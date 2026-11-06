@@ -109,20 +109,24 @@ theorem complex_line_mem_of_real_det_ne_zero
     exact K.add_mem (K.smul_mem _ hu) (K.smul_mem _ hv)
   have hp := K.smul_mem ((u.re * v.im - u.im * v.re)⁻¹) hm
   simpa only [smul_smul, inv_mul_cancel₀ hd, one_smul] using hp
+variable (u v w : ℂ)
+include u v w in
 
-theorem triangle_real_det01 (u v w : ℂ) :
+theorem triangle_real_det01  :
     u.re * (v * star w).im - u.im * (v * star w).re =
       -(u * w * star v).im := by
   simp [Complex.mul_re, Complex.mul_im]
   ring
+include u v w in
 
-theorem triangle_real_det12 (u v w : ℂ) :
+theorem triangle_real_det12  :
     w.re * (star u * v).im - w.im * (star u * v).re =
       -(u * w * star v).im := by
   simp [Complex.mul_re, Complex.mul_im]
   ring
+include u v w in
 
-theorem triangle_real_det02 (u v w : ℂ) :
+theorem triangle_real_det02  :
     v.re * (u * w).im - v.im * (u * w).re =
       (u * w * star v).im := by
   simp [Complex.mul_re, Complex.mul_im]

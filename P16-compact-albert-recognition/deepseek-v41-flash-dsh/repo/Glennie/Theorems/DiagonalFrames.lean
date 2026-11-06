@@ -68,9 +68,11 @@ theorem diagonal_frame_resolution (p : Fin 3 → Albert) (hp : Frame p)
 private theorem diagonal_test_inner (a b c : ℝ) (x : Albert) :
     inner (diagonalAlbert a b c) x = a*x.d0+b*x.d1+c*x.d2 := by
   simp [inner_coordinates,diagonalAlbert,octDot_coordinates]
+variable (p : Fin 3 → Albert) (hp : Frame p)
+include p hp in
 
 /-- Uniform overlaps with any diagonal frame fix all three actual coordinates. -/
-theorem diagonal_frame_uniform_coordinates (p : Fin 3 → Albert) (hp : Frame p)
+theorem diagonal_frame_uniform_coordinates 
     (hpd : ∀ i, IsDiagonal (p i)) (x : Albert)
     (hu : ∀ i, inner (p i) x = 1/3) : x.d0 = 1/3 ∧ x.d1 = 1/3 ∧ x.d2 = 1/3 := by
   have ht (a b c : ℝ) :
@@ -92,16 +94,18 @@ theorem diagonal_frame_uniform_coordinates (p : Fin 3 → Albert) (hp : Frame p)
   rw [diagonal_test_inner] at h0 h1 h2
   norm_num [trace,diagonalAlbert] at h0 h1 h2
   refine ⟨?_,?_,?_⟩ <;> linarith
+include p hp in
 
 /-- Frame encoders diagonalize with zero determinant and fixed discriminant square. -/
-theorem diagonal_frame_encoder_cubic_zero (p : Fin 3 → Albert) (hp : Frame p)
+theorem diagonal_frame_encoder_cubic_zero 
     (he : IsDiagonal (encoder p)) :
     (encoder p).d0*(encoder p).d1*(encoder p).d2 = 0 := by
   have h := frame_encoder_cubicNorm p hp
   rw [diagonalAlbert_representation (encoder p) he,newtonCubicNorm_coordinates] at h
   simpa [diagonalAlbert,octNormSq,Quaternion.normSq_def',octMul,octConj,octRe] using h
+include p hp in
 
-theorem diagonal_frame_encoder_discriminant (p : Fin 3 → Albert) (hp : Frame p)
+theorem diagonal_frame_encoder_discriminant 
     (he : IsDiagonal (encoder p)) :
     (((encoder p).d0-(encoder p).d1)*((encoder p).d0-(encoder p).d2)*
       ((encoder p).d1-(encoder p).d2))^2 = 4 := by

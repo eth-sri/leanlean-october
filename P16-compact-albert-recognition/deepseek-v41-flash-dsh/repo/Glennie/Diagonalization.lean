@@ -9,18 +9,22 @@ public import Glennie.Native.RealConjugation
 @[expose] public section
 namespace Glennie
 noncomputable section
+variable (x : Albert)
+include x in
 
-def HasMaximalDiagonalEnergy (x : Albert) : Prop :=
+def HasMaximalDiagonalEnergy  : Prop :=
   ∀ g : CompactAutomorphism, diagonalEnergy (g.equiv x) ≤ diagonalEnergy x
+include x in
 
-theorem maximalDiagonalEnergy_after (x : Albert) (hx : HasMaximalDiagonalEnergy x)
+theorem maximalDiagonalEnergy_after  (hx : HasMaximalDiagonalEnergy x)
     (g : CompactAutomorphism) (hg : diagonalEnergy (g.equiv x) = diagonalEnergy x) :
     HasMaximalDiagonalEnergy (g.equiv x) := by
   intro h
   rw [hg]
   exact hx (h.comp g)
+include x in
 
-theorem maximalDiagonalEnergy_slot12_zero (x : Albert) (hx : HasMaximalDiagonalEnergy x) :
+theorem maximalDiagonalEnergy_slot12_zero  (hx : HasMaximalDiagonalEnergy x) :
     x.o12 = 0 := by
   by_contra hn
   obtain ⟨g, n, hn, h0, h1, h2, hslot⟩ := OctRelatedTriple.make_slot12_real x hn
@@ -32,22 +36,25 @@ theorem maximalDiagonalEnergy_slot12_zero (x : Albert) (hx : HasMaximalDiagonalE
   rw [realRotation12_d0, realRotation12_d1, realRotation12_d2,
     h0, h1, h2, hslot, octRe_scalar] at hmax
   nlinarith [he]
+include x in
 
-theorem realSwap01_diagonalEnergy (x : Albert) :
+theorem realSwap01_diagonalEnergy  :
     diagonalEnergy (realSwap01Automorphism.equiv x) = diagonalEnergy x := by
   change diagonalEnergy (realConjugateAlbert realSwap01 x) = _
   rw [realSwap01_coordinates]
   simp only [diagonalEnergy]
   ring
+include x in
 
-theorem realSwap02_diagonalEnergy (x : Albert) :
+theorem realSwap02_diagonalEnergy  :
     diagonalEnergy (realSwap02Automorphism.equiv x) = diagonalEnergy x := by
   change diagonalEnergy (realConjugateAlbert realSwap02 x) = _
   rw [realSwap02_coordinates]
   simp only [diagonalEnergy]
   ring
+include x in
 
-theorem maximalDiagonalEnergy_isDiagonal (x : Albert) (hx : HasMaximalDiagonalEnergy x) :
+theorem maximalDiagonalEnergy_isDiagonal  (hx : HasMaximalDiagonalEnergy x) :
     IsDiagonal x := by
   have h12 := maximalDiagonalEnergy_slot12_zero x hx
   have h02 := maximalDiagonalEnergy_slot12_zero (realSwap01Automorphism.equiv x)
@@ -65,9 +72,10 @@ theorem maximalDiagonalEnergy_isDiagonal (x : Albert) (hx : HasMaximalDiagonalEn
       simp only [star_zero, neg_zero]
     simpa only [octConj_conj, hz] using h
   exact ⟨h01', h02, h12⟩
+include x in
 
 /-- Diagonalization in the genuine native product/trace automorphism group. -/
-theorem native_diagonalization (x : Albert) :
+theorem native_diagonalization  :
     ∃ g : CompactAutomorphism, IsDiagonal (g.equiv x) := by
   obtain ⟨g, hg⟩ := exists_diagonalEnergy_maximum x
   refine ⟨g, maximalDiagonalEnergy_isDiagonal _ ?_⟩

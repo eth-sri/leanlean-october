@@ -15,7 +15,6 @@ open Glennie.Compact.NativeWordTableR01
 open AlbertGeometry.Cubic AlbertGeometry.BasedNormAdjointTransport
 open AlbertGeometry.IntrinsicLocalTransport
 open scoped BigOperators
-set_option autoImplicit false
 
 /-- Exactly the existing downstream linear/unit/product/metric boundary,
 with the source metric written in the native raw normalization. -/

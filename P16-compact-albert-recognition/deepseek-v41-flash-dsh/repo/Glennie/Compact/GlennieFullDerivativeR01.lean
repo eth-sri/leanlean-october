@@ -18,7 +18,6 @@ open Glennie.Compact.GlennieDerivativeR01
 open Glennie.Compact.GlennieDerivativeGenerationR01
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedSimpArgs false
@@ -28,11 +27,14 @@ abbrev NativeTriple := Albert × (Albert × Albert)
 
 /-- The literal native scalar on three independently variable Albert inputs. -/
 def phiTriple (p : NativeTriple) : ℝ := phi p.1 p.2.1 p.2.2
+variable (x y z : Albert)
+include x y z in
 
-theorem phi_cyclic (x y z : Albert) : phi y z x = phi x y z := by
+theorem phi_cyclic  : phi y z x = phi x y z := by
   rw [phi_swap_first_two z y x, phi_swap_first_third x y z, neg_neg]
+include x y z in
 
-theorem hasFDerivAt_phi_first (x y z : Albert) :
+theorem hasFDerivAt_phi_first  :
     HasFDerivAt (fun w : Albert => phi w y z)
       (nativeInnerContinuous (glennieVector y z x)) x := by
   have hfun : (fun w : Albert => phi w y z) = (fun w => phi y z w) := by
@@ -40,8 +42,9 @@ theorem hasFDerivAt_phi_first (x y z : Albert) :
     exact (phi_cyclic w y z).symm
   rw [hfun]
   exact hasFDerivAt_phi_third y z x
+include x y z in
 
-theorem hasFDerivAt_phi_second (x y z : Albert) :
+theorem hasFDerivAt_phi_second  :
     HasFDerivAt (fun w : Albert => phi x w z)
       (nativeInnerContinuous (glennieVector z x y)) y := by
   have hfun : (fun w : Albert => phi x w z) = (fun w => phi z x w) := by

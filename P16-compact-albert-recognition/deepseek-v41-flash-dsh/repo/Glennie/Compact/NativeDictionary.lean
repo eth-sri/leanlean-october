@@ -20,42 +20,53 @@ namespace Glennie.Compact.NativeDictionary
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option linter.unusedSimpArgs false
+variable (a : Fin 26 → ℝ)
+include a in
 
 /-! ## Traceless decode -/
 
 /-- The explicit traceless decode. It equals `sectorDecode (extH a) (extM a)`
 (theorem `extDecode0_eq_sectorDecode`). -/
-def extDecode0 (a : Fin 26 → ℝ) : Albert :=
+def extDecode0  : Albert :=
   ⟨a 0 + a 1, -a 0 + a 1, -2 * a 1,
     (⟨a 2, a 3, -a 12, -a 13⟩, ⟨-a 18, -a 19, -a 24, a 25⟩),
     (⟨a 4, a 5, a 10, a 11⟩, ⟨a 16, a 17, a 22, -a 23⟩),
     (⟨a 6, a 7, -a 8, -a 9⟩, ⟨-a 14, -a 15, -a 20, a 21⟩)⟩
+include a in
 
-@[simp] theorem extDecode0_d0 (a : Fin 26 → ℝ) : (extDecode0 a).d0 = a 0 + a 1 := rfl
-@[simp] theorem extDecode0_d1 (a : Fin 26 → ℝ) : (extDecode0 a).d1 = -a 0 + a 1 := rfl
-@[simp] theorem extDecode0_d2 (a : Fin 26 → ℝ) : (extDecode0 a).d2 = -2 * a 1 := rfl
-@[simp] theorem extDecode0_o01 (a : Fin 26 → ℝ) :
+@[simp] theorem extDecode0_d0  : (extDecode0 a).d0 = a 0 + a 1 := rfl
+include a in
+@[simp] theorem extDecode0_d1  : (extDecode0 a).d1 = -a 0 + a 1 := rfl
+include a in
+@[simp] theorem extDecode0_d2  : (extDecode0 a).d2 = -2 * a 1 := rfl
+include a in
+@[simp] theorem extDecode0_o01  :
     (extDecode0 a).o01 =
       ((⟨a 2, a 3, -a 12, -a 13⟩, ⟨-a 18, -a 19, -a 24, a 25⟩) : Octonion) := rfl
-@[simp] theorem extDecode0_o02 (a : Fin 26 → ℝ) :
+include a in
+@[simp] theorem extDecode0_o02  :
     (extDecode0 a).o02 =
       ((⟨a 4, a 5, a 10, a 11⟩, ⟨a 16, a 17, a 22, -a 23⟩) : Octonion) := rfl
-@[simp] theorem extDecode0_o12 (a : Fin 26 → ℝ) :
+include a in
+@[simp] theorem extDecode0_o12  :
     (extDecode0 a).o12 =
       ((⟨a 6, a 7, -a 8, -a 9⟩, ⟨-a 14, -a 15, -a 20, a 21⟩) : Octonion) := rfl
+variable (a : Fin 27 → ℝ)
+include a in
 
 /-! ## Full 27-coordinate decode and encode -/
 
 /-- Drop the unit coordinate: full index `i.succ` is traceless index `i`. -/
-def extTail (a : Fin 27 → ℝ) : Fin 26 → ℝ := fun i => a i.succ
+def extTail  : Fin 26 → ℝ := fun i => a i.succ
+include a in
 
-@[simp] theorem extTail_apply (a : Fin 27 → ℝ) (i : Fin 26) : extTail a i = a i.succ := rfl
+@[simp] theorem extTail_apply  (i : Fin 26) : extTail a i = a i.succ := rfl
+include a in
 
 /-- Full decode: coordinate 0 multiplies the native unit (raw trace 3). -/
-def extDecode (a : Fin 27 → ℝ) : Albert := a 0 • (1 : Albert) + extDecode0 (extTail a)
+def extDecode  : Albert := a 0 • (1 : Albert) + extDecode0 (extTail a)
 
 /-- Traceless encode, the inverse of `extDecode0` on the traceless part. -/
 def extEncode0 (x : Albert) : Fin 26 → ℝ :=

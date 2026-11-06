@@ -71,15 +71,19 @@ abbrev AutomorphismColumns := Fin 27 → Albert
 
 def automorphismBasis : Module.Basis (Fin 27) ℝ Albert :=
   Module.finBasisOfFinrankEq ℝ Albert albert_finrank
+variable (v : AutomorphismColumns)
+include v in
 
-def columnMap (v : AutomorphismColumns) : Albert →ₗ[ℝ] Albert :=
+def columnMap  : Albert →ₗ[ℝ] Albert :=
   automorphismBasis.constr ℝ v
+include v in
 
-@[simp] theorem columnMap_basis (v : AutomorphismColumns) (i : Fin 27) :
+@[simp] theorem columnMap_basis  (i : Fin 27) :
     columnMap v (automorphismBasis i) = v i :=
   automorphismBasis.constr_basis ℝ v i
+include v in
 
-theorem columnMap_apply (v : AutomorphismColumns) (x : Albert) :
+theorem columnMap_apply  (x : Albert) :
     columnMap v x = ∑ i, automorphismBasis.equivFun x i • v i :=
   automorphismBasis.constr_apply_fintype ℝ v x
 
@@ -160,17 +164,21 @@ theorem automorphismMaps_nonempty : automorphismMaps.Nonempty := by
   change columnMap _ 1 = 1 ∧ _
   rw [hm]
   exact ⟨rfl, (fun _ _ => rfl), (fun _ _ => rfl)⟩
+variable (g : CompactAutomorphism)
+include g in
 
-def CompactAutomorphism.columns (g : CompactAutomorphism) : AutomorphismColumns :=
+def CompactAutomorphism.columns  : AutomorphismColumns :=
   fun i => g.equiv (automorphismBasis i)
+include g in
 
-@[simp] theorem CompactAutomorphism.columns_apply (g : CompactAutomorphism) (x : Albert) :
+@[simp] theorem CompactAutomorphism.columns_apply  (x : Albert) :
     columnMap g.columns x = g.equiv x := by
   rw [show columnMap g.columns = g.equiv.toLinearMap from
     columnMap_linearImage g.equiv.toLinearMap]
   rfl
+include g in
 
-theorem CompactAutomorphism.columns_mem (g : CompactAutomorphism) :
+theorem CompactAutomorphism.columns_mem  :
     g.columns ∈ automorphismMaps := by
   refine ⟨?_, ?_, ?_⟩
   · simpa only [CompactAutomorphism.columns_apply] using g.map_unit

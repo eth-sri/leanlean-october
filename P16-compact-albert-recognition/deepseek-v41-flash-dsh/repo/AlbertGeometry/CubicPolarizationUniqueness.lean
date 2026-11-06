@@ -16,30 +16,31 @@ namespace AlbertGeometry.Cubic
 noncomputable section
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+variable (P Q : SymmetricTrilinearForm E) (hN : diagonalCubic P.form = diagonalCubic Q.form)
+include P Q hN in
 
 /-- Whole-function equality is carried through two actual derivatives. -/
 theorem cubicHessian_function_eq_of_diagonal_eq
-    (P Q : SymmetricTrilinearForm E)
-    (hN : diagonalCubic P.form = diagonalCubic Q.form) :
+     :
     cubicHessian P = cubicHessian Q := by
   exact congrArg
     (fun N : E → ℝ => fun x : E =>
       fderiv ℝ (fun z : E => fderiv ℝ N z) x) hN
+include P Q hN in
 
 /-- Equal whole diagonal functions have equal literal third derivatives. -/
 theorem cubicThirdDerivative_eq_of_diagonal_eq
-    (P Q : SymmetricTrilinearForm E)
-    (hN : diagonalCubic P.form = diagonalCubic Q.form) (x : E) :
+     (x : E) :
     cubicThirdDerivative P x = cubicThirdDerivative Q x := by
   exact congrArg
     (fun H : E → (E →L[ℝ] E →L[ℝ] ℝ) => fderiv ℝ H x)
     (cubicHessian_function_eq_of_diagonal_eq P Q hN)
+include P Q hN in
 
 /-- The already proved one-sixth recovery formula cancels the third derivative.
 The basepoint zero is arbitrary; the derivative theorem is global. -/
 theorem form_apply_eq_of_diagonal_eq
-    (P Q : SymmetricTrilinearForm E)
-    (hN : diagonalCubic P.form = diagonalCubic Q.form) (u v w : E) :
+     (u v w : E) :
     P.form ![u, v, w] = Q.form ![u, v, w] := by
   calc
     P.form ![u, v, w] =
@@ -51,11 +52,11 @@ theorem form_apply_eq_of_diagonal_eq
         (cubicThirdDerivative_eq_of_diagonal_eq P Q hN 0)
     _ = Q.form ![u, v, w] :=
       form_from_actual_thirdDerivative Q 0 u v w
+include P Q hN in
 
 /-- Equality on every ordered triple gives equality of the actual CMMs. -/
 theorem form_eq_of_diagonal_eq
-    (P Q : SymmetricTrilinearForm E)
-    (hN : diagonalCubic P.form = diagonalCubic Q.form) : P.form = Q.form := by
+     : P.form = Q.form := by
   apply ContinuousMultilinearMap.ext
   intro m
   have hm : m = ![m 0, m 1, m 2] := by

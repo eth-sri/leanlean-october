@@ -68,21 +68,25 @@ private theorem eval_const_hasFDerivAt
   ext w
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.zero_apply, map_zero, zero_add]
+variable (P : SymmetricTrilinearForm E)
+include P in
 
 /-- Literal second derivative of the actual varying ambient metric. -/
-def ambientMetricD2 (P : SymmetricTrilinearForm E) (x : E) :
+def ambientMetricD2  (x : E) :
     E →L[ℝ] E →L[ℝ] E →L[ℝ] E →L[ℝ] ℝ :=
   fderiv ℝ (ambientMetricD1 P) x
+include P in
 
-theorem hasFDerivAt_actual_metricD1 (P : SymmetricTrilinearForm E) {x : E}
+theorem hasFDerivAt_actual_metricD1  {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     HasFDerivAt (ambientMetricD1 P) (ambientMetricD2 P x) x := by
   have hD1 : ContDiffAt ℝ ⊤ (ambientMetricD1 P) x :=
     (contDiffAt_actual_metric P hx).fderiv_right (by simp)
   exact (hD1.differentiableAt (by simp)).hasFDerivAt
+include P in
 
 /-- Fourth-derivative cancellation is an actual Schwarz theorem for g. -/
-theorem ambientMetricD2_swap12 (P : SymmetricTrilinearForm E) {x : E}
+theorem ambientMetricD2_swap12  {x : E}
     (hx : 0 < diagonalCubic P.form x) (u v w z : E) :
     ambientMetricD2 P x u v w z = ambientMetricD2 P x v u w z := by
   have h := (contDiffAt_actual_metric P hx).isSymmSndFDerivAt le_top
@@ -90,37 +94,43 @@ theorem ambientMetricD2_swap12 (P : SymmetricTrilinearForm E) {x : E}
   change fderiv ℝ (fderiv ℝ (logHessianForm P)) x u v w z =
     fderiv ℝ (fderiv ℝ (logHessianForm P)) x v u w z
   exact hs
+include P in
 
 /-- The genuine derivative of the smooth actual connection coefficient. -/
-def ambientGammaD1 (P : SymmetricTrilinearForm E) (x : E) :
+def ambientGammaD1  (x : E) :
     E →L[ℝ] E →L[ℝ] E →L[ℝ] E := fderiv ℝ (ambientGamma P) x
+include P in
 
-theorem hasFDerivAt_actual_ambientGamma (P : SymmetricTrilinearForm E) {x : E}
+theorem hasFDerivAt_actual_ambientGamma  {x : E}
     (hx : 0 < diagonalCubic P.form x)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) :
     HasFDerivAt (ambientGamma P) (ambientGammaD1 P x) x :=
   ((contDiffAt_ambientGamma P hx hp).differentiableAt (by simp)).hasFDerivAt
+include P in
 
 /-- The actual connection on a field in a constant affine direction. Its
 coefficient has the smooth torsion/metric/uniqueness laws in the imported leaf. -/
-def ambientCovariantDerivative (P : SymmetricTrilinearForm E) (u : E)
+def ambientCovariantDerivative  (u : E)
     (Y : E → E) (x : E) : E := fderiv ℝ Y x u + ambientGamma P x u (Y x)
+include P in
 
-theorem ambientCovariantDerivative_const (P : SymmetricTrilinearForm E) (u w x : E) :
+theorem ambientCovariantDerivative_const  (u w x : E) :
     ambientCovariantDerivative P u (fun _ : E => w) x = ambientGamma P x u w := by
   simp only [ambientCovariantDerivative, fderiv_const_apply,
     ContinuousLinearMap.zero_apply, zero_add]
+include P in
 
 /-- Actual covariant-derivative commutator on constant affine fields. Those
 direction fields commute, so their Lie-bracket term is zero. No product or
 desired curvature expression occurs in this definition. -/
-def ambientCurvature (P : SymmetricTrilinearForm E) (x u v w : E) : E :=
+def ambientCurvature  (x u v w : E) : E :=
   ambientCovariantDerivative P u (ambientCovariantDerivative P v (fun _ : E => w)) x -
     ambientCovariantDerivative P v (ambientCovariantDerivative P u (fun _ : E => w)) x
+include P in
 
 /-- The actual constant-field curvature has its actual D-Gamma expression,
 by proved differentiability and uniqueness rather than total-fderiv fallback. -/
-theorem ambientCurvature_apply (P : SymmetricTrilinearForm E) {x : E}
+theorem ambientCurvature_apply  {x : E}
     (hx : 0 < diagonalCubic P.form x)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) (u v w : E) :
     ambientCurvature P x u v w =
@@ -140,9 +150,10 @@ theorem ambientCurvature_apply (P : SymmetricTrilinearForm E) {x : E}
   simp only [ambientCovariantDerivative, hv.fderiv, hu.fderiv,
     ContinuousLinearMap.flip_apply]
   simp only [sub_eq_add_neg, neg_add, add_assoc, add_left_comm, add_comm]
+include P in
 
 /-- The Hessian metric has Dg=2g(Gamma(.,.),.) at every positive metric point. -/
-theorem ambientMetricD1_eq_two_Gamma (P : SymmetricTrilinearForm E) {x : E}
+theorem ambientMetricD1_eq_two_Gamma  {x : E}
     (hx : 0 < diagonalCubic P.form x)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) (u v w : E) :
     ambientMetricD1 P x u v w =
@@ -151,11 +162,12 @@ theorem ambientMetricD1_eq_two_Gamma (P : SymmetricTrilinearForm E) {x : E}
   rw [ambientKoszulTensor_eq_half P hx] at h
   simp only [ContinuousLinearMap.smul_apply, smul_eq_mul] at h
   linarith
+include P in
 
 /-- Differentiate actual Koszul pairing on a proved positive neighborhood.
 All scalar/CLM derivatives have actual certificates. No inverse derivative
 formula or prescribed fourth metric jet is assumed. -/
-theorem ambientGammaD1_pairing (P : SymmetricTrilinearForm E) {x : E}
+theorem ambientGammaD1_pairing  {x : E}
     (hx : 0 < diagonalCubic P.form x)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) (u v w z : E) :
     logHessianForm P x (ambientGammaD1 P x u v w) z =
@@ -182,11 +194,12 @@ theorem ambientGammaD1_pairing (P : SymmetricTrilinearForm E) {x : E}
   simp only [ContinuousLinearMap.flip_apply, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul] at hd
   linarith
+include P in
 
 /-- Actual Hessian curvature is the negative connection commutator at every
 positive metric point. Symmetric fourth derivatives cancel, leaving the
 inverse-raising terms with the manuscript's sign. -/
-theorem ambientCurvature_eq_neg_Gamma_commutator (P : SymmetricTrilinearForm E) {x : E}
+theorem ambientCurvature_eq_neg_Gamma_commutator  {x : E}
     (hx : 0 < diagonalCubic P.form x)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) (u v w : E) :
     ambientCurvature P x u v w =
@@ -203,11 +216,12 @@ theorem ambientCurvature_eq_neg_Gamma_commutator (P : SymmetricTrilinearForm E) 
     ambientMetricD1_eq_two_Gamma P hx hp u (ambientGamma P x v w) z,
     ambientMetricD1_eq_two_Gamma P hx hp v (ambientGamma P x u w) z]
   ring
+include P in
 
 /-- Original arbitrary-cubic full ambient tensor endpoint, before Jordan:
 N(e)=1 and actual positivity alone give R_e=-[L_u,L_v], with all radial slots. -/
 theorem ambientCurvature_at_one_eq_neg_product_commutator
-    (P : SymmetricTrilinearForm E) (e : E) (he : diagonalCubic P.form e = 1)
+     (e : E) (he : diagonalCubic P.form e = 1)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P e u u) (u v w : E) :
     ambientCurvature P e u v w =
       -(intrinsicProduct P e (rawBilinearForm_nondegenerate P e he hp) u

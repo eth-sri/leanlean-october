@@ -25,7 +25,6 @@ open Glennie.Compact.FlowFamily
 open Glennie.Compact.Rank20Certificate
 
 noncomputable section
-set_option autoImplicit false
 
 /-- All400 entries of the actual original native Jacobian, including every zero.
     Only the twenty column indices are split; each row remains universal. -/

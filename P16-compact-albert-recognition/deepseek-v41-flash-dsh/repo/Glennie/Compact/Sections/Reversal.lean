@@ -54,7 +54,6 @@ open Glennie.Compact.Affine20 Glennie.Compact.ChartTransfer
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option linter.unusedSimpArgs false
 

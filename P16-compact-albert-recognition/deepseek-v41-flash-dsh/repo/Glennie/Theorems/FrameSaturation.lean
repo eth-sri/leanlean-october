@@ -13,8 +13,10 @@ namespace Glennie
 noncomputable section
 
 set_option maxHeartbeats 2000000
+variable (d e f : ℝ) (u v w : ℂ)
+include d e f u v w in
 
-theorem fe_complex_cubic (d e f : ℝ) (u v w : ℂ) :
+theorem fe_complex_cubic  :
     newtonCubicNorm (complexAlbert d e f u v w) = d*e*f-
       d*Complex.normSq w-e*Complex.normSq v-f*Complex.normSq u+
       2*(u*w*star v).re := by
@@ -23,20 +25,23 @@ theorem fe_complex_cubic (d e f : ℝ) (u v w : ℂ) :
     Quaternion.re_mul,Quaternion.imI_mul,Quaternion.imJ_mul,Quaternion.imK_mul,
     Complex.normSq_apply,Complex.mul_re,Complex.mul_im]
   ring
+include d e f u v w in
 
-theorem fe_complex_square_d0 (d e f : ℝ) (u v w : ℂ) :
+theorem fe_complex_square_d0  :
     (jordan (complexAlbert d e f u v w) (complexAlbert d e f u v w)).d0 =
       d^2+Complex.normSq u+Complex.normSq v := by
   simp [jordan_d0,complexAlbert,complexOct,octDot_coordinates,octNormSq,
     Quaternion.normSq_def',Complex.normSq_apply]
   ring
-theorem fe_complex_square_d1 (d e f : ℝ) (u v w : ℂ) :
+include d e f u v w in
+theorem fe_complex_square_d1  :
     (jordan (complexAlbert d e f u v w) (complexAlbert d e f u v w)).d1 =
       e^2+Complex.normSq u+Complex.normSq w := by
   simp [jordan_d1,complexAlbert,complexOct,octDot_coordinates,octNormSq,
     Quaternion.normSq_def',Complex.normSq_apply]
   ring
-theorem fe_complex_square_d2 (d e f : ℝ) (u v w : ℂ) :
+include d e f u v w in
+theorem fe_complex_square_d2  :
     (jordan (complexAlbert d e f u v w) (complexAlbert d e f u v w)).d2 =
       f^2+Complex.normSq v+Complex.normSq w := by
   simp [jordan_d2,complexAlbert,complexOct,octDot_coordinates,octNormSq,

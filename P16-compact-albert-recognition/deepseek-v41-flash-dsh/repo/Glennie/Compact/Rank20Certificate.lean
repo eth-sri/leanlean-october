@@ -33,7 +33,6 @@ namespace Glennie.Compact.Rank20Certificate
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## Z[sqrt3] as a local ring (Mathlib's Zsqrtd pattern with d = 3) -/
@@ -73,10 +72,13 @@ instance : Mul Z3 := ⟨fun z w => ⟨z.re * w.re + 3 * z.im * w.im, z.re * w.im
 @[simp] theorem re_neg (z : Z3) : (-z).re = -z.re := rfl
 
 @[simp] theorem im_neg (z : Z3) : (-z).im = -z.im := rfl
+variable (z w : Z3)
+include z w in
 
-@[simp] theorem re_mul (z w : Z3) : (z * w).re = z.re * w.re + 3 * z.im * w.im := rfl
+@[simp] theorem re_mul  : (z * w).re = z.re * w.re + 3 * z.im * w.im := rfl
+include z w in
 
-@[simp] theorem im_mul (z w : Z3) : (z * w).im = z.re * w.im + z.im * w.re := rfl
+@[simp] theorem im_mul  : (z * w).im = z.re * w.im + z.im * w.re := rfl
 
 instance addCommGroup : AddCommGroup Z3 := by
   refine
@@ -91,10 +93,12 @@ instance addCommGroup : AddCommGroup Z3 := by
   intros <;>
   ext <;>
   simp [add_comm, add_left_comm]
+include z w in
 
-@[simp] theorem re_sub (z w : Z3) : (z - w).re = z.re - w.re := rfl
+@[simp] theorem re_sub  : (z - w).re = z.re - w.re := rfl
+include z w in
 
-@[simp] theorem im_sub (z w : Z3) : (z - w).im = z.im - w.im := rfl
+@[simp] theorem im_sub  : (z - w).im = z.im - w.im := rfl
 
 instance addGroupWithOne : AddGroupWithOne Z3 :=
   { Z3.addCommGroup with

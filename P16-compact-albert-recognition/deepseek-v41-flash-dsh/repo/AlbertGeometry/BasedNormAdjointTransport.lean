@@ -21,10 +21,12 @@ open AlbertGeometry.BasedNormDerivativeTransport.BasedNormIso
 variable {E G : Type*}
   [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
   [NormedAddCommGroup G] [NormedSpace ℝ G] [FiniteDimensional ℝ G]
+variable (P : SymmetricTrilinearForm E)
+include P in
 
 /-- Algebraic projection of the ACTUAL raw continuous bilinear form. No new
 pairing is substituted for its derivative-defined values. -/
-def rawBilinearForm (P : SymmetricTrilinearForm E) (e : E) :
+def rawBilinearForm  (e : E) :
     LinearMap.BilinForm ℝ E where
   toFun := fun x => (rawTraceForm P e x).toLinearMap
   map_add' := by
@@ -37,13 +39,15 @@ def rawBilinearForm (P : SymmetricTrilinearForm E) (e : E) :
     ext z
     change rawTraceForm P e (t • x) z = t * rawTraceForm P e x z
     simp only [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
+include P in
 
-@[simp] theorem rawBilinearForm_apply (P : SymmetricTrilinearForm E) (e x y : E) :
+@[simp] theorem rawBilinearForm_apply  (e x y : E) :
     rawBilinearForm P e x y = rawTraceForm P e x y := rfl
+include P in
 
 /-- Both left and right separation follow by testing the same vector. The
 normalization and positivity are the actual endpoint's base hypotheses. -/
-theorem rawBilinearForm_nondegenerate (P : SymmetricTrilinearForm E) (e : E)
+theorem rawBilinearForm_nondegenerate  (e : E)
     (he : diagonalCubic P.form e = 1)
     (hpos : ∀ x : E, x ≠ 0 → 0 < logHessianForm P e x x) :
     (rawBilinearForm P e).Nondegenerate := by
@@ -60,15 +64,17 @@ theorem rawBilinearForm_nondegenerate (P : SymmetricTrilinearForm E) (e : E)
     have hz : rawTraceForm P e x x = 0 := hx x
     rw [rawTraceForm_eq_three_logMetric P e he x x] at hz
     linarith
+include P in
 
 /-- Inverse of the actual finite-dimensional raw B dual equivalence applied to
 actual DN_x. Existence is supplied by toDual, not by a chosen desired adjoint. -/
-def intrinsicAdjoint (P : SymmetricTrilinearForm E) (e : E)
+def intrinsicAdjoint  (e : E)
     (hB : (rawBilinearForm P e).Nondegenerate) (x : E) : E :=
   ((rawBilinearForm P e).toDual hB).symm
     (fderiv ℝ (diagonalCubic P.form) x).toLinearMap
+include P in
 
-theorem intrinsicAdjoint_pairing (P : SymmetricTrilinearForm E) (e : E)
+theorem intrinsicAdjoint_pairing  (e : E)
     (hB : (rawBilinearForm P e).Nondegenerate) (x y : E) :
     rawTraceForm P e (intrinsicAdjoint P e hB x) y =
       fderiv ℝ (diagonalCubic P.form) x y := by
@@ -76,8 +82,9 @@ theorem intrinsicAdjoint_pairing (P : SymmetricTrilinearForm E) (e : E)
     (((rawBilinearForm P e).toDual hB).symm
       (fderiv ℝ (diagonalCubic P.form) x).toLinearMap) y = _
   exact LinearMap.BilinForm.apply_toDual_symm_apply _ y
+include P in
 
-theorem intrinsicAdjoint_unique (P : SymmetricTrilinearForm E) (e : E)
+theorem intrinsicAdjoint_unique  (e : E)
     (hB : (rawBilinearForm P e).Nondegenerate) (x z : E)
     (hz : ∀ y : E, rawTraceForm P e z y = fderiv ℝ (diagonalCubic P.form) x y) :
     z = intrinsicAdjoint P e hB x := by
@@ -85,26 +92,31 @@ theorem intrinsicAdjoint_unique (P : SymmetricTrilinearForm E) (e : E)
   ext y
   change rawTraceForm P e z y = rawTraceForm P e (intrinsicAdjoint P e hB x) y
   rw [hz, intrinsicAdjoint_pairing]
+include P in
 
 /-- Unhalved polarization of the actual quadratic adjoint. -/
-def intrinsicCross (P : SymmetricTrilinearForm E) (e : E)
+def intrinsicCross  (e : E)
     (hB : (rawBilinearForm P e).Nondegenerate) (x y : E) : E :=
   intrinsicAdjoint P e hB (x + y) - intrinsicAdjoint P e hB x - intrinsicAdjoint P e hB y
+include P in
 
-def intrinsicS (P : SymmetricTrilinearForm E) (e x y : E) : ℝ :=
+def intrinsicS  (e x y : E) : ℝ :=
   normTrace P e x * normTrace P e y - rawTraceForm P e x y
+include P in
 
 /-- The prescribed native HALVED reconstruction, formed intrinsically from
 actual norm derivatives. Native equality and algebra laws are later theorems. -/
-def intrinsicProduct (P : SymmetricTrilinearForm E) (e : E)
+def intrinsicProduct  (e : E)
     (hB : (rawBilinearForm P e).Nondegenerate) (x y : E) : E :=
   (1 / 2 : ℝ) • (intrinsicCross P e hB x y + normTrace P e x • y +
     normTrace P e y • x - intrinsicS P e x y • e)
 
 variable {P : SymmetricTrilinearForm E} {e : E}
   {Q : SymmetricTrilinearForm G} {f : G}
+variable (I : BasedNormIso P e Q f)
+include I in
 
-theorem intrinsicAdjoint_pull (I : BasedNormIso P e Q f)
+theorem intrinsicAdjoint_pull 
     (hB : (rawBilinearForm P e).Nondegenerate)
     (hC : (rawBilinearForm Q f).Nondegenerate) (x : E) :
     I.equiv (intrinsicAdjoint P e hB x) = intrinsicAdjoint Q f hC (I.equiv x) := by
@@ -112,19 +124,22 @@ theorem intrinsicAdjoint_pull (I : BasedNormIso P e Q f)
   intro y
   obtain ⟨v, rfl⟩ := I.equiv.surjective y
   rw [← I.rawTraceForm_pull, intrinsicAdjoint_pairing, I.fderiv_norm_pull_apply]
+include I in
 
-theorem intrinsicCross_pull (I : BasedNormIso P e Q f)
+theorem intrinsicCross_pull 
     (hB : (rawBilinearForm P e).Nondegenerate)
     (hC : (rawBilinearForm Q f).Nondegenerate) (x y : E) :
     I.equiv (intrinsicCross P e hB x y) = intrinsicCross Q f hC (I.equiv x) (I.equiv y) := by
   simp only [intrinsicCross, map_sub, map_add, intrinsicAdjoint_pull I hB hC]
+include I in
 
-theorem intrinsicS_pull (I : BasedNormIso P e Q f) (x y : E) :
+theorem intrinsicS_pull  (x y : E) :
     intrinsicS P e x y = intrinsicS Q f (I.equiv x) (I.equiv y) := by
   simp only [intrinsicS, I.normTrace_pull, I.rawTraceForm_pull]
+include I in
 
 /-- Product preservation is a derived theorem, not a based-map premise. -/
-theorem intrinsicProduct_pull (I : BasedNormIso P e Q f)
+theorem intrinsicProduct_pull 
     (hB : (rawBilinearForm P e).Nondegenerate)
     (hC : (rawBilinearForm Q f).Nondegenerate) (x y : E) :
     I.equiv (intrinsicProduct P e hB x y) =

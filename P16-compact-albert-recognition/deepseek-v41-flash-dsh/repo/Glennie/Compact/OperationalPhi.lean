@@ -10,7 +10,6 @@ is asserted. All products and pairings are the existing Glennie definitions.
 namespace Glennie.Compact.OperationalPhi
 open Glennie
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-- The swapped-order contrast, with an arbitrary unnormalized final argument. -/

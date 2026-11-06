@@ -22,16 +22,19 @@ namespace AlbertGeometry.Cubic
 noncomputable section
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+variable (P : SymmetricTrilinearForm E)
+include P in
 
 /-- Continuity of the actual DN map follows from its proved derivative. -/
-theorem continuous_fderiv_diagonalCubic (P : SymmetricTrilinearForm E) :
+theorem continuous_fderiv_diagonalCubic  :
     Continuous (fun x : E => fderiv ℝ (diagonalCubic P.form) x) := by
   exact (show Differentiable ℝ
     (fun x : E => fderiv ℝ (diagonalCubic P.form) x) from
       fun x => (hasFDerivAt_fderiv_diagonalCubic_actual P x).differentiableAt).continuous
+include P in
 
 /-- The reciprocal derivative is continuous at each actual positive point. -/
-theorem continuousAt_inverseCubicDerivative (P : SymmetricTrilinearForm E) {x : E}
+theorem continuousAt_inverseCubicDerivative  {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     ContinuousAt (inverseCubicDerivative P) x := by
   have hN := (differentiable_diagonalCubic P.form).continuous.continuousAt (x := x)
@@ -40,9 +43,10 @@ theorem continuousAt_inverseCubicDerivative (P : SymmetricTrilinearForm E) {x : 
     (fun z : E => (-(diagonalCubic P.form z ^ 2)⁻¹) •
       fderiv ℝ (diagonalCubic P.form) z) x
   exact ((hN.pow 2).inv₀ (pow_ne_zero 2 (ne_of_gt hx))).neg.smul hD
+include P in
 
 /-- CLM-valued continuity of the derivative-certified rational formula. -/
-theorem continuousAt_logHessianFormula (P : SymmetricTrilinearForm E) {x : E}
+theorem continuousAt_logHessianFormula  {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     ContinuousAt (logHessianFormula P) x := by
   letI : NormedAddCommGroup (E →L[ℝ] ℝ) :=
@@ -83,16 +87,18 @@ theorem continuousAt_logHessianFormula (P : SymmetricTrilinearForm E) {x : E}
     ContinuousAt.smul (M := ℝ) (X := E →L[ℝ] E →L[ℝ] ℝ) (Y := E)
       (hN.inv₀ (ne_of_gt hx)) hH
   exact ContinuousAt.add (M := E →L[ℝ] E →L[ℝ] ℝ) (X := E) hS hR
+include P in
 
 /-- The identity is used on a proved positive neighborhood before transporting
 continuity to the actual second derivative of log N. -/
-theorem continuousAt_logHessian (P : SymmetricTrilinearForm E) {x : E}
+theorem continuousAt_logHessian  {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     ContinuousAt (logHessian P) x :=
   (continuousAt_logHessianFormula P hx).congr_of_eventuallyEq
     ((eventually_positive P hx).mono (fun z hz => logHessian_eq_formula P hz))
+include P in
 
-theorem continuousAt_logHessianForm (P : SymmetricTrilinearForm E) {x : E}
+theorem continuousAt_logHessianForm  {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     ContinuousAt (logHessianForm P) x := by
   change ContinuousAt (fun z : E => (-1 / 3 : ℝ) • logHessian P z) x
@@ -111,7 +117,7 @@ theorem exists_coercivity_of_positive [FiniteDimensional ℝ E]
   have hq : Continuous (fun u : E => B u u) :=
     B.continuous.clm_apply continuous_id
   obtain ⟨c, hc, hmin⟩ := (isCompact_sphere (0 : E) 1).exists_forall_le'
-    hq.continuousOn (show ∀ u ∈ Metric.sphere (0 : E) 1, (0 : ℝ) < B u u from by
+    hq.continuousOn (show ∀ u ∈ Metric.sphere (0 : E) 1, 0 < B u u from by
       intro u hu
       have hn : ‖u‖ = 1 := by simpa [Metric.mem_sphere, dist_eq_norm] using hu
       apply hB u

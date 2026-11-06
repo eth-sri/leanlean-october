@@ -72,10 +72,12 @@ theorem reconstruct (K : Mat) :
   ext a b
   fin_cases a <;> fin_cases b <;>
     simp [matrixUnit, Fin.sum_univ_three, Matrix.single_apply, smul_eq_mul]
+variable (a b c : ℂ)
+include a b c in
 
 /-- Expand the diagonal adjugate through the explicit three-by-three formula
 before default simp can replace it by erased-Finset cofactor products. -/
-private theorem diagonalInput_adjugate (a b c : ℂ) :
+private theorem diagonalInput_adjugate  :
     (diagonalInput a b c).adjugate = Matrix.diagonal ![b*c,a*c,a*b] := by
   rw [Matrix.adjugate_fin_three]
   ext i j
@@ -100,35 +102,45 @@ local macro "solve_complex_unit" : tactic =>
        Matrix.trace, Matrix.diag, Matrix.one_apply, Fin.sum_univ_three,
        smul_eq_mul]
      all_goals ring))
+include a b c in
 
-theorem unit00 (a b c : ℂ) (H : Mat) :
+theorem unit00  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 0 0) = 0 := by solve_complex_unit
+include a b c in
 
-theorem unit01 (a b c : ℂ) (H : Mat) :
+theorem unit01  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 0 1) = 0 := by solve_complex_unit
+include a b c in
 
-theorem unit02 (a b c : ℂ) (H : Mat) :
+theorem unit02  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 0 2) = 0 := by solve_complex_unit
+include a b c in
 
-theorem unit10 (a b c : ℂ) (H : Mat) :
+theorem unit10  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 1 0) = 0 := by solve_complex_unit
+include a b c in
 
-theorem unit11 (a b c : ℂ) (H : Mat) :
+theorem unit11  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 1 1) = 0 := by solve_complex_unit
+include a b c in
 
-theorem unit12 (a b c : ℂ) (H : Mat) :
+theorem unit12  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 1 2) = 0 := by solve_complex_unit
+include a b c in
 
-theorem unit20 (a b c : ℂ) (H : Mat) :
+theorem unit20  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 2 0) = 0 := by solve_complex_unit
+include a b c in
 
-theorem unit21 (a b c : ℂ) (H : Mat) :
+theorem unit21  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 2 1) = 0 := by solve_complex_unit
+include a b c in
 
-theorem unit22 (a b c : ℂ) (H : Mat) :
+theorem unit22  (H : Mat) :
     residual (diagonalInput a b c) H (matrixUnit 2 2) = 0 := by solve_complex_unit
+include a b c in
 
-theorem residual_unit_zero (a b c : ℂ) (H : Mat) (i j : Fin 3) :
+theorem residual_unit_zero  (H : Mat) (i j : Fin 3) :
     residual (diagonalInput a b c) H (matrixUnit i j) = 0 := by
   fin_cases i <;> fin_cases j
   · exact unit00 a b c H
@@ -140,10 +152,11 @@ theorem residual_unit_zero (a b c : ℂ) (H : Mat) (i j : Fin 3) :
   · exact unit20 a b c H
   · exact unit21 a b c H
   · exact unit22 a b c H
+include a b c in
 
 /-- Unconditional assembly uses actual complex linearity, exact reconstruction
 and EVERY proved unit certificate. No missing residual premise is assumed. -/
-theorem residual_zero (a b c : ℂ) (H K : Mat) :
+theorem residual_zero  (H K : Mat) :
     residual (diagonalInput a b c) H K = 0 := by
   change residualComplexLinear (diagonalInput a b c) H K = 0
   rw [reconstruct K, map_sum]
@@ -153,8 +166,9 @@ theorem residual_zero (a b c : ℂ) (H K : Mat) :
     rw [residualComplexLinear_apply]
     exact residual_unit_zero a b c H i j
   simp only [hz, smul_zero, Finset.sum_const_zero]
+include a b c in
 
-theorem mixed_identity (a b c : ℂ) (H K : Mat) :
+theorem mixed_identity  (H K : Mat) :
     SectorContraction.tracePolar
       (complexCommutator (diagonalInput a b c) H K)
       (symmProduct (diagonalInput a b c) H) =

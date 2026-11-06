@@ -79,11 +79,12 @@ theorem cubic_three_neg (u : E) : P.form ![-u,-u,-u] = -P.form ![u,u,u] := by
 
 variable {H : Type*} [NormedAddCommGroup H] [NormedSpace ℝ H] [CompleteSpace H]
 variable (Q : SymmetricTrilinearForm H) (f : H) (hf : diagonalCubic Q.form f = 1)
+variable (D : tangentSpace P e ≃ₗ[ℝ] tangentSpace Q f)
+include D in
 
-set_option maxHeartbeats 800000 in
 /-- Construct an ambient equivalence from the actual derivative splits and a
 proved tangent map. No ambient inverse or recognized map is assumed. -/
-def ambientLift (D : tangentSpace P e ≃ₗ[ℝ] tangentSpace Q f) : E ≃ₗ[ℝ] H where
+def ambientLift  : E ≃ₗ[ℝ] H where
   toFun (x : E) :=
     let equiv : (tangentSpace P e) ≃ (tangentSpace Q f) := D.toEquiv
     let forward : (tangentSpace P e) → (tangentSpace Q f) := equiv.toFun
@@ -147,9 +148,9 @@ def ambientLift (D : tangentSpace P e ≃ₗ[ℝ] tangentSpace Q f) : E ≃ₗ[�
         (fderiv ℝ (diagonalCubic P.form) e x, D (tangentProjection P e he x))
     simp only [normalSplitInverse, map_smul, Submodule.coe_smul, smul_eq_mul,
       smul_add, smul_smul, div_eq_mul_inv, mul_assoc]
+include D in
 
-set_option maxHeartbeats 800000 in
-@[simp] theorem ambientLift_apply (D : tangentSpace P e ≃ₗ[ℝ] tangentSpace Q f) (x : E) :
+@[simp] theorem ambientLift_apply  (x : E) :
     ambientLift P e he Q f hf D x =
       let equiv : (tangentSpace P e) ≃ (tangentSpace Q f) := D.toEquiv
       let forward : (tangentSpace P e) → (tangentSpace Q f) := equiv.toFun
@@ -157,20 +158,21 @@ set_option maxHeartbeats 800000 in
       let v : (tangentSpace Q f) := forward u
       (fderiv ℝ (diagonalCubic P.form) e x / 3) • f + v.val := by
   rfl
+include D in
 
 /-- Unit preservation is an output of the genuine split normalization. -/
-theorem ambientLift_unit (D : tangentSpace P e ≃ₗ[ℝ] tangentSpace Q f) : ambientLift P e he Q f hf D e = f := by
+theorem ambientLift_unit  : ambientLift P e he Q f hf D e = f := by
   change (fderiv ℝ (diagonalCubic P.form) e e / 3) • f +
     (D (tangentProjection P e he e) : H) = f
   simp only [ambientLift_apply, fderiv_diagonalCubic_at_one P.form e he,
     tangentProjection_basepoint, map_zero, ZeroMemClass.coe_zero,
     div_self (by norm_num : (3 : ℝ) ≠ 0), one_smul, add_zero]
+include D in
 
-set_option maxHeartbeats 800000 in
 /-- Actual tangent metric and cubic certificates give whole norm equality.
 These certificates are PROVED from signed curvature recovery in the consumer. -/
 theorem ambientLift_norm
-    (D : tangentSpace P e ≃ₗ[ℝ] tangentSpace Q f)
+    
     (hmetric : ∀ u v : (tangentSpace P e),
       let equiv : (tangentSpace P e) ≃ (tangentSpace Q f) := D.toEquiv
       let d : (tangentSpace P e) → (tangentSpace Q f) := equiv.toFun
@@ -202,11 +204,11 @@ theorem ambientLift_norm
   rw [ambientLift_apply]
   change diagonalCubic Q.form (t • f + (D u : H)) = _
   rw [cubic_unit_tangent_expansion Q f hf, hm, hc, hN]
+include D in
 
-set_option maxHeartbeats 800000 in
 /-- A genuine norm/unit morphism is CONSTRUCTED. The stored certificates are
 proved outputs, not additional hypotheses about an unknown ambient map. -/
-def basedNormIsoOfTangent (D : tangentSpace P e ≃ₗ[ℝ] tangentSpace Q f) [FiniteDimensional ℝ E]
+def basedNormIsoOfTangent  [FiniteDimensional ℝ E]
     (hmetric : ∀ u v : (tangentSpace P e),
       let equiv : (tangentSpace P e) ≃ (tangentSpace Q f) := D.toEquiv
       let d : (tangentSpace P e) → (tangentSpace Q f) := equiv.toFun

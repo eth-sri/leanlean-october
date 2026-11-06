@@ -7,7 +7,6 @@ public import Glennie.Covariance
 namespace Glennie.Compact.NativeNormKernel
 open Glennie
 noncomputable section
-set_option autoImplicit false
 
  def F (x y z : Albert) : Albert := U x (U y z) - U y (U x z)
  def H (x y z : Albert) : Albert := U z (jordan x y)
@@ -44,14 +43,17 @@ set_option autoImplicit false
     _ ≤ R^2 * (‖x‖*‖y‖) := by gcongr; exact jordan_norm _ _
     _ ≤ R^2 * (R*R) := by gcongr
     _ = R^4 := by ring
+variable (x x' y z : Albert)
+include x x' y z in
 
- theorem F_sub_first (x x' y z : Albert) :
+ theorem F_sub_first  :
     F x y z - F x' y z =
       (U x (U y z) - U x' (U y z)) - U y (U x z - U x' z) := by
   simp only [F, U_sub_argument]
   abel
+include x x' y z in
 
- theorem F_sub_first_radius (x x' y z : Albert) (R : ℝ) (hR : 0 ≤ R)
+ theorem F_sub_first_radius  (R : ℝ) (hR : 0 ≤ R)
     (hx : ‖x‖ ≤ R) (hx' : ‖x'‖ ≤ R) (hy : ‖y‖ ≤ R) (hz : ‖z‖ ≤ R) :
     ‖F x y z-F x' y z‖ ≤ 4*R^4*‖x-x'‖ := by
   rw [F_sub_first]
@@ -68,8 +70,9 @@ set_option autoImplicit false
         exact (U_sub_base_radius x x' z R hx hx').trans
           (mul_le_mul_of_nonneg_left hz (by positivity))
     _ = 4*R^4*‖x-x'‖ := by ring
+include x x' y z in
 
- theorem H_sub_first_radius (x x' y z : Albert) (R : ℝ) (hR : 0 ≤ R)
+ theorem H_sub_first_radius  (R : ℝ) (hR : 0 ≤ R)
     (hy : ‖y‖ ≤ R) (hz : ‖z‖ ≤ R) :
     ‖H x y z-H x' y z‖ ≤ R^3*‖x-x'‖ := by
   have he : H x y z-H x' y z = U z (jordan (x-x') y) := by

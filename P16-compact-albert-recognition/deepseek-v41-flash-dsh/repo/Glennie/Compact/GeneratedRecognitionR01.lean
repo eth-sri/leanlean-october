@@ -9,7 +9,6 @@ noncomputable section
 open Module Glennie Glennie.Compact.NativeWordTableR01
 open Glennie.Compact.NativeWordTableR01.ClosureCandidate
 open scoped BigOperators
-set_option autoImplicit false
 
 section GeneratedRecognition
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]

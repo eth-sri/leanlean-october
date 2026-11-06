@@ -43,10 +43,12 @@ theorem h0_ne_zero : h 0 ≠ 0 := by
   intro hz
   have hd := congrArg (fun x : V => (x : Albert).d0) hz
   norm_num [h, e, unit] at hd
+variable (B : SymmetricCubic)
+include B in
 
 /-- Pull back the arbitrary unknown, apply the proved fixed-frame gate, then
 transport the equality back. There is no invariance assumption on B. -/
-theorem transported_frame_constraint (B : SymmetricCubic)
+theorem transported_frame_constraint 
     (hB : A (q referenceCubic) B = 0) (g : CompactAutomorphism) :
     ∃ c : ℝ, ∀ i : Fin 3,
       KB B (automorphismV g (h i)) = c • KA (automorphismV g (h i)) := by
@@ -65,10 +67,11 @@ theorem transported_frame_constraint (B : SymmetricCubic)
       exact congrArg (automorphismV g) (LinearMap.congr_fun (hc i) w)
     _ = c • KA (automorphismV g (h i)) (automorphismV g w) := by
       rw [map_smul, automorphismV_KA]
+include B in
 
 /-- Nonzero transported directions force their scalar to agree with the base
 scalar, by product symmetry and the proved native injectivity at h0. -/
-theorem transported_scalar_eq (B : SymmetricCubic) (g : CompactAutomorphism)
+theorem transported_scalar_eq  (g : CompactAutomorphism)
     (b c : ℝ) (hb : KB B (h 0) = b • KA (h 0))
     (hc : KB B (automorphismV g (h 0)) = c • KA (automorphismV g (h 0))) :
     b = c := by
@@ -91,10 +94,11 @@ theorem transported_scalar_eq (B : SymmetricCubic) (g : CompactAutomorphism)
       _ = c • KA (automorphismV g (h 0)) (h 0) := LinearMap.congr_fun hc _
       _ = _ := congrArg (fun x : V => c • x) (KA_comm _ _)
   exact smul_left_injective ℝ hv heq
+include B in
 
 /-- One scalar works on every actual transported reference frame. The sole
 hypothesis is the original unrestricted Jacobi equation. -/
-theorem common_scalar_on_reference_frames (B : SymmetricCubic)
+theorem common_scalar_on_reference_frames 
     (hB : A (q referenceCubic) B = 0) :
     ∃ b : ℝ, ∀ g : CompactAutomorphism, ∀ i : Fin 3,
       KB B (automorphismV g (h i)) = b • KA (automorphismV g (h i)) := by

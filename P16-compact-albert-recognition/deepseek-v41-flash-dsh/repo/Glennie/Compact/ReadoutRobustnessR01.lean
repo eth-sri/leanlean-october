@@ -8,7 +8,6 @@ namespace Glennie.Compact.ReadoutRobustnessR01
 open Glennie Glennie.Compact.Affine20 Glennie.Compact.Sections
 open Glennie.Compact.OperationalPhi
 noncomputable section
-set_option autoImplicit false
 
 /-- Six scalars in native order: h+, h-, x+, x-, 1+, 1-. -/
 structure Readouts where
@@ -69,8 +68,10 @@ theorem weightedScore_error (noisy exact : Readouts) (ε : ℝ)
   constructor <;> linarith
 
 def noisyPhi (noisy : Readouts) : ℝ := weightedScore noisy / 2
+variable (T : Triple) (noisy : Readouts)
+include T noisy in
 
-theorem phi_error (T : Triple) (noisy : Readouts) (ε : ℝ)
+theorem phi_error  (ε : ℝ)
     (h : ErrorsAtMost noisy (exactReadouts T) ε) :
     |noisyPhi noisy - phiOf T| ≤ 6 * ε := by
   have hb := weightedScore_error noisy (exactReadouts T) ε h
@@ -79,25 +80,28 @@ theorem phi_error (T : Triple) (noisy : Readouts) (ε : ℝ)
   apply abs_le.mpr
   dsimp [noisyPhi]
   constructor <;> linarith
+include T noisy in
 
-theorem positive_certificate (T : Triple) (noisy : Readouts) (ε : ℝ)
+theorem positive_certificate  (ε : ℝ)
     (h : ErrorsAtMost noisy (exactReadouts T) ε)
     (hp : 12 * ε < weightedScore noisy) : 0 < phiOf T := by
   have hb := weightedScore_error noisy (exactReadouts T) ε h
   rw [weightedScore_eq_two_phi] at hb
   have hu := (abs_le.mp hb).2
   linarith
+include T noisy in
 
-theorem negative_certificate (T : Triple) (noisy : Readouts) (ε : ℝ)
+theorem negative_certificate  (ε : ℝ)
     (h : ErrorsAtMost noisy (exactReadouts T) ε)
     (hn : weightedScore noisy < -(12 * ε)) : phiOf T < 0 := by
   have hb := weightedScore_error noisy (exactReadouts T) ε h
   rw [weightedScore_eq_two_phi] at hb
   have hl := (abs_le.mp hb).1
   linarith
+include T noisy in
 
 /-- A posteriori strict sign certificate for the actual ordered triple. -/
-theorem sign_certificate (T : Triple) (noisy : Readouts) (ε : ℝ)
+theorem sign_certificate  (ε : ℝ)
     (hε : 0 ≤ ε) (h : ErrorsAtMost noisy (exactReadouts T) ε)
     (hm : 12 * ε < |weightedScore noisy|) :
     (weightedScore noisy < 0 ∧ phiOf T < 0) ∨

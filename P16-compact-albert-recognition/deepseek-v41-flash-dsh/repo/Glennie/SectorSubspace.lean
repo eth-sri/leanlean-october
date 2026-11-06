@@ -46,17 +46,21 @@ theorem complexSector_finrank : Module.finrank ℝ complexSector = 9 := by
   change Module.finrank ℝ (LinearMap.range complexAlbertLinear) = 9
   rw [← (LinearEquiv.ofInjective complexAlbertLinear complexAlbertLinear_injective).finrank_eq]
   simp [ComplexCoordinates, Complex.finrank_real_complex]
+variable (x : Albert)
+include x in
 
-theorem complexProjection_mem (x : Albert) : complexProjection x ∈ complexSector :=
+theorem complexProjection_mem  : complexProjection x ∈ complexSector :=
   ⟨complexCoordinatesLinear x, complexAlbert_coordinates x⟩
+include x in
 
-theorem complexProjection_eq_self (x : Albert) (hx : InComplexSector x) :
+theorem complexProjection_eq_self  (hx : InComplexSector x) :
     complexProjection x = x := by
   rcases hx with ⟨⟨h01j,h01k,h01s⟩,⟨h02j,h02k,h02s⟩,⟨h12j,h12k,h12s⟩⟩
   ext <;> simp [complexProjection, complexPart, complexOct,
     h01j,h01k,h01s,h02j,h02k,h02s,h12j,h12k,h12s]
+include x in
 
-theorem complexSector_mem_iff (x : Albert) : x ∈ complexSector ↔ InComplexSector x := by
+theorem complexSector_mem_iff  : x ∈ complexSector ↔ InComplexSector x := by
   constructor
   · rintro ⟨q, rfl⟩
     simp [complexAlbertLinear, complexAlbert, complexOct, InComplexSector, OctInComplex]

@@ -64,12 +64,15 @@ theorem rawVector_gram (i j : RawIndex) :
     · simp only [rawVector, slots_gram, octBasis_gram]
       by_cases hs : s = p <;> by_cases ht : t = u <;>
         simp [rawWeight, hs, ht]
+variable (i : RawIndex)
+include i in
 
 /-- The h0 direction has weight2; every other raw coordinate has weight2/3. -/
-def normalization (i : RawIndex) : ℝ :=
+def normalization  : ℝ :=
   if i = Sum.inl 0 then (Real.sqrt 2)⁻¹ else Real.sqrt (3/2)
+include i in
 
-theorem normalization_weight (i : RawIndex) :
+theorem normalization_weight  :
     normalization i * normalization i * rawWeight i = 1 := by
   by_cases hi : i = Sum.inl 0
   · have hn : Real.sqrt (2 : ℝ) ≠ 0 := Real.sqrt_ne_zero'.mpr (by norm_num)
@@ -80,8 +83,9 @@ theorem normalization_weight (i : RawIndex) :
   · have hs : (Real.sqrt (3/2 : ℝ))^2 = 3/2 := Real.sq_sqrt (by norm_num)
     simp only [normalization, rawWeight, if_neg hi]
     nlinarith
+include i in
 
-def normalizedVector (i : RawIndex) : V := normalization i • rawVector i
+def normalizedVector  : V := normalization i • rawVector i
 
 theorem normalizedVector_gram (i j : RawIndex) :
     gA (normalizedVector i) (normalizedVector j) = if i = j then 1 else 0 := by

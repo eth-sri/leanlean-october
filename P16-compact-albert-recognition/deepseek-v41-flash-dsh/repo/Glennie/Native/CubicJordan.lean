@@ -20,25 +20,28 @@ noncomputable section
 set_option maxHeartbeats 2000000
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+variable (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (T : V →ₗ[ℝ] ℝ)
+include mul T in
 
 /-- Six times the cubic characteristic identity, with Newton coefficients. -/
-def residual (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (T : V →ₗ[ℝ] ℝ) (e x : V) : V :=
+def residual  (e x : V) : V :=
   (6 : ℝ) • mul x (mul x x) - (6 * T x) • mul x x +
     (3 * (T x) ^ 2 - 3 * T (mul x x)) • x -
     ((T x) ^ 3 - 3 * T x * T (mul x x) + 2 * T (mul x (mul x x))) • e
+include mul T in
 
 /-- Twice the coefficient of the linear perturbation in the cubic identity. -/
-def linearResidual (mul : V →ₗ[ℝ] V →ₗ[ℝ] V)
-    (T : V →ₗ[ℝ] ℝ) (e x y : V) : V :=
+def linearResidual  (e x y : V) : V :=
   (4 : ℝ) • mul x (mul x y) + (2 : ℝ) • mul (mul x x) y -
     (2 * T y) • mul x x - (4 * T x) • mul x y +
     (2 * T x * T y - 2 * T (mul x y)) • x +
     ((T x) ^ 2 - T (mul x x)) • y -
     (((T x) ^ 2 - T (mul x x)) * T y -
       2 * T x * T (mul x y) + 2 * T (mul (mul x x) y)) • e
+include mul T in
 
 theorem linearResidual_eq_zero
-    (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (T : V →ₗ[ℝ] ℝ) (e : V)
+     (e : V)
     (comm : ∀ x y, mul x y = mul y x)
     (assocTrace : ∀ x y z, T (mul (mul x y) z) = T (mul x (mul y z)))
     (char : ∀ x, residual mul T e x = 0) (x y : V) :
@@ -53,10 +56,11 @@ theorem linearResidual_eq_zero
       simp only [comm y x, comm y (mul x x), ← assocTrace x x y]
       module
     _ = 0 := by rw [char, char, char]; simp
+include mul T in
 
 /-- Concrete commutativity, unit, trace associativity and Newton residual imply Jordan. -/
 theorem jordan_of_cubic_trace_identity
-    (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (T : V →ₗ[ℝ] ℝ) (e : V)
+     (e : V)
     (comm : ∀ x y, mul x y = mul y x)
     (unit : ∀ x, mul e x = x)
     (assocTrace : ∀ x y z, T (mul (mul x y) z) = T (mul x (mul y z)))

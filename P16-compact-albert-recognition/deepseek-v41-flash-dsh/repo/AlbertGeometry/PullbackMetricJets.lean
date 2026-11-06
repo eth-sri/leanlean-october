@@ -225,7 +225,6 @@ theorem pullbackMetric_cubic_apply (x : W) (hx : x ∈ U) (u w : W) :
   simp only [pullbackMetricFormula, ContinuousLinearMap.bilinearComp_apply,
     ContinuousLinearMap.smul_apply, smul_eq_mul, fullyCurried_apply]
 
-set_option maxHeartbeats 2000000 in
 /-- Smoothness follows on this same fixed U from the actual cubic identity. -/
 theorem contDiffAt_pullbackMetric (x : W) (hx : x ∈ U) : ContDiffAt ℝ ⊤ G x := by
   have hχ : ContDiffAt ℝ ⊤ (levelChartPoint P e he) x :=

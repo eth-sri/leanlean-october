@@ -9,14 +9,18 @@ namespace Glennie.Compact.CyclicTraceNullR01
 noncomputable section
 
 variable {M : Type*} [Ring M] [Algebra ℝ M]
+variable (a b : M)
+include a b in
 
-def symmProd (a b : M) : M := (1 / 2 : ℝ) • (a * b + b * a)
+def symmProd  : M := (1 / 2 : ℝ) • (a * b + b * a)
+include a b in
 
-def quadratic (a b : M) : M :=
+def quadratic  : M :=
   (2 : ℝ) • symmProd a (symmProd a b) - symmProd (symmProd a a) b
+include a b in
 
 /-- Associativity expands the symmetrized quadratic representation to aba. -/
-theorem quadratic_eq_sandwich (a b : M) : quadratic a b = a * b * a := by
+theorem quadratic_eq_sandwich  : quadratic a b = a * b * a := by
   simp only [quadratic, symmProd, smul_mul_assoc, mul_smul_comm,
     mul_add, add_mul, smul_add, smul_smul, mul_assoc]
   module
@@ -60,23 +64,28 @@ theorem scalarPhi_eq_zero (τ : M →ₗ[ℝ] ℝ)
 section Represented
 
 variable {E : Type*} [AddCommGroup E] [Module ℝ E]
+variable (j : E → E → E)
+include j in
 
-def quadraticWith (j : E → E → E) (a b : E) : E :=
+def quadraticWith  (a b : E) : E :=
   (2 : ℝ) • j a (j a b) - j (j a a) b
+include j in
 
-def phiWith (j : E → E → E) (B : E → E → ℝ) (x y z : E) : ℝ :=
+def phiWith  (B : E → E → ℝ) (x y z : E) : ℝ :=
   B (quadraticWith j x (quadraticWith j y z) -
     quadraticWith j y (quadraticWith j x z)) (quadraticWith j z (j x y))
+include j in
 
-theorem map_quadraticWith (j : E → E → E) (ρ : E →ₗ[ℝ] M)
+theorem map_quadraticWith  (ρ : E →ₗ[ℝ] M)
     (hj : ∀ a b, ρ (j a b) = symmProd (ρ a) (ρ b)) (a b : E) :
     ρ (quadraticWith j a b) = quadratic (ρ a) (ρ b) := by
   simp only [quadraticWith, map_sub, map_smul, hj, quadratic]
+include j in
 
 /-- Actual compatible special-null producer: product and form compatibility
 are hypotheses; scalar nullness is proved by the associative cyclic kernel. -/
 theorem phiWith_eq_zero_of_compatible_trace
-    (j : E → E → E) (B : E → E → ℝ) (ρ : E →ₗ[ℝ] M)
+     (B : E → E → ℝ) (ρ : E →ₗ[ℝ] M)
     (τ : M →ₗ[ℝ] ℝ)
     (hj : ∀ a b, ρ (j a b) = symmProd (ρ a) (ρ b))
     (hB : ∀ a b, B a b = τ (ρ a * ρ b))

@@ -10,7 +10,6 @@ namespace Glennie.Compact.GlennieScalarPotentialR01
 open Glennie
 open Glennie.Compact.OperationalPhi
 noncomputable section
-set_option autoImplicit false
 
 /-- The commutator of the two native quadratic operators, applied to z. -/
 def commU (x y z : Albert) : Albert := U x (U y z) - U y (U x z)

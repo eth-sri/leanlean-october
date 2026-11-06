@@ -80,7 +80,6 @@ open Glennie.Compact.FrameTopology
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## 1. The compact automorphism action on ordered triples
@@ -205,12 +204,14 @@ fibre. -/
 def flatFibre : Set Triple :=
   {T : Triple | (∀ a : Fin 3, Glennie.Frame (T a)) ∧
     ledger54 T = ledger54 flatBaseTriple}
+variable (T : Triple)
+include T in
 
 /-- Uniform triple traces plus frames force the whole 54-entry ledger to be the flat
 one. The C block is `1/9` on both sides; the three pair blocks are `1/3` on both
 sides, by `uniform_pair_blocks` (`FlatBase.lean`) and
 `flatBaseTriple_ledger54_P/Q/R` (`FrameTopology.lean`). -/
-theorem ledger54_eq_flat_of_uniform (T : Triple)
+theorem ledger54_eq_flat_of_uniform 
     (hT : ∀ a : Fin 3, Glennie.Frame (T a))
     (hu : Glennie.UniformLedger (T 0) (T 1) (T 2)) :
     ledger54 T = ledger54 flatBaseTriple := by
@@ -228,10 +229,11 @@ theorem ledger54_eq_flat_of_uniform (T : Triple)
   · funext k i
     rw [ledger54_R, flatBaseTriple_ledger54_R]
     exact (hb k i).2.2
+include T in
 
 /-- The converse: projecting the C block. This is `uniform_of_full54`
 (`FirstPairNormalization.lean`) restated on `T`; that one is `private`. -/
-theorem uniform_of_ledger54_eq_flat (T : Triple)
+theorem uniform_of_ledger54_eq_flat 
     (hL : ledger54 T = ledger54 flatBaseTriple) :
     Glennie.UniformLedger (T 0) (T 1) (T 2) := by
   intro i j k
@@ -239,10 +241,11 @@ theorem uniform_of_ledger54_eq_flat (T : Triple)
     congrArg (fun L : Ledger54 => L.1 i j k) hL
   rw [ledger54_C, flatBaseTriple_ledger54_C] at h
   exact h
+include T in
 
 /-- THE FIBRE IS CUT OUT BY ONE SCALAR EQUATION. For a frame triple, 54-entry ledger
 equality with the flat base is equivalent to `|Phi| = 4/27`. -/
-theorem ledger54_eq_flat_iff_abs_phi (T : Triple)
+theorem ledger54_eq_flat_iff_abs_phi 
     (hT : ∀ a : Fin 3, Glennie.Frame (T a)) :
     ledger54 T = ledger54 flatBaseTriple ↔
       |Glennie.phi (Glennie.encoder (T 0)) (Glennie.encoder (T 1))

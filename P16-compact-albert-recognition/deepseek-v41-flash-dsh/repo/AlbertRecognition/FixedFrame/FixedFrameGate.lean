@@ -27,9 +27,11 @@ theorem KA_h_cross (i j : Fin 3) (hij : i ≠ j) :
     norm_num [KA_apply, project_coe, traceless, trace, h, e, unit,
       jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
       octDot_coordinates, octMul, octConj, hnorm]
+variable (i : Fin 3) (u : Octonion)
+include i u in
 
 /-- Raw native slot eigenvalues; the adjacent slots have coefficient -1/2. -/
-theorem KA_h_X01 (i : Fin 3) (u : Octonion) :
+theorem KA_h_X01  :
     KA (h i) (X01 u) = (if i = 2 then (1 : ℝ) else -(1/2 : ℝ)) • X01 u := by
   have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
   have hneg (x : Albert) : -x =
@@ -45,8 +47,9 @@ theorem KA_h_X01 (i : Fin 3) (u : Octonion) :
     | module
     | (apply Prod.ext <;> apply Quaternion.ext <;>
         norm_num [smul_eq_mul] <;> ring)
+include i u in
 
-theorem KA_h_X02 (i : Fin 3) (u : Octonion) :
+theorem KA_h_X02  :
     KA (h i) (X02 u) = (if i = 1 then (1 : ℝ) else -(1/2 : ℝ)) • X02 u := by
   have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
   have hneg (x : Albert) : -x =
@@ -62,8 +65,9 @@ theorem KA_h_X02 (i : Fin 3) (u : Octonion) :
     | module
     | (apply Prod.ext <;> apply Quaternion.ext <;>
         norm_num [smul_eq_mul] <;> ring)
+include i u in
 
-theorem KA_h_X12 (i : Fin 3) (u : Octonion) :
+theorem KA_h_X12  :
     KA (h i) (X12 u) = (if i = 0 then (1 : ℝ) else -(1/2 : ℝ)) • X12 u := by
   have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
   have hneg (x : Albert) : -x =

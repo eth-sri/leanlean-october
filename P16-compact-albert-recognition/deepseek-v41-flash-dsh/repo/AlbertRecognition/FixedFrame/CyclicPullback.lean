@@ -126,9 +126,11 @@ private theorem intertwines_operatorComm (T : V ≃ₗ[ℝ] V)
     (v : V) : T (operatorComm P Q v) = operatorComm R S (T v) := by
   change T (P (Q v) - Q (P v)) = R (S (T v)) - S (R (T v))
   simp only [map_sub, hP, hQ]
+variable (g : CompactAutomorphism)
+include g in
 
 /-- The actual reference-q tensor transports with the native automorphism. -/
-theorem automorphismV_q_reference (g : CompactAutomorphism) (x y v : V) :
+theorem automorphismV_q_reference  (x y v : V) :
     automorphismV g (q referenceCubic x y v) =
       q referenceCubic (automorphismV g x) (automorphismV g y)
         (automorphismV g v) := by
@@ -136,9 +138,10 @@ theorem automorphismV_q_reference (g : CompactAutomorphism) (x y v : V) :
   exact intertwines_operatorComm (automorphismV g)
     (KA x) (KA y) (KA (automorphismV g x)) (KA (automorphismV g y))
     (automorphismV_KA g x) (automorphismV_KA g y) v
+include g in
 
 /-- Literal A(q) covariance for the pulled-back arbitrary cubic, pointwise. -/
-theorem automorphismV_A_q_pullback (g : CompactAutomorphism) (B : SymmetricCubic)
+theorem automorphismV_A_q_pullback  (B : SymmetricCubic)
     (x y z v : V) :
     automorphismV g (A (q referenceCubic) (pullbackCubic (automorphismV g) B)
       x y z v) =
@@ -176,9 +179,10 @@ theorem automorphismV_A_q_pullback (g : CompactAutomorphism) (B : SymmetricCubic
   exact congrArg₂ (fun a b : V => a + b)
     (congrArg₂ (fun a b : V => a + b) (hterm x y z) (hterm y z x))
     (hterm z x y)
+include g in
 
 /-- The sole original Jacobi-kernel hypothesis is stable under actual pullback. -/
-theorem A_q_pullback_zero (g : CompactAutomorphism) (B : SymmetricCubic)
+theorem A_q_pullback_zero  (B : SymmetricCubic)
     (hB : A (q referenceCubic) B = 0) :
     A (q referenceCubic) (pullbackCubic (automorphismV g) B) = 0 := by
   funext x y z
@@ -225,19 +229,23 @@ theorem cyclicV_coordinates (x : V) :
   apply Subtype.ext
   rw [cyclicV_coordinates]
   apply Albert.ext <;> norm_num [h, e, unit, octConj]
+variable (u : Octonion)
+include u in
 
-@[simp] theorem cyclicV_X01 (u : Octonion) : cyclicV (X01 u) = X12 u := by
+@[simp] theorem cyclicV_X01  : cyclicV (X01 u) = X12 u := by
   apply Subtype.ext
   rw [cyclicV_coordinates]
   apply Albert.ext <;> simp [X01, X12, octConj]
+include u in
 
-@[simp] theorem cyclicV_X02 (u : Octonion) :
+@[simp] theorem cyclicV_X02  :
     cyclicV (X02 u) = X01 (octConj u) := by
   apply Subtype.ext
   rw [cyclicV_coordinates]
   apply Albert.ext <;> simp [X01, X02, octConj]
+include u in
 
-@[simp] theorem cyclicV_X12 (u : Octonion) :
+@[simp] theorem cyclicV_X12  :
     cyclicV (X12 u) = X02 (octConj u) := by
   apply Subtype.ext
   rw [cyclicV_coordinates]

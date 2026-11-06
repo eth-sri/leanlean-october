@@ -11,7 +11,6 @@ open Glennie.Compact.Affine20 Glennie.Compact.FlowFamily Glennie.Compact.Section
 
 noncomputable section
 
-set_option autoImplicit false
 
 /-- Both original local sections have the same complete54 ledger, with every
 original hypothesis, neighbourhood, frame, chart and sign output retained. -/

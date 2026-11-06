@@ -12,18 +12,23 @@ namespace Glennie.MatrixDetEstimate
 noncomputable section
 
 open Matrix
+variable (M : Matrix (Fin 3) (Fin 3) ℂ)
+include M in
 
-def columnGram (M : Matrix (Fin 3) (Fin 3) ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
+def columnGram  : Matrix (Fin 3) (Fin 3) ℂ :=
   M.conjTranspose * M
+include M in
 
-def frobeniusSq (M : Matrix (Fin 3) (Fin 3) ℂ) : ℝ := (columnGram M).trace.re
+def frobeniusSq  : ℝ := (columnGram M).trace.re
+include M in
 
-theorem determinant_gram_real (M : Matrix (Fin 3) (Fin 3) ℂ) :
+theorem determinant_gram_real  :
     (columnGram M).det.re = Complex.normSq M.det := by
   rw [columnGram, Matrix.det_mul, Matrix.det_conjTranspose]
   simp [Complex.mul_re, Complex.normSq_apply]
+include M in
 
-theorem normSq_det_le (M : Matrix (Fin 3) (Fin 3) ℂ) :
+theorem normSq_det_le  :
     27 * Complex.normSq M.det ≤ frobeniusSq M ^ 3 := by
   let hG := Matrix.isHermitian_conjTranspose_mul_self M
   have hdet : Complex.normSq M.det =
@@ -42,8 +47,9 @@ theorem normSq_det_le (M : Matrix (Fin 3) (Fin 3) ℂ) :
     (Matrix.eigenvalues_conjTranspose_mul_self_nonneg M 0)
     (Matrix.eigenvalues_conjTranspose_mul_self_nonneg M 1)
     (Matrix.eigenvalues_conjTranspose_mul_self_nonneg M 2)
+include M in
 
-theorem normSq_det_eq_iff_eigenvalues (M : Matrix (Fin 3) (Fin 3) ℂ) :
+theorem normSq_det_eq_iff_eigenvalues  :
     27 * Complex.normSq M.det = frobeniusSq M ^ 3 ↔
       (Matrix.isHermitian_conjTranspose_mul_self M).eigenvalues 0 =
         (Matrix.isHermitian_conjTranspose_mul_self M).eigenvalues 1 ∧
@@ -66,9 +72,10 @@ theorem normSq_det_eq_iff_eigenvalues (M : Matrix (Fin 3) (Fin 3) ℂ) :
     (Matrix.eigenvalues_conjTranspose_mul_self_nonneg M 0)
     (Matrix.eigenvalues_conjTranspose_mul_self_nonneg M 1)
     (Matrix.eigenvalues_conjTranspose_mul_self_nonneg M 2)
+include M in
 
 /-- Equality forces the entire Gram matrix scalar, without an invertibility hypothesis. -/
-theorem normSq_det_equality_gram (M : Matrix (Fin 3) (Fin 3) ℂ)
+theorem normSq_det_equality_gram 
     (heq : 27 * Complex.normSq M.det = frobeniusSq M ^ 3) :
     columnGram M = Matrix.diagonal (fun _ => (frobeniusSq M / 3 : ℂ)) := by
   let hG := Matrix.isHermitian_conjTranspose_mul_self M
@@ -89,8 +96,9 @@ theorem normSq_det_equality_gram (M : Matrix (Fin 3) (Fin 3) ℂ)
   norm_cast
   simp only [Unitary.mul_star_self, OneMemClass.coe_one]
   exact algebraMap_smul ℂ (frobeniusSq M/3) (1 : Matrix (Fin 3) (Fin 3) ℂ)
+include M in
 
-theorem im_det_sq_le_normSq (M : Matrix (Fin 3) (Fin 3) ℂ) :
+theorem im_det_sq_le_normSq  :
     M.det.im ^ 2 ≤ Complex.normSq M.det := by
   simp [Complex.normSq_apply]
   nlinarith [sq_nonneg M.det.re]

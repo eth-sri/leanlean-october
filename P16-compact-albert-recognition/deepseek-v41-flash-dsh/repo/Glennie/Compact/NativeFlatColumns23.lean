@@ -11,10 +11,13 @@ public import Mathlib.Analysis.Calculus.Deriv.Comp
 public import Mathlib.Analysis.Calculus.Deriv.Pi
 public import Mathlib.Analysis.Calculus.FDeriv.Linear
 
+public import Glennie.Compact.NativeFlatCommon
+
 @[expose] public section
 
 namespace Glennie.Compact.NativeFlatColumns23
 
+open Glennie.Compact.NativeFlatCommon
 open Glennie.Compact.NativeDictionary
 open Glennie.Compact.FlatBase
 open Glennie.Compact.FlowFamily
@@ -22,18 +25,6 @@ open Glennie.Compact.Rank20
 open Glennie.Compact.Rank20Certificate
 
 noncomputable section
-set_option autoImplicit false
-
-private theorem flatFrameP_literal (i : Fin 3) :
-    flatFrameP i =
-      ![diagonalAlbert 0 0 1, diagonalAlbert 0 1 0,
-        diagonalAlbert 1 0 0] i := by
-  fin_cases i <;> ext <;>
-    norm_num [flatFrameP, projectorFrame, flatXN, diagonalAlbert,
-      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj, octScalar,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul]
 
 set_option maxHeartbeats 1000000 in
 private theorem direction_two_flatFrameP (i : Fin 3) :
@@ -69,50 +60,6 @@ private theorem direction_three_flatFrameP (i : Fin 3) :
 
 /- These are whole native atom equalities, derived from the projector formula.
    They contain no certificate entry, assumed velocity or trace hypothesis. -/
-private theorem flatFrameQ_literal (j : Fin 3) :
-    flatFrameQ j =
-      ![(⟨1 / 3, 1 / 3, 1 / 3,
-          ((⟨-flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨1 / 6, flatScale / 2, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨-flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0)⟩ : Albert),
-        ⟨1 / 3, 1 / 3, 1 / 3,
-          ((⟨0, 1 / 3, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨-1 / 3, 0, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨0, 1 / 3, 0, 0⟩ : Quaternion ℝ), 0)⟩,
-        ⟨1 / 3, 1 / 3, 1 / 3,
-          ((⟨flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨1 / 6, -flatScale / 2, 0, 0⟩ : Quaternion ℝ), 0),
-          ((⟨flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0)⟩] j := by
-  fin_cases j <;> ext <;>
-    simp [flatFrameQ, projectorFrame, flatY1, octI, quatI, octScalar,
-      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul] <;>
-    ring_nf <;> norm_num [flatScale_sq]
-
-private theorem flatFrameR_literal (k : Fin 3) :
-    flatFrameR k =
-      ![(⟨1 / 3, 1 / 3, 1 / 3,
-          (0, (⟨0, 0, -flatScale / 2, 1 / 6⟩ : Quaternion ℝ)),
-          (0, (⟨flatScale / 2, 1 / 6, 0, 0⟩ : Quaternion ℝ)),
-          ((⟨0, 0, -1 / 6, flatScale / 2⟩ : Quaternion ℝ), 0)⟩ : Albert),
-        ⟨1 / 3, 1 / 3, 1 / 3,
-          (0, (⟨0, 0, 0, -1 / 3⟩ : Quaternion ℝ)),
-          (0, (⟨0, -1 / 3, 0, 0⟩ : Quaternion ℝ)),
-          ((⟨0, 0, 1 / 3, 0⟩ : Quaternion ℝ), 0)⟩,
-        ⟨1 / 3, 1 / 3, 1 / 3,
-          (0, (⟨0, 0, flatScale / 2, 1 / 6⟩ : Quaternion ℝ)),
-          (0, (⟨-flatScale / 2, 1 / 6, 0, 0⟩ : Quaternion ℝ)),
-          ((⟨0, 0, -1 / 6, -flatScale / 2⟩ : Quaternion ℝ), 0)⟩] k := by
-  fin_cases k <;> ext <;>
-    simp [flatFrameR, projectorFrame, witnessZ, octJL, octL, octK, quatJ, quatK,
-      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octNormSq, Quaternion.normSq_def', octMul, octConj,
-      Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-      Quaternion.imK_mul] <;>
-    ring_nf <;> norm_num [flatScale_sq]
-
 private theorem flat_pair_o02_re (j k : Fin 3) :
     (jordan (flatFrameQ j) (flatFrameR k)).o02.1.re =
       ![(1 / 18 : ℝ), -1 / 9, 1 / 18] j := by
@@ -131,20 +78,6 @@ private theorem flat_pair_o02_imI (j k : Fin 3) :
       Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
       Quaternion.imK_mul] <;> ring
 
-private theorem flatScale_eq_sqrt3_div_three : flatScale = Real.sqrt 3 / 3 := by
-  have hsq : Real.sqrt (3 : ℝ) ^ 2 = 3 :=
-    Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)
-  have hn : Real.sqrt (3 : ℝ) ≠ 0 := by
-    intro h
-    rw [h] at hsq
-    norm_num at hsq
-  dsimp [flatScale]
-  apply (div_eq_div_iff hn (by norm_num : (3 : ℝ) ≠ 0)).2
-  nlinarith [hsq]
-
-set_option maxHeartbeats 1000000 in
-/-- All20 original raw rows in fixed column2, including its eight zeros.
-    The literal triple is exactly the original Sections.flatBase. -/
 theorem jacobianEntry_flatBase_column_two (r : Fin 20) :
     jacobianEntry ![flatFrameP, flatFrameQ, flatFrameR] r 2 = JQ r 2 := by
   rw [jacobianEntry_ctx0 _ r 2 (by rfl)]

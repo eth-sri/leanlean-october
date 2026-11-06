@@ -47,11 +47,12 @@ theorem trace_four_re_reverse (S G K B : Mat)
     (hK : K.IsHermitian) (hB : B.IsHermitian) :
     (S*G*K*B).trace.re = -(G*S*B*K).trace.re := by
   simpa using congrArg Complex.re (star_trace_four S G K B hS hG hK hB)
+variable (M S K B : Mat) (hS : S.conjTranspose = -S)
+include M S K B hS in
 
 /-- Expand the actual hidden contraction over the full complex field first.
 G=M†M is literal, and no determinant/inverse condition is used. -/
-theorem hidden_trace_expansion (M S K B : Mat)
-    (hS : S.conjTranspose = -S) :
+theorem hidden_trace_expansion  :
     ((M*S).conjTranspose *
       (M*((K*B).trace • (1:Mat)-K*B))).trace =
       -((K*B).trace * (S*(M.conjTranspose*M)).trace) +
@@ -61,11 +62,11 @@ theorem hidden_trace_expansion (M S K B : Mat)
     Matrix.trace_sub, Matrix.trace_neg, Matrix.trace_smul, smul_eq_mul,
     Matrix.mul_assoc]
   ring
+include M S K B hS in
 
 /-- The scalar t=tr(KB) is real by the explicit Hermitian trace bridge. Its
 product with the purely imaginary tr(SG) contributes zero real part. -/
-theorem hidden_real_trace (M S K B : Mat)
-    (hS : S.conjTranspose = -S) (hK : K.IsHermitian) (hB : B.IsHermitian) :
+theorem hidden_real_trace  (hK : K.IsHermitian) (hB : B.IsHermitian) :
     ((M*S).conjTranspose *
       (M*((K*B).trace • (1:Mat)-K*B))).trace.re =
         (S*(M.conjTranspose*M)*K*B).trace.re := by
@@ -75,11 +76,11 @@ theorem hidden_real_trace (M S K B : Mat)
   have ht := SectorAssemblyBridges.trace_mul_im_zero K B hK hB
   rw [hidden_trace_expansion M S K B hS]
   simp [Complex.mul_re, hsg, ht]
+include M S K B hS in
 
 /-- Exact real mixed cancellation. All singular M are covered. No missing
 mixed matrix identity or scalar cancellation is supplied as a premise. -/
-theorem mixed_trace_cancel (M S K B : Mat)
-    (hS : S.conjTranspose = -S) (hK : K.IsHermitian) (hB : B.IsHermitian) :
+theorem mixed_trace_cancel  (hK : K.IsHermitian) (hB : B.IsHermitian) :
     ((M.conjTranspose*M)*(S*B*K-K*B*S)).trace.re +
       2*((M*S).conjTranspose *
         (M*((K*B).trace • (1:Mat)-K*B))).trace.re = 0 := by

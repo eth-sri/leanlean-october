@@ -12,23 +12,28 @@ open Glennie.NativeGenerationHiddenSpanR01
 
 private theorem complexOct_one_completion : complexOct 1 = octScalar 1 := by
   apply Prod.ext <;> apply Quaternion.ext <;> simp [complexOct, octScalar]
+variable (z : Albert)
+include z in
 
-theorem hiddenOct_hiddenMatrix0 (z : Albert) :
+theorem hiddenOct_hiddenMatrix0  :
     hiddenOct (fun i => hiddenMatrix z i 0) = -residual z.o12 := by
   apply Prod.ext <;> apply Quaternion.ext <;>
     simp [hiddenOct, hiddenMatrix, hiddenColumn, NativeGenerationHiddenActionsR01.residual, complexOct, complexPart]
+include z in
 
-theorem hiddenOct_hiddenMatrix1 (z : Albert) :
+theorem hiddenOct_hiddenMatrix1  :
     hiddenOct (fun i => hiddenMatrix z i 1) = residual z.o02 := by
   apply Prod.ext <;> apply Quaternion.ext <;>
     simp [hiddenOct, hiddenMatrix, hiddenColumn, NativeGenerationHiddenActionsR01.residual, complexOct, complexPart]
+include z in
 
-theorem hiddenOct_hiddenMatrix2 (z : Albert) :
+theorem hiddenOct_hiddenMatrix2  :
     hiddenOct (fun i => hiddenMatrix z i 2) = -residual z.o01 := by
   apply Prod.ext <;> apply Quaternion.ext <;>
     simp [hiddenOct, hiddenMatrix, hiddenColumn, NativeGenerationHiddenActionsR01.residual, complexOct, complexPart]
+include z in
 
-theorem raw_decomposition (z : Albert) :
+theorem raw_decomposition  :
     z = z.d0 • diagonalAlbert 1 0 0 + z.d1 • diagonalAlbert 0 1 0 +
       z.d2 • diagonalAlbert 0 0 1 + E01 z.o01 + E02 z.o02 + E12 z.o12 := by
   ext <;> simp [diagonalAlbert, E01, E02, E12]

@@ -33,7 +33,6 @@ namespace Glennie.Compact.Affine20
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## Maps preserving affine combinations of the 20 coordinates -/

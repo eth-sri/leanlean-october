@@ -8,7 +8,6 @@ public import Glennie.Hilbert
 namespace Glennie.Compact.NativeNormKernel
 open Glennie
 noncomputable section
-set_option autoImplicit false
 
  theorem norm_map (g : CompactAutomorphism) (x : Albert) : ‖g.equiv x‖ = ‖x‖ := by
   apply le_antisymm

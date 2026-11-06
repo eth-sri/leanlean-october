@@ -992,7 +992,6 @@ end Glennie.SubmissionR03
 namespace Glennie.SubmissionR04Quotient
 noncomputable section
 open Glennie Glennie.Compact.Affine20 Glennie.SubmissionR03
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 
 abbrev ChartPoint := Fin 20 → ℝ
@@ -1170,7 +1169,6 @@ end Glennie.SubmissionR04Quotient
 @[expose] public section
 namespace Glennie.SubmissionR04Intrinsic
 noncomputable section
-set_option autoImplicit false
 structure BasedCubic (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] where
   form : ContinuousMultilinearMap ℝ (fun _ : Fin 3 => E) ℝ
   swap12 : ∀ x y z : E, form ![x, y, z] = form ![y, x, z]
@@ -1310,7 +1308,6 @@ end
 end Glennie.SubmissionR04Intrinsic
 namespace Glennie.SubmissionR04Intrinsic.Local
 noncomputable section
-set_option autoImplicit false
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 abbrev Triple (E : Type*) := Fin 3 → Fin 3 → E
 abbrev Ledger54 := Glennie.Compact.Affine20.Ledger54
@@ -1443,7 +1440,6 @@ end Glennie.SubmissionR04Intrinsic.Local
 @[expose] public section
 namespace Glennie.SubmissionR04Intrinsic
 noncomputable section
-set_option autoImplicit false
 def nativeCubic (x : Albert) : ℝ :=
   (Glennie.trace x ^ 3 - 3 * Glennie.trace x * Glennie.inner x x +
     2 * Glennie.inner x (jordan x x)) / 6
@@ -1494,7 +1490,6 @@ end Glennie.SubmissionR04Intrinsic
 @[expose] public section
 namespace Glennie.SubmissionR04Intrinsic
 noncomputable section
-set_option autoImplicit false
 open AlbertGeometry.Cubic
 open AlbertGeometry.BasedNormDerivativeTransport.BasedNormIso
 open AlbertGeometry.BasedNormAdjointTransport
@@ -1592,7 +1587,6 @@ end Glennie.SubmissionR04Intrinsic
 @[expose] public section
 namespace Glennie.SubmissionR04Intrinsic
 noncomputable section
-set_option autoImplicit false
 open Glennie
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -1702,7 +1696,6 @@ end Glennie.SubmissionR04Intrinsic
 @[expose] public section
 namespace Glennie.SubmissionR04Intrinsic
 noncomputable section
-set_option autoImplicit false
 open Glennie
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -1802,7 +1795,6 @@ theorem curvaturePremise_iff_actual (P : BasedCubic E) (e : E)
 open AlbertGeometry.Cubic AlbertGeometry.NativeCurvatureDictionary
   AlbertGeometry.NativeEuclideanNormBinding
 
-set_option maxHeartbeats 800000 in
 
 def frameToActualIso (P : BasedCubic E) (e : E)
     (he : diagonalCubic (toSource P).form e = 1)
@@ -1835,7 +1827,6 @@ def frameToActualIso (P : BasedCubic E) (e : E)
     rw [hactual, F.symm_apply_apply]
     exact nativeMetricFrame.apply_symm_apply _
 
-set_option maxHeartbeats 800000 in
 theorem actualIso_iff_independentFrame (P : BasedCubic E) (e : E)
     (he : diagonalCubic (toSource P).form e = 1)
     (hp : ∀ z : E, z ≠ 0 → 0 < metric P e z z) :
@@ -1913,7 +1904,6 @@ end Glennie.SubmissionR04Intrinsic
 @[expose] public section
 namespace Glennie.SubmissionR04Intrinsic.LocalBridge
 noncomputable section
-set_option autoImplicit false
 open AlbertGeometry.Cubic AlbertGeometry.IntrinsicLocalTransport
 open AlbertGeometry.RecognitionFromCurvature
 open AlbertGeometry.IntrinsicLocalGenerationCapstoneR01
@@ -2139,7 +2129,6 @@ end Glennie.SubmissionR04Intrinsic.LocalBridge
 @[expose] public section
 namespace Glennie.SubmissionR04Intrinsic
 noncomputable section
-set_option autoImplicit false
 theorem intrinsic_local_reconstruction
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [CompleteSpace E] [FiniteDimensional ℝ E]

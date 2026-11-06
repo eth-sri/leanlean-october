@@ -10,9 +10,10 @@ public import Glennie.Compact.FlatBase
 namespace Glennie.NativeOrderedPositivePair
 open Glennie Glennie.Compact.FlatBase
 noncomputable section
-set_option autoImplicit false
+variable (a b c : ℝ)
+include a b c in
 
-private theorem six_diagonal_patterns (a b c : ℝ)
+private theorem six_diagonal_patterns 
     (ht : a + b + c = 0) (hn : a^2 + b^2 + c^2 = 2) (hc : a*b*c = 0) :
     (a = 1 ∧ b = 0 ∧ c = -1) ∨
     (a = 1 ∧ b = -1 ∧ c = 0) ∨
@@ -60,14 +61,16 @@ private theorem six_diagonal_patterns (a b c : ℝ)
       simp [ha, hb, hc]
     · have hb : b = 1 := by linarith
       simp [ha, hb, hc]
+include a b c in
 
-private theorem swap01_diagonal (a b c : ℝ) :
+private theorem swap01_diagonal  :
     realSwap01Automorphism.equiv (diagonalAlbert a b c) = diagonalAlbert b a c := by
   change realConjugateAlbert realSwap01 (diagonalAlbert a b c) = _
   rw [realSwap01_coordinates]
   simp [diagonalAlbert, octConj]
+include a b c in
 
-private theorem swap02_diagonal (a b c : ℝ) :
+private theorem swap02_diagonal  :
     realSwap02Automorphism.equiv (diagonalAlbert a b c) = diagonalAlbert c b a := by
   change realConjugateAlbert realSwap02 (diagonalAlbert a b c) = _
   rw [realSwap02_coordinates]

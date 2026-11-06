@@ -19,9 +19,11 @@ private theorem octDot_zero_right (a : Octonion) : octDot a 0 = 0 := by
 private theorem octDot_smul_right (r : ℝ) (a b : Octonion) :
     octDot a (r • b) = r * octDot a b := by
   rw [octDot_comm, octDot_smul_left, octDot_comm b a]
+variable (x y z : V)
+include x y z in
 
 /-- The full native commutator is tracefree by the proved trace pairing law. -/
-theorem trace_full_commutator (x y z : V) :
+theorem trace_full_commutator  :
     Glennie.trace (jordan (x : Albert) (jordan (y : Albert) (z : Albert)) -
       jordan (y : Albert) (jordan (x : Albert) (z : Albert))) = 0 := by
   rw [trace_sub]
@@ -30,9 +32,10 @@ theorem trace_full_commutator (x y z : V) :
   rw [← inner_jordan_associative, ← inner_jordan_associative,
     jordan_comm (y : Albert) (x : Albert)]
   simp
+include x y z in
 
 /-- Raising and projecting indices contributes the exact scalar metric term. -/
-theorem KA_projected_composition (x y z : V) :
+theorem KA_projected_composition  :
     KA x (KA y z) =
       project (jordan (x : Albert) (jordan (y : Albert) (z : Albert))) -
         gA y z • x := by
@@ -41,10 +44,11 @@ theorem KA_projected_composition (x y z : V) :
   rw [traceless, jordan_sub_right, jordan_smul_right, jordan_unit_right,
     map_sub, map_smul, project_V]
   rfl
+include x y z in
 
 /-- Exact unit/trace splitting identifies D with the full Jordan commutator.
 This uses bilinearity and associative trace pairing, not a Jordan identity. -/
-theorem D_apply_project_native (x y z : V) :
+theorem D_apply_project_native  :
     D x y z = project
       (jordan (x : Albert) (jordan (y : Albert) (z : Albert)) -
         jordan (y : Albert) (jordan (x : Albert) (z : Albert))) := by
@@ -53,8 +57,9 @@ theorem D_apply_project_native (x y z : V) :
   change gA y z • x - gA x z • y + (KA x (KA y z) - KA y (KA x z)) = _
   rw [map_sub, KA_projected_composition, KA_projected_composition]
   module
+include x y z in
 
-theorem D_apply_native (x y z : V) :
+theorem D_apply_native  :
     (D x y z : Albert) =
       jordan (x : Albert) (jordan (y : Albert) (z : Albert)) -
         jordan (y : Albert) (jordan (x : Albert) (z : Albert)) := by
@@ -62,15 +67,22 @@ theorem D_apply_native (x y z : V) :
   change traceless _ = _
   rw [traceless, trace_full_commutator]
   simp
+variable (x : Albert)
+include x in
 
 /- Native coordinate projections of additive negation. These are definitional
 identities for the inspected coordinate transport on Albert. -/
-@[simp] private theorem albert_neg_d0 (x : Albert) : (-x).d0 = -x.d0 := rfl
-@[simp] private theorem albert_neg_d1 (x : Albert) : (-x).d1 = -x.d1 := rfl
-@[simp] private theorem albert_neg_d2 (x : Albert) : (-x).d2 = -x.d2 := rfl
-@[simp] private theorem albert_neg_o01 (x : Albert) : (-x).o01 = -x.o01 := rfl
-@[simp] private theorem albert_neg_o02 (x : Albert) : (-x).o02 = -x.o02 := rfl
-@[simp] private theorem albert_neg_o12 (x : Albert) : (-x).o12 = -x.o12 := rfl
+@[simp] private theorem albert_neg_d0  : (-x).d0 = -x.d0 := rfl
+include x in
+@[simp] private theorem albert_neg_d1  : (-x).d1 = -x.d1 := rfl
+include x in
+@[simp] private theorem albert_neg_d2  : (-x).d2 = -x.d2 := rfl
+include x in
+@[simp] private theorem albert_neg_o01  : (-x).o01 = -x.o01 := rfl
+include x in
+@[simp] private theorem albert_neg_o02  : (-x).o02 = -x.o02 := rfl
+include x in
+@[simp] private theorem albert_neg_o12  : (-x).o12 = -x.o12 := rfl
 
 private def nativeDiagonal (r s t : ℝ) : Albert := ⟨r,s,t,0,0,0⟩
 
@@ -99,9 +111,11 @@ private theorem jordan_slot12 (a : Octonion) (x : Albert) :
 
 private theorem h1_nativeDiagonal : (h 1 : Albert) = nativeDiagonal 1 (-2) 1 := by
   apply Albert.ext <;> norm_num [h, e, unit, nativeDiagonal]
+variable (a : Octonion)
+include a in
 
 /-- The complete native formula on an arbitrary full Albert input. -/
-private theorem full_commutator_h1_slot12 (a : Octonion) (x : Albert) :
+private theorem full_commutator_h1_slot12  (x : Albert) :
     jordan (nativeDiagonal 1 (-2) 1) (jordan (X12 a : Albert) x) -
       jordan (X12 a : Albert) (jordan (nativeDiagonal 1 (-2) 1) x) =
       ⟨0,-(3/2 : ℝ)*octDot a x.o12,(3/2 : ℝ)*octDot a x.o12,
@@ -113,11 +127,13 @@ private theorem full_commutator_h1_slot12 (a : Octonion) (x : Albert) :
     octMul_smul_left, smul_smul]
   all_goals try simp only [← sub_smul, ← neg_smul]
   all_goals congr 1 <;> ring
+include a in
 
 /-- The operator uses the zero-based h1, complementary to the distinguished h0. -/
-def frameAction (a : Octonion) : V →ₗ[ℝ] V := D (h 1) (X12 a)
+def frameAction  : V →ₗ[ℝ] V := D (h 1) (X12 a)
+include a in
 
-theorem frameAction_coordinates (a : Octonion) (x : V) :
+theorem frameAction_coordinates  (x : V) :
     (frameAction a x : Albert) =
       ⟨0,-(3/2 : ℝ)*octDot a (x : Albert).o12,
         (3/2 : ℝ)*octDot a (x : Albert).o12,
@@ -126,14 +142,16 @@ theorem frameAction_coordinates (a : Octonion) (x : V) :
         ((3/4 : ℝ)*((x : Albert).d1-(x : Albert).d2)) • a⟩ := by
   rw [frameAction, D_apply_native, h1_nativeDiagonal]
   exact full_commutator_h1_slot12 a (x : Albert)
+include a in
 
-theorem frameAction_h0 (a : Octonion) : frameAction a (h 0) = 0 := by
+theorem frameAction_h0  : frameAction a (h 0) = 0 := by
   apply Subtype.ext
   rw [frameAction_coordinates]
   apply Albert.ext <;>
     simp [h, e, unit, octDot_zero_right, octMul_zero_left] <;> ring
+include a in
 
-theorem frameAction_d (a : Octonion) :
+theorem frameAction_d  :
     frameAction a frameD = (3/2 : ℝ) • X12 a := by
   apply Subtype.ext
   rw [frameAction_coordinates]

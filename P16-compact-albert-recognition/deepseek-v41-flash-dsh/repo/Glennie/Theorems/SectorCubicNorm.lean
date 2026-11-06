@@ -10,7 +10,6 @@ public section
 namespace Glennie
 noncomputable section
 
-set_option maxHeartbeats 2000000 in
 theorem hiddenAlbert_cubicNorm (M : Matrix (Fin 3) (Fin 3) ℂ) :
     newtonCubicNorm (hiddenAlbert M) = 2 * M.det.re := by
   rw [newtonCubicNorm_coordinates]

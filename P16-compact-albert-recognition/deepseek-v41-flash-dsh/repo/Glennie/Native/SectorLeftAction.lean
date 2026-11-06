@@ -8,7 +8,6 @@ public import Glennie.Theorems.ProjectorFrame
 namespace Glennie
 noncomputable section
 
-set_option autoImplicit false
 
 /-- Real left multiplication by an actual unitary matrix, with its explicit inverse.
 Exposed because it is data in the exported automorphism constructor. -/

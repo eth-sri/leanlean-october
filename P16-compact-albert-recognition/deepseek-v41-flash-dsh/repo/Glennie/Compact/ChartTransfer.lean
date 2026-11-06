@@ -34,7 +34,6 @@ open Glennie.Compact.Affine20 Glennie.Compact.FlowFamily
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## Zero-margin helpers for the reconstruction maps

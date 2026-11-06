@@ -8,7 +8,6 @@ namespace Glennie.Compact.NativeWordTableR01
 noncomputable section
 open Module Glennie AlbertGeometry.NativeOperatorTrace
 open scoped BigOperators Matrix
-set_option autoImplicit false
 
 def synthesisCoordinates : (Fin 27 → ℝ) ≃ₗ[ℝ] (Fin 27 → ℝ) where
   __ := coordinateMatrix.mulVecLin

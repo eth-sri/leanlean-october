@@ -9,7 +9,6 @@ namespace Glennie.Compact.NativeWordTableR01
 noncomputable section
 open Glennie AlbertGeometry.NativeOperatorTrace
 open scoped BigOperators Matrix
-set_option autoImplicit false
 
 inductive Word where
   | unit : Word

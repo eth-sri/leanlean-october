@@ -27,9 +27,11 @@ def qk : Quaternion ℝ := ⟨0, 0, 0, 1⟩
   apply Quaternion.ext <;> norm_num [qi, qj, qk]
 @[simp] theorem qk_mul_qk : qk * qk = -1 := by
   apply Quaternion.ext <;> norm_num [qk]
+variable (p : Quaternion ℝ)
+include p in
 
 /-- Characteristic zero, proved on the four actual quaternion coordinates. -/
-theorem quat_neg_eq_self_zero (p : Quaternion ℝ) (hp : -p = p) : p = 0 := by
+theorem quat_neg_eq_self_zero  (hp : -p = p) : p = 0 := by
   have hr := congrArg QuaternionAlgebra.re hp
   have hi := congrArg QuaternionAlgebra.imI hp
   have hj := congrArg QuaternionAlgebra.imJ hp
@@ -37,9 +39,10 @@ theorem quat_neg_eq_self_zero (p : Quaternion ℝ) (hp : -p = p) : p = 0 := by
   simp only [Quaternion.re_neg, Quaternion.imI_neg, Quaternion.imJ_neg,
     Quaternion.imK_neg] at hr hi hj hk
   apply Quaternion.ext <;> simp <;> linarith
+include p in
 
 /-- Multiplication by the literal unit k is injective, without a division API. -/
-theorem quat_right_k_zero (p : Quaternion ℝ) (hp : p * qk = 0) : p = 0 := by
+theorem quat_right_k_zero  (hp : p * qk = 0) : p = 0 := by
   have hr := congrArg QuaternionAlgebra.re hp
   have hi := congrArg QuaternionAlgebra.imI hp
   have hj := congrArg QuaternionAlgebra.imJ hp
@@ -47,9 +50,10 @@ theorem quat_right_k_zero (p : Quaternion ℝ) (hp : p * qk = 0) : p = 0 := by
   simp [qk, Quaternion.re_mul, Quaternion.imI_mul,
     Quaternion.imJ_mul, Quaternion.imK_mul] at hr hi hj hk
   apply Quaternion.ext <;> simp <;> linarith
+include p in
 
 /-- The common quaternion commutant of i and j is precisely the real line. -/
-theorem quat_comm_i_j_real (p : Quaternion ℝ)
+theorem quat_comm_i_j_real 
     (hi : qi * p = p * qi) (hj : qj * p = p * qj) :
     p = (p.re : Quaternion ℝ) := by
   have hiJ := congrArg QuaternionAlgebra.imJ hi
@@ -57,9 +61,10 @@ theorem quat_comm_i_j_real (p : Quaternion ℝ)
   have hjK := congrArg QuaternionAlgebra.imK hj
   simp [qi, qj, Quaternion.imJ_mul, Quaternion.imK_mul] at hiJ hiK hjK
   apply Quaternion.ext <;> simp <;> linarith
+include p in
 
 /-- Simultaneously anticommuting with i,j,k forces all four coordinates to zero. -/
-theorem quat_anticomm_i_j_k_zero (p : Quaternion ℝ)
+theorem quat_anticomm_i_j_k_zero 
     (hi : qi * p = -(p * qi)) (hj : qj * p = -(p * qj))
     (hk : qk * p = -(p * qk)) : p = 0 := by
   have hiR := congrArg QuaternionAlgebra.re hi

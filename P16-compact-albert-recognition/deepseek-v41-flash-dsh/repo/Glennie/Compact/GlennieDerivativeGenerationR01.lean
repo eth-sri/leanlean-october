@@ -16,7 +16,6 @@ open Glennie.Compact.GlennieDerivativeR01
 open Glennie.NativeGenerationEndpointR01
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 -- Keep the native/Hilbert inherited-instance convention of the provider.
 set_option backward.isDefEq.respectTransparency false

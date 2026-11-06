@@ -12,12 +12,15 @@ namespace Glennie
 noncomputable section
 
 set_option maxHeartbeats 2000000
+variable (x : Albert)
+include x in
 
-def projectorFrame (x : Albert) : Fin 3 → Albert :=
+def projectorFrame  : Fin 3 → Albert :=
   ![(1 / 2 : ℝ) • (jordan x x - x), 1 - jordan x x,
     (1 / 2 : ℝ) • (jordan x x + x)]
+include x in
 
-private theorem projector_cube_recursion (x : Albert) :
+private theorem projector_cube_recursion  :
     jordan x (jordan x x) = (trace x) • jordan x x -
       (((trace x)^2-inner x x)/2) • x + newtonCubicNorm x • (1 : Albert) := by
   have h6 : (6 : ℝ) • (jordan x (jordan x x) -
@@ -35,14 +38,16 @@ private theorem projector_cube_recursion (x : Albert) :
         newtonCubicNorm x • (1 : Albert)) = 0 := by
     simpa [smul_smul] using h
   exact sub_eq_zero.mp hz
+include x in
 
-theorem cube_of_trace_norm_cubic (x : Albert) (ht : trace x=0)
+theorem cube_of_trace_norm_cubic  (ht : trace x=0)
     (hn : inner x x=2) (hc : newtonCubicNorm x=0) :
     jordan x (jordan x x)=x := by
   rw [projector_cube_recursion,ht,hn,hc]
   norm_num
+include x in
 
-theorem projectorFrame_is_frame_of_cube (x : Albert) (ht : trace x=0)
+theorem projectorFrame_is_frame_of_cube  (ht : trace x=0)
     (hn : inner x x=2) (hc : jordan x (jordan x x)=x) :
     Frame (projectorFrame x) := by
   have hs : trace (jordan x x)=2 := hn
@@ -73,12 +78,14 @@ theorem projectorFrame_is_frame_of_cube (x : Albert) (ht : trace x=0)
   · simp only [projectorFrame,Matrix.cons_val_zero,Matrix.cons_val_one,
       Matrix.cons_val_two,Matrix.tail_cons,Matrix.head_cons,Matrix.cons_val_fin_one]
     module
+include x in
 
-theorem projectorFrame_is_frame (x : Albert) (ht : trace x=0)
+theorem projectorFrame_is_frame  (ht : trace x=0)
     (hn : inner x x=2) (hc : newtonCubicNorm x=0) : Frame (projectorFrame x) :=
   projectorFrame_is_frame_of_cube x ht hn (cube_of_trace_norm_cubic x ht hn hc)
+include x in
 
-theorem projectorFrame_encoder (x : Albert) : encoder (projectorFrame x)=x := by
+theorem projectorFrame_encoder  : encoder (projectorFrame x)=x := by
   simp only [encoder,projectorFrame,Matrix.cons_val_zero,
     Matrix.cons_val_two,Matrix.tail_cons,Matrix.head_cons]
   module

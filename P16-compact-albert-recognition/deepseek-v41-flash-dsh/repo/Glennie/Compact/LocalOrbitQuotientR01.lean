@@ -9,7 +9,6 @@ noncomputable section
 open Glennie Glennie.Compact.Affine20 Glennie.Compact.FlatOrbit
 open Glennie.Compact.Sections Glennie.Compact.NearbyOrbits
 open Glennie.Compact.FrameTopology
-set_option autoImplicit false
 
 abbrev ChartPoint := Fin 20 → ℝ
 

@@ -37,7 +37,6 @@ open Glennie.Compact.Sections
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## 1. The two flat base triples are one triple

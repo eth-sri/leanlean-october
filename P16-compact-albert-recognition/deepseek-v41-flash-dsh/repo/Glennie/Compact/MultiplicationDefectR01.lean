@@ -11,11 +11,11 @@ public import Mathlib.Tactic.Module
 namespace Glennie.Compact.MultiplicationDefectR01
 noncomputable section
 open Glennie.Compact.CyclicTraceNullR01
-set_option autoImplicit false
 
-variable {A E : Type*}
+variable {A E M : Type*}
   [NormedAddCommGroup A] [InnerProductSpace ℝ A]
   [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+  [Ring M] [Algebra ℝ M]
 
 abbrev Product (V : Type*) [AddCommGroup V] [Module ℝ V] := V →ₗ[ℝ] V →ₗ[ℝ] V
 
@@ -28,6 +28,20 @@ def rightFactor (j : Product A) (x y z : A) : A := Q j z (j x y)
 
 def response (j : Product A) (x y z : A) : ℝ :=
   phiWith (fun a b => j a b) (Inner.inner ℝ) x y z
+
+variable (jA : Product A) (jE : Product E) (f : A →ₗᵢ[ℝ] E)
+  (hA : ∀ a b, ‖jA a b‖ ≤ ‖a‖ * ‖b‖)
+  (hE : ∀ a b, ‖jE a b‖ ≤ ‖a‖ * ‖b‖)
+  (hUA : ∀ a b, ‖Q jA a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
+  (hUE : ∀ a b, ‖Q jE a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
+  (ρ : E →ₗ[ℝ] M) (τ : M →ₗ[ℝ] ℝ)
+  (hj : ∀ a b, ρ (jE a b) = symmProd (ρ a) (ρ b))
+  (hB : ∀ a b, Inner.inner ℝ a b = τ (ρ a * ρ b))
+  (hcyclic : ∀ a b : M, τ (a * b) = τ (b * a))
+  (μ : ℝ) (hμ : 0 ≤ μ)
+  (hdef : ∀ a b, ‖f (jA a b) - jE (f a) (f b)‖ ≤ μ * ‖a‖ * ‖b‖)
+  (hQ : ∀ a b, ‖f (Q jA a b) - Q jE (f a) (f b)‖ ≤ 6 * μ * ‖a‖ ^ 2 * ‖b‖)
+  (R : ℝ) (hR : 0 ≤ R)
 
 /-- Linearity of the quadratic representation in its final argument. -/
 theorem Q_sub (j : Product A) (a b c : A) : Q j a (b - c) = Q j a b - Q j a c := by
@@ -46,14 +60,8 @@ theorem norm_four (a b c d : E) :
       add_le_add (add_le_add (norm_add_le _ _) le_rfl) le_rfl
     _ = _ := by norm_num [norm_smul]
 
-/-- Bilinear multiplication error propagates to U with coefficient six. -/
-theorem quadratic_error
-    (jA : Product A) (jE : Product E) (f : A →ₗᵢ[ℝ] E)
-    (hA : ∀ a b, ‖jA a b‖ ≤ ‖a‖ * ‖b‖)
-    (hE : ∀ a b, ‖jE a b‖ ≤ ‖a‖ * ‖b‖)
-    (μ : ℝ) (hμ : 0 ≤ μ)
-    (hdef : ∀ a b, ‖f (jA a b) - jE (f a) (f b)‖ ≤ μ * ‖a‖ * ‖b‖)
-    (a b : A) :
+include jA jE f hA hE μ hμ hdef in
+theorem quadratic_error (a b : A) :
     ‖f (Q jA a b) - Q jE (f a) (f b)‖ ≤ 6 * μ * ‖a‖ ^ 2 * ‖b‖ := by
   let D : A → A → E := fun u v => f (jA u v) - jE (f u) (f v)
   have hD (u v : A) : ‖D u v‖ ≤ μ * ‖u‖ * ‖v‖ := hdef u v
@@ -62,12 +70,8 @@ theorem quadratic_error
         D (jA a a) b - jE (D a a) (f b) := by
     simp only [Q, quadraticWith, D, map_sub, map_smul, LinearMap.sub_apply]
     module
-  have h₁ : ‖D a (jA a b)‖ ≤ μ * ‖a‖ ^ 2 * ‖b‖ := by
-    calc
-      _ ≤ μ * ‖a‖ * ‖jA a b‖ := hD _ _
-      _ ≤ μ * ‖a‖ * (‖a‖ * ‖b‖) :=
-        mul_le_mul_of_nonneg_left (hA a b) (mul_nonneg hμ (norm_nonneg a))
-      _ = _ := by ring
+  have h₁ : ‖D a (jA a b)‖ ≤ μ * ‖a‖ ^ 2 * ‖b‖ :=
+    (hD a _).trans (by nlinarith [hA a b, mul_nonneg hμ (norm_nonneg a)])
   have h₂ : ‖jE (f a) (D a b)‖ ≤ μ * ‖a‖ ^ 2 * ‖b‖ := by
     calc
       _ ≤ ‖f a‖ * ‖D a b‖ := hE _ _
@@ -100,14 +104,8 @@ theorem quadratic_error
         (mul_le_mul_of_nonneg_left h₂ (by norm_num))) h₃) h₄
     _ = _ := by ring
 
-/-- One composed quadratic word has transport error twelve. -/
-theorem nested_error
-    (jA : Product A) (jE : Product E) (f : A →ₗᵢ[ℝ] E)
-    (hUA : ∀ a b, ‖Q jA a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (hUE : ∀ a b, ‖Q jE a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (μ : ℝ) (hμ : 0 ≤ μ)
-    (hQ : ∀ a b, ‖f (Q jA a b) - Q jE (f a) (f b)‖ ≤
-      6 * μ * ‖a‖ ^ 2 * ‖b‖) (x y z : A) :
+include jA jE f hUA hUE μ hμ hQ in
+theorem nested_error (x y z : A) :
     ‖f (Q jA x (Q jA y z)) - Q jE (f x) (Q jE (f y) (f z))‖ ≤
       12 * μ * ‖x‖ ^ 2 * ‖y‖ ^ 2 * ‖z‖ := by
   have heq : f (Q jA x (Q jA y z)) - Q jE (f x) (Q jE (f y) (f z)) =
@@ -117,8 +115,7 @@ theorem nested_error
     module
   have h₁ : ‖f (Q jA x (Q jA y z)) - Q jE (f x) (f (Q jA y z))‖ ≤
       6 * μ * ‖x‖ ^ 2 * ‖y‖ ^ 2 * ‖z‖ := by
-    calc
-      _ ≤ 6 * μ * ‖x‖ ^ 2 * ‖Q jA y z‖ := hQ x (Q jA y z)
+    calc _ ≤ 6 * μ * ‖x‖ ^ 2 * ‖Q jA y z‖ := hQ x (Q jA y z)
       _ ≤ 6 * μ * ‖x‖ ^ 2 * (‖y‖ ^ 2 * ‖z‖) :=
         mul_le_mul_of_nonneg_left (hUA y z) (by positivity)
       _ = _ := by ring
@@ -138,14 +135,8 @@ theorem nested_error
       (6 * μ * ‖x‖ ^ 2 * ‖y‖ ^ 2 * ‖z‖) := add_le_add h₁ h₂
     _ = _ := by ring
 
-/-- Difference of the two composed words has transport error twenty-four. -/
-theorem commutator_error
-    (jA : Product A) (jE : Product E) (f : A →ₗᵢ[ℝ] E)
-    (hUA : ∀ a b, ‖Q jA a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (hUE : ∀ a b, ‖Q jE a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (μ : ℝ) (hμ : 0 ≤ μ)
-    (hQ : ∀ a b, ‖f (Q jA a b) - Q jE (f a) (f b)‖ ≤
-      6 * μ * ‖a‖ ^ 2 * ‖b‖) (x y z : A) :
+include jA jE f hUA hUE μ hμ hQ in
+theorem commutator_error (x y z : A) :
     ‖f (commutator jA x y z) - commutator jE (f x) (f y) (f z)‖ ≤
       24 * μ * ‖x‖ ^ 2 * ‖y‖ ^ 2 * ‖z‖ := by
   have heq : f (commutator jA x y z) - commutator jE (f x) (f y) (f z) =
@@ -163,15 +154,8 @@ theorem commutator_error
         (nested_error jA jE f hUA hUE μ hμ hQ y x z)
     _ = _ := by ring
 
-/-- The final U/product factor has transport error seven. -/
-theorem rightFactor_error
-    (jA : Product A) (jE : Product E) (f : A →ₗᵢ[ℝ] E)
-    (hA : ∀ a b, ‖jA a b‖ ≤ ‖a‖ * ‖b‖)
-    (hUE : ∀ a b, ‖Q jE a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (μ : ℝ) (hμ : 0 ≤ μ)
-    (hdef : ∀ a b, ‖f (jA a b) - jE (f a) (f b)‖ ≤ μ * ‖a‖ * ‖b‖)
-    (hQ : ∀ a b, ‖f (Q jA a b) - Q jE (f a) (f b)‖ ≤
-      6 * μ * ‖a‖ ^ 2 * ‖b‖) (x y z : A) :
+include jA jE f hA hUE μ hμ hdef hQ in
+theorem rightFactor_error (x y z : A) :
     ‖f (rightFactor jA x y z) - rightFactor jE (f x) (f y) (f z)‖ ≤
       7 * μ * ‖z‖ ^ 2 * ‖x‖ * ‖y‖ := by
   have heq : f (rightFactor jA x y z) - rightFactor jE (f x) (f y) (f z) =
@@ -226,17 +210,10 @@ theorem norm_rightFactor_le (j : Product A)
       mul_le_mul_of_nonneg_left (hJ x y) (sq_nonneg _)
     _ = _ := by ring
 
+include jA jE f hA hE hUA hUE μ hμ hdef in
 /-- Generic metric/product discrepancy; no target vanishing assumption.
 The sharper anisotropic form also handles zero arguments without division. -/
-theorem response_discrepancy
-    (jA : Product A) (jE : Product E) (f : A →ₗᵢ[ℝ] E)
-    (hA : ∀ a b, ‖jA a b‖ ≤ ‖a‖ * ‖b‖)
-    (hE : ∀ a b, ‖jE a b‖ ≤ ‖a‖ * ‖b‖)
-    (hUA : ∀ a b, ‖Q jA a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (hUE : ∀ a b, ‖Q jE a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (μ : ℝ) (hμ : 0 ≤ μ)
-    (hdef : ∀ a b, ‖f (jA a b) - jE (f a) (f b)‖ ≤ μ * ‖a‖ * ‖b‖)
-    (x y z : A) :
+theorem response_discrepancy (x y z : A) :
     |response jA x y z - response jE (f x) (f y) (f z)| ≤
       38 * μ * ‖x‖ ^ 3 * ‖y‖ ^ 3 * ‖z‖ ^ 3 := by
   have hQ := quadratic_error jA jE f hA hE μ hμ hdef
@@ -275,16 +252,8 @@ theorem response_discrepancy
         (mul_le_mul hnF hH (norm_nonneg _) (by positivity))
     _ = _ := by ring
 
-/-- Radius-ball form, with radius power nine and no smallness restriction on μ. -/
-theorem response_discrepancy_radius
-    (jA : Product A) (jE : Product E) (f : A →ₗᵢ[ℝ] E)
-    (hA : ∀ a b, ‖jA a b‖ ≤ ‖a‖ * ‖b‖)
-    (hE : ∀ a b, ‖jE a b‖ ≤ ‖a‖ * ‖b‖)
-    (hUA : ∀ a b, ‖Q jA a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (hUE : ∀ a b, ‖Q jE a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (μ : ℝ) (hμ : 0 ≤ μ)
-    (hdef : ∀ a b, ‖f (jA a b) - jE (f a) (f b)‖ ≤ μ * ‖a‖ * ‖b‖)
-    (R : ℝ) (hR : 0 ≤ R) (x y z : A)
+include jA jE f hA hE hUA hUE μ hμ hdef R hR in
+theorem response_discrepancy_radius (x y z : A)
     (hx : ‖x‖ ≤ R) (hy : ‖y‖ ≤ R) (hz : ‖z‖ ≤ R) :
     |response jA x y z - response jE (f x) (f y) (f z)| ≤ 38 * μ * R ^ 9 := by
   calc
@@ -293,23 +262,11 @@ theorem response_discrepancy_radius
     _ ≤ 38 * μ * R ^ 3 * R ^ 3 * R ^ 3 := by gcongr
     _ = _ := by ring
 
+include jA jE f hA hE hUA hUE ρ τ hj hB hcyclic μ hμ hdef R hR in
 /-- Compatible cyclic-trace specialization. Nullness is produced by the existing
 explicit associative representation theorem, rather than assumed as a field.
 Generic norm hypotheses remain visible until concrete native/target producers apply. -/
-theorem response_bound_of_compatible_trace
-    {M : Type*} [Ring M] [Algebra ℝ M]
-    (jA : Product A) (jE : Product E) (f : A →ₗᵢ[ℝ] E)
-    (hA : ∀ a b, ‖jA a b‖ ≤ ‖a‖ * ‖b‖)
-    (hE : ∀ a b, ‖jE a b‖ ≤ ‖a‖ * ‖b‖)
-    (hUA : ∀ a b, ‖Q jA a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (hUE : ∀ a b, ‖Q jE a b‖ ≤ ‖a‖ ^ 2 * ‖b‖)
-    (ρ : E →ₗ[ℝ] M) (τ : M →ₗ[ℝ] ℝ)
-    (hj : ∀ a b, ρ (jE a b) = symmProd (ρ a) (ρ b))
-    (hB : ∀ a b, Inner.inner ℝ a b = τ (ρ a * ρ b))
-    (hcyclic : ∀ a b : M, τ (a * b) = τ (b * a))
-    (μ : ℝ) (hμ : 0 ≤ μ)
-    (hdef : ∀ a b, ‖f (jA a b) - jE (f a) (f b)‖ ≤ μ * ‖a‖ * ‖b‖)
-    (R : ℝ) (hR : 0 ≤ R) (x y z : A)
+theorem response_bound_of_compatible_trace (x y z : A)
     (hx : ‖x‖ ≤ R) (hy : ‖y‖ ≤ R) (hz : ‖z‖ ≤ R) :
     |response jA x y z| ≤ 38 * μ * R ^ 9 := by
   have hnull : response jE (f x) (f y) (f z) = 0 :=

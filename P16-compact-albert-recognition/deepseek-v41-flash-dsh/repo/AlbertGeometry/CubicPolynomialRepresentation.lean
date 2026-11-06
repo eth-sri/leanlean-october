@@ -19,44 +19,52 @@ open scoped BigOperators
 open AlbertGeometry.Cubic
 
 abbrev Coordinates := EuclideanSpace ℝ (Fin 27)
+variable (i j k : Fin 27)
+include i j k in
 
 /-- A genuine continuous coordinate product in three separately linear inputs. -/
-def coordinateProduct (i j k : Fin 27) : TrilinearForm Coordinates :=
+def coordinateProduct  : TrilinearForm Coordinates :=
   (ContinuousMultilinearMap.mkPiAlgebra ℝ (Fin 3) ℝ).compContinuousLinearMap
     ![EuclideanSpace.proj i, EuclideanSpace.proj j, EuclideanSpace.proj k]
+include i j k in
 
-theorem coordinateProduct_apply (i j k : Fin 27) (m : Fin 3 → Coordinates) :
+theorem coordinateProduct_apply  (m : Fin 3 → Coordinates) :
     coordinateProduct i j k m = m 0 i * m 1 j * m 2 k := by
   simp [coordinateProduct, Fin.prod_univ_three, mul_assoc]
+include i j k in
 
 /-- The six slot permutations are averaged with literal coefficient1/6.
 Repeated coordinate indices remain six terms; no orbit-size division is used. -/
-def symmetricCoordinateForm (i j k : Fin 27) : TrilinearForm Coordinates :=
+def symmetricCoordinateForm  : TrilinearForm Coordinates :=
   (1 / 6 : ℝ) • (coordinateProduct i j k + coordinateProduct i k j +
     coordinateProduct j i k + coordinateProduct j k i +
     coordinateProduct k i j + coordinateProduct k j i)
+include i j k in
 
-theorem symmetricCoordinateForm_apply (i j k : Fin 27) (x y z : Coordinates) :
+theorem symmetricCoordinateForm_apply  (x y z : Coordinates) :
     symmetricCoordinateForm i j k ![x,y,z] = (1 / 6 : ℝ) *
       (x i * y j * z k + x i * y k * z j +
        x j * y i * z k + x j * y k * z i +
        x k * y i * z j + x k * y j * z i) := by
   simp [symmetricCoordinateForm, coordinateProduct_apply, smul_eq_mul]
   ring
+include i j k in
 
-theorem symmetricCoordinateForm_swap12 (i j k : Fin 27) (x y z : Coordinates) :
+theorem symmetricCoordinateForm_swap12  (x y z : Coordinates) :
     symmetricCoordinateForm i j k ![x,y,z] =
       symmetricCoordinateForm i j k ![y,x,z] := by
   rw [symmetricCoordinateForm_apply, symmetricCoordinateForm_apply]
   ring
+include i j k in
 
-theorem symmetricCoordinateForm_swap23 (i j k : Fin 27) (x y z : Coordinates) :
+theorem symmetricCoordinateForm_swap23  (x y z : Coordinates) :
     symmetricCoordinateForm i j k ![x,y,z] =
       symmetricCoordinateForm i j k ![x,z,y] := by
   rw [symmetricCoordinateForm_apply, symmetricCoordinateForm_apply]
   ring
+include i j k in
 
-theorem symmetricCoordinateForm_diagonal (i j k : Fin 27) (x : Coordinates) :
+theorem symmetricCoordinateForm_diagonal  (x : Coordinates) :
     symmetricCoordinateForm i j k (fun _ : Fin 3 => x) = x i * x j * x k := by
   have hv : (fun _ : Fin 3 => x) = ![x,x,x] := by
     ext t

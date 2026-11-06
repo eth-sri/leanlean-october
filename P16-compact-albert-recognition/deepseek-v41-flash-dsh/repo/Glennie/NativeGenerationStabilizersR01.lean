@@ -19,8 +19,10 @@ theorem automorphism_ext {g h : CompactAutomorphism} (he : g.equiv = h.equiv) : 
   cases h
   cases he
   rfl
+variable (g : CompactAutomorphism)
+include g in
 
-def fixedSubmodule (g : CompactAutomorphism) : Submodule ℝ Albert where
+def fixedSubmodule  : Submodule ℝ Albert where
   carrier := {t | g.equiv t = t}
   zero_mem' := by simp
   add_mem' := by
@@ -31,9 +33,10 @@ def fixedSubmodule (g : CompactAutomorphism) : Submodule ℝ Albert where
     intro r p hp
     simp only [Set.mem_setOf_eq] at hp ⊢
     rw [map_smul, hp]
+include g in
 
 theorem automorphism_fixes_all_of_phi_ne_zero
-    (g : CompactAutomorphism) (x y z : Albert)
+     (x y z : Albert)
     (hphi : phi x y z ≠ 0)
     (hx : g.equiv x = x) (hy : g.equiv y = y) (hz : g.equiv z = z) :
     ∀ t : Albert, g.equiv t = t := by
@@ -49,9 +52,10 @@ theorem automorphism_fixes_all_of_phi_ne_zero
   intro t
   have ht : t ∈ fixedSubmodule g := by rw [hK]; trivial
   exact ht
+include g in
 
 theorem automorphism_eq_refl_of_phi_ne_zero
-    (g : CompactAutomorphism) (x y z : Albert)
+     (x y z : Albert)
     (hphi : phi x y z ≠ 0)
     (hx : g.equiv x = x) (hy : g.equiv y = y) (hz : g.equiv z = z) :
     g = CompactAutomorphism.refl := by

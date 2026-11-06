@@ -14,7 +14,6 @@ open Glennie.Compact.NormCompatibleNullTargetR01
 open Glennie.Compact.ReadoutRobustnessR01
 open Glennie.Compact.MeasuredMarginR01
 noncomputable section
-set_option autoImplicit false
 
 variable {E M : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   [Ring M] [Algebra ℝ M]

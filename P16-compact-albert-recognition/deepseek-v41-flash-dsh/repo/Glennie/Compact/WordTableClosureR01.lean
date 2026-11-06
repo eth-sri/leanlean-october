@@ -9,13 +9,14 @@ namespace Glennie.Compact.NativeWordTableR01.ClosureCandidate
 open Module Glennie Glennie.Compact.NativeWordTableR01
 open scoped BigOperators
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 variable {E F : Type*} [AddCommGroup E] [Module ℝ E]
   [AddCommGroup F] [Module ℝ F]
+variable (b : Basis (Fin 27) ℝ E)
+include b in
 
- theorem bilinear_eq_of_basis (b : Basis (Fin 27) ℝ E)
+ theorem bilinear_eq_of_basis 
     (p q : E →ₗ[ℝ] E →ₗ[ℝ] F)
     (h : ∀ i j, p (b i) (b j) = q (b i) (b j)) : p = q := by
   apply b.ext
@@ -23,19 +24,22 @@ variable {E F : Type*} [AddCommGroup E] [Module ℝ E]
   apply b.ext
   intro j
   exact h i j
+include b in
 
- def markedLinearEquiv (b : Basis (Fin 27) ℝ E) : E ≃ₗ[ℝ] Albert :=
+ def markedLinearEquiv  : E ≃ₗ[ℝ] Albert :=
   b.equiv wordBasis (Equiv.refl (Fin 27))
+include b in
 
- theorem markedLinearEquiv_basis (b : Basis (Fin 27) ℝ E) (i : Fin 27) :
+ theorem markedLinearEquiv_basis  (i : Fin 27) :
     markedLinearEquiv b (b i) = nativeWords i := by
   rw [markedLinearEquiv, Basis.equiv_apply]
   exact wordBasis_eq_nativeWords i
+include b in
 
  /-- Full denominator-cleared table agreement forces product preservation.
 D is a fixed nonzero certificate scale; no D inverse appears in the proof. -/
  theorem map_product_of_scaled_table
-    (b : Basis (Fin 27) ℝ E) (jE : E →ₗ[ℝ] E →ₗ[ℝ] E)
+     (jE : E →ₗ[ℝ] E →ₗ[ℝ] E)
     (D : ℝ) (hD : D ≠ 0) (C : Fin 27 → Fin 27 → Fin 27 → ℝ)
     (hNative : ∀ i j, D • jordan (nativeWords i) (nativeWords j) =
       ∑ k, C i j k • nativeWords k)
@@ -62,10 +66,11 @@ D is a fixed nonzero certificate scale; no D inverse appears in the proof. -/
     exact hBasis
   intro x y
   exact congrArg (fun r : E →ₗ[ℝ] E →ₗ[ℝ] Albert => r x y) he
+include b in
 
  /-- Matching bilinear forms on the same ordered basis extends with the same A. -/
  theorem map_metric_of_basis
-    (b : Basis (Fin 27) ℝ E)
+    
     (BE : E →ₗ[ℝ] E →ₗ[ℝ] ℝ) (BA : Albert →ₗ[ℝ] Albert →ₗ[ℝ] ℝ)
     (hGram : ∀ i j, BE (b i) (b j) = BA (nativeWords i) (nativeWords j)) :
     ∀ x y, BE x y = BA (markedLinearEquiv b x) (markedLinearEquiv b y) := by

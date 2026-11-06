@@ -30,7 +30,6 @@ open Glennie.Compact.NativeDictionary
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option linter.unusedSimpArgs false
 
@@ -63,31 +62,38 @@ def traceC : (Fin 27 → ℝ) →L[ℝ] ℝ :=
   LinearMap.toContinuousLinearMap (traceLinear ∘ₗ extEquiv.toLinearMap)
 
 theorem traceC_apply (a : Fin 27 → ℝ) : traceC a = trace (extEquiv a) := rfl
+variable (D : Albert →ₗ[ℝ] Albert)
+include D in
 
 /-- The Leibniz law, transported to coordinates. -/
-theorem toCoord_prodC (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
+theorem toCoord_prodC  (hD : IsJordanDerivation D)
     (a b : Fin 27 → ℝ) :
     toCoord D (prodC a b) = prodC (toCoord D a) b + prodC a (toCoord D b) := by
   have h := hD (extEquiv a) (extEquiv b)
   simp only [toCoord_apply, prodC_apply, LinearEquiv.apply_symm_apply, h, map_add]
+include D in
 
 /-! ## The flow and its inverse -/
 
 /-- exp(t D) on coordinates. -/
-def flowC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) : (Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ) :=
+def flowC  (t : ℝ) : (Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ) :=
   NormedSpace.exp (t • toCoord D)
+include D in
 
 /-- exp(t (-D)) on coordinates: the inverse flow. -/
-def flowInvC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) : (Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ) :=
+def flowInvC  (t : ℝ) : (Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ) :=
   NormedSpace.exp (t • -toCoord D)
+include D in
 
-theorem flowC_zero (D : Albert →ₗ[ℝ] Albert) : flowC D 0 = 1 := by
+theorem flowC_zero  : flowC D 0 = 1 := by
   simp [flowC]
+include D in
 
-theorem flowInvC_zero (D : Albert →ₗ[ℝ] Albert) : flowInvC D 0 = 1 := by
+theorem flowInvC_zero  : flowInvC D 0 = 1 := by
   simp [flowInvC]
+include D in
 
-theorem flowC_mul_flowInvC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) :
+theorem flowC_mul_flowInvC  (t : ℝ) :
     flowC D t * flowInvC D t = 1 := by
   let +nondep : NormedAlgebra ℚ ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)) :=
     .restrictScalars ℚ ℝ _
@@ -95,8 +101,9 @@ theorem flowC_mul_flowInvC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) :
     (((Commute.refl (toCoord D)).neg_right).smul_left t).smul_right t
   rw [flowC, flowInvC, ← NormedSpace.exp_add_of_commute h, ← smul_add, add_neg_cancel,
     smul_zero, NormedSpace.exp_zero]
+include D in
 
-theorem flowInvC_mul_flowC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) :
+theorem flowInvC_mul_flowC  (t : ℝ) :
     flowInvC D t * flowC D t = 1 := by
   let +nondep : NormedAlgebra ℚ ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)) :=
     .restrictScalars ℚ ℝ _
@@ -104,32 +111,37 @@ theorem flowInvC_mul_flowC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) :
     (((Commute.refl (toCoord D)).neg_left).smul_left t).smul_right t
   rw [flowC, flowInvC, ← NormedSpace.exp_add_of_commute h, ← smul_add, neg_add_cancel,
     smul_zero, NormedSpace.exp_zero]
+include D in
 
-theorem flowC_flowInvC_apply (D : Albert →ₗ[ℝ] Albert) (t : ℝ) (c : Fin 27 → ℝ) :
+theorem flowC_flowInvC_apply  (t : ℝ) (c : Fin 27 → ℝ) :
     flowC D t (flowInvC D t c) = c := by
   rw [← mul_apply_eq_comp, flowC_mul_flowInvC, one_apply_eq_self]
+include D in
 
-theorem flowInvC_flowC_apply (D : Albert →ₗ[ℝ] Albert) (t : ℝ) (c : Fin 27 → ℝ) :
+theorem flowInvC_flowC_apply  (t : ℝ) (c : Fin 27 → ℝ) :
     flowInvC D t (flowC D t c) = c := by
   rw [← mul_apply_eq_comp, flowInvC_mul_flowC, one_apply_eq_self]
+include D in
 
 /-! ## Derivatives -/
 
-theorem hasDerivAt_flowC_apply (D : Albert →ₗ[ℝ] Albert) (c : Fin 27 → ℝ) (t : ℝ) :
+theorem hasDerivAt_flowC_apply  (c : Fin 27 → ℝ) (t : ℝ) :
     HasDerivAt (fun s => flowC D s c) (toCoord D (flowC D t c)) t := by
   have h : HasDerivAt (fun s => flowC D s c) ((toCoord D * flowC D t) c + flowC D t 0) t :=
     (hasDerivAt_exp_smul_const' (toCoord D) t).clm_apply (hasDerivAt_const t c)
   refine h.congr_deriv ?_
   rw [mul_apply_eq_comp, map_zero, add_zero]
+include D in
 
-theorem hasDerivAt_flowInvC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) :
+theorem hasDerivAt_flowInvC  (t : ℝ) :
     HasDerivAt (fun s => flowInvC D s) (flowInvC D t * -toCoord D) t := by
   simpa [flowInvC] using hasDerivAt_exp_smul_const (-toCoord D) t
+include D in
 
 /-! ## Product and trace preservation -/
 
 /-- exp(t D) preserves the native product, for every derivation D. -/
-theorem flowC_prodC (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
+theorem flowC_prodC  (hD : IsJordanDerivation D)
     (a b : Fin 27 → ℝ) (t : ℝ) :
     flowC D t (prodC a b) = prodC (flowC D t a) (flowC D t b) := by
   have hderiv : ∀ s : ℝ, HasDerivAt
@@ -158,9 +170,10 @@ theorem flowC_prodC (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
   have h2 := congrArg (flowC D t) hconst
   rw [flowC_flowInvC_apply] at h2
   exact h2.symm
+include D in
 
 /-- exp(t D) preserves the raw trace, for every trace-free D. -/
-theorem flowC_traceC (D : Albert →ₗ[ℝ] Albert) (hT : TraceFree D)
+theorem flowC_traceC  (hT : TraceFree D)
     (a : Fin 27 → ℝ) (t : ℝ) :
     traceC (flowC D t a) = traceC a := by
   have hderiv : ∀ s : ℝ, HasDerivAt (fun r => traceC (flowC D r a)) 0 s := by
@@ -173,50 +186,58 @@ theorem flowC_traceC (D : Albert →ₗ[ℝ] Albert) (hT : TraceFree D)
   have hconst := is_const_of_deriv_eq_zero
     (fun s => (hderiv s).differentiableAt) (fun s => (hderiv s).deriv) t 0
   simpa only [flowC_zero, one_apply_eq_self] using hconst
+include D in
 
 /-! ## The flow on Albert as a compact automorphism -/
 
-def flowL (D : Albert →ₗ[ℝ] Albert) (t : ℝ) : Albert →ₗ[ℝ] Albert :=
+def flowL  (t : ℝ) : Albert →ₗ[ℝ] Albert :=
   extEquiv.toLinearMap ∘ₗ (flowC D t : (Fin 27 → ℝ) →ₗ[ℝ] (Fin 27 → ℝ)) ∘ₗ
     extEquiv.symm.toLinearMap
+include D in
 
-def flowInvL (D : Albert →ₗ[ℝ] Albert) (t : ℝ) : Albert →ₗ[ℝ] Albert :=
+def flowInvL  (t : ℝ) : Albert →ₗ[ℝ] Albert :=
   extEquiv.toLinearMap ∘ₗ (flowInvC D t : (Fin 27 → ℝ) →ₗ[ℝ] (Fin 27 → ℝ)) ∘ₗ
     extEquiv.symm.toLinearMap
+include D in
 
 /-- The flow exp(t D) as a real-linear equivalence of Albert. -/
-def flow (D : Albert →ₗ[ℝ] Albert) (t : ℝ) : Albert ≃ₗ[ℝ] Albert :=
+def flow  (t : ℝ) : Albert ≃ₗ[ℝ] Albert :=
   LinearEquiv.ofLinearMap (flowL D t) (flowInvL D t)
     (LinearMap.ext fun x => by
       simp [flowL, flowInvL, flowC_flowInvC_apply])
     (LinearMap.ext fun x => by
       simp [flowL, flowInvL, flowInvC_flowC_apply])
+include D in
 
-theorem flow_apply (D : Albert →ₗ[ℝ] Albert) (t : ℝ) (x : Albert) :
+theorem flow_apply  (t : ℝ) (x : Albert) :
     flow D t x = extEquiv (flowC D t (extEquiv.symm x)) := rfl
+include D in
 
-theorem flow_jordan (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D) (t : ℝ)
+theorem flow_jordan  (hD : IsJordanDerivation D) (t : ℝ)
     (x y : Albert) : flow D t (jordan x y) = jordan (flow D t x) (flow D t y) := by
   simp only [flow_apply]
   rw [← prodC_symm, flowC_prodC D hD, prodC_apply, LinearEquiv.apply_symm_apply]
+include D in
 
-theorem flow_trace (D : Albert →ₗ[ℝ] Albert) (hT : TraceFree D) (t : ℝ) (x : Albert) :
+theorem flow_trace  (hT : TraceFree D) (t : ℝ) (x : Albert) :
     trace (flow D t x) = trace x := by
   have h := flowC_traceC D hT (extEquiv.symm x) t
   simp only [traceC_apply, LinearEquiv.apply_symm_apply] at h
   rw [flow_apply]
   exact h
+include D in
 
 /-- Step 3 headline: exp(t D) is a genuine compact automorphism (product and
 trace preserving real-linear equivalence) for every derivation D that is
 trace-free. -/
-def flowAut (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D) (hT : TraceFree D)
+def flowAut  (hD : IsJordanDerivation D) (hT : TraceFree D)
     (t : ℝ) : CompactAutomorphism where
   equiv := flow D t
   map_jordan := flow_jordan D hD t
   map_trace := flow_trace D hT t
+include D in
 
-theorem flowAut_apply (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
+theorem flowAut_apply  (hD : IsJordanDerivation D)
     (hT : TraceFree D) (t : ℝ) (x : Albert) :
     (flowAut D hD hT t).equiv x = flow D t x := rfl
 

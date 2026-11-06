@@ -14,16 +14,19 @@ reduction assumption and do not state the universal Glennie endpoint.
 public section
 
 namespace Glennie.ScalarEstimates
+variable (a b c : ℝ)
+include a b c in
 
 /-- The trace-zero cubic discriminant, with the actual unscaled trace metric. -/
-theorem discriminant_identity (a b c : ℝ) (htrace : a + b + c = 0) :
+theorem discriminant_identity  (htrace : a + b + c = 0) :
     ((a - b) * (a - c) * (b - c)) ^ 2 =
       (a ^ 2 + b ^ 2 + c ^ 2) ^ 3 / 2 - 27 * (a * b * c) ^ 2 := by
   have hc : c = -a - b := by linarith
   rw [hc]
   ring
+include a b c in
 
-private theorem amgm_min (a b c : ℝ) (ha : 0 ≤ a) (hab : a ≤ b) (hac : a ≤ c) :
+private theorem amgm_min  (ha : 0 ≤ a) (hab : a ≤ b) (hac : a ≤ c) :
     27 * (a * b * c) ≤ (a + b + c) ^ 3 := by
   have hu : 0 ≤ b - a := by linarith
   have hv : 0 ≤ c - a := by linarith
@@ -35,9 +38,10 @@ private theorem amgm_min (a b c : ℝ) (ha : 0 ≤ a) (hab : a ≤ b) (hac : a �
       ((b - a) + (c - a)) ^ 3 +
         9 * a * ((b - a) ^ 2 - (b - a) * (c - a) + (c - a) ^ 2) := by ring
   linarith
+include a b c in
 
 /-- AM–GM in a polynomial form, including zero arguments. -/
-theorem amgm_three (a b c : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) :
+theorem amgm_three  (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) :
     27 * (a * b * c) ≤ (a + b + c) ^ 3 := by
   rcases le_total a b with hab | hba
   · rcases le_total a c with hac | hca
@@ -49,8 +53,9 @@ theorem amgm_three (a b c : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) :
       nlinarith
     · have h := amgm_min c a b hc (hcb.trans hba) hcb
       nlinarith
+include a b c in
 
-private theorem amgm_min_eq (a b c : ℝ) (ha : 0 ≤ a) (hab : a ≤ b) (hac : a ≤ c)
+private theorem amgm_min_eq  (ha : 0 ≤ a) (hab : a ≤ b) (hac : a ≤ c)
     (heq : 27 * (a * b * c) = (a + b + c) ^ 3) : a = b ∧ b = c := by
   have hu : 0 ≤ b - a := by linarith
   have hv : 0 ≤ c - a := by linarith
@@ -66,8 +71,9 @@ private theorem amgm_min_eq (a b c : ℝ) (ha : 0 ≤ a) (hab : a ≤ b) (hac : 
     have hp := pow_pos (lt_of_not_ge h) 3
     linarith
   constructor <;> linarith
+include a b c in
 
-theorem amgm_three_eq_iff (a b c : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) :
+theorem amgm_three_eq_iff  (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) :
     27 * (a * b * c) = (a + b + c) ^ 3 ↔ a = b ∧ b = c := by
   constructor
   · intro heq

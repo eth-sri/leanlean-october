@@ -14,7 +14,6 @@ open Glennie.Compact.MeasuredMarginR01
 open Glennie.Compact.NativeNormKernel
 open Glennie.Compact.ReadoutRobustnessR01
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 def diagonalProductLinear : Product Diagonal27 where

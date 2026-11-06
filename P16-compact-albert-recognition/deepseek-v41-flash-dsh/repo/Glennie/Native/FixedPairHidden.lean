@@ -8,7 +8,6 @@ public import Glennie.Compact.Affine20.Relabel
 namespace Glennie.NativeFixedPairHidden
 open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
 noncomputable section
-set_option autoImplicit false
 
 private theorem gram_phase_of_projections (r : Fin 3 → Albert) (hr : Frame r)
     (he : complexProjection (encoder r) = 0)

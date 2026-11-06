@@ -14,7 +14,6 @@ open Glennie.Compact.NativeQFamilyLedger
 open Glennie.Compact.NearbyOrbits
 open Glennie.Compact.Sections
 open Glennie.Compact.LocalOrbitQuotientR01
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-- Drop exactly the six single observations. No injectivity on arbitrary arrays. -/

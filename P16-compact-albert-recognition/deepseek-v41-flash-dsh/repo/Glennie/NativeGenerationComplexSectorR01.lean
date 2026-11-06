@@ -33,8 +33,10 @@ def slot12 : ℂ →ₗ[ℝ] Albert where
     ext <;> simp [complexAlbert, complexOct]
   map_smul' r u := by
     ext <;> simp [complexAlbert, complexOct, smul_eq_mul]
+variable (u v w : ℂ)
+include u v w in
 
-theorem cross_slot01_12 (u v w : ℂ) :
+theorem cross_slot01_12  :
     (2 : ℝ) • jordan (slot01 u) (slot12 w) = slot02 (u * w) := by
   ext <;> simp [slot01, slot02, slot12, complexAlbert, complexOct,
     jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
@@ -43,8 +45,9 @@ theorem cross_slot01_12 (u v w : ℂ) :
     Complex.mul_re, Complex.mul_im, smul_eq_mul]
   all_goals ring
   all_goals norm_num [octNormSq, Quaternion.normSq_def']
+include u v w in
 
-theorem cross_slot01_02 (u v w : ℂ) :
+theorem cross_slot01_02  :
     (2 : ℝ) • jordan (slot01 u) (slot02 v) = slot12 (star u * v) := by
   ext <;> simp [slot01, slot02, slot12, complexAlbert, complexOct,
     jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
@@ -53,8 +56,9 @@ theorem cross_slot01_02 (u v w : ℂ) :
     Complex.mul_re, Complex.mul_im, smul_eq_mul]
   all_goals ring
   all_goals norm_num [octNormSq, Quaternion.normSq_def']
+include u v w in
 
-theorem cross_slot02_12 (u v w : ℂ) :
+theorem cross_slot02_12  :
     (2 : ℝ) • jordan (slot02 v) (slot12 w) = slot01 (v * star w) := by
   ext <;> simp [slot01, slot02, slot12, complexAlbert, complexOct,
     jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,

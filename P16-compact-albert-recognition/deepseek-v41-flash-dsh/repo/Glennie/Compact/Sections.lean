@@ -60,7 +60,6 @@ open Glennie.Compact.Affine20 Glennie.Compact.NativeDictionary Glennie.Compact.F
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 
 /-! ## Continuity of the moved atoms -/
@@ -70,9 +69,11 @@ def decodeCLM : (Fin 27 → ℝ) →L[ℝ] Albert :=
   LinearMap.toContinuousLinearMap extEquiv.toLinearMap
 
 theorem decodeCLM_apply (c : Fin 27 → ℝ) : decodeCLM c = extEquiv c := rfl
+variable (T : Triple)
+include T in
 
 /-- Every atom of the moved triple depends continuously on the twenty flow parameters. -/
-theorem continuous_movedTriple_atom (T : Triple) (a i : Fin 3) :
+theorem continuous_movedTriple_atom  (a i : Fin 3) :
     Continuous fun s : Fin 20 → ℝ => movedTriple T s a i := by
   have h : Continuous fun s : Fin 20 → ℝ =>
       extEquiv.symm (movedFrame contextDirection contextDirection_isJordanDerivation
@@ -88,21 +89,23 @@ theorem continuous_movedTriple_atom (T : Triple) (a i : Fin 3) :
     movedFrame contextDirection contextDirection_isJordanDerivation
       contextDirection_traceFree T a s i
   exact h2
+include T in
 
 /-! ## The inverse function theorem on `cRow (ledger54 (movedTriple T s))` -/
 
 /-- The chart point of T is recovered from the twenty rows at the base point of the family. -/
-theorem rowsOf_chart_base (T : Triple) (hT : ∀ a : Fin 3, Frame (T a)) :
+theorem rowsOf_chart_base  (hT : ∀ a : Fin 3, Frame (T a)) :
     rowsOf (encode20 (ledger54 T)) = rowLedger T 0 := by
   have h := rowsOf_encode20_movedTriple T hT 0
   rw [movedTriple_zero] at h
   exact h
+include T in
 
 /-- The local section of the ledger map, indexed by chart coordinates.
 The invertibility of the strict derivative is an explicit hypothesis, in exactly the
 form `Rank20.rank20_of_bridge` (Rank20Reduction.lean) delivers it; nothing about rank or
 determinants is assumed here. -/
-theorem exists_section_of_equiv (T : Triple) (hT : ∀ a : Fin 3, Frame (T a))
+theorem exists_section_of_equiv  (hT : ∀ a : Fin 3, Frame (T a))
     (e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ))
     (he : (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) = rowLedgerDeriv T) :
     ∃ W : Set (Fin 20 → ℝ), IsOpen W ∧ encode20 (ledger54 T) ∈ W ∧
@@ -147,9 +150,10 @@ theorem exists_section_of_equiv (T : Triple) (hT : ∀ a : Fin 3, Frame (T a))
   · intro b hb
     show encode20 (ledger54 (movedTriple T (Psi.symm (rowsOf b)))) = b
     rw [encode20_movedTriple_eq_chartVec T hT, hright (rowsOf b) hb, chartVec_rowsOf]
+include T in
 
 /-- The same section, on a neighbourhood shrunk so that Phi stays strictly negative. -/
-theorem exists_signed_section_of_equiv (T : Triple) (hT : ∀ a : Fin 3, Frame (T a))
+theorem exists_signed_section_of_equiv  (hT : ∀ a : Fin 3, Frame (T a))
     (e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ))
     (he : (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) = rowLedgerDeriv T)
     (hneg : phiOf T < 0) :

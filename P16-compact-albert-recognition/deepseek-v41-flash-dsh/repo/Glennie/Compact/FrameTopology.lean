@@ -40,7 +40,6 @@ open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## Continuity building blocks

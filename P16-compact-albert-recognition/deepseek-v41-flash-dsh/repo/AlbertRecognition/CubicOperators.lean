@@ -38,10 +38,12 @@ theorem metric_nondegenerate : metricBilin.Nondegenerate :=
 def metricDual : V ≃ₗ[ℝ] Module.Dual ℝ V := metricBilin.toDual metric_nondegenerate
 
 @[simp] theorem metricDual_apply (x y : V) : metricDual x y = gA x y := rfl
+variable (B : SymmetricCubic)
+include B in
 
 /-- Every arbitrary symmetric trilinear form has its unique actual multiplication
 operators obtained by raising one index with the specified scaled metric. -/
-def KB (B : SymmetricCubic) : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
+def KB  : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
   toFun x := metricDual.symm.toLinearMap.comp (B.form x)
   map_add' x y := by
     apply LinearMap.ext
@@ -55,24 +57,28 @@ def KB (B : SymmetricCubic) : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
     intro y
     change metricDual.symm (B.form (r • x) y) = r • metricDual.symm (B.form x y)
     rw [map_smul, LinearMap.smul_apply, map_smul]
+include B in
 
-@[simp] theorem KB_apply (B : SymmetricCubic) (x y : V) :
+@[simp] theorem KB_apply  (x y : V) :
     KB B x y = metricDual.symm (B.form x y) := rfl
+include B in
 
-theorem KB_pairing (B : SymmetricCubic) (x y z : V) :
+theorem KB_pairing  (x y z : V) :
     gA (KB B x y) z = B.form x y z := by
   change metricBilin
     ((metricBilin.toDual metric_nondegenerate).symm (B.form x y)) z = _
   exact LinearMap.BilinForm.apply_toDual_symm_apply _ _
+include B in
 
-theorem KB_comm (B : SymmetricCubic) (x y : V) : KB B x y = KB B y x := by
+theorem KB_comm  (x y : V) : KB B x y = KB B y x := by
   apply metricDual.injective
   apply LinearMap.ext
   intro z
   change gA (KB B x y) z = gA (KB B y x) z
   rw [KB_pairing, KB_pairing, B.swap12]
+include B in
 
-theorem KB_selfadjoint (B : SymmetricCubic) (x y z : V) :
+theorem KB_selfadjoint  (x y z : V) :
     gA (KB B x y) z = gA y (KB B x z) := by
   rw [gA_comm y (KB B x z), KB_pairing, KB_pairing, B.swap23]
 

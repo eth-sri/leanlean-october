@@ -8,14 +8,18 @@ public import Mathlib.Analysis.Complex.Polynomial.Basic
 @[expose] public section
 namespace Glennie
 noncomputable section
+variable (I : Octonion)
+include I in
 
-def octComplexLine (I : Octonion) (z : ℂ) : Octonion :=
+def octComplexLine  (z : ℂ) : Octonion :=
   z.re • octScalar 1 + z.im • I
+include I in
 
-@[simp] theorem octComplexLine_one (I : Octonion) :
+@[simp] theorem octComplexLine_one  :
     octComplexLine I 1 = octScalar 1 := by simp [octComplexLine]
+include I in
 
-theorem octComplexLine_mul (I : Octonion) (hi : octRe I = 0)
+theorem octComplexLine_mul  (hi : octRe I = 0)
     (hn : octNormSq I = 1) (z w : ℂ) :
     octComplexLine I (z*w) = octMul (octComplexLine I z) (octComplexLine I w) := by
   have hi2 : octMul I I = (-1 : ℝ) • octScalar 1 := by
@@ -24,8 +28,9 @@ theorem octComplexLine_mul (I : Octonion) (hi : octRe I = 0)
     octMul_add_left, octMul_add_right, octMul_smul_left, octMul_smul_right,
     octMul_scalar_left, octMul_scalar_right, hi2, one_smul]
   module
+include I in
 
-theorem octComplexLine_normSq (I : Octonion) (hi : octRe I = 0)
+theorem octComplexLine_normSq  (hi : octRe I = 0)
     (hn : octNormSq I = 1) (z : ℂ) :
     octNormSq (octComplexLine I z) = Complex.normSq z := by
   have h := congrArg (fun r : ℝ => z.im^2*r) hn
@@ -33,8 +38,9 @@ theorem octComplexLine_normSq (I : Octonion) (hi : octRe I = 0)
   simp [octComplexLine, octNormSq, Quaternion.normSq_def', octScalar,
     Complex.normSq_apply, smul_eq_mul, hi] at h ⊢
   nlinarith [h]
+include I in
 
-theorem octComplexLine_conj (I : Octonion) (hi : octRe I = 0) (z : ℂ) :
+theorem octComplexLine_conj  (hi : octRe I = 0) (z : ℂ) :
     octConj (octComplexLine I z) = octComplexLine I (star z) := by
   have hI : octConj I = -I := by
     apply Prod.ext <;> apply Quaternion.ext <;> simp_all [octConj, octRe]

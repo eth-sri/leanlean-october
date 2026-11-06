@@ -10,17 +10,19 @@ namespace Glennie.Compact.NativeWordTableR01.ClosureCandidate
 open Module Glennie Glennie.Compact.NativeWordTableR01
 open scoped BigOperators InnerProductSpace
 noncomputable section
-set_option autoImplicit false
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+variable (v : Fin 27 → E) (p : E) (D : ℝ) (c : Fin 27 → ℝ)
+include v p D c in
 
  /-- Exact scalar expression for the norm square of the denominator-cleared residual. -/
- def residualScalar (v : Fin 27 → E) (p : E) (D : ℝ) (c : Fin 27 → ℝ) : ℝ :=
+ def residualScalar  : ℝ :=
     D^2 * Inner.inner ℝ p p -
     2*D*(∑ k, c k * Inner.inner ℝ p (v k)) +
     ∑ k, ∑ l, c k*c l * Inner.inner ℝ (v k) (v l)
+include v p D c in
 
- theorem residual_norm_sq (v : Fin 27 → E) (p : E) (D : ℝ) (c : Fin 27 → ℝ) :
+ theorem residual_norm_sq  :
     ‖D • p - ∑ k, c k • v k‖^2 = residualScalar v p D c := by
   have hp : Inner.inner ℝ p (∑ k, c k • v k) =
       ∑ k, c k * Inner.inner ℝ p (v k) := by
@@ -41,10 +43,10 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   rw [← real_inner_self_eq_norm_sq p]
   dsimp [residualScalar]
   ring
+include v p D c in
 
  /-- Positive definite Hilbert geometry turns a nonpositive scalar residual into closure. -/
- theorem residual_zero_of_scalar_nonpos (v : Fin 27 → E) (p : E)
-    (D : ℝ) (c : Fin 27 → ℝ) (h : residualScalar v p D c ≤ 0) :
+ theorem residual_zero_of_scalar_nonpos  (h : residualScalar v p D c ≤ 0) :
     D • p = ∑ k, c k • v k := by
   have hn : ‖D • p-∑ k, c k • v k‖^2 = 0 :=
     le_antisymm ((residual_norm_sq v p D c).trans_le h) (sq_nonneg _)

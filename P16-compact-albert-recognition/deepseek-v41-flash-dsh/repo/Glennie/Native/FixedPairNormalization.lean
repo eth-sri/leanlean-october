@@ -8,7 +8,6 @@ namespace Glennie.NativeFixedPairNormalization
 open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
 open Glennie.NativeFixedPairHidden
 noncomputable section
-set_option autoImplicit false
 
 private theorem diagonal_third :
     Matrix.diagonal (fun _ : Fin 3 => (1/3 : ℂ)) = (1/3 : ℂ) • (1 : SectorMatrix) := by

@@ -22,36 +22,46 @@ noncomputable section
 def gramEntry (i j k l : Fin 3) : ℝ :=
   if i = k then (if j = l then 2 / 9 else 1 / 18)
   else (if j = l then 1 / 18 else -1 / 36)
+variable (a : Fin 3 → Fin 3 → ℝ)
+include a in
 
-def quadratic (a : Fin 3 → Fin 3 → ℝ) : ℝ :=
+def quadratic  : ℝ :=
   ∑ i, ∑ j, ∑ k, ∑ l, a i j * gramEntry i j k l * a k l
+include a in
 
-def squares (a : Fin 3 → Fin 3 → ℝ) : ℝ := ∑ i, ∑ j, (a i j) ^ 2
-def rows (a : Fin 3 → Fin 3 → ℝ) (i : Fin 3) : ℝ := ∑ j, a i j
-def cols (a : Fin 3 → Fin 3 → ℝ) (j : Fin 3) : ℝ := ∑ i, a i j
-def total (a : Fin 3 → Fin 3 → ℝ) : ℝ := ∑ i, rows a i
+def squares  : ℝ := ∑ i, ∑ j, (a i j) ^ 2
+include a in
+def rows  (i : Fin 3) : ℝ := ∑ j, a i j
+include a in
+def cols  (j : Fin 3) : ℝ := ∑ i, a i j
+include a in
+def total  : ℝ := ∑ i, rows a i
+include a in
 
-theorem quadratic_identity (a : Fin 3 → Fin 3 → ℝ) :
+theorem quadratic_identity  :
     36 * quadratic a = 3 * squares a + 3 * (∑ i, (rows a i) ^ 2) +
       3 * (∑ j, (cols a j) ^ 2) - (total a) ^ 2 := by
   simp [quadratic, gramEntry, squares, rows, cols, total, Fin.sum_univ_three]
   ring
+include a in
 
-theorem row_cauchy (a : Fin 3 → Fin 3 → ℝ) :
+theorem row_cauchy  :
     (total a) ^ 2 ≤ 3 * (∑ i, (rows a i) ^ 2) := by
   simp only [total, Fin.sum_univ_three]
   nlinarith [sq_nonneg (rows a 0 - rows a 1),
     sq_nonneg (rows a 0 - rows a 2), sq_nonneg (rows a 1 - rows a 2)]
+include a in
 
 /-- A uniform lower bound that proves all nine mixed products are independent. -/
-theorem quadratic_lower_bound (a : Fin 3 → Fin 3 → ℝ) :
+theorem quadratic_lower_bound  :
     squares a / 12 ≤ quadratic a := by
   have hidentity := quadratic_identity a
   have hcauchy := row_cauchy a
   have hcol : 0 ≤ ∑ j, (cols a j) ^ 2 := by positivity
   linarith
+include a in
 
-theorem quadratic_eq_zero_iff (a : Fin 3 → Fin 3 → ℝ) :
+theorem quadratic_eq_zero_iff  :
     quadratic a = 0 ↔ ∀ i j, a i j = 0 := by
   constructor
   · intro hzero

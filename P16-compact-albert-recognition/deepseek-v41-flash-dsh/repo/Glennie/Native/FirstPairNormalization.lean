@@ -23,7 +23,6 @@ namespace Glennie.NativeFirstPairNormalization
 open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
 open Glennie.NativeOrderedPositivePair Glennie.NativeFixedPairNormalization
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## Frames are their own projector frames -/
@@ -344,12 +343,14 @@ theorem native_flat_pair_normalization (p q : Fin 3 → Albert)
     exact hmP i
   · exact fun i =>
       frame_eq_of_encoder_eq q flatFrameQ hq flatFrameQ_frame (m.comp g) hEnc i
+variable (p q r : Fin 3 → Albert)
+include p q r in
 
 /-- Arbitrary genuine frame pair over the original flat ledger is carried to the
 ORIGINAL ordered first pair by one constructed product automorphism, and the third
 frame is carried into the original fixed-pair flat ledger. -/
 theorem native_flat_first_pair_normalization
-    (p q r : Fin 3 → Albert) (hp : Frame p) (hq : Frame q) (hr : Frame r)
+     (hp : Frame p) (hq : Frame q) (hr : Frame r)
     (hu : UniformLedger p q r) :
     ∃ g : CompactAutomorphism,
       (∀ i : Fin 3, g.equiv (p i) = flatFrameP i) ∧
@@ -369,8 +370,9 @@ theorem native_flat_first_pair_normalization
   rw [hpf, hqf] at h
   rw [h]
   exact hu i j k
+include p q r in
 
-private theorem uniform_of_full54 (p q r : Fin 3 → Albert)
+private theorem uniform_of_full54 
     (hL : ledger54 ![p, q, r] = ledger54 ![flatFrameP, flatFrameQ, flatFrameR]) :
     UniformLedger p q r := by
   intro i j k
@@ -378,12 +380,13 @@ private theorem uniform_of_full54 (p q r : Fin 3 → Albert)
   change ledger p q r i j k =
     ledger flatFrameP flatFrameQ flatFrameR i j k at h
   exact h.trans (flat_uniform i j k)
+include p q r in
 
 /-- ORDERED BASE FIBRE, uniform-ledger form: every genuine frame triple with the
 original flat ledger is carried by ONE actual product automorphism to the original
 ordered flat triple or to its ordered third-frame reversal. -/
 theorem native_flat_ordered_base_fibre
-    (p q r : Fin 3 → Albert) (hp : Frame p) (hq : Frame q) (hr : Frame r)
+     (hp : Frame p) (hq : Frame q) (hr : Frame r)
     (hu : UniformLedger p q r) :
     ∃ g : CompactAutomorphism,
       (∀ i : Fin 3, g.equiv (p i) = flatFrameP i) ∧
@@ -406,12 +409,13 @@ theorem native_flat_ordered_base_fibre
         (CompactAutomorphism.comp_apply h g (r i)).trans (hc i)
     · exact Or.inr fun i =>
         (CompactAutomorphism.comp_apply h g (r i)).trans (hc i)
+include p q r in
 
 /-- ORDERED BASE FIBRE: every genuine frame triple with the original complete
 54-entry flat ledger is carried by ONE actual product automorphism to the original
 ordered flat triple or to its ordered third-frame reversal. -/
 theorem native_flat_full54_ordered_base_fibre
-    (p q r : Fin 3 → Albert) (hp : Frame p) (hq : Frame q) (hr : Frame r)
+     (hp : Frame p) (hq : Frame q) (hr : Frame r)
     (hL : ledger54 ![p, q, r] = ledger54 ![flatFrameP, flatFrameQ, flatFrameR]) :
     ∃ g : CompactAutomorphism,
       (∀ i : Fin 3, g.equiv (p i) = flatFrameP i) ∧

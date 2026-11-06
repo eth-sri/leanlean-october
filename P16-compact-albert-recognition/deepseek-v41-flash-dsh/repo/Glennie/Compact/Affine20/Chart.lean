@@ -34,7 +34,6 @@ namespace Glennie.Compact.Affine20
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## The genuine affine domain -/

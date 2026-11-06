@@ -12,7 +12,6 @@ open Glennie.Compact.Affine20 Glennie.Compact.FlowFamily
 
 noncomputable section
 
-set_option autoImplicit false
 
 /-- The actual original flat-base derivative supplies both local full54 sections.
 All neighbourhood, continuity, frame, chart and strict-sign outputs are retained. -/

@@ -53,23 +53,28 @@ theorem complex_hidden_orthogonal (x : Albert) (M : Matrix (Fin 3) (Fin 3) ℂ) 
     inner (complexProjection x) (hiddenAlbert M) = 0 := by
   simp [inner_coordinates, octDot_coordinates, complexProjection, hiddenAlbert,
     complexOct, hiddenOct]
+variable (M : Matrix (Fin 3) (Fin 3) ℂ)
+include M in
 
-theorem hiddenAlbert_norm (M : Matrix (Fin 3) (Fin 3) ℂ) :
+theorem hiddenAlbert_norm  :
     inner (hiddenAlbert M) (hiddenAlbert M) =
       2 * ∑ i, ∑ j, Complex.normSq (M i j) := by
   simp [inner_coordinates, octDot_coordinates, octNormSq, Quaternion.normSq_def',
     hiddenAlbert, hiddenOct, Complex.normSq_apply,
     Fin.sum_univ_three]
   ring
+include M in
 
-def sectorColumnGram (M : Matrix (Fin 3) (Fin 3) ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
+def sectorColumnGram  : Matrix (Fin 3) (Fin 3) ℂ :=
   M.conjTranspose * M
+include M in
 
-def sectorFrobeniusSq (M : Matrix (Fin 3) (Fin 3) ℂ) : ℝ :=
+def sectorFrobeniusSq  : ℝ :=
   ∑ i, ∑ j, Complex.normSq (M i j)
+include M in
 
 /-- The full complex projection of the square, in the actual hidden-column gauge. -/
-theorem hidden_square_complexProjection (M : Matrix (Fin 3) (Fin 3) ℂ) :
+theorem hidden_square_complexProjection  :
     complexProjection (jordan (hiddenAlbert M) (hiddenAlbert M)) =
       complexAlbert
         (sectorFrobeniusSq M - (sectorColumnGram M 0 0).re)

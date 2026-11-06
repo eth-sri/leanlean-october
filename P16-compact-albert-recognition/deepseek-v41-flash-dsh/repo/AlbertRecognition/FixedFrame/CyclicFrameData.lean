@@ -10,10 +10,11 @@ public import AlbertRecognition.FixedFrame.ThreeFrameRelations
 namespace AlbertRecognition.FixedFrame
 noncomputable section
 open Glennie
+variable (B : SymmetricCubic) (hB : A (q referenceCubic) B = 0)
+include B hB in
 
 /-- The first actual cyclic pullback derives all h1 coarse actions. -/
-theorem h1_coarse_actions_of_A_q_zero (B : SymmetricCubic)
-    (hB : A (q referenceCubic) B = 0) :
+theorem h1_coarse_actions_of_A_q_zero  :
     ∃ a b c : ℝ, KB B (h 1) (h 1) = a • h 1 ∧
       (∀ j : Fin 3, j ≠ 1 →
         KB B (h 1) (h j + (1/2 : ℝ) • h 1) =
@@ -50,11 +51,11 @@ theorem h1_coarse_actions_of_A_q_zero (B : SymmetricCubic)
   · intro u
     simpa only [cyclicV_h0, cyclicV_X01] using
       transfer (h 0) (X01 u) c (h01 u)
+include B hB in
 
 /-- Apply the actual cyclic pullback again to derive all h2 coarse actions.
 The preceding h1 theorem applied to BT performs the literal T² pullback. -/
-theorem h2_coarse_actions_of_A_q_zero (B : SymmetricCubic)
-    (hB : A (q referenceCubic) B = 0) :
+theorem h2_coarse_actions_of_A_q_zero  :
     ∃ a b c : ℝ, KB B (h 2) (h 2) = a • h 2 ∧
       (∀ j : Fin 3, j ≠ 2 →
         KB B (h 2) (h j + (1/2 : ℝ) • h 2) =
@@ -91,11 +92,11 @@ theorem h2_coarse_actions_of_A_q_zero (B : SymmetricCubic)
   · intro u
     simpa only [cyclicV_h1, cyclicV_X01] using
       transfer (h 1) (X01 u) c (h01 u)
+include B hB in
 
 /-- Construct, rather than assume, the intermediate data for the original gate.
 Only genuine cubic symmetry and A(q(referenceCubic))B=0 are available. -/
-theorem threeFrameScalarData_of_A_q_zero (B : SymmetricCubic)
-    (hB : A (q referenceCubic) B = 0) : Nonempty (ThreeFrameScalarData B) := by
+theorem threeFrameScalarData_of_A_q_zero  : Nonempty (ThreeFrameScalarData B) := by
   obtain ⟨a0,b0,c0,ha0,hd0,h010,h020,h120⟩ := h0_coarse_actions_of_A_q_zero B hB
   obtain ⟨a1,b1,c1,ha1,hd1,h011,h021,h121⟩ := h1_coarse_actions_of_A_q_zero B hB
   obtain ⟨a2,b2,c2,ha2,hd2,h012,h022,h122⟩ := h2_coarse_actions_of_A_q_zero B hB

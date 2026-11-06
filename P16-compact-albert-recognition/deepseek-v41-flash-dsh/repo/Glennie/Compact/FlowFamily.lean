@@ -32,7 +32,6 @@ open Glennie.Compact.NativeDictionary Glennie.Compact.Flows
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option linter.unusedSimpArgs false
 
@@ -278,45 +277,54 @@ def rowIndex : Fin 20 → Fin 3 × Fin 3 × Fin 3 :=
 no factor 4. Basis vectors are `extDecode (extUnit m)`. -/
 def direction (n : Fin 20) : Albert →ₗ[ℝ] Albert :=
   innerDerLinear (extDecode (extUnit 1)) (extDecode (extUnit (partnerIndex n)))
+variable (a : Fin 3) (n : Fin 20)
+include a n in
 
 /-- The direction family of frame a: direction n if it belongs to frame a, else 0. -/
-def contextDirection (a : Fin 3) (n : Fin 20) : Albert →ₗ[ℝ] Albert :=
+def contextDirection  : Albert →ₗ[ℝ] Albert :=
   if a = contextIndex n then direction n else 0
+include a n in
 
-theorem contextDirection_isJordanDerivation (a : Fin 3) (n : Fin 20) :
+theorem contextDirection_isJordanDerivation  :
     IsJordanDerivation (contextDirection a n) := by
   unfold contextDirection
   split_ifs
   · exact isJordanDerivation_innerDerLinear _ _
   · exact IsJordanDerivation.zero
+include a n in
 
-theorem contextDirection_traceFree (a : Fin 3) (n : Fin 20) :
+theorem contextDirection_traceFree  :
     TraceFree (contextDirection a n) := by
   unfold contextDirection
   split_ifs
   · exact traceFree_innerDerLinear _ _
   · exact TraceFree.zero
+include a n in
 
-theorem contextDirection_apply (a : Fin 3) (n : Fin 20) (x : Albert) :
+theorem contextDirection_apply  (x : Albert) :
     contextDirection a n x = if a = contextIndex n then direction n x else 0 := by
   unfold contextDirection
   split_ifs <;> rfl
+variable (T : Fin 3 → Fin 3 → Albert)
+include T in
 
 /-- The atom tangent. -/
-def atomTangent (T : Fin 3 → Fin 3 → Albert) (n : Fin 20) (a i : Fin 3) : Albert :=
+def atomTangent  (n : Fin 20) (a i : Fin 3) : Albert :=
   if a = contextIndex n then direction n (T a i) else 0
+include T in
 
 /-- The literal scalar `jacobianEntry`, with its `let`s inlined. -/
-def jacobianEntry (T : Fin 3 → Fin 3 → Albert) (r n : Fin 20) : ℝ :=
+def jacobianEntry  (r n : Fin 20) : ℝ :=
   trace (jordan (jordan (atomTangent T n 0 (rowIndex r).1) (T 1 (rowIndex r).2.1))
       (T 2 (rowIndex r).2.2) +
     jordan (jordan (T 0 (rowIndex r).1) (atomTangent T n 1 (rowIndex r).2.1))
       (T 2 (rowIndex r).2.2) +
     jordan (jordan (T 0 (rowIndex r).1) (T 1 (rowIndex r).2.1))
       (atomTangent T n 2 (rowIndex r).2.2))
+include T in
 
 /-- The twenty selected ledger rows of the moved triple, as a map of s in R^20. -/
-def rowLedger (T : Fin 3 → Fin 3 → Albert) (s : Fin 20 → ℝ) : Fin 20 → ℝ := fun r =>
+def rowLedger  (s : Fin 20 → ℝ) : Fin 20 → ℝ := fun r =>
   ledger (movedFrame contextDirection contextDirection_isJordanDerivation
       contextDirection_traceFree T 0 s)
     (movedFrame contextDirection contextDirection_isJordanDerivation
@@ -324,20 +332,23 @@ def rowLedger (T : Fin 3 → Fin 3 → Albert) (s : Fin 20 → ℝ) : Fin 20 →
     (movedFrame contextDirection contextDirection_isJordanDerivation
       contextDirection_traceFree T 2 s)
     (rowIndex r).1 (rowIndex r).2.1 (rowIndex r).2.2
+include T in
 
 /-- Its strict derivative at 0, row by row. -/
-def rowLedgerDeriv (T : Fin 3 → Fin 3 → Albert) : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ) :=
+def rowLedgerDeriv  : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ) :=
   ContinuousLinearMap.pi fun r =>
     movedLedgerDeriv contextDirection T (rowIndex r).1 (rowIndex r).2.1 (rowIndex r).2.2
+include T in
 
-theorem hasStrictFDerivAt_rowLedger (T : Fin 3 → Fin 3 → Albert) :
+theorem hasStrictFDerivAt_rowLedger  :
     HasStrictFDerivAt (rowLedger T) (rowLedgerDeriv T) 0 := by
   refine hasStrictFDerivAt_pi'.2 fun r => ?_
   rw [rowLedgerDeriv, ContinuousLinearMap.proj_pi]
   exact hasStrictFDerivAt_ledger_movedFrame contextDirection contextDirection_isJordanDerivation
     contextDirection_traceFree T _ _ _
+include T in
 
-theorem rowLedgerDeriv_single (T : Fin 3 → Fin 3 → Albert) (r n : Fin 20) :
+theorem rowLedgerDeriv_single  (r n : Fin 20) :
     rowLedgerDeriv T (Pi.single n 1) r = jacobianEntry T r n := by
   rw [rowLedgerDeriv, ContinuousLinearMap.pi_apply, movedLedgerDeriv_apply, jacobianEntry,
     trace_add, trace_add]

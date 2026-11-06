@@ -6,7 +6,6 @@ public import Glennie.Compact.NativeNormKernelR01
 namespace Glennie.Compact.NativeNormKernel
 open Glennie
 noncomputable section
-set_option autoImplicit false
 
  theorem crossU_smul_first (t : ℝ) (x y w : Albert) :
     crossU (t • x) y w = t • crossU x y w := by

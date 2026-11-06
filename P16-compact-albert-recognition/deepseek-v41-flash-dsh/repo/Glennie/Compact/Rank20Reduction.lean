@@ -26,23 +26,25 @@ open Glennie.Compact.NativeDictionary Glennie.Compact.Flows Glennie.Compact.Flow
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option linter.unusedSimpArgs false
+variable (T : Fin 3 → Fin 3 → Albert)
+include T in
 
 /-! ## The derivative matrix and invertibility -/
 
 /-- The matrix of `rowLedgerDeriv T` in the standard basis is `jacobianEntry T`. -/
-theorem toMatrix'_rowLedgerDeriv (T : Fin 3 → Fin 3 → Albert) :
+theorem toMatrix'_rowLedgerDeriv  :
     LinearMap.toMatrix' ((rowLedgerDeriv T : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) :
       (Fin 20 → ℝ) →ₗ[ℝ] (Fin 20 → ℝ)) = Matrix.of (jacobianEntry T) := by
   ext r n
   rw [LinearMap.toMatrix'_apply, Matrix.of_apply, ContinuousLinearMap.coe_coe,
     rowLedgerDeriv_single]
+include T in
 
 /-- A nonzero determinant of the jacobianEntry matrix makes the strict derivative of the
 twenty selected ledger rows a continuous linear equivalence of R^20. -/
-theorem exists_equiv_of_det_ne_zero (T : Fin 3 → Fin 3 → Albert)
+theorem exists_equiv_of_det_ne_zero 
     (h : (Matrix.of (jacobianEntry T)).det ≠ 0) :
     ∃ e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ),
       (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) = rowLedgerDeriv T := by
@@ -53,18 +55,20 @@ theorem exists_equiv_of_det_ne_zero (T : Fin 3 → Fin 3 → Albert)
     exact h0
   exact ⟨(rowLedgerDeriv T).toContinuousLinearEquivOfDetNeZero hdet,
     (rowLedgerDeriv T).coe_toContinuousLinearEquivOfDetNeZero hdet⟩
+include T in
 
 /-- The twenty rows then have an invertible strict derivative at 0. -/
-theorem hasStrictFDerivAt_rowLedger_of_equiv (T : Fin 3 → Fin 3 → Albert)
+theorem hasStrictFDerivAt_rowLedger_of_equiv 
     (e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ))
     (he : (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) = rowLedgerDeriv T) :
     HasStrictFDerivAt (rowLedger T) (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) 0 := by
   rw [he]
   exact hasStrictFDerivAt_rowLedger T
+include T in
 
 /-- Conditional rank 20: if the derivative matrix at T is the certified matrix JQ, the
 strict derivative of the twenty rows at T is a continuous linear equivalence. -/
-theorem rank20_of_bridge (T : Fin 3 → Fin 3 → Albert)
+theorem rank20_of_bridge 
     (hT : ∀ r n : Fin 20, jacobianEntry T r n = JQ r n) :
     ∃ e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ),
       (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) = rowLedgerDeriv T := by
@@ -74,11 +78,12 @@ theorem rank20_of_bridge (T : Fin 3 → Fin 3 → Albert)
     exact hT r n
   rw [hJ]
   exact det_JQ_ne_zero
+include T in
 
 /-! ## Entry formulas for the bridge -/
 
 /-- First-frame columns: one trace pairing. -/
-theorem jacobianEntry_ctx0 (T : Fin 3 → Fin 3 → Albert) (r n : Fin 20)
+theorem jacobianEntry_ctx0  (r n : Fin 20)
     (h : contextIndex n = 0) :
     jacobianEntry T r n = inner (direction n (T 0 (rowIndex r).1))
       (jordan (T 1 (rowIndex r).2.1) (T 2 (rowIndex r).2.2)) := by
@@ -93,9 +98,10 @@ theorem jacobianEntry_ctx0 (T : Fin 3 → Fin 3 → Albert) (r n : Fin 20)
   show inner (jordan (direction n (T 0 (rowIndex r).1)) (T 1 (rowIndex r).2.1))
     (T 2 (rowIndex r).2.2) = _
   exact inner_jordan_associative _ _ _
+include T in
 
 /-- Second-frame columns: one trace pairing. -/
-theorem jacobianEntry_ctx1 (T : Fin 3 → Fin 3 → Albert) (r n : Fin 20)
+theorem jacobianEntry_ctx1  (r n : Fin 20)
     (h : contextIndex n = 1) :
     jacobianEntry T r n = inner (direction n (T 1 (rowIndex r).2.1))
       (jordan (T 0 (rowIndex r).1) (T 2 (rowIndex r).2.2)) := by

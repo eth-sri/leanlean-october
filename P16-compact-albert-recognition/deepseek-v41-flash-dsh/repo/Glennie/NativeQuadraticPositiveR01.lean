@@ -9,7 +9,6 @@ set_option linter.privateModule false
 namespace Glennie.NativeQuadraticPositiveR01
 open Glennie
 noncomputable section
-set_option autoImplicit false
 
 @[simp] private theorem octConj_zero_local : octConj (0 : Octonion) = 0 := by
   simp [octConj]

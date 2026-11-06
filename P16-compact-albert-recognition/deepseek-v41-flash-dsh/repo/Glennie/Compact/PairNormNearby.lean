@@ -121,7 +121,6 @@ open Glennie.Compact.Sections Glennie.Compact.NearbyOrbits
 open Glennie.NativeOrderedPositivePair
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## 1. Pure arithmetic on reals and matrices

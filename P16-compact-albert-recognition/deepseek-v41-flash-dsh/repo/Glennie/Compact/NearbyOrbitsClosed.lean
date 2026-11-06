@@ -71,7 +71,6 @@ open Glennie.Compact.Sections Glennie.Compact.NearbyOrbits
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## 1. Sign rigidity over a neighbourhood of the flat ledger, with no premise -/

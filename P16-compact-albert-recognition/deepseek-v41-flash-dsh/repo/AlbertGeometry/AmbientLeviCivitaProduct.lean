@@ -76,33 +76,40 @@ private theorem eval_const_hasFDerivAt
   ext w
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.zero_apply, map_zero, zero_add]
+variable (P : SymmetricTrilinearForm E)
+include P in
 
 /-- Smoothness is proved for the literal log and then its literal derivatives. -/
-theorem contDiffAt_actual_log (P : SymmetricTrilinearForm E) {x : E}
+theorem contDiffAt_actual_log  {x : E}
     (hx : 0 < diagonalCubic P.form x) : ContDiffAt ℝ ⊤ (logCubic P) x :=
   (contDiff_diagonalCubic P.form ⊤).contDiffAt.log (ne_of_gt hx)
+include P in
 
-theorem contDiffAt_actual_logHessian (P : SymmetricTrilinearForm E) {x : E}
+theorem contDiffAt_actual_logHessian  {x : E}
     (hx : 0 < diagonalCubic P.form x) : ContDiffAt ℝ ⊤ (logHessian P) x := by
   have hd : ContDiffAt ℝ ⊤ (fderiv ℝ (logCubic P)) x :=
     (contDiffAt_actual_log P hx).fderiv_right (by simp)
   exact hd.fderiv_right (by simp)
+include P in
 
-theorem contDiffAt_actual_metric (P : SymmetricTrilinearForm E) {x : E}
+theorem contDiffAt_actual_metric  {x : E}
     (hx : 0 < diagonalCubic P.form x) : ContDiffAt ℝ ⊤ (logHessianForm P) x :=
   (contDiffAt_actual_logHessian P hx).const_smul (-1 / 3 : ℝ)
+include P in
 
 /-- The derivative of the actual varying ambient metric, never a stored jet. -/
-def ambientMetricD1 (P : SymmetricTrilinearForm E) (x : E) :
+def ambientMetricD1  (x : E) :
     E →L[ℝ] E →L[ℝ] E →L[ℝ] ℝ := fderiv ℝ (logHessianForm P) x
+include P in
 
-theorem hasFDerivAt_actual_metric (P : SymmetricTrilinearForm E) {x : E}
+theorem hasFDerivAt_actual_metric  {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     HasFDerivAt (logHessianForm P) (ambientMetricD1 P x) x :=
   ((contDiffAt_actual_metric P hx).differentiableAt (by simp)).hasFDerivAt
+include P in
 
 /-- Third-derivative Schwarz symmetry swaps the first two metric-jet slots. -/
-theorem ambientMetricD1_swap12 (P : SymmetricTrilinearForm E) {x : E}
+theorem ambientMetricD1_swap12  {x : E}
     (hx : 0 < diagonalCubic P.form x) (u v w : E) :
     ambientMetricD1 P x u v w = ambientMetricD1 P x v u w := by
   have hd : ContDiffAt ℝ ⊤ (fderiv ℝ (logCubic P)) x :=
@@ -118,9 +125,10 @@ theorem ambientMetricD1_swap12 (P : SymmetricTrilinearForm E) {x : E}
   rw [hmetric]
   simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
   exact congrArg (fun r : ℝ => (-1 / 3 : ℝ) * r) hs
+include P in
 
 /-- Symmetry is differentiated on an actual positive neighborhood. -/
-theorem ambientMetricD1_swap23 (P : SymmetricTrilinearForm E) {x : E}
+theorem ambientMetricD1_swap23  {x : E}
     (hx : 0 < diagonalCubic P.form x) (u v w : E) :
     ambientMetricD1 P x u v w = ambientMetricD1 P x u w v := by
   have hG := hasFDerivAt_actual_metric P hx
@@ -132,16 +140,18 @@ theorem ambientMetricD1_swap23 (P : SymmetricTrilinearForm E) {x : E}
   have h := congrArg (fun L : E →L[ℝ] ℝ => L u)
     (h1.unique (h2.congr_of_eventuallyEq hc))
   simpa only [ContinuousLinearMap.flip_apply] using h
+include P in
 
 /-- Actual affine-coordinate Koszul tensor, built from the literal metric jet. -/
-def ambientKoszulTensor (P : SymmetricTrilinearForm E) (x : E) :
+def ambientKoszulTensor  (x : E) :
     E →L[ℝ] E →L[ℝ] E →L[ℝ] ℝ :=
   (1 / 2 : ℝ) • (ambientMetricD1 P x + (ambientMetricD1 P x).flip -
     ((((ContinuousLinearMap.flipₗᵢ ℝ E E ℝ).toContinuousLinearEquiv).toContinuousLinearMap :
       (E →L[ℝ] E →L[ℝ] ℝ) →L[ℝ] E →L[ℝ] E →L[ℝ] ℝ).comp
       (ambientMetricD1 P x).flip))
+include P in
 
-theorem ambientKoszulTensor_apply (P : SymmetricTrilinearForm E) (x u v w : E) :
+theorem ambientKoszulTensor_apply  (x u v w : E) :
     ambientKoszulTensor P x u v w =
       (ambientMetricD1 P x u v w + ambientMetricD1 P x v u w -
         ambientMetricD1 P x w u v) / 2 := by
@@ -154,8 +164,9 @@ theorem ambientKoszulTensor_apply (P : SymmetricTrilinearForm E) (x u v w : E) :
   rw [hflip]
   simp only [ContinuousLinearMap.flip_apply, smul_eq_mul]
   ring
+include P in
 
-theorem ambientKoszulTensor_eq_half (P : SymmetricTrilinearForm E) {x : E}
+theorem ambientKoszulTensor_eq_half  {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     ambientKoszulTensor P x = (1 / 2 : ℝ) • ambientMetricD1 P x := by
   ext u v w
@@ -163,22 +174,25 @@ theorem ambientKoszulTensor_eq_half (P : SymmetricTrilinearForm E) {x : E}
     ambientMetricD1_swap12 P hx w u v, ambientMetricD1_swap23 P hx u w v]
   simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
   ring
+include P in
 
 /-- Raise the actual Koszul covector by the actual metric inverse. The total
 inverse may be zero off the invertible locus; all laws below prove invertibility. -/
-def ambientGamma (P : SymmetricTrilinearForm E) (x : E) : E →L[ℝ] E →L[ℝ] E :=
+def ambientGamma  (x : E) : E →L[ℝ] E →L[ℝ] E :=
   ((ContinuousLinearMap.compL ℝ E (E →L[ℝ] ℝ) E)
     (logHessianForm P x).inverse).comp (ambientKoszulTensor P x)
+include P in
 
-theorem ambientGamma_apply (P : SymmetricTrilinearForm E) (x u v : E) :
+theorem ambientGamma_apply  (x u v : E) :
     ambientGamma P x u v = (logHessianForm P x).inverse
       (ambientKoszulTensor P x u v) := by
   simp only [ambientGamma, ContinuousLinearMap.comp_apply, ContinuousLinearMap.compL_apply]
 
 section FiniteDimension
 variable [FiniteDimensional ℝ E]
+include P in
 
-theorem actual_metric_dual_injective (P : SymmetricTrilinearForm E) (x : E)
+theorem actual_metric_dual_injective  (x : E)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) :
     Function.Injective (logHessianForm P x) := by
   intro u v huv
@@ -190,8 +204,9 @@ theorem actual_metric_dual_injective (P : SymmetricTrilinearForm E) (x : E)
     rw [hzero'] at h
     exact (lt_irrefl 0) h
   exact sub_eq_zero.mp hz
+include P in
 
-theorem actual_metric_dual_isInvertible (P : SymmetricTrilinearForm E) (x : E)
+theorem actual_metric_dual_isInvertible  (x : E)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) :
     (logHessianForm P x).IsInvertible := by
   let d : Module.Dual ℝ E ≃ₗ[ℝ] (E →L[ℝ] ℝ) := LinearMap.toContinuousLinearMap
@@ -202,18 +217,20 @@ theorem actual_metric_dual_isInvertible (P : SymmetricTrilinearForm E) (x : E)
     (LinearEquiv.ofInjectiveOfFinrankEq (logHessianForm P x).toLinearMap
       (actual_metric_dual_injective P x hp) hdim).toContinuousLinearEquiv
   exact ⟨A, rfl⟩
+include P in
 
 /-- Actual affine Koszul identity at every positive metric point. -/
-theorem ambientGamma_koszul (P : SymmetricTrilinearForm E) (x : E)
+theorem ambientGamma_koszul  (x : E)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) (u v w : E) :
     logHessianForm P x (ambientGamma P x u v) w = ambientKoszulTensor P x u v w := by
   rw [ambientGamma_apply]
   exact congrArg (fun L : E →L[ℝ] ℝ => L w)
     ((actual_metric_dual_isInvertible P x hp).self_apply_inverse
       (ambientKoszulTensor P x u v))
+include P in
 
 /-- Actual adjoint polarization gives the cross pairing before Jordan laws. -/
-theorem intrinsicCross_pairing (P : SymmetricTrilinearForm E) (e : E)
+theorem intrinsicCross_pairing  (e : E)
     (hB : (rawBilinearForm P e).Nondegenerate) (u v w : E) :
     rawTraceForm P e (intrinsicCross P e hB u v) w = 6 * P.form ![u,v,w] := by
   simp only [intrinsicCross, map_sub, ContinuousLinearMap.sub_apply,
@@ -224,16 +241,18 @@ theorem intrinsicCross_pairing (P : SymmetricTrilinearForm E) (e : E)
     ring
   rw [hadd, P.swap12 v u w]
   ring
+include P in
 
-theorem rawTraceForm_unit_left (P : SymmetricTrilinearForm E) (e : E)
+theorem rawTraceForm_unit_left  (e : E)
     (he : diagonalCubic P.form e = 1) (w : E) :
     rawTraceForm P e e w = normTrace P e w := by
   rw [rawTraceForm_eq_three_logMetric P e he, logHessianForm_radial_at_one P e w he]
   unfold normTrace
   ring
+include P in
 
 /-- Exact full-slot product pairing, with rawB=3g and unhalved cross. -/
-theorem intrinsicProduct_pairing (P : SymmetricTrilinearForm E) (e : E)
+theorem intrinsicProduct_pairing  (e : E)
     (he : diagonalCubic P.form e = 1) (hB : (rawBilinearForm P e).Nondegenerate)
     (u v w : E) :
     rawTraceForm P e (intrinsicProduct P e hB u v) w =
@@ -244,10 +263,11 @@ theorem intrinsicProduct_pairing (P : SymmetricTrilinearForm E) (e : E)
     ContinuousLinearMap.sub_apply, smul_eq_mul, intrinsicCross_pairing,
     rawTraceForm_unit_left P e he]
   ring
+include P in
 
 /-- Differentiate the proved rational metric identity on its positive
 neighborhood. The scalar derivatives and whole CLM derivative agree by uniqueness. -/
-theorem ambientMetricD1_at_one (P : SymmetricTrilinearForm E) (e : E)
+theorem ambientMetricD1_at_one  (e : E)
     (he : diagonalCubic P.form e = 1) (u v w : E) :
     ambientMetricD1 P e u v w = (-1 / 3 : ℝ) *
       (6 * P.form ![u,v,w] - normTrace P e u * cubicHessian P e v w -
@@ -282,10 +302,11 @@ theorem ambientMetricD1_at_one (P : SymmetricTrilinearForm E) (e : E)
     smul_eq_mul, Pi.mul_apply, he, one_pow, inv_one, normTrace] at hd ⊢
   rw [hd]
   ring
+include P in
 
 /-- The metric cubic jet is DERIVED from actual DN/D2N/D3N, then compared
 with the independently reconstructed product. All radial slots are retained. -/
-theorem ambientMetricD1_eq_neg_two_product (P : SymmetricTrilinearForm E) (e : E)
+theorem ambientMetricD1_eq_neg_two_product  (e : E)
     (he : diagonalCubic P.form e = 1) (hB : (rawBilinearForm P e).Nondegenerate)
     (u v w : E) :
     ambientMetricD1 P e u v w =
@@ -295,10 +316,11 @@ theorem ambientMetricD1_eq_neg_two_product (P : SymmetricTrilinearForm E) (e : E
   simp only [intrinsicS, rawTraceForm_apply] at hg
   rw [ambientMetricD1_at_one P e he]
   nlinarith only [hg]
+include P in
 
 /-- Actual AMBIENT affine Levi-Civita coefficient at the normalized base.
 The product has its real positive-derived nondegeneracy certificate. -/
-theorem ambientGamma_at_one_eq_neg_product (P : SymmetricTrilinearForm E) (e : E)
+theorem ambientGamma_at_one_eq_neg_product  (e : E)
     (he : diagonalCubic P.form e = 1)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P e u u) (u v : E) :
     ambientGamma P e u v =
@@ -317,10 +339,11 @@ end FiniteDimension
 
 section SmoothConnection
 variable [CompleteSpace E] [FiniteDimensional ℝ E]
+include P in
 
 /-- Genuine smooth connection field on the actual positive-definite locus;
 point invertibility and the literal metric derivatives supply its smoothness. -/
-theorem contDiffAt_ambientGamma (P : SymmetricTrilinearForm E) {x : E}
+theorem contDiffAt_ambientGamma  {x : E}
     (hx : 0 < diagonalCubic P.form x)
     (hp : ∀ u : E, u ≠ 0 → 0 < logHessianForm P x u u) :
     ContDiffAt ℝ ⊤ (ambientGamma P) x := by

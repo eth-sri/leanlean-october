@@ -125,19 +125,24 @@ def KA : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
 
 theorem KA_comm (x y : V) : KA x y = KA y x := by
   simp only [KA_apply, Glennie.jordan_comm]
+variable (x y z : V)
+include x y z in
 
-def CA (x y z : V) : ℝ := gA (KA x y) z
+def CA  : ℝ := gA (KA x y) z
+include x y z in
 
-theorem CA_eq_native (x y z : V) :
+theorem CA_eq_native  :
     CA x y z = Glennie.inner (Glennie.jordan (x : Albert) (y : Albert))
       (z : Albert) / 3 :=
   project_pairing _ _
+include x y z in
 
-theorem CA_swap12 (x y z : V) : CA x y z = CA y x z := by
+theorem CA_swap12  : CA x y z = CA y x z := by
   unfold CA
   rw [KA_comm]
+include x y z in
 
-theorem CA_swap23 (x y z : V) : CA x y z = CA x z y := by
+theorem CA_swap23  : CA x y z = CA x z y := by
   rw [CA_eq_native, CA_eq_native,
     Glennie.inner_jordan_associative, Glennie.inner_jordan_associative,
     Glennie.jordan_comm (y : Albert) (z : Albert)]
@@ -153,17 +158,21 @@ structure SymmetricCubic where
 spectral-decomposition or automorphic-diagonalization module. -/
 def e : Fin 3 → Albert :=
   ![⟨1, 0, 0, 0, 0, 0⟩, ⟨0, 1, 0, 0, 0, 0⟩, ⟨0, 0, 1, 0, 0, 0⟩]
+variable (i : Fin 3)
+include i in
 
-@[simp] theorem trace_e (i : Fin 3) : Glennie.trace (e i) = 1 := by
+@[simp] theorem trace_e  : Glennie.trace (e i) = 1 := by
   fin_cases i <;> norm_num [e, Glennie.trace]
+include i in
 
-def h (i : Fin 3) : V :=
+def h  : V :=
   ⟨(1 : Albert) - (3 : ℝ) • e i, by
     change Glennie.trace ((1 : Albert) - (3 : ℝ) • e i) = 0
     rw [Glennie.trace_sub, Glennie.trace_unit, Glennie.trace_smul, trace_e]
     norm_num⟩
+include i in
 
-@[simp] theorem h_coe (i : Fin 3) :
+@[simp] theorem h_coe  :
     (h i : Albert) = (1 : Albert) - (3 : ℝ) • e i := rfl
 
 theorem h_sum_zero : h 0 + h 1 + h 2 = 0 := by

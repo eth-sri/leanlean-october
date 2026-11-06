@@ -8,8 +8,10 @@ public import Glennie.ShearReverse
 @[expose] public section
 namespace Glennie
 noncomputable section
+variable (x y z : Albert)
+include x y z in
 
-theorem phi_third_add_first (x y z : Albert) (t : ℝ) :
+theorem phi_third_add_first  (t : ℝ) :
     phi x y (z+t • x) = phi x y z := by
   obtain ⟨g, hx, hy⟩ := universal_pair_reduction x y
   rw [← g.phi_map x y (z+t • x), ← g.phi_map x y z, map_add, map_smul]
@@ -20,8 +22,9 @@ theorem phi_third_add_first (x y z : Albert) (t : ℝ) :
     change hiddenMatrix (g.equiv z)+t • hiddenMatrix (g.equiv x) = hiddenMatrix (g.equiv z)
     rw [hiddenMatrix_eq_zero _ (diagonal_inComplex _ hx), smul_zero, add_zero]
   rw [hm]
+include x y z in
 
-theorem phi_first_add_third (x y z : Albert) (t : ℝ) :
+theorem phi_first_add_third  (t : ℝ) :
     phi (x+t • z) y z = phi x y z := by
   apply reverse_shear_of_cubic (fun a b => phi a y b)
   · intro a b c
@@ -35,8 +38,9 @@ theorem phi_first_add_third (x y z : Albert) (t : ℝ) :
     ring
   · exact fun a b s => phi_smul_third s a y b
   · exact fun a b s => phi_third_add_first a y b s
+include x y z in
 
-theorem phi_swap_first_third (x y z : Albert) : phi z y x = -phi x y z := by
+theorem phi_swap_first_third  : phi z y x = -phi x y z := by
   have h1 := phi_first_add_third x y z 1
   have h2 := phi_third_add_first (x+z) y z (-1)
   have h3 := phi_first_add_third (x+z) y (-x) 1

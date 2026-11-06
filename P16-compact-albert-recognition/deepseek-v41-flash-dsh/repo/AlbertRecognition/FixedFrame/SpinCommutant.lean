@@ -39,29 +39,36 @@ theorem spinJ_imag_apply (a : Octonion) (ha : octConj a = -a) (u v : Octonion) :
     change -(octLeft v) (-a) = (octLeft v) a
     rw [map_neg, neg_neg]
   · rfl
+variable (F : Module.End ℝ Spin)
+include F in
 
-def spinP (F : Module.End ℝ Spin) : Module.End ℝ Octonion :=
+def spinP  : Module.End ℝ Octonion :=
   (LinearMap.fst ℝ Octonion Octonion).comp
     (F.comp (LinearMap.inl ℝ Octonion Octonion))
-def spinQ (F : Module.End ℝ Spin) : Module.End ℝ Octonion :=
+include F in
+def spinQ  : Module.End ℝ Octonion :=
   (LinearMap.fst ℝ Octonion Octonion).comp
     (F.comp (LinearMap.inr ℝ Octonion Octonion))
-def spinR (F : Module.End ℝ Spin) : Module.End ℝ Octonion :=
+include F in
+def spinR  : Module.End ℝ Octonion :=
   (LinearMap.snd ℝ Octonion Octonion).comp
     (F.comp (LinearMap.inl ℝ Octonion Octonion))
-def spinS (F : Module.End ℝ Spin) : Module.End ℝ Octonion :=
+include F in
+def spinS  : Module.End ℝ Octonion :=
   (LinearMap.snd ℝ Octonion Octonion).comp
     (F.comp (LinearMap.inr ℝ Octonion Octonion))
+include F in
 
 /-- Literal four-block reconstruction of any real-linear map. -/
-theorem spin_four_blocks (F : Module.End ℝ Spin) (u v : Octonion) :
+theorem spin_four_blocks  (u v : Octonion) :
     F (u, v) = (spinP F u + spinQ F v, spinR F u + spinS F v) := by
   have hsplit : (u, v) = (u, 0) + (0, v) := by simp
   rw [hsplit, map_add]
   rfl
+include F in
 
 /-- Commuting with J_1 gives precisely [[P,Q],[-Q,P]]. -/
-theorem spin_blocks_of_unit (F : Module.End ℝ Spin)
+theorem spin_blocks_of_unit 
     (hF : F.comp (spinJ (octScalar 1)) = (spinJ (octScalar 1)).comp F)
     (u v : Octonion) :
     F (u, v) = (spinP F u + spinQ F v, -spinQ F u + spinP F v) := by
@@ -78,10 +85,11 @@ theorem spin_blocks_of_unit (F : Module.End ℝ Spin)
       (spinJ (octScalar 1) (F (x, 0))).2 at h
     simpa [spinJ, spinP, spinQ, spinR, spinS] using h
   rw [spin_four_blocks F u v, hR u, hS v]
+include F in
 
 /-- Eight actual native Clifford generators have scalar common commutant.
 No self-adjointness, reference invariance or algebra structure is required of F. -/
-theorem spin_commutant_scalar (F : Module.End ℝ Spin)
+theorem spin_commutant_scalar 
     (hF : ∀ t : Fin 8,
       F.comp (spinJ (octBasis t)) = (spinJ (octBasis t)).comp F) :
     ∃ b : ℝ, F = b • LinearMap.id := by

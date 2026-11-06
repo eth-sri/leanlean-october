@@ -23,7 +23,6 @@ open Glennie
 open Glennie.Compact.GlennieScalarPotentialR01
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 -- Match Compactness at the native/Hilbert inherited-instance boundary.
 -- This changes elaboration transparency, not the heartbeat limit or proof rules.

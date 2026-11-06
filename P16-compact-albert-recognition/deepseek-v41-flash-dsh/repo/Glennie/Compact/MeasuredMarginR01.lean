@@ -13,7 +13,6 @@ open Glennie.NativeGenerationEndpointR01
 open Glennie.NativeGenerationStabilizersR01
 open Glennie.Compact.NativeNormKernel
 noncomputable section
-set_option autoImplicit false
 
  theorem scalar_margin_lower (observed actual ξ : ℝ)
     (herr : |observed-actual| ≤ ξ) : |observed|-ξ ≤ |actual| := by

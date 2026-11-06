@@ -118,7 +118,6 @@ variable (F : V ≃ₗ[ℝ] W)
 
 -- All intermediate modules are fixed by these structure fields. No inferred
 -- composition module and no topology or norm on the algebraic carrier V is used.
-set_option maxHeartbeats 1000000 in
 def frameAmbientMap (P : SymmetricTrilinearForm E) (e : E)
     (F : V ≃ₗ[ℝ] tangentSpace P e) : V →ₗ[ℝ] E :=
   LinearMap.mk
@@ -216,7 +215,6 @@ def frameTrilinearForm (P : SymmetricTrilinearForm E) (e : E)
 
 -- These witnesses concern structure projections only, not a new metric/product.
 
-set_option maxHeartbeats 1000000 in
 private theorem frameTrilinearForm_apply (P : SymmetricTrilinearForm E) (e : E)
     (F : V ≃ₗ[ℝ] tangentSpace P e) (x y z : V) :
     frameTrilinearForm P e F x y z =
@@ -239,14 +237,12 @@ def frameCubic (P : SymmetricTrilinearForm E) (e : E)
       fullyCurried_apply, fullyCurried_apply]
     exact P.swap23 (F x : E) (F y : E) (F z : E)
 
-set_option maxHeartbeats 1000000 in
 @[simp] theorem frameCubic_apply (P : SymmetricTrilinearForm E) (e : E)
     (F : V ≃ₗ[ℝ] tangentSpace P e) (x y z : V) :
     (frameCubic P e F).form x y z = P.form ![(F x : E), (F y : E), (F z : E)] := by
   change frameTrilinearForm P e F x y z = _
   rw [frameTrilinearForm_apply, fullyCurried_apply]
 
-set_option maxHeartbeats 1000000 in
 /-- Literal scalar FOUR-tensor of the ACTUAL Levi-Civita curvature, in F.
 The desired native q formula does not occur in this definition. -/
 def scalarCurvatureInFrame (P : SymmetricTrilinearForm E) (e : E)
@@ -265,7 +261,6 @@ set_option maxHeartbeats 1000000
 variable (hmetric : ∀ x y : V, baseChartMetric P e he (F x) (F y) = gA x y)
 set_option maxHeartbeats 200000
 
-set_option maxHeartbeats 1000000 in
 /-- The unknown tangent K and native KB of its literal coordinate
 cubic are the SAME raised operator under the metric frame, proved by pairing. -/
 theorem raisedTangentCubic_frame (P : SymmetricTrilinearForm E) (e : E)

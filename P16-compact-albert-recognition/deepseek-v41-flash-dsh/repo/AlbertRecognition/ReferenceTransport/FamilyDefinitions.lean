@@ -13,15 +13,19 @@ open scoped Quaternion
 
 /-- Three diagonal cases and 3 slots × 8 units × 2 signs. -/
 abbrev FamilyIndex := Fin 3 ⊕ (Fin 3 × Fin 8 × Bool)
+variable (t : Fin 8)
+include t in
 
-def signedBasis (t : Fin 8) (plus : Bool) : Octonion :=
+def signedBasis  (plus : Bool) : Octonion :=
   if plus then octBasis t else -octBasis t
+include t in
 
-theorem octBasis_norm (t : Fin 8) : octNormSq (octBasis t) = 1 := by
+theorem octBasis_norm  : octNormSq (octBasis t) = 1 := by
   fin_cases t <;>
     norm_num [octBasis, octNormSq, Quaternion.normSq_def', octScalar, qi, qj, qk]
+include t in
 
-theorem signedBasis_norm (t : Fin 8) (plus : Bool) :
+theorem signedBasis_norm  (plus : Bool) :
     octNormSq (signedBasis t plus) = 1 := by
   cases plus
   · change octNormSq (-octBasis t) = 1

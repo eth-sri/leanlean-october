@@ -80,10 +80,12 @@ theorem D_swap (x y : V) : D y x = -D x y := by
   unfold D q
   rw [wedge_swap y x, operatorComm_swap (KB referenceCubic y) (KB referenceCubic x)]
   module
+variable (B : SymmetricCubic)
+include B in
 
 /-- A pointwise reduction of the actual Jacobi equation.  The concrete frame
 corollary below discharges both vanishing identities from native multiplication. -/
-theorem commutes_of_A_D_zero_of_vanishing (B : SymmetricCubic)
+theorem commutes_of_A_D_zero_of_vanishing 
     (hB : A D B = 0) (x y z : V)
     (hxy : D x y = 0) (hxz : D x z = 0) :
     operatorComm (KB B x) (D y z) = 0 := by
@@ -92,17 +94,19 @@ theorem commutes_of_A_D_zero_of_vanishing (B : SymmetricCubic)
   simpa only [A, hzx, hxy, operatorComm_zero_right, zero_add, add_zero] using hcyclic
 
 namespace FixedFrame
+include B in
 
 /-- The unrestricted unknown's h0 operator commutes with every actual native
 frameAction.  The only input is the literal reference-q Jacobi kernel equation. -/
-theorem h0_frame_commutes_of_A_q_zero (B : SymmetricCubic)
+theorem h0_frame_commutes_of_A_q_zero 
     (hB : A (q referenceCubic) B = 0) (a : Glennie.Octonion) :
     operatorComm (KB B (h 0)) (frameAction a) = 0 := by
   exact commutes_of_A_D_zero_of_vanishing B (A_D_zero_of_A_q_zero B hB)
     (h 0) (h 1) (X12 a) D_h0_h1_zero (D_h0_X12_zero a)
+include B in
 
 /-- Application form used by the subsequent native block-commutant argument. -/
-theorem h0_frame_action_intertwines_of_A_q_zero (B : SymmetricCubic)
+theorem h0_frame_action_intertwines_of_A_q_zero 
     (hB : A (q referenceCubic) B = 0) (a : Glennie.Octonion) (v : V) :
     KB B (h 0) (frameAction a v) = frameAction a (KB B (h 0) v) := by
   have hcomm := congrArg (fun P : V →ₗ[ℝ] V => P v)

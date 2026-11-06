@@ -30,7 +30,6 @@ def nativeDeterminant (x : Albert) : ℝ :=
 
 -- Declaration-scoped resource budget for literal coordinate expansion.
 
-set_option maxHeartbeats 2000000 in
 /-- Independent actual binary-coordinate expansion; no determinant identity is
 an input, and no associative octonion/matrix law is invoked. -/
 theorem nativeNewtonNorm_eq_nativeDeterminant (x : Albert) :

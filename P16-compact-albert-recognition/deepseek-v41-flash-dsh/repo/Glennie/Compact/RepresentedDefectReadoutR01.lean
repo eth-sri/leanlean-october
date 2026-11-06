@@ -11,7 +11,6 @@ open Glennie.Compact.CyclicTraceNullR01
 open Glennie.Compact.NormCompatibleNullTargetR01
 open Glennie.Compact.ReadoutRobustnessR01
 noncomputable section
-set_option autoImplicit false
 
 variable {E N : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   [NormedRing N] [NormedAlgebra ℝ N]

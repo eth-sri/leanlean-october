@@ -114,7 +114,6 @@ open Glennie.Compact.Sections
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## 1. The twenty chart coordinates and the fifty-four ledger entries are the same fibre
@@ -139,18 +138,22 @@ theorem ledger54_eq_decode20 {T : Triple} (hT : ∀ a : Fin 3, Glennie.Frame (T 
     ledger54 T = decode20 b := by
   subst hb
   exact (decode_encode_frames T hT).symm
+variable (b : Fin 20 → ℝ)
+include b in
 
 /-- The FULL 54-entry fibre over a chart point: ordered frame triples whose complete ledger
 is the decoded chart point. This is the set the target is about. -/
-def fibre54 (b : Fin 20 → ℝ) : Set Triple :=
+def fibre54  : Set Triple :=
   {T : Triple | (∀ a : Fin 3, Glennie.Frame (T a)) ∧ ledger54 T = decode20 b}
+include b in
 
 /-- The 20-coordinate fibre over a chart point. -/
-def fibre20 (b : Fin 20 → ℝ) : Set Triple :=
+def fibre20  : Set Triple :=
   {T : Triple | (∀ a : Fin 3, Glennie.Frame (T a)) ∧ encode20 (ledger54 T) = b}
+include b in
 
 /-- Unconditional, for every chart point, with no hypothesis whatever. -/
-theorem fibre20_subset_fibre54 (b : Fin 20 → ℝ) : fibre20 b ⊆ fibre54 b := by
+theorem fibre20_subset_fibre54  : fibre20 b ⊆ fibre54 b := by
   rintro T ⟨hT, hb⟩
   exact ⟨hT, ledger54_eq_decode20 hT hb⟩
 

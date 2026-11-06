@@ -18,28 +18,32 @@ namespace Glennie.Compact.InnerDerivation
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option linter.unusedSimpArgs false
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V]
+variable (mul : V →ₗ[ℝ] V →ₗ[ℝ] V)
+include mul in
 
 /-- The Jordan defect (x o y) o (x o x) - x o (y o (x o x)): cubic in x, linear in y. -/
-def defect (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (x y : V) : V :=
+def defect  (x y : V) : V :=
   mul (mul x y) (mul x x) - mul x (mul y (mul x x))
+include mul in
 
 /-- Cyclic polarization of the defect in its cubic argument. -/
-def polar (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (x₁ x₂ x₃ y : V) : V :=
+def polar  (x₁ x₂ x₃ y : V) : V :=
   (mul (mul x₁ y) (mul x₂ x₃) - mul x₁ (mul y (mul x₂ x₃))) +
     (mul (mul x₂ y) (mul x₃ x₁) - mul x₂ (mul y (mul x₃ x₁))) +
     (mul (mul x₃ y) (mul x₁ x₂) - mul x₃ (mul y (mul x₁ x₂)))
+include mul in
 
 /-- The inner operator D_{a,b} z = a o (b o z) - b o (a o z). -/
-def der (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (a b z : V) : V :=
+def der  (a b z : V) : V :=
   mul a (mul b z) - mul b (mul a z)
+include mul in
 
 /-- Polarization: the cyclic polar form is half the seven-term alternating sum. -/
-theorem polar_eq_half (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
+theorem polar_eq_half  (comm : ∀ x y, mul x y = mul y x)
     (x₁ x₂ x₃ y : V) :
     polar mul x₁ x₂ x₃ y = (1 / 2 : ℝ) •
       (defect mul (x₁ + x₂ + x₃) y - defect mul (x₁ + x₂) y - defect mul (x₁ + x₃) y -
@@ -47,15 +51,17 @@ theorem polar_eq_half (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul
   simp only [polar, defect, map_add, LinearMap.add_apply]
   simp only [comm x₂ x₁, comm x₃ x₁, comm x₃ x₂]
   module
+include mul in
 
-theorem polar_eq_zero (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
+theorem polar_eq_zero  (comm : ∀ x y, mul x y = mul y x)
     (hJ : ∀ x y, defect mul x y = 0) (x₁ x₂ x₃ y : V) :
     polar mul x₁ x₂ x₃ y = 0 := by
   rw [polar_eq_half mul comm]
   simp [hJ]
+include mul in
 
 /-- Leibniz law for D_{a,b}: the difference of two polarized Jordan identities. -/
-theorem der_leibniz (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
+theorem der_leibniz  (comm : ∀ x y, mul x y = mul y x)
     (hJ : ∀ x y, defect mul x y = 0) (a b z x : V) :
     der mul a b (mul z x) = mul (der mul a b z) x + mul z (der mul a b x) := by
   have E1 := polar_eq_zero mul comm hJ x a z b
@@ -73,7 +79,6 @@ namespace Glennie.Compact
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option linter.unusedSimpArgs false
 
