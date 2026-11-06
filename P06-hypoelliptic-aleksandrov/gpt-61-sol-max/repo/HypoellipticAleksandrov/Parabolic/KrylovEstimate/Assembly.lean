@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.Parabolic.ABP
 
 /-! # The scalar parabolic Aleksandrov estimate on the Krylov cylinders -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic
-open MeasureTheory Set
+open MeasureTheory
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
 /-- Krylov's scalar parabolic Aleksandrov estimate, uniformly over location and height. -/
@@ -16,7 +16,7 @@ theorem parabolic_aleksandrov_aux
     (N : ℕ) (hN : 1 ≤ N) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (t₀ : ℝ) (v₀ : PDE.Vec N) (h : ℝ), 0 < h → h ≤ 1 →
-      ∀ (a : TimeVelocity N → PDE.Mat N) (f u : TimeVelocity N → ℝ),
+      ∀ (a : TimeVelocity N → PDE.Mat N) (f u : HypoellipticAleksandrov.Parabolic.ScalarField N),
         ContinuousOn a (krylovClosedCylinder t₀ h v₀) →
         (∀ z ∈ krylovClosedCylinder t₀ h v₀, (a z).IsSymm) →
         (∀ z ∈ krylovClosedCylinder t₀ h v₀,
@@ -32,14 +32,14 @@ theorem parabolic_aleksandrov_aux
   obtain ⟨C, hC, hABP⟩ := parabolic_abp_unit_of_lower_ellipticity N hN lam hlam
   refine ⟨C, hC.le, ?_⟩
   intro t₀ v₀ h hh hh1 a f u ha _hsym hell hf hu hsub hb z hz
-  let Z : TimeVelocity N := (z.1 - (t₀ - h), z.2 - v₀)
+  let Z  := (z.1 - (t₀ - h), z.2 - v₀)
   have hZ : Z ∈ closedParabolicCylinder h (0 : PDE.Vec N) := by
     refine ⟨⟨by dsimp [Z]; linarith [hz.1.1],
       by dsimp [Z]; linarith [hz.1.2]⟩, ?_⟩
     change PDE.euclideanSqDist (z.2 - v₀) 0 ≤ 1 ^ 2
-    have hv : PDE.euclideanSqDist z.2 v₀ ≤ 1 ^ 2 :=
+    have hv  :=
       (show PDE.euclideanSqDist z.2 v₀ < 1 ^ 2 from hz.2).le
-    simpa only [PDE.euclideanSqDist, Pi.sub_apply, sub_zero] using hv
+    simpa only [PDE.euclideanSqDist, sub_zero] using hv
   have hmap : KrylovEstimate.innerMap t₀ h v₀ 1 Z = z := by
     apply Prod.ext
     · simp only [KrylovEstimate.innerMap, parabolicAffine, Z, one_pow,

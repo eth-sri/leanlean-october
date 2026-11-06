@@ -5,11 +5,13 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ABPAbstractHold
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.MajorantKinetic
 import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # From the source Green measures to the localised Aleksandrov estimate -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Set MeasureTheory
 open scoped MatrixOrder Matrix.Norms.Elementwise
@@ -25,17 +27,17 @@ theorem kinetic_abp_abstract_of_continuous
     (hApos : ∀ P ∈ Q, (A P.time P.position P.velocity).PosSemidef)
     (q : ℝ) (hq : 1 < q) (K : ℝ) (hK : 0 < K)
     (Γ : KineticPoint d → Measure (KineticPoint d))
-    (hpotential : ∀ g : KineticPoint d → ℝ,
-      ContDiff ℝ (⊤ : ℕ∞) (fun z => g ((KineticPoint.equivProd d).symm z)) →
+    (hpotential : ∀ g : HypoellipticAleksandrov.KineticScalarField d,
+      ContDiff ℝ PDE.smoothOrder (fun z => g ((KineticPoint.equivProd d).symm z)) →
       HasCompactSupport g → tsupport g ⊆ Q → (∀ P, 0 ≤ g P) →
       IsKineticC112On (fun P => ∫ z, g z ∂Γ P) Q ∧
       (∀ P ∈ Q, 0 ≤ ∫ z, g z ∂Γ P) ∧
       (∀ P ∈ Q, forwardKineticOperator A (fun P => ∫ z, g z ∂Γ P) P = -g P))
-    (hdensity : ∀ P ∈ Q, ∃ G : KineticPoint d → ℝ,
+    (hdensity : ∀ P ∈ Q, ∃ G : HypoellipticAleksandrov.KineticScalarField d,
       Measurable G ∧ (∀ z, 0 ≤ G z) ∧
       Γ P = (μQ).withDensity (fun z => ENNReal.ofReal (G z)) ∧
       (eLpNorm G (ENNReal.ofReal q) μQ).toReal ≤ K ∧ MemLp G (ENNReal.ofReal q) μQ)
-    (u g₀ : KineticPoint d → ℝ)
+    (u g₀ : HypoellipticAleksandrov.KineticScalarField d)
     (hcont : ContinuousOn u (closure Q)) (hreg : IsKineticC112On u Q)
     (hg₀0 : ∀ P ∈ Q, 0 ≤ g₀ P)
     (hLp : MemLp g₀ (ENNReal.ofReal (q / (q - 1))) μQ)
@@ -49,7 +51,7 @@ theorem kinetic_abp_abstract_of_continuous
       (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d)))
       (KineticPoint.homeomorphProd d).symm
   let p := q / (q - 1)
-  have hpq : q.HolderConjugate p := Real.HolderConjugate.conjExponent hq
+  have hpq  := Real.HolderConjugate.conjExponent hq
   have hp : 1 < p := hpq.symm.lt
   have hQ := isOpen_forwardCylinder Z₀ R hR
   let F := {P | 0 < u P}.indicator g₀
@@ -58,7 +60,7 @@ theorem kinetic_abp_abstract_of_continuous
     simp only [indicator,mem_inter_iff,mem_ofPred_eq,hP,true_and,F]
   have hFs : MeasurableSet (Q ∩ {P | 0 < u P}) :=
     (hreg.continuousOn.isOpen_inter_preimage hQ isOpen_Ioi).measurableSet
-  have hFp : MemLp F (ENNReal.ofReal p) μQ := (hLp.indicator hFs).ae_eq hFeq
+  have hFp  := (hLp.indicator hFs).ae_eq hFeq
   let N := (eLpNorm F (ENNReal.ofReal p) μQ).toReal
   let M := sSup ((fun P => max (u P) 0) '' exitBoundary Z₀ R hR)
   have hinterior : ∀ P ∈ Q, u P ≤ M + K * N := by
@@ -94,13 +96,13 @@ theorem kinetic_abp_abstract_of_continuous
     obtain ⟨g,hgs,hgc,hgQ,hg0,hmajor,hgnorm⟩ := exists_smooth_majorant_kinetic hQ
       (isCompact_closure_innerCylinder Z₀ R hR δ hδ0 hδlt)
       (closure_innerCylinder_subset Z₀ R hR δ hδ0 hδlt)
-      (h := fun P => abpPositiveCutoff ε (u P) * max (-forwardKineticOperator A u P) 0)
-      (F := F) ((hcut.1.continuous.comp_continuousOn hreg.continuousOn).mul hdef)
+
+       ((hcut.1.continuous.comp_continuousOn hreg.continuousOn).mul hdef)
       (fun P _ => mul_nonneg (hcut.2.1 _).1 (hdef0 P))
       (hdom.mono fun _ h => h.2) (ENNReal.one_le_ofReal.mpr hp.le)
       ENNReal.ofReal_ne_top hη
     have hgc' : Continuous g := by
-      have he : (fun P : KineticPoint d =>
+      have he : (fun P  =>
           g ((KineticPoint.equivProd d).symm ((KineticPoint.homeomorphProd d) P))) = g := by
         funext P
         exact congrArg g ((KineticPoint.equivProd d).symm_apply_apply P)
@@ -121,7 +123,7 @@ theorem kinetic_abp_abstract_of_continuous
     obtain ⟨G,hG,hG0,hΓ,hGnorm,hGq⟩ := hdensity P hP
     have hWbound := abp_potential_holder μQ (Γ P) G g hpq hG hG0
       (Filter.Eventually.of_forall hg0) hΓ hGq hgp hGnorm
-    have hb : (∫ z, g z ∂Γ P) ≤ K * (N + η) :=
+    have hb  :=
       hWbound.trans (mul_le_mul_of_nonneg_left hgN hK.le)
     dsimp only [ε] at hcompare
     nlinarith only [hcompare,hb,hbudget,hζ]

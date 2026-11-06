@@ -5,11 +5,11 @@ public import Mathlib.Analysis.Calculus.ContDiff.Defs
 
 /-! # C² parameter integration with integrable jet bounds and a null exceptional set -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
-open scoped Topology
+
 
 /-- Dominated C² jets give actual C² regularity of their parameter integral. -/
 theorem singular_parameter_integral_contDiffOn_two
@@ -33,7 +33,7 @@ theorem singular_parameter_integral_contDiffOn_two
     ContDiffOn ℝ 2 (fun x => ∫ a, f x a ∂mu) U ∧
       (∀ x ∈ U, HasFDerivAt (fun y => ∫ a, f y a ∂mu) (∫ a, f' x a ∂mu) x) ∧
       (∀ x ∈ U, HasFDerivAt (fun y => ∫ a, f' y a ∂mu) (∫ a, f'' x a ∂mu) x) := by
-  have hi0 x (hx : x ∈ U) : Integrable (f x) mu :=
+  have hi0 x (hx : x ∈ U)  :=
     hb0.mono' (hm0 x hx) (hn0.mono (fun a ha => ha x hx))
   have hi1 x (hx : x ∈ U) : Integrable (f' x) mu :=
     hb1.mono' (hm1 x hx) (hn1.mono (fun a ha => ha x hx))
@@ -57,16 +57,7 @@ theorem singular_parameter_integral_contDiffOn_two
     · exact hn2
     · exact hb2
     · exact hd1
-  have hcI : ContinuousOn (fun x => ∫ a, f'' x a ∂mu) U := by
-    intro x hx
-    apply ContinuousAt.continuousWithinAt
-    apply continuousAt_of_dominated
-    · filter_upwards [hU.mem_nhds hx] with y hy
-      exact hm2 y hy
-    · filter_upwards [hU.mem_nhds hx] with y hy
-      exact hn2.mono (fun a ha => ha y hy)
-    · exact hb2
-    · exact hc2.mono (fun a ha => ha.continuousAt (hU.mem_nhds hx))
+
   refine ⟨?_, hd0I, hd1I⟩
   intro x hx
   apply ContDiffAt.contDiffWithinAt
@@ -74,6 +65,15 @@ theorem singular_parameter_integral_contDiffOn_two
   refine ⟨fun y => ∫ a, f' y a ∂mu, ⟨U, hU.mem_nhds hx, hd0I⟩, ?_⟩
   apply contDiffAt_succ_iff_hasFDerivAt.mpr
   refine ⟨fun y => ∫ a, f'' y a ∂mu, ⟨U, hU.mem_nhds hx, hd1I⟩, ?_⟩
-  exact contDiffAt_zero.mpr ⟨U, hU.mem_nhds hx, hcI⟩
+  exact contDiffAt_zero.mpr ⟨U, hU.mem_nhds hx, (by
+      intro x hx
+      apply ContinuousAt.continuousWithinAt
+      apply continuousAt_of_dominated
+      · filter_upwards [hU.mem_nhds hx] with y hy
+        exact hm2 y hy
+      · filter_upwards [hU.mem_nhds hx] with y hy
+        exact hn2.mono (fun a ha => ha y hy)
+      · exact hb2
+      · exact hc2.mono (fun a ha => ha.continuousAt (hU.mem_nhds hx)))⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

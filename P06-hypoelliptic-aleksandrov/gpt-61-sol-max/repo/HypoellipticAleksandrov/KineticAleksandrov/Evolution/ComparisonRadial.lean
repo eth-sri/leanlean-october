@@ -24,20 +24,24 @@ Proposition 2.1 and the collar barrier `w(d)` of
 Proposition 2.1.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov Filter Set Matrix
+open Filter Matrix
 open scoped Topology
 
+variable {n : ℕ}
+
+variable (m x : PDE.Vec n)
+
 /-- The squared distance to a fixed centre has the expected derivative. -/
-theorem hasFDerivAt_vecNormSq_sub {n : ℕ} (m x : PDE.Vec n) :
-    HasFDerivAt (fun y : PDE.Vec n => PDE.vecNormSq (y - m))
+theorem hasFDerivAt_vecNormSq_sub   :
+    HasFDerivAt (fun y  => PDE.vecNormSq (y - m))
       (∑ i, (2 * (x i - m i)) • (ContinuousLinearMap.proj i : PDE.Vec n →L[ℝ] ℝ)) x := by
-  have hfun : (fun y : PDE.Vec n => PDE.vecNormSq (y - m)) =
+  have hfun : (fun y  => PDE.vecNormSq (y - m)) =
       fun y => ∑ i, (y i - m i) ^ 2 := by
     funext y
     rw [PDE.vecNormSq_eq_sum_sq]
@@ -48,18 +52,22 @@ theorem hasFDerivAt_vecNormSq_sub {n : ℕ} (m x : PDE.Vec n) :
   have h1 : HasFDerivAt (fun y : PDE.Vec n => y i - m i)
       (ContinuousLinearMap.proj i : PDE.Vec n →L[ℝ] ℝ) x :=
     (hasFDerivAt_apply i x).sub_const (m i)
-  have h2 := h1.pow 2
-  convert h2 using 1
+
+  convert (h1.pow 2) using 1
   simp
 
 /-- Evaluation of the derivative of the squared distance on a basis vector. -/
-theorem normSqGradCLM_apply_basisVec {n : ℕ} (m x : PDE.Vec n) (i : Fin n) :
+theorem normSqGradCLM_apply_basisVec   (i : Fin n) :
     (∑ k, (2 * (x k - m k)) • (ContinuousLinearMap.proj k : PDE.Vec n →L[ℝ] ℝ))
       (PDE.basisVec i) = 2 * (x i - m i) := by
   simp [PDE.basisVec_apply]
 
+variable {Ψ : ℝ → ℝ}
+
+variable {m x : PDE.Vec n}
+
 /-- Gradient of a function of the squared distance. -/
-theorem classicalGradient_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.Vec n}
+theorem classicalGradient_comp_vecNormSq_sub
     (hΨ : DifferentiableAt ℝ Ψ (PDE.vecNormSq (x - m))) :
     PDE.classicalGradient (fun y => Ψ (PDE.vecNormSq (y - m))) x =
       fun i => 2 * deriv Ψ (PDE.vecNormSq (x - m)) * (x i - m i) := by
@@ -72,33 +80,34 @@ theorem classicalGradient_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x :
   simp only [_root_.smul_apply, normSqGradCLM_apply_basisVec, smul_eq_mul]
   ring
 
+section
+variable (hΨ : ContDiffAt ℝ 2 Ψ (PDE.vecNormSq (x - m)))
+
+include hΨ
 /-- Hessian of a function of the squared distance. -/
-theorem sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.Vec n}
-    (hΨ : ContDiffAt ℝ 2 Ψ (PDE.vecNormSq (x - m))) (i j : Fin n) :
+theorem sliceHessian_comp_vecNormSq_sub
+     (i j : Fin n) :
     sliceHessian (fun y => Ψ (PDE.vecNormSq (y - m))) x i j =
       4 * deriv (deriv Ψ) (PDE.vecNormSq (x - m)) * (x i - m i) * (x j - m j) +
         (if i = j then 2 * deriv Ψ (PDE.vecNormSq (x - m)) else 0) := by
   set S : PDE.Vec n → ℝ := fun y => PDE.vecNormSq (y - m) with hS
-  have hSc : Continuous S := by
-    have : S = fun y => ∑ i, (y i - m i) ^ 2 := by
-      funext y
-      simp only [hS]
-      rw [PDE.vecNormSq_eq_sum_sq]
-      rfl
-    rw [this]
-    fun_prop
-  have hSd : HasFDerivAt S
-      (∑ i, (2 * (x i - m i)) • (ContinuousLinearMap.proj i : PDE.Vec n →L[ℝ] ℝ)) x :=
-    hasFDerivAt_vecNormSq_sub m x
-  have hΨev : ∀ᶠ s in 𝓝 (S x), ContDiffAt ℝ 2 Ψ s := hΨ.eventually (by norm_num)
-  have hev : ∀ᶠ y in 𝓝 x, ContDiffAt ℝ 2 Ψ (S y) := hSc.continuousAt.eventually hΨev
+
+
+
+
   have hΨ2 : HasDerivAt (deriv Ψ) (deriv (deriv Ψ) (S x)) (S x) := by
-    have h1 : ContDiffAt ℝ 1 (fun s => fderiv ℝ Ψ s 1) (S x) :=
-      (hΨ.fderiv_right (m := 1) (by norm_num)).clm_apply contDiffAt_const
-    exact (h1.differentiableAt (by norm_num)).hasDerivAt
-  have hgrad : (fun y => PDE.classicalGradient (fun y => Ψ (S y)) y) =ᶠ[𝓝 x]
+
+    exact (((hΨ.fderiv_right (m := 1) (by norm_num)).clm_apply contDiffAt_const).differentiableAt (by norm_num)).hasDerivAt
+  have hgrad : ((PDE.classicalGradient (fun y => Ψ (S y)))) =ᶠ[𝓝 x]
       fun y => fun k => 2 * deriv Ψ (S y) * (y k - m k) := by
-    filter_upwards [hev] with y hy
+    filter_upwards [((show Continuous S by
+        have : S = fun y => ∑ i, (y i - m i) ^ 2 := by
+          funext y
+          simp only [hS]
+          rw [PDE.vecNormSq_eq_sum_sq]
+          rfl
+        rw [this]
+        fun_prop).continuousAt.eventually (hΨ.eventually (by norm_num)))] with y hy
     exact classicalGradient_comp_vecNormSq_sub (hy.differentiableAt (by norm_num))
   have hfj : ∀ k : Fin n, ∃ L : PDE.Vec n →L[ℝ] ℝ,
       HasFDerivAt (fun y : PDE.Vec n => 2 * deriv Ψ (S y) * (y k - m k)) L x ∧
@@ -106,12 +115,10 @@ theorem sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.
           4 * deriv (deriv Ψ) (S x) * (x i - m i) * (x k - m k) +
             (if i = k then 2 * deriv Ψ (S x) else 0) := by
     intro k
-    have h1 := hΨ2.comp_hasFDerivAt x hSd
-    have h2 : HasFDerivAt (fun y : PDE.Vec n => y k - m k)
-        (ContinuousLinearMap.proj k : PDE.Vec n →L[ℝ] ℝ) x :=
-      (hasFDerivAt_apply k x).sub_const (m k)
-    have h3 := (h1.const_mul 2).mul h2
-    refine ⟨_, h3, ?_⟩
+
+
+
+    refine ⟨_, (((hΨ2.comp_hasFDerivAt x (hasFDerivAt_vecNormSq_sub m x)).const_mul 2).mul ((hasFDerivAt_apply k x).sub_const (m k))), ?_⟩
     intro i
     simp only [_root_.add_apply, _root_.smul_apply, normSqGradCLM_apply_basisVec, smul_eq_mul,
       ContinuousLinearMap.proj_apply, PDE.basisVec_apply]
@@ -120,21 +127,20 @@ theorem sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.
     · have h' : k ≠ i := fun e => h e.symm
       simp [h, h']; ring
   choose L hL hLe using hfj
-  have hdiff : ∀ k : Fin n, DifferentiableAt ℝ
-      (fun y : PDE.Vec n => 2 * deriv Ψ (S y) * (y k - m k)) x :=
-    fun k => (hL k).differentiableAt
+
   unfold sliceHessian
   rw [hgrad.fderiv_eq]
-  rw [fderiv_pi hdiff]
+  rw [fderiv_pi (fun k => (hL k).differentiableAt)]
   simp only [ContinuousLinearMap.pi_apply]
   rw [(hL j).fderiv, hLe j i]
 
 /-- Contraction of a matrix with the Hessian of a function of the squared distance. -/
-theorem matrixContraction_sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ}
-    {m x : PDE.Vec n} (hΨ : ContDiffAt ℝ 2 Ψ (PDE.vecNormSq (x - m))) (A : PDE.Mat n) :
+theorem matrixContraction_sliceHessian_comp_vecNormSq_sub
+      (A : PDE.Mat n) :
     matrixContraction A (sliceHessian (fun y => Ψ (PDE.vecNormSq (y - m))) x) =
       4 * deriv (deriv Ψ) (PDE.vecNormSq (x - m)) * dotProduct (x - m) (A.mulVec (x - m)) +
         2 * deriv Ψ (PDE.vecNormSq (x - m)) * A.trace := by
+  let sharedTerm_5084ec2959 := (2 * deriv Ψ (PDE.vecNormSq (x - m)))
   unfold matrixContraction
   simp_rw [sliceHessian_comp_vecNormSq_sub hΨ]
   simp only [mul_add, Finset.sum_add_distrib]
@@ -145,13 +151,13 @@ theorem matrixContraction_sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ �
   · simp only [Matrix.trace, Matrix.diag, mul_ite, mul_zero, Finset.sum_ite_eq,
       Finset.mem_univ, ite_true]
     rw [Finset.sum_congr rfl (fun i _ => by ring : ∀ i ∈ Finset.univ,
-      A i i * (2 * deriv Ψ (PDE.vecNormSq (x - m))) =
-        2 * deriv Ψ (PDE.vecNormSq (x - m)) * A i i)]
+      A i i * (sharedTerm_5084ec2959) =
+        sharedTerm_5084ec2959 * A i i)]
     rw [← Finset.mul_sum]
 
 /-- The Laplacian of a function of the squared distance. -/
-theorem sum_diag_sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.Vec n}
-    (hΨ : ContDiffAt ℝ 2 Ψ (PDE.vecNormSq (x - m))) :
+theorem sum_diag_sliceHessian_comp_vecNormSq_sub
+     :
     ∑ i, sliceHessian (fun y => Ψ (PDE.vecNormSq (y - m))) x i i =
       4 * deriv (deriv Ψ) (PDE.vecNormSq (x - m)) * PDE.vecNormSq (x - m) +
         2 * n * deriv Ψ (PDE.vecNormSq (x - m)) := by
@@ -164,35 +170,35 @@ theorem sum_diag_sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m
     simp only [Pi.sub_apply]
     ring
   · ring
+end
+
 
 /-- Time derivative of a function of the squared distance to a moving centre. -/
-theorem hasDerivAt_comp_vecNormSq_sub_moving {n : ℕ} {Ψ : ℝ → ℝ} {m : ℝ → PDE.Vec n}
+theorem hasDerivAt_comp_vecNormSq_sub_moving   {m : ℝ → PDE.Vec n}
     {m' : PDE.Vec n} {σ : ℝ} (y : PDE.Vec n) (hm : HasDerivAt m m' σ)
     (hΨ : DifferentiableAt ℝ Ψ (PDE.vecNormSq (y - m σ))) :
     HasDerivAt (fun t => Ψ (PDE.vecNormSq (y - m t)))
       (deriv Ψ (PDE.vecNormSq (y - m σ)) * (-2 * ∑ i, (y i - m σ i) * m' i)) σ := by
-  have hi : ∀ i : Fin n, HasDerivAt (fun t => (y i - m t i) ^ 2)
-      (2 * (y i - m σ i) * (-(m' i))) σ := by
-    intro i
-    have h1 : HasDerivAt (fun t => m t i) (m' i) σ := (hasDerivAt_pi.1 hm) i
-    have h2 := (h1.const_sub (y i)).pow 2
-    convert h2 using 1
-    norm_num
-  have hsum : HasDerivAt (fun t => PDE.vecNormSq (y - m t))
-      (∑ i, 2 * (y i - m σ i) * (-(m' i))) σ := by
-    have hfun : (fun t => PDE.vecNormSq (y - m t)) = fun t => ∑ i, (y i - m t i) ^ 2 := by
-      funext t
-      rw [PDE.vecNormSq_eq_sum_sq]
-      rfl
-    rw [hfun]
-    exact HasDerivAt.fun_sum (fun i _ => hi i)
-  have h : HasDerivAt (fun t => Ψ (PDE.vecNormSq (y - m t)))
-      (deriv Ψ (PDE.vecNormSq (y - m σ)) * ∑ i, 2 * (y i - m σ i) * -m' i) σ :=
-    hΨ.hasDerivAt.comp σ hsum
-  have e : (-2 * ∑ i, (y i - m σ i) * m' i) = ∑ i, 2 * (y i - m σ i) * -m' i := by
+
+
+
+
+  have e : (-2 * ∑ i, (y i - m σ i) * m' i) = (((∑ i, 2 * (y i - m σ i) * (-(m' i))))) := by
     rw [Finset.mul_sum]
     exact Finset.sum_congr rfl (fun i _ => by ring)
   rw [e]
-  exact h
+  exact (hΨ.hasDerivAt.comp σ (by
+      have hfun : (fun t => PDE.vecNormSq (y - m t)) = fun t => ∑ i, (y i - m t i) ^ 2 := by
+        funext t
+        rw [PDE.vecNormSq_eq_sum_sq]
+        rfl
+      rw [hfun]
+      exact HasDerivAt.fun_sum (fun i _ => (show ∀ i : Fin n, HasDerivAt (fun t => (y i - m t i) ^ 2)
+      (2 * (y i - m σ i) * (-(m' i))) σ by
+          intro i
+
+          have h2 := (((hasDerivAt_pi.1 hm) i).const_sub (y i)).pow 2
+          convert h2 using 1
+          norm_num) i)))
 
 end HypoellipticAleksandrov.KineticAleksandrov

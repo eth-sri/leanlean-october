@@ -5,23 +5,27 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeas
 import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
 import Mathlib.MeasureTheory.Group.Measure
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Spatial integration by parts for the explicit Kolmogorov Gaussian -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory
 
+variable {f g : ℝ × ℝ → ℝ}
+
 /-- A continuous factor times a continuous compactly supported test is integrable. -/
-theorem bellman_integrable_mul_test {f g : ℝ × ℝ → ℝ}
+theorem bellman_integrable_mul_test
     (hf : Continuous f) (hg : Continuous g) (hc : HasCompactSupport g) :
     Integrable (fun q => f q * g q) :=
   (hf.mul hg).integrable_of_hasCompactSupport hc.mul_left
 
 /-- Integration by parts for smooth functions with a compactly supported right factor. -/
-theorem bellman_integral_mul_direction {f g : ℝ × ℝ → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+theorem bellman_integral_mul_direction
+    (hf : ContDiff ℝ PDE.smoothOrder f) (hg : ContDiff ℝ PDE.smoothOrder g)
     (hc : HasCompactSupport g) (v : ℝ × ℝ) :
     (∫ q, f q * fderiv ℝ g q v) = -(∫ q, fderiv ℝ f q v * g q) := by
   let : (volume : Measure (ℝ × ℝ)).IsAddHaarMeasure := by
@@ -38,7 +42,7 @@ theorem bellman_integral_mul_direction {f g : ℝ × ℝ → ℝ}
 
 /-- Spatial transfer of the Kolmogorov generator from the test to the Gaussian. -/
 theorem bellmanGaussianKernel_integral_generator (t : BellmanPositiveTime)
-    (φ : ℝ × ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (φ : ℝ × ℝ → ℝ) (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hc : HasCompactSupport φ) :
     (∫ q, bellmanGaussianKernel t q *
       (q.2 * fderiv ℝ φ q (1, 0) +
@@ -46,10 +50,11 @@ theorem bellmanGaussianKernel_integral_generator (t : BellmanPositiveTime)
     ∫ q, (-q.2 * fderiv ℝ (bellmanGaussianKernel t) q (1, 0) +
       fderiv ℝ (fun z => fderiv ℝ (bellmanGaussianKernel t) z (0, 1)) q (0, 1)) *
         φ q := by
+  let sharedTerm_90aa2b83f0 := ((fun z : ℝ × ℝ => z.2 * φ z))
   have hk := contDiff_bellmanGaussianKernel t
-  have hvφ : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × ℝ => q.2 * φ q) :=
+  have hvφ : ContDiff ℝ PDE.smoothOrder sharedTerm_90aa2b83f0 :=
     contDiff_snd.mul hφ
-  have hd (q : ℝ × ℝ) : fderiv ℝ (fun z : ℝ × ℝ => z.2 * φ z) q (1, 0) =
+  have hd (q : ℝ × ℝ) : fderiv ℝ sharedTerm_90aa2b83f0 q (1, 0) =
       q.2 * fderiv ℝ φ q (1, 0) := by
     rw [fderiv_fun_mul differentiableAt_snd (hφ.differentiable (by simp) q)]
     simp [fderiv_snd]
@@ -74,8 +79,7 @@ theorem bellmanGaussianKernel_integral_generator (t : BellmanPositiveTime)
       φ q) := bellman_integrable_mul_test
         (continuous_snd.neg.mul (bellman_contDiff_direction hk (1, 0)).continuous)
         hφ.continuous hc
-  have hjV : Integrable (fun q =>
-      fderiv ℝ (fun z => fderiv ℝ (bellmanGaussianKernel t) z (0, 1)) q (0, 1) * φ q) :=
+  have hjV  :=
     bellman_integrable_mul_test
       (bellman_contDiff_direction (bellman_contDiff_direction hk (0, 1)) (0, 1)).continuous
       hφ.continuous hc

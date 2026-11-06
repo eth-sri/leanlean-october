@@ -5,11 +5,11 @@ import Mathlib.Tactic.Linarith
 
 /-! # Values and plateau of the selected flattened profile -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-open Filter
+
 
 /-- The fixed flattening primitive grows at most linearly on the whole real line. -/
 theorem abs_flatteningPsi_le (s : ℝ) : |flatteningPsi s| ≤ |s| := by

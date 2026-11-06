@@ -12,36 +12,41 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Set
 
+variable {d : ℕ} (H : XV d → ℝ)
+
 /-- The closed shell that contains the stationary source. -/
-def profileShell {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ) : Set (XV d) :=
+def profileShell  (alpha r : ℝ) : Set (XV d) :=
   {q | Real.rpow r alpha ≤ H q ∧ H q ≤ 2 * Real.rpow r alpha}
 
+section
+variable (alpha c M : ℝ) (ha : 0 < alpha) (hc : 0 < c) (hM : 0 < M) (hlo : ∀ q, c * Real.rpow (rho q) alpha ≤ H q)
+
+include ha hc hM hlo
 /-- Comparison with a positive gauge power traps any fixed upper profile sublevel. -/
-theorem profile_sublevel_subset_rho {d : ℕ} (H : XV d → ℝ) (alpha c M : ℝ)
-    (ha : 0 < alpha) (hc : 0 < c) (hM : 0 < M)
-    (hlo : ∀ q, c * Real.rpow (rho q) alpha ≤ H q) :
+theorem profile_sublevel_subset_rho   :
     {q | H q ≤ M} ⊆ {q | rho q ≤ Real.rpow (M / c) alpha⁻¹} := by
   intro q hq
-  have hb : Real.rpow (rho q) alpha ≤ M / c :=
+  have hb  :=
     (le_div_iff₀ hc).2 (by simpa only [mul_comm] using (hlo q).trans hq)
-  have hbase : 0 < M / c := div_pos hM hc
-  have hroot := Real.rpow_pos_of_pos hbase alpha⁻¹
-  apply (Real.rpow_le_rpow_iff (rho_nonneg q) hroot.le ha).mp
+  have hbase  := div_pos hM hc
+
+  apply (Real.rpow_le_rpow_iff (rho_nonneg q) (Real.rpow_pos_of_pos hbase alpha⁻¹).le ha).mp
   simp only [Real.rpow_eq_pow] at hb ⊢
   rw [Real.rpow_inv_rpow hbase.le ha.ne']
   exact hb
 
 /-- A continuous comparable profile has finite-volume upper sublevels. -/
-theorem profile_sublevel_volume_lt_top {d : ℕ} (H : XV d → ℝ) (alpha c M : ℝ)
-    (ha : 0 < alpha) (hc : 0 < c) (hM : 0 < M)
-    (hlo : ∀ q, c * Real.rpow (rho q) alpha ≤ H q) :
-    volume {q | H q ≤ M} < ⊤ := by
-  exact lt_of_le_of_lt
+theorem profile_sublevel_volume_lt_top   :
+    volume {q | H q ≤ M} < ⊤ := lt_of_le_of_lt
     (measure_mono (profile_sublevel_subset_rho H alpha c M ha hc hM hlo))
     (isCompact_rho_sublevel d (Real.rpow (M / c) alpha⁻¹)).measure_lt_top
+end
+
+
+variable (alpha r : ℝ)
 
 /-- Homogeneity identifies the radius-r shell as the inverse-dilation preimage. -/
-theorem profileShell_eq_preimage {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem profileShell_eq_preimage
     (hr : 0 < r)
     (hhom : ∀ s : ℝ, 0 < s → ∀ q,
       H (dilate s q) = Real.rpow s alpha * H q) :
@@ -61,7 +66,7 @@ theorem profileShell_eq_preimage {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
       (div_le_iff₀ hp).1 hhi⟩
 
 /-- The source shell has exactly the expected kinetic dilation factor. -/
-theorem profileShell_volume {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem profileShell_volume
     (hH : Continuous H) (hr : 0 < r)
     (hhom : ∀ s : ℝ, 0 < s → ∀ q,
       H (dilate s q) = Real.rpow s alpha * H q) :
@@ -75,16 +80,17 @@ theorem profileShell_volume {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     Measure.smul_apply, smul_eq_mul]
 
 /-- A comparable homogeneous profile gives a radius-uniform shell-volume constant. -/
-theorem shell_volume_bound {d : ℕ} (H : XV d → ℝ) (alpha c : ℝ)
+theorem shell_volume_bound  (alpha c : ℝ)
     (ha : 0 < alpha) (hc : 0 < c) (hH : Continuous H)
     (hlo : ∀ q, c * Real.rpow (rho q) alpha ≤ H q)
     (hhom : ∀ s : ℝ, 0 < s → ∀ q,
       H (dilate s q) = Real.rpow s alpha * H q) :
     ∃ C : ℝ, 0 < C ∧ ∀ r : ℝ, 0 < r →
       volume (profileShell H alpha r) ≤ ENNReal.ofReal (C * r ^ (4 * d)) := by
-  let m := volume {q : XV d | 1 ≤ H q ∧ H q ≤ 2}
-  have hm : m < ⊤ := lt_of_le_of_lt
-    (measure_mono (show {q : XV d | 1 ≤ H q ∧ H q ≤ 2} ⊆ {q | H q ≤ 2} from
+  let sharedTerm_78322e8bb6 := ({q : XV d | 1 ≤ H q ∧ H q ≤ 2})
+  let m := volume sharedTerm_78322e8bb6
+  have hm  := lt_of_le_of_lt
+    (measure_mono (show sharedTerm_78322e8bb6 ⊆ {q | H q ≤ 2} from
       fun _ hq => hq.2))
     (profile_sublevel_volume_lt_top H alpha c 2 ha hc (by norm_num) hlo)
   refine ⟨m.toReal + 1, by positivity, ?_⟩

@@ -3,23 +3,25 @@ module
 public import HypoellipticAleksandrov.Parabolic.SourceLocalHarnackScaling
 public import HypoellipticAleksandrov.Parabolic.HarnackStability
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.CoefficientExtension
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Local weak Harnack inequalities on closed link boxes -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Filter MeasureTheory Set
-open scoped ENNReal Topology Matrix.Norms.Elementwise
+open scoped ENNReal Matrix.Norms.Elementwise
 
 /-- Smooth coefficients and values have a continuous parabolic residual. -/
 theorem continuous_parabolicOperator_of_smooth_for_unitCylinder
-    {d : ℕ} {B : CoefficientField d} {q : TimeVelocity d → ℝ}
+    {d : ℕ} {B : CoefficientField d} {q : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (hB : IsSmoothCoefficient B)
-    (hq : ContDiff ℝ (↑(⊤ : ℕ∞)) q) :
+    (hq : ContDiff ℝ (↑PDE.smoothOrder) q) :
     Continuous (fun z => parabolicOperator B q z) := by
   change Continuous (fun x =>
     timeDerivative q x - matrixContraction (coefficientAt B x) (velocityHessian q x))
@@ -36,7 +38,7 @@ theorem continuous_parabolicOperator_of_smooth_for_unitCylinder
     · exact hB.continuous.matrix_elem i j
     · unfold velocityHessian
       have hfirst : ContDiff ℝ 1 (fderiv ℝ q) :=
-        hq.fderiv_right (m := 1) (by exact WithTop.coe_le_coe.mpr le_top)
+        hq.fderiv_right  (WithTop.coe_le_coe.mpr le_top)
       simpa using (hfirst.continuous_fderiv (by norm_num)).clm_apply
         continuous_const |>.clm_apply continuous_const
 
@@ -45,8 +47,8 @@ theorem exists_local_parabolic_harnack_weak_continuous
     (d : ℕ) (hd : 1 ≤ d) (lam : ℝ) (hlam : 0 < lam)
     (Lam : ℝ) (hlamLam : lam ≤ Lam) :
     ∃ hBox : ℝ, 0 < hBox ∧ hBox ≤ 1 ∧
-      ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
-        (u : TimeVelocity d → ℝ) (t0 : ℝ) (v0 : PDE.Vec d) (r : ℝ),
+      ∀ (U : HypoellipticAleksandrov.Parabolic.Region d) (B : CoefficientField d)
+        (u : HypoellipticAleksandrov.Parabolic.ScalarField d) (t0 : ℝ) (v0 : PDE.Vec d) (r : ℝ),
         IsOpen U → 0 < r →
         parabolicClosedBox 2 r (t0 - r ^ 2) v0 ⊆ U →
         IsContinuousCoefficientOn B U →
@@ -74,7 +76,7 @@ theorem exists_local_parabolic_harnack_weak_continuous
       B Aext U K u u hU hK hKU hExtAE
       (isBorel_midpointExtension_of_continuousOn hU hB lam Lam) hExtLower hExtUpper
       hWeak (ae_restrict_of_forall_mem hU.measurableSet huNonneg) hu EventuallyEq.rfl
-  let F : ℕ → TimeVelocity d → ℝ := fun n z =>
+  let F  := fun n z =>
     parabolicOperator (parabolicMollifyCoefficient Aext n) (parabolicMollifiedValue J.g n) z
   have hFnorm : Tendsto (fun n => parabolicELpNormOn d (F n) K) atTop (nhds 0) := by
     apply Tendsto.congr' ?_ hResidual
@@ -84,7 +86,7 @@ theorem exists_local_parabolic_harnack_weak_continuous
       ae_restrict_of_forall_mem hK.measurableSet hn.2.2.2.2.2.2
     exact (eLpNorm_congr_ae hAE).symm
   have hFreal := tendsto_parabolicLpNormOn_of_tendsto_parabolicELpNormOn_zero hFnorm
-  let ε : ℕ → ℝ := fun n =>
+  let ε  := fun n =>
     C * r ^ ((d : ℝ) / ((d : ℝ) + 1)) * parabolicLpNormOn d (F n) K
   have hε : Tendsto ε atTop (nhds 0) := by
     simpa only [ε, mul_zero] using tendsto_const_nhds.mul hFreal
@@ -113,7 +115,7 @@ theorem exists_local_parabolic_harnack_weak_continuous
       (F n) t0 v0 r hr hK hKU hU (Subset.refl _)
       (IsContinuousCoefficientOn.of_global hBcontinuous U)
       (contDiffOn_of_global (hn.2.2.2.2.1.of_le
-        (by exact WithTop.coe_le_coe.mpr le_top)) U)
+        (WithTop.coe_le_coe.mpr le_top)) U)
       (continuous_parabolicOperator_of_smooth_for_unitCylinder hn.1
         hn.2.2.2.2.1).continuousOn hn.2.2.2.2.2.1
       (HasLowerEllipticityOn.of_global hn.2.2.1 K)

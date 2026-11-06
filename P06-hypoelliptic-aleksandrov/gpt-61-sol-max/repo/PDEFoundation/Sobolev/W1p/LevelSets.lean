@@ -17,7 +17,7 @@ needed for an arbitrary Lipschitz scalar composition remains a separate
 later result.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal
 
@@ -37,14 +37,14 @@ theorem grad_ae_zero_on_level_set
     (u : W1pFunction U p) (c : ℝ) :
     ∀ᵐ x ∂(volumeOn U), u.toFun x = c → u.grad x = 0 := by
   let : Fact (1 ≤ p) := ⟨hp⟩
-  let : IsFiniteMeasure (volumeOn U) :=
+  let  :=
     hU.isSobolevRegularDomain.isFiniteMeasure_volumeOn
-  let v₁ : W1pFunction U p :=
+  let v₁  :=
     u.positivePartSubConst hU hp hpTop c
-  let v₂ : W1pFunction U p :=
+  let v₂  :=
     (-u).positivePartSubConst hU hp hpTop (-c)
-  let v : W1pFunction U p := v₁ - v₂
-  let w : W1pFunction U p := u.addConst (-c)
+  let v  := v₁ - v₂
+  let w  := u.addConst (-c)
   have htoFun_eq : v.toFun = w.toFun := by
     funext x
     have hneg : (-u).toFun x - -c = c - u.toFun x := by
@@ -58,26 +58,24 @@ theorem grad_ae_zero_on_level_set
       ring
     · rw [max_eq_left h, max_eq_right (by linarith)]
       ring
-  have hgrad_ae : ∀ᵐ x ∂(volumeOn U), v.grad x = w.grad x := by
-    have hcoord : ∀ i : Fin d,
-        (fun x => v.grad x i) =ᵐ[volumeOn U] (fun x => w.grad x i) := by
-      intro i
-      refine HasWeakPartialDerivOn.ae_eq hU.isOpen
-        (MeasureTheory.locallyIntegrableOn_of_locallyIntegrable_restrict
-          (v.locallyIntegrable_grad i))
-        (MeasureTheory.locallyIntegrableOn_of_locallyIntegrable_restrict
-          (w.locallyIntegrable_grad i))
-        (v.hasWeakGradient i) ?_
-      rw [htoFun_eq]
-      exact w.hasWeakGradient i
-    have hall : ∀ᵐ x ∂(volumeOn U), ∀ i, v.grad x i = w.grad x i :=
-      ae_all_iff.mpr hcoord
-    filter_upwards [hall] with x hx
-    funext i
-    exact hx i
-  filter_upwards [hgrad_ae] with x hx hxc
-  have hvgrad : v.grad x = v₁.grad x - v₂.grad x := by
-    rfl
+
+  filter_upwards [(by
+
+      have hall  :=
+        ae_all_iff.mpr (by
+            intro i
+            refine HasWeakPartialDerivOn.ae_eq hU.isOpen
+              (MeasureTheory.locallyIntegrableOn_of_locallyIntegrable_restrict
+                (v.locallyIntegrable_grad i))
+              (MeasureTheory.locallyIntegrableOn_of_locallyIntegrable_restrict
+                (w.locallyIntegrable_grad i))
+              (v.hasWeakGradient i) ?_
+            rw [htoFun_eq]
+            exact w.hasWeakGradient i)
+      filter_upwards [hall] with x hx
+      funext i
+      exact hx i)] with x hx hxc
+
   have hwgrad : w.grad x = u.grad x := by
     simp only [w, addConst_grad]
   have hv₁zero : v₁.grad x = 0 := by
@@ -87,9 +85,8 @@ theorem grad_ae_zero_on_level_set
   have hv₂zero : v₂.grad x = 0 := by
     change {y | -c < (-u).toFun y}.indicator (-u).grad x = 0
     rw [Set.indicator_of_notMem (by
-      simp only [Set.mem_ofPred_eq, neg_toFun, not_lt, hxc]
-      exact le_rfl)]
-  rw [← hwgrad, ← hx, hvgrad, hv₁zero, hv₂zero, sub_zero]
+      simp_all)]
+  rw [← hwgrad, ← hx, (show v.grad x = v₁.grad x - v₂.grad x from rfl), hv₁zero, hv₂zero, sub_zero]
 
 end W1pFunction
 

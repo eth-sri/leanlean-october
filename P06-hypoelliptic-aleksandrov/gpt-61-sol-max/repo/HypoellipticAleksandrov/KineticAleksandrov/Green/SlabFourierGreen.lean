@@ -15,31 +15,33 @@ import Mathlib.Probability.Kernel.Composition.IntegralCompProd
   kernel-product measure by uniqueness (`existsUnique_greenMeasure`).
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Green
 
 open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped ENNReal NNReal ProbabilityTheory
+open scoped ProbabilityTheory
+
+variable {d : ℕ}
 
 /-- The first marginal of the master kernel is independent of the starting `z` (case W). -/
-theorem firstMarginal_startingPosition {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
+theorem firstMarginal_startingPosition
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+    (hcov : IsTranslationCovariantEvolution (wholeSpace d) _ MeasurableSet.univ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d) :
     K.firstMarginal (wholeSpaceQuery σ τ hστ v z) =
       K.firstMarginal (wholeSpaceQuery σ τ hστ v 0) := by
   let p : EvolutionState (wholeSpace d) (fun _ => 0) σ :=
     ⟨(v, 0), (wholeSpaceQuery σ τ hστ v 0).property.2⟩
-  have hq : evolutionQueryOfState (wholeSpace d) (fun _ => 0) σ τ hστ
-      (evolutionStateShift (wholeSpace d) (fun _ => 0) σ z p) = wholeSpaceQuery σ τ hστ v z := by
+  have hq : evolutionQueryOfState (wholeSpace d) _ σ τ hστ
+      (evolutionStateShift (wholeSpace d) _ σ z p) = wholeSpaceQuery σ τ hστ v z := by
     apply Subtype.ext
     simp only [evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift,
       wholeSpaceQuery, p, zero_add]
-  have hp : evolutionQueryOfState (wholeSpace d) (fun _ => 0) σ τ hστ p =
+  have hp : evolutionQueryOfState (wholeSpace d) _ σ τ hστ p =
       wholeSpaceQuery σ τ hστ v 0 := rfl
   have hmt := master_translation (Ω := wholeSpace d) (γ := fun _ => 0) MeasurableSet.univ K hcov
     σ τ hστ p z
@@ -50,23 +52,21 @@ theorem firstMarginal_startingPosition {d : ℕ}
     Measure.map_map measurable_fst (measurable_evolutionAmbientStateShift z)]
   rfl
 
+variable {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
+
 /-- A Green measure is the explicit kernel-product measure. -/
-theorem green_eq_compProd {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
+theorem green_eq_compProd
     [IsFiniteMeasure μ] (Γ : Measure (ElapsedTime ⊤ × EvolutionAmbientState d))
-    (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ) :
-    Γ = (((μ.prod (elapsedVolume ⊤)).compProd (elapsedKernel K σ₀ ⊤)).map
-      (fun q => (q.1.2, q.2))) :=
+    (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ) : type_of% ((existsUnique_greenMeasure K σ₀ ⊤ (by simp) μ).unique hΓ (compProd_isGreenMeasure K σ₀ ⊤ μ)) :=
   (existsUnique_greenMeasure K σ₀ ⊤ (by simp) μ).unique hΓ (compProd_isGreenMeasure K σ₀ ⊤ μ)
 
 
 /-- A bounded Borel function supported in the slab is integrable against a Green measure. -/
-theorem integrable_green_slab {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
+theorem integrable_green_slab
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
     (hfb : ∀ p, ‖f p‖ ≤ 1) (hsupp : ∀ p, p ∉ slabSet T → f p = 0) : Integrable f Γ := by
-  have hfin : Γ (slabSet (d := d) T) < ⊤ :=
+  have hfin  :=
     (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
       (ENNReal.mul_lt_top (measure_lt_top _ _) ENNReal.ofReal_lt_top)
   have hi : Integrable ((slabSet (d := d) T).indicator (fun _ => (1 : ℝ))) Γ :=
@@ -79,13 +79,13 @@ theorem integrable_green_slab {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
 
 /-- **Green integral calculus.**  For bounded complex Borel `f` supported in the slab,
 `∫ f dΓ = ∫_τ ∫_μ ∫_{master (σ₀ → σ₀ + τ)} f(τ, ·)`. -/
-theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
+theorem green_integral
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
     (hfb : ∀ p, ‖f p‖ ≤ 1) (hsupp : ∀ p, p ∉ slabSet T → f p = 0) :
     ∫ p, f p ∂Γ = ∫ τ, (∫ p, (∫ w, f (τ, w) ∂K.master (elapsedQuery σ₀ p τ)) ∂μ)
       ∂elapsedVolume ⊤ := by
+  let sharedTerm_8aa715ce9a := ((fun q : (EvolutionState Ω γ σ₀ × ElapsedTime ⊤) × EvolutionAmbientState d => f (q.1.2, q.2)))
   have hint := integrable_green_slab K σ₀ μ Γ hΓ hT f hf hfb hsupp
   have hι : Measurable (fun q : (EvolutionState Ω γ σ₀ × ElapsedTime ⊤) × EvolutionAmbientState d =>
       (q.1.2, q.2)) := by fun_prop
@@ -93,8 +93,7 @@ theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
   have hΓeq := green_eq_compProd K σ₀ μ Γ hΓ
   rw [hΓeq] at hint ⊢
   rw [integral_map hι.aemeasurable hf.aestronglyMeasurable]
-  have hint' : Integrable (fun q : (EvolutionState Ω γ σ₀ × ElapsedTime ⊤) ×
-      EvolutionAmbientState d => f (q.1.2, q.2)) Ξ :=
+  have hint' : Integrable sharedTerm_8aa715ce9a Ξ :=
     (integrable_map_measure hf.aestronglyMeasurable hι.aemeasurable).1 hint
   have hfk : ProbabilityTheory.IsFiniteKernel (elapsedKernel K σ₀ ⊤) := by
     unfold elapsedKernel; infer_instance
@@ -103,9 +102,8 @@ theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
   set G : EvolutionState Ω γ σ₀ × ElapsedTime ⊤ → ℂ :=
     fun a => ∫ w, f (a.2, w) ∂elapsedKernel K σ₀ ⊤ a with hG
   have hGm : StronglyMeasurable G := by
-    have h1 : StronglyMeasurable (fun q : (EvolutionState Ω γ σ₀ × ElapsedTime ⊤) ×
-        EvolutionAmbientState d => f (q.1.2, q.2)) := (hf.comp hι).stronglyMeasurable
-    exact h1.integral_kernel_prod_right' (κ := elapsedKernel K σ₀ ⊤)
+    have h1 : StronglyMeasurable sharedTerm_8aa715ce9a := (hf.comp hι).stronglyMeasurable
+    exact h1.integral_kernel_prod_right'
   have hGb : ∀ a, ‖G a‖ ≤ (slabTimeSet T).indicator (fun _ => (1 : ℝ)) a.2 := by
     intro a
     by_cases ha : a.2 ∈ slabTimeSet T
@@ -119,7 +117,7 @@ theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
             simp only [integral_const, smul_eq_mul, mul_one, measureReal_def]
             exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using this)
     · rw [Set.indicator_of_notMem ha]
-      have : ∀ w, f (a.2, w) = 0 := fun w => hsupp _ (fun h => ha h)
+      have : ∀ w, f (a.2, w) = 0 := fun w => hsupp _ (ha)
       simp [hG, this]
   have hGi : Integrable G (μ.prod (elapsedVolume ⊤)) := by
     have hfinT : (μ.prod (elapsedVolume ⊤)) (univ ×ˢ slabTimeSet T) < ⊤ := by

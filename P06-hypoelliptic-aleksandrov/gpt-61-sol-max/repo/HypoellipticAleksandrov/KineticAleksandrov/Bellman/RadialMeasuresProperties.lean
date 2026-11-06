@@ -6,8 +6,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.RadialMeasuresD
 
 /-! # Radon, comparison, nontriviality, and degree properties of the literal radial pair -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

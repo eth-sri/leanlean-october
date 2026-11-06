@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripM
 
 /-! # The exact Green measure decomposition for nested physical velocity intervals -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 
 /-- The actual larger Green measure is the smaller Green plus the actual internal restart Green. -/
 theorem nestedIntervalGreen_identity
@@ -20,27 +20,25 @@ theorem nestedIntervalGreen_identity
     stripGreen hH hLE hlam hLam A H2 T (nestedPoleInclusion H1 H2 hsub T e) =
       stripGreen hH hLE hlam hLam A H1 T e +
         nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e := by
-  let D := stripPast H2 T
-  have hs (ep : StripPole H2 (T : WithTop ℝ)) :
-      ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H2 T ep, p ∈ D :=
+
+  have hs (ep : StripPole H2 (T : WithTop ℝ))  :=
     stripGreenOfKernel_ae_mem_stripPast H2 (stripEvolution hH hLE hlam hLam A H2).2 T ep
-  have hsmall : ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H1 T e, p ∈ D := by
-    filter_upwards [stripGreenOfKernel_ae_mem_stripPast H1
-      (stripEvolution hH hLE hlam hLam A H1).2 T e] with p hp
-    exact ⟨hp.1, hsub hp.2⟩
-  have hrestart : ∀ᵐ p ∂nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e,
-      p ∈ D := by
-    rw [ae_iff]
-    unfold nestedIntervalRestartGreen
-    refine (Measure.bind_apply (m := nestedIntervalRestartPoles hH hLE hlam hLam A
-      H1 H2 sMinus T e) (isOpen_stripPast H2 T).measurableSet.compl
-      (Measure.measurable_measure.mpr (fun B hB =>
-        stripGreen_measurable_apply hH hLE hlam hLam A H2 T B hB)).aemeasurable).trans ?_
-    apply lintegral_eq_zero_of_ae_eq_zero
-    exact Filter.Eventually.of_forall (fun ep => ae_iff.mp (hs ep))
-  apply nested_physical_measure_eq D (isOpen_stripPast H2 T)
+
+
+  apply nested_physical_measure_eq (stripPast H2 T) (isOpen_stripPast H2 T)
     (hs (nestedPoleInclusion H1 H2 hsub T e))
-  · rw [ae_iff, Measure.add_apply, ae_iff.mp hsmall, ae_iff.mp hrestart]
+  · rw [ae_iff, Measure.add_apply, ae_iff.mp (by
+      filter_upwards [stripGreenOfKernel_ae_mem_stripPast H1
+        (stripEvolution hH hLE hlam hLam A H1).2 T e] with p hp
+      exact ⟨hp.1, hsub hp.2⟩), ae_iff.mp (by
+      rw [ae_iff]
+      unfold nestedIntervalRestartGreen
+      refine (Measure.bind_apply (m := nestedIntervalRestartPoles hH hLE hlam hLam A
+        H1 H2 sMinus T e) (isOpen_stripPast H2 T).measurableSet.compl
+        (Measure.measurable_measure.mpr (fun B hB =>
+          stripGreen_measurable_apply hH hLE hlam hLam A H2 T B hB)).aemeasurable).trans ?_
+      apply lintegral_eq_zero_of_ae_eq_zero
+      exact Filter.Eventually.of_forall (fun ep => ae_iff.mp (hs ep)))]
     exact zero_add 0
   · intro f hfs hfn
     rw [integral_add_measure (nestedProbe_integrable A f _)

@@ -10,6 +10,11 @@ import Mathlib.Analysis.Calculus.Deriv.Slope
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.FunProp
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Cutoffs of the strictly forbidden phase
@@ -18,16 +23,18 @@ A compactly supported terminal test has a positive phase margin. A smooth
 increasing cutoff of the phase then dominates the test and vanishes at phase zero.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
-open Set Filter MeasureTheory
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+open Set
+open HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped Topology
+
+
+variable {E : Type*}
 
 /-- A compact test supported in a positive phase region has a uniform positive margin. -/
-theorem exists_positive_phase_margin {E : Type*} [TopologicalSpace E]
+theorem exists_positive_phase_margin  [TopologicalSpace E]
     {φ q : E → ℝ} (hφ : HasCompactSupport φ) (hq : Continuous q)
     (hs : tsupport φ ⊆ {x | 0 < q x}) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ x ∈ tsupport φ, δ ≤ q x := by
@@ -37,17 +44,17 @@ theorem exists_positive_phase_margin {E : Type*} [TopologicalSpace E]
   · exact ⟨1, zero_lt_one, fun x hx => False.elim (he ⟨x, hx⟩)⟩
 
 /-- A smooth monotone phase cutoff dominates every `[0,1]` test in the forbidden set. -/
-theorem exists_phase_cutoff {E : Type*} [TopologicalSpace E]
+theorem exists_phase_cutoff  [TopologicalSpace E]
     {φ q : E → ℝ} (hφ : HasCompactSupport φ) (hq : Continuous q)
     (hs : tsupport φ ⊆ {x | 0 < q x}) (hbound : ∀ x, 0 ≤ φ x ∧ φ x ≤ 1) :
-    ∃ χ : ℝ → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ Monotone χ ∧
+    ∃ χ : ℝ → ℝ, ContDiff ℝ PDE.smoothOrder χ ∧ Monotone χ ∧
       χ 0 = 0 ∧ (∀ r, 0 ≤ χ r ∧ χ r ≤ 1) ∧ (∀ x, φ x ≤ χ (q x)) := by
   obtain ⟨δ, hδ, hm⟩ := exists_positive_phase_margin hφ hq hs
   refine ⟨fun r => Real.smoothTransition (r / δ), ?_, ?_, ?_, ?_, ?_⟩
-  · exact Real.smoothTransition.contDiff.comp (contDiff_id.div_const δ)
+  · fun_prop
   · intro r s hrs
     exact Real.smoothTransition.monotone (div_le_div_of_nonneg_right hrs hδ.le)
-  · simp only [zero_div, Real.smoothTransition.zero]
+  · simp
   · intro r
     exact ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
   · intro x
@@ -58,8 +65,10 @@ theorem exists_phase_cutoff {E : Type*} [TopologicalSpace E]
     · rw [image_eq_zero_of_notMem_tsupport hx]
       exact Real.smoothTransition.nonneg _
 
+variable {d : ℕ}
+
 /-- Composing a signed phase with a smooth scalar cutoff preserves slice regularity. -/
-theorem phaseCutoff_isSliceRegularAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
+theorem phaseCutoff_isSliceRegularAt  (sgn : ℝ) (ξ z0 : PDE.Vec d)
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
     {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
     {χ : ℝ → ℝ} (hχ : ContDiff ℝ 2 χ) (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
@@ -68,8 +77,10 @@ theorem phaseCutoff_isSliceRegularAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
   exact ⟨(hχ.differentiable (by norm_num)).differentiableAt.comp p.time hr.time,
     hχ.contDiffAt.comp p.position hr.position, hχ.contDiffAt.comp p.velocity hr.velocity⟩
 
+variable (B : CoefficientField d)
+
 /-- The transported operator obeys the scalar chain rule on an affine phase barrier. -/
-theorem lop_phaseCutoff {d : ℕ} (B : CoefficientField d) (sgn : ℝ) (ξ z0 : PDE.Vec d)
+theorem lop_phaseCutoff   (sgn : ℝ) (ξ z0 : PDE.Vec d)
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
     {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
     {χ : ℝ → ℝ} (hχ : ContDiff ℝ 2 χ) (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
@@ -88,13 +99,13 @@ theorem lop_phaseCutoff {d : ℕ} (B : CoefficientField d) (sgn : ℝ) (ξ z0 : 
     have hv := hd.comp_hasFDerivAt p.velocity
       (hr.velocity.differentiableAt (by norm_num)).hasFDerivAt
     ext i
-    change fderiv ℝ (χ ∘ fun z : PDE.Vec d =>
+    change fderiv ℝ (χ ∘ fun z  =>
       phaseBarrier sgn ξ z0 b γ σ Lb ρ ⟨p.time, p.position, z⟩)
         p.velocity (PDE.basisVec i) = _
     rw [hv.fderiv]
     rfl
   have hh : diffusedHessian (fun q => χ (κ q)) p = 0 := by
-    have hz : (fun y : PDE.Vec d => kineticPositionGradient
+    have hz : (fun y  => kineticPositionGradient
         (fun q => χ (κ q)) ⟨p.time, y, p.velocity⟩) = fun _ => 0 := by
       funext y i
       change fderiv ℝ (fun _ : PDE.Vec d => χ (κ p)) y (PDE.basisVec i) = 0
@@ -116,7 +127,7 @@ theorem lop_phaseCutoff {d : ℕ} (B : CoefficientField d) (sgn : ℝ) (ξ z0 : 
   ring
 
 /-- A classical terminal solution with a forbidden-phase test is nonpositive initially. -/
-theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
+theorem classical_phase_test_nonpos
     (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d)
     (σ τ Lb ρ : ℝ) (hστ : σ < τ) (hρ : 0 < ρ)
     (ξ z0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
@@ -136,18 +147,18 @@ theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
     u ⟨σ, v, z0⟩ ≤ 0 := by
   let Ω := PDE.euclideanBall (0 : PDE.Vec d) ρ
   let κ := phaseBarrier sgn ξ z0 b γ σ Lb ρ
-  let q : EvolutionAmbientState d → ℝ := fun x =>
+  let q  := fun x =>
     sgn * (phaseCoordinate ξ z0 x - phaseCenter ξ b γ σ τ) - Lb * ρ * (τ - σ)
-  have hq : Continuous q := by
-    dsimp only [q, phaseCoordinate]
-    unfold PDE.vecDot
-    simp only [Pi.sub_apply]
-    fun_prop
-  obtain ⟨χ, hχ, hmχ, hχ0, hχbounds, hdom⟩ := exists_phase_cutoff hφ.2.1 hq hs hbound
-  have hχ2 : ContDiff ℝ 2 χ := hχ.of_le
+
+  obtain ⟨χ, hχ, hmχ, hχ0, hχbounds, hdom⟩ := exists_phase_cutoff hφ.2.1 (by
+      dsimp only [q, phaseCoordinate]
+      unfold PDE.vecDot
+      simp only [Pi.sub_apply]
+      fun_prop) hs hbound
+  have hχ2  := hχ.of_le
     (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
-  let F : KineticPoint d → ℝ := fun p => χ (κ p)
-  have hFnonneg : ∀ p, 0 ≤ F p := fun p => (hχbounds (κ p)).1
+  let F  := fun p => χ (κ p)
+  have hFnonneg  := fun p => (hχbounds (κ p)).1
   have hFc : ContinuousOn F (maximumClosedTube Ω γ σ τ) :=
     hχ.continuous.comp_continuousOn
       ((phaseBarrier_continuousOn sgn ξ z0 hb (ρ := ρ) hστ.le hγ.continuousOn).mono
@@ -160,8 +171,8 @@ theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
     apply mul_nonpos_of_nonneg_of_nonpos hmχ.deriv_nonneg
     apply (phase_barrier_drift B b γ σ τ Lb ρ hρ ξ z0 hξ hb hγ.continuousOn
       sgn hsgn p hp.1 ?_).2
-    have hv' := mem_movingDomain_iff.mp hp.2
-    simpa only [Ω, PDE.euclideanBall, PDE.euclideanSqDist, Set.mem_ofPred_eq, sub_zero] using hv'
+
+    simpa only [Ω, PDE.euclideanBall, PDE.euclideanSqDist, Set.mem_ofPred_eq, sub_zero] using (mem_movingDomain_iff.mp hp.2)
   obtain ⟨M, hM, hbM, -⟩ :=
     phase_infinity_barrier B b σ τ ρ hρ γ hγ.continuousOn
       (continuous_of_euclidean_lipschitz hb) z0
@@ -174,97 +185,97 @@ theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
     (zIndependentCoefficient B) b τ φ u).mpr hu
   have hur : ∀ p ∈ maximumOpenTube Ω γ σ τ, IsSliceRegularAt u p :=
     fun p hp => huv.isSliceRegularAt (PDE.isOpen_euclideanBall 0 ρ) hγ (hopen hp)
-  have huinitial : ∀ η : ℝ, 0 < η →
-      u ⟨σ, v, z0⟩ ≤ η * Real.exp ((M + 1) * (τ - σ)) := by
-    intro η hη
-    let H := infinityBarrier η M τ z0
-    let w : KineticPoint d → ℝ := fun p => u p - F p - H p
-    have hHr : ∀ p, IsSliceRegularAt H p := infinityBarrier_isSliceRegularAt η M τ z0
-    have hwcontrol : IsUniformlyNegAtInfinityOn w (maximumClosedTube Ω γ σ τ) := by
-      intro A
-      obtain ⟨R, hR, hh⟩ := infinityBarrier_uniform_growth hη hM z0 (C - A)
-      refine ⟨R, hR, ?_⟩
-      intro p hp hz
-      have huC := (le_abs_self (u p)).trans (hC p (hclosed hp))
-      have hH := hh p hp.1.2 hz
-      have hF := hFnonneg p
-      dsimp [w, H]
-      linarith
-    have hwr : ∀ p ∈ maximumOpenTube Ω γ σ τ, IsSliceRegularAt w p :=
-      fun p hp => ((hur p hp).sub (hFr p hp)).sub (hHr p)
-    have hwsub : ∀ p ∈ maximumOpenTube Ω γ σ τ,
-        0 ≤ transportedForwardOperator (zIndependentCoefficient B) b w p := by
-      intro p hp
-      have hr := hur p hp
-      have hfr := hFr p hp
-      have hhr := hHr p
-      have heq := hu.2.2.2.1 p (hopen hp)
-      have hf := hFlop p hp
-      have hh := lop_infinityBarrier_le B b (τ := τ) hη.le hM z0 p
-        (hbM p ⟨⟨hp.1.1.le, hp.1.2.le⟩, subset_closure hp.2⟩)
-      have hHpos : 0 ≤ H p := by
-        have hn := PDE.vecNormSq_nonneg (p.velocity - z0)
-        dsimp [H, infinityBarrier]
-        positivity
-      have he : transportedForwardOperator (zIndependentCoefficient B) b w p =
-          transportedForwardOperator (zIndependentCoefficient B) b u p -
-            lop B b F p - lop B b H p := by
-        have h1 := viscousTransportedOperator_sub (B := zIndependentCoefficient B)
-          (b := b) (ε := 0) (hr.sub hfr) hhr
-        have h2 := viscousTransportedOperator_sub (B := zIndependentCoefficient B)
-          (b := b) (ε := 0) hr hfr
-        simpa only [viscousTransportedOperator_zero, h2, w, lop,
-          transportedForwardOperatorOfTimeDiffusedCoefficient] using h1
-      rw [he, heq]
-      linarith
-    have hterminal : ∀ p ∈ maximumClosedTube Ω γ σ τ, p.time = τ → w p ≤ 0 := by
-      intro p hp ht
-      have hut := hu.2.2.2.2.1 p ⟨ht, ht ▸ hp.2⟩
-      have hdom' := hdom (p.position, p.velocity)
-      have hF : F p = χ (q (p.position, p.velocity)) := by
-        dsimp [F, κ, q, phaseBarrier, phaseCoordinate]
-        rw [ht]
-      have hH : 0 ≤ H p := by
-        have hn := PDE.vecNormSq_nonneg (p.velocity - z0)
-        dsimp [H, infinityBarrier]
-        positivity
-      dsimp [w]
-      rw [hut, hF]
-      linarith
-    have hlateral : ∀ p ∈ maximumClosedTube Ω γ σ τ,
-        p.position ∈ frontier (movingDomain Ω γ p.time) → w p ≤ 0 := by
-      intro p hp hf
-      have hul := hu.2.2.2.2.2 p ⟨hp.1.2, hf⟩
-      have hF := hFnonneg p
-      have hH : 0 ≤ H p := by
-        have hn := PDE.vecNormSq_nonneg (p.velocity - z0)
-        dsimp [H, infinityBarrier]
-        positivity
-      dsimp [w]
-      rw [hul]
-      linarith
-    have hw := nonpos_on_maximumClosedTube hστ (PDE.isOpen_euclideanBall 0 ρ)
-      (isCompact_closure_of_maximumPrinciple_domain (Or.inl ⟨0, ρ, hρ, rfl⟩))
-      hγ.continuousOn
-      (((hu.2.1.mono hclosed).sub hFc).sub (infinityBarrier_continuous η M τ z0).continuousOn)
-      (Or.inr hwcontrol)
-      (fun p hp => ⟨(hwr p hp).time, (hwr p hp).position,
-        (hwr p hp).velocity.differentiableAt (by norm_num)⟩)
-      (fun p _ => hB p.time p.position) hwsub hterminal hlateral
-      ⟨σ, v, z0⟩ ⟨⟨le_rfl, hστ.le⟩, subset_closure hv⟩
-    have hstart : F ⟨σ, v, z0⟩ = 0 := by
-      dsimp [F, κ, phaseBarrier, phaseCenter]
-      simpa only [sub_self, PDE.vecDot, Pi.zero_apply, mul_zero,
-        Finset.sum_const_zero, intervalIntegral.integral_same, sub_zero] using hχ0
-    dsimp [w, H] at hw
-    rw [hstart] at hw
-    simpa only [infinityBarrier, sub_self, PDE.vecNormSq, PDE.vecDot, Pi.zero_apply,
-      mul_zero, Finset.sum_const_zero, add_zero, mul_one, sub_zero, sub_nonpos] using hw
+
   by_contra hn
-  have hpos : 0 < u ⟨σ, v, z0⟩ := lt_of_not_ge hn
+
   let E := Real.exp ((M + 1) * (τ - σ))
   have he : 0 < E := Real.exp_pos _
-  have hh := huinitial (u ⟨σ, v, z0⟩ / (2 * E)) (div_pos hpos (by positivity))
+  have hh := (show ∀ η : ℝ, 0 < η →
+      u ⟨σ, v, z0⟩ ≤ η * Real.exp ((M + 1) * (τ - σ)) by
+      intro η hη
+      let H := infinityBarrier η M τ z0
+      let w  := fun p => u p - F p - H p
+      have hHr  := infinityBarrier_isSliceRegularAt η M τ z0
+
+      have hwr  :=
+        fun p hp => ((hur p hp).sub (hFr p hp)).sub (hHr p)
+
+
+
+      have hw := nonpos_on_maximumClosedTube hστ (PDE.isOpen_euclideanBall 0 ρ)
+        (isCompact_closure_of_maximumPrinciple_domain (Or.inl ⟨0, ρ, hρ, rfl⟩))
+        hγ.continuousOn
+        (((hu.2.1.mono hclosed).sub hFc).sub (infinityBarrier_continuous η M τ z0).continuousOn)
+        (Or.inr (show IsUniformlyNegAtInfinityOn w (maximumClosedTube Ω γ σ τ) by
+            intro A
+            obtain ⟨R, hR, hh⟩ := infinityBarrier_uniform_growth hη hM z0 (C - A)
+            refine ⟨R, hR, ?_⟩
+            intro p hp hz
+            have huC := (le_abs_self (u p)).trans (hC p (hclosed hp))
+            have hH := hh p hp.1.2 hz
+            have hF := hFnonneg p
+            dsimp [w, H]
+            linarith))
+        (fun p hp => ⟨(hwr p hp).time, (hwr p hp).position,
+          (hwr p hp).velocity.differentiableAt (by norm_num)⟩)
+        (fun p _ => hB p.time p.position) (show ∀ p ∈ maximumOpenTube Ω γ σ τ,
+          0 ≤ transportedForwardOperator (zIndependentCoefficient B) b w p by
+            intro p hp
+            have hr := hur p hp
+            have hfr := hFr p hp
+            have hhr := hHr p
+            have heq := hu.2.2.2.1 p (hopen hp)
+            have hf := hFlop p hp
+            have hh := lop_infinityBarrier_le B b (τ := τ) hη.le hM z0 p
+              (hbM p ⟨⟨hp.1.1.le, hp.1.2.le⟩, subset_closure hp.2⟩)
+            have hHpos : 0 ≤ H p := by
+              have hn := PDE.vecNormSq_nonneg (p.velocity - z0)
+              dsimp [H, infinityBarrier]
+              positivity
+            have he : transportedForwardOperator (zIndependentCoefficient B) b w p =
+                transportedForwardOperator (zIndependentCoefficient B) b u p -
+                  lop B b F p - lop B b H p := by
+              have h1 := viscousTransportedOperator_sub (B := zIndependentCoefficient B)
+                (b := b) (ε := 0) (hr.sub hfr) hhr
+              have h2 := viscousTransportedOperator_sub (B := zIndependentCoefficient B)
+                (b := b) (ε := 0) hr hfr
+              simpa only [viscousTransportedOperator_zero, h2, w, lop,
+                transportedForwardOperatorOfTimeDiffusedCoefficient] using h1
+            rw [he, heq]
+            linarith) (show ∀ p ∈ maximumClosedTube Ω γ σ τ, p.time = τ → w p ≤ 0 by
+            intro p hp ht
+            have hut := hu.2.2.2.2.1 p ⟨ht, ht ▸ hp.2⟩
+            have hdom' := hdom (p.position, p.velocity)
+            have hF : F p = χ (q (p.position, p.velocity)) := by
+              dsimp [F, κ, q, phaseBarrier, phaseCoordinate]
+              rw [ht]
+            have hH : 0 ≤ H p := by
+              have hn := PDE.vecNormSq_nonneg (p.velocity - z0)
+              dsimp [H, infinityBarrier]
+              positivity
+            dsimp [w]
+            rw [hut, hF]
+            linarith) (show ∀ p ∈ maximumClosedTube Ω γ σ τ,
+          p.position ∈ frontier (movingDomain Ω γ p.time) → w p ≤ 0 by
+            intro p hp hf
+            have hul := hu.2.2.2.2.2 p ⟨hp.1.2, hf⟩
+            have hF := hFnonneg p
+            have hH : 0 ≤ H p := by
+              have hn := PDE.vecNormSq_nonneg (p.velocity - z0)
+              dsimp [H, infinityBarrier]
+              positivity
+            dsimp [w]
+            rw [hul]
+            linarith)
+        ⟨σ, v, z0⟩ ⟨⟨le_rfl, hστ.le⟩, subset_closure hv⟩
+      have hstart : F ⟨σ, v, z0⟩ = 0 := by
+        dsimp [F, κ, phaseBarrier, phaseCenter]
+        simpa only [PDE.vecDot, sub_self, Pi.zero_apply, mul_zero, Finset.sum_const_zero,
+          intervalIntegral.integral_same] using hχ0
+      dsimp [w, H] at hw
+      rw [hstart] at hw
+      simpa only [infinityBarrier, sub_self, PDE.vecNormSq, PDE.vecDot, Pi.zero_apply,
+        mul_zero, Finset.sum_const_zero, add_zero, mul_one, sub_zero, sub_nonpos] using hw) (u ⟨σ, v, z0⟩ / (2 * E)) (div_pos (lt_of_not_ge hn) (by positivity))
   have hcancel : u ⟨σ, v, z0⟩ / (2 * E) * E = u ⟨σ, v, z0⟩ / 2 := by
     field_simp
   rw [hcancel] at hh

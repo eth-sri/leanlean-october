@@ -1,37 +1,33 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelSlice
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Continuous zero traces for the kinetic Duhamel potential -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
 
+variable (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ) (B : FullKineticCoefficient d) (b : PDE.VectorField d) (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ) (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K) (g : HypoellipticAleksandrov.KineticScalarField d) (hgn : ∀ p, 0 ≤ g p) (hg : Continuous g) (hgc : HasCompactSupport g) (hgs : ContDiff ℝ PDE.smoothOrder (fun q : ℝ × EvolutionAmbientState d => g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ) (hgU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T)
+
+include hΩa hγ hreal hgn hg hgc hgs hgU
 /-- Dominated convergence gives continuity of the kinetic potential up to the past boundary. -/
-theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (g : KineticPoint d → ℝ) (hgn : ∀ p, 0 ≤ g p) (hg : Continuous g)
-    (hgc : HasCompactSupport g)
-    (hgs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
-    (hgU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T)
+theorem continuousWithinAt_duhamelPotential
     (p₀ : KineticPoint d) (hp₀ : p₀ ∈ evolutionPastClosedCylinder Ω γ T) :
     ContinuousWithinAt (duhamelPotential K T g)
       (evolutionPastClosedCylinder Ω γ T) p₀ := by
   obtain ⟨a, btime, -, hab⟩ := exists_time_window_of_hasCompactSupport g hgc
   obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hgc
-  have hgb : ∀ p, g p ≤ C := fun p => (le_abs_self _).trans (by simpa using hC p)
-  have hC0 : 0 ≤ C := (hgn ⟨0, 0, 0⟩).trans (hgb _)
-  have hgm : Measurable g := hg.measurable
+  have hgb  := fun p => (le_abs_self _).trans (by exact hC p)
+  have hC0  := (hgn ⟨0, 0, 0⟩).trans (hgb _)
+  have hgm  := hg.measurable
   have hmeas := measurable_duhamelIntegrand K hΩ hγ g hgm
-  let F : KineticPoint d → ℝ → ℝ := fun p r =>
+  let F  := fun p r =>
     (Ioc p.time T).indicator (duhamelIntegrand K g p) r
   have hW : duhamelPotential K T g = fun p => ∫ r, F p r :=
     funext fun p => (integral_indicator measurableSet_Ioc).symm
@@ -64,14 +60,14 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
       ContinuousWithinAt (fun p => F p r) (evolutionPastClosedCylinder Ω γ T) p₀ := by
     filter_upwards [hne] with r hr
     rcases lt_trichotomy r p₀.time with h | h | h
-    · have hopen : {p : KineticPoint d | r < p.time} ∈ 𝓝 p₀ :=
+    · have hopen  :=
         (isOpen_lt continuous_const continuous_time).mem_nhds h
-      have hev : (fun p => F p r) =ᶠ[𝓝[evolutionPastClosedCylinder Ω γ T] p₀] fun _ => (0 : ℝ) := by
+      have hev : (fun p => F p r) =ᶠ[𝓝[evolutionPastClosedCylinder Ω γ T] p₀] fun _ => (0 ) := by
         filter_upwards [mem_nhdsWithin_of_mem_nhds hopen] with p hp
         exact indicator_of_notMem (fun hh => absurd hh.1 (not_lt.2 hp.le)) _
       have h0 : F p₀ r = 0 := indicator_of_notMem (fun hh => absurd hh.1 (not_lt.2 h.le)) _
       exact continuousWithinAt_const.congr_of_eventuallyEq hev h0
-    · exact absurd h (by simpa using hr)
+    · exact absurd h (hr)
     · by_cases hrT : r ≤ T
       · have hc1 := continuousOn_duhamelIntegrand hΩa hΩ B b S K hreal
           g hg hgc hgs T hgU r
@@ -82,7 +78,7 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
         have hc2 := (hc1 p₀ hp₀r).mono_of_mem_nhdsWithin hnh
         have hev : (fun p => F p r) =ᶠ[𝓝[evolutionPastClosedCylinder Ω γ T] p₀]
             fun p => duhamelIntegrand K g p r := by
-          have hopen : {p : KineticPoint d | p.time < r} ∈ 𝓝 p₀ :=
+          have hopen  :=
             (isOpen_lt continuous_time continuous_const).mem_nhds h
           filter_upwards [mem_nhdsWithin_of_mem_nhds hopen] with p hp
           exact indicator_of_mem (show r ∈ Ioc p.time T from ⟨hp, hrT⟩) _
@@ -95,21 +91,11 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
   rw [hW]
   exact continuousWithinAt_of_dominated
     (Eventually.of_forall fun p => (hFm p).aestronglyMeasurable)
-    (Eventually.of_forall fun p => Eventually.of_forall fun r => hbd p r) hint hcont
+    (Eventually.of_forall fun p => Eventually.of_forall (hbd p)) hint hcont
 
 /-- The kinetic Duhamel potential is continuous on the entire closed past cylinder. -/
-theorem continuousOn_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (g : KineticPoint d → ℝ) (hgn : ∀ p, 0 ≤ g p) (hg : Continuous g)
-    (hgc : HasCompactSupport g)
-    (hgs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
-    (hgU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) :
+theorem continuousOn_duhamelPotential  :
     ContinuousOn (duhamelPotential K T g) (evolutionPastClosedCylinder Ω γ T) :=
-  fun p hp => continuousWithinAt_duhamelPotential hΩa hΩ hγ B b S K hreal
-    g hgn hg hgc hgs T hgU p hp
+  (continuousWithinAt_duhamelPotential hΩa hΩ hγ B b S K hreal g hgn hg hgc hgs T hgU)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

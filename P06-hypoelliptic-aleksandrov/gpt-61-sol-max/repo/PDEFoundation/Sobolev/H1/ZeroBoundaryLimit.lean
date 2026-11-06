@@ -17,7 +17,7 @@ derivatives.  No boundedness or geometric regularity of the domain is needed
 for this closure statement.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal
 
@@ -25,9 +25,11 @@ namespace PDE
 
 open Filter MeasureTheory Topology
 
+variable {d : ℕ}
+
 /-- Commuting the two arguments of a pointwise difference does not change its
 `Lᵖ` extended norm. -/
-theorem eLpNorm_sub_swap {d : ℕ} {μ : Measure (Vec d)}
+theorem eLpNorm_sub_swap  {μ : Measure (Vec d)}
     (a b : Vec d → ℝ) {p : ℝ≥0∞} :
     eLpNorm (fun x => a x - b x) p μ =
       eLpNorm (fun x => b x - a x) p μ := by
@@ -41,7 +43,7 @@ theorem eLpNorm_sub_swap {d : ℕ} {μ : Measure (Vec d)}
 If an `H¹` representative is the coordinatewise `L²(volumeOn U)` limit of
 representatives admitting supported smooth `H¹₀` approximations, then its
 chosen representative belongs to `MemH10 U`. -/
-theorem memH10_of_tendsto_H1 {d : ℕ} {U : Set (Vec d)}
+theorem memH10_of_tendsto_H1  {U : Set (Vec d)}
     (hU : IsOpen U) (f : H1Function U) (F : ℕ → H1Function U)
     (hmem : ∀ n, MemH10 U (F n).toFun)
     (hfun : Tendsto

@@ -7,8 +7,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoundedSourc
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov SectionTwo
-open scoped ENNReal
+open MeasureTheory SectionTwo
+
 
 /-- Quadratic mass makes the unique Green measure finite at every horizon. -/
 instance stripGreen_isFiniteMeasure

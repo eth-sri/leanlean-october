@@ -19,19 +19,17 @@ abbrev BellmanSphere := {q : ℝ × ℝ // bellmanGauge q = 1}
 abbrev BellmanCoefficient (lam Lam : ℝ) := {b : ℝ // b ∈ Icc lam Lam}
 
 /-- The gauge polynomial is continuous. -/
-theorem bellmanGaugePower_continuous : Continuous bellmanGaugePower := by
-  exact (continuous_fst.pow 2).add (continuous_snd.pow 6)
+theorem bellmanGaugePower_continuous : Continuous bellmanGaugePower := (continuous_fst.pow 2).add (continuous_snd.pow 6)
 
 /-- The source gauge is continuous, including at the origin. -/
-theorem bellmanGauge_continuous : Continuous bellmanGauge := by
-  exact (Real.continuous_rpow_const (by norm_num : 0 ≤ (1 / 6 : ℝ))).comp
+theorem bellmanGauge_continuous : Continuous bellmanGauge := (Real.continuous_rpow_const (by norm_num : 0 ≤ (1 / 6 : ℝ))).comp
     bellmanGaugePower_continuous
 
 /-- Raising the gauge to the sixth power recovers its polynomial. -/
 theorem bellmanGauge_pow_six (q : ℝ × ℝ) :
     bellmanGauge q ^ 6 = bellmanGaugePower q := by
   simpa only [bellmanGauge, one_div, Nat.cast_ofNat] using
-    Real.rpow_inv_natCast_pow (bellmanGaugePower_nonneg q) (by decide : (6 : ℕ) ≠ 0)
+    Real.rpow_inv_natCast_pow (bellmanGaugePower_nonneg q) (by decide : (6 ) ≠ 0)
 
 /-- A point on the anisotropic sphere is away from the origin. -/
 theorem BellmanSphere.ne_zero (z : BellmanSphere) : z.val ≠ (0, 0) := by
@@ -42,10 +40,10 @@ theorem BellmanSphere.ne_zero (z : BellmanSphere) : z.val ≠ (0, 0) := by
 
 /-- The source sphere is a compact subset of the literal product plane. -/
 theorem bellmanSphere_isCompact : IsCompact {q : ℝ × ℝ | bellmanGauge q = 1} := by
-  have hc : IsClosed {q : ℝ × ℝ | bellmanGauge q = 1} :=
-    isClosed_eq bellmanGauge_continuous continuous_const
-  apply ((isCompact_Icc : IsCompact (Icc (-1 : ℝ) 1)).prod
-    (isCompact_Icc : IsCompact (Icc (-1 : ℝ) 1))).of_isClosed_subset hc
+  let sharedTerm_3648dbb532 := ((isCompact_Icc : IsCompact (Icc (-1 : ℝ) 1)))
+
+  apply (sharedTerm_3648dbb532.prod
+    sharedTerm_3648dbb532).of_isClosed_subset (isClosed_eq bellmanGauge_continuous continuous_const)
   intro q hq
   have hp : q.1 ^ 2 + q.2 ^ 6 = 1 := by
     have h := bellmanGauge_pow_six q
@@ -56,9 +54,9 @@ theorem bellmanSphere_isCompact : IsCompact {q : ℝ × ℝ | bellmanGauge q = 1
   have hv : q.2 ^ 6 ≤ 1 := by nlinarith only [hp, sq_nonneg q.1]
   have hv2 : q.2 ^ 2 ≤ 1 := by
     by_contra h
-    have hs : 1 < q.2 ^ 2 := lt_of_not_ge h
-    have ht : 1 < (q.2 ^ 2) ^ 3 := one_lt_pow₀ hs (by decide)
-    nlinarith only [hv, ht]
+
+
+    nlinarith only [hv, (show 1 < (q.2 ^ 2) ^ 3 from one_lt_pow₀ (lt_of_not_ge h) (by decide))]
   exact ⟨⟨by nlinarith only [hx], by nlinarith only [hx]⟩,
     ⟨by nlinarith only [hv2], by nlinarith only [hv2]⟩⟩
 

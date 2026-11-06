@@ -15,7 +15,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
 /-- Mathlib's actual smooth compact test space on the whole real line. -/
-abbrev BellmanRealTest := TestFunction (⊤ : TopologicalSpace.Opens ℝ) ℝ (⊤ : ℕ∞)
+abbrev BellmanRealTest := TestFunction (⊤ : TopologicalSpace.Opens ℝ) ℝ (⊤ )
 
 /-- The ordinary derivative of a real smooth compact test, in the same Mathlib test space. -/
 def bellmanTestDerivative (φ : BellmanRealTest) : BellmanRealTest where
@@ -42,10 +42,10 @@ theorem bellman_test_derivative_kernel (L : BellmanRealTest →ₗ[ℝ] ℝ)
   refine ⟨L ρ, ?_⟩
   intro φ
   let a : ℝ := ∫ x, φ x
-  let θ : BellmanRealTest := φ - a • ρ
-  have hiφ : Integrable (fun x => φ x) volume :=
+  let θ  := φ - a • ρ
+  have hiφ : Integrable (fun x => φ x)  :=
     φ.contDiff.continuous.integrable_of_hasCompactSupport φ.hasCompactSupport
-  have hiρ : Integrable (fun x => ρ x) volume :=
+  have hiρ : Integrable (fun x => ρ x)  :=
     ρ.contDiff.continuous.integrable_of_hasCompactSupport ρ.hasCompactSupport
   have hmean : (∫ x, θ x) = 0 := by
     change (∫ x, φ x - a * ρ x) = 0

@@ -14,17 +14,22 @@ open Set Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The anisotropic dilation is a genuine continuous linear map of the plane. -/
-def bellmanDilationLinear (r : ℝ) : (ℝ × ℝ) →L[ℝ] (ℝ × ℝ) :=
+def bellmanDilationLinear (r : ℝ)  :=
   (r ^ 3 • ContinuousLinearMap.fst ℝ ℝ ℝ).prod
     (r • ContinuousLinearMap.snd ℝ ℝ ℝ)
 
+variable (r : ℝ)
+
 /-- The linear-map representation preserves the literal source dilation. -/
-theorem bellmanDilationLinear_apply (r : ℝ) (q : ℝ × ℝ) :
+theorem bellmanDilationLinear_apply  (q : ℝ × ℝ) :
     bellmanDilationLinear r q = bellmanPlaneDilation r q := rfl
 
+section
+variable (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) (hphi : DifferentiableAt ℝ phi (bellmanPlaneDilation r q))
+
+include hphi
 /-- The position chain rule has the anisotropic cubic factor. -/
-theorem bellmanDx_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ)
-    (hphi : DifferentiableAt ℝ phi (bellmanPlaneDilation r q)) :
+theorem bellmanDx_comp_dilation   :
     bellmanDx (fun z => phi (bellmanPlaneDilation r z)) q =
       r ^ 3 * bellmanDx phi (bellmanPlaneDilation r q) := by
   have hf := hphi.hasFDerivAt.comp q (bellmanDilationLinear r).hasFDerivAt
@@ -38,8 +43,7 @@ theorem bellmanDx_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ 
   rfl
 
 /-- The velocity chain rule has the linear radial factor. -/
-theorem bellmanDv_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ)
-    (hphi : DifferentiableAt ℝ phi (bellmanPlaneDilation r q)) :
+theorem bellmanDv_comp_dilation   :
     bellmanDv (fun z => phi (bellmanPlaneDilation r z)) q =
       r * bellmanDv phi (bellmanPlaneDilation r q) := by
   have hf := hphi.hasFDerivAt.comp q (bellmanDilationLinear r).hasFDerivAt
@@ -51,15 +55,18 @@ theorem bellmanDv_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ 
   have he : ((0 : ℝ), r) = r • ((0 : ℝ), (1 : ℝ)) := by simp
   rw [he, map_smul]
   rfl
+end
 
+
+variable (hr : 0 < r) (phi : (ℝ × ℝ) → ℝ) (hp : ContDiffOn ℝ 2 phi bellmanPuncturedSet) (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet)
+
+include hr hp hq
 /-- The second velocity chain rule has the quadratic radial factor. -/
-theorem bellmanDvv_comp_dilation (r : ℝ) (hr : 0 < r)
-    (phi : (ℝ × ℝ) → ℝ) (hp : ContDiffOn ℝ 2 phi bellmanPuncturedSet)
-    (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
+theorem bellmanDvv_comp_dilation   :
     bellmanDvv (fun z => phi (bellmanPlaneDilation r z)) q =
       r ^ 2 * bellmanDvv phi (bellmanPlaneDilation r q) := by
-  have hmap (z : ℝ × ℝ) (hz : z ∈ bellmanPuncturedSet) :
-      bellmanPlaneDilation r z ∈ bellmanPuncturedSet :=
+  let sharedTerm_f7e7e765e3 := ((fun z => r * bellmanDv phi (bellmanPlaneDilation r z)))
+  have hmap (z : ℝ × ℝ) (hz : z ∈ bellmanPuncturedSet)  :=
     bellmanPlaneDilation_ne_zero r hr z hz
   have hd (z : ℝ × ℝ) (hz : z ∈ bellmanPuncturedSet) :
       DifferentiableAt ℝ phi (bellmanPlaneDilation r z) :=
@@ -68,15 +75,15 @@ theorem bellmanDvv_comp_dilation (r : ℝ) (hr : 0 < r)
   have hv : ContDiffOn ℝ 1 (bellmanDv phi) bellmanPuncturedSet :=
     (hp.fderiv_of_isOpen bellmanPuncturedSet_isOpen (m := 1) (by norm_num)).clm_apply
       contDiffOn_const
-  have hvd : DifferentiableAt ℝ (bellmanDv phi) (bellmanPlaneDilation r q) :=
+  have hvd  :=
     ((hv _ (hmap q hq)).contDiffAt
       (bellmanPuncturedSet_isOpen.mem_nhds (hmap q hq))).differentiableAt (by norm_num)
   have he : bellmanDv (fun z => phi (bellmanPlaneDilation r z)) =ᶠ[𝓝 q]
-      fun z => r * bellmanDv phi (bellmanPlaneDilation r z) := by
+      sharedTerm_f7e7e765e3 := by
     filter_upwards [bellmanPuncturedSet_isOpen.mem_nhds hq] with z hz
     exact bellmanDv_comp_dilation r phi z (hd z hz)
   have hf := (hvd.hasFDerivAt.comp q (bellmanDilationLinear r).hasFDerivAt).const_mul r
-  change HasFDerivAt (fun z => r * bellmanDv phi (bellmanPlaneDilation r z)) _ q at hf
+  change HasFDerivAt sharedTerm_f7e7e765e3 _ q at hf
   rw [bellmanDvv, he.fderiv_eq, hf.fderiv]
   simp only [ContinuousLinearMap.comp_apply, bellmanDilationLinear,
     ContinuousLinearMap.prod_apply, smul_apply, ContinuousLinearMap.coe_fst',
@@ -87,9 +94,7 @@ theorem bellmanDvv_comp_dilation (r : ℝ) (hr : 0 < r)
   ring
 
 /-- Both terms in the Bellman operator acquire the same quadratic factor under dilation. -/
-theorem bellmanOperator_comp_dilation (r : ℝ) (hr : 0 < r)
-    (phi : (ℝ × ℝ) → ℝ) (hp : ContDiffOn ℝ 2 phi bellmanPuncturedSet)
-    (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) (b : ℝ) :
+theorem bellmanOperator_comp_dilation   (b : ℝ) :
     bellmanOperator b (fun z => phi (bellmanPlaneDilation r z)) q =
       r ^ 2 * bellmanOperator b phi (bellmanPlaneDilation r q) := by
   have hmap := bellmanPlaneDilation_ne_zero r hr q hq

@@ -3,24 +3,26 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceBarrier
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BallEvolution
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelEquation
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Uniform quadratic comparison for smooth compact sources
 
 The bound depends on the source supremum, rather than its distance to the boundary.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open HypoellipticAleksandrov Parabolic Evolution Set
-open scoped Topology
+open Evolution
+
 
 /-- The stationary moving-domain convention recovers exactly the given ball. -/
 theorem boundedSource_stationary_domain {d : ℕ} (c : PDE.Vec d) (R t : ℝ) :
     movingDomain (PDE.euclideanBall c R) (fun _ => 0) t = PDE.euclideanBall c R := by
   ext y
   rw [mem_movingDomain_iff]
-  simp only [sub_zero]
+  simp
 
 /-- Smooth compact sources bounded by one satisfy the uniform quadratic comparison. -/
 theorem duhamel_smooth_le_boundedSourceQuadratic
@@ -30,20 +32,22 @@ theorem duhamel_smooth_le_boundedSourceQuadratic
     (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B)
     (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (b : PDE.Vec d → PDE.Vec d) (hb : IsSmoothDrift b)
+    (b : PDE.VectorField d) (hb : IsSmoothDrift b)
     (hbounds : HasTransportBounds m Lb b)
     (S : TerminalOperatorFamily (PDE.euclideanBall c R) (fun _ => 0))
     (K : MovingFiberKernel (PDE.euclideanBall c R) (fun _ => 0))
-    (hreal : RealizesTerminalEvolution (PDE.euclideanBall c R) (fun _ => 0)
+    (hreal : RealizesTerminalEvolution _ _
       (PDE.isOpen_euclideanBall c R).measurableSet B b S K)
-    (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
-    (hgs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
+    (g : HypoellipticAleksandrov.KineticScalarField d) (hg : Continuous g) (hc : HasCompactSupport g)
+    (hgs : ContDiff ℝ PDE.smoothOrder (fun q : ℝ × EvolutionAmbientState d =>
       g ⟨q.1, q.2.1, q.2.2⟩)) (hgn : ∀ p, 0 ≤ g p) (hgb : ∀ p, g p ≤ 1)
     (T : ℝ) (hs : tsupport g ⊆
       evolutionPastOpenCylinder (PDE.euclideanBall c R) (fun _ => 0) T)
     (p : KineticPoint d)
     (hp : p ∈ evolutionPastClosedCylinder (PDE.euclideanBall c R) (fun _ => 0) T) :
     duhamelPotential K T g p ≤ boundedSourceQuadratic c R lam p := by
+  let sharedTerm_ad5b0ffe6f := (evolutionPastOpenCylinder (PDE.euclideanBall c R) (fun _ => 0) T)
+
   have hΩ := LocalA.localBall_admissible c hR
   have hΩm := (PDE.isOpen_euclideanBall c R).measurableSet
   have hγ : Continuous (fun _ : ℝ => (0 : PDE.Vec d)) := continuous_const
@@ -57,22 +61,18 @@ theorem duhamel_smooth_le_boundedSourceQuadratic
     hB hBs hb g hgn hg hc hgs T hs hlam hm hell hbounds.2
   have hU := (isOpen_duhamelCylinder (PDE.isOpen_euclideanBall c R) hγ T).preimage
     (evolutionHomeomorph d).continuous
-  have hreg : ∀ q ∈ evolutionPastOpenCylinder (PDE.euclideanBall c R) (fun _ => 0) T,
+  have hreg : ∀ q ∈ sharedTerm_ad5b0ffe6f,
       IsSliceRegularAt W q := by
     intro q hq
     apply boundedSource_sliceRegular_of_smooth
-    have hqm : (evolutionHomeomorph d).symm q ∈
-        evolutionHomeomorph d ⁻¹'
-          evolutionPastOpenCylinder (PDE.euclideanBall c R) (fun _ => 0) T := by
-      simpa using hq
-    exact hWs.contDiffAt (hU.mem_nhds hqm)
-  have hslab : movingClosedSlab (PDE.euclideanBall c R) (fun _ => 0) p.time T ⊆
-      evolutionPastClosedCylinder (PDE.euclideanBall c R) (fun _ => 0) T :=
-    fun q hq => ⟨hq.2.1, hq.2.2⟩
+
+    exact hWs.contDiffAt (hU.mem_nhds (by
+        simpa))
+
   have hactive : movingActiveSlab (PDE.euclideanBall c R) (fun _ => 0) p.time T ⊆
-      evolutionPastOpenCylinder (PDE.euclideanBall c R) (fun _ => 0) T :=
+      sharedTerm_ad5b0ffe6f :=
     fun q hq => ⟨hq.2.1, hq.2.2⟩
-  have hQn : ∀ q ∈ movingClosedSlab (PDE.euclideanBall c R) (fun _ => 0) p.time T,
+  have hQn : ∀ q ∈ ((movingClosedSlab (PDE.euclideanBall c R) (fun _ => 0) p.time T)),
       0 ≤ Q q := by
     intro q hq
     apply boundedSourceQuadratic_nonneg hlam c R
@@ -87,7 +87,7 @@ theorem duhamel_smooth_le_boundedSourceQuadratic
     have hqn := hQn q hq
     dsimp only [Q] at hqn
     linarith only [hw, hqn, hq.1]
-  · exact (hWc.mono hslab).sub (continuous_boundedSourceQuadratic c R lam).continuousOn
+  · exact (hWc.mono (fun q hq => ⟨hq.2.1, hq.2.2⟩)).sub (continuous_boundedSourceQuadratic c R lam).continuousOn
   · intro q hq
     exact (hreg q (hactive hq)).sub (isSliceRegularAt_boundedSourceQuadratic c R lam q)
   · intro q hq
@@ -96,25 +96,25 @@ theorem duhamel_smooth_le_boundedSourceQuadratic
     have hw : viscousTransportedOperator B b 0 W q = -g q := by
       rw [viscousTransportedOperator_zero]
       exact hWe q (hactive hq)
-    have hqv := viscousTransportedOperator_boundedSourceQuadratic_le hd hlam B hell b c R q
+
     change 0 ≤ viscousTransportedOperator B b 0 W q -
       viscousTransportedOperator B b 0 Q q
     rw [hw]
-    exact sub_nonneg.mpr (hqv.trans (neg_le_neg (hgb q)))
+    exact sub_nonneg.mpr ((viscousTransportedOperator_boundedSourceQuadratic_le hd hlam B hell b c R q).trans (neg_le_neg (hgb q)))
   · intro q hq ht
-    have hw := duhamelPotential_eq_zero_of_terminal_le K T g q ht.ge
+
     change W q - Q q ≤ 0
     dsimp only [W]
-    rw [hw, zero_sub]
+    rw [(duhamelPotential_eq_zero_of_terminal_le K T g q ht.ge), zero_sub]
     exact neg_nonpos.mpr (hQn q hq)
   · intro q hq hfront
-    have hnot : q.position ∉ movingDomain (PDE.euclideanBall c R) (fun _ => 0) q.time :=
+    have hnot  :=
       ((isOpen_movingDomain_of_isAdmissibleEvolutionDomain (fun _ => 0) hΩ q.time
         ).frontier_eq ▸ hfront).2
-    have hw := duhamelPotential_eq_zero_of_not_mem K T g q hnot
+
     change W q - Q q ≤ 0
     dsimp only [W]
-    rw [hw, zero_sub]
+    rw [(duhamelPotential_eq_zero_of_not_mem K T g q hnot), zero_sub]
     exact neg_nonpos.mpr (hQn q hq)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

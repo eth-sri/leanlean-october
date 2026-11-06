@@ -12,11 +12,11 @@ import Mathlib.Tactic
 
 /-! # Preliminary autonomous admissibility without return-time estimates -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Holder Set MeasureTheory
-open scoped ENNReal
+open Parabolic Holder Set MeasureTheory
+
 
 /-- Smooth autonomous homogeneous solutions satisfy the preliminary exponent-six comparison. -/
 theorem smoothAutonomousP6_of_entrance (hentrance : EntranceStatement)
@@ -34,30 +34,28 @@ theorem smoothAutonomousP6_of_entrance (hentrance : EntranceStatement)
     refine ⟨hw.continuousOn, ?_⟩
     intro P₀ R hR hQ psi hpsi
     obtain ⟨U, _hU, hUQ, hps⟩ := smoothNear_regular hpsi
-    have hQQ : backwardCylinder P₀ R ⊆ O := subset_closure.trans hQ
+    have hQQ  := subset_closure.trans hQ
     have hpr := comparison_regular_mono hps (subset_closure.trans hUQ)
     have hwr := comparison_regular_mono hw hQQ
     have hneg := comparison_regular_const_mul hwr (-1)
-    have hdiff : IsKineticC112On (fun P => psi P - w P) (backwardCylinder P₀ R) := by
-      simpa only [neg_one_mul, sub_eq_add_neg] using comparison_regular_add hpr hneg
-    have hop : ∀ᵐ P ∂volume.restrict (backwardCylinder P₀ R),
-        autonomousScalarOperator A.a (fun Q => psi Q - w Q) P ≤
-          autonomousScalarOperator A.a psi P := by
-      filter_upwards [ae_restrict_of_ae_restrict_of_subset hQQ heqw,
-        ae_restrict_mem (isOpen_backwardCylinder P₀ R hR).measurableSet] with P he hP
-      have hadd := autonomous_operator_add hpr hneg A.a hP
-      have hmul := autonomous_operator_const_mul hwr (-1) A.a hP
-      simp only [neg_one_mul, ← sub_eq_add_neg] at hadd hmul
-      rw [hadd, hmul, he]
-      simp only [neg_zero, add_zero, le_refl]
+
+
     obtain ⟨_hmeas, hLp⟩ := autonomous_test_source hlam
       A.smooth.continuous.measurable A.bounds P₀ R hR hpsi
     have hn : {P | 0 < psi P - w P} = {P | w P < psi P} := by
       ext P
       exact sub_pos
     have hbnd := hestimate A P₀ R hR (fun P => psi P - w P)
-      (autonomousScalarOperator A.a psi)
-      (hpsi.continuousOn.sub (hw.continuousOn.mono hQ)) hdiff hLp hop
+      _
+      (hpsi.continuousOn.sub (hw.continuousOn.mono hQ)) (by
+          simpa only [neg_one_mul, sub_eq_add_neg] using comparison_regular_add hpr hneg) hLp (by
+          filter_upwards [ae_restrict_of_ae_restrict_of_subset hQQ heqw,
+            ae_restrict_mem (isOpen_backwardCylinder P₀ R hR).measurableSet] with P he hP
+          have hadd := autonomous_operator_add hpr hneg A.a hP
+          have hmul := autonomous_operator_const_mul hwr (-1) A.a hP
+          simp only [neg_one_mul, ← sub_eq_add_neg] at hadd hmul
+          rw [hadd, hmul, he]
+          simp only [neg_zero, add_zero, le_refl])
     have hbnd' : ∀ P ∈ closure (backwardCylinder P₀ R), psi P - w P ≤
         sSup ((fun P => max (psi P - w P) 0) '' kineticBoundary P₀ R) +
           C_A * R ^ (2 - (4 * (1 : ℝ) + 2) / 6) *
@@ -70,11 +68,11 @@ theorem smoothAutonomousP6_of_entrance (hentrance : EntranceStatement)
     · rintro y ⟨P, hP, rfl⟩
       simpa only [Nat.cast_one] using hbnd' P hP
   refine ⟨hsup u hu heq, ?_⟩
-  have hneg : IsKineticC112On (fun P => -u P) O := by
-    simpa only [neg_one_mul] using comparison_regular_const_mul hu (-1)
-  apply hsup (fun P => -u P) hneg
+
+  apply hsup (fun P => -u P) (by
+      simpa only [neg_one_mul] using comparison_regular_const_mul hu (-1))
   filter_upwards [heq, ae_restrict_mem hO.measurableSet] with P he hP
-  have hm := autonomous_operator_const_mul hu (-1) A.a hP
-  simpa only [neg_one_mul, he, neg_zero] using hm
+
+  simpa only [neg_one_mul, he, neg_zero] using (autonomous_operator_const_mul hu (-1) A.a hP)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

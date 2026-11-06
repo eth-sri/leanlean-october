@@ -12,7 +12,7 @@ This module records a support-local continuity gluing lemma for real-valued
 functions on an arbitrary topological space.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov
 
@@ -22,9 +22,7 @@ theorem continuous_mul_of_tsupport_subset
     {X : Type*} [TopologicalSpace X] {U : Set X} {b q : X → ℝ}
     (hU : IsOpen U) (hb : ContinuousOn b U) (hbsupp : tsupport b ⊆ U)
     (hq : ContinuousOn q U) :
-    Continuous (fun x => b x * q x) := by
-  refine (hb.mul hq).continuous_of_tsupport_subset hU ?_
-  exact (tsupport_mul_subset_left (f := b) (g := q)).trans hbsupp
+    Continuous (fun x => b x * q x) := (ContinuousOn.continuous_of_tsupport_subset (ContinuousOn.mul hb hq) hU (LE.le.trans tsupport_mul_subset_left hbsupp))
 
 /-- A unit-bounded compact cutoff turns locally continuous, locally bounded
 data into a globally continuous, compactly supported, globally bounded field. -/
@@ -47,9 +45,9 @@ theorem continuous_hasCompactSupport_norm_le_cutoff_mul
   · rw [Real.norm_eq_abs, abs_mul]
     calc
       |b x| * |q x| ≤ 1 * C :=
-        mul_le_mul (by simpa only [Real.norm_eq_abs] using hbunit x)
-          (by simpa only [Real.norm_eq_abs] using hqbound x hx)
-          (by simpa only [Real.norm_eq_abs] using (norm_nonneg (q x))) zero_le_one
+        mul_le_mul (hbunit x)
+          (hqbound x hx)
+          ((norm_nonneg (q x))) zero_le_one
       _ = C := one_mul C
       _ ≤ max C 0 := le_max_left _ _
   · rw [image_eq_zero_of_notMem_tsupport hx]

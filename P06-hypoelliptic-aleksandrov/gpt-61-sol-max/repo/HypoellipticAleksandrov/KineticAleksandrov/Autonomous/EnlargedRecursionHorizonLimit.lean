@@ -8,18 +8,18 @@ import Mathlib.Tactic
 
 /-! # Right horizon limits of the actual finite-strip exit measures -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory Filter
+
 open scoped Topology
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) (b : ℝ)
 
 /-- The actual occupation measure has no mass on a fixed physical time slice. -/
 theorem enlarged_stripGreen_time_slice_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) (b : ℝ) :
+     :
     stripGreen hH hLE hlam hLam A H ⊤ e {p | p.time = b} = 0 := by
   have h := stripGreen_timeMarginal hH hLE hlam hLam A H ⊤ e {b}
     (measurableSet_singleton b)
@@ -28,10 +28,7 @@ theorem enlarged_stripGreen_time_slice_zero
 
 /-- Every compact smooth probe has the correct right limit as its exit horizon decreases. -/
 theorem enlarged_exit_probe_right_limit
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
-    (b : ℝ) (hb : e.1.time < b) (f : exitProbeSubmodule) :
+     (hb : e.1.time < b) (f : exitProbeSubmodule) :
     let t := fun n : ℕ => b + 1 / ((n : ℝ) + 1)
     let ht := fun n : ℕ => hb.trans (show b < t n by
       dsimp [t]
@@ -49,9 +46,9 @@ theorem enlarged_exit_probe_right_limit
     simpa only [add_zero] using tendsto_one_div_add_atTop_nhds_zero_nat.const_add b
   let G := stripGreen hH hLE hlam hLam A H ⊤ e
   let g := forwardScalarOperator A.a (exitProbePhysical f)
-  have hg : Integrable g G :=
+  have hg  :=
     stripGreen_integrable hH hLE hlam hLam A H ⊤ e (exitProbeOperatorDatum A f)
-  let D := fun n : ℕ => {p : Point | p.time < t n}
+  let D := fun n  => {p : Point | p.time < t n}
   have hanti : Antitone D := by
     intro n m hnm p hp
     have hn : (n : ℝ) ≤ m := Nat.cast_le.mpr hnm
@@ -88,7 +85,7 @@ theorem enlarged_exit_probe_right_limit
         ∂stripExit hH hLE hlam hLam A H B (stripPoleFinite H e B hB)) =
         exitProbePhysical f e.1 + ∫ p in {p : Point | p.time < B}, g p ∂G := by
     have h := stripExitOfRealization_probe_integral hH hlam hLam A H
-      (stripEvolution hH hLE hlam hLam A H)
+      _
       (stripEvolution_spec hH hLE hlam hLam A H) B (stripPoleFinite H e B hB) f
     change _ = exitProbePhysical f e.1 + ∫ p, g p
       ∂stripGreen hH hLE hlam hLam A H B (stripPoleFinite H e B hB) at h

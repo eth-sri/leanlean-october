@@ -10,16 +10,18 @@ import Mathlib.MeasureTheory.Integral.Prod
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
-open scoped ENNReal
+
 variable {d : ℕ}
 
+variable (Λ : ℝ × EvolutionAmbientState d → ℝ)
+
 /-- The positive part of a compact test defines a positive source measure. -/
-def sourcePositiveMeasure (Λ : ℝ × EvolutionAmbientState d → ℝ) :
+def sourcePositiveMeasure  :
     Measure (ℝ × EvolutionAmbientState d) :=
   volume.withDensity (fun q => ENNReal.ofReal (max (Λ q) 0))
 
 /-- Integrable positive parts give finite test weights. -/
-theorem sourcePositiveMeasure_isFinite (Λ : ℝ × EvolutionAmbientState d → ℝ)
+theorem sourcePositiveMeasure_isFinite
     (hΛ : Continuous Λ) (hc : HasCompactSupport Λ) :
     IsFiniteMeasure (sourcePositiveMeasure Λ) := by
   have hint : Integrable (fun q => max (Λ q) 0) :=
@@ -31,12 +33,12 @@ theorem sourcePositiveMeasure_isFinite (Λ : ℝ × EvolutionAmbientState d → 
   exact ENNReal.ofReal_ne_top
 
 /-- The same test weight on physical starting points uses the coordinate equivalence. -/
-def sourcePositiveStartMeasure (Λ : ℝ × EvolutionAmbientState d → ℝ) :
+def sourcePositiveStartMeasure  :
     Measure (KineticPoint d) :=
   (sourcePositiveMeasure Λ).map (KineticPoint.equivProd d).symm
 
 /-- Positive compact test weights are finite also in the starting-point carrier. -/
-theorem sourcePositiveStartMeasure_isFinite (Λ : ℝ × EvolutionAmbientState d → ℝ)
+theorem sourcePositiveStartMeasure_isFinite
     (hΛ : Continuous Λ) (hc : HasCompactSupport Λ) :
     IsFiniteMeasure (sourcePositiveStartMeasure Λ) := by
   have := sourcePositiveMeasure_isFinite Λ hΛ hc
@@ -44,7 +46,7 @@ theorem sourcePositiveStartMeasure_isFinite (Λ : ℝ × EvolutionAmbientState d
   infer_instance
 
 /-- Integrals against positive test weights are the ordinary weighted integrals. -/
-theorem integral_sourcePositiveMeasure (Λ : ℝ × EvolutionAmbientState d → ℝ)
+theorem integral_sourcePositiveMeasure
     (hΛ : Measurable Λ) (f : ℝ × EvolutionAmbientState d → ℝ) :
     (∫ q, f q ∂sourcePositiveMeasure Λ) = ∫ q, max (Λ q) 0 * f q := by
   unfold sourcePositiveMeasure
@@ -54,8 +56,8 @@ theorem integral_sourcePositiveMeasure (Λ : ℝ × EvolutionAmbientState d → 
   simp only [ENNReal.toReal_ofReal (le_max_right _ _), smul_eq_mul]
 
 /-- A starting-coordinate weight integrates by the literal coordinate permutation. -/
-theorem integral_sourcePositiveStartMeasure (Λ : ℝ × EvolutionAmbientState d → ℝ)
-    (hΛ : Measurable Λ) (f : KineticPoint d → ℝ) (hf : Measurable f) :
+theorem integral_sourcePositiveStartMeasure
+    (hΛ : Measurable Λ) (f : HypoellipticAleksandrov.KineticScalarField d) (hf : Measurable f) :
     (∫ p, f p ∂sourcePositiveStartMeasure Λ) =
       ∫ q, max (Λ q) 0 * f ⟨q.1, q.2.1, q.2.2⟩ := by
   unfold sourcePositiveStartMeasure
@@ -63,21 +65,24 @@ theorem integral_sourcePositiveStartMeasure (Λ : ℝ × EvolutionAmbientState d
     hf.aestronglyMeasurable]
   exact integral_sourcePositiveMeasure Λ hΛ _
 
+variable {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
+
+include hΩ hγ in
 /-- The finite-window source action is Borel as a function of starting point. -/
-theorem measurable_duhamel_window {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (g : KineticPoint d → ℝ) (hg : Measurable g) (a T : ℝ) :
+theorem measurable_duhamel_window
+    (g : HypoellipticAleksandrov.KineticScalarField d) (hg : Measurable g) (a T : ℝ) :
     Measurable (fun p => ∫ r in Ioo a T, duhamelIntegrand K g p r) :=
   ((measurable_duhamelIntegrand K hΩ hγ g hg).stronglyMeasurable.integral_prod_right'
     (ν := volume.restrict (Ioo a T))).measurable
 
+variable (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ) (hc : HasCompactSupport Λ) (a T : ℝ)
+
+include hΩ hγ hΛ hc
 /-- Compact-test source weights reproduce the weighted Duhamel window integral. -/
 theorem integral_boundedSourceAction_positive_weight
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ)
-    (hc : HasCompactSupport Λ) (a T : ℝ)
-    (g : KineticPoint d → ℝ) (hg : Measurable g)
+
+
+    (g : HypoellipticAleksandrov.KineticScalarField d) (hg : Measurable g)
     (M : ℝ) (hM : 0 ≤ M) (hb : ∀ p, |g p| ≤ M) :
     (∫ q, g ⟨q.1, q.2.1, q.2.2⟩
       ∂boundedSourceActionMeasure K (sourcePositiveStartMeasure Λ) a T) =
@@ -90,11 +95,9 @@ theorem integral_boundedSourceAction_positive_weight
 
 /-- A compact test's lower time bound identifies its action with the Duhamel potential. -/
 theorem integral_boundedSourceAction_positive_potential
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ)
-    (hc : HasCompactSupport Λ) (a T : ℝ) (hfloor : ∀ q, Λ q ≠ 0 → a ≤ q.1)
-    (g : KineticPoint d → ℝ) (hg : Measurable g)
+
+     (hfloor : ∀ q, Λ q ≠ 0 → a ≤ q.1)
+    (g : HypoellipticAleksandrov.KineticScalarField d) (hg : Measurable g)
     (M : ℝ) (hM : 0 ≤ M) (hb : ∀ p, |g p| ≤ M) :
     (∫ q, g ⟨q.1, q.2.1, q.2.2⟩
       ∂boundedSourceActionMeasure K (sourcePositiveStartMeasure Λ) a T) =

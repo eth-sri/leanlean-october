@@ -16,7 +16,7 @@ its finite l1 norm explicit without introducing any analytic assumption.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open scoped ENNReal
+
 
 /-- A product exponential majorant on the literal two-index lattice. -/
 def positionYoungKernel (d : ℝ) (z : ℤ × ℤ) : ℝ :=
@@ -30,26 +30,29 @@ theorem position_overlap_majorant (c h k : ℝ) (hc : 0 < c) (hh : 0 ≤ h)
   rw [← Real.exp_add, ← Real.exp_add]
   apply Real.exp_le_exp.mpr
   rw [abs_of_nonneg hh]
-  have hm := le_max_left (h - 1) 0
-  have hm0 := le_max_right (h - 1) 0
-  nlinarith only [hc, hh, hk, hm, hm0]
 
+
+  nlinarith only [hc, hh, hk, (le_max_left (h - 1) 0), (le_max_right (h - 1) 0)]
+
+variable (d : ℝ) (hd : 0 < d)
+
+include hd
 /-- Exponential absolute-value tails on the integer grid are summable. -/
-theorem position_exp_abs_summable (d : ℝ) (hd : 0 < d) :
+theorem position_exp_abs_summable  :
     Summable (fun k : ℤ => Real.exp (-d * |(k : ℝ)|)) := by
+  let sharedTerm_5f9a113807 := ((Real.summable_exp_nat_mul_iff).mpr (show -d < 0 by linarith))
   apply summable_int_iff_summable_nat_and_neg.mpr
   constructor
-  · have h := (Real.summable_exp_nat_mul_iff).mpr (show -d < 0 by linarith)
+  ·
     simpa only [Int.cast_natCast, abs_of_nonneg (Nat.cast_nonneg (α := ℝ) _), mul_comm]
-      using h
-  · have h := (Real.summable_exp_nat_mul_iff).mpr (show -d < 0 by linarith)
+      using sharedTerm_5f9a113807
+  ·
     simpa only [Int.cast_neg, Int.cast_natCast, abs_neg,
-      abs_of_nonneg (Nat.cast_nonneg (α := ℝ) _), mul_comm] using h
+      abs_of_nonneg (Nat.cast_nonneg (α := ℝ) _), mul_comm] using sharedTerm_5f9a113807
 
 /-- The two-index majorant has finite real l1 mass. -/
-theorem positionYoungKernel_summable (d : ℝ) (hd : 0 < d) :
-    Summable (positionYoungKernel d) := by
-  exact (position_exp_abs_summable d hd).mul_of_nonneg
+theorem positionYoungKernel_summable  :
+    Summable (positionYoungKernel d) := (position_exp_abs_summable d hd).mul_of_nonneg
     (position_exp_abs_summable d hd) (fun _ => (Real.exp_pos _).le)
     (fun _ => (Real.exp_pos _).le)
 

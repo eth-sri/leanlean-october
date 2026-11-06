@@ -13,12 +13,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
+variable (H : Interval) (sMinus T : ℝ)
+
 /-- The physical finite strip, open at both time endpoints. -/
-def reconstructionStrip (H : Interval) (sMinus T : ℝ) : Set Point :=
+def reconstructionStrip  : Set Point :=
   {p | sMinus < p.time ∧ p.time < T ∧ p.velocity 0 ∈ H.carrier}
 
 /-- The prescribed exit omits the initial velocity face. -/
-def reconstructionExit (H : Interval) (sMinus T : ℝ) : Set Point :=
+def reconstructionExit  : Set Point :=
   {p | p.time = T ∧ p.velocity 0 ∈ Set.Icc H.lo H.hi} ∪
     {p | sMinus < p.time ∧ p.time < T ∧
       (p.velocity 0 = H.lo ∨ p.velocity 0 = H.hi)}

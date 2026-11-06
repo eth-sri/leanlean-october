@@ -3,11 +3,13 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentationCoordinates
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundarySolutionRegularity
 import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionJets
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Actual weak and smooth regularity of source-class homogeneous physical solutions -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic Evolution SectionTwo TheoremA Occupation
 
@@ -15,13 +17,13 @@ open Set MeasureTheory Parabolic Evolution SectionTwo TheoremA Occupation
 theorem mass_classical_homogeneous_weak {d : ℕ} {lam Lam : ℝ}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     {D : Set (KineticPoint d)} (hD : IsOpen D)
-    (u : KineticPoint d → ℝ) (hu : IsKineticC112On u D)
+    (u : HypoellipticAleksandrov.KineticScalarField d) (hu : IsKineticC112On u D)
     (he : ∀ P ∈ D, forwardKineticOperator (ofTimeVelocityCoefficient B) u P = 0) :
     IsWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
       (massPhysicalPoint ⁻¹' D) (u ∘ massPhysicalPoint) (fun _ => 0) := by
   let U := massPhysicalPoint ⁻¹' D
-  have hU : IsOpen U := hD.preimage continuous_massPhysicalPoint
-  have hc {f : KineticPoint d → ℝ} (hf : ContinuousOn f D) :
+
+  have hc {f : HypoellipticAleksandrov.KineticScalarField d} (hf : ContinuousOn f D) :
       ContinuousOn (f ∘ massPhysicalPoint) U :=
     hf.comp continuous_massPhysicalPoint.continuousOn (fun _ hx => hx)
   have hV (i : Fin d) : ContinuousOn
@@ -34,7 +36,7 @@ theorem mass_classical_homogeneous_weak {d : ℕ} {lam Lam : ℝ}
       (fun x => kineticVelocityHessian u (massPhysicalPoint x) j i) U :=
     hc ((continuous_apply i).comp_continuousOn
       ((continuous_apply j).comp_continuousOn hu.continuousOn_kineticVelocityHessian))
-  refine ⟨(hc hu.continuousOn).locallyIntegrableOn hU.measurableSet, ?_⟩
+  refine ⟨(hc hu.continuousOn).locallyIntegrableOn (hD.preimage continuous_massPhysicalPoint).measurableSet, ?_⟩
   intro ψ hψ hcompact hs
   have hi := Autonomous.integral_transportedAdjoint_of_anisotropic_jets
     (zIndependentCoefficient B) (identityDrift d) (sectionTwoCoefficient_fullBounds lam Lam B hB).1
@@ -61,7 +63,7 @@ theorem mass_classical_homogeneous_weak {d : ℕ} {lam Lam : ℝ}
       apply Finset.sum_congr rfl
       intro j _
       rw [(hB.2.2.2.1 (timeCoord d x) (diffusedCoord d x)).apply i j]
-    have hp := he (massPhysicalPoint x) hx
+    have hp := he _ hx
     rw [forwardKineticOperator_apply] at hp
     simp only [zIndependentCoefficient, identityDrift, Function.comp_apply, id_eq]
     rw [hsum]
@@ -75,16 +77,16 @@ theorem mass_classical_homogeneous_weak {d : ℕ} {lam Lam : ℝ}
         PDE.vecDot (diffusedCoord d x) (kineticPositionGradient u (massPhysicalPoint x)) = 0 := by
       simpa only [ofTimeVelocityCoefficient, massPhysicalPoint, add_right_comm] using! hp
     rw [hp', zero_mul]
-  · simp only [zero_mul, integral_zero]
+  · simp
 
 /-- Hörmander upgrades the exact C112 homogeneous class without a second position premise. -/
 theorem mass_classical_homogeneous_smooth
     (hH : HormanderHypoellipticityStatement) {d : ℕ} {lam Lam : ℝ}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     {D : Set (KineticPoint d)} (hD : IsOpen D)
-    (u : KineticPoint d → ℝ) (hu : IsKineticC112On u D)
+    (u : HypoellipticAleksandrov.KineticScalarField d) (hu : IsKineticC112On u D)
     (he : ∀ P ∈ D, forwardKineticOperator (ofTimeVelocityCoefficient B) u P = 0) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
+    ContDiffOn ℝ PDE.smoothOrder (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' D) := by
   have hw := mass_classical_homogeneous_weak B hB hD u hu he
   have hset : massPhysicalPoint ⁻¹' D =
@@ -92,7 +94,7 @@ theorem mass_classical_homogeneous_smooth
     ext x
     constructor
     · intro hx
-      exact ⟨massPhysicalPoint x, hx, rfl⟩
+      exact ⟨_, hx, rfl⟩
     · rintro ⟨P, hP, hEq⟩
       have hp : massPhysicalPoint x = P := congrArg sectionTwoPoint hEq.symm
       change massPhysicalPoint x ∈ D

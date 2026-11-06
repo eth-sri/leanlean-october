@@ -12,11 +12,13 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+variable (f : ℝ → ℝ) (y : ℝ)
+
 /-- The oriented first angular moment from the source. -/
-def bellmanAngularFirstMoment (f : ℝ → ℝ) (y : ℝ) : ℝ := ∫ z in 0..y, z * f z
+def bellmanAngularFirstMoment  : ℝ := ∫ z in 0..y, z * f z
 
 /-- The oriented second angular moment from the source. -/
-def bellmanAngularSecondMoment (f : ℝ → ℝ) (y : ℝ) : ℝ := ∫ z in 0..y, z ^ 2 * f z
+def bellmanAngularSecondMoment  : ℝ := ∫ z in 0..y, z ^ 2 * f z
 
 /-- Local absolute continuity on ordered intervals also applies to oriented intervals. -/
 theorem bellman_locallyAC_oriented {g : ℝ → ℝ}
@@ -28,16 +30,18 @@ theorem bellman_locallyAC_oriented {g : ℝ → ℝ}
 
 /-- Locally integrable angular densities have integrable polynomial moments on every interval. -/
 theorem bellmanAngularMoment_intervalIntegrable {f : ℝ → ℝ}
-    (hf : LocallyIntegrable f volume) (a b : ℝ) (n : ℕ) :
+    (hf : LocallyIntegrable f ) (a b : ℝ) (n : ℕ) :
     IntervalIntegrable (fun z => z ^ n * f z) volume a b := by
   apply (intervalIntegrable_iff').mpr
   exact (hf.integrableOn_isCompact isCompact_uIcc).continuousOn_mul
     (by fun_prop) isCompact_uIcc
 
+variable (β : ℝ)
+
 /-- Integrating the flux derivative gives its first-moment formula. -/
-theorem bellmanAngularFlux_integrated (β : ℝ) (f J : ℝ → ℝ)
+theorem bellmanAngularFlux_integrated  (f J : ℝ → ℝ)
     (hJ : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval J a b)
-    (hdJ : ∀ᵐ y ∂volume, deriv J y = -(β - 2) / 3 * y * f y) (y : ℝ) :
+    (hdJ : ∀ᵐ y, deriv J y = -(β - 2) / 3 * y * f y) (y : ℝ) :
     J y = J 0 - ((β - 2) / 3) * bellmanAngularFirstMoment f y := by
   have he := (bellman_locallyAC_oriented hJ 0 y).integral_deriv_eq_sub
   have hc : (∫ z in 0..y, deriv J z) =
@@ -54,18 +58,18 @@ theorem bellmanAngularFlux_integrated (β : ℝ) (f J : ℝ → ℝ)
   linarith
 
 /-- Two source interval integrations yield the exact angular identity. -/
-theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
-    (hf : LocallyIntegrable f volume)
+theorem bellmanAngularDensity_integrated  (f h J : ℝ → ℝ)
+    (hf : LocallyIntegrable f )
     (hh : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval h a b)
     (hJ : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval J a b)
-    (hdh : ∀ᵐ y ∂volume, deriv h y = J y - y ^ 2 * f y / 3)
-    (hdJ : ∀ᵐ y ∂volume, deriv J y = -(β - 2) / 3 * y * f y) :
+    (hdh : ∀ᵐ y, deriv h y = J y - y ^ 2 * f y / 3)
+    (hdJ : ∀ᵐ y, deriv J y = -(β - 2) / 3 * y * f y) :
     ∀ y : ℝ, h y = h 0 + J 0 * y - ((β - 2) / 3) * y *
       bellmanAngularFirstMoment f y + ((β - 3) / 3) * bellmanAngularSecondMoment f y := by
   intro y
   have hJa := bellman_locallyAC_oriented hJ 0 y
-  have hha := bellman_locallyAC_oriented hh 0 y
-  have hid : AbsolutelyContinuousOnInterval (fun z : ℝ => z) 0 y :=
+
+  have hid : AbsolutelyContinuousOnInterval (fun z  => z) 0 y :=
     (contDiff_id : ContDiff ℝ 1 (fun z : ℝ => z)).contDiffOn.absolutelyContinuousOnInterval
   have hip := hJa.integral_mul_deriv_eq_deriv_mul hid
   simp only [deriv_id'', mul_one, mul_zero, sub_zero] at hip
@@ -80,9 +84,9 @@ theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
         ring
       _ = _ := by rw [intervalIntegral.integral_const_mul]; rfl
   rw [hm, bellmanAngularFlux_integrated β f J hJ hdJ y] at hip
-  have hjInt : IntervalIntegrable J volume 0 y := hJa.continuousOn.intervalIntegrable
-  have hmInt := bellmanAngularMoment_intervalIntegrable hf 0 y 2
-  have hhe := hha.integral_deriv_eq_sub
+
+
+  have hhe := (bellman_locallyAC_oriented hh 0 y).integral_deriv_eq_sub
   have hhInt : (∫ z in 0..y, deriv h z) =
       (∫ z in 0..y, J z) - bellmanAngularSecondMoment f y / 3 := by
     calc
@@ -92,7 +96,7 @@ theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
         intro _
         exact hz
       _ = _ := by
-        rw [intervalIntegral.integral_sub hjInt (hmInt.div_const 3),
+        rw [intervalIntegral.integral_sub hJa.continuousOn.intervalIntegrable ((bellmanAngularMoment_intervalIntegrable hf 0 y 2).div_const 3),
           intervalIntegral.integral_div]
         rfl
   rw [hhInt, hip] at hhe

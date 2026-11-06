@@ -4,11 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PoleDensityN
 
 /-! # Uniform one-sign pole density of the actual physical infinite Green measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open scoped ENNReal NNReal
+open MeasureTheory
+
 
 /-- The actual one-sign infinite physical Green measure has a nonnegative Lebesgue density
 with the exact `r^(6/q-4)` norm bound. The constant is uniform in coefficient derivatives,
@@ -34,6 +34,6 @@ theorem one_sign_pole_density
     clock_physical_green_density hH hLE hlam hLam A c e he F hFm hFn hFd,
     polePhysicalDensity_eLpNorm_bound c e F hFm hFn q C (by linarith) hC.le hFN,
     stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
-      ⟨e, WithTop.coe_lt_top _, he⟩⟩
+      _⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

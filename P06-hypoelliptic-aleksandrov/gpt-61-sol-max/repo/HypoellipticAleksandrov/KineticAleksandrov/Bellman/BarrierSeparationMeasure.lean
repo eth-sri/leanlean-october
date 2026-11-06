@@ -6,8 +6,8 @@ import Mathlib.Tactic
 
 /-! # Riesz representation of the normalized positive separator -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set MeasureTheory
 open scoped CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -22,12 +22,8 @@ theorem exists_bellman_functional_probability (L : C(X, ℝ) →L[ℝ] ℝ)
       ∀ f : C(X, ℝ), ∫ x, f x ∂mu = L f := by
   let ell : C_c(X, ℝ) →ₚ[ℝ] ℝ :=
     { toFun := fun f => L f.toContinuousMap
-      map_add' := fun f g => by
-        change L (f.toContinuousMap + g.toContinuousMap) = _
-        exact map_add L _ _
-      map_smul' := fun c f => by
-        change L (c • f.toContinuousMap) = _
-        exact map_smul L _ _
+      map_add' := fun f g => (id (map_add L f.toContinuousMap g.toContinuousMap))
+      map_smul' := fun c f => (id (map_smul L c f.toContinuousMap))
       monotone' := fun f g hfg => by
         have hp := hpos (g.toContinuousMap - f.toContinuousMap)
           (fun x => sub_nonneg.mpr (hfg x))
@@ -35,11 +31,11 @@ theorem exists_bellman_functional_probability (L : C(X, ℝ) →L[ℝ] ℝ)
         exact sub_nonneg.mp hp }
   let mu := RealRMK.rieszMeasure ell
   have ht (f : C(X, ℝ)) : ∫ x, f x ∂mu = L f := by
-    let fc : C_c(X, ℝ) := ⟨f, HasCompactSupport.of_compactSpace f⟩
-    exact RealRMK.integral_rieszMeasure ell fc
-  have hmass : mu.real univ = 1 := by
-    simpa only [ContinuousMap.one_apply, integral_const, smul_eq_mul, mul_one] using (ht 1).trans h1
-  exact ⟨mu, isProbabilityMeasure_iff_real.mpr hmass, ht⟩
+
+    exact RealRMK.integral_rieszMeasure ell (⟨f, HasCompactSupport.of_compactSpace f⟩)
+
+  exact ⟨mu, isProbabilityMeasure_iff_real.mpr (by
+      simpa only [ContinuousMap.one_apply, integral_const, smul_eq_mul, mul_one] using (ht 1).trans h1), ht⟩
 
 /-- A continuous subspace avoiding strict positivity has an annihilating probability. -/
 theorem exists_bellman_subspace_probability (S : Submodule ℝ C(X, ℝ))

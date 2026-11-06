@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripI
 
 /-! # Actual larger-interval Green decomposition on all compact interior source tests -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 
 /-- Compact interior tests satisfy the exact Green decomposition with the true restart mixture. -/
 theorem nestedIntervalGreen_probe_identity
@@ -37,10 +37,10 @@ theorem nestedIntervalGreen_probe_identity
       fun ep => ∫ p, exitProbePhysical f p ∂stripGreen hH hLE hlam hLam A H2 T ep := by
     funext ep
     exact nestedSourcePotential_eq_green A H2 E T f ep
-  have hb := nested_integral_bind τ (stripGreen hH hLE hlam hLam A H2 T)
+  have hb := nested_integral_bind τ _
     (Measure.measurable_measure.mpr (fun B hB =>
       stripGreen_measurable_apply hH hLE hlam hLam A H2 T B hB))
-    (exitProbePhysical f)
+    _
     (nestedProbe_integrable A f
       (nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e))
   change _ = _ + ∫ p, u p ∂(stripExit hH hLE hlam hLam A H1 T e).restrict

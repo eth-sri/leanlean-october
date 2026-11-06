@@ -1,14 +1,17 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsBarrierGreenBounds
+import Mathlib.Tactic.NormNum
+
+
 
 /-! # Actual quantitative cutoff removal for regularized singular barriers -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov MeasureTheory Filter Set
-open scoped Topology ENNReal
+open MeasureTheory Filter
+open scoped Topology
 
 /-- Compact Green bounds pass to the noncompact sublinear barrier by extended Fatou.
 All cutoff generator errors have been proved quantitatively, and the signed endpoint is retained. -/
@@ -47,16 +50,15 @@ theorem barrier_green_cutoff_removal
   have herr : Tendsto (fun n : ℕ => C * (T : ℝ) / ((n : ℝ) + 1)) atTop (𝓝 0) := by
     simpa only [mul_zero, mul_one_div] using
       (tendsto_const_nhds (x := C * (T : ℝ))).mul
-        (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
+        (tendsto_one_div_add_atTop_nhds_zero_nat )
   have hbt : Tendsto b atTop (𝓝 ((∫ q, f q ∂kernelXV E T z) - f z)) := by
-    have hi := barrierRectCutoff_integral_tendsto (kernelXV E T z) f
+    have hi := barrierRectCutoff_integral_tendsto _ f
       hf.continuous.measurable hfi Y
     simpa only [add_zero] using (hi.sub hcut0).add herr
   have hboundF (n : ℕ) : (∫⁻ q, F n q ∂physicalOccupationMeasure E z T) ≤ ENNReal.ofReal (b n) :=
     hb ((n : ℝ) + 1) (by
-      have hn : (0 : ℝ) ≤ n := by positivity
-      linarith only [hn])
-  have hh := singular_fatou_of_real_bounds (physicalOccupationMeasure E z T) F
+      norm_num)
+  have hh := singular_fatou_of_real_bounds _ F
     (fun q => ENNReal.ofReal (c * w q)) hmF hpF b _ hbt hboundF
   simpa only [ENNReal.ofReal_mul hc.le,
     lintegral_const_mul' _ _ ENNReal.ofReal_lt_top.ne] using hh

@@ -9,7 +9,7 @@ public import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory
-open scoped ENNReal
+
 
 /-- The actual physical terminal kernel as a measurable function of elapsed real time. -/
 def physicalElapsedKernel (E : FullSpaceEvolution) (z : Z) : Kernel ℝ Z where
@@ -20,21 +20,23 @@ def physicalElapsedKernel (E : FullSpaceEvolution) (z : Z) : Kernel ℝ Z where
 /-- The elapsed physical kernel is uniformly sub-Markov, hence finite. -/
 instance physicalElapsedKernel_isFinite (E : FullSpaceEvolution) (z : Z) :
     IsFiniteKernel (physicalElapsedKernel E z) :=
-  ⟨⟨1, ENNReal.one_lt_top, fun t => kernelXV_mass_le_one E (Real.toNNReal t) z⟩⟩
+  ⟨⟨1, ENNReal.one_lt_top, fun t => kernelXV_mass_le_one E _ z⟩⟩
+
+variable (E : FullSpaceEvolution) (z : Z) (T : ℝ)
 
 /-- Occupation is integration of the actual terminal kernel over the source time window. -/
-def physicalOccupationMeasure (E : FullSpaceEvolution) (z : Z) (T : ℝ) : Measure Z :=
+def physicalOccupationMeasure  : Measure Z :=
   physicalElapsedKernel E z ∘ₘ volume.restrict (Ioc 0 T)
 
 /-- Source boxes are evaluated by the exact time integral of physical kernel masses. -/
-theorem physicalOccupationMeasure_apply (E : FullSpaceEvolution) (z : Z) (T : ℝ)
+theorem physicalOccupationMeasure_apply
     (s : Set Z) (hs : MeasurableSet s) :
     physicalOccupationMeasure E z T s =
       ∫⁻ t in Ioc 0 T, kernelXV E (Real.toNNReal t) z s :=
   Measure.bind_apply hs (physicalElapsedKernel E z).aemeasurable
 
 /-- The actual occupation measure has total mass at most the observation time. -/
-theorem physicalOccupationMeasure_mass_le (E : FullSpaceEvolution) (z : Z) (T : ℝ) :
+theorem physicalOccupationMeasure_mass_le  :
     physicalOccupationMeasure E z T univ ≤ ENNReal.ofReal T := by
   rw [physicalOccupationMeasure_apply _ _ _ _ MeasurableSet.univ]
   apply (lintegral_mono (fun t => kernelXV_mass_le_one E (Real.toNNReal t) z)).trans_eq

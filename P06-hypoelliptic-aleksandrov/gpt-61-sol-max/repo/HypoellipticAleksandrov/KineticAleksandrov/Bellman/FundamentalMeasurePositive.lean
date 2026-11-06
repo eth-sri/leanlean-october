@@ -5,34 +5,34 @@ import Mathlib.Tactic
 
 /-! # Nontriviality of the literal time-integrated Gaussian measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
 /-- Positive-time Lebesgue measure has infinite total mass. -/
 theorem bellmanPositiveTimeVolume_univ : bellmanPositiveTimeVolume univ = ⊤ := by
+  let sharedTerm_577e861c58 := ((volume.restrict (Ioi (0 : ℝ))))
   unfold bellmanPositiveTimeVolume
   calc
-    _ = (volume.restrict (Ioi (0 : ℝ)))
+    _ = sharedTerm_577e861c58
         (Subtype.val '' (univ : Set BellmanPositiveTime)) := by
       convert! (MeasurableEmbedding.subtype_coe (s := Ioi (0 : ℝ))
-        measurableSet_Ioi).comap_apply (volume.restrict (Ioi (0 : ℝ))) univ using 1
+        measurableSet_Ioi).comap_apply sharedTerm_577e861c58 univ using 1
     _ = ⊤ := by
       simp only [image_univ, Subtype.range_val_subtype]
-      change (volume.restrict (Ioi (0 : ℝ))) (Ioi 0) = ⊤
+      change sharedTerm_577e861c58 (Ioi 0) = ⊤
       rw [Measure.restrict_apply measurableSet_Ioi, inter_self, Real.volume_Ioi]
 
 /-- The time-integrated Gaussian density is strictly positive off its pole. -/
 theorem bellmanFundamentalDensity_pos (q : BellmanPuncturedPlane) :
     0 < bellmanFundamentalDensity q := by
-  have hf : Measurable (fun t : BellmanPositiveTime =>
-      ENNReal.ofReal (bellmanGaussianKernel t q.val)) :=
+  let sharedTerm_42ba19410a := ((fun t : BellmanPositiveTime => ENNReal.ofReal (bellmanGaussianKernel t q.val)))
+  have hf : Measurable sharedTerm_42ba19410a :=
     ENNReal.measurable_ofReal.comp
       (continuous_bellmanGaussianKernel.comp
         (continuous_id.prodMk continuous_const)).measurable
-  have hs : Function.support (fun t : BellmanPositiveTime =>
-      ENNReal.ofReal (bellmanGaussianKernel t q.val)) = univ := by
+  have hs : Function.support sharedTerm_42ba19410a = univ := by
     apply eq_univ_of_forall
     intro t
     exact (ENNReal.ofReal_pos.mpr (bellmanGaussianKernel_pos t q.val)).ne'
@@ -70,10 +70,7 @@ theorem bellmanPuncturedVolume_univ : bellmanPuncturedVolume univ = ⊤ := by
 /-- The actual fundamental measure is nonzero, without assuming a solution exists. -/
 theorem bellmanFundamentalMeasure_ne_zero : bellmanFundamentalMeasure ≠ 0 := by
   intro h
-  have hz : ∫⁻ q, bellmanFundamentalDensity q ∂bellmanPuncturedVolume = 0 := by
-    have h0 := congrArg (fun μ : Measure BellmanPuncturedPlane => μ univ) h
-    simpa only [bellmanFundamentalMeasure, withDensity_apply _ MeasurableSet.univ,
-      Measure.restrict_univ, Measure.coe_zero, Pi.zero_apply] using h0
+
   have hs : Function.support bellmanFundamentalDensity = univ := by
     apply eq_univ_of_forall
     intro q
@@ -81,6 +78,9 @@ theorem bellmanFundamentalMeasure_ne_zero : bellmanFundamentalMeasure ≠ 0 := b
   have hp := (lintegral_pos_iff_support measurable_bellmanFundamentalDensity).mpr
     (show 0 < bellmanPuncturedVolume (Function.support bellmanFundamentalDensity) by
       rw [hs, bellmanPuncturedVolume_univ]; exact ENNReal.zero_lt_top)
-  exact hp.ne' hz
+  exact hp.ne' (by
+
+      simpa only [bellmanFundamentalMeasure, withDensity_apply _ MeasurableSet.univ,
+        Measure.restrict_univ, Measure.coe_zero, Pi.zero_apply] using (congrArg (fun μ : Measure BellmanPuncturedPlane => μ univ) h))
 
 end HypoellipticAleksandrov.KineticAleksandrov

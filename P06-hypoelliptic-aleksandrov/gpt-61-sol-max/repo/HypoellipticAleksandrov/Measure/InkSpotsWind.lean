@@ -4,6 +4,11 @@ public import HypoellipticAleksandrov.Measure.InkSpotsGeometry
 public import HypoellipticAleksandrov.Measure.IntervalUnion
 public import Mathlib.MeasureTheory.Integral.Marginal
 public import Mathlib.MeasureTheory.Measure.Prod
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.IntervalDelayFinite
+import Lean.Elab.Tactic.SolveByElim
+import Mathlib.Tactic.Linarith
+
+
 
 /-!
 # Wind estimate for source ink spots
@@ -17,59 +22,57 @@ time sections and then integrates those section inequalities.
 
 noncomputable section
 
-open Function MeasureTheory Set
-open scoped ENNReal Topology
+open MeasureTheory Set
+open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem strictDense_timeInterval_subset_unit {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) :
+section
+variable {d : ℕ} {Gamma : HypoellipticAleksandrov.Parabolic.Region d} {xi : ℝ} {q : InkSpotsBox d} (hq : inkSpotsStrictDense Gamma xi q)
+
+include hq
+private theorem strictDense_timeInterval_subset_unit  :
     Ioo q.baseTime (q.baseTime + q.radius ^ 2) ⊆ Ioo 0 1 := by
-  have hr : 0 < q.radius := hq.1
+
   intro t ht
-  have htSource : (t, q.center) ∈ inkSpotsSourceBox q := by
-    rw [mem_inkSpotsSourceBox_iff]
-    refine ⟨ht.1, ht.2, ?_⟩
-    · intro i
-      simp only [sub_self, abs_zero]
-      exact hr
-  have htUnit : (t, q.center) ∈ inkSpotsUnitBox d := hq.2.1 htSource
+
+  have htUnit  := hq.2.1 (show (t, q.center) ∈ inkSpotsSourceBox q by
+      rw [mem_inkSpotsSourceBox_iff]
+      refine ⟨ht.1, ht.2, ?_⟩
+      · intro i
+        simp only [sub_self, abs_zero]
+        exact hq.1)
   rw [inkSpotsUnitBox, mem_parabolicBox_iff] at htUnit
   constructor
   · exact htUnit.1
   · convert htUnit.2.1 using 1
     norm_num
 
-private theorem strictDense_baseTime_nonneg {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) :
-    0 ≤ q.baseTime := by
-  have htime := strictDense_timeInterval_subset_unit hq
-  have hnonempty : q.baseTime < q.baseTime + q.radius ^ 2 := by
-    nlinarith [sq_pos_of_pos hq.1]
-  exact (Ioo_subset_Ioo_iff hnonempty).mp htime |>.1
+private theorem strictDense_baseTime_nonneg  :
+    0 ≤ q.baseTime := (Ioo_subset_Ioo_iff (by
+      nlinarith [sq_pos_of_pos hq.1])).mp (strictDense_timeInterval_subset_unit hq) |>.1
 
-private theorem strictDense_baseTime_add_sq_le_one {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) :
-    q.baseTime + q.radius ^ 2 ≤ 1 := by
-  have htime := strictDense_timeInterval_subset_unit hq
-  have hnonempty : q.baseTime < q.baseTime + q.radius ^ 2 := by
-    nlinarith [sq_pos_of_pos hq.1]
-  exact (Ioo_subset_Ioo_iff hnonempty).mp htime |>.2
+private theorem strictDense_baseTime_add_sq_le_one  :
+    q.baseTime + q.radius ^ 2 ≤ 1 := (Ioo_subset_Ioo_iff (by
+      nlinarith [sq_pos_of_pos hq.1])).mp (strictDense_timeInterval_subset_unit hq) |>.2
+end
+
 
 private def windAmbientTime (eta : ℝ) : Set ℝ :=
   Ioo 0 (1 + 4 / eta)
 
-private def windAmbientVelocity (d : ℕ) : Set (PDE.Vec d) :=
-  velocityCube (0 : PDE.Vec d) 1
+variable (d : ℕ)
 
-private def windAmbient (d : ℕ) (eta : ℝ) : Set (TimeVelocity d) :=
+private def windAmbientVelocity  : PDE.VelocityRegion d :=
+  velocityCube (0 ) 1
+
+private def windAmbient  (eta : ℝ) : HypoellipticAleksandrov.Parabolic.Region d :=
   windAmbientTime eta ×ˢ windAmbientVelocity d
 
-private theorem inkSpotsQ2_subset_windAmbient {d : ℕ} {eta : ℝ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
+variable {d : ℕ}
+
+private theorem inkSpotsQ2_subset_windAmbient  {eta : ℝ}
+    {Gamma : HypoellipticAleksandrov.Parabolic.Region d} {xi : ℝ} {q : InkSpotsBox d}
     (heta : 0 < eta) (hq : inkSpotsStrictDense Gamma xi q) :
     inkSpotsQ2 eta q ⊆ windAmbient d eta := by
   intro z hz
@@ -77,19 +80,19 @@ private theorem inkSpotsQ2_subset_windAmbient {d : ℕ} {eta : ℝ}
   rw [mem_inkSpotsQ2_iff] at hz
   refine ⟨?_, hz.2.2.2⟩
   constructor
-  · have hbase : 0 ≤ q.baseTime := strictDense_baseTime_nonneg hq
+  · have hbase  := strictDense_baseTime_nonneg hq
     nlinarith [sq_pos_of_pos hq.1]
-  · have htop : q.baseTime + q.radius ^ 2 ≤ 1 :=
+  · have htop  :=
       strictDense_baseTime_add_sq_le_one hq
-    have hbase : 0 ≤ q.baseTime := strictDense_baseTime_nonneg hq
-    have hsquare : q.radius ^ 2 ≤ 1 := by nlinarith [hbase]
+    have hbase  := strictDense_baseTime_nonneg hq
+
     rw [inkSpotsTerminalTime_eq] at hz
     have hdiv : 4 * q.radius ^ 2 / eta ≤ 4 / eta := by
       rw [div_le_div_iff_of_pos_right heta]
       nlinarith
     exact hz.2.1.trans_le (by linarith)
 
-private theorem inkSpotsD2_subset_windAmbient {d : ℕ} (Gamma : Set (TimeVelocity d))
+private theorem inkSpotsD2_subset_windAmbient  (Gamma : HypoellipticAleksandrov.Parabolic.Region d)
     (xi eta : ℝ) (heta : 0 < eta) :
     inkSpotsD2 Gamma xi eta ⊆ windAmbient d eta := by
   intro z hz
@@ -98,17 +101,19 @@ private theorem inkSpotsD2_subset_windAmbient {d : ℕ} (Gamma : Set (TimeVeloci
   rcases mem_iUnion.1 hz with ⟨hq, hz⟩
   exact inkSpotsQ2_subset_windAmbient heta hq hz
 
+variable (eta : ℝ) (q : InkSpotsBox d)
+
 /-- The time section of a forward source stack. -/
-private def windForwardInterval {d : ℕ} (eta : ℝ) (q : InkSpotsBox d) : Set ℝ :=
+private def windForwardInterval   : Set ℝ :=
   Ioo (q.baseTime + q.radius ^ 2) (inkSpotsTerminalTime eta q)
 
 /-- The uncut right-end expansion of a forward stack.  The first source
 enlargement is later clipped by the reference unit box. -/
-private def windExpandedInterval {d : ℕ} (eta : ℝ) (q : InkSpotsBox d) : Set ℝ :=
+private def windExpandedInterval   : Set ℝ :=
   Ioo (q.baseTime - 3 * q.radius ^ 2) (inkSpotsTerminalTime eta q)
 
-private theorem inkSpotsQ1_time_mem_windExpandedInterval {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} {q : InkSpotsBox d} {t : ℝ}
+private theorem inkSpotsQ1_time_mem_windExpandedInterval
+    {Gamma : HypoellipticAleksandrov.Parabolic.Region d} {xi eta : ℝ} {q : InkSpotsBox d} {t : ℝ}
     (heta : 0 < eta) (heta1 : eta < 1) (hq : inkSpotsStrictDense Gamma xi q)
     {v : PDE.Vec d} (ht : (t, v) ∈ inkSpotsQ1 q) :
     t ∈ windExpandedInterval eta q := by
@@ -118,49 +123,16 @@ private theorem inkSpotsQ1_time_mem_windExpandedInterval {d : ℕ}
   · exact ht.1
   · rw [inkSpotsTerminalTime_eq]
     norm_num at ht
-    have hr : 0 < q.radius := hq.1
+
     have hdiv : 4 * q.radius ^ 2 ≤ 4 * q.radius ^ 2 / eta := by
       rw [le_div_iff₀ heta]
-      nlinarith [sq_pos_of_pos hr]
+      nlinarith [sq_pos_of_pos hq.1]
     linarith
 
 private theorem isOpen_ordConnected_eq_Ioo_csInf_csSup (I : Set ℝ)
     (hIopen : IsOpen I) (hIord : I.OrdConnected) (hInonempty : I.Nonempty)
     (hIbelow : BddBelow I) (hIabove : BddAbove I) :
-    I = Ioo (sInf I) (sSup I) := by
-  apply Subset.antisymm
-  · intro x hx
-    have hinf : sInf I ≤ x := csInf_le hIbelow hx
-    have hsup : x ≤ sSup I := le_csSup hIabove hx
-    constructor
-    · by_contra hnot
-      have hxeq : x = sInf I := le_antisymm (le_of_not_gt hnot) hinf
-      rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hleft : x - eps / 2 ∈ I := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x - eps / 2) - x| = eps / 2 := by
-          rw [show (x - eps / 2) - x = -(eps / 2) by ring, abs_neg,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : sInf I ≤ x - eps / 2 := csInf_le hIbelow hleft
-      rw [← hxeq] at hle
-      linarith
-    · by_contra hnot
-      have hxeq : sSup I = x := le_antisymm (le_of_not_gt hnot) hsup
-      rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hright : x + eps / 2 ∈ I := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x + eps / 2) - x| = eps / 2 := by
-          rw [show (x + eps / 2) - x = eps / 2 by ring,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : x + eps / 2 ≤ sSup I := le_csSup hIabove hright
-      rw [hxeq] at hle
-      linarith
-  · exact IsConnected.Ioo_csInf_csSup_subset
-      ⟨hInonempty, hIord.isPreconnected⟩ hIbelow hIabove
+    I = Ioo (sInf I) (sSup I) := (KineticAleksandrov.Holder.Covering.open_ordConnected_eq_Ioo hIopen hInonempty hIbelow hIabove hIord)
 
 /-- Right-end interval expansion, clipped only at the left endpoint of the
 ambient interval.  This is the concrete map used for the time sections. -/
@@ -168,7 +140,7 @@ private def rightEndpointExpansion (a kappa : ℝ) (I : Set ℝ) : Set ℝ :=
   Ioo (max a (sSup I - kappa * (sSup I - sInf I))) (sSup I)
 
 private theorem rightEndpointExpansion_forwardInterval {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} (q : InkSpotsBox d)
+    {Gamma : HypoellipticAleksandrov.Parabolic.Region d} {xi eta : ℝ} (q : InkSpotsBox d)
     (heta : 0 < eta) (hq : inkSpotsStrictDense Gamma xi q) :
     rightEndpointExpansion 0 (1 + eta) (windForwardInterval eta q) =
       Ioo (max 0 (q.baseTime - 3 * q.radius ^ 2))
@@ -176,7 +148,7 @@ private theorem rightEndpointExpansion_forwardInterval {d : ℕ}
   unfold rightEndpointExpansion windForwardInterval
   have hnonempty : q.baseTime + q.radius ^ 2 < inkSpotsTerminalTime eta q := by
     rw [inkSpotsTerminalTime_eq]
-    have hsquare : 0 < q.radius ^ 2 := sq_pos_of_pos hq.1
+    have hsquare  := sq_pos_of_pos hq.1
     field_simp
     nlinarith
   rw [csInf_Ioo hnonempty, csSup_Ioo hnonempty]
@@ -204,16 +176,19 @@ private theorem rightEndpointExpansion_mono_of_subset {a kappa : ℝ}
     nlinarith
   · exact hsup
 
-private theorem rightEndpointExpansion_measure_le {a b kappa : ℝ} {I : Set ℝ}
+variable {a b kappa : ℝ}
+
+variable {I : Set ℝ}
+
+private theorem rightEndpointExpansion_measure_le
     (hkappa : 1 ≤ kappa) (hI : IsOpenSubinterval (Ioo a b) I) :
     volume (rightEndpointExpansion a kappa I) ≤
       ENNReal.ofReal kappa * volume I := by
-  have hIbelow : BddBelow I :=
-    ⟨a, fun x hx => (hI.2.2.2 hx).1.le⟩
-  have hIabove : BddAbove I :=
-    ⟨b, fun x hx => (hI.2.2.2 hx).2.le⟩
+  let sharedTerm_c34a4b628e := ((sSup I - kappa * (sSup I - sInf I)))
+
+
   have hIeq := isOpen_ordConnected_eq_Ioo_csInf_csSup I hI.2.1 hI.2.2.1
-    hI.1 hIbelow hIabove
+    hI.1 (⟨a, fun x hx => (hI.2.2.2 hx).1.le⟩) (⟨b, fun x hx => (hI.2.2.2 hx).2.le⟩)
   have hlt : sInf I < sSup I := by
     rw [hIeq] at hI
     exact nonempty_Ioo.mp hI.1
@@ -221,44 +196,41 @@ private theorem rightEndpointExpansion_measure_le {a b kappa : ℝ} {I : Set ℝ
     Real.volume_Ioo, Real.volume_Ioo]
   rw [← ENNReal.ofReal_mul (le_trans zero_le_one hkappa)]
   apply ENNReal.ofReal_le_ofReal
-  have hleft : sSup I - kappa * (sSup I - sInf I) ≤
-      max a (sSup I - kappa * (sSup I - sInf I)) := le_max_right _ _
+  have hleft : sharedTerm_c34a4b628e ≤
+      max a sharedTerm_c34a4b628e := le_max_right _ _
   nlinarith
 
-private theorem isOpenSubinterval_rightEndpointExpansion {a b kappa : ℝ}
-    {I : Set ℝ} (hkappa : 1 < kappa) (hI : IsOpenSubinterval (Ioo a b) I) :
+private theorem isOpenSubinterval_rightEndpointExpansion
+     (hkappa : 1 < kappa) (hI : IsOpenSubinterval (Ioo a b) I) :
     IsOpenSubinterval (Ioo a b) (rightEndpointExpansion a kappa I) := by
-  have hIbelow : BddBelow I :=
-    ⟨a, fun x hx => (hI.2.2.2 hx).1.le⟩
+
   have hIabove : BddAbove I :=
     ⟨b, fun x hx => (hI.2.2.2 hx).2.le⟩
   have hIeq := isOpen_ordConnected_eq_Ioo_csInf_csSup I hI.2.1 hI.2.2.1
-    hI.1 hIbelow hIabove
+    hI.1 (⟨a, fun x hx => (hI.2.2.2 hx).1.le⟩) hIabove
   have hlt : sInf I < sSup I := by
     rw [hIeq] at hI
     exact nonempty_Ioo.mp hI.1
-  have hupper : sSup I ≤ b := by
-    rcases hI.1 with ⟨x, hx⟩
-    apply (csSup_le_iff hIabove ⟨x, hx⟩).2
-    intro y hy
-    exact (hI.2.2.2 hy).2.le
-  have haUpper : a < sSup I := by
-    rcases hI.1 with ⟨x, hx⟩
-    exact (hI.2.2.2 hx).1.trans_le (le_csSup hIabove hx)
+
+
   unfold rightEndpointExpansion
   constructor
   · refine nonempty_Ioo.mpr (max_lt ?_ ?_)
-    · exact haUpper
-    · have hproduct : 0 < kappa * (sSup I - sInf I) :=
-        mul_pos (zero_lt_one.trans hkappa) (sub_pos.mpr hlt)
-      linarith
+    · exact (by
+        rcases hI.1 with ⟨x, hx⟩
+        exact (hI.2.2.2 hx).1.trans_le (le_csSup hIabove hx))
+    · nlinarith
   constructor
   · exact isOpen_Ioo
   constructor
   · exact ordConnected_Ioo
-  · exact Ioo_subset_Ioo (le_max_left _ _) hupper
+  · exact Ioo_subset_Ioo (le_max_left _ _) (by
+      rcases hI.1 with ⟨x, hx⟩
+      apply (csSup_le_iff hIabove ⟨x, hx⟩).2
+      intro y hy
+      exact (hI.2.2.2 hy).2.le)
 
-private theorem volume_sUnion_rightEndpointExpansion {a b kappa : ℝ}
+private theorem volume_sUnion_rightEndpointExpansion
     (hkappa : 1 < kappa) (B : Set (Set ℝ))
     (hB : ∀ I ∈ B, IsOpenSubinterval (Ioo a b) I)
     (hbounded : Bornology.IsBounded (⋃₀ B)) :
@@ -266,31 +238,30 @@ private theorem volume_sUnion_rightEndpointExpansion {a b kappa : ℝ}
       ENNReal.ofReal kappa * volume (⋃₀ B) := by
   apply volume_sUnion_monotone_interval_enlargement_of_le kappa hkappa (Ioo a b)
     isOpen_Ioo ordConnected_Ioo B (rightEndpointExpansion a kappa) hB hbounded
-  · intro I hI
-    exact isOpenSubinterval_rightEndpointExpansion hkappa hI
+  · simp_all [isOpenSubinterval_rightEndpointExpansion]
   · intro I hI _
     exact rightEndpointExpansion_measure_le hkappa.le hI
   · intro I₁ I₂ hI₁ hI₂ hsub
-    have hI₂below : BddBelow I₂ :=
-      ⟨a, fun x hx => (hI₂.2.2.2 hx).1.le⟩
-    have hI₁above : BddAbove I₁ :=
-      ⟨b, fun x hx => (hI₁.2.2.2 hx).2.le⟩
-    have hI₂above : BddAbove I₂ :=
-      ⟨b, fun x hx => (hI₂.2.2.2 hx).2.le⟩
-    exact rightEndpointExpansion_mono_of_subset hI₁.1 hI₂below hI₁above hI₂above
+
+
+
+    exact rightEndpointExpansion_mono_of_subset hI₁.1 (⟨a, fun x hx => (hI₂.2.2.2 hx).1.le⟩) (⟨b, fun x hx => (hI₁.2.2.2 hx).2.le⟩) (⟨b, fun x hx => (hI₂.2.2.2 hx).2.le⟩)
       hkappa.le hsub
 
-private def timeSection {d : ℕ} (S : Set (TimeVelocity d)) (v : PDE.Vec d) : Set ℝ :=
+variable {d : ℕ}
+
+private def timeSection  (S : HypoellipticAleksandrov.Parabolic.Region d) (v : PDE.Vec d) : Set ℝ :=
   {t | (t, v) ∈ S}
 
-private def windSectionFamily {d : ℕ} (Gamma : Set (TimeVelocity d))
-    (xi eta : ℝ) (v : PDE.Vec d) : Set (Set ℝ) :=
+variable (Gamma : HypoellipticAleksandrov.Parabolic.Region d) (xi eta : ℝ) (v : PDE.Vec d)
+
+private def windSectionFamily   : Set (Set ℝ) :=
   {I | ∃ q, inkSpotsStrictDense Gamma xi q ∧
     v ∈ velocityCube q.center (3 * q.radius) ∧ v ∈ velocityCube 0 1 ∧
     I = windForwardInterval eta q}
 
-private theorem timeSection_inkSpotsD2_eq_sUnion_windSectionFamily {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta : ℝ) (v : PDE.Vec d) :
+private theorem timeSection_inkSpotsD2_eq_sUnion_windSectionFamily
+     :
     timeSection (inkSpotsD2 Gamma xi eta) v =
       ⋃₀ (windSectionFamily Gamma xi eta v) := by
   ext t
@@ -309,14 +280,16 @@ private theorem timeSection_inkSpotsD2_eq_sUnion_windSectionFamily {d : ℕ}
     exact mem_iUnion.2 ⟨q, mem_iUnion.2 ⟨hq,
       (mem_inkSpotsQ2_iff).2 ⟨ht.1, ht.2, hvCenter, hvUnit⟩⟩⟩
 
-private theorem windForwardInterval_eligible {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} {q : InkSpotsBox d}
+variable {Gamma : HypoellipticAleksandrov.Parabolic.Region d} {xi eta : ℝ}
+
+private theorem windForwardInterval_eligible
+     {q : InkSpotsBox d}
     (heta : 0 < eta) (hq : inkSpotsStrictDense Gamma xi q) :
     IsOpenSubinterval (windAmbientTime eta) (windForwardInterval eta q) := by
   constructor
   · apply nonempty_Ioo.mpr
     rw [inkSpotsTerminalTime_eq]
-    have hsquare : 0 < q.radius ^ 2 := sq_pos_of_pos hq.1
+    have hsquare  := sq_pos_of_pos hq.1
     field_simp
     nlinarith
   constructor
@@ -324,10 +297,10 @@ private theorem windForwardInterval_eligible {d : ℕ}
   constructor
   · exact ordConnected_Ioo
   · intro t ht
-    have hbase : 0 ≤ q.baseTime := strictDense_baseTime_nonneg hq
-    have htop : q.baseTime + q.radius ^ 2 ≤ 1 :=
+    have hbase  := strictDense_baseTime_nonneg hq
+    have htop  :=
       strictDense_baseTime_add_sq_le_one hq
-    have hsquare : q.radius ^ 2 ≤ 1 := by nlinarith
+
     rw [windForwardInterval, mem_Ioo] at ht
     rw [windAmbientTime, mem_Ioo]
     constructor
@@ -338,8 +311,8 @@ private theorem windForwardInterval_eligible {d : ℕ}
         nlinarith
       exact ht.2.trans_le (by linarith)
 
-private theorem timeSection_inkSpotsD1_subset_expanded_windSections {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} (heta : 0 < eta)
+private theorem timeSection_inkSpotsD1_subset_expanded_windSections
+     (heta : 0 < eta)
     (heta1 : eta < 1) (v : PDE.Vec d) :
     timeSection (inkSpotsD1 Gamma xi) v ⊆
       ⋃₀ (rightEndpointExpansion 0 (1 + eta) ''
@@ -350,29 +323,32 @@ private theorem timeSection_inkSpotsD1_subset_expanded_windSections {d : ℕ}
   rcases mem_iUnion.1 ht with ⟨hq, ht⟩
   have htQ1 := ht
   rw [mem_inkSpotsQ1_iff] at ht
-  have hExpanded : t ∈ windExpandedInterval eta q :=
+  have hExpanded  :=
     inkSpotsQ1_time_mem_windExpandedInterval heta heta1 hq htQ1
   have hUnitTime : 0 < t := by
     rw [inkSpotsUnitBox, mem_parabolicBox_iff] at ht
     exact ht.2.2.2.1
-  have hUnitVelocity : v ∈ velocityCube (0 : PDE.Vec d) 1 := by
-    have hUnit := ht.2.2.2
-    rw [inkSpotsUnitBox, mem_parabolicBox_iff] at hUnit
-    exact hUnit.2.2
-  have hExpanded' : t ∈ rightEndpointExpansion 0 (1 + eta)
-      (windForwardInterval eta q) := by
-    rw [rightEndpointExpansion_forwardInterval q heta hq]
-    rw [windExpandedInterval, mem_Ioo] at hExpanded
-    constructor
-    · exact max_lt hUnitTime hExpanded.1
-    · exact hExpanded.2
-  refine mem_sUnion.2 ⟨rightEndpointExpansion 0 (1 + eta)
-      (windForwardInterval eta q), ?_, hExpanded'⟩
-  exact ⟨windForwardInterval eta q,
-    ⟨q, hq, ht.2.2.1, hUnitVelocity, rfl⟩, rfl⟩
 
-private theorem sUnion_windSectionFamily_bounded {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta : ℝ) (heta : 0 < eta)
+
+  refine mem_sUnion.2 ⟨rightEndpointExpansion 0 (1 + eta)
+      (windForwardInterval eta q), ?_, (show _ by
+          rw [rightEndpointExpansion_forwardInterval q heta hq]
+          rw [windExpandedInterval, mem_Ioo] at hExpanded
+          constructor
+          · exact max_lt hUnitTime hExpanded.1
+          · exact hExpanded.2)⟩
+  exact ⟨_,
+    ⟨q, hq, ht.2.2.1, (show _ by
+        have hUnit := ht.2.2.2
+        rw [inkSpotsUnitBox, mem_parabolicBox_iff] at hUnit
+        exact hUnit.2.2), rfl⟩, rfl⟩
+
+section
+variable (Gamma : HypoellipticAleksandrov.Parabolic.Region d) (xi eta : ℝ) (heta : 0 < eta)
+
+include heta
+private theorem sUnion_windSectionFamily_bounded
+
     (v : PDE.Vec d) :
     Bornology.IsBounded (⋃₀ windSectionFamily Gamma xi eta v) := by
   apply (Metric.isBounded_Ioo 0 (1 + 4 / eta)).subset
@@ -380,8 +356,8 @@ private theorem sUnion_windSectionFamily_bounded {d : ℕ}
   rcases hI with ⟨q, hq, _, _, rfl⟩
   exact (windForwardInterval_eligible heta hq).2.2.2
 
-private theorem volume_timeSection_inkSpotsD1_le_one_add_eta_mul_D2 {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta : ℝ) (heta : 0 < eta)
+private theorem volume_timeSection_inkSpotsD1_le_one_add_eta_mul_D2
+
     (heta1 : eta < 1) (v : PDE.Vec d) :
     volume (timeSection (inkSpotsD1 Gamma xi) v) ≤
       ENNReal.ofReal (1 + eta) *
@@ -401,15 +377,17 @@ private theorem volume_timeSection_inkSpotsD1_le_one_add_eta_mul_D2 {d : ℕ}
     _ = ENNReal.ofReal (1 + eta) *
         volume (timeSection (inkSpotsD2 Gamma xi eta) v) := by
       rw [timeSection_inkSpotsD2_eq_sUnion_windSectionFamily]
+end
 
-private theorem volume_eq_lintegral_timeSection {d : ℕ} (S : Set (TimeVelocity d))
+
+private theorem volume_eq_lintegral_timeSection  (S : HypoellipticAleksandrov.Parabolic.Region d)
     (hS : MeasurableSet S) :
     volume S = ∫⁻ v, volume (timeSection S v) := by
   rw [Measure.volume_eq_prod, Measure.prod_apply_symm hS]
   rfl
 
-private theorem volume_inkSpotsD1_le_one_add_eta_mul_inkSpotsD2 {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta : ℝ) (heta : 0 < eta)
+private theorem volume_inkSpotsD1_le_one_add_eta_mul_inkSpotsD2
+    (Gamma : HypoellipticAleksandrov.Parabolic.Region d) (xi eta : ℝ) (heta : 0 < eta)
     (heta1 : eta < 1) :
     volume (inkSpotsD1 Gamma xi) ≤
       ENNReal.ofReal (1 + eta) * volume (inkSpotsD2 Gamma xi eta) := by
@@ -419,32 +397,30 @@ private theorem volume_inkSpotsD1_le_one_add_eta_mul_inkSpotsD2 {d : ℕ}
     (∫⁻ v, volume (timeSection (inkSpotsD1 Gamma xi) v)) ≤
         ∫⁻ v, ENNReal.ofReal (1 + eta) *
           volume (timeSection (inkSpotsD2 Gamma xi eta) v) :=
-      lintegral_mono fun v =>
-        volume_timeSection_inkSpotsD1_le_one_add_eta_mul_D2 Gamma xi eta heta heta1 v
+      lintegral_mono (volume_timeSection_inkSpotsD1_le_one_add_eta_mul_D2 Gamma xi eta heta heta1)
     _ = ENNReal.ofReal (1 + eta) *
         ∫⁻ v, volume (timeSection (inkSpotsD2 Gamma xi eta) v) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
 
-private theorem isBounded_velocityCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) :
+private theorem isBounded_velocityCube  (v₀ : PDE.Vec d) (r : ℝ) :
     Bornology.IsBounded (velocityCube v₀ r) := by
   apply (isCompact_velocityClosedCube v₀ r).isBounded.subset
   intro v hv i
   exact le_of_lt (hv i)
 
-private theorem volume_inkSpotsD2_ne_top {d : ℕ} (Gamma : Set (TimeVelocity d))
-    (xi eta : ℝ) (heta : 0 < eta) :
-    volume (inkSpotsD2 Gamma xi eta) ≠ ∞ := by
-  apply ne_of_lt
-  apply lt_of_le_of_lt (measure_mono (inkSpotsD2_subset_windAmbient Gamma xi eta heta))
-  apply Bornology.IsBounded.measure_lt_top
-  exact (Metric.isBounded_Ioo 0 (1 + 4 / eta)).prod
-    (isBounded_velocityCube (0 : PDE.Vec d) 1)
+variable (Gamma : HypoellipticAleksandrov.Parabolic.Region d) (xi eta : ℝ) (heta : 0 < eta)
+
+include heta
+private theorem volume_inkSpotsD2_ne_top   :
+    volume (inkSpotsD2 Gamma xi eta) ≠ ∞ := (ne_of_lt
+  (lt_of_le_of_lt (measure_mono (inkSpotsD2_subset_windAmbient Gamma xi eta heta))
+    (Bornology.IsBounded.measure_lt_top
+      (Bornology.IsBounded.prod (Metric.isBounded_Ioo 0 (1 + 4 / eta)) (isBounded_velocityCube 0 1)))))
 
 /-- Krylov--Safonov, Lemma 2.3 (wind): the clipped first enlargements are controlled
 by the forward stacks. -/
 theorem volume_inkSpotsD1_toReal_le_one_add_eta_mul_D2
-    {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta : ℝ)
-    (heta : 0 < eta) (heta1 : eta < 1) :
+      (heta1 : eta < 1) :
     (volume (inkSpotsD1 Gamma xi)).toReal ≤
       (1 + eta) * (volume (inkSpotsD2 Gamma xi eta)).toReal := by
   have hmeasure := volume_inkSpotsD1_le_one_add_eta_mul_inkSpotsD2

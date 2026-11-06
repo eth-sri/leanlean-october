@@ -6,11 +6,11 @@ import Mathlib.Tactic
 
 /-! # Scaled similarity tails stay bounded at every nonzero position-axis point -/
 
-@[expose] public noncomputable section
+@[expose] public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-open Filter Asymptotics Set
+open Filter Asymptotics
 open scoped Topology
 
 /-- Exact power cancellation for every real jet degree, including negative degrees. -/
@@ -23,8 +23,10 @@ theorem scalar_similarity_power_cancel_general (beta x v : ℝ) (hx : 0 < x) :
   have hp := (Real.rpow_pos_of_pos hx (beta / 3)).ne'
   field_simp
 
+variable {ι : Type*} (l : Filter ι)
+
 /-- The signed similarity coordinate tends to the appropriate infinite ray in a joint axis limit. -/
-theorem scalarSimilarity_tendsto_axis {ι : Type*} (l : Filter ι) (X V : ι → ℝ)
+theorem scalarSimilarity_tendsto_axis  (X V : ι → ℝ)
     (v : ℝ) (hv : v ≠ 0) (hX : Tendsto X l (𝓝 0))
     (hXp : ∀ᶠ i in l, 0 < X i) (hV : Tendsto V l (𝓝 v)) :
     Tendsto (fun i => scalarSimilarity (X i) (V i)) l
@@ -46,29 +48,29 @@ theorem scalarSimilarity_tendsto_axis {ι : Type*} (l : Filter ι) (X V : ι →
       hV.neg.neg_mul_atTop (neg_neg_of_pos hv) hInv
 
 /-- Two actual similarity-tail bounds give local boundedness after kinetic rescaling at an axis. -/
-theorem scalar_scaled_tail_bounded {ι : Type*} (l : Filter ι) (f : ℝ → ℝ) (beta : ℝ)
+theorem scalar_scaled_tail_bounded  (f : ℝ → ℝ) (beta : ℝ)
     (ht : IsBigO atTop f (fun s => Real.rpow |s| beta))
     (hb : IsBigO atBot f (fun s => Real.rpow |s| beta))
     (X V : ι → ℝ) (v : ℝ) (hv : v ≠ 0) (hX : Tendsto X l (𝓝 0))
     (hXp : ∀ᶠ i in l, 0 < X i) (hV : Tendsto V l (𝓝 v)) :
     IsBigO l (fun i => Real.rpow (X i) (beta / 3) * f (scalarSimilarity (X i) (V i)))
-      (fun _ => (1 : ℝ)) := by
-  have hS := scalarSimilarity_tendsto_axis l X V v hv hX hXp hV
-  have hf : IsBigO l (fun i => f (scalarSimilarity (X i) (V i)))
-      (fun i => Real.rpow |scalarSimilarity (X i) (V i)| beta) := by
-    by_cases hvn : v < 0
-    · rw [ite_eq_left hvn] at hS
-      exact ht.comp_tendsto hS
-    · rw [ite_eq_right hvn] at hS
-      exact hb.comp_tendsto hS
-  have hm := (isBigO_refl (fun i => Real.rpow (X i) (beta / 3)) l).mul hf
-  have he : (fun i => Real.rpow (X i) (beta / 3) *
-      Real.rpow |scalarSimilarity (X i) (V i)| beta) =ᶠ[l] fun i => Real.rpow |V i| beta := by
-    filter_upwards [hXp] with i hi
-    exact scalar_similarity_power_cancel_general beta (X i) (V i) hi
-  have hP : Tendsto (fun i => Real.rpow |V i| beta) l (𝓝 (Real.rpow |v| beta)) := by
-    simpa only [Real.rpow_eq_pow, Function.comp_def] using
-      (Real.continuousAt_rpow_const |v| beta (Or.inl (abs_ne_zero.mpr hv))).tendsto.comp hV.abs
-  exact (hm.congr' EventuallyEq.rfl he).trans (isBigO_const_of_tendsto hP one_ne_zero)
+      (fun _ => (1 : ℝ)) := (IsBigO.trans
+  (IsBigO.congr'
+    (IsBigO.mul (isBigO_refl (fun i => (X i).rpow (beta / 3)) l)
+      (if hvn : v < 0 then
+        IsBigO.comp_tendsto ht
+          (Eq.mp (congrArg (fun _a => Tendsto (fun i => scalarSimilarity (X i) (V i)) l _a) (ite_eq_left hvn))
+            (scalarSimilarity_tendsto_axis l X V v hv hX hXp hV))
+      else
+        IsBigO.comp_tendsto hb
+          (Eq.mp (congrArg (fun _a => Tendsto (fun i => scalarSimilarity (X i) (V i)) l _a) (ite_eq_right hvn))
+            (scalarSimilarity_tendsto_axis l X V v hv hX hXp hV))))
+    EventuallyEq.rfl
+    (mp_mem hXp (univ_mem' (id fun i hi => scalar_similarity_power_cancel_general beta (X i) (V i) hi))))
+  (isBigO_const_of_tendsto
+    (id
+      (Tendsto.comp (ContinuousAt.tendsto (Real.continuousAt_rpow_const |v| beta (Or.inl (abs_ne_zero.mpr hv))))
+        (Tendsto.abs hV)))
+    one_ne_zero))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

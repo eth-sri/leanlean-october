@@ -5,8 +5,8 @@ public import Mathlib.Topology.MetricSpace.Thickening
 
 /-! # Support control by the actual mollifier radius -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set Metric
 variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]

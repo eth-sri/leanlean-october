@@ -41,19 +41,17 @@ theorem positionOverlapDelay_le (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ
   unfold positionOverlapDelay
   by_cases h : 0 ≤ (i : ℝ) - (j : ℝ) - 1
   · rw [max_eq_left h]
-    have heup := (enlargedTimeBin_bounds c.r s e.time j he.1).2
-    have hzlo := (enlargedTimeBin_bounds c.r s z.time i hz.1).1
-    nlinarith only [heup, hzlo]
+
+
+    nlinarith only [((enlargedTimeBin_bounds c.r s e.time j he.1).2), ((enlargedTimeBin_bounds c.r s z.time i hz.1).1)]
   · rw [max_eq_right (le_of_not_ge h), zero_mul, add_zero]
     exact ht.le
 
+variable (hpush : PushforwardStatement) (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (hc : |c.vbar| = 2 * c.r) (s x : ℝ) (j i : ℕ) (k ell : ℤ) (e : Point) (he : e ∈ enlargedStartCell c s x j k) (hv : e.velocity 0 ∈ c.active)
+
+include hpush hc he hv
 /-- A source pole obeys the restarted-tail norm bound on any output cell. -/
-theorem positionActiveDensity_output_tail (hpush : PushforwardStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (hc : |c.vbar| = 2 * c.r)
-    (s x : ℝ) (j i : ℕ) (k ell : ℤ) (e : Point)
-    (he : e ∈ enlargedStartCell c s x j k) (hv : e.velocity 0 ∈ c.active)
+theorem positionActiveDensity_output_tail
     (q : ℝ) (hq : 0 < q) (K : ℝ≥0∞)
     (htail : positionPositiveNorm
       (volume.restrict {z | e.time + positionOverlapDelay i j * c.r ^ 2 ≤ z.time ∧
@@ -73,12 +71,7 @@ theorem positionActiveDensity_output_tail (hpush : PushforwardStatement)
   exact ⟨positionOverlapDelay_le c s x j i k ell e z he hcell.1 hs.1, hs.2.1⟩
 
 /-- Cells outside the finite-speed overlap region receive no density contribution. -/
-theorem positionActiveDensity_output_zero (hpush : PushforwardStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (hc : |c.vbar| = 2 * c.r)
-    (s x : ℝ) (j i : ℕ) (k ell : ℤ) (e : Point)
-    (he : e ∈ enlargedStartCell c s x j k) (hv : e.velocity 0 ∈ c.active)
+theorem positionActiveDensity_output_zero
     (hno : ¬(j ≤ i ∧ |((ell - k : ℤ) : ℝ)| ≤ 5 * ((i : ℝ) - (j : ℝ) + 1))) :
     ∀ᵐ z ∂volume.restrict (enlargedOutputCell c s x i ell),
       positionActiveDensity hH hLE hlam hLam A c e z = 0 := by

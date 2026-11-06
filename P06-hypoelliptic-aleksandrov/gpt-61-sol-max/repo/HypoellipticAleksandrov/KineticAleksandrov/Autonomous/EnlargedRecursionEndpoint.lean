@@ -4,14 +4,17 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripU
 
 /-! # Nested union identities retaining a pole at the lower observation time -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+ public section
 
+namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+open MeasureTheory
+
+section
+variable (H1 H2 : FiniteIntervalUnion) (s T : ℝ) (mu : Measure Point) (hmu : ∀ᵐ p ∂mu, p ∈ finiteUnionExitSet H1 s T)
+
+include hmu
 /-- On the prescribed exit, lowering its time origin does not change an internal face. -/
-theorem enlarged_internal_restrict_eq (H1 H2 : FiniteIntervalUnion) (s T : ℝ)
-    (mu : Measure Point) (hmu : ∀ᵐ p ∂mu, p ∈ finiteUnionExitSet H1 s T) :
+theorem enlarged_internal_restrict_eq  :
     mu.restrict (finiteUnionInternalExit H1 H2 (s - 1) T) =
       mu.restrict (finiteUnionInternalExit H1 H2 s T) := by
   apply Measure.restrict_congr_set
@@ -21,8 +24,7 @@ theorem enlarged_internal_restrict_eq (H1 H2 : FiniteIntervalUnion) (s T : ℝ)
       p.velocity 0 ∈ frontier H1.carrier ∩ H2.carrier) ↔
     (s < p.time ∧ p.time < T ∧ p.velocity 0 ∈ frontier H1.carrier ∩ H2.carrier)
   rcases hp with hp | hp
-  · rw [hp.1]
-    simp only [lt_self_iff_false, false_and, and_false]
+  · simp_all
   · constructor
     · intro h
       exact ⟨hp.1, h.2⟩
@@ -30,8 +32,7 @@ theorem enlarged_internal_restrict_eq (H1 H2 : FiniteIntervalUnion) (s T : ℝ)
       exact ⟨by linarith [h.1], h.2⟩
 
 /-- On a smaller prescribed exit, lowering time does not change the larger outer face. -/
-theorem enlarged_outer_restrict_eq (H1 H2 : FiniteIntervalUnion) (s T : ℝ)
-    (mu : Measure Point) (hmu : ∀ᵐ p ∂mu, p ∈ finiteUnionExitSet H1 s T) :
+theorem enlarged_outer_restrict_eq  :
     mu.restrict (finiteUnionExitSet H2 (s - 1) T) =
       mu.restrict (finiteUnionExitSet H2 s T) := by
   apply Measure.restrict_congr_set
@@ -42,8 +43,7 @@ theorem enlarged_outer_restrict_eq (H1 H2 : FiniteIntervalUnion) (s T : ℝ)
     (p.time = T ∧ p.velocity 0 ∈ closure H2.carrier ∨
       s < p.time ∧ p.time < T ∧ p.velocity 0 ∈ frontier H2.carrier)
   rcases hp with hp | hp
-  · rw [hp.1]
-    simp only [lt_self_iff_false, false_and, and_false, or_false]
+  · simp_all
   · constructor
     · rintro (h | h)
       · exact Or.inl h
@@ -51,6 +51,8 @@ theorem enlarged_outer_restrict_eq (H1 H2 : FiniteIntervalUnion) (s T : ℝ)
     · rintro (h | h)
       · exact Or.inl h
       · exact Or.inr ⟨by linarith [h.1], h.2⟩
+end
+
 
 /-- The literal nested union decomposition is valid also at the lower time endpoint. -/
 theorem enlarged_nested_union_point
@@ -69,12 +71,12 @@ theorem enlarged_nested_union_point
       (finiteUnionExit hH hLE hlam hLam A H1 T e).restrict (finiteUnionExitSet H2 s T) +
         (finiteUnionPointRestartPoles hH hLE hlam hLam A H1 H2 s T e).bind
           (finiteUnionExit hH hLE hlam hLam A H2 T) := by
-  have hs : s - 1 < e.1.time := by linarith
+
   have hm : ∀ᵐ p ∂finiteUnionExit hH hLE hlam hLam A H1 T e,
       p ∈ finiteUnionExitSet H1 s T := by
     rw [ae_iff]
     exact finiteUnionExit_compl_exit hH hLE hlam hLam A H1 s T e he
-  have h := strip_nested_union_point hH hLE hlam hLam A H1 H2 hsub (s - 1) T e hs
+  have h := strip_nested_union_point hH hLE hlam hLam A H1 H2 hsub (s - 1) T e (by linarith)
   have hi : finiteUnionPointRestartPoles hH hLE hlam hLam A H1 H2 (s - 1) T e =
       finiteUnionPointRestartPoles hH hLE hlam hLam A H1 H2 s T e := by
     unfold finiteUnionPointRestartPoles

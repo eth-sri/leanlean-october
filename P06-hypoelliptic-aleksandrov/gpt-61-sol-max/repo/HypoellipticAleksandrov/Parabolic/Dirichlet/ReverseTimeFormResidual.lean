@@ -12,21 +12,21 @@ the reverse-time spatial-form action from the negative source.
 
 @[expose] public section
 
-open Filter MeasureTheory Set
-open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise MatrixOrder
+open MeasureTheory Set
+open scoped Matrix.Norms.Elementwise MatrixOrder
 
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The reverse-time residual candidate in the Bochner dual carrier. -/
-noncomputable def reverseTimeFormResidual
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+def reverseTimeFormResidual
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -36,7 +36,7 @@ noncomputable def reverseTimeFormResidual
     (hcSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
+    (F : PDE.TimeScalarField d)
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -49,12 +49,12 @@ noncomputable def reverseTimeFormResidual
 /-- On one event, the residual plus the literal spatial form is the
 negative reverse-time source functional, simultaneously for all spatial tests. -/
 theorem ae_reverseTimeFormResidual_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -64,7 +64,7 @@ theorem ae_reverseTimeFormResidual_apply
     (hcSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
+    (F : PDE.TimeScalarField d)
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))

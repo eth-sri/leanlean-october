@@ -9,24 +9,28 @@ This is the velocity-return input to time-bin counting, rather than a bound
 on the visit-counting measure itself.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory
 
+section
+variable (c : Clock) (j : ℕ) (t : ℝ) (ht : (j : ℝ) * c.r ^ 2 ≤ t)
+
+include ht
 /-- Elapsed time after the start of bin `j` has at least its dimensionless bin index. -/
-theorem timeBinCount_scaled_time_le (c : Clock) (j : ℕ) (t : ℝ)
-    (ht : (j : ℝ) * c.r ^ 2 ≤ t) :
+theorem timeBinCount_scaled_time_le  :
     1 + (j : ℝ) ≤ 1 + t / c.r ^ 2 := by
-  have h := (le_div_iff₀ (sq_pos_of_pos c.positive)).mpr ht
-  linarith only [h]
+
+  linarith only [((le_div_iff₀ (sq_pos_of_pos c.positive)).mpr ht)]
 
 /-- The source square-root decay is bounded by its value at the bin's left endpoint. -/
-theorem timeBinCount_decay_le (c : Clock) (j : ℕ) (t : ℝ)
-    (ht : (j : ℝ) * c.r ^ 2 ≤ t) :
+theorem timeBinCount_decay_le  :
     (1 + t / c.r ^ 2) ^ (-1 / 2 : ℝ) ≤ (1 + (j : ℝ)) ^ (-1 / 2 : ℝ) :=
   Real.rpow_le_rpow_of_nonpos (by positivity) (timeBinCount_scaled_time_le c j t ht)
     (by norm_num)
+end
+
 
 /-- The actual active-velocity action has a uniform square-root bound throughout each bin. -/
 theorem timeBinCount_velocity_decay_of_return_time
@@ -46,9 +50,9 @@ theorem timeBinCount_velocity_decay_of_return_time
   intro A c P hbar hv j t ht
   have hb := (c.active_abs_bounds (enlarged_closedEntrance_subset_active c hv)).2
   rw [hbar] at hb
-  have hp : |P.velocity 0| ≤ 3 * c.r := by linarith only [hb, c.positive]
-  have ht0 : 0 ≤ t := (mul_nonneg (Nat.cast_nonneg j) (sq_nonneg c.r)).trans ht
-  exact (h A c (P.position 0, P.velocity 0) t hbar hp ht0).trans
+
+
+  exact (h A c (P.position 0, P.velocity 0) t hbar (by linarith only [hb, c.positive]) ((mul_nonneg (Nat.cast_nonneg j) (sq_nonneg c.r)).trans ht)).trans
     (mul_le_mul_of_nonneg_left (timeBinCount_decay_le c j t ht) hC.le)
 
 /-- A uniform probability bound on a bin gives radius-squared times that bound in occupation. -/

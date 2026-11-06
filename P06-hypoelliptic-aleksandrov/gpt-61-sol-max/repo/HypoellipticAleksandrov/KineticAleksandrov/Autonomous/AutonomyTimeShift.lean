@@ -11,18 +11,20 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
+variable (h : ℝ)
+
 /-- Translate time while keeping physical position and velocity fixed. -/
-def autonomousTimeShift (h : ℝ) (p : KineticPoint 1) : KineticPoint 1 :=
+def autonomousTimeShift  (p : KineticPoint 1) : KineticPoint 1 :=
   ⟨p.time + h, p.position, p.velocity⟩
 
 /-- The time translation is continuous. -/
-theorem continuous_autonomousTimeShift (h : ℝ) : Continuous (autonomousTimeShift h) :=
+theorem continuous_autonomousTimeShift  : Continuous (autonomousTimeShift h) :=
   KineticPoint.continuous_mk (continuous_time.add continuous_const)
     continuous_position continuous_velocity
 
 /-- The forward autonomous operator commutes with time translation. -/
 theorem autonomous_operator_timeShift (a : ℝ → ℝ → ℝ) (h : ℝ)
-    (u : KineticPoint 1 → ℝ) (p : KineticPoint 1) :
+    (u : HypoellipticAleksandrov.KineticScalarField 1) (p : KineticPoint 1) :
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1)
       (fun q => u (autonomousTimeShift h q)) p =
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1) u
@@ -36,7 +38,7 @@ theorem autonomous_operator_timeShift (a : ℝ → ℝ → ℝ) (h : ℝ)
 
 /-- Time translation carries an actual full-space terminal solution to an actual solution. -/
 theorem fullspace_classical_timeShift {a : ℝ → ℝ → ℝ} (h τ : ℝ)
-    (F : BoundedBorel (EvolutionAmbientState 1)) (u : KineticPoint 1 → ℝ)
+    (F : BoundedBorel (EvolutionAmbientState 1)) (u : HypoellipticAleksandrov.KineticScalarField 1)
     (hu : IsClassicalTerminalSolution autonomousWholeDomain (fun _ => 0)
       (evolutionCoefficient a) (identityDrift 1) (τ + h) F u) :
     IsClassicalTerminalSolution autonomousWholeDomain (fun _ => 0)
@@ -58,7 +60,7 @@ theorem fullspace_classical_timeShift {a : ℝ → ℝ → ℝ} (h τ : ℝ)
     rw [autonomous_operator_timeShift]
     exact hop _ ⟨by change p.time + h < τ + h; linarith [hp.1], by rw [hd]; trivial⟩
   · intro p hp
-    exact ht _ ⟨congrArg (fun r : ℝ => r + h) hp.1,
+    exact ht _ ⟨congrArg (fun r  => r + h) hp.1,
       by rw [hd, closure_univ]; trivial⟩
   · intro p hp
     have hf := hp.2

@@ -15,18 +15,21 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter Set MeasureTheory
 open scoped BigOperators
 
+variable {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.Region d}
+
 /-- Restricting a supplied classical jet preserves its actual derivative functions. -/
-theorem scalarC12On_mono {d : ℕ} {U V : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hu : IsScalarC12On u U) (hVU : V ⊆ U) :
+theorem scalarC12On_mono
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d} (hu : IsScalarC12On u U) (hVU : V ⊆ U) :
     IsScalarC12On u V := by
   rcases hu with ⟨hv, ht, hs, hdt, hdg, hdh⟩
   exact ⟨hv.mono hVU, fun z hz => ht z (hVU hz), fun z hz => hs z (hVU hz),
     hdt.mono hVU, hdg.mono hVU, hdh.mono hVU⟩
 
+variable (u : HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : IsScalarC12On u U) (hV : IsOpen V) (hVc : IsCompact (closure V)) (hVU : closure V ⊆ U)
+
 /-- A compact collar carries the literal classical weak `W¹,²₂` jet. -/
-def classicalLocalW12Jet {d : ℕ} {U V : Set (TimeVelocity d)}
-    (u : TimeVelocity d → ℝ) (hu : IsScalarC12On u U)
-    (hV : IsOpen V) (hVc : IsCompact (closure V)) (hVU : closure V ⊆ U) :
+def classicalLocalW12Jet
+     :
     ParabolicW12Function d V 2 :=
   { toFun := u
     timeDeriv := scalarTimeDerivative u
@@ -50,10 +53,7 @@ def classicalLocalW12Jet {d : ℕ} {U V : Set (TimeVelocity d)}
       (scalarC12On_mono hu (subset_closure.trans hVU)) }
 
 /-- The literal local classical jet retains the homogeneous equation in weak-jet order. -/
-theorem classicalLocalW12Jet_homogeneous_equation {d : ℕ}
-    {U V : Set (TimeVelocity d)} (u : TimeVelocity d → ℝ)
-    (hu : IsScalarC12On u U) (hV : IsOpen V) (hVc : IsCompact (closure V))
-    (hVU : closure V ⊆ U) (A : CoefficientField d)
+theorem classicalLocalW12Jet_homogeneous_equation   (A : CoefficientField d)
     (heq : ∀ z ∈ U, scalarTimeDerivative u z +
       matrixContraction (coefficientAt A z) (scalarSpatialHessian u z) = 0) :
     ∀ᵐ z ∂timeVelocityVolumeOn V,
@@ -63,9 +63,9 @@ theorem classicalLocalW12Jet_homogeneous_equation {d : ℕ}
   apply ae_restrict_of_forall_mem hV.measurableSet
   intro z hz
   have hzU := hVU (subset_closure hz)
-  have hs := scalarSpatialHessian_isSymm_of_c12 hu hzU
+
   have hentry (i j : Fin d) : scalarSpatialHessian u z j i =
-      scalarSpatialHessian u z i j := congrArg (fun M : PDE.Mat d => M i j) hs
+      scalarSpatialHessian u z i j := congrArg (fun M : PDE.Mat d => M i j) (scalarSpatialHessian_isSymm_of_c12 hu hzU)
   simpa only [classicalLocalW12Jet, matrixContraction, coefficientAt, hentry]
     using heq z hzU
 

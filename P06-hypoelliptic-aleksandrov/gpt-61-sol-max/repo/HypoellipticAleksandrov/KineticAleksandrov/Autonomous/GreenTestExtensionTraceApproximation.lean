@@ -6,11 +6,11 @@ import Mathlib.Topology.TietzeExtension
 
 /-! # Genuine smooth compact approximation of bounded continuous future slab traces -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set HypoellipticAleksandrov Topology
-open SectionTwo TheoremA Evolution
+open Set Topology
+open Evolution
 open scoped CompactlySupported
 
 /-- A bounded continuous future slab trace admits uniformly bounded smooth compact probes,
@@ -40,7 +40,7 @@ theorem exists_reconstruction_smooth_trace_probe
       (fun p => abs_le.mp (hb p.1 p.2)) (by linarith) hj
   let pack (q : ℝ × ℝ × ℝ) : EvolutionVec 1 :=
     packPoint q.1 (fun _ => q.2.2) (fun _ => q.2.1)
-  let K : Set (EvolutionVec 1) := pack '' (Icc a T ×ˢ (Icc (-R) R ×ˢ Icc H.lo H.hi))
+  let K  := pack '' (Icc a T ×ˢ (Icc (-R) R ×ˢ Icc H.lo H.hi))
   have hp : Continuous pack := by
     change Continuous (fun q : ℝ × ℝ × ℝ =>
       (evolutionProdCLE 1).symm (q.1, (fun _ => q.2.2), (fun _ => q.2.1)))

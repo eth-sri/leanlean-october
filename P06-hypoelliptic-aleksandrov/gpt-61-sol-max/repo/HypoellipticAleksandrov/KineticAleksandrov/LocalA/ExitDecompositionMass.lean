@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDecompositio
 
 /-! # The lateral exit mass is exactly the actual killed mass loss -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Parabolic
+open Set MeasureTheory SectionTwo
 
 /-- The terminal corner stays lateral, and its total mass is the precise killed loss. -/
 theorem ballExit_lateral_mass

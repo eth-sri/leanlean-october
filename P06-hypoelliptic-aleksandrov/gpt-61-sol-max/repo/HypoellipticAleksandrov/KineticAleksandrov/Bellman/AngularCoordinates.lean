@@ -5,6 +5,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeas
 public import Mathlib.Topology.Homeomorph.Defs
 import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 import Mathlib.Tactic
+import Aesop
+
+
 
 /-! # Literal positive-position radial and angular coordinates -/
 
@@ -19,26 +22,28 @@ abbrev BellmanPositivePositionPlane := {q : ℝ × ℝ // 0 < q.1}
 /-- The source coordinates X=s³ and v=sy on positive position. -/
 def bellmanAngularPoint (w : BellmanPositiveTime × ℝ) : BellmanPuncturedPlane :=
   ⟨(w.1.val ^ 3, w.1.val * w.2), by
-    intro h
-    have hx : w.1.val ^ 3 = 0 := congrArg Prod.fst h
-    exact (pow_ne_zero 3 (ne_of_gt w.1.property)) hx⟩
+    aesop⟩
+
+variable (β : ℝ)
 
 /-- The source radial measure for density degree β, with no angular density assumption. -/
-def bellmanRadialWeight (β : ℝ) : Measure BellmanPositiveTime :=
+def bellmanRadialWeight  : Measure BellmanPositiveTime :=
   bellmanPositiveTimeVolume.withDensity (fun s => ENNReal.ofReal (s.val ^ (3 - β)))
 
 /-- The literal homogeneous representation of an arbitrary positive angular measure. -/
-def bellmanAngularRep (β : ℝ) (F : Measure ℝ) : Measure BellmanPuncturedPlane :=
+def bellmanAngularRep  (F : Measure ℝ) : Measure BellmanPuncturedPlane :=
   Measure.map bellmanAngularPoint ((bellmanRadialWeight β).prod F)
 
+variable (q : BellmanPositivePositionPlane)
+
 /-- The positive cubic root used in the inverse coordinate map. -/
-def bellmanPositionRoot (q : BellmanPositivePositionPlane) : BellmanPositiveTime :=
+def bellmanPositionRoot  : BellmanPositiveTime :=
   ⟨q.val.1 ^ ((3 : ℝ)⁻¹), Real.rpow_pos_of_pos q.property _⟩
 
 /-- The position root cubed is the original positive position. -/
-theorem bellmanPositionRoot_cube (q : BellmanPositivePositionPlane) :
+theorem bellmanPositionRoot_cube  :
     (bellmanPositionRoot q).val ^ 3 = q.val.1 :=
-  Real.rpow_inv_natCast_pow q.property.le (by norm_num : (3 : ℕ) ≠ 0)
+  Real.rpow_inv_natCast_pow q.property.le (by norm_num : (3 ) ≠ 0)
 
 /-- Radial-angular coordinates are a homeomorphism onto the positive-position half-plane. -/
 def bellmanAngularHomeomorph :
@@ -47,7 +52,7 @@ def bellmanAngularHomeomorph :
   invFun q := (bellmanPositionRoot q, q.val.2 / (bellmanPositionRoot q).val)
   left_inv w := by
     have he : ((w.1.val ^ 3 : ℝ) ^ ((3 : ℝ)⁻¹)) = w.1.val :=
-      Real.pow_rpow_inv_natCast w.1.property.le (by norm_num : (3 : ℕ) ≠ 0)
+      Real.pow_rpow_inv_natCast w.1.property.le (by norm_num : (3 ) ≠ 0)
     apply Prod.ext
     · apply Subtype.ext
       exact he

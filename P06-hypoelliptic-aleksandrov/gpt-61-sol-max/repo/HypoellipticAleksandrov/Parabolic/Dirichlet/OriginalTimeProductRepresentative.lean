@@ -11,36 +11,38 @@ to the literal original-time interval, without imposing an order on its
 endpoints.
 -/
 
-@[expose] public section
+ public section
 
 open MeasureTheory Set
 open scoped ENNReal
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-! The reflection `r ↦ r₁ - r` sends the original-time restricted volume to
 the corresponding reverse-time restricted volume. -/
 private theorem originalTimeReflection_measurePreserving_toReverseTime (r₀ r₁ : ℝ) :
-    MeasurePreserving (fun r : ℝ => r₁ - r)
+    MeasurePreserving (fun r  => r₁ - r)
       (volume.restrict (Set.Ioo r₀ r₁)) (reverseTimeVolume (r₁ - r₀)) := by
-  have hreflection : MeasurePreserving (fun r : ℝ => r₁ - r)
-      (volume : Measure ℝ) volume := by
-    simpa only [Function.comp_def, sub_eq_add_neg] using
-      (measurePreserving_add_left (volume : Measure ℝ) r₁).comp
-        (Measure.measurePreserving_neg (volume : Measure ℝ))
-  have hpreimage : (fun r : ℝ => r₁ - r) ⁻¹' Set.Ioo 0 (r₁ - r₀) =
+
+  have hpreimage : (fun r  => r₁ - r) ⁻¹' Set.Ioo 0 (r₁ - r₀) =
       Set.Ioo r₀ r₁ := by
     rw [preimage_const_sub_Ioo]
     congr 1 <;> ring
   rw [reverseTimeVolume, reverseTimeOpenInterval, ← hpreimage]
-  exact hreflection.restrict_preimage isOpen_Ioo.measurableSet
+  exact (show MeasurePreserving (fun r  => r₁ - r)
+      (volume ) by
+      simpa only [Function.comp_def, sub_eq_add_neg] using
+        (measurePreserving_add_left (volume : Measure ℝ) r₁).comp
+          (Measure.measurePreserving_neg (volume : Measure ℝ))).restrict_preimage isOpen_Ioo.measurableSet
 
 /-! The original-time and spatial restricted volumes form the literal
 time--velocity restricted volume on their product set. -/
+variable {d : ℕ}
+
 private theorem originalTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn
-    {d : ℕ} (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec d)) :
+     (r₀ r₁ : ℝ) (Ω : PDE.VelocityRegion d) :
     (volume.restrict (Set.Ioo r₀ r₁)).prod (PDE.volumeOn Ω) =
       timeVelocityVolumeOn (Set.Ioo r₀ r₁ ×ˢ Ω) := by
   rw [timeVelocityVolumeOn, volume_timeVelocity_eq_prod]
@@ -51,10 +53,10 @@ private theorem originalTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn
 representative whose spatial slices agree almost everywhere with its reflected
 timewise values. -/
 theorem exists_originalTimeL2V_value_product_representative
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
+     {Ω : PDE.VelocityRegion d} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀)) :
-    ∃ U : TimeVelocity d → ℝ,
-      MemLp U (2 : ℝ≥0∞)
+    ∃ U : HypoellipticAleksandrov.Parabolic.ScalarField d,
+      MemLp U (2 )
         (timeVelocityVolumeOn (Set.Ioo r₀ r₁ ×ˢ Ω)) ∧
       ∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
         (fun y => U (r, y)) =ᵐ[PDE.volumeOn Ω]
@@ -62,12 +64,12 @@ theorem exists_originalTimeL2V_value_product_representative
   obtain ⟨Urev, hU_memLp, hU_slice⟩ :=
     exists_reverseTimeL2V_value_product_representative hΩ (r₁ - r₀) u
   let htime := originalTimeReflection_measurePreserving_toReverseTime r₀ r₁
-  let hproduct := htime.prod (MeasurePreserving.id (PDE.volumeOn Ω))
+
   rw [← reverseTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn (r₁ - r₀) Ω] at hU_memLp
   refine ⟨fun z => Urev (r₁ - z.1, z.2), ?_, ?_⟩
   · rw [← originalTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn r₀ r₁ Ω]
     simpa only [Function.comp_def, Prod.map_def, id_eq] using
-      hU_memLp.comp_measurePreserving hproduct
+      hU_memLp.comp_measurePreserving (htime.prod (MeasurePreserving.id (PDE.volumeOn Ω)))
   · filter_upwards [htime.quasiMeasurePreserving.ae hU_slice] with r hr
     exact hr
 

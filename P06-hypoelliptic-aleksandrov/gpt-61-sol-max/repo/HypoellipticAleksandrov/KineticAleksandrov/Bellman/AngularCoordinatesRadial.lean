@@ -32,10 +32,10 @@ instance bellmanPositiveTimeVolume_isOpenPosMeasure :
   intro U hU hUne
   have he : Topology.IsOpenEmbedding (Subtype.val : BellmanPositiveTime → ℝ) :=
     isOpen_Ioi.isOpenEmbedding_subtypeVal
-  have ho : IsOpen (Subtype.val '' U : Set ℝ) := he.isOpen_iff_image_isOpen.mp hU
+  have ho  := he.isOpen_iff_image_isOpen.mp hU
   rw [bellmanPositiveTimeVolume, he.measurableEmbedding.comap_apply,
     Measure.restrict_apply ho.measurableSet]
-  have hs : (Subtype.val '' U : Set ℝ) ⊆ Ioi (0 : ℝ) := by
+  have hs : (Subtype.val '' U ) ⊆ Ioi (0 ) := by
     rintro s ⟨t, _, rfl⟩
     exact t.property
   rw [inter_eq_left.mpr hs]
@@ -43,16 +43,14 @@ instance bellmanPositiveTimeVolume_isOpenPosMeasure :
 
 /-- The source radial measure is positive on every nonempty open radial set. -/
 instance bellmanRadialWeight_isOpenPosMeasure (β : ℝ) :
-    IsOpenPosMeasure (bellmanRadialWeight β) := by
-  have hm : Measurable (fun s : BellmanPositiveTime =>
-      ENNReal.ofReal (s.val ^ (3 - β))) := by fun_prop
-  have hn : ∀ᵐ s ∂bellmanPositiveTimeVolume,
-      ENNReal.ofReal (s.val ^ (3 - β)) ≠ 0 :=
-    ae_of_all _ fun s => (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos s.property _)).ne'
-  have hac := withDensity_absolutelyContinuous' hm.aemeasurable hn
-  constructor
-  intro U hU hUne hz
-  exact (hU.measure_pos bellmanPositiveTimeVolume hUne).ne'
-    (hac hz)
+    IsOpenPosMeasure (bellmanRadialWeight β) := ({
+  open_pos := fun U hU hUne hz =>
+    LT.lt.ne' (IsOpen.measure_pos bellmanPositiveTimeVolume hU hUne)
+      (withDensity_absolutelyContinuous'
+        (Measurable.aemeasurable
+          (Measurable.ennreal_ofReal (Measurable.pow_const (Measurable.subtype_coe measurable_id') (3 - β))))
+        (ae_of_all bellmanPositiveTimeVolume fun s =>
+          LT.lt.ne' (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos s.property (3 - β))))
+        hz) })
 
 end HypoellipticAleksandrov.KineticAleksandrov

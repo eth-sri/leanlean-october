@@ -13,16 +13,18 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter Set
 open scoped Topology
 
+variable {d : ℕ}
+
 /-- The interior representative extended by zero to the ambient cylinder. -/
-def sourceInteriorZeroExtension {d : ℕ} (a T : ℝ) (Ω : Set (PDE.Vec d))
-    (w : TimeVelocity d → ℝ) : TimeVelocity d → ℝ := by
+def sourceInteriorZeroExtension  (a T : ℝ) (Ω : PDE.VelocityRegion d)
+    (w : HypoellipticAleksandrov.Parabolic.ScalarField d) : HypoellipticAleksandrov.Parabolic.ScalarField d := by
   classical
   exact (scalarParabolicOpenCylinder a T Ω).piecewise w (fun _ => 0)
 
 /-- A time envelope gives a continuous zero terminal trace for the interior extension. -/
-theorem continuousWithinAt_source_zeroExtension_terminal {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (a T M : ℝ) (hM : 0 ≤ M)
-    (w : TimeVelocity d → ℝ)
+theorem continuousWithinAt_source_zeroExtension_terminal
+    {Ω : PDE.VelocityRegion d} (a T M : ℝ) (hM : 0 ≤ M)
+    (w : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hb : ∀ z ∈ scalarParabolicOpenCylinder a T Ω, |w z| ≤ M * (T - z.1))
     (p : TimeVelocity d) (hp : p.1 = T) :
     ContinuousWithinAt
@@ -34,13 +36,13 @@ theorem continuousWithinAt_source_zeroExtension_terminal {d : ℕ}
   have hpU : p ∉ U := by
     intro h
     exact (lt_irrefl T) (hp ▸ h.1.2)
-  have hpW : W p = 0 := piecewise_eq_of_notMem U w (fun _ => 0) hpU
+  have hpW : W p = 0 := piecewise_eq_of_notMem U w _ hpU
   have hbound (z : TimeVelocity d) : ‖W z‖ ≤ M * |T - z.1| := by
     by_cases hz : z ∈ U
-    · rw [show W z = w z from piecewise_eq_of_mem U w (fun _ => 0) hz,
+    · rw [show W z = w z from piecewise_eq_of_mem U w _ hz,
         Real.norm_eq_abs]
       simpa only [abs_of_pos (sub_pos.mpr hz.1.2)] using hb z hz
-    · rw [show W z = 0 from piecewise_eq_of_notMem U w (fun _ => 0) hz, norm_zero]
+    · rw [show W z = 0 from piecewise_eq_of_notMem U w _ hz, norm_zero]
       exact mul_nonneg hM (abs_nonneg _)
   have hz : Tendsto (fun z : TimeVelocity d => M * |T - z.1|) (𝓝 p) (𝓝 0) := by
     have hc : Continuous (fun z : TimeVelocity d => M * |T - z.1|) :=

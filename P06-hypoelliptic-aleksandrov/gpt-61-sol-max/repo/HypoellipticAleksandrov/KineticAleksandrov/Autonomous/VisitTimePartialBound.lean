@@ -8,8 +8,8 @@ import Mathlib.Tactic
 
 /-! # A uniform short-time bound for actual finite entrance sums -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -23,18 +23,19 @@ theorem visitActiveGreen_partial_time_mass_le
       ((visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ
         visitEntrancePiece hH hLE hlam hLam A c J s T P n)
           {p | p.time ∈ Icc (b - c.r ^ 2) (b + 2 * c.r ^ 2)}).toReal ≤ 3 * c.r ^ 2 := by
-  let W : Set Point := {p | p.time ∈ Icc (b - c.r ^ 2) (b + 2 * c.r ^ 2)}
-  have hW : MeasurableSet W := isClosed_Icc.measurableSet.preimage continuous_time.measurable
+  let sharedTerm_198e4e7e79 := ((Icc (b - c.r ^ 2) (b + 2 * c.r ^ 2)))
+  let W : Set Point := {p | p.time ∈ sharedTerm_198e4e7e79}
+
   have hm := visitActiveGreen_partial_le hH hLE hlam hLam A c J s T hT P hP N W
   rw [visitOuterGreen_eq_strip hH hLE hlam hLam A J s T P hP] at hm
   have ht := stripGreen_timeMarginal hH hLE hlam hLam A J T
     ⟨P, WithTop.coe_lt_coe.mpr hP.2.1, hP.2.2⟩
-    (Icc (b - c.r ^ 2) (b + 2 * c.r ^ 2)) isClosed_Icc.measurableSet
+    sharedTerm_198e4e7e79 isClosed_Icc.measurableSet
   rw [Real.volume_Icc] at ht
   have hw : b + 2 * c.r ^ 2 - (b - c.r ^ 2) = 3 * c.r ^ 2 := by ring
   rw [hw] at ht
   have hh := ENNReal.toReal_mono ENNReal.ofReal_ne_top (hm.trans ht)
-  rw [ENNReal.toReal_ofReal (by positivity), visit_partial_real_mass _ N W hW] at hh
+  rw [ENNReal.toReal_ofReal (by positivity), visit_partial_real_mass _ N W (isClosed_Icc.measurableSet.preimage continuous_time.measurable)] at hh
   exact hh
 
 /-- The short-time counting constant is uniform in the coefficient, clock, and outer strip. -/

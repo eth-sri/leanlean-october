@@ -5,8 +5,8 @@ import Mathlib.Tactic
 
 /-! # Summable powers in the preliminary entrance estimate -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 
 /-- The sixth-fifths power of the core estimate has a summable positive scale power. -/

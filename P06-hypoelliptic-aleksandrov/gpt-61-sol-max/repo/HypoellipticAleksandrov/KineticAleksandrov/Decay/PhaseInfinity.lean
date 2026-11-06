@@ -18,48 +18,55 @@ Compactness bounds the drift on the moving diffused tube. The resulting local
 constant is used only for comparison with a vanishing positive penalty.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+open HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open Set Filter
-open scoped Topology
+open Set
+
+
+variable {d : ℕ}
+
+variable (η M τ : ℝ) (z0 : PDE.Vec d)
 
 /-- The quadratic infinity penalty is continuous in all source coordinates. -/
-theorem infinityBarrier_continuous {d : ℕ} (η M τ : ℝ) (z0 : PDE.Vec d) :
+theorem infinityBarrier_continuous   :
     Continuous (infinityBarrier η M τ z0) := by
   have hv : Continuous (fun p : KineticPoint d => p.velocity - z0) :=
     continuous_velocity.sub continuous_const
-  have hn := PDE.continuous_vecNormSq.comp hv
-  exact (continuous_const.mul (continuous_const.add hn)).mul
+
+  exact (continuous_const.mul (continuous_const.add (PDE.continuous_vecNormSq.comp hv))).mul
     (Real.continuous_exp.comp (continuous_const.mul (continuous_const.sub continuous_time)))
 
 /-- The quadratic infinity penalty is slice regular everywhere. -/
-theorem infinityBarrier_isSliceRegularAt {d : ℕ} (η M τ : ℝ) (z0 : PDE.Vec d)
+theorem infinityBarrier_isSliceRegularAt
     (p : KineticPoint d) : IsSliceRegularAt (infinityBarrier η M τ z0) p := by
   apply IsSliceRegularAt.of_contDiffAt
   unfold rawLift infinityBarrier PDE.vecNormSq PDE.vecDot
   fun_prop
 
+variable (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
+
 /-- The operator on the quadratic transported-variable penalty. -/
-theorem lop_infinityBarrier {d : ℕ} (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) (η M τ : ℝ) (z0 : PDE.Vec d) (p : KineticPoint d) :
+theorem lop_infinityBarrier   (η M τ : ℝ) (z0 : PDE.Vec d) (p : KineticPoint d) :
     lop B b (infinityBarrier η M τ z0) p =
       η * Real.exp ((M + 1) * (τ - p.time)) *
         (-(M + 1) * (1 + PDE.vecNormSq (p.velocity - z0)) +
           2 * PDE.vecDot (b p.position) (p.velocity - z0)) := by
+  let sharedTerm_a8df3a4ecc := (Real.exp ((M + 1) * (τ - p.time)))
+  let sharedTerm_624122d4a2 := (η * (1 + PDE.vecNormSq (p.velocity - z0)))
   have ht : kineticTimeDerivative (infinityBarrier η M τ z0) p =
-      η * (1 + PDE.vecNormSq (p.velocity - z0)) *
-        (Real.exp ((M + 1) * (τ - p.time)) * (-(M + 1))) := by
-    have h := (((hasDerivAt_id p.time).const_sub τ).const_mul (M + 1)).exp
-    have he := (h.const_mul (η * (1 + PDE.vecNormSq (p.velocity - z0)))).deriv
+      sharedTerm_624122d4a2 *
+        (sharedTerm_a8df3a4ecc * (-(M + 1))) := by
+
+    have he := (((((hasDerivAt_id p.time).const_sub τ).const_mul (M + 1)).exp).const_mul sharedTerm_624122d4a2).deriv
     change kineticTimeDerivative (infinityBarrier η M τ z0) p = _ at he
     simpa only [id_eq, mul_neg_one] using he
   have hg : kineticVelocityGradient (infinityBarrier η M τ z0) p =
-      fun i => 2 * (η * Real.exp ((M + 1) * (τ - p.time))) * (p.velocity i - z0 i) := by
-    have hf : (fun z : PDE.Vec d => infinityBarrier η M τ z0 ⟨p.time, p.position, z⟩) =
-        fun z => (fun s : ℝ => η * Real.exp ((M + 1) * (τ - p.time)) * (1 + s))
+      fun i => 2 * (η * sharedTerm_a8df3a4ecc) * (p.velocity i - z0 i) := by
+    have hf : (fun z  => infinityBarrier η M τ z0 ⟨p.time, p.position, z⟩) =
+        fun z => (fun s : ℝ => η * sharedTerm_a8df3a4ecc * (1 + s))
           (PDE.vecNormSq (z - z0)) := by
       funext z
       unfold infinityBarrier
@@ -68,12 +75,11 @@ theorem lop_infinityBarrier {d : ℕ} (B : CoefficientField d)
     rw [hf, classicalGradient_comp_vecNormSq_sub
       ((contDiffAt_affine_weight _ _ _).differentiableAt (by norm_num)), deriv_affine_weight]
   have hh : diffusedHessian (infinityBarrier η M τ z0) p = 0 := by
-    have hzero : (fun y : PDE.Vec d => kineticPositionGradient
+    have hzero : (fun y  => kineticPositionGradient
         (infinityBarrier η M τ z0) ⟨p.time, y, p.velocity⟩) = fun _ => 0 := by
       funext y i
-      change fderiv ℝ (fun _ : PDE.Vec d => η *
-        (1 + PDE.vecNormSq (p.velocity - z0)) *
-        Real.exp ((M + 1) * (τ - p.time))) y (PDE.basisVec i) = 0
+      change fderiv ℝ (fun _ : PDE.Vec d => sharedTerm_624122d4a2 *
+        sharedTerm_a8df3a4ecc) y (PDE.basisVec i) = 0
       rw [fderiv_const_apply]
       rfl
     ext i j
@@ -84,8 +90,8 @@ theorem lop_infinityBarrier {d : ℕ} (B : CoefficientField d)
   rw [ht, hg, hh]
   simp only [matrixContraction, Matrix.zero_apply, mul_zero, Finset.sum_const_zero, add_zero]
   have hd : PDE.vecDot (b p.position)
-      (fun i => 2 * (η * Real.exp ((M + 1) * (τ - p.time))) * (p.velocity i - z0 i)) =
-      2 * (η * Real.exp ((M + 1) * (τ - p.time))) *
+      (fun i => 2 * (η * sharedTerm_a8df3a4ecc) * (p.velocity i - z0 i)) =
+      2 * (η * sharedTerm_a8df3a4ecc) *
         PDE.vecDot (b p.position) (p.velocity - z0) := by
     simp only [PDE.vecDot, Pi.sub_apply, Finset.mul_sum]
     apply Finset.sum_congr rfl
@@ -95,26 +101,25 @@ theorem lop_infinityBarrier {d : ℕ} (B : CoefficientField d)
   ring
 
 /-- A local drift bound makes the quadratic infinity penalty a strict supersolution. -/
-theorem lop_infinityBarrier_le {d : ℕ} (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) {η M τ : ℝ} (hη : 0 ≤ η) (hM : 0 ≤ M)
+theorem lop_infinityBarrier_le   {η M τ : ℝ} (hη : 0 ≤ η) (hM : 0 ≤ M)
     (z0 : PDE.Vec d) (p : KineticPoint d) (hb : PDE.vecEuclideanNorm (b p.position) ≤ M) :
     lop B b (infinityBarrier η M τ z0) p ≤ -infinityBarrier η M τ z0 p := by
   have hcs := PDE.abs_vecDot_le_vecEuclideanNorm_mul (b p.position) (p.velocity - z0)
-  have hn := PDE.vecEuclideanNorm_nonneg (p.velocity - z0)
+
   have hsq := PDE.vecEuclideanNorm_sq (p.velocity - z0)
-  have hdot : 2 * PDE.vecDot (b p.position) (p.velocity - z0) ≤
-      M * (1 + PDE.vecNormSq (p.velocity - z0)) := by
-    have hb' := mul_le_mul_of_nonneg_right hb hn
-    have hm' := mul_nonneg hM (sq_nonneg (PDE.vecEuclideanNorm (p.velocity - z0) - 1))
-    nlinarith [le_abs_self (PDE.vecDot (b p.position) (p.velocity - z0))]
+
   rw [lop_infinityBarrier]
   unfold infinityBarrier
-  have hh := mul_le_mul_of_nonneg_left hdot
+  have hh := mul_le_mul_of_nonneg_left (show 2 * PDE.vecDot (b p.position) (p.velocity - z0) ≤
+      M * (1 + PDE.vecNormSq (p.velocity - z0)) by
+      have hb' := mul_le_mul_of_nonneg_right hb (PDE.vecEuclideanNorm_nonneg (p.velocity - z0))
+      have hm' := mul_nonneg hM (sq_nonneg (PDE.vecEuclideanNorm (p.velocity - z0) - 1))
+      nlinarith [le_abs_self (PDE.vecDot (b p.position) (p.velocity - z0))])
     (mul_nonneg hη (Real.exp_pos ((M + 1) * (τ - p.time))).le)
   nlinarith
 
 /-- The quadratic penalty dominates every level uniformly at transported infinity. -/
-theorem infinityBarrier_uniform_growth {d : ℕ} {η M τ : ℝ}
+theorem infinityBarrier_uniform_growth  {η M τ : ℝ}
     (hη : 0 < η) (hM : 0 ≤ M) (z0 : PDE.Vec d) (A : ℝ) :
     ∃ R : ℝ, 0 ≤ R ∧ ∀ p : KineticPoint d, p.time ≤ τ →
       R ≤ PDE.vecEuclideanNorm p.velocity → A ≤ infinityBarrier η M τ z0 p := by
@@ -127,23 +132,23 @@ theorem infinityBarrier_uniform_growth {d : ℕ} {η M τ : ℝ}
     have htriangle := PDE.vecEuclideanNorm_add_le (p.velocity - z0) z0
     rw [sub_add_cancel] at htriangle
     have hQ : 1 ≤ Q := by dsimp [Q]; linarith [le_max_right (A / η) 0]
-    have hq : Q ≤ PDE.vecEuclideanNorm (p.velocity - z0) := by linarith
+
     have hsq := PDE.vecEuclideanNorm_sq (p.velocity - z0)
-    have hbase : A ≤ η * (1 + PDE.vecNormSq (p.velocity - z0)) := by
-      have hA : A / η ≤ Q := by dsimp [Q]; linarith [le_max_left (A / η) 0]
-      have hAs : A ≤ η * Q := by
-        simpa only [mul_comm] using (div_le_iff₀ hη).mp hA
-      have hmul := mul_le_mul_of_nonneg_left
-        (show Q ≤ 1 + PDE.vecNormSq (p.velocity - z0) by nlinarith) hη.le
-      exact hAs.trans hmul
+
     have he : 1 ≤ Real.exp ((M + 1) * (τ - p.time)) :=
       Real.one_le_exp (mul_nonneg (by linarith) (sub_nonneg.mpr ht))
     unfold infinityBarrier
-    exact hbase.trans (le_mul_of_one_le_right
+    exact (show A ≤ η * (1 + PDE.vecNormSq (p.velocity - z0)) by
+
+        have hAs : A ≤ η * Q := by
+          simpa only [mul_comm] using (div_le_iff₀ hη).mp (by dsimp [Q]; linarith [le_max_left (A / η) 0])
+        have hmul := mul_le_mul_of_nonneg_left
+          (show Q ≤ 1 + PDE.vecNormSq (p.velocity - z0) by nlinarith) hη.le
+        exact hAs.trans hmul).trans (le_mul_of_one_le_right
       (mul_nonneg hη.le (by linarith [PDE.vecNormSq_nonneg (p.velocity - z0)])) he)
 
 /-- A finite local drift bound supplies the source supersolution and uniform growth. -/
-theorem phase_infinity_barrier {d : ℕ} (B : CoefficientField d)
+theorem phase_infinity_barrier  (B : CoefficientField d)
     (b : PDE.Vec d → PDE.Vec d) (σ τ ρ : ℝ) (hρ : 0 < ρ)
     (γ : ℝ → PDE.Vec d) (hγ : ContinuousOn γ (Icc σ τ))
     (hb : Continuous b) (z0 : PDE.Vec d) :

@@ -16,7 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- On the punctured plane the gauge is a continuous positive radius coordinate. -/
 def bellmanGaugeRadius (q : BellmanPuncturedPlane) : BellmanPositiveTime :=
-  ⟨bellmanGauge q.val, bellmanGauge_pos q.val q.property⟩
+  ⟨_, bellmanGauge_pos q.val q.property⟩
 
 /-- The positive gauge radius is continuous. -/
 theorem continuous_bellmanGaugeRadius : Continuous bellmanGaugeRadius :=
@@ -24,15 +24,9 @@ theorem continuous_bellmanGaugeRadius : Continuous bellmanGaugeRadius :=
 
 /-- The source radial projection is proper because its radius is recovered by the gauge. -/
 theorem isProperMap_sphereRadialPoint (lam Lam : ℝ) :
-    IsProperMap (sphereRadialPoint (lam := lam) (Lam := Lam)) := by
-  apply isProperMap_of_comp_of_t2 (continuous_sphereRadialPoint lam Lam)
-    continuous_bellmanGaugeRadius
-  have he : bellmanGaugeRadius ∘ (sphereRadialPoint (lam := lam) (Lam := Lam)) =
-      Prod.fst := by
-    funext w
-    exact Subtype.ext (sphereRadialPoint_gauge w)
-  rw [he]
-  exact isProperMap_fst_of_compactSpace
+    IsProperMap (sphereRadialPoint (lam := lam) (Lam := Lam)) := (isProperMap_of_comp_of_t2 (continuous_sphereRadialPoint lam Lam) continuous_bellmanGaugeRadius
+  (Eq.mpr (id (congrArg (fun _a => IsProperMap _a) (funext fun w => Subtype.ext (sphereRadialPoint_gauge w))))
+    isProperMap_fst_of_compactSpace))
 
 /-- A proper continuous map preserves finite mass on compact subsets. -/
 theorem bellman_proper_map_finiteOnCompacts {A B : Type*}
@@ -54,10 +48,7 @@ instance radialMu_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)
 theorem bellmanRadialEtaProduct_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)
     (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
     IsFiniteMeasureOnCompacts (((bellmanRadiusMeasure alpha).prod pi).withDensity
-      (fun w => ENNReal.ofReal w.2.2.val)) := by
-  have hf : Continuous (fun w : BellmanPositiveTime ×
-      (BellmanSphere × BellmanCoefficient lam Lam) => w.2.2.val) := by fun_prop
-  exact bellman_withDensity_finiteOnCompacts ((bellmanRadiusMeasure alpha).prod pi) _ hf
+      (fun w => ENNReal.ofReal w.2.2.val)) := bellman_withDensity_finiteOnCompacts _ _ (by fun_prop)
 
 /-- The second radial measure is finite on compact subsets of the punctured plane. -/
 instance radialEta_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)

@@ -41,15 +41,15 @@ instance {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} :
     CoeFun (W1pFunction U p) (fun _ => Vec d → ℝ) where
   coe u := u.toFun
 
-theorem memLpOn_mono {d : ℕ}
-    {U V : Set (Vec d)} {p : ℝ≥0∞} {u : Vec d → ℝ}
+variable {d : ℕ} {U V : Set (Vec d)} {p : ℝ≥0∞}
+
+theorem memLpOn_mono  {u : Vec d → ℝ}
     (hVU : V ⊆ U) (hu : MemLpOn U p u) :
     MemLpOn V p u :=
   hu.mono_measure (MeasureTheory.Measure.restrict_mono_set
     MeasureTheory.volume hVU)
 
-theorem gradMemLpOn_mono {d : ℕ}
-    {U V : Set (Vec d)} {p : ℝ≥0∞} {Du : Vec d → Vec d}
+theorem gradMemLpOn_mono  {Du : Vec d → Vec d}
     (hVU : V ⊆ U) (hDu : GradMemLpOn U p Du) :
     GradMemLpOn V p Du := by
   intro i
@@ -57,8 +57,12 @@ theorem gradMemLpOn_mono {d : ℕ}
 
 namespace W1pFunction
 
+variable {d : ℕ}
+
+variable {U : Set (Vec d)} {p : ℝ≥0∞}
+
 @[ext]
-theorem ext {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+theorem ext
     {u v : W1pFunction U p}
     (htoFun : u.toFun = v.toFun) (hgrad : u.grad = v.grad) :
     u = v := by
@@ -68,20 +72,21 @@ theorem ext {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
   cases hgrad
   rfl
 
-theorem hasWeakPartialDerivOn {d : ℕ}
-    {U : Set (Vec d)} {p : ℝ≥0∞}
-    (u : W1pFunction U p) (i : Fin d) :
-    HasWeakPartialDerivOn U i u.toFun (fun x => u.grad x i) :=
+variable (u : W1pFunction U p) (i : Fin d)
+
+theorem hasWeakPartialDerivOn
+
+     : type_of% (u.hasWeakGradient i) :=
   u.hasWeakGradient i
 
-theorem grad_memLp {d : ℕ}
-    {U : Set (Vec d)} {p : ℝ≥0∞}
-    (u : W1pFunction U p) (i : Fin d) :
+theorem grad_memLp
+
+     :
     MemLpOn U p (fun x => u.grad x i) :=
   u.gradMemLp i
 
 /-- Restrict a representative-level Sobolev function to an open subset. -/
-def restrict {d : ℕ} {U V : Set (Vec d)} {p : ℝ≥0∞}
+def restrict  {U V : Set (Vec d)} {p : ℝ≥0∞}
     (u : W1pFunction U p) (hVOpen : IsOpen V) (hVU : V ⊆ U) :
     W1pFunction V p where
   toFun := u.toFun
@@ -92,7 +97,7 @@ def restrict {d : ℕ} {U V : Set (Vec d)} {p : ℝ≥0∞}
 
 /-- Package a compactly supported `C¹` function as a Sobolev
 representative. -/
-noncomputable def ofContDiff {d : ℕ}
+noncomputable def ofContDiff
     {U : Set (Vec d)} (_hUOpen : IsOpen U)
     {f : Vec d → ℝ} (hf : ContDiff ℝ 1 f)
     (hfSupport : HasCompactSupport f) (p : ℝ≥0∞) :
@@ -103,16 +108,13 @@ noncomputable def ofContDiff {d : ℕ}
     have hfCont : Continuous f :=
       (hf.differentiable (by simp)).continuous
     exact (hfCont.memLp_of_hasCompactSupport hfSupport).restrict U
-  gradMemLp := by
-    intro i
-    have hderivCont :
-        Continuous (fun x => (fderiv ℝ f x) (basisVec i)) := by
-      simpa using
-        (hf.continuous_fderiv (by simp)).clm_apply continuous_const
-    have hderivSupport :
-        HasCompactSupport (fun x => (fderiv ℝ f x) (basisVec i)) := by
-      simpa using hfSupport.fderiv_apply (𝕜 := ℝ) (basisVec i)
-    exact (hderivCont.memLp_of_hasCompactSupport hderivSupport).restrict U
+  gradMemLp := (fun i =>
+  MeasureTheory.MemLp.restrict U
+    (Continuous.memLp_of_hasCompactSupport
+      (Continuous.clm_apply
+        (ContDiff.continuous_fderiv hf (of_eq_true (Eq.trans (congrArg Not one_ne_zero._simp_1) not_false_eq_true)))
+        continuous_const)
+      (HasCompactSupport.fderiv_apply ℝ hfSupport (basisVec i))))
   hasWeakGradient := HasWeakGradientOn.of_contDiff hf
 
 end W1pFunction

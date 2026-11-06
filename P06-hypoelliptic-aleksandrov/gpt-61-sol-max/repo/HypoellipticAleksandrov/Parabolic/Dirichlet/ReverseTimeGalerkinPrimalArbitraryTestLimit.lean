@@ -16,12 +16,12 @@ open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProduct
 noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
   (a : CoefficientField d)
-  (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
+  (b : PDE.TimeVectorField d) (c F : PDE.TimeScalarField d)
   (haSmooth : IsSmoothOnNeighborhood
     (fun z : TimeVelocity d => a z.1 z.2)
     (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -42,12 +42,12 @@ variable
 
 /-- The quotient-level reverse-time identity against an arbitrary spatial test. -/
 def reverseTimeGalerkinPrimal_arbitrary_test_identity_prop
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -78,7 +78,7 @@ def reverseTimeGalerkinPrimal_arbitrary_test_identity_prop
 /-- One common weakly convergent Galerkin subsequence satisfies the identity
 for every spatial test and every scalar time test. -/
 theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_arbitraryTests
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    (initial : PDE.ScalarLp Ω (2 )) :
     ∃ (U : ReverseTimeL2V hΩ (r₁ - r₀)) (φ : ℕ → ℕ),
       StrictMono φ ∧
       (∀ ell : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ,
@@ -111,10 +111,10 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_arbitraryTests
   let mass : H10HilbertGraph hΩ → ℝ := fun w =>
     reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
       (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv (eta.memLp_deriv ∞) w) G
-  let source : H10HilbertGraph hΩ → ℝ := fun w =>
+  let source  := fun w =>
     reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
       (reverseTimeSeparatedVTest hΩ eta w) S
-  let form : H10HilbertGraph hΩ → ℝ := fun w =>
+  let form  := fun w =>
     reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
       (reverseTimeSeparatedVTest hΩ eta w) A
   have hMass : Tendsto (fun n => mass (vN n)) atTop (𝓝 (mass v)) := by
@@ -126,7 +126,7 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_arbitraryTests
         (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv (eta.memLp_deriv ∞) v)))
     exact (reverseTimeDualPairingCLM hΩ (r₁ - r₀) G).continuous.tendsto _ |>.comp
       (tendsto_reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv
-        (eta.memLp_deriv ∞) hv)
+        _ hv)
   have hSource : Tendsto (fun n => source (vN n)) atTop (𝓝 (source v)) := by
     change Tendsto
       (fun n => reverseTimeDualPairingCLM hΩ (r₁ - r₀) S
@@ -149,10 +149,9 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_arbitraryTests
     intro n
     simpa only [reverseTimeGalerkinPrimal_fixed_test_identity_prop, mass, source, form, G, S,
       A, hk n] using hfixed (k n) eta
-  have hRight : Tendsto (fun n => -source (vN n) + form (vN n)) atTop
-      (𝓝 (-source v + form v)) :=
+  have hRight  :=
     hSource.neg.add hForm
-  have hLimit : mass v = -source v + form v :=
+  have hLimit  :=
     tendsto_nhds_unique_of_eventuallyEq hMass hRight (Eventually.of_forall hFixed)
   simpa only [reverseTimeGalerkinPrimal_arbitrary_test_identity_prop, mass, source, form, G,
     S, A] using hLimit

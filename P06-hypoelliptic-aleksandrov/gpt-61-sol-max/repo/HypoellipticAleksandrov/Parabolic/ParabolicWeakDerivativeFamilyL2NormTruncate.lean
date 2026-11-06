@@ -15,7 +15,9 @@ namespace HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 open MeasureTheory
 open scoped BigOperators ENNReal
 
-private def castLEEmbedding {d M L : ℕ} (hML : M ≤ L) :
+variable {d M L : ℕ}
+
+private def castLEEmbedding  (hML : M ≤ L) :
     ParabolicDerivativeIndex d M ↪ ParabolicDerivativeIndex d L where
   toFun := ParabolicDerivativeIndex.castLE hML
   inj' := by
@@ -27,34 +29,23 @@ private def castLEEmbedding {d M L : ℕ} (hML : M ≤ L) :
 /-- Truncating the parabolic weight bound cannot increase the squared
 finite-family `L²` norm. -/
 theorem squaredL2Norm_truncate_le
-    {d M L : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
+     {U : HypoellipticAleksandrov.Parabolic.Region d}
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hML : M ≤ L) :
-    squaredL2Norm (F.truncate hML) ≤ squaredL2Norm F := by
-  classical
-  unfold squaredL2Norm
-  let e : ParabolicDerivativeIndex d M ↪ ParabolicDerivativeIndex d L :=
-    castLEEmbedding hML
-  let component : ParabolicDerivativeIndex d L → ℝ := fun beta ↦
-    (ENNReal.toReal
-      (eLpNorm (F.representative beta) 2 (timeVelocityVolumeOn U))) ^ 2
-  calc
-    ∑ beta : ParabolicDerivativeIndex d M,
-        (ENNReal.toReal
-          (eLpNorm ((F.truncate hML).representative beta) 2
-            (timeVelocityVolumeOn U))) ^ 2 =
-        ∑ beta ∈ Finset.univ.map e, component beta := by
-          rw [Finset.sum_map]
-          rfl
-    _ ≤ ∑ beta ∈ Finset.univ, component beta := by
-      apply Finset.sum_le_sum_of_subset_of_nonneg
-      · exact Finset.subset_univ _
-      · intro beta _ _
-        exact sq_nonneg _
-    _ = ∑ beta : ParabolicDerivativeIndex d L,
-        (ENNReal.toReal
-          (eLpNorm (F.representative beta) 2
-            (timeVelocityVolumeOn U))) ^ 2 := rfl
+    squaredL2Norm (F.truncate hML) ≤ squaredL2Norm F := (id
+  (Trans.trans
+    (Trans.trans
+      (Eq.mpr
+        (id
+          (congrArg
+            (fun _a =>
+              ∑ beta, (eLpNorm ((F.truncate hML).representative beta) 2 (timeVelocityVolumeOn U)).toReal ^ 2 = _a)
+            (Finset.sum_map Finset.univ (castLEEmbedding hML) fun beta =>
+              (eLpNorm (F.representative beta) 2 (timeVelocityVolumeOn U)).toReal ^ 2)))
+        (Eq.refl (∑ beta, (eLpNorm ((F.truncate hML).representative beta) 2 (timeVelocityVolumeOn U)).toReal ^ 2)))
+      (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ (Finset.map (castLEEmbedding hML) Finset.univ))
+        fun beta a a_1 => sq_nonneg (eLpNorm (F.representative beta) 2 (timeVelocityVolumeOn U)).toReal))
+    rfl))
 
 end HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily

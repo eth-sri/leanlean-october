@@ -12,48 +12,52 @@ facts for the literal finite coordinate-shift carrier used in spatial
 difference-quotient arguments.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open Set
 open scoped Convex
 
+variable {d : ℕ}
+
+variable {K Ω : PDE.VelocityRegion d}
+
 /-- A compact spatial carrier inside an open set has a positive common signed
 coordinate-shift radius whose literal carrier stays in the open set. -/
 theorem IsCompact.exists_spatialCoordinateShiftCarrier_subset_open
-    {d : ℕ} {K Ω : Set (PDE.Vec d)}
+
     (hK : IsCompact K) (hΩ : IsOpen Ω) (hKΩ : K ⊆ Ω) :
     ∃ δ : ℝ, 0 < δ ∧
       HypoellipticAleksandrov.Parabolic.Dirichlet.spatialCoordinateShiftCarrier K δ ⊆ Ω := by
-  let K' : Set (TimeVelocity d) := ({0} : Set ℝ) ×ˢ K
-  let U : Set (TimeVelocity d) := Set.univ ×ˢ Ω
-  have hK' : IsCompact K' := isCompact_singleton.prod hK
-  have hU : IsOpen U := isOpen_univ.prod hΩ
-  have hK'U : K' ⊆ U := by
-    intro z hz
-    exact ⟨Set.mem_univ _, hKΩ hz.2⟩
+
+
+
+
+
   obtain ⟨δ, hδ, _hthickening, hshift⟩ :=
-    IsCompact.exists_spatialShift_cthickening_collar hK' hU hK'U
+    IsCompact.exists_spatialShift_cthickening_collar (isCompact_singleton.prod hK) (isOpen_univ.prod hΩ) (by
+        intro z hz
+        exact ⟨Set.mem_univ _, hKΩ hz.2⟩)
   refine ⟨δ, hδ, ?_⟩
   intro x hx
   rcases mem_spatialCoordinateShiftCarrier_iff.mp hx with ⟨y, k, s, hy, hs, rfl⟩
-  exact (hshift k s hs (show (0, y) ∈ K' from ⟨by simp, hy⟩)).2
+  exact (hshift k s hs (show (0, y) ∈ (({0} : Set ℝ) ×ˢ K) from ⟨by simp, hy⟩)).2
 
 /-- Containment of the coordinate-shift carrier gives the corresponding
 signed coordinate-shift map into the outer set. -/
 theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
-    {d : ℕ} {K Ω : Set (PDE.Vec d)} {δ h : ℝ}
+      {δ h : ℝ}
     (hcarrier : spatialCoordinateShiftCarrier K δ ⊆ Ω)
     (k : Fin d) (hh : |h| ≤ δ) :
-    Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k) K Ω := by
+    Set.MapsTo (fun y  => y + h • PDE.basisVec k) K Ω := by
   intro y hy
   exact hcarrier (mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le hy hh)
 
 /-- A time--velocity coordinate segment over `K` stays in the closed time slab
 and the literal signed coordinate-shift carrier. -/
 theorem segment_spatialShift_subset_Icc_prod_spatialCoordinateShiftCarrier
-    {d : ℕ} {K : Set (PDE.Vec d)} {T δ h : ℝ}
+     {K : PDE.VelocityRegion d} {T δ h : ℝ}
     (k : Fin d) (z : TimeVelocity d)
     (hh : |h| ≤ δ) (hz : z ∈ Set.Icc 0 T ×ˢ K) :
     [z -[ℝ] spatialShift k h z] ⊆

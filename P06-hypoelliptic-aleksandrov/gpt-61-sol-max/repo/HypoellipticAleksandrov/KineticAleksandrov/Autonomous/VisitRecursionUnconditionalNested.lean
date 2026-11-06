@@ -5,8 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStrip
 
 /-! # Physical nested-strip identities for the actual visit kernels -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 

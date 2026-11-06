@@ -13,7 +13,7 @@ Their conjunction records open steps; it does not prove them.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set
 
 /-- Source l:timed-entrance#time-bin-count: the exact AU-14 hTime binder. -/
 def TimeBinCountStatement : Prop :=

@@ -5,6 +5,8 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 public import Mathlib.Analysis.Calculus.FDeriv.Pi
 import Mathlib.Tactic.FunProp
 import Mathlib.Tactic.Positivity
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # The regularized translated radial seed in Appendix C
@@ -20,54 +22,63 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open scoped BigOperators
 
+variable {d : ℕ}
+
 /-- The positive quantity inside the seed's real power. -/
-def seedBase {d : ℕ} (sigma : ℝ) (y e : PDE.Vec d) : ℝ :=
+def seedBase  (sigma : ℝ) (y e : PDE.Vec d) : ℝ :=
   sigma ^ 2 + PDE.vecNormSq (y - e)
 
 /-- The literal seed of Appendix C. -/
-def seed {d : ℕ} (alpha C₀ sigma : ℝ) (y e : PDE.Vec d) : ℝ :=
+def seed  (alpha C₀ sigma : ℝ) (y e : PDE.Vec d) : ℝ :=
   C₀ + Real.rpow (seedBase sigma y e) (alpha / 2)
 
 /-- The seed base is strictly positive when the regularization parameter is positive. -/
-theorem seedBase_pos {d : ℕ} (sigma : ℝ) (hsigma : 0 < sigma)
-    (y e : PDE.Vec d) : 0 < seedBase sigma y e := by
-  exact add_pos_of_pos_of_nonneg (sq_pos_of_pos hsigma) (PDE.vecNormSq_nonneg _)
+theorem seedBase_pos  (sigma : ℝ) (hsigma : 0 < sigma)
+    (y e : PDE.Vec d) : 0 < seedBase sigma y e := add_pos_of_pos_of_nonneg (sq_pos_of_pos hsigma) (PDE.vecNormSq_nonneg _)
+
+variable (alpha C₀ sigma : ℝ)
 
 /-- The literal seed is positive for a nonnegative additive constant. -/
-theorem seed_pos {d : ℕ} (alpha C₀ sigma : ℝ) (hC₀ : 0 ≤ C₀)
-    (hsigma : 0 < sigma) (y e : PDE.Vec d) : 0 < seed alpha C₀ sigma y e := by
-  exact add_pos_of_nonneg_of_pos hC₀ (Real.rpow_pos_of_pos
+theorem seed_pos   (hC₀ : 0 ≤ C₀)
+    (hsigma : 0 < sigma) (y e : PDE.Vec d) : 0 < seed alpha C₀ sigma y e := add_pos_of_nonneg_of_pos hC₀ (Real.rpow_pos_of_pos
     (seedBase_pos sigma hsigma y e) _)
 
 /-- The regularized seed is smooth jointly in its two native vector variables. -/
-theorem contDiff_seed {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma) :
-    ContDiff ℝ (⊤ : ℕ∞)
+theorem contDiff_seed   (hsigma : 0 < sigma) :
+    ContDiff ℝ PDE.smoothOrder
       (fun q : PDE.Vec d × PDE.Vec d => seed alpha C₀ sigma q.1 q.2) := by
-  have hb : ContDiff ℝ (⊤ : ℕ∞)
+  have hb : ContDiff ℝ PDE.smoothOrder
       (fun q : PDE.Vec d × PDE.Vec d => seedBase sigma q.1 q.2) := by
     unfold seedBase PDE.vecNormSq PDE.vecDot
     fun_prop
   exact contDiff_const.add (hb.rpow_const_of_ne fun q =>
     (seedBase_pos sigma hsigma q.1 q.2).ne')
 
+variable (alpha sigma : ℝ)
+
+variable (y e : PDE.Vec d)
+
 /-- The tangential Hessian eigenvalue of the seed. -/
-def seedTangentialEigenvalue {d : ℕ} (alpha sigma : ℝ) (y e : PDE.Vec d) : ℝ :=
+def seedTangentialEigenvalue    : ℝ :=
   alpha * Real.rpow (seedBase sigma y e) (alpha / 2 - 1)
 
 /-- The radial Hessian eigenvalue of the seed. -/
-def seedRadialEigenvalue {d : ℕ} (alpha sigma : ℝ) (y e : PDE.Vec d) : ℝ :=
+def seedRadialEigenvalue    : ℝ :=
   alpha * Real.rpow (seedBase sigma y e) (alpha / 2 - 2) *
     (sigma ^ 2 - (1 - alpha) * PDE.vecNormSq (y - e))
 
+section
+variable (ha : 0 < alpha) (hsigma : 0 < sigma) (y e : PDE.Vec d)
+
+include ha hsigma
 /-- The tangential seed eigenvalue is strictly positive. -/
-theorem seedTangentialEigenvalue_pos {d : ℕ} (alpha sigma : ℝ)
-    (ha : 0 < alpha) (hsigma : 0 < sigma) (y e : PDE.Vec d) :
-    0 < seedTangentialEigenvalue alpha sigma y e := by
-  exact mul_pos ha (Real.rpow_pos_of_pos (seedBase_pos sigma hsigma y e) _)
+theorem seedTangentialEigenvalue_pos
+     :
+    0 < seedTangentialEigenvalue alpha sigma y e := mul_pos ha (Real.rpow_pos_of_pos (seedBase_pos sigma hsigma y e) _)
 
 /-- The radial seed eigenvalue is negative precisely past the source threshold. -/
-theorem seedRadialEigenvalue_neg_iff {d : ℕ} (alpha sigma : ℝ)
-    (ha : 0 < alpha) (hsigma : 0 < sigma) (y e : PDE.Vec d) :
+theorem seedRadialEigenvalue_neg_iff
+     :
     seedRadialEigenvalue alpha sigma y e < 0 ↔
       sigma ^ 2 < (1 - alpha) * PDE.vecNormSq (y - e) := by
   unfold seedRadialEigenvalue
@@ -76,18 +87,20 @@ theorem seedRadialEigenvalue_neg_iff {d : ℕ} (alpha sigma : ℝ)
   simp only [Real.rpow_eq_pow]
   rw [mul_neg_iff]
   simp only [hp, hp.not_gt, true_and, false_and, or_false, sub_neg]
+end
+
 
 /-- The Euclidean dot product with a fixed vector as a continuous linear map. -/
-def seedDotLinear {d : ℕ} (z : PDE.Vec d) : PDE.Vec d →L[ℝ] ℝ :=
+def seedDotLinear  (z : PDE.Vec d) : PDE.Vec d →L[ℝ] ℝ :=
   ∑ i : Fin d, z i • ContinuousLinearMap.proj i
 
 /-- Evaluation of the dot-product continuous linear map. -/
-theorem seedDotLinear_apply {d : ℕ} (z w : PDE.Vec d) :
+theorem seedDotLinear_apply  (z w : PDE.Vec d) :
     seedDotLinear z w = PDE.vecDot z w := by
   simp [seedDotLinear, PDE.vecDot]
 
 /-- The exact Frechet derivative of the seed base. -/
-theorem hasFDerivAt_seedBase {d : ℕ} (sigma : ℝ) (y e : PDE.Vec d) :
+theorem hasFDerivAt_seedBase  (sigma : ℝ) (y e : PDE.Vec d) :
     HasFDerivAt (fun z => seedBase sigma z e) (2 • seedDotLinear (y - e)) y := by
   have hi (i : Fin d) : HasFDerivAt (fun z : PDE.Vec d => (z i - e i) ^ 2)
       ((2 * (y i - e i)) •
@@ -102,8 +115,12 @@ theorem hasFDerivAt_seedBase {d : ℕ} (sigma : ℝ) (y e : PDE.Vec d) :
   · ext w
     simp [seedDotLinear, Finset.mul_sum, mul_assoc]
 
+section
+variable (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+
+include hsigma
 /-- The exact first derivative of the seed with respect to its velocity variable. -/
-theorem hasFDerivAt_seed {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+theorem hasFDerivAt_seed
     (y e : PDE.Vec d) :
     HasFDerivAt (fun z => seed alpha C₀ sigma z e)
       ((alpha * Real.rpow (seedBase sigma y e) (alpha / 2 - 1)) •
@@ -117,22 +134,27 @@ theorem hasFDerivAt_seed {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
     ring
 
 /-- The first seed derivative applied to a native vector. -/
-theorem fderiv_seed_apply {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+theorem fderiv_seed_apply
     (y e w : PDE.Vec d) :
     fderiv ℝ (fun z => seed alpha C₀ sigma z e) y w =
       alpha * Real.rpow (seedBase sigma y e) (alpha / 2 - 1) *
         PDE.vecDot (y - e) w := by
   rw [(hasFDerivAt_seed alpha C₀ sigma hsigma y e).fderiv]
   simp only [smul_apply, smul_eq_mul, seedDotLinear_apply]
+end
+
 
 /-- The rank-one expression for the seed's velocity Hessian. -/
-def seedHessianForm {d : ℕ} (alpha sigma : ℝ) (y e w u : PDE.Vec d) : ℝ :=
+def seedHessianForm  (alpha sigma : ℝ) (y e w u : PDE.Vec d) : ℝ :=
   alpha * Real.rpow (seedBase sigma y e) (alpha / 2 - 1) * PDE.vecDot w u +
     alpha * (alpha - 2) * Real.rpow (seedBase sigma y e) (alpha / 2 - 2) *
       PDE.vecDot (y - e) w * PDE.vecDot (y - e) u
 
+variable (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+
+include hsigma in
 /-- The differentiated seed first derivative, with an explicit linear-map value. -/
-theorem hasFDerivAt_seed_first {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+theorem hasFDerivAt_seed_first
     (y e w : PDE.Vec d) :
     HasFDerivAt (fun z => fderiv ℝ (fun a => seed alpha C₀ sigma a e) z w)
       ((PDE.vecDot (y - e) w *
@@ -158,9 +180,13 @@ theorem hasFDerivAt_seed_first {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < 
       Real.rpow_eq_pow, hexp]
     ring
 
+section
+variable (y e w u : PDE.Vec d)
+
+include hsigma
 /-- The exact seed Hessian, evaluated on two arbitrary native directions. -/
-theorem seed_hessian {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
-    (y e w u : PDE.Vec d) :
+theorem seed_hessian
+     :
     fderiv ℝ (fun z => fderiv ℝ (fun a => seed alpha C₀ sigma a e) z w) y u =
       seedHessianForm alpha sigma y e w u := by
   rw [(hasFDerivAt_seed_first alpha C₀ sigma hsigma y e w).fderiv]
@@ -169,15 +195,17 @@ theorem seed_hessian {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
   ring
 
 /-- The seed Hessian has its stated tangential eigenvalue on orthogonal directions. -/
-theorem seed_hessian_tangent {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
-    (y e w u : PDE.Vec d) (hw : PDE.vecDot (y - e) w = 0) :
+theorem seed_hessian_tangent
+     (hw : PDE.vecDot (y - e) w = 0) :
     fderiv ℝ (fun z => fderiv ℝ (fun a => seed alpha C₀ sigma a e) z w) y u =
       seedTangentialEigenvalue alpha sigma y e * PDE.vecDot w u := by
-  rw [seed_hessian alpha C₀ sigma hsigma]
-  simp [seedHessianForm, seedTangentialEigenvalue, hw]
+  simp_all [seed_hessian, seedHessianForm, seedTangentialEigenvalue]
+end
 
+
+include hsigma in
 /-- The seed Hessian has its stated radial eigenvalue on the translated radial vector. -/
-theorem seed_hessian_radial {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+theorem seed_hessian_radial
     (y e u : PDE.Vec d) :
     fderiv ℝ (fun z => fderiv ℝ (fun a => seed alpha C₀ sigma a e) z (y - e)) y u =
       seedRadialEigenvalue alpha sigma y e * PDE.vecDot (y - e) u := by
@@ -193,16 +221,17 @@ theorem seed_hessian_radial {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sig
   unfold seedBase PDE.vecNormSq
   ring
 
+include hsigma in
 /-- The ambient sphere-direction derivative of the seed is the negative velocity jet. -/
-theorem fderiv_seed_sphere_apply {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+theorem fderiv_seed_sphere_apply
     (y e w : PDE.Vec d) :
-    fderiv ℝ (fun a => seed alpha C₀ sigma y a) e w =
+    fderiv ℝ ((seed alpha C₀ sigma y)) e w =
       -(alpha * Real.rpow (seedBase sigma y e) (alpha / 2 - 1) *
         PDE.vecDot (y - e) w) := by
   have hsym (a b : PDE.Vec d) : seed alpha C₀ sigma a b = seed alpha C₀ sigma b a := by
     unfold seed seedBase
     rw [show a - b = -(b - a) by abel, PDE.vecNormSq_neg]
-  have hf : (fun a => seed alpha C₀ sigma y a) =
+  have hf : ((seed alpha C₀ sigma y)) =
       (fun a => seed alpha C₀ sigma a y) := by
     funext a
     exact hsym y a

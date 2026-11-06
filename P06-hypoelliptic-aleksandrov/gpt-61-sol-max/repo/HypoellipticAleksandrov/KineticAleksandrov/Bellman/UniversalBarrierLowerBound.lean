@@ -32,19 +32,19 @@ theorem positive_bellman_image_lower_bound (lam Lam : ℝ) (_hlam : 0 < lam)
       0 < bellmanOperator b.val phi z.val) :
     ∃ c : ℝ, 0 < c ∧ ∀ q ∈ bellmanPuncturedSet, ∀ b ∈ Icc lam Lam,
       c * bellmanGauge q ^ (alpha - 2) ≤ bellmanOperator b phi q := by
-  let : Nonempty (BellmanCoefficient lam Lam) := bellmanCoefficient_nonempty lam Lam hLam
-  have hc := hhom.image_continuous (lam := lam) (Lam := Lam)
+  let  := bellmanCoefficient_nonempty lam Lam hLam
+
   obtain ⟨w0, _, hmin⟩ := (isCompact_univ : IsCompact
     (univ : Set (BellmanSphere × BellmanCoefficient lam Lam))).exists_isMinOn
-      univ_nonempty hc.continuousOn
+      univ_nonempty (hhom.image_continuous (lam := lam) (Lam := Lam)).continuousOn
   refine ⟨bellmanOperator w0.2.val phi w0.1.val, hpos w0.1 w0.2, ?_⟩
   intro q hq b hb
   let z := bellmanSpherePoint q hq
-  have hminq := hmin (show (z, (⟨b, hb⟩ : BellmanCoefficient lam Lam)) ∈ univ from trivial)
-  have hs := bellman_homogeneous_operator_scaling hhom (bellmanGauge q)
+
+  have hs := bellman_homogeneous_operator_scaling hhom _
     (bellmanGauge_pos q hq) z.val z.ne_zero b
   rw [bellmanSpherePoint_reconstruct q hq] at hs
   rw [hs, mul_comm]
-  exact mul_le_mul_of_nonneg_left hminq (Real.rpow_nonneg (bellmanGauge_nonneg q) _)
+  exact mul_le_mul_of_nonneg_left (hmin (show (z, (⟨b, hb⟩ : BellmanCoefficient lam Lam)) ∈ univ from trivial)) (Real.rpow_nonneg (bellmanGauge_nonneg q) _)
 
 end HypoellipticAleksandrov.KineticAleksandrov

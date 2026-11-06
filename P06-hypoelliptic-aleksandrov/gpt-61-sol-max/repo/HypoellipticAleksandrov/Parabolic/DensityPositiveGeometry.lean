@@ -3,6 +3,12 @@ module
 public import HypoellipticAleksandrov.Measure.InkSpotsGeometry
 public import HypoellipticAleksandrov.Parabolic.ForwardPropagationGeometry
 public import Mathlib.Tactic
+import Lean.Elab.Tactic.Grind
+import Mathlib.Tactic.GCongr
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Positivity
+
+
 
 /-!
 # Cap-to-stack geometry for positive parabolic density
@@ -14,8 +20,8 @@ coefficient, solution, density-to-point, or forward-propagation assertion.
 
 @[expose] public section
 
-open Set
-open scoped Topology
+
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -32,54 +38,56 @@ theorem inkSpots_closedSourceBox_subset_closedUnitBox
   have hsource : closure (inkSpotsSourceBox q) =
       parabolicClosedBox 1 q.radius q.baseTime q.center := by
     simpa only [inkSpotsSourceBox] using
-      (closure_parabolicBox_of_pos (d := d) (vartheta := (1 : ℝ))
+      (closure_parabolicBox_of_pos (d := d) (vartheta := (1 ))
         (r := q.radius) (t0 := q.baseTime) (v0 := q.center)
         (by norm_num) hR)
   have hunit : closure (inkSpotsUnitBox d) =
       parabolicClosedBox 1 1 0 0 := by
     simpa only [inkSpotsUnitBox] using
-      (closure_parabolicBox_of_pos (d := d) (vartheta := (1 : ℝ))
-        (r := (1 : ℝ)) (t0 := 0) (v0 := (0 : PDE.Vec d))
+      (closure_parabolicBox_of_pos (d := d) (vartheta := (1 ))
+        (r := (1 )) (t0 := 0) (v0 := (0 ))
         (by norm_num) (by norm_num))
   rw [← hsource, ← hunit]
   exact closure_mono hq
 
+variable {d : ℕ}
+
 /-- Elementary endpoint and coordinate consequences of source containment. -/
-private theorem inkSpots_source_bounds {d : ℕ} {q : InkSpotsBox d}
+private theorem inkSpots_source_bounds  {q : InkSpotsBox d}
     (hR : 0 < q.radius)
     (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d) :
     0 ≤ q.baseTime ∧ q.baseTime + q.radius ^ 2 ≤ 1 ∧ q.radius ≤ 1 ∧
       ∀ i, |q.center i| + q.radius ≤ 1 := by
   have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hR hq
-  have hcenter : (q.baseTime + q.radius ^ 2, q.center) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨?_, ?_, fun i => ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · norm_num
-    · simp [hR.le]
-  have hcenterUnit := hclosed hcenter
+
+  have hcenterUnit := hclosed (show (q.baseTime + q.radius ^ 2, q.center) ∈
+      parabolicClosedBox 1 q.radius q.baseTime q.center by
+      rw [mem_parabolicClosedBox_iff]
+      refine ⟨?_, ?_, fun i => ?_⟩
+      · nlinarith [sq_nonneg q.radius]
+      · norm_num
+      · simp [hR.le])
   rw [mem_parabolicClosedBox_iff] at hcenterUnit
-  have hplus : (q.baseTime, q.center + q.radius • (1 : PDE.Vec d)) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨le_rfl, ?_, ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · intro i
-      simp only [Pi.add_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul]
-      rw [add_sub_cancel_left]
-      simp [abs_of_nonneg hR.le]
-  have hminus : (q.baseTime, q.center - q.radius • (1 : PDE.Vec d)) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨le_rfl, ?_, ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · intro i
-      simp only [Pi.sub_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul]
-      rw [sub_sub_cancel_left]
-      simp [abs_of_nonneg hR.le]
-  have hplusUnit := hclosed hplus
-  have hminusUnit := hclosed hminus
+
+
+  have hplusUnit := hclosed (show (q.baseTime, q.center + q.radius • (1 : PDE.Vec d)) ∈
+      parabolicClosedBox 1 q.radius q.baseTime q.center by
+      rw [mem_parabolicClosedBox_iff]
+      refine ⟨le_rfl, ?_, ?_⟩
+      · nlinarith [sq_nonneg q.radius]
+      · intro i
+        simp only [Pi.add_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul]
+        rw [add_sub_cancel_left]
+        simp [abs_of_nonneg hR.le])
+  have hminusUnit := hclosed (show (q.baseTime, q.center - q.radius • (1 : PDE.Vec d)) ∈
+      parabolicClosedBox 1 q.radius q.baseTime q.center by
+      rw [mem_parabolicClosedBox_iff]
+      refine ⟨le_rfl, ?_, ?_⟩
+      · nlinarith [sq_nonneg q.radius]
+      · intro i
+        simp only [Pi.sub_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul]
+        rw [sub_sub_cancel_left]
+        simp [abs_of_nonneg hR.le])
   rw [mem_parabolicClosedBox_iff] at hplusUnit hminusUnit
   refine ⟨hplusUnit.1, by norm_num at hcenterUnit ⊢; exact hcenterUnit.2.1, ?_, ?_⟩
   · nlinarith [sq_nonneg (q.radius - 1)]
@@ -88,9 +96,9 @@ private theorem inkSpots_source_bounds {d : ℕ} {q : InkSpotsBox d}
     have hm := hminusUnit.2.2 i
     simp only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, Pi.one_apply,
       smul_eq_mul, Pi.zero_apply, sub_zero] at hp hm
-    have hp' : q.center i + q.radius * 1 ≤ 1 :=
+    have hp'  :=
       (le_abs_self _).trans hp
-    have hm' : -(q.center i - q.radius * 1) ≤ 1 :=
+    have hm'  :=
       (neg_le_abs _).trans hm
     have habs : |q.center i| ≤ 1 - q.radius := by
       rw [abs_le]
@@ -99,7 +107,7 @@ private theorem inkSpots_source_bounds {d : ℕ} {q : InkSpotsBox d}
 
 /-- A point of the terminal contraction has the source's strict time and
 coordinate bounds. -/
-private theorem inkSpotsQ3_bounds {d : ℕ} {eta zeta : ℝ} {q : InkSpotsBox d}
+private theorem inkSpotsQ3_bounds  {eta zeta : ℝ} {q : InkSpotsBox d}
     {z : TimeVelocity d} (heta : 0 < eta) (hzeta : 0 < zeta) (hzeta1 : zeta < 1)
     (hR : 0 < q.radius)
     (hz : z ∈ inkSpotsQ3 eta zeta q) :
@@ -107,37 +115,39 @@ private theorem inkSpotsQ3_bounds {d : ℕ} {eta zeta : ℝ} {q : InkSpotsBox d}
         z.1 - (q.baseTime + q.radius ^ 2) ∧
       z.1 - (q.baseTime + q.radius ^ 2) < 4 * q.radius ^ 2 / eta ∧
       ∀ i, |z.2 i - q.center i| < 3 * zeta * q.radius := by
+  let sharedTerm_df0c8206b3 := (q.baseTime + q.radius ^ 2 + 4 * q.radius ^ 2 / eta)
+  let sharedTerm_42137fb4c0 := ((1 - zeta ^ 2) * (4 * q.radius ^ 2 / eta))
   rcases hz with ⟨y, hy, hyz⟩
   rcases hy with ⟨⟨hyleft, hyright⟩, hycenter, hyunit⟩
   subst z
   constructor
   · dsimp [inkSpotsContraction, inkSpotsTerminalTime]
-    have hsquare : 0 < zeta ^ 2 := sq_pos_of_pos hzeta
-    have hsquareOne : zeta ^ 2 < 1 := by nlinarith
-    have hspan : 0 < 4 * q.radius ^ 2 / eta := by positivity
+    have hsquare  := sq_pos_of_pos hzeta
+
+
     have htime :
-        q.baseTime + q.radius ^ 2 + 4 * q.radius ^ 2 / eta -
-            zeta ^ 2 * (q.baseTime + q.radius ^ 2 + 4 * q.radius ^ 2 / eta - y.1) -
+        sharedTerm_df0c8206b3 -
+            zeta ^ 2 * (sharedTerm_df0c8206b3 - y.1) -
             (q.baseTime + q.radius ^ 2) =
-          (1 - zeta ^ 2) * (4 * q.radius ^ 2 / eta) +
+          sharedTerm_42137fb4c0 +
             zeta ^ 2 * (y.1 - (q.baseTime + q.radius ^ 2)) := by ring
     rw [htime]
     have htail : 0 < zeta ^ 2 * (y.1 - (q.baseTime + q.radius ^ 2)) :=
       mul_pos hsquare (by linarith)
-    have hfactor : (1 - zeta ^ 2) * (4 * q.radius ^ 2 / eta) =
+    have hfactor : sharedTerm_42137fb4c0 =
         4 * (1 - zeta ^ 2) * q.radius ^ 2 / eta := by ring
     rw [hfactor]
     nlinarith
   constructor
   · dsimp [inkSpotsContraction, inkSpotsTerminalTime]
-    have hsquare : 0 < zeta ^ 2 := sq_pos_of_pos hzeta
-    have hsquareOne : zeta ^ 2 < 1 := by nlinarith
-    have hspan : 0 < 4 * q.radius ^ 2 / eta := by positivity
+    have hsquare  := sq_pos_of_pos hzeta
+
+
     have htime :
-        q.baseTime + q.radius ^ 2 + 4 * q.radius ^ 2 / eta -
-            zeta ^ 2 * (q.baseTime + q.radius ^ 2 + 4 * q.radius ^ 2 / eta - y.1) -
+        sharedTerm_df0c8206b3 -
+            zeta ^ 2 * (sharedTerm_df0c8206b3 - y.1) -
             (q.baseTime + q.radius ^ 2) =
-          (1 - zeta ^ 2) * (4 * q.radius ^ 2 / eta) +
+          sharedTerm_42137fb4c0 +
             zeta ^ 2 * (y.1 - (q.baseTime + q.radius ^ 2)) := by ring
     rw [htime]
     have htail : zeta ^ 2 * (y.1 - (q.baseTime + q.radius ^ 2)) <
@@ -154,7 +164,7 @@ private theorem inkSpotsQ3_bounds {d : ℕ} {eta zeta : ℝ} {q : InkSpotsBox d}
 
 /-- The clipped terminal stack has strict coordinate room inside the unit
 box, measured at every contraction factor no larger than `1 - zeta`. -/
-private theorem inkSpotsQ3_unit_margin {d : ℕ} {eta zeta kappa : ℝ}
+private theorem inkSpotsQ3_unit_margin  {eta zeta kappa : ℝ}
     {q : InkSpotsBox d} {z : TimeVelocity d}
     (hzeta : 0 < zeta) (hzeta1 : zeta < 1) (hR : 0 < q.radius)
     (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d)
@@ -167,20 +177,19 @@ private theorem inkSpotsQ3_unit_margin {d : ℕ} {eta zeta kappa : ℝ}
   subst z
   obtain ⟨hbase0, hbase1, hRle, hcenter⟩ := inkSpots_source_bounds hR hq
   intro i
-  have hyabs : |y.2 i| < 1 := by
-    simpa only [Pi.zero_apply, sub_zero] using hyunit i
-  have hcabs : |q.center i| ≤ 1 - q.radius := by
-    linarith [hcenter i]
+
+
   have hrewrite : q.center i + zeta * (y.2 i - q.center i) =
       (1 - zeta) * q.center i + zeta * y.2 i := by ring
   change |q.center i + zeta * (y.2 i - q.center i)| <
     1 - kappa * q.radius
   rw [hrewrite]
-  have hcenterTerm : (1 - zeta) * |q.center i| ≤
-      (1 - zeta) * (1 - q.radius) :=
-    mul_le_mul_of_nonneg_left hcabs (sub_nonneg.mpr hzeta1.le)
-  have hyTerm : zeta * |y.2 i| < zeta * 1 :=
-    mul_lt_mul_of_pos_left hyabs hzeta
+  have hcenterTerm  :=
+    mul_le_mul_of_nonneg_left (show |q.center i| ≤ 1 - q.radius by
+        linarith [hcenter i]) (sub_nonneg.mpr hzeta1.le)
+  have hyTerm  :=
+    mul_lt_mul_of_pos_left (show |y.2 i| < 1 by
+        simpa only [Pi.zero_apply, sub_zero] using hyunit i) hzeta
   calc
     |(1 - zeta) * q.center i + zeta * y.2 i| ≤
         |(1 - zeta) * q.center i| + |zeta * y.2 i| := abs_add_le _ _
@@ -193,7 +202,7 @@ private theorem inkSpotsQ3_unit_margin {d : ℕ} {eta zeta kappa : ℝ}
 
 /-- The positive coordinatewise slack used to enlarge the two relevant
 velocity points to a closed propagation rectangle. -/
-private def inkSpotsCorridorSlack {d : ℕ} (kappa : ℝ) (q : InkSpotsBox d)
+private def inkSpotsCorridorSlack  (kappa : ℝ) (q : InkSpotsBox d)
     (z : TimeVelocity d) (i : Fin d) : ℝ :=
   min (kappa * q.radius / 2)
     (min (1 - |q.center i| - kappa * q.radius)
@@ -205,16 +214,7 @@ private theorem inkSpots_kappa_properties {eta zeta kappa : ℝ}
     (hzeta1 : zeta < 1)
     (hkappa : kappa = min (eta / 4) (1 - zeta)) :
     0 < kappa ∧ kappa ≤ eta / 4 ∧ kappa ≤ 1 - zeta ∧ kappa < 1 / 4 := by
-  rw [hkappa]
-  have hetaQuarter : 0 < eta / 4 := by positivity
-  have hzetaGap : 0 < 1 - zeta := sub_pos.mpr hzeta1
-  constructor
-  · exact lt_min hetaQuarter hzetaGap
-  constructor
-  · exact min_le_left _ _
-  constructor
-  · exact min_le_right _ _
-  · exact (min_le_left _ _).trans_lt (by nlinarith)
+  grind
 
 /-- A point of the clipped terminal stack admits a target-dependent physical
 corridor suitable for the first propagation use in Lemma 3.3. -/
@@ -240,20 +240,22 @@ theorem exists_inkSpotsQ3_forward_corridor
           parabolicClosedRectangle
             (z.1 - (q.baseTime + q.radius ^ 2)) lower upper ⊆
         parabolicClosedBox 1 1 0 0 := by
+  let sharedTerm_74145ac82f := ((3 * zeta + 3 * kappa) * q.radius)
+  let sharedTerm_d2f2a398b1 := (4 * (1 - zeta ^ 2))
+  let sharedTerm_be26e5f10f := (z.1 - (q.baseTime + q.radius ^ 2))
   obtain ⟨hkappa0, hkappaEta, hkappaZeta, hkappaQuarter⟩ :=
     inkSpots_kappa_properties heta0 heta1 hzeta1 hkappa
   obtain ⟨htlower, htupper, hzcenter⟩ :=
     inkSpotsQ3_bounds heta0 hzeta0 hzeta1 hR hz.1
   obtain ⟨hbase0, hbase1, hRle, hcenter⟩ := inkSpots_source_bounds hR hq
   have hztime : z.1 < 1 := by
-    simpa only [inkSpotsUnitBox, one_mul, zero_add, one_pow] using
-      (mem_parabolicBox_iff.mp hz.2).2.1
-  have hzmargin : ∀ i, |z.2 i| < 1 - kappa * q.radius :=
+    simpa only [one_pow, one_mul, zero_add] using (mem_parabolicBox_iff.mp hz.2).2.1
+  have hzmargin  :=
     inkSpotsQ3_unit_margin hzeta0 hzeta1 hR hq hkappaZeta hz
-  let slack : PDE.Vec d := inkSpotsCorridorSlack kappa q z
-  let lower : PDE.Vec d := fun i =>
+  let slack  := inkSpotsCorridorSlack kappa q z
+  let lower  := fun i =>
     min 0 (z.2 i - q.center i) - kappa * q.radius - slack i
-  let upper : PDE.Vec d := fun i =>
+  let upper  := fun i =>
     max 0 (z.2 i - q.center i) + kappa * q.radius + slack i
   have hslack : ∀ i, 0 < slack i ∧ slack i ≤ kappa * q.radius / 2 ∧
       slack i ≤ (1 - |q.center i| - kappa * q.radius) / 2 ∧
@@ -264,51 +266,47 @@ theorem exists_inkSpotsQ3_forward_corridor
       nlinarith [hcenter i]
     have hzMargin : 0 < 1 - |z.2 i| - kappa * q.radius := by
       nlinarith [hzmargin i]
-    have hhalfKappa : 0 < kappa * q.radius / 2 := by positivity
-    have hminMargin : 0 < min (1 - |q.center i| - kappa * q.radius)
-        (1 - |z.2 i| - kappa * q.radius) :=
-      lt_min hcenterMargin hzMargin
-    have hhalfMargin : 0 < min (1 - |q.center i| - kappa * q.radius)
-        (1 - |z.2 i| - kappa * q.radius) / 2 := by
-      exact div_pos hminMargin (by norm_num)
-    refine ⟨lt_min hhalfKappa hhalfMargin, min_le_left _ _,
+
+
+
+    refine ⟨lt_min (show _ by positivity) (by
+        exact div_pos (lt_min hcenterMargin hzMargin) (by norm_num)), min_le_left _ _,
       le_trans (min_le_right _ _)
         ((div_le_div_iff_of_pos_right (by norm_num)).mpr (min_le_left _ _)),
       le_trans (min_le_right _ _)
         ((div_le_div_iff_of_pos_right (by norm_num)).mpr (min_le_right _ _))⟩
-  have htimeLower : kappa * q.radius ^ 2 <
-      z.1 - (q.baseTime + q.radius ^ 2) := by
-    have hgap : kappa < 4 * (1 - zeta ^ 2) / eta := by
-      have hrewrite : 4 * (1 - zeta ^ 2) / eta =
-          (1 - zeta) * (4 * (1 + zeta) / eta) := by ring
-      rw [hrewrite]
+
+
+  refine ⟨lower, upper, (by
+      let sharedTerm_dd7f2f4d1d := ((1 - zeta) * (4 * (1 + zeta) / eta))
+
       calc
-        kappa ≤ 1 - zeta := hkappaZeta
-        _ < (1 - zeta) * (4 * (1 + zeta) / eta) := by
-          have : 1 < 4 * (1 + zeta) / eta := by
-            apply (lt_div_iff₀ heta0).mpr
-            nlinarith
-          simpa using mul_lt_mul_of_pos_left this (sub_pos.mpr hzeta1)
-    calc
-      kappa * q.radius ^ 2 <
-          (4 * (1 - zeta ^ 2) / eta) * q.radius ^ 2 :=
-        mul_lt_mul_of_pos_right hgap (sq_pos_of_pos hR)
-      _ = 4 * (1 - zeta ^ 2) * q.radius ^ 2 / eta := by ring
-      _ < z.1 - (q.baseTime + q.radius ^ 2) := htlower
-  have htimeUpper : z.1 - (q.baseTime + q.radius ^ 2) ≤
-      kappa⁻¹ * q.radius ^ 2 := by
-    have hkappaInv : 4 / eta ≤ kappa⁻¹ := by
-      rw [le_inv_comm₀ (by positivity) hkappa0]
-      have hinv : (4 / eta)⁻¹ = eta / 4 := by
-        field_simp
-      simpa only [hinv] using hkappaEta
-    have : 4 * q.radius ^ 2 / eta ≤ kappa⁻¹ * q.radius ^ 2 := by
-      calc
-        4 * q.radius ^ 2 / eta = (4 / eta) * q.radius ^ 2 := by ring
-        _ ≤ kappa⁻¹ * q.radius ^ 2 :=
-          mul_le_mul_of_nonneg_right hkappaInv (sq_nonneg q.radius)
-    exact htupper.le.trans this
-  refine ⟨lower, upper, htimeLower, htimeUpper, ?_, ?_, ?_, ?_⟩
+        kappa * q.radius ^ 2 <
+            (sharedTerm_d2f2a398b1 / eta) * q.radius ^ 2 :=
+          mul_lt_mul_of_pos_right (by
+              have hrewrite : sharedTerm_d2f2a398b1 / eta =
+                  sharedTerm_dd7f2f4d1d := by ring
+              rw [hrewrite]
+              calc
+                kappa ≤ 1 - zeta := hkappaZeta
+                _ < sharedTerm_dd7f2f4d1d := by
+                  have : 1 < 4 * (1 + zeta) / eta := by
+                    apply (lt_div_iff₀ heta0).mpr
+                    nlinarith
+                  simpa using mul_lt_mul_of_pos_left this (sub_pos.mpr hzeta1)) (sq_pos_of_pos hR)
+        _ = sharedTerm_d2f2a398b1 * q.radius ^ 2 / eta := by ring
+        _ < sharedTerm_be26e5f10f := htlower), (by
+
+      have : 4 * q.radius ^ 2 / eta ≤ kappa⁻¹ * q.radius ^ 2 := by
+        calc
+          4 * q.radius ^ 2 / eta = (4 / eta) * q.radius ^ 2 := by ring
+          _ ≤ kappa⁻¹ * q.radius ^ 2 :=
+            mul_le_mul_of_nonneg_right (by
+                rw [le_inv_comm₀ (by positivity) hkappa0]
+                have hinv : (4 / eta)⁻¹ = eta / 4 := by
+                  field_simp
+                simpa only [hinv] using hkappaEta) (sq_nonneg q.radius)
+      exact htupper.le.trans this), ?_, ?_, ?_, ?_⟩
   · intro i
     have hs := hslack i
     dsimp [lower, upper]
@@ -317,7 +315,7 @@ theorem exists_inkSpotsQ3_forward_corridor
       have hminmax : min 0 (z.2 i - q.center i) ≤ max 0 (z.2 i - q.center i) :=
         min_le_max
       linarith only [hminmax, hs.1]
-    · have hdiff : |z.2 i - q.center i| < 3 * zeta * q.radius := hzcenter i
+    · have hdiff  := hzcenter i
       have hsmall : kappa * (3 * zeta + 3 * kappa) < 1 := by
         calc
           kappa * (3 * zeta + 3 * kappa) ≤
@@ -334,39 +332,38 @@ theorem exists_inkSpotsQ3_forward_corridor
           z.2 i - q.center i + kappa * q.radius + slack i -
               (0 - kappa * q.radius - slack i) =
               (z.2 i - q.center i) + 2 * kappa * q.radius + 2 * slack i := by ring
-          _ < (3 * zeta + 3 * kappa) * q.radius := by
+          _ < sharedTerm_74145ac82f := by
             have : 2 * slack i ≤ kappa * q.radius := by nlinarith [hs.2.1]
-            have hrest : 2 * kappa * q.radius + 2 * slack i ≤
-                3 * kappa * q.radius := by linarith only [this]
+
             calc
               z.2 i - q.center i + 2 * kappa * q.radius + 2 * slack i ≤
                   (z.2 i - q.center i) + 3 * kappa * q.radius :=
                 by simpa [add_assoc, add_left_comm, add_comm] using
-                  add_le_add_left hrest (z.2 i - q.center i)
+                  add_le_add_left (show 2 * kappa * q.radius + 2 * slack i ≤
+                3 * kappa * q.radius by linarith only [this]) (z.2 i - q.center i)
               _ < 3 * zeta * q.radius + 3 * kappa * q.radius :=
-                by simpa [add_comm] using add_lt_add_right hdiff (3 * kappa * q.radius)
-              _ = (3 * zeta + 3 * kappa) * q.radius := by ring
+                by gcongr <;> first | positivity | assumption | norm_num
+              _ = sharedTerm_74145ac82f := by ring
           _ ≤ kappa⁻¹ * q.radius :=
             mul_le_mul_of_nonneg_right hbound hR.le).le
       · rw [max_eq_left hcase, min_eq_right hcase]
-        have hcase' : z.2 i - q.center i ≤ 0 := hcase
+        have hcase'  := hcase
         rw [abs_of_nonpos hcase'] at hdiff
         exact (calc
           0 + kappa * q.radius + slack i -
               (z.2 i - q.center i - kappa * q.radius - slack i) =
               -(z.2 i - q.center i) + 2 * kappa * q.radius + 2 * slack i := by ring
-          _ < (3 * zeta + 3 * kappa) * q.radius := by
+          _ < sharedTerm_74145ac82f := by
             have : 2 * slack i ≤ kappa * q.radius := by nlinarith [hs.2.1]
-            have hrest : 2 * kappa * q.radius + 2 * slack i ≤
-                3 * kappa * q.radius := by linarith only [this]
+
             calc
               -(z.2 i - q.center i) + 2 * kappa * q.radius + 2 * slack i ≤
                   -(z.2 i - q.center i) + 3 * kappa * q.radius :=
                 by simpa [add_assoc, add_left_comm, add_comm] using
-                  add_le_add_left hrest (-(z.2 i - q.center i))
+                  add_le_add_left (show _ by linarith only [this]) (-(z.2 i - q.center i))
               _ < 3 * zeta * q.radius + 3 * kappa * q.radius :=
-                by simpa [add_comm] using add_lt_add_right hdiff (3 * kappa * q.radius)
-              _ = (3 * zeta + 3 * kappa) * q.radius := by ring
+                by gcongr <;> first | positivity | assumption | norm_num
+              _ = sharedTerm_74145ac82f := by ring
           _ ≤ kappa⁻¹ * q.radius :=
             mul_le_mul_of_nonneg_right hbound hR.le).le
   · intro i
@@ -436,37 +433,36 @@ private theorem selected_alpha_bounds {d : ℕ} {a alpha : ℝ}
     (ha0 : 0 < a) (ha1 : a < 1)
     (halpha : alpha = (1 + a) ^ (-(1 / ((d : ℝ) + 2)))) :
     0 < alpha ∧ alpha < 1 ∧ (1 / 2 : ℝ) < alpha ^ 2 := by
+  let sharedTerm_3119e36090 := (2 / ((d : ℝ) + 2))
   have hbase : 1 < 1 + a := by linarith
-  have hbasePos : 0 < 1 + a := lt_trans zero_lt_one hbase
+  have hbasePos  := lt_trans zero_lt_one hbase
   have hden : 0 < (d : ℝ) + 2 := by positivity
-  have hexpNeg : -(1 / ((d : ℝ) + 2)) < 0 := by
-    exact neg_lt_zero.mpr (one_div_pos.mpr hden)
-  have halphaPos : 0 < alpha := by
-    rw [halpha]
-    exact Real.rpow_pos_of_pos hbasePos _
-  have halphaLtOne : alpha < 1 := by
-    rw [halpha]
-    exact Real.rpow_lt_one_of_one_lt_of_neg hbase hexpNeg
-  have hfrac : 2 / ((d : ℝ) + 2) ≤ 1 := by
-    apply (div_le_iff₀ hden).mpr
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := by positivity
-    nlinarith
-  have hexp : (-1 : ℝ) ≤ -(2 / ((d : ℝ) + 2)) := by
-    exact neg_le_neg hfrac
+
+
+
+
+
   have halphaSq : alpha ^ 2 =
-      (1 + a) ^ (-(2 / ((d : ℝ) + 2)) ) := by
+      (1 + a) ^ (-(sharedTerm_3119e36090) ) := by
     rw [halpha, ← Real.rpow_natCast, ← Real.rpow_mul hbasePos.le]
     congr 1
     ring
-  have hpow : (1 + a) ^ (-1 : ℝ) ≤ alpha ^ 2 := by
-    rw [halphaSq]
-    exact Real.rpow_le_rpow_of_exponent_le hbase.le hexp
-  have hinv : (1 / 2 : ℝ) < (1 + a) ^ (-1 : ℝ) := by
-    rw [Real.rpow_neg_one]
-    rw [← one_div]
-    apply (lt_div_iff₀ hbasePos).mpr
-    nlinarith
-  exact ⟨halphaPos, halphaLtOne, hinv.trans_le hpow⟩
+
+
+  exact ⟨(by
+      rw [halpha]
+      exact Real.rpow_pos_of_pos hbasePos _), (by
+      rw [halpha]
+      exact Real.rpow_lt_one_of_one_lt_of_neg hbase (neg_lt_zero.mpr (one_div_pos.mpr hden))), (show (1 / 2 : ℝ) < (1 + a) ^ (-1 : ℝ) by
+          rw [Real.rpow_neg_one]
+          rw [← one_div]
+          apply (lt_div_iff₀ hbasePos).mpr
+          nlinarith).trans_le (by
+      rw [halphaSq]
+      exact Real.rpow_le_rpow_of_exponent_le hbase.le (neg_le_neg (show sharedTerm_3119e36090 ≤ 1 by
+          apply (div_le_iff₀ hden).mpr
+
+          nlinarith)))⟩
 
 /-- A selected crossing of the second ink-spots enlargement supplies the
 fixed physical corridor for propagation to the terminal half-cube. -/
@@ -493,91 +489,87 @@ theorem selected_inkSpots_forward_corridor
         v i < (1 : Real) - kappa * q.radius) ∧
       parabolicClosedRectangle (d := d)
           (1 - (q.baseTime + alpha ^ 2 * q.radius ^ 2))
-          (fun _ => (-1 : Real)) (fun _ => (1 : Real)) ⊆
+          (fun _ => (-1 : Real)) (fun _ => (1 )) ⊆
         (parabolicAffine (d := d) (q.baseTime + alpha ^ 2 * q.radius ^ 2)
-          (0 : PDE.Vec d) 1) ⁻¹' parabolicClosedBox (d := d) 1 1 0 0 := by
+          (0 ) 1) ⁻¹' parabolicClosedBox  1 1 0 0 := by
+  let sharedTerm_2555de4b20 := ((q.baseTime + alpha ^ 2 * q.radius ^ 2))
   obtain ⟨halpha0, halpha1, halphaHalf⟩ :=
     selected_alpha_bounds ha0 ha1 halpha
-  have hetaLeOne : eta ≤ 1 := heta1.le
-  have hcNonneg : 0 ≤ c := hc.le
+  have hetaLeOne  := heta1.le
+  have hcNonneg  := hc.le
   obtain ⟨hbase0, hbase1, hRle, hcenter⟩ := inkSpots_source_bounds hR hq
   rcases (mem_inkSpotsQ2_iff.mp hcross) with
     ⟨hcrossLower, hcrossUpper, hcrossCenter, hcrossUnit⟩
-  have hspan : c < 4 * q.radius ^ 2 / eta := by
-    change 1 + c < q.baseTime + q.radius ^ 2 +
-      4 * q.radius ^ 2 / eta at hcrossUpper
-    linarith
+
   have hR0sqLt : R0 ^ 2 < q.radius ^ 2 := by
     rw [hR0]
-    have hmul : c * eta < 4 * q.radius ^ 2 :=
-      (lt_div_iff₀ heta0).mp hspan
-    have hcEtaNonneg : 0 ≤ c * eta :=
+
+    have hcEtaNonneg  :=
       mul_nonneg hcNonneg heta0.le
-    have hcEtaLe : c * eta ≤ c * 1 :=
-      mul_le_mul_of_nonneg_left hetaLeOne hcNonneg
-    nlinarith only [hmul, hcEtaNonneg, hcEtaLe]
-  have hRsqLe : q.radius ^ 2 ≤ 1 := by
-    have hmul : q.radius * q.radius ≤ q.radius * 1 :=
-      mul_le_mul_of_nonneg_left hRle hR.le
-    nlinarith
-  have hR0sqLtOne : R0 ^ 2 < 1 := hR0sqLt.trans_le hRsqLe
-  have hR0ltOne : R0 < 1 := by
-    apply (sq_lt_sq₀ hR0pos.le zero_le_one).mp
-    simpa using hR0sqLtOne
-  have hR0ltR : R0 < q.radius := by
-    apply (sq_lt_sq₀ hR0pos.le hR.le).mp
-    exact hR0sqLt
+
+    nlinarith only [((lt_div_iff₀ heta0).mp (show c < 4 * q.radius ^ 2 / eta by
+        change 1 + c < q.baseTime + q.radius ^ 2 +
+          4 * q.radius ^ 2 / eta at hcrossUpper
+        linarith)), hcEtaNonneg, (mul_le_mul_of_nonneg_left hetaLeOne hcNonneg)]
+
+  have hR0sqLtOne  := hR0sqLt.trans_le (show q.radius ^ 2 ≤ 1 by
+
+      nlinarith)
+
+
   have hfactor0 : 0 < 1 - alpha ^ 2 := by
     nlinarith [sq_pos_of_pos halpha0]
-  have hfactorLtHalf : 1 - alpha ^ 2 < 1 / 2 := by
-    linarith
+
   have hkappa0 : 0 < kappa := by
     rw [hkappa]
     exact mul_pos hfactor0 (sq_pos_of_pos hR0pos)
   have hkappaLtR0sq : kappa < R0 ^ 2 := by
     rw [hkappa]
-    have hfactorLtOne : 1 - alpha ^ 2 < 1 := by linarith
-    nlinarith [mul_pos (sq_pos_of_pos hR0pos) (sub_pos.mpr hfactorLtOne)]
+
+    nlinarith [mul_pos (sq_pos_of_pos hR0pos) (sub_pos.mpr (show 1 - alpha ^ 2 < 1 by linarith))]
   have hkappaLtHalfR0sq : kappa < (1 / 2 : ℝ) * R0 ^ 2 := by
     rw [hkappa]
-    exact mul_lt_mul_of_pos_right hfactorLtHalf (sq_pos_of_pos hR0pos)
-  have hkappaLtOne : kappa < 1 :=
+    exact mul_lt_mul_of_pos_right (show 1 - alpha ^ 2 < 1 / 2 by
+        linarith) (sq_pos_of_pos hR0pos)
+  have hkappaLtOne  :=
     hkappaLtR0sq.trans hR0sqLtOne
-  have hkappaLtFactor : kappa < 1 - alpha ^ 2 := by
-    rw [hkappa]
-    have : R0 ^ 2 < 1 := hR0sqLtOne
-    nlinarith [mul_pos hfactor0 (sub_pos.mpr this)]
+
   have htwoKappaLtR : 2 * kappa < q.radius := by
-    have htwoKappaLtR0sq : 2 * kappa < R0 ^ 2 := by
-      nlinarith [hkappaLtHalfR0sq]
-    have hR0sqLtR0 : R0 ^ 2 < R0 := by
-      nlinarith [mul_pos hR0pos (sub_pos.mpr hR0ltOne)]
-    exact htwoKappaLtR0sq.trans (hR0sqLtR0.trans hR0ltR)
-  have htimeLower : kappa * q.radius ^ 2 <
-      1 - (q.baseTime + alpha ^ 2 * q.radius ^ 2) := by
-    have hmain : kappa * q.radius ^ 2 <
-        (1 - alpha ^ 2) * q.radius ^ 2 :=
-      mul_lt_mul_of_pos_right hkappaLtFactor (sq_pos_of_pos hR)
-    have hrewrite : 1 - (q.baseTime + alpha ^ 2 * q.radius ^ 2) =
-        (1 - (q.baseTime + q.radius ^ 2)) +
-          (1 - alpha ^ 2) * q.radius ^ 2 := by ring
-    rw [hrewrite]
-    linarith
-  have hkappaLtRsq : kappa < q.radius ^ 2 :=
+
+
+    exact (show 2 * kappa < R0 ^ 2 by
+        nlinarith [hkappaLtHalfR0sq]).trans ((show R0 ^ 2 < R0 by
+            nlinarith [mul_pos hR0pos (sub_pos.mpr (by
+                apply (sq_lt_sq₀ hR0pos.le zero_le_one).mp
+                simpa using hR0sqLtOne))]).trans (show R0 < q.radius by
+        apply (sq_lt_sq₀ hR0pos.le hR.le).mp
+        exact hR0sqLt))
+
+  have hkappaLtRsq  :=
     hkappaLtR0sq.trans hR0sqLt
-  have htimeUpperOne : (1 : ℝ) ≤ kappa⁻¹ * q.radius ^ 2 := by
-    calc
-      (1 : ℝ) ≤ q.radius ^ 2 / kappa :=
-        (le_div_iff₀ hkappa0).mpr (by
-          simpa only [one_mul] using hkappaLtRsq.le)
-      _ = kappa⁻¹ * q.radius ^ 2 := by ring
-  have htimeLeOne : 1 - (q.baseTime + alpha ^ 2 * q.radius ^ 2) ≤ 1 := by
-    have hnonneg : 0 ≤ alpha ^ 2 * q.radius ^ 2 :=
-      mul_nonneg (sq_nonneg alpha) (sq_nonneg q.radius)
-    linarith
-  have htimeUpper : 1 - (q.baseTime + alpha ^ 2 * q.radius ^ 2) ≤
-      kappa⁻¹ * q.radius ^ 2 := htimeLeOne.trans htimeUpperOne
-  refine ⟨htimeLower, htimeUpper, ?_, ?_, ?_, ?_⟩
+
+
+  have htimeUpper : 1 - (sharedTerm_2555de4b20) ≤
+      kappa⁻¹ * q.radius ^ 2 := (show 1 - (sharedTerm_2555de4b20) ≤ 1 by
+          have hnonneg  :=
+            mul_nonneg (sq_nonneg alpha) (sq_nonneg q.radius)
+          linarith).trans (by
+          calc
+            (1 : ℝ) ≤ q.radius ^ 2 / kappa :=
+              (le_div_iff₀ hkappa0).mpr (by
+                simpa only [one_mul] using hkappaLtRsq.le)
+            _ = kappa⁻¹ * q.radius ^ 2 := by ring)
+  refine ⟨(by
+      have hmain  :=
+        mul_lt_mul_of_pos_right (show kappa < 1 - alpha ^ 2 by
+            rw [hkappa]
+            have  := hR0sqLtOne
+            nlinarith [mul_pos hfactor0 (sub_pos.mpr this)]) (sq_pos_of_pos hR)
+      have hrewrite : 1 - (sharedTerm_2555de4b20) =
+          (1 - (q.baseTime + q.radius ^ 2)) +
+            (1 - alpha ^ 2) * q.radius ^ 2 := by ring
+      rw [hrewrite]
+      linarith), htimeUpper, ?_, ?_, ?_, ?_⟩
   · intro i
     constructor
     · have hkapRlt : kappa * q.radius < 1 := by
@@ -620,11 +612,11 @@ theorem selected_inkSpots_forward_corridor
     constructor <;> linarith only [hvi, hvneg, hvle, hkapRHalf]
   · rintro ⟨t, x⟩ hx
     rw [mem_parabolicClosedRectangle_iff] at hx
-    change parabolicAffine (q.baseTime + alpha ^ 2 * q.radius ^ 2) 0 1
+    change parabolicAffine sharedTerm_2555de4b20 0 1
         (t, x) ∈ parabolicClosedBox 1 1 0 0
     rw [mem_parabolicClosedBox_iff]
     refine ⟨?_, ?_, ?_⟩
-    · have hseedNonneg : 0 ≤ q.baseTime + alpha ^ 2 * q.radius ^ 2 :=
+    · have hseedNonneg : 0 ≤ sharedTerm_2555de4b20 :=
         add_nonneg hbase0 (mul_nonneg (sq_nonneg alpha) (sq_nonneg q.radius))
       dsimp [parabolicAffine]
       linarith only [hseedNonneg, hx.1]

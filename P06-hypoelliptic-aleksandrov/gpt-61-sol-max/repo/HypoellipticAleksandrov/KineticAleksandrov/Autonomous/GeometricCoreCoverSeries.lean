@@ -10,15 +10,17 @@ import Mathlib.Tactic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory
-open scoped ENNReal
+open MeasureTheory
+
+
+variable (delta : ℝ)
 
 /-- The positive geometric power appearing in the source cover. -/
-def geometricBandPower (delta : ℝ) (j : ℕ) : ℝ :=
+def geometricBandPower  (j : ℕ) : ℝ :=
   (4 * (7 / 8 : ℝ) ^ j) ^ delta
 
 /-- The geometric band powers are summable exactly in the positive-exponent regime. -/
-theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
+theorem geometricBandPower_summable  (hd : 0 < delta) :
     Summable (geometricBandPower delta) := by
   have he (j : ℕ) : geometricBandPower delta j =
       (4 : ℝ) ^ delta * ((7 / 8 : ℝ) ^ delta) ^ j := by
@@ -26,17 +28,16 @@ theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
     rw [Real.mul_rpow (by norm_num) (by positivity), ← Real.rpow_natCast,
       ← Real.rpow_mul (by norm_num), mul_comm (j : ℝ) delta,
       Real.rpow_mul (by norm_num), Real.rpow_natCast]
-  have hefun := funext he
-  rw [hefun]
+
+  rw [(funext he)]
   apply Summable.mul_left
   apply summable_geometric_of_lt_one
   · positivity
   · exact Real.rpow_lt_one (by norm_num) (by norm_num) hd
 
 /-- The geometric band sum is strictly positive. -/
-theorem geometricBandPower_tsum_pos (delta : ℝ) (hd : 0 < delta) :
-    0 < ∑' j, geometricBandPower delta j := by
-  exact (geometricBandPower_summable delta hd).tsum_pos
+theorem geometricBandPower_tsum_pos  (hd : 0 < delta) :
+    0 < ∑' j, geometricBandPower delta j := (geometricBandPower_summable delta hd).tsum_pos
     (fun j => by unfold geometricBandPower; positivity) 0
     (by unfold geometricBandPower; positivity)
 
@@ -45,12 +46,12 @@ theorem geometricBandPower_sum (C R delta k : ℝ) (hC : 0 ≤ C) (hR : 0 < R)
     (hd : 0 < delta) :
     (∑' i : Bool × ℕ, ENNReal.ofReal (C * R ^ k * geometricBandPower delta i.2)) =
       ENNReal.ofReal (2 * C * (∑' j, geometricBandPower delta j) * R ^ k) := by
-  have hs := (geometricBandPower_summable delta hd).mul_left (C * R ^ k)
+
   have hn (j : ℕ) : 0 ≤ C * R ^ k * geometricBandPower delta j := by
     unfold geometricBandPower; positivity
   rw [ENNReal.tsum_prod']
   simp only [tsum_fintype, Finset.sum_const, Finset.card_univ, Fintype.card_bool, two_nsmul]
-  rw [← ENNReal.ofReal_tsum_of_nonneg hn hs, ← ENNReal.ofReal_add (tsum_nonneg hn)
+  rw [← ENNReal.ofReal_tsum_of_nonneg hn ((geometricBandPower_summable delta hd).mul_left (C * R ^ k)), ← ENNReal.ofReal_add (tsum_nonneg hn)
     (tsum_nonneg hn), tsum_mul_left]
   congr 1
   ring

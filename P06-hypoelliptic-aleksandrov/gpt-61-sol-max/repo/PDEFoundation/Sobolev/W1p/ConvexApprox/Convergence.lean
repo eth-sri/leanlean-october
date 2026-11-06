@@ -2,6 +2,9 @@ module
 
 public import PDEFoundation.Sobolev.W1p.ConvexApprox.PointwiseBounds
 public import Mathlib.MeasureTheory.Function.ContinuousMapDense
+import Mathlib.Tactic.Ring
+
+
 
 /-!
 # `L^p` convergence of convex-domain smoothing
@@ -20,7 +23,7 @@ are handled separately without making that route a dependency of value
 convergence.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal Pointwise Convolution Topology
 
@@ -28,14 +31,18 @@ namespace PDE
 
 open Filter MeasureTheory
 
+variable {d : ℕ} {U : Set (Vec d)}
+
+section
+variable {ρ u : Vec d → ℝ} {p : ENNReal} (hU : IsOpenBoundedConvexDomain U) (hρ : IsConvexApproxKernel ρ)
+
+include hU hρ in
 /-- Convex approximation of continuous input converges in `L^p` on the
 bounded domain for every finite exponent. -/
 theorem
     tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_continuous
-    {d : ℕ} {U : Set (Vec d)}
-    {ρ u : Vec d → ℝ} {p : ENNReal}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hρ : IsConvexApproxKernel ρ) (hp : p ≠ ∞)
+
+     (hp : p ≠ ∞)
     (hu : Continuous u)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -45,20 +52,20 @@ theorem
     (hεNonneg : ∀ᶠ n : ℕ in atTop, 0 ≤ ε n)
     (hεOne : ∀ᶠ n : ℕ in atTop, ε n ≤ 1) :
     Tendsto
-      (fun n : ℕ =>
+      (fun n  =>
         eLpNorm
           (fun x =>
             convexApproxSmoothing ρ u x0 r (ε n) x - u x)
           p (volumeOn U))
       atTop (𝓝 0) := by
-  let f : ℕ → Vec d → ℝ :=
+  let f  :=
     fun n x =>
       convexApproxSmoothing ρ u x0 r (ε n) x - u x
   let μ : Measure (Vec d) :=
     volumeOn U
   let : IsFiniteMeasure μ :=
     hU.isFiniteMeasure_volumeOn
-  have hUMeas : MeasurableSet U :=
+  have hUMeas  :=
     hU.isOpen.measurableSet
   have hpowTop :
       μ Set.univ ^ (1 / p.toReal) ≠ ∞ := by
@@ -83,7 +90,7 @@ theorem
         simp only [hηTop, le_top]
   let δ : ℝ :=
     η.toReal / (cμ + 1)
-  have hηReal : 0 < η.toReal :=
+  have hηReal  :=
     ENNReal.toReal_pos hη.ne' hηTop
   have hδ : 0 < δ := by
     dsimp only [δ]
@@ -98,13 +105,13 @@ theorem
     by_cases hx : x ∈ U
     · simpa [f, hx, Real.dist_eq] using hn hx
     · simp [hx, δ, hδ.le]
-  let g : Vec d → ℝ :=
+  let g  :=
     Set.indicator U (f n)
   have hsupport : Function.support g ⊆ U := by
     simp [g]
   have hnormIndicatorSub :
       eLpNorm (g - fun _ : Vec d => (0 : ℝ))
-          p volume ≤
+          p  ≤
         ENNReal.ofReal δ *
           volume U ^ (1 / p.toReal) := by
     exact
@@ -121,9 +128,9 @@ theorem
   have hsubZero :
       (g - fun _ : Vec d => (0 : ℝ)) = g := by
     ext x
-    simp only [Pi.sub_apply, sub_zero]
+    simp
   have hnormIndicator :
-      eLpNorm g p volume ≤
+      eLpNorm g p  ≤
         ENNReal.ofReal δ *
           volume U ^ (1 / p.toReal) := by
     rw [← hsubZero]
@@ -134,11 +141,7 @@ theorem
           μ Set.univ ^ (1 / p.toReal) := by
     calc
       eLpNorm (f n) p μ =
-          eLpNorm g p volume := by
-        symm
-        simpa only [μ, g, volumeOn] using
-          (eLpNorm_indicator_eq_eLpNorm_restrict
-            (μ := volume) (p := p) (f := f n) hUMeas)
+          eLpNorm g p  := (Eq.symm (id (eLpNorm_indicator_eq_eLpNorm_restrict hUMeas)))
       _ ≤
           ENNReal.ofReal δ *
             volume U ^ (1 / p.toReal) :=
@@ -160,8 +163,6 @@ theorem
     calc
       δ * cμ =
           η.toReal * (cμ / (cμ + 1)) := by
-        dsimp only [δ]
-        rw [div_eq_mul_inv, div_eq_mul_inv]
         ring
       _ ≤ η.toReal * 1 :=
         mul_le_mul_of_nonneg_left hfrac hηReal.le
@@ -179,30 +180,24 @@ theorem
       rw [← ENNReal.ofReal_toReal hηTop]
       exact ENNReal.ofReal_le_ofReal hδMul
 
+variable (hpOne : 1 ≤ p) (hpTop : p ≠ ∞) (hu : MemLpOn U p u) {x0 : Vec d} {r : ℝ} (hball : Metric.closedBall x0 r ⊆ U) (hr : 0 < r) {ε : ℕ → ℝ} (hε : Tendsto ε atTop (𝓝 0)) (hεPos : ∀ᶠ n : ℕ in atTop, 0 < ε n) (hεOne : ∀ᶠ n : ℕ in atTop, ε n < 1)
+
+include hU hρ hpOne hpTop hu hball hr hε hεPos hεOne
 /-- Convex approximation converges in `L^p` for every finite exponent
 `p ≥ 1` and every `MemLpOn` input. -/
 theorem
     tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_memLpOn
-    {d : ℕ} {U : Set (Vec d)}
-    {ρ u : Vec d → ℝ} {p : ENNReal}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hρ : IsConvexApproxKernel ρ)
-    (hpOne : 1 ≤ p) (hpTop : p ≠ ∞)
-    (hu : MemLpOn U p u)
-    {x0 : Vec d} {r : ℝ}
-    (hball : Metric.closedBall x0 r ⊆ U)
-    (hr : 0 < r)
-    {ε : ℕ → ℝ}
-    (hε : Tendsto ε atTop (𝓝 0))
-    (hεPos : ∀ᶠ n : ℕ in atTop, 0 < ε n)
-    (hεOne : ∀ᶠ n : ℕ in atTop, ε n < 1) :
+
+
+     :
     Tendsto
-      (fun n : ℕ =>
+      (fun n  =>
         eLpNorm
           (fun x =>
             convexApproxSmoothing ρ u x0 r (ε n) x - u x)
           p (volumeOn U))
       atTop (𝓝 0) := by
+  let sharedTerm_cd5d366546 := (((1 / 2 : ℝ) ^ d))
   let μ : Measure (Vec d) :=
     volumeOn U
   apply ENNReal.tendsto_nhds_zero.2
@@ -226,36 +221,32 @@ theorem
   have hεHalf :
       ∀ᶠ n : ℕ in atTop, ε n < (1 / 2 : ℝ) :=
     (tendsto_order.1 hε).2 _ (by positivity)
-  let C : ENNReal :=
-    ENNReal.ofReal (((1 / 2 : ℝ) ^ d)⁻¹) ^
+  let C  :=
+    ENNReal.ofReal (sharedTerm_cd5d366546⁻¹) ^
       (1 / p).toReal
   have hCPos : 0 < C := by
     dsimp only [C]
     positivity
-  have hCZero : C ≠ 0 :=
+  have hCZero  :=
     hCPos.ne'
   have hCTop : C ≠ ∞ := by
     dsimp only [C]
     exact
       (ENNReal.rpow_lt_top_of_nonneg
         (by positivity) ENNReal.ofReal_ne_top).ne
-  let δ : ENNReal :=
+  let δ  :=
     min η₂ (η₁ / C)
   have hδPos : 0 < δ := by
-    have hquotient : 0 < η₁ / C :=
+    have hquotient  :=
       ENNReal.div_pos hη₁Pos.ne' hCTop
     dsimp only [δ]
     exact lt_min hη₂Pos hquotient
   have huMem : MemLp u p μ := by
-    simpa only [μ] using hu
+    exact hu
   obtain ⟨g, happrox, hgMem⟩ :=
     huMem.exists_boundedContinuous_eLpNorm_sub_le
-      hpTop (ε := δ) hδPos.ne'
-  have hthirdMem :
-      MemLp
-        (fun x => (g : Vec d → ℝ) x - u x)
-        p μ :=
-    hgMem.sub huMem
+      hpTop  hδPos.ne'
+
   have hthirdNorm :
       eLpNorm
           (fun x => (g : Vec d → ℝ) x - u x)
@@ -267,17 +258,15 @@ theorem
           p μ =
         eLpNorm
           (fun x => u x - (g : Vec d → ℝ) x)
-          p μ := by
-        exact
-          eLpNorm_sub_comm
-            (g : Vec d → ℝ) u p μ
+          p μ := eLpNorm_sub_comm
+            _ u p μ
       _ ≤ δ :=
         happrox
       _ ≤ η₂ :=
         min_le_left _ _
   have hmiddleTendsto :
       Tendsto
-        (fun n : ℕ =>
+        (fun n  =>
           eLpNorm
             (fun x =>
               convexApproxSmoothing ρ
@@ -288,15 +277,7 @@ theorem
     tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_continuous
       hU hρ hpTop g.continuous hball hr.le
       hε hεNonneg hεLeOne
-  have hmiddleEventually :
-      ∀ᶠ n : ℕ in atTop,
-        eLpNorm
-            (fun x =>
-              convexApproxSmoothing ρ
-                  (g : Vec d → ℝ) x0 r (ε n) x -
-                g x)
-            p μ ≤
-          η₂ :=
+  have hmiddleEventually  :=
     ENNReal.tendsto_nhds_zero.1
       hmiddleTendsto η₂ hη₂Pos
   have hcomboEventually :
@@ -331,18 +312,16 @@ theorem
           (1 / 2 : ℝ) ≤ 1 - ε n := by
         linarith
       have hpow :
-          (1 / 2 : ℝ) ^ d ≤ (1 - ε n) ^ d :=
+          sharedTerm_cd5d366546 ≤ (1 - ε n) ^ d :=
         pow_le_pow_left₀ (by positivity) hhalf d
-      have hpowPos : 0 < (1 / 2 : ℝ) ^ d := by
+      have hpowPos : 0 < sharedTerm_cd5d366546 := by
         positivity
       have hinv :
           ((1 - ε n) ^ d)⁻¹ ≤
-            ((1 / 2 : ℝ) ^ d)⁻¹ := by
+            sharedTerm_cd5d366546⁻¹ := by
         simpa only [one_div] using
           one_div_le_one_div_of_le hpowPos hpow
-      have hofReal :
-          ENNReal.ofReal (((1 - ε n) ^ d)⁻¹) ≤
-            ENNReal.ofReal (((1 / 2 : ℝ) ^ d)⁻¹) :=
+      have hofReal  :=
         ENNReal.ofReal_le_ofReal hinv
       exact
         ENNReal.rpow_le_rpow hofReal (by positivity)
@@ -365,9 +344,7 @@ theorem
             (1 / p).toReal *
           eLpNorm
             (fun x => u x - (g : Vec d → ℝ) x)
-            p μ := by
-        exact
-          eLpNorm_sub_convexApproxSmoothing_le
+            p μ := eLpNorm_sub_convexApproxSmoothing_le
             hU hρ hpOne hpTop hu hgMem
             hball hr hεnPos hεnOne
       _ ≤
@@ -386,19 +363,18 @@ theorem
     [hεPos, hεHalf, hfirstEventually,
       hcomboEventually] with
     n hεnPos hεnHalf hfirst hcombo
-  let F : Vec d → ℝ :=
+  let F  :=
     fun x =>
       convexApproxSmoothing ρ u x0 r (ε n) x -
         convexApproxSmoothing ρ
           (g : Vec d → ℝ) x0 r (ε n) x
-  let G : Vec d → ℝ :=
+  let G  :=
     fun x =>
       (convexApproxSmoothing ρ
             (g : Vec d → ℝ) x0 r (ε n) x -
           g x) +
         ((g : Vec d → ℝ) x - u x)
-  have hεnOne : ε n < 1 := by
-    linarith
+
   have hsum :
       eLpNorm (F + G) p μ < η :=
     hη₁ _ _ hfirst hcombo.le
@@ -426,19 +402,9 @@ theorem
 convex approximation. -/
 theorem
     tendsto_eLpNorm_sub_zero_one_sub_mul_convexApproxSmoothing_of_memLpOn
-    {d : ℕ} {U : Set (Vec d)}
-    {ρ u : Vec d → ℝ} {p : ENNReal}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hρ : IsConvexApproxKernel ρ)
-    (hpOne : 1 ≤ p) (hpTop : p ≠ ∞)
-    (hu : MemLpOn U p u)
-    {x0 : Vec d} {r : ℝ}
-    (hball : Metric.closedBall x0 r ⊆ U)
-    (hr : 0 < r)
-    {ε : ℕ → ℝ}
-    (hε : Tendsto ε atTop (𝓝 0))
-    (hεPos : ∀ᶠ n : ℕ in atTop, 0 < ε n)
-    (hεOne : ∀ᶠ n : ℕ in atTop, ε n < 1) :
+
+
+     :
     Tendsto
       (fun n : ℕ =>
         eLpNorm
@@ -448,6 +414,7 @@ theorem
               u x)
           p (volumeOn U))
       atTop (𝓝 0) := by
+  let sharedTerm_ea7f0468d3 := (((1 / 2 : ℝ) ^ d))
   let μ : Measure (Vec d) :=
     volumeOn U
   apply ENNReal.tendsto_nhds_zero.2
@@ -461,7 +428,7 @@ theorem
       (μ := μ) (ε := ℝ) (p := p) hη.ne'
   have hvalueTendsto :
       Tendsto
-        (fun n : ℕ =>
+        (fun n  =>
           eLpNorm
             (fun x =>
               convexApproxSmoothing ρ u x0 r (ε n) x - u x)
@@ -470,22 +437,16 @@ theorem
     tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_memLpOn
       hU hρ hpOne hpTop hu hball hr
       hε hεPos hεOne
-  have hvalueEventually :
-      ∀ᶠ n : ℕ in atTop,
-        eLpNorm
-            (fun x =>
-              convexApproxSmoothing ρ u x0 r (ε n) x - u x)
-            p μ ≤
-          η₁ :=
+  have hvalueEventually  :=
     ENNReal.tendsto_nhds_zero.1
       hvalueTendsto η₁ hη₁Pos
   have hεHalf :
       ∀ᶠ n : ℕ in atTop, ε n < (1 / 2 : ℝ) :=
     (tendsto_order.1 hε).2 _ (by positivity)
-  let C : ENNReal :=
-    ENNReal.ofReal (((1 / 2 : ℝ) ^ d)⁻¹) ^
+  let C  :=
+    ENNReal.ofReal (sharedTerm_ea7f0468d3⁻¹) ^
       (1 / p).toReal
-  let B : ENNReal :=
+  let B  :=
     C * eLpNorm u p μ
   have hCTop : C ≠ ∞ := by
     dsimp only [C]
@@ -493,7 +454,7 @@ theorem
       (ENNReal.rpow_lt_top_of_nonneg
         (by positivity) ENNReal.ofReal_ne_top).ne
   have huMem : MemLp u p μ := by
-    simpa only [μ] using hu
+    exact hu
   have hBTop : B ≠ ∞ := by
     dsimp only [B]
     exact
@@ -506,20 +467,18 @@ theorem
     exact ENNReal.ofReal_toReal hBTop
   have hscaledTendsto :
       Tendsto
-        (fun n : ℕ => |ε n| * M)
+        (fun n  => |ε n| * M)
         atTop (𝓝 0) := by
     simpa only [Real.norm_eq_abs, abs_zero, zero_mul] using
       hε.norm.mul_const M
   have hsmallTendsto :
       Tendsto
-        (fun n : ℕ =>
+        (fun n  =>
           ENNReal.ofReal (|ε n| * M))
         atTop (𝓝 0) := by
     simpa only [ENNReal.ofReal_zero] using
       ENNReal.tendsto_ofReal hscaledTendsto
-  have hsmallEventually :
-      ∀ᶠ n : ℕ in atTop,
-        ENNReal.ofReal (|ε n| * M) ≤ η₁ :=
+  have hsmallEventually  :=
     ENNReal.tendsto_nhds_zero.1
       hsmallTendsto η₁ hη₁Pos
   have hconvBoundEventually :
@@ -538,18 +497,16 @@ theorem
           (1 / 2 : ℝ) ≤ 1 - ε n := by
         linarith
       have hpow :
-          (1 / 2 : ℝ) ^ d ≤ (1 - ε n) ^ d :=
+          sharedTerm_ea7f0468d3 ≤ (1 - ε n) ^ d :=
         pow_le_pow_left₀ (by positivity) hhalf d
-      have hpowPos : 0 < (1 / 2 : ℝ) ^ d := by
+      have hpowPos : 0 < sharedTerm_ea7f0468d3 := by
         positivity
       have hinv :
           ((1 - ε n) ^ d)⁻¹ ≤
-            ((1 / 2 : ℝ) ^ d)⁻¹ := by
+            sharedTerm_ea7f0468d3⁻¹ := by
         simpa only [one_div] using
           one_div_le_one_div_of_le hpowPos hpow
-      have hofReal :
-          ENNReal.ofReal (((1 - ε n) ^ d)⁻¹) ≤
-            ENNReal.ofReal (((1 / 2 : ℝ) ^ d)⁻¹) :=
+      have hofReal  :=
         ENNReal.ofReal_le_ofReal hinv
       exact
         ENNReal.rpow_le_rpow hofReal (by positivity)
@@ -573,15 +530,14 @@ theorem
     [hvalueEventually, hconvBoundEventually,
       hsmallEventually, hεPos, hεHalf] with
     n hvalue hconvBound hsmall hεnPos hεnHalf
-  let F : Vec d → ℝ :=
+  let F  :=
     fun x =>
       convexApproxSmoothing ρ u x0 r (ε n) x - u x
-  let G : Vec d → ℝ :=
+  let G  :=
     fun x =>
       (-ε n) *
         convexApproxSmoothing ρ u x0 r (ε n) x
-  have hεnOne : ε n < 1 := by
-    linarith
+
   have hGNorm :
       eLpNorm G p μ ≤ η₁ := by
     calc
@@ -590,20 +546,21 @@ theorem
             eLpNorm
               (convexApproxSmoothing ρ u x0 r (ε n))
               p μ := by
+        let sharedTerm_b0b5d5ca91 := ((convexApproxSmoothing ρ u x0 r (ε n)))
         dsimp only [G]
         change
           eLpNorm
               ((-ε n) •
-                convexApproxSmoothing ρ u x0 r (ε n))
+                sharedTerm_b0b5d5ca91)
               p μ =
             ENNReal.ofReal |ε n| *
               eLpNorm
-                (convexApproxSmoothing ρ u x0 r (ε n))
+                sharedTerm_b0b5d5ca91
                 p μ
         simpa only [Real.enorm_eq_ofReal_abs, abs_neg] using
           (eLpNorm_const_smul
             (-ε n)
-            (convexApproxSmoothing ρ u x0 r (ε n))
+            sharedTerm_b0b5d5ca91
             p μ)
       _ ≤ ENNReal.ofReal |ε n| * B := by
         gcongr
@@ -638,51 +595,35 @@ theorem
         hdecomposition
     _ ≤ η :=
       hsum.le
+end
 
+
+variable {u : Vec d → ℝ} {p : ENNReal} (hU : IsOpenBoundedConvexDomain U) (hpOne : 1 ≤ p) (hpTop : p ≠ ∞) (hu : MemLpOn U p u) {x0 : Vec d} {r : ℝ} (hball : Metric.closedBall x0 r ⊆ U) (hr : 0 < r)
+
+include hU hpOne hpTop hu hball hr
 /-- The unit convex-approximation sequence converges in `L^p` for arbitrary
 `MemLpOn` input. -/
 theorem
     tendsto_eLpNorm_sub_zero_unitConvexApproxSequence_of_memLpOn
-    {d : ℕ} {U : Set (Vec d)}
-    {u : Vec d → ℝ} {p : ENNReal}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hpOne : 1 ≤ p) (hpTop : p ≠ ∞)
-    (hu : MemLpOn U p u)
-    {x0 : Vec d} {r : ℝ}
-    (hball : Metric.closedBall x0 r ⊆ U)
-    (hr : 0 < r) :
+
+     :
     Tendsto
-      (fun n : ℕ =>
+      (fun n  =>
         eLpNorm
           (fun x =>
             unitConvexApproxSequence u x0 r n x - u x)
           p (volumeOn U))
-      atTop (𝓝 0) := by
-  simpa only [unitConvexApproxSequence] using
-    (tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_memLpOn
-      hU
-      (isConvexApproxKernel_unitConvexApproxKernel
-        (d := d))
-      hpOne hpTop hu hball hr
-      tendsto_unitConvexApproxScale_zero
-      (Eventually.of_forall fun n => by
-        exact unitConvexApproxScale_pos n)
-      (((tendsto_order.1
-        tendsto_unitConvexApproxScale_zero).2
-          1 zero_lt_one).mono fun _ hn => hn))
+      atTop (𝓝 0) := (id
+  (tendsto_eLpNorm_sub_zero_convexApproxSmoothing_of_memLpOn hU isConvexApproxKernel_unitConvexApproxKernel hpOne hpTop
+    hu hball hr tendsto_unitConvexApproxScale_zero (Eventually.of_forall fun n => unitConvexApproxScale_pos n)
+    (Eventually.mono ((tendsto_order.mp tendsto_unitConvexApproxScale_zero).right 1 zero_lt_one) fun x hn => hn)))
 
 /-- The affine-weighted unit convex-approximation sequence converges in
 `L^p`; this is the form used for smoothed weak gradients. -/
 theorem
     tendsto_eLpNorm_sub_zero_one_sub_mul_unitConvexApproxSequence_of_memLpOn
-    {d : ℕ} {U : Set (Vec d)}
-    {u : Vec d → ℝ} {p : ENNReal}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hpOne : 1 ≤ p) (hpTop : p ≠ ∞)
-    (hu : MemLpOn U p u)
-    {x0 : Vec d} {r : ℝ}
-    (hball : Metric.closedBall x0 r ⊆ U)
-    (hr : 0 < r) :
+
+     :
     Tendsto
       (fun n : ℕ =>
         eLpNorm
@@ -691,18 +632,10 @@ theorem
                 unitConvexApproxSequence u x0 r n x -
               u x)
           p (volumeOn U))
-      atTop (𝓝 0) := by
-  simpa only [unitConvexApproxSequence] using
-    (tendsto_eLpNorm_sub_zero_one_sub_mul_convexApproxSmoothing_of_memLpOn
-      hU
-      (isConvexApproxKernel_unitConvexApproxKernel
-        (d := d))
-      hpOne hpTop hu hball hr
-      tendsto_unitConvexApproxScale_zero
-      (Eventually.of_forall fun n => by
-        exact unitConvexApproxScale_pos n)
-      (((tendsto_order.1
-        tendsto_unitConvexApproxScale_zero).2
-          1 zero_lt_one).mono fun _ hn => hn))
+      atTop (𝓝 0) := (id
+  (tendsto_eLpNorm_sub_zero_one_sub_mul_convexApproxSmoothing_of_memLpOn hU isConvexApproxKernel_unitConvexApproxKernel
+    hpOne hpTop hu hball hr tendsto_unitConvexApproxScale_zero
+    (Eventually.of_forall fun n => unitConvexApproxScale_pos n)
+    (Eventually.mono ((tendsto_order.mp tendsto_unitConvexApproxScale_zero).right 1 zero_lt_one) fun x hn => hn)))
 
 end PDE

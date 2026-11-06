@@ -8,8 +8,8 @@ import Mathlib.Tactic
 
 /-! # Operator homogeneity for propagating the positive sphere bound -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -35,18 +35,16 @@ theorem bellman_homogeneous_operator_scaling {alpha : ℝ} {phi : (ℝ × ℝ) �
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) (b : ℝ) :
     bellmanOperator b phi (bellmanPlaneDilation r q) =
       r ^ (alpha - 2) * bellmanOperator b phi q := by
-  have he : (fun z => phi (bellmanPlaneDilation r z)) =ᶠ[𝓝 q]
-      fun z => r ^ alpha * phi z := by
-    filter_upwards [bellmanPuncturedSet_isOpen.mem_nhds hq] with z hz
-    exact h.2 r hr z hz
-  have hj : r ^ 2 * bellmanOperator b phi (bellmanPlaneDilation r q) =
-      r ^ alpha * bellmanOperator b phi q := by
-    rw [← bellmanOperator_comp_dilation r hr phi h.1 q hq b,
-      bellman_operator_germ_eq he b, bellman_operator_mul]
+
+
   apply mul_left_cancel₀ (pow_ne_zero 2 hr.ne')
   calc
     r ^ 2 * bellmanOperator b phi (bellmanPlaneDilation r q) =
-        r ^ alpha * bellmanOperator b phi q := hj
+        r ^ alpha * bellmanOperator b phi q := (by
+            rw [← bellmanOperator_comp_dilation r hr phi h.1 q hq b,
+              bellman_operator_germ_eq (by
+                  filter_upwards [bellmanPuncturedSet_isOpen.mem_nhds hq] with z hz
+                  exact h.2 r hr z hz) b, bellman_operator_mul])
     _ = r ^ 2 * (r ^ (alpha - 2) * bellmanOperator b phi q) := by
       rw [← mul_assoc, ← Real.rpow_natCast, ← Real.rpow_add hr]
       congr 2

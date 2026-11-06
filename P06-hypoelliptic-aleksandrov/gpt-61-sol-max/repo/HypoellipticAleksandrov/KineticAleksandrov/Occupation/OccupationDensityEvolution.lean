@@ -16,7 +16,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
 open Set MeasureTheory
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped MatrixOrder ProbabilityTheory
 
@@ -27,10 +27,10 @@ def TerminalEvolutionStatement : Prop :=
     (lam Lam m L_b : ℝ)
     (_hlam : 0 < lam) (_hlamLam : lam ≤ Lam)
     (_hm : 0 < m) (_hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : PDE.VelocityRegion n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n)
+    (b : PDE.VectorField n)
     (hΩ : IsAdmissibleEvolutionDomain Ω)
     (_hγ : IsContinuousPiecewiseC1 γ)
     (_hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -43,13 +43,13 @@ def TerminalEvolutionStatement : Prop :=
       ∃ K : MovingFiberKernel Ω γ,
         (∀ (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)),
           IsSmoothCompactTerminalDatum Ω γ τ F →
-            ∃ u : KineticPoint n → ℝ,
+            ∃ u : HypoellipticAleksandrov.KineticScalarField n,
               IsClassicalTerminalSolution Ω γ B b τ F u ∧
               (∀ (σ : ℝ) (hστ : σ ≤ τ)
                   (p : EvolutionState Ω γ σ),
                 u ⟨σ, p.1.1, p.1.2⟩ =
                   P σ τ hστ (terminalStateDatum F) p) ∧
-              (∀ v : KineticPoint n → ℝ,
+              (∀ v : HypoellipticAleksandrov.KineticScalarField n,
                 IsClassicalTerminalSolution Ω γ B b τ F v →
                   EqOn v u (evolutionPastClosedCylinder Ω γ τ))) ∧
         (∀ (σ : ℝ),
@@ -61,7 +61,7 @@ def TerminalEvolutionStatement : Prop :=
             (f : BoundedBorel (EvolutionState Ω γ τ)),
           0 ≤ f → 0 ≤ P σ τ hστ f) ∧
         (∀ (σ τ : ℝ) (hστ : σ ≤ τ),
-          P σ τ hστ (1 : BoundedBorel (EvolutionState Ω γ τ)) ≤
+          P σ τ hστ (1 ) ≤
             (1 : BoundedBorel (EvolutionState Ω γ σ))) ∧
         (∀ (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ),
           P σ τ (hσr.trans hrτ) =
@@ -79,7 +79,7 @@ def TerminalEvolutionStatement : Prop :=
         (∀ q : EvolutionQuery Ω γ, K.master q Set.univ ≤ 1) ∧
         (∀ (E : Set (EvolutionAmbientState n))
             (_hE : MeasurableSet E),
-          Measurable (fun q : EvolutionQuery Ω γ => K.master q E)) ∧
+          Measurable (fun q  => K.master q E)) ∧
         (∀ (σ τ : ℝ) (hστ : σ ≤ τ)
             (p : EvolutionState Ω γ σ),
           K.fiberKernel
@@ -102,8 +102,8 @@ theorem evolution_clauses_of_realization
     (hEvol : TerminalEvolutionStatement)
     (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+    (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+    (B : FullKineticCoefficient n) (b : PDE.VectorField n)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hBs : IsSmoothFullKineticCoefficient B) (hBsym : IsSymmetricFullKineticCoefficient B)
     (hBell : HasEverywhereLoewnerBounds lam Lam B) (hbs : IsSmoothDrift b)
@@ -121,22 +121,20 @@ theorem evolution_clauses_of_realization
   obtain ⟨S₀, K₀, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, hcov, hdom, hpar⟩ :=
     hEvol n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hBs hBsym hBell
       hbs hbl hbc
-  have hr₀ : RealizesTerminalEvolution Ω γ
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S₀ K₀ :=
-    ⟨hc, hi, he, hcomp⟩
-  have hunique := terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal hr₀
-  rw [hunique.2]
+
+
+  rw [(terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal (⟨hc, hi, he, hcomp⟩)).2]
   exact ⟨hcov, hdom, hpar⟩
 
 /-- The full evolution premise supplies the marginal bundle for every whole-space realization. -/
 theorem wholeSpace_marginalBundle_of_evolution
     (hEvol : TerminalEvolutionStatement) {d : ℕ} (hd : 0 < d)
     {lam Lam : ℝ} {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
-    (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+    (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 )))
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+    (hreal : RealizesTerminalEvolution (wholeSpace d) _
       MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K) :
-    HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+    HasParabolicMarginalBundle (wholeSpace d) _
       MeasurableSet.univ (zIndependentCoefficient B) K := by
   obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
   have hb := identityDrift_bounds d

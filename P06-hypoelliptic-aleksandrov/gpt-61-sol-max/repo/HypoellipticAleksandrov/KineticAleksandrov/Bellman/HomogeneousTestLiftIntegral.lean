@@ -7,8 +7,8 @@ import Mathlib.Tactic
 
 /-! # Differentiating an integral with a compact parameter carrier -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set MeasureTheory Filter Topology Metric
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -37,14 +37,14 @@ theorem bellman_compact_parameter_bound {U : Set E} (hU : IsOpen U)
     {q : E} (hq : q ∈ U) : ∃ s ∈ 𝓝 q, s ⊆ U ∧ ∃ C : ℝ,
       ∀ x ∈ s, ∀ a : A, ‖f x a‖ ≤ C := by
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.mp hU q hq
-  have hp : 0 < r / 2 := half_pos hr
+
   have hsmall : closedBall q (r / 2) ⊆ U := by
     intro x hx
     apply hsub
     exact lt_of_le_of_lt hx (half_lt_self hr)
-  have hc := (isCompact_closedBall q (r / 2)).prod (isCompact_univ : IsCompact (univ : Set A))
-  obtain ⟨C, hC⟩ := hc.bddAbove_image (hf.mono (prod_mono hsmall Subset.rfl)).norm
-  exact ⟨closedBall q (r / 2), closedBall_mem_nhds q hp, hsmall, C,
+
+  obtain ⟨C, hC⟩ := ((isCompact_closedBall q (r / 2)).prod (isCompact_univ : IsCompact (univ : Set A))).bddAbove_image (hf.mono (prod_mono hsmall Subset.rfl)).norm
+  exact ⟨_, closedBall_mem_nhds q (half_pos hr), hsmall, C,
     fun x hx a => hC ⟨(x, a), ⟨hx, trivial⟩, rfl⟩⟩
 
 omit [CompleteSpace F] [SecondCountableTopology A] in
@@ -77,7 +77,7 @@ theorem bellman_compact_parameter_continuousAt (mu : Measure A) [IsFiniteMeasure
   · filter_upwards [hU.mem_nhds hq] with x hx
     exact (bellman_compact_parameter_integrable mu hf hx).aestronglyMeasurable
   · filter_upwards [hs] with x hx
-    exact ae_of_all _ (fun a => hC x hx a)
+    exact ae_of_all _ ((hC x hx))
   · exact integrable_const C
   · apply ae_of_all
     intro a
@@ -97,9 +97,7 @@ theorem bellman_compact_parameter_contDiffOn_two (mu : Measure A) [IsFiniteMeasu
     (hd : ∀ q ∈ U, ∀ a, HasFDerivAt (fun x => f x a) (f' q a) q)
     (hd' : ∀ q ∈ U, ∀ a, HasFDerivAt (fun x => f' x a) (f'' q a) q) :
     ContDiffOn ℝ 2 (fun x => ∫ a, f x a ∂mu) U := by
-  have hc : ContinuousOn (fun x => ∫ a, f'' x a ∂mu) U := by
-    intro q hq
-    exact (bellman_compact_parameter_continuousAt mu hU f'' hf'' hq).continuousWithinAt
+
   intro q hq
   apply ContDiffAt.contDiffWithinAt
   apply contDiffAt_succ_iff_hasFDerivAt.mpr
@@ -110,6 +108,8 @@ theorem bellman_compact_parameter_contDiffOn_two (mu : Measure A) [IsFiniteMeasu
     refine ⟨fun x => ∫ a, f'' x a ∂mu, ⟨U, hU.mem_nhds hq, ?_⟩, ?_⟩
     · intro x hx
       exact bellman_compact_parameter_hasFDerivAt mu hU f' f'' hf' hf'' hd' hx
-    · exact contDiffAt_zero.mpr ⟨U, hU.mem_nhds hq, hc⟩
+    · exact contDiffAt_zero.mpr ⟨U, hU.mem_nhds hq, (by
+        intro q hq
+        exact (bellman_compact_parameter_continuousAt mu hU f'' hf'' hq).continuousWithinAt)⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

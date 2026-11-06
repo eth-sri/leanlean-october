@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyRegion
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonNodes
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierBound
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # The source Cauchy estimate for two actual finite ellipsoid solutions
@@ -13,19 +15,19 @@ and the growth barrier on the common artificial radial face. No Cauchy estimate 
 assumed as a premise.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
-open scoped Topology MatrixOrder
+open HypoellipticAleksandrov.Parabolic Set
+open scoped MatrixOrder
 
 /-- Actual finite ellipsoid solutions satisfy the common inner-cylinder Cauchy bound.
 All containment premises are explicit radius inequalities; all analytic bounds are proved. -/
 theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -34,7 +36,7 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
     (hd : 0 < d) (hL : 0 ≤ L) (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (hC : 0 ≤ C)
     {Γ : ℝ → PDE.Vec n} (hΓ : Continuous Γ)
     (g : Fin 2 → ℝ → PDE.Vec n) (r R : Fin 2 → ℝ)
-    (hg : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (g i))
+    (hg : ∀ i, ContDiff ℝ PDE.smoothOrder (g i))
     (hgL : ∀ i s t, PDE.vecEuclideanNorm (g i s - g i t) ≤ L * |s - t|)
     (hr : ∀ i, 0 < r i) (hR : ∀ i, 0 < R i) (hrr0 : ∀ i, r i ≤ r0)
     (hdr : ∀ i, d < r i)
@@ -75,9 +77,7 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
     dsimp only [cg, growthConstant]
     have := PDE.vecEuclideanNorm_nonneg (b 0)
     positivity
-  have hmem (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) :
-      (straightenedPoint (g i) p).2 ∈
-        openEllipsoid (straightenedEllipsoidMatrix n (r i) (R i)) :=
+  have hmem (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K)  :=
     mem_straightenedEllipsoid_of_common_innerCylinder hρ (hr i) (hR i)
       (hclose i) (hsize i) hp
   have hclosed (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) :
@@ -119,7 +119,7 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
     viscousTransportedOperator_growthBarrier_le hε1 (fun s y z => (hB s y z).2) hb τ p
   have hterm (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) (hτ : p.time = τ) :
       v i p = F (p.position, p.velocity) := by
-    have he := (hu i).2.2.2.1 (straightenedPoint (g i) p).2 (hclosed i p hp).2
+    have he := (hu i).2.2.2.1 _ (hclosed i p hp).2
     simpa only [v, straightenedPullback, straightenedPoint, hτ,
       spatialY_spatialPack, spatialZ_spatialPack, add_sub_cancel] using he
   have side (s : ℝ) (hs : s = 1 ∨ s = -1) :

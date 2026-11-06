@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStar
 
 /-! # Integrating the literal position-start identity against actual starting measures -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+open Set MeasureTheory ProbabilityTheory
 open scoped Classical
 
 /-- Finite active starting measures satisfy the exact position-resolved slab identity. -/
@@ -28,7 +28,7 @@ theorem positionStartQuadratic_integrated_slab_identity
   dsimp only
   let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
     visitQuadratic c (q.velocity 0)
-  let g := fun q : Point => forwardScalarOperator A.a f q
+  let g := fun q  => forwardScalarOperator A.a f q
   let S := {q : Point | a < q.time ∧ q.time ≤ b}
   let B := positionStartTerminalKernel hH hLE hlam hLam A c J b
   let D := positionStartTerminalKernel hH hLE hlam hLam A c J a

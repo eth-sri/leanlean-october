@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStar
 
 /-! # The literal position-start Green identity on a half-open observation slab -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 
 /-- Subtracting the cumulative identities gives the exact source slab identity for one pole. -/
 theorem positionStartQuadratic_slab_identity
@@ -27,7 +27,7 @@ theorem positionStartQuadratic_slab_identity
   let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
     visitQuadratic c (q.velocity 0)
   let G := stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c p hv)
-  have hg : Integrable (fun q => forwardScalarOperator A.a f q) G :=
+  have hg  :=
     positionStartQuadratic_operator_integrable hlam hLam A c Y hc G
       ((stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
         (densityClockPole c p hv)).mono fun _ hq => hq.2)

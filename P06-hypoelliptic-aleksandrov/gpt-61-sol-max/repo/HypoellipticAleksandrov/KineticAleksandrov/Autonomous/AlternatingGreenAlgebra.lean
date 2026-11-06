@@ -2,10 +2,13 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursion
 import Mathlib.Tactic
+import Mathlib.Tactic.Bound
+
+
 
 /-! # Positive measure telescoping for a finite number of visits -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory
 
@@ -16,7 +19,7 @@ theorem alternating_measure_telescope (total initial : Measure Point)
     (hstep : ∀ n, remainder n = charge n + remainder (n + 1)) (N : ℕ) :
     total = initial + ∑ n ∈ Finset.range N, charge n + remainder N := by
   induction N with
-  | zero => simpa only [Finset.range_zero, Finset.sum_empty, add_zero] using hzero
+  | zero => bound
   | succ N ih =>
     calc
       total = initial + ∑ n ∈ Finset.range N, charge n + remainder N := ih

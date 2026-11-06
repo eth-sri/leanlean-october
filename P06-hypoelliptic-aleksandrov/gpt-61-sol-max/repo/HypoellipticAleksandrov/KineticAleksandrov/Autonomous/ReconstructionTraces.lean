@@ -12,19 +12,19 @@ values and limits are proved directly; no interior smoothness is asserted here.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter
+open Set
 open SectionTwo TheoremA
-open scoped Topology
+
+
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
 
 /-- The actual pointwise difference used in homogeneous reconstruction. -/
-def stripReconstructionCandidate (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
+def stripReconstructionCandidate
     (T : ℝ) (phi : Point → ℝ) (g : BoundedBorel Point) (p : Point) : ℝ :=
   phi p - stripSourcePotential H K T g p
 
 /-- The actual candidate equals its prescribed terminal/lateral exit value. -/
-theorem stripReconstructionCandidate_eqOn_exit (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
+theorem stripReconstructionCandidate_eqOn_exit
     (sMinus T : ℝ) (phi : Point → ℝ) (g : BoundedBorel Point) :
     EqOn (stripReconstructionCandidate H K T phi g) phi
       (reconstructionExit H sMinus T) := by
@@ -32,7 +32,7 @@ theorem stripReconstructionCandidate_eqOn_exit (H : Interval)
   have hz : stripSourcePotential H K T g p = 0 := by
     rcases hp with ht | hv
     · exact duhamelPotential_eq_zero_of_terminal_le K T (nativeStripSource g)
-        (sectionTwoPoint p) (by change T ≤ p.time; exact ht.1.ge)
+        (sectionTwoPoint p) ((id (Eq.ge ht.left)))
     · apply duhamelPotential_eq_zero_of_not_mem K T (nativeStripSource g)
         (sectionTwoPoint p)
       change p.velocity ∉ movingDomain (intervalDomain H) (fun _ => 0) p.time

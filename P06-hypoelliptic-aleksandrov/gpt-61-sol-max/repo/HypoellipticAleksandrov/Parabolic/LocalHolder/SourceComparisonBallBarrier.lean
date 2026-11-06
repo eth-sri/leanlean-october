@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonRadial
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonGrowth
 import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Quadratic barriers on the actual Euclidean spatial ball
 
@@ -16,18 +18,22 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set Matrix KineticAleksandrov
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
+variable {d : ℕ}
+
+variable (v₀ : PDE.Vec d) (r lam M : ℝ)
+
 /-- The source-M quadratic barrier in the native Euclidean geometry. -/
-def sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ) (y : PDE.Vec d) : ℝ :=
+def sourceBallBarrier   (y : PDE.Vec d) : ℝ :=
   M * (r ^ 2 - PDE.vecNormSq (y - v₀)) / (2 * (d : ℝ) * lam)
 
 /-- The polynomial source barrier is smooth. -/
-theorem contDiff_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (sourceBallBarrier v₀ r lam M) :=
+theorem contDiff_sourceBallBarrier   :
+    ContDiff ℝ PDE.smoothOrder (sourceBallBarrier v₀ r lam M) :=
   (contDiff_const.mul (contDiff_const.sub
     (PDE.contDiff_vecNormSq.comp (contDiff_id.sub contDiff_const)))).div_const _
 
 /-- The source barrier is nonnegative on the closed Euclidean ball. -/
-theorem sourceBallBarrier_nonneg {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
+theorem sourceBallBarrier_nonneg
     (hlam : 0 < lam) (hM : 0 ≤ M) {y : PDE.Vec d}
     (hy : y ∈ closure (PDE.euclideanBall v₀ r)) :
     0 ≤ sourceBallBarrier v₀ r lam M y := by
@@ -41,7 +47,7 @@ theorem sourceBallBarrier_nonneg {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
     (mul_nonneg (mul_nonneg (by norm_num) (Nat.cast_nonneg d)) hlam.le)
 
 /-- The source barrier has zero trace on the Euclidean ball frontier. -/
-theorem sourceBallBarrier_zero_frontier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
+theorem sourceBallBarrier_zero_frontier
     {y : PDE.Vec d} (hy : y ∈ frontier (PDE.euclideanBall v₀ r)) :
     sourceBallBarrier v₀ r lam M y = 0 := by
   rw [(PDE.isOpen_euclideanBall v₀ r).frontier_eq] at hy
@@ -56,20 +62,21 @@ theorem sourceBallBarrier_zero_frontier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : 
   simp only [sourceBallBarrier, heq, sub_self, mul_zero, zero_div]
 
 /-- The stationary quadratic has the literal negative trace forcing. -/
-theorem scalarOperator_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
+theorem scalarOperator_sourceBallBarrier
     (A : CoefficientField d) (z : TimeVelocity d) :
     scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
       (fun z => sourceBallBarrier v₀ r lam M z.2) z =
       -(2 * M * (A z.1 z.2).trace) / (2 * (d : ℝ) * lam) := by
-  let Ψ : ℝ → ℝ := fun s => M * (r ^ 2 - s) / (2 * (d : ℝ) * lam)
+  let sharedTerm_34a6b55219 := ((2 * (d : ℝ) * lam))
+  let Ψ  := fun s => M * (r ^ 2 - s) / (sharedTerm_34a6b55219)
   have hΨ : ContDiff ℝ 2 Ψ :=
     (contDiff_const.mul (contDiff_const.sub contDiff_id)).div_const _
-  have hd (s : ℝ) : deriv Ψ s = -M / (2 * (d : ℝ) * lam) := by
+  have hd (s : ℝ) : deriv Ψ s = -M / (sharedTerm_34a6b55219) := by
     simpa only [zero_sub, mul_neg, neg_div, mul_one, Pi.sub_def, id_eq] using
       (((hasDerivAt_const s (r ^ 2)).sub (hasDerivAt_id s)).const_mul M
-        |>.div_const (2 * (d : ℝ) * lam)).deriv
+        |>.div_const sharedTerm_34a6b55219).deriv
   have hdd (s : ℝ) : deriv (deriv Ψ) s = 0 := by
-    rw [show deriv Ψ = fun _ => -M / (2 * (d : ℝ) * lam) from funext hd]
+    rw [show deriv Ψ = fun _ => -M / (sharedTerm_34a6b55219) from funext hd]
     exact deriv_const _ _
   have ht : scalarTimeDerivative (fun z => sourceBallBarrier v₀ r lam M z.2) z = 0 := by
     change deriv (fun _ : ℝ => sourceBallBarrier v₀ r lam M z.2) z.1 = 0
@@ -81,7 +88,7 @@ theorem scalarOperator_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M :
   ring
 
 /-- Lower ellipticity gives the source-M supersolution inequality. -/
-theorem scalarOperator_sourceBallBarrier_le {d : ℕ} (hd : 0 < d)
+theorem scalarOperator_sourceBallBarrier_le  (hd : 0 < d)
     (v₀ : PDE.Vec d) (r lam M : ℝ) (hlam : 0 < lam) (hM : 0 ≤ M)
     (A : CoefficientField d) (hlo : HasLowerEllipticity lam A) (z : TimeVelocity d) :
     scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)

@@ -10,9 +10,9 @@ import Mathlib.Tactic
 
 /-! # The exact half-acceleration remainder along a compatible smooth skeleton -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -41,7 +41,7 @@ theorem skeleton_position_remainder_le {d : ℕ} {x v : ℝ → PDE.Vec d} {H : 
     (f := fun t => e (v t - v b)) hsb
   have hc1 : Continuous (fun t => ‖e (v t - v b)‖) :=
     (e.continuous.comp (hv.sub continuous_const)).norm
-  have hc2 : Continuous (fun t : ℝ => H * (b - t)) := by fun_prop
+  have hc2 : Continuous (fun t  => H * (b - t)) := by fun_prop
   have hm := intervalIntegral.integral_mono_on (μ := volume) hsb (hc1.intervalIntegrable s b)
     (hc2.intervalIntegrable s b) (fun t ht => show ‖e (v t - v b)‖ ≤ H * (b - t) from by
       change ‖(v t - v b).toHilbertVec‖ ≤ H * (b - t)
@@ -49,7 +49,7 @@ theorem skeleton_position_remainder_le {d : ℕ} {x v : ℝ → PDE.Vec d} {H : 
       have h := hLip t b
       rw [abs_of_nonpos (sub_nonpos.mpr ht.2)] at h
       simpa only [neg_sub] using h)
-  have hid : IntervalIntegrable (fun t : ℝ => t) volume s b :=
+  have hid : IntervalIntegrable (fun t  => t) volume s b :=
     continuous_id.intervalIntegrable s b
   have hi : (∫ t in s..b, H * (b - t)) = H * (b - s) ^ 2 / 2 := by
     rw [intervalIntegral.integral_const_mul,

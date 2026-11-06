@@ -3,22 +3,24 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelAdjoint
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EvolutionInstance
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSliceWeak
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Integration by parts for twice continuously differentiable compact tests -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov MeasureTheory Set SectionTwo Evolution Occupation
+open MeasureTheory Set SectionTwo Evolution
 variable {d : ℕ}
 
 /-- Full kinetic integration by parts, with all jets discharged by interior smoothness. -/
 theorem integral_transportedAdjoint_contDiffOn_two {U : Set (EvolutionVec d)} (hU : IsOpen U)
     {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B)
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
+    {b : PDE.VectorField d} (hb : IsSmoothDrift b)
     {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ 2 u U)
-    (ψ : EvolutionVec d → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
+    (ψ : EvolutionVec d → ℝ) (hψ : ContDiff ℝ PDE.smoothOrder ψ)
     (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     (∫ x in U, u x * transportedAdjoint B b ψ x) =
       ∫ x in U, transportedOperator B b u x * ψ x := by
@@ -91,12 +93,11 @@ theorem continuous_transportedOperator_c2 {lam Lam : ℝ} (A : SmoothAutonomous 
 /-- Outside a test's closed support all terms of its actual operator vanish. -/
 theorem transportedOperator_eq_zero_of_notMem_tsupport {f : EvolutionVec 1 → ℝ}
     {x : EvolutionVec 1} (hx : x ∉ tsupport f) (B : FullKineticCoefficient 1)
-    (b : PDE.Vec 1 → PDE.Vec 1) : transportedOperator B b f x = 0 := by
-  have h0 := fderiv_of_notMem_tsupport ℝ hx
-  have hn : x ∉ tsupport (fun y => fderiv ℝ f y (basisV (0 : Fin 1))) :=
-    fun h => hx (tsupport_fderiv_apply_subset ℝ (basisV 0) h)
-  have h1 := fderiv_of_notMem_tsupport ℝ hn
-  simp only [transportedOperator, Fin.sum_univ_one, h0, h1,
+    (b : PDE.VectorField 1) : transportedOperator B b f x = 0 := by
+
+
+
+  simp only [transportedOperator, Fin.sum_univ_one, (fderiv_of_notMem_tsupport ℝ hx), (fderiv_of_notMem_tsupport ℝ (fun h => hx (tsupport_fderiv_apply_subset ℝ (basisV 0) h))),
     zero_apply, mul_zero, add_zero]
 
 /-- A C² test satisfies the weak equation for its actual kinetic operator. -/

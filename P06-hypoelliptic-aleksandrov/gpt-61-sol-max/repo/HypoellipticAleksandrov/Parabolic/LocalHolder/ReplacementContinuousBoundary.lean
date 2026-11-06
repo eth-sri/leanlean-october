@@ -9,11 +9,11 @@ Smooth boundary approximation converges uniformly with the exact traces. The int
 proved local energy and compactness argument establishes the limit's classical equation.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
-open Filter MeasureTheory Set
-open scoped Topology Matrix.Norms.Elementwise
+open Set
+open scoped Matrix.Norms.Elementwise
 
 /-- Arbitrary continuous closed-ball data have an actual classical homogeneous replacement. -/
 theorem exists_continuous_backward_homogeneous_replacement {d : ℕ} (hd : 0 < d)
@@ -21,9 +21,9 @@ theorem exists_continuous_backward_homogeneous_replacement {d : ℕ} (hd : 0 < d
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A)
-    (w : TimeVelocity d → ℝ)
+    (w : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hw : ContinuousOn w (scalarParabolicClosedCylinder a T (PDE.euclideanBall v₀ r))) :
-    ∃ v : TimeVelocity d → ℝ,
+    ∃ v : HypoellipticAleksandrov.Parabolic.ScalarField d,
       IsClassicalBackwardDirichletSolution a T (PDE.euclideanBall v₀ r) A
         (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => 0) (fun y => w (T, y)) w v := by
   classical
@@ -35,9 +35,9 @@ theorem exists_continuous_backward_homogeneous_replacement {d : ℕ} (hd : 0 < d
   have hEq (n : ℕ) (z : TimeVelocity d) (hz : z ∈ Ioo a T ×ˢ Ω) :
       scalarTimeDerivative (u n) z +
         matrixContraction (coefficientAt A z) (scalarSpatialHessian (u n) z) = 0 := by
-    have he := (hu n).2.2.1 z hz
+
     simpa only [scalarParabolicZeroOrderOperator_apply, coefficientAt, PDE.vecDot, Pi.zero_apply,
-      zero_mul, Finset.sum_const_zero, add_zero] using he
+      zero_mul, Finset.sum_const_zero, add_zero] using ((hu n).2.2.1 z hz)
   obtain ⟨hv12, hveq⟩ := homogeneous_continuousMap_limit_is_classical a T Ω
     (PDE.isOpen_euclideanBall v₀ r)
     (KineticAleksandrov.Occupation.isBounded_euclideanBall v₀ hr).isCompact_closure
@@ -51,7 +51,7 @@ theorem exists_continuous_backward_homogeneous_replacement {d : ℕ} (hd : 0 < d
     have hzK : (T, y) ∈ K := ⟨⟨haT.le, le_rfl⟩, hy⟩
     change continuousMapZeroExtension V (T, y) = w (T, y)
     rw [continuousMapZeroExtension, dite_eq_left hzK]
-    exact htrace ⟨(T, y), hzK⟩ (Or.inl ⟨mem_singleton T, hy⟩)
+    exact htrace _ (Or.inl ⟨mem_singleton T, hy⟩)
   · intro z hz
     have hzK : z ∈ K := ⟨hz.1, frontier_subset_closure hz.2⟩
     rw [continuousMapZeroExtension, dite_eq_left hzK]

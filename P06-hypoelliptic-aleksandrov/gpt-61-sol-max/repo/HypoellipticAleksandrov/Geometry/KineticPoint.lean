@@ -39,6 +39,9 @@ structure KineticPoint (d : ℕ) where
   /-- Velocity coordinate. -/
   velocity : PDE.Vec d
 
+/-- Scalar fields on kinetic spacetime. -/
+abbrev KineticScalarField (d : ℕ) := KineticPoint d → ℝ
+
 /-- The explicit coordinate equivalence with the standard nested product carrier. -/
 def KineticPoint.equivProd (d : ℕ) :
     KineticPoint d ≃ ℝ × (PDE.Vec d × PDE.Vec d) where
@@ -55,32 +58,36 @@ def KineticPoint.equivProd (d : ℕ) :
 This is only topology and uniformity infrastructure, not manuscript round
 Euclidean geometry. -/
 instance (d : ℕ) : MetricSpace (KineticPoint d) :=
-  MetricSpace.induced (KineticPoint.equivProd d)
+  MetricSpace.induced _
     (KineticPoint.equivProd d).injective inferInstance
 
+variable (d : ℕ)
+
 /-- The coordinate equivalence is an isometry for the transported standard product metric. -/
-def KineticPoint.isometryEquivProd (d : ℕ) :
+def KineticPoint.isometryEquivProd  :
     KineticPoint d ≃ᵢ ℝ × (PDE.Vec d × PDE.Vec d) where
   toEquiv := KineticPoint.equivProd d
   isometry_toFun :=
-    MetricSpace.isometry_induced (KineticPoint.equivProd d)
+    MetricSpace.isometry_induced _
       (KineticPoint.equivProd d).injective
 
 /-- The explicit coordinate homeomorphism with the standard nested product carrier. -/
-def KineticPoint.homeomorphProd (d : ℕ) :
+def KineticPoint.homeomorphProd  :
     KineticPoint d ≃ₜ ℝ × (PDE.Vec d × PDE.Vec d) :=
   (KineticPoint.isometryEquivProd d).toHomeomorph
 
+variable {d : ℕ}
+
 /-- The time projection is continuous for the standard product topology. -/
-theorem continuous_time {d : ℕ} : Continuous (@KineticPoint.time d) :=
+theorem continuous_time  : Continuous (@KineticPoint.time d) :=
   continuous_fst.comp (KineticPoint.homeomorphProd d).continuous
 
 /-- The position projection is continuous for the standard product topology. -/
-theorem continuous_position {d : ℕ} : Continuous (@KineticPoint.position d) :=
+theorem continuous_position  : Continuous (@KineticPoint.position d) :=
   continuous_snd.fst.comp (KineticPoint.homeomorphProd d).continuous
 
 /-- The velocity projection is continuous for the standard product topology. -/
-theorem continuous_velocity {d : ℕ} : Continuous (@KineticPoint.velocity d) :=
+theorem continuous_velocity  : Continuous (@KineticPoint.velocity d) :=
   continuous_snd.snd.comp (KineticPoint.homeomorphProd d).continuous
 
 /-- Assemble a continuous kinetic point from continuous coordinate functions. -/

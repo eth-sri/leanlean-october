@@ -5,6 +5,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerm
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationBarriersTraces
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitMeasure
 import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.NormNum
+
+
 
 /-! # Classical terminal solutions conditional on viscous existence
 
@@ -12,8 +15,8 @@ The additional premise is the existence of bounded classical viscous terminal so
 on the moving domains.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set Filter MeasureTheory Evolution Classical
 open scoped Topology MatrixOrder
@@ -24,8 +27,8 @@ theorem exists_classical_terminalSolution_of_viscous
     (hH : HormanderHypoellipticityStatement)
     (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+    (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+    (B : FullKineticCoefficient n) (b : PDE.VectorField n)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
     (hB_symm : IsSymmetricFullKineticCoefficient B)
@@ -35,35 +38,34 @@ theorem exists_classical_terminalSolution_of_viscous
     (hvisc : ∀ (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)),
       IsSmoothCompactTerminalDatum Ω γ τ F → ∀ (ε : ℝ), 0 < ε → ε ≤ 1 →
       ∀ (C : ℝ), 0 ≤ C → (∀ q, |F q| ≤ C) →
-      ∃ u : KineticPoint n → ℝ,
+      ∃ u : HypoellipticAleksandrov.KineticScalarField n,
         IsClassicalViscousTerminalSolution Ω γ B b ε τ F u ∧
         (∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u p| ≤ C) ∧
-        (∀ v : KineticPoint n → ℝ,
+        (∀ v : HypoellipticAleksandrov.KineticScalarField n,
           IsClassicalViscousTerminalSolution Ω γ B b ε τ F v →
             EqOn v u (evolutionPastClosedCylinder Ω γ τ)))
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
-    ∃ u : KineticPoint n → ℝ,
+    ∃ u : HypoellipticAleksandrov.KineticScalarField n,
       IsClassicalTerminalSolution Ω γ B b τ F u ∧
       (∀ C : ℝ, 0 ≤ C → (∀ q, |F q| ≤ C) →
         ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u p| ≤ C) ∧
-      (∀ v : KineticPoint n → ℝ,
+      (∀ v : HypoellipticAleksandrov.KineticScalarField n,
         IsClassicalTerminalSolution Ω γ B b τ F v →
           EqOn v u (evolutionPastClosedCylinder Ω γ τ)) := by
-  let : SecondCountableTopology (KineticPoint n) :=
-    (KineticPoint.homeomorphProd n).isEmbedding.secondCountableTopology
+  let sharedTerm_0d683bc08d := ({ ε : ℝ // 0 < ε ∧ ε ≤ 1 })
+
   obtain ⟨C, hC, hFC⟩ := F.exists_bound
-  let family (ε : {ε : ℝ // 0 < ε ∧ ε ≤ 1}) :=
+  let family (ε : sharedTerm_0d683bc08d) :=
     (hvisc τ F hF ε.1 ε.2.1 ε.2.2 C hC hFC).choose
-  have hfamily (ε : {ε : ℝ // 0 < ε ∧ ε ≤ 1}) :=
+  have hfamily (ε : sharedTerm_0d683bc08d) :=
     (hvisc τ F hF ε.1 ε.2.1 ε.2.2 C hC hFC).choose_spec
-  let seqε (j : ℕ) : {ε : ℝ // 0 < ε ∧ ε ≤ 1} :=
+  let seqε (j : ℕ) : sharedTerm_0d683bc08d :=
     ⟨1 / ((j : ℝ) + 1), by
       constructor
       · positivity
       · exact (div_le_one (by positivity)).mpr (by
-          have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
-          linarith)⟩
+          norm_num)⟩
   let v := fun j => family (seqε j)
   let w := family ⟨1, one_pos, le_rfl⟩
   have hw : IsClassicalViscousTerminalSolution Ω γ B b 1 τ F w := (hfamily _).1
@@ -150,7 +152,7 @@ theorem exists_classical_terminalSolution_of_viscous
   have hzero := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F candidate).mpr hclass
   refine ⟨candidate, hclass, ?_, ?_⟩
   · intro D hD hFD
-    have _hD := hD
+
     exact classical_abs_le_const hΩo hγ.1 hlam hB_ell hb_lipschitz
       le_rfl zero_le_one hzero hFD
   · intro z hz

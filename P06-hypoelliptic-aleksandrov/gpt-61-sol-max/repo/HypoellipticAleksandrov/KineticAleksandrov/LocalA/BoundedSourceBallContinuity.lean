@@ -6,35 +6,31 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalWea
 
 /-! # Full bounded-source continuity and traces on the physical closed strip -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Evolution TheoremA
+ public section
 
+namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
+open Set SectionTwo TheoremA
+
+variable (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) (S : TerminalOperatorFamily (PDE.euclideanBall v₀ R) (fun _ => 0)) (K : MovingFiberKernel (PDE.euclideanBall v₀ R) (fun _ => 0)) (hreal : RealizesTerminalEvolution (PDE.euclideanBall v₀ R) (fun _ => 0) (PDE.isOpen_euclideanBall v₀ R).measurableSet (zIndependentCoefficient B) (identityDrift d) S K) (a T M : ℝ)
+
+include hH hd hB hR hreal
 /-- The literal signed bounded ball potential is continuous on the entire closed strip,
 including its initial face and both zero trace faces. -/
 theorem boundedBallSourcePotential_continuousOn
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (S : TerminalOperatorFamily (PDE.euclideanBall v₀ R) (fun _ => 0))
-    (K : MovingFiberKernel (PDE.euclideanBall v₀ R) (fun _ => 0))
-    (hreal : RealizesTerminalEvolution (PDE.euclideanBall v₀ R) (fun _ => 0)
-      (PDE.isOpen_euclideanBall v₀ R).measurableSet
-      (zIndependentCoefficient B) (identityDrift d) S K)
-    (a T M : ℝ) (haT : a ≤ T) (hM : 0 ≤ M)
-    (F : KineticPoint d → ℝ) (hF : Measurable F)
+     (haT : a ≤ T) (hM : 0 ≤ M)
+    (F : HypoellipticAleksandrov.KineticScalarField d) (hF : Measurable F)
     (hb : ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M) :
     ContinuousOn (boundedBallSourcePotential K a T F) (localClosedStrip a T v₀ R) := by
+  let sharedTerm_0e3a2722b3 := (boundedSourcePast (PDE.euclideanBall v₀ R) (fun _ => 0) T)
   obtain ⟨hBs, hBsym, hell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
   obtain ⟨hgm, hgb⟩ := boundedBallSource_extension a T M v₀ R hM F hF hb
   let g := (localStrip a T v₀ R).indicator F ∘ sectionTwoPoint
   have hgz : ∀ Q, KineticPoint.equivProd d Q ∉
-      boundedSourcePast (PDE.euclideanBall v₀ R) (fun _ => 0) T → g Q = 0 := by
+      sharedTerm_0e3a2722b3 → g Q = 0 := by
     intro Q hQ
     by_cases hm : sectionTwoPoint Q ∈ localStrip a T v₀ R
     · have hpast : KineticPoint.equivProd d Q ∈
-          boundedSourcePast (PDE.euclideanBall v₀ R) (fun _ => 0) T := by
+          sharedTerm_0e3a2722b3 := by
         refine ⟨hm.2.1, ?_⟩
         rw [boundedSource_stationary_domain]
         exact hm.2.2
@@ -70,16 +66,8 @@ theorem boundedBallSourcePotential_continuousOn
 /-- Full bounded-source continuity, zero terminal/lateral traces, and the exact minimum
 barrier are proved for the supplied actual ball evolution. -/
 theorem boundedBallSourcePotential_bounded_traces
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (S : TerminalOperatorFamily (PDE.euclideanBall v₀ R) (fun _ => 0))
-    (K : MovingFiberKernel (PDE.euclideanBall v₀ R) (fun _ => 0))
-    (hreal : RealizesTerminalEvolution (PDE.euclideanBall v₀ R) (fun _ => 0)
-      (PDE.isOpen_euclideanBall v₀ R).measurableSet
-      (zIndependentCoefficient B) (identityDrift d) S K)
-    (a T M : ℝ) (haT : a < T) (hM : 0 ≤ M)
-    (F : KineticPoint d → ℝ) (hF : Measurable F)
+     (haT : a < T) (hM : 0 ≤ M)
+    (F : HypoellipticAleksandrov.KineticScalarField d) (hF : Measurable F)
     (hb : ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M) :
     ContinuousOn (boundedBallSourcePotential K a T F) (localClosedStrip a T v₀ R) ∧
       (∀ P ∈ localTrace a T v₀ R, boundedBallSourcePotential K a T F P = 0) ∧

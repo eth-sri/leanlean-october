@@ -13,25 +13,27 @@ measurability discharge the earlier integration skeleton below. The final export
 has only the Lieberman and Hörmander inputs as explicit premises.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
+open Set
 open scoped ProbabilityTheory
+
+variable (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement)
 
 /-- Integration skeleton for the terminal evolution; the composition identity and the joint
 measurability of the master kernel remain explicit premises. -/
 theorem exists_terminalEvolution_aux
-    (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement)
+
     (hComp : ∀
     (n : ℕ) (hn : 1 ≤ n)
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : PDE.VelocityRegion n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n)
+    (b : PDE.VectorField n)
     (hΩ : IsAdmissibleEvolutionDomain Ω)
     (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -51,10 +53,10 @@ theorem exists_terminalEvolution_aux
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : PDE.VelocityRegion n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n)
+    (b : PDE.VectorField n)
     (hΩ : IsAdmissibleEvolutionDomain Ω)
     (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -74,10 +76,10 @@ theorem exists_terminalEvolution_aux
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : PDE.VelocityRegion n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n)
+    (b : PDE.VectorField n)
     (hΩ : IsAdmissibleEvolutionDomain Ω)
     (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -88,9 +90,8 @@ theorem exists_terminalEvolution_aux
     (hb_coercive : HasUnitDirectionDriftCoercivity m b),
       let hEx := classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hLE hH
-      Measurable (fun q : EvolutionQuery Ω γ =>
-        terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-          hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q)) :
+      Measurable ((terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz
+  hb_coercive hEx))) :
     SectionTwo.TerminalEvolutionConclusion := by
   intro n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
@@ -105,12 +106,13 @@ theorem exists_terminalEvolution_aux
     (hJoint n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive)
 
+include hLE hH in
 /-- The proof of the terminal evolution statement (companion paper, Proposition 2.1), relative
 only to classical Dirichlet solvability on ellipsoids (Lieberman, Theorem 5.14) and
 Hörmander's hypoellipticity theorem. All intermediate existence, composition and
 joint-measurability premises are discharged by proved results. -/
 theorem exists_terminalEvolution_of_classical
-    (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement) :
+     :
     SectionTwo.TerminalEvolutionConclusion := by
   apply exists_terminalEvolution_aux hLE hH
   · intro n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b

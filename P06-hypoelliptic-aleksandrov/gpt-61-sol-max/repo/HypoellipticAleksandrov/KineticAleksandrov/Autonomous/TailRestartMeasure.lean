@@ -12,28 +12,31 @@ the absolute restart-time slice and retains every interior active velocity.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo
+open Set MeasureTheory
+
+
+variable (H : Interval) (s : ℝ)
 
 /-- Put a native terminal state on its physical absolute-time slice. -/
-def activeRestartPoint (H : Interval) (s : ℝ)
+def activeRestartPoint
     (w : EvolutionState (intervalDomain H) (fun _ => 0) s) : Point :=
   ⟨s, w.1.2, w.1.1⟩
 
 /-- Restoring physical coordinates on a fixed time slice is measurable. -/
-theorem measurable_activeRestartPoint (H : Interval) (s : ℝ) :
-    Measurable (activeRestartPoint H s) := by
-  exact (KineticPoint.measurable_equivProd_symm 1).comp
+theorem measurable_activeRestartPoint  :
+    Measurable (activeRestartPoint H s) := (KineticPoint.measurable_equivProd_symm 1).comp
     (measurable_const.prodMk
       ((measurable_snd.comp measurable_subtype_coe).prodMk
         (measurable_fst.comp measurable_subtype_coe)))
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
+variable (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t)
+
 /-- The surviving terminal measure, restored to the source's physical spacetime coordinates. -/
 def activeRestartMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
-    (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) : Measure Point :=
+
+     : Measure Point :=
   ((stripEvolution hH hLE hlam hLam A c.activeInterval).2.fiberKernel
     (intervalDomain_measurable c.activeInterval) e.time (e.time + t)
     (le_add_of_nonneg_right ht)
@@ -42,10 +45,8 @@ def activeRestartMeasure
 
 /-- The mass of the remaining terminal measure is exactly the surviving killed mass. -/
 theorem activeRestartMeasure_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
-    (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) :
+
+     :
     activeRestartMeasure hH hLE hlam hLam A c e he t ht univ =
       ENNReal.ofReal (activeSurvivingMass hH hLE hlam hLam A c e he t ht) := by
   let E := stripEvolution hH hLE hlam hLam A c.activeInterval
@@ -67,8 +68,7 @@ theorem activeRestartMeasure_mass
 
 /-- Remaining terminal mass obeys the source uniform exponential decay. -/
 theorem activeRestartMeasure_mass_exp
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+     :
     ∃ C c₀ : ℝ, 0 < C ∧ 0 < c₀ ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (e : Point) (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t),
       activeRestartMeasure hH hLE hlam hLam A c e he t ht univ ≤

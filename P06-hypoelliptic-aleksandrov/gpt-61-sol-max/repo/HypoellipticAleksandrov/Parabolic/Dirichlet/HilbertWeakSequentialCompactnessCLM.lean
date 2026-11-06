@@ -5,9 +5,9 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.HilbertWeakSequentialC
 /-! Sequential weak compactness against continuous linear functionals in separable real Hilbert
 spaces. -/
 
-@[expose] public section
+ public section
 
-open Filter Function Set
+open Filter
 open scoped Topology
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -8,17 +8,19 @@ import Mathlib.Tactic
 
 /-! # The exact Euclidean acceleration and Young bounds for the source Gaussian -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Filter
 open scoped Topology
 
+variable {d : ℕ}
+
 /-- A smooth Euclidean Lipschitz velocity has the same Euclidean acceleration bound. -/
-theorem vecEuclideanNorm_deriv_le {d : ℕ} {v : ℝ → PDE.Vec d} {H : ℝ}
+theorem vecEuclideanNorm_deriv_le  {v : ℝ → PDE.Vec d} {H : ℝ}
     (hH : 0 ≤ H) (hv : Differentiable ℝ v)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|) (s : ℝ) :
     PDE.vecEuclideanNorm (deriv v s) ≤ H := by
@@ -37,7 +39,7 @@ theorem vecEuclideanNorm_deriv_le {d : ℕ} {v : ℝ → PDE.Vec d} {H : ℝ}
   exact hnorm
 
 /-- Young's inequality with exactly the source coefficient `3 lam / 2`. -/
-theorem acceleration_young {d : ℕ} {lam H : ℝ} (hlam : 0 < lam)
+theorem acceleration_young  {lam H : ℝ} (hlam : 0 < lam)
     (a p : PDE.Vec d) (ha : PDE.vecEuclideanNorm a ≤ H) :
     2 * PDE.vecDot a p ≤ (3 * lam / 2) * PDE.vecNormSq p + 2 * H ^ 2 / (3 * lam) := by
   have hdot := (le_abs_self (PDE.vecDot a p)).trans

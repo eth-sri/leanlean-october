@@ -16,63 +16,60 @@ namespace PDE
 def axisCube {d : ℕ} (z : Vec d) (L : ℝ) : Set (Vec d) :=
   Set.pi Set.univ fun i => Set.Ioo (z i) (z i + L)
 
+variable {d : ℕ} (z : Vec d)
+
+variable (L : ℝ)
+
 /-- The coordinate center of an axis cube. -/
-noncomputable def axisCubeCenter {d : ℕ} (z : Vec d) (L : ℝ) : Vec d :=
+noncomputable def axisCubeCenter   : Vec d :=
   fun i => z i + L / 2
 
-@[simp]
-theorem axisCubeCenter_apply {d : ℕ}
-    (z : Vec d) (L : ℝ) (i : Fin d) :
-    axisCubeCenter z L i = z i + L / 2 :=
-  rfl
 
-theorem axisCube_nonempty {d : ℕ} (z : Vec d) {L : ℝ}
+
+theorem axisCube_nonempty  {L : ℝ}
     (hL : 0 < L) :
     (axisCube z L).Nonempty := by
   refine ⟨axisCubeCenter z L, ?_⟩
   intro i _hi
-  constructor <;> dsimp <;> linarith
+  constructor <;> dsimp [axisCubeCenter] <;> linarith
 
-theorem isOpen_axisCube {d : ℕ} (z : Vec d) (L : ℝ) :
-    IsOpen (axisCube z L) := by
-  dsimp [axisCube]
-  exact isOpen_set_pi Set.finite_univ fun _i _hi => isOpen_Ioo
+variable (L : ℝ)
 
-theorem isBoundedDomain_axisCube {d : ℕ}
-    (z : Vec d) (L : ℝ) :
+theorem isOpen_axisCube   :
+    IsOpen (axisCube z L) := (id (isOpen_set_pi Set.finite_univ fun _i _hi => isOpen_Ioo))
+
+theorem isBoundedDomain_axisCube   :
     IsBoundedDomain (axisCube z L) := by
   dsimp [axisCube]
   exact Bornology.IsBounded.isBoundedDomain <|
     Bornology.IsBounded.pi fun _i => Metric.isBounded_Ioo _ _
 
-theorem convex_axisCube {d : ℕ} (z : Vec d) (L : ℝ) :
+theorem convex_axisCube   :
     Convex ℝ (axisCube z L) := by
   dsimp [axisCube]
   refine convex_pi ?_
   intro _i _hi
   exact convex_Ioo _ _
 
-theorem isOpenBoundedConvexDomain_axisCube {d : ℕ}
-    (z : Vec d) (L : ℝ) :
+theorem isOpenBoundedConvexDomain_axisCube   :
     IsOpenBoundedConvexDomain (axisCube z L) :=
   ⟨isOpen_axisCube z L, isBoundedDomain_axisCube z L,
     convex_axisCube z L⟩
 
-theorem hasEuclideanDiameterLE_axisCube {d : ℕ}
-    (z : Vec d) {L : ℝ} (hL : 0 ≤ L) :
+theorem hasEuclideanDiameterLE_axisCube  {L : ℝ} (hL : 0 ≤ L) :
     HasEuclideanDiameterLE (axisCube z L)
       (Real.sqrt d * L) := by
   intro x hx y hy
-  have hsup : ‖x - y‖ ≤ L := by
-    rw [pi_norm_le_iff_of_nonneg hL]
-    intro i
-    have hxi := hx i (Set.mem_univ i)
-    have hyi := hy i (Set.mem_univ i)
-    simpa [Real.norm_eq_abs] using
-      (abs_le.2 ⟨by linarith [hxi.1, hyi.2],
-        by linarith [hxi.2, hyi.1]⟩)
+
   exact
     (vecEuclideanNorm_le_sqrt_natCast_mul_norm (x - y)).trans
-      (mul_le_mul_of_nonneg_left hsup (Real.sqrt_nonneg d))
+      (mul_le_mul_of_nonneg_left (by
+          rw [pi_norm_le_iff_of_nonneg hL]
+          intro i
+          have hxi := hx i (Set.mem_univ i)
+          have hyi := hy i (Set.mem_univ i)
+          simpa [Real.norm_eq_abs] using
+            (abs_le.2 ⟨by linarith [hxi.1, hyi.2],
+              by linarith [hxi.2, hyi.1]⟩)) (Real.sqrt_nonneg d))
 
 end PDE

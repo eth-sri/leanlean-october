@@ -10,32 +10,34 @@ These carriers are used only for local energy and regularity estimates. The pres
 Euclidean ball and its boundary remain the replacement domain.
 -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
+variable {d : ℕ}
+
 /-- A finite time interval and compact spatial closure give compact product closure. -/
-theorem isCompact_closure_local_product {d : ℕ} (a T : ℝ)
-    {O : Set (PDE.Vec d)} (hOc : IsCompact (closure O)) :
+theorem isCompact_closure_local_product  (a T : ℝ)
+    {O : PDE.VelocityRegion d} (hOc : IsCompact (closure O)) :
     IsCompact (closure (Ioo a T ×ˢ O)) := by
   rw [closure_prod_eq]
   exact (isCompact_Icc.of_isClosed_subset isClosed_closure
     (closure_minimal Ioo_subset_Icc_self isClosed_Icc)).prod hOc
 
 /-- Strict temporal margins and spatial compact containment give product compact containment. -/
-theorem closure_local_product_subset {d : ℕ} {a b c e : ℝ}
-    (hac : a < c) (heb : e < b) {O Ω : Set (PDE.Vec d)} (hOΩ : closure O ⊆ Ω) :
+theorem closure_local_product_subset  {a b c e : ℝ}
+    (hac : a < c) (heb : e < b) {O Ω : PDE.VelocityRegion d} (hOΩ : closure O ⊆ Ω) :
     closure (Ioo c e ×ˢ O) ⊆ Ioo a b ×ˢ Ω := by
   rw [closure_prod_eq]
   intro z hz
-  have ht : z.1 ∈ Icc c e :=
+  have ht  :=
     closure_minimal Ioo_subset_Icc_self isClosed_Icc hz.1
   exact ⟨⟨hac.trans_le ht.1, ht.2.trans_lt heb⟩, hOΩ hz.2⟩
 
 /-- Every point of an open spatial carrier has three nested compactly contained collars. -/
-theorem exists_three_nested_local_spatial_collars {d : ℕ}
-    (Ω : Set (PDE.Vec d)) (hΩ : IsOpen Ω) (x : PDE.Vec d) (hx : x ∈ Ω) :
-    ∃ O₀ O₁ O₂ : Set (PDE.Vec d),
+theorem exists_three_nested_local_spatial_collars
+    (Ω : PDE.VelocityRegion d) (hΩ : IsOpen Ω) (x : PDE.Vec d) (hx : x ∈ Ω) :
+    ∃ O₀ O₁ O₂ : PDE.VelocityRegion d,
       IsOpen O₀ ∧ IsCompact (closure O₀) ∧ closure O₀ ⊆ Ω ∧
       IsOpen O₁ ∧ IsCompact (closure O₁) ∧ closure O₁ ⊆ O₀ ∧
       IsOpen O₂ ∧ IsCompact (closure O₂) ∧ closure O₂ ⊆ O₁ ∧ x ∈ O₂ := by

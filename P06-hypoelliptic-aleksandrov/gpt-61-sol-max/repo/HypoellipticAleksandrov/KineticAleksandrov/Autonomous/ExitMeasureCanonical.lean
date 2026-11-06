@@ -7,8 +7,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExt
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo
+open MeasureTheory
+
 
 /-- The canonical exit measure uses the independently characterized autonomous evolution. -/
 def stripExit
@@ -16,7 +16,7 @@ def stripExit
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) : Measure Point :=
-  stripExitOfRealization hH hlam hLam A H (stripEvolution hH hLE hlam hLam A H)
+  stripExitOfRealization hH hlam hLam A H _
     (stripEvolution_spec hH hLE hlam hLam A H) T e
 
 /-- Each canonical exit measure is finite. -/
@@ -35,6 +35,6 @@ theorem stripExit_measurable
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ) :
     Measurable (stripExit hH hLE hlam hLam A H T) :=
   stripExitOfRealization_measurable hH hlam hLam A H _
-    (stripEvolution_spec hH hLE hlam hLam A H) T
+    _ T
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

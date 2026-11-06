@@ -5,8 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionCell
 
 /-! # The exact localized lower weight of position-resolved starts -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -35,7 +35,7 @@ theorem positionStartQuadratic_slab_lower (mu : Measure Point) [IsFiniteMeasure 
           ((continuous_apply 0).comp continuous_position).measurable).inter
             (isClosed_closure.measurableSet.preimage
               ((continuous_apply 0).comp continuous_velocity).measurable)))
-  have hf : Integrable f mu := positionStartQuadratic_integrable c Y mu
+  have hf  := positionStartQuadratic_integrable c Y mu
     (hmu.mono fun _ hp => subset_closure (enlarged_closedEntrance_subset_active c hp))
   have hm : (∫ p, B.indicator (fun _ => 5 * c.r ^ 2 / 16) p ∂mu) ≤
       ∫ p, S.indicator f p ∂mu := by

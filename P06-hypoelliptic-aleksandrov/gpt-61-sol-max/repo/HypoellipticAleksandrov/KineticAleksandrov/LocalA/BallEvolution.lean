@@ -16,7 +16,7 @@ any choice-based boundary construction.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Parabolic
+open SectionTwo
 
 /-- Operator family and kernel on the stationary Euclidean velocity ball. -/
 abbrev LocalBallEvolution {d : ℕ} (v₀ : PDE.Vec d) (R : ℝ) :=
@@ -37,7 +37,7 @@ theorem existsUnique_localBallEvolution
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) :
     ∃! E : LocalBallEvolution v₀ R,
-      RealizesTerminalEvolution (PDE.euclideanBall v₀ R) (fun _ => 0)
+      RealizesTerminalEvolution _ _
         (PDE.isOpen_euclideanBall v₀ R).measurableSet
         (zIndependentCoefficient B) (identityDrift d) E.1 E.2 := by
   have hΩ := localBall_admissible v₀ hR
@@ -48,13 +48,13 @@ theorem existsUnique_localBallEvolution
       one_pos le_rfl (PDE.euclideanBall v₀ R) (fun _ => 0)
       (zIndependentCoefficient B) (identityDrift d) hΩ (zeroCurve_piecewiseC1 d)
       hBs hBsym hBell (identityDrift_smooth d) hb.1 hb.2
-  have hreal : RealizesTerminalEvolution (PDE.euclideanBall v₀ R) (fun _ => 0)
+  have hreal : RealizesTerminalEvolution _ _
       (PDE.isOpen_euclideanBall v₀ R).measurableSet
       (zIndependentCoefficient B) (identityDrift d) S K := ⟨hc, hi, he, hcomp⟩
   refine ⟨(S, K), hreal, ?_⟩
   intro E hE
-  obtain ⟨hS, hK⟩ := terminalEvolution_unique (PDE.euclideanBall v₀ R) (fun _ => 0)
-    hΩ (zIndependentCoefficient B) (identityDrift d) E.1 S E.2 K hE hreal
+  obtain ⟨hS, hK⟩ := terminalEvolution_unique _ _
+    hΩ _ _ E.1 S E.2 K hE hreal
   exact Prod.ext hS hK
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

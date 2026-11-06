@@ -10,12 +10,12 @@ This module proves uniform convergence of product Bernstein approximations on
 finite unit cubes for maps into a locally convex real topological vector space.
 -/
 
-@[expose] public section
+ public section
 
 open Filter Topology
 open scoped BigOperators Topology unitInterval
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -27,7 +27,7 @@ variable {E : Type*} [AddCommGroup E] [TopologicalSpace E]
 /-- Product Bernstein approximations converge uniformly on every finite unit cube. -/
 theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
     (f : C(Fin d → I, E)) :
-    Tendsto (fun n : ℕ => piBernsteinApproximation n f) atTop (𝓝 f) := by
+    Tendsto (fun n  => piBernsteinApproximation n f) atTop (𝓝 f) := by
   classical
   letI : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
   have : IsUniformAddGroup E := isUniformAddGroup_of_addCommGroup
@@ -46,7 +46,7 @@ theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
       fun_prop (disch := assumption)
     simpa only [BddAbove, Set.Nonempty, mem_upperBounds, Set.forall_mem_range,
       Prod.forall] using isCompact_range hcontinuous |>.bddAbove
-  have hC₀ : 0 ≤ C := le_trans (gauge_nonneg _) (hC 0 0)
+  have hC₀  := le_trans (gauge_nonneg _) (hC 0 0)
   obtain ⟨δ, hδ₀, hδ⟩ : ∃ δ > 0, ∀ x y : Fin d → I,
       dist x y < δ → gauge U (f x - f y) < 1 / 2 := by
     have huniform := CompactSpace.uniformContinuous_of_continuous (map_continuous f)
@@ -54,9 +54,9 @@ theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
       (basis_sets _).uniformity_of_nhds_zero_swapped] at huniform
     exact huniform {z | gauge U z < 1 / 2} <| tendsto_gauge_nhds_zero hU₀
       |>.eventually_lt_const <| by positivity
-  have hdim : 0 ≤ (d : ℝ) := Nat.cast_nonneg d
-  have hlimit := tendsto_const_div_atTop_nhds_zero_nat (C / δ ^ 2 * d)
-  filter_upwards [hlimit.eventually_lt_const (half_pos one_pos), eventually_ne_atTop 0]
+
+
+  filter_upwards [(tendsto_const_div_atTop_nhds_zero_nat (C / δ ^ 2 * d)).eventually_lt_const (half_pos one_pos), eventually_ne_atTop 0]
     with n hn hn₀ x
   set S : Finset (Fin d → Fin (n + 1)) :=
     {k : Fin d → Fin (n + 1) | dist (piBernsteinGrid k) x < δ}
@@ -111,11 +111,11 @@ theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
               piBernsteinBasis n k x := by
           gcongr with k hk
           conv_lhs => rw [← one_mul (piBernsteinBasis n k x)]
-          have hfar : ¬ dist (piBernsteinGrid k) x < δ := by
-            simpa only [Finset.mem_compl, Finset.mem_filter, Finset.mem_univ,
-              true_and, S] using hk
+
           have hsquare :=
-            sq_le_sum_sq_sub_of_not_dist_lt_piBernsteinGrid k x δ hδ₀.le hfar
+            sq_le_sum_sq_sub_of_not_dist_lt_piBernsteinGrid k x δ hδ₀.le (by
+                simpa only [Finset.mem_compl, Finset.mem_filter, Finset.mem_univ,
+                  true_and, S] using hk)
           have hratio : 1 ≤
               (∑ i : Fin d, ((x i : ℝ) - (piBernsteinGrid k i : ℝ)) ^ 2) /
                 δ ^ 2 := by
@@ -142,28 +142,28 @@ theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
           rw [sum_sq_sub_piBernsteinGrid_mul_piBernsteinBasis hn₀]
           ring
         _ ≤ C / δ ^ 2 * d / n := by
-          have hCδ : 0 ≤ C / δ ^ 2 := div_nonneg hC₀ (sq_nonneg δ)
-          have hsum : (∑ i : Fin d, (x i : ℝ) * (1 - (x i : ℝ))) ≤ d := by
-            calc
-              (∑ i : Fin d, (x i : ℝ) * (1 - (x i : ℝ))) ≤
-                  ∑ _i : Fin d, (1 : ℝ) := by
-                apply Finset.sum_le_sum
-                intro i _
-                calc
-                  (x i : ℝ) * (1 - (x i : ℝ)) ≤ 1 * 1 := by
-                    gcongr <;> unit_interval
-                  _ = 1 := mul_one 1
-              _ = d := by simp only [Finset.sum_const, Finset.card_univ,
-                Fintype.card_fin, nsmul_eq_mul, mul_one]
+          let sharedTerm_a064ff510d := (∑ i : Fin d, (x i : ℝ) * (1 - (x i : ℝ)))
+
+
           calc
             C / δ ^ 2 * (∑ i : Fin d,
                 (x i : ℝ) * (1 - (x i : ℝ)) / n) =
-                (C / δ ^ 2 * ∑ i : Fin d,
-                  (x i : ℝ) * (1 - (x i : ℝ))) / n := by
+                (C / δ ^ 2 * sharedTerm_a064ff510d) / n := by
               rw [← Finset.sum_div]
               ring
             _ ≤ (C / δ ^ 2 * d) / n :=
-              div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hsum hCδ)
+              div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left (by
+                  calc
+                    (sharedTerm_a064ff510d) ≤
+                        ∑ _i : Fin d, (1 : ℝ) := by
+                      apply Finset.sum_le_sum
+                      intro i _
+                      calc
+                        (x i : ℝ) * (1 - (x i : ℝ)) ≤ 1 * 1 := by
+                          gcongr <;> unit_interval
+                        _ = 1 := mul_one 1
+                    _ = d := by simp only [Finset.sum_const, Finset.card_univ,
+                      Fintype.card_fin, nsmul_eq_mul, mul_one]) (div_nonneg hC₀ (sq_nonneg δ)))
                 (Nat.cast_nonneg n)
             _ = C / δ ^ 2 * d / n := rfl
         _ < 1 / 2 := hn)

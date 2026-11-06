@@ -4,13 +4,15 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceLo
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceAbsorption
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationDensity
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovBound
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The whole-space occupation source bound -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Set
+open HypoellipticAleksandrov.Parabolic SectionTwo Set
 open scoped Matrix.Norms.Elementwise
 variable {d : ℕ}
 
@@ -21,18 +23,18 @@ theorem occupation_whole_space_bound
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (B : CoefficientField d) (_hB : IsSectionTwoCoefficient lam Lam B)
         (S : WholeFamily d) (K : WholeKernel d)
-        (_hreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+        (_hreal : RealizesTerminalEvolution (wholeSpace d) _
           MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K)
-        (_hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+        (_hP : HasParabolicMarginalBundle (wholeSpace d) _
           MeasurableSet.univ (zIndependentCoefficient B) K)
-        (F : TimeVelocity d → ℝ) (_hF0 : ∀ q, 0 ≤ F q)
-        (_hFs : ContDiff ℝ (⊤ : ℕ∞) F) (_hFc : HasCompactSupport F)
+        (F : HypoellipticAleksandrov.Parabolic.ScalarField d) (_hF0 : ∀ q, 0 ≤ F q)
+        (_hFs : ContDiff ℝ PDE.smoothOrder F) (_hFc : HasCompactSupport F)
         (_hFsupp : tsupport F ⊆ Ioo (0 : ℝ) 1 ×ˢ univ),
         let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
         let H := sSup (W '' (Icc (0 : ℝ) 1 ×ˢ univ))
         (∀ (α : ℝ), 0 ≤ α → α < 1 → ∀ (vStar : PDE.Vec d) (R : ℝ),
           0 < R → R ^ 2 = max 1 (4 * d * Lam) →
-          ∃ V : TimeVelocity d → ℝ,
+          ∃ V : HypoellipticAleksandrov.Parabolic.ScalarField d,
             IsClassicalBackwardDirichletSolution α 1 (PDE.euclideanBall vStar R) B
               (fun _ _ => 0) (fun _ _ => 0) (fun r v => -F (r, v))
               (fun _ => 0) (fun _ => 0) V ∧
@@ -47,7 +49,7 @@ theorem occupation_whole_space_bound
   have hR : 0 < R := Real.sqrt_pos.mpr hm
   have hRsq : R ^ 2 = max 1 (4 * (d : ℝ) * Lam) := Real.sq_sqrt hm.le
   let M := C * R ^ ((d : ℝ) / ((d : ℝ) + 1))
-  have hM : 0 ≤ M := mul_nonneg hC0 (Real.rpow_nonneg hR.le _)
+
   refine ⟨2 * M, by positivity, ?_⟩
   intro B hB S K _hreal hP F hF0 hFs hFc hFsupp
   dsimp only
@@ -56,14 +58,13 @@ theorem occupation_whole_space_bound
   have hloc := wholeSpace_localization_direct hH hd hB K hP F hF0 hFs hFc hFsupp
   refine ⟨?_, ?_⟩
   · intro α hα0 hα1 vStar R' hR' hRsq'
-    simpa only [occupationQuadratic] using hloc α hα0 hα1 vStar R' hR' hRsq'
+    exact hloc α hα0 hα1 vStar R' hR' hRsq'
   · have hnorm : 0 ≤ parabolicLpNorm d F := ENNReal.toReal_nonneg
     have hpoint : ∀ q ∈ Icc (0 : ℝ) 1 ×ˢ univ,
         W q ≤ M * parabolicLpNorm d F + H / 2 := by
       intro q hq
       by_cases ht : q.1 = 1
-      · have hzero : W q = 0 := by
-          exact parabolicDuhamelPotential_eq_zero_of_terminal_le K MeasurableSet.univ
+      · have hzero : W q = 0 := parabolicDuhamelPotential_eq_zero_of_terminal_le K MeasurableSet.univ
             1 F q ht.ge
         have hpot := occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
         have hH0 : 0 ≤ H := (hpot.1 (0, 0)).trans
@@ -92,7 +93,7 @@ theorem occupation_whole_space_bound
         dsimp [M] at hv ⊢
         linarith
     have hsup := wholeSpace_absorb
-      (show (Icc (0 : ℝ) 1 ×ˢ (univ : Set (PDE.Vec d))).Nonempty from
+      (show (Icc (0 : ℝ) 1 ×ˢ (univ : PDE.VelocityRegion d)).Nonempty from
         ⟨(0, 0), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩⟩) hpoint
     change H ≤ (2 * M) * parabolicLpNorm d F
     nlinarith [hsup]

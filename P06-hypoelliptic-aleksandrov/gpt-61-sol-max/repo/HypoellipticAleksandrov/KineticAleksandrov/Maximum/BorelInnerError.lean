@@ -15,13 +15,15 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Filter Set
 open scoped MatrixOrder Matrix.Norms.Elementwise Topology
 
+variable {d : ℕ}
+
 /-- The coefficient defect is the absolute literal Hessian contraction. -/
-def borelCoefficientError {d : ℕ} (C A : CoefficientField d)
+def borelCoefficientError  (C A : CoefficientField d)
     (H : KineticPoint d → PDE.Mat d) (P : KineticPoint d) : ℝ :=
   |matrixContraction (C P.time P.velocity - A P.time P.velocity) (H P)|
 
 /-- On each fixed compact set the classical coefficient error vanishes in Lp. -/
-theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+theorem borel_inner_error  {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField d) (hBorel : IsBorelCoefficient A)
     (hlo : HasLowerEllipticityAE lam A) (hhi : HasUpperEllipticityAE Lam A)
     (C : ℕ → CoefficientField d)
@@ -37,6 +39,7 @@ theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam
       (volume.restrict K)) ∧
     Tendsto (fun j => (eLpNorm (borelCoefficientError (C j) A H)
       (ENNReal.ofReal p) (volume.restrict K)).toReal) atTop (𝓝 0) := by
+  let sharedTerm_f7e10e827d := ((Fin d → Fin d → ℝ))
   let : IsFiniteMeasureOnCompacts (volume : Measure (KineticPoint d)) :=
     Measure.IsFiniteMeasureOnCompacts.map
       (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d)))
@@ -45,14 +48,14 @@ theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam
     rw [Measure.restrict_apply_univ]
     exact hK.measure_lt_top⟩
   let : TopologicalSpace.PseudoMetrizableSpace (PDE.Mat d) :=
-    inferInstanceAs (TopologicalSpace.PseudoMetrizableSpace (Fin d → Fin d → ℝ))
+    inferInstanceAs (TopologicalSpace.PseudoMetrizableSpace sharedTerm_f7e10e827d)
   let : SecondCountableTopology (PDE.Mat d) :=
-    inferInstanceAs (SecondCountableTopology (Fin d → Fin d → ℝ))
+    inferInstanceAs (SecondCountableTopology sharedTerm_f7e10e827d)
   let : BorelSpace (PDE.Mat d) :=
-    inferInstanceAs (BorelSpace (Fin d → Fin d → ℝ))
+    inferInstanceAs (BorelSpace sharedTerm_f7e10e827d)
   change Measurable (coefficientAt A) at hBorel
-  have hproj : Measurable (fun P : KineticPoint d => (P.time,P.velocity)) :=
-    ((continuous_time (d := d)).prodMk (continuous_velocity (d := d))).measurable
+  have hproj  :=
+    ((continuous_time (d := d)).prodMk (continuous_velocity )).measurable
   have hAm : AEStronglyMeasurable
       (fun P : KineticPoint d => A P.time P.velocity) (volume.restrict K) :=
     (hBorel.comp hproj).aestronglyMeasurable.restrict
@@ -93,10 +96,10 @@ theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam
     simp only [borelFrobeniusNorm_eq,matrixContraction,pow_two,Function.comp_def]
   obtain ⟨B,hB⟩ := hK.bddAbove_image hFN
   let M := max B 0
-  have hM : 0 ≤ M := le_max_right _ _
+
   have hHM P (hP : P ∈ K) : borelFrobeniusNorm (H P) ≤ M :=
     (hB (mem_image_of_mem _ hP)).trans (le_max_left _ _)
-  have hLam0 : 0 ≤ Lam := hlam.le.trans hLam
+  have hLam0  := hlam.le.trans hLam
   have hbound j : ∀ᵐ P ∂(volume.restrict K), borelCoefficientError (C j) A H P ≤
       2 * Real.sqrt d * Lam * M := by
     filter_upwards [hbounds j,ae_restrict_mem hK.measurableSet] with P hb hP

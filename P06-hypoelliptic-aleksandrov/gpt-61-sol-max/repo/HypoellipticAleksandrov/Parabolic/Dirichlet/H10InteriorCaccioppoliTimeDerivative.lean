@@ -15,21 +15,21 @@ This module assembles the interior Hessian representatives and the literal
 reverse-time equation into an interior weak time derivative.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-open Filter MeasureTheory Set
-open scoped ENNReal Topology RealInnerProductSpace MatrixOrder Matrix.Norms.Elementwise
+open MeasureTheory Set
+open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 namespace IsReverseTimeVariationalEnergySolution
 
 /-- The interior Caccioppoli estimate supplies ordered weak spatial Hessian
 representatives, with uniform `L²` control of every matrix entry. -/
 theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_interior_caccioppoli
-    {d : ℕ} {Ω inner O : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner O : PDE.VelocityRegion d} {Kη Kχ : ℝ}
     (hd : 0 < d)
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
@@ -46,8 +46,8 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
         (hlamLam : lam ≤ Lam) (hM : 0 ≤ M),
         ∃ C_cac : ℝ, 0 ≤ C_cac ∧
           ∀ (a : CoefficientField d)
-            (b : ℝ → PDE.Vec d → PDE.Vec d)
-            (c F : ℝ → PDE.Vec d → ℝ),
+            (b : PDE.TimeVectorField d)
+            (c F : PDE.TimeScalarField d),
           ∀ (haSmooth : IsSmoothOnNeighborhood
                 (fun z : TimeVelocity d => a z.1 z.2)
                 (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -72,7 +72,7 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
             (hA : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
                 spatialMatrixFDerivFrobeniusNorm
-                  (fun w : TimeVelocity d =>
+                  (fun w  =>
                     reverseTimeCoefficient r₁ a w.1 w.2) z ≤ M)
             (hB : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
@@ -81,7 +81,7 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
             (hBD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
                 spatialVectorFDerivFrobeniusNorm
-                  (fun w : TimeVelocity d =>
+                  (fun w  =>
                     reverseTimeDivergenceDrift r₁ a b w.1 w.2) z ≤ M)
             (hq : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
@@ -89,28 +89,28 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
             (hqD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
                 spatialScalarFDerivEuclideanNorm
-                  (fun w : TimeVelocity d =>
+                  (fun w  =>
                     -(reverseTimeScalarCoefficient r₁ c w.1 w.2)) z ≤ M)
             (hfD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
                 spatialScalarFDerivEuclideanNorm
-                  (fun w : TimeVelocity d =>
+                  (fun w  =>
                     -(reverseTimeScalarCoefficient r₁ F w.1 w.2)) z ≤ M),
-          ∀ (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+          ∀ (initial : PDE.ScalarLp Ω (2 ))
             (u : ReverseTimeL2V hΩ (r₁ - r₀))
             (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
             (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
               (sub_pos.mpr h₀₁) u g)
             (hu : IsReverseTimeVariationalEnergySolution
               r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu),
-            ∃ G : Fin d → TimeVelocity d → ℝ,
-              (∀ j, MemLp (G j) (2 : ℝ≥0∞)
+            ∃ G : Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d,
+              (∀ j, MemLp (G j) (2 )
                 (timeVelocityVolumeOn
                   (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω))) ∧
               ∃ H : TimeVelocity d → PDE.Mat d,
                 ∃ hHmem : ∀ j k : Fin d,
                     ParabolicMemLpOn (Set.Ioo τ₁ τ₂ ×ˢ O)
-                      (2 : ℝ≥0∞) (fun z => H z j k),
+                      (2 ) (fun z => H z j k),
                   (∀ j k : Fin d,
                     HasWeakVelocityPartialDerivOn
                       (Set.Ioo τ₁ τ₂ ×ˢ O) k (G j)
@@ -124,8 +124,8 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
                               r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
                               haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
                               initial) ^ 2))) ∧
-                  ∃ U : TimeVelocity d → ℝ,
-                    MemLp U (2 : ℝ≥0∞)
+                  ∃ U : HypoellipticAleksandrov.Parabolic.ScalarField d,
+                    MemLp U (2 )
                       (timeVelocityVolumeOn
                         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) ∧
                     (∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀),
@@ -137,7 +137,7 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
                     (∀ j : Fin d,
                       HasWeakVelocityPartialDerivOn
                         (Set.Ioo τ₁ τ₂ ×ˢ O) j U (G j)) ∧
-                    let W : TimeVelocity d → ℝ := fun z =>
+                    let W : HypoellipticAleksandrov.Parabolic.ScalarField d := fun z =>
                       (∑ i : Fin d, ∑ j : Fin d,
                         reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) +
                       (∑ j : Fin d,
@@ -145,7 +145,7 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
                       reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z -
                       reverseTimeScalarCoefficient r₁ F z.1 z.2
                     ParabolicMemLpOn (Set.Ioo τ₁ τ₂ ×ˢ O)
-                        (2 : ℝ≥0∞) W ∧
+                        (2 ) W ∧
                       HasWeakTimeDerivOn (Set.Ioo τ₁ τ₂ ×ˢ O) U W := by
   obtain ⟨δ, hδ, hcarrier, hprev⟩ :=
     exists_gradientCoord_representatives_hessian_uniform_interior_caccioppoli
@@ -162,51 +162,35 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
       hA hB hBD hq hqD hfD initial u g hdu hu
   refine ⟨G, hG, H, hHmem, hHweak, hHbound, ?_⟩
   obtain ⟨U, hU, hUslice⟩ := exists_reverseTimeL2V_value_product_representative hΩ (r₁ - r₀) u
-  have hslice : ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀),
-      ((fun y => U (τ, y)) =ᵐ[PDE.volumeOn Ω]
-        fun y => valueCLM hΩ (u τ) y) ∧
-      (∀ j, (fun y => G j (τ, y)) =ᵐ[PDE.volumeOn Ω]
-        fun y => gradientCLM hΩ (u τ) y j) := by
-    filter_upwards [hUslice, hGslice] with τ hUτ hGτ
-    exact ⟨hUτ, hGτ⟩
+
   have htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval (r₁ - r₀) := by
     intro τ hτ
     exact ⟨hτ₀.trans (hτ₀τ₁.trans hτ.1), hτ.2.trans (hτ₂τ₃.trans hτ₃)⟩
-  have hOΩ : O ⊆ Ω := hOinner.trans η.inner_subset_outer
+  have hOΩ  := hOinner.trans η.inner_subset_outer
   have hUGlobal :=
     reverseTime_hasWeakVelocityPartialDerivOn_of_product_representatives
       hΩ (r₁ - r₀) u U hU hUslice G hG hGslice
-  have hUweak : ∀ j : Fin d,
-      HasWeakVelocityPartialDerivOn (Set.Ioo τ₁ τ₂ ×ˢ O) j U (G j) := by
-    intro j
-    exact (hUGlobal j).restrict (Set.prod_mono htime hOΩ)
-  let W : TimeVelocity d → ℝ := fun z =>
-    (∑ i : Fin d, ∑ j : Fin d,
-      reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) +
-    (∑ j : Fin d, reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z) +
-    reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z -
-    reverseTimeScalarCoefficient r₁ F z.1 z.2
-  have hUlocal : ParabolicMemLpOn
-      (Set.Ioo τ₁ τ₂ ×ˢ O) (2 : ℝ≥0∞) U :=
+
+
+  have hUlocal  :=
     hU.mono_measure
       (Measure.restrict_mono_set volume (Set.prod_mono htime hOΩ))
-  have hGlocal : ∀ j,
-      ParabolicMemLpOn (Set.Ioo τ₁ τ₂ ×ˢ O) (2 : ℝ≥0∞) (G j) := fun j =>
+  have hGlocal  := fun j =>
     (hG j).mono_measure
       (Measure.restrict_mono_set volume (Set.prod_mono htime hOΩ))
-  have hW : ParabolicMemLpOn
-      (Set.Ioo τ₁ τ₂ ×ˢ O) (2 : ℝ≥0∞) W :=
+  have hW  :=
     hessianTimeDerivative_memLp r₀ r₁ τ₁ τ₂ hΩ hΩbounded hOopen hOΩ htime
       a b c F haSmooth hbSmooth hcSmooth hFSmooth U hUlocal G hGlocal H hHmem
   have hsep :=
     reverseTime_separated_hessian_coefficient_cancellation
       r₀ r₁ h₀₁ hΩ hΩbounded hOopen hOΩ τ₁ τ₂ htime a b c F haSmooth hbSmooth
       hcSmooth hFSmooth initial u g hdu hu U hU hUslice G hG hGslice H hHmem hHweak
-  have hWweak : HasWeakTimeDerivOn (Set.Ioo τ₁ τ₂ ×ˢ O) U W :=
-    hasWeakTimeDerivOn_of_forall_separatedProduct hOopen hUlocal hW (by
-      intro eta psi
-      simpa only [W] using hsep eta psi)
-  exact ⟨U, hU, hslice, hUweak, hW, hWweak⟩
+
+  exact ⟨U, hU, (by
+      filter_upwards [hUslice, hGslice] with τ hUτ hGτ
+      exact ⟨hUτ, hGτ⟩), (by
+      intro j
+      exact (hUGlobal j).restrict (Set.prod_mono htime hOΩ)), hW, (hasWeakTimeDerivOn_of_forall_separatedProduct hOopen hUlocal hW (hsep))⟩
 
 end IsReverseTimeVariationalEnergySolution
 end HypoellipticAleksandrov.Parabolic.Dirichlet

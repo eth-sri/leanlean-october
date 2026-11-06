@@ -16,7 +16,7 @@ they are available before any choice of a Sobolev representative.
 
 @[expose] public section
 
-open scoped ENNReal Topology Interval
+open scoped Interval
 
 namespace PDE
 
@@ -28,23 +28,21 @@ noncomputable section
 def intervalPrimitive (a : ℝ) (g : ℝ → ℝ) (t : ℝ) : ℝ :=
   ∫ x in a..t, g x
 
-@[simp] theorem intervalPrimitive_self (a : ℝ) (g : ℝ → ℝ) :
-    intervalPrimitive a g a = 0 := by
-  simp [intervalPrimitive]
+
 
 /-- A locally integrable interval primitive is continuous.  This is a
 continuity theorem only; the later weak-derivative bridge must still establish
 the a.e. derivative identity separately. -/
 theorem continuousOn_intervalPrimitive
     {a b : ℝ} {g : ℝ → ℝ} (hab : a ≤ b)
-    (hg : IntegrableOn g (Icc a b) volume) :
+    (hg : IntegrableOn g (Icc a b) ) :
     ContinuousOn (intervalPrimitive a g) (Icc a b) := by
-  have hg' : IntegrableOn g (uIcc a b) volume := by
-    simpa [uIcc_of_le hab] using hg
+
   change ContinuousOn (fun t => ∫ x in a..t, g x) (Icc a b)
   rw [← uIcc_of_le hab]
   exact intervalIntegral.continuousOn_primitive_interval
-    (μ := volume) (f := g) (a := a) (b := b) hg'
+        (by
+            simpa [uIcc_of_le hab] using hg)
 
 end
 

@@ -5,17 +5,19 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeas
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
 import Mathlib.MeasureTheory.Integral.Bochner.Set
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Compact smooth majorants of velocity intervals -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
 /-- A compact smooth majorant with integral at most twice the interval length. -/
 theorem exists_capacity_cutoff (E : Interval) :
-    ∃ chi : ℝ → ℝ, ContDiff ℝ (⊤ : ℕ∞) chi ∧ HasCompactSupport chi ∧
+    ∃ chi : ℝ → ℝ, ContDiff ℝ PDE.smoothOrder chi ∧ HasCompactSupport chi ∧
       tsupport chi ⊆ Ioo (E.lo - (E.hi - E.lo) / 2) (E.hi + (E.hi - E.lo) / 2) ∧
       (∀ v, 0 ≤ chi v ∧ chi v ≤ 1) ∧ (∀ v ∈ Icc E.lo E.hi, chi v = 1) ∧
       (∫ v, chi v) ≤ 2 * (E.hi - E.lo) := by

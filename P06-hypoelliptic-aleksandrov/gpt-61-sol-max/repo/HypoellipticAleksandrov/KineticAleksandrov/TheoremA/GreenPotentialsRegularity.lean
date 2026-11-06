@@ -2,40 +2,42 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeOperator
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonCalculus
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Anisotropic regularity from joint interior smoothness -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.TheoremA
 open Set
 open Evolution Parabolic
-open scoped Topology
+
 variable {d : ℕ}
 
 /-- Joint smoothness in packed Euclidean coordinates supplies the full kinetic C112 API. -/
-theorem isKineticC112On_of_contDiffOn {u : KineticPoint d → ℝ}
+theorem isKineticC112On_of_contDiffOn {u : HypoellipticAleksandrov.KineticScalarField d}
     {D : Set (KineticPoint d)} (hD : IsOpen D)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph d)
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ evolutionHomeomorph d)
       (evolutionHomeomorph d ⁻¹' D)) : IsKineticC112On u D := by
   let e := evolutionHomeomorph d
   let U := e ⁻¹' D
   let f := u ∘ e
-  have hU : IsOpen U := hD.preimage e.continuous
+  have hU  := hD.preimage e.continuous
   have hx : ∀ p ∈ D, e.symm p ∈ U := fun p hp => by simpa [U] using hp
   have hs : ∀ x ∈ U, ContDiffAt ℝ 2 f x :=
     fun x hx => (hu.contDiffAt (hU.mem_nhds hx)).of_le (by simp)
   have hd : ∀ x ∈ U, DifferentiableAt ℝ f x :=
     fun x hx => (hs x hx).differentiableAt (by norm_num)
   have hj : ∀ v : EvolutionVec d,
-      ContDiffOn ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ f x v) U :=
+      ContDiffOn ℝ PDE.smoothOrder (fun x => fderiv ℝ f x v) U :=
     fun v => (hu.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
   have hjj : ∀ v w : EvolutionVec d,
       ContinuousOn (fun x => fderiv ℝ (fun y => fderiv ℝ f y v) x w) U :=
     fun v w => (((hj v).fderiv_of_isOpen (m := 0) hU (by simp)).clm_apply
       contDiffOn_const).continuousOn
   have hc : ContinuousOn e.symm D := e.symm.continuous.continuousOn
-  have hm : MapsTo e.symm D U := hx
+  have hm  := hx
   have hslice : ∀ p ∈ D, IsSliceRegularAt u p := by
     intro p hp
     apply IsSliceRegularAt.of_contDiffAt

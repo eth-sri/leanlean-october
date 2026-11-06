@@ -5,11 +5,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDecompositio
 
 /-! # The actual exit Fourier variation is bounded by lateral mass plus killed variation -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
-open scoped ENNReal
+
 
 /-- The actual exit Fourier density-map is additive in finite physical measures. -/
 theorem exitFourier_add {d : ℕ} (μ ν : Measure (PDE.Vec d × TimeVelocity d))
@@ -35,14 +35,15 @@ theorem ballExit_fourier_short_strip_bound
       1 - (ballTransition hH hLE hd hlam hLam B hB v₀ hR P ⟨H.1, H.2.1⟩).real univ +
         ((fourierProjection (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
           (ballEvolutionQuery P ⟨H.1, H.2.1⟩) ξ).variation univ).toReal := by
+  let sharedTerm_65d50ddcbf := ((localBallKernel hH hLE hd hlam hLam B hB v₀ hR))
   let β := (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P ⟨H.1, H.2.1⟩).restrict
     {Q | Q.velocity ∈ frontier (PDE.euclideanBall v₀ R)}
-  let ζ := ballExitRestart hH hLE hd hlam hLam B hB v₀ hR P T H
-  let ν := fourierProjection (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
+
+  let ν := fourierProjection sharedTerm_65d50ddcbf
     (ballEvolutionQuery P ⟨H.1, H.2.1⟩) ξ
   have hs : exitFourier (ballExit hH hLE hd hlam hLam B hB v₀ hR P T) ξ =
       exitFourier (β.map (exitCoordinates P.1 v₀)) ξ +
-        exitFourier (ζ.map (exitCoordinates P.1 v₀)) ξ := by
+        exitFourier ((ballExitRestart hH hLE hd hlam hLam B hB v₀ hR P T H).map (exitCoordinates P.1 v₀)) ξ := by
     unfold ballExit
     rw [ballExit_short_strip_measure_decomposition hH hLE hd hlam hLam B hB v₀ hR P T H,
       Measure.map_add _ _ (continuous_exitCoordinates P.1 v₀).measurable, exitFourier_add]
@@ -56,9 +57,9 @@ theorem ballExit_fourier_short_strip_bound
         MeasurableSet.univ, preimage_univ] at hb
     · exact ballExitRestart_fourier_variation_le hH hLE hd hlam hLam B hB v₀ hR P T H ξ
   have hn := fourierProjection_totalVariation_le_one
-    (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
+    sharedTerm_65d50ddcbf
     (ballEvolutionQuery P ⟨H.1, H.2.1⟩) ξ _ (fourierProjection_spec _ _ _)
-  have hνfin : ν.variation univ ≠ ⊤ := ne_of_lt (hn.trans_lt ENNReal.one_lt_top)
+  have hνfin  := ne_of_lt (hn.trans_lt ENNReal.one_lt_top)
   have hr := ENNReal.toReal_mono
     (ENNReal.add_ne_top.mpr ⟨measure_ne_top β univ, hνfin⟩) he
   rw [ENNReal.toReal_add (measure_ne_top β univ) hνfin] at hr

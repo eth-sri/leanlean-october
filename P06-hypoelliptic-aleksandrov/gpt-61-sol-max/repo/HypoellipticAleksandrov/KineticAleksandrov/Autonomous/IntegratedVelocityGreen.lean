@@ -5,31 +5,35 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.IntegratedVe
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
 import Mathlib.Basic.Real.Basic
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Full-space Green measure in raw elapsed-time coordinates -/
 
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory Filter
+open Set MeasureTheory Filter
 open SectionTwo
 open scoped ENNReal
 
 /-- Actual native initial state corresponding to a physical point. -/
 def velocityInitialState (z : Z) : EvolutionState autonomousWholeDomain (fun _ => 0) 0 :=
-  ⟨(wholeQuery 0 z).1.2.2, (wholeQuery 0 z).2.2⟩
+  ⟨_, (wholeQuery 0 z).2.2⟩
+
+variable (E : FullSpaceEvolution) (T : ℝ) (hT : 0 < T) (z : Z)
 
 /-- Actual finite-horizon occupation measure. -/
-def velocityGreen (E : FullSpaceEvolution) (T : ℝ) (hT : 0 < T) (z : Z) :
+def velocityGreen  :
     Measure (ElapsedTime (ENNReal.ofReal T) × EvolutionAmbientState 1) :=
-  greenMeasure E.2 0 (ENNReal.ofReal T) (ENNReal.ofReal_pos.mpr hT)
+  greenMeasure E.2 0 _ (ENNReal.ofReal_pos.mpr hT)
     (Measure.dirac (velocityInitialState z))
 
 /-- Finite-horizon occupation has mass at most the elapsed horizon. -/
-theorem velocityGreen_mass_le (E : FullSpaceEvolution) (T : ℝ) (hT : 0 < T) (z : Z) :
+theorem velocityGreen_mass_le  :
     velocityGreen E T hT z univ ≤ ENNReal.ofReal T := by
-  have h := greenMeasure_timeMarginal_le E.2 0 (ENNReal.ofReal T)
-    (Measure.dirac (velocityInitialState z)) (velocityGreen E T hT z)
+  have h := greenMeasure_timeMarginal_le E.2 0 _
+    _ (velocityGreen E T hT z)
     (greenMeasure_spec E.2 0 _ _ _) univ MeasurableSet.univ
   simpa only [preimage_univ, Measure.dirac_apply_of_mem (mem_univ _), one_mul,
     elapsedVolume_univ T hT] using h
@@ -63,35 +67,33 @@ instance velocityGreenRaw_isFiniteMeasure (E : FullSpaceEvolution) (T : ℝ)
 /-- Every raw occupation point lies strictly before the terminal time. -/
 theorem velocityGreenRaw_restrict_past (E : FullSpaceEvolution) (T : ℝ)
     (hT : 0 < T) (z : Z) :
-    (velocityGreenRaw E T hT z).restrict {q | q.1 < T} = velocityGreenRaw E T hT z := by
-  apply Measure.restrict_eq_self_of_ae_mem
-  change ∀ᵐ q ∂(velocityGreen E T hT z).map velocityElapsedRaw, q.1 < T
-  apply (ae_map_iff (velocityElapsedRaw_measurable T).aemeasurable
-    (measurableSet_lt measurable_fst measurable_const)).2
-  exact Eventually.of_forall fun q => (ENNReal.ofReal_lt_ofReal_iff hT).mp q.1.2.2
+    (velocityGreenRaw E T hT z).restrict {q | q.1 < T} = velocityGreenRaw E T hT z := (Measure.restrict_eq_self_of_ae_mem
+  (id
+    ((ae_map_iff (Measurable.aemeasurable (velocityElapsedRaw_measurable T))
+          (measurableSet_lt measurable_fst measurable_const)).mpr
+      (Eventually.of_forall fun q => (ENNReal.ofReal_lt_ofReal_iff hT).mp q.1.property.right))))
 
 /-- The compact convex-source bound holds for its literal raw Green integral. -/
 theorem velocityGreenRaw_source_integral_le (hH : HormanderHypoellipticityStatement)
     {lam Lam r T : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (hr : 0 < r) (hT : 0 < T) (z : Z)
-    (f : ℝ × EvolutionAmbientState 1 → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+    (f : ℝ × EvolutionAmbientState 1 → ℝ) (hf : ContDiff ℝ PDE.smoothOrder f)
     (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ {q | q.1 < T})
     (hf01 : ∀ q, 0 ≤ f q ∧ f q ≤ 1) :
     (∫ q, f q * (lam * velocityOccupationDensity r (q.2.1 0))
       ∂velocityGreenRaw E T hT z) ≤ Real.sqrt (2 * Lam * T) := by
   let g := fun q : Point => f (q.time, q.position, q.velocity) *
     (lam * velocityOccupationDensity r (q.position 0))
-  have hs : ContDiff ℝ (⊤ : ℕ∞) (rawLift g) := hf.mul
+  have hs : ContDiff ℝ PDE.smoothOrder (rawLift g) := hf.mul
     (contDiff_const.mul ((velocityOccupationDensity_contDiff hr).comp
       ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst)))
-  have hc : HasCompactSupport g :=
-    (hfc.comp_homeomorph (KineticPoint.homeomorphProd 1)).mul_right
-  have hg : Continuous g := hs.continuous.comp (KineticPoint.homeomorphProd 1).continuous
+
+
   have hn : ∀ q, 0 ≤ g q := fun q => mul_nonneg (hf01 _).1
     (mul_nonneg hlam.le (velocityOccupationDensity_nonneg r _))
   have hrep := duhamelPotential_eq_greenMeasure E.2 autonomousWholeDomain_measurable
-    continuous_const T g hn hg hc 0 hT (velocityInitialState z)
+    continuous_const T g hn (hs.continuous.comp (KineticPoint.homeomorphProd 1).continuous) ((hfc.comp_homeomorph (KineticPoint.homeomorphProd 1)).mul_right) 0 hT (velocityInitialState z)
   have hb := velocity_profile_source_bound hH hlam hLam A E hE hr T f hf hfc hfU hf01
     ⟨0, fun _ => z.2, fun _ => z.1⟩ hT
   change (∫ q, rawLift g q ∂(velocityGreen E T hT z).map velocityElapsedRaw) ≤ _
@@ -99,7 +101,7 @@ theorem velocityGreenRaw_source_integral_le (hH : HormanderHypoellipticityStatem
     hs.continuous.aestronglyMeasurable]
   have hI (D : ℝ) (hD : 0 < D) (hDT : D = T) :
       (∫ q : ElapsedTime (ENNReal.ofReal D) × EvolutionAmbientState 1,
-        g ⟨0 + q.1.1, q.2.1, q.2.2⟩ ∂greenMeasure E.2 0 (ENNReal.ofReal D)
+        g ⟨0 + q.1.1, q.2.1, q.2.2⟩ ∂greenMeasure E.2 0 _
           (ENNReal.ofReal_pos.mpr hD) (Measure.dirac (velocityInitialState z))) =
       ∫ q, rawLift g (velocityElapsedRaw q) ∂velocityGreen E T hT z := by
     subst D
@@ -107,8 +109,8 @@ theorem velocityGreenRaw_source_integral_le (hH : HormanderHypoellipticityStatem
     exact Eventually.of_forall fun q => by
       change g ⟨0 + q.1.1, q.2.1, q.2.2⟩ = g ⟨q.1.1, q.2.1, q.2.2⟩
       rw [show (0 : ℝ) + q.1.1 = q.1.1 by ring]
-  have hi := (hI (T - 0) (sub_pos.mpr hT) (by ring)).symm.trans hrep.symm
-  exact hi.trans_le (by simpa only [velocityInitialState, wholeQuery, wholeSpaceQuery,
+
+  exact ((hI (T - 0) (sub_pos.mpr hT) (by ring)).symm.trans hrep.symm).trans_le (by simpa only [velocityInitialState, wholeQuery, wholeSpaceQuery,
     sub_zero] using hb)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

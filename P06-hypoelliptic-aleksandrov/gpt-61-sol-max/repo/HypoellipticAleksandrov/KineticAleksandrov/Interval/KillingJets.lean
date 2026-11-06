@@ -4,6 +4,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Interval.KillingCalculu
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import PDEFoundation.Sobolev.OneDimensional.SmoothTransport
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import Batteries.Tactic.Alias
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ScalarAdaptersCalculus
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-! # Scalar jets of the affine endpoint heat barrier -/
 
@@ -14,29 +20,17 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 
 /-- The unique native coordinate direction agrees with scalar differentiation,
 including Mathlib's total derivative convention at nonsmooth points. -/
-theorem scalar_deriv_eq_native (f : PDE.Vec 1 → ℝ) (v : PDE.Vec 1) :
-    deriv (fun t => f (fun _ => t)) (v 0) = (fderiv ℝ f v) (PDE.basisVec 0) := by
-  have h := PDE.scalarToVecOneContinuousLinearEquiv.comp_right_fderiv
-    (f := f) (x := v 0)
-  have he := congrArg (fun L : ℝ →L[ℝ] ℝ => L 1) h
-  have h1 : (PDE.scalarToVecOneContinuousLinearEquiv : ℝ →L[ℝ] PDE.Vec 1) 1 =
-      PDE.basisVec 0 := PDE.scalarToVecOneContinuousLinearEquiv_one
-  have hv : PDE.scalarToVecOneContinuousLinearEquiv (v 0) = v := by
-    ext i
-    have hi := Fin.eq_zero i
-    subst i
-    rfl
-  rw [ContinuousLinearMap.comp_apply, h1, hv] at he
-  exact he
+alias scalar_deriv_eq_native := _root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.scalar_deriv_eq_native
+
 
 
 /-- The one-dimensional native Hessian is the iterated scalar derivative. -/
 theorem scalarSpatialHessian_one (u : TimeVelocity 1 → ℝ) (p : TimeVelocity 1) :
     scalarSpatialHessian u p 0 0 =
       deriv (deriv (fun v => u (p.1, fun _ => v))) (p.2 0) := by
-  let g : PDE.Vec 1 → PDE.Vec 1 :=
+  let g  :=
     fun v => scalarSpatialGradient u (p.1, v)
-  have hg : (fun t : ℝ => g (fun _ => t) 0) =
+  have hg : (fun t  => g (fun _ => t) 0) =
       deriv (fun v => u (p.1, fun _ => v)) := by
     funext t
     exact (scalar_deriv_eq_native (fun v => u (p.1, v)) (fun _ => t)).symm
@@ -78,34 +72,47 @@ theorem deriv2_intervalHeat_affine {lam θ : ℝ} (_hlam : 0 < lam) (_hθ : 0 < 
 def endpointHeat (lam τ ε s e : ℝ) (p : TimeVelocity 1) : ℝ :=
   intervalHeat lam (τ - p.1 + ε) (s * (p.2 0 - e))
 
+variable {lam τ ε s e : ℝ} (hlam : 0 < lam)
+
+section
+variable (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε)
+
+include hlam hp
 /-- Joint regularity of the regularized endpoint barrier. -/
-theorem contDiffAt_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
-    (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (endpointHeat lam τ ε s e) p := by
-  have hg : ContDiffAt ℝ (⊤ : ℕ∞)
-      (fun q : TimeVelocity 1 => (τ - q.1 + ε, s * (q.2 0 - e))) p :=
+theorem contDiffAt_endpointHeat
+     :
+    ContDiffAt ℝ PDE.smoothOrder (endpointHeat lam τ ε s e) p := by
+  let sharedTerm_1b0d6b88a6 := ((fun q : TimeVelocity 1 => (τ - q.1 + ε, s * (q.2 0 - e))))
+  have hg : ContDiffAt ℝ PDE.smoothOrder
+      sharedTerm_1b0d6b88a6 p :=
     ((contDiffAt_const.sub contDiffAt_fst).add contDiffAt_const).prodMk
       (contDiffAt_const.mul
         (((contDiff_apply ℝ ℝ (0 : Fin 1)).contDiffAt.comp p contDiffAt_snd).sub
           contDiffAt_const))
   exact (contDiffAt_intervalHeat hlam (τ - p.1 + ε, s * (p.2 0 - e)) hp).comp p
-    (f := fun q : TimeVelocity 1 => (τ - q.1 + ε, s * (q.2 0 - e))) hg
+    (f := sharedTerm_1b0d6b88a6) hg
 
 /-- The time derivative reverses the forward half-line time. -/
-theorem scalarTimeDerivative_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
-    (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε) :
+theorem scalarTimeDerivative_endpointHeat
+     :
     scalarTimeDerivative (endpointHeat lam τ ε s e) p =
       -deriv (fun θ => intervalHeat lam θ (s * (p.2 0 - e))) (τ - p.1 + ε) := by
-  have h := (hasDerivAt_intervalHeat_time hlam hp (s * (p.2 0 - e))).comp p.1
+  let sharedTerm_7b76908b7a := ((s * (p.2 0 - e)))
+  have h := (hasDerivAt_intervalHeat_time hlam hp sharedTerm_7b76908b7a).comp p.1
     (((hasDerivAt_const p.1 τ).sub (hasDerivAt_id p.1)).add_const ε)
   dsimp only [Function.comp_def, id_eq, Pi.sub_apply] at h
-  change deriv (fun r => intervalHeat lam (τ - r + ε) (s * (p.2 0 - e))) p.1 = _
-  rw [h.deriv, (hasDerivAt_intervalHeat_time hlam hp (s * (p.2 0 - e))).deriv]
+  change deriv (fun r => intervalHeat lam (τ - r + ε) sharedTerm_7b76908b7a) p.1 = _
+  rw [h.deriv, (hasDerivAt_intervalHeat_time hlam hp sharedTerm_7b76908b7a).deriv]
   ring
+end
 
+
+variable (hs : s ^ 2 = 1)
+
+include hlam hs
 /-- The native Hessian is the scalar heat Hessian when the orientation has square one. -/
-theorem scalarSpatialHessian_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
-    (hs : s ^ 2 = 1) (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε) :
+theorem scalarSpatialHessian_endpointHeat
+     (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε) :
     scalarSpatialHessian (endpointHeat lam τ ε s e) p 0 0 =
       deriv (deriv (intervalHeat lam (τ - p.1 + ε))) (s * (p.2 0 - e)) := by
   rw [scalarSpatialHessian_one]
@@ -114,8 +121,8 @@ theorem scalarSpatialHessian_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
   rw [deriv2_intervalHeat_affine hlam hp, hs, one_mul]
 
 /-- The endpoint barrier is a backward supersolution under the source ellipticity bound. -/
-theorem endpointHeat_operator_nonpos {lam τ ε s e : ℝ} (hlam : 0 < lam)
-    (hs : s ^ 2 = 1) (B : CoefficientField 1) (p : TimeVelocity 1)
+theorem endpointHeat_operator_nonpos
+     (B : CoefficientField 1) (p : TimeVelocity 1)
     (hp : 0 < τ - p.1 + ε) (hx : 0 ≤ s * (p.2 0 - e))
     (hB : lam ≤ B p.1 p.2 0 0) :
     scalarParabolicOperator B 0 (endpointHeat lam τ ε s e) p ≤ 0 := by

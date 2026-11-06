@@ -10,12 +10,14 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierOccupa
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Scaling MeasureTheory Set
-open scoped ENNReal
+open HypoellipticAleksandrov.Parabolic SectionTwo Scaling MeasureTheory Set
+
+
+variable {d : ℕ}
 
 /-- Elapsed-time pairing is the ordinary open-interval pairing with the marginal kernel. -/
-theorem occupation_rhs_interval {d : ℕ} (K : WholeKernel d) (σ T : ℝ) (hT : 0 < T)
-    (ρ : Measure (PDE.Vec d)) (φ : TimeVelocity d → ℝ) :
+theorem occupation_rhs_interval  (K : WholeKernel d) (σ T : ℝ) (hT : 0 < T)
+    (ρ : Measure (PDE.Vec d)) (φ : HypoellipticAleksandrov.Parabolic.ScalarField d) :
     (∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal T),
       ∫ w, φ (τ.1, w) ∂K.firstMarginal
         (wholeSpaceQuery σ (σ + τ.1) (le_add_of_nonneg_right τ.2.1.le) v 0)
@@ -33,7 +35,7 @@ theorem occupation_rhs_interval {d : ℕ} (K : WholeKernel d) (σ T : ℝ) (hT :
   rw [Green.occupationKernel_of_nonneg K σ τ.1 τ.2.1.le v]
 
 /-- Bounded-Borel pullback by the forward parabolic dilation. -/
-def occupation_scaledTest {d : ℕ} (T : ℝ) (φ : BoundedBorel (TimeVelocity d)) :
+def occupation_scaledTest  (T : ℝ) (φ : BoundedBorel (TimeVelocity d)) :
     BoundedBorel (TimeVelocity d) :=
   ⟨fun q => φ (parabolicAffine 0 0 (Real.sqrt T) q),
     φ.measurable.comp ((contDiff_infty_parabolicAffine 0 0 (Real.sqrt T)).continuous.measurable),
@@ -41,10 +43,11 @@ def occupation_scaledTest {d : ℕ} (T : ℝ) (φ : BoundedBorel (TimeVelocity d
       obtain ⟨C, hC, hb⟩ := φ.exists_bound
       exact ⟨C, hC, fun q => hb _⟩⟩
 
+variable (K : WholeKernel d) (σ₀ : ℝ) {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d))
+
 /-- The real-interval occupation pairing of the constructed scaled kernel. -/
-theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
-    {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d))
-    (φ : TimeVelocity d → ℝ) :
+theorem occupation_rhs_scaled
+    (φ : HypoellipticAleksandrov.Parabolic.ScalarField d) :
     let r : {r : ℝ // 0 < r} := ⟨Real.sqrt T, Real.sqrt_pos.mpr hT⟩
     let Φ := KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d) r
     let Kt := KineticAffineScaling.pushKernel (KineticAffineScaling.mapsDomain_wholeSpace Φ) K
@@ -57,7 +60,7 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
   let r : {r : ℝ // 0 < r} := ⟨Real.sqrt T, Real.sqrt_pos.mpr hT⟩
   let Φ := KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d) r
   let Kt := KineticAffineScaling.pushKernel (KineticAffineScaling.mapsDomain_wholeSpace Φ) K
-  have hs : Real.sqrt T ≠ 0 := (Real.sqrt_pos.mpr hT).ne'
+  have hs  := (Real.sqrt_pos.mpr hT).ne'
   have hsq := Real.sq_sqrt hT.le
   have he : MeasurableEmbedding (fun v : PDE.Vec d => (Real.sqrt T)⁻¹ • v) :=
     (Homeomorph.smulOfNeZero (Real.sqrt T)⁻¹ (inv_ne_zero hs)).measurableEmbedding
@@ -95,8 +98,7 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
     rw [zero_add, smul_smul, mul_inv_cancel₀ hs, one_smul]
 
 /-- A unit-time density for the constructed pushforward yields the original slab density. -/
-theorem isOccupationDensity_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
-    {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d)) (gt : TimeVelocity d → ℝ)
+theorem isOccupationDensity_scaled   (gt : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hgt : IsOccupationDensity
       (KineticAffineScaling.pushKernel (KineticAffineScaling.mapsDomain_wholeSpace
         (KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d)
@@ -116,10 +118,10 @@ theorem isOccupationDensity_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
   rw [hh, occupation_rhs_interval _ 0 1 zero_lt_one]
   change T * (∫ v, (∫ t in Ioo (0 : ℝ) 1,
     ∫ w, φ (parabolicAffine 0 0 (Real.sqrt T) (t, w)) ∂_) ∂_) = _
-  have hs := occupation_rhs_scaled K σ₀ hT ρ φ
-  have hp := occupation_rhs_interval K σ₀ T hT ρ φ
-  have hm := congrArg (fun a : ℝ => T * a) hs
+
+
+  have hm := congrArg (fun a  => T * a) (occupation_rhs_scaled K σ₀ hT ρ φ)
   rw [← mul_assoc, mul_inv_cancel₀ hT.ne', one_mul] at hm
-  exact hm.trans hp.symm
+  exact hm.trans (occupation_rhs_interval K σ₀ T hT ρ φ).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

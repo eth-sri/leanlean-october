@@ -2,29 +2,35 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundarySolutionLinearity
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalFunctionalProbe
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Smooth compact physical probes and their actual trace restrictions -/
 
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
+open SectionTwo
 open scoped CompactlySupported
 
 /-- Ambient smooth compact probes in exactly the stipulated physical product coordinates. -/
 def boundaryProbeSubmodule (d : ℕ) : Submodule ℝ (ℝ × PDE.Vec d × PDE.Vec d → ℝ) where
-  carrier := {f | ContDiff ℝ (⊤ : ℕ∞) f ∧ HasCompactSupport f}
+  carrier := {f | ContDiff ℝ PDE.smoothOrder f ∧ HasCompactSupport f}
   zero_mem' := ⟨contDiff_const, HasCompactSupport.zero⟩
   add_mem' := fun hf hg => ⟨hf.1.add hg.1, hf.2.add hg.2⟩
   smul_mem' := fun _c _f hf => ⟨contDiff_const.smul hf.1, hf.2.smul_left⟩
 
+variable {d : ℕ}
+
+variable (f : boundaryProbeSubmodule d)
+
 /-- The literal physical function represented by an ambient product probe. -/
-def boundaryProbePhysical {d : ℕ} (f : boundaryProbeSubmodule d) : KineticPoint d → ℝ :=
+def boundaryProbePhysical   : HypoellipticAleksandrov.KineticScalarField d :=
   f.1 ∘ KineticPoint.equivProd d
 
 /-- Every probe has the full stipulated smoothness, continuity and compact support. -/
-theorem boundaryProbePhysical_regular {d : ℕ} (f : boundaryProbeSubmodule d) :
-    ContDiff ℝ (⊤ : ℕ∞) (boundaryProbePhysical f ∘ (KineticPoint.equivProd d).symm) ∧
+theorem boundaryProbePhysical_regular   :
+    ContDiff ℝ PDE.smoothOrder (boundaryProbePhysical f ∘ (KineticPoint.equivProd d).symm) ∧
       Continuous (boundaryProbePhysical f) ∧ HasCompactSupport (boundaryProbePhysical f) := by
   have heq : boundaryProbePhysical f ∘ (KineticPoint.equivProd d).symm = f.1 := by
     funext q
@@ -33,8 +39,10 @@ theorem boundaryProbePhysical_regular {d : ℕ} (f : boundaryProbeSubmodule d) :
   · exact f.2.1.continuous.comp (KineticPoint.homeomorphProd d).continuous
   · exact f.2.2.comp_homeomorph (KineticPoint.homeomorphProd d)
 
+variable (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
+
 /-- A probe restricts to a genuine compactly supported continuous function on the full trace. -/
-def boundaryProbeCc {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
+def boundaryProbeCc
     (f : boundaryProbeSubmodule d) : C_c(localTrace a T v₀ R, ℝ) where
   toFun P := boundaryProbePhysical f P.1
   continuous_toFun := (boundaryProbePhysical_regular f).2.1.comp continuous_subtype_val
@@ -42,14 +50,14 @@ def boundaryProbeCc {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
     (isClosed_localTrace a T v₀ R).isClosedEmbedding_subtypeVal
 
 /-- Trace restriction is linear before any functional or measure is selected. -/
-def boundaryProbeCcLinear {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+def boundaryProbeCcLinear   :
     boundaryProbeSubmodule d →ₗ[ℝ] C_c(localTrace a T v₀ R, ℝ) where
   toFun := boundaryProbeCc a T v₀ R
   map_add' f g := by ext P; rfl
   map_smul' c f := by ext P; rfl
 
 /-- Products of a probe with itself supply squares in the dense trace range. -/
-theorem boundaryProbeCc_sq {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
+theorem boundaryProbeCc_sq
     (f : boundaryProbeSubmodule d) :
     ∃ g : boundaryProbeSubmodule d,
       boundaryProbeCcLinear a T v₀ R g =

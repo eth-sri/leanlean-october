@@ -24,11 +24,11 @@ theorem scalar_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ)
     Tendsto (fun s => f s / Real.rpow s alpha) atTop (𝓝 c) := by
   have hb := Kummer.rpow_mul_isBigO_of_add_eq
     (fun s => f s - c * Real.rpow s alpha) (-alpha) (alpha - 3) (-3)
-    (by simpa only [Real.rpow_eq_pow] using hr) (by ring)
-  have hp : Tendsto (fun s : ℝ => Real.rpow s (-3)) atTop (𝓝 0) := by
-    simpa only [Real.rpow_eq_pow] using
-      tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 3)
-  have hzero := hb.trans_tendsto hp
+    (hr) (by ring)
+
+  have hzero := hb.trans_tendsto (by
+      simpa only [Real.rpow_eq_pow] using
+        tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 3))
   have h := tendsto_const_nhds.add hzero (a := c)
   simp only [add_zero] at h
   apply h.congr'
@@ -39,18 +39,21 @@ theorem scalar_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ)
   field_simp
   ring
 
+variable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+
+include hLam
 /-- The actual joined profile has its specified positive-ray normalized limit. -/
-theorem F_ratio_atTop (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_ratio_atTop  :
     Tendsto (fun s => F gamma Lam s / Real.rpow |s| (3 * gamma.1))
       atTop (𝓝 (Real.rpow (9 * Lam) (-gamma.1))) := by
-  have h := scalar_tail_ratio (Fplus gamma Lam) (3 * gamma.1)
-    (Real.rpow (9 * Lam) (-gamma.1)) (Fplus_asymptotic gamma Lam hLam)
+  have h := scalar_tail_ratio _ (3 * gamma.1)
+    _ (Fplus_asymptotic gamma Lam hLam)
   apply h.congr'
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
   simp only [F, hs, ↓reduceIte, abs_of_pos hs]
 
 /-- The matched joined profile has the same negative-ray normalized limit. -/
-theorem F_ratio_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem F_ratio_atBot
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) :
     Tendsto (fun s => F gamma Lam s / Real.rpow |s| (3 * gamma.1))
@@ -59,9 +62,9 @@ theorem F_ratio_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
     Kummer.M_negative_expansion gamma Lam hLam
   rw [scalar_matching_trace_coefficient gamma Lam hLam hmatch] at hb
   have h := scalar_tail_ratio (fun s => Fminus gamma Lam (-s)) (3 * gamma.1)
-    (Real.rpow (9 * Lam) (-gamma.1)) hb
-  have ht := h.comp tendsto_neg_atBot_atTop
-  apply ht.congr'
+    _ hb
+
+  apply (h.comp tendsto_neg_atBot_atTop).congr'
   filter_upwards [eventually_lt_atBot (0 : ℝ)] with s hs
   simp only [Function.comp_def, neg_neg, F, hs, not_lt.mpr hs.le,
     ↓reduceIte, abs_of_neg hs]

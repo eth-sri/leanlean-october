@@ -7,13 +7,15 @@ import Mathlib.Tactic.Linarith
 
 /-! # Addition of source and continuation phase errors -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
-open Set MeasureTheory
+open MeasureTheory
+
+variable {d : ℕ}
 
 /-- Changing the transported base point splits the phase coordinate additively. -/
-theorem phaseCoordinate_split {d : ℕ} (ξ z0 : PDE.Vec d)
+theorem phaseCoordinate_split  (ξ z0 : PDE.Vec d)
     (x y : EvolutionAmbientState d) :
     phaseCoordinate ξ z0 x = phaseCoordinate ξ z0 y + phaseCoordinate ξ y.2 x := by
   unfold phaseCoordinate PDE.vecDot
@@ -24,7 +26,7 @@ theorem phaseCoordinate_split {d : ℕ} (ξ z0 : PDE.Vec d)
   ring
 
 /-- Source and conditional continuation phase errors add under kernel integration. -/
-theorem continuation_phase_support {d : ℕ} {α : Type*} [MeasurableSpace α]
+theorem continuation_phase_support  {α : Type*} [MeasurableSpace α]
     (sourceState : α → EvolutionAmbientState d) (hsource : Measurable sourceState)
     (ξ z0 : PDE.Vec d) (a c e1 e2 : ℝ)
     (R : Measure α) [IsFiniteMeasure R]
@@ -34,15 +36,14 @@ theorem continuation_phase_support {d : ℕ} {α : Type*} [MeasurableSpace α]
     (E : Measure (EvolutionAmbientState d))
     (hE : ∀ A, MeasurableSet A → E A = ∫⁻ p, κ p A ∂R) :
     ∀ᵐ x ∂E, |phaseCoordinate ξ z0 x - (a + c)| ≤ e1 + e2 := by
-  have hmeas : MeasurableSet {x : EvolutionAmbientState d |
-      ¬ |phaseCoordinate ξ z0 x - (a + c)| ≤ e1 + e2} := by
-    have hq : Continuous (fun x : EvolutionAmbientState d =>
-        |phaseCoordinate ξ z0 x - (a + c)|) := by
-      unfold phaseCoordinate PDE.vecDot
-      fun_prop
-    exact (isClosed_le hq continuous_const).measurableSet.compl
+
   apply ae_iff.mpr
-  rw [hE _ hmeas]
+  rw [hE _ (by
+
+      exact (isClosed_le (show Continuous (fun x  =>
+          |phaseCoordinate ξ z0 x - (a + c)|) by
+          unfold phaseCoordinate PDE.vecDot
+          fun_prop) continuous_const).measurableSet.compl)]
   apply lintegral_eq_zero_of_ae_eq_zero
   filter_upwards [hR, hκ] with p hp hk
   apply ae_iff.mp

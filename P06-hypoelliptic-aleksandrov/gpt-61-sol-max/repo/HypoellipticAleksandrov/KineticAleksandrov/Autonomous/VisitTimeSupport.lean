@@ -4,9 +4,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitTimeCal
 
 /-! # The localized quadratic and its operator vanish off the same short time window -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set
 
 /-- Both localized test terms vanish outside the closed window of length three r squared. -/
 theorem visitTimeQuadratic_zero_off_window (c : Clock) (b : ℝ) (a : ℝ → ℝ → ℝ)
@@ -25,6 +25,6 @@ theorem visitTimeQuadratic_zero_off_window (c : Clock) (b : ℝ) (a : ℝ → �
   · rw [he, zero_mul]
   · rw [visitTimeQuadratic_operator c _
       (visitTimeCutoff_properties b c.r c.positive).1, he, hd]
-    simp only [zero_mul, mul_zero, sub_zero]
+    simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1FourierMoments
 public import Mathlib.Analysis.Fourier.FourierTransformDeriv
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # A single smooth inverse Fourier function in the exit-marginal `L¹` space -/
 
@@ -39,7 +41,7 @@ theorem ballExitL1Inversion_contDiff
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
-    ContDiff ℝ (⊤ : ℕ∞)
+    ContDiff ℝ PDE.smoothOrder
       (exitL1Inversion (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)) := by
   apply ContDiff.const_smul
   apply VectorFourier.contDiff_fourierIntegral

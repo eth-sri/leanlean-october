@@ -18,17 +18,17 @@ theorem bellmanPunctured_sq_pos (q : BellmanPuncturedPlane) :
   refine lt_of_le_of_ne (add_nonneg (sq_nonneg _) (sq_nonneg _)) ?_
   intro h
   apply q.property
-  have hx : q.val.1 = 0 := by nlinarith only [h, sq_nonneg q.val.2]
-  have hv : q.val.2 = 0 := by nlinarith only [h, sq_nonneg q.val.1]
-  exact Prod.ext hx hv
+
+
+  exact Prod.ext (by nlinarith only [h, sq_nonneg q.val.2]) (by nlinarith only [h, sq_nonneg q.val.1])
 
 /-- A punctured compact set has a positive uniform squared-distance lower bound. -/
 theorem bellmanPunctured_compact_lower_bound (K : Set BellmanPuncturedPlane)
     (hK : IsCompact K) : ∃ a : ℝ, 0 < a ∧ ∀ q ∈ K, a ≤ q.val.1 ^ 2 + q.val.2 ^ 2 := by
   by_cases hne : K.Nonempty
-  · have hc : Continuous (fun q : BellmanPuncturedPlane => q.val.1 ^ 2 + q.val.2 ^ 2) := by
-      fun_prop
-    obtain ⟨q, hq, hmin⟩ := hK.exists_isMinOn hne hc.continuousOn
+  ·
+    obtain ⟨q, hq, hmin⟩ := hK.exists_isMinOn hne (show Continuous (fun q : BellmanPuncturedPlane => q.val.1 ^ 2 + q.val.2 ^ 2) by
+        fun_prop).continuousOn
     exact ⟨_, bellmanPunctured_sq_pos q, fun z hz => hmin hz⟩
   · refine ⟨1, by norm_num, ?_⟩
     intro q hq
@@ -45,9 +45,9 @@ instance bellmanFundamentalMeasure_finiteOnCompacts :
     IsFiniteMeasureOnCompacts bellmanFundamentalMeasure where
   lt_top_of_isCompact K hK := by
     obtain ⟨a, ha, hbound⟩ := bellmanPunctured_compact_lower_bound K hK
-    let C : ENNReal := ∫⁻ t : BellmanPositiveTime,
+    let C  := ∫⁻ t : BellmanPositiveTime,
       ENNReal.ofReal (bellmanTimeMajorant a t.val) ∂bellmanPositiveTimeVolume
-    have hC : C ≠ ⊤ := bellmanTimeMajorant_lintegral_ne_top a
+    have hC  := bellmanTimeMajorant_lintegral_ne_top a
     calc
       bellmanFundamentalMeasure K = ∫⁻ q in K, bellmanFundamentalDensity q
           ∂bellmanPuncturedVolume := withDensity_apply _ hK.measurableSet

@@ -10,16 +10,18 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitMeasure
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Actual smoothness and pointwise viscous equation for the exhaustion candidate -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter MeasureTheory
+open HypoellipticAleksandrov.Parabolic Set Filter
 open Evolution
 open scoped Topology MatrixOrder
 
@@ -27,7 +29,7 @@ open scoped Topology MatrixOrder
 pointwise on every strict bounded inner cylinder, relative to the explicit Hörmander input. -/
 theorem classical_innerBallDirichletLimit_on_innerCylinder
     (hH : HormanderHypoellipticityStatement)
-    {n : ℕ} {lam Lam Lb m : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb m : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hn : 1 ≤ n) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B)
@@ -43,7 +45,7 @@ theorem classical_innerBallDirichletLimit_on_innerCylinder
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))
     (β R : ℕ → ℝ) (hβpos : ∀ k, 0 < β k)
     (hβlim : Tendsto β atTop (𝓝 0)) (hRlim : Tendsto R atTop atTop)
-    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (g k))
+    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ PDE.smoothOrder (g k))
     (hgL : ∀ k s t, PDE.vecEuclideanNorm (g k s - g k t) ≤ L * |s - t|)
     (hclose : ∀ k s, s ∈ Icc α τ → PDE.vecEuclideanNorm (g k s - Γ s) ≤ β k / 2)
     (u : ℕ → TimeVelocity (n + n) → ℝ)
@@ -52,7 +54,7 @@ theorem classical_innerBallDirichletLimit_on_innerCylinder
       (straightenedCoefficient B (g k) ε) (straightenedDrift b (g k))
       (fun _ _ => 0) (fun _ _ => 0)
       (fun x => F (g k τ + spatialY x, spatialZ x)) (fun _ => 0) (u k)) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (innerBallDirichletLimit r0 Γ g u ∘ evolutionHomeomorph n)
+    ContDiffOn ℝ PDE.smoothOrder (innerBallDirichletLimit r0 Γ g u ∘ evolutionHomeomorph n)
       (evolutionHomeomorph n ⁻¹' boundedInnerOpenCylinder (r0 - δ0) Γ α τ S0) ∧
     ∀ p ∈ boundedInnerOpenCylinder (r0 - δ0) Γ α τ S0,
       viscousTransportedOperator B b ε (innerBallDirichletLimit r0 Γ g u) p = 0 := by
@@ -60,7 +62,7 @@ theorem classical_innerBallDirichletLimit_on_innerCylinder
   let vlim (p : KineticPoint n) :=
     limUnder atTop (fun k => straightenedPullback (g k) (u k) p)
   have hU : IsOpen U := isOpen_boundedInnerOpenCylinder _ hΓ.1 _ _ _
-  have hV : IsOpen (evolutionHomeomorph n ⁻¹' U) :=
+  have hV  :=
     hU.preimage (evolutionHomeomorph n).continuous
   have hsm := contDiffOn_innerBall_dirichlet_limit (S0 := S0)
     hH hn hlam hlamLam hm hmLb hB hBs hBsym hbs hb hbco haα hατ hδ0 hδr hd hdr

@@ -3,39 +3,43 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWeakAdjoint
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BracketSquares
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSliceWeak
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Integration against the full kinetic adjoint for smooth interior functions -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open Evolution
 
 variable {d : ℕ}
 
+variable {U : Set (EvolutionVec d)}
+
 /-- Interior smoothness gives smooth directional derivatives on an open set. -/
-theorem contDiffOn_duhamel_direction {U : Set (EvolutionVec d)} (hU : IsOpen U)
-    {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+theorem contDiffOn_duhamel_direction  (hU : IsOpen U)
+    {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ PDE.smoothOrder u U)
     (v : EvolutionVec d) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ u x v) U :=
+    ContDiffOn ℝ PDE.smoothOrder (fun x => fderiv ℝ u x v) U :=
   (hu.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
 
 /-- Full kinetic integration by parts, with all jets discharged by interior smoothness. -/
-theorem integral_transportedAdjoint_contDiffOn {U : Set (EvolutionVec d)} (hU : IsOpen U)
+theorem integral_transportedAdjoint_contDiffOn  (hU : IsOpen U)
     {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B)
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
-    {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
-    (ψ : EvolutionVec d → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
+    {b : PDE.VectorField d} (hb : IsSmoothDrift b)
+    {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ PDE.smoothOrder u U)
+    (ψ : EvolutionVec d → ℝ) (hψ : ContDiff ℝ PDE.smoothOrder ψ)
     (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     (∫ x in U, u x * transportedAdjoint B b ψ x) =
       ∫ x in U, transportedOperator B b u x * ψ x := by
   let D (v : EvolutionVec d) (f : EvolutionVec d → ℝ) (x : EvolutionVec d) :=
     fderiv ℝ f x v
-  have hd : ∀ v, ContDiffOn ℝ (⊤ : ℕ∞) (D v u) U :=
+  have hd  :=
     fun v => contDiffOn_duhamel_direction hU hu v
-  have hdd : ∀ v w, ContDiffOn ℝ (⊤ : ℕ∞) (D w (D v u)) U :=
+  have hdd  :=
     fun v w => contDiffOn_duhamel_direction hU (hd v) w
   have hline : ∀ v x, x ∈ U → HasLineDerivAt ℝ u (D v u x) x v := by
     intro v x hx

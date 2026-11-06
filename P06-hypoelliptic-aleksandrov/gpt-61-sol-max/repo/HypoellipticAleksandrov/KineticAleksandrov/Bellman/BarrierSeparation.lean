@@ -5,8 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.BarrierSeparati
 
 /-! # The source probability separation alternative for C² homogeneous images -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -20,22 +20,21 @@ theorem exists_annihilating_bellman_probability (lam Lam alpha : ℝ)
       IsProbabilityMeasure pi ∧
       ∀ phi : (ℝ × ℝ) → ℝ, IsBellmanHomogeneous alpha phi →
         (∫ w, bellmanOperator w.2.val phi w.1.val ∂pi) = 0 := by
-  have hd : Disjoint bellmanPositiveCone
-      (bellmanImageSpace alpha lam Lam : Set C(BellmanSphere × BellmanCoefficient lam Lam, ℝ)) := by
-    refine disjoint_left.mpr ?_
-    intro f hf hS
-    obtain ⟨phi, hphi, he⟩ := (mem_bellmanImageSpace_iff alpha lam Lam f).mp hS
-    apply hno
-    refine ⟨phi, hphi, ?_⟩
-    intro z b
-    have h := hf (z, b)
-    rw [← he] at h
-    exact h
+
   obtain ⟨pi, hpi, ht⟩ := exists_bellman_subspace_probability
-    (bellmanImageSpace alpha lam Lam) hd
+    _ (by
+        refine disjoint_left.mpr ?_
+        intro f hf hS
+        obtain ⟨phi, hphi, he⟩ := (mem_bellmanImageSpace_iff alpha lam Lam f).mp hS
+        apply hno
+        refine ⟨phi, hphi, ?_⟩
+        intro z b
+        have h := hf (z, b)
+        rw [← he] at h
+        exact h)
   refine ⟨pi, hpi, ?_⟩
   intro phi hphi
-  exact ht (bellmanImage lam Lam phi hphi)
+  exact ht _
     ((mem_bellmanImageSpace_iff alpha lam Lam _).mpr ⟨phi, hphi, rfl⟩)
 
 end HypoellipticAleksandrov.KineticAleksandrov

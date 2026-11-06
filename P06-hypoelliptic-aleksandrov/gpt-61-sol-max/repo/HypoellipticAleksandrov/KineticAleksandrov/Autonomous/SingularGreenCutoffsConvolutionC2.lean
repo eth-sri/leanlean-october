@@ -8,21 +8,25 @@ import Mathlib.MeasureTheory.Constructions.BorelSpace.ContinuousLinearMap
 
 /-! # Actual C² regularity of position smoothing, including zero velocity -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory Filter
 open scoped Topology
 
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1) (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ) (hs : HasCompactSupport κ)
+
+include h ha ha1 hκ hs
 /-- Position smoothing is C² on the entire physical plane, without a regularity premise. -/
-theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ) (hs : HasCompactSupport κ) :
+theorem positionBarrierConvolution_jet_spec  :
     ∀ q0 : ℝ × ℝ,
       ContDiffAt ℝ 2 (positionBarrierConvolution κ phi) q0 ∧
       HasFDerivAt (positionBarrierConvolution κ phi) (∫ Y, barrierConvolutionJet κ phi q0 Y) q0 ∧
       HasFDerivAt (fun q => ∫ Y, barrierConvolutionJet κ phi q Y)
         (∫ Y, barrierConvolutionSecondJet κ phi q0 Y) q0 := by
+  let sharedTerm_b3f9b0e558 := (((ℝ × ℝ) →L[ℝ] ((ℝ × ℝ) →L[ℝ] ℝ)))
+  let sharedTerm_34813a7254 := ((volume.ae_ne (0 : ℝ)))
+  let sharedTerm_13eb4a210e := ((by norm_num : (0 : ℝ) < 1))
   intro q0
   obtain ⟨R, hR, hwindow⟩ := barrier_convolution_support_window κ hs q0
   let K := Icc (-R) R
@@ -43,7 +47,7 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
     (isCompact_Icc (a := q0.2 - 1) (b := q0.2 + 1))).exists_bound_of_continuousOn
       hψ.continuousOn
   let B := max B0 0
-  have hB : 0 ≤ B := le_max_right _ _
+
   have hbphi (q : ℝ × ℝ) (hq : q ∈ U) (Y : ℝ) (hY : Y ∈ K) :
       |bellmanOriginExtension phi (Y, q.2)| ≤ B := by
     have hqv := (barrier_parameter_ball_bounds hq).2
@@ -56,7 +60,7 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
   let p1 := (alpha - 1) / 3
   let p2 := (alpha - 2) / 3
   let b0 := fun _ : ℝ => K0 * B
-  let b1 := fun Y : ℝ => K1 * B + K0 * Cv * |Y| ^ p1
+  let b1 := fun Y  => K1 * B + K0 * Cv * |Y| ^ p1
   let b2 := fun Y : ℝ => K2 * B + 2 * K1 * Cv * |Y| ^ p1 + K0 * Cvv * |Y| ^ p2
   have hi1 : Integrable (fun Y : ℝ => |Y| ^ p1) mu :=
     (bellman_abs_rpow_locallyIntegrable p1 (by dsimp only [p1]; linarith))
@@ -69,8 +73,8 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
   have hb2 : Integrable b2 mu := ((integrable_const _).add
     (hi1.const_mul (2 * K1 * Cv))).add (hi2.const_mul (K0 * Cvv))
   let : TopologicalSpace.PseudoMetrizableSpace
-      ((ℝ × ℝ) →L[ℝ] ((ℝ × ℝ) →L[ℝ] ℝ)) := by
-    let m : PseudoMetricSpace ((ℝ × ℝ) →L[ℝ] ((ℝ × ℝ) →L[ℝ] ℝ)) := inferInstance
+      sharedTerm_b3f9b0e558 := by
+    let m : PseudoMetricSpace sharedTerm_b3f9b0e558 := inferInstance
     exact ⟨⟨m.toUniformSpace, rfl, inferInstance⟩⟩
   have hmeas0 (q : ℝ × ℝ) : Measurable (barrierConvolutionIntegrand κ phi q) :=
     (hκ.continuous.measurable.comp (measurable_const.sub measurable_id)).mul
@@ -79,7 +83,7 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
   have hmeas2 q := (barrierConvolutionJets_measurable h ha κ hκ q).2
   have hae : ∀ᵐ Y ∂mu, Y ∈ K ∧ Y ≠ 0 := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
-      ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with Y hY hn
+      ae_restrict_of_ae sharedTerm_34813a7254] with Y hY hn
     exact ⟨hY, hn⟩
   have hs2 : ContDiffOn ℝ 2 (fun q => ∫ Y, barrierConvolutionIntegrand κ phi q Y ∂mu) U ∧
       (∀ q ∈ U, HasFDerivAt (fun p => ∫ Y, barrierConvolutionIntegrand κ phi p Y ∂mu)
@@ -129,24 +133,24 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
           | exact hvb
           | exact hbκ0 _
         _ = _ := by ring
-    · filter_upwards [ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with Y hY
+    · filter_upwards [ae_restrict_of_ae sharedTerm_34813a7254] with Y hY
       intro q _
       exact barrierConvolutionIntegrand_hasFDerivAt h κ hκ q Y hY
-    · filter_upwards [ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with Y hY
+    · filter_upwards [ae_restrict_of_ae sharedTerm_34813a7254] with Y hY
       intro q _
       exact barrierConvolutionJet_hasFDerivAt h κ hκ q Y hY
-    · filter_upwards [ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with Y hY
+    · filter_upwards [ae_restrict_of_ae sharedTerm_34813a7254] with Y hY
       exact (barrierConvolutionSecondJet_continuous h ha κ hκ Y hY).continuousOn
   have he : positionBarrierConvolution κ phi =ᶠ[𝓝 q0]
       fun q => ∫ Y, barrierConvolutionIntegrand κ phi q Y ∂mu := by
-    filter_upwards [Metric.ball_mem_nhds q0 (by norm_num : (0 : ℝ) < 1)] with q hq
+    filter_upwards [Metric.ball_mem_nhds q0 sharedTerm_13eb4a210e] with q hq
     apply (setIntegral_eq_integral_of_forall_compl_eq_zero (s := K) ?_).symm
     intro Y hY
     rw [barrierConvolutionIntegrand, (hwindow q hq Y hY).1, zero_mul]
   have hq0 : q0 ∈ U := Metric.mem_ball_self (by norm_num)
   have he1 : (fun q => ∫ Y, barrierConvolutionJet κ phi q Y) =ᶠ[𝓝 q0]
       fun q => ∫ Y, barrierConvolutionJet κ phi q Y ∂mu := by
-    filter_upwards [Metric.ball_mem_nhds q0 (by norm_num : (0 : ℝ) < 1)] with q hq
+    filter_upwards [Metric.ball_mem_nhds q0 sharedTerm_13eb4a210e] with q hq
     apply (setIntegral_eq_integral_of_forall_compl_eq_zero (s := K) ?_).symm
     intro Y hY
     obtain ⟨h0, h1, _⟩ := hwindow q hq Y hY
@@ -171,9 +175,7 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
     exact (hs2.2.2 q0 hq0).congr_of_eventuallyEq he1
 
 /-- Position smoothing is C² on the entire physical plane, including zero velocity. -/
-theorem positionBarrierConvolution_contDiff {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ) (hs : HasCompactSupport κ) :
+theorem positionBarrierConvolution_contDiff  :
     ContDiff ℝ 2 (positionBarrierConvolution κ phi) := by
   rw [contDiff_iff_contDiffAt]
   exact fun q => (positionBarrierConvolution_jet_spec h ha ha1 κ hκ hs q).1

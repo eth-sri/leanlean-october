@@ -16,26 +16,28 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped Topology
 
+variable {d : ℕ}
+
+variable {K : HypoellipticAleksandrov.Parabolic.Region d} (V : C(K, ℝ))
+
 /-- Extend a continuous closed-carrier function by zero to name its ambient values. -/
-def continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity d)}
-    (V : C(K, ℝ)) (z : TimeVelocity d) : ℝ := by
+def continuousMapZeroExtension   (z : TimeVelocity d) : ℝ := by
   classical
   exact if hz : z ∈ K then V ⟨z, hz⟩ else 0
 
 /-- The ambient extension retains the prescribed continuous closed-carrier restriction. -/
-theorem continuousOn_continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity d)}
-    (V : C(K, ℝ)) : ContinuousOn (continuousMapZeroExtension V) K := by
+theorem continuousOn_continuousMapZeroExtension   : ContinuousOn (continuousMapZeroExtension V) K := by
   rw [continuousOn_iff_continuous_domRestrict]
   convert V.continuous using 1
   funext z
   simp only [Set.domRestrict_apply, continuousMapZeroExtension, dite_eq_left z.property]
 
 /-- Uniform closed-carrier convergence implies strong restricted L2 convergence. -/
-theorem tendsto_local_toLp_of_continuousMap_tendsto {d : ℕ}
-    (K S : Set (TimeVelocity d)) [CompactSpace K]
+theorem tendsto_local_toLp_of_continuousMap_tendsto
+    (K S : HypoellipticAleksandrov.Parabolic.Region d) [CompactSpace K]
     (hS : IsOpen S) (hSc : IsCompact (closure S)) (hSK : closure S ⊆ K)
     (U : ℕ → C(K, ℝ)) (V : C(K, ℝ)) (hlim : Tendsto U atTop (𝓝 V))
-    (u : ℕ → TimeVelocity d → ℝ) (hu : ∀ n, ParabolicMemLpOn S 2 (u n))
+    (u : ℕ → HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : ∀ n, ParabolicMemLpOn S 2 (u n))
     (hueq : ∀ (n : ℕ) (z : K), U n z = u n z) :
     ∃ hv : ParabolicMemLpOn S 2 (continuousMapZeroExtension V),
       Tendsto (fun n => (hu n).toLp (u n)) atTop

@@ -9,11 +9,11 @@ This measure-theoretic lemma transfers all occupation exponents at once from a
 whole-space density to the killed interval occupation measure.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory Filter
-open scoped ENNReal
+open Set MeasureTheory
+
 
 /-- A finite measure dominated by a real density has a smaller real density. -/
 theorem exists_real_density_of_le_withDensity {X : Type*} [MeasurableSpace X]
@@ -23,7 +23,7 @@ theorem exists_real_density_of_le_withDensity {X : Type*} [MeasurableSpace X]
     ∃ g : X → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧ Integrable g m ∧
       (∀ᵐ x ∂m, g x ≤ f x) ∧
       (∀ φ : X → ℝ, (∫ x, φ x * g x ∂m) = ∫ x, φ x ∂ν) := by
-  have hac : ν ≪ m := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
+  have hac  := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
   let g := fun x => (ν.rnDeriv m x).toReal
   have hrle : ∀ᵐ x ∂m, ν.rnDeriv m x ≤ ENNReal.ofReal (f x) := by
     apply ae_le_of_forall_setLIntegral_le_of_sigmaFinite₀

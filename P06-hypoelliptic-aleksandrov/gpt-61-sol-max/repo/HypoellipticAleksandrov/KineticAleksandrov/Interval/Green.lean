@@ -9,10 +9,10 @@ Killed slab densities are glued and logarithmically averaged over all positive t
 Constants depend only on the structural parameters, interval length and exponent.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov.KineticAleksandrov.Green
@@ -26,12 +26,12 @@ theorem interval_green_density
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length)
     (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
     ∃ C : ℝ, 0 < C ∧
-    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
+    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.VectorField 1),
     SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
     ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
       (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
       (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-    RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
+    RealizesTerminalEvolution _ stationary hJ
       (zIndependentCoefficient B) b S K →
     c - a = length → ∀ (σ : ℝ),
     ∀ (μ : Measure (EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ))

@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.SpatialBlock
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Straightened viscous coefficients for the truncation problem
@@ -30,13 +32,13 @@ open scoped MatrixOrder ContDiff
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The straightened block coefficient `diag(B(σ, g(σ) + Y, z), ε I)` on `(Y, z)`. -/
-noncomputable def straightenedCoefficient {n : ℕ} (B : FullKineticCoefficient n)
+def straightenedCoefficient {n : ℕ} (B : FullKineticCoefficient n)
     (g : ℝ → PDE.Vec n) (ε : ℝ) : CoefficientField (n + n) :=
   fun s x => viscousBlockMatrix (B s (g s + spatialY x) (spatialZ x)) ε
 
 /-- The straightened drift `(-g'(σ), b(g(σ) + Y))` on `(Y, z)`. -/
-noncomputable def straightenedDrift {n : ℕ} (b : PDE.Vec n → PDE.Vec n)
-    (g : ℝ → PDE.Vec n) : ℝ → PDE.Vec (n + n) → PDE.Vec (n + n) :=
+def straightenedDrift {n : ℕ} (b : PDE.VectorField n)
+    (g : ℝ → PDE.Vec n)  :=
   fun s x => spatialPack (-deriv g s) (b (g s + spatialY x))
 
 section Evaluation
@@ -53,22 +55,22 @@ end Evaluation
 
 section Premises
 
-variable {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+variable {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
 
 /-- The derivative of a smooth curve is smooth. -/
-theorem contDiff_deriv_of_smooth {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
-    ContDiff ℝ (⊤ : ℕ∞) (deriv g) :=
+theorem contDiff_deriv_of_smooth {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ PDE.smoothOrder g) :
+    ContDiff ℝ PDE.smoothOrder (deriv g) :=
   (contDiff_infty_iff_deriv.mp hg).2
 
 /-- The straightened coefficient is a smooth coefficient field. -/
 theorem isSmoothCoefficient_straightenedCoefficient
     (hB_smooth : IsSmoothFullKineticCoefficient B)
-    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (ε : ℝ) :
+    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ PDE.smoothOrder g) (ε : ℝ) :
     IsSmoothCoefficient (straightenedCoefficient B g ε) := by
-  change ContDiff ℝ (⊤ : ℕ∞)
+  change ContDiff ℝ PDE.smoothOrder
     (fun z i j => coefficientAt (straightenedCoefficient B g ε) z i j)
   refine contDiff_pi.2 fun k => contDiff_pi.2 fun l => ?_
-  have hmap : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec (n + n) =>
+  have hmap : ContDiff ℝ PDE.smoothOrder (fun q : ℝ × PDE.Vec (n + n) =>
       (q.1, (g q.1 + spatialY q.2, spatialZ q.2))) :=
     contDiff_fst.prodMk
       (((hg.comp contDiff_fst).add (contDiff_spatialY.comp contDiff_snd)).prodMk
@@ -92,10 +94,13 @@ theorem isSymm_straightenedCoefficient
     (straightenedCoefficient B g ε s x).IsSymm :=
   viscousBlockMatrix_isSymm (hB_symm s _ _) ε
 
+section
+variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n))
+
+include hB_ell
 /-- Lower Loewner bound `min(lam, ε) ≤ diag(B, ε I)`. -/
 theorem straightenedCoefficient_lower
-    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-    (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n)) :
+     :
     min lam ε • (1 : PDE.Mat (n + n)) ≤ straightenedCoefficient B g ε s x := by
   rw [← viscousBlockMatrix_smul_one (min lam ε)]
   exact viscousBlockMatrix_mono
@@ -103,17 +108,18 @@ theorem straightenedCoefficient_lower
 
 /-- Upper Loewner bound `diag(B, ε I) ≤ max(Lam, ε)`. -/
 theorem straightenedCoefficient_upper
-    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-    (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n)) :
+     :
     straightenedCoefficient B g ε s x ≤ max Lam ε • (1 : PDE.Mat (n + n)) := by
   rw [← viscousBlockMatrix_smul_one (max Lam ε)]
   exact viscousBlockMatrix_mono
     ((hB_ell s _ _).2.trans (smul_one_le_smul_one (le_max_left Lam ε))) (le_max_right Lam ε)
+end
+
 
 /-- The straightened drift is smooth; no growth bound on `b` is needed. -/
 theorem contDiff_straightenedDrift (hb_smooth : IsSmoothDrift b)
-    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
-    ContDiff ℝ (⊤ : ℕ∞)
+    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ PDE.smoothOrder g) :
+    ContDiff ℝ PDE.smoothOrder
       (fun q : TimeVelocity (n + n) => straightenedDrift b g q.1 q.2) := by
   refine contDiff_spatialPack ((contDiff_deriv_of_smooth hg).comp contDiff_fst).neg ?_
   exact hb_smooth.comp ((hg.comp contDiff_fst).add (contDiff_spatialY.comp contDiff_snd))
@@ -127,12 +133,12 @@ theorem straightenedCoefficient_bounds_smooth
     (hB_symm : IsSymmetricFullKineticCoefficient B)
     (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
     (hb_smooth : IsSmoothDrift b)
-    (g : ℝ → PDE.Vec n) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (ε : ℝ) :
+    (g : ℝ → PDE.Vec n) (hg : ContDiff ℝ PDE.smoothOrder g) (ε : ℝ) :
     IsSmoothCoefficient (straightenedCoefficient B g ε) ∧
     (∀ s x, (straightenedCoefficient B g ε s x).IsSymm) ∧
     (∀ s x, min lam ε • (1 : PDE.Mat (n + n)) ≤ straightenedCoefficient B g ε s x) ∧
     (∀ s x, straightenedCoefficient B g ε s x ≤ max Lam ε • (1 : PDE.Mat (n + n))) ∧
-    ContDiff ℝ (⊤ : ℕ∞)
+    ContDiff ℝ PDE.smoothOrder
       (fun q : TimeVelocity (n + n) => straightenedDrift b g q.1 q.2) :=
   ⟨isSmoothCoefficient_straightenedCoefficient hB_smooth hg ε,
     isSymm_straightenedCoefficient hB_symm g ε,

@@ -7,8 +7,8 @@ import Mathlib.Tactic
 
 /-! # Vanishing second moment divided by radius from finite first moment -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set Filter
 open scoped Topology
@@ -18,7 +18,7 @@ theorem bellmanAngularSecondMoment_div_tendsto (f : ℝ → ℝ)
     (_hf : LocallyIntegrable f volume)
     (hi : IntegrableOn (fun z => z * f z) (Ioi 0) volume) :
     Tendsto (fun y => bellmanAngularSecondMoment f y / y) atTop (𝓝 0) := by
-  let G := fun y : ℝ => (Iic y).indicator (fun z => (z / y) * (z * f z))
+  let G := fun y  => (Iic y).indicator (fun z => (z / y) * (z * f z))
   have hmeas : ∀ᶠ y : ℝ in atTop,
       AEStronglyMeasurable (G y) (volume.restrict (Ioi 0)) := by
     apply Eventually.of_forall
@@ -37,13 +37,13 @@ theorem bellmanAngularSecondMoment_div_tendsto (f : ℝ → ℝ)
     · rw [show G y z = 0 from indicator_of_notMem (show z ∉ Iic y from hzy) _]
       simpa only [norm_zero] using norm_nonneg (z * f z)
   have hlim : ∀ᵐ z ∂volume.restrict (Ioi 0),
-      Tendsto (fun y => G y z) atTop (𝓝 (0 : ℝ)) := by
+      Tendsto (fun y => G y z) atTop (𝓝 (0 )) := by
     apply ae_of_all
     intro z
     have he : (fun y => G y z) =ᶠ[atTop] (fun y => (z / y) * (z * f z)) := by
       filter_upwards [eventually_ge_atTop z] with y hy
       exact indicator_of_mem (show z ∈ Iic y from hy) _
-    have hr : Tendsto (fun y : ℝ => z / y) atTop (𝓝 0) :=
+    have hr : Tendsto (fun y  => z / y) atTop (𝓝 0) :=
       tendsto_const_nhds.div_atTop tendsto_id
     have ht := hr.mul_const (z * f z)
     simpa only [zero_mul] using ht.congr' he.symm
@@ -54,7 +54,7 @@ theorem bellmanAngularSecondMoment_div_tendsto (f : ℝ → ℝ)
   filter_upwards [eventually_ge_atTop (1 : ℝ)] with y hy
   dsimp [G]
   rw [integral_indicator measurableSet_Iic, Measure.restrict_restrict measurableSet_Iic,
-    show Iic y ∩ Ioi (0 : ℝ) = Ioc 0 y from
+    show Iic y ∩ Ioi (0 ) = Ioc 0 y from
       Set.ext (fun z => by simp only [mem_inter_iff, mem_Iic, mem_Ioi, mem_Ioc]; tauto),
     bellmanAngularSecondMoment, intervalIntegral.integral_of_le (by linarith : 0 ≤ y)]
   rw [← integral_div]

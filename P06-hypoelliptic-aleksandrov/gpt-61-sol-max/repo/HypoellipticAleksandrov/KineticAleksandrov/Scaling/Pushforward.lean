@@ -23,30 +23,26 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Scaling
 
 open MeasureTheory ProbabilityTheory Set
 open HypoellipticAleksandrov
-open scoped ENNReal
+
+
+variable {α β : Type*}
 
 /-- A measurable equivalence restricts to measurable equivalences of subtypes. -/
-def measurableEquivSubtype {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+def measurableEquivSubtype  [MeasurableSpace α] [MeasurableSpace β]
     (e : α ≃ᵐ β) {p : α → Prop} {q : β → Prop} (h : ∀ x, p x ↔ q (e x)) :
     {x // p x} ≃ᵐ {y // q y} where
   toEquiv := e.toEquiv.subtypeEquiv h
   measurable_toFun := (e.measurable.comp measurable_subtype_coe).subtype_mk
   measurable_invFun := (e.symm.measurable.comp measurable_subtype_coe).subtype_mk
 
-@[simp] theorem coe_measurableEquivSubtype {α β : Type*} [MeasurableSpace α]
-    [MeasurableSpace β] (e : α ≃ᵐ β) {p : α → Prop} {q : β → Prop}
-    (h : ∀ x, p x ↔ q (e x)) (x : {x // p x}) :
-    ((measurableEquivSubtype e h x : {y // q y}) : β) = e x := rfl
 
-@[simp] theorem coe_measurableEquivSubtype_symm {α β : Type*} [MeasurableSpace α]
-    [MeasurableSpace β] (e : α ≃ᵐ β) {p : α → Prop} {q : β → Prop}
-    (h : ∀ x, p x ↔ q (e x)) (y : {y // q y}) :
-    (((measurableEquivSubtype e h).symm y : {x // p x}) : α) = e.symm y := rfl
+
+
 
 /-- Every master kernel is a finite kernel, by its sub-Markov bound. -/
-instance isFiniteKernel_master {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+instance isFiniteKernel_master {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) : IsFiniteKernel K.master :=
-  ⟨1, ENNReal.one_lt_top, fun q => by simpa using K.mass_le_one q⟩
+  ⟨1, ENNReal.one_lt_top, fun q => by exact K.mass_le_one q⟩
 
 namespace KineticAffineScaling
 
@@ -66,37 +62,43 @@ theorem continuous_ambientSymm :
   unfold positionInv transportInv
   fun_prop
 
-variable {Φ} {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+variable {Φ} {Ω Ω' : PDE.VelocityRegion d} {γ γ' : ℝ → PDE.Vec d}
+
+variable (h : Φ.MapsDomain Ω γ Ω' γ')
 
 /-- The change of variables on queries, rescaled to original. -/
-def queryMap (h : Φ.MapsDomain Ω γ Ω' γ') (q : EvolutionQuery Ω' γ') :
+def queryMap  (q : EvolutionQuery Ω' γ') :
     EvolutionQuery Ω γ :=
   ⟨Φ.rawQuery q.1, Φ.time_le_iff.2 q.2.1, (h.stateSet_mem_iff q.1.1 q.1.2.2).1 q.2.2⟩
 
-theorem measurable_queryMap (h : Φ.MapsDomain Ω γ Ω' γ') : Measurable (queryMap h) :=
+theorem measurable_queryMap  : Measurable (queryMap h) :=
   Measurable.subtype_mk (Φ.continuous_rawQuery.measurable.comp measurable_subtype_coe)
 
-theorem measurable_outEquiv (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d) :
+theorem measurable_outEquiv (Ω' : PDE.VelocityRegion d) (γ' : ℝ → PDE.Vec d) :
     Measurable (fun p : EvolutionQuery Ω' γ' × EvolutionAmbientState d =>
       (Φ.ambientEquiv p.1.1.2.1).symm p.2) :=
   Φ.continuous_ambientSymm.measurable.comp
     ((measurable_fst.comp (measurable_snd.comp (measurable_subtype_coe.comp
       measurable_fst))).prodMk measurable_snd)
 
+variable (h : Φ.MapsDomain Ω γ Ω' γ')
+
+variable (K : MovingFiberKernel Ω γ)
+
 /-- The pushed-forward master kernel. -/
-def pushMaster (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
+def pushMaster   :
     Kernel (EvolutionQuery Ω' γ') (EvolutionAmbientState d) :=
   depMap (K.master.comap (queryMap h) (measurable_queryMap h))
     (fun q => (Φ.ambientEquiv q.1.2.1).symm) (measurable_outEquiv Ω' γ')
 
-theorem pushMaster_apply (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
+theorem pushMaster_apply
     (q : EvolutionQuery Ω' γ') :
     pushMaster h K q = (K.master (queryMap h q)).map (Φ.ambientEquiv q.1.2.1).symm := by
   rw [pushMaster, depMap_apply, Kernel.comap_apply]
 
 /-- The pushed-forward moving-fiber kernel
 `K̂.master q' = (K.master (Φ q')).map (Φ_{τ'})⁻¹`. -/
-def pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
+def pushKernel   :
     MovingFiberKernel Ω' γ' where
   master := pushMaster h K
   terminal_support := by
@@ -114,32 +116,27 @@ def pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
       MeasurableSet.univ, preimage_univ]
     exact K.mass_le_one (queryMap h q)
 
-@[simp] theorem pushKernel_master (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
-    (pushKernel h K).master = pushMaster h K := rfl
+
 
 /-- **Master pushforward**: `K̂.master q' = (K.master (Φ q')).map (Φ_{τ'})⁻¹`. -/
-theorem pushKernel_master_apply (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
+theorem pushKernel_master_apply
     (q : EvolutionQuery Ω' γ') :
     (pushKernel h K).master q =
       (K.master (queryMap h q)).map (Φ.ambientEquiv q.1.2.1).symm :=
   pushMaster_apply h K q
 
+variable (τ : ℝ)
+
 /-- The change of variables on moving fibre states, hat to original. -/
-def stateEquiv (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) :
+def stateEquiv   :
     EvolutionState Ω' γ' τ ≃ᵐ EvolutionState Ω γ (Φ.time τ) :=
-  measurableEquivSubtype (Φ.ambientEquiv τ) (h.stateSet_mem_iff τ)
+  measurableEquivSubtype _ (h.stateSet_mem_iff τ)
 
-@[simp] theorem coe_stateEquiv (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
-    (p : EvolutionState Ω' γ' τ) :
-    ((stateEquiv h τ p : EvolutionState Ω γ (Φ.time τ)) : EvolutionAmbientState d) =
-      Φ.ambientEquiv τ p.1 := rfl
 
-@[simp] theorem coe_stateEquiv_symm (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
-    (p : EvolutionState Ω γ (Φ.time τ)) :
-    (((stateEquiv h τ).symm p : EvolutionState Ω' γ' τ) : EvolutionAmbientState d) =
-      (Φ.ambientEquiv τ).symm p.1 := rfl
 
-theorem queryMap_queryOfState (h : Φ.MapsDomain Ω γ Ω' γ') {τ τ' : ℝ} (hττ' : τ ≤ τ')
+
+
+theorem queryMap_queryOfState  {τ τ' : ℝ} (hττ' : τ ≤ τ')
     (p : EvolutionState Ω' γ' τ) :
     queryMap h (evolutionQueryOfState Ω' γ' τ τ' hττ' p) =
       evolutionQueryOfState Ω γ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ')
@@ -147,7 +144,7 @@ theorem queryMap_queryOfState (h : Φ.MapsDomain Ω γ Ω' γ') {τ τ' : ℝ} (
 
 /-- **Fibre pushforward**: the fixed-time fibre kernel of `K̂` is the conjugate of that of
 `K` by the state equivalences. -/
-theorem fiberKernel_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
+theorem fiberKernel_pushKernel  (K : MovingFiberKernel Ω γ)
     (hΩ : MeasurableSet Ω) (hΩ' : MeasurableSet Ω') (τ τ' : ℝ) (hττ' : τ ≤ τ')
     (p : EvolutionState Ω' γ' τ) :
     (pushKernel h K).fiberKernel hΩ' τ τ' hττ' p =

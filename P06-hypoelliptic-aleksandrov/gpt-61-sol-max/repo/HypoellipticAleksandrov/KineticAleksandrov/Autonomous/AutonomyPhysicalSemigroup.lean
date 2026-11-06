@@ -8,14 +8,14 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AutonomyActi
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Set MeasureTheory
+
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- The coordinate exchange is an actual linear equivalence of bounded Borel carriers. -/
 def physicalBorelEquiv : BoundedBorel (EvolutionAmbientState 1) ≃ₗ[ℝ]
     BoundedBorel (EvolutionState autonomousWholeDomain (fun _ => 0) 0) where
   toFun F := terminalStateDatum (physicalTerminalDatum F)
-  invFun G := G.pullback (fun x => fullspaceState 0 x.swap)
+  invFun G := G.pullback _
     ((measurable_fullspaceState 0).comp measurable_swap)
   left_inv F := by apply BoundedBorel.ext; intro x; rfl
   right_inv G := by apply BoundedBorel.ext; intro x; rfl
@@ -38,6 +38,6 @@ theorem fullSpacePhysicalSemigroup_eq_action {lam Lam : ℝ} (A : SmoothAutonomo
   change E.1 0 t t.coe_nonneg (terminalStateDatum (physicalTerminalDatum F)) p = _
   exact (hE.2.1 0 t t.coe_nonneg p (terminalStateDatum (physicalTerminalDatum F))).trans
     (integral_master_eq_fiber E.2 autonomousWholeDomain_measurable 0 t t.coe_nonneg p
-      (physicalTerminalDatum F) (physicalTerminalDatum F).measurable).symm
+      _ (physicalTerminalDatum F).measurable).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

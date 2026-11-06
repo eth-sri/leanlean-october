@@ -62,53 +62,53 @@ theorem ext {α : Type*} [MeasurableSpace α]
   funext x
   exact h x
 
+variable {α : Type*}
+
 /-- The underlying function of a bounded-Borel function is measurable. -/
-theorem measurable {α : Type*} [MeasurableSpace α]
+theorem measurable  [MeasurableSpace α]
     (f : BoundedBorel α) : Measurable f := f.property.1
 
 /-- A bounded-Borel function has a finite nonnegative uniform absolute bound. -/
-theorem exists_bound {α : Type*} [MeasurableSpace α]
-    (f : BoundedBorel α) : ∃ C : ℝ, 0 ≤ C ∧ ∀ x, abs (f x) ≤ C :=
+theorem exists_bound  [MeasurableSpace α]
+    (f : BoundedBorel α) : type_of% (f.property.2) :=
   f.property.2
 
 /-- The bounded-Borel constant function with value `c`. -/
-def const {α : Type*} [MeasurableSpace α] (c : ℝ) : BoundedBorel α :=
+def const  [MeasurableSpace α] (c : ℝ) : BoundedBorel α :=
   ⟨fun _ => c, measurable_const, ⟨abs c, abs_nonneg _, fun _ => le_rfl⟩⟩
 
 /-- The constant-one bounded-Borel function. -/
 instance {α : Type*} [MeasurableSpace α] : One (BoundedBorel α) :=
   ⟨const 1⟩
 
+variable {α : Type*}
+
 @[simp]
-theorem zero_apply {α : Type*} [MeasurableSpace α] (x : α) :
+theorem zero_apply  [MeasurableSpace α] (x : α) :
     (0 : BoundedBorel α) x = 0 := rfl
 
 @[simp]
-theorem one_apply {α : Type*} [MeasurableSpace α] (x : α) :
+theorem one_apply  [MeasurableSpace α] (x : α) :
     (1 : BoundedBorel α) x = 1 := rfl
 
-@[simp]
-theorem const_apply {α : Type*} [MeasurableSpace α] (c : ℝ) (x : α) :
-    const c x = c := rfl
+
 
 @[simp]
-theorem add_apply {α : Type*} [MeasurableSpace α]
+theorem add_apply  [MeasurableSpace α]
     (f g : BoundedBorel α) (x : α) : (f + g) x = f x + g x := rfl
 
 @[simp]
-theorem neg_apply {α : Type*} [MeasurableSpace α]
+theorem neg_apply  [MeasurableSpace α]
     (f : BoundedBorel α) (x : α) : (-f) x = -f x := rfl
 
-@[simp]
-theorem sub_apply {α : Type*} [MeasurableSpace α]
-    (f g : BoundedBorel α) (x : α) : (f - g) x = f x - g x := rfl
+
 
 @[simp]
-theorem smul_apply {α : Type*} [MeasurableSpace α]
+theorem smul_apply  [MeasurableSpace α]
     (c : ℝ) (f : BoundedBorel α) (x : α) : (c • f) x = c • f x := rfl
 
 /-- The pointwise maximum of two bounded-Borel functions. -/
-def supFn {α : Type*} [MeasurableSpace α]
+def supFn  [MeasurableSpace α]
     (f g : BoundedBorel α) : BoundedBorel α :=
   ⟨fun x => max (f x) (g x), by
     constructor
@@ -126,7 +126,7 @@ def supFn {α : Type*} [MeasurableSpace α]
         exact (hf x).trans (le_max_left _ _)⟩
 
 /-- The pointwise minimum of two bounded-Borel functions. -/
-def infFn {α : Type*} [MeasurableSpace α]
+def infFn  [MeasurableSpace α]
     (f g : BoundedBorel α) : BoundedBorel α :=
   ⟨fun x => min (f x) (g x), by
     constructor
@@ -158,24 +158,18 @@ instance {α : Type*} [MeasurableSpace α] : Lattice (BoundedBorel α) where
   inf_le_right f g x := min_le_right _ _
   le_inf f g h hfg hgh x := le_min (hfg x) (hgh x)
 
-@[simp]
-theorem sup_apply {α : Type*} [MeasurableSpace α]
-    (f g : BoundedBorel α) (x : α) : (f ⊔ g) x = max (f x) (g x) := rfl
 
-@[simp]
-theorem inf_apply {α : Type*} [MeasurableSpace α]
-    (f g : BoundedBorel α) (x : α) : (f ⊓ g) x = min (f x) (g x) := rfl
 
-/-- The positive part `max f 0` of a bounded-Borel function. -/
-def positivePart {α : Type*} [MeasurableSpace α]
-    (f : BoundedBorel α) : BoundedBorel α := f ⊔ 0
 
-@[simp]
-theorem positivePart_apply {α : Type*} [MeasurableSpace α]
-    (f : BoundedBorel α) (x : α) : f.positivePart x = max (f x) 0 := rfl
+
+
+
+
+
+variable {α β : Type*}
 
 /-- Pull a bounded-Borel function back along a measurable map. -/
-def pullback {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+def pullback  [MeasurableSpace α] [MeasurableSpace β]
     (g : β → α) (hg : Measurable g) (f : BoundedBorel α) : BoundedBorel β :=
   ⟨fun x => f (g x), by
     constructor
@@ -184,18 +178,18 @@ def pullback {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
       exact ⟨C, hC, fun x => hf (g x)⟩⟩
 
 @[simp]
-theorem pullback_apply {α β : Type*} [MeasurableSpace α]
+theorem pullback_apply  [MeasurableSpace α]
     [MeasurableSpace β] (g : β → α) (hg : Measurable g)
     (f : BoundedBorel α) (x : β) : f.pullback g hg x = f (g x) := rfl
 
-/-- Restrict a bounded-Borel function to a subtype. -/
-def restrict {α : Type*} [MeasurableSpace α]
-    (s : Set α) (f : BoundedBorel α) : BoundedBorel s :=
-  pullback ((↑) : s → α) measurable_subtype_coe f
+variable {α : Type*}
 
-@[simp]
-theorem restrict_apply {α : Type*} [MeasurableSpace α]
-    (s : Set α) (f : BoundedBorel α) (x : s) : f.restrict s x = f x := rfl
+/-- Restrict a bounded-Borel function to a subtype. -/
+def restrict  [MeasurableSpace α]
+    (s : Set α) (f : BoundedBorel α) : BoundedBorel s :=
+  pullback _ measurable_subtype_coe f
+
+
 
 end BoundedBorel
 end HypoellipticAleksandrov.KineticAleksandrov

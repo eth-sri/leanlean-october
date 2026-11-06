@@ -9,16 +9,16 @@ This module records the exact `ℓ²` product norm inherited by the spatial
 Hilbert realization of the zero-boundary Sobolev graph.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The spatial `H¹₀` Hilbert-graph norm is the squared `ℓ²` sum of its value
 and weak-gradient component norms. -/
 theorem norm_sq_h10HilbertGraph
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
     ‖u‖ ^ 2 =
       ‖valueCLM hΩ u‖ ^ 2 + ‖gradientCLM hΩ u‖ ^ 2 := by

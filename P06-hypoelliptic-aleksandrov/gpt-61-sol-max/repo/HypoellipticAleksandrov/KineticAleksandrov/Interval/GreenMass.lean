@@ -10,20 +10,20 @@ The proved killing estimate is integrated in elapsed Lebesgue time. The resultin
 constant is uniform in the initial time, coefficient derivatives and interval position.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov.KineticAleksandrov.Green
-open scoped ENNReal
+
 
 /-- The exponentially killed time profile has exact elapsed integral `1/k`. -/
 theorem lintegral_interval_killing_profile {k : ℝ} (hk : 0 < k) :
     (∫⁻ t : ElapsedTime ⊤, ENNReal.ofReal (Real.exp (-k * t.1))
       ∂elapsedVolume ⊤) = ENNReal.ofReal k⁻¹ := by
-  rw [lintegral_elapsed_top (fun t : ℝ => ENNReal.ofReal (Real.exp (-k * t)))]
+  rw [lintegral_elapsed_top (fun t  => ENNReal.ofReal (Real.exp (-k * t)))]
   rw [← ofReal_integral_eq_lintegral_ofReal
     (integrableOn_exp_mul_Ioi (neg_neg_of_pos hk) 0)
     (Filter.Eventually.of_forall fun t => (Real.exp_pos _).le)]
@@ -42,7 +42,7 @@ theorem interval_green_finite_mass
       ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
       (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
       (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-      RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
+      RealizesTerminalEvolution _ stationary hJ
         (zIndependentCoefficient B) b S K →
       c - a = length → ∀ (σ : ℝ)
       (μ : Measure (EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ))
@@ -58,7 +58,7 @@ theorem interval_green_finite_mass
       ENNReal.ofReal (C * Real.exp (-k * t.1)) := by
     intro p t
     have hv : p.1.1 ∈ PDE.oneDimensionalAxisBox a c := by
-      simpa only [evolutionStateSet, mem_prod, movingDomain_stationary] using p.2.1
+      simpa only [evolutionStateSet, movingDomain_stationary] using p.2.1
     have hm := hmass a c hac B b hs hJ S K hr hlen σ (σ + t.1)
       (le_add_of_nonneg_right t.2.1.le) ⟨p.1.1, hv⟩
     have he := interval_parabolic_mass_eq_master hJ K B hp σ (σ + t.1)

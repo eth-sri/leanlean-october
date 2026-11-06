@@ -5,8 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripK
 
 /-! # Integrating and telescoping stopped kernel inequalities -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory
 
@@ -33,11 +33,11 @@ theorem enlarged_integral_kernel_le
     (f g : Point → ℝ) (hK : Integrable f (K ∘ₘ mu)) (hg : Integrable g mu)
     (hstep : ∀ᵐ p ∂mu, (∫ q, f q ∂K p) ≤ g p) :
     (∫ q, f q ∂K ∘ₘ mu) ≤ ∫ p, g p ∂mu := by
-  have hiK : Integrable (fun p => ∫ q, f q ∂K p) mu := by
-    rw [Measure.comp_eq_comp_const_apply] at hK
-    simpa only [Kernel.const_apply] using hK.integral_comp
+
   rw [nested_integral_bind mu K K.measurable f hK]
-  exact integral_mono_ae hiK hg hstep
+  exact integral_mono_ae (by
+      rw [Measure.comp_eq_comp_const_apply] at hK
+      simpa only [Kernel.const_apply] using hK.integral_comp) hg hstep
 
 /-- Finite nonnegative terminal spends telescope through successive active and waiting values. -/
 theorem enlarged_terminal_values_telescope (U R D : ℕ → ℝ)
@@ -47,7 +47,7 @@ theorem enlarged_terminal_values_telescope (U R D : ℕ → ℝ)
   have hh : ∀ N, (∑ n ∈ Finset.range N, D n) + U N ≤ U 0 := by
     intro N
     induction N with
-    | zero => simp only [Finset.range_zero, Finset.sum_empty, zero_add, le_refl]
+    | zero => simp_all
     | succ N ih =>
       rw [Finset.sum_range_succ]
       linarith [ha N, hw N]

@@ -5,6 +5,8 @@ public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import Mathlib.Analysis.Calculus.FDeriv.Mul
 public import Mathlib.Analysis.Calculus.LocalExtr.Basic
 public import Mathlib.Topology.Algebra.Support
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Quantitative smooth cutoff data
@@ -43,7 +45,7 @@ structure QuantitativeSmoothCutoff {d : ℕ}
   /-- The cutoff function. -/
   toFun : Vec d → ℝ
   /-- Smoothness to every order. -/
-  smooth : ContDiff ℝ (⊤ : ℕ∞) toFun
+  smooth : ContDiff ℝ PDE.smoothOrder toFun
   /-- The cutoff has compact topological support. -/
   hasCompactSupport : HasCompactSupport toFun
   /-- The topological support lies in the prescribed outer set. -/
@@ -69,33 +71,13 @@ instance :
       (fun _ => Vec d → ℝ) where
   coe η := η.toFun
 
-/-- Restrict the plateau set and enlarge the permitted support set without
-changing the cutoff function or its gradient constant. -/
-def reindex
-    {inner' outer' : Set (Vec d)}
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hinner : inner' ⊆ inner) (houter : outer ⊆ outer') :
-    QuantitativeSmoothCutoff inner' outer' K where
-  toFun := η.toFun
-  smooth := η.smooth
-  hasCompactSupport := η.hasCompactSupport
-  tsupport_subset := η.tsupport_subset.trans houter
-  nonneg := η.nonneg
-  le_one := η.le_one
-  eq_one_on_inner := fun x hx =>
-    η.eq_one_on_inner x (hinner hx)
-  gradient_bound := η.gradient_bound
 
-@[simp]
-theorem reindex_toFun
-    {inner' outer' : Set (Vec d)}
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hinner : inner' ⊆ inner) (houter : outer ⊆ outer') :
-    (η.reindex hinner houter).toFun = η.toFun :=
-  rfl
+
+
+variable (η : QuantitativeSmoothCutoff inner outer K)
 
 private theorem classicalGradient_sq_toFun
-    (η : QuantitativeSmoothCutoff inner outer K) (x : Vec d) :
+     (x : Vec d) :
     classicalGradient (fun y => η.toFun y ^ 2) x =
       (2 * η.toFun x) • classicalGradient η.toFun x := by
   have hηDiff : DifferentiableAt ℝ η.toFun x :=
@@ -115,7 +97,7 @@ private theorem classicalGradient_sq_toFun
 The support and plateau sets are unchanged, while the explicit Euclidean
 gradient constant becomes `2 * K`.
 -/
-def sq (η : QuantitativeSmoothCutoff inner outer K) :
+def sq  :
     QuantitativeSmoothCutoff inner outer (2 * K) where
   toFun := fun x => η.toFun x ^ 2
   smooth := η.smooth.pow 2
@@ -125,7 +107,7 @@ def sq (η : QuantitativeSmoothCutoff inner outer K) :
       funext x
       simp only [Pi.mul_apply, pow_two]
     rw [hsquare]
-    exact η.hasCompactSupport.mul_right (f' := η.toFun)
+    exact η.hasCompactSupport.mul_right
   tsupport_subset := by
     simpa only [pow_two] using
       (tsupport_mul_subset_left
@@ -154,27 +136,29 @@ def sq (η : QuantitativeSmoothCutoff inner outer K) :
 
 @[simp]
 theorem sq_toFun
-    (η : QuantitativeSmoothCutoff inner outer K) :
+     :
     η.sq.toFun = fun x => η.toFun x ^ 2 :=
   rfl
 
+variable (x : Vec d)
+
 @[simp]
 theorem sq_apply
-    (η : QuantitativeSmoothCutoff inner outer K) (x : Vec d) :
+      :
     η.sq x = η x ^ 2 :=
   rfl
 
 /-- The classical gradient of the squared cutoff is exactly
 `2 * η * ∇η`. -/
 theorem sq_classicalGradient
-    (η : QuantitativeSmoothCutoff inner outer K) (x : Vec d) :
+      :
     classicalGradient η.sq.toFun x =
       (2 * η x) • classicalGradient η.toFun x :=
   classicalGradient_sq_toFun η x
 
 /-- The ordinary support is contained in the prescribed outer set. -/
 theorem support_subset
-    (η : QuantitativeSmoothCutoff inner outer K) :
+     :
     Function.support η.toFun ⊆ outer :=
   (subset_tsupport η.toFun).trans η.tsupport_subset
 
@@ -183,25 +167,24 @@ theorem support_subset
 No openness hypothesis on `inner` is needed: a plateau point has value one,
 and the global upper bound `η ≤ 1` makes it a local maximum. -/
 theorem classicalGradient_eq_zero_of_mem_inner
-    (η : QuantitativeSmoothCutoff inner outer K)
+
     {x : Vec d} (hx : x ∈ inner) :
     classicalGradient η.toFun x = 0 := by
-  have hmax : IsMaxOn η.toFun Set.univ x := by
-    intro y _
-    rw [η.eq_one_on_inner x hx]
-    exact η.le_one y
-  have hlocal : IsLocalMax η.toFun x :=
-    hmax.isLocalMax (by simp)
-  have hfderiv : fderiv ℝ η.toFun x = 0 :=
-    IsLocalMax.fderiv_eq_zero hlocal
+
+
+
   funext i
-  rw [classicalGradient_apply, hfderiv]
+  rw [classicalGradient_apply, (IsLocalMax.fderiv_eq_zero ((show IsMaxOn η.toFun Set.univ x by
+      intro y _
+      rw [η.eq_one_on_inner x hx]
+      exact η.le_one y).isLocalMax (by simp)))]
   exact zero_apply _
 
+include η in
 /-- The plateau and support properties force the inner set to lie in the
 outer set. -/
 theorem inner_subset_outer
-    (η : QuantitativeSmoothCutoff inner outer K) :
+     :
     inner ⊆ outer := by
   intro x hx
   apply η.support_subset
@@ -209,17 +192,18 @@ theorem inner_subset_outer
   rw [η.eq_one_on_inner x hx]
   exact one_ne_zero
 
+include η in
 /-- Any realized pointwise Euclidean gradient bound is nonnegative. -/
 theorem gradient_bound_nonneg
-    (η : QuantitativeSmoothCutoff inner outer K) :
+     :
     0 ≤ K :=
   (vecEuclideanNorm_nonneg
-    (classicalGradient η.toFun (0 : Vec d))).trans
+    (classicalGradient η.toFun (0 ))).trans
       (η.gradient_bound 0)
 
 /-- Every coordinate of the classical gradient is bounded by `K`. -/
 theorem abs_classicalGradient_apply_le
-    (η : QuantitativeSmoothCutoff inner outer K)
+
     (x : Vec d) (i : Fin d) :
     |classicalGradient η.toFun x i| ≤ K :=
   (abs_apply_le_vecEuclideanNorm

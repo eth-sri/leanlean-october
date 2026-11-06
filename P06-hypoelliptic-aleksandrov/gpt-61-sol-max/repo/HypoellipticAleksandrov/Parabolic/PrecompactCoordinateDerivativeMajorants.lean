@@ -11,9 +11,9 @@ This file bounds a finite-order family of coordinate derivatives on the compact 
 common precompact neighborhood.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -24,18 +24,20 @@ private theorem order_le_parabolicWeight {d : ℕ}
     VelocityMultiIndex.parabolicWeight]
   omega
 
+variable {d M : ℕ}
+
 private theorem continuousOn_coordinateIteratedFDeriv
-    {d M : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ M f U)
+     {U : HypoellipticAleksandrov.Parabolic.Region d}
+    (hU : IsOpen U) (f : HypoellipticAleksandrov.Parabolic.ScalarField d) (hf : ContDiffOn ℝ M f U)
     (alpha : ParabolicDerivativeIndex d M) :
     ContinuousOn
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 f) U := by
   intro z hz
-  have horder : alpha.1.order ≤ M :=
+  have horder  :=
     (order_le_parabolicWeight alpha.1).trans alpha.2
-  have hdiff : ContDiffAt ℝ M f z := hf.contDiffAt (hU.mem_nhds hz)
+
   unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hiter := hdiff.iteratedFDeriv_right
+  have hiter := (hf.contDiffAt (hU.mem_nhds hz)).iteratedFDeriv_right
     (m := 0) (i := alpha.1.coordinateList.length) (by simpa)
   exact ((contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
     (fun i ↦ timeVelocityBasis
@@ -45,12 +47,12 @@ private theorem continuousOn_coordinateIteratedFDeriv
 neighborhood carrying nonnegative finite-order derivative majorants for an
 arbitrary indexed scalar family. -/
 theorem exists_precompactOpen_coordinateIteratedFDeriv_majorants
-    {d M : ℕ} {ι : Type*}
-    {U K : Set (TimeVelocity d)}
+     {ι : Type*}
+    {U K : HypoellipticAleksandrov.Parabolic.Region d}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
-    (q : ι → TimeVelocity d → ℝ)
+    (q : ι → HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hq : ∀ i, ContDiffOn ℝ M (q i) U) :
-    ∃ (V : Set (TimeVelocity d))
+    ∃ (V : HypoellipticAleksandrov.Parabolic.Region d)
       (B : ι → ParabolicDerivativeIndex d M → ℝ),
       IsOpen V ∧
       K ⊆ V ∧

@@ -5,11 +5,11 @@ import Mathlib.Tactic.Linarith
 
 /-! # Uniform stationary source amplitude on the shrinking shell -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-open MeasureTheory Set
+
 open scoped MatrixOrder
 
 /-- The upper profile comparison traps the shell away from the origin at scale r. -/
@@ -29,25 +29,25 @@ theorem velocity_gradient_on_shell {d : ℕ} (H : XV d → ℝ) (gv : XV d → P
   refine ⟨K, hK, ?_⟩
   intro r hr q hq
   have hlo := hq.1
-  have hn : q ≠ 0 := by
-    intro he
-    rw [he, hzero] at hlo
-    exact (not_le_of_gt (Real.rpow_pos_of_pos hr alpha)) hlo
+
   have hb : r ≤ B * rho q := by
     apply (Real.rpow_le_rpow_iff hr.le (mul_nonneg hB.le (rho_nonneg q)) ha).mp
     rw [Real.mul_rpow hB.le (rho_nonneg q), hBa]
     exact hlo.trans (hcomp q)
   have hlower : r / B ≤ rho q := (div_le_iff₀ hB).2 (by simpa only [mul_comm] using hb)
   have hnegative : alpha - 1 ≤ 0 := sub_nonpos.mpr ha1.le
-  have hp := Real.rpow_le_rpow_of_nonpos (div_pos hr hB) hlower hnegative
-  have ht := (hgrad q hn).trans (mul_le_mul_of_nonneg_left hp hC.le)
+
+  have ht := (hgrad q (show _ by
+      intro he
+      rw [he, hzero] at hlo
+      exact (not_le_of_gt (Real.rpow_pos_of_pos hr alpha)) hlo)).trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos (div_pos hr hB) hlower hnegative) hC.le)
   simp only [Real.rpow_eq_pow] at ht ⊢
   rw [Real.div_rpow hr.le hB.le] at ht
-  simpa only [K, div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm] using ht
+  simpa only [K, div_eq_mul_inv, mul_comm, mul_left_comm] using ht
 
 /-- The exact powers in the source amplitude combine to alpha minus two. -/
 theorem source_rpow_identity (alpha r : ℝ) (hr : 0 < r) :
-    Real.rpow r (-alpha) * (Real.rpow r (alpha - 1)) ^ (2 : ℕ) =
+    Real.rpow r (-alpha) * (Real.rpow r (alpha - 1)) ^ (2 ) =
       Real.rpow r (alpha - 2) := by
   simp only [Real.rpow_eq_pow]
   rw [← Real.rpow_mul_natCast hr.le, ← Real.rpow_add hr]
@@ -74,21 +74,21 @@ theorem shell_source_bound {d : ℕ} (A : XV d → PDE.Mat d) (H : XV d → ℝ)
   intro r hr q
   by_cases hq : q ∈ profileShell H alpha r
   · have hquad0 := quadratic_nonneg_of_loewner lam hlam.le (A q) (hA q).1 (gv q)
-    have hquad1 := quadratic_upper_of_loewner Lam (A q) (hA q).2 (gv q)
-    have hnorm := hgradShell r hr q hq
-    have hnormSq : PDE.vecNormSq (gv q) ≤ (G * Real.rpow r (alpha - 1)) ^ 2 := by
-      rw [← PDE.vecEuclideanNorm_sq]
-      exact pow_le_pow_left₀ (PDE.vecEuclideanNorm_nonneg _) hnorm _
-    have hsecond0 := flatteningPsi_deriv2_nonneg (H q / Real.rpow r alpha)
-    have hsecond1 := hsecond (H q / Real.rpow r alpha)
+
+
+
+
+
     unfold flatSourceWithJet
     constructor
-    · exact mul_nonneg (mul_nonneg (Real.rpow_pos_of_pos hr _).le hsecond0) hquad0
+    · exact mul_nonneg (mul_nonneg (Real.rpow_pos_of_pos hr _).le (flatteningPsi_deriv2_nonneg (H q / Real.rpow r alpha))) hquad0
     · calc
         _ ≤ Real.rpow r (-alpha) * D * (Lam * (G * Real.rpow r (alpha - 1)) ^ 2) :=
           mul_le_mul
-            (mul_le_mul_of_nonneg_left hsecond1 (Real.rpow_pos_of_pos hr _).le)
-            (hquad1.trans (mul_le_mul_of_nonneg_left hnormSq hLam.le))
+            (mul_le_mul_of_nonneg_left (hsecond (H q / Real.rpow r alpha)) (Real.rpow_pos_of_pos hr _).le)
+            ((quadratic_upper_of_loewner Lam (A q) (hA q).2 (gv q)).trans (mul_le_mul_of_nonneg_left (by
+                rw [← PDE.vecEuclideanNorm_sq]
+                exact pow_le_pow_left₀ (PDE.vecEuclideanNorm_nonneg _) (hgradShell r hr q hq) _) hLam.le))
             hquad0 (mul_nonneg (Real.rpow_pos_of_pos hr _).le hD.le)
         _ = D * Lam * G ^ 2 *
             (Real.rpow r (-alpha) * (Real.rpow r (alpha - 1)) ^ 2) := by ring

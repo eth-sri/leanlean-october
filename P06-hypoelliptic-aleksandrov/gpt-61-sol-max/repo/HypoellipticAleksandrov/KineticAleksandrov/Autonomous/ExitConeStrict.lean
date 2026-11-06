@@ -1,14 +1,16 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeCalculus
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Vanishing of both actual measures beyond every strict transport cone -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter
-open SectionTwo TheoremA Evolution
+open MeasureTheory
+
 
 /-- A strict negative transport direction kills both actual measures on its positive side. -/
 theorem reconstruction_strict_transport_cone_ae
@@ -34,8 +36,7 @@ theorem reconstruction_strict_transport_cone_ae
     apply abs_le.mpr
     exact ⟨((neg_le_neg (le_max_left |H.lo| |H.hi|)).trans (neg_abs_le H.lo)).trans hv.1.le,
       hv.2.le.trans ((le_abs_self H.hi).trans (le_max_right _ _))⟩
-  have hop (p : Point) : forwardScalarOperator A.a phi p =
-      (alpha + p.velocity 0 * beta) * deriv expNegInvGlue (rho p) :=
+  have hop (p : Point)  :=
     reconstructionConeProbe_operator A.a alpha beta gamma p
   have hbd (p : Point) (hp : p.velocity 0 ∈ H.carrier) :
       |forwardScalarOperator A.a phi p| ≤ C * 2 := by
@@ -81,12 +82,12 @@ theorem reconstruction_strict_transport_cone_ae
     filter_upwards [hz] with p hp
     exact expNegInvGlue.zero_iff_nonpos.mp hp
   · have hdc : Continuous (deriv expNegInvGlue) :=
-      (expNegInvGlue.contDiff : ContDiff ℝ (⊤ : ℕ∞) expNegInvGlue).continuous_deriv (by simp)
+      (expNegInvGlue.contDiff : ContDiff ℝ PDE.smoothOrder expNegInvGlue).continuous_deriv (by simp)
     have hrho : Continuous rho :=
       ((continuous_const.mul continuous_time).add
         (continuous_const.mul ((continuous_apply 0).comp continuous_position))).add continuous_const
     have hmeas : AEStronglyMeasurable (forwardScalarOperator A.a phi) Γ := by
-      have hc : Continuous (fun p : Point => (alpha + p.velocity 0 * beta) *
+      have hc : Continuous (fun p  => (alpha + p.velocity 0 * beta) *
           deriv expNegInvGlue (rho p)) := (((continuous_const.add
         (((continuous_apply 0).comp continuous_velocity).mul continuous_const)).mul
           (hdc.comp hrho)))
@@ -105,7 +106,7 @@ theorem reconstruction_strict_transport_cone_ae
     filter_upwards [hz, stripGreenOfKernel_ae_mem_stripPast H E.2 T e] with p hp hs
     by_contra hposrho
     have hdr := (reconstructionConeTransition_deriv_bounds (rho p)).2.2 (not_le.mp hposrho)
-    have hcoef : alpha + p.velocity 0 * beta < 0 := (hdir _ hs.2).trans_lt (neg_neg_of_pos hdelta)
+    have hcoef  := (hdir _ hs.2).trans_lt (neg_neg_of_pos hdelta)
     have hn := mul_neg_of_neg_of_pos hcoef hdr
     rw [← hop] at hn
     change -forwardScalarOperator A.a phi p = 0 at hp

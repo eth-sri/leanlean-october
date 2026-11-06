@@ -27,19 +27,11 @@ variable {d : ℕ} {U : Set (Vec d)}
 /-- The constant `H¹(U)` representative with zero weak gradient. -/
 noncomputable def const [IsFiniteMeasure (volumeOn U)]
     (c : ℝ) : H1Function U :=
-  (W1pFunction.const (U := U) (p := (2 : ℝ≥0∞)) c).toH1Function
+  (W1pFunction.const (U := U) (p := (2 )) c).toH1Function
 
-@[simp]
-theorem const_apply [IsFiniteMeasure (volumeOn U)]
-    (c : ℝ) (x : Vec d) :
-    (const (U := U) c) x = c :=
-  rfl
 
-@[simp]
-theorem grad_const [IsFiniteMeasure (volumeOn U)]
-    (c : ℝ) (x : Vec d) :
-    (const (U := U) c).grad x = 0 :=
-  rfl
+
+
 
 /-- Add a scalar constant without changing the chosen weak gradient. -/
 noncomputable def addConst [IsFiniteMeasure (volumeOn U)]
@@ -52,66 +44,16 @@ theorem addConst_apply [IsFiniteMeasure (volumeOn U)]
     u.addConst c x = u x + c :=
   rfl
 
-@[simp]
-theorem grad_addConst [IsFiniteMeasure (volumeOn U)]
-    (u : H1Function U) (c : ℝ) (x : Vec d) :
-    (u.addConst c).grad x = u.grad x := by
-  simpa only [addConst, W1pFunction.toH1Function_grad,
-    H1Function.toW1pFunction_grad] using
-      u.toW1pFunction.addConst_grad c x
 
-/-- Subtract a scalar constant on a bounded convex domain without exposing a
-finite-measure typeclass argument in the public API. -/
-noncomputable def subConst
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (c : ℝ) : H1Function U := by
-  letI : IsFiniteMeasure (volumeOn U) :=
-    hU.isFiniteMeasure_volumeOn
-  exact u.addConst (-c)
 
-@[simp]
-theorem subConst_apply
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (c : ℝ) (x : Vec d) :
-    u.subConst hU c x = u x - c := by
-  let : IsFiniteMeasure (volumeOn U) :=
-    hU.isFiniteMeasure_volumeOn
-  rw [subConst]
-  simp only [addConst_apply]
-  ring
 
-@[simp]
-theorem grad_subConst
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (c : ℝ) (x : Vec d) :
-    (u.subConst hU c).grad x = u.grad x := by
-  let : IsFiniteMeasure (volumeOn U) :=
-    hU.isFiniteMeasure_volumeOn
-  rw [subConst]
-  exact grad_addConst u (-c) x
 
-/-- Subtract the arithmetic integral average without changing the chosen weak
-gradient. -/
-noncomputable def subAverage [IsFiniteMeasure (volumeOn U)]
-    (u : H1Function U) : H1Function U :=
-  u.toW1pFunction.subAverage.toH1Function
 
-@[simp]
-theorem subAverage_apply [IsFiniteMeasure (volumeOn U)]
-    (u : H1Function U) (x : Vec d) :
-    u.subAverage x = u x - integralAverage U u := by
-  simpa only [subAverage, W1pFunction.toH1Function_apply,
-    H1Function.toW1pFunction_apply,
-    H1Function.toW1pFunction_toFun] using
-      u.toW1pFunction.subAverage_apply x
 
-@[simp]
-theorem grad_subAverage [IsFiniteMeasure (volumeOn U)]
-    (u : H1Function U) (x : Vec d) :
-    u.subAverage.grad x = u.grad x := by
-  simpa only [subAverage, W1pFunction.toH1Function_grad,
-    H1Function.toW1pFunction_grad] using
-      u.toW1pFunction.subAverage_grad x
+
+
+
+
 
 end H1Function
 

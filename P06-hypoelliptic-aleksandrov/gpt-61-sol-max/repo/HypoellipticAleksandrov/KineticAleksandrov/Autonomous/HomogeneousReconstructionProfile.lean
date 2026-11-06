@@ -13,8 +13,10 @@ open HypoellipticAleksandrov Parabolic Evolution
 /-- A scalar velocity profile, written in the native diffused coordinate. -/
 def reconstructionProfile (f : ℝ → ℝ) (p : Point) : ℝ := f (p.position 0)
 
+variable {f : ℝ → ℝ}
+
 /-- A twice smooth scalar profile has the required native slice regularity. -/
-theorem reconstructionProfile_regular {f : ℝ → ℝ} (hf : ContDiff ℝ 2 f) (p : Point) :
+theorem reconstructionProfile_regular  (hf : ContDiff ℝ 2 f) (p : Point) :
     IsSliceRegularAt (reconstructionProfile f) p := by
   refine ⟨?_, ?_, ?_⟩
   · change DifferentiableAt ℝ (fun _ : ℝ => f (p.position 0)) p.time
@@ -24,37 +26,36 @@ theorem reconstructionProfile_regular {f : ℝ → ℝ} (hf : ContDiff ℝ 2 f) 
     exact contDiffAt_const
 
 /-- A continuous scalar profile is continuous on native spacetime. -/
-theorem reconstructionProfile_continuous {f : ℝ → ℝ} (hf : Continuous f) :
+theorem reconstructionProfile_continuous  (hf : Continuous f) :
     Continuous (reconstructionProfile f) :=
   hf.comp ((continuous_apply 0).comp continuous_position)
 
-private theorem profile_gradient {f : ℝ → ℝ} (hf : Differentiable ℝ f) (y : PDE.Vec 1) :
+private theorem profile_gradient  (hf : Differentiable ℝ f) (y : PDE.Vec 1) :
     PDE.classicalGradient (fun z : PDE.Vec 1 => f (z 0)) y =
       fun _ => deriv f (y 0) := by
+  let sharedTerm_b4d5f48cde := ((fun z : PDE.Vec 1 => f (z 0)))
   ext i
-  have h := (hf (y 0)).hasDerivAt.comp_hasFDerivAt y (hasFDerivAt_apply (𝕜 := ℝ) 0 y)
-  change fderiv ℝ (fun z : PDE.Vec 1 => f (z 0)) y (PDE.basisVec i) = _
-  have hd : fderiv ℝ (fun z : PDE.Vec 1 => f (z 0)) y =
+
+  change fderiv ℝ sharedTerm_b4d5f48cde y (PDE.basisVec i) = _
+  have hd : fderiv ℝ sharedTerm_b4d5f48cde y =
       deriv f (y 0) • ContinuousLinearMap.proj 0 := by
-    simpa only [Function.comp_def] using! h.fderiv
+    simpa only [Function.comp_def] using! ((hf (y 0)).hasDerivAt.comp_hasFDerivAt y (hasFDerivAt_apply (𝕜 := ℝ) 0 y)).fderiv
   rw [hd]
   fin_cases i
   simp [PDE.basisVec]
 
-private theorem profile_hessian {f : ℝ → ℝ} (hf : ContDiff ℝ 2 f) (y : PDE.Vec 1) :
+private theorem profile_hessian  (hf : ContDiff ℝ 2 f) (y : PDE.Vec 1) :
     sliceHessian (fun z : PDE.Vec 1 => f (z 0)) y 0 0 = deriv (deriv f) (y 0) := by
-  have hg : (fun z => PDE.classicalGradient (fun w : PDE.Vec 1 => f (w 0)) z) =
-      fun z _ => deriv f (z 0) :=
-    funext (profile_gradient (hf.differentiable (by norm_num)))
+
   have h := (hf.differentiable_deriv_two (y 0)).hasDerivAt.comp_hasFDerivAt y
     (hasFDerivAt_apply (𝕜 := ℝ) 0 y)
-  have hp := hasFDerivAt_pi.mpr (fun _ : Fin 1 => h)
+
   unfold sliceHessian
-  rw [hg]
+  rw [(funext (profile_gradient (hf.differentiable (by norm_num))))]
   have hd : fderiv ℝ (fun z : PDE.Vec 1 => fun _ : Fin 1 => deriv f (z 0)) y =
       ContinuousLinearMap.pi (fun _ : Fin 1 =>
         deriv (deriv f) (y 0) • ContinuousLinearMap.proj 0) := by
-    simpa only [Function.comp_def] using! hp.fderiv
+    simpa only [Function.comp_def] using! (hasFDerivAt_pi.mpr (fun _ : Fin 1 => h)).fderiv
   rw [hd]
   simp [PDE.basisVec]
 

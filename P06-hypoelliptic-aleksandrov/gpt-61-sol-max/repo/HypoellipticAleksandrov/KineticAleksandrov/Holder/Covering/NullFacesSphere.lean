@@ -13,17 +13,22 @@ The internal Hilbert realization is used only through its proved Euclidean norm 
 measure-preserving coordinate conversion.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+variable {d : ℕ}
+
+section
+variable (x : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+
+include hr
 /-- A native Euclidean sphere is the coordinate preimage of the internal Hilbert sphere. -/
-theorem euclideanSphere_eq_hilbert_preimage {d : ℕ} (x : PDE.Vec d) {r : ℝ}
-    (hr : 0 < r) :
+theorem euclideanSphere_eq_hilbert_preimage   :
     PDE.euclideanSphere x r = PDE.Vec.toHilbertVec ⁻¹'
       Metric.sphere x.toHilbertVec r := by
   ext y
@@ -38,19 +43,21 @@ theorem euclideanSphere_eq_hilbert_preimage {d : ℕ} (x : PDE.Vec d) {r : ℝ}
     rw [h]
 
 /-- Positive-radius native Euclidean spheres have zero ordinary Lebesgue volume. -/
-theorem volume_euclideanSphere {d : ℕ} (x : PDE.Vec d) {r : ℝ} (hr : 0 < r) :
+theorem volume_euclideanSphere   :
     volume (PDE.euclideanSphere x r) = 0 := by
   rw [euclideanSphere_eq_hilbert_preimage x hr]
   change volume (WithLp.toLp 2 ⁻¹' Metric.sphere x.toHilbertVec r) = 0
   rw [(PiLp.volume_preserving_toLp (Fin d)).measure_preimage
     (Metric.isClosed_sphere.measurableSet.nullMeasurableSet)]
   exact Measure.addHaar_sphere_of_ne_zero volume x.toHilbertVec hr.ne'
+end
+
 
 /-- A complete kinetic velocity-sphere face is null, without bounding time or position. -/
-theorem volume_velocity_sphere_face {d : ℕ} (v : PDE.Vec d) {r : ℝ} (hr : 0 < r) :
+theorem volume_velocity_sphere_face  (v : PDE.Vec d) {r : ℝ} (hr : 0 < r) :
     volume {P : KineticPoint d | P.velocity ∈ PDE.euclideanSphere v r} = 0 := by
   let s := (univ : Set ℝ) ×ˢ
-    ((univ : Set (PDE.Vec d)) ×ˢ PDE.euclideanSphere v r)
+    ((univ : PDE.VelocityRegion d) ×ˢ PDE.euclideanSphere v r)
   have hs : MeasurableSet s := MeasurableSet.univ.prod
     (MeasurableSet.univ.prod (PDE.isClosed_euclideanSphere v r).measurableSet)
   have heq : {P : KineticPoint d | P.velocity ∈ PDE.euclideanSphere v r} =
@@ -62,8 +69,10 @@ theorem volume_velocity_sphere_face {d : ℕ} (v : PDE.Vec d) {r : ℝ} (hr : 0 
   simp only [s, Measure.volume_eq_prod, Measure.prod_prod, volume_euclideanSphere v hr,
     mul_zero]
 
+variable (P : KineticPoint d)
+
 /-- A free-transport position sphere becomes a translated sphere on each time slice. -/
-theorem position_sphere_slice {d : ℕ} (P : KineticPoint d) (t R : ℝ) (x : PDE.Vec d) :
+theorem position_sphere_slice   (t R : ℝ) (x : PDE.Vec d) :
     x-P.position-(t-P.time) • P.velocity ∈ PDE.euclideanSphere 0 R ↔
       x ∈ PDE.euclideanSphere (P.position+(t-P.time) • P.velocity) R := by
   have heq : x-P.position-(t-P.time) • P.velocity =
@@ -73,25 +82,26 @@ theorem position_sphere_slice {d : ℕ} (P : KineticPoint d) (t R : ℝ) (x : PD
   rfl
 
 /-- A complete free-transport position-sphere face is null. -/
-theorem volume_position_sphere_face {d : ℕ} (P : KineticPoint d) {R : ℝ} (hR : 0 < R) :
+theorem volume_position_sphere_face   {R : ℝ} (hR : 0 < R) :
     volume {X : KineticPoint d | relativePosition P X ∈ PDE.euclideanSphere 0 R} = 0 := by
+  let sharedTerm_68782a5391 := ({X : KineticPoint d | relativePosition P X ∈ PDE.euclideanSphere 0 R})
   let s := (KineticPoint.equivProd d).symm ⁻¹'
-    {X : KineticPoint d | relativePosition P X ∈ PDE.euclideanSphere 0 R}
+    sharedTerm_68782a5391
   have hx : Continuous (relativePosition P) :=
     (continuous_position.sub continuous_const).sub
       ((continuous_time.sub continuous_const).smul continuous_const)
   have hs : MeasurableSet s := ((PDE.isClosed_euclideanSphere 0 R).preimage hx).measurableSet
     |>.preimage (KineticPoint.measurable_equivProd_symm d)
   have hpre : (KineticPoint.equivProd d) ⁻¹' s =
-      {X : KineticPoint d | relativePosition P X ∈ PDE.euclideanSphere 0 R} := by
+      sharedTerm_68782a5391 := by
     ext X
-    simp only [s, mem_preimage, Equiv.symm_apply_apply]
+    rfl
   have hv := (KineticPoint.measurePreserving_equivProd d).measure_preimage hs.nullMeasurableSet
   rw [hpre] at hv
   rw [hv, Measure.volume_eq_prod, Measure.prod_apply hs]
   have hslice (t : ℝ) : Prod.mk t ⁻¹' s =
       PDE.euclideanSphere (P.position+(t-P.time) • P.velocity) R ×ˢ
-        (univ : Set (PDE.Vec d)) := by
+        (univ : PDE.VelocityRegion d) := by
     ext z
     simp only [s, mem_preimage, KineticPoint.equivProd, Equiv.coe_fn_symm_mk,
       mem_ofPred_eq, relativePosition, mem_prod, mem_univ, and_true]

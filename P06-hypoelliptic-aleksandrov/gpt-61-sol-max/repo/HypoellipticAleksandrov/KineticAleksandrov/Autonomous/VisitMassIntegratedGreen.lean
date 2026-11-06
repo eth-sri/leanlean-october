@@ -8,16 +8,19 @@ import Mathlib.Tactic
 
 /-! # The genuine quadratic Green identity integrated over each actual entrance -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier)
+
+section
+variable (n : ℕ)
+
+include hP
 /-- Every actual entrance satisfies the integrated quadratic identity on its active domain. -/
 theorem visitQuadratic_entrance_green_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
-    (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
+      :
     (∫ p, visitQuadratic c (p.velocity 0)
       ∂visitEntrancePiece hH hLE hlam hLam A c J s T P n) =
       (∫ p, visitQuadratic c (p.velocity 0)
@@ -44,15 +47,15 @@ theorem visitQuadratic_entrance_green_identity
   have hp : f =ᵐ[mu] fun p => (∫ q, f q ∂E p) + ∫ q, g q ∂G p := by
     filter_upwards [visitEntrancePiece_ae_activePole hH hLE hlam hLam A c J s T P hP n]
       with p hp
-    let ep := visitPoleInclusion (visitActiveUnion c J) s T ⟨p, hp⟩
-    have he : E p = finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
+    let ep := visitPoleInclusion _ s T ⟨p, hp⟩
+    have he : E p = finiteUnionExit hH hLE hlam hLam A _ T ep := by
       change (if ht : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-        finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
+        finiteUnionExit hH hLE hlam hLam A _ T
           (visitPoleInclusion _ s T ⟨p, ht⟩) else 0) = _
       rw [dite_eq_left hp]
-    have hg : G p = finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
+    have hg : G p = finiteUnionGreen hH hLE hlam hLam A _ T ep := by
       change (if ht : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-        finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
+        finiteUnionGreen hH hLE hlam hLam A _ T
           (visitPoleInclusion _ s T ⟨p, ht⟩) else 0) = _
       rw [dite_eq_left hp]
     have hh := visitQuadratic_active_identity hH hLE hlam hLam A c J T ep
@@ -71,10 +74,7 @@ theorem visitQuadratic_entrance_green_identity
 
 /-- The genuine per-entrance count inequality follows from the actual quadratic Green identity. -/
 theorem visitQuadratic_entrance_mass_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
-    (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
+      :
     let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
     let E := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
     let G := visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
@@ -103,13 +103,13 @@ theorem visitQuadratic_entrance_mass_bound
   exact (visitQuadratic_entrance_integral_lower hH hLE hlam hLam A c J s T P n).trans
     ((visitQuadratic_entrance_green_identity hH hLE hlam hLam A c J s T P hP n).le.trans
       (add_le_add hxfull (visitCoefficient_integral_le hlam A (G ∘ₘ mu))))
+end
 
+
+include hP in
 /-- Summing actual entrance estimates gives the finite quadratic counting inequality. -/
 theorem visitQuadratic_partial_mass_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
-    (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
+     (N : ℕ) :
     let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P
     let E := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
     let G := visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T

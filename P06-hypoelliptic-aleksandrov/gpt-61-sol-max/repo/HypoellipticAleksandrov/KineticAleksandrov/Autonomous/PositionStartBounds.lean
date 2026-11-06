@@ -7,10 +7,10 @@ import Mathlib.Tactic
 
 /-! # Uniform localized generator bound for the position-start test -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov MeasureTheory Set
+open Set
 
 /-- The source localized quadratic has a uniform generator bound on the active interval. -/
 theorem positionStartQuadratic_operator_bound {lam Lam : ℝ}

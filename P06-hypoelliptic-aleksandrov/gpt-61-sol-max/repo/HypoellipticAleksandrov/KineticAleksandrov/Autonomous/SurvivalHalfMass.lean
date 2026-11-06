@@ -13,22 +13,26 @@ quadratic occupation bound, independently of coefficient derivatives and poles.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo
-open scoped ENNReal
+
+
+
 
 /-- Twice the uniform quadratic occupation time of the clock's active interval. -/
 def activeHalfMassTime (lam : ℝ) (c : Clock) : ℝ := 9 * c.r ^ 2 / (16 * lam)
 
+section
+variable {lam : ℝ} (hlam : 0 < lam) (c : Clock)
+
+include hlam
 /-- Positive ellipticity and radius give a strictly positive half-mass time. -/
-theorem activeHalfMassTime_pos {lam : ℝ} (hlam : 0 < lam) (c : Clock) :
+theorem activeHalfMassTime_pos  :
     0 < activeHalfMassTime lam c := by
   unfold activeHalfMassTime
   have hr := c.positive
   positivity
 
 /-- Every active pole has the same uniform upper bound on quadratic occupation. -/
-theorem active_quadratic_occupation_le {lam : ℝ} (hlam : 0 < lam) (c : Clock)
+theorem active_quadratic_occupation_le
     (v : ℝ) :
     (v - c.activeInterval.lo) * (c.activeInterval.hi - v) / (2 * lam) ≤
       activeHalfMassTime lam c / 2 := by
@@ -39,6 +43,8 @@ theorem active_quadratic_occupation_le {lam : ℝ} (hlam : 0 < lam) (c : Clock)
   rw [he]
   change (v - (c.vbar - 3 * c.r / 4)) * (c.vbar + 3 * c.r / 4 - v) ≤ _
   nlinarith only [sq_nonneg (v - c.vbar)]
+end
+
 
 /-- The actual killed kernel has lost at least half its mass at this common elapsed time. -/
 theorem active_survival_half_mass

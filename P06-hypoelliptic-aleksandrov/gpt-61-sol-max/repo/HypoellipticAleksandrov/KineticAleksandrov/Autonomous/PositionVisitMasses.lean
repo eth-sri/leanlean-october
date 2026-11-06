@@ -12,10 +12,10 @@ are proved internally. Only the precise full-space terminal domination conclusio
 is taken as a hypothesis.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 
 /-- The corrected mass conditions, assuming the terminal domination estimate. -/
 theorem positionVisitMassesStatement_holds_of_terminal_domination
@@ -33,13 +33,13 @@ theorem positionVisitMassesStatement_holds_of_terminal_domination
   refine ⟨enlargedVisitMassConstant lam Lam, enlargedVisitMassConstant_pos hlam hLam, ?_⟩
   intro A c J R T P hR hT hTR hbar hJ hvel
   dsimp only
-  have hPT : P.time < P.time + T := by linarith
+
   have : IsFiniteMeasure (visitsFromZero hH hLE hlam hLam A c J T P) :=
     enlargedVisitStarts_isFiniteMeasure hH hLE hlam hLam A c J R T P
       hR hT hTR hbar hJ hvel
   refine ⟨inferInstance, ?_, ?_, ?_, ?_, ?_⟩
   · exact enlargedVisitStarts_ae_support hH hLE hlam hLam A c J P.time (P.time + T)
-      P le_rfl hPT
+      P le_rfl (by linarith)
   · exact enlargedVisitStarts_mass_le hH hLE hlam hLam A c J R T P hR hT hTR hbar hJ hvel
   · intro j
     exact enlargedPositionVisitMass_sum _ c P.time 0 j

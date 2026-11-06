@@ -6,8 +6,8 @@ import Mathlib.Tactic
 
 /-! # The literal angular density tail estimate -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -16,18 +16,19 @@ theorem bellmanAngularDensity_tail (β : ℝ) (μ : Measure BellmanPuncturedPlan
     [IsFiniteMeasureOnCompacts μ] (F : Measure ℝ) [IsFiniteMeasureOnCompacts F]
     (hrep : μ.restrict {q | 0 < q.val.1} = bellmanAngularRep β F)
     (f : ℝ → ℝ) (hF : F = volume.withDensity (fun x => ENNReal.ofReal (f x)))
-    (hf : LocallyIntegrable f volume) (hn : ∀ᵐ x ∂volume, 0 ≤ f x) :
-    IntegrableOn (fun y => f y * |y| ^ (β - 4)) {y : ℝ | 2 < |y|} volume := by
-  let S : Set ℝ := {y | 2 < |y|}
-  have hS : MeasurableSet S := by measurability
-  have hm : Measurable (fun y : ℝ => |y| ^ (β - 4)) := by fun_prop
-  have hi : IntegrableOn (fun y : ℝ => |y| ^ (β - 4)) S F := by
-    apply (lintegral_ofReal_ne_top_iff_integrable hm.aestronglyMeasurable
+    (hf : LocallyIntegrable f ) (hn : ∀ᵐ x, 0 ≤ f x) :
+    IntegrableOn (fun y => f y * |y| ^ (β - 4)) {y : ℝ | 2 < |y|}  := by
+  let sharedTerm_0cb79d2c52 := ((fun y : ℝ => |y| ^ (β - 4)))
+
+
+
+  have hi : IntegrableOn sharedTerm_0cb79d2c52 ({y | 2 < |y|}) F := by
+    apply (lintegral_ofReal_ne_top_iff_integrable (show Measurable sharedTerm_0cb79d2c52 by fun_prop).aestronglyMeasurable
       (ae_of_all _ fun y => Real.rpow_nonneg (abs_nonneg y) _)).mp
     exact (bellmanAngularTail_lintegral_finite β μ F hrep).ne
-  have hfm := hf.aestronglyMeasurable.aemeasurable.ennreal_ofReal
-  rw [hF, IntegrableOn, restrict_withDensity hS] at hi
-  have ht := (integrable_withDensity_iff_integrable_smul₀' hfm.restrict
+
+  rw [hF, IntegrableOn, restrict_withDensity (by measurability)] at hi
+  have ht := (integrable_withDensity_iff_integrable_smul₀' hf.aestronglyMeasurable.aemeasurable.ennreal_ofReal.restrict
     (ae_of_all _ fun x => ENNReal.ofReal_lt_top)).mp hi
   apply ht.congr
   filter_upwards [ae_restrict_of_ae hn] with x hx

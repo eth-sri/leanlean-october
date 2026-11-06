@@ -3,6 +3,8 @@ module
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonPrinciple
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Comparison for the viscous terminal problem
@@ -24,16 +26,18 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set Matrix
-open scoped Topology MatrixOrder
+open Set Matrix
+open scoped MatrixOrder
+
+variable {n : ℕ}
 
 /-- Subtraction for the viscous operator at a slice-regular point. -/
-theorem viscousTransportedOperator_sub {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} {u v : KineticPoint n → ℝ} {p : KineticPoint n}
+theorem viscousTransportedOperator_sub  {B : FullKineticCoefficient n}
+    {b : PDE.VectorField n} {ε : ℝ} {u v : HypoellipticAleksandrov.KineticScalarField n} {p : KineticPoint n}
     (hu : IsSliceRegularAt u p) (hv : IsSliceRegularAt v p) :
     viscousTransportedOperator B b ε (fun q => u q - v q) p =
       viscousTransportedOperator B b ε u p - viscousTransportedOperator B b ε v p := by
-  have h : (fun q : KineticPoint n => u q - v q) = fun q => u q + (-1) * v q := by
+  have h : (fun q  => u q - v q) = fun q => u q + (-1) * v q := by
     funext q
     ring
   rw [h, viscousTransportedOperator_add hu (hv.const_mul (-1)),
@@ -41,25 +45,25 @@ theorem viscousTransportedOperator_sub {n : ℕ} {B : FullKineticCoefficient n}
   ring
 
 /-- A matrix coefficient with a positive lower Loewner bound is positive semidefinite. -/
-theorem posSemidef_of_hasEverywhereLoewnerBounds {n : ℕ} {lam Lam : ℝ} (hlam : 0 ≤ lam)
+theorem posSemidef_of_hasEverywhereLoewnerBounds  {lam Lam : ℝ} (hlam : 0 ≤ lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    (σ : ℝ) (y z : PDE.Vec n) : (B σ y z).PosSemidef := by
-  have h0 : (0 : PDE.Mat n) ≤ lam • (1 : PDE.Mat n) := by
-    rw [Matrix.nonneg_iff_posSemidef]
-    exact Matrix.PosSemidef.one.smul hlam
-  exact Matrix.nonneg_iff_posSemidef.mp (h0.trans (hB σ y z).1)
+    (σ : ℝ) (y z : PDE.Vec n) : (B σ y z).PosSemidef := (nonneg_iff_posSemidef.mp
+  (LE.le.trans
+    (Eq.mpr (id (congrArg (fun _a => _a) (propext nonneg_iff_posSemidef))) (PosSemidef.smul PosSemidef.one hlam))
+    (hB σ y z).left))
+
+variable (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n) (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 
 /-- The viscous classical terminal-solution predicate: `IsClassicalTerminalSolution` with
 `L_ε = L + ε Δ_z` in the equation. -/
-def IsClassicalViscousTerminalSolution {n : ℕ}
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) (ε : ℝ)
+def IsClassicalViscousTerminalSolution
+     (ε : ℝ)
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
-    (u : KineticPoint n → ℝ) : Prop :=
+    (u : HypoellipticAleksandrov.KineticScalarField n) : Prop :=
   (∃ C : ℝ, 0 ≤ C ∧
       ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, abs (u p) ≤ C) ∧
     ContinuousOn u (evolutionPastClosedCylinder Ω γ τ) ∧
-    ContDiffOn ℝ (⊤ : ℕ∞)
+    ContDiffOn ℝ PDE.smoothOrder
       (fun q => u ⟨q.1, q.2.1, q.2.2⟩)
       (evolutionPastInteriorRaw Ω γ τ) ∧
     (∀ p ∈ evolutionPastOpenCylinder Ω γ τ,
@@ -69,18 +73,18 @@ def IsClassicalViscousTerminalSolution {n : ℕ}
     (∀ p ∈ evolutionLateralFrontier Ω γ τ, u p = 0)
 
 /-- At `ε = 0` the viscous predicate is `IsClassicalTerminalSolution`. -/
-theorem isClassicalViscousTerminalSolution_zero_iff {n : ℕ}
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-    (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)) (u : KineticPoint n → ℝ) :
+theorem isClassicalViscousTerminalSolution_zero_iff
+
+    (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)) (u : HypoellipticAleksandrov.KineticScalarField n) :
     IsClassicalViscousTerminalSolution Ω γ B b 0 τ F u ↔
       IsClassicalTerminalSolution Ω γ B b τ F u := by
-  unfold IsClassicalViscousTerminalSolution IsClassicalTerminalSolution
-  simp only [viscousTransportedOperator_zero]
+  simp_all [IsClassicalViscousTerminalSolution, IsClassicalTerminalSolution]
 
+variable {Ω : PDE.VelocityRegion n} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+
+include hΩ hγ
 /-- The raw interior of the past moving cylinder is open. -/
-theorem isOpen_evolutionPastInteriorRaw {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (τ : ℝ) :
+theorem isOpen_evolutionPastInteriorRaw   (τ : ℝ) :
     IsOpen (evolutionPastInteriorRaw Ω γ τ) := by
   have h1 : IsOpen {q : ℝ × (PDE.Vec n × PDE.Vec n) | q.1 < τ} :=
     isOpen_lt continuous_fst continuous_const
@@ -94,16 +98,14 @@ theorem isOpen_evolutionPastInteriorRaw {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : 
     mem_movingDomain_iff]
 
 /-- A viscous classical solution is slice regular at every point of the open cylinder. -/
-theorem IsClassicalViscousTerminalSolution.isSliceRegularAt {n : ℕ} {Ω : Set (PDE.Vec n)}
-    (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {ε τ : ℝ}
-    {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
+theorem IsClassicalViscousTerminalSolution.isSliceRegularAt
+    {B : FullKineticCoefficient n} {b : PDE.VectorField n} {ε τ : ℝ}
+    {F : BoundedBorel (EvolutionAmbientState n)} {u : HypoellipticAleksandrov.KineticScalarField n}
     (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u)
     {p : KineticPoint n} (hp : p ∈ evolutionPastOpenCylinder Ω γ τ) :
-    IsSliceRegularAt u p := by
-  apply IsSliceRegularAt.of_contDiffAt
-  have hmem : (p.time, p.position, p.velocity) ∈ evolutionPastInteriorRaw Ω γ τ := hp
-  have hnhds := (isOpen_evolutionPastInteriorRaw hΩ hγ τ).mem_nhds hmem
-  exact (hu.2.2.1.contDiffAt hnhds).of_le (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
+    IsSliceRegularAt u p := (IsSliceRegularAt.of_contDiffAt
+  (ContDiffAt.of_le
+    (ContDiffOn.contDiffAt hu.right.right.left (IsOpen.mem_nhds (isOpen_evolutionPastInteriorRaw hΩ hγ τ) hp))
+    (WithTop.coe_le_coe.mpr le_top)))
 
 end HypoellipticAleksandrov.KineticAleksandrov

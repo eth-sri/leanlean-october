@@ -6,35 +6,49 @@ import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import HypoellipticAleksandrov.KineticAleksandrov.Holder.GaussianBarrierVelocity
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonLinear
 import Mathlib.Tactic
+import Aesop
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-! # Exact spatial jets of the exponential ellipsoid barrier -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov Parabolic
 open scoped Matrix BigOperators
 
+variable {d : ℕ} (Q : PDE.Mat d)
+
 /-- The scaled defining quadratic is smooth at every finite order. -/
-theorem contDiff_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (k : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x => k * PDE.vecDot x (Q *ᵥ x)) := by
+theorem contDiff_scaled_quadratic  (k : ℝ) :
+    ContDiff ℝ PDE.smoothOrder (fun x => k * PDE.vecDot x (Q *ᵥ x)) := by
   unfold PDE.vecDot Matrix.mulVec dotProduct
   fun_prop
 
+variable (hQ : Q.IsSymm)
+
+section
+variable (k : ℝ) (x : PDE.Vec d)
+
+include hQ
 /-- The native gradient of the scaled symmetric quadratic. -/
-theorem gradient_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k : ℝ) (x : PDE.Vec d) :
+theorem gradient_scaled_quadratic
+     :
     PDE.classicalGradient (fun y => k * PDE.vecDot y (Q *ᵥ y)) x =
       (2 * k) • (Q *ᵥ x) := by
+  let sharedTerm_55649f5c99 := ((fun y : PDE.Vec d => k * ∑ j, y j * ∑ l, Q j l * y l))
   have h := (HasFDerivAt.fun_sum (u := Finset.univ) (fun (i : Fin d) _ =>
     (hasFDerivAt_apply (𝕜 := ℝ) i x).mul
       (HasFDerivAt.fun_sum (u := Finset.univ) (fun (j : Fin d) _ =>
         (hasFDerivAt_apply (𝕜 := ℝ) j x).const_mul (Q i j))))).const_mul k
   ext i
   unfold PDE.classicalGradient
-  change fderiv ℝ (fun y => k * ∑ j, y j * ∑ l, Q j l * y l) x
+  change fderiv ℝ sharedTerm_55649f5c99 x
     (PDE.basisVec i) = _
-  change HasFDerivAt (fun y : PDE.Vec d => k * ∑ j, y j * ∑ l, Q j l * y l) _ x at h
+  change HasFDerivAt sharedTerm_55649f5c99 _ x at h
   rw [h.fderiv]
   simp only [smul_apply, add_apply,
     sum_apply, ContinuousLinearMap.proj_apply,
@@ -51,16 +65,15 @@ theorem gradient_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   ring
 
 /-- The native Hessian of the scaled symmetric quadratic. -/
-theorem hessian_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k : ℝ) (x : PDE.Vec d) :
+theorem hessian_scaled_quadratic
+     :
     sliceHessian (fun y => k * PDE.vecDot y (Q *ᵥ y)) x = (2 * k) • Q := by
-  have hg : PDE.classicalGradient (fun y => k * PDE.vecDot y (Q *ᵥ y)) =
-      fun y => (2 * k) • (Q *ᵥ y) := funext (gradient_scaled_quadratic Q hQ k)
+
   have h := (hasFDerivAt_pi.mpr (fun j : Fin d =>
     (HasFDerivAt.fun_sum (u := Finset.univ) (fun (l : Fin d) _ =>
       (hasFDerivAt_apply (𝕜 := ℝ) l x).const_mul (Q j l))).const_mul (2 * k)))
   unfold sliceHessian
-  rw [hg]
+  rw [(funext (gradient_scaled_quadratic Q hQ k))]
   ext i j
   change fderiv ℝ (fun y => fun j => (2 * k) * ∑ l, Q j l * y l) x
     (PDE.basisVec i) j = _
@@ -70,10 +83,18 @@ theorem hessian_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
     PDE.basisVec_apply, smul_eq_mul, Matrix.smul_apply]
   simp only [mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
   rw [hQ.apply i j]
+end
 
+
+variable (k C : ℝ)
+
+section
+variable (x : PDE.Vec d)
+
+include hQ
 /-- The exponential barrier's exact gradient, including its drift sign. -/
-theorem gradient_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k C : ℝ) (x : PDE.Vec d) :
+theorem gradient_exp_quadratic
+      :
     PDE.classicalGradient
       (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))) x =
       (-2 * C * k * Real.exp (k * PDE.vecDot x (Q *ᵥ x))) • (Q *ᵥ x) := by
@@ -84,14 +105,13 @@ theorem gradient_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
     funext y
     simp only [neg_mul, neg_neg]
     ring
-  have heDiff : DifferentiableAt ℝ (fun y : PDE.Vec d =>
-      (-C) * Real.exp (-((-k) * PDE.vecDot y (Q *ᵥ y)))) x := by
-    exact hq.hasFDerivAt.neg.exp.differentiableAt.const_mul (-C)
-  have hExDiff : DifferentiableAt ℝ (fun y : PDE.Vec d =>
+
+  have hExDiff : DifferentiableAt ℝ (fun y  =>
       Real.exp (-((-k) * PDE.vecDot y (Q *ᵥ y)))) x :=
     hq.hasFDerivAt.neg.exp.differentiableAt
   have hExpGrad := Holder.classicalGradient_exp_neg hq
-  rw [he, classicalGradient_add (differentiableAt_const _) heDiff,
+  rw [he, classicalGradient_add (differentiableAt_const _) (show _ by
+      exact hq.hasFDerivAt.neg.exp.differentiableAt.const_mul (-C)),
     classicalGradient_const_mul (-C) hExDiff, hExpGrad,
     gradient_scaled_quadratic Q hQ]
   ext i
@@ -100,8 +120,8 @@ theorem gradient_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   ring
 
 /-- The exponential barrier's exact Hessian. -/
-theorem hessian_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k C : ℝ) (x : PDE.Vec d) (i j : Fin d) :
+theorem hessian_exp_quadratic
+      (i j : Fin d) :
     sliceHessian
       (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))) x i j =
       -C * Real.exp (k * PDE.vecDot x (Q *ᵥ x)) *
@@ -117,9 +137,7 @@ theorem hessian_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   have hc : sliceHessian (fun _ : PDE.Vec d => C * Real.exp k) x = 0 := by
     have hg : PDE.classicalGradient (fun _ : PDE.Vec d => C * Real.exp k) =
         fun _ => (0 : PDE.Vec d) := by
-      funext y; ext l
-      simp only [PDE.classicalGradient, fderiv_const_apply, zero_apply,
-        Pi.zero_apply]
+      funext y; aesop
     unfold sliceHessian
     rw [hg, fderiv_const_apply]
     rfl
@@ -129,10 +147,13 @@ theorem hessian_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
     gradient_scaled_quadratic Q hQ, hessian_scaled_quadratic Q hQ]
   simp only [Pi.smul_apply, Matrix.smul_apply, smul_eq_mul, neg_mul, neg_neg]
   ring
+end
 
+
+include hQ in
 /-- Exact backward operator of the exponential ellipsoid barrier. -/
-theorem scalarOperator_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k C : ℝ) (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
+theorem scalarOperator_exp_quadratic
+     (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (z : TimeVelocity d) :
     scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
       (fun p => C * (Real.exp k - Real.exp (k * PDE.vecDot p.2 (Q *ᵥ p.2)))) z =
@@ -140,8 +161,9 @@ theorem scalarOperator_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
       (2 * k * matrixContraction (A z.1 z.2) Q +
        4 * k ^ 2 * PDE.vecDot (Q *ᵥ z.2) (A z.1 z.2 *ᵥ (Q *ᵥ z.2)) +
        2 * k * PDE.vecDot (b z.1 z.2) (Q *ᵥ z.2)) := by
+  let sharedTerm_e0d013e6c5 := ((fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))))
   have ht : scalarTimeDerivative
-      (fun p : TimeVelocity d => C *
+      (fun p  => C *
         (Real.exp k - Real.exp (k * PDE.vecDot p.2 (Q *ᵥ p.2)))) z = 0 := by
     change deriv (fun _ : ℝ => C *
       (Real.exp k - Real.exp (k * PDE.vecDot z.2 (Q *ᵥ z.2)))) z.1 = 0
@@ -149,13 +171,13 @@ theorem scalarOperator_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   rw [scalarParabolicZeroOrderOperator_apply, ht]
   simp only [zero_mul, add_zero, zero_add]
   change matrixContraction (A z.1 z.2)
-    (sliceHessian (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y))))
+    (sliceHessian sharedTerm_e0d013e6c5
       z.2) + PDE.vecDot (b z.1 z.2)
         (PDE.classicalGradient
-          (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))) z.2) = _
+          sharedTerm_e0d013e6c5 z.2) = _
   rw [gradient_exp_quadratic Q hQ]
   have hh : sliceHessian
-      (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))) z.2 =
+      sharedTerm_e0d013e6c5 z.2 =
       fun i j => -C * Real.exp (k * PDE.vecDot z.2 (Q *ᵥ z.2)) *
         (2 * k * Q i j + 4 * k ^ 2 * (Q *ᵥ z.2) i * (Q *ᵥ z.2) j) := by
     ext i j

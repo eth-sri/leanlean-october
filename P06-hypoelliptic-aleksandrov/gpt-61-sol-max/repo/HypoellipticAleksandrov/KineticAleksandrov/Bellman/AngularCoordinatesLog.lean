@@ -22,7 +22,7 @@ def bellmanLogRadiusHomeomorph : BellmanPositiveTime ≃ₜ ℝ where
   continuous_invFun := Real.continuous_exp.subtype_mk _
 
 /-- The log-radius/angular product coordinates retain the literal angular variable. -/
-def bellmanLogAngularHomeomorph : (BellmanPositiveTime × ℝ) ≃ₜ (ℝ × ℝ) :=
+def bellmanLogAngularHomeomorph  :=
   bellmanLogRadiusHomeomorph.prodCongr (Homeomorph.refl ℝ)
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -10,23 +10,23 @@ This module rewrites the reverse-time dual pairing of the Bochner spatial-form
 action against a separated test as its literal scalar integral.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory Set Topology
-open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
+open MeasureTheory Set
+open scoped Matrix Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The Bochner spatial-form action paired with a separated test is its
 pointwise spatial-form integral. -/
 theorem reverseTimeSpatialForm_pairing_eq_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d) (c : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))

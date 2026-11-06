@@ -11,13 +11,13 @@ truncation radius ensure that the terminal datum vanishes on every actual latera
 in the window. This is proved before constructing any full-domain solution.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+
 
 /-- Terminal support remains strictly inside the moving ellipsoid throughout a window
 whose length depends on the collar distance and the common curve Lipschitz constant. -/
@@ -37,9 +37,9 @@ theorem mem_straightenedEllipsoid_of_terminal_support_window
   have hg : PDE.vecEuclideanNorm (g τ - g p.time) ≤ d := by
     have ht := hgL τ p.time
     rw [abs_of_nonneg (sub_nonneg.mpr hτ)] at ht
-    have hw : τ - p.time ≤ d / (1 + L) := by linarith
+
     have he : d / (1 + L) * (1 + L) = d := div_mul_cancel₀ _ (by linarith)
-    have hdq : 0 ≤ d / (1 + L) := div_nonneg hd.le (by linarith)
+
     nlinarith
   have hnorm : PDE.vecEuclideanNorm (p.position - g p.time) ≤ r - d := by
     have he : p.position - g p.time = (p.position - g τ) + (g τ - g p.time) := by abel

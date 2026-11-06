@@ -2,6 +2,9 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.HormanderBridge
 public import HypoellipticAleksandrov.KineticAleksandrov.Hormander
+import Batteries.Tactic.Alias
+
+
 
 /-!
 # Hörmander's hypoellipticity theorem
@@ -12,9 +15,9 @@ smooth `c, g`. Then `u` agrees almost everywhere with a smooth function. The pro
 the `hormander` package.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 set_option autoImplicit false
 
 open Set MeasureTheory
@@ -25,19 +28,6 @@ open scoped BigOperators
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The locally integrable Hörmander regularity statement. -/
-theorem exists_smooth_aeRepresentative_of_hormander
-    {k N : ℕ} {Ω : Set (PDE.Vec N)}
-    (hΩ : IsOpen Ω)
-    (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N)
-    (c g u : PDE.Vec N → ℝ)
-    (hX : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (X i) Ω)
-    (hspan : LieAlgebraSpansOn Ω X)
-    (hc : ContDiffOn ℝ (⊤ : ℕ∞) c Ω)
-    (hEq : HasWeakHormanderEquation Ω X c g u) :
-    ∃ f : PDE.Vec N → ℝ,
-      ContDiffOn ℝ (⊤ : ℕ∞) f Ω ∧
-        u =ᵐ[Measure.restrict volume Ω] f := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.exists_smooth_aeRepresentative_of_hormander_aux
-    hΩ X c g u hX hspan hc hEq
+alias exists_smooth_aeRepresentative_of_hormander := _root_.HypoellipticAleksandrov.KineticAleksandrov.exists_smooth_aeRepresentative_of_hormander_aux
 
 end HypoellipticAleksandrov.KineticAleksandrov

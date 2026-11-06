@@ -5,9 +5,9 @@ import Mathlib.Tactic
 
 /-! # Exact transformation of weighted radial volume -/
 
-@[expose] public section
-noncomputable section
-open MeasureTheory Set
+ public section
+
+open MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Inverse radius scaling gives the exact inverse homogeneous weight. -/

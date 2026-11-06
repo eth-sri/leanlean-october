@@ -7,7 +7,7 @@ import Mathlib.Tactic.Linarith
 
 /-! # Positive flattening scales and vanishing stationary source norms -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
@@ -29,11 +29,11 @@ theorem construction_small_scale_threshold (alpha : ℝ) (ha : 0 < alpha) :
   have hp := Real.rpow_le_rpow hr.le hrr.le ha.le
   change Real.rpow r alpha ≤ Real.rpow r0 alpha at hp
   rw [hpower] at hp
-  have hca : flatteningOffset * a = 1 / 4 := by dsimp [a]; field_simp
+
   have hb : flatteningOffset * Real.rpow r alpha ≤ 1 / 4 := by
     calc
       _ ≤ flatteningOffset * a := mul_le_mul_of_nonneg_left hp hc.le
-      _ = _ := hca
+      _ = _ := (show _ by dsimp [a]; field_simp)
   have hpow := (Real.rpow_pos_of_pos hr alpha).le
   have hco := mul_le_mul_of_nonneg_right flatteningOffset_bounds.1.le hpow
   constructor
@@ -51,34 +51,34 @@ theorem construction_flat_source_decay_of_profile {d : ℕ} {alpha : ℝ}
       (flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha (r j))
       (ENNReal.ofReal p) (volume.restrict {q | profileFunction h q < 1}))
       atTop (nhds 0) := by
+
   obtain ⟨C, r0, hC, hr0, hb⟩ := flat_source_eLpNorm_le_of_profile d alpha p ha ha1 hp h
-  have he : ∀ᶠ j in atTop, r j < r0 := hlim.eventually (gt_mem_nhds hr0)
-  have hpow := (Real.continuous_rpow_const hexponent.le).tendsto (0 : ℝ) |>.comp hlim
-  have hpow0 : Tendsto (fun j => Real.rpow (r j) (alpha - 2 + 4 * (d : ℝ) / p))
-      atTop (nhds 0) := by
-    simpa only [Function.comp_def, Real.rpow_eq_pow, Real.zero_rpow hexponent.ne'] using hpow
-  have hup : Tendsto (fun j => ENNReal.ofReal
-      (C * Real.rpow (r j) (alpha - 2 + 4 * (d : ℝ) / p))) atTop (nhds 0) := by
-    simpa only [Function.comp_def, mul_zero, ENNReal.ofReal_zero] using
-      ENNReal.continuous_ofReal.continuousAt.tendsto.comp
-      (hpow0.const_mul C)
-  apply tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hup
+
+
+
+
+  apply tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds (by
+      simpa only [Function.comp_def, mul_zero, ENNReal.ofReal_zero] using
+        ENNReal.continuous_ofReal.continuousAt.tendsto.comp
+        ((show Tendsto (fun j => Real.rpow (r j) (((alpha - 2 + 4 * (d : ℝ) / p))))
+      atTop (nhds 0) by
+            simpa only [Function.comp_def, Real.rpow_eq_pow, Real.zero_rpow hexponent.ne'] using ((Real.continuous_rpow_const hexponent.le).tendsto (0 ) |>.comp hlim)).const_mul C))
   · exact Eventually.of_forall (fun _ => bot_le)
-  · filter_upwards [he] with j hj
+  · filter_upwards [(hlim.eventually (gt_mem_nhds hr0))] with j hj
     exact hb (r j) (hr j) hj
 
 /-- A concrete positive sequence stays strictly below a prescribed positive threshold. -/
 theorem construction_exists_scales (r0 : ℝ) (hr0 : 0 < r0) :
     ∃ r : ℕ → ℝ, (∀ j, 0 < r j ∧ r j < r0) ∧ Tendsto r atTop (nhds 0) := by
-  let r : ℕ → ℝ := fun j => r0 * (1 / ((j : ℝ) + 2))
-  refine ⟨r, ?_, ?_⟩
+
+  refine ⟨(fun j => r0 * (1 / ((j : ℝ) + 2))), ?_, ?_⟩
   · intro j
-    have hj : 0 ≤ (j : ℝ) := Nat.cast_nonneg _
+
     constructor
     · exact mul_pos hr0 (div_pos zero_lt_one (by linarith))
     · change r0 * (1 / ((j : ℝ) + 2)) < r0
-      have hi : 1 / ((j : ℝ) + 2) < 1 := (div_lt_one (by linarith)).mpr (by linarith)
-      simpa only [mul_one] using mul_lt_mul_of_pos_left hi hr0
+
+      simpa only [mul_one] using mul_lt_mul_of_pos_left ((div_lt_one (by linarith)).mpr (by linarith)) hr0
   · have hh := (tendsto_add_atTop_iff_nat 1).2
       (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
     have hh' : Tendsto (fun j : ℕ => 1 / ((j : ℝ) + 2)) atTop (nhds 0) := by

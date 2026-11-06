@@ -10,12 +10,12 @@ This module composes the bounded pivot-factorization energy identity with the
 timewise reverse-time variational residual evaluation.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory
-open scoped ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
+open MeasureTheory
+open scoped ENNReal Matrix.Norms.Elementwise
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -23,12 +23,12 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 weighted energy identity with its source-minus-form residual. -/
 theorem
     IsReverseTimeVariationalEnergySolution.integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -38,11 +38,11 @@ theorem
     (hcSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
+    (F : PDE.TimeScalarField d)
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (initial : PDE.ScalarLp Ω (2 ))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
@@ -70,9 +70,7 @@ theorem
       ‖valueCLM hΩ (A (u t))‖ ^ 2 * eta.deriv t
         ∂reverseTimeVolume (r₁ - r₀)) =
         -(∫ t, (2 * (g t) (S (u t))) * eta t
-          ∂reverseTimeVolume (r₁ - r₀)) := by
-      exact
-      integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_pivot_factorization
+          ∂reverseTimeVolume (r₁ - r₀)) := integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_pivot_factorization
         hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) A S hfactor u g hdu eta
     _ = -(∫ t,
         (2 *

@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FiniteUnionD
 
 /-! # Strict future support of the actual enlarged exit kernels -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 
 /-- Every actual enlarged exit occurs strictly after its pole time. -/
 theorem enlargedVisitExitKernel_ae_time_gt
@@ -25,12 +25,12 @@ theorem enlargedVisitExitKernel_ae_time_gt
         (enlargedVisitPole H T ⟨p, hp⟩), q ∈ finiteUnionExitSet H p.time T := by
       rw [ae_iff]
       exact finiteUnionExit_compl_exit hH hLE hlam hLam A H p.time T
-        (enlargedVisitPole H T ⟨p, hp⟩) le_rfl
+        _ le_rfl
     apply h.mono
     intro q hq
     rcases hq with hq | hq
     · exact hq.1 ▸ hp.1
     · exact hq.1
-  · simp only [ae_zero, Filter.eventually_bot]
+  · rfl
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -8,17 +8,17 @@ public import HypoellipticAleksandrov.Parabolic.WeakJetExtension
 
 /-! # Compactly supported continuous weak representatives of a scalar jet -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
-open Set Filter MeasureTheory
+open Set
 open scoped Topology
 
 /-- Localization supplies global continuous compactly supported selected weak derivatives. -/
 theorem exists_compact_continuous_scalar_jet
-    {N : ℕ} {V K : Set (TimeVelocity N)} (hV : IsOpen V)
+    {N : ℕ} {V K : HypoellipticAleksandrov.Parabolic.Region N} (hV : IsOpen V)
     (hK : IsCompact K) (hKV : K ⊆ V)
-    (q : TimeVelocity N → ℝ) (hq : IsScalarC12On q V) :
+    (q : HypoellipticAleksandrov.Parabolic.ScalarField N) (hq : IsScalarC12On q V) :
     ∃ w : ParabolicW12Function N univ 1,
       Continuous w.toFun ∧ HasCompactSupport w.toFun ∧
       Continuous w.timeDeriv ∧ HasCompactSupport w.timeDeriv ∧
@@ -31,7 +31,7 @@ theorem exists_compact_continuous_scalar_jet
       EqOn w.velocityHessian (scalarSpatialHessian q) K := by
   obtain ⟨U, hU, hKU, hUV, hcU⟩ :=
     exists_open_between_and_isCompact_closure hK hV hKV
-  have hsub : U ⊆ V := subset_closure.trans hUV
+  have hsub  := subset_closure.trans hUV
   have hlocal : IsScalarC12On q U :=
     ⟨hq.continuousOn.mono hsub, fun z hz => hq.timeSlice_differentiableAt (hsub hz),
       fun z hz => hq.spatialSlice_contDiffAt (hsub hz),
@@ -70,7 +70,7 @@ theorem exists_compact_continuous_scalar_jet
       (m := 0) (by norm_num)).continuous.clm_apply continuous_const).clm_apply
       continuous_const
   have hvs : tsupport W.toFun ⊆ tsupport b := tsupport_mul_subset_left
-  have hts : tsupport W.timeDeriv ⊆ tsupport b :=
+  have hts  :=
     tsupport_mul_timeDeriv_subset b q (scalarTimeDerivative q)
   have hgs (i : Fin N) : tsupport (fun z => W.velocityGrad z i) ⊆ tsupport b :=
     tsupport_mul_velocityGrad_subset b q (fun z => scalarSpatialGradient q z i)
@@ -97,14 +97,13 @@ theorem exists_compact_continuous_scalar_jet
         hlocal.continuousOn_scalarSpatialGradient))).add
       (((continuous_apply j).comp_continuousOn hlocal.continuousOn_scalarSpatialGradient).mul
         (hgb i).continuousOn)).add (hlocal.continuousOn.mul (hhb i j).continuousOn)
-  have compact (f : TimeVelocity N → ℝ) (hf : tsupport f ⊆ tsupport b) :
-      HasCompactSupport f := hc.of_isClosed_subset (isClosed_tsupport _) hf
+  have compact (f : HypoellipticAleksandrov.Parabolic.ScalarField N) (hf : tsupport f ⊆ tsupport b)  := hc.of_isClosed_subset (isClosed_tsupport _) hf
   have eqon {E : Type} {f g : TimeVelocity N → E} (he : f =ᶠ[𝓝ˢ K] g) : EqOn f g K := by
     obtain ⟨O, _, hKO, hO⟩ := eventually_nhdsSet_iff_exists.mp he
     exact fun z hz => hO z (hKO hz)
   exact ⟨W, hvc, compact _ hvs, htc, compact _ hts,
     fun i => ⟨hgc i, compact _ (hgs i)⟩,
-    fun i j => ⟨hhc i j, compact _ (hhs i j)⟩, eqon (E := ℝ) hv, eqon (E := ℝ) ht,
-    eqon (E := PDE.Vec N) hg, eqon (E := PDE.Mat N) hh⟩
+    fun i j => ⟨hhc i j, compact _ (hhs i j)⟩, eqon  hv, eqon  ht,
+    eqon  hg, eqon  hh⟩
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

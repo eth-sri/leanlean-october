@@ -6,12 +6,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.DecayIterationAri
 
 /-! # Source frequency iteration, including the short-interval remainder -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped ENNReal
+
 
 /-- The frequency-floor estimate follows from the actual scaled blocks and Fourier composition. -/
 theorem fourier_floor_iteration_of_blocks {d : ℕ}
@@ -35,7 +35,7 @@ theorem fourier_floor_iteration_of_blocks {d : ℕ}
         Real.exp (-(-Real.log (1 - δ) / L) * (τ - σ) *
           PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ)) := by
   dsimp only
-  have hN : 0 < PDE.vecEuclideanNorm ξ := frequency_norm_pos hξ
+  have hN  := frequency_norm_pos hξ
   let N := PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ)
   have hNp : 0 < N := Real.rpow_pos_of_pos hN _
   let T := L * PDE.vecEuclideanNorm ξ ^ (-(2 / 3 : ℝ))
@@ -44,32 +44,30 @@ theorem fourier_floor_iteration_of_blocks {d : ℕ}
     rw [Real.rpow_neg hN.le]
     rfl
   have hT : 0 < T := by rw [hTdef]; exact div_pos hL hNp
-  have ha : 0 < 1 - δ := sub_pos.mpr hδ1
+  have ha  := sub_pos.mpr hδ1
   let x := (τ - σ) * N / L
-  have hx : 0 ≤ x := (div_pos (mul_pos (sub_pos.mpr hστ) hNp) hL).le
+
   have hxT : x * T = τ - σ := by
     rw [hTdef]
     dsimp [x]
     field_simp
-  have hk : (Nat.floor x : ℝ) * T ≤ τ - σ := by
-    rw [← hxT]
-    exact mul_le_mul_of_nonneg_right (Nat.floor_le hx) hT.le
-  have hstep : ∀ (s : ℝ) (w : PDE.Vec d),
-      totalVariationNorm (fourierKernel K s (s + T) (le_add_of_nonneg_right hT.le) ξ w) ≤
-        ENNReal.ofReal (1 - δ) := by
-    intro s w
-    have hst : s ≤ s + T := le_add_of_nonneg_right hT.le
-    let qs := wholeSpaceQuery s (s + T) hst w 0
-    have hs := hsteps s w qs rfl _ (fourierKernel_spec K s (s + T) hst ξ w)
-    have hf : totalVariationNorm (fourierKernel K s (s + T) hst ξ w) ≠ ⊤ :=
-      ne_of_lt ((fourierKernel_totalVariation_le_one K s (s + T) hst ξ w).trans_lt
-        ENNReal.one_lt_top)
-    calc
-      _ = ENNReal.ofReal (TV (fourierKernel K s (s + T) hst ξ w)) :=
-        (ENNReal.ofReal_toReal hf).symm
-      _ ≤ ENNReal.ofReal (1 - δ) := ENNReal.ofReal_le_ofReal hs
-  have hn := fourier_natural_block_iteration K hcomp hcov ξ hT ha.le hstep
-    (Nat.floor x) σ τ hστ.le hk v
+
+
+  have hn := fourier_natural_block_iteration K hcomp hcov ξ hT ha.le (by
+      intro s w
+      have hst : s ≤ s + T := le_add_of_nonneg_right hT.le
+
+
+      have hf  :=
+        ne_of_lt ((fourierKernel_totalVariation_le_one K s (s + T) hst ξ w).trans_lt
+          ENNReal.one_lt_top)
+      calc
+        _ = ENNReal.ofReal (TV (fourierKernel K s (s + T) hst ξ w)) :=
+          (ENNReal.ofReal_toReal hf).symm
+        _ ≤ ENNReal.ofReal (1 - δ) := ENNReal.ofReal_le_ofReal (hsteps s w (wholeSpaceQuery s (s + T) hst w 0) rfl _ (fourierKernel_spec K s (s + T) hst ξ w)))
+    (Nat.floor x) σ τ hστ.le (by
+        rw [← hxT]
+        exact mul_le_mul_of_nonneg_right (Nat.floor_le ((div_pos (mul_pos (sub_pos.mpr hστ) hNp) hL).le)) hT.le) v
   have hr := ENNReal.toReal_mono (by simp) hn
   simp only [ENNReal.toReal_pow, ENNReal.toReal_ofReal ha.le] at hr
   rw [iteration_projection_eq K σ τ hστ.le v ξ q hq ν hν]
@@ -100,8 +98,8 @@ theorem fourier_decay_frequency_iteration_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
     nonzero_frequency_blocks_of_unitBlock d hd lam Lam hlam hlamLam hEvol hblock
   refine ⟨L, δ, hL, hδ, hδ1, ?_⟩
   intro B hB S K hreal ξ hξ σ τ hστ v q hq ν hν
-  have hcov := (iteration_evolution_clauses hEvol hd hlam hlamLam B hB S K hreal).2.2
-  exact fourier_floor_iteration_of_blocks K hreal.2.2.2 hcov hL hδ hδ1 ξ hξ
+
+  exact fourier_floor_iteration_of_blocks K hreal.2.2.2 ((iteration_evolution_clauses hEvol hd hlam hlamLam B hB S K hreal).2.2) hL hδ hδ1 ξ hξ
     (hsteps B hB S K hreal ξ hξ) σ τ hστ v q hq ν hν
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

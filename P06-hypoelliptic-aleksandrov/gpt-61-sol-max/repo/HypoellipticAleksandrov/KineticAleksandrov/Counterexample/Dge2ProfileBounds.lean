@@ -3,12 +3,14 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2ProfileConstruction
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2SpectralCompact
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ShellGeometry
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Compact gauge-shell comparison for the actual homogeneous profile -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
@@ -17,10 +19,12 @@ theorem isCompact_unitGaugeShell (d : ℕ) : IsCompact {q : XV d | rho q = 1} :=
   (isCompact_rho_sublevel d 1).of_isClosed_subset
     (isClosed_eq (continuous_rho d) continuous_const) (fun _ h => le_of_eq h)
 
+variable {d : ℕ}
+
 /-- Positive-degree homogeneity transports shell bounds to every nonzero kinetic point. -/
-theorem homogeneous_profile_comparison {d : ℕ} (alpha : ℝ) (ha : 0 < alpha)
+theorem homogeneous_profile_comparison  (alpha : ℝ) (ha : 0 < alpha)
     (H : XV d → ℝ) (hzero : H 0 = 0)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
+    (hsmooth : ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ))
     (hpos : ∀ q, q ≠ 0 → 0 < H q)
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q) :
     ∃ c C : ℝ, 0 < c ∧ c ≤ C ∧ ∀ q,
@@ -61,12 +65,12 @@ theorem homogeneous_profile_comparison {d : ℕ} (alpha : ℝ) (ha : 0 < alpha)
     · simpa only [mul_comm, Real.rpow_eq_pow] using mul_le_mul_of_nonneg_left hhi hnonneg
 
 /-- The actual profile is quantitatively comparable with the source kinetic gauge power. -/
-theorem geometricProfile_comparison {d : ℕ} (alpha C₀ sigma R : ℝ) (ha : 0 < alpha)
+theorem geometricProfile_comparison  (alpha C₀ sigma R : ℝ) (ha : 0 < alpha)
     (hC₀ : 0 ≤ C₀) (hsigma : 0 < sigma) (hR : 0 < R) :
     ∃ c C : ℝ, 0 < c ∧ c ≤ C ∧ ∀ q : XV d,
       c * Real.rpow (rho q) alpha ≤ geometricProfile alpha C₀ sigma R q ∧
       geometricProfile alpha C₀ sigma R q ≤ C * Real.rpow (rho q) alpha := by
-  apply homogeneous_profile_comparison alpha ha (geometricProfile alpha C₀ sigma R)
+  apply homogeneous_profile_comparison alpha ha _
     (geometricProfile_zero d alpha C₀ sigma R ha)
     (geometricProfile_smooth_off_origin alpha C₀ sigma R hsigma hR)
     (geometricProfile_pos alpha C₀ sigma R hC₀ hsigma hR)

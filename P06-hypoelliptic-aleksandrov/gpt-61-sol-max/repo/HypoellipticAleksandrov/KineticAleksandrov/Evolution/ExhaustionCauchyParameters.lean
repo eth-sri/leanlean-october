@@ -10,13 +10,13 @@ The growth-face and collar errors tend to zero together. This numerical lemma
 chooses the common inner cylinder before choosing approximation indices.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open Filter Set
+open Filter
 open scoped Topology
 
 /-- The concrete growth/collar error can be made arbitrarily small, with any prescribed
@@ -49,7 +49,7 @@ theorem exists_small_dirichlet_comparison_parameters
       ((hq.eventually (gt_mem_nhds hr0)).and
         ((hq.eventually (gt_mem_nhds hd)).and (hjS.and
           (herr.eventually (gt_mem_nhds he))))) |>.exists
-  have hj0 : 0 ≤ (j : ℝ) := Nat.cast_nonneg j
+
   have hqpos : 0 < q j := by dsimp [q]; positivity
   have hden : (j : ℝ) + 1 ≤ 1 + ((j : ℝ) + 1) ^ 2 := by nlinarith
   have hsmall : M / (1 + ((j : ℝ) + 1) ^ 2) ≤ M * q j := by

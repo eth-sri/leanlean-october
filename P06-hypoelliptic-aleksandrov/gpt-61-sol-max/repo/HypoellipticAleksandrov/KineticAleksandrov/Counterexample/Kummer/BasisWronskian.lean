@@ -20,8 +20,10 @@ open Set
 def weightedWronskian (b : ℝ) (f g : ℝ → ℝ) (z : ℝ) : ℝ :=
   Real.exp (-z) * z ^ b * (deriv f z * g z - f z * deriv g z)
 
+variable (a b : ℝ) (f g : ℝ → ℝ)
+
 /-- The weighted Wronskian has zero derivative for two classical solutions. -/
-theorem hasDerivAt_weightedWronskian (a b : ℝ) (f g : ℝ → ℝ)
+theorem hasDerivAt_weightedWronskian
     (z : ℝ) (hz : 0 < z) (hf : DifferentiableAt ℝ f z)
     (hg : DifferentiableAt ℝ g z) (hf' : DifferentiableAt ℝ (deriv f) z)
     (hg' : DifferentiableAt ℝ (deriv g) z)
@@ -44,7 +46,7 @@ theorem hasDerivAt_weightedWronskian (a b : ℝ) (f g : ℝ → ℝ)
       (Real.exp (-z) * z ^ (b - 1) * f z) * heqg
 
 /-- Abel's weighted Wronskian is constant on the positive axis. -/
-theorem weightedWronskian_eq (a b : ℝ) (f g : ℝ → ℝ)
+theorem weightedWronskian_eq
     (hf : DifferentiableOn ℝ f (Ioi 0)) (hg : DifferentiableOn ℝ g (Ioi 0))
     (hf' : DifferentiableOn ℝ (deriv f) (Ioi 0))
     (hg' : DifferentiableOn ℝ (deriv g) (Ioi 0))

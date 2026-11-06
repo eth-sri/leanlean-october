@@ -3,6 +3,10 @@ module
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicInkSpotsBridge
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicOpenCover
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyGeometry
+import Batteries.Tactic.Alias
+import HypoellipticAleksandrov.Measure.ParabolicDyadicMeasure
+
+
 
 /-!
 # Dyadic forward boxes for parabolic Morrey geometry
@@ -12,14 +16,14 @@ coordinate boxes used by the Morrey layer.  It deliberately does not identify
 the half-open partition cells with these boxes.
 -/
 
-@[expose] public section
+ public section
 
-open Filter Set
-open scoped Topology
+open Filter
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
-noncomputable section
+section
 
 /-- The existing dyadic source-box data is literally the forward box used by
 the physical Morrey projection. -/
@@ -29,15 +33,13 @@ theorem parabolicDyadicOpenCell_eq_parabolicBox
       parabolicBox 1
         (parabolicDyadicSourceBox index).radius
         (parabolicDyadicSourceBox index).baseTime
-        (parabolicDyadicSourceBox index).center := by
-  change parabolicDyadicOpenCell index =
-    inkSpotsSourceBox (parabolicDyadicSourceBox index)
-  exact (inkSpotsSourceBox_parabolicDyadicSourceBox index).symm
+        (parabolicDyadicSourceBox index).center := (id (Eq.symm (inkSpotsSourceBox_parabolicDyadicSourceBox index)))
+
+variable {d n : Nat} (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d)
 
 /-- One simultaneous dyadic refinement halves the forward-box radius. -/
 theorem parabolicDyadicSourceBox_radius_childIndex
-    {d n : Nat} (index : ParabolicDyadicIndex d n)
-    (child : ParabolicDyadicChild d) :
+     :
     (parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)).radius =
       (parabolicDyadicSourceBox index).radius / 2 := by
   change ((2 : Real) ^ (n + 1))⁻¹ = ((2 : Real) ^ n)⁻¹ / 2
@@ -47,8 +49,7 @@ theorem parabolicDyadicSourceBox_radius_childIndex
 /-- The corresponding child forward box is contained in its parent forward
 box, in the orientation expected by normalized restriction. -/
 theorem parabolicDyadicForwardBox_child_subset
-    {d n : Nat} (index : ParabolicDyadicIndex d n)
-    (child : ParabolicDyadicChild d) :
+     :
     parabolicBox 1
         (parabolicDyadicSourceBox
           (parabolicDyadicChildIndex index child)).radius
@@ -67,13 +68,8 @@ theorem parabolicDyadicForwardBox_child_subset
 
 /-- The dyadic forward-box diameter scale tends to zero. -/
 theorem tendsto_two_mul_parabolicDyadicSourceBox_radius_atTop :
-    Tendsto (fun n : Nat => 2 * ((2 : Real) ^ n)⁻¹) atTop (nhds 0) := by
-  have heq : parabolicDyadicVelocityWidth =
-      (fun n : Nat => 2 * ((2 : Real) ^ n)⁻¹) := by
-    funext n
-    exact rfl
-  rw [← heq]
-  exact tendsto_parabolicDyadicVelocityWidth_atTop
+    Tendsto (fun n : Nat => 2 * ((2 : Real) ^ n)⁻¹) atTop (nhds 0) := tendsto_parabolicDyadicVelocityWidth_atTop
+
 
 end
 

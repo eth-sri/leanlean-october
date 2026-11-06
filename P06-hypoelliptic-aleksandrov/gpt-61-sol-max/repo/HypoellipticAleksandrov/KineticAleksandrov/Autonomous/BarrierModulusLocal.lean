@@ -5,18 +5,18 @@ import Mathlib.Analysis.Calculus.MeanValue
 
 /-! # Uniform reference-scale increments of the actual Bellman extension -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization
-open HypoellipticAleksandrov Set MeasureTheory
+open Set
 
 /-- Gauge below one implies product norm at most one, using both kinetic weights. -/
 theorem barrier_small_gauge_norm {q : ℝ × ℝ} (hq : bellmanGauge q < 1) : ‖q‖ ≤ 1 := by
   obtain ⟨hX, hv⟩ := bellmanGauge_coordinate_bounds q
   rw [Prod.norm_def, max_le_iff, Real.norm_eq_abs, Real.norm_eq_abs]
-  have hpow : bellmanGauge q ^ 3 ≤ 1 := by
-    simpa only [one_pow] using pow_le_pow_left₀ (bellmanGauge_nonneg q) hq.le 3
-  exact ⟨hX.trans hpow, hv.trans hq.le⟩
+
+  exact ⟨hX.trans (by
+      simpa only [one_pow] using pow_le_pow_left₀ (bellmanGauge_nonneg q) hq.le 3), hv.trans hq.le⟩
 
 /-- A reference-scale axis increment is controlled either by distant jets or a compact ball. -/
 theorem barrier_reference_axis_increment (Phi : (ℝ × ℝ) → ℝ)
@@ -41,15 +41,15 @@ theorem barrier_reference_axis_increment (Phi : (ℝ × ℝ) → ℝ)
   · push Not at hfar
     obtain ⟨t, ht, htg⟩ := hfar
     have htq := barrier_small_gauge_norm htg
-    have hx : ‖axis x‖ ≤ 2 := by
-      have hdist := (haxisdist x t).trans
-        (by simpa only [abs_sub_comm] using (abs_sub_left_of_mem_uIcc ht).trans hxy)
-      have hh := norm_le_norm_add_norm_sub' (axis x) (axis t)
-      linarith only [hdist, hh, htq]
-    have hy : ‖axis y‖ ≤ 2 := by
-      have hdist := (haxisdist y t).trans ((abs_sub_right_of_mem_uIcc ht).trans hxy)
-      have hh := norm_le_norm_add_norm_sub' (axis y) (axis t)
-      linarith only [hdist, hh, htq]
-    exact (abs_sub _ _).trans (by linarith only [hball _ hx, hball _ hy, hD])
+
+
+    exact (abs_sub _ _).trans (by linarith only [hball _ (show ‖axis x‖ ≤ 2 by
+        have hdist := (haxisdist x t).trans
+          (by simpa only [abs_sub_comm] using (abs_sub_left_of_mem_uIcc ht).trans hxy)
+        have hh := norm_le_norm_add_norm_sub' (axis x) (axis t)
+        linarith only [hdist, hh, htq]), hball _ (show ‖axis y‖ ≤ 2 by
+
+
+            linarith only [((haxisdist y t).trans ((abs_sub_right_of_mem_uIcc ht).trans hxy)), (norm_le_norm_add_norm_sub' (axis y) (axis t)), htq]), hD])
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization

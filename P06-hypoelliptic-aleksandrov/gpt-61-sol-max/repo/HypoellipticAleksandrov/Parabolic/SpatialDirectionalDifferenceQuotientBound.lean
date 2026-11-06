@@ -11,7 +11,7 @@ coordinate into a signed forward spatial difference-quotient bound.  The
 zero-step case is included without assuming the bound is nonnegative.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -20,7 +20,7 @@ open scoped Convex
 /-- A signed spatial difference quotient is bounded by the corresponding directed
 spatial Fréchet derivative along its coordinate segment. -/
 theorem abs_spatialDifferenceQuotient_le_of_segment_spatialFDeriv_bound
-    {d : ℕ} {f : TimeVelocity d → ℝ} {M h : ℝ}
+    {d : ℕ} {f : HypoellipticAleksandrov.Parabolic.ScalarField d} {M h : ℝ}
     {k : Fin d} {z : TimeVelocity d}
     (hdiff : ∀ w ∈ [z -[ℝ] spatialShift k h z], DifferentiableAt ℝ f w)
     (hdir : ∀ w ∈ [z -[ℝ] spatialShift k h z],
@@ -30,15 +30,15 @@ theorem abs_spatialDifferenceQuotient_le_of_segment_spatialFDeriv_bound
   · subst h
     have hMnonneg : 0 ≤ M :=
       (abs_nonneg ((fderiv ℝ f z) (0, PDE.basisVec k))).trans
-        (hdir z (left_mem_segment ℝ z (spatialShift k 0 z)))
+        (hdir z (left_mem_segment ℝ z _))
     simpa only [spatialDifferenceQuotient_apply, spatialTranslate_apply,
       spatialShift_zero, id_eq, sub_self, zero_div, abs_zero] using hMnonneg
   · obtain ⟨w, hw, hMVT⟩ :=
-      domain_mvt (s := [z -[ℝ] spatialShift k h z]) (f := f) (f' := fderiv ℝ f)
+      domain_mvt
         (fun w hw => (hdiff w hw).hasFDerivAt.hasFDerivWithinAt)
-        (convex_segment z (spatialShift k h z))
-        (left_mem_segment ℝ z (spatialShift k h z))
-        (right_mem_segment ℝ z (spatialShift k h z))
+        (convex_segment z _)
+        (left_mem_segment ℝ z _)
+        (right_mem_segment ℝ z _)
     have hshift_sub : spatialShift k h z - z = h • (0, PDE.basisVec k) := by
       simp only [spatialShift, add_sub_cancel_left, Prod.smul_mk, smul_zero]
     have hMVT' : f (spatialShift k h z) - f z =

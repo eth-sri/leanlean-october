@@ -6,19 +6,21 @@ public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 
 /-! # Fixed-position parabolic slices of the normalized kinetic equation -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
+variable {d : ℕ}
+
 /-- The fixed-position embedding is continuous in the literal physical coordinates. -/
-theorem continuous_fixedPosition {d : ℕ} (x : PDE.Vec d) :
+theorem continuous_fixedPosition  (x : PDE.Vec d) :
     Continuous (fun z : TimeVelocity d => (⟨z.1, x, z.2⟩ : KineticPoint d)) :=
   KineticPoint.continuous_mk continuous_fst continuous_const continuous_snd
 
 /-- Restriction to a fixed position preserves the anisotropic scalar regularity. -/
-theorem kineticC112_fixedPosition {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} {E : Set (TimeVelocity d)}
+theorem kineticC112_fixedPosition  {u : HypoellipticAleksandrov.KineticScalarField d}
+    {D : Set (KineticPoint d)} {E : HypoellipticAleksandrov.Parabolic.Region d}
     (hu : IsKineticC112On u D) (x : PDE.Vec d)
     (hE : ∀ z ∈ E, (⟨z.1, x, z.2⟩ : KineticPoint d) ∈ D) :
     IsScalarC12On (fun z => u ⟨z.1, x, z.2⟩) E := by
@@ -35,7 +37,7 @@ theorem kineticC112_fixedPosition {d : ℕ} {u : KineticPoint d → ℝ}
   · exact hu.continuousOn_kineticVelocityHessian.comp hc hE
 
 /-- The source's fixed-position parabolic cylinder lies inside the unit kinetic cylinder. -/
-theorem normalized_slice_mem {d : ℕ} (x : PDE.Vec d)
+theorem normalized_slice_mem  (x : PDE.Vec d)
     (hx : x ∈ PDE.euclideanBall 0 (1 / 8 : ℝ))
     (z : TimeVelocity d)
     (hz : z ∈ scalarParabolicOpenCylinder (-9 / 16) 0
@@ -53,13 +55,13 @@ theorem normalized_slice_mem {d : ℕ} (x : PDE.Vec d)
       PDE.euclideanBall_mono (by norm_num) (by norm_num : (1 / 8 : ℝ) ≤ 1) hx
 
 /-- The normalized homogeneous kinetic equation is the forced scalar slice equation. -/
-theorem normalized_slice_equation {d : ℕ}
-    (A : CoefficientField d) (u : KineticPoint d → ℝ)
-    (hu : IsKineticC112On u (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1))
+theorem normalized_slice_equation
+    (A : CoefficientField d) (u : HypoellipticAleksandrov.KineticScalarField d)
+    (hu : IsKineticC112On u (backwardCylinder (⟨0, 0, 0⟩ ) 1))
     (he : ∀ P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1,
       backwardOperatorOfTimeVelocityCoefficient A u P = 0)
     (x : PDE.Vec d) (hx : x ∈ PDE.euclideanBall 0 (1 / 8 : ℝ)) :
-    let w : TimeVelocity d → ℝ := fun z => u ⟨z.1, x, z.2⟩
+    let w : HypoellipticAleksandrov.Parabolic.ScalarField d := fun z => u ⟨z.1, x, z.2⟩
     IsScalarC12On w (scalarParabolicOpenCylinder (-9 / 16) 0
       (PDE.euclideanBall 0 (3 / 4 : ℝ))) ∧
     ∀ z ∈ scalarParabolicOpenCylinder (-9 / 16) 0
@@ -70,7 +72,7 @@ theorem normalized_slice_equation {d : ℕ}
   dsimp only
   refine ⟨kineticC112_fixedPosition hu x (normalized_slice_mem x hx), ?_⟩
   intro z hz
-  have h := he ⟨z.1, x, z.2⟩ (normalized_slice_mem x hx z hz)
+  have h := he _ (normalized_slice_mem x hx z hz)
   rw [backwardOperatorOfTimeVelocityCoefficient_apply] at h
   change kineticTimeDerivative u ⟨z.1, x, z.2⟩ -
     matrixContraction (A z.1 z.2) (kineticVelocityHessian u ⟨z.1, x, z.2⟩) = _

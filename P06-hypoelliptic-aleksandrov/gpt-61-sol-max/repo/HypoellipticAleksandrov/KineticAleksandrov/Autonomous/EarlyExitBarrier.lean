@@ -5,12 +5,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitMeasureS
 
 /-! # A single exponential velocity-face estimate without coefficient derivatives -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo TheoremA Evolution
-open scoped ENNReal
+open Set
+
+
 
 /-- One velocity face has the exponential early-exit estimate supplied by its literal
 classical supersolution. Parameters are internal algebraic data, not analytic inputs. -/
@@ -29,8 +29,8 @@ theorem reconstruction_early_face_exponential_bound
   let c := Lam * k ^ 2
   let b := sMinus + theta
   let phi := reconstructionExponentialPlane (-c) beta (c * b - beta * face)
-  have hLam0 : 0 < Lam := hlam.trans_le hLam
-  have hc : 0 ≤ c := mul_nonneg hLam0.le (sq_nonneg k)
+
+  have hc  := mul_nonneg (hlam.trans_le hLam).le (sq_nonneg k)
   have hp (p : Point) : phi p = Real.exp (c * (b - p.time) + beta * (p.velocity 0 - face)) := by
     dsimp only [phi, reconstructionExponentialPlane]
     congr 1
@@ -49,30 +49,29 @@ theorem reconstruction_early_face_exponential_bound
     have hh : b - p.time ≤ theta := by dsimp only [b]; linarith
     have hh' := mul_le_mul_of_nonneg_left hh hc
     linarith
-  have hbound : ∃ M : ℝ, ∀ p, e.1.time ≤ p.time → p.time ≤ T →
-      p.velocity 0 ∈ H.carrier → |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M := by
-    refine ⟨(1 + c) * Real.exp (c * theta), fun p ht _ hv => ?_⟩
-    have hv' : p.velocity 0 ∈ Icc H.lo H.hi := ⟨hv.1.le, hv.2.le⟩
-    have hpb := hpn p ht hv'
-    have ha := A.bounds (p.position 0) (p.velocity 0)
-    have ha0 : 0 ≤ A.a (p.position 0) (p.velocity 0) := hlam.le.trans ha.1
-    have hpb0 := (hpos p).le
-    constructor
-    · rw [abs_of_nonneg hpb0]
-      nlinarith [Real.exp_pos (c * theta)]
-    · rw [hop, abs_mul, abs_mul, abs_of_nonpos (sub_nonpos.mpr ha.2),
-        abs_of_nonneg (sq_nonneg k), abs_of_nonneg hpb0]
-      have h1 : -(A.a (p.position 0) (p.velocity 0) - Lam) * k ^ 2 ≤ c := by
-        dsimp only [c]
-        nlinarith [sq_nonneg k]
-      have hh := mul_le_mul h1 hpb hpb0 hc
-      nlinarith [Real.exp_pos (c * theta)]
+
   have hB : MeasurableSet {p : Point | p.velocity 0 = face ∧ p.time ≤ b} :=
     (isClosed_eq ((continuous_apply 0).comp continuous_velocity)
       continuous_const).measurableSet.inter
       (isClosed_le continuous_time continuous_const).measurableSet
   have hmass := stripExitOfRealization_le_supersolution hH hlam hLam A H E hE T e phi
-    (reconstructionExponentialPlane_smooth _ _ _) hbound
+    (reconstructionExponentialPlane_smooth _ _ _) (by
+        refine ⟨(1 + c) * Real.exp (c * theta), fun p ht _ hv => ?_⟩
+
+        have hpb := hpn p ht (show p.velocity 0 ∈ Icc H.lo H.hi from ⟨hv.1.le, hv.2.le⟩)
+        have ha := A.bounds (p.position 0) (p.velocity 0)
+
+        have hpb0 := (hpos p).le
+        constructor
+        · rw [abs_of_nonneg hpb0]
+          nlinarith [Real.exp_pos (c * theta)]
+        · rw [hop, abs_mul, abs_mul, abs_of_nonpos (sub_nonpos.mpr ha.2),
+            abs_of_nonneg (sq_nonneg k), abs_of_nonneg hpb0]
+
+          have hh := mul_le_mul (show -(A.a (p.position 0) (p.velocity 0) - Lam) * k ^ 2 ≤ c by
+              dsimp only [c]
+              nlinarith [sq_nonneg k]) hpb hpb0 hc
+          nlinarith [Real.exp_pos (c * theta)])
     (fun p _ _ => by
       rw [hop]
       exact mul_nonpos_of_nonpos_of_nonneg

@@ -7,22 +7,24 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripGreenCh
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 open SectionTwo
-open scoped ENNReal
+
+
+variable (H : Interval)
 
 /-- A finite valid pole is also valid for the infinite terminal horizon. -/
-def stripPoleInfinite (H : Interval) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
+def stripPoleInfinite  (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     StripPole H ⊤ := ⟨e.1, WithTop.coe_lt_top _, e.2.2⟩
 
 /-- Truncating the actual infinite-horizon Green measure gives the finite-horizon measure. -/
-theorem stripGreenOfKernel_horizonRestriction (H : Interval)
+theorem stripGreenOfKernel_horizonRestriction
     (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) :
     stripGreenOfKernel H K T e =
       (stripGreenOfKernel H K ⊤ (stripPoleInfinite H T e)).restrict {p | p.time < T} := by
   let R := ENNReal.ofReal (T - e.1.time)
-  have hR : 0 < T - e.1.time := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
+  have hR  := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
   have hh := greenMeasure_horizonRestriction K e.1.time R ⊤ le_top
     (Measure.dirac (stripPoleState H T e))
     (greenMeasure K e.1.time R (stripHorizon_pos H T e) _)

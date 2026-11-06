@@ -8,9 +8,9 @@ import Mathlib.Tactic
 
 /-! # Strictly positive annular normalization of homogeneous Radon measures -/
 
-@[expose] public section
-noncomputable section
-open Set MeasureTheory
+ public section
+
+open MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- A compact ambient cutoff away from the origin remains compact on the punctured carrier. -/
@@ -37,12 +37,11 @@ theorem bellman_annular_integral_pos (beta : ℝ) (mu : Measure BellmanPunctured
     (bellman_annular_test_compact chi hcompact hs)
   apply (integral_pos_iff_support_of_nonneg
     (fun q : BellmanPuncturedPlane => hpos q.val) hi).mpr
-  have hm := bellmanUnitAnnulus_measure_ne_zero beta mu hn hd
-  have hsupp : bellmanUnitAnnulus ⊆ Function.support
-      (fun q : BellmanPuncturedPlane => chi q.val) := by
-    intro q hq
-    exact Function.mem_support.mpr (by rw [hone _ hq.1 hq.2]; norm_num)
-  exact lt_of_lt_of_le (pos_iff_ne_zero.mpr hm) (measure_mono hsupp)
+
+
+  exact lt_of_lt_of_le (pos_iff_ne_zero.mpr (bellmanUnitAnnulus_measure_ne_zero beta mu hn hd)) (measure_mono (by
+      intro q hq
+      exact Function.mem_support.mpr (by rw [hone _ hq.1 hq.2]; norm_num)))
 
 /-- Dividing by the proved positive annular mass gives integral one. -/
 theorem bellman_annular_normalize (mu : Measure BellmanPuncturedPlane)

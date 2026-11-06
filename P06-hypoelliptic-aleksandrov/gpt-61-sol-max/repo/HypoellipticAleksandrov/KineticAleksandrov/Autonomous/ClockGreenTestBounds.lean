@@ -4,11 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTe
 
 /-! # Actual uniform-in-spacetime bounds for a physical clock test -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open Set Parabolic
+open TheoremA
 
 /-- The genuine clock potential and its literal physical source are bounded on the active strip. -/
 theorem clockSourcePotential_pullback_bounded

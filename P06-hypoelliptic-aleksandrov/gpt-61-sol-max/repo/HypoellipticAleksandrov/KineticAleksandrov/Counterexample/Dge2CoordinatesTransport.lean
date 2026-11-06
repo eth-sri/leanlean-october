@@ -5,40 +5,38 @@ import Mathlib.Tactic.LinearCombination
 
 /-! # Exact transport contraction of the homogeneous ansatz -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 /-- The full joint derivative splits into the two literal slice derivatives. -/
-theorem fderiv_uncurry_split {d : ℕ} (phi : PDE.Vec d → PDE.Vec d → ℝ)
+theorem fderiv_uncurry_split {d : ℕ} (phi : PDE.Vec d → PDE.ScalarField d)
     (y e u w : PDE.Vec d) (hphi : DifferentiableAt ℝ (Function.uncurry phi) (y, e)) :
     fderiv ℝ (Function.uncurry phi) (y, e) (u, w) =
-      fderiv ℝ (fun z => phi z e) y u + fderiv ℝ (fun z => phi y z) e w := by
-  have hiy : HasFDerivAt (fun z : PDE.Vec d => (z, e))
-      ((ContinuousLinearMap.id ℝ (PDE.Vec d)).prod
-        (0 : PDE.Vec d →L[ℝ] PDE.Vec d)) y := by
-    convert (hasFDerivAt_id (𝕜 := ℝ) y).prodMk
-      (hasFDerivAt_const (𝕜 := ℝ) e y) using 1
-    funext z
-    rfl
-  have hie : HasFDerivAt (fun z : PDE.Vec d => (y, z))
-      ((0 : PDE.Vec d →L[ℝ] PDE.Vec d).prod
-        (ContinuousLinearMap.id ℝ (PDE.Vec d))) e := by
-    convert (hasFDerivAt_const (𝕜 := ℝ) y e).prodMk
-      (hasFDerivAt_id (𝕜 := ℝ) e) using 1
-    funext z
-    rfl
-  have hy := hphi.hasFDerivAt.comp y hiy
-  have he := hphi.hasFDerivAt.comp e hie
+      fderiv ℝ (fun z => phi z e) y u + fderiv ℝ ((phi y)) e w := by
+
+
+
+  have he := hphi.hasFDerivAt.comp e (by
+      convert (hasFDerivAt_const (𝕜 := ℝ) y e).prodMk
+        (hasFDerivAt_id  e) using 1
+      funext z
+      rfl)
   have hy' : HasFDerivAt (fun z => phi z e)
       ((fderiv ℝ (Function.uncurry phi) (y, e)).comp
         ((ContinuousLinearMap.id ℝ (PDE.Vec d)).prod 0)) y := by
-    convert hy using 1
+    convert (hphi.hasFDerivAt.comp y (show HasFDerivAt (fun z : PDE.Vec d => (z, e))
+      ((ContinuousLinearMap.id ℝ (PDE.Vec d)).prod
+        (0 : PDE.Vec d →L[ℝ] PDE.Vec d)) y by
+        convert (hasFDerivAt_id (𝕜 := ℝ) y).prodMk
+          (hasFDerivAt_const  e y) using 1
+        funext z
+        rfl)) using 1
     funext z
     rfl
-  have he' : HasFDerivAt (fun z => phi y z)
+  have he' : HasFDerivAt ((phi y))
       ((fderiv ℝ (Function.uncurry phi) (y, e)).comp
         ((0 : PDE.Vec d →L[ℝ] PDE.Vec d).prod (ContinuousLinearMap.id ℝ (PDE.Vec d)))) e := by
     convert he using 1
@@ -50,16 +48,18 @@ theorem fderiv_uncurry_split {d : ℕ} (phi : PDE.Vec d → PDE.Vec d → ℝ)
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.prod_apply,
     ContinuousLinearMap.id_apply, zero_apply]
 
+variable {d : ℕ}
+
 /-- The normalized velocity differential has the exact inverse-radius factor. -/
-theorem normalizedVelocityDifferential_apply {d : ℕ} (x v w : PDE.Vec d) (hx : x ≠ 0) :
+theorem normalizedVelocityDifferential_apply  (x v w : PDE.Vec d) (hx : x ≠ 0) :
     normalizedVelocityDifferential x v w =
       (-(1 / 3 : ℝ) * (PDE.vecEuclideanNorm x)⁻¹ *
         PDE.vecDot (positionDirection x) w) • normalizedVelocity x v := by
-  have hr : 0 < PDE.vecEuclideanNorm x := PDE.vecEuclideanNorm_pos_iff.mpr hx
+
   have hp : Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3 : ℝ) - 1) =
       (PDE.vecEuclideanNorm x)⁻¹ * Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3 : ℝ)) := by
     simp only [Real.rpow_eq_pow]
-    rw [Real.rpow_sub hr, Real.rpow_one]
+    rw [Real.rpow_sub (PDE.vecEuclideanNorm_pos_iff.mpr hx), Real.rpow_one]
     ring
   simp only [normalizedVelocityDifferential, ContinuousLinearMap.smulRight_apply,
     smul_apply, smul_eq_mul, positionRadiusDifferential_apply, normalizedVelocity,
@@ -68,18 +68,19 @@ theorem normalizedVelocityDifferential_apply {d : ℕ} (x v w : PDE.Vec d) (hx :
   ring
 
 /-- The cube-root physical velocity is recovered exactly from the normalized velocity. -/
-theorem velocity_eq_cubeRoot_smul {d : ℕ} (x v : PDE.Vec d) (hx : x ≠ 0) :
+theorem velocity_eq_cubeRoot_smul  (x v : PDE.Vec d) (hx : x ≠ 0) :
     v = Real.rpow (PDE.vecEuclideanNorm x) (1 / 3) • normalizedVelocity x v := by
-  have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
+
   unfold normalizedVelocity
   rw [smul_smul]
   simp only [Real.rpow_eq_pow]
-  rw [← Real.rpow_add hr]
+  rw [← Real.rpow_add (PDE.vecEuclideanNorm_pos_iff.mpr hx)]
   norm_num
 
+variable (alpha : ℝ) (phi : PDE.Vec d → PDE.ScalarField d)
+
 /-- The exact position derivative gives the angular expression before transport contraction. -/
-theorem fderiv_homogeneousAnsatz_position {d : ℕ} (alpha : ℝ)
-    (phi : PDE.Vec d → PDE.Vec d → ℝ) (x v w : PDE.Vec d) (hx : x ≠ 0)
+theorem fderiv_homogeneousAnsatz_position   (x v w : PDE.Vec d) (hx : x ≠ 0)
     (hphi : DifferentiableAt ℝ (Function.uncurry phi)
       (normalizedVelocity x v, positionDirection x)) :
     fderiv ℝ (fun z => homogeneousAnsatz alpha phi z v) x w =
@@ -88,15 +89,15 @@ theorem fderiv_homogeneousAnsatz_position {d : ℕ} (alpha : ℝ)
           (alpha / 3 * phi (normalizedVelocity x v) (positionDirection x) -
             (1 / 3 : ℝ) * fderiv ℝ (fun z => phi z (positionDirection x))
               (normalizedVelocity x v) (normalizedVelocity x v)) +
-          fderiv ℝ (fun z => phi (normalizedVelocity x v) z) (positionDirection x)
+          fderiv ℝ ((phi (normalizedVelocity x v))) (positionDirection x)
             (w - PDE.vecDot (positionDirection x) w • positionDirection x)) := by
-  have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
+
   have hp : Real.rpow (PDE.vecEuclideanNorm x) (alpha / 3) *
       (PDE.vecEuclideanNorm x)⁻¹ =
       Real.rpow (PDE.vecEuclideanNorm x) (alpha / 3 - 1) := by
     simp only [Real.rpow_eq_pow]
-    rw [Real.rpow_sub hr, Real.rpow_one]
-    simp only [div_eq_mul_inv]
+    rw [Real.rpow_sub (PDE.vecEuclideanNorm_pos_iff.mpr hx), Real.rpow_one]
+    rfl
   rw [(hasFDerivAt_homogeneousAnsatz_position alpha phi x v hx hphi).fderiv]
   simp only [add_apply, smul_apply, smul_eq_mul, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.prod_apply, positionRadiusDifferential_apply,
@@ -108,18 +109,17 @@ theorem fderiv_homogeneousAnsatz_position {d : ℕ} (alpha : ℝ)
     (PDE.vecDot (positionDirection x) w *
       (-(1 / 3 : ℝ) * fderiv ℝ (fun z => phi z (positionDirection x))
         (normalizedVelocity x v) (normalizedVelocity x v)) +
-      fderiv ℝ (fun z => phi (normalizedVelocity x v) z) (positionDirection x)
+      fderiv ℝ ((phi (normalizedVelocity x v))) (positionDirection x)
         (w - PDE.vecDot (positionDirection x) w • positionDirection x)) * hp
 
 /-- Transport and the velocity Hessian have the identical kinetic prefactor. -/
-theorem homogeneousAnsatz_transport {d : ℕ} (alpha : ℝ)
-    (phi : PDE.Vec d → PDE.Vec d → ℝ) (x v : PDE.Vec d) (hx : x ≠ 0)
+theorem homogeneousAnsatz_transport   (x v : PDE.Vec d) (hx : x ≠ 0)
     (hphi : DifferentiableAt ℝ (Function.uncurry phi)
       (normalizedVelocity x v, positionDirection x)) :
     fderiv ℝ (fun z => homogeneousAnsatz alpha phi z v) x v =
       Real.rpow (PDE.vecEuclideanNorm x) ((alpha - 2) / 3) *
         ansatzTransport alpha phi (normalizedVelocity x v) (positionDirection x) := by
-  have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
+
   have hv := velocity_eq_cubeRoot_smul x v hx
   have hdot : PDE.vecDot (positionDirection x) v =
       Real.rpow (PDE.vecEuclideanNorm x) (1 / 3) *
@@ -139,7 +139,7 @@ theorem homogeneousAnsatz_transport {d : ℕ} (alpha : ℝ)
       Real.rpow (PDE.vecEuclideanNorm x) (1 / 3) =
       Real.rpow (PDE.vecEuclideanNorm x) ((alpha - 2) / 3) := by
     simp only [Real.rpow_eq_pow]
-    rw [← Real.rpow_add hr]
+    rw [← Real.rpow_add (PDE.vecEuclideanNorm_pos_iff.mpr hx)]
     congr 1
     ring
   rw [fderiv_homogeneousAnsatz_position alpha phi x v v hx hphi, htangent, hdot, map_smul]

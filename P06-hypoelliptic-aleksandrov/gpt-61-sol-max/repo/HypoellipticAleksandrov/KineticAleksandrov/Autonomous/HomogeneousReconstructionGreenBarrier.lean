@@ -3,25 +3,27 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassQuadratic
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionCollar
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelCutoffSequence
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Profile comparison for the actual finite-strip Green measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory Filter
+open SectionTwo TheoremA
 open scoped Topology ENNReal
 
+variable (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H) (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
+
+include hH hlam hLam hE
 /-- Integrating a smooth nonnegative profile against the actual Green measure is bounded
 by any smooth native supersolution profile. -/
 theorem reconstruction_green_lintegral_le_barrier
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
+
     (k q : Point → ℝ)
-    (hk : ContDiff ℝ (⊤ : ℕ∞) (rawLift k)) (hkn : ∀ p, 0 ≤ k p)
+    (hk : ContDiff ℝ PDE.smoothOrder (rawLift k)) (hkn : ∀ p, 0 ≤ k p)
     (hqc : Continuous q) (hqr : ∀ p, IsSliceRegularAt q p)
     (hqn : ∀ p ∈ evolutionPastClosedCylinder (intervalDomain H) (fun _ => 0) T, 0 ≤ q p)
     (hqo : ∀ p ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T,
@@ -35,7 +37,7 @@ theorem reconstruction_green_lintegral_le_barrier
   let D := evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T
   let U := (KineticPoint.equivProd 1).symm ⁻¹' D
   have hD : IsOpen D := isOpen_duhamelCylinder
-    (γ := fun _ => 0) (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H))
+     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H))
     continuous_const T
   have hU : IsOpen U := hD.preimage (KineticPoint.homeomorphProd 1).symm.continuous
   obtain ⟨χ, hχ, hb, hmono, hcover⟩ := exists_increasing_smooth_interior_cutoffs hU
@@ -43,7 +45,7 @@ theorem reconstruction_green_lintegral_le_barrier
     χ n (KineticPoint.equivProd 1 p) * k p
   have hgc (n : ℕ) : HasCompactSupport (g n) :=
     ((hχ n).2.1.comp_homeomorph (KineticPoint.homeomorphProd 1)).mul_right
-  have hgs (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (rawLift (g n)) :=
+  have hgs (n : ℕ) : ContDiff ℝ PDE.smoothOrder (rawLift (g n)) :=
     (hχ n).1.mul hk
   have hgcont (n : ℕ) : Continuous (g n) :=
     ((hχ n).1.continuous.comp (KineticPoint.homeomorphProd 1).continuous).mul
@@ -56,11 +58,11 @@ theorem reconstruction_green_lintegral_le_barrier
       (KineticPoint.homeomorphProd 1).continuous) hx
     have hu := (hχ n).2.2 hy
     change (KineticPoint.equivProd 1).symm (KineticPoint.equivProd 1 p) ∈ D at hu
-    simpa only [Equiv.symm_apply_apply] using hu
+    exact hu
   have hgb (n : ℕ) : ∃ C : ℝ, 0 ≤ C ∧ ∀ p, |g n p| ≤ C := by
     obtain ⟨B, hB⟩ := (hgcont n).bounded_above_of_compact_support (hgc n)
     refine ⟨max B 0, le_max_right _ _, fun p => ?_⟩
-    have hh : |g n p| ≤ B := by simpa only [Real.norm_eq_abs] using hB p
+    have hh : |g n p| ≤ B := by exact hB p
     exact hh.trans (le_max_left _ _)
   let F (n : ℕ) : BoundedBorel Point :=
     ⟨g n ∘ sectionTwoPoint,
@@ -94,7 +96,7 @@ theorem reconstruction_green_lintegral_le_barrier
       simpa only [sub_zero, intervalDomain, PDE.mem_oneDimensionalAxisBox_iff,
         PDE.vecOneCoordinate, sectionTwoPoint, Interval.carrier] using hp.2
     have hnU : KineticPoint.equivProd 1 (sectionTwoPoint p) ∈ U := by
-      simpa only [U, mem_preimage, Equiv.symm_apply_apply] using hnp
+      exact hnp
     obtain ⟨N, hN⟩ := hcover _ hnU
     apply le_antisymm
     · apply le_iSup_of_le N
@@ -110,7 +112,7 @@ theorem reconstruction_green_lintegral_le_barrier
     intro n
     have hi := stripGreen_integrable_boundedBorel H E.2 T e (F n)
     rw [← ofReal_integral_eq_lintegral_ofReal hi
-      (Eventually.of_forall (fun p => hgn n (sectionTwoPoint p)))]
+      (Eventually.of_forall (fun p => hgn n _))]
     exact ENNReal.ofReal_le_ofReal (hbound n)
   · intro n
     exact (F n).measurable.ennreal_ofReal
@@ -120,14 +122,11 @@ theorem reconstruction_green_lintegral_le_barrier
 /-- Integrating a smooth nonnegative profile against the actual Green measure is bounded
 by any smooth native supersolution profile. -/
 theorem reconstruction_green_le_profile
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
+
     (k q : ℝ → ℝ) (C : ℝ) (hC : 0 ≤ C)
-    (hk : ContDiff ℝ (⊤ : ℕ∞) k) (hkn : ∀ v, 0 ≤ k v)
+    (hk : ContDiff ℝ PDE.smoothOrder k) (hkn : ∀ v, 0 ≤ k v)
     (hkb : ∀ v ∈ H.carrier, k v ≤ C)
-    (hq : ContDiff ℝ (⊤ : ℕ∞) q)
+    (hq : ContDiff ℝ PDE.smoothOrder q)
     (hqn : ∀ v, H.lo ≤ v → v ≤ H.hi → 0 ≤ q v)
     (hqo : ∀ p, transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1)
       (reconstructionProfile q) p ≤ -k (p.position 0)) :
@@ -136,7 +135,7 @@ theorem reconstruction_green_le_profile
   let D := evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T
   let U := (KineticPoint.equivProd 1).symm ⁻¹' D
   have hD : IsOpen D := isOpen_duhamelCylinder
-    (γ := fun _ => 0) (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H))
+     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H))
     continuous_const T
   have hU : IsOpen U := hD.preimage (KineticPoint.homeomorphProd 1).symm.continuous
   obtain ⟨χ, hχ, hb, -, hcover⟩ := exists_increasing_smooth_interior_cutoffs hU
@@ -144,7 +143,7 @@ theorem reconstruction_green_le_profile
     χ n (KineticPoint.equivProd 1 p) * k (p.position 0)
   have hgc (n : ℕ) : HasCompactSupport (g n) :=
     ((hχ n).2.1.comp_homeomorph (KineticPoint.homeomorphProd 1)).mul_right
-  have hgs (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (rawLift (g n)) :=
+  have hgs (n : ℕ) : ContDiff ℝ PDE.smoothOrder (rawLift (g n)) :=
     (hχ n).1.mul (hk.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.fst))
   have hgcont (n : ℕ) : Continuous (g n) :=
     ((hχ n).1.continuous.comp (KineticPoint.homeomorphProd 1).continuous).mul
@@ -157,19 +156,18 @@ theorem reconstruction_green_le_profile
       (KineticPoint.homeomorphProd 1).continuous) hx
     have hu := (hχ n).2.2 hy
     change (KineticPoint.equivProd 1).symm (KineticPoint.equivProd 1 p) ∈ D at hu
-    simpa only [Equiv.symm_apply_apply] using hu
+    exact hu
   have hgb (n : ℕ) (p : Point) : |g n p| ≤ C := by
     rw [abs_of_nonneg (hgn n p)]
     by_cases hz : g n p = 0
     · simpa only [hz] using hC
     · have hp := hgD n (subset_tsupport _ hz)
       have hv : p.position 0 ∈ H.carrier := by
-        simpa only [mem_movingDomain_iff, PDE.mem_translateSet_iff_sub_mem, sub_zero,
-          intervalDomain,
-          PDE.mem_oneDimensionalAxisBox_iff, PDE.vecOneCoordinate, Interval.carrier] using hp.2
+        simpa only [Interval.carrier, intervalDomain, mem_movingDomain_iff, sub_zero,
+          PDE.mem_oneDimensionalAxisBox_iff, PDE.vecOneCoordinate] using hp.2
       exact (mul_le_of_le_one_left (hkn _) (hb n _).2).trans (hkb _ hv)
   let F (n : ℕ) : BoundedBorel Point :=
-    ⟨g n ∘ sectionTwoPoint,
+    ⟨_,
       (hgcont n).measurable.comp (continuous_sectionTwoPoint 1).measurable,
       ⟨C, hC, fun p => hgb n _⟩⟩
   let K : BoundedBorel Point :=
@@ -193,7 +191,7 @@ theorem reconstruction_green_le_profile
       simpa only [sub_zero, intervalDomain, PDE.mem_oneDimensionalAxisBox_iff,
         PDE.vecOneCoordinate, sectionTwoPoint, Interval.carrier] using hp.2
     have hnU : KineticPoint.equivProd 1 (sectionTwoPoint p) ∈ U := by
-      simpa only [U, mem_preimage, Equiv.symm_apply_apply] using hnp
+      exact hnp
     obtain ⟨N, hN⟩ := hcover _ hnU
     apply tendsto_const_nhds.congr'
     filter_upwards [eventually_ge_atTop N] with n hn
@@ -239,10 +237,7 @@ theorem reconstruction_green_le_profile
 
 /-- Exponential collar occupation is uniformly quadratic in the collar width. -/
 theorem reconstruction_green_collar_bound
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
+
     {δ : ℝ} (hδ : 0 < δ) :
     ∫ p, reconstructionCollarWeight H δ (p.velocity 0) ∂stripGreenOfKernel H E.2 T e ≤
       2 * δ ^ 2 / lam := by

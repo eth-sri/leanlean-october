@@ -4,6 +4,13 @@ public import HypoellipticAleksandrov.Parabolic.ProperSplitIndexArithmetic
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyLeibniz
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Analysis.BoundedMultiplierLp
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import Mathlib.Tactic.Linarith
+import all HypoellipticAleksandrov.Parabolic.LocalWeakTimeProduct
+
+open private HypoellipticAleksandrov.Parabolic.ae_restrict_of_forall_mem from HypoellipticAleksandrov.Parabolic.LocalWeakTimeProduct
+
 
 /-!
 # Generic proper commutator residual
@@ -20,18 +27,22 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators
 
+variable {d M : ℕ}
+
+variable {U : HypoellipticAleksandrov.Parabolic.Region d}
+
 /-- The source derivative minus all proper coefficient commutators at one
 bounded parabolic multi-index. -/
 noncomputable def properDifferentiatedScalarCommutatorResidual
-    {d M : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} {F : ℝ → PDE.Vec d → ℝ}
+
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d} {F : PDE.TimeScalarField d}
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
-      (fun z : TimeVelocity d => F z.1 z.2))
-    (beta : ParabolicDerivativeIndex d M) : TimeVelocity d → ℝ :=
+      (fun z  => F z.1 z.2))
+    (beta : ParabolicDerivativeIndex d M) : HypoellipticAleksandrov.Parabolic.ScalarField d :=
   fun z =>
     E.representative beta z -
       (∑ i, ∑ j, ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
@@ -63,8 +74,8 @@ noncomputable def properDifferentiatedScalarCommutatorResidual
         else 0)
 
 private theorem coordinateIteratedFDeriv_continuousOn
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ M q U)
+      (hU : IsOpen U)
+    (q : HypoellipticAleksandrov.Parabolic.ScalarField d) (hq : ContDiffOn ℝ M q U)
     (alpha : TimeVelocityMultiIndex d) (halpha : alpha.order ≤ M) :
     ContinuousOn (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha q) U := by
   intro z hz
@@ -76,33 +87,29 @@ private theorem coordinateIteratedFDeriv_continuousOn
     (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi |>.continuousAt
 
 private theorem splitLeft_order_le
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
+     (beta : ParabolicDerivativeIndex d M)
     (gamma : TimeVelocityMultiIndex.Split beta.1) :
     gamma.left.order ≤ M := by
-  have horder_weight : beta.1.order ≤ beta.1.parabolicWeight := by
-    simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-      TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-      TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
-    omega
-  exact gamma.order_left_le.trans (horder_weight.trans beta.2)
 
-private theorem ae_restrict_of_forall_mem
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (S : Set α) (hS : MeasurableSet S) {P : α → Prop} (hP : ∀ x ∈ S, P x) :
-    ∀ᵐ x ∂μ.restrict S, P x := by
-  filter_upwards [ae_restrict_mem hS] with x hx
-  exact hP x hx
+  exact gamma.order_left_le.trans ((show beta.1.order ≤ beta.1.parabolicWeight by
+      simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
+        TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
+        TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
+      omega).trans beta.2)
+
+
+
 
 private theorem properAtom_memLp_and_eLpNorm_toReal_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ M q U)
+    {d M : ℕ} (U : HypoellipticAleksandrov.Parabolic.Region d) (hU : IsOpen U)
+    (q : HypoellipticAleksandrov.Parabolic.ScalarField d) (hq : ContDiffOn ℝ M q U)
     (B : ParabolicDerivativeIndex d M → ℝ)
     (hB : ∀ alpha, 0 ≤ B alpha)
     (hqBound : ∀ alpha z, z ∈ U →
       |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 q z| ≤ B alpha)
     (beta : ParabolicDerivativeIndex d M)
     (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (f : gamma.left ≠ 0 → TimeVelocity d → ℝ)
+    (f : gamma.left ≠ 0 → HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hf : ∀ hproper, ParabolicMemLpOn U 2 (f hproper)) :
     ParabolicMemLpOn U 2 (fun z =>
       if hproper : gamma.left ≠ 0 then
@@ -124,18 +131,17 @@ private theorem properAtom_memLp_and_eLpNorm_toReal_le
   classical
   by_cases hproper : gamma.left ≠ 0
   · simp only [dif_pos hproper]
-    let multiplier := fun z : TimeVelocity d =>
+    let multiplier := fun z  =>
       (beta.1.choose gamma.left : ℝ) *
         TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z
     have hcontinuous : ContinuousOn multiplier U :=
       continuousOn_const.mul (coordinateIteratedFDeriv_continuousOn hU q hq gamma.left
         (splitLeft_order_le beta gamma))
-    have hmeas : AEStronglyMeasurable multiplier (timeVelocityVolumeOn U) :=
-      hcontinuous.aestronglyMeasurable hU.measurableSet
+
     have hbound : ∀ᵐ z ∂timeVelocityVolumeOn U,
         |multiplier z| ≤ (beta.1.choose gamma.left : ℝ) *
           B (ParabolicDerivativeIndex.splitLeft beta gamma) :=
-      ae_restrict_of_forall_mem U hU.measurableSet fun z hz => by
+      _root_.HypoellipticAleksandrov.Parabolic.ae_restrict_of_forall_mem U hU.measurableSet fun z hz => by
         dsimp [multiplier]
         rw [abs_mul, abs_of_nonneg (Nat.cast_nonneg _)]
         exact mul_le_mul_of_nonneg_left
@@ -143,7 +149,7 @@ private theorem properAtom_memLp_and_eLpNorm_toReal_le
           (Nat.cast_nonneg _)
     simpa only [multiplier] using
       HypoellipticAleksandrov.Analysis.memLp_mul_eLpNorm_toReal_le_of_ae_abs_le
-        (mul_nonneg (Nat.cast_nonneg _) (hB _)) hmeas (hf hproper) hbound
+        (mul_nonneg (Nat.cast_nonneg _) (hB _)) (hcontinuous.aestronglyMeasurable hU.measurableSet) (hf hproper) hbound
   · simp only [dif_neg hproper]
     exact ⟨MemLp.zero', by simp⟩
 
@@ -160,11 +166,11 @@ private theorem eLpNorm_fin_sum_toReal_le
     funext x
     simp only [Finset.sum_apply]
   rw [hfun] at hle
-  have htop : (∑ i, eLpNorm (f i) 2 μ) ≠ ⊤ := by
-    rw [ENNReal.sum_ne_top]
-    intro i hi
-    exact (hf i).eLpNorm_ne_top
-  have hr := ENNReal.toReal_mono htop hle
+
+  have hr := ENNReal.toReal_mono (by
+      rw [ENNReal.sum_ne_top]
+      intro i hi
+      exact (hf i).eLpNorm_ne_top) hle
   rw [ENNReal.toReal_sum (fun i _ => (hf i).eLpNorm_ne_top)] at hr
   exact hr
 
@@ -173,26 +179,24 @@ private theorem eLpNorm_sub_toReal_le
     (f g : α → ℝ) (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
     ENNReal.toReal (eLpNorm (fun x => f x - g x) 2 μ) ≤
       ENNReal.toReal (eLpNorm f 2 μ) + ENNReal.toReal (eLpNorm g 2 μ) := by
-  have hle : eLpNorm (f - g) 2 μ ≤ eLpNorm f 2 μ + eLpNorm g 2 μ :=
-    eLpNorm_sub_le (by norm_num)
-  have htop : eLpNorm f 2 μ + eLpNorm g 2 μ ≠ ⊤ :=
-    ENNReal.add_ne_top.mpr ⟨hf.eLpNorm_ne_top, hg.eLpNorm_ne_top⟩
-  have hr := ENNReal.toReal_mono htop hle
+
+
+  have hr := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hf.eLpNorm_ne_top, hg.eLpNorm_ne_top⟩) (eLpNorm_sub_le (by norm_num))
   rw [ENNReal.toReal_add hf.eLpNorm_ne_top hg.eLpNorm_ne_top] at hr
   exact hr
 
 /-- The proper commutator residual is in restricted `L²` and obeys the literal
 componentwise convolution bound with no principal split. -/
 theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d M : ℕ} (U : HypoellipticAleksandrov.Parabolic.Region d) (hU : IsOpen U)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (u : TimeVelocity d → ℝ)
-    (F : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
+    (u : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (F : PDE.TimeScalarField d)
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
-      (fun z : TimeVelocity d => F z.1 z.2))
+      (fun z  => F z.1 z.2))
     (Ba : Fin d → Fin d → ParabolicDerivativeIndex d M → ℝ)
     (Bb : Fin d → ParabolicDerivativeIndex d M → ℝ)
     (Bc : ParabolicDerivativeIndex d M → ℝ)
@@ -250,7 +254,7 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
                   beta gamma hproper)) 2 (timeVelocityVolumeOn U))
         else 0) := by
   classical
-  let A : TimeVelocity d → ℝ := fun z =>
+  let A  := fun z =>
     ∑ i, ∑ j, ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
       if hproper : gamma.left ≠ 0 then
         (beta.1.choose gamma.left : ℝ) *
@@ -260,7 +264,7 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
             (ParabolicDerivativeIndex.properSplitRightVelocityTwo
               beta gamma hproper j i) z
       else 0
-  let B : TimeVelocity d → ℝ := fun z =>
+  let B  := fun z =>
     ∑ j, ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
       if hproper : gamma.left ≠ 0 then
         (beta.1.choose gamma.left : ℝ) *
@@ -270,7 +274,7 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
             (ParabolicDerivativeIndex.properSplitRightVelocity
               beta gamma hproper j) z
       else 0
-  let C : TimeVelocity d → ℝ := fun z =>
+  let C  := fun z =>
     ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
       if hproper : gamma.left ≠ 0 then
         (beta.1.choose gamma.left : ℝ) *
@@ -282,7 +286,7 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
       else 0
   have hAatom (i j : Fin d) (gamma : TimeVelocityMultiIndex.Split beta.1) :=
     properAtom_memLp_and_eLpNorm_toReal_le U hU
-      (fun x : TimeVelocity d => a x.1 x.2 i j) (ha i j) (Ba i j) (hBa i j)
+      (fun x  => a x.1 x.2 i j) (ha i j) (Ba i j) (hBa i j)
       (haBound i j) beta gamma
       (fun hproper => D.representative
         (ParabolicDerivativeIndex.properSplitRightVelocityTwo
@@ -290,14 +294,14 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
       (fun hproper => D.memLp _)
   have hBatom (j : Fin d) (gamma : TimeVelocityMultiIndex.Split beta.1) :=
     properAtom_memLp_and_eLpNorm_toReal_le U hU
-      (fun x : TimeVelocity d => b x.1 x.2 j) (hb j) (Bb j) (hBb j)
+      (fun x  => b x.1 x.2 j) (hb j) (Bb j) (hBb j)
       (hbBound j) beta gamma
       (fun hproper => D.representative
         (ParabolicDerivativeIndex.properSplitRightVelocity beta gamma hproper j))
       (fun hproper => D.memLp _)
   have hCatom (gamma : TimeVelocityMultiIndex.Split beta.1) :=
     properAtom_memLp_and_eLpNorm_toReal_le U hU
-      (fun x : TimeVelocity d => c x.1 x.2) hc Bc hBc hcBound beta gamma
+      (fun x  => c x.1 x.2) hc Bc hBc hcBound beta gamma
       (fun hproper => D.representative
         (ParabolicDerivativeIndex.properSplitRightValue beta gamma hproper))
       (fun hproper => D.memLp _)
@@ -315,7 +319,7 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
     apply memLp_finset_sum Finset.univ
     intro gamma hgamma
     exact (hBatom j gamma).1
-  have hCmem : ParabolicMemLpOn U 2 C :=
+  have hCmem  :=
     memLp_finset_sum Finset.univ fun gamma _ => (hCatom gamma).1
   have hAnorm : ENNReal.toReal (eLpNorm A 2 (timeVelocityVolumeOn U)) ≤
       ∑ i, ∑ j, ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
@@ -379,33 +383,14 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
       _ ≤ _ := Finset.sum_le_sum fun j _ =>
         (eLpNorm_fin_sum_toReal_le _ fun gamma => (hBatom j gamma).1).trans
           (Finset.sum_le_sum fun gamma _ => (hBatom j gamma).2)
-  have hCnorm : ENNReal.toReal (eLpNorm C 2 (timeVelocityVolumeOn U)) ≤
-      ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
-        if hproper : gamma.left ≠ 0 then
-          (beta.1.choose gamma.left : ℝ) *
-            Bc (ParabolicDerivativeIndex.splitLeft beta gamma) *
-            ENNReal.toReal (eLpNorm
-              (D.representative
-                (ParabolicDerivativeIndex.properSplitRightValue
-                  beta gamma hproper)) 2 (timeVelocityVolumeOn U))
-        else 0 :=
+  have hCnorm  :=
     (eLpNorm_fin_sum_toReal_le _ fun gamma => (hCatom gamma).1).trans
       (Finset.sum_le_sum fun gamma _ => (hCatom gamma).2)
-  have hEA : ParabolicMemLpOn U 2 (fun z => E.representative beta z - A z) :=
+  have hEA  :=
     (E.memLp beta).sub hAmem
-  have hEAB : ParabolicMemLpOn U 2
-      (fun z => (E.representative beta z - A z) - B z) := hEA.sub hBmem
-  have hsubB : ENNReal.toReal (eLpNorm (fun z =>
-        (E.representative beta z - A z) - B z) 2 (timeVelocityVolumeOn U)) ≤
-      ENNReal.toReal (eLpNorm (fun z => E.representative beta z - A z) 2
-        (timeVelocityVolumeOn U)) +
-      ENNReal.toReal (eLpNorm B 2 (timeVelocityVolumeOn U)) :=
-    eLpNorm_sub_toReal_le _ _ hEA hBmem
-  have hsubA : ENNReal.toReal (eLpNorm (fun z => E.representative beta z - A z) 2
-        (timeVelocityVolumeOn U)) ≤
-      ENNReal.toReal (eLpNorm (E.representative beta) 2 (timeVelocityVolumeOn U)) +
-      ENNReal.toReal (eLpNorm A 2 (timeVelocityVolumeOn U)) :=
-    eLpNorm_sub_toReal_le _ _ (E.memLp beta) hAmem
+  have hEAB  := hEA.sub hBmem
+
+
   refine ⟨?_, ?_⟩
   · convert hEAB.sub hCmem using 1
     funext z
@@ -422,7 +407,7 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
             (timeVelocityVolumeOn U)) +
           ENNReal.toReal (eLpNorm B 2 (timeVelocityVolumeOn U))) +
           ENNReal.toReal (eLpNorm C 2 (timeVelocityVolumeOn U)) :=
-        add_le_add hsubB
+        add_le_add (eLpNorm_sub_toReal_le _ _ hEA hBmem)
           (le_refl (ENNReal.toReal (eLpNorm C 2 (timeVelocityVolumeOn U))))
       _ ≤ ((ENNReal.toReal (eLpNorm (E.representative beta) 2
             (timeVelocityVolumeOn U)) +
@@ -430,16 +415,10 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
           ENNReal.toReal (eLpNorm B 2 (timeVelocityVolumeOn U))) +
           ENNReal.toReal (eLpNorm C 2 (timeVelocityVolumeOn U)) :=
         add_le_add
-          (add_le_add hsubA
+          (add_le_add (eLpNorm_sub_toReal_le _ _ (E.memLp beta) hAmem)
             (le_refl (ENNReal.toReal (eLpNorm B 2 (timeVelocityVolumeOn U)))))
           (le_refl (ENNReal.toReal (eLpNorm C 2 (timeVelocityVolumeOn U))))
       _ ≤ _ := by
-        exact add_le_add
-          (add_le_add
-            (add_le_add
-              (le_refl (ENNReal.toReal (eLpNorm (E.representative beta) 2
-                (timeVelocityVolumeOn U)))) hAnorm)
-            hBnorm)
-          hCnorm
+        linarith
 
 end HypoellipticAleksandrov.Parabolic

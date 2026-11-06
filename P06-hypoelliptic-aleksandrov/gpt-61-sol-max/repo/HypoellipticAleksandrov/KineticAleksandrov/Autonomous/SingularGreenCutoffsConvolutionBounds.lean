@@ -5,22 +5,22 @@ import Mathlib.Analysis.Normed.Operator.Prod
 
 /-! # Transparent norm bounds for the position-convolution parameter jets -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Set MeasureTheory
+
 
 /-- A scalar combination of the two coordinate projections has its elementary norm bound. -/
 theorem barrier_projection_norm_le (a b : ℝ) :
-    ‖a • barrierPositionProjection + b • barrierVelocityProjection‖ ≤ |a| + |b| := by
-  exact (norm_add_le _ _).trans_eq (by
+    ‖a • barrierPositionProjection + b • barrierVelocityProjection‖ ≤ |a| + |b| := (norm_add_le _ _).trans_eq (by
     simp only [norm_smul, Real.norm_eq_abs, barrierPositionProjection,
       barrierVelocityProjection, ContinuousLinearMap.norm_fst, ContinuousLinearMap.norm_snd,
       mul_one])
 
+variable (κ : ℝ → ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) (Y : ℝ)
+
 /-- The first convolution jet only needs the value and first velocity fiber majorants. -/
-theorem barrierConvolutionJet_norm_le (κ : ℝ → ℝ) (phi : (ℝ × ℝ) → ℝ)
-    (q : ℝ × ℝ) (Y : ℝ) :
+theorem barrierConvolutionJet_norm_le  :
     ‖barrierConvolutionJet κ phi q Y‖ ≤
       |deriv κ (q.1 - Y)| * |bellmanOriginExtension phi (Y, q.2)| +
         |κ (q.1 - Y)| * |bellmanDv phi (Y, q.2)| := by
@@ -30,8 +30,7 @@ theorem barrierConvolutionJet_norm_le (κ : ℝ → ℝ) (phi : (ℝ × ℝ) →
       (κ (q.1 - Y) * bellmanDv phi (Y, q.2))
 
 /-- The second convolution jet needs only the locally integrable second velocity majorant. -/
-theorem barrierConvolutionSecondJet_norm_le (κ : ℝ → ℝ) (phi : (ℝ × ℝ) → ℝ)
-    (q : ℝ × ℝ) (Y : ℝ) :
+theorem barrierConvolutionSecondJet_norm_le  :
     ‖barrierConvolutionSecondJet κ phi q Y‖ ≤
       |deriv (deriv κ) (q.1 - Y)| * |bellmanOriginExtension phi (Y, q.2)| +
         2 * |deriv κ (q.1 - Y)| * |bellmanDv phi (Y, q.2)| +

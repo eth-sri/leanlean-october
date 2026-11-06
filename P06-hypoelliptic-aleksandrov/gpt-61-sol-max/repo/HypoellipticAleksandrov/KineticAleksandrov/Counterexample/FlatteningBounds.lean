@@ -5,19 +5,22 @@ import Mathlib.Tactic.GCongr
 
 /-! # Compact bounds on all flattened derivative representatives -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open Set MeasureTheory
 
+variable {d : ℕ}
+
 /-- The flattened explicit jets are locally bounded, also on compact sets containing the origin. -/
-theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
+theorem flatProfile_jets_compact_bound_of_profile  {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (K : Set (XV d)) (hK : IsCompact K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ q ∈ K,
       ‖flatProfilePositionJet h r q‖ ≤ M ∧ ‖flatProfileVelocityJet h r q‖ ≤ M ∧
         ∀ i k, |flatProfileHessian h r q i k| ≤ M := by
+  let sharedTerm_74284464e4 := ((Real.rpow_pos_of_pos hr (-alpha)))
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
   have hzero := (selectedProfile_spec h).2.2.2.2.2.2.2.1
   have hbounds := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
@@ -34,7 +37,7 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
   have hM : 0 ≤ M := le_max_right _ _
   obtain ⟨P, hP, hPbound⟩ := flatteningPsi_deriv2_bound
   let D := Real.rpow r (-alpha) * P
-  have hD : 0 ≤ D := mul_nonneg (Real.rpow_pos_of_pos hr (-alpha)).le hP.le
+
   refine ⟨M + D * M ^ 2, by positivity, ?_⟩
   intro q hq
   have hMB : M ≤ M + D * M ^ 2 := le_add_of_nonneg_right (by positivity)
@@ -70,7 +73,7 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
       _ ≤ M + D * M ^ 2 := by
         rw [abs_mul, abs_neg, abs_mul, abs_mul, abs_mul]
         simp only [Real.rpow_eq_pow]
-        rw [abs_of_pos (Real.rpow_pos_of_pos hr (-alpha))]
+        rw [abs_of_pos sharedTerm_74284464e4]
         have hfirst : |deriv flatteningPsi s| * |profileHessian h q i k| ≤ M := by
           calc
             _ ≤ 1 * M := mul_le_mul hs (hmh i k) (abs_nonneg _) (by norm_num)
@@ -79,7 +82,7 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
             |profileVelocityJet h q i| * |profileVelocityJet h q k| ≤ D * M ^ 2 := by
           dsimp [D]
           rw [pow_two]
-          have hpow : 0 ≤ r ^ (-alpha) := (Real.rpow_pos_of_pos hr (-alpha)).le
+
           calc
             _ ≤ r ^ (-alpha) * P * M * M := by gcongr
             _ = _ := by ring
@@ -108,13 +111,13 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
     exact ⟨hM.trans hMB, hM.trans hMB, fun _ _ => hM.trans hMB⟩
 
 /-- Measurable real functions bounded on each compact set are locally integrable. -/
-theorem locallyIntegrable_of_compact_bound {d : ℕ} (f : XV d → ℝ) (hf : Measurable f)
+theorem locallyIntegrable_of_compact_bound  (f : XV d → ℝ) (hf : Measurable f)
     (hb : ∀ K : Set (XV d), IsCompact K →
-      ∃ M : ℝ, 0 ≤ M ∧ ∀ q ∈ K, |f q| ≤ M) : LocallyIntegrable f volume := by
+      ∃ M : ℝ, 0 ≤ M ∧ ∀ q ∈ K, |f q| ≤ M) : LocallyIntegrable f  := by
   apply locallyIntegrable_iff.mpr
   intro K hK
   obtain ⟨M, hM, hbM⟩ := hb K hK
-  have hi : IntegrableOn (fun _ : XV d => M) K volume := integrableOn_const hK.measure_ne_top
+  have hi : IntegrableOn (fun _ : XV d => M) K  := integrableOn_const hK.measure_ne_top
   change Integrable (fun _ : XV d => M) (volume.restrict K) at hi
   change Integrable f (volume.restrict K)
   apply hi.mono hf.aestronglyMeasurable.restrict
@@ -122,11 +125,11 @@ theorem locallyIntegrable_of_compact_bound {d : ℕ} (f : XV d → ℝ) (hf : Me
   simpa only [Real.norm_eq_abs, abs_of_nonneg hM] using hbM q hq
 
 /-- All selected flattened derivative components are locally integrable. -/
-theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
+theorem flatProfile_jets_locallyIntegrable_of_profile  {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
-    (∀ i, LocallyIntegrable (fun q => flatProfilePositionJet h r q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => flatProfileVelocityJet h r q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => flatProfileHessian h r q i k) volume) := by
+    (∀ i, LocallyIntegrable (fun q => flatProfilePositionJet h r q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => flatProfileVelocityJet h r q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => flatProfileHessian h r q i k) ) := by
   obtain ⟨hmx, hmv, hmh⟩ := measurable_flatProfile_jets h r
   refine ⟨?_, ?_, ?_⟩
   · intro i
@@ -136,8 +139,7 @@ theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
     obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr K hK
     refine ⟨M, hM, ?_⟩
     intro q hq
-    simpa only [Real.norm_eq_abs] using
-      (norm_le_pi_norm (flatProfilePositionJet h r q) i).trans (hb q hq).1
+    exact (norm_le_pi_norm (flatProfilePositionJet h r q) i).trans (hb q hq).1
   · intro i
     apply locallyIntegrable_of_compact_bound (fun q => flatProfileVelocityJet h r q i)
       ((measurable_pi_apply i).comp hmv)
@@ -145,8 +147,7 @@ theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
     obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr K hK
     refine ⟨M, hM, ?_⟩
     intro q hq
-    simpa only [Real.norm_eq_abs] using
-      (norm_le_pi_norm (flatProfileVelocityJet h r q) i).trans (hb q hq).2.1
+    exact (norm_le_pi_norm (flatProfileVelocityJet h r q) i).trans (hb q hq).2.1
   · intro i k
     apply locallyIntegrable_of_compact_bound (fun q => flatProfileHessian h r q i k) (hmh i k)
     intro K hK

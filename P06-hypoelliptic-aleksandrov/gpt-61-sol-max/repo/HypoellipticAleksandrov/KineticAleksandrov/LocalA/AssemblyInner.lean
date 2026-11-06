@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BorelDerivativeL
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BorelHolderLimit
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.AffineGeometryTopology
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.OscillationContractionGeometry
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Transfer of the joint estimate on a fixed compact interior cylinder -/
 
@@ -19,13 +21,13 @@ open scoped Topology Matrix.Norms.Elementwise
 def SmoothEstimateFor {d : ℕ} (lam Lam : ℝ) (C_m : ℕ → ℝ) (C α : ℝ) : Prop :=
   ∀ A : CoefficientField d, IsSmoothCoefficient A → IsSymmetricCoefficient A →
     HasLowerEllipticityAE lam A → HasUpperEllipticityAE Lam A →
-  ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R → ∀ u : KineticPoint d → ℝ,
+  ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R → ∀ u : HypoellipticAleksandrov.KineticScalarField d,
     ContinuousOn u (closure (backwardCylinder P₀ R)) →
     IsKineticC112On u (backwardCylinder P₀ R) →
     (∀ᵐ P ∂volume.restrict (backwardCylinder P₀ R),
       backwardOperatorOfTimeVelocityCoefficient A u P = 0) →
     (∀ P ∈ backwardCylinder P₀ R,
-      ContDiffAt ℝ (⊤ : ℕ∞) (physicalPositionSlice u P) P.position) ∧
+      ContDiffAt ℝ PDE.smoothOrder (physicalPositionSlice u P) P.position) ∧
     (∀ m, 1 ≤ m → ∀ P ∈ backwardCylinder P₀ (3 * R / 4),
       R ^ (3 * m) * ‖iteratedFDeriv ℝ m (physicalPositionSlice u P) P.position‖ ≤
         C_m m * Holder.oscillationOn u (backwardCylinder P₀ R)) ∧
@@ -44,13 +46,13 @@ theorem borel_inner_joint_estimates
     (hs : IsSymmetricCoefficient A) (hlo : HasLowerEllipticityAE lam A)
     (hhi : HasUpperEllipticityAE Lam A)
     (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (u : KineticPoint d → ℝ) (hu : IsKineticC112On u (backwardCylinder P₀ R))
+    (u : HypoellipticAleksandrov.KineticScalarField d) (hu : IsKineticC112On u (backwardCylinder P₀ R))
     (he : ∀ᵐ P ∂volume.restrict (backwardCylinder P₀ R),
       backwardOperatorOfTimeVelocityCoefficient A u P = 0)
     (P₁ : KineticPoint d) (r : ℝ) (hr : 0 < r)
     (hKD : closure (backwardCylinder P₁ r) ⊆ backwardCylinder P₀ R) :
     (∀ P ∈ backwardCylinder P₁ (3 * r / 4),
-      ContDiffAt ℝ (⊤ : ℕ∞) (physicalPositionSlice u P) P.position ∧
+      ContDiffAt ℝ PDE.smoothOrder (physicalPositionSlice u P) P.position ∧
       ∀ m, 1 ≤ m → r ^ (3 * m) *
         ‖iteratedFDeriv ℝ m (physicalPositionSlice u P) P.position‖ ≤
           C_m m * Holder.oscillationOn u (backwardCylinder P₁ r)) ∧
@@ -63,7 +65,7 @@ theorem borel_inner_joint_estimates
   obtain ⟨B, w, O, hO, hKO, hB, hw, hew, ht⟩ :=
     exists_backward_homogeneous_correctors hH hLE hd lam Lam hlam hLam A hA hs hlo hhi
       P₀ R hR u hu he (closure E) hK hKD
-  have hEO : E ⊆ O := subset_closure.trans hKO
+  have hEO  := subset_closure.trans hKO
   have heQ j : ∀ᵐ P ∂volume.restrict E,
       backwardOperatorOfTimeVelocityCoefficient (B j) (w j) P = 0 := by
     filter_upwards [ae_restrict_mem (isOpen_backwardCylinder P₁ r hr).measurableSet]
@@ -73,9 +75,9 @@ theorem borel_inner_joint_estimates
     P₁ r hr (w j) ((hw j).continuousOn.mono hKO)
     (comparison_regular_mono (hw j) hEO)
     (heQ j)
-  have hne : E.Nonempty := backwardCylinder_nonempty P₁ hr
-  have hab : BddAbove (u '' E) := (hK.bddAbove_image huc).mono (image_mono subset_closure)
-  have hbb : BddBelow (u '' E) := (hK.bddBelow_image huc).mono (image_mono subset_closure)
+  have hne  := backwardCylinder_nonempty P₁ hr
+  have hab  := (hK.bddAbove_image huc).mono (image_mono subset_closure)
+  have hbb  := (hK.bddBelow_image huc).mono (image_mono subset_closure)
   have hos := corrector_oscillation_tendsto hne hab hbb (ht.mono subset_closure)
   have hos0 := Holder.oscillationOn_nonneg hne hab hbb
   have h34 : backwardCylinder P₁ (3 * r / 4) ⊆ E :=
@@ -84,18 +86,17 @@ theorem borel_inner_joint_estimates
     Holder.backwardCylinder_radius_mono P₁ (by positivity) (by linarith)
   refine ⟨?_, ?_⟩
   · intro P hP
-    let s := fun x : PDE.Vec d => (⟨P.time, x, P.velocity⟩ : KineticPoint d)
+    let s := fun x  => (⟨P.time, x, P.velocity⟩ : KineticPoint d)
     have hsc : Continuous s := KineticPoint.continuous_mk continuous_const continuous_id
       continuous_const
     have hpre := (isOpen_backwardCylinder P₁ (3 * r / 4) (by positivity)).preimage hsc
-    have hPin : P.position ∈ s ⁻¹' backwardCylinder P₁ (3 * r / 4) := hP
+    have hPin  := hP
     obtain ⟨ρ, hρ, hball⟩ := Metric.nhds_basis_closedBall.mem_iff.mp (hpre.mem_nhds hPin)
     have hsq : closedBall P.position ρ ⊆ s ⁻¹' closure E :=
       fun x hx => subset_closure (h34 (hball hx))
     have hfs j x hx := (hestj j).1 (s x) (h34 (hball hx))
-    have hconv : TendstoUniformlyOn (fun j => physicalPositionSlice (w j) P)
-        (physicalPositionSlice u P) atTop (closedBall P.position ρ) := (ht.comp s).mono hsq
-    have hcont : ContinuousOn (physicalPositionSlice u P) (closedBall P.position ρ) :=
+    have hconv  := (ht.comp s).mono hsq
+    have hcont  :=
       huc.comp hsc.continuousOn hsq
     let b := fun m => C_m m / r ^ (3 * m)
     have hb m : 0 ≤ b m := div_nonneg (hCm m) (pow_pos hr _).le

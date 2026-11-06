@@ -6,16 +6,17 @@ import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripKernelIn
 
 /-! # The actual short-time quadratic identity integrated over entrance measures -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ) (P : Point)
+
+variable (n : ℕ)
+
 /-- The localized quadratic is integrable against every actual entrance measure. -/
 theorem visitTimeQuadratic_integrable_entrance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
-    (P : Point) (n : ℕ) :
+      :
     Integrable (fun p => visitTimeCutoff b c.r c.positive p.time *
       visitQuadratic c (p.velocity 0))
       (visitEntrancePiece hH hLE hlam hLam A c J s T P n) := by
@@ -25,10 +26,7 @@ theorem visitTimeQuadratic_integrable_entrance
 
 /-- The localized quadratic also has exactly zero outgoing internal-face integral. -/
 theorem visitTimeQuadratic_outgoing_integral_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
-    (P : Point) (n : ℕ) :
+      :
     (∫ p, visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0)
       ∂visitOutgoingPiece hH hLE hlam hLam A c J s T P n) = 0 := by
   have hz : (fun p => visitTimeCutoff b c.r c.positive p.time *
@@ -42,9 +40,7 @@ theorem visitTimeQuadratic_outgoing_integral_zero
 
 /-- Every actual entrance satisfies the genuine integrated short-time quadratic identity. -/
 theorem visitTimeQuadratic_entrance_green_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ) (P : Point)
+
     (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
     let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
     let E := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
@@ -60,10 +56,10 @@ theorem visitTimeQuadratic_entrance_green_identity
   let G := visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
   let f := fun q : Point => visitTimeCutoff b c.r c.positive q.time *
     visitQuadratic c (q.velocity 0)
-  let g := fun p => forwardScalarOperator A.a f p
-  have hE : Integrable f (E ∘ₘ mu) :=
+  let g := (forwardScalarOperator A.a f)
+  have hE  :=
     visitTimeQuadratic_integrable_activeExitMixture hH hLE hlam hLam A c J s T b mu
-  have hG : Integrable g (G ∘ₘ mu) :=
+  have hG  :=
     visitTimeQuadratic_operator_integrable_activeGreenMixture hH hLE hlam hLam A c J s T b mu
   have hiE : Integrable (fun p => ∫ q, f q ∂E p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hE
@@ -74,15 +70,15 @@ theorem visitTimeQuadratic_entrance_green_identity
   have hp : f =ᵐ[mu] fun p => (∫ q, f q ∂E p) - ∫ q, g q ∂G p := by
     filter_upwards [visitEntrancePiece_ae_activePole hH hLE hlam hLam A c J s T P hP n]
       with p hp
-    let ep := visitPoleInclusion (visitActiveUnion c J) s T ⟨p, hp⟩
-    have he : E p = finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
+    let ep := visitPoleInclusion _ s T ⟨p, hp⟩
+    have he : E p = finiteUnionExit hH hLE hlam hLam A _ T ep := by
       change (if ht : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-        finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
+        finiteUnionExit hH hLE hlam hLam A _ T
           (visitPoleInclusion _ s T ⟨p, ht⟩) else 0) = _
       rw [dite_eq_left hp]
-    have hg : G p = finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
+    have hg : G p = finiteUnionGreen hH hLE hlam hLam A _ T ep := by
       change (if ht : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-        finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
+        finiteUnionGreen hH hLE hlam hLam A _ T
           (visitPoleInclusion _ s T ⟨p, ht⟩) else 0) = _
       rw [dite_eq_left hp]
     have hh := visitTimeQuadratic_active_identity hH hLE hlam hLam A c J b T ep

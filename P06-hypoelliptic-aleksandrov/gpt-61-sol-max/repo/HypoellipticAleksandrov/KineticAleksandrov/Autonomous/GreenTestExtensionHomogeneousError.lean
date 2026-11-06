@@ -1,14 +1,16 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExtensionSpatialTail
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Actual exit-probe approximation of a bounded smooth homogeneous solution -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open MeasureTheory
+open SectionTwo TheoremA
 
 /-- A bounded homogeneous solution is approximated at its pole by actual compact exit
 integrals, with a proved exponentially vanishing spatial-tail error. -/
@@ -18,7 +20,7 @@ theorem reconstruction_homogeneous_probe_error
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (lower T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : lower < e.1.time) (u : Point → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' reconstructionStrip H lower T))
     (hop : ∀ p ∈ reconstructionStrip H lower T, forwardScalarOperator A.a u p = 0)
     (hc : ContinuousOn u (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
@@ -36,7 +38,7 @@ theorem reconstruction_homogeneous_probe_error
   obtain ⟨F, hFb, hclose⟩ := exists_reconstruction_smooth_trace_probe H e.1.time T hT u
     (hc.mono (reconstructionClosedSlab_subset_strip_union_exit H he)) M hM hb R eps heps
   have hFc := (exitProbePhysical_continuous_compact F).1
-  have hFr := exitProbePhysical_isKineticC112On F (reconstructionStrip H lower T)
+  have hFr := exitProbePhysical_isKineticC112On F _
     (isOpen_reconstructionStrip H lower T)
   obtain ⟨C, hC⟩ := exitProbePhysical_bounded_source A F
   have hFs : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H lower T,
@@ -54,8 +56,7 @@ theorem reconstruction_homogeneous_probe_error
   have hqc : Continuous q := continuous_const.mul (reconstructionSpatialBarrier_continuous _ _)
   have hqr (p : Point) : IsSliceRegularAt q p :=
     (reconstructionSpatialBarrier_regular _ _ p).const_mul k
-  have hqo (p : Point) (hp : p ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T) :
-      transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) q p ≤ 0 :=
+  have hqo (p : Point) (hp : p ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T)  :=
     reconstructionSpatialBarrier_scaled_operator A H T k hk p hp
   have hbd (p : Point) (hp : p ∈ stripClosedExit H T) (ht : e.1.time ≤ p.time) :
       |u p - v p| ≤ eps + q (sectionTwoPoint p) := by

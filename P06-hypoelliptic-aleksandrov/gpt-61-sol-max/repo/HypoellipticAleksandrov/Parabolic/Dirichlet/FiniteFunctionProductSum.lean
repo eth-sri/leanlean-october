@@ -9,11 +9,11 @@ This file separates one coordinate in a weighted product summed over a finite de
 function space.
 -/
 
-@[expose] public section
+ public section
 
 open scoped BigOperators
 
-noncomputable section
+
 
 /-- A weighted product over a finite dependent function space factors coordinatewise. -/
 theorem Fintype.sum_apply_mul_prod
@@ -24,7 +24,7 @@ theorem Fintype.sum_apply_mul_prod
     (∑ k : ∀ j, κ j, A (k i) * ∏ j : ι, w j (k j)) =
       (∑ a : κ i, A a * w i a) *
         ∏ j ∈ (Finset.univ.erase i), ∑ a : κ j, w j a := by
-  let v : ∀ j, κ j → R := fun j a =>
+  let v  := fun j a =>
     if h : j = i then A (h ▸ a) * w j a else w j a
   have hvprod (k : ∀ j, κ j) :
       (∏ j, v j (k j)) = A (k i) * ∏ j, w j (k j) := by

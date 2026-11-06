@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWeakIntegration
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeCoord
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Anisotropic adjoint identity without second transported derivatives
 
@@ -9,8 +11,8 @@ Only the time derivative, the first transported derivatives and the first two di
  derivatives occur in the kinetic operator. The integrations by parts use these actual jets.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open Evolution
@@ -18,7 +20,7 @@ open Evolution
 /-- Continuous anisotropic directional jets give the exact transported adjoint identity. -/
 theorem integral_transportedAdjoint_of_anisotropic_jets
     {n : ℕ} {U : Set (EvolutionVec n)}
-    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+    (B : FullKineticCoefficient n) (b : PDE.VectorField n)
     (hB : IsSmoothFullKineticCoefficient B) (hb : IsSmoothDrift b)
     (u T : EvolutionVec n → ℝ) (V Z : Fin n → EvolutionVec n → ℝ)
     (H : Fin n → Fin n → EvolutionVec n → ℝ)
@@ -29,7 +31,7 @@ theorem integral_transportedAdjoint_of_anisotropic_jets
     (hdV : ∀ i x, x ∈ U → HasLineDerivAt ℝ u (V i x) x (basisV i))
     (hdZ : ∀ i x, x ∈ U → HasLineDerivAt ℝ u (Z i x) x (basisZ i))
     (hdH : ∀ i j x, x ∈ U → HasLineDerivAt ℝ (V i) (H i j x) x (basisV j))
-    (ψ : EvolutionVec n → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
+    (ψ : EvolutionVec n → ℝ) (hψ : ContDiff ℝ PDE.smoothOrder ψ)
     (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     (∫ x in U, u x * transportedAdjoint B b ψ x) =
       ∫ x in U, (T x +
@@ -40,11 +42,11 @@ theorem integral_transportedAdjoint_of_anisotropic_jets
   let β i (x : EvolutionVec n) := b (diffusedCoord n x) i
   let D (v : EvolutionVec n) (φ : EvolutionVec n → ℝ) (x : EvolutionVec n) :=
     fderiv ℝ φ x v
-  have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (A i j) := fun i j =>
+  have hA : ∀ i j, ContDiff ℝ PDE.smoothOrder (A i j) := fun i j =>
     (hB i j).comp (evolutionProdCLE n).contDiff
-  have hβ : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (β i) := fun i =>
+  have hβ : ∀ i, ContDiff ℝ PDE.smoothOrder (β i) := fun i =>
     (contDiff_pi.mp hb i).comp (diffusedCoord n).contDiff
-  have hD : ∀ v φ, ContDiff ℝ (⊤ : ℕ∞) φ → ContDiff ℝ (⊤ : ℕ∞) (D v φ) :=
+  have hD : ∀ v φ, ContDiff ℝ PDE.smoothOrder φ → ContDiff ℝ PDE.smoothOrder (D v φ) :=
     fun v φ hφ => (hφ.fderiv_right (by simp)).clm_apply contDiff_const
   have hDc : ∀ v φ, HasCompactSupport φ → HasCompactSupport (D v φ) :=
     fun v φ hφ => hφ.fderiv_apply (𝕜 := ℝ) v
@@ -85,26 +87,26 @@ theorem integral_transportedAdjoint_of_anisotropic_jets
     congr 2
     funext x
     ring
-  have iT : IntegrableOn (fun x => u x * D basisT ψ x) U volume :=
+  have iT : IntegrableOn (fun x => u x * D basisT ψ x) U  :=
     (integrable_evolution_mul_test hu (hD basisT ψ hψ).continuous
       (hDc basisT ψ hc) ((hDs basisT ψ).trans hs)).integrableOn
   have iH : ∀ i j, IntegrableOn (fun x =>
-      u x * D (basisV i) (D (basisV j) (fun y => A i j y * ψ y)) x) U volume := by
+      u x * D (basisV i) (D (basisV j) (fun y => A i j y * ψ y)) x) U  := by
     intro i j
     exact (integrable_evolution_mul_test hu
       (hD _ _ (hD _ _ ((hA i j).mul hψ))).continuous
       (hDc _ _ (hDc _ _ hc.mul_left))
       ((hDs _ _).trans ((hDs _ _).trans (tsupport_mul_subset_right.trans hs)))).integrableOn
-  have iZ : ∀ i, IntegrableOn (fun x => u x * (β i x * D (basisZ i) ψ x)) U volume :=
+  have iZ : ∀ i, IntegrableOn (fun x => u x * (β i x * D (basisZ i) ψ x)) U  :=
     fun i => (integrable_evolution_mul_test hu
       ((hβ i).continuous.mul (hD _ _ hψ).continuous)
       (hDc _ _ hc).mul_left (tsupport_mul_subset_right.trans ((hDs _ _).trans hs))).integrableOn
-  have jT : IntegrableOn (fun x => T x * ψ x) U volume :=
+  have jT : IntegrableOn (fun x => T x * ψ x) U  :=
     (integrable_evolution_mul_test hT hψ.continuous hc hs).integrableOn
-  have jH : ∀ i j, IntegrableOn (fun x => (A i j x * H i j x) * ψ x) U volume :=
+  have jH : ∀ i j, IntegrableOn (fun x => (A i j x * H i j x) * ψ x) U  :=
     fun i j => (integrable_evolution_mul_test ((hA i j).continuous.continuousOn.mul (hH i j))
       hψ.continuous hc hs).integrableOn
-  have jZ : ∀ i, IntegrableOn (fun x => (β i x * Z i x) * ψ x) U volume :=
+  have jZ : ∀ i, IntegrableOn (fun x => (β i x * Z i x) * ψ x) U  :=
     fun i => (integrable_evolution_mul_test ((hβ i).continuous.continuousOn.mul (hZ i))
       hψ.continuous hc hs).integrableOn
   have sumInt {ι : Type} [Fintype ι] (f : ι → EvolutionVec n → ℝ)

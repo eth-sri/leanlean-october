@@ -8,14 +8,17 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementReflectio
 Time reflection transports the signed backward bound to arbitrary forward cylinders.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
+variable {d : ℕ}
+
+variable (a T : ℝ) (Ω : PDE.VelocityRegion d) (z : TimeVelocity d)
+
 /-- Reflection transports an arbitrary open cylinder to the reversed time cylinder. -/
-theorem timeReflection_mem_openCylinder_iff {d : ℕ} (a T : ℝ)
-    (Ω : Set (PDE.Vec d)) (z : TimeVelocity d) :
+theorem timeReflection_mem_openCylinder_iff   :
     timeReflection z ∈ scalarParabolicOpenCylinder a T Ω ↔
       z ∈ scalarParabolicOpenCylinder (1 - T) (1 - a) Ω := by
   change (a < 1 - z.1 ∧ 1 - z.1 < T) ∧ z.2 ∈ Ω ↔
@@ -23,20 +26,19 @@ theorem timeReflection_mem_openCylinder_iff {d : ℕ} (a T : ℝ)
   constructor <;> rintro ⟨⟨hlo, hhi⟩, hy⟩ <;> refine ⟨⟨?_, ?_⟩, hy⟩ <;> linarith
 
 /-- Reflection transports an arbitrary closed cylinder to the reversed time cylinder. -/
-theorem timeReflection_mem_closedCylinder_iff {d : ℕ} (a T : ℝ)
-    (Ω : Set (PDE.Vec d)) (z : TimeVelocity d) :
+theorem timeReflection_mem_closedCylinder_iff   :
     timeReflection z ∈ scalarParabolicClosedCylinder a T Ω ↔
       z ∈ scalarParabolicClosedCylinder (1 - T) (1 - a) Ω := by
   change (a ≤ 1 - z.1 ∧ 1 - z.1 ≤ T) ∧ z.2 ∈ closure Ω ↔
     ((1 - T ≤ z.1 ∧ z.1 ≤ 1 - a) ∧ z.2 ∈ closure Ω)
   constructor <;> rintro ⟨⟨hlo, hhi⟩, hy⟩ <;> refine ⟨⟨?_, ?_⟩, hy⟩ <;> linarith
 
+variable {Ω : PDE.VelocityRegion d} {a T : ℝ} (hΩo : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haT : a < T) (A : CoefficientField d) (hAc : IsContinuousCoefficient A) (hApsd : ∀ t y, (A t y).PosSemidef)
+
+include hΩo hΩb haT hAc hApsd in
 /-- A zero initial/lateral forward solution obeys the signed source time bound. -/
-theorem abs_zeroBoundary_forward_le_time {d : ℕ} {Ω : Set (PDE.Vec d)} {a T : ℝ}
-    (hΩo : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haT : a < T)
-    (A : CoefficientField d) (hAc : IsContinuousCoefficient A)
-    (hApsd : ∀ t y, (A t y).PosSemidef)
-    (u : TimeVelocity d → ℝ)
+theorem abs_zeroBoundary_forward_le_time
+    (u : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hu : IsScalarC12On u (scalarParabolicOpenCylinder a T Ω))
     (hc : ContinuousOn u (scalarParabolicClosedCylinder a T Ω))
     (hi : ∀ y ∈ closure Ω, u (a, y) = 0)
@@ -46,7 +48,7 @@ theorem abs_zeroBoundary_forward_le_time {d : ℕ} {Ω : Set (PDE.Vec d)} {a T :
       |scalarTimeDerivative u z -
         matrixContraction (coefficientAt A z) (scalarSpatialHessian u z)| ≤ M) :
     ∀ z ∈ scalarParabolicClosedCylinder a T Ω, |u z| ≤ M * (z.1 - a) := by
-  let F : ℝ → PDE.Vec d → ℝ := fun t y =>
+  let F  := fun t y =>
     -(scalarTimeDerivative u (1 - t, y) -
       matrixContraction (A (1 - t) y) (scalarSpatialHessian u (1 - t, y)))
   have hopen : timeReflection ⁻¹' scalarParabolicOpenCylinder a T Ω =
@@ -79,39 +81,25 @@ theorem abs_zeroBoundary_forward_le_time {d : ℕ} {Ω : Set (PDE.Vec d)} {a T :
     (timeReflectedCoefficient A) (isContinuousCoefficient_timeReflected hAc)
     (fun t y => hApsd (1 - t) y) F M hM (fun z hz => by
       simpa only [F, abs_neg, timeReflection, coefficientAt] using
-        hf (timeReflection z) ((timeReflection_mem_openCylinder_iff a T Ω z).mpr hz))
+        hf _ ((timeReflection_mem_openCylinder_iff a T Ω z).mpr hz))
     (timeReflectedScalar u) hsol
   intro z hz
-  have hz' : timeReflection z ∈
-      scalarParabolicClosedCylinder (1 - T) (1 - a) Ω := by
-    exact (timeReflection_mem_closedCylinder_iff (1 - T) (1 - a) Ω z).mpr
-      (by simpa only [sub_sub_cancel] using hz)
-  have hb := hbound (timeReflection z) hz'
+  have hz'  := (timeReflection_mem_closedCylinder_iff (1 - T) (1 - a) Ω z).mpr
+      (by simpa)
+  have hb := hbound _ hz'
   change |u (timeReflection (timeReflection z))| ≤ M * (1 - a - (1 - z.1)) at hb
   rw [timeReflection_involutive z] at hb
   convert hb using 1; ring
 
+variable (w v : HypoellipticAleksandrov.Parabolic.ScalarField d) (hw : IsScalarC12On w (scalarParabolicOpenCylinder a T Ω)) (hv : IsScalarC12On v (scalarParabolicOpenCylinder a T Ω)) (hwc : ContinuousOn w (scalarParabolicClosedCylinder a T Ω)) (hvc : ContinuousOn v (scalarParabolicClosedCylinder a T Ω)) (he : EqOn v w (({a} ×ˢ closure Ω) ∪ (Icc a T ×ˢ frontier Ω))) (hve : ∀ z ∈ scalarParabolicOpenCylinder a T Ω, scalarTimeDerivative v z = matrixContraction (coefficientAt A z) (scalarSpatialHessian v z)) (M : ℝ) (hM : 0 ≤ M) (hf : ∀ z ∈ scalarParabolicOpenCylinder a T Ω, |scalarTimeDerivative w z - matrixContraction (coefficientAt A z) (scalarSpatialHessian w z)| ≤ M)
+
+include hΩo hΩb haT hAc hApsd hw hv hwc hvc he hve hM hf
 /-- A homogeneous replacement with the same forward traces has the sharp residual bound. -/
-theorem abs_forward_replacement_error_le_time {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {a T : ℝ} (hΩo : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haT : a < T)
-    (A : CoefficientField d) (hAc : IsContinuousCoefficient A)
-    (hApsd : ∀ t y, (A t y).PosSemidef)
-    (w v : TimeVelocity d → ℝ)
-    (hw : IsScalarC12On w (scalarParabolicOpenCylinder a T Ω))
-    (hv : IsScalarC12On v (scalarParabolicOpenCylinder a T Ω))
-    (hwc : ContinuousOn w (scalarParabolicClosedCylinder a T Ω))
-    (hvc : ContinuousOn v (scalarParabolicClosedCylinder a T Ω))
-    (he : EqOn v w (({a} ×ˢ closure Ω) ∪ (Icc a T ×ˢ frontier Ω)))
-    (hve : ∀ z ∈ scalarParabolicOpenCylinder a T Ω,
-      scalarTimeDerivative v z =
-        matrixContraction (coefficientAt A z) (scalarSpatialHessian v z))
-    (M : ℝ) (hM : 0 ≤ M)
-    (hf : ∀ z ∈ scalarParabolicOpenCylinder a T Ω,
-      |scalarTimeDerivative w z -
-        matrixContraction (coefficientAt A z) (scalarSpatialHessian w z)| ≤ M) :
+theorem abs_forward_replacement_error_le_time
+     :
     ∀ z ∈ scalarParabolicClosedCylinder a T Ω, |w z - v z| ≤ M * (z.1 - a) := by
   apply abs_zeroBoundary_forward_le_time hΩo hΩb haT A hAc hApsd
-    (fun z => w z - v z) (isScalarC12On_sub hw hv) (hwc.sub hvc)
+    _ (isScalarC12On_sub hw hv) (hwc.sub hvc)
   · intro y hy
     exact sub_eq_zero.mpr (he (Or.inl ⟨mem_singleton a, hy⟩)).symm
   · intro z hz
@@ -135,23 +123,8 @@ theorem abs_forward_replacement_error_le_time {d : ℕ} {Ω : Set (PDE.Vec d)}
     exact hf z hz
 
 /-- The forward replacement error is uniformly bounded over the entire finite horizon. -/
-theorem abs_forward_replacement_error_le_horizon {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {a T : ℝ} (hΩo : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haT : a < T)
-    (A : CoefficientField d) (hAc : IsContinuousCoefficient A)
-    (hApsd : ∀ t y, (A t y).PosSemidef)
-    (w v : TimeVelocity d → ℝ)
-    (hw : IsScalarC12On w (scalarParabolicOpenCylinder a T Ω))
-    (hv : IsScalarC12On v (scalarParabolicOpenCylinder a T Ω))
-    (hwc : ContinuousOn w (scalarParabolicClosedCylinder a T Ω))
-    (hvc : ContinuousOn v (scalarParabolicClosedCylinder a T Ω))
-    (he : EqOn v w (({a} ×ˢ closure Ω) ∪ (Icc a T ×ˢ frontier Ω)))
-    (hve : ∀ z ∈ scalarParabolicOpenCylinder a T Ω,
-      scalarTimeDerivative v z =
-        matrixContraction (coefficientAt A z) (scalarSpatialHessian v z))
-    (M : ℝ) (hM : 0 ≤ M)
-    (hf : ∀ z ∈ scalarParabolicOpenCylinder a T Ω,
-      |scalarTimeDerivative w z -
-        matrixContraction (coefficientAt A z) (scalarSpatialHessian w z)| ≤ M) :
+theorem abs_forward_replacement_error_le_horizon
+     :
     ∀ z ∈ scalarParabolicClosedCylinder a T Ω, |w z - v z| ≤ M * (T - a) := by
   intro z hz
   exact (abs_forward_replacement_error_le_time hΩo hΩb haT A hAc hApsd

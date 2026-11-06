@@ -38,36 +38,21 @@ def scalarToVecOne (t : ℝ) : Vec 1 := fun _ => t
 def oneDimensionalAxisBox (a b : ℝ) : Set (Vec 1) :=
   axisBox (fun _ => a) (fun _ => b)
 
-@[simp] theorem vecOneEquivReal_apply (x : Vec 1) :
-    vecOneEquivReal x = vecOneCoordinate x := by
-  rw [vecOneEquivReal, MeasurableEquiv.funUnique_apply]
-  change x default = x 0
-  congr 1
 
-@[simp] theorem vecOneEquivReal_symm_apply (t : ℝ) :
-    vecOneEquivReal.symm t = scalarToVecOne t := by
-  funext i
-  rw [vecOneEquivReal, MeasurableEquiv.funUnique_symm_apply]
-  rfl
 
-@[simp] theorem vecOneCoordinate_scalarToVecOne (t : ℝ) :
-    vecOneCoordinate (scalarToVecOne t) = t :=
-  rfl
+variable (t : ℝ)
 
-@[simp] theorem scalarToVecOne_vecOneCoordinate (x : Vec 1) :
-    scalarToVecOne (vecOneCoordinate x) = x := by
-  funext i
-  have hi : i = 0 := Subsingleton.elim _ _
-  subst i
-  rfl
+
+
+
+
+
 
 /-- The native coordinate equivalence preserves the project's volume measure
 exactly. -/
 theorem volumePreserving_vecOneEquivReal :
     MeasurePreserving vecOneEquivReal
-      (volume : Measure (Vec 1)) (volume : Measure ℝ) := by
-  simpa only [vecOneEquivReal] using!
-    (volume_preserving_funUnique (Fin 1) ℝ)
+      (volume )  := (id (volume_preserving_funUnique (Fin 1) ℝ))
 
 /-- Membership in a native one-coordinate interval is precisely membership
 of the scalar coordinate in the corresponding open interval. -/

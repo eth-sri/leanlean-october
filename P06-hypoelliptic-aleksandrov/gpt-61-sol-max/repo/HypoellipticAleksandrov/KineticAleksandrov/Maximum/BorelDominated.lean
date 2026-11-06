@@ -6,7 +6,7 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-! # Dominated convergence for the fixed-inner-cylinder error -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Filter
 open scoped Topology
@@ -23,21 +23,21 @@ theorem borel_bounded_error_norm_tendsto {E : Type*} [MeasurableSpace E]
     apply (memLp_const B).of_le (hm j)
     filter_upwards [hnn j,hb j] with z hz hzB
     simpa only [Real.norm_of_nonneg hz,Real.norm_of_nonneg hB] using hzB
-  have hpower j : AEStronglyMeasurable (fun z => e j z ^ p) μ :=
+  have hpower j  :=
     (Real.continuous_rpow_const hp.le).comp_aestronglyMeasurable (hm j)
   have hbound j : ∀ᵐ z ∂μ, ‖e j z ^ p‖ ≤ B ^ p := by
     filter_upwards [hnn j,hb j] with z hz hzB
     rw [Real.norm_of_nonneg (Real.rpow_nonneg hz _)]
     exact Real.rpow_le_rpow hz hzB hp.le
-  have hconv : ∀ᵐ z ∂μ, Tendsto (fun j => e j z ^ p) atTop (𝓝 0) := by
-    filter_upwards [hc] with z hz
-    simpa only [Function.comp_def,Real.zero_rpow hp.ne'] using
-      (Real.continuous_rpow_const hp.le).continuousAt.tendsto.comp hz
+
   have hi := tendsto_integral_of_dominated_convergence (fun _ : E => B ^ p)
-    hpower (integrable_const _) hbound hconv
+    hpower (integrable_const _) hbound (by
+        filter_upwards [hc] with z hz
+        simpa only [Function.comp_def,Real.zero_rpow hp.ne'] using
+          (Real.continuous_rpow_const hp.le).continuousAt.tendsto.comp hz)
   simp only [integral_zero] at hi
-  have hr := (Real.continuous_rpow_const (by positivity : 0 ≤ 1 / p)).tendsto 0
-  have ht := hr.comp hi
+
+  have ht := ((Real.continuous_rpow_const (by positivity : 0 ≤ 1 / p)).tendsto 0).comp hi
   simp only [Function.comp_def,Real.zero_rpow (by positivity : 1 / p ≠ 0)] at ht
   convert ht using 1
   funext j

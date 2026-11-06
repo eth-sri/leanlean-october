@@ -9,10 +9,10 @@ Continuity at exponent zero supplies an exponent below one. The real power ident
 then convert the dyadic geometric envelope into a power of the physical distance.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
-open Filter Set
+
 open scoped Topology
 
 /-- Every contraction factor admits a strictly positive Hölder exponent below one. -/
@@ -20,7 +20,7 @@ theorem exists_holder_exponent_of_contraction {q : ℝ} (hq : q < 1) :
     ∃ α : ℝ, 0 < α ∧ α < 1 ∧ q ≤ (1 / 2 : ℝ) ^ α := by
   have hcont : ContinuousAt (fun α : ℝ => (1 / 2 : ℝ) ^ α) 0 :=
     Real.continuousAt_const_rpow (by norm_num)
-  have hnhds : {α : ℝ | q < (1 / 2 : ℝ) ^ α} ∈ 𝓝 0 :=
+  have hnhds  :=
     hcont.preimage_mem_nhds (Ioi_mem_nhds (by simpa only [Real.rpow_zero] using hq))
   obtain ⟨ε, hε, hsub⟩ := Metric.mem_nhds_iff.mp hnhds
   let α := min (ε / 2) (1 / 2)

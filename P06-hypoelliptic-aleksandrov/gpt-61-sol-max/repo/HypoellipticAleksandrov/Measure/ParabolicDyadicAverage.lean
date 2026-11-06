@@ -13,8 +13,8 @@ parabolic dyadic checkpoint.
 
 @[expose] public section
 
-open Filter MeasureTheory Set
-open scoped ENNReal
+open MeasureTheory Set
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -38,10 +38,14 @@ def parabolicDyadicCheckpointAverage (d n : ℕ)
     (parabolicDyadicRestrictedCell index).indicator
       (fun _ => parabolicDyadicCellAverage d n f index) z
 
+variable {d n : ℕ}
+
+variable (index : ParabolicDyadicIndex d n)
+
 /-- Restricting the reference-subtype measure to an addressed cell recovers
 the ambient volume of that half-open cell. -/
-theorem parabolicDyadicReferenceMeasure_restrictedCell {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem parabolicDyadicReferenceMeasure_restrictedCell
+     :
     parabolicDyadicReferenceMeasure d (parabolicDyadicRestrictedCell index) =
       volume (parabolicDyadicHalfOpenCell index) := by
   rw [parabolicDyadicReferenceMeasure, comap_subtype_coe_apply
@@ -52,8 +56,8 @@ theorem parabolicDyadicReferenceMeasure_restrictedCell {d n : ℕ}
 
 /-- The real reference-subtype measure of a generation-`n` addressed cell is
 the exact parabolic dyadic volume. -/
-theorem parabolicDyadicReferenceMeasure_restrictedCell_toReal {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem parabolicDyadicReferenceMeasure_restrictedCell_toReal
+     :
     (parabolicDyadicReferenceMeasure d
       (parabolicDyadicRestrictedCell index)).toReal =
       (2 : ℝ) ^ d / (2 : ℝ) ^ ((d + 2) * n) := by
@@ -62,8 +66,8 @@ theorem parabolicDyadicReferenceMeasure_restrictedCell_toReal {d n : ℕ}
 
 /-- Every finite addressed dyadic cell has strictly positive reference
 subtype measure, also in dimension zero. -/
-theorem parabolicDyadicReferenceMeasure_restrictedCell_real_pos {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem parabolicDyadicReferenceMeasure_restrictedCell_real_pos
+     :
     0 < (parabolicDyadicReferenceMeasure d).real
       (parabolicDyadicRestrictedCell index) := by
   rw [Measure.real, parabolicDyadicReferenceMeasure_restrictedCell_toReal]
@@ -71,7 +75,7 @@ theorem parabolicDyadicReferenceMeasure_restrictedCell_real_pos {d n : ℕ}
 
 /-- On an addressed generation-`n` cell, the checkpoint average is the
 corresponding single-cell average. -/
-theorem parabolicDyadicCheckpointAverage_eq_cellAverage {d n : ℕ}
+theorem parabolicDyadicCheckpointAverage_eq_cellAverage
     (f : ParabolicDyadicReferenceSpace d → ℝ)
     (index : ParabolicDyadicIndex d n) (z : ParabolicDyadicReferenceSpace d)
     (hz : z ∈ parabolicDyadicRestrictedCell index) :
@@ -82,17 +86,18 @@ theorem parabolicDyadicCheckpointAverage_eq_cellAverage {d n : ℕ}
   rw [Finset.sum_eq_single index]
   · simp only [Set.indicator_of_mem hz]
   · intro other _ hne
-    have hnot : z ∉ parabolicDyadicRestrictedCell other := by
-      intro hother
-      exact (Set.disjoint_left.mp
-        (parabolicDyadicHalfOpenCell_disjoint_of_ne hne) hother hz).elim
-    simp only [Set.indicator_of_notMem hnot]
+
+    simp only [Set.indicator_of_notMem (show z ∉ parabolicDyadicRestrictedCell other by
+        intro hother
+        exact (Set.disjoint_left.mp
+          (parabolicDyadicHalfOpenCell_disjoint_of_ne hne) hother hz).elim)]
   · simp
+
+variable (d n : ℕ) (f : ParabolicDyadicReferenceSpace d → ℝ)
 
 /-- The finite checkpoint average is strongly measurable for the checkpoint
 filtration. -/
-theorem stronglyMeasurable_parabolicDyadicCheckpointAverage (d n : ℕ)
-    (f : ParabolicDyadicReferenceSpace d → ℝ) :
+theorem stronglyMeasurable_parabolicDyadicCheckpointAverage  :
     StronglyMeasurable[parabolicDyadicFiltration d ((d + 2) * n)]
       (parabolicDyadicCheckpointAverage d n f) := by
   unfold parabolicDyadicCheckpointAverage
@@ -111,8 +116,7 @@ theorem stronglyMeasurable_parabolicDyadicCheckpointAverage (d n : ℕ)
 
 /-- The finite checkpoint average is integrable for the finite reference
 measure. -/
-theorem integrable_parabolicDyadicCheckpointAverage (d n : ℕ)
-    (f : ParabolicDyadicReferenceSpace d → ℝ) :
+theorem integrable_parabolicDyadicCheckpointAverage  :
     Integrable (parabolicDyadicCheckpointAverage d n f)
       (parabolicDyadicReferenceMeasure d) := by
   classical
@@ -127,7 +131,7 @@ theorem integrable_parabolicDyadicCheckpointAverage (d n : ℕ)
 /-- The set integral of the checkpoint average over an addressed cell is the
 set integral of the original function over that cell. -/
 theorem setIntegral_parabolicDyadicCheckpointAverage_restrictedCell
-    (d n : ℕ) (f : ParabolicDyadicReferenceSpace d → ℝ)
+
     (index : ParabolicDyadicIndex d n) :
     ∫ x in parabolicDyadicRestrictedCell index,
       parabolicDyadicCheckpointAverage d n f x ∂parabolicDyadicReferenceMeasure d =
@@ -139,39 +143,41 @@ theorem setIntegral_parabolicDyadicCheckpointAverage_restrictedCell
         ∫ x in parabolicDyadicRestrictedCell index,
           parabolicDyadicCellAverage d n f index ∂parabolicDyadicReferenceMeasure d :=
       setIntegral_congr_fun (measurableSet_parabolicDyadicRestrictedCell index)
-        fun z hz => parabolicDyadicCheckpointAverage_eq_cellAverage f index z hz
+        (parabolicDyadicCheckpointAverage_eq_cellAverage f index)
     _ = ∫ x in parabolicDyadicRestrictedCell index,
           f x ∂parabolicDyadicReferenceMeasure d := by
       rw [setIntegral_const, smul_eq_mul]
       unfold parabolicDyadicCellAverage
-      have hpos := parabolicDyadicReferenceMeasure_restrictedCell_real_pos index
-      rw [← mul_assoc, mul_inv_cancel₀ hpos.ne']
+
+      rw [← mul_assoc, mul_inv_cancel₀ (parabolicDyadicReferenceMeasure_restrictedCell_real_pos index).ne']
       exact one_mul _
 
 /-- The explicit checkpoint average is the conditional expectation onto the
 finite sigma-algebra generated by the complete dyadic generator block. -/
 theorem parabolicDyadicCheckpointAverage_ae_eq_condExp
-    (d n : ℕ) (f : ParabolicDyadicReferenceSpace d → ℝ)
+
     (hf : Integrable f (parabolicDyadicReferenceMeasure d)) :
     parabolicDyadicCheckpointAverage d n f =ᵐ[parabolicDyadicReferenceMeasure d]
       (parabolicDyadicReferenceMeasure d)[f |
         parabolicDyadicFiltration d ((d + 2) * n)] := by
+  let sharedTerm_f30374226c := (((d + 2) * n))
+  let sharedTerm_26c3e3f053 := (Set (Set (ParabolicDyadicReferenceSpace d)))
   classical
   letI : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
     ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top d)⟩
   apply ae_eq_condExp_of_forall_setIntegral_eq
-    ((parabolicDyadicFiltration d).le ((d + 2) * n)) hf
+    ((parabolicDyadicFiltration d).le sharedTerm_f30374226c) hf
   · intro s _ _
     exact (integrable_parabolicDyadicCheckpointAverage d n f).integrableOn
   · intro s hs _
     change MeasurableSet[MeasureTheory.Filtration.seq
-      (parabolicDyadicFiltration d) ((d + 2) * n)] s at hs
+      (parabolicDyadicFiltration d) sharedTerm_f30374226c] s at hs
     change MeasurableSet[MeasurableSpace.generateFrom
-      (memPartition (parabolicDyadicGenerator d) ((d + 2) * n))] s at hs
+      (memPartition (parabolicDyadicGenerator d) sharedTerm_f30374226c)] s at hs
     obtain ⟨S, hS, hs_eq⟩ :=
       (MeasurableSpace.measurableSet_generateFrom_memPartition_iff
-        (parabolicDyadicGenerator d) ((d + 2) * n) s).mp hs
-    have hS_range : (↑S : Set (Set (ParabolicDyadicReferenceSpace d))) ⊆
+        (parabolicDyadicGenerator d) sharedTerm_f30374226c s).mp hs
+    have hS_range : (↑S : sharedTerm_26c3e3f053) ⊆
         Set.range (parabolicDyadicRestrictedCell :
           ParabolicDyadicIndex d n → Set (ParabolicDyadicReferenceSpace d)) := by
       rw [← memPartition_parabolicDyadicFiltration_checkpoint_eq_range]
@@ -181,20 +187,13 @@ theorem parabolicDyadicCheckpointAverage_ae_eq_condExp
       obtain ⟨index, hindex⟩ := hS_range hcell
       rw [← hindex]
       exact measurableSet_parabolicDyadicRestrictedCell index
-    have hdisjoint : (↑S : Set (Set (ParabolicDyadicReferenceSpace d))).Pairwise
+    have hdisjoint : (↑S : sharedTerm_26c3e3f053).Pairwise
         (Function.onFun Disjoint id) := by
       intro cell hcell other hother hne
-      exact disjoint_memPartition (parabolicDyadicGenerator d) ((d + 2) * n)
+      exact disjoint_memPartition _ sharedTerm_f30374226c
         (hS hcell) (hS hother) hne
-    have haverage : ∀ cell ∈ S,
-        ∫ x in cell, parabolicDyadicCheckpointAverage d n f x
-          ∂parabolicDyadicReferenceMeasure d =
-        ∫ x in cell, f x ∂parabolicDyadicReferenceMeasure d := by
-      intro cell hcell
-      obtain ⟨index, hindex⟩ := hS_range hcell
-      rw [← hindex]
-      exact setIntegral_parabolicDyadicCheckpointAverage_restrictedCell d n f index
-    have hS_union : ⋃₀ (↑S : Set (Set (ParabolicDyadicReferenceSpace d))) =
+
+    have hS_union : ⋃₀ (↑S : sharedTerm_26c3e3f053) =
         ⋃ cell ∈ S, cell := by
       ext z
       simp
@@ -211,7 +210,14 @@ theorem parabolicDyadicCheckpointAverage_ae_eq_condExp
       _ = ∑ cell ∈ S, ∫ x in cell, f x ∂parabolicDyadicReferenceMeasure d := by
         apply Finset.sum_congr rfl
         intro cell hcell
-        exact haverage cell hcell
+        exact (show ∀ cell ∈ S,
+        ∫ x in cell, parabolicDyadicCheckpointAverage d n f x
+          ∂parabolicDyadicReferenceMeasure d =
+        ∫ x in cell, f x ∂parabolicDyadicReferenceMeasure d by
+            intro cell hcell
+            obtain ⟨index, hindex⟩ := hS_range hcell
+            rw [← hindex]
+            exact setIntegral_parabolicDyadicCheckpointAverage_restrictedCell d n f index) cell hcell
       _ = ∫ x in ⋃ cell ∈ S, cell, f x ∂parabolicDyadicReferenceMeasure d :=
         (integral_biUnion_finset S hmeas hdisjoint fun cell hcell => hf.integrableOn).symm
       _ = ∫ x in s, f x ∂parabolicDyadicReferenceMeasure d := by

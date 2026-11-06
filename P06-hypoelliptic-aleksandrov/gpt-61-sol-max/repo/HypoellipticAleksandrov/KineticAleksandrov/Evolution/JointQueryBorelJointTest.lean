@@ -2,25 +2,27 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelSlice
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Jointly measurable integrals of compact time-state probes -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
-open scoped Topology
+open HypoellipticAleksandrov MeasureTheory Set Filter
+
 
 section EvolutionData
 
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+variable (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -45,10 +47,10 @@ local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hm
 measure at its own terminal time is jointly Borel measurable. -/
 theorem measurable_joint_terminal_probe
     (Φ : BoundedBorel (ℝ × EvolutionAmbientState n))
-    (hΦ : ContDiff ℝ (⊤ : ℕ∞) Φ) (hc : HasCompactSupport Φ)
+    (hΦ : ContDiff ℝ PDE.smoothOrder Φ) (hc : HasCompactSupport Φ)
     (hs : tsupport Φ ⊆ {z : ℝ × EvolutionAmbientState n |
       z.2 ∈ evolutionStateSet Ω γ z.1}) :
-    Measurable (fun q : EvolutionQuery Ω γ => ∫ x, Φ (q.1.2.1, x) ∂(μT q)) := by
+    Measurable (fun q  => ∫ x, Φ (q.1.2.1, x) ∂(μT q)) := by
   let A (j : ℕ) (q : EvolutionQuery Ω γ) := validTerminalProbeIntegral n Ω γ μT
     (jointTerminalProbeSlice Φ (terminalTimeMesh j q.1.2.1)) q
   have hA (j : ℕ) : Measurable (A j) := by
@@ -77,7 +79,7 @@ theorem measurable_joint_terminal_probe
     (fun j => (Φ.measurable.comp (measurable_const.prodMk measurable_id)).aestronglyMeasurable)
     (integrable_const C)
     (fun j => Eventually.of_forall fun x => by
-      simpa only [Real.norm_eq_abs] using hC (terminalTimeMesh j q.1.2.1, x))
+      simp_all)
     (Eventually.of_forall fun x => hΦ.continuous.continuousAt.tendsto.comp
       ((tendsto_terminalTimeMesh q.1.2.1).prodMk_nhds tendsto_const_nhds))
   have hnear := (tendsto_terminalTimeMesh q.1.2.1).eventually

@@ -11,75 +11,82 @@ The finite estimate uses bounded open components. The countable estimate follows
 continuity from below over finite subfamilies, with no uniform bound on the intervals.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+variable {ι : Type*}
+
+variable (a h : ι → ℝ)
+
 /-- A bounded forward union controls the preceding union by the sharp delay factor. -/
-theorem interval_delay_of_bounded_union {ι : Type*} (a h : ι → ℝ) (I : Set ι)
+theorem interval_delay_of_bounded_union   (I : Set ι)
     {m : ℝ} (hm : 0 < m) (hh : ∀ i ∈ I, 0 < h i)
     (hbelow : BddBelow (⋃ i ∈ I, Ioo (a i) (a i + m*h i)))
     (habove : BddAbove (⋃ i ∈ I, Ioo (a i) (a i + m*h i))) :
     volume (⋃ i ∈ I, Ioo (a i-h i) (a i)) ≤
       ENNReal.ofReal ((m+1)/m) * volume (⋃ i ∈ I, Ioo (a i) (a i+m*h i)) := by
-  let U := ⋃ i ∈ I, Ioo (a i) (a i+m*h i)
+  let sharedTerm_d29ca50734 := (ENNReal.ofReal ((m + 1) / m))
+
+
   obtain ⟨C, hcount, hdisj, hcomp, hcover, hcontains⟩ :=
     bounded_open_interval_components (isOpen_biUnion fun _ _ => isOpen_Ioo) hbelow habove
-  let ext : Set ℝ → Set ℝ := fun s => Ioo (sInf s-(sSup s-sInf s)/m) (sSup s)
-  have hback : (⋃ i ∈ I, Ioo (a i-h i) (a i)) ⊆ ⋃ s ∈ C, ext s := by
-    intro x hx
-    obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
-    have hai : a i < a i+m*h i := by nlinarith only [hm, hh i hi]
-    obtain ⟨s, hs, hIs⟩ := hcontains (a i) (a i+m*h i) hai
-      (subset_iUnion₂_of_subset i hi Subset.rfl)
-    have hI := backwardInterval_subset_component_extension (hh i hi) hm
-      (hIs.trans (subset_of_eq (hcomp s hs).2))
-    exact mem_iUnion₂.mpr ⟨s, hs, hI hxi⟩
-  have hvol : ∀ s ∈ C, volume (ext s) = ENNReal.ofReal ((m+1)/m) * volume s := by
-    intro s hs
-    change volume (Ioo (sInf s-(sSup s-sInf s)/m) (sSup s)) = _
-    rw [volume_component_extension hm, ← (hcomp s hs).2]
-  have hmeas : ∀ s ∈ C, MeasurableSet s := by
-    intro s hs
-    rw [(hcomp s hs).2]
-    exact measurableSet_Ioo
+  let ext  := fun s => Ioo (sInf s-(sSup s-sInf s)/m) (sSup s)
+
+
+
   calc
-    volume (⋃ i ∈ I, Ioo (a i-h i) (a i)) ≤ volume (⋃ s ∈ C, ext s) :=
-      measure_mono hback
+    volume (((⋃ i ∈ I, Ioo (a i - h i) (a i)))) ≤ volume (⋃ s ∈ C, ext s) :=
+      measure_mono (by
+          intro x hx
+          obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
+
+          obtain ⟨s, hs, hIs⟩ := hcontains (a i) (a i+m*h i) (by nlinarith only [hm, hh i hi])
+            (subset_iUnion₂_of_subset i hi Subset.rfl)
+          have hI := backwardInterval_subset_component_extension (hh i hi) hm
+            (hIs.trans (subset_of_eq (hcomp s hs).2))
+          exact mem_iUnion₂.mpr ⟨s, hs, hI hxi⟩)
     _ ≤ ∑' s : C, volume (ext s) := measure_biUnion_le volume hcount ext
-    _ = ∑' s : C, ENNReal.ofReal ((m+1)/m) * volume (s : Set ℝ) :=
-      tsum_congr fun s => hvol s s.2
-    _ = ENNReal.ofReal ((m+1)/m) * ∑' s : C, volume (s : Set ℝ) :=
+    _ = ∑' s : C, sharedTerm_d29ca50734 * volume (s : Set ℝ) :=
+      tsum_congr fun s => (show ∀ s ∈ C, volume (ext s) = sharedTerm_d29ca50734 * volume s by
+          intro s hs
+          change volume (Ioo (sInf s-(sSup s-sInf s)/m) (sSup s)) = _
+          rw [volume_component_extension hm, ← (hcomp s hs).2]) s s.2
+    _ = sharedTerm_d29ca50734 * ∑' s : C, volume (s : Set ℝ) :=
       ENNReal.tsum_mul_left
-    _ = ENNReal.ofReal ((m+1)/m) * volume U := by
-      have hsum := measure_biUnion (μ := volume) hcount hdisj hmeas
+    _ = sharedTerm_d29ca50734 * volume (⋃ i ∈ I, Ioo (a i) (a i+m*h i)) := by
+      have hsum := measure_biUnion (μ := volume) hcount hdisj (by
+          intro s hs
+          rw [(hcomp s hs).2]
+          exact measurableSet_Ioo)
       simp only [id_eq] at hsum
       rw [hcover] at hsum
       rw [← hsum]
 
 /-- The sharp delayed-union inequality for a finite interval family. -/
-theorem interval_delay_finset {ι : Type*} (a h : ι → ℝ) (s : Finset ι)
+theorem interval_delay_finset   (s : Finset ι)
     {m : ℝ} (hm : 0 < m) (hh : ∀ i ∈ s, 0 < h i) :
     volume (⋃ i ∈ s, Ioo (a i-h i) (a i)) ≤
       ENNReal.ofReal ((m+1)/m) * volume (⋃ i ∈ s, Ioo (a i) (a i+m*h i)) := by
+  let sharedTerm_88da0a54dc := ((fun i => a i + m * h i))
   apply interval_delay_of_bounded_union a h (s : Set ι) hm hh
   · obtain ⟨l, hl⟩ := (s.finite_toSet.image a).bddBelow
     refine ⟨l, ?_⟩
     intro x hx
     obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
     exact (hl (mem_image_of_mem a hi)).trans hxi.1.le
-  · obtain ⟨b, hb⟩ := (s.finite_toSet.image (fun i => a i+m*h i)).bddAbove
+  · obtain ⟨b, hb⟩ := (s.finite_toSet.image sharedTerm_88da0a54dc).bddAbove
     refine ⟨b, ?_⟩
     intro x hx
     obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
-    exact hxi.2.le.trans (hb (mem_image_of_mem (fun i => a i+m*h i) hi))
+    exact hxi.2.le.trans (hb (mem_image_of_mem sharedTerm_88da0a54dc hi))
 
 /-- Countable delayed interval families satisfy the same sharp factor. -/
-theorem interval_delay_countable {ι : Type*} [Countable ι] (a h : ι → ℝ)
+theorem interval_delay_countable  [Countable ι] (a h : ι → ℝ)
     {m : ℝ} (hm : 0 < m) (hh : ∀ i, 0 < h i) :
     volume (⋃ i, Ioo (a i-h i) (a i)) ≤
       ENNReal.ofReal ((m+1)/m) * volume (⋃ i, Ioo (a i) (a i+m*h i)) := by

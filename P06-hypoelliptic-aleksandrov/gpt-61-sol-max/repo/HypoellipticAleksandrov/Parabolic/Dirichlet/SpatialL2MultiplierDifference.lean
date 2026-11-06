@@ -9,20 +9,20 @@ This file proves quotient-safe bounds for the difference of two bounded scalar
 multipliers on spatial restricted-volume `L²`.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory
-open scoped ENNReal RealInnerProductSpace
+open MeasureTheory
+open scoped ENNReal
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- An almost-everywhere uniform bound on two scalar coefficients' difference
 bounds the difference of their induced spatial `L²` multipliers at each input. -/
 theorem norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (q p : PDE.Vec d → ℝ)
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
+    (q p : PDE.ScalarField d)
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
     (Cq : ℝ) (hCq : 0 ≤ Cq)
@@ -31,7 +31,7 @@ theorem norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
     (hpBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖p y‖ ≤ Cp)
     (D : ℝ) (hD : 0 ≤ D)
     (hsub : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y - p y‖ ≤ D)
-    (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    (f : PDE.ScalarLp Ω (2 )) :
     ‖(scalarL2Multiplier q hq Cq hCq hqBound -
         scalarL2Multiplier p hp Cp hCp hpBound) f‖ ≤ D * ‖f‖ := by
   apply Lp.norm_le_mul_norm_of_ae_le_mul
@@ -48,8 +48,8 @@ theorem norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
 /-- An almost-everywhere uniform bound on two scalar coefficients' difference
 bounds the operator norm of their induced spatial `L²` multipliers. -/
 theorem norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (q p : PDE.Vec d → ℝ)
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
+    (q p : PDE.ScalarField d)
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
     (Cq : ℝ) (hCq : 0 ≤ Cq)

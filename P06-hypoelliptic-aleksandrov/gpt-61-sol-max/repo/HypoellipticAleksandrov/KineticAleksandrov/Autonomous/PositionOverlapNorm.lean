@@ -33,8 +33,10 @@ theorem positionPositiveNorm_add {X : Type*} [MeasurableSpace X]
       positionPositiveNorm m q f + positionPositiveNorm m q g :=
   ENNReal.lintegral_Lp_add_le hf.aemeasurable hg.aemeasurable hq
 
+variable {X ι : Type*}
+
 /-- The extended positive Lq norm satisfies the finite-sum triangle inequality. -/
-theorem positionPositiveNorm_finsetSum {X ι : Type*} [MeasurableSpace X]
+theorem positionPositiveNorm_finsetSum  [MeasurableSpace X]
     (m : Measure X) (q : ℝ) (hq : 1 ≤ q) (f : ι → X → ℝ≥0∞)
     (hf : ∀ i, Measurable (f i)) (S : Finset ι) :
     positionPositiveNorm m q (fun x => ∑ i ∈ S, f i x) ≤
@@ -51,29 +53,29 @@ theorem positionPositiveNorm_finsetSum {X ι : Type*} [MeasurableSpace X]
       (Finset.measurable_sum S (fun j _ => hf j))).trans (add_le_add le_rfl ih)
 
 /-- Countably many positive densities obey Minkowski without an integrability side premise. -/
-theorem positionPositiveNorm_tsum {X ι : Type*} [MeasurableSpace X] [Countable ι]
+theorem positionPositiveNorm_tsum  [MeasurableSpace X] [Countable ι]
     (m : Measure X) (q : ℝ) (hq : 1 ≤ q) (f : ι → X → ℝ≥0∞)
     (hf : ∀ i, Measurable (f i)) :
     positionPositiveNorm m q (fun x => ∑' i, f i x) ≤
       ∑' i, positionPositiveNorm m q (f i) := by
   classical
   have hq0 : 0 < q := by linarith
-  have hm (S : Finset ι) : Measurable (fun x => (∑ i ∈ S, f i x) ^ q) :=
+  have hm (S : Finset ι)  :=
     (Finset.measurable_sum S (fun i _ => hf i)).pow_const q
-  have hd : Directed (· ≤ ·) (fun S : Finset ι => fun x => (∑ i ∈ S, f i x) ^ q) := by
-    intro S T
-    refine ⟨S ∪ T, ?_, ?_⟩
-    · intro x
-      exact ENNReal.rpow_le_rpow (Finset.sum_le_sum_of_subset_of_nonneg
-        Finset.subset_union_left (fun _ _ _ => zero_le)) hq0.le
-    · intro x
-      exact ENNReal.rpow_le_rpow (Finset.sum_le_sum_of_subset_of_nonneg
-        Finset.subset_union_right (fun _ _ _ => zero_le)) hq0.le
+
   have he : positionPositiveNorm m q (fun x => ∑' i, f i x) =
       ⨆ S : Finset ι, positionPositiveNorm m q (fun x => ∑ i ∈ S, f i x) := by
     unfold positionPositiveNorm
     simp_rw [ENNReal.tsum_eq_iSup_sum, position_rpow_iSup _ q hq0]
-    rw [lintegral_iSup_directed_of_measurable hm hd,
+    rw [lintegral_iSup_directed_of_measurable hm (by
+        intro S T
+        refine ⟨S ∪ T, ?_, ?_⟩
+        · intro x
+          exact ENNReal.rpow_le_rpow (Finset.sum_le_sum_of_subset_of_nonneg
+            Finset.subset_union_left (fun _ _ _ => zero_le)) hq0.le
+        · intro x
+          exact ENNReal.rpow_le_rpow (Finset.sum_le_sum_of_subset_of_nonneg
+            Finset.subset_union_right (fun _ _ _ => zero_le)) hq0.le),
       position_rpow_iSup _ (1 / q) (one_div_pos.mpr hq0)]
   rw [he]
   refine iSup_le (fun S => (positionPositiveNorm_finsetSum m q hq f hf S).trans ?_)

@@ -5,7 +5,7 @@ import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 
 /-! # Vanishing individual masses in a finite counting measure -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped Topology

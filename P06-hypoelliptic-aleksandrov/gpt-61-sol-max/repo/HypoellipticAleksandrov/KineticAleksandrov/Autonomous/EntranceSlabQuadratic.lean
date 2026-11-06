@@ -8,13 +8,15 @@ The terminal family retains starts at its observation time. This endpoint is
 needed for the right-closed time bins in the source entrance-slab estimate.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+variable (c : Clock) (mu : Measure Point)
+
 /-- Entrance-supported finite measures have an integrable source quadratic. -/
-theorem entranceSlabQuadratic_integrable (c : Clock) (mu : Measure Point)
+theorem entranceSlabQuadratic_integrable
     [IsFiniteMeasure mu] (hmu : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.entrance) :
     Integrable (fun p => visitQuadratic c (p.velocity 0)) mu := by
   apply Integrable.mono' (integrable_const (9 * c.r ^ 2 / 16))
@@ -28,7 +30,7 @@ theorem entranceSlabQuadratic_integrable (c : Clock) (mu : Measure Point)
   exact visitQuadratic_le c _
 
 /-- The lower quadratic bound survives restriction to any measurable time slab. -/
-theorem entranceSlabQuadratic_mass_lower (c : Clock) (mu : Measure Point)
+theorem entranceSlabQuadratic_mass_lower
     [IsFiniteMeasure mu] (hmu : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.entrance) :
     5 * c.r ^ 2 / 16 * (mu univ).toReal ≤
       ∫ p, visitQuadratic c (p.velocity 0) ∂mu := by
@@ -37,44 +39,45 @@ theorem entranceSlabQuadratic_mass_lower (c : Clock) (mu : Measure Point)
     (hmu.mono fun _ hp => visitQuadratic_entrance_lower c hp)
   simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using h
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+
 /-- A visit starting at the right endpoint contributes its actual initial quadratic value. -/
 theorem entranceSlabQuadratic_terminal_at_start
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (p : Point)
+     (p : Point)
     (ht : p.time = b) (hv : p.velocity 0 ∈ (visitActiveUnion c J).carrier) :
     (∫ q, visitQuadratic c (q.velocity 0)
       ∂enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p) =
         visitQuadratic c (p.velocity 0) := by
-  unfold enlargedActiveTerminalFamily
-  rw [ite_eq_left ⟨ht, hv⟩, integral_dirac]
+  simp_all [enlargedActiveTerminalFamily]
 
+variable (hJ : closure c.active ⊆ J.carrier) (p : Point)
+
+include hJ
 /-- Before its right endpoint the slab identity is the actual active Green identity. -/
 theorem entranceSlabQuadratic_point_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
-    (hJ : closure c.active ⊆ J.carrier) (p : Point)
+
+
     (ht : p.time < b) (hv : p.velocity 0 ∈ (visitActiveUnion c J).carrier) :
     visitQuadratic c (p.velocity 0) =
       (∫ q, visitQuadratic c (q.velocity 0)
         ∂enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p) +
       ∫ q, 2 * A.a (q.position 0) (q.velocity 0)
         ∂enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b p := by
+  let sharedTerm_37593492f8 := (p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b)
   classical
-  have hp : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b := ⟨ht, hv⟩
-  let ep := enlargedVisitPole (visitActiveUnion c J) b ⟨p, hp⟩
+  have hp : sharedTerm_37593492f8 := ⟨ht, hv⟩
+  let ep := enlargedVisitPole _ b ⟨p, hp⟩
   have hi := visitQuadratic_active_identity hH hLE hlam hLam A c J b ep
   have he : enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b p =
-      finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) b ep := by
-    change (if h : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b then
-      finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) b
+      finiteUnionExit hH hLE hlam hLam A _ b ep := by
+    change (if h : sharedTerm_37593492f8 then
+      finiteUnionExit hH hLE hlam hLam A _ b
         (enlargedVisitPole _ b ⟨p, h⟩) else 0) = _
     rw [dite_eq_left hp]
   have hg : enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b p =
-      finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) b ep := by
-    change (if h : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b then
-      finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) b
+      finiteUnionGreen hH hLE hlam hLam A _ b ep := by
+    change (if h : sharedTerm_37593492f8 then
+      finiteUnionGreen hH hLE hlam hLam A _ b
         (enlargedVisitPole _ b ⟨p, h⟩) else 0) = _
     rw [dite_eq_left hp]
   let E := enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b
@@ -100,16 +103,14 @@ theorem entranceSlabQuadratic_point_identity
   have hn : (fun q : Point => -2 * A.a (q.position 0) (q.velocity 0)) =
       -(fun q => 2 * A.a (q.position 0) (q.velocity 0)) := by
     funext q
-    simp only [Pi.neg_apply, neg_mul]
+    simp
   rw [hn, integral_neg', sub_neg_eq_add] at hi
   exact hi
 
 /-- The point identity includes visits starting exactly at the slab's right endpoint. -/
 theorem entranceSlabQuadratic_closed_point_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
-    (hJ : closure c.active ⊆ J.carrier) (p : Point)
+
+
     (ht : p.time ≤ b) (hv : p.velocity 0 ∈ (visitActiveUnion c J).carrier) :
     visitQuadratic c (p.velocity 0) =
       (∫ q, visitQuadratic c (q.velocity 0)
@@ -122,7 +123,7 @@ theorem entranceSlabQuadratic_closed_point_identity
   · have hg : enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b p =
         0 := by
       change (if h : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b then
-        finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) b
+        finiteUnionGreen hH hLE hlam hLam A _ b
           (enlargedVisitPole _ b ⟨p, h⟩) else 0) = 0
       exact dite_eq_right (fun h => (ne_of_lt h.1) heq)
     rw [hg, integral_zero_measure, add_zero,

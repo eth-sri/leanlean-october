@@ -9,13 +9,13 @@ The ambient norm is used only for compactness. The propagated comparison error i
 expressed in the source's explicit Euclidean squared radius.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Metric
+
 
 /-- Sublevel sets of the quadratic norm weight are compact in finite dimension. -/
 theorem isCompact_quadratic_weight_sublevel
@@ -34,19 +34,19 @@ theorem isCompact_quadratic_weight_sublevel
 
 /-- The quadratic ambient norm weight is bounded by the actual Euclidean state weight. -/
 theorem quadratic_state_weight_le_radial {n : ℕ} (r : ℝ) (x : EvolutionAmbientState n) :
-    1 + ‖x‖ ^ 2 ≤ 1 + radialSq (⟨r, x.1, x.2⟩ : KineticPoint n) := by
+    1 + ‖x‖ ^ 2 ≤ 1 + radialSq (⟨r, x.1, x.2⟩ ) := by
   have hcomponent (y : PDE.Vec n) : ‖y‖ ^ 2 ≤ PDE.vecNormSq y := by
     rw [← PDE.vecEuclideanNorm_sq]
     exact (sq_le_sq₀ (norm_nonneg _) (PDE.vecEuclideanNorm_nonneg _)).mpr
       (PDE.norm_le_vecEuclideanNorm y)
-  have h₁ := hcomponent x.1
-  have h₂ := hcomponent x.2
+
+
   rw [Prod.norm_def]
   dsimp only [radialSq]
   rcases le_total ‖x.1‖ ‖x.2‖ with h | h
   · rw [max_eq_right h]
-    linarith only [h₂, PDE.vecNormSq_nonneg x.1]
+    linarith only [(hcomponent x.2), PDE.vecNormSq_nonneg x.1]
   · rw [max_eq_left h]
-    linarith only [h₁, PDE.vecNormSq_nonneg x.2]
+    linarith only [(hcomponent x.1), PDE.vecNormSq_nonneg x.2]
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -9,8 +9,8 @@ import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 
 /-! # Transport of density estimates through kinetic coordinates -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory
 open scoped ENNReal
@@ -35,32 +35,30 @@ theorem mixture_point_density_of_tests (mu : Measure (KineticPoint 1))
       MemLp f (ENNReal.ofReal (q / (q - 1))) volume → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂mu) ≤ C *
         (eLpNorm f (ENNReal.ofReal (q / (q - 1))) volume).toReal) :
-    ∃ g : KineticPoint 1 → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧
+    ∃ g : HypoellipticAleksandrov.KineticScalarField 1, Measurable g ∧ (∀ x, 0 ≤ g x) ∧
       mu = volume.withDensity (fun x => ENNReal.ofReal (g x)) ∧
-      MemLp g (ENNReal.ofReal q) volume ∧
-      (eLpNorm g (ENNReal.ofReal q) volume).toReal ≤ C := by
+      MemLp g (ENNReal.ofReal q)  ∧
+      (eLpNorm g (ENNReal.ofReal q) ).toReal ≤ C := by
+
   let F := KineticPoint.equivProd 1
   have hm := KineticPoint.measurable_equivProd 1
-  have hp : MeasurePreserving F volume volume :=
+  have hp : MeasurePreserving F volume  :=
     KineticPoint.measurePreserving_equivProd 1
   have he : MeasurableEmbedding F := (KineticPoint.homeomorphProd 1).measurableEmbedding
   have : (volume : Measure (PDE.Vec 1 × PDE.Vec 1)).IsAddHaarMeasure :=
     Measure.prod.instIsAddHaarMeasure volume volume
   have : (volume : Measure (ℝ × (PDE.Vec 1 × PDE.Vec 1))).IsAddHaarMeasure :=
     Measure.prod.instIsAddHaarMeasure volume volume
-  have ht : ∀ f : BoundedBorel (ℝ × (PDE.Vec 1 × PDE.Vec 1)),
-      MemLp f (ENNReal.ofReal (q / (q - 1))) volume → (∀ x, 0 ≤ f x) →
-      (∫ x, f x ∂mu.map F) ≤ C *
-        (eLpNorm f (ENNReal.ofReal (q / (q - 1))) volume).toReal := by
-    intro f hfp hfn
-    have hh := htest (f.pullback F hm) (hfp.comp_measurePreserving hp)
-      (fun x => hfn (F x))
-    change (∫ x, f (F x) ∂mu) ≤ C *
-      (eLpNorm ((↑f) ∘ F) (ENNReal.ofReal (q / (q - 1))) volume).toReal at hh
-    rw [he.integral_map f]
-    simpa only [eLpNorm_comp_measurePreserving hfp.aestronglyMeasurable hp] using hh
+
   obtain ⟨g, hgm, hgn, hgd, hgp, hgb⟩ :=
-    mixture_density_bound_of_bounded_tests volume (mu.map F) q C hq hC ht
+    mixture_density_bound_of_bounded_tests volume (mu.map F) q C hq hC (by
+        intro f hfp hfn
+        have hh := htest (f.pullback F hm) (hfp.comp_measurePreserving hp)
+          (fun x => hfn (F x))
+        change (∫ x, f (F x) ∂mu) ≤ C *
+          (eLpNorm ((↑f) ∘ F) (((ENNReal.ofReal (q / (q - 1))))) volume).toReal at hh
+        rw [he.integral_map f]
+        simpa only [eLpNorm_comp_measurePreserving hfp.aestronglyMeasurable hp] using hh)
   refine ⟨g ∘ F, hgm.comp hm, fun x => hgn (F x), ?_,
     hgp.comp_measurePreserving hp, ?_⟩
   · apply he.map_injective

@@ -3,24 +3,26 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.GaussianBarrierOperator
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.BarrierSignAcceleration
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The reviewed multiplied Gaussian barrier inequality, including zero amplitude -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
-open MeasureTheory Set Matrix
+open MeasureTheory Matrix
 open scoped MatrixOrder
 
 /-- Ellipticity and the covariance trace give the source Gaussian differential sign. -/
 theorem gaussianBarrier_sign {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (Lam H L ell tminus sblock : ℝ) (hLam : lam ≤ Lam) (hH : 0 ≤ H) (hell : 0 ≤ ell)
     (A : FullKineticCoefficient d) (hA : FullElliptic lam Lam A)
-    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
-    (hv : ContDiff ℝ (⊤ : ℕ∞) v) (hkin : ∀ s, HasDerivAt x (v s) s)
+    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ PDE.smoothOrder x)
+    (hv : ContDiff ℝ PDE.smoothOrder v) (hkin : ∀ s, HasDerivAt x (v s) s)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|) :
     ∀ᵐ P ∂(volume.restrict {P : KineticPoint d |
       0 < P.time - tminus - sblock ∧ P.time - tminus - sblock ≤ h}),
@@ -54,10 +56,10 @@ theorem gaussianBarrier_sign {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < 
   let R := (gramian lam h sigma)⁻¹ 1 1
   let B := fullKineticCoefficientAt A P
   let G := Real.exp (-Xi d lam Lam H h * sigma - qform lam h sigma y V)
-  have hs : 0 < sigma ∧ sigma ≤ h := hP
+  have hs  := hP
   have hstrip : -(h / 128) ≤ sigma := by linarith only [hh, hs.1]
-  have hR : 0 ≤ R := gramian_inv_velocity_nonneg hlam hh hstrip
-  have hLam0 : 0 ≤ Lam := (hlam.trans_le hLam).le
+  have hR  := gramian_inv_velocity_nonneg hlam hh hstrip
+  have hLam0  := (hlam.trans_le hLam).le
   have hquad := loewner_quadratic_lower hl pvec
   have htrA := loewner_trace_upper hu
   have htrR := gramian_velocity_trace_le d hlam hh hs.1.le hs.2

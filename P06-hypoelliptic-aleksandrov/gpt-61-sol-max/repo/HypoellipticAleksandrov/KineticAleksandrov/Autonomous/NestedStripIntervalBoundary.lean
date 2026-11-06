@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripI
 
 /-! # Exact terminal, outer-lateral and internal-lateral interval exit splitting -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 
 /-- The literal interval exit boundary is Borel in physical coordinates. -/
 theorem measurableSet_nestedIntervalExit (H : Interval) (sMinus T : ℝ) :
@@ -34,8 +34,8 @@ theorem nestedIntervalExit_compl_iff_internal (H1 H2 : Interval)
     · refine ⟨hp.1, hp.2.1, hp.2.2, ?_⟩
       change H2.lo < p.velocity 0 ∧ p.velocity 0 < H2.hi
       have hl : p.velocity 0 ≠ H2.lo := fun hl => hn (Or.inr ⟨hp.1, hp.2.1, Or.inl hl⟩)
-      have hh : p.velocity 0 ≠ H2.hi := fun hh => hn (Or.inr ⟨hp.1, hp.2.1, Or.inr hh⟩)
-      exact ⟨lt_of_le_of_ne hc.2.1 hl.symm, lt_of_le_of_ne hc.2.2 hh⟩
+
+      exact ⟨lt_of_le_of_ne hc.2.1 hl.symm, lt_of_le_of_ne hc.2.2 (fun hh => hn (Or.inr ⟨hp.1, hp.2.1, Or.inr hh⟩))⟩
   · intro hs hn
     rcases hn with hn | hn
     · exact (ne_of_lt hs.2.1) hn.1
@@ -56,15 +56,15 @@ theorem nestedIntervalExit_boundary_split
       (stripExit hH hLE hlam hLam A H1 T e).restrict
         (nestedIntervalInternalExit H1 H2 sMinus T) := by
   let μ := stripExit hH hLE hlam hLam A H1 T e
-  have hm : ∀ᵐ p ∂μ, p ∈ reconstructionExit H1 sMinus T := by
-    rw [ae_iff]
-    exact (strip_exit_probability hH hLE hlam hLam A H1 sMinus T e he.le).2.1
-  have heq : (reconstructionExit H2 sMinus T)ᶜ =ᵐ[μ]
-      nestedIntervalInternalExit H1 H2 sMinus T := by
-    filter_upwards [hm] with p hp
-    exact propext (nestedIntervalExit_compl_iff_internal H1 H2 hsub sMinus T p hp)
+
+
   have hs := μ.restrict_add_restrict_compl (measurableSet_nestedIntervalExit H2 sMinus T)
-  rw [Measure.restrict_congr_set heq] at hs
+  rw [Measure.restrict_congr_set (show (reconstructionExit H2 sMinus T)ᶜ =ᵐ[μ]
+      nestedIntervalInternalExit H1 H2 sMinus T by
+      filter_upwards [(show ∀ᵐ p ∂μ, p ∈ reconstructionExit H1 sMinus T by
+          rw [ae_iff]
+          exact (strip_exit_probability hH hLE hlam hLam A H1 sMinus T e he.le).2.1)] with p hp
+      exact propext (nestedIntervalExit_compl_iff_internal H1 H2 hsub sMinus T p hp))] at hs
   exact hs.symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

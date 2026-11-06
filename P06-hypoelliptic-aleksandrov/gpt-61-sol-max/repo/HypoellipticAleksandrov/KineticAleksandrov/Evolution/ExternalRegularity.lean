@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BracketHormander
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeTransfer
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Hörmander regularity for `L_ε` and for the transported operator
@@ -25,13 +27,13 @@ The statements below use only the standing hypotheses that the proofs need
 coercivity); the standing hypotheses of the evolution problem therefore specialise to them.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 set_option autoImplicit false
 
 open MeasureTheory Set
-open HypoellipticAleksandrov
+
 open scoped MatrixOrder
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
@@ -44,19 +46,19 @@ variable {n : ℕ}
 with `u = v` almost everywhere on `U`. -/
 theorem exists_smooth_viscous_kinetic_representative
     (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+    {B : FullKineticCoefficient n} {b : PDE.VectorField n} (hlam : 0 < lam)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
     (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (hb_smooth : IsSmoothDrift b)
-    (U : Set (KineticPoint n)) (hU : IsOpen U) (ε : ℝ) (hε : 0 < ε) (u : KineticPoint n → ℝ)
+    (U : Set (KineticPoint n)) (hU : IsOpen U) (ε : ℝ) (hε : 0 < ε) (u : HypoellipticAleksandrov.KineticScalarField n)
     (hu : IsKineticWeakRegularizedSolution B b ε U u (fun _ => 0)) :
-    ∃ v : KineticPoint n → ℝ,
-      ContDiffOn ℝ (⊤ : ℕ∞) (v ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) ∧
+    ∃ v : HypoellipticAleksandrov.KineticScalarField n,
+      ContDiffOn ℝ PDE.smoothOrder (v ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) ∧
         u =ᵐ[volume.restrict U] v := by
   obtain ⟨hX, hspan⟩ :=
     hormander_hypotheses_regularizedFields hlam hB_smooth hB_ell hb_smooth hε
       (evolutionHomeomorph n ⁻¹' U)
   have hEq := hasWeakHormanderEquation_comp_regularizedFields hε.le hlam hB_smooth hB_ell
-    hb_smooth hu (contDiffOn_const (c := (0 : ℝ)))
+    hb_smooth hu (contDiffOn_const )
   exact exists_kinetic_representative
     (hH ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) _ _ _ _ hX hspan
       contDiffOn_const hEq)
@@ -68,20 +70,20 @@ on the preimage of `U`, with `u = v` almost everywhere on `U`.  The bracket chec
 unit-direction drift coercivity. -/
 theorem exists_smooth_kinetic_representative
     (hH : HormanderHypoellipticityStatement) {lam Lam m : ℝ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+    {B : FullKineticCoefficient n} {b : PDE.VectorField n} (hlam : 0 < lam)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
     (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (hb_smooth : IsSmoothDrift b)
     (hm : 0 < m) (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-    (U : Set (KineticPoint n)) (hU : IsOpen U) (u : KineticPoint n → ℝ)
+    (U : Set (KineticPoint n)) (hU : IsOpen U) (u : HypoellipticAleksandrov.KineticScalarField n)
     (hu : IsKineticWeakTransportedSolution B b U u (fun _ => 0)) :
-    ∃ v : KineticPoint n → ℝ,
-      ContDiffOn ℝ (⊤ : ℕ∞) (v ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) ∧
+    ∃ v : HypoellipticAleksandrov.KineticScalarField n,
+      ContDiffOn ℝ PDE.smoothOrder (v ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) ∧
         u =ᵐ[volume.restrict U] v := by
   obtain ⟨hX, hspan⟩ :=
     hormander_hypotheses_transportedFields hlam hB_smooth hB_ell hb_smooth hm hb_coercive
       (evolutionHomeomorph n ⁻¹' U)
   have hEq := hasWeakHormanderEquation_comp_transportedFields hlam hB_smooth hB_ell
-    hb_smooth hu (contDiffOn_const (c := (0 : ℝ)))
+    hb_smooth hu (contDiffOn_const )
   exact exists_kinetic_representative
     (hH ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) _ _ _ _ hX hspan
       contDiffOn_const hEq)
@@ -90,7 +92,7 @@ theorem exists_smooth_kinetic_representative
 are continuous in packed coordinates on the preimage of an open `U` and agree almost everywhere
 on `U` agree at every point of `U`. -/
 theorem eqOn_of_ae_eq_of_continuousOn_kinetic {U : Set (KineticPoint n)} (hU : IsOpen U)
-    {v w : KineticPoint n → ℝ}
+    {v w : HypoellipticAleksandrov.KineticScalarField n}
     (hv : ContinuousOn (v ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U))
     (hw : ContinuousOn (w ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U))
     (hae : v =ᵐ[volume.restrict U] w) : EqOn v w U := by

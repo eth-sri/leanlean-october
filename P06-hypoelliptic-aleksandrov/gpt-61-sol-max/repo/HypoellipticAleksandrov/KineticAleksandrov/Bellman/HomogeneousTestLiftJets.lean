@@ -7,8 +7,8 @@ import Mathlib.Tactic
 
 /-! # Directional jets of the radial test lift -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set MeasureTheory Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -23,7 +23,7 @@ theorem bellman_lift_dx (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
   apply ae_of_all
   intro r
   dsimp only
-  have hv : bellmanDilationLinear r.val ((1 : ℝ), 0) = r.val ^ 3 • ((1 : ℝ), 0) := by
+  have hv : bellmanDilationLinear r.val ((1 ), 0) = r.val ^ 3 • ((1 : ℝ), 0) := by
     simp [bellmanDilationLinear, ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd']
   rw [hv, map_smul, smul_eq_mul, ← mul_assoc]
   have hp : r.val ^ (-1 - alpha) * r.val ^ 3 = r.val ^ (-1 - (alpha - 3)) := by
@@ -33,8 +33,10 @@ theorem bellman_lift_dx (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
   rw [hp]
   rfl
 
+variable (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+
 /-- The first velocity derivative is the lift of the first test jet with its shifted weight. -/
-theorem bellman_lift_dv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_dv
     (hz : ContDiffOn ℝ 1 zeta bellmanPuncturedSet) (hc : HasCompactSupport zeta)
     (hs : tsupport zeta ⊆ bellmanPuncturedSet) (q : ℝ × ℝ)
     (hq : q ∈ bellmanPuncturedSet) :
@@ -44,7 +46,7 @@ theorem bellman_lift_dv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
   apply ae_of_all
   intro r
   dsimp only
-  have hv : bellmanDilationLinear r.val ((0 : ℝ), 1) = r.val • ((0 : ℝ), 1) := by
+  have hv : bellmanDilationLinear r.val ((0 ), 1) = r.val • ((0 : ℝ), 1) := by
     simp [bellmanDilationLinear, ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd']
   rw [hv, map_smul, smul_eq_mul, ← mul_assoc]
   have hp : r.val ^ (-1 - alpha) * r.val = r.val ^ (-1 - (alpha - 1)) := by
@@ -56,7 +58,7 @@ theorem bellman_lift_dv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
   rfl
 
 /-- The second velocity derivative is the lift of the second test jet with its shifted weight. -/
-theorem bellman_lift_dvv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_dvv
     (hz : ContDiffOn ℝ 2 zeta bellmanPuncturedSet) (hc : HasCompactSupport zeta)
     (hs : tsupport zeta ⊆ bellmanPuncturedSet) (q : ℝ × ℝ)
     (hq : q ∈ bellmanPuncturedSet) :

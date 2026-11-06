@@ -6,15 +6,15 @@ import Mathlib.Tactic
 
 /-! # Reflection of the finite angular tail -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
 /-- Reflection preserves the two-sided density-tail integrability condition. -/
 theorem bellmanAngularTail_reflect (β : ℝ) (f : ℝ → ℝ)
-    (ht : IntegrableOn (fun y => f y * |y| ^ (β - 4)) {y : ℝ | 2 < |y|} volume) :
-    IntegrableOn (fun y => f (-y) * |y| ^ (β - 4)) {y : ℝ | 2 < |y|} volume := by
+    (ht : IntegrableOn (fun y => f y * |y| ^ (β - 4)) {y : ℝ | 2 < |y|} ) :
+    IntegrableOn (fun y => f (-y) * |y| ^ (β - 4)) {y : ℝ | 2 < |y|}  := by
   have hi := ((Measure.measurePreserving_neg (volume : Measure ℝ)).integrableOn_comp_preimage
     (Homeomorph.neg ℝ).measurableEmbedding).mpr ht
   have he : (fun y : ℝ => -y) ⁻¹' {y : ℝ | 2 < |y|} = {y : ℝ | 2 < |y|} := by
@@ -28,8 +28,7 @@ theorem bellmanAngularTail_reflect (β : ℝ) (f : ℝ → ℝ)
 
 /-- An almost everywhere comparison on the real line holds after reflection. -/
 theorem bellmanAngularComparison_reflect (R : ℝ) (f h : ℝ → ℝ)
-    (hc : ∀ᵐ y ∂volume, h y ≤ R * f y) :
-    ∀ᵐ y ∂volume, h (-y) ≤ R * f (-y) :=
+    (hc : ∀ᵐ y, h y ≤ R * f y) : type_of% ((Measure.measurePreserving_neg (volume : Measure ℝ)).quasiMeasurePreserving.ae hc) :=
   (Measure.measurePreserving_neg (volume : Measure ℝ)).quasiMeasurePreserving.ae hc
 
 end HypoellipticAleksandrov.KineticAleksandrov

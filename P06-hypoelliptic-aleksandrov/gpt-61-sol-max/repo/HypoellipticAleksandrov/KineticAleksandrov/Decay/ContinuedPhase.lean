@@ -8,17 +8,17 @@ import Mathlib.Tactic.Linarith
 
 /-! # Source block phase errors after continuation and trimming -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- The two actual corridor phases remain in quarter-width strips after continuation. -/
 theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
-    (lam Lam m Lb Cstar σ : ℝ) (D : Set (PDE.Vec d))
-    (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
+    (lam Lam m Lb Cstar σ : ℝ) (D : PDE.VelocityRegion d)
+    (B : CoefficientField d) (b : PDE.VectorField d)
     (hsetting : SourceSetting lam Lam m Lb D B b) (hC : 0 < Cstar)
     (ξ v0 z0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
     (hfit : PDE.euclideanBall v0 (blockOuter Lb) ⊆ D)
@@ -36,22 +36,22 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
     (K2 : MovingFiberKernel (PDE.euclideanBall 0 (blockEta m Lb)) γ2)
     (S0 : TerminalOperatorFamily (PDE.euclideanBall v0 (4 * blockRho Lb)) stationary)
     (K0 : MovingFiberKernel (PDE.euclideanBall v0 (4 * blockRho Lb)) stationary)
-    (hreal1 : RealizesTerminalEvolution (PDE.euclideanBall 0 (blockEta m Lb)) γ1
+    (hreal1 : RealizesTerminalEvolution _ γ1
       (PDE.isOpen_euclideanBall 0 (blockEta m Lb)).measurableSet
       (zIndependentCoefficient B) b S1 K1)
-    (hreal2 : RealizesTerminalEvolution (PDE.euclideanBall 0 (blockEta m Lb)) γ2
+    (hreal2 : RealizesTerminalEvolution _ γ2
       (PDE.isOpen_euclideanBall 0 (blockEta m Lb)).measurableSet
       (zIndependentCoefficient B) b S2 K2)
-    (hreal0 : RealizesTerminalEvolution (PDE.euclideanBall v0 (4 * blockRho Lb)) stationary
+    (hreal0 : RealizesTerminalEvolution _ stationary
       (PDE.isOpen_euclideanBall v0 (4 * blockRho Lb)).measurableSet
       (zIndependentCoefficient B) b S0 K0)
-    (hpar1 : HasParabolicMarginalBundle (PDE.euclideanBall 0 (blockEta m Lb)) γ1
+    (hpar1 : HasParabolicMarginalBundle _ γ1
       (PDE.isOpen_euclideanBall 0 (blockEta m Lb)).measurableSet
       (zIndependentCoefficient B) K1)
-    (hpar2 : HasParabolicMarginalBundle (PDE.euclideanBall 0 (blockEta m Lb)) γ2
+    (hpar2 : HasParabolicMarginalBundle _ γ2
       (PDE.isOpen_euclideanBall 0 (blockEta m Lb)).measurableSet
       (zIndependentCoefficient B) K2)
-    (hpar0 : HasParabolicMarginalBundle (PDE.euclideanBall v0 (4 * blockRho Lb)) stationary
+    (hpar0 : HasParabolicMarginalBundle _ stationary
       (PDE.isOpen_euclideanBall v0 (4 * blockRho Lb)).measurableSet
       (zIndependentCoefficient B) K0)
     (q1 : EvolutionQuery (PDE.euclideanBall 0 (blockEta m Lb)) γ1)
@@ -68,10 +68,10 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
     (hsT : σ + blockL0 m ≤ σ + blockTime m Lb)
     (E1 E2 F1 F2 : Measure (EvolutionAmbientState d))
     (hE1 : ∀ A, MeasurableSet A → E1 A =
-      ∫⁻ p, K0.master (movingQuery (σ + blockL0 m) (σ + blockTime m Lb)
+      ∫⁻ p, K0.master (movingQuery _ _
         hsT p.1.1 p.1.2 p.2.1) A ∂R1)
     (hE2 : ∀ A, MeasurableSet A → E2 A =
-      ∫⁻ p, K0.master (movingQuery (σ + blockL0 m) (σ + blockTime m Lb)
+      ∫⁻ p, K0.master (movingQuery _ _
         hsT p.1.1 p.1.2 p.2.1) A ∂R2)
     (hF1 : F1 ≤ E1) (hF2 : F2 ≤ E2) :
     let Φ1 := phaseCenter ξ b γ1 σ (σ + blockL0 m) +
@@ -93,7 +93,7 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
   have hbound (γ : ℝ → PDE.Vec d) (hγ : IsContinuousPiecewiseC1 γ)
       (S : TerminalOperatorFamily (PDE.euclideanBall 0 (blockEta m Lb)) γ)
       (K : MovingFiberKernel (PDE.euclideanBall 0 (blockEta m Lb)) γ)
-      (hreal : RealizesTerminalEvolution (PDE.euclideanBall 0 (blockEta m Lb)) γ
+      (hreal : RealizesTerminalEvolution _ γ
         (PDE.isOpen_euclideanBall 0 (blockEta m Lb)).measurableSet
         (zIndependentCoefficient B) b S K)
       (q : EvolutionQuery (PDE.euclideanBall 0 (blockEta m Lb)) γ)
@@ -104,7 +104,7 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
         ENNReal.ofReal (blockMass Cstar m Lb / (2 * (K.master q).real univ)) • K.master q)
       (E : Measure (EvolutionAmbientState d))
       (hE : ∀ A, MeasurableSet A → E A =
-        ∫⁻ p, K0.master (movingQuery (σ + blockL0 m) (σ + blockTime m Lb)
+        ∫⁻ p, K0.master (movingQuery _ _
           hsT p.1.1 p.1.2 p.2.1) A ∂R) :
       ∀ᵐ x ∂E, |phaseCoordinate ξ z0 x -
         (phaseCenter ξ b γ σ (σ + blockL0 m) +
@@ -112,7 +112,7 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
     have hv : v0 ∈ movingDomain (PDE.euclideanBall 0 (blockEta m Lb)) γ σ := by
       have h := q.2.2.1
       simpa only [hq] using h
-    have hq' : q = movingQuery σ (σ + blockL0 m) hστ v0 z0 hv := Subtype.ext hq
+    have hq' : q = movingQuery σ _ hστ v0 z0 hv := Subtype.ext hq
     have hphase := phase_localization_of_continuous_curve d lam Lam m Lb D B b
       hsetting σ (σ + blockL0 m) (blockEta m Lb) γ hη hγ.1 S K hreal ξ z0 v0 hξ hστ hv
     rw [← hq'] at hphase

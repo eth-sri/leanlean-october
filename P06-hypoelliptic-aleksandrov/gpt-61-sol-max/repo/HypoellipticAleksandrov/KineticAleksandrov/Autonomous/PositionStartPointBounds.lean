@@ -4,8 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStar
 
 /-! # Localized terminal bounds on the literal source box -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 

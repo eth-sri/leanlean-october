@@ -22,29 +22,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal MatrixOrder
 
-/-- The cube root `λ^(1/3)` of the ellipticity scale. -/
-def lamCbrt (lam : ℝ) : ℝ := lam ^ (1 / 3 : ℝ)
 
-theorem lamCbrt_pos {lam : ℝ} (hlam : 0 < lam) : 0 < lamCbrt lam :=
-  Real.rpow_pos_of_pos hlam _
 
-/-- The velocity part of the pushforward, `v ↦ λ^(-1/3) v`, as a measurable equivalence. -/
-def lamVelocityEquiv (d : ℕ) {lam : ℝ} (hlam : 0 < lam) : PDE.Vec d ≃ᵐ PDE.Vec d :=
-  (Homeomorph.smulOfNeZero (lamCbrt lam)⁻¹ (inv_ne_zero (lamCbrt_pos hlam).ne')).toMeasurableEquiv
 
-@[simp] theorem lamVelocityEquiv_apply (d : ℕ) {lam : ℝ} (hlam : 0 < lam) (v : PDE.Vec d) :
-    lamVelocityEquiv d hlam v = (lamCbrt lam)⁻¹ • v :=
-  rfl
 
-/-- The ambient pushforward map: velocity scaled, transported coordinate unchanged. -/
-def lamAmbientEquiv (d : ℕ) {lam : ℝ} (hlam : 0 < lam) :
-    EvolutionAmbientState d ≃ᵐ EvolutionAmbientState d :=
-  (lamVelocityEquiv d hlam).prodCongr (MeasurableEquiv.refl _)
 
-@[simp] theorem lamAmbientEquiv_apply (d : ℕ) {lam : ℝ} (hlam : 0 < lam)
-    (w : EvolutionAmbientState d) :
-    lamAmbientEquiv d hlam w = ((lamCbrt lam)⁻¹ • w.1, w.2) :=
-  rfl
+
 
 /-- Pushforward of a complex measure by a measurable equivalence preserves total variation. -/
 theorem variation_map_equiv_univ {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]

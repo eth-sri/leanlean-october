@@ -5,14 +5,14 @@ import Mathlib.Tactic
 
 /-! # Backward monotonicity and lower bounds for negative angular moments -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open MeasureTheory Set
+open MeasureTheory
 
 /-- The negative first moment grows as the endpoint moves to the left. -/
 theorem bellmanAngularFirstMoment_negative_mono {f : ℝ → ℝ}
-    (hf : LocallyIntegrable f volume) (hn : ∀ᵐ z ∂volume, 0 ≤ f z)
+    (hf : LocallyIntegrable f ) (hn : ∀ᵐ z, 0 ≤ f z)
     (y a : ℝ) (hya : y ≤ a) (ha : a ≤ 0) :
     bellmanAngularFirstMoment f a ≤ bellmanAngularFirstMoment f y := by
   have hi (u v : ℝ) : IntervalIntegrable (fun z => z * f z) volume u v := by
@@ -30,15 +30,15 @@ theorem bellmanAngularFirstMoment_negative_mono {f : ℝ → ℝ}
 
 /-- The integrated angular identity gives the source negative linear lower bound. -/
 theorem bellmanAngularDensity_negative_lower (β : ℝ) (f h J : ℝ → ℝ)
-    (hβ : 3 ≤ β) (hf : LocallyIntegrable f volume) (hn : ∀ᵐ z ∂volume, 0 ≤ f z)
+    (hβ : 3 ≤ β) (hf : LocallyIntegrable f ) (hn : ∀ᵐ z, 0 ≤ f z)
     (h0 : h 0 = 0) (hj0 : J 0 = 0)
     (he : ∀ y : ℝ, h y = h 0 + J 0 * y - ((β - 2) / 3) * y *
       bellmanAngularFirstMoment f y + ((β - 3) / 3) * bellmanAngularSecondMoment f y)
     (y : ℝ) (hy : y ≤ 0) :
     (-y / 3) * bellmanAngularFirstMoment f y ≤ h y := by
-  have hb := bellmanAngularSecondMoment_negative_bound hf hn hy
-  have hd : 0 ≤ (β - 3) / 3 := by linarith
-  have hm := mul_le_mul_of_nonneg_left hb hd
+
+
+  have hm := mul_le_mul_of_nonneg_left (bellmanAngularSecondMoment_negative_bound hf hn hy) (show 0 ≤ (β - 3) / 3 by linarith)
   rw [he y, h0, hj0]
   nlinarith
 

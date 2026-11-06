@@ -6,7 +6,7 @@ import Mathlib.Tactic
 
 /-! # Entrance counting and operator integration in the actual short time window -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -21,7 +21,7 @@ theorem visitTimeQuadratic_entrance_integral_lower
         {p | p.time ∈ Icc b (b + c.r ^ 2)}).toReal ≤
       ∫ p, visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0)
         ∂visitEntrancePiece hH hLE hlam hLam A c J s T P n := by
-  let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
+
   let W := {p : Point | p.time ∈ Icc b (b + c.r ^ 2)}
   have hW : MeasurableSet W := isClosed_Icc.measurableSet.preimage continuous_time.measurable
   have hi := integral_mono_ae ((integrable_const (5 * c.r ^ 2 / 16)).indicator hW)
@@ -55,7 +55,7 @@ theorem visitTimeQuadratic_activeGreen_integral_bound : ∃ D : ℝ, 0 ≤ D ∧
   let := hmuFinite
   dsimp only
   let G := visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu
-  let f := fun p : Point => forwardScalarOperator A.a
+  let f := fun p  => forwardScalarOperator A.a
     (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p
   let W := {p : Point | p.time ∈ Icc (b - c.r ^ 2) (b + 2 * c.r ^ 2)}
   have hW : MeasurableSet W := isClosed_Icc.measurableSet.preimage continuous_time.measurable

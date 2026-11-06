@@ -7,24 +7,26 @@ import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormOperato
 import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothH10DenseRange
 import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothNeighborhoodSpatialSlices
 import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Stationary smooth barriers as literal variational solutions
 
 Density extends the classical identity to every H10 test in the energy equation.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
-open Filter MeasureTheory Set Dirichlet
-open scoped ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
+open MeasureTheory Set Dirichlet
+open scoped ENNReal Matrix.Norms.Elementwise
 
 /-- A smooth stationary zero-boundary barrier solves its literal variational source equation. -/
 theorem stationarySourceCurve_isVariationalEnergySolution {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+    {Ω : PDE.VelocityRegion d} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (A : CoefficientField d)
-    (hA : IsSmoothCoefficient A) (F : TimeVelocity d → ℝ)
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) (q : PDE.H10Function Ω)
+    (hA : IsSmoothCoefficient A) (F : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hF : ContDiff ℝ PDE.smoothOrder F) (q : PDE.H10Function Ω)
     (hq : ContDiff ℝ 2 q.toH1Function.toFun)
     (heq : ∀ z ∈ Icc a T ×ˢ Ω,
       scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
@@ -36,6 +38,7 @@ theorem stationarySourceCurve_isVariationalEnergySolution {d : ℕ}
       (stationarySourceCurve hΩ (T - a) (h10HilbertGraphOfH10Function hΩ q)) 0
       (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT)
         (h10HilbertGraphOfH10Function hΩ q)) := by
+  let sharedTerm_0f4de66fee := ((fun t y => F (t, y)))
   let Q := h10HilbertGraphOfH10Function hΩ q
   let hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
       (scalarParabolicClosedCylinder a T Ω) :=
@@ -56,51 +59,51 @@ theorem stationarySourceCurve_isVariationalEnergySolution {d : ℕ}
     rw [stationarySourceCurve_hilbertRepresentative]
     rfl
   · filter_upwards [stationarySourceCurve_ae hΩ (T - a) Q,
-      Lp.coeFn_zero (H10HilbertGraphDual hΩ) 2 (reverseTimeVolume (T - a))]
+      Lp.coeFn_zero (H10HilbertGraphDual hΩ) 2 _]
       with τ hqτ hgτ
     intro hτ v
     rw [hqτ, hgτ]
     change 0 + reverseTimeSpatialForm hΩ T τ A (fun _ _ => 0) (fun _ _ => 0) Q v = _
     rw [zero_add]
     have hτc : τ ∈ Icc 0 (T - a) := ⟨hτ.1.le, hτ.2.le⟩
-    let fτ := reverseTimeSourceSlice T τ (fun t y => F (t, y))
+    let fτ := reverseTimeSourceSlice T τ sharedTerm_0f4de66fee
       (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood a T hΩ hΩb
-        (fun t y => F (t, y)) hFs τ hτc)
+        sharedTerm_0f4de66fee hFs τ hτc)
     let L := reverseTimeSpatialFormOperator a T haT hΩ hΩb A
       (fun _ _ => 0) (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q
     let R := reverseTimeSourceFunctional hΩ fτ
-    have hLR : L = R := by
-      apply ContinuousLinearMap.coeFn_injective
-      apply Continuous.ext_on
-        (denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ)
-        L.continuous R.continuous
-      rintro _ ⟨ψ, rfl⟩
-      change L (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) =
-        R (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ)
-      have ha : ∀ i j, ContDiffOn ℝ 1 (fun y => A (T - τ) y i j) Ω := by
-        intro i j
-        exact contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
-          a T (T - τ) A hAs (by constructor <;> linarith [hτ.1, hτ.2]) i j
-      rw [show L _ = reverseTimeSpatialForm hΩ T τ A (fun _ _ => 0)
-        (fun _ _ => 0) Q _ from reverseTimeSpatialFormOperator_apply
-          a T haT hΩ hΩb A (fun _ _ => 0) (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q _,
-        reverseTimeSpatialForm_stationary_barrier_weakIdentity hΩ T τ A
-          (fun _ _ => 0) (fun _ _ => 0) q hq ha
-          (fun _ => continuousOn_const) continuousOn_const ψ]
-      change _ = reverseTimeSourceFunctional hΩ fτ _
-      rw [reverseTimeSourceFunctional_apply, L2.inner_def, ← integral_neg]
-      apply integral_congr_ae
-      filter_upwards [coeFn_reverseTimeSourceSlice T τ (fun t y => F (t, y))
-        (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood a T hΩ hΩb
-          (fun t y => F (t, y)) hFs τ hτc),
-        ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ,
-        ae_restrict_mem hΩ.measurableSet] with y hFy hψ hy
-      rw [hFy, hψ, heq (T - τ, y)
-        ⟨by constructor <;> linarith [hτ.1, hτ.2], hy⟩]
-      simp only [RCLike.inner_apply, conj_trivial]
-      ring
+
     rw [← reverseTimeSpatialFormOperator_apply a T haT hΩ hΩb A
       (fun _ _ => 0) (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q v]
-    exact congrArg (fun D : H10HilbertGraphDual hΩ => D v) hLR
+    exact congrArg (fun D : H10HilbertGraphDual hΩ => D v) (by
+        apply ContinuousLinearMap.coeFn_injective
+        apply Continuous.ext_on
+          (denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ)
+          L.continuous R.continuous
+        rintro _ ⟨ψ, rfl⟩
+        change L (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) =
+          R (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ)
+
+        rw [show L _ = reverseTimeSpatialForm hΩ T τ A (fun _ _ => 0)
+          (fun _ _ => 0) Q _ from reverseTimeSpatialFormOperator_apply
+            a T haT hΩ hΩb A (fun _ _ => 0) (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q _,
+          reverseTimeSpatialForm_stationary_barrier_weakIdentity hΩ T τ A
+            (fun _ _ => 0) (fun _ _ => 0) q hq (by
+                intro i j
+                exact contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
+                  a T (T - τ) A hAs (by constructor <;> linarith [hτ.1, hτ.2]) i j)
+            (fun _ => continuousOn_const) continuousOn_const ψ]
+        change _ = reverseTimeSourceFunctional hΩ fτ _
+        rw [reverseTimeSourceFunctional_apply, L2.inner_def, ← integral_neg]
+        apply integral_congr_ae
+        filter_upwards [coeFn_reverseTimeSourceSlice T τ sharedTerm_0f4de66fee
+          (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood a T hΩ hΩb
+            sharedTerm_0f4de66fee hFs τ hτc),
+          ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ,
+          ae_restrict_mem hΩ.measurableSet] with y hFy hψ hy
+        rw [hFy, hψ, heq (T - τ, y)
+          ⟨by constructor <;> linarith [hτ.1, hτ.2], hy⟩]
+        simp only [RCLike.inner_apply, conj_trivial]
+        ring)
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

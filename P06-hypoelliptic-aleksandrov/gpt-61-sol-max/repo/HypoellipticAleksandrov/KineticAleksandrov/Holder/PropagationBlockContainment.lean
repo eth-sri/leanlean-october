@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # Source block cylinders lie in the smooth path corridor with halved radii -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -25,6 +25,7 @@ theorem propagation_block_containment {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
       ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩
       (barrierW d lam Lam H T1 * Real.sqrt h)) ⊆
       corridor tminus (-T0) TP (kx / 2) (kv / 2) x v := by
+  let sharedTerm_9cf860eb29 := (h ^ (3 / 2 : ℝ))
   let W := barrierW d lam Lam H T1
   let b := sblock + h
   let R := W * Real.sqrt h
@@ -39,10 +40,10 @@ theorem propagation_block_containment {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
       h = Real.sqrt h * Real.sqrt h := by nlinarith only [Real.sq_sqrt hh.le]
       _ ≤ Real.sqrt T1 * Real.sqrt h :=
         mul_le_mul_of_nonneg_right hsqrt (Real.sqrt_nonneg h)
-  have hpower : h ^ 2 = h ^ (3 / 2 : ℝ) * Real.sqrt h := by
+  have hpower : h ^ 2 = sharedTerm_9cf860eb29 * Real.sqrt h := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_add hh]
     norm_num
-  have hthree : h ^ 2 ≤ Real.sqrt T1 * h ^ (3 / 2 : ℝ) := by
+  have hthree : h ^ 2 ≤ Real.sqrt T1 * sharedTerm_9cf860eb29 := by
     rw [hpower]
     simpa only [mul_comm] using mul_le_mul_of_nonneg_left hsqrt (Real.rpow_nonneg hh.le _)
   intro P hP
@@ -55,8 +56,8 @@ theorem propagation_block_containment {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
     dsimp only [b, s]
     constructor <;> linarith only [htlo, htup]
   have hs : s ∈ Icc (-T0) TP := by
-    have hb : b ≤ TP := hblock
-    have ht : W ^ 2 * h ≤ T0 := htime.1
+    have hb  := hblock
+    have ht  := htime.1
     constructor <;> dsimp only [b] at * <;> linarith only [hdelta.1, hdelta.2, hb, ht, hsblock, hh]
   have hvelEq : P.velocity - v s = (P.velocity - v b) + (v b - v s) := by abel
   have hvelPath := hLip b s
@@ -86,19 +87,19 @@ theorem propagation_block_containment {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
     rw [hposEq]
     exact (PDE.vecEuclideanNorm_add_le _ _).trans
       (add_le_add hpos (by simpa only [PDE.vecEuclideanNorm_neg] using hrem))
-  have hdeltaSq : (b - s) ^ 2 ≤ (W ^ 2 * h) ^ 2 :=
+  have hdeltaSq  :=
     (sq_le_sq₀ hdelta.1 (mul_nonneg (sq_nonneg W) hh.le)).mpr hdelta.2
   have hposTube : PDE.vecEuclideanNorm (P.position - x s) ≤
-      positionTubeConstant d lam Lam H T1 * h ^ (3 / 2 : ℝ) := by
+      positionTubeConstant d lam Lam H T1 * sharedTerm_9cf860eb29 := by
     calc
       _ ≤ R ^ 3 + H * (W ^ 2 * h) ^ 2 / 2 := hposTotal.trans
         (add_le_add le_rfl (div_le_div_of_nonneg_right
           (mul_le_mul_of_nonneg_left hdeltaSq hH) (by norm_num)))
-      _ = W ^ 3 * h ^ (3 / 2 : ℝ) + (H * W ^ 4 / 2) * h ^ 2 := by
+      _ = W ^ 3 * sharedTerm_9cf860eb29 + (H * W ^ 4 / 2) * h ^ 2 := by
         rw [propagation_block_radius_cube hh.le]
         ring
-      _ ≤ W ^ 3 * h ^ (3 / 2 : ℝ) +
-          (H * W ^ 4 / 2) * (Real.sqrt T1 * h ^ (3 / 2 : ℝ)) :=
+      _ ≤ W ^ 3 * sharedTerm_9cf860eb29 +
+          (H * W ^ 4 / 2) * (Real.sqrt T1 * sharedTerm_9cf860eb29) :=
         add_le_add le_rfl (mul_le_mul_of_nonneg_left hthree (by positivity))
       _ = _ := by dsimp only [W, positionTubeConstant]; ring
   exact ⟨hs, hposTube.trans (propagation_step_position hH hkx hh hhstar),

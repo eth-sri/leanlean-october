@@ -4,11 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 
 /-! # Exact stopped exit action of a supplied bounded homogeneous potential -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
-open SectionTwo TheoremA Evolution
+open MeasureTheory Filter Parabolic
+
 
 /-- The actual exit action equals the value of a bounded homogeneous classical potential. -/
 theorem enlarged_stripExit_potential_identity
@@ -23,14 +23,14 @@ theorem enlarged_stripExit_potential_identity
     (∫ p, u p ∂stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb)) = u e.1 := by
   have hsub : reconstructionStrip H (e.1.time - 1) b ⊆ {p | p.time < b} :=
     fun _ hp => hp.2.1
-  have hr : IsKineticC112On u (reconstructionStrip H (e.1.time - 1) b) := by
-    rcases hphi with ⟨hc0, ht, hx, hv, htc, hxc, hvc, hvvc⟩
-    exact ⟨hc0.mono hsub, fun p hp => ht p (hsub hp), fun p hp => hx p (hsub hp),
-      fun p hp => hv p (hsub hp), htc.mono hsub, hxc.mono hsub, hvc.mono hsub,
-      hvvc.mono hsub⟩
+
   have hi := strip_identity_C112 hH hLE hlam hLam A H (e.1.time - 1) b
     (by linarith) (stripPoleFinite H e b hb) (by change e.1.time - 1 < e.1.time; linarith)
-    u hr
+    u (by
+        rcases hphi with ⟨hc0, ht, hx, hv, htc, hxc, hvc, hvvc⟩
+        exact ⟨hc0.mono hsub, fun p hp => ht p (hsub hp), fun p hp => hx p (hsub hp),
+          fun p hp => hv p (hsub hp), htc.mono hsub, hxc.mono hsub, hvc.mono hsub,
+          hvvc.mono hsub⟩)
       (hc.mono fun p hp => by
         rcases hp with hp | hp
         · exact hp.2.1.le

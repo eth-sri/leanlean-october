@@ -49,8 +49,10 @@ theorem bellmanDvv_smul (c : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) 
   simp only [bellmanDvv, he, fderiv_const_smul_field, Pi.smul_apply,
     smul_apply, smul_eq_mul]
 
+variable (alpha lam Lam : ℝ)
+
 /-- The continuous operator image is a linear map from the actual homogeneous space. -/
-def bellmanImageLinearMap (alpha lam Lam : ℝ) :
+def bellmanImageLinearMap  :
     bellmanHomogeneousSpace alpha →ₗ[ℝ] C(BellmanSphere × BellmanCoefficient lam Lam, ℝ) where
   toFun phi := bellmanImage lam Lam phi.val phi.property
   map_add' phi psi := by
@@ -71,12 +73,12 @@ def bellmanImageLinearMap (alpha lam Lam : ℝ) :
     ring
 
 /-- The literal image subspace in the source's uniform function space. -/
-def bellmanImageSpace (alpha lam Lam : ℝ) :
+def bellmanImageSpace  :
     Submodule ℝ C(BellmanSphere × BellmanCoefficient lam Lam, ℝ) :=
   (bellmanImageLinearMap alpha lam Lam).range
 
 /-- Membership in the image means exactly that a C² homogeneous witness produces it. -/
-theorem mem_bellmanImageSpace_iff (alpha lam Lam : ℝ)
+theorem mem_bellmanImageSpace_iff
     (f : C(BellmanSphere × BellmanCoefficient lam Lam, ℝ)) :
     f ∈ bellmanImageSpace alpha lam Lam ↔
       ∃ phi : (ℝ × ℝ) → ℝ, ∃ h : IsBellmanHomogeneous alpha phi,

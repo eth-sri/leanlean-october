@@ -10,7 +10,7 @@ This module transports closed-box scalar continuity through the normalized
 parabolic affine map and records the resulting terminal-face limit.
 -/
 
-@[expose] public section
+ public section
 
 open Filter Set
 
@@ -21,29 +21,26 @@ noncomputable section
 /-- Continuity within the normalized closed Harnack box gives the terminal-face
 limit along the interior-time approximation. -/
 theorem ContinuousOn.tendsto_localHarnackTerminalApprox
-    {d : ℕ} {q : TimeVelocity d → ℝ} {v : PDE.Vec d}
+    {d : ℕ} {q : HypoellipticAleksandrov.Parabolic.ScalarField d} {v : PDE.Vec d}
     (hq : ContinuousOn q (parabolicClosedBox 2 2 0 0))
     (hv : v ∈ velocityCube (0 : PDE.Vec d) 1) :
-    Tendsto (fun j : ℕ => q (localHarnackTerminalApprox j, v)) atTop
+    Tendsto (fun j  => q (localHarnackTerminalApprox j, v)) atTop
       (_root_.nhds (q (8, v))) := by
-  let K : Set (TimeVelocity d) := parabolicClosedBox 2 2 0 0
-  let zj : ℕ → TimeVelocity d := fun j => (localHarnackTerminalApprox j, v)
-  have hzj : Tendsto zj atTop (_root_.nhds (8, v)) := by
-    exact HypoellipticAleksandrov.Parabolic.tendsto_localHarnackTerminalApprox.prodMk_nhds
-      (tendsto_const_nhds : Tendsto (fun _ : ℕ => v) atTop (_root_.nhds v))
-  have hzjMem : ∀ j : ℕ, zj j ∈ K := by
-    intro j
-    have hj := localHarnackTerminalApprox_mem_normalizedOpenBox (v := v) j hv
-    rw [mem_parabolicBox_iff] at hj
-    rw [mem_parabolicClosedBox_iff]
-    exact ⟨hj.1.le, hj.2.1.le, fun i => (hj.2.2 i).le⟩
-  have hzjWithin : Tendsto zj atTop (_root_.nhdsWithin (8, v) K) :=
-    tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within zj hzj
-      (Eventually.of_forall hzjMem)
-  have hterminal : (8, v) ∈ K :=
-    normalized_terminal_target_mem_normalizedClosedBox hv
-  simpa only [Function.comp_def, zj] using
-    (hq (8, v) hterminal).tendsto.comp hzjWithin
+
+
+  have hzj  := HypoellipticAleksandrov.Parabolic.tendsto_localHarnackTerminalApprox.prodMk_nhds
+      (tendsto_const_nhds (x := v))
+
+  have hzjWithin  :=
+    tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within (fun j => (localHarnackTerminalApprox j, v)) hzj
+      (Eventually.of_forall (by
+          intro j
+          have hj := localHarnackTerminalApprox_mem_normalizedOpenBox  j hv
+          rw [mem_parabolicBox_iff] at hj
+          rw [mem_parabolicClosedBox_iff]
+          exact ⟨hj.1.le, hj.2.1.le, fun i => (hj.2.2 i).le⟩))
+
+  exact (hq (8, v) (normalized_terminal_target_mem_normalizedClosedBox hv)).tendsto.comp hzjWithin
 
 end
 

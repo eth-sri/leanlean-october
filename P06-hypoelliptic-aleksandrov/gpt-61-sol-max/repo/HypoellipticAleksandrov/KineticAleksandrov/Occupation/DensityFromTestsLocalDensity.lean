@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.DensityFromT
 public import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Local sharp bounds for the density forced by smooth tests
@@ -14,7 +16,7 @@ The bounded-test norm argument is applied only on compact subsets, where the ref
 measure is finite. Absolute continuity is proved from smooth tests in the preceding module.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -24,12 +26,14 @@ open scoped ENNReal
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
 
+variable (ν μ : Measure E)
+
 /-- The density forced by smooth tests is measurable, nonnegative, and integrable. -/
-theorem rnDensity_of_smooth_tests (ν μ : Measure E)
+theorem rnDensity_of_smooth_tests
     [ν.IsAddHaarMeasure] [IsFiniteMeasure μ] {U : Set E} (hU : IsOpen U)
     (hμU : μ Uᶜ = 0) {p : ℝ≥0∞} (hp : 1 ≤ p) (hpt : p ≠ ∞)
     {C : ℝ} (hC : 0 ≤ C)
-    (htest : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
+    (htest : ∀ f : E → ℝ, ContDiff ℝ PDE.smoothOrder f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C * (eLpNorm f p (ν.restrict U)).toReal) :
     let g := fun x => (μ.rnDeriv (ν.restrict U) x).toReal
@@ -48,10 +52,10 @@ theorem rnDensity_of_smooth_tests (ν μ : Measure E)
   · simpa only [measureReal_def] using Measure.integral_toReal_rnDeriv hac
 
 /-- The Radon–Nikodym density has the sharp `Lʳ` bound on each compact interior subset. -/
-theorem rnDensity_compact_norm_le (ν μ : Measure E)
+theorem rnDensity_compact_norm_le
     [ν.IsAddHaarMeasure] [IsFiniteMeasure μ] {U : Set E} (hU : IsOpen U)
     (hμU : μ Uᶜ = 0) {r C : ℝ} (hr : 1 < r) (hC : 0 ≤ C)
-    (htest : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
+    (htest : ∀ f : E → ℝ, ContDiff ℝ PDE.smoothOrder f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C *
         (eLpNorm f (ENNReal.ofReal (r / (r - 1))) (ν.restrict U)).toReal)
@@ -64,33 +68,33 @@ theorem rnDensity_compact_norm_le (ν μ : Measure E)
     apply ENNReal.one_le_ofReal.mpr
     exact (le_div_iff₀ (by linarith)).2 (by linarith)
   have hpt : p ≠ ∞ := ENNReal.ofReal_ne_top
-  have hac := absolutelyContinuous_of_smooth_tests ν μ hU hμU hp hpt hC htest
+
   have hprops := rnDensity_of_smooth_tests ν μ hU hμU hp hpt hC htest
   let g := fun x => (μ.rnDeriv (ν.restrict U) x).toReal
   have hfin : IsFiniteMeasure ((ν.restrict U).restrict K) := ⟨by
     rw [Measure.restrict_apply_univ, Measure.restrict_eq_self ν hKU]
     exact hK.measure_lt_top⟩
-  have : IsFiniteMeasureOnCompacts (ν + μ) := finiteOnCompacts_add ν μ
+  have  := finiteOnCompacts_add ν μ
   apply memLp_and_eLpNorm_le_of_bounded_conjugate_tests hr hC hprops.1
     hprops.2.2.1.restrict
   intro φ hφ hφbound
   obtain ⟨M, hM, hφM⟩ := hφbound
   let f := K.indicator φ
-  have hf : Measurable f := hφ.indicator hK.measurableSet
+
   have hfK : Function.support f ⊆ K := Set.support_indicator_subset
-  have hfM : ∀ x, |f x| ≤ M := by
-    intro x
-    by_cases hx : x ∈ K
-    · simpa [f, hx] using hφM x
-    · simpa [f, hx] using hM
-  have hfp := memLp_of_bounded_compact_support (ν + μ) hf hK hfK hfM p
+
+  have hfp := memLp_of_bounded_compact_support (ν + μ) (hφ.indicator hK.measurableSet) hK hfK (by
+      intro x
+      by_cases hx : x ∈ K
+      · simpa [f, hx] using hφM x
+      · simpa [f, hx] using hM) p
   have hb := abs_integral_le_of_smooth_tests_compact ν μ hU hp hpt hC htest
     hfp hK hKU hfK
   have hpair : (∫ x, φ x * g x ∂(ν.restrict U).restrict K) = ∫ x, f x ∂μ := by
     rw [show (fun x => φ x * g x) = (fun x => g x * φ x) by
       funext x; exact mul_comm _ _]
     change (∫ x in K, (μ.rnDeriv (ν.restrict U) x).toReal * φ x ∂ν.restrict U) = _
-    rw [setIntegral_toReal_rnDeriv_mul hac hK.measurableSet,
+    rw [setIntegral_toReal_rnDeriv_mul (absolutelyContinuous_of_smooth_tests ν μ hU hμU hp hpt hC htest) hK.measurableSet,
       ← integral_indicator hK.measurableSet]
   rw [hpair]
   simpa only [f, eLpNorm_indicator_eq_eLpNorm_restrict hK.measurableSet] using hb

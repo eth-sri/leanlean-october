@@ -2,13 +2,15 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1DerivativesBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1InversionReal
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Derivative contraction under the real-density projection -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory Parabolic SectionTwo
+open SectionTwo
 
 /-- The real-part projection is a contraction in the complex norm. -/
 theorem norm_exitRealPart_le_one : ‖exitRealPart‖ ≤ 1 := by
@@ -34,14 +36,14 @@ theorem ballExitL1Density_derivative_le
   dsimp only
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
   let L := exitRealPart.compLpL 1 (exitMarginal ν)
-  have hs := ballExitL1Inversion_contDiff hH hLE hd hlam hLam B hB v₀ hR P T hv hT
+
   have he := L.iteratedFDeriv_comp_left
-    ((hs.of_le (by simp : (j : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).contDiffAt (x := y)) le_rfl
+    (((ballExitL1Inversion_contDiff hH hLE hd hlam hLam B hB v₀ hR P T hv hT).of_le (by simp : (j : WithTop ℕ∞) ≤ PDE.smoothOrder)).contDiffAt (x := y)) le_rfl
   change ‖iteratedFDeriv ℝ j (L ∘ exitL1Inversion ν) y‖ ≤ _
   rw [he]
-  have hL : ‖L‖ ≤ 1 := exitRealPart.norm_compLpL_le.trans norm_exitRealPart_le_one
+
   exact (ContinuousLinearMap.norm_compContinuousMultilinearMap_le _ _).trans
     (by simpa only [one_mul] using
-      mul_le_mul_of_nonneg_right hL (norm_nonneg (iteratedFDeriv ℝ j (exitL1Inversion ν) y)))
+      mul_le_mul_of_nonneg_right (exitRealPart.norm_compLpL_le.trans norm_exitRealPart_le_one) (norm_nonneg (iteratedFDeriv ℝ j (exitL1Inversion ν) y)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

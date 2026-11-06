@@ -8,8 +8,8 @@ import Mathlib.Tactic
 
 /-! # Integrating the actual homogeneous angular representation -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -27,7 +27,7 @@ theorem bellmanRadialWeight_integral (β : ℝ) (f : ℝ → ℝ) :
     have hem : MeasurableEmbedding (Subtype.val : BellmanPositiveTime → ℝ) :=
       MeasurableEmbedding.subtype_coe measurableSet_Ioi
     have he := hem.integral_map
-      (fun s : ℝ => s ^ (3 - β) * f s) (μ := bellmanPositiveTimeVolume)
+      (fun s  => s ^ (3 - β) * f s) (μ := bellmanPositiveTimeVolume)
     rw [map_bellmanPositiveTimeVolume_coe] at he
     exact he.symm
   · exact ae_of_all _ fun _ => ENNReal.ofReal_lt_top
@@ -35,10 +35,6 @@ theorem bellmanRadialWeight_integral (β : ℝ) (f : ℝ → ℝ) :
 /-- A test supported in positive position integrates against precisely that restriction. -/
 theorem bellman_integral_positive_restrict (μ : Measure BellmanPuncturedPlane)
     (f : ℝ × ℝ → ℝ) (hs : tsupport f ⊆ {q : ℝ × ℝ | 0 < q.1}) :
-    (∫ q, f q.val ∂μ.restrict {q | 0 < q.val.1}) = ∫ q, f q.val ∂μ := by
-  apply setIntegral_eq_integral_of_forall_compl_eq_zero
-  intro q hq
-  apply image_eq_zero_of_notMem_tsupport
-  exact fun h => hq (hs h)
+    (∫ q, f q.val ∂μ.restrict {q | 0 < q.val.1}) = ∫ q, f q.val ∂μ := (setIntegral_eq_integral_of_forall_compl_eq_zero fun q hq => image_eq_zero_of_notMem_tsupport fun h => hq (hs h))
 
 end HypoellipticAleksandrov.KineticAleksandrov

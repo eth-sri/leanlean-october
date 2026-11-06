@@ -7,22 +7,23 @@ import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 
 /-! # The Green-density Hölder bound used by abstract Aleksandrov comparison -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory
 
+variable {E : Type*}
+
 /-- The real-valued seminorm formula for an a.e. nonnegative real source. -/
-theorem abp_eLpNorm_toReal_nonneg {E : Type*} [MeasurableSpace E]
+theorem abp_eLpNorm_toReal_nonneg  [MeasurableSpace E]
     {μ : Measure E} {g : E → ℝ} {p : ℝ} (hp : 0 < p)
     (hg : MemLp g (ENNReal.ofReal p) μ) (hnn : ∀ᵐ x ∂μ, 0 ≤ g x) :
     (eLpNorm g (ENNReal.ofReal p) μ).toReal = (∫ x, g x ^ p ∂μ) ^ (1 / p) := by
   rw [hg.eLpNorm_eq_integral_rpow_norm (ENNReal.ofReal_pos.mpr hp).ne'
     ENNReal.ofReal_ne_top]
   simp only [ENNReal.toReal_ofReal hp.le]
-  have hi : 0 ≤ ∫ x, ‖g x‖ ^ p ∂μ :=
-    integral_nonneg fun x => Real.rpow_nonneg (norm_nonneg _) _
-  rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hi _)]
+
+  rw [ENNReal.toReal_ofReal (Real.rpow_nonneg (integral_nonneg fun x => Real.rpow_nonneg (norm_nonneg _) _) _)]
   simp only [one_div]
   congr 1
   apply integral_congr_ae
@@ -30,7 +31,7 @@ theorem abp_eLpNorm_toReal_nonneg {E : Type*} [MeasurableSpace E]
   rw [Real.norm_of_nonneg hx]
 
 /-- A positive Green density with its source norm bound gives the potential estimate. -/
-theorem abp_potential_holder {E : Type*} [MeasurableSpace E]
+theorem abp_potential_holder  [MeasurableSpace E]
     (μ Γ : Measure E) (G g : E → ℝ) {q p K : ℝ} (hpq : q.HolderConjugate p)
     (hG : Measurable G) (hG0 : ∀ x, 0 ≤ G x) (hg0 : ∀ᵐ x ∂μ, 0 ≤ g x)
     (hΓ : Γ = μ.withDensity (fun x => ENNReal.ofReal (G x)))

@@ -4,8 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FiniteUnionD
 
 /-! # Borel dependence of componentwise union measures -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal
@@ -15,8 +15,8 @@ theorem finiteUnion_component_family_measurable
     (H : FiniteIntervalUnion) (T : WithTop ℝ)
     (f : ∀ i : Fin H.count, StripPole (H.component i) T → Measure Point)
     (hf : ∀ i, Measurable (f i)) :
-    Measurable (fun e : FiniteUnionPole H T =>
-      f (finiteUnionPoleIndex H T e) (finiteUnionComponentPole H T e)) := by
+    Measurable (fun e  =>
+      f _ (finiteUnionComponentPole H T e)) := by
   classical
   apply Measure.measurable_measure.mpr
   intro B hB
@@ -25,7 +25,7 @@ theorem finiteUnion_component_family_measurable
   have hD (i : Fin H.count) : MeasurableSet (D i) :=
     isOpen_Ioo.measurableSet.preimage
       (((continuous_apply 0).comp continuous_velocity).measurable.comp measurable_subtype_coe)
-  let g (i : Fin H.count) (e : FiniteUnionPole H T) : ℝ≥0∞ :=
+  let g (i : Fin H.count) (e : FiniteUnionPole H T)  :=
     if h : e ∈ D i then f i ⟨e.1, e.2.1, h⟩ B else 0
   have hg (i : Fin H.count) : Measurable (g i) := by
     have hp : Measurable (fun e : D i => (⟨e.1.1, e.1.2.1, e.2⟩ :
@@ -34,7 +34,7 @@ theorem finiteUnion_component_family_measurable
     exact Measurable.dite
       (((Measure.measurable_measure.mp (hf i)) B hB).comp hp) measurable_const (hD i)
   have heq (e : FiniteUnionPole H T) :
-      f (finiteUnionPoleIndex H T e) (finiteUnionComponentPole H T e) B =
+      f _ (finiteUnionComponentPole H T e) B =
         ∑ i : Fin H.count, g i e := by
     symm
     rw [Finset.sum_eq_single (finiteUnionPoleIndex H T e)]
@@ -51,17 +51,15 @@ theorem finiteUnion_component_family_measurable
       exact False.elim (hn (Finset.mem_univ _))
   have hm : Measurable (fun e => ∑ i : Fin H.count, g i e) :=
     Finset.measurable_sum _ (fun i _ => hg i)
-  have hfun : (fun e : FiniteUnionPole H T =>
-      f (finiteUnionPoleIndex H T e) (finiteUnionComponentPole H T e) B) =
-        fun e => ∑ i : Fin H.count, g i e := funext heq
+  have hfun  := funext heq
   rw [hfun]
   exact hm
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion)
+
 /-- The actual Green family of a finite union has Borel pole dependence. -/
 theorem finiteUnionGreen_measurable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ) :
+     (T : WithTop ℝ) :
     Measurable (finiteUnionGreen hH hLE hlam hLam A H T) := by
   unfold finiteUnionGreen
   exact finiteUnion_component_family_measurable H T
@@ -71,9 +69,7 @@ theorem finiteUnionGreen_measurable
 
 /-- The actual finite-horizon exit family of a finite union has Borel pole dependence. -/
 theorem finiteUnionExit_measurable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) :
+     (T : ℝ) :
     Measurable (finiteUnionExit hH hLE hlam hLam A H T) := by
   unfold finiteUnionExit
   exact finiteUnion_component_family_measurable H T

@@ -8,11 +8,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryMeasureT
 
 /-! # The actual exit integral is the convolution with the canonical real density -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory Filter Parabolic SectionTwo
-open scoped ENNReal Convolution
+open MeasureTheory Filter Parabolic SectionTwo
+open scoped Convolution
 
 variable (hH : HormanderHypoellipticityStatement)
   (hLE : LiebermanEllipsoidDirichletStatement)
@@ -30,9 +30,9 @@ theorem ballExit_density_nonneg :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
     ∀ᵐ p ∂volume.prod (exitMarginal ν), 0 ≤ exitJointDensity ν p := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+
   apply (Measure.ae_prod_iff_ae_ae
-    (measurableSet_le measurable_const (measurable_exitJointDensity ν))).mpr
+    (measurableSet_le measurable_const (measurable_exitJointDensity (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)))).mpr
   exact Eventually.of_forall fun y =>
     (ballExitPositionKernel_density hH hLE hd hlam hLam B hB v₀ hR P T hv hT).mono
       (fun z hz => hz.2 y)

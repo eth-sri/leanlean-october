@@ -4,8 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoxConcentra
 
 /-! # Box concentration conditional on the full source return-time conclusion -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set
 
@@ -16,7 +16,7 @@ theorem box_concentration_of_return_time
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ)
     (ha : bellmanAdjointExponent (Lam / lam)
-      (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) - 2 < alpha)
+      (by apply (le_div_iff₀ hlam).2; simpa) - 2 < alpha)
     (ha1 : alpha < 1) (A0 : ℝ) (hA0 : 0 < A0)
     (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (F : BoundedBorel (EvolutionAmbientState 1)), (∀ p, 0 ≤ F p) →
@@ -30,18 +30,21 @@ theorem box_concentration_of_return_time
       0 < r → |z.2| ≤ 3 * r →
       (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) t z (box A0 r Y)).toReal ≤
         C * (1 + (t : ℝ) / r ^ 2) ^ (-gamma alpha / 2) := by
+  let sharedTerm_11d9c5cc8d := ((10 : ℝ) ^ (gamma alpha / 2))
+  let sharedTerm_b777bfa5a0 := ((2 : ℝ) ^ (gamma alpha / 2))
+  let sharedTerm_bd14f7e525 := ((3 : ℝ) ^ (alpha / 2))
   obtain ⟨CR, hCR, hreturn⟩ := hReturn
   obtain ⟨B, hB, hocc⟩ :=
     deterministic_box_occupation hH hLE lam Lam hlam hLam alpha ha ha1 A0 1 hA0
   have hg : 0 < gamma alpha := by dsimp only [gamma]; linarith
-  let K := CR * B * (3 : ℝ) ^ (alpha / 2)
+  let K := CR * B * sharedTerm_bd14f7e525
   have hK : 0 < K := by dsimp only [K]; positivity
-  let C := (10 : ℝ) ^ (gamma alpha / 2) + K * (2 : ℝ) ^ (gamma alpha / 2)
+  let C := sharedTerm_11d9c5cc8d + K * sharedTerm_b777bfa5a0
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro A z Y r t hr hz
   let E := fullSpaceEvolution hH hLE hlam hLam A
-  let f := fun s : ℝ => (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal
+  let f := fun s  => (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal
   let x := (t : ℝ) / r ^ 2
   have hx : 0 ≤ x := div_nonneg t.property (sq_nonneg r)
   have hx1 : 0 < 1 + x := by linarith
@@ -53,9 +56,7 @@ theorem box_concentration_of_return_time
     have hfcomp (s : ℝ) (hs : s ∈ Ioc (2 * (t : ℝ)) (3 * (t : ℝ))) :
         f t ≤ CR * f s := by
       have hs0 : 0 ≤ s := by linarith [hs.1]
-      have hh := hreturn A (boxIndicatorDatum A0 r Y) (fun p => by
-        change 0 ≤ (box A0 r Y).indicator (fun _ => (1 : ℝ)) (p.1 0, p.2 0)
-        exact indicator_nonneg (fun _ _ => zero_le_one) _)
+      have hh := hreturn A (boxIndicatorDatum A0 r Y) (fun p => (id (indicator_nonneg (fun x x_1 => zero_le_one) (p.1 0, p.2 0))))
         t (Real.toNNReal s) z ht
         (by simpa only [Real.coe_toNNReal s hs0] using hs.1.le)
         (by simpa only [Real.coe_toNNReal s hs0] using hs.2) hv
@@ -73,13 +74,13 @@ theorem box_concentration_of_return_time
     simp only [Real.coe_toNNReal _ htime] at hoc
     have hprod := hav.trans (mul_le_mul_of_nonneg_left hoc hCR.le)
     have hpow : (3 * (t : ℝ)) ^ (alpha / 2) =
-        (3 : ℝ) ^ (alpha / 2) * (t : ℝ) ^ (alpha / 2) :=
+        sharedTerm_bd14f7e525 * (t : ℝ) ^ (alpha / 2) :=
       Real.mul_rpow (by norm_num) t.property
     rw [hpow] at hprod
     have hraw : f t ≤ K * (r ^ (gamma alpha) * (t : ℝ) ^ (alpha / 2) / (t : ℝ)) := by
       have hdiv : f t ≤
           (CR * (B * r ^ (gamma alpha) *
-            ((3 : ℝ) ^ (alpha / 2) * (t : ℝ) ^ (alpha / 2)))) / (t : ℝ) :=
+            (sharedTerm_bd14f7e525 * (t : ℝ) ^ (alpha / 2)))) / (t : ℝ) :=
         (le_div_iff₀ ht).mpr (by simpa only [mul_comm] using hprod)
       convert hdiv using 1
       dsimp only [K]
@@ -91,10 +92,10 @@ theorem box_concentration_of_return_time
       nlinarith
     have hfinal := hraw.trans (mul_le_mul_of_nonneg_left
       (box_decay_large_comparison hxlarge hg.le) hK.le)
-    have hKC : K * (2 : ℝ) ^ (gamma alpha / 2) ≤ C := by
+    have hKC : K * sharedTerm_b777bfa5a0 ≤ C := by
       dsimp only [C]
       exact le_add_of_nonneg_left (by positivity)
-    have hbound : K * ((2 : ℝ) ^ (gamma alpha / 2) *
+    have hbound : K * (sharedTerm_b777bfa5a0 *
         (1 + x) ^ (-gamma alpha / 2)) ≤ C * (1 + x) ^ (-gamma alpha / 2) := by
       rw [← mul_assoc]
       exact mul_le_mul_of_nonneg_right hKC hdecay
@@ -107,7 +108,7 @@ theorem box_concentration_of_return_time
       (by linarith : -gamma alpha / 2 ≤ 0)
     have hm := mul_le_mul_of_nonneg_left hp
       (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 10) (gamma alpha / 2))
-    have hone : (10 : ℝ) ^ (gamma alpha / 2) * 10 ^ (-gamma alpha / 2) = 1 := by
+    have hone : sharedTerm_11d9c5cc8d * 10 ^ (-gamma alpha / 2) = 1 := by
       rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 10)]
       rw [show gamma alpha / 2 + -gamma alpha / 2 = 0 by ring, Real.rpow_zero]
     rw [hone] at hm
@@ -115,7 +116,7 @@ theorem box_concentration_of_return_time
       exact (ENNReal.toReal_mono ENNReal.one_ne_top
         ((measure_mono (subset_univ _)).trans (kernelXV_mass_le_one E t z))).trans_eq
           ENNReal.toReal_one
-    have hsmallC : (10 : ℝ) ^ (gamma alpha / 2) ≤ C := by
+    have hsmallC : sharedTerm_11d9c5cc8d ≤ C := by
       dsimp only [C]
       exact le_add_of_nonneg_right (by positivity)
     exact (hmass.trans hm).trans (mul_le_mul_of_nonneg_right hsmallC hdecay)

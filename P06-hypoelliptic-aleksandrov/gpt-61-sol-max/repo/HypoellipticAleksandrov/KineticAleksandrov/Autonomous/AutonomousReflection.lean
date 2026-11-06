@@ -6,10 +6,10 @@ import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 
 /-! # Reflection of the conditional smooth autonomous estimate -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic TheoremA
+open Set MeasureTheory Parabolic TheoremA
 
 /-- The backward smooth estimate retains the positive-set source and the same constant. -/
 theorem autonomous_smooth_localised_of_below_four_density
@@ -17,7 +17,7 @@ theorem autonomous_smooth_localised_of_below_four_density
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p : ℝ)
     (hp : criticalP ⟨Lam / lam, (le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)⟩ < p) :
+      (by simpa)⟩ < p) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (P₀ : Point) (R : ℝ), 0 < R → ∀ (u f : Point → ℝ),
       ContinuousOn u (closure (backwardCylinder P₀ R)) →
@@ -36,7 +36,7 @@ theorem autonomous_smooth_localised_of_below_four_density
   refine ⟨C, hC, ?_⟩
   intro A P₀ R hR u f hcont hreg hLp hsub P hP
   let B : SmoothAutonomous lam Lam :=
-    ⟨reflectedAutonomous A.a, reflectedAutonomous_smooth A, reflectedAutonomous_bounds A⟩
+    ⟨_, reflectedAutonomous_smooth A, reflectedAutonomous_bounds A⟩
   let Z₀ := kineticReflection P₀
   let Q := forwardCylinder Z₀ R hR
   let U := u ∘ kineticReflection
@@ -49,8 +49,8 @@ theorem autonomous_smooth_localised_of_below_four_density
     simpa only [preimage_closure_backwardCylinder_reflection P₀ R hR] using hc
   have hUr : IsKineticC112On U Q := by
     simpa only [preimage_backwardCylinder_reflection P₀ R hR] using
-      isKineticC112On_kineticReflection u (backwardCylinder P₀ R) hreg
-  have hgLp : MemLp g (ENNReal.ofReal p) (volume.restrict Q) :=
+      isKineticC112On_kineticReflection u _ hreg
+  have hgLp  :=
     hLp.comp_measurePreserving hmp
   have hUs : ∀ᵐ P ∂volume.restrict Q, -g P ≤ forwardScalarOperator B.a U P := by
     filter_upwards [hmp.quasiMeasurePreserving.ae hsub] with P hP
@@ -62,7 +62,7 @@ theorem autonomous_smooth_localised_of_below_four_density
     change kineticReflection (kineticReflection P) ∈ closure (backwardCylinder P₀ R)
     rw [kineticReflection_involutive P]
     exact hP
-  have hresult := hbound (kineticReflection P) hPr
+  have hresult := hbound _ hPr
   have hnorm : eLpNorm ({P | 0 < U P}.indicator g) (ENNReal.ofReal p)
       (volume.restrict Q) =
       eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)

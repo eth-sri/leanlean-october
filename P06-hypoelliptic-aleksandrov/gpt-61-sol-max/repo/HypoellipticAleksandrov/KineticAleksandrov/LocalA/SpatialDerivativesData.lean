@@ -11,9 +11,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
+variable {d : ℕ}
+
 /-- Local data, after subtracting one value, extend with norm at most their raw oscillation. -/
-theorem spatialData_local_extension {d : ℕ} (Z₀ P : KineticPoint d) {R : ℝ} (hR : 0 < R)
-    (hP : P ∈ forwardCylinder Z₀ R hR) (U : KineticPoint d → ℝ)
+theorem spatialData_local_extension  (Z₀ P : KineticPoint d) {R : ℝ} (hR : 0 < R)
+    (hP : P ∈ forwardCylinder Z₀ R hR) (U : HypoellipticAleksandrov.KineticScalarField d)
     (hU : ContinuousOn U (closure (forwardCylinder Z₀ R hR))) :
     let M := Holder.oscillationOn U (forwardCylinder Z₀ R hR)
     0 ≤ M ∧ ∃ H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ,
@@ -32,29 +34,28 @@ theorem spatialData_local_extension {d : ℕ} (Z₀ P : KineticPoint d) {R : ℝ
   refine ⟨hM, ?_⟩
   have hdata : ContinuousOn (fun q => U (e.symm q) - U P) (e '' closure E) :=
     (hU.comp e.symm.continuous.continuousOn
-      (fun q hq => by rcases hq with ⟨Q, hQ, rfl⟩; simpa using hQ)).sub continuousOn_const
-  have hb : ∀ q ∈ e '' closure E, ‖U (e.symm q) - U P‖ ≤
-      Holder.oscillationOn U E := by
-    rintro q ⟨Q, hQ, rfl⟩
-    simp only [e.symm_apply_apply, Real.norm_eq_abs]
-    rw [← ho]
-    exact Holder.abs_sub_le_oscillationOn hab hbb hQ (subset_closure hP)
+      (fun q hq => by rcases hq with ⟨Q, hQ, rfl⟩; exact hQ)).sub continuousOn_const
+
   obtain ⟨H, hH, hHc, hHb, hHe⟩ := spatialData_compact_extension
-    (e '' closure E) (hc.image e.continuous) _ hdata _ hM hb
+    (e '' closure E) (hc.image e.continuous) _ hdata _ hM (by
+        rintro q ⟨Q, hQ, rfl⟩
+        simp only [e.symm_apply_apply, Real.norm_eq_abs]
+        rw [← ho]
+        exact Holder.abs_sub_le_oscillationOn hab hbb hQ (subset_closure hP))
   refine ⟨H, hH, hHc, hHb, fun Q hQ => ?_⟩
   have hv := hHe (e Q) ⟨Q, hQ, rfl⟩
-  rw [e.symm_apply_apply] at hv
-  simpa only [e, KineticPoint.homeomorphProd, KineticPoint.isometryEquivProd,
-    IsometryEquiv.coe_toHomeomorph, IsometryEquiv.coe_mk] using hv
+  assumption
+
+variable (P : KineticPoint d) (v₀ : PDE.Vec d)
 
 /-- Boundary displacement and exit data give literal physical product coordinates. -/
-def spatialBoundaryCoordinates {d : ℕ} (P : KineticPoint d) (v₀ : PDE.Vec d)
+def spatialBoundaryCoordinates
     (p : PDE.Vec d × TimeVelocity d) : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (p.2.1, (P.position + p.1 + (p.2.1 - P.time) • v₀, p.2.2))
 
 /-- Centered free-transport reconstruction is uniformly continuous. -/
-theorem uniformContinuous_spatialBoundaryCoordinates {d : ℕ}
-    (P : KineticPoint d) (v₀ : PDE.Vec d) :
+theorem uniformContinuous_spatialBoundaryCoordinates
+     :
     UniformContinuous (spatialBoundaryCoordinates P v₀) := by
   have hs : UniformContinuous (fun p : PDE.Vec d × TimeVelocity d =>
       (p.2.1 - P.time) • v₀) :=

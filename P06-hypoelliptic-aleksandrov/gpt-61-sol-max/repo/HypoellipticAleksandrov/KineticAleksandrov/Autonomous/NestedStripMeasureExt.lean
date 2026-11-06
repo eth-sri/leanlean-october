@@ -3,11 +3,13 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripRepresentation
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
 import Mathlib.Topology.Algebra.Support
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Physical finite measures determined by compact interior nonnegative tests -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open Evolution
@@ -30,7 +32,7 @@ theorem nested_physical_measure_eq {μ ν : Measure Point} [IsFiniteMeasure μ] 
     filter_upwards [hρ] with p hp
     change e (e.symm p) ∈ D
     rwa [e.apply_symm_apply]
-  have htest (f : EvolutionVec 1 → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+  have htest (f : EvolutionVec 1 → ℝ) (hf : ContDiff ℝ PDE.smoothOrder f)
       (hc : HasCompactSupport f) (hs : tsupport f ⊆ U) (hn : ∀ x, 0 ≤ f x) :
       (∫ x, f x ∂a) = ∫ x, f x ∂b := by
     let F : exitProbeSubmodule := ⟨f, hf, hc⟩
@@ -39,7 +41,7 @@ theorem nested_physical_measure_eq {μ ν : Measure Point} [IsFiniteMeasure μ] 
       intro p hp
       have h := hs hp
       change e (e.symm p) ∈ D at h
-      simpa only [e.apply_symm_apply] using h
+      simpa using h
     have hi := hprobe F hFs (fun p => hn _)
     have hmap (ρ : Measure Point) : (∫ x, f x ∂ρ.map e.symm) =
         ∫ p, exitProbePhysical F p ∂ρ :=

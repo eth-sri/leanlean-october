@@ -13,11 +13,11 @@ The connection and differentiated tail estimates are proved upstream; no analyti
 is assumed by the exported existence theorem.
 -/
 
-@[expose] public noncomputable section
+@[expose] public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-open MeasureTheory Set
+
 
 /-- The actual Appendix C scalar profile satisfies the complete branch interface. -/
 theorem counterProfileOne_exists (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1) :
@@ -25,7 +25,7 @@ theorem counterProfileOne_exists (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1
   let gamma : ScalarGamma := ⟨alpha / 3, by constructor <;> linarith⟩
   have hga : 3 * gamma.1 = alpha := by dsimp only [gamma]; ring
   obtain ⟨Lam, hLam, hmatch⟩ := exists_matching_ratio gamma.1 gamma.2.1 gamma.2.2
-  have hp : 0 < Lam := lt_trans zero_lt_one hLam
+  have hp  := lt_trans zero_lt_one hLam
   obtain ⟨c, C0, hc, hcC, hcomp⟩ := scalarProfile_comparison gamma Lam hp hmatch
   obtain ⟨Cg, hCg, hgrad⟩ := scalarGv_gauge_bound gamma Lam hp hmatch
   let C : ℝ := max C0 Cg

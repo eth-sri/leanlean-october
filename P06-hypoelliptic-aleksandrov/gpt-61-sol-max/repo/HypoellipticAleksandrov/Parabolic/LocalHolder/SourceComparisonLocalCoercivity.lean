@@ -10,8 +10,8 @@ A scalar Young inequality absorbs the coefficient and cutoff error row into half
 the elliptic gradient energy, leaving only a multiple of the squared solution value.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Matrix
 open scoped BigOperators MatrixOrder
@@ -19,12 +19,14 @@ open scoped BigOperators MatrixOrder
 private theorem error_row_young (lam a b : ℝ) (hlam : 0 < lam) :
     -(lam / 2) * b ^ 2 ≤ a * b + a ^ 2 / (2 * lam) := by
   apply (mul_le_mul_iff_right₀ (show 0 < 2 * lam by positivity)).mp
-  have hs := sq_nonneg (lam * b + a)
+
   field_simp
-  nlinarith only [hs]
+  nlinarith only [(sq_nonneg (lam * b + a))]
+
+variable {d : ℕ}
 
 /-- A bounded error row is absorbed into half of the weighted elliptic energy. -/
-theorem local_value_energy_flux_coercivity {d : ℕ}
+theorem local_value_energy_flux_coercivity
     (lam ρ q K : ℝ) (hlam : 0 < lam) (hK : 0 ≤ K)
     (A : PDE.Mat d) (G B : PDE.Vec d)
     (hA : lam • (1 : PDE.Mat d) ≤ A) (hB : ∀ j, |B j| ≤ K) :
@@ -51,23 +53,23 @@ theorem local_value_energy_flux_coercivity {d : ℕ}
     exact hquad
   have hentry (j : Fin d) : -(lam / 2) * ρ ^ 2 * G j ^ 2 ≤
       q * ρ * (B j * G j) + K ^ 2 * q ^ 2 / (2 * lam) := by
-    have hy := error_row_young lam (q * B j) (ρ * G j) hlam
-    have hbsq : B j ^ 2 ≤ K ^ 2 := by
-      simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) hK).2 (hB j)
-    have hbq : (q * B j) ^ 2 / (2 * lam) ≤ K ^ 2 * q ^ 2 / (2 * lam) := by
-      apply div_le_div_of_nonneg_right ?_ (by positivity)
-      calc
-        _ = q ^ 2 * B j ^ 2 := mul_pow _ _ _
-        _ ≤ q ^ 2 * K ^ 2 := mul_le_mul_of_nonneg_left hbsq (sq_nonneg q)
-        _ = _ := mul_comm _ _
-    have hy' : -(lam / 2) * ρ ^ 2 * G j ^ 2 ≤
-        q * ρ * (B j * G j) + (q * B j) ^ 2 / (2 * lam) := by
-      convert hy using 1 <;> ring
-    exact hy'.trans (add_le_add le_rfl hbq)
-  have hsum := Finset.sum_le_sum (fun j (_ : j ∈ Finset.univ) => hentry j)
+
+
+
+
+    exact (show -(lam / 2) * ρ ^ 2 * G j ^ 2 ≤
+        q * ρ * (B j * G j) + (q * B j) ^ 2 / (2 * lam) by
+        convert (error_row_young lam (q * B j) (ρ * G j) hlam) using 1 <;> ring).trans (add_le_add le_rfl (by
+        apply div_le_div_of_nonneg_right ?_ (by positivity)
+        calc
+          _ = q ^ 2 * B j ^ 2 := mul_pow _ _ _
+          _ ≤ q ^ 2 * K ^ 2 := mul_le_mul_of_nonneg_left (by
+              simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) hK).2 (hB j)) (sq_nonneg q)
+          _ = _ := mul_comm _ _))
+
   have herror : -(lam / 2) * ρ ^ 2 * (∑ j, G j ^ 2) ≤
       q * ρ * (∑ j, B j * G j) + (d : ℝ) * K ^ 2 * q ^ 2 / (2 * lam) := by
-    convert hsum using 1 <;>
+    convert (Finset.sum_le_sum (fun j (_ : j ∈ Finset.univ) => hentry j)) using 1 <;>
       simp only [← Finset.mul_sum, Finset.sum_add_distrib, Finset.sum_const,
       Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_div_assoc,
       mul_assoc]
@@ -75,7 +77,7 @@ theorem local_value_energy_flux_coercivity {d : ℕ}
   linarith only [hprincipal, herror]
 
 /-- The expanded cutoff flux has its exact principal-plus-error-row decomposition. -/
-theorem local_value_energy_flux_eq {d : ℕ} (ρ q : ℝ)
+theorem local_value_energy_flux_eq  (ρ q : ℝ)
     (A D : PDE.Mat d) (G R : PDE.Vec d) :
     (∑ i, ∑ j, (A i j * G j * (ρ ^ 2 * G i + 2 * ρ * R i * q) +
       D i j * G j * q * ρ ^ 2)) =

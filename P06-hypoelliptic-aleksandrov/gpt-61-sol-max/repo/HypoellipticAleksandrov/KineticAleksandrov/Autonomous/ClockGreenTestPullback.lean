@@ -1,32 +1,34 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTestBoundary
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The literal physical C112 regularity of the clock pullback -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open Set Parabolic
+
 
 /-- Scalar-coordinate smoothness of a normalized test gives literal physical C112 smoothness
 of its clock pullback throughout the physical active strip. -/
 theorem clock_pullback_C112 (c : Clock) (e : Point) (h : Point → ℝ)
-    (hh : ContDiffOn ℝ (⊤ : ℕ∞) (h ∘ scalarPoint)
+    (hh : ContDiffOn ℝ PDE.smoothOrder (h ∘ scalarPoint)
       {q : Fin 3 → ℝ | q 2 ∈ normalizedActive}) :
     IsKineticC112On (h ∘ c.map e) {p | p.velocity 0 ∈ c.active} := by
   let l : (ℝ × PDE.Vec 1 × PDE.Vec 1) → (Fin 3 → ℝ) := fun q =>
     ![q.1, q.2.1 0, q.2.2 0]
-  have hl : ContDiff ℝ (⊤ : ℕ∞) l := by
+  have hl : ContDiff ℝ PDE.smoothOrder l := by
     apply contDiff_pi.mpr
     intro i
     fin_cases i
-    · change ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.1)
+    · change ContDiff ℝ PDE.smoothOrder (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.1)
       exact contDiff_fst
-    · change ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.2.1 0)
+    · change ContDiff ℝ PDE.smoothOrder (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.2.1 0)
       exact (contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.fst
-    · change ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.2.2 0)
+    · change ContDiff ℝ PDE.smoothOrder (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.2.2 0)
       exact (contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd
   have hm : MapsTo (c.mapCoordinates e ∘ l)
       (KineticPoint.equivProd 1 '' {p : Point | p.velocity 0 ∈ c.active})

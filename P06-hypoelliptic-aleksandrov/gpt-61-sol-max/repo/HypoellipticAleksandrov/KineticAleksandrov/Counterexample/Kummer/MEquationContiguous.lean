@@ -19,8 +19,10 @@ theorem poch_shift (a : ℝ) (n : ℕ) :
     a * poch (a + 1) n = (a + n) * poch a n := by
   rw [← poch_succ_left, poch_succ, mul_comm]
 
+variable (a : ℝ) (b : Pos)
+
 /-- The coefficient identity underlying the positive-parameter continuation. -/
-theorem coeff_contiguous_succ (a : ℝ) (b : Pos) (n : ℕ) :
+theorem coeff_contiguous_succ  (n : ℕ) :
     coeff a b (n + 1) = coeff (a + 1) (next b) (n + 1) +
       ((a - b.1) / (b.1 * (b.1 + 1))) * coeff (a + 1) (next (next b)) n := by
   have hb := ne_of_gt b.2
@@ -41,41 +43,41 @@ theorem coeff_contiguous_succ (a : ℝ) (b : Pos) (n : ℕ) :
       (a - b.1) / (b.1 * (b.1 + 1)) *
         (poch (a + 1) n / (poch (next (next b)).1 n * n.factorial))
   field_simp
-  have hsm := congrArg (fun x : ℝ => a * poch (a + 1) n * x) hs
-  nlinarith only [hsm]
+
+  nlinarith only [(congrArg (fun x  => a * poch (a + 1) n * x) hs)]
 
 /-- A contiguous relation expressing all admissible parameters through positive Euler ones. -/
-theorem M_contiguous (a : ℝ) (b : Pos) (z : ℝ) :
+theorem M_contiguous  (z : ℝ) :
     M a b z = M (a + 1) (next b) z +
       ((a - b.1) * z / (b.1 * (b.1 + 1))) * M (a + 1) (next (next b)) z := by
+  let sharedTerm_bafa889ce6 := (((a - b.1) * z / (b.1 * (b.1 + 1))))
   have hs := (hasSum_M (a + 1) (next (next b)) z).mul_left
-    ((a - b.1) * z / (b.1 * (b.1 + 1)))
+    sharedTerm_bafa889ce6
   have he (n : ℕ) :
-      ((a - b.1) * z / (b.1 * (b.1 + 1))) *
+      (sharedTerm_bafa889ce6) *
         (coeff (a + 1) (next (next b)) n * z ^ n) =
       ((a - b.1) / (b.1 * (b.1 + 1))) *
         coeff (a + 1) (next (next b)) n * z ^ (n + 1) := by
     rw [pow_succ]
     ring
   simp only [he] at hs
-  let f : ℕ → ℝ := fun n => (coeff a b n - coeff (a + 1) (next b) n) * z ^ n
+  let f  := fun n => (coeff a b n - coeff (a + 1) (next b) n) * z ^ n
   have hf (n : ℕ) : f (n + 1) =
       ((a - b.1) / (b.1 * (b.1 + 1))) *
         coeff (a + 1) (next (next b)) n * z ^ (n + 1) := by
     dsimp [f]
     rw [coeff_contiguous_succ]
     ring
-  have hsum : HasSum f
-      (((a - b.1) * z / (b.1 * (b.1 + 1))) * M (a + 1) (next (next b)) z) := by
-    have h0 : f 0 = 0 := by simp [f]
-    simpa only [h0, zero_add] using (hs.congr_fun (fun n => hf n)).zero_add (f := f)
-  have hdiff := (hasSum_M a b z).sub (hasSum_M (a + 1) (next b) z)
-  have hdiff' : HasSum f (M a b z - M (a + 1) (next b) z) := by
-    convert hdiff using 1
-    ext n
-    dsimp [f]
-    ring
-  have h := hdiff'.unique hsum
+
+
+
+  have h := (show HasSum f (M a b z - M (a + 1) (next b) z) by
+      convert ((hasSum_M a b z).sub (hasSum_M (a + 1) (next b) z)) using 1
+      ext n
+      dsimp [f]
+      ring).unique (by
+      have h0 : f 0 = 0 := by simp [f]
+      simpa only [h0, zero_add] using (hs.congr_fun (fun n => hf n)).zero_add)
   linarith only [h]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

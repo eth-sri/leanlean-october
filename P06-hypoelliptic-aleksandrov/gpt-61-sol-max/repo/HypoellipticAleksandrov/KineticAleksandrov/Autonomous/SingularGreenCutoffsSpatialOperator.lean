@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 
 /-! # Compact support and continuity of actual spatial generators -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set MeasureTheory
+open SectionTwo Evolution
 
 /-- An actual compact C² native spatial test has a continuous compactly supported generator. -/
 theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
@@ -19,10 +19,9 @@ theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1)
         (fun q => F (q.position, q.velocity)) ⟨0, x.1, x.2⟩) := by
   let f := fun q : Point => F (q.position, q.velocity)
-  let π := fun x : EvolutionVec 1 => (diffusedCoord 1 x, transportedCoord 1 x)
-  let fraw := fun x : EvolutionVec 1 => F (π x)
-  have hπ : Continuous π :=
-    (diffusedCoord 1).continuous.prodMk (transportedCoord 1).continuous
+  let π := fun x  => (diffusedCoord 1 x, transportedCoord 1 x)
+  let fraw := fun x  => F (π x)
+
   have hfraw : ContDiff ℝ 2 fraw := hF.comp
     ((diffusedCoord 1).contDiff.prodMk (transportedCoord 1).contDiff)
   have hfeq : f ∘ evolutionHomeomorph 1 = fraw := by
@@ -33,8 +32,7 @@ theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   let H := fun x : EvolutionAmbientState 1 =>
     transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) f ⟨0, x.1, x.2⟩
   let x0 := fun x : EvolutionAmbientState 1 => (evolutionProdCLE 1).symm (0, x)
-  have hx0 : Continuous x0 :=
-    (evolutionProdCLE 1).symm.continuous.comp (continuous_const.prodMk continuous_id)
+
   have hHeq : H = (transportedOperator (evolutionCoefficient A.a) (identityDrift 1) fraw)
       ∘ x0 := by
     funext x
@@ -47,26 +45,26 @@ theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
       rfl
     rw [hx] at hh
     exact hh.symm
-  have hHc : Continuous H := by
-    rw [hHeq]
-    exact (continuous_transportedOperator_c2 A hfraw).comp hx0
-  have hHk : HasCompactSupport H := by
-    apply hc.of_isClosed_subset (isClosed_tsupport H)
-    apply closure_minimal ?_ (isClosed_tsupport F)
-    intro x hx
-    by_contra hn
-    have hnx : x0 x ∉ tsupport fraw := by
-      intro hh
-      have hhit := tsupport_comp_subset_preimage F hπ hh
-      apply hn
-      change π (x0 x) ∈ tsupport F at hhit
-      have hpx : π (x0 x) = x := by
-        have hh := (evolutionProdCLE 1).apply_symm_apply (0, x)
-        exact congrArg Prod.snd hh
-      rwa [hpx] at hhit
-    have hz := transportedOperator_eq_zero_of_notMem_tsupport hnx
-      (evolutionCoefficient A.a) (identityDrift 1)
-    exact hx (by rw [hHeq]; exact hz)
-  exact ⟨hHc, hHk⟩
+
+
+  exact ⟨(show Continuous H by
+      rw [hHeq]
+      exact (continuous_transportedOperator_c2 A hfraw).comp ((evolutionProdCLE 1).symm.continuous.comp (continuous_const.prodMk continuous_id))), (by
+      apply hc.of_isClosed_subset (isClosed_tsupport H)
+      apply closure_minimal ?_ (isClosed_tsupport F)
+      intro x hx
+      by_contra hn
+
+      have hz := transportedOperator_eq_zero_of_notMem_tsupport (by
+          intro hh
+          have hhit := tsupport_comp_subset_preimage F ((diffusedCoord 1).continuous.prodMk (transportedCoord 1).continuous) hh
+          apply hn
+          change π (x0 x) ∈ tsupport F at hhit
+          have hpx : π (x0 x) = x := by
+
+            exact congrArg Prod.snd ((evolutionProdCLE 1).apply_symm_apply (0, x))
+          rwa [hpx] at hhit)
+        (evolutionCoefficient A.a) (identityDrift 1)
+      exact hx (by rw [hHeq]; exact hz))⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

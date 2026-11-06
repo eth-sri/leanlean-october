@@ -7,9 +7,9 @@ import Mathlib.Tactic
 
 /-! # Exact scalar induction and leakage choice for the source density ladder -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -40,8 +40,7 @@ theorem density_ladder_numeric {a beta L0 : ℝ} (ha : 0 < a) (e : ℕ → ℝ) 
       a⁻¹ ^ n * beta - L0 * (∑ k ∈ Finset.range n, a⁻¹ ^ k) ≤ e n := by
     intro n
     induction n with
-    | zero => intro _; simpa only [pow_zero, one_mul, Finset.range_zero,
-        Finset.sum_empty, mul_zero, sub_zero] using hzero
+    | zero => simp_all
     | succ n ih =>
       intro hn
       have he := mul_le_mul_of_nonneg_left (ih (Nat.le_of_succ_le hn))
@@ -64,8 +63,7 @@ theorem exists_density_leakage_choice {a eta beta C V : ℝ} (ha : 0 < a) (ha1 :
   let N := n + 1
   have hN : 1 ≤ N := by dsimp only [N]; omega
   have hn' : a⁻¹ ^ n ≤ a⁻¹ ^ N := pow_le_pow_right₀ hq.le (Nat.le_succ n)
-  have hbig : 1 - eta < a⁻¹ ^ N * beta := by
-    exact (div_lt_iff₀ hbeta).mp (hn.trans_le hn')
+  have hbig : 1 - eta < a⁻¹ ^ N * beta := (div_lt_iff₀ hbeta).mp (hn.trans_le hn')
   let S := ∑ k ∈ Finset.range N, a⁻¹ ^ k
   have hS : 0 < S := Finset.sum_pos (fun k _ => pow_pos (inv_pos.mpr ha) k)
     (Finset.nonempty_range_iff.mpr (by omega))

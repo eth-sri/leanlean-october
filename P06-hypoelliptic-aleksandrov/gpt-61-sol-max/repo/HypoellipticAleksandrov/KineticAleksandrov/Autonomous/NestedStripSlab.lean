@@ -4,18 +4,16 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripE
 
 /-! # Closed-slab measurability and actual exit integrability -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
 /-- The literal finite physical slab is closed. -/
 theorem nestedClosedSlab_isClosed (H : Interval) (s T : ℝ) :
-    IsClosed (reconstructionClosedSlab H s T) := by
-  have hv : Continuous (fun p : Point => p.velocity 0) :=
-    (continuous_apply 0).comp continuous_velocity
-  exact (isClosed_le continuous_const continuous_time).inter
-    ((isClosed_le continuous_time continuous_const).inter (isClosed_Icc.preimage hv))
+    IsClosed (reconstructionClosedSlab H s T) := (IsClosed.inter (isClosed_le continuous_const continuous_time)
+  (IsClosed.inter (isClosed_le continuous_time continuous_const)
+    (IsClosed.preimage (Continuous.comp (continuous_apply 0) continuous_velocity) isClosed_Icc)))
 
 /-- Smaller exits lie in the genuine larger closed future slab. -/
 theorem nested_exit_ae_larger_slab
@@ -26,13 +24,13 @@ theorem nested_exit_ae_larger_slab
     (e : StripPole H1 (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
     ∀ᵐ p ∂stripExit hH hLE hlam hLam A H1 T e,
       p ∈ reconstructionClosedSlab H2 sMinus T := by
-  have hcl : Icc H1.lo H1.hi ⊆ Icc H2.lo H2.hi := by
-    have h := closure_mono hsub
-    change closure (Ioo H1.lo H1.hi) ⊆ closure (Ioo H2.lo H2.hi) at h
-    rwa [closure_Ioo H1.ordered.ne, closure_Ioo H2.ordered.ne] at h
+
   filter_upwards [stripExitOfRealization_ae_closed_future hH hlam hLam A H1 _
-    (stripEvolution_spec hH hLE hlam hLam A H1) T e] with p hp
-  exact ⟨he.trans hp.1, hp.2.1, hcl hp.2.2⟩
+    _ T e] with p hp
+  exact ⟨he.trans hp.1, hp.2.1, (show Icc H1.lo H1.hi ⊆ Icc H2.lo H2.hi by
+      have h := closure_mono hsub
+      change closure (Ioo H1.lo H1.hi) ⊆ closure (Ioo H2.lo H2.hi) at h
+      rwa [closure_Ioo H1.ordered.ne, closure_Ioo H2.ordered.ne] at h) hp.2.2⟩
 
 /-- Continuity and a proved uniform bound on the actual supporting slab imply integrability. -/
 theorem nestedSlab_integrable (H : Interval) (s T : ℝ) (μ : Measure Point)
@@ -42,10 +40,10 @@ theorem nestedSlab_integrable (H : Interval) (s T : ℝ) (μ : Measure Point)
     (hb : ∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ reconstructionClosedSlab H s T, |u p| ≤ C) :
     Integrable u μ := by
   obtain ⟨C, -, hC⟩ := hb
-  have hμ := Measure.restrict_eq_self_of_ae_mem hs
+
   have hm := hc.aestronglyMeasurable (nestedClosedSlab_isClosed H s T).measurableSet
     (μ := μ)
-  rw [hμ] at hm
+  rw [(Measure.restrict_eq_self_of_ae_mem hs)] at hm
   apply Integrable.mono' (integrable_const C) hm
   filter_upwards [hs] with p hp
   rw [Real.norm_eq_abs]

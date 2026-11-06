@@ -6,8 +6,8 @@ import Mathlib.Tactic
 
 /-! # Compact positive-radius windows and their literal integral restrictions -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

@@ -6,7 +6,7 @@ import Mathlib.Tactic.Linarith
 
 /-! # The radius-uniform subcritical source norm -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
@@ -14,24 +14,26 @@ open MeasureTheory Set
 
 /-- The norm of a measurable nonnegative source supported on a finite-volume shell. -/
 theorem eLpNorm_le_shell_bound {d : ℕ} (f : XV d → ℝ) (S : Set (XV d))
-    (p B : ℝ) (hp : 0 < p) (hB : 0 ≤ B) (hf : AEStronglyMeasurable f volume)
+    (p B : ℝ) (hp : 0 < p) (hB : 0 ≤ B) (hf : AEStronglyMeasurable f )
     (hS : MeasurableSet S) (hbound : ∀ q, 0 ≤ f q ∧ f q ≤ B)
     (hsupp : ∀ q, q ∉ S → f q = 0) :
-    eLpNorm f (ENNReal.ofReal p) volume ≤ ENNReal.ofReal B * volume S ^ (1 / p) := by
-  have hm : ∀ᵐ q ∂volume, ‖f q‖ ≤ ‖S.indicator (fun _ => B) q‖ := by
-    filter_upwards [] with q
-    by_cases hq : q ∈ S
-    · rw [indicator_of_mem hq, Real.norm_eq_abs, abs_of_nonneg (hbound q).1,
-        Real.norm_eq_abs, abs_of_nonneg hB]
-      exact (hbound q).2
-    · rw [hsupp q hq, indicator_of_notMem hq]
-  apply (eLpNorm_mono_ae hf hm).trans_eq
+    eLpNorm f (ENNReal.ofReal p)  ≤ ENNReal.ofReal B * volume S ^ (1 / p) := by
+
+  apply (eLpNorm_mono_ae hf (show ∀ᵐ q, ‖f q‖ ≤ ‖S.indicator (fun _ => B) q‖ by
+      filter_upwards [] with q
+      by_cases hq : q ∈ S
+      · rw [indicator_of_mem hq, Real.norm_eq_abs, abs_of_nonneg (hbound q).1,
+          Real.norm_eq_abs, abs_of_nonneg hB]
+        exact (hbound q).2
+      · rw [hsupp q hq, indicator_of_notMem hq])).trans_eq
   rw [eLpNorm_indicator_const hS.nullMeasurableSet (ENNReal.ofReal_ne_zero_iff.mpr hp)
     ENNReal.ofReal_ne_top, ENNReal.toReal_ofReal hp.le]
   rw [← ofReal_norm, Real.norm_eq_abs, abs_of_nonneg hB]
 
+variable (d : ℕ)
+
 /-- The shell norm powers combine to the precise source exponent. -/
-theorem source_norm_rpow_identity (d : ℕ) (alpha p V K r : ℝ)
+theorem source_norm_rpow_identity  (alpha p V K r : ℝ)
     (hp : 0 < p) (hV : 0 < V) (hK : 0 ≤ K) (hr : 0 < r) :
     ENNReal.ofReal (K * Real.rpow r (alpha - 2)) *
       ENNReal.ofReal (V * r ^ (4 * d)) ^ (1 / p) =
@@ -53,7 +55,7 @@ theorem source_norm_rpow_identity (d : ℕ) (alpha p V K r : ℝ)
     _ = _ := by rw [← Real.rpow_add hr]
 
 /-- The literal source formula satisfies the source manuscript's Lp estimate. -/
-theorem flat_source_eLpNorm_le_of_profile (d : ℕ) (alpha p : ℝ)
+theorem flat_source_eLpNorm_le_of_profile  (alpha p : ℝ)
     (ha : 0 < alpha) (ha1 : alpha < 1) (hp : 1 ≤ p)
     (hprofile : CounterProfileStatement d alpha) :
     ∃ C r₀ : ℝ, 0 < C ∧ 0 < r₀ ∧ ∀ r : ℝ, 0 < r → r < r₀ →
@@ -77,14 +79,13 @@ theorem flat_source_eLpNorm_le_of_profile (d : ℕ) (alpha p : ℝ)
   have hf := (measurable_flatSourceWithJet (profileMatrix hprofile)
     (profileFunction hprofile) (profileVelocityJet hprofile) alpha r
     hAm hH.measurable hgv).aestronglyMeasurable (μ := volume)
-  have hS : MeasurableSet (profileShell (profileFunction hprofile) alpha r) :=
-    ((isClosed_le continuous_const hH).inter (isClosed_le hH continuous_const)).measurableSet
+
   have hn := eLpNorm_le_shell_bound _ (profileShell (profileFunction hprofile) alpha r)
     p (K * Real.rpow r (alpha - 2)) hp0
-    (mul_nonneg hK.le (Real.rpow_pos_of_pos hr _).le) hf hS (hbound r hr)
-    (fun q hq => flatSourceWithJet_eq_zero_off_shell _ _ _ alpha r hr q hq)
-  have hpow := ENNReal.rpow_le_rpow (hvol r hr) (div_nonneg zero_le_one hp0.le)
-  have hn' := hn.trans (mul_le_mul_right hpow (ENNReal.ofReal (K * Real.rpow r (alpha - 2))))
+    (mul_nonneg hK.le (Real.rpow_pos_of_pos hr _).le) hf (((isClosed_le continuous_const hH).inter (isClosed_le hH continuous_const)).measurableSet) (hbound r hr)
+    ((flatSourceWithJet_eq_zero_off_shell _ _ _ alpha r hr))
+
+  have hn' := hn.trans (mul_le_mul_right (ENNReal.rpow_le_rpow (hvol r hr) (div_nonneg zero_le_one hp0.le)) (ENNReal.ofReal (K * Real.rpow r (alpha - 2))))
   rw [source_norm_rpow_identity d alpha p V K r hp0 hV hK.le hr] at hn'
   apply (eLpNorm_restrict_le _ _ _ _).trans
   rw [eLpNorm_congr_ae (flatSource_ae_eq_jet_of_profile hprofile r)]

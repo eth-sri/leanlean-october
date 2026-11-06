@@ -8,9 +8,9 @@ import Mathlib.Tactic
 
 /-! # All-density positivity from the proved ink-spots and macroscopic comparisons -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -22,12 +22,12 @@ theorem exists_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A : ℝ)
     ∃ theta : ℝ, 0 < theta ∧ theta < 1 ∧
       ∃ (Psigma : KineticPoint d) (rsigma : ℝ), 0 < rsigma ∧
         closure (backwardCylinder Psigma rsigma) ⊆
-          backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 ∧
+          backwardCylinder (⟨0, 0, 0⟩ ) 1 ∧
         ∀ beta : ℝ, 0 < beta → beta ≤ 1 → ∃ kappa : ℝ, 0 < kappa ∧
           ∀ A : FullKineticCoefficient d, FullElliptic lam Lam A →
           ∀ (P0 : KineticPoint d) (R : ℝ), 0 < R →
           ∀ O : Set (KineticPoint d), IsOpen O → closure (backwardCylinder P0 R) ⊆ O →
-          ∀ u : KineticPoint d → ℝ, (∀ P ∈ O, 0 ≤ u P) →
+          ∀ u : HypoellipticAleksandrov.KineticScalarField d, (∀ P ∈ O, 0 ≤ u P) →
             IsAdmissibleSupersolution A O p C_A u →
             beta * (volume (kineticAffine P0 R '' backwardCylinder Psigma rsigma)).toReal ≤
               (volume ({P | 1 ≤ u P} ∩
@@ -43,7 +43,7 @@ theorem exists_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A : ℝ)
     (volume_cylinder_pos_ne_top _ zero_lt_one).1.ne'
     (volume_cylinder_pos_ne_top _ zero_lt_one).2
   refine ⟨eps, heps, heps1,
-    kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps (samplingCenter d m),
+    kineticAffine (⟨0, 0, 0⟩ ) eps (samplingCenter d m),
     eps, heps, ?_, ?_⟩
   · rw [← physical_sampling_image _ heps m]
     exact hsigma
@@ -72,18 +72,17 @@ theorem exists_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A : ℝ)
   have hGb : Bornology.IsBounded G := isBounded_kineticAffine_image P0 scale
     (isBounded_referenceRegion d m (by linarith only [referenceBound_large m]))
   have hGopen : IsOpen G := (kineticAffineHomeomorph P0 scale hscale.ne').isOpenMap _
-    (isOpen_referenceRegion d m (referenceBound m))
-  have hSigmab : Bornology.IsBounded Sigma :=
-    (isCompact_closure_backwardCylinder S scale hscale).isBounded.subset subset_closure
-  have hSigmaMeas : MeasurableSet Sigma := (isOpen_cylinder S scale).measurableSet
-  let E := fun j : ℕ => {P | delta ^ j ≤ u P} ∩ Sigma
-  let F := fun j : ℕ => {P | delta ^ (j + 1) ≤ u P} ∩ G
+    (isOpen_referenceRegion d m _)
+
+
+  let E := fun j  => {P | delta ^ j ≤ u P} ∩ Sigma
+  let F := fun j  => {P | delta ^ (j + 1) ≤ u P} ∩ G
   have hEMeas (j : ℕ) : MeasurableSet (E j) := measurableSet_superlevel_inter hO
-    hSigmaMeas (subset_closure.trans hSigmaO) hu.1 _
+    ((isOpen_cylinder S scale).measurableSet) (subset_closure.trans hSigmaO) hu.1 _
   have hFMeas (j : ℕ) : MeasurableSet (F j) := measurableSet_superlevel_inter hO
     hGopen.measurableSet (subset_closure.trans hGO) hu.1 _
   have hEb (j : ℕ) : Bornology.IsBounded (E j) :=
-    superlevel_inter_isBounded hSigmab u _
+    superlevel_inter_isBounded ((isCompact_closure_backwardCylinder S scale hscale).isBounded.subset subset_closure) u _
   have hFb (j : ℕ) : Bornology.IsBounded (F j) :=
     superlevel_inter_isBounded hGb u _
   have hdown (j : ℕ) : delta ^ (j + 1) ≤ delta ^ j := by
@@ -109,9 +108,9 @@ theorem exists_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A : ℝ)
       (hden : (1 - eta) * (volume (backwardCylinder Q r)).toReal ≤
         (volume ({Z | delta ^ j ≤ u Z} ∩ backwardCylinder Q r)).toReal) :
       ∀ Z ∈ backwardCylinder P0 scale, (3 / 4 : ℝ) * cmac * delta ^ j ≤ u Z := by
-    have hQO : closure (backwardCylinder Q r) ⊆ O := (closure_mono hsub).trans hSigmaO
+
     have hcap := hnear A hA Q r (delta ^ j) hr (pow_nonneg hdelt.le j)
-      O hO hQO u hnonneg hu hden
+      O hO ((closure_mono hsub).trans hSigmaO) u hnonneg hu hden
     have hb := hmacro p C_A hp A hA P0 scale hscale O hO hGO u hnonneg hu
       Q r ((3 / 4 : ℝ) * delta ^ j) hr hbig hsub (by positivity) hcap
     intro Z hZ
@@ -123,14 +122,14 @@ theorem exists_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A : ℝ)
   have hSigmaVolPos : 0 < (volume Sigma).toReal := by rw [hSigmaVol]; positivity
   have hphysicalSigma : kineticAffine P0 R ''
       backwardCylinder
-        (kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps (samplingCenter d m)) eps = Sigma := by
+        (kineticAffine (⟨0, 0, 0⟩ ) eps (samplingCenter d m)) eps = Sigma := by
     rw [← physical_sampling_image _ heps m]
     rw [image_image]
-    have hc0 : kineticAffine P0 R ∘ kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps =
+    have hc0 : kineticAffine P0 R ∘ kineticAffine (⟨0, 0, 0⟩ ) eps =
         kineticAffine P0 scale := by
       rw [kineticAffine_comp]
       congr 1
-      ext i <;> simp [kineticAffine]
+      ext i <;> simp
     rw [← Function.comp_def, hc0, physical_sampling_image P0 hscale m]
   rw [hphysicalSigma] at hdensity
   have htarget : backwardCylinder P0 (eps * R) = backwardCylinder P0 scale := by
@@ -142,16 +141,13 @@ theorem exists_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A : ℝ)
       (1 - eta) * (volume (backwardCylinder Q r)).toReal ≤
         (volume ({Z | delta ^ j ≤ u Z} ∩ backwardCylinder Q r)).toReal
   · obtain ⟨j, hj, Q, r, hr, hsub, hbig, hden⟩ := hmac
-    have hpow : delta ^ N ≤ delta ^ j :=
-      pow_le_pow_of_le_one hdelt.le hdelt1.le hj.le
+
     intro Z hZ
-    exact (mul_le_mul_of_nonneg_left hpow (by positivity :
+    exact (mul_le_mul_of_nonneg_left (pow_le_pow_of_le_one hdelt.le hdelt1.le hj.le) (by positivity :
       0 ≤ (3 / 4 : ℝ) * cmac)).trans (hmacDensity j Q r hr hsub hbig hden Z hZ)
-  let e := fun j : ℕ => (volume (E j)).toReal / (volume Sigma).toReal
+  let e := fun j  => (volume (E j)).toReal / (volume Sigma).toReal
   let L0 := C * (m : ℝ) * r0 ^ 2 / V
-  have hzero : beta ≤ e 0 := by
-    apply (le_div_iff₀ hSigmaVolPos).mpr
-    simpa only [E, pow_zero] using hdensity
+
   have hstep (j : ℕ) (hj : j < N) : e j ≤ a * (e (j + 1) + L0) := by
     have hcriterion (Q : KineticPoint d) (r : ℝ) (hr : 0 < r)
         (hsub : backwardCylinder Q r ⊆ Sigma)
@@ -159,14 +155,14 @@ theorem exists_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A : ℝ)
           (volume (E j ∩ backwardCylinder Q r)).toReal) :
         r < r0 * scale ∧ forwardStack Q r m ⊆ F j := by
       rw [hlocalLevel j Q r hsub] at hden
-      have hsmall : r < r0 * scale := by
-        by_contra hs
-        exact hmac ⟨j, hj, Q, r, hr, hsub, le_of_not_gt hs, hden⟩
-      refine ⟨hsmall, ?_⟩
+
+      refine ⟨(by
+          by_contra hs
+          exact hmac ⟨j, hj, Q, r, hr, hsub, le_of_not_gt hs, hden⟩), ?_⟩
       have hcomp := physical_sampling_comparison_image_subset P0 Q hscale hr m hsub
-      have hcompO := (closure_mono hcomp).trans hGO
+
       have hvis := hstack A hA Q r (delta ^ j) hr (pow_nonneg hdelt.le j)
-        O hO hcompO u hnonneg hu hden
+        O hO ((closure_mono hcomp).trans hGO) u hnonneg hu hden
       intro Z hZ
       exact ⟨by simpa only [mem_ofPred_eq, pow_succ, mul_comm delta] using hvis Z hZ,
         hcomp (forwardStack_subset_comparison Q hr m hZ)⟩
@@ -181,13 +177,12 @@ theorem exists_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A : ℝ)
       field_simp
     rw [heq]
     exact hb
-  have hterminal := density_ladder_numeric ha e N hzero hstep
-  have hterminalDense : 1 - eta < e N := by linarith only [hterminal, herror]
-  have hdenSigma : (1 - eta) * (volume Sigma).toReal ≤
-      (volume ({Z | delta ^ N ≤ u Z} ∩ Sigma)).toReal :=
-    (le_div_iff₀ hSigmaVolPos).mp hterminalDense.le
-  have hbigSigma : r0 * scale ≤ scale :=
-    (mul_le_mul_of_nonneg_right hr01.le hscale.le).trans_eq (one_mul scale)
-  exact hmacDensity N S scale hscale Subset.rfl hbigSigma hdenSigma
+  have hterminal := density_ladder_numeric ha e N (by
+      apply (le_div_iff₀ hSigmaVolPos).mpr
+      exact hdensity) hstep
+
+
+
+  exact hmacDensity N S scale hscale Subset.rfl ((mul_le_mul_of_nonneg_right hr01.le hscale.le).trans_eq (one_mul scale)) ((le_div_iff₀ hSigmaVolPos).mp (show 1 - eta < e N by linarith only [hterminal, herror]).le)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

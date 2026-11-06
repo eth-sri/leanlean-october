@@ -6,6 +6,8 @@ import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Mathlib.MeasureTheory.Measure.Regular
 import Mathlib.MeasureTheory.Integral.Bochner.Set
 import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Absolute continuity forced by positive smooth-test bounds
@@ -15,7 +17,7 @@ complement of the open test region. Compact null sets are tested by their measur
 indicators; inner regularity then handles all null sets.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -30,7 +32,7 @@ theorem absolutelyContinuous_of_smooth_tests (ν μ : Measure E)
     [ν.IsAddHaarMeasure] [IsFiniteMeasure μ] {U : Set E} (hU : IsOpen U)
     (hμU : μ Uᶜ = 0) {p : ℝ≥0∞} (hp : 1 ≤ p) (hpt : p ≠ ∞)
     {C : ℝ} (hC : 0 ≤ C)
-    (htest : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
+    (htest : ∀ f : E → ℝ, ContDiff ℝ PDE.smoothOrder f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C * (eLpNorm f p (ν.restrict U)).toReal) :
     μ ≪ ν.restrict U := by

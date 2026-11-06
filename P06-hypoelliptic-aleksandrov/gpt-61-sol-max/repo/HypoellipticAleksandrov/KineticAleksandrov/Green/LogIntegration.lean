@@ -5,6 +5,9 @@ public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.Integrability.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Lean.Elab.Tactic.Grind
+
+
 
 /-!
 # Logarithmic integration over dyadic slabs
@@ -16,9 +19,9 @@ and a measurable positive height `h` (`τ = h`): `log 2 · ν{h < S} ≤ ∫_0^S
 We also record the power integral `∫_0^S T^{δ-1} dT = S^δ/δ`.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Green
 
@@ -30,15 +33,13 @@ lemma lintegral_inv_Ioo_half {a : ℝ} (ha : 0 < a) :
     ∫⁻ T in Ioo (a / 2) a, ENNReal.ofReal T⁻¹ = ENNReal.ofReal (Real.log 2) := by
   have ha2 : 0 < a / 2 := by positivity
   have hle : a / 2 ≤ a := by linarith
-  have hint : IntervalIntegrable (fun x : ℝ => x⁻¹) volume (a / 2) a :=
+  have hint : IntervalIntegrable (fun x  => x⁻¹) volume (a / 2) a :=
     intervalIntegral.intervalIntegrable_inv (fun x hx => by
       rw [Set.uIcc_of_le hle] at hx
       exact (lt_of_lt_of_le ha2 hx.1).ne') continuousOn_id
-  have h1 : ∫⁻ T in Ioo (a / 2) a, ENNReal.ofReal T⁻¹ =
-      ∫⁻ T in Ioc (a / 2) a, ENNReal.ofReal T⁻¹ :=
-    setLIntegral_congr Ioo_ae_eq_Ioc
-  rw [h1, ← ofReal_integral_eq_lintegral_ofReal
-    (by simpa [IntegrableOn, Set.uIoc_of_le hle] using hint.1)
+
+  rw [(setLIntegral_congr Ioo_ae_eq_Ioc), ← ofReal_integral_eq_lintegral_ofReal
+    ((hint.left))
     ((ae_restrict_iff' measurableSet_Ioc).2 (Filter.Eventually.of_forall fun T hT =>
       inv_nonneg.2 (by linarith [hT.1])))]
   congr 1
@@ -69,26 +70,20 @@ lemma lintegral_inv_indicator {h S : ℝ} (hh : 0 < h) (hhS : h < S) :
   simp only [mem_inter_iff, mem_Ioo, mem_Ioc]
   constructor
   · exact fun hp => hp.1
-  · intro hp
-    exact ⟨hp, by linarith [hp.1], by linarith [hp.2]⟩
+  · grind
 
 /-- Logarithmic averaging: `log 2 · ν{h < S} ≤ ∫_0^S ν{T < h < 2T} dT/T`. -/
 lemma log_mul_measure_le {X : Type*} [MeasurableSpace X] (ν : Measure X) [SFinite ν]
     {h : X → ℝ} (hh : Measurable h) (hpos : ∀ x, 0 < h x) (S : ℝ) :
     ENNReal.ofReal (Real.log 2) * ν {x | h x < S} ≤
       ∫⁻ T in Ioc 0 S, ENNReal.ofReal T⁻¹ * ν {x | T < h x ∧ h x < 2 * T} := by
+  let sharedTerm_39761700c5 := ({q : X × ℝ | q.2 < h q.1 ∧ h q.1 < 2 * q.2})
   set f : X → ℝ → ℝ≥0∞ := fun x T => ENNReal.ofReal T⁻¹ *
     ({p : ℝ | p < h x ∧ h x < 2 * p}.indicator (fun _ => (1 : ℝ≥0∞)) T) with hf
-  have hSet : MeasurableSet {q : X × ℝ | q.2 < h q.1 ∧ h q.1 < 2 * q.2} :=
+  have hSet : MeasurableSet sharedTerm_39761700c5 :=
     (measurableSet_lt measurable_snd (hh.comp measurable_fst)).inter
       (measurableSet_lt (hh.comp measurable_fst) (measurable_const.mul measurable_snd))
-  have hfm : Measurable (Function.uncurry f) := by
-    have : Function.uncurry f = fun q : X × ℝ => ENNReal.ofReal q.2⁻¹ *
-        ({q : X × ℝ | q.2 < h q.1 ∧ h q.1 < 2 * q.2}.indicator (fun _ => (1 : ℝ≥0∞)) q) := by
-      ext q; rfl
-    rw [this]
-    exact (ENNReal.measurable_ofReal.comp measurable_snd.inv).mul
-      (measurable_const.indicator hSet)
+
   calc ENNReal.ofReal (Real.log 2) * ν {x | h x < S}
       = ∫⁻ x, {x | h x < S}.indicator (fun _ => ENNReal.ofReal (Real.log 2)) x ∂ν := by
         rw [lintegral_indicator_const (measurableSet_lt hh measurable_const), mul_comm]
@@ -100,7 +95,13 @@ lemma log_mul_measure_le {X : Type*} [MeasurableSpace X] (ν : Measure X) [SFini
         · rw [Set.indicator_of_notMem (show x ∉ {x | h x < S} from hx)]
           exact zero_le
     _ = ∫⁻ T in Ioc 0 S, (∫⁻ x, f x T ∂ν) :=
-        lintegral_lintegral_swap hfm.aemeasurable
+        lintegral_lintegral_swap (show Measurable (Function.uncurry f) by
+            have : Function.uncurry f = fun q  => ENNReal.ofReal q.2⁻¹ *
+                (sharedTerm_39761700c5.indicator (fun _ => (1 : ℝ≥0∞)) q) := by
+              ext q; rfl
+            rw [this]
+            exact (ENNReal.measurable_ofReal.comp measurable_snd.inv).mul
+              (measurable_const.indicator hSet)).aemeasurable
     _ = _ := by
         refine lintegral_congr fun T => ?_
         have : ∀ x, f x T = ENNReal.ofReal T⁻¹ *
@@ -124,14 +125,14 @@ lemma lintegral_inv_mul_rpow {S δ : ℝ} (hS : 0 < S) (hδ : 0 < δ) (K : ℝ�
     have : T ^ (δ - 1) = T⁻¹ * T ^ δ := by
       rw [Real.rpow_sub hT0, Real.rpow_one]; field_simp
     rw [this, ENNReal.ofReal_mul (inv_nonneg.2 hT0.le), mul_left_comm]
-  have hmeas : Measurable fun x : ℝ => ENNReal.ofReal (x ^ (δ - 1)) :=
+  have hmeas : Measurable fun x  => ENNReal.ofReal (x ^ (δ - 1)) :=
     ENNReal.measurable_ofReal.comp (measurable_id.pow_const _)
   rw [setLIntegral_congr_fun measurableSet_Ioc h1, lintegral_const_mul K hmeas]
   congr 1
   have hint : IntegrableOn (fun T : ℝ => T ^ (δ - 1)) (Ioc 0 S) := by
     have := (intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := S)
       (by linarith : -1 < δ - 1)).1
-    simpa [Set.uIoc_of_le hS.le] using this
+    exact this
   rw [← ofReal_integral_eq_lintegral_ofReal hint
     ((ae_restrict_iff' measurableSet_Ioc).2 (Filter.Eventually.of_forall fun T hT =>
       (Real.rpow_pos_of_pos hT.1 _).le))]

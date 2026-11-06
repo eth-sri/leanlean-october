@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitMeasure
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # The weak equation on strict bounded inner cylinders
@@ -14,20 +16,20 @@ The actual limit is continuous, hence locally integrable. Its compact-test
 identity is the proved limit of the finite Dirichlet weak equations.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter MeasureTheory
+open HypoellipticAleksandrov.Parabolic Set Filter MeasureTheory
 open Evolution
 open scoped Topology MatrixOrder
 
 /-- The actual Dirichlet exhaustion limit solves the regularized kinetic equation
 weakly on every strict bounded inner cylinder. -/
 theorem weakRegularized_innerBall_dirichlet_limit
-    {n : ℕ} {lam Lam Lb m : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb m : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hn : 1 ≤ n) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B)
@@ -43,7 +45,7 @@ theorem weakRegularized_innerBall_dirichlet_limit
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))
     (β R : ℕ → ℝ) (hβpos : ∀ k, 0 < β k)
     (hβlim : Tendsto β atTop (𝓝 0)) (hRlim : Tendsto R atTop atTop)
-    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (g k))
+    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ PDE.smoothOrder (g k))
     (hgL : ∀ k s t, PDE.vecEuclideanNorm (g k s - g k t) ≤ L * |s - t|)
     (hclose : ∀ k s, s ∈ Icc α τ → PDE.vecEuclideanNorm (g k s - Γ s) ≤ β k / 2)
     (u : ℕ → TimeVelocity (n + n) → ℝ)
@@ -56,13 +58,13 @@ theorem weakRegularized_innerBall_dirichlet_limit
       (boundedInnerOpenCylinder (r0 - δ0) Γ α τ S0)
       (fun p => limUnder atTop (fun k => straightenedPullback (g k) (u k) p))
       (fun _ => 0) := by
-  let U := boundedInnerOpenCylinder (r0 - δ0) Γ α τ S0
-  have hU : IsOpen U := isOpen_boundedInnerOpenCylinder _ hΓ.1 _ _ _
+
+
   have hcont := (continuousOn_bounded_innerBall_dirichlet_limit (S0 := S0)
     hlam hB hBs hbs hb haα hατ hδ0 hδr hd hdr hL hε.le hε1 hC hΓ.1
     F hFC hsupp β R hβpos hβlim hRlim g hg hgL hclose u hu).1.mono
       (boundedInnerOpenCylinder_subset_closed _ Γ α τ S0)
-  refine ⟨hcont.locallyIntegrableOn hU.measurableSet, ?_⟩
+  refine ⟨hcont.locallyIntegrableOn (isOpen_boundedInnerOpenCylinder _ hΓ.1 _ _ _).measurableSet, ?_⟩
   intro ψ hψ hc hs
   have hEq := integral_regularizedAdjoint_innerBall_dirichlet_limit_eq_zero
     hn hlam hlamLam hm hmLb hB hBs hBsym hbs hb hbco haα hατ hδ0 hδr hd hdr

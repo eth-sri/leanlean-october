@@ -10,21 +10,21 @@ This module converts the uniform interior difference-quotient bounds for fixed
 gradient representatives into ordered weak spatial Hessian representatives.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-open Filter MeasureTheory Set
-open scoped ENNReal Topology RealInnerProductSpace MatrixOrder Matrix.Norms.Elementwise
+open MeasureTheory Set
+open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 namespace IsReverseTimeVariationalEnergySolution
 
 /-- The interior Caccioppoli estimate supplies ordered weak spatial Hessian
 representatives, with uniform `L²` control of every matrix entry. -/
 theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppoli
-    {d : ℕ} {Ω inner O : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner O : PDE.VelocityRegion d} {Kη Kχ : ℝ}
     (hd : 0 < d)
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
@@ -41,8 +41,8 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
         (hlamLam : lam ≤ Lam) (hM : 0 ≤ M),
         ∃ C_cac : ℝ, 0 ≤ C_cac ∧
           ∀ (a : CoefficientField d)
-            (b : ℝ → PDE.Vec d → PDE.Vec d)
-            (c F : ℝ → PDE.Vec d → ℝ),
+            (b : PDE.TimeVectorField d)
+            (c F : PDE.TimeScalarField d),
           ∀ (haSmooth : IsSmoothOnNeighborhood
                 (fun z : TimeVelocity d => a z.1 z.2)
                 (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -67,7 +67,7 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
             (hA : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
                 spatialMatrixFDerivFrobeniusNorm
-                  (fun w : TimeVelocity d =>
+                  (fun w  =>
                     reverseTimeCoefficient r₁ a w.1 w.2) z ≤ M)
             (hB : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
@@ -76,7 +76,7 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
             (hBD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
                 spatialVectorFDerivFrobeniusNorm
-                  (fun w : TimeVelocity d =>
+                  (fun w  =>
                     reverseTimeDivergenceDrift r₁ a b w.1 w.2) z ≤ M)
             (hq : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
@@ -84,22 +84,22 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
             (hqD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
                 spatialScalarFDerivEuclideanNorm
-                  (fun w : TimeVelocity d =>
+                  (fun w  =>
                     -(reverseTimeScalarCoefficient r₁ c w.1 w.2)) z ≤ M)
             (hfD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
                 spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
                 spatialScalarFDerivEuclideanNorm
-                  (fun w : TimeVelocity d =>
+                  (fun w  =>
                     -(reverseTimeScalarCoefficient r₁ F w.1 w.2)) z ≤ M),
-          ∀ (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+          ∀ (initial : PDE.ScalarLp Ω (2 ))
             (u : ReverseTimeL2V hΩ (r₁ - r₀))
             (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
             (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
               (sub_pos.mpr h₀₁) u g)
             (hu : IsReverseTimeVariationalEnergySolution
               r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu),
-            ∃ G : Fin d → TimeVelocity d → ℝ,
-              (∀ j, MemLp (G j) (2 : ℝ≥0∞)
+            ∃ G : Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d,
+              (∀ j, MemLp (G j) (2 )
                 (timeVelocityVolumeOn
                   (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω))) ∧
               (∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀), ∀ j,
@@ -108,7 +108,7 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
               ∃ H : TimeVelocity d → PDE.Mat d,
                 ∃ hHmem : ∀ j k : Fin d,
                     ParabolicMemLpOn (Set.Ioo τ₁ τ₂ ×ˢ O)
-                      (2 : ℝ≥0∞) (fun z => H z j k),
+                      (2 ) (fun z => H z j k),
                   (∀ j k : Fin d,
                     HasWeakVelocityPartialDerivOn
                       (Set.Ioo τ₁ τ₂ ×ˢ O) k (G j) (fun z => H z j k)) ∧
@@ -135,34 +135,32 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
     hraw' a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hUpper hcNonpos
       hA hB hBD hq hqD hfD initial u g hdu hu
   refine ⟨G, hGmem, hGslice, ?_⟩
-  let Qin : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
+  let Qin  := Set.Ioo τ₁ τ₂ ×ˢ O
   let B : ℝ := C_cac * ((r₁ - r₀) +
     (reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
       a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial) ^ 2)
-  have hQinOpen : IsOpen Qin := isOpen_Ioo.prod hOopen
-  have hOΩ : O ⊆ Ω := hOinner.trans η.inner_subset_outer
+
+
   have htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval (r₁ - r₀) := by
     intro τ hτ
     exact ⟨hτ₀.trans (hτ₀τ₁.trans hτ.1),
       hτ.2.trans (hτ₂τ₃.trans hτ₃)⟩
-  have hQin : Qin ⊆ reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω :=
-    Set.prod_mono htime hOΩ
-  have hGlocal : ∀ j, ParabolicMemLpOn Qin (2 : ℝ≥0∞) (G j) := by
-    intro j
-    exact (hGmem j).mono_measure (Measure.restrict_mono_set volume hQin)
-  have hclose : ∀ j k : Fin d, ∃ entry : TimeVelocity d → ℝ,
-      ∃ hentry : ParabolicMemLpOn Qin (2 : ℝ≥0∞) entry,
+
+
+  have hclose : ∀ j k : Fin d, ∃ entry : HypoellipticAleksandrov.Parabolic.ScalarField d,
+      ∃ hentry : ParabolicMemLpOn Qin (2 ) entry,
         HasWeakVelocityPartialDerivOn Qin k (G j) entry ∧
           ‖hentry.toLp entry‖ ≤ Real.sqrt B := by
     intro j k
     exact exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenceQuotient
-      Qin hQinOpen k (G j) (hGlocal j) δ (Real.sqrt B) hδ
+      Qin (isOpen_Ioo.prod hOopen) k (G j) ((show ∀ j, ParabolicMemLpOn Qin (2 ) (G j) by
+          intro j
+          exact (hGmem j).mono_measure (Measure.restrict_mono_set volume (Set.prod_mono htime (hOinner.trans η.inner_subset_outer)))) j) δ (Real.sqrt B) hδ
         (hDQmem j k) (hDQnorm j k)
   choose entry hentry hweak hnorm using hclose
-  let H : TimeVelocity d → PDE.Mat d := fun z j k => entry j k z
-  let hHmem : ∀ j k : Fin d,
-      ParabolicMemLpOn Qin (2 : ℝ≥0∞) (fun z => H z j k) := fun j k => hentry j k
-  refine ⟨H, hHmem, ?_, ?_⟩
+
+
+  refine ⟨(fun z j k => entry j k z), hentry, ?_, ?_⟩
   · intro j k
     exact hweak j k
   · intro j k

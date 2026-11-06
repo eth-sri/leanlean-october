@@ -6,25 +6,26 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 
 /-! # Vanishing positive source norms before the spatial smoothing diagonal -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter Set
 open scoped Topology ENNReal
 
+variable {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1) (h : CounterProfileStatement d alpha)
+
+include hd ha ha1
 /-- Shell domination lifts to the literal spacetime source norm, with the finite time
 factor and no change to the selected profile witnesses. -/
-theorem construction_indicatorSource_norm_le {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r mu R m T S : ℝ)
+theorem construction_indicatorSource_norm_le  (r mu R m T S : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2) (hS : 0 < S)
     (hrate : mu = (d : ℝ) * profileLowerEllipticity h / R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)
     (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < m)
     (p : ℝ≥0∞) (hp0 : p ≠ 0) (hpTop : p ≠ ∞) :
-    eLpNorm (fun P : KineticPoint d =>
+    eLpNorm (fun P  =>
       max (constructionIndicatorSource h r mu R (KineticPoint.equivProd d P)) 0) p
-      (volume.restrict (backwardCylinder (⟨T, 0, 0⟩ : KineticPoint d) S)) ≤
+      (volume.restrict (backwardCylinder (⟨T, 0, 0⟩ ) S)) ≤
       (volume (Ioo (T - S ^ 2) T)) ^ (1 / p.toReal) *
         eLpNorm (flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r)
           p (volume.restrict {q | profileFunction h q < 1}) := by
@@ -42,7 +43,7 @@ theorem construction_indicatorSource_norm_le {d : ℕ} (hd : 1 ≤ d)
   · have hm := ((construction_indicatorSource_measurable h r mu R).comp
         (KineticPoint.measurable_equivProd d)).max (measurable_const (a := (0 : ℝ)))
     have hn := eLpNorm_mono_ae_real (p := p)
-      (g := fun P : KineticPoint d => D.indicator f (P.position, P.velocity))
+      (g := fun P  => D.indicator f (P.position, P.velocity))
       (μ := volume.restrict (backwardCylinder (⟨T, 0, 0⟩ : KineticPoint d) S))
       hm.aestronglyMeasurable.restrict
       (ae_restrict_of_ae (hbound.mono (fun P hP => by
@@ -71,9 +72,7 @@ theorem construction_indicatorSource_norm_le {d : ℕ} (hd : 1 ≤ d)
 
 /-- Positive selected sources tend to zero on the fixed cylinder as the flattening
 scales tend to zero in the full subcritical range. -/
-theorem construction_indicatorSource_norm_tendsto {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (mu R m T S p : ℝ)
+theorem construction_indicatorSource_norm_tendsto  (mu R m T S p : ℝ)
     (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2) (hS : 0 < S)
     (hrate : mu = (d : ℝ) * profileLowerEllipticity h / R ^ 2)
     (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < m)
@@ -83,22 +82,19 @@ theorem construction_indicatorSource_norm_tendsto {d : ℕ} (hd : 1 ≤ d)
     Tendsto (fun j => eLpNorm (fun P : KineticPoint d =>
       max (constructionIndicatorSource h (r j) mu R (KineticPoint.equivProd d P)) 0)
       (ENNReal.ofReal p)
-      (volume.restrict (backwardCylinder (⟨T, 0, 0⟩ : KineticPoint d) S)))
+      (volume.restrict (backwardCylinder (⟨T, 0, 0⟩ ) S)))
       atTop (𝓝 0) := by
-  have hp0 : ENNReal.ofReal p ≠ 0 := (ENNReal.ofReal_pos.mpr (zero_lt_one.trans_le hp)).ne'
-  have hpTop : ENNReal.ofReal p ≠ ∞ := ENNReal.ofReal_ne_top
-  let C := (volume (Ioo (T - S ^ 2) T)) ^ (1 / (ENNReal.ofReal p).toReal)
-  have hC : C ≠ ∞ := ENNReal.rpow_ne_top_of_nonneg
+
+
+
+  have hC : ((volume (Ioo (T - S ^ 2) T)) ^ (1 / (ENNReal.ofReal p).toReal)) ≠ ∞ := ENNReal.rpow_ne_top_of_nonneg
     (by positivity) (measure_Ioo_lt_top.ne)
-  have hu := (ENNReal.continuous_const_mul hC).tendsto (0 : ℝ≥0∞) |>.comp
+  have hu := (ENNReal.continuous_const_mul hC).tendsto (0 ) |>.comp
     (construction_flat_source_decay_of_profile h p ha ha1 hp he r hr hlim)
-  have hu0 : Tendsto (fun j => C * eLpNorm
-      (flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha (r j))
-      (ENNReal.ofReal p) (volume.restrict {q | profileFunction h q < 1}))
-      atTop (𝓝 0) := by
-    simpa only [Function.comp_def, mul_zero] using! hu
-  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hu0
+
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (by
+      simpa only [Function.comp_def, mul_zero] using! hu)
     (fun _ => bot_le) (fun j => construction_indicatorSource_norm_le hd ha ha1 h
-      (r j) mu R m T S (hr j) hmu hR hm hS hrate (hs j) hmargin _ hp0 hpTop)
+      (r j) mu R m T S (hr j) hmu hR hm hS hrate (hs j) hmargin _ ((ENNReal.ofReal_pos.mpr (zero_lt_one.trans_le hp)).ne') ENNReal.ofReal_ne_top)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

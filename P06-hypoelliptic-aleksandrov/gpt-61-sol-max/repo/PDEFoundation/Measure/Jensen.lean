@@ -21,7 +21,7 @@ theorem.
 - `abs_integral_rpow_le_integral_abs_rpow`: scalar moment Jensen inequality.
 -/
 
-@[expose] public section
+ public section
 
 namespace PDE
 
@@ -39,21 +39,10 @@ theorem abs_integral_rpow_le_integral_abs_rpow
     {f : α → ℝ} {p : ℝ} (hp : 1 ≤ p)
     (hf : Integrable f μ)
     (hfp : Integrable (fun x => |f x| ^ p) μ) :
-    |∫ x, f x ∂μ| ^ p ≤ ∫ x, |f x| ^ p ∂μ := by
-  have hpNonneg : 0 ≤ p :=
-    zero_le_one.trans hp
-  have hJensen :
-      (∫ x, |f x| ∂μ) ^ p ≤
-        ∫ x, |f x| ^ p ∂μ := by
-    simpa only [Function.comp_apply] using
-      (convexOn_rpow hp).map_integral_le
-        (Real.continuous_rpow_const hpNonneg).continuousOn
-        isClosed_Ici
-        (Filter.Eventually.of_forall fun x => abs_nonneg (f x))
-        hf.abs hfp
-  exact
-    (Real.rpow_le_rpow (abs_nonneg _)
-      MeasureTheory.abs_integral_le_integral_abs hpNonneg).trans
-        hJensen
+    |∫ x, f x ∂μ| ^ p ≤ ∫ x, |f x| ^ p ∂μ := (LE.le.trans
+  (Real.rpow_le_rpow (abs_nonneg (∫ (a : α), f a ∂μ)) abs_integral_le_integral_abs (LE.le.trans zero_le_one hp))
+  (ConvexOn.map_integral_le (convexOn_rpow hp)
+    (Continuous.continuousOn (Real.continuous_rpow_const (LE.le.trans zero_le_one hp))) isClosed_Ici
+    (Filter.Eventually.of_forall fun x => abs_nonneg (f x)) (Integrable.abs hf) hfp))
 
 end PDE

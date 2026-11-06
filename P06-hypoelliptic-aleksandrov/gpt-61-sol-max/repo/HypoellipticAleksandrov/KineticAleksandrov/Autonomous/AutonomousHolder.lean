@@ -14,8 +14,8 @@ The estimate and compact-inner-cylinder convention are (9.7).
 Conditional theorem; the improved density assertion remains an explicit hypothesis.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory Holder
 open scoped MatrixOrder
@@ -31,7 +31,7 @@ theorem kinetic_holder_autonomous_relative_of_below_four_density
         Measurable (Function.uncurry a) →
         (∀ x v : ℝ, lam ≤ a x v ∧ a x v ≤ Lam) →
       ∀ (Omega : Set (KineticPoint 1)), IsOpen Omega →
-      ∀ (u : KineticPoint 1 → ℝ),
+      ∀ (u : HypoellipticAleksandrov.KineticScalarField 1),
         (∃ M : ℝ, ∀ P ∈ Omega, |u P| ≤ M) →
         Parabolic.IsKineticC112On u Omega →
         (∀ᵐ P ∂(volume.restrict Omega), autonomousScalarOperator a u P = 0) →
@@ -47,16 +47,10 @@ theorem kinetic_holder_autonomous_relative_of_below_four_density
     1 (by norm_num) lam Lam 6 C_A hlam hLam (by norm_num)
   refine ⟨alpha, C, ha, ha1, ?_⟩
   intro a hmeas hb Omega hOmega u hbounded hu heq
-  have hlo : ∀ᵐ P ∂(volume : Measure (KineticPoint 1)),
-      lam • (1 : PDE.Mat 1) ≤
-        fullKineticCoefficientAt (Autonomous.autonomousCoefficient a) P :=
-    Filter.Eventually.of_forall (fun P => (Autonomous.autonomous_lift_elliptic hb P).1)
-  have hhi : ∀ᵐ P ∂(volume : Measure (KineticPoint 1)),
-      fullKineticCoefficientAt (Autonomous.autonomousCoefficient a) P ≤
-        Lam • (1 : PDE.Mat 1) :=
-    Filter.Eventually.of_forall (fun P => (Autonomous.autonomous_lift_elliptic hb P).2)
-  exact hholder (Autonomous.autonomousCoefficient a)
+
+
+  exact hholder _
     (Autonomous.autonomous_lift_measurable hmeas) (Autonomous.autonomous_lift_symm a)
-    hlo hhi Omega hOmega u hbounded (hadm a hmeas hb Omega hOmega u hbounded hu heq)
+    (Filter.Eventually.of_forall (fun P => (Autonomous.autonomous_lift_elliptic hb P).1)) (Filter.Eventually.of_forall (fun P => (Autonomous.autonomous_lift_elliptic hb P).2)) Omega hOmega u hbounded (hadm a hmeas hb Omega hOmega u hbounded hu heq)
 
 end HypoellipticAleksandrov.KineticAleksandrov

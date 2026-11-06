@@ -5,7 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2Prof
 
 /-! # The proved higher-dimensional profile supplies the shared branch interface -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 

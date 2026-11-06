@@ -2,13 +2,15 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsDynkin
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AutonomyBoundedData
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Derived terminal Green identity for bounded smooth tests -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set MeasureTheory
+open SectionTwo Evolution Set
 
 /-- The actual signed Green potential of a smooth test is its value minus its
 actual terminal-kernel value. The forcing is its literal kinetic operator. -/
@@ -20,7 +22,7 @@ theorem fullspace_green_terminal_error_smooth_datum
     (Cf M : ℝ) (hM : 0 ≤ M) (hfb : ∀ p, |f p| ≤ Cf)
     (hLf : ∀ p, |transportedForwardOperator (evolutionCoefficient A.a)
       (identityDrift 1) f p| ≤ M)
-    (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+    (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ PDE.smoothOrder F)
     (δ : ℝ) (hFt : ∀ p, p.time = T → |f p - F (p.position, p.velocity)| ≤ δ)
     (p : Point) (hp : p.time < T) :
     |duhamelPotential E.2 T
@@ -36,27 +38,15 @@ theorem fullspace_green_terminal_error_smooth_datum
   have hD : IsOpen D := isOpen_duhamelCylinder
     (isOpen_of_isAdmissibleEvolutionDomain autonomousWholeDomain_admissible)
     continuous_const T
-  have hU : IsOpen (evolutionHomeomorph 1 ⁻¹' D) :=
-    hD.preimage (evolutionHomeomorph 1).continuous
-  have hus : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
+
+  have hus : ContDiffOn ℝ PDE.smoothOrder (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D) := by
     apply contDiffOn_comp_evolutionHomeomorph_iff.mpr
     rw [← evolutionPastInteriorRaw_eq_image]
     exact hu.2.2.1
-  have hfc : Continuous f := by
-    have he : f = (f ∘ evolutionHomeomorph 1) ∘ (evolutionHomeomorph 1).symm := by
-      funext q; simp only [Function.comp_apply, Homeomorph.apply_symm_apply]
-    rw [he]
-    exact hf.continuous.comp (evolutionHomeomorph 1).symm.continuous
-  have hL : Continuous (fun q => transportedForwardOperator (evolutionCoefficient A.a)
-      (identityDrift 1) f q) := by
-    have hc := (continuous_transportedOperator_c2 A hf).comp
-      (evolutionHomeomorph 1).symm.continuous
-    convert hc using 1
-    funext q
-    rw [Function.comp_apply,
-      transportedOperator_comp hf.contDiffAt, Homeomorph.apply_symm_apply]
-  have hgm : Measurable g := hL.neg.measurable.indicator hD.measurableSet
+
+
+
   have hgb (q : Point) : |g q| ≤ M := by
     by_cases hq : q ∈ D
     · simpa only [g, indicator_of_mem hq, abs_neg] using hLf q
@@ -80,15 +70,25 @@ theorem fullspace_green_terminal_error_smooth_datum
         (fun x => (f ∘ evolutionHomeomorph 1) ((evolutionProdCLE 1).symm x))
         (q.time, q.position, q.velocity) at hh
       rwa [he] at hh)
-  have hureg (q : Point) (hq : q ∈ D) : IsSliceRegularAt u q :=
+  have hureg (q : Point) (hq : q ∈ D)  :=
     reconstruction_slice_regular_of_contDiffOn hD hus q hq
   have hgreen := fullspace_green_terminal_error hH hlam A E hE T (fun q => f q - u q) g
-    (hf.contDiffOn.sub (hus.of_le (by simp))) (hfc.continuousOn.sub hu.2.1) hgm (Cf + Cu) M hM
+    (hf.contDiffOn.sub (hus.of_le (by simp))) ((show Continuous f by
+        have he : f = (f ∘ evolutionHomeomorph 1) ∘ (evolutionHomeomorph 1).symm := by
+          funext q; simp only [Function.comp_apply, Homeomorph.apply_symm_apply]
+        rw [he]
+        exact hf.continuous.comp (evolutionHomeomorph 1).symm.continuous).continuousOn.sub hu.2.1) ((show Continuous ((transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) f)) by
+            have hc := (continuous_transportedOperator_c2 A hf).comp
+              (evolutionHomeomorph 1).symm.continuous
+            convert hc using 1
+            funext q
+            rw [Function.comp_apply,
+              transportedOperator_comp hf.contDiffAt, Homeomorph.apply_symm_apply]).neg.measurable.indicator hD.measurableSet) (Cf + Cu) M hM
     (fun q hq => (abs_sub _ _).trans
       (add_le_add (hfb q) (hCu q ⟨hq, hwhole q⟩))) hgb
-    (fun q hq => indicator_of_notMem (by intro hh; exact (not_lt_of_ge hq) hh.1) _)
+    (fun q hq => indicator_of_notMem ((fun hh => not_lt_of_ge hq hh.left)) _)
     δ (fun q hq => by
-      rw [hu.2.2.2.2.1 q ⟨hq, by simpa only [hq] using hwhole q⟩]
+      rw [hu.2.2.2.2.1 q ⟨hq, hwhole q⟩]
       exact hFt q hq)
     (fun q hq => by
       have hqd : q ∈ D := ⟨hq, by

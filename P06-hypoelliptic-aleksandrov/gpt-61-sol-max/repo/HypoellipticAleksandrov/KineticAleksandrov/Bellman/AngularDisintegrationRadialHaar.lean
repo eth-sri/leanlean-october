@@ -5,6 +5,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularCoordina
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasurePositive
 import Mathlib.MeasureTheory.Measure.Haar.Unique
 import Mathlib.Tactic
+import Aesop
+
+
 
 /-! # The actual ds/s reference measure and its translation-invariant log-radius image -/
 
@@ -35,7 +38,7 @@ theorem map_bellmanRadialHaar_radialScale (r : ℝ) (hr : 0 < r) :
     fun_prop
   rw [bellmanRadialHaar, bellman_map_withDensity _ _ _ hf,
     map_bellmanPositiveTimeVolume_radialScale, withDensity_smul_measure]
-  have he : (fun s : BellmanPositiveTime =>
+  have he : (fun s  =>
       ENNReal.ofReal ((bellmanRadialScale r hr).symm s).val⁻¹) =
       ENNReal.ofReal r • (fun s : BellmanPositiveTime => ENNReal.ofReal s.val⁻¹) := by
     funext s
@@ -58,12 +61,9 @@ instance bellmanLogRadialHaar_finiteOnCompacts :
       ext q
       constructor
       · intro hq
-        exact ⟨bellmanLogRadiusHomeomorph q, hq,
+        exact ⟨_, hq,
           bellmanLogRadiusHomeomorph.symm_apply_apply q⟩
-      · rintro ⟨z, hz, rfl⟩
-        change bellmanLogRadiusHomeomorph (bellmanLogRadiusHomeomorph.symm z) ∈ K
-        rw [bellmanLogRadiusHomeomorph.apply_symm_apply]
-        exact hz
+      · simp_all [bellmanLogRadiusHomeomorph] <;> aesop
     rw [he]
     exact (hK.image bellmanLogRadiusHomeomorph.symm.continuous).measure_lt_top
 
@@ -73,7 +73,7 @@ instance bellmanLogRadialHaar_addInvariant : IsAddLeftInvariant bellmanLogRadial
   intro a
   rw [bellmanLogRadialHaar,
     Measure.map_map (by fun_prop) bellmanLogRadiusHomeomorph.measurable]
-  have he : (fun x : ℝ => a + x) ∘ bellmanLogRadiusHomeomorph =
+  have he : (fun x  => a + x) ∘ bellmanLogRadiusHomeomorph =
       bellmanLogRadiusHomeomorph ∘ bellmanRadialScale (Real.exp a) (Real.exp_pos a) := by
     funext s
     change a + Real.log s.val = Real.log (Real.exp a * s.val)
@@ -103,7 +103,7 @@ theorem bellmanLogRadialHaar_ne_zero : bellmanLogRadialHaar ≠ 0 :=
 
 /-- The finite Haar normalization factor of the literal log-radius reference measure. -/
 def bellmanRadialHaarFactor : ℝ≥0 :=
-  addHaarScalarFactor bellmanLogRadialHaar (volume : Measure ℝ)
+  addHaarScalarFactor bellmanLogRadialHaar (volume )
 
 /-- The actual log-radius reference measure is its finite Haar factor times volume. -/
 theorem bellmanLogRadialHaar_eq_smul_volume :

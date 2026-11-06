@@ -4,6 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarEq
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarGluing
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.Connection
 import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Local scalar matching
@@ -19,35 +24,38 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set Filter
 open scoped Topology ContDiff
 
+variable (gamma : ScalarGamma)
+
 /-- The entire local expression at diffusivity a, with the source linear normalization. -/
-def scalarLocal (gamma : ScalarGamma) (Lam a s : ℝ) : ℝ :=
+def scalarLocal  (Lam a s : ℝ) : ℝ :=
   gammaA gamma.1 * Kummer.M (-gamma.1) Kummer.b23 (scalarCubic a s) +
     gammaB gamma.1 * s / Real.rpow (9 * Lam) (1 / 3) *
       Kummer.M (1 / 3 - gamma.1) Kummer.b43 (scalarCubic a s)
 
 /-- The literal local expression at diffusivity one is the negative piece. -/
-theorem scalarLocal_one (gamma : ScalarGamma) (Lam : ℝ) :
+theorem scalarLocal_one  (Lam : ℝ) :
     scalarLocal gamma Lam 1 = Fminus gamma Lam := by
   funext s
   simp only [scalarLocal, scalarCubic, mul_one, Fminus]
 
+variable (Lam a : ℝ)
+
 /-- Smoothness of the entire local expression. -/
-theorem contDiff_scalarLocal (gamma : ScalarGamma) (Lam a : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (scalarLocal gamma Lam a) := by
-  have hm (u : ℝ) (b : Kummer.Pos) : ContDiff ℝ (⊤ : ℕ∞) (Kummer.M u b) :=
+theorem contDiff_scalarLocal   :
+    ContDiff ℝ PDE.smoothOrder (scalarLocal gamma Lam a) := by
+  have hm (u : ℝ) (b : Kummer.Pos) : ContDiff ℝ PDE.smoothOrder (Kummer.M u b) :=
     (Kummer.analyticOnNhd_M u b).contDiff
   exact (contDiff_const.mul ((hm _ _).comp (contDiff_scalarCubic a))).add
     (((contDiff_const.mul contDiff_id).div_const _).mul
       ((hm _ _).comp (contDiff_scalarCubic a)))
 
 /-- The local expression has the source value at zero for every diffusivity. -/
-@[simp] theorem scalarLocal_zero (gamma : ScalarGamma) (Lam a : ℝ) :
+@[simp] theorem scalarLocal_zero   :
     scalarLocal gamma Lam a 0 = gammaA gamma.1 := by
-  simp only [scalarLocal, scalarCubic, zero_pow (by decide : 3 ≠ 0), zero_div,
-    Kummer.M_zero, mul_one, mul_zero, add_zero]
+  simp_all [scalarLocal, scalarCubic]
 
 /-- Its first derivative at zero is independent of the branch diffusivity. -/
-theorem scalarLocal_hasDerivAt_zero (gamma : ScalarGamma) (Lam a : ℝ) :
+theorem scalarLocal_hasDerivAt_zero   :
     HasDerivAt (scalarLocal gamma Lam a)
       (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)) 0 := by
   have hc : scalarCubic a 0 = 0 := by simp [scalarCubic]
@@ -59,47 +67,44 @@ theorem scalarLocal_hasDerivAt_zero (gamma : ScalarGamma) (Lam a : ℝ) :
     ((((hasDerivAt_id (0 : ℝ)).const_mul (gammaB gamma.1)).div_const
       (Real.rpow (9 * Lam) (1 / 3))).mul (hd (1 / 3 - gamma.1) Kummer.b43))
   unfold scalarLocal
-  simpa only [Pi.add_def, Pi.mul_def, id_eq, scalarCubic,
-    zero_pow (by decide : 3 ≠ 0), zero_div, Kummer.M_zero, mul_zero, zero_mul,
-    add_zero, zero_add, mul_one] using h
+  simpa only [scalarCubic, id_eq, Pi.mul_def, Pi.add_def, mul_zero, mul_one,
+    zero_pow (by decide : 3 ≠ 0), zero_div, Kummer.M_zero, add_zero, zero_add] using h
 
 /-- The local expression solves the scalar equation at all real s. -/
-theorem scalarLocal_ode (gamma : ScalarGamma) (Lam a s : ℝ) (ha : a ≠ 0) :
+theorem scalarLocal_ode  (Lam a s : ℝ) (ha : a ≠ 0) :
     a * deriv (deriv (scalarLocal gamma Lam a)) s -
       s ^ 2 / 3 * deriv (scalarLocal gamma Lam a) s +
         gamma.1 * s * scalarLocal gamma Lam a s = 0 := by
-  let f : ℝ → ℝ := fun t => Kummer.M (-gamma.1) Kummer.b23 (scalarCubic a t)
-  let g : ℝ → ℝ := fun t => t *
-    Kummer.M (1 / 3 - gamma.1) Kummer.b43 (scalarCubic a t)
+  let sharedTerm_a2b9706405 := ((1 / 3 - gamma.1))
+  let f  := fun t => Kummer.M (-gamma.1) Kummer.b23 (scalarCubic a t)
+  let g  := fun t => t *
+    Kummer.M sharedTerm_a2b9706405 Kummer.b43 (scalarCubic a t)
   have hm (u : ℝ) (b : Kummer.Pos) : ContDiff ℝ 2 (Kummer.M u b) :=
     (Kummer.analyticOnNhd_M u b).contDiff
   have hc : ContDiff ℝ 2 (scalarCubic a) := (contDiff_scalarCubic a).of_le (by norm_num)
-  have hf : ContDiff ℝ 2 f := (hm _ _).comp hc
-  have hg : ContDiff ℝ 2 g := contDiff_id.mul ((hm _ _).comp hc)
+
+
   have hfo := scalarCubic_ode (Kummer.M (-gamma.1) Kummer.b23) gamma.1 a s ha
     (hm _ _).contDiffAt
     (by simpa only [Kummer.b23, neg_mul, sub_neg_eq_add] using
       Kummer.M_ode (-gamma.1) Kummer.b23 (scalarCubic a s))
-  have hgo := scalarCubic_second_ode (Kummer.M (1 / 3 - gamma.1) Kummer.b43)
+  have hgo := scalarCubic_second_ode (Kummer.M sharedTerm_a2b9706405 Kummer.b43)
     gamma.1 a s ha (hm _ _)
-    (by simpa only [Kummer.b43] using
-      Kummer.M_ode (1 / 3 - gamma.1) Kummer.b43 (scalarCubic a s))
+    ((id (Kummer.M_ode sharedTerm_a2b9706405 Kummer.b43 (scalarCubic a s))))
   have he : scalarLocal gamma Lam a = fun t => gammaA gamma.1 * f t +
       (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)) * g t := by
     funext t
     dsimp only [scalarLocal, f, g]
     ring
   rw [he]
-  exact scalar_ode_linear_combination f g gamma.1 a (gammaA gamma.1)
-    (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)) s hf hg hfo hgo
+  exact scalar_ode_linear_combination f g gamma.1 a _
+    _ s ((hm _ _).comp hc) (contDiff_id.mul ((hm _ _).comp hc)) hfo hgo
 
 /-- Both local second derivatives vanish at zero by their actual differential equation. -/
-theorem scalarLocal_deriv2_zero (gamma : ScalarGamma) (Lam a : ℝ) (ha : a ≠ 0) :
+theorem scalarLocal_deriv2_zero  (Lam a : ℝ) (ha : a ≠ 0) :
     deriv (deriv (scalarLocal gamma Lam a)) 0 = 0 := by
   have ho := scalarLocal_ode gamma Lam a 0 ha
-  simp only [zero_pow (by decide : 2 ≠ 0), zero_div, zero_mul, mul_zero, sub_zero,
-    add_zero] at ho
-  exact (mul_eq_zero.mp ho).resolve_left ha
+  simp_all
 
 /-- Exact positive-side connection consumer, pending the Kummer lane's connection proof. -/
 theorem Fplus_eq_scalarLocal_of_connection
@@ -131,8 +136,14 @@ variable (hconnection : ∀ a : Kummer.NegThird, ∀ z : ℝ, 0 < z →
 
 include hconnection
 
+variable (gamma : ScalarGamma)
+
+section
+variable (Lam : ℝ) (hLam : 0 < Lam)
+
+include hLam
 /-- The source piecewise profile is the join of its two entire local expressions. -/
-theorem F_eq_scalarJoin_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_eq_scalarJoin_of_connection   :
     F gamma Lam = scalarJoin (scalarLocal gamma Lam Lam) (scalarLocal gamma Lam 1) := by
   funext s
   unfold F scalarJoin
@@ -143,56 +154,56 @@ theorem F_eq_scalarJoin_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 
     rw [scalarLocal_one]
     by_cases hs0 : s < 0
     · simp only [hs0, ↓reduceIte]
-    · have hz : s = 0 := le_antisymm (le_of_not_gt hs) (le_of_not_gt hs0)
-      simp only [hz, lt_self_iff_false, ↓reduceIte, Fminus_zero]
+    ·
+      simp only [(le_antisymm (le_of_not_gt hs) (le_of_not_gt hs0)), lt_self_iff_false, ↓reduceIte, Fminus_zero]
 
 /-- Exact C² matching at the scalar join, conditional only on the complete connection export. -/
-theorem F_contDiff_two_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_contDiff_two_of_connection   :
     ContDiff ℝ 2 (F gamma Lam) := by
   rw [F_eq_scalarJoin_of_connection hconnection gamma Lam hLam]
   apply contDiff_two_scalarJoin
   · exact (contDiff_scalarLocal gamma Lam Lam).of_le (by norm_num)
   · exact (contDiff_scalarLocal gamma Lam 1).of_le (by norm_num)
-  · rw [scalarLocal_zero, scalarLocal_zero]
+  · norm_num
   · rw [(scalarLocal_hasDerivAt_zero gamma Lam Lam).deriv,
       (scalarLocal_hasDerivAt_zero gamma Lam 1).deriv]
   · rw [scalarLocal_deriv2_zero gamma Lam Lam hLam.ne',
       scalarLocal_deriv2_zero gamma Lam 1 one_ne_zero]
 
 /-- The joined value and first two derivatives have precisely the source normalization. -/
-theorem F_zero_jets_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_zero_jets_of_connection   :
     F gamma Lam 0 = gammaA gamma.1 ∧
     deriv (F gamma Lam) 0 = gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3) ∧
     deriv (deriv (F gamma Lam)) 0 = 0 := by
+  let sharedTerm_11e49d1a23 := ((by norm_num : (2 : ℕ∞ω) ≤ ∞))
   refine ⟨F_zero gamma Lam, ?_⟩
-  have hf : Differentiable ℝ (scalarLocal gamma Lam Lam) :=
-    (contDiff_scalarLocal gamma Lam Lam).differentiable (by norm_num)
-  have hg : Differentiable ℝ (scalarLocal gamma Lam 1) :=
-    (contDiff_scalarLocal gamma Lam 1).differentiable (by norm_num)
-  have hfg : scalarLocal gamma Lam Lam 0 = scalarLocal gamma Lam 1 0 := by simp
+
+
+
   have hdfg : deriv (scalarLocal gamma Lam Lam) 0 =
       deriv (scalarLocal gamma Lam 1) 0 := by
     rw [(scalarLocal_hasDerivAt_zero gamma Lam Lam).deriv,
       (scalarLocal_hasDerivAt_zero gamma Lam 1).deriv]
   have hfdd := ((contDiff_scalarLocal gamma Lam Lam).of_le
-    (by norm_num : (2 : ℕ∞ω) ≤ ∞)).differentiable_deriv_two
+    sharedTerm_11e49d1a23).differentiable_deriv_two
   have hgdd := ((contDiff_scalarLocal gamma Lam 1).of_le
-    (by norm_num : (2 : ℕ∞ω) ≤ ∞)).differentiable_deriv_two
-  have hddfg : deriv (deriv (scalarLocal gamma Lam Lam)) 0 =
-      deriv (deriv (scalarLocal gamma Lam 1)) 0 := by
-    rw [scalarLocal_deriv2_zero gamma Lam Lam hLam.ne',
-      scalarLocal_deriv2_zero gamma Lam 1 one_ne_zero]
+    sharedTerm_11e49d1a23).differentiable_deriv_two
+
   rw [F_eq_scalarJoin_of_connection hconnection gamma Lam hLam,
-    scalarJoin_deriv _ _ hf hg hfg hdfg]
+    scalarJoin_deriv _ _ ((contDiff_scalarLocal gamma Lam Lam).differentiable (by norm_num)) ((contDiff_scalarLocal gamma Lam 1).differentiable (by norm_num)) (by simp) hdfg]
   constructor
   · simp only [scalarJoin, lt_self_iff_false, ↓reduceIte]
     exact (scalarLocal_hasDerivAt_zero gamma Lam 1).deriv
-  · rw [scalarJoin_deriv _ _ hfdd hgdd hdfg hddfg]
+  · rw [scalarJoin_deriv _ _ hfdd hgdd hdfg (by
+      rw [scalarLocal_deriv2_zero gamma Lam Lam hLam.ne',
+        scalarLocal_deriv2_zero gamma Lam 1 one_ne_zero])]
     simp only [scalarJoin, lt_self_iff_false, ↓reduceIte]
     exact scalarLocal_deriv2_zero gamma Lam 1 one_ne_zero
+end
+
 
 /-- The glued profile solves the scalar equation, including its regular joining point. -/
-theorem F_ode_of_connection (gamma : ScalarGamma) (Lam s : ℝ) (hLam : 0 < Lam) :
+theorem F_ode_of_connection  (Lam s : ℝ) (hLam : 0 < Lam) :
     (if 0 < s then Lam else 1) * deriv (deriv (F gamma Lam)) s -
       s ^ 2 / 3 * deriv (F gamma Lam) s + gamma.1 * s * F gamma Lam s = 0 := by
   rcases lt_trichotomy s 0 with hs | hs | hs
@@ -220,9 +231,7 @@ theorem F_contDiff_two (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
   F_contDiff_two_of_connection Kummer.UNr_connection gamma Lam hLam
 
 /-- The actual joined solution satisfies the piecewise scalar ODE everywhere. -/
-theorem F_ode (gamma : ScalarGamma) (Lam s : ℝ) (hLam : 0 < Lam) :
-    (if 0 < s then Lam else 1) * deriv (deriv (F gamma Lam)) s -
-      s ^ 2 / 3 * deriv (F gamma Lam) s + gamma.1 * s * F gamma Lam s = 0 :=
+theorem F_ode (gamma : ScalarGamma) (Lam s : ℝ) (hLam : 0 < Lam) : type_of% (F_ode_of_connection Kummer.UNr_connection gamma Lam s hLam) :=
   F_ode_of_connection Kummer.UNr_connection gamma Lam s hLam
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

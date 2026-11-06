@@ -26,43 +26,38 @@ open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
+variable (d : ℕ) (σ₀ : ℝ)
+
 /-- A Green-carrier point `(τ,(w,z))` started at time `σ₀`, as the kinetic point
 `(σ₀ + τ, X = z, v = w)` in absolute time. -/
-def greenKineticPoint (d : ℕ) (σ₀ : ℝ) {S : ℝ≥0∞}
+def greenKineticPoint  {S : ℝ≥0∞}
     (q : ElapsedTime S × EvolutionAmbientState d) : KineticPoint d :=
   ⟨σ₀ + q.1.1, q.2.2, q.2.1⟩
 
 /-- The kinetic points whose absolute time lies strictly between `σ₀` and `σ₀ + S`. -/
-def elapsedSlab (d : ℕ) (σ₀ : ℝ) (S : ℝ≥0∞) : Set (KineticPoint d) :=
+def elapsedSlab  (S : ℝ≥0∞) : Set (KineticPoint d) :=
   {P | σ₀ < P.time ∧ ENNReal.ofReal (P.time - σ₀) < S}
 
 /-- The coordinate change `(t,(w,z)) ↦ (σ₀ + t, X = z, v = w)` as a measurable equivalence. -/
-def absoluteTimeEquiv (d : ℕ) (σ₀ : ℝ) : ℝ × EvolutionAmbientState d ≃ᵐ KineticPoint d :=
+def absoluteTimeEquiv  : ℝ × EvolutionAmbientState d ≃ᵐ KineticPoint d :=
   ((MeasurableEquiv.addLeft σ₀).prodCongr MeasurableEquiv.prodComm).trans
     (KineticPoint.homeomorphProd d).symm.toMeasurableEquiv
 
-theorem absoluteTimeEquiv_apply (d : ℕ) (σ₀ : ℝ) (q : ℝ × EvolutionAmbientState d) :
+theorem absoluteTimeEquiv_apply  (q : ℝ × EvolutionAmbientState d) :
     absoluteTimeEquiv d σ₀ q = ⟨σ₀ + q.1, q.2.2, q.2.1⟩ := rfl
 
 /-- The absolute-time coordinate change preserves Lebesgue measure. -/
-theorem measurePreserving_absoluteTimeEquiv (d : ℕ) (σ₀ : ℝ) :
-    MeasurePreserving (absoluteTimeEquiv d σ₀) volume volume := by
-  let e := (KineticPoint.homeomorphProd d).toMeasurableEquiv
-  have he : MeasurePreserving e volume volume := KineticPoint.measurePreserving_equivProd d
-  have h1 : MeasurePreserving (MeasurableEquiv.addLeft σ₀) (volume : Measure ℝ) volume :=
-    measurePreserving_add_left volume σ₀
-  have h2 : MeasurePreserving (MeasurableEquiv.prodComm :
-      EvolutionAmbientState d ≃ᵐ EvolutionAmbientState d)
-      (volume : Measure (EvolutionAmbientState d)) volume :=
-    Measure.measurePreserving_swap
-  exact (he.symm e).comp (h1.prod h2)
+theorem measurePreserving_absoluteTimeEquiv  :
+    MeasurePreserving (absoluteTimeEquiv d σ₀) volume  := ((KineticPoint.measurePreserving_equivProd d).symm ((KineticPoint.homeomorphProd d).toMeasurableEquiv)).comp ((measurePreserving_add_left volume σ₀).prod Measure.measurePreserving_swap)
 
-theorem greenKineticPoint_eq (d : ℕ) (σ₀ : ℝ) (S : ℝ≥0∞) :
+variable (S : ℝ≥0∞)
+
+theorem greenKineticPoint_eq   :
     greenKineticPoint d σ₀ (S := S) =
       absoluteTimeEquiv d σ₀ ∘ Prod.map (Subtype.val : ElapsedTime S → ℝ) id := rfl
 
 /-- Absolute-time writing is a measurable embedding. -/
-theorem measurableEmbedding_greenKineticPoint (d : ℕ) (σ₀ : ℝ) (S : ℝ≥0∞) :
+theorem measurableEmbedding_greenKineticPoint   :
     MeasurableEmbedding (greenKineticPoint d σ₀ (S := S)) := by
   rw [greenKineticPoint_eq]
   exact (absoluteTimeEquiv d σ₀).measurableEmbedding.comp
@@ -70,29 +65,30 @@ theorem measurableEmbedding_greenKineticPoint (d : ℕ) (σ₀ : ℝ) (S : ℝ�
       MeasurableEmbedding.id)
 
 /-- Elapsed-time Lebesgue measure times Lebesgue measure is pushed to the slab Lebesgue measure. -/
-theorem map_greenKineticPoint (d : ℕ) (σ₀ : ℝ) (S : ℝ≥0∞) :
+theorem map_greenKineticPoint   :
     ((elapsedVolume S).prod (volume : Measure (EvolutionAmbientState d))).map
         (greenKineticPoint d σ₀) = volume.restrict (elapsedSlab d σ₀ S) := by
-  have hj : Measurable (Prod.map (Subtype.val : ElapsedTime S → ℝ)
-      (id : EvolutionAmbientState d → EvolutionAmbientState d)) :=
+  let sharedTerm_81663c64f4 := ({τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < S})
+  let sharedTerm_8214bea7c2 := ((Prod.map (Subtype.val : ElapsedTime S → ℝ) (id : EvolutionAmbientState d → EvolutionAmbientState d)))
+  let sharedTerm_c11a846e63 := ((volume : Measure (EvolutionAmbientState d)))
+  have hj : Measurable sharedTerm_8214bea7c2 :=
     measurable_subtype_coe.prodMap measurable_id
-  have h1 : ((elapsedVolume S).prod (volume : Measure (EvolutionAmbientState d))).map
-      (Prod.map (Subtype.val : ElapsedTime S → ℝ)
-        (id : EvolutionAmbientState d → EvolutionAmbientState d)) =
+  have h1 : ((elapsedVolume S).prod sharedTerm_c11a846e63).map
+      sharedTerm_8214bea7c2 =
       (volume : Measure (ℝ × EvolutionAmbientState d)).restrict
-        ({τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < S} ×ˢ univ) := by
+        (sharedTerm_81663c64f4 ×ˢ univ) := by
     have h := Measure.map_prod_map (elapsedVolume S)
-      (volume : Measure (EvolutionAmbientState d)) measurable_subtype_coe
-      (measurable_id : Measurable (id : EvolutionAmbientState d → EvolutionAmbientState d))
+      sharedTerm_c11a846e63 measurable_subtype_coe
+      (measurable_id )
     rw [Measure.map_id] at h
     rw [← h]
     have h2 : (elapsedVolume S).map (Subtype.val : ElapsedTime S → ℝ) =
-        volume.restrict {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < S} :=
+        volume.restrict sharedTerm_81663c64f4 :=
       map_comap_subtype_coe (measurableSet_elapsedTime S) volume
     rw [h2]
     have h3 := Measure.prod_restrict (μ := (volume : Measure ℝ))
-      (ν := (volume : Measure (EvolutionAmbientState d)))
-      {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < S} univ
+      (ν := sharedTerm_c11a846e63)
+      sharedTerm_81663c64f4 univ
     rw [Measure.restrict_univ] at h3
     exact h3
   rw [greenKineticPoint_eq, ← Measure.map_map (absoluteTimeEquiv d σ₀).measurable hj, h1,
@@ -109,7 +105,7 @@ theorem map_greenKineticPoint (d : ℕ) (σ₀ : ℝ) (S : ℝ≥0∞) :
     ext <;> simp [absoluteTimeEquiv_apply]
 
 /-- The absolute-time slab is a measurable subset of kinetic space. -/
-theorem measurableSet_elapsedSlab (d : ℕ) (σ₀ : ℝ) (S : ℝ≥0∞) :
+theorem measurableSet_elapsedSlab   :
     MeasurableSet (elapsedSlab d σ₀ S) := by
   have ht : Measurable (@KineticPoint.time d) := continuous_time.measurable
   exact (measurableSet_lt measurable_const ht).inter
@@ -131,7 +127,7 @@ theorem greenKineticPoint_density {d : ℕ} (σ₀ : ℝ) (S : ℝ≥0∞)
           (Function.extend (greenKineticPoint d σ₀ (S := S)) G 0) ∧
       ∀ q : ℝ≥0∞, eLpNorm (Function.extend (greenKineticPoint d σ₀ (S := S)) G 0) q
           (volume.restrict Q) ≤
-        eLpNorm G q ((elapsedVolume S).prod (volume : Measure (EvolutionAmbientState d))) := by
+        eLpNorm G q ((elapsedVolume S).prod (volume )) := by
   set ν := (elapsedVolume S).prod (volume : Measure (EvolutionAmbientState d)) with hν
   set ι := greenKineticPoint d σ₀ (S := S) with hι
   have hemb : MeasurableEmbedding ι := measurableEmbedding_greenKineticPoint d σ₀ S
@@ -159,9 +155,7 @@ theorem greenKineticPoint_density {d : ℕ} (σ₀ : ℝ) (S : ℝ≥0∞)
       _ = ∫⁻ x, B.indicator Gx (ι x) ∂ν := by
           refine lintegral_congr fun x => ?_
           by_cases hx : ι x ∈ B
-          · simp only [indicator_of_mem (show x ∈ ι ⁻¹' B from hx),
-              indicator_of_mem hx, ← hGxι]
-            rfl
+          · solve_by_elim (maxDepth := 4) []
           · simp only [indicator_of_notMem (show x ∉ ι ⁻¹' B from hx),
               indicator_of_notMem hx]
       _ = ∫⁻ b, B.indicator Gx b ∂(ν.map ι) := (hemb.lintegral_map _).symm
@@ -170,12 +164,11 @@ theorem greenKineticPoint_density {d : ℕ} (σ₀ : ℝ) (S : ℝ≥0∞)
     rw [hmap, hν, hι, map_greenKineticPoint, ← withDensity_indicator hslab, ← hGxs]
   refine ⟨hGxm, ?_, fun q => ?_⟩
   · rw [hvol, restrict_withDensity hQ]
-  · have hnorm : eLpNorm Gx q (volume.restrict Q) =
-        eLpNorm Gx q ((volume.restrict Q).restrict (elapsedSlab d σ₀ S)) := by
-      conv_lhs => rw [hGxs]
-      exact eLpNorm_indicator_eq_eLpNorm_restrict hslab
+  ·
     calc eLpNorm Gx q (volume.restrict Q)
-        = eLpNorm Gx q ((volume.restrict Q).restrict (elapsedSlab d σ₀ S)) := hnorm
+        = eLpNorm Gx q ((volume.restrict Q).restrict (elapsedSlab d σ₀ S)) := (show _ by
+            conv_lhs => rw [hGxs]
+            exact eLpNorm_indicator_eq_eLpNorm_restrict hslab)
       _ ≤ eLpNorm Gx q (volume.restrict (elapsedSlab d σ₀ S)) :=
           eLpNorm_mono_measure _ (by
             rw [Measure.restrict_restrict hslab, inter_comm, ← Measure.restrict_restrict hQ]

@@ -13,17 +13,19 @@ namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set Filter
 open scoped Topology
 
+variable {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N)
+
 /-- Parabolic compression about the time midpoint and velocity centre. -/
-def innerMap {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (ρ : ℝ) :
+def innerMap  (ρ : ℝ) :
     TimeVelocity N → TimeVelocity N :=
   parabolicAffine (t₀ - h + (1 - ρ ^ 2) * h / 2) v₀ ρ
 
 /-- Strict compression sends the closed reference cylinder into the open source cylinder. -/
 theorem innerMap_mapsTo
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+     (hh : 0 < h)
     {ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ < 1) :
     Set.MapsTo (innerMap t₀ h v₀ ρ)
-      (closedParabolicCylinder h (0 : PDE.Vec N))
+      (closedParabolicCylinder h (0 ))
       (krylovCylinder t₀ h v₀) := by
   intro z hz
   rcases hz with ⟨hztime, hzvel⟩
@@ -44,9 +46,9 @@ theorem innerMap_mapsTo
 
 /-- At radius one, the forward boundary maps to the original bottom and lateral faces. -/
 theorem innerMap_one_boundary
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) :
+     :
     Set.MapsTo (innerMap t₀ h v₀ 1)
-      (forwardParabolicBoundary h (0 : PDE.Vec N))
+      (forwardParabolicBoundary h (0 ))
       (krylovParabolicBoundary t₀ h v₀) := by
   intro z hz
   have hm : innerMap t₀ h v₀ 1 z = (t₀ - h + z.1, v₀ + z.2) := by
@@ -59,8 +61,7 @@ theorem innerMap_one_boundary
     change z.1 = 0 at ht
     refine ⟨?_, ?_⟩
     · simpa only [ht, add_zero] using (Set.mem_singleton (t₀ - h))
-    · simpa only [PDE.euclideanClosedBall, PDE.euclideanSqDist, Set.mem_setOf_eq,
-        add_sub_cancel_left, sub_zero] using hv
+    · simp_all [PDE.euclideanClosedBall, PDE.euclideanSqDist]
   · right
     rcases hz with ⟨ht, hv⟩
     refine ⟨⟨by linarith [ht.1], by linarith [ht.2]⟩, ?_⟩
@@ -69,7 +70,7 @@ theorem innerMap_one_boundary
 
 /-- Compression can approximate the uncompressed values uniformly on the closed cylinder. -/
 theorem exists_innerMap_value_close
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+     (hh : 0 < h)
     (u : TimeVelocity N → ℝ)
     (hu : ContinuousOn u (krylovClosedCylinder t₀ h v₀))
     {ε : ℝ} (hε : 0 < ε) :
@@ -89,14 +90,14 @@ theorem exists_innerMap_value_close
     apply g.continuous.comp
     dsimp [F, innerMap, parabolicAffine]
     fun_prop
-  have he : ∀ᶠ ρ in 𝓝 (1 : ℝ), ∀ z : K0, dist (F 1 z) (F ρ z) < ε :=
+  have he  :=
     (Metric.tendstoUniformly_iff.mp (hc.tendstoUniformly F 1)) ε hε
-  have he' : ∀ᶠ ρ in 𝓝[<] (1 : ℝ), ∀ z : K0, dist (F 1 z) (F ρ z) < ε :=
+  have he' : ∀ᶠ ρ in 𝓝[<] (1 ), ∀ z : K0, dist (F 1 z) (F ρ z) < ε :=
     he.filter_mono nhdsWithin_le_nhds
   have hp : ∀ᶠ ρ : ℝ in 𝓝[<] 1, 0 < ρ :=
     (eventually_gt_nhds (by norm_num : (0 : ℝ) < 1)).filter_mono nhdsWithin_le_nhds
   obtain ⟨ρ, hclose, hpos, hlt⟩ :=
-    (he'.and (hp.and (self_mem_nhdsWithin : ∀ᶠ ρ : ℝ in 𝓝[<] 1, ρ ∈ Iio 1))).exists
+    (he'.and (hp.and (self_mem_nhdsWithin ))).exists
   refine ⟨ρ, hpos, hlt, fun z hz => ?_⟩
   have hzρ := innerMap_mapsTo t₀ h v₀ hh hpos hlt hz
   have hzρK : innerMap t₀ h v₀ ρ z ∈ K :=

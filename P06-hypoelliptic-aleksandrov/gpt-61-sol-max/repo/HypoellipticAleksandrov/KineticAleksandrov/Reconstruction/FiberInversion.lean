@@ -31,22 +31,23 @@ def fiberInversionDensity (g : Y → ℝ≥0∞) (κ : Kernel Y (PDE.Vec d)) (p 
   ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹ *
     (vecInvIntegral (fun ξ => fiberDensity g κ ξ p.1) p.2).re)
 
+variable (κ : Kernel Y (PDE.Vec d))
+
 /-- The Fourier transform of `g(y) • κ y` is the fibre representative `k̃^ξ(y)`. -/
-lemma vecFourier_smul_kernel (κ : Kernel Y (PDE.Vec d)) (g : Y → ℝ≥0∞) (y : Y)
+lemma vecFourier_smul_kernel  (g : Y → ℝ≥0∞) (y : Y)
     (ξ : PDE.Vec d) : vecFourier ((g y) • κ y) ξ = fiberDensity g κ ξ y := by
-  unfold vecFourier fiberDensity fiberFourier
-  rw [integral_smul_measure, Complex.real_smul]
+  simp_all [vecFourier, fiberDensity, fiberFourier]
 
 /-- Fibre inversion at a single `y`: the measure `g(y) π_y` equals the Lebesgue measure with
 density `G(y, ·)`, and `G(y, ·) ≤ H(y)`. -/
-lemma fiber_inversion_at (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (g : Y → ℝ≥0∞) (y : Y)
+lemma fiber_inversion_at  [IsMarkovKernel κ] (g : Y → ℝ≥0∞) (y : Y)
     (hy : g y < ∞) (hint : Integrable (fun ξ => fiberDensity g κ ξ y)) :
     (volume : Measure (PDE.Vec d)).withDensity (fun z => fiberInversionDensity g κ (y, z)) =
         (g y) • κ y ∧
       ∀ z, fiberInversionDensity g κ (y, z) ≤ fiberHeight g κ y := by
   have : IsFiniteMeasure ((g y) • κ y) :=
     ⟨by simp [Measure.smul_apply, hy]⟩
-  have hfun : vecFourier ((g y) • κ y) = fun ξ => fiberDensity g κ ξ y :=
+  have hfun  :=
     funext (vecFourier_smul_kernel κ g y)
   have hφ : Integrable (vecFourier ((g y) • κ y)) := by rw [hfun]; exact hint
   have hG : ∀ z, fiberInversionDensity g κ (y, z) =
@@ -58,10 +59,10 @@ lemma fiber_inversion_at (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (g : Y 
         = (volume : Measure (PDE.Vec d)).withDensity
             (fun z => ENNReal.ofReal (vecInvDensity ((g y) • κ y) z)) := by
           simp only [hG]
-      _ = (g y) • κ y := (eq_withDensity_vecInvDensity ((g y) • κ y) hφ).symm
+      _ = (g y) • κ y := (eq_withDensity_vecInvDensity _ hφ).symm
   · rw [hG]
-    have hle := vecInvDensity_le ((g y) • κ y) hφ z
-    refine (ENNReal.ofReal_le_ofReal hle).trans (le_of_eq ?_)
+
+    refine (ENNReal.ofReal_le_ofReal (vecInvDensity_le _ hφ z)).trans (le_of_eq ?_)
     rw [fiberHeight, ENNReal.ofReal_mul (by positivity), hfun]
     congr 1
     rw [ofReal_integral_norm_eq_lintegral_enorm hint]
@@ -73,16 +74,16 @@ lemma measurable_fiberInversionDensity {g : Y → ℝ≥0∞} (hg : Measurable g
   unfold fiberInversionDensity
   refine ENNReal.measurable_ofReal.comp (measurable_const.mul (Complex.measurable_re.comp ?_))
   have hc : Continuous fun q : PDE.Vec d × PDE.Vec d =>
-      cexp (I * ((PDE.vecDot q.1 q.2 : ℝ) : ℂ)) := by
+      cexp (I * ((PDE.vecDot q.1 q.2 ) : ℂ)) := by
     unfold PDE.vecDot
     fun_prop
   have hf : Measurable fun q : (Y × PDE.Vec d) × PDE.Vec d =>
-      cexp (I * ((PDE.vecDot q.2 q.1.2 : ℝ) : ℂ)) * fiberDensity g κ q.2 q.1.1 :=
+      cexp (I * ((PDE.vecDot q.2 q.1.2 ) : ℂ)) * fiberDensity g κ q.2 q.1.1 :=
     (hc.measurable.comp (measurable_snd.prodMk (measurable_snd.comp measurable_fst))).mul
       ((measurable_fiberDensity hg κ).comp (measurable_snd.prodMk
         (measurable_fst.comp measurable_fst)))
   exact (StronglyMeasurable.integral_prod_right (f := fun (p : Y × PDE.Vec d) (ξ : PDE.Vec d) =>
-    cexp (I * ((PDE.vecDot ξ p.2 : ℝ) : ℂ)) * fiberDensity g κ ξ p.1)
+    cexp (I * ((PDE.vecDot ξ p.2 ) : ℂ)) * fiberDensity g κ ξ p.1)
     hf.stronglyMeasurable).measurable
 
 
@@ -109,8 +110,8 @@ theorem fiber_inversion {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y × PDE.
     [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hg : Measurable g) (hΓ : Γ.fst = m.withDensity g)
     (k : PDE.Vec d → Y → ℂ)
     (hk : ∀ ξ, Integrable (k ξ) m ∧ ∀ E, MeasurableSet E →
-      ∫ y in E, k ξ y ∂m = ∫ p in E ×ˢ (univ : Set (PDE.Vec d)),
-        cexp (-((PDE.vecDot ξ p.2 : ℝ) * I)) ∂Γ)
+      ∫ y in E, k ξ y ∂m = ∫ p in E ×ˢ (univ : PDE.VelocityRegion d),
+        cexp (-((PDE.vecDot ξ p.2 ) * I)) ∂Γ)
     {γ q : ℝ} (hγ : 1 < γ) (hq : 1 < q)
     (hH : ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
       ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) m < ∞) :
@@ -122,7 +123,7 @@ theorem fiber_inversion {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y × PDE.
           fiberHeight g Γ.condKernel y ^ (q - 1) * g y := by
   obtain ⟨hdis, -⟩ := fiber_disintegration Γ hg hΓ k hk
   have hfin := (fiber_height_minkowski Γ hg hΓ k hk hγ).2 hH
-  have hgtop : ∀ᵐ y ∂m, g y < ∞ := ae_lt_top hg (lintegral_ne_top_of_fst_eq Γ hΓ)
+  have hgtop  := ae_lt_top hg (lintegral_ne_top_of_fst_eq Γ hΓ)
   set κ := Γ.condKernel with hκ
   have hGm := measurable_fiberInversionDensity hg κ
   have hfib : ∀ᵐ y ∂m, (volume : Measure (PDE.Vec d)).withDensity
@@ -146,7 +147,7 @@ theorem fiber_inversion {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y × PDE.
       refine lintegral_congr fun y => ?_
       rw [← lintegral_indicator (hS' y)]
       refine lintegral_congr fun z => ?_
-      by_cases h : (y, z) ∈ S <;> simp [Set.indicator, h]
+      by_cases h : (y, z) ∈ S <;> rfl
     rw [hL, hR]
     refine lintegral_congr_ae ?_
     filter_upwards [hfib] with y ⟨h1, _⟩

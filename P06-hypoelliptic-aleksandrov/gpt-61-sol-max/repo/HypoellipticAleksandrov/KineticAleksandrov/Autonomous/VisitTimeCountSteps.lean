@@ -1,10 +1,13 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitTimeWindowIntegrals
+import Mathlib.Tactic.Linarith
+
+
 
 /-! # Genuine per-entrance short-time counting inequalities before outer domination -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -14,9 +17,7 @@ theorem visitTimeQuadratic_le (c : Clock) (b : ℝ) (p : Point) :
       9 * c.r ^ 2 / 16 := by
   have he := (visitTimeCutoff_properties b c.r c.positive).2 p.time
   have h := mul_le_mul_of_nonneg_left (visitQuadratic_le c (p.velocity 0)) he.1
-  have hh := mul_le_mul_of_nonneg_right he.2 (by positivity : 0 ≤ 9 * c.r ^ 2 / 16)
-  simp only [one_mul] at hh
-  exact h.trans hh
+  nlinarith
 
 /-- Removing the zero internal face bounds the localized exit integral by retained exit mass. -/
 theorem visitTimeQuadratic_retainedExit_integral_le
@@ -67,9 +68,9 @@ theorem visitTimeQuadratic_entrance_mass_bound : ∃ D : ℝ, 0 ≤ D ∧
   refine ⟨D, hD, ?_⟩
   intro hH hLE lam Lam hlam hLam A c J s T b P hP n
   dsimp only
-  let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
+
   have hx := visitTimeQuadratic_retainedExit_integral_le hH hLE hlam hLam A c J s T b P n
-  have hg := hd hH hLE lam Lam hlam hLam A c J s T b mu inferInstance
+  have hg := hd hH hLE lam Lam hlam hLam A c J s T b (visitEntrancePiece hH hLE hlam hLam A c J s T P n) inferInstance
   have hh := visitTimeQuadratic_entrance_green_identity hH hLE hlam hLam A c J s T b P hP n
   dsimp only at hx hg hh
   have hi := (visitTimeQuadratic_entrance_integral_lower

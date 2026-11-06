@@ -26,18 +26,11 @@ theorem scalarNativeCoordinates_symm_apply (p : ℝ × ℝ) :
 
 /-- Coordinate evaluation preserves precisely the native product volume normalization. -/
 theorem scalarNativeCoordinates_measurePreserving :
-    MeasurePreserving scalarNativeCoordinates volume volume := by
-  have hh := (volume_preserving_funUnique (Fin 1) ℝ).prod
-    (volume_preserving_funUnique (Fin 1) ℝ)
-  rw [Measure.volume_eq_prod, Measure.volume_eq_prod]
-  convert hh using 1
-  · funext q
-    rfl
-  · rfl
+    MeasurePreserving scalarNativeCoordinates volume  := (MeasurePreserving.prod (volume_preserving_funUnique (Fin 1) ℝ) (volume_preserving_funUnique (Fin 1) ℝ))
 
 /-- The inverse coordinate map also preserves the exact product volume normalization. -/
 theorem scalarNativeCoordinates_symm_measurePreserving :
-    MeasurePreserving scalarNativeCoordinates.symm volume volume :=
+    MeasurePreserving scalarNativeCoordinates.symm volume  :=
   MeasurePreserving.symm scalarNativeCoordinates scalarNativeCoordinates_measurePreserving
 
 /-- The position-line tangent is the native position basis vector. -/

@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSliceWeak
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelLayerLimit
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # The weak identity of one source slice, with its terminal boundary term
@@ -29,17 +31,19 @@ variable {d : ℕ}
 def packQ (d : ℕ) (q : ℝ × (PDE.Vec d × PDE.Vec d)) : EvolutionVec d :=
   packPoint q.1 q.2.1 q.2.2
 
-@[simp] theorem timeCoord_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+variable (q : ℝ × (PDE.Vec d × PDE.Vec d))
+
+@[simp] theorem timeCoord_packQ  :
     Evolution.timeCoord d (packQ d q) = q.1 := timeCoord_packPoint _ _ _
 
-@[simp] theorem diffusedCoord_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+@[simp] theorem diffusedCoord_packQ  :
     diffusedCoord d (packQ d q) = q.2.1 := diffusedCoord_packPoint _ _ _
 
-@[simp] theorem evolutionToTimeVelocity_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+@[simp] theorem evolutionToTimeVelocity_packQ  :
     evolutionToTimeVelocity d (packQ d q) = (q.1, q.2.1) :=
   Prod.ext (timeCoord_packQ q) (diffusedCoord_packQ q)
 
-theorem packQ_eq_symm (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+theorem packQ_eq_symm  :
     packQ d q = (evolutionProdMeasurableEquiv d).symm q := by
   rw [MeasurableEquiv.eq_symm_apply, evolutionProdMeasurableEquiv_apply]
   simp [packQ]
@@ -71,13 +75,13 @@ Borel extension `u` of the slice solution against `Lop^* ψ` over the slab `σ <
 terminal boundary term `∫ m₀`, where `m₀` is the left limit of `u ψ` at `σ = r`. -/
 theorem slice_weak_identity {B' : CoefficientField d}
     (hB : IsSmoothFullKineticCoefficient (zIndependentCoefficient B'))
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
-    {D : Set (TimeVelocity d)} (hD : IsOpen D) {V u : TimeVelocity d → ℝ}
-    (hV : ContDiffOn ℝ (⊤ : ℕ∞) V D)
+    {b : PDE.VectorField d} (hb : IsSmoothDrift b)
+    {D : HypoellipticAleksandrov.Parabolic.Region d} (hD : IsOpen D) {V u : HypoellipticAleksandrov.Parabolic.ScalarField d}
+    (hV : ContDiffOn ℝ PDE.smoothOrder V D)
     (hVeq : ∀ p ∈ D, scalarParabolicOperator B' (fun _ _ => 0) V p = 0)
     (huV : ∀ p ∈ D, u p = V p) (hum : Measurable u) (C : ℝ) (hC0 : 0 ≤ C)
     (hub : ∀ p, |u p| ≤ C)
-    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ)
+    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ PDE.smoothOrder ψ) (hc : HasCompactSupport ψ)
     (r : ℝ) (hψD : ∀ x ∈ tsupport ψ, Evolution.timeCoord d x < r →
       evolutionToTimeVelocity d x ∈ D)
     (m₀ : PDE.Vec d × PDE.Vec d → ℝ)
@@ -87,15 +91,14 @@ theorem slice_weak_identity {B' : CoefficientField d}
         (fun q => u (q.1, q.2.1) *
           transportedAdjoint (zIndependentCoefficient B') b ψ (packQ d q)) q) +
       ∫ w : PDE.Vec d × PDE.Vec d, m₀ w = 0 := by
-  have hLc : Continuous (transportedAdjoint (zIndependentCoefficient B') b ψ) :=
-    (contDiff_transportedAdjoint hB hb hψ).continuous
-  have hLcs := hasCompactSupport_transportedAdjoint (B := zIndependentCoefficient B') (b := b) hc
+
+
   refine layer_slice_identity (volume : Measure (PDE.Vec d × PDE.Vec d)) r
     (fun q => u (q.1, q.2.1)) (fun q => ψ (packQ d q))
     (fun q => transportedAdjoint (zIndependentCoefficient B') b ψ (packQ d q))
     (hum.comp (measurable_fst.prodMk (measurable_snd.fst))) C hC0 (fun q => hub _)
     (hψ.continuous.comp continuous_packQ) (hasCompactSupport_comp_packQ hc)
-    (hLc.comp continuous_packQ) (hasCompactSupport_comp_packQ hLcs) ?_ m₀ hlim
+    (((contDiff_transportedAdjoint hB hb hψ).continuous).comp continuous_packQ) (hasCompactSupport_comp_packQ (hasCompactSupport_transportedAdjoint (B := zIndependentCoefficient B') (b := b) hc)) ?_ m₀ hlim
   intro h hh
   have h1 := slice_cutoff_identity hB hb hD hV hVeq huV hum C hub hψ hc r hψD h hh
   rw [integral_evolution_eq_prod, integral_evolution_eq_prod] at h1

@@ -9,7 +9,7 @@ On a positive finite-volume domain, normalized and unnormalized `L^p`
 convergence are equivalent. The proofs retain the exact volume factors.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal Topology
 
@@ -32,7 +32,7 @@ theorem
     Tendsto
       (fun i => eLpMeanNormOn U p (F i - f))
       l (𝓝 0) := by
-  let C : ℝ≥0∞ :=
+  let C  :=
     (volume U)⁻¹ ^ (1 / p).toReal
   have hCTop : C ≠ ∞ := by
     dsimp only [C]
@@ -42,7 +42,7 @@ theorem
         (ENNReal.inv_ne_top.mpr hUPos.ne')).ne
   have hScaled :=
     ENNReal.Tendsto.const_mul
-      (a := C) h (Or.inr hCTop)
+       h (Or.inr hCTop)
   simpa only [C, mul_zero,
     eLpMeanNormOn_eq_volume_inv_rpow_mul_eLpNormOn
       hUTop] using hScaled

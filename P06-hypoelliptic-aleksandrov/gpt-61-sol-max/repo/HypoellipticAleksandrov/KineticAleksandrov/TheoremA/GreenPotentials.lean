@@ -5,11 +5,13 @@ public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotential
 public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotentialsLocality
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelEquation
 import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonGeometry
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The whole-space Green source potentials for Theorem A -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.TheoremA
 open Set MeasureTheory SectionTwo Evolution Parabolic
 open scoped Topology
@@ -21,13 +23,13 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
     (B : CoefficientField d) (hB : IsSmoothCoefficient B)
     (hBs : IsSymmetricCoefficient B) (hlo : HasLowerEllipticity lam B)
     (hhi : HasUpperEllipticity Lam B)
-    (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+    (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 )))
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+    (hreal : RealizesTerminalEvolution (wholeSpace d) _
       MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K)
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (g : KineticPoint d → ℝ)
-    (hgs : ContDiff ℝ (⊤ : ℕ∞) (fun z => g ((KineticPoint.equivProd d).symm z)))
+    (g : HypoellipticAleksandrov.KineticScalarField d)
+    (hgs : ContDiff ℝ PDE.smoothOrder (fun z => g ((KineticPoint.equivProd d).symm z)))
     (hgc : HasCompactSupport g) (hgQ : tsupport g ⊆ forwardCylinder Z₀ R hR)
     (hg0 : ∀ P, 0 ≤ g P) :
     IsKineticC112On (fun P => ∫ z, g z ∂cylinderGreenMeasure K Z₀ R hR P)
@@ -37,6 +39,7 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
       (∀ P ∈ forwardCylinder Z₀ R hR,
         forwardKineticOperator (ofTimeVelocityCoefficient B)
           (fun P => ∫ z, g z ∂cylinderGreenMeasure K Z₀ R hR P) P = -g P) := by
+  let sharedTerm_f1d57053c6 := ((by norm_num : (0 : ℝ) < 1))
   let T := Z₀.time + R ^ 2
   let g₂ := g ∘ sectionTwoPoint
   let W := duhamelPotential K T g₂
@@ -49,8 +52,8 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
       rfl
     rw [← heq]
     exact hgs.continuous.comp (KineticPoint.homeomorphProd d).continuous
-  have hg₂ : Continuous g₂ := hg.comp (continuous_sectionTwoPoint d)
-  have hgc₂ : HasCompactSupport g₂ := hasCompactSupport_sectionTwoPoint hgc
+  have hg₂  := hg.comp (continuous_sectionTwoPoint d)
+  have hgc₂  := hasCompactSupport_sectionTwoPoint hgc
   have hgs₂ := contDiff_sectionTwoPoint_source hgs
   have hg₂0 : ∀ P, 0 ≤ g₂ P := fun P => hg0 _
   have hgU : tsupport g₂ ⊆ evolutionPastOpenCylinder (wholeSpace d) (fun _ => 0) T := by
@@ -64,19 +67,19 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
   have hW := duhamelPotential_contDiffOn hH (wholeSpace_admissible d)
     MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
     S K hreal hfull hsym (identityDrift_smooth d) g₂ hg₂0 hg₂ hgc₂ hgs₂ T hgU
-    hlam (by norm_num : (0 : ℝ) < 1) hell (identityDrift_bounds d).2
+    hlam sharedTerm_f1d57053c6 hell (identityDrift_bounds d).2
   have hEQ := duhamelPotential_source_equation hH (wholeSpace_admissible d)
     MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
     S K hreal hfull hsym (identityDrift_smooth d) g₂ hg₂0 hg₂ hgc₂ hgs₂ T hgU
-    hlam (by norm_num : (0 : ℝ) < 1) hell (identityDrift_bounds d).2
-  have heq : ∀ P, P.time < T → F P = V P :=
-    fun P hP => integral_cylinderGreenMeasure K Z₀ R hR g hg0 hg hgc hgQ P hP
+    hlam sharedTerm_f1d57053c6 hell (identityDrift_bounds d).2
+  have heq  :=
+    (integral_cylinderGreenMeasure K Z₀ R hR g hg0 hg hgc hgQ)
   have hQ := isOpen_forwardCylinder Z₀ R hR
   have hQt : ∀ P ∈ forwardCylinder Z₀ R hR, P.time < T :=
     fun P hP => ((mem_forwardCylinder_iff _ _ _ hR).1 hP).2.1
-  let swap : EvolutionVec d → EvolutionVec d := fun x =>
+  let swap  := fun x =>
     packPoint (timeCoord d x) (transportedCoord d x) (diffusedCoord d x)
-  have hswap : ContDiff ℝ (⊤ : ℕ∞) swap := by
+  have hswap : ContDiff ℝ PDE.smoothOrder swap := by
     exact (evolutionProdCLE d).symm.contDiff.comp
       ((Evolution.timeCoord d).contDiff.prodMk
         ((transportedCoord d).contDiff.prodMk (diffusedCoord d).contDiff))
@@ -85,7 +88,7 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
     intro x hx
     refine ⟨?_, by simp [movingDomain_wholeSpace]⟩
     simpa [swap] using hQt _ hx
-  have hV : ContDiffOn ℝ (⊤ : ℕ∞) (V ∘ evolutionHomeomorph d)
+  have hV : ContDiffOn ℝ PDE.smoothOrder (V ∘ evolutionHomeomorph d)
       (evolutionHomeomorph d ⁻¹' forwardCylinder Z₀ R hR) := by
     have hv := hW.comp hswap.contDiffOn hmap
     convert hv using 1

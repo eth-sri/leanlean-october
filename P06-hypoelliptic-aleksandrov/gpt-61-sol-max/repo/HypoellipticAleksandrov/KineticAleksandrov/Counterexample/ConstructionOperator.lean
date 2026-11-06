@@ -2,11 +2,13 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionTimeConvergence
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothFunctions
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The literal backward operator of the spatially smoothed zero extension -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open HypoellipticAleksandrov.Parabolic
 
@@ -27,16 +29,17 @@ theorem construction_smoothed_operator_eq {d : ℕ} (hd : 1 ≤ d)
       matrixContraction (A (P.position, P.velocity)) (fun i k => spatialMollify phi
         (fun y => constructionExtendedNativeHessian h r mu R m P.time y i k)
           (P.position, P.velocity)) := by
+  let sharedTerm_d0161e4d33 := ((fun y hy => (hmargin y hy).trans_lt hm))
   let f := spatialMollify phi (fun y =>
     zeroExtendedProfile (profileFunction h) alpha r mu R ⟨P.time, y.1, y.2⟩)
-  have hc : ContDiff ℝ (⊤ : ℕ∞) f := spatialMollify_contDiff phi _
+  have hc : ContDiff ℝ PDE.smoothOrder f := spatialMollify_contDiff phi _
     (continuous_zeroExtendedProfile_spatial_of_profile h r mu R hr hmu hR hscale
-      (fun y hy => (hmargin y hy).trans_lt hm) P.time).locallyIntegrable
+      sharedTerm_d0161e4d33 P.time).locallyIntegrable
   have hdt : kineticTimeDerivative (smoothedZeroExtendedProfile h r mu R phi) P =
       spatialMollify phi (constructionExtendedTimeJet h r mu R P.time)
         (P.position, P.velocity) :=
     construction_mollified_time_jet ha h r mu R hr hmu hR
-      (fun y hy => (hmargin y hy).trans_lt hm) phi P.time (P.position, P.velocity)
+      sharedTerm_d0161e4d33 phi P.time (P.position, P.velocity)
   have hx : kineticPositionGradient (smoothedZeroExtendedProfile h r mu R phi) P =
       fun i => spatialMollify phi (fun y =>
         constructionExtendedNativeGradient h r mu R m P.time y (Fin.castAdd d i))

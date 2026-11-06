@@ -9,8 +9,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+variable (H : FiniteIntervalUnion)
+
 /-- Component face points remain boundary points of the entire open union. -/
-theorem FiniteIntervalUnion.frontier_component_subset (H : FiniteIntervalUnion)
+theorem FiniteIntervalUnion.frontier_component_subset
     (i : Fin H.count) : frontier (H.component i).carrier ⊆ frontier H.carrier := by
   intro v hv
   rw [frontier, mem_sdiff, H.isOpen_carrier.interior_eq]
@@ -27,27 +29,28 @@ theorem FiniteIntervalUnion.frontier_component_subset (H : FiniteIntervalUnion)
     exact Set.disjoint_left.mp hd (frontier_subset_closure hv) hj
 
 /-- The prescribed physical union exit has the true velocity frontier. -/
-def finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : ℝ) : Set Point :=
+def finiteUnionExitSet  (sMinus T : ℝ) : Set Point :=
   {p | p.time = T ∧ p.velocity 0 ∈ closure H.carrier} ∪
     {p | sMinus < p.time ∧ p.time < T ∧ p.velocity 0 ∈ frontier H.carrier}
 
 /-- Each interval exit lies on the union's prescribed exit. -/
-theorem reconstructionExit_subset_finiteUnionExitSet (H : FiniteIntervalUnion)
+theorem reconstructionExit_subset_finiteUnionExitSet
     (i : Fin H.count) (sMinus T : ℝ) :
     reconstructionExit (H.component i) sMinus T ⊆ finiteUnionExitSet H sMinus T := by
+  let sharedTerm_208d85f826 := ((Ioo (H.component i).lo (H.component i).hi))
   intro p hp
   rcases hp with hp | hp
   · refine Or.inl ⟨hp.1, closure_mono (H.component_subset i) ?_⟩
-    change p.velocity 0 ∈ closure (Ioo (H.component i).lo (H.component i).hi)
+    change p.velocity 0 ∈ closure sharedTerm_208d85f826
     rw [closure_Ioo (H.component i).ordered.ne]
     exact hp.2
   · refine Or.inr ⟨hp.1, hp.2.1, H.frontier_component_subset i ?_⟩
-    change p.velocity 0 ∈ frontier (Ioo (H.component i).lo (H.component i).hi)
+    change p.velocity 0 ∈ frontier sharedTerm_208d85f826
     rw [frontier_Ioo (H.component i).ordered]
-    simpa only [mem_insert_iff, mem_singleton_iff] using hp.2.2
+    exact hp.2.2
 
 /-- The genuine union exit is Borel. -/
-theorem measurableSet_finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : ℝ) :
+theorem measurableSet_finiteUnionExitSet  (sMinus T : ℝ) :
     MeasurableSet (finiteUnionExitSet H sMinus T) := by
   unfold finiteUnionExitSet
   apply MeasurableSet.union
@@ -70,7 +73,7 @@ theorem finiteUnionExit_compl_exit
     (e : FiniteUnionPole H (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
     finiteUnionExit hH hLE hlam hLam A H T e (finiteUnionExitSet H sMinus T)ᶜ = 0 := by
   have hp := (strip_exit_probability hH hLE hlam hLam A
-    (H.component (finiteUnionPoleIndex H T e)) sMinus T
+    _ sMinus T
     (finiteUnionComponentPole H T e) he).2.1
   apply le_antisymm _ (zero_le)
   apply (measure_mono (compl_subset_compl.mpr

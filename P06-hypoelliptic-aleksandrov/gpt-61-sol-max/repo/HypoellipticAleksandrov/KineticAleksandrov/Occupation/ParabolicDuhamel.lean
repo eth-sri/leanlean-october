@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSmooth
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Lemma 2.3: parabolic Duhamel potentials
@@ -14,18 +16,18 @@ to the terminal face `σ = T` and the lateral frontier.  Hörmander's theorem en
 explicit hypothesis `hH`.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
-open MeasureTheory Set Filter
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
-open HypoellipticAleksandrov.KineticAleksandrov.Evolution
-open scoped Topology
+open Set
+open HypoellipticAleksandrov.Parabolic
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+
+
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
 
 /-- **Parabolic Duhamel lemma** (Lemma 2.3), without the transport data. -/
 theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
@@ -34,10 +36,10 @@ theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
     (K : MovingFiberKernel Ω γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) (zIndependentCoefficient B) K)
-    (T : ℝ) (g : TimeVelocity d → ℝ) (hg0 : ∀ p, 0 ≤ g p) (hgs : ContDiff ℝ (⊤ : ℕ∞) g)
+    (T : ℝ) (g : HypoellipticAleksandrov.Parabolic.ScalarField d) (hg0 : ∀ p, 0 ≤ g p) (hgs : ContDiff ℝ PDE.smoothOrder g)
     (hgc : HasCompactSupport g)
     (hgU : tsupport g ⊆ {p : TimeVelocity d | p.1 < T ∧ p.2 ∈ movingDomain Ω γ p.1}) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
+    ContDiffOn ℝ PDE.smoothOrder
         (parabolicDuhamelPotential K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) T g)
         {p : TimeVelocity d | p.1 < T ∧ p.2 ∈ movingDomain Ω γ p.1} ∧
       (∀ p ∈ {p : TimeVelocity d | p.1 < T ∧ p.2 ∈ movingDomain Ω γ p.1},
@@ -57,17 +59,17 @@ theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
         parabolicDuhamelPotential K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) T g p =
           0) := by
   have hΩm := measurableSet_of_isAdmissibleEvolutionDomain hΩ
-  have hγc : Continuous γ := hγ.1
+  have hγc  := hγ.1
   obtain ⟨hsmooth, heq⟩ := duhamel_smooth_equation K hH hΩ hγc hB hP g hg0 hgs hgc T hgU
-  have hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v)) := fun r =>
+  have hg : ∀ r, Measurable (fun v  => g (r, v)) := fun r =>
     hgs.continuous.measurable.comp (measurable_const.prodMk measurable_id)
   obtain ⟨C, hC⟩ := hgs.continuous.bounded_above_of_compact_support hgc
   have hbdd : BddAbove (range g) := ⟨C, by
     rintro _ ⟨p, rfl⟩
-    exact (le_abs_self _).trans (by simpa using hC p)⟩
-  have hgb : ∀ p, g p ≤ ⨆ q, g q := fun p => le_ciSup hbdd p
+    exact (le_abs_self _).trans (hC p)⟩
+
   refine ⟨hsmooth, fun p hp => ⟨parabolicDuhamelPotential_nonneg K hΩm T g hg hg0 p,
-    parabolicDuhamelPotential_le K hΩm T g hg hg0 _ hgb p hp.1.le⟩, heq,
+    parabolicDuhamelPotential_le K hΩm T g hg hg0 _ (fun p => le_ciSup hbdd p) p hp.1.le⟩, heq,
     continuousOn_duhamelPotential K hΩ hγc hP g hg0 hgs hgc T hgU,
     fun p hp => parabolicDuhamelPotential_eq_zero_of_terminal_le K hΩm T g p hp.ge,
     fun p hp => parabolicDuhamelPotential_eq_zero_of_not_mem K hΩm T g p ?_⟩

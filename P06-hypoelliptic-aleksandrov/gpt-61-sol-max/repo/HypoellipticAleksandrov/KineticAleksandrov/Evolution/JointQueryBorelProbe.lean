@@ -18,13 +18,13 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set
+open HypoellipticAleksandrov Set
 
 
 /-- A measurable countable family of functions can be evaluated at a measurable mesh index
 and at the actual query point. -/
-theorem measurable_mesh_query_lookup {n : ℕ} {Ω : Set (PDE.Vec n)}
-    {γ : ℝ → PDE.Vec n} (j : ℕ) (v : ℤ → KineticPoint n → ℝ)
+theorem measurable_mesh_query_lookup {n : ℕ} {Ω : PDE.VelocityRegion n}
+    {γ : ℝ → PDE.Vec n} (j : ℕ) (v : ℤ → HypoellipticAleksandrov.KineticScalarField n)
     (hv : ∀ k, Measurable (v k)) :
     Measurable (fun q : EvolutionQuery Ω γ =>
       v (terminalTimeMeshIndex j q.1.2.1) (evolutionQueryPoint q)) := by
@@ -48,8 +48,8 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+variable (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -70,12 +70,12 @@ local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hm
 
 /-- A fixed terminal probe solution, extended by zero outside its past closed cylinder.
 For a datum not supported in the terminal fiber the auxiliary function is zero. -/
-def extendedTerminalProbe (n : ℕ) (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+def extendedTerminalProbe (n : ℕ) (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+    (B : FullKineticCoefficient n) (b : PDE.VectorField n)
     (hEx : ClassicalTerminalExistence Ω γ B b)
-    (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)) : KineticPoint n → ℝ := by
+    (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)) : HypoellipticAleksandrov.KineticScalarField n := by
   classical
-  exact if hF : IsSmoothCompactTerminalDatum Ω γ τ F then
+  exact if hF : _ then
     (evolutionPastClosedCylinder Ω γ τ).indicator (hEx τ F hF).choose
   else 0
 
@@ -86,11 +86,11 @@ theorem measurable_extendedTerminalProbe
   classical
   unfold extendedTerminalProbe
   split_ifs with hF
-  · have hu := (hEx τ F hF).choose_spec.1
+  ·
     have hs : IsClosed (evolutionPastClosedCylinder Ω γ τ) :=
       (isClosed_le continuous_time continuous_const).inter
         (isClosed_setOf_mem_closure_movingDomain hγ.1)
-    exact hu.2.1.measurable_piecewise continuousOn_const hs.measurableSet
+    exact ((hEx τ F hF).choose_spec.1).2.1.measurable_piecewise continuousOn_const hs.measurableSet
   · exact measurable_const
 
 /-- On a valid earlier source the extension is exactly the terminal integral operator. -/
@@ -111,8 +111,7 @@ theorem measurable_upper_terminal_probe
     (j : ℕ) (F : BoundedBorel (EvolutionAmbientState n)) :
     Measurable (fun q : EvolutionQuery Ω γ =>
       extendedTerminalProbe n Ω γ B b hEx
-        (terminalTimeMesh j q.1.2.1) F (evolutionQueryPoint q)) := by
-  exact measurable_mesh_query_lookup j
+        (terminalTimeMesh j q.1.2.1) F (evolutionQueryPoint q)) := measurable_mesh_query_lookup j
     (fun k => extendedTerminalProbe n Ω γ B b hEx ((k : ℝ) / ((j : ℝ) + 1)) F)
     (fun k => measurable_extendedTerminalProbe n hn lam Lam m L_b
       hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell

@@ -4,8 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.SourceNotation
 
 /-! # Euclidean frequency normalization for kinetic blocks -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 /-- A nonzero Euclidean frequency has strictly positive Euclidean norm. -/

@@ -17,15 +17,15 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
 
 /-- Starting-point/source-time pairs on which the existing master query is valid. -/
-def boundedSourcePairSet (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) :
+def boundedSourcePairSet (Ω : PDE.VelocityRegion d) (γ : ℝ → PDE.Vec d) :
     Set (KineticPoint d × ℝ) :=
   {q | q.1.time ≤ q.2 ∧ q.1.position ∈ movingDomain Ω γ q.1.time}
 
 /-- The valid-pair carrier excludes invalid kernel queries. -/
-abbrev BoundedSourcePair (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) :=
+abbrev BoundedSourcePair (Ω : PDE.VelocityRegion d) (γ : ℝ → PDE.Vec d) :=
   {q : KineticPoint d × ℝ // q ∈ boundedSourcePairSet Ω γ}
 
 /-- The valid pair set is Borel. -/
@@ -96,7 +96,7 @@ theorem integrable_bounded_real {E : Type*} [MeasurableSpace E]
 theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
     (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (ν : Measure (KineticPoint d)) [IsFiniteMeasure ν] (a T : ℝ)
-    (g : KineticPoint d → ℝ) (hg : Measurable g)
+    (g : HypoellipticAleksandrov.KineticScalarField d) (hg : Measurable g)
     (M : ℝ) (hM : 0 ≤ M) (hb : ∀ p, |g p| ≤ M) :
     (∫ q, g ⟨q.1, q.2.1, q.2.2⟩ ∂boundedSourceActionMeasure K ν a T) =
       ∫ p, (∫ r in Ioo a T, duhamelIntegrand K g p r) ∂ν := by
@@ -110,14 +110,13 @@ theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
   have hf : Measurable f :=
     hg.comp ((KineticPoint.measurable_equivProd_symm d).comp
       (measurable_fst.prodMk (measurable_snd.fst.prodMk measurable_snd.snd)))
-  have hF : Integrable (f ∘ boundedSourceOutput) (η.compProd κ) :=
-    integrable_bounded_real _ _ (hf.comp measurable_boundedSourceOutput) M (fun q => hb _)
-  have hm := measurable_duhamelIntegrand K hΩ hγ g hg
+
+
   have hi : Integrable (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2) ρ :=
-    integrable_bounded_real _ _ hm M
+    integrable_bounded_real _ _ (measurable_duhamelIntegrand K hΩ hγ g hg) M
       (fun q => abs_duhamelIntegrand_le K g M hM hb q.1 q.2)
   have hD := measurableSet_boundedSourcePairSet hΩ hγ
-  have hcoe : (fun q : BoundedSourcePair Ω γ =>
+  have hcoe : (fun q  =>
       ∫ w, f (boundedSourceOutput (q,w)) ∂κ q) =
       fun q => duhamelIntegrand K g q.1.1 q.1.2 := by
     funext q
@@ -129,7 +128,7 @@ theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
     rw [dite_eq_left hq]
     rfl
   have hind : (boundedSourcePairSet Ω γ).indicator
-      (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2) =
+      (fun q  => duhamelIntegrand K g q.1 q.2) =
       fun q => duhamelIntegrand K g q.1 q.2 := by
     funext q
     by_cases hq : q ∈ boundedSourcePairSet Ω γ
@@ -141,11 +140,11 @@ theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
   change (∫ q, f q ∂(η.compProd κ).map boundedSourceOutput) = _
   rw [integral_map measurable_boundedSourceOutput.aemeasurable hf.aestronglyMeasurable]
   change (∫ q, (f ∘ boundedSourceOutput) q ∂η.compProd κ) = _
-  rw [Measure.integral_compProd hF]
+  rw [Measure.integral_compProd (integrable_bounded_real _ _ (hf.comp measurable_boundedSourceOutput) M (fun q => hb _))]
   simp only [Function.comp_apply]
   rw [hcoe]
   have hsub := integral_subtype_comap (μ := ρ) hD
-    (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2)
+    (fun q  => duhamelIntegrand K g q.1 q.2)
   rw [hsub, ← integral_indicator hD, hind]
   exact integral_prod _ hi
 

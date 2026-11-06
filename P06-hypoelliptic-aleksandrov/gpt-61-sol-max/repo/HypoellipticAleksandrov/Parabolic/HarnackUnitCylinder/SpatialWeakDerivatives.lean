@@ -5,13 +5,13 @@ public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.DirectionalI
 
 /-! # Distributional spatial derivatives from C² time slices -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
 /-- The scalar spatial gradient supplies every first distributional spatial derivative. -/
 theorem IsScalarC12On.hasWeakVelocityPartialDerivOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.Region d} {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (hU : IsOpen U) (hu : IsScalarC12On u U) (i : Fin d) :
     HasWeakVelocityPartialDerivOn U i u
       (fun z => scalarSpatialGradient u z i) := by
@@ -27,7 +27,7 @@ theorem IsScalarC12On.hasWeakVelocityPartialDerivOn
 
 /-- Scalar Hessian components supply second weak spatial derivatives in selected-jet order. -/
 theorem IsScalarC12On.hasWeakVelocitySecondPartialDerivOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.Region d} {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (hU : IsOpen U) (hu : IsScalarC12On u U) (i j : Fin d) :
     HasWeakVelocityPartialDerivOn U j
       (fun z => scalarSpatialGradient u z i)
@@ -51,7 +51,6 @@ theorem IsScalarC12On.hasWeakVelocitySecondPartialDerivOn
     simpa using hc2.isSymmSndFDerivAt (by norm_num) (PDE.basisVec j) (PDE.basisVec i)
   rw [heq] at hg
   unfold HasLineDerivAt at hg ⊢
-  convert hg using 1 <;> first | rfl | (funext t; simp [HasLineDerivAt,
-    scalarSpatialGradient, PDE.classicalGradient, Function.comp_def])
+  convert hg using 1 <;> first | rfl | simp_all [scalarSpatialGradient, PDE.classicalGradient]
 
 end HypoellipticAleksandrov.Parabolic

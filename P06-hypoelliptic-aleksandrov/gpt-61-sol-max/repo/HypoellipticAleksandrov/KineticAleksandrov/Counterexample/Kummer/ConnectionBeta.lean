@@ -4,6 +4,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.C
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.EulerIntegral
 import Mathlib.MeasureTheory.Function.JacobianOneDim
 import Mathlib.Tactic
+import Aesop
+
+
 
 /-!
 # Beta evaluation on the positive half-line
@@ -17,21 +20,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
 open Set MeasureTheory
 
+variable (t : ℝ)
+
 /-- Fractional linear coordinate on the positive half-line. -/
-def betaCoordinate (t : ℝ) : ℝ := t / (1 + t)
+def betaCoordinate  : ℝ := t / (1 + t)
 
 /-- Derivative of the fractional linear coordinate. -/
-theorem hasDerivAt_betaCoordinate (t : ℝ) (ht : 0 < t) :
+theorem hasDerivAt_betaCoordinate  (ht : 0 < t) :
     HasDerivAt betaCoordinate ((1 + t) ^ (-2 : ℝ)) t := by
   have h := (hasDerivAt_id t).div ((hasDerivAt_const t 1).add (hasDerivAt_id t))
     (ne_of_gt (by linarith : 0 < 1 + t))
-  convert h using 1
-  · rfl
-  · change (1 + t) ^ (-2 : ℝ) = (1 * (1 + t) - t * (0 + 1)) / (1 + t) ^ 2
-    rw [show (-2 : ℝ) = -(2 : ℝ) by norm_num,
-      Real.rpow_neg (by linarith : 0 ≤ 1 + t), Real.rpow_two]
-    field_simp
-    ring
+  aesop
 
 /-- The coordinate is injective on the positive half-line. -/
 theorem betaCoordinate_injOn : InjOn betaCoordinate (Ioi 0) := by
@@ -56,10 +55,10 @@ theorem betaCoordinate_image : betaCoordinate '' Ioi 0 = Ioo 0 1 := by
   · intro hu
     refine ⟨u / (1 - u), div_pos hu.1 (sub_pos.mpr hu.2), ?_⟩
     dsimp [betaCoordinate]
-    have hn : 1 - u ≠ 0 := ne_of_gt (sub_pos.mpr hu.2)
+
     have hd : 1 + u / (1 - u) ≠ 0 := ne_of_gt
       (add_pos zero_lt_one (div_pos hu.1 (sub_pos.mpr hu.2)))
-    field_simp [hn, hd]
+    field_simp [(ne_of_gt (sub_pos.mpr hu.2)), hd]
     ring
 
 /-- Pullback of the Beta weight including the Jacobian. -/
@@ -79,8 +78,11 @@ theorem betaCoordinate_weight (a c t : ℝ) (ht : 0 < t) :
   congr 2
   ring
 
+variable (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
+
+include ha hc
 /-- Integrability of the half-line Beta weight. -/
-theorem integrableOn_betaHalf (a c : ℝ) (ha : 0 < a) (hc : 0 < c) :
+theorem integrableOn_betaHalf  :
     IntegrableOn (fun t : ℝ => t ^ (a - 1) * (1 + t) ^ (-a - c)) (Ioi 0) := by
   have h := (integrableOn_image_iff_integrableOn_abs_deriv_smul measurableSet_Ioi
     (fun t ht => (hasDerivAt_betaCoordinate t ht).hasDerivWithinAt)
@@ -90,7 +92,7 @@ theorem integrableOn_betaHalf (a c : ℝ) (ha : 0 < a) (hc : 0 < c) :
   exact h.congr_fun (fun t ht => betaCoordinate_weight a c t ht) measurableSet_Ioi
 
 /-- Evaluation of the half-line Beta integral. -/
-theorem integral_betaHalf (a c : ℝ) (ha : 0 < a) (hc : 0 < c) :
+theorem integral_betaHalf  :
     (∫ t in Ioi (0 : ℝ), t ^ (a - 1) * (1 + t) ^ (-a - c)) =
       Real.Gamma a * Real.Gamma c / Real.Gamma (a + c) := by
   have h := integral_image_eq_integral_abs_deriv_smul measurableSet_Ioi

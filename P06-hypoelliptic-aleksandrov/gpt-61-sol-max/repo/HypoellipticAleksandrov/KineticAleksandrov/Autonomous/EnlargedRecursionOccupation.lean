@@ -4,18 +4,18 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 
 /-! # Domination of finite enlarged active occupations by full-space evolution -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- Every killed strip occupation is dominated by the full-space physical occupation. -/
 theorem enlarged_stripGreen_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (P : Point) (T : ℝ) (hT : 0 < T)
+     (H : Interval) (P : Point) (T : ℝ) (hT : 0 < T)
     (hv : P.velocity 0 ∈ H.carrier) :
     stripGreen hH hLE hlam hLam A H (P.time + T)
       ⟨P, WithTop.coe_lt_coe.mpr (by linarith), hv⟩ ≤
@@ -25,7 +25,7 @@ theorem enlarged_stripGreen_le_fullspace
   let E := fullSpaceEvolution hH hLE hlam hLam A
   have hmono := strip_kernel_le_fullspace hH hLE hlam hLam A E
     (fullSpaceEvolution_spec hH hLE hlam hLam A) H
-    (stripEvolution hH hLE hlam hLam A H) (stripEvolution_spec hH hLE hlam hLam A H)
+    _ (stripEvolution_spec hH hLE hlam hLam A H)
   apply Measure.le_iff.mpr
   intro B hB
   let F : Point → ℝ≥0∞ := B.indicator 1
@@ -38,7 +38,7 @@ theorem enlarged_stripGreen_le_fullspace
   have hh : stripHorizon ((P.time + T : ℝ) : WithTop ℝ) P.time = ENNReal.ofReal T := by
     simp [stripHorizon]
   let K := (stripEvolution hH hLE hlam hLam A H).2
-  let p := stripPoleState H ((P.time + T : ℝ) : WithTop ℝ) e
+  let p := stripPoleState H _ e
   change (∫⁻ t, ∫⁻ w, F (elapsedPhysicalPoint P.time (t, w))
     ∂K.master (elapsedQuery P.time p t)
     ∂elapsedVolume (stripHorizon ((P.time + T : ℝ) : WithTop ℝ) P.time)) ≤
@@ -60,17 +60,14 @@ theorem enlarged_stripGreen_le_fullspace
 
 /-- Every finite enlarged active sum is dominated by the actual full-space occupation. -/
 theorem enlarged_active_occupation_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (hT : 0 < T)
+     (c : Clock) (J : Interval) (T : ℝ) (hT : 0 < T)
     (P : Point) (hv : P.velocity 0 ∈ J.carrier) (N : ℕ) :
     (∑ n ∈ Finset.range N,
       enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P n) ≤
         enlargedFullSpaceOccupation hH hLE hlam hLam A P T := by
   classical
-  have hP : P.time ≤ P.time ∧ P.time < P.time + T ∧ P.velocity 0 ∈ J.carrier :=
-    ⟨le_rfl, by linarith, hv⟩
-  have h := (enlarged_piece_domination hH hLE hlam hLam A c J P.time (P.time + T) P hP N).2
+
+  have h := (enlarged_piece_domination hH hLE hlam hLam A c J P.time (P.time + T) P (⟨le_rfl, by linarith, hv⟩) N).2
   apply (h.trans Measure.restrict_le_self).trans
   have hp : P ∈ enlargedVisitPoleSet J.toFiniteUnion (P.time + T) :=
     ⟨by linarith, by simpa only [Interval.toFiniteUnion_carrier] using hv⟩

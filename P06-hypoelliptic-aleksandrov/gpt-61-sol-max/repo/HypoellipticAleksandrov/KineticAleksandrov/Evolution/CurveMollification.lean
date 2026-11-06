@@ -6,6 +6,11 @@ import Mathlib.Analysis.Calculus.ContDiff.Convolution
 public import Mathlib.Analysis.Convolution
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CurveLipschitz
+import Mathlib.Tactic.FunProp
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Mollification of Lipschitz curves
@@ -58,7 +63,7 @@ theorem vecEuclideanNorm_weighted_integral_le {n : ℕ} {f : ℝ → PDE.Vec n}
     intro i
     have := (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin n => ℝ) i).integral_comp_comm
       (integrable_weight_smul hρc hρs hf)
-    simpa using this.symm
+    exact this.symm
   have hint : ∀ i, Integrable (fun t => ρ t * f t i) := fun i =>
     integrable_weight_mul hρc hρs (continuous_apply i |>.comp hf)
   have hsq : PDE.vecNormSq v = ∫ t, ρ t * PDE.vecDot v (f t) := by
@@ -96,7 +101,7 @@ theorem vecEuclideanNorm_weighted_integral_le {n : ℕ} {f : ℝ → PDE.Vec n}
     linarith
   by_contra hcon
   push Not at hcon
-  have hpos : 0 < PDE.vecEuclideanNorm v := hc.trans_lt hcon
+
   have : PDE.vecEuclideanNorm v ^ 2 ≤ PDE.vecEuclideanNorm v * c := by
     rwa [PDE.vecEuclideanNorm_sq]
   nlinarith
@@ -127,20 +132,20 @@ end Weighted
 theorem curveMollify_eq_convolution {n : ℕ} (ρ : ℝ → ℝ) (γ : ℝ → PDE.Vec n) :
     curveMollify ρ γ = ρ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] γ := by
   funext s
-  simp [curveMollify, convolution_def]
+  rfl
 
 /-- **Analytic core of the curve approximation.**  A globally `L`-Lipschitz curve is uniformly
 `ε`-approximated by a smooth curve which is globally `L`-Lipschitz for the Euclidean norm. -/
 theorem exists_smooth_lipschitz_approx {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
     {L : ℝ} (hL : 0 ≤ L)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ L * |s - t|) {ε : ℝ} (hε : 0 < ε) :
-    ∃ g : ℝ → PDE.Vec n, ContDiff ℝ (⊤ : ℕ∞) g ∧
+    ∃ g : ℝ → PDE.Vec n, ContDiff ℝ PDE.smoothOrder g ∧
       (∀ s t, PDE.vecEuclideanNorm (g s - g t) ≤ L * |s - t|) ∧
       ∀ s, PDE.vecEuclideanNorm (g s - γ s) ≤ ε := by
   set δ : ℝ := ε / (L + 1) with hδ
   have hδ0 : 0 < δ := by positivity
   let φ : ContDiffBump (0 : ℝ) := ⟨δ / 2, δ, half_pos hδ0, half_lt_self hδ0⟩
-  have hρ0 : ∀ t, 0 ≤ φ.normed volume t := fun t => φ.nonneg_normed t
+  have hρ0 : ∀ t, 0 ≤ φ.normed volume t := φ.nonneg_normed
   have hρc : Continuous (φ.normed volume) := φ.continuous_normed
   have hρs : HasCompactSupport (φ.normed volume) := φ.hasCompactSupport_normed
   have hρ1 : ∫ t, φ.normed volume t = 1 := φ.integral_normed
@@ -151,18 +156,17 @@ theorem exists_smooth_lipschitz_approx {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ :
     simpa [Metric.mem_ball, Real.dist_eq] using this
   refine ⟨curveMollify (φ.normed volume) γ, ?_, ?_, ?_⟩
   · rw [curveMollify_eq_convolution]
-    exact hρs.contDiff_convolution_left _ φ.contDiff_normed (hγ.locallyIntegrable (μ := volume))
+    exact hρs.contDiff_convolution_left _ φ.contDiff_normed (hγ.locallyIntegrable )
   · intro s s'
     rw [curveMollify_sub hρc hρs hγ]
     refine vecEuclideanNorm_weighted_integral_le hρ0 hρc hρs hρ1 ?_ (by positivity) fun t _ => ?_
-    · exact (hγ.comp (continuous_const.sub continuous_id)).sub
-        (hγ.comp (continuous_const.sub continuous_id))
+    · fun_prop
     · refine (hLip _ _).trans (le_of_eq ?_)
       congr 2; ring
   · intro s
     rw [curveMollify_sub_self hρc hρs hρ1 hγ]
     refine vecEuclideanNorm_weighted_integral_le hρ0 hρc hρs hρ1 ?_ hε.le fun t ht => ?_
-    · exact (hγ.comp (continuous_const.sub continuous_id)).sub continuous_const
+    · fun_prop
     · refine (hLip _ _).trans ?_
       have h1 : |s - t - s| < δ := by rw [show s - t - s = -t by ring, abs_neg]; exact hsupp t ht
       calc L * |s - t - s| ≤ L * δ := mul_le_mul_of_nonneg_left h1.le hL

@@ -5,15 +5,15 @@ import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 
 /-! # Position-fiber integration by parts without a hidden origin mass -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization
-open HypoellipticAleksandrov Set MeasureTheory Filter
-open scoped Topology
+open Set MeasureTheory Filter
+
 
 /-- A continuous function with a locally integrable derivative off zero has no point defect. -/
 theorem singular_line_weak_derivative (f g : ℝ → ℝ) (hf : Continuous f)
-    (hg : LocallyIntegrable g volume) (hd : ∀ x : ℝ, x ≠ 0 → HasDerivAt f (g x) x)
+    (hg : LocallyIntegrable g ) (hd : ∀ x : ℝ, x ≠ 0 → HasDerivAt f (g x) x)
     (test : ℝ → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
     (∫ x, f x * deriv test x) = -(∫ x, g x * test x) := by
   have h1 := hg.integrable_smul_right_of_hasCompactSupport ht.continuous hs
@@ -22,7 +22,7 @@ theorem singular_line_weak_derivative (f g : ℝ → ℝ) (hf : Continuous f)
   simp only [smul_eq_mul] at h1 h2
   let H := fun x => f x * test x
   let D := fun x => g x * test x + f x * deriv test x
-  have hD : Integrable D volume := h1.add h2
+  have hD : Integrable D  := h1.add h2
   have hH : Continuous H := hf.mul ht.continuous
   have hHk : HasCompactSupport H := hs.mul_left
   have hdH (x : ℝ) (hx : x ≠ 0) : HasDerivAt H (D x) x :=
@@ -41,10 +41,12 @@ theorem singular_line_weak_derivative (f g : ℝ → ℝ) (hf : Continuous f)
   rw [integral_add h1 h2] at hz
   linarith only [hz]
 
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1) (v : ℝ)
+
+include h ha ha1
 /-- Each actual position derivative fiber is locally integrable on the full position line. -/
-theorem barrier_dx_fiber_locallyIntegrable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1) (v : ℝ) :
-    LocallyIntegrable (fun X => bellmanDx phi (X, v)) volume := by
+theorem barrier_dx_fiber_locallyIntegrable  :
+    LocallyIntegrable (fun X => bellmanDx phi (X, v))  := by
   rw [locallyIntegrable_iff]
   intro K hK
   obtain ⟨R, hR, hRb⟩ := hK.isBounded.exists_pos_norm_lt
@@ -55,9 +57,7 @@ theorem barrier_dx_fiber_locallyIntegrable {alpha : ℝ} {phi : (ℝ × ℝ) →
   exact abs_le.mp hh.le
 
 /-- The actual position convolution moves its derivative onto the source jet even at v=0. -/
-theorem barrier_position_fiber_weak_dx {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (v : ℝ) (test : ℝ → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
+theorem barrier_position_fiber_weak_dx  (test : ℝ → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
     (∫ X, bellmanOriginExtension phi (X, v) * deriv test X) =
       -(∫ X, bellmanDx phi (X, v) * test X) := by
   apply singular_line_weak_derivative _ _

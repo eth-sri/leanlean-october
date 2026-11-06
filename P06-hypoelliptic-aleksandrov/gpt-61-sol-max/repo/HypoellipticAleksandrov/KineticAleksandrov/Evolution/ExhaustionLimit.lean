@@ -17,9 +17,9 @@ explicit hypotheses. This is
 a classical viscous evolution result relative to those hypotheses.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -30,8 +30,8 @@ section EvolutionData
 
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+variable (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)
 variable (hB_symm : IsSymmetricFullKineticCoefficient B)
@@ -50,10 +50,10 @@ theorem exists_viscous_terminalSolution
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
     (ε : ℝ) (hε : 0 < ε) (hε1 : ε ≤ 1)
     (C : ℝ) (hC : 0 ≤ C) (hFC : ∀ q, |F q| ≤ C) :
-    ∃ u : KineticPoint n → ℝ,
+    ∃ u : HypoellipticAleksandrov.KineticScalarField n,
       IsClassicalViscousTerminalSolution Ω γ B b ε τ F u ∧
       (∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u p| ≤ C) ∧
-      (∀ v : KineticPoint n → ℝ,
+      (∀ v : HypoellipticAleksandrov.KineticScalarField n,
         IsClassicalViscousTerminalSolution Ω γ B b ε τ F v →
           EqOn v u (evolutionPastClosedCylinder Ω γ τ)) := by
   rcases hΩ with hWhole | ⟨c, r, hr, hBall⟩ | ⟨hN, lo, hi, hlohi, hInterval⟩

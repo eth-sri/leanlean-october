@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # Uniform positive radial windows for compact tests away from the origin -/
 
-@[expose] public section
-noncomputable section
-open Set Filter Topology MeasureTheory
+ public section
+
+open Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- A compact test away from zero has a positive lower and finite upper gauge bound. -/
@@ -32,21 +32,21 @@ theorem bellman_compact_test_local_radius_window (zeta : (ℝ × ℝ) → ℝ)
         ∀ x ∈ U, ∀ r : BellmanPositiveTime,
           bellmanPlaneDilation r.val x ∈ tsupport zeta → r.val ∈ Icc a b := by
   obtain ⟨a0, b0, ha0, hab0, hbounds⟩ := bellman_compact_test_gauge_bounds zeta hc hs
-  have hg : 0 < bellmanGauge q := bellmanGauge_pos q hq
+  have hg  := bellmanGauge_pos q hq
   let U := {x : ℝ × ℝ | bellmanGauge q / 2 < bellmanGauge x ∧
     bellmanGauge x < 2 * bellmanGauge q}
   have hU : IsOpen U :=
     (isOpen_lt continuous_const bellmanGauge_continuous).inter
       (isOpen_lt bellmanGauge_continuous continuous_const)
-  have hqU : q ∈ U := ⟨half_lt_self hg, by linarith⟩
-  have hsub : U ⊆ bellmanPuncturedSet := by
-    intro x hx hz
-    have hh := hx.1
-    have hzero : bellmanGauge (0, 0) = 0 := by
-      norm_num [bellmanGauge, bellmanGaugePower]
-    rw [hz, hzero] at hh
-    linarith
-  refine ⟨U, hU, hqU, hsub, a0 / (2 * bellmanGauge q),
+
+
+  refine ⟨U, hU, (⟨half_lt_self hg, by linarith⟩), (by
+      intro x hx hz
+      have hh := hx.1
+      have hzero : bellmanGauge (0, 0) = 0 := by
+        norm_num [bellmanGauge, bellmanGaugePower]
+      rw [hz, hzero] at hh
+      linarith), a0 / (2 * bellmanGauge q),
     2 * b0 / bellmanGauge q, div_pos ha0 (by positivity), ?_, ?_⟩
   · apply (div_le_div_iff₀ (by positivity) hg).mpr
     nlinarith [mul_pos ha0 hg]

@@ -1,11 +1,13 @@
 module
 
 public import Mathlib.Analysis.Calculus.ContDiff.Convolution
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # All-order bounds for convolution with a compact smooth Banach-valued density -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open MeasureTheory
 open scoped Convolution
@@ -21,7 +23,7 @@ theorem convolution_iteratedFDeriv_bound
     {E' F : Type} [NormedAddCommGroup E'] [NormedSpace ℝ E']
     [NormedAddCommGroup F] [NormedSpace ℝ F] [CompleteSpace F]
     (L : E →L[ℝ] E' →L[ℝ] F) (g : V → E')
-    (hc : HasCompactSupport g) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (x : V) :
+    (hc : HasCompactSupport g) (hg : ContDiff ℝ PDE.smoothOrder g) (x : V) :
     ‖iteratedFDeriv ℝ n (f ⋆[L, μ] g) x‖ ≤
       ‖L‖ * M * ∫ y, ‖iteratedFDeriv ℝ n g y‖ ∂μ := by
   induction n generalizing E' F with
@@ -43,12 +45,12 @@ theorem convolution_iteratedFDeriv_bound
         congr 1
         exact integral_sub_left_eq_self (fun y => ‖g y‖) μ x
   | succ n ih =>
-    have hgd : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ g) := hg.fderiv_right (by simp)
+
     have hdf : fderiv ℝ (f ⋆[L, μ] g) = f ⋆[L.precompR V, μ] fderiv ℝ g := by
       funext y
       exact (hc.hasFDerivAt_convolution_right L hf (hg.of_le (by simp)) y).fderiv
     rw [← norm_iteratedFDeriv_fderiv, hdf]
-    have hi := ih (L.precompR V) (fderiv ℝ g) (hc.fderiv ℝ) hgd
+    have hi := ih (L.precompR V) (fderiv ℝ g) (hc.fderiv ℝ) (hg.fderiv_right (by simp))
     simp only [norm_iteratedFDeriv_fderiv] at hi
     exact hi.trans (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (L.norm_precompR_le V) hM)

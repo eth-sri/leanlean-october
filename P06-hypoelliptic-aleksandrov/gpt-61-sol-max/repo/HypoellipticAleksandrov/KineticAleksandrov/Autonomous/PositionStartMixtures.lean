@@ -12,30 +12,28 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+
 /-- The existing terminal family as a measurable kernel, including zero-duration starts. -/
 def positionStartTerminalKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
+     :
     Kernel Point Point :=
-  ⟨enlargedActiveTerminalFamily hH hLE hlam hLam A c J b,
+  ⟨_,
     positionStartTerminalFamily_measurable hH hLE hlam hLam A c J b⟩
 
 /-- Every actual active terminal family has mass at most one. -/
 theorem positionStartTerminalKernel_mass_le_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (p : Point) :
+     (p : Point) :
     positionStartTerminalKernel hH hLE hlam hLam A c J b p univ ≤ 1 := by
   change (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p) univ ≤ 1
   unfold enlargedActiveTerminalFamily
   split
-  · simp only [Measure.dirac_apply_of_mem (mem_univ p), le_refl]
+  · simp
   · apply (Measure.restrict_le_self univ).trans
     change (if h : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b then _
       else (0 : Measure Point)) univ ≤ 1
     split
-    · simp only [measure_univ, le_refl]
+    · simp
     · exact zero_le
 
 /-- The terminal kernel is uniformly finite without a domination hypothesis. -/
@@ -47,11 +45,11 @@ instance positionStartTerminalKernel_isFiniteKernel
   ⟨1, ENNReal.one_lt_top,
     positionStartTerminalKernel_mass_le_one hH hLE hlam hLam A c J b⟩
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock)
+
 /-- Terminal mixtures retain the closed active velocity support. -/
 theorem positionStartTerminalMixture_ae_closedActive
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+     (J : Interval) (b : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(positionStartTerminalKernel hH hLE hlam hLam A c J b ∘ₘ mu),
       q.velocity 0 ∈ closure c.active := by
@@ -75,9 +73,7 @@ theorem positionStartTerminalMixture_ae_closedActive
 
 /-- Finite all-time active mixtures retain open active support. -/
 theorem positionStartAllTimeMixture_ae_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (mu : Measure Point) :
+     (mu : Measure Point) :
     ∀ᵐ q ∂(coreAllTimeGreenKernel hH hLE hlam hLam A c ∘ₘ mu),
       q.velocity 0 ∈ c.active := by
   apply Measure.ae_comp_of_ae_ae
@@ -86,11 +82,11 @@ theorem positionStartAllTimeMixture_ae_active
   apply Filter.Eventually.of_forall
   intro p
   change ∀ᵐ q ∂(if hp : p.velocity 0 ∈ c.active then
-    stripGreen hH hLE hlam hLam A (visitActiveInterval c) ⊤
+    stripGreen hH hLE hlam hLam A _ ⊤
       (coreAllTimePole c ⟨p, hp⟩) else 0), q.velocity 0 ∈ c.active
   split
   · exact (stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A
       (visitActiveInterval c) _).mono fun _ hq => hq.2
-  · simp only [ae_zero, Filter.eventually_bot]
+  · rfl
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

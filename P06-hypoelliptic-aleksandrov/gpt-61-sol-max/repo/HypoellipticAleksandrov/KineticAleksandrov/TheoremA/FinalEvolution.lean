@@ -14,11 +14,11 @@ The occupation, unit-frequency block, decay and slab bounds are discharged by th
 proved results. This intermediate export retains the evolution conclusion explicitly.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open Set MeasureTheory
-open scoped ENNReal MatrixOrder
+open MeasureTheory
+open scoped MatrixOrder
 
 /-- The time--velocity conclusion assembled from the terminal evolution and the two analytic
 hypotheses. -/
@@ -32,7 +32,7 @@ theorem kinetic_aleksandrov_timeVelocity_of_terminalEvolution
       ∀ (A : CoefficientField d),
         IsBorelCoefficient A → IsSymmetricCoefficient A →
         HasLowerEllipticityAE lam A → HasUpperEllipticityAE Lam A →
-      ∀ (f u : KineticPoint d → ℝ),
+      ∀ (f u : HypoellipticAleksandrov.KineticScalarField d),
         Measurable (fun P : backwardCylinder P₀ R => f P) →
         ContinuousOn u (closure (backwardCylinder P₀ R)) →
         Parabolic.IsKineticC112On u (backwardCylinder P₀ R) →
@@ -48,10 +48,10 @@ theorem kinetic_aleksandrov_timeVelocity_of_terminalEvolution
   have hIter := SectionTwo.iterationEvolutionStatement_of_conclusion hEv
   have hOcc := Occupation.parabolicOccupationFamily_holds
     (SectionTwo.occupationEvolutionStatement_of_conclusion hEv) hH hd lam Lam hlam hLam
-  have hBlock := Decay.unit_frequency_block_W hIter d hd lam Lam hlam hLam
-  have hDecay := Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hIter hBlock
+
+
   exact kinetic_aleksandrov_timeVelocity_of_slabFourierBounds d hd lam Lam p hlam hLam hp hH
-    (Green.slabFourierBounds_of_occupation_decay hd lam Lam hOcc hDecay)
+    (Green.slabFourierBounds_of_occupation_decay hd lam Lam hOcc (Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hIter (Decay.unit_frequency_block_W hIter d hd lam Lam hlam hLam)))
     (SectionTwo.taAssemblyEvolution_of_conclusion hEv d hd lam Lam hlam hLam)
 
 end HypoellipticAleksandrov.KineticAleksandrov

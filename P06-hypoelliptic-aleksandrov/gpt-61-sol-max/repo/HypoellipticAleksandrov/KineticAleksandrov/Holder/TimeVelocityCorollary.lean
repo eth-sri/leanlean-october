@@ -12,8 +12,8 @@ The local theorem is still an unproved input boundary. Constants precede all
 coefficient, domain, solution, compact-set and radius data.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory Holder LocalA
 open scoped MatrixOrder
@@ -29,7 +29,7 @@ theorem kinetic_holder_timeVelocity_relative_of_local
         IsBorelCoefficient A → IsSymmetricCoefficient A →
         HasLowerEllipticityAE lam A → HasUpperEllipticityAE Lam A →
       ∀ (Omega : Set (KineticPoint d)), IsOpen Omega →
-      ∀ (u : KineticPoint d → ℝ),
+      ∀ (u : HypoellipticAleksandrov.KineticScalarField d),
         (∃ M : ℝ, ∀ P ∈ Omega, |u P| ≤ M) →
         Parabolic.IsKineticC112On u Omega →
         (∀ᵐ P ∂(volume.restrict Omega),
@@ -54,11 +54,11 @@ theorem kinetic_holder_timeVelocity_relative_of_local
     simp only [mem_iUnion] at hZ
     obtain ⟨P, hP, hZ⟩ := hZ
     exact hQ P hP hZ
-  have hcont : ContinuousOn u (closure E) := hu.continuousOn.mono hEO
-  have habc : BddAbove (u '' closure E) := hcompact.bddAbove_image hcont
-  have hbbc : BddBelow (u '' closure E) := hcompact.bddBelow_image hcont
-  have hab : BddAbove (u '' E) := habc.mono (image_mono subset_closure)
-  have hbb : BddBelow (u '' E) := hbbc.mono (image_mono subset_closure)
+  have hcont  := hu.continuousOn.mono hEO
+  have habc  := hcompact.bddAbove_image hcont
+  have hbbc  := hcompact.bddBelow_image hcont
+  have hab  := habc.mono (image_mono subset_closure)
+  have hbb  := hbbc.mono (image_mono subset_closure)
   have hcenter (P : KineticPoint d) (hP : P ∈ K) : P ∈ closure E := by
     rw [hclosed]
     exact mem_iUnion.mpr ⟨P, mem_iUnion.mpr ⟨hP,
@@ -78,7 +78,7 @@ theorem kinetic_holder_timeVelocity_relative_of_local
       rw [congrArg u he, sub_self, abs_zero]
       exact mul_nonneg (mul_nonneg hC.le hosc)
         (Real.rpow_nonneg (div_nonneg hdelta hR0.le) _)
-    have hdpos : 0 < quasiDistance P Q := lt_of_le_of_ne hdelta (Ne.symm hz)
+    have hdpos  := lt_of_le_of_ne hdelta (Ne.symm hz)
     by_cases hnear : quasiDistance P Q < R0 / 4
     · have hhalf : 0 < R0 / 2 := by positivity
       have hdhalf : quasiDistance P Q ≤ R0 / 2 := by linarith only [hnear, hR0]
@@ -86,9 +86,9 @@ theorem kinetic_holder_timeVelocity_relative_of_local
       have hsubhalf := closure_mono (backwardCylinder_radius_mono Q hdpos hdhalf)
       have hsub : backwardCylinder Q R0 ⊆ backwardCylinder Q (2 * R0) :=
         backwardCylinder_radius_mono Q hR0 (by linarith only [hR0])
-      have hsmallO : closure (backwardCylinder Q R0) ⊆ Omega :=
+      have hsmallO  :=
         (closure_mono hsub).trans (hQ Q hQK)
-      have hsmall : backwardCylinder Q R0 ⊆ Omega := subset_closure.trans hsmallO
+      have hsmall  := subset_closure.trans hsmallO
       have huSmall : Parabolic.IsKineticC112On u (backwardCylinder Q R0) := by
         refine ⟨hu.1.mono hsmall, ?_, ?_, ?_, hu.2.2.2.2.1.mono hsmall,
           hu.2.2.2.2.2.1.mono hsmall, hu.2.2.2.2.2.2.1.mono hsmall,

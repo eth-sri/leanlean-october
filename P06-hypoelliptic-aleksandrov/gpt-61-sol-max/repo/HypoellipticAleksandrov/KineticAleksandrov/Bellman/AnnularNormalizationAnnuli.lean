@@ -77,13 +77,13 @@ theorem bellmanUnitAnnulus_measure_ne_zero (beta : ℝ) (mu : Measure BellmanPun
     (hmu : mu ≠ 0) (hd : HasBellmanDensityDegree beta mu) :
     mu bellmanUnitAnnulus ≠ 0 := by
   intro hzero
-  have hj : ∀ j : ℤ, mu (bellmanDyadicAnnulus j) = 0 := by
-    intro j
-    rw [bellmanDyadicAnnulus,
-      hd _ _ _ bellmanUnitAnnulus_isCompact.measurableSet, hzero, mul_zero]
-  have hz : mu univ = 0 := by
-    rw [← bellmanDyadicAnnulus_iUnion]
-    exact measure_iUnion_null hj
-  exact hmu (Measure.measure_univ_eq_zero.mp hz)
+
+
+  exact hmu (Measure.measure_univ_eq_zero.mp (by
+      rw [← bellmanDyadicAnnulus_iUnion]
+      exact measure_iUnion_null (by
+          intro j
+          rw [bellmanDyadicAnnulus,
+            hd _ _ _ bellmanUnitAnnulus_isCompact.measurableSet, hzero, mul_zero])))
 
 end HypoellipticAleksandrov.KineticAleksandrov

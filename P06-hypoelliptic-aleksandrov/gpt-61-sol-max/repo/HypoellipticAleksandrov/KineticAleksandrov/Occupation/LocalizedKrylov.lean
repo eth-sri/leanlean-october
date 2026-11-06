@@ -21,18 +21,20 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
-open scoped Topology MatrixOrder Matrix.Norms.Elementwise ENNReal
+open HypoellipticAleksandrov.Parabolic
+open scoped MatrixOrder Matrix.Norms.Elementwise
 
 variable {d : ℕ}
 
+variable (R : ℝ) (vStar : PDE.Vec d)
+
 /-- The reflected and rescaled solution `u(t, y) = V(1 - R² t, v_* + R y)`. -/
-def localizedScaled (R : ℝ) (vStar : PDE.Vec d) (V : TimeVelocity d → ℝ) :
-    TimeVelocity d → ℝ :=
+def localizedScaled  (V : HypoellipticAleksandrov.Parabolic.ScalarField d) :
+    HypoellipticAleksandrov.Parabolic.ScalarField d :=
   fun z => V (reflectScale R vStar z)
 
 /-- The reflected and rescaled coefficient `a(t, y) = B(1 - R² t, v_* + R y)`. -/
-def localizedCoefficient (R : ℝ) (vStar : PDE.Vec d) (B : CoefficientField d) :
+def localizedCoefficient  (B : CoefficientField d) :
     TimeVelocity d → PDE.Mat d :=
   fun z => coefficientAt B (reflectScale R vStar z)
 

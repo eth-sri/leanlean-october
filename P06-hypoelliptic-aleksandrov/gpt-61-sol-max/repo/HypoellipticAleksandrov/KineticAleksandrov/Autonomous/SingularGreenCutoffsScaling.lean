@@ -15,42 +15,52 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic
 
-/-- Rescale a scalar cutoff by its physical radius. -/
-def scaledScalarCutoff (chi : ℝ → ℝ) (R : ℝ) : ℝ → ℝ := fun s => chi (s/R)
+variable (chi : ℝ → ℝ)
 
+/-- Rescale a scalar cutoff by its physical radius. -/
+def scaledScalarCutoff  (R : ℝ) : ℝ → ℝ := fun s => chi (s/R)
+
+variable (hchi : ContDiff ℝ 2 chi)
+
+include hchi in
 /-- Scalar rescaling preserves C² regularity. -/
-theorem scaledScalarCutoff_contDiff (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
+theorem scaledScalarCutoff_contDiff
     (R : ℝ) : ContDiff ℝ 2 (scaledScalarCutoff chi R) :=
   hchi.comp (contDiff_id.div_const R)
 
+include hchi in
 /-- The first derivative has the exact inverse-radius factor. -/
-theorem scaledScalarCutoff_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
+theorem scaledScalarCutoff_deriv
     (R s : ℝ) :
     deriv (scaledScalarCutoff chi R) s = deriv chi (s/R)/R := by
-  have hc := (hchi.differentiable (by norm_num) (s/R)).hasDerivAt
-  have hs := (hasDerivAt_id s).div_const R
-  change deriv (chi ∘ (fun t => t/R)) s = _
-  simpa only [id_eq, one_div, div_eq_mul_inv, one_mul] using (hc.comp s hs).deriv
 
+
+  change deriv (chi ∘ (fun t => t/R)) s = _
+  simpa only [div_eq_mul_inv, id_eq, one_mul] using (((hchi.differentiable (by norm_num) (s/R)).hasDerivAt).comp s ((hasDerivAt_id s).div_const R)).deriv
+
+variable {R : ℝ}
+
+include hchi
 /-- The second derivative has the exact inverse-square radius factor. -/
-theorem scaledScalarCutoff_second_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
-    {R : ℝ} (hR : R ≠ 0) (s : ℝ) :
+theorem scaledScalarCutoff_second_deriv
+     (hR : R ≠ 0) (s : ℝ) :
     deriv (deriv (scaledScalarCutoff chi R)) s = deriv (deriv chi) (s/R)/R^2 := by
-  have he : deriv (scaledScalarCutoff chi R) = fun t => deriv chi (t/R)/R := by
+  let sharedTerm_959b16fbea := ((fun t => deriv chi (t / R) / R))
+  have he : deriv (scaledScalarCutoff chi R) = sharedTerm_959b16fbea := by
     funext t
     exact scaledScalarCutoff_deriv chi hchi R t
   rw [he]
-  have hc := (hchi.differentiable_deriv_two (s/R)).hasDerivAt
-  have hs := (hasDerivAt_id s).div_const R
-  have hd : deriv (fun t => deriv chi (t/R)/R) s =
+
+
+  have hd : deriv sharedTerm_959b16fbea s =
       (deriv (deriv chi) (s/R)*(1/R))/R := by
-    simpa only [Function.comp_def, id_eq] using ((hc.comp s hs).div_const R).deriv
+    simpa only [Function.comp_def, id_eq] using ((((hchi.differentiable_deriv_two (s/R)).hasDerivAt).comp s ((hasDerivAt_id s).div_const R)).div_const R).deriv
   rw [hd]
   field_simp
 
 /-- Uniform first-derivative bounds acquire one inverse-radius factor. -/
-theorem scaledScalarCutoff_deriv_bound (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
-    {R : ℝ} (hR : 0 < R) (C : ℝ) (hC : ∀ s, |deriv chi s| ≤ C) (s : ℝ) :
+theorem scaledScalarCutoff_deriv_bound
+     (hR : 0 < R) (C : ℝ) (hC : ∀ s, |deriv chi s| ≤ C) (s : ℝ) :
     |deriv (scaledScalarCutoff chi R) s| ≤ C/R := by
   rw [scaledScalarCutoff_deriv chi hchi, abs_div, abs_of_pos hR]
   exact div_le_div_of_nonneg_right (hC _) hR.le

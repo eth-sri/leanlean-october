@@ -4,16 +4,16 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandShiftedPosi
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandShiftedPositivePartBackward
 
 /-! # Shifted-positive-part reverse-time Steklov energy identities -/
-@[expose] public section
+ public section
 
-open MeasureTheory Set
-open scoped ENNReal NNReal
-noncomputable section
+open Set
+open scoped NNReal
+
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- Fixed-window forward Steklov shifted-positive-part energy identity. -/
 theorem reverseTimeForwardSteklov_shiftedPositivePart_energy_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : PDE.VelocityRegion d} (hΩ : IsOpen Ω)
     (hΩb : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T) (M N : ℝ≥0)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)

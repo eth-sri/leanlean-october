@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLim
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitMeasure
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Compact-region integral convergence for actual approximants
@@ -12,19 +14,19 @@ Dominated convergence uses eventual continuity and the actual finite-domain
 maximum-principle bound. No ambient measurability of a Dirichlet extension is assumed.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter MeasureTheory
+open HypoellipticAleksandrov.Parabolic Set Filter MeasureTheory
 open scoped Topology MatrixOrder
 
 /-- Integration against any continuous test on a fixed bounded inner cylinder
 commutes with the actual Dirichlet exhaustion limit. -/
 theorem tendsto_setIntegral_mul_innerBall_dirichlet
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -37,7 +39,7 @@ theorem tendsto_setIntegral_mul_innerBall_dirichlet
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))
     (β R : ℕ → ℝ) (hβpos : ∀ k, 0 < β k)
     (hβlim : Tendsto β atTop (𝓝 0)) (hRlim : Tendsto R atTop atTop)
-    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (g k))
+    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ PDE.smoothOrder (g k))
     (hgL : ∀ k s t, PDE.vecEuclideanNorm (g k s - g k t) ≤ L * |s - t|)
     (hclose : ∀ k s, s ∈ Icc α τ → PDE.vecEuclideanNorm (g k s - Γ s) ≤ β k / 2)
     (u : ℕ → TimeVelocity (n + n) → ℝ)
@@ -46,7 +48,7 @@ theorem tendsto_setIntegral_mul_innerBall_dirichlet
       (straightenedCoefficient B (g k) ε) (straightenedDrift b (g k))
       (fun _ _ => 0) (fun _ _ => 0)
       (fun x => F (g k τ + spatialY x, spatialZ x)) (fun _ => 0) (u k))
-    (φ : KineticPoint n → ℝ) (hφ : Continuous φ) :
+    (φ : HypoellipticAleksandrov.KineticScalarField n) (hφ : Continuous φ) :
     Tendsto (fun k => ∫ p in
       movingClosedSlab (PDE.euclideanBall 0 (r0 - δ0)) Γ α τ ∩
         {p | radialSq p ≤ S0 ^ 2}, straightenedPullback (g k) (u k) p * φ p)

@@ -5,16 +5,18 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EarlyExit
 
 /-! # The full actual finite-strip Green identity for the original bounded C112 class -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
-open SectionTwo TheoremA Evolution
+open MeasureTheory Parabolic
+
+
+variable (hH : HormanderHypoellipticityStatement)
 
 /-- The original bounded C112 class has the full actual identity at every strictly interior
 starting time, with no extra regularity or boundary-solution premise. -/
 theorem strip_identity_C112_of_realization
-    (hH : HormanderHypoellipticityStatement)
+
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (_hT : sMinus < T)
@@ -50,7 +52,7 @@ theorem strip_identity_C112_of_realization
 
 /-- The canonical autonomous families satisfy the full C112 identity at an interior pole. -/
 theorem strip_identity_C112
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+     (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (sMinus T : ℝ) (hT : sMinus < T)
     (e : StripPole H (T : WithTop ℝ)) (he : sMinus < e.1.time) (phi : Point → ℝ)

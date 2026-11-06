@@ -5,29 +5,33 @@ public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Deriv
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Smooth primitives for the capacity test -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
+variable {f : ℝ → ℝ}
+
 /-- A smooth real function has a smooth integral primitive. -/
-theorem capacity_primitive_smooth {f : ℝ → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (a : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (fun v => ∫ x in a..v, f x) := by
+theorem capacity_primitive_smooth  (hf : ContDiff ℝ PDE.smoothOrder f)
+    (a : ℝ) : ContDiff ℝ PDE.smoothOrder (fun v => ∫ x in a..v, f x) := by
   have hd (v : ℝ) : HasDerivAt (fun v => ∫ x in a..v, f x) (f v) v :=
     intervalIntegral.integral_hasDerivAt_right (hf.continuous.intervalIntegrable a v)
       hf.continuous.aestronglyMeasurable.stronglyMeasurableAtFilter hf.continuous.continuousAt
   apply contDiff_infty_iff_deriv.mpr
   refine ⟨fun v => (hd v).differentiableAt, ?_⟩
-  have he : deriv (fun v => ∫ x in a..v, f x) = f := funext fun v => (hd v).deriv
-  rw [he]
+
+  rw [(funext fun v => (hd v).deriv)]
   exact hf
 
 /-- The cumulative integral of a nonnegative compactly supported function is bounded
 by its total integral when its support lies to the right of the starting point. -/
-theorem capacity_cumulative_bounds {f : ℝ → ℝ} {a : ℝ}
+theorem capacity_cumulative_bounds  {a : ℝ}
     (hi : Integrable f volume) (hn : ∀ v, 0 ≤ f v)
     (hs : tsupport f ⊆ Ioi a) (v : ℝ) :
     0 ≤ (∫ x in a..v, f x) ∧ (∫ x in a..v, f x) ≤ ∫ x, f x := by
@@ -35,9 +39,9 @@ theorem capacity_cumulative_bounds {f : ℝ → ℝ} {a : ℝ}
   · rw [intervalIntegral.integral_of_le hav]
     exact ⟨integral_nonneg (fun x => hn x),
       setIntegral_le_integral hi (Filter.Eventually.of_forall hn)⟩
-  · have hva : v ≤ a := (not_le.mp hav).le
+  ·
     have hz : (∫ x in v..a, f x) = 0 := by
-      rw [intervalIntegral.integral_of_le hva]
+      rw [intervalIntegral.integral_of_le ((not_le.mp hav).le)]
       apply integral_eq_zero_of_ae
       apply (ae_restrict_iff' measurableSet_Ioc).mpr
       exact Filter.Eventually.of_forall fun x hx =>

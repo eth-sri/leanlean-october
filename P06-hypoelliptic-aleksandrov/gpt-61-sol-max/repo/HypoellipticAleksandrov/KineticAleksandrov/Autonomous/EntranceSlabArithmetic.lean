@@ -34,15 +34,15 @@ theorem entranceSlab_mass_arithmetic {r Lam M p g : ℝ}
     field_simp
     ring
   rw [he] at hd
-  have hC1 : (9 / 5 : ℝ) ≤ entranceSlabConstant Lam := by
-    unfold entranceSlabConstant
-    exact le_add_of_nonneg_right (by positivity)
-  have hC2 : 32 * Lam / 5 ≤ entranceSlabConstant Lam := by
-    unfold entranceSlabConstant
-    exact le_add_of_nonneg_left (by norm_num)
+
+
   exact hd.trans (by
     rw [mul_add]
-    exact add_le_add (mul_le_mul_of_nonneg_right hC1 hp)
-      (mul_le_mul_of_nonneg_right hC2 (by positivity)))
+    exact add_le_add (mul_le_mul_of_nonneg_right (by
+        unfold entranceSlabConstant
+        exact le_add_of_nonneg_right (by positivity)) hp)
+      (mul_le_mul_of_nonneg_right (by
+          unfold entranceSlabConstant
+          exact le_add_of_nonneg_left (by norm_num)) (by positivity)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

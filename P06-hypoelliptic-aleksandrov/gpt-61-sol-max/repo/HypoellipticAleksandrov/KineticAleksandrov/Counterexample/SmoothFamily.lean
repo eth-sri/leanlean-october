@@ -9,11 +9,11 @@ The functions and all cylinder parameters are retained. Only the coefficient smo
 scale is chosen separately after fixing each function.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory HypoellipticAleksandrov.Parabolic
-open scoped Topology ENNReal MatrixOrder Matrix.Norms.Elementwise
+open scoped Topology MatrixOrder Matrix.Norms.Elementwise
 
 /-- Coefficient mollification after fixing each smooth function proves the literal smooth
 family conjunct, with the same ellipticity bounds, cylinder and function sequence. -/
@@ -21,6 +21,7 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
     {P₀ : KineticPoint d} {R : ℝ} (hp : 1 ≤ p) (hR : 0 < R)
     (h : MeasurableFamilyStatement d p lam Lam P₀ R) :
     SmoothFamilyStatement d p lam Lam P₀ R := by
+  let sharedTerm_d171406d0a := ((volume.restrict (backwardCylinder P₀ R)))
   classical
   obtain ⟨A, U, hA, hb, hU, hnonneg, hboundary, hheight, hsource⟩ := h
   have hpn : ENNReal.ofReal p ≠ 0 := (ENNReal.ofReal_pos.mpr (by linarith)).ne'
@@ -30,14 +31,14 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
       eLpNorm (fun P => matrixContraction
         (mollifiedMatrix (standardMollifierSequence k) A (P.position, P.velocity) -
           A (P.position, P.velocity)) (kineticVelocityHessian (U j) P))
-        (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)) <
+        (ENNReal.ofReal p) sharedTerm_d171406d0a <
         ENNReal.ofReal (1 / ((j : ℝ) + 1)) := by
     intro j
     have he := smooth_coefficient_error_tendsto A lam Lam hA hb (U j) (hU j)
       P₀ R hR (ENNReal.ofReal p) hpn ENNReal.ofReal_ne_top
     exact (he.eventually (Iio_mem_nhds (ENNReal.ofReal_pos.mpr (by positivity)))).exists
   choose k hk using hchoose
-  let B : ℕ → XV d → PDE.Mat d := fun j => mollifiedMatrix (standardMollifierSequence (k j)) A
+  let B  := fun j => mollifiedMatrix (standardMollifierSequence (k j)) A
   have hB j := smooth_coefficients_same_bounds (standardMollifierSequence (k j)) A lam Lam hA hb
   have hBm : ∀ j i l, Measurable (fun q => B j q i l) := by
     intro j i l
@@ -55,21 +56,20 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
       simpa only [Function.comp_apply, ENNReal.ofReal_zero] using!
         ENNReal.continuous_ofReal.continuousAt.tendsto.comp
           tendsto_one_div_add_atTop_nhds_zero_nat
-    have he : Tendsto (fun j => eLpNorm (E j) (ENNReal.ofReal p)
-        (volume.restrict (backwardCylinder P₀ R))) atTop (𝓝 0) :=
+    have he  :=
       tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds heps
         (fun j => bot_le) (fun j => (hk j).le)
     have hlim := hsource.add he
     have hlim0 : Tendsto (fun j =>
         eLpNorm (fun P => max (backwardOperator (fun _t x v => A (x, v)) (U j) P) 0)
-          (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)) +
-        eLpNorm (E j) (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)))
+          (ENNReal.ofReal p) sharedTerm_d171406d0a +
+        eLpNorm (E j) (ENNReal.ofReal p) sharedTerm_d171406d0a)
         atTop (𝓝 0) := by
       simpa only [add_zero] using! hlim
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hlim0
       (fun j => bot_le)
     intro j
     exact positive_source_norm_le_coefficient_error A (B j) hA (hBm j) (U j) (hU j)
-      (volume.restrict (backwardCylinder P₀ R)) (ENNReal.ofReal p) hp1
+      sharedTerm_d171406d0a _ hp1
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

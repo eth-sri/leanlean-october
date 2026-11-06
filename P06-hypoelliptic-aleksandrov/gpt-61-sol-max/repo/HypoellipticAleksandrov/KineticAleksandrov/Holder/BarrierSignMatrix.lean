@@ -3,20 +3,31 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.CovarianceBoundsTrace
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.NearFullCutoff
 import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonGrowth
+import all HypoellipticAleksandrov.KineticAleksandrov.Decay.RetentionMatrix
+
+open private HypoellipticAleksandrov.KineticAleksandrov.Decay.contraction_one from HypoellipticAleksandrov.KineticAleksandrov.Decay.RetentionMatrix
+
 
 /-! # Native matrix contractions and ellipticity bounds for the Gaussian sign -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Matrix
-open scoped BigOperators MatrixOrder
+open scoped MatrixOrder
+
+variable {d : ℕ}
+
+variable (A : PDE.Mat d)
 
 /-- Native rank-one contraction is the corresponding Euclidean quadratic form. -/
-theorem matrixContraction_rankOne {d : ℕ} (A : PDE.Mat d) (p : PDE.Vec d) :
+theorem matrixContraction_rankOne   (p : PDE.Vec d) :
     matrixContraction A (fun i j => p i * p j) = PDE.vecDot p (A.mulVec p) := by
   unfold matrixContraction PDE.vecDot Matrix.mulVec dotProduct
   simp only [Finset.mul_sum]
@@ -27,12 +38,11 @@ theorem matrixContraction_rankOne {d : ℕ} (A : PDE.Mat d) (p : PDE.Vec d) :
   ring
 
 /-- Contraction against the identity is exactly the native matrix trace. -/
-theorem matrixContraction_identity {d : ℕ} (A : PDE.Mat d) :
-    matrixContraction A (1 : PDE.Mat d) = A.trace := by
-  simp [matrixContraction, Matrix.trace, Matrix.diag, Matrix.one_apply]
+alias matrixContraction_identity := _root_.HypoellipticAleksandrov.KineticAleksandrov.Decay.contraction_one
+
 
 /-- The exact Gaussian Hessian contraction in native Euclidean coordinates. -/
-theorem matrixContraction_gaussian {d : ℕ} (A : PDE.Mat d) (p : PDE.Vec d) (a R : ℝ) :
+theorem matrixContraction_gaussian   (p : PDE.Vec d) (a R : ℝ) :
     matrixContraction A (fun i j => a * (4 * p i * p j - 2 * R * (1 : PDE.Mat d) i j)) =
       a * (4 * PDE.vecDot p (A.mulVec p) - 2 * R * A.trace) := by
   let K : PDE.Mat d := fun i j => p i * p j
@@ -47,8 +57,10 @@ theorem matrixContraction_gaussian {d : ℕ} (A : PDE.Mat d) (p : PDE.Vec d) (a 
     matrixContraction_rankOne, matrixContraction_identity]
   ring
 
+variable {A : PDE.Mat d}
+
 /-- Lower Loewner ellipticity yields the literal native quadratic lower bound. -/
-theorem loewner_quadratic_lower {d : ℕ} {A : PDE.Mat d} {lam : ℝ}
+theorem loewner_quadratic_lower   {lam : ℝ}
     (hl : lam • (1 : PDE.Mat d) ≤ A) (p : PDE.Vec d) :
     lam * PDE.vecNormSq p ≤ PDE.vecDot p (A.mulVec p) := by
   have hp := (Matrix.le_iff.mp hl).dotProduct_mulVec_nonneg p
@@ -58,12 +70,9 @@ theorem loewner_quadratic_lower {d : ℕ} {A : PDE.Mat d} {lam : ℝ}
   linarith only [hp]
 
 /-- Upper Loewner ellipticity bounds the coefficient trace by `d Lam`. -/
-theorem loewner_trace_upper {d : ℕ} {A : PDE.Mat d} {Lam : ℝ}
-    (hu : A ≤ Lam • (1 : PDE.Mat d)) : A.trace ≤ (d : ℝ) * Lam := by
-  have hp := (Matrix.le_iff.mp hu).trace_nonneg
-  rw [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one] at hp
-  simp only [Fintype.card_fin, smul_eq_mul] at hp
-  linarith only [hp]
+theorem loewner_trace_upper   {Lam : ℝ}
+    (hu : A ≤ Lam • (1 : PDE.Mat d)) : A.trace ≤ (d : ℝ) * Lam := (trace_le_of_le_smul_one hu)
+
 
 /-- The inverse velocity covariance scalar is nonnegative on the definite strip. -/
 theorem gramian_inv_velocity_nonneg {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)

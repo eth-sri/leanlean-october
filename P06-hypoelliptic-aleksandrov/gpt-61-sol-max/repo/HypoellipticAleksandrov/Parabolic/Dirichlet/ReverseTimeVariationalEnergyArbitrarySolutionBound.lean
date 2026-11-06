@@ -9,25 +9,25 @@ This module transports the constructed Galerkin radius bound to every supplied
 reverse-time variational energy solution with the same data.
 -/
 
-@[expose] public section
+ public section
 
-open Topology
+
 open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- Every supplied reverse-time variational energy solution is bounded by the
 constructed Galerkin primal radius. -/
 theorem IsReverseTimeVariationalEnergySolution.norm_le_reverseTimeGalerkinPrimalRadius
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ lam Lam : ℝ) (h₀₁ : r₀ < r₁)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -48,7 +48,7 @@ theorem IsReverseTimeVariationalEnergySolution.norm_le_reverseTimeGalerkinPrimal
         a z.1 z.2 ≤ Lam • (1 : PDE.Mat d))
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (initial : PDE.ScalarLp Ω (2 ))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)

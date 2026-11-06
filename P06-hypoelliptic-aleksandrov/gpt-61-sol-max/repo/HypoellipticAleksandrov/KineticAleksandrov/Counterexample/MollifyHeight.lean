@@ -5,11 +5,11 @@ import Mathlib.Tactic.NormNum
 
 /-! # Retaining a strict height margin under approximate identities -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter
-open scoped Topology
+
 variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
   [MeasureSpace G] [BorelSpace G] [FiniteDimensional ℝ G]
   [Measure.IsAddHaarMeasure (volume : Measure G)]

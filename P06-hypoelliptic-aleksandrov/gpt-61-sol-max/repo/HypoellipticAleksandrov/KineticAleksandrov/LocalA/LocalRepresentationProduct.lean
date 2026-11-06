@@ -3,19 +3,21 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationCutoff
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonLinear
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The classical residual of a multiplier independent of velocity -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
 /-- Multiplication by a smooth time-position function creates only a transport defect. -/
 theorem forward_operator_position_multiplier {d : ℕ}
-    (A : FullKineticCoefficient d) (η : TimeVelocity d → ℝ)
-    (hη : ContDiff ℝ (⊤ : ℕ∞) η)
-    {u : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
+    (A : FullKineticCoefficient d) (η : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hη : ContDiff ℝ PDE.smoothOrder η)
+    {u : HypoellipticAleksandrov.KineticScalarField d} {D : Set (KineticPoint d)}
     (hu : IsKineticC112On u D) {P : KineticPoint d} (hP : P ∈ D) :
     forwardKineticOperator A (fun Q => η (Q.time, Q.position) * u Q) P =
       η (P.time, P.position) * forwardKineticOperator A u P +

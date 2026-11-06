@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 
 /-! # Full-space terminal actions in native and physical coordinates -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+open MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- Time autonomy identifies an absolute native query with the scalar elapsed kernel. -/

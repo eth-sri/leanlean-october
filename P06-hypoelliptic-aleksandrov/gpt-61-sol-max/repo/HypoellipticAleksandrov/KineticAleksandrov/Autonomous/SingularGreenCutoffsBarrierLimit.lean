@@ -6,11 +6,11 @@ import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-! # Actual expanding cutoff limits and extended Fatou bounds -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory Filter
-open scoped Topology ENNReal
+open MeasureTheory Filter
+open scoped Topology
 
 /-- The literal scalar cutoff equals one throughout its inner unit interval. -/
 theorem barrierCutoff_eq_one {x : ℝ} (hx : |x| ≤ 1) : barrierCutoff x = 1 := by
@@ -27,20 +27,19 @@ theorem barrierRectCutoff_eventually_one (Y : ℝ) (z : Z) :
     have hn0 : (0 : ℝ) ≤ n := by positivity
     linarith only [hn0]
   have hR0 : 0 < (n : ℝ) + 1 := by positivity
-  have hcube : (n : ℝ) + 1 ≤ ((n : ℝ) + 1) ^ 3 := by
-    have hh := mul_nonneg hR0.le (show 0 ≤ ((n : ℝ) + 1) ^ 2 - 1 by nlinarith [hR])
-    nlinarith only [hh]
+
   have hx : |z.1 - Y| ≤ ((n : ℝ) + 1) ^ 3 :=
-    (le_max_left _ _).trans (hn.trans ((by linarith : (n : ℝ) ≤ n + 1).trans hcube))
-  have hv : |z.2| ≤ (n : ℝ) + 1 :=
-    (le_max_right _ _).trans (hn.trans (by linarith))
-  have hx' : |(z.1 - Y) / ((n : ℝ) + 1) ^ 3| ≤ 1 := by
-    rw [abs_div, abs_of_pos (pow_pos hR0 3), div_le_iff₀ (pow_pos hR0 3), one_mul]
-    exact hx
-  have hv' : |z.2 / ((n : ℝ) + 1)| ≤ 1 := by
-    rw [abs_div, abs_of_pos hR0, div_le_iff₀ hR0, one_mul]
-    exact hv
-  simp only [barrierRectCutoff, barrierCutoff_eq_one hx', barrierCutoff_eq_one hv', one_mul]
+    (le_max_left _ _).trans (hn.trans ((by linarith : (n : ℝ) ≤ n + 1).trans (by
+
+        nlinarith only [(mul_nonneg hR0.le (show 0 ≤ ((n : ℝ) + 1) ^ 2 - 1 by nlinarith [hR]))])))
+
+
+
+  simp only [barrierRectCutoff, barrierCutoff_eq_one (show |(z.1 - Y) / ((n : ℝ) + 1) ^ 3| ≤ 1 by
+      rw [abs_div, abs_of_pos (pow_pos hR0 3), div_le_iff₀ (pow_pos hR0 3), one_mul]
+      exact hx), barrierCutoff_eq_one (show |z.2 / ((n : ℝ) + 1)| ≤ 1 by
+          rw [abs_div, abs_of_pos hR0, div_le_iff₀ hR0, one_mul]
+          exact ((le_max_right _ _).trans (hn.trans (by linarith)))), one_mul]
 
 /-- Actual integrable endpoint tests converge under the expanding kinetic cutoff. -/
 theorem barrierRectCutoff_integral_tendsto (mu : Measure Z) (f : Z → ℝ)
@@ -73,9 +72,8 @@ theorem singular_fatou_of_real_bounds {W : Type*} [MeasurableSpace W]
     (b : ℕ → ℝ) (B : ℝ) (hb : Tendsto b atTop (𝓝 B))
     (hi : ∀ n, (∫⁻ w, f n w ∂mu) ≤ ENNReal.ofReal (b n)) :
     (∫⁻ w, F w ∂mu) ≤ ENNReal.ofReal B := by
-  have he : (fun w => liminf (fun n => f n w) atTop) = F :=
-    funext (fun w => (hp w).liminf_eq)
-  rw [← he]
+
+  rw [← (funext (fun w => (hp w).liminf_eq))]
   apply (lintegral_liminf_le hm).trans
   apply (liminf_le_liminf (Eventually.of_forall hi)).trans_eq
   exact ((ENNReal.continuous_ofReal.tendsto B).comp hb).liminf_eq

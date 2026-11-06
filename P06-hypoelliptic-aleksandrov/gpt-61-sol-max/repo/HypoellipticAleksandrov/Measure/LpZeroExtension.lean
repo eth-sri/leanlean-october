@@ -30,8 +30,10 @@ def zeroExtend
   ((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f)).toLp
     (Set.indicator s (⇑f))
 
+variable {α E : Type*}
+
 private theorem coeFn_zeroExtend
-    {α E : Type*} [MeasurableSpace α]
+     [MeasurableSpace α]
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     {p : ℝ≥0∞} [Fact (1 ≤ p)]
     {μ : Measure α} {s : Set α}
@@ -39,11 +41,11 @@ private theorem coeFn_zeroExtend
     ⇑(zeroExtend hs f) =ᵐ[μ] Set.indicator s (⇑f) := by
   change ⇑(((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f)).toLp
     (Set.indicator s (⇑f))) =ᵐ[μ] Set.indicator s (⇑f)
-  exact @MemLp.coeFn_toLp α E _ p μ _ (Set.indicator s (⇑f))
-    ((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f))
+  exact @MemLp.coeFn_toLp α E _ p μ _ _
+    _
 
 private theorem indicator_add_ae
-    {α E : Type*} [MeasurableSpace α]
+     [MeasurableSpace α]
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     {p : ℝ≥0∞} [Fact (1 ≤ p)]
     {μ : Measure α} {s : Set α}
@@ -56,7 +58,7 @@ private theorem indicator_add_ae
   · simp only [Pi.add_apply, Set.indicator_of_notMem hx, zero_add]
 
 private theorem indicator_smul_ae
-    {α E : Type*} [MeasurableSpace α]
+     [MeasurableSpace α]
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     {p : ℝ≥0∞} [Fact (1 ≤ p)]
     {μ : Measure α} {s : Set α}
@@ -69,7 +71,7 @@ private theorem indicator_smul_ae
 
 /-- Extension by zero from `Lp E p (μ.restrict s)` to `Lp E p μ`, as a
 linear isometry. -/
-noncomputable def zeroExtendLinearIsometry
+def zeroExtendLinearIsometry
     {α E : Type*} [MeasurableSpace α]
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     {p : ℝ≥0∞} [Fact (1 ≤ p)]

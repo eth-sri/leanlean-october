@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.WeakPrincipalCoercivityCore
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Weak principal coercivity
@@ -10,11 +12,11 @@ localized-limit results from `WeakPrincipalCoercivityCore` into the final weak
 principal-coercivity theorem.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
 
-open Function MeasureTheory Set Topology
+
+open MeasureTheory Set
 open scoped ENNReal BigOperators MatrixOrder
 
 namespace HypoellipticAleksandrov.Parabolic
@@ -24,9 +26,9 @@ obtained from one common localized scalar mollification. -/
 theorem weakPrincipalIntegrationByParts_coercive
     {d : ℕ} (lam Lam M K : ℝ)
     (s₀ s₁ : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (O : PDE.VelocityRegion d) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d)
-    (q : TimeVelocity d → ℝ)
+    (q : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
     (hAmeas : AEStronglyMeasurable A
@@ -54,8 +56,8 @@ theorem weakPrincipalIntegrationByParts_coercive
       HasWeakVelocityPartialDerivOn
         (Set.Ioo s₀ s₁ ×ˢ O) i
         (fun z => QG z j) (fun z => QH z j i))
-    (η : PDE.Vec d → ℝ)
-    (hη : ContDiff ℝ (⊤ : ℕ∞) η)
+    (η : PDE.ScalarField d)
+    (hη : ContDiff ℝ PDE.smoothOrder η)
     (hηcompact : HasCompactSupport η)
     (hηsupport : tsupport η ⊆ O)
     (hηnonneg : ∀ y, 0 ≤ η y)
@@ -63,7 +65,7 @@ theorem weakPrincipalIntegrationByParts_coercive
     (hηderiv : ∀ y ∈ O, ∀ i : Fin d,
       |spatialPartial i η y| ≤ K)
     (ζ : ℝ → ℝ)
-    (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
+    (hζ : ContDiff ℝ PDE.smoothOrder ζ)
     (hζcompact : HasCompactSupport ζ)
     (hζsupport : tsupport ζ ⊆ Set.Ioo s₀ s₁)
     (hζnonneg : ∀ r, 0 ≤ ζ r) :
@@ -73,7 +75,7 @@ theorem weakPrincipalIntegrationByParts_coercive
             (∑ i : Fin d, ∑ j : Fin d,
               A z i j * QH z j i) *
             WeakGradientTimeEnergy.localizedGradientDivergence η QG QH z)
-        (Set.Ioo s₀ s₁ ×ˢ O) volume ∧
+        (Set.Ioo s₀ s₁ ×ˢ O)  ∧
       IntegrableOn
         (fun z =>
           ζ z.1 * η z.2 ^ 2 *
@@ -89,35 +91,32 @@ theorem weakPrincipalIntegrationByParts_coercive
           ζ z.1 *
             (∑ i : Fin d, ∑ j : Fin d,
               A z i j * QH z j i) *
-            WeakGradientTimeEnergy.localizedGradientDivergence η QG QH z
-          ∂volume) ≥
+            WeakGradientTimeEnergy.localizedGradientDivergence η QG QH z) ≥
         lam / 2 *
           (∫ z in Set.Ioo s₀ s₁ ×ˢ O,
             ζ z.1 * η z.2 ^ 2 *
-              ∑ k : Fin d, ∑ i : Fin d, QH z k i ^ 2
-            ∂volume) -
+              ∑ k : Fin d, ∑ i : Fin d, QH z k i ^ 2) -
         principalCoercivityConstant d lam Lam M K *
           (∫ z in Set.Ioo s₀ s₁ ×ˢ O,
             ζ z.1 *
               (tsupport η).indicator
-                (fun y => ∑ k : Fin d, QG (z.1, y) k ^ 2) z.2
-            ∂volume) := by
+                (fun y => ∑ k : Fin d, QG (z.1, y) k ^ 2) z.2) := by
   obtain ⟨δ, hδ, b, hb, hbCompact, hbSub, _hbOne, _hqEq, hQGEq, hQHEq⟩ :=
     WeakPrincipalCoercivityCore.exists_localized_spatial_jet_plateau
       s₀ s₁ O hO q QG QH η hηcompact hηsupport ζ hζcompact hζsupport
-  let rG : TimeVelocity d → PDE.Vec d := fun z j =>
+  let rG  := fun z j =>
     b z * QG z j + q z * velocityGradient b z j
-  let rH : TimeVelocity d → PDE.Mat d := fun z j i =>
+  let rH  := fun z j i =>
     b z * QH z j i + velocityGradient b z i * QG z j +
       velocityGradient b z j * QG z i + q z * velocityHessian b z j i
   have hrGEq : ∀ j : Fin d, Set.EqOn (fun z => rG z j) (fun z => QG z j)
       (Metric.thickening δ (tsupport ζ ×ˢ tsupport η)) := by
     intro j z hz
-    simpa only [rG, localizedGradient] using hQGEq j hz
+    exact hQGEq j hz
   have hrHEq : ∀ j i : Fin d, Set.EqOn (fun z => rH z j i) (fun z => QH z j i)
       (Metric.thickening δ (tsupport ζ ×ˢ tsupport η)) := by
     intro j i z hz
-    simpa only [rH, localizedHessian] using hQHEq j i hz
+    exact hQHEq j i hz
   have hsupport_mem (z : TimeVelocity d)
       (ht : z.1 ∈ tsupport ζ) (hv : z.2 ∈ tsupport η) :
       z ∈ Metric.thickening δ (tsupport ζ ×ˢ tsupport η) :=
@@ -154,9 +153,9 @@ theorem weakPrincipalIntegrationByParts_coercive
         change rG z k = QG z k at hgk
         change rH z k k = QH z k k at hhk
         rw [hgk, hhk]
-      · have hzero : η z.2 = 0 := image_eq_zero_of_notMem_tsupport hv
+      · have hzero  := image_eq_zero_of_notMem_tsupport hv
         simp [WeakGradientTimeEnergy.localizedGradientDivergence, hzero]
-    · have hzero : ζ z.1 = 0 := image_eq_zero_of_notMem_tsupport ht
+    · have hzero  := image_eq_zero_of_notMem_tsupport ht
       simp [hzero]
   have henergy : ∀ z,
       ζ z.1 * η z.2 ^ 2 *
@@ -175,9 +174,9 @@ theorem weakPrincipalIntegrationByParts_coercive
         have hki := hrHEq k i hz
         change rH z k i = QH z k i at hki
         rw [hki]
-      · have hzero : η z.2 = 0 := image_eq_zero_of_notMem_tsupport hv
+      · have hzero  := image_eq_zero_of_notMem_tsupport hv
         simp [hzero]
-    · have hzero : ζ z.1 = 0 := image_eq_zero_of_notMem_tsupport ht
+    · have hzero  := image_eq_zero_of_notMem_tsupport ht
       simp [hzero]
   have hgradient : ∀ z : TimeVelocity d,
       ζ z.1 * (tsupport η).indicator
@@ -188,14 +187,14 @@ theorem weakPrincipalIntegrationByParts_coercive
     by_cases ht : z.1 ∈ tsupport ζ
     · by_cases hv : z.2 ∈ tsupport η
       · rw [Set.indicator_of_mem hv, Set.indicator_of_mem hv]
-        apply congrArg (fun x : ℝ => ζ z.1 * x)
+        apply congrArg (fun x  => ζ z.1 * x)
         apply Finset.sum_congr rfl
         intro k hk
         have hkEq := hrGEq k (hsupport_mem z ht hv)
         change rG z k = QG z k at hkEq
         rw [hkEq]
       · simp [Set.indicator_of_notMem hv]
-    · have hzero : ζ z.1 = 0 := image_eq_zero_of_notMem_tsupport ht
+    · have hzero  := image_eq_zero_of_notMem_tsupport ht
       simp [hzero]
   have htargets := WeakPrincipalCoercivityCore.targets_integrableOn
     s₀ s₁ O hO lam Lam A QG QH hAmeas hlam hAlower hAupper hQG_memLp hQH_memLp
@@ -208,40 +207,36 @@ theorem weakPrincipalIntegrationByParts_coercive
       ζ hζ hζcompact hζnonneg
   change -(∫ z in Set.Ioo s₀ s₁ ×ˢ O, ζ z.1 *
       (∑ i : Fin d, ∑ j : Fin d, A z i j * rH z j i) *
-      WeakGradientTimeEnergy.localizedGradientDivergence η rG rH z ∂volume) ≥
+      WeakGradientTimeEnergy.localizedGradientDivergence η rG rH z) ≥
     lam / 2 * (∫ z in Set.Ioo s₀ s₁ ×ˢ O, ζ z.1 * η z.2 ^ 2 *
-      ∑ k : Fin d, ∑ i : Fin d, rH z k i ^ 2 ∂volume) -
+      ∑ k : Fin d, ∑ i : Fin d, rH z k i ^ 2) -
     principalCoercivityConstant d lam Lam M K *
       (∫ z in Set.Ioo s₀ s₁ ×ˢ O, ζ z.1 * (tsupport η).indicator
-        (fun y => ∑ k : Fin d, rG (z.1, y) k ^ 2) z.2 ∂volume) at hlocal
+        (fun y => ∑ k : Fin d, rG (z.1, y) k ^ 2) z.2) at hlocal
   rw [show (∫ z in Set.Ioo s₀ s₁ ×ˢ O,
       ζ z.1 *
         (∑ i : Fin d, ∑ j : Fin d,
           A z i j * rH z j i) *
         WeakGradientTimeEnergy.localizedGradientDivergence η
-          rG rH z ∂volume) =
+          rG rH z) =
       ∫ z in Set.Ioo s₀ s₁ ×ˢ O,
         ζ z.1 * (∑ i : Fin d, ∑ j : Fin d, A z i j * QH z j i) *
-          WeakGradientTimeEnergy.localizedGradientDivergence η QG QH z
-        ∂volume by
+          WeakGradientTimeEnergy.localizedGradientDivergence η QG QH z by
     apply integral_congr_ae
     exact Filter.Eventually.of_forall hprincipal] at hlocal
   rw [show (∫ z in Set.Ioo s₀ s₁ ×ˢ O,
       ζ z.1 * η z.2 ^ 2 *
-        ∑ k : Fin d, ∑ i : Fin d, rH z k i ^ 2 ∂volume) =
+        ∑ k : Fin d, ∑ i : Fin d, rH z k i ^ 2) =
       ∫ z in Set.Ioo s₀ s₁ ×ˢ O,
-        ζ z.1 * η z.2 ^ 2 * ∑ k : Fin d, ∑ i : Fin d, QH z k i ^ 2
-        ∂volume by
+        ζ z.1 * η z.2 ^ 2 * ∑ k : Fin d, ∑ i : Fin d, QH z k i ^ 2 by
     apply integral_congr_ae
     exact Filter.Eventually.of_forall henergy] at hlocal
   rw [show (∫ z in Set.Ioo s₀ s₁ ×ˢ O,
       ζ z.1 * (tsupport η).indicator
-        (fun y => ∑ k : Fin d, rG (z.1, y) k ^ 2) z.2
-      ∂volume) =
+        (fun y => ∑ k : Fin d, rG (z.1, y) k ^ 2) z.2) =
       ∫ z in Set.Ioo s₀ s₁ ×ˢ O,
         ζ z.1 * (tsupport η).indicator
-          (fun y => ∑ k : Fin d, QG (z.1, y) k ^ 2) z.2
-        ∂volume by
+          (fun y => ∑ k : Fin d, QG (z.1, y) k ^ 2) z.2 by
     apply integral_congr_ae
     exact Filter.Eventually.of_forall hgradient] at hlocal
   exact hlocal

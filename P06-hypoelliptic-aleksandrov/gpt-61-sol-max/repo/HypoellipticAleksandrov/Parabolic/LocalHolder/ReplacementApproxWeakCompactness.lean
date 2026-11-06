@@ -9,8 +9,8 @@ One subsequence retains every entry of a finite family. This avoids making indep
 subsequence choices when passing the derivative relations to a limit.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter
 open scoped Topology BigOperators
@@ -24,7 +24,7 @@ theorem exists_strictMono_tendsto_clm_family_of_sum_norm_sq_le
     ∃ (v : I → H) (σ : ℕ → ℕ), StrictMono σ ∧
       ∀ i (ell : H →L[ℝ] ℝ),
         Tendsto (fun n => ell (u (σ n) i)) atTop (𝓝 (ell (v i))) := by
-  let q : ℕ → PiLp 2 (fun _ : I => H) := fun n => WithLp.toLp 2 (u n)
+  let q  := fun n => WithLp.toLp 2 (u n)
   have hq (n : ℕ) : ‖q n‖ ≤ C := by
     have heq : ‖q n‖ ^ 2 = ∑ i, ‖u n i‖ ^ 2 := PiLp.norm_sq_eq_of_L2 _ _
     have hsq := hb n

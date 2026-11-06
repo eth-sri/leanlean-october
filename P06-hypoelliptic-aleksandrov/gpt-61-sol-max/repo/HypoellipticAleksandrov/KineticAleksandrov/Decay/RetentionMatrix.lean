@@ -13,29 +13,33 @@ import Mathlib.Tactic.Positivity
 The standing positive ellipticity hypotheses are retained explicitly.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Matrix
-open scoped MatrixOrder BigOperators
+open HypoellipticAleksandrov Matrix
+open scoped MatrixOrder
 
-private theorem trace_upper {d : ℕ} {Lam : ℝ} {A : PDE.Mat d}
+variable {d : ℕ}
+
+private theorem trace_upper  {Lam : ℝ} {A : PDE.Mat d}
     (hhi : A ≤ Lam • (1 : PDE.Mat d)) : A.trace ≤ (d : ℝ) * Lam := by
-  have hgap : (Lam • (1 : PDE.Mat d) - A).PosSemidef := Matrix.le_iff.mp hhi
+  have hgap  := Matrix.le_iff.mp hhi
   have htrace := hgap.trace_nonneg
   simp only [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one,
     Fintype.card_fin, smul_eq_mul] at htrace
   linarith
 
-private theorem contraction_one {d : ℕ} (A : PDE.Mat d) :
+variable (A : PDE.Mat d)
+
+private theorem contraction_one   :
     matrixContraction A 1 = A.trace := by
   classical
   simp [matrixContraction, Matrix.trace, Matrix.diag, Matrix.one_apply]
 
-private theorem contraction_outer {d : ℕ} (A : PDE.Mat d) (Y : PDE.Vec d) :
+private theorem contraction_outer   (Y : PDE.Vec d) :
     matrixContraction A (Matrix.of (fun i j => Y i * Y j)) = PDE.vecDot Y (A *ᵥ Y) := by
   classical
   unfold matrixContraction PDE.vecDot Matrix.mulVec dotProduct
@@ -57,10 +61,10 @@ theorem retention_barrier_second_order {d N : ℕ} (hN : 3 ≤ N)
       (barrierC d N lam Lam / s ^ 4) *
         (1 - PDE.vecNormSq Y / s ^ 2) ^ (N - 2) * PDE.vecNormSq Y ≤
       matrixContraction A (Hess (barrier N s) Y) := by
-  have _hA := hA
-  have hLam : 0 ≤ Lam := (hlam.trans_le hlamLam).le
-  have hs2 : 0 < s ^ 2 := sq_pos_of_pos hs
-  have hR : 0 ≤ PDE.vecNormSq Y := PDE.vecNormSq_nonneg Y
+
+  have hLam  := (hlam.trans_le hlamLam).le
+  have hs2  := sq_pos_of_pos hs
+  have hR  := PDE.vecNormSq_nonneg Y
   have hY' : PDE.vecNormSq Y < s ^ 2 := by
     simpa only [PDE.euclideanBall, PDE.euclideanSqDist, Set.mem_ofPred_eq, sub_zero] using hY
   set w := 1 - PDE.vecNormSq Y / s ^ 2 with hw
@@ -114,28 +118,30 @@ private theorem young_of_square {X U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V)
     (hX : X ^ 2 ≤ 4 * U * V) : X ≤ U + V := by
   nlinarith [sq_nonneg (U - V)]
 
-private theorem barrier_drift_absorption {d N : ℕ} (hN : 3 ≤ N)
-    (lam Lam s H : ℝ) (hs : 0 < s) (hc : 0 < barrierC d N lam Lam)
+variable {d N : ℕ} (hN : 3 ≤ N) (lam Lam s H : ℝ) (hs : 0 < s)
+
+include hN hs
+private theorem barrier_drift_absorption  (hc : 0 < barrierC d N lam Lam)
     (a Y : PDE.Vec d) (ha : PDE.vecEuclideanNorm a ≤ H)
     (hY : Y ∈ PDE.euclideanBall 0 s) :
     PDE.vecDot a (PDE.classicalGradient (barrier N s) Y) ≤
       (barrierC d N lam Lam / s ^ 4) *
         (1 - PDE.vecNormSq Y / s ^ 2) ^ (N - 2) * PDE.vecNormSq Y +
       ((N : ℝ) ^ 2 * H ^ 2 / barrierC d N lam Lam) * barrier N s Y := by
-  have hs2 : 0 < s ^ 2 := sq_pos_of_pos hs
-  have hR : 0 ≤ PDE.vecNormSq Y := PDE.vecNormSq_nonneg Y
+  have hs2  := sq_pos_of_pos hs
+  have hR  := PDE.vecNormSq_nonneg Y
   have hY' : PDE.vecNormSq Y < s ^ 2 := by
     simpa only [PDE.euclideanBall, PDE.euclideanSqDist, Set.mem_ofPred_eq, sub_zero] using hY
   set w := 1 - PDE.vecNormSq Y / s ^ 2 with hw
   have hw0 : 0 ≤ w := by
     have := (div_lt_one hs2).mpr hY'
     dsimp [w]; linarith
-  have hH : 0 ≤ H := (PDE.vecEuclideanNorm_nonneg a).trans ha
+  have hH  := (PDE.vecEuclideanNorm_nonneg a).trans ha
   have hnorm : PDE.vecNormSq a ≤ H ^ 2 := by
     have hn := PDE.vecEuclideanNorm_nonneg a
     have heq := PDE.vecEuclideanNorm_sq a
     nlinarith
-  have hCS : PDE.vecDot a Y ^ 2 ≤ H ^ 2 * PDE.vecNormSq Y :=
+  have hCS  :=
     (PDE.sq_vecDot_le_vecNormSq_mul_vecNormSq a Y).trans
       (mul_le_mul_of_nonneg_right hnorm hR)
   have hgrad := (retention_polynomial_barrier hN s hs).2.2.2.1 Y hY
@@ -169,8 +175,7 @@ private theorem barrier_drift_absorption {d N : ℕ} (hN : 3 ≤ N)
   exact hsq
 
 /-- Young absorption gives the source global drift inequality. -/
-theorem retention_barrier_drift_inequality {d N : ℕ} (hN : 3 ≤ N)
-    (lam Lam s H : ℝ) (hs : 0 < s) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+theorem retention_barrier_drift_inequality  (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hc : 0 < barrierC d N lam Lam) (A : PDE.Mat d) (hA : A.IsSymm)
     (hlo : lam • (1 : PDE.Mat d) ≤ A) (hhi : A ≤ Lam • (1 : PDE.Mat d))
     (a Y : PDE.Vec d) (ha : PDE.vecEuclideanNorm a ≤ H) :

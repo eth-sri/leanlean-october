@@ -7,8 +7,8 @@ import Mathlib.Tactic
 
 /-! # Absolute integrability for the sphere-probability radial Fubini calculation -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -16,8 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 theorem bellman_radial_test_compactSupport {lam Lam : ℝ} (alpha : ℝ)
     (g : (ℝ × ℝ) → ℝ) (hc : HasCompactSupport g) (hs : tsupport g ⊆ bellmanPuncturedSet)
     (weight : BellmanSphere × BellmanCoefficient lam Lam → ℝ) :
-    HasCompactSupport (fun w : BellmanPositiveTime ×
-      (BellmanSphere × BellmanCoefficient lam Lam) =>
+    HasCompactSupport (fun w  =>
       w.1.val ^ (1 - alpha) * (weight w.2 * g (sphereRadialPoint w).val)) := by
   obtain ⟨a, b, ha, _, hbounds⟩ := bellman_compact_test_gauge_bounds g hc hs
   have hK := (bellmanRadiusWindow_isCompact a b ha).prod
@@ -39,19 +38,14 @@ theorem bellman_radial_test_integrable {lam Lam : ℝ} (alpha : ℝ)
     (g : (ℝ × ℝ) → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
     (hs : tsupport g ⊆ bellmanPuncturedSet)
     (weight : BellmanSphere × BellmanCoefficient lam Lam → ℝ) (hw : Continuous weight) :
-    Integrable (fun w : BellmanPositiveTime ×
-      (BellmanSphere × BellmanCoefficient lam Lam) =>
+    Integrable (fun w  =>
       w.1.val ^ (1 - alpha) * (weight w.2 * g (sphereRadialPoint w).val))
-      (bellmanPositiveTimeVolume.prod pi) := by
-  have hr : Continuous (fun w : BellmanPositiveTime ×
-      (BellmanSphere × BellmanCoefficient lam Lam) => w.1.val ^ (1 - alpha)) :=
-    (continuous_subtype_val.comp continuous_fst).rpow_const
-      (fun w => Or.inl w.1.property.ne')
-  have hp : Continuous (fun w : BellmanPositiveTime ×
-      (BellmanSphere × BellmanCoefficient lam Lam) => (sphereRadialPoint w).val) :=
-    continuous_subtype_val.comp (continuous_sphereRadialPoint lam Lam)
-  have hcont := hr.mul ((hw.comp continuous_snd).mul (hg.comp hp))
-  exact hcont.integrable_of_hasCompactSupport
-    (bellman_radial_test_compactSupport alpha g hc hs weight)
+      (bellmanPositiveTimeVolume.prod pi) := (Continuous.integrable_of_hasCompactSupport
+  (Continuous.mul
+    (Continuous.rpow_const (Continuous.comp continuous_subtype_val continuous_fst) fun w =>
+      Or.inl (LT.lt.ne' w.1.property))
+    (Continuous.mul (Continuous.comp hw continuous_snd)
+      (Continuous.comp hg (Continuous.comp continuous_subtype_val (continuous_sphereRadialPoint lam Lam)))))
+  (bellman_radial_test_compactSupport alpha g hc hs weight))
 
 end HypoellipticAleksandrov.KineticAleksandrov

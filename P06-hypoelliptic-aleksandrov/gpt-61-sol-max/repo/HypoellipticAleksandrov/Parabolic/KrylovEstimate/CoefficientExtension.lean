@@ -2,16 +2,19 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
 public import Mathlib.Topology.TietzeExtension
+import Mathlib.Tactic.FunProp
+
+
 
 /-! # Continuous extension of the coefficient matrix from a closed set -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 
 /-- Extend a continuous matrix field from a closed set, preserving its values there. -/
 theorem exists_continuous_matrix_extension
-    {N : ℕ} {K : Set (TimeVelocity N)} (hK : IsClosed K)
+    {N : ℕ} {K : HypoellipticAleksandrov.Parabolic.Region N} (hK : IsClosed K)
     (a : TimeVelocity N → PDE.Mat N) (ha : ContinuousOn a K) :
     ∃ ae : TimeVelocity N → PDE.Mat N,
       Continuous ae ∧ Set.EqOn ae a K := by
@@ -23,7 +26,7 @@ theorem exists_continuous_matrix_extension
     exact ⟨g, fun z => congrFun hg z⟩
   choose g hg using he
   refine ⟨fun z i j => g i j z, ?_, ?_⟩
-  · exact continuous_pi fun i => continuous_pi fun j => (g i j).continuous
+  · fun_prop
   · intro z hz
     funext i j
     exact hg i j ⟨z, hz⟩

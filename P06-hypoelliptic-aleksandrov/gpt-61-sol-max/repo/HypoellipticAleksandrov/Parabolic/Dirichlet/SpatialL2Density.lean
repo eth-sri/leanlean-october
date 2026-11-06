@@ -3,6 +3,11 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolev
 public import Mathlib.Analysis.Normed.Lp.SmoothApprox
 public import Mathlib.Geometry.Manifold.SmoothApprox
+import Aesop
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Interior-supported smooth tests are dense in spatial `L²`
@@ -13,25 +18,27 @@ uses global smooth compact approximation, localizes by a compact core and a
 Urysohn cutoff, and smooths once more without enlarging topological support.
 -/
 
-@[expose] public section
+ public section
 
 open Filter MeasureTheory
-open scoped ENNReal RealInnerProductSpace Topology
+open scoped ENNReal
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
+
+variable {d : ℕ}
 
 private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support
-    {d : ℕ} {μ : Measure (PDE.Vec d)} [IsFiniteMeasureOnCompacts μ]
+     {μ : Measure (PDE.Vec d)} [IsFiniteMeasureOnCompacts μ]
     {f : PDE.Vec d → ℝ} (hfCompact : HasCompactSupport f)
     (hfCont : Continuous f) {ε : ℝ} (hε : 0 < ε) :
     ∃ g : PDE.Vec d → ℝ,
-      HasCompactSupport g ∧ ContDiff ℝ (⊤ : ℕ∞) g ∧
+      HasCompactSupport g ∧ ContDiff ℝ PDE.smoothOrder g ∧
       Function.support g ⊆ Function.support f ∧
-      eLpNorm (f - g) (2 : ℝ≥0∞) μ ≤ ENNReal.ofReal ε := by
+      eLpNorm (f - g) (2 ) μ ≤ ENNReal.ofReal ε := by
   by_cases hf : f =ᵐ[μ] 0
   · refine ⟨0, HasCompactSupport.zero, contDiff_const, by simp, ?_⟩
     simp [eLpNorm_congr_ae hf]
@@ -44,25 +51,27 @@ private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support
   have hε' : 0 < ε' := by
     dsimp [ε']
     positivity
-  have hscale : ENNReal.ofReal ε' * μ (tsupport f) ^ (1 / (2 : ℝ≥0∞).toReal) ≤
-      ENNReal.ofReal ε := by
-    rw [← ENNReal.ofReal_toReal htsupport, ENNReal.ofReal_rpow_of_pos hmeasure_pos,
-      ← ENNReal.ofReal_mul hε'.le, ENNReal.ofReal_le_ofReal_iff hε.le, hε'_def, mul_assoc,
-      ← Real.rpow_add hmeasure_pos, neg_add_cancel, Real.rpow_zero, mul_one]
+
   obtain ⟨g, hgSmooth, hgDist, hgSupport⟩ :=
-    hfCont.exists_contDiff_approx (⊤ : ℕ∞) (ε := fun _ ↦ ε') (by fun_prop)
+    hfCont.exists_contDiff_approx (⊤ ) (ε := fun _ ↦ ε') (by fun_prop)
       (by intro; exact hε')
   refine ⟨g, hfCompact.mono hgSupport, hgSmooth, hgSupport, ?_⟩
   refine (eLpNorm_sub_le_of_dist_bdd μ ENNReal.coe_ne_top
     hfCompact.measurableSet.nullMeasurableSet hε'.le
     (hfCont.aestronglyMeasurable.sub hgSmooth.continuous.aestronglyMeasurable) ?_
-    (subset_tsupport f) (hgSupport.trans (subset_tsupport f))).trans hscale
+    (subset_tsupport f) (hgSupport.trans (subset_tsupport f))).trans (show ENNReal.ofReal ε' * μ (tsupport f) ^ (1 / (2 : ℝ≥0∞).toReal) ≤
+      ENNReal.ofReal ε by
+        rw [← ENNReal.ofReal_toReal htsupport, ENNReal.ofReal_rpow_of_pos hmeasure_pos,
+          ← ENNReal.ofReal_mul hε'.le, ENNReal.ofReal_le_ofReal_iff hε.le, hε'_def, mul_assoc,
+          ← Real.rpow_add hmeasure_pos, neg_add_cancel, Real.rpow_zero, mul_one])
   intro x
   rw [dist_comm]
   exact (hgDist x).le
 
+variable {Ω K : PDE.VelocityRegion d}
+
 private theorem cutoff_error_ae
-    {d : ℕ} {Ω K : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+      (hΩ : IsOpen Ω)
     (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
     (hχone : Set.EqOn χ 1 K) :
     g - (fun x ↦ χ x * g x) =ᵐ[PDE.volumeOn Ω]
@@ -75,24 +84,25 @@ private theorem cutoff_error_ae
   · simp [hx]
   · rw [Set.indicator_of_notMem hx]
     by_cases hxK : x ∈ K
-    · have hχ : χ x = 1 := hχone hxK
-      simp only [Pi.sub_apply, hχ, one_mul, sub_self]
-    · have hxnot : x ∉ tsupport g := by
-        intro hxtsupport
-        exact hx ⟨⟨hxΩ, hxtsupport⟩, hxK⟩
+    · aesop
+    ·
       simp only [Pi.sub_apply]
-      rw [image_eq_zero_of_notMem_tsupport hxnot]
-      simp only [mul_zero, sub_zero]
+      rw [image_eq_zero_of_notMem_tsupport (show x ∉ tsupport g by
+          intro hxtsupport
+          exact hx ⟨⟨hxΩ, hxtsupport⟩, hxK⟩)]
+      simp
+
+variable (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
 
 private theorem cutoff_error_indicator_bound
-    {d : ℕ} {Ω K : Set (PDE.Vec d)}
-    (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+
+
     (hg : AEStronglyMeasurable g (PDE.volumeOn Ω))
     {C : ℝ} (hC : ∀ x, ‖g x‖ ≤ C) (hC0 : 0 ≤ C)
     (hχrange : ∀ x, χ x ∈ Set.Icc (0 : ℝ) 1)
     (hset : MeasurableSet ((Ω ∩ tsupport g) \ K)) :
     eLpNorm (((Ω ∩ tsupport g) \ K).indicator
-      (g - (fun x ↦ χ x * g x))) (2 : ℝ≥0∞) (PDE.volumeOn Ω) ≤
+      (g - (fun x ↦ χ x * g x))) (2 ) (PDE.volumeOn Ω) ≤
       ENNReal.ofReal C * (PDE.volumeOn Ω) ((Ω ∩ tsupport g) \ K) ^
         (1 / (2 : ℝ≥0∞).toReal) := by
   apply eLpNorm_indicator_sub_le_of_dist_bdd (PDE.volumeOn Ω) ENNReal.coe_ne_top
@@ -101,9 +111,9 @@ private theorem cutoff_error_indicator_bound
   intro x hx
   have hχ0 : 0 ≤ χ x := (hχrange x).1
   have hχ1 : χ x ≤ 1 := (hχrange x).2
-  have hsub0 : 0 ≤ 1 - χ x := by linarith
+
   have hsub1 : |1 - χ x| ≤ 1 := by
-    rw [abs_of_nonneg hsub0]
+    rw [abs_of_nonneg (by linarith)]
     linarith
   calc
     dist (g x) (χ x * g x) = |1 - χ x| * ‖g x‖ := by
@@ -114,29 +124,29 @@ private theorem cutoff_error_indicator_bound
     _ ≤ C := by nlinarith [mul_nonneg hC0 (abs_nonneg (1 - χ x))]
 
 private theorem cutoff_error_lt_of_core
-    {d : ℕ} {Ω K : Set (PDE.Vec d)}
-    (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+
+
     {C r ε : ℝ} (hC0 : 0 ≤ C) (hCpos : 0 < C) (hr : 0 < r) (hε : 0 < ε)
     (hmeasure : (PDE.volumeOn Ω) ((Ω ∩ tsupport g) \ K) < ENNReal.ofReal (r ^ 2))
     (herror : g - (fun x ↦ χ x * g x) =ᵐ[PDE.volumeOn Ω]
       ((Ω ∩ tsupport g) \ K).indicator (g - (fun x ↦ χ x * g x)))
     (hindicator : eLpNorm (((Ω ∩ tsupport g) \ K).indicator
-      (g - (fun x ↦ χ x * g x))) (2 : ℝ≥0∞) (PDE.volumeOn Ω) ≤
+      (g - (fun x ↦ χ x * g x))) (2 ) (PDE.volumeOn Ω) ≤
       ENNReal.ofReal C * (PDE.volumeOn Ω) ((Ω ∩ tsupport g) \ K) ^
         (1 / (2 : ℝ≥0∞).toReal))
     (hr_def : r = ε / (C + 1)) :
-    eLpNorm (g - (fun x ↦ χ x * g x)) (2 : ℝ≥0∞) (PDE.volumeOn Ω) <
+    eLpNorm (g - (fun x ↦ χ x * g x)) (2 ) (PDE.volumeOn Ω) <
       ENNReal.ofReal ε := by
+  let sharedTerm_c06b046482 := ((g - (fun x ↦ χ x * g x)))
   calc
-    eLpNorm (g - (fun x ↦ χ x * g x)) (2 : ℝ≥0∞) (PDE.volumeOn Ω) =
+    eLpNorm sharedTerm_c06b046482 (2 ) (PDE.volumeOn Ω) =
         eLpNorm (((Ω ∩ tsupport g) \ K).indicator
-          (g - (fun x ↦ χ x * g x))) (2 : ℝ≥0∞) (PDE.volumeOn Ω) :=
+          sharedTerm_c06b046482) (2 ) (PDE.volumeOn Ω) :=
       eLpNorm_congr_ae herror
     _ ≤ ENNReal.ofReal C * (PDE.volumeOn Ω) ((Ω ∩ tsupport g) \ K) ^
         (1 / (2 : ℝ≥0∞).toReal) := hindicator
     _ < ENNReal.ofReal C * (ENNReal.ofReal (r ^ 2)) ^
-        (1 / (2 : ℝ≥0∞).toReal) := by
-      exact ENNReal.mul_lt_mul_right (ENNReal.ofReal_ne_zero_iff.mpr hCpos)
+        (1 / (2 : ℝ≥0∞).toReal) := ENNReal.mul_lt_mul_right (ENNReal.ofReal_ne_zero_iff.mpr hCpos)
         ENNReal.ofReal_ne_top (ENNReal.rpow_lt_rpow hmeasure (by norm_num))
     _ = ENNReal.ofReal (C * r) := by
       have hrpow : (r ^ 2) ^ (1 / (2 : ℝ)) = r := by
@@ -153,52 +163,52 @@ private theorem cutoff_error_lt_of_core
           ((div_lt_one (by linarith : 0 < C + 1)).mpr (by linarith)) hε
         _ = ε := one_mul _
 
+variable (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+
 private theorem cutoff_continuous
-    {d : ℕ} (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ)) (hgCont : Continuous g) :
+      (hgCont : Continuous g) :
     Continuous (fun x ↦ χ x * g x) :=
   χ.continuous.mul hgCont
 
 private theorem cutoff_hasCompactSupport
-    {d : ℕ} (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+
     (hχcompact : IsCompact (tsupport χ)) :
-    HasCompactSupport (fun x ↦ χ x * g x) := by
-  exact hχcompact.of_isClosed_subset (isClosed_tsupport _)
+    HasCompactSupport (fun x ↦ χ x * g x) := hχcompact.of_isClosed_subset (isClosed_tsupport _)
     tsupport_mul_subset_left
 
+variable {Ω : PDE.VelocityRegion d}
+
+variable (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+
 private theorem cutoff_tsupport_subset
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+
     (hχsupport : tsupport χ ⊆ Ω) :
     tsupport (fun x ↦ χ x * g x) ⊆ Ω :=
   tsupport_mul_subset_left.trans hχsupport
 
 private theorem cutoff_bundle
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+
     (hgCont : Continuous g) (hχcompact : IsCompact (tsupport χ))
     (hχsupport : tsupport χ ⊆ Ω) {ε : ℝ}
-    (hcutoff : eLpNorm (g - (fun x ↦ χ x * g x)) (2 : ℝ≥0∞) (PDE.volumeOn Ω) <
+    (hcutoff : eLpNorm (g - (fun x ↦ χ x * g x)) (2 ) (PDE.volumeOn Ω) <
       ENNReal.ofReal ε) :
     ∃ h : PDE.Vec d → ℝ,
       Continuous h ∧ HasCompactSupport h ∧ tsupport h ⊆ Ω ∧
-      eLpNorm (g - h) (2 : ℝ≥0∞) (PDE.volumeOn Ω) < ENNReal.ofReal ε := by
-  let h : PDE.Vec d → ℝ := fun x ↦ χ x * g x
-  have hhcont : Continuous h := cutoff_continuous g χ hgCont
-  have hhcompact : HasCompactSupport h := cutoff_hasCompactSupport g χ hχcompact
-  have hhsupport : tsupport h ⊆ Ω := cutoff_tsupport_subset g χ hχsupport
-  exact Exists.intro h ⟨hhcont, hhcompact, hhsupport, hcutoff⟩
+      eLpNorm (g - h) (2 ) (PDE.volumeOn Ω) < ENNReal.ofReal ε := (Exists.intro (fun x => χ x * g x)
+  ⟨cutoff_continuous g χ hgCont,
+    ⟨cutoff_hasCompactSupport g χ hχcompact, ⟨cutoff_tsupport_subset g χ hχsupport, hcutoff⟩⟩⟩)
 
 private theorem compactCore_cutoff_eLpNorm_sub_lt
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    {g : PDE.Vec d → ℝ} (hgSmooth : ContDiff ℝ (⊤ : ℕ∞) g)
+      (hΩ : IsOpen Ω)
+    {g : PDE.Vec d → ℝ} (hgSmooth : ContDiff ℝ PDE.smoothOrder g)
     (hgCompact : HasCompactSupport g) {ε : ℝ} (hε : 0 < ε) :
     ∃ h : PDE.Vec d → ℝ,
       Continuous h ∧ HasCompactSupport h ∧ tsupport h ⊆ Ω ∧
-      eLpNorm (g - h) (2 : ℝ≥0∞) (PDE.volumeOn Ω) < ENNReal.ofReal ε := by
-  let μ : Measure (PDE.Vec d) := PDE.volumeOn Ω
-  have hmeas : MeasurableSet (Ω ∩ tsupport g) :=
+      eLpNorm (g - h) (2 ) (PDE.volumeOn Ω) < ENNReal.ofReal ε := by
+
+  have hmeas  :=
     hΩ.measurableSet.inter (isClosed_tsupport g).measurableSet
-  have hfinite : μ (Ω ∩ tsupport g) ≠ ∞ := by
-    exact (measure_mono Set.inter_subset_right).trans_lt
-      hgCompact.isCompact.measure_lt_top |>.ne
+
   rcases hgSmooth.continuous.bounded_above_of_compact_support hgCompact with ⟨C, hC⟩
   have hC0 : 0 ≤ C := (norm_nonneg (g 0)).trans (hC 0)
   by_cases hCzero : C = 0
@@ -206,46 +216,48 @@ private theorem compactCore_cutoff_eLpNorm_sub_lt
       funext x
       apply norm_eq_zero.mp
       exact le_antisymm (by simpa [hCzero] using hC x) (norm_nonneg _)
-    have hzero : eLpNorm (g - 0) (2 : ℝ≥0∞) (PDE.volumeOn Ω) < ENNReal.ofReal ε := by
-      simpa [hgzero] using ENNReal.ofReal_pos.2 hε
-    exact ⟨0, continuous_zero, HasCompactSupport.zero, by simp, hzero⟩
-  have hCpos : 0 < C := lt_of_le_of_ne hC0 (Ne.symm hCzero)
+
+    exact ⟨0, continuous_zero, HasCompactSupport.zero, by simp, (by
+        simpa [hgzero] using ENNReal.ofReal_pos.2 hε)⟩
+
   let r : ℝ := ε / (C + 1)
   have hr : 0 < r := by
     dsimp [r]
     positivity
-  rcases hmeas.exists_isCompact_diff_lt hfinite
+  rcases hmeas.exists_isCompact_diff_lt (show (PDE.volumeOn Ω) (Ω ∩ tsupport g) ≠ ∞ by
+      exact (measure_mono Set.inter_subset_right).trans_lt
+        hgCompact.isCompact.measure_lt_top |>.ne)
     (ENNReal.ofReal_pos.2 (sq_pos_of_pos hr)).ne' with ⟨K, hKA, hKCompact, hKmeasure⟩
   rcases exists_continuousMap_one_of_isCompact_subset_isOpen hKCompact hΩ
     (hKA.trans Set.inter_subset_left) with ⟨χ, hχone, hχcompact, hχsupport, hχrange⟩
-  have herror := cutoff_error_ae hΩ g χ hχone
+
   have hindicator := cutoff_error_indicator_bound g χ hgSmooth.continuous.aestronglyMeasurable
     hC hC0 hχrange
     (hmeas.diff hKCompact.isClosed.measurableSet)
-  have hcutoff : eLpNorm (g - (fun x ↦ χ x * g x)) (2 : ℝ≥0∞) (PDE.volumeOn Ω) <
-      ENNReal.ofReal ε := by
-    simpa only [μ] using
-      cutoff_error_lt_of_core g χ hC0 hCpos hr hε hKmeasure herror hindicator rfl
-  exact cutoff_bundle g χ hgSmooth.continuous hχcompact hχsupport hcutoff
+
+  exact cutoff_bundle g χ hgSmooth.continuous hχcompact hχsupport (cutoff_error_lt_of_core g χ hC0 (lt_of_le_of_ne hC0 (Ne.symm hCzero)) hr hε hKmeasure (cutoff_error_ae hΩ g χ hχone) hindicator rfl)
 
 private theorem lp_dist_toLp_toLp_le
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
     {f g : α → ℝ} {ε : ℝ}
-    (hf : MemLp f (2 : ℝ≥0∞) μ) (hg : MemLp g (2 : ℝ≥0∞) μ)
+    (hf : MemLp f (2 ) μ) (hg : MemLp g (2 ) μ)
     (hε : 0 ≤ ε)
-    (hfg : eLpNorm (f - g) (2 : ℝ≥0∞) μ ≤ ENNReal.ofReal ε) :
+    (hfg : eLpNorm (f - g) (2 ) μ ≤ ENNReal.ofReal ε) :
     dist (hf.toLp f) (hg.toLp g) ≤ ε := by
   rw [Lp.dist_def, eLpNorm_congr_ae (hf.coeFn_toLp.sub hg.coeFn_toLp)]
   calc
-    (eLpNorm (f - g) (2 : ℝ≥0∞) μ).toReal ≤ (ENNReal.ofReal ε).toReal :=
+    (eLpNorm (f - g) (2 ) μ).toReal ≤ (ENNReal.ofReal ε).toReal :=
       ENNReal.toReal_mono ENNReal.ofReal_ne_top hfg
     _ = ε := ENNReal.toReal_ofReal hε
 
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} (hΩ : IsOpen Ω)
+
+include hΩ in
 private theorem exists_weakTestFunction_toScalarLp_dist_lt
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (u : PDE.ScalarLp Ω (2 : ℝ≥0∞)) {ε : ℝ} (hε : 0 < ε) :
+
+    (u : PDE.ScalarLp Ω (2 )) {ε : ℝ} (hε : 0 < ε) :
     ∃ φ : PDE.WeakTestFunction Ω,
-      dist u (φ.toScalarLp (2 : ℝ≥0∞)) < ε := by
+      dist u (φ.toScalarLp (2 )) < ε := by
   let μ : Measure (PDE.Vec d) := PDE.volumeOn Ω
   have hquarter : 0 < ε / 4 := by positivity
   obtain ⟨g, hgCompact, hgSmooth, hug⟩ :=
@@ -255,19 +267,19 @@ private theorem exists_weakTestFunction_toScalarLp_dist_lt
   obtain ⟨q, hqCompact, hqSmooth, hqSupport, hhq⟩ :=
     continuousCompact_contDiff_eLpNorm_sub_le_with_support
       (μ := PDE.volumeOn Ω) hhCompact hhCont hquarter
-  have hqTsupport : tsupport q ⊆ Ω := by
-    rw [tsupport]
-    exact (closure_mono hqSupport).trans (show closure (Function.support h) ⊆ Ω from hhSupport)
+
   let φ : PDE.WeakTestFunction Ω :=
     { toFun := q
       contDiff := hqSmooth
       hasCompactSupport := hqCompact
-      tsupport_subset := hqTsupport }
-  let mg : MemLp g (2 : ℝ≥0∞) μ :=
+      tsupport_subset := (by
+          rw [tsupport]
+          exact (closure_mono hqSupport).trans (show closure (Function.support h) ⊆ Ω from hhSupport)) }
+  let mg : MemLp g (2 ) μ :=
     (hgSmooth.continuous.memLp_of_hasCompactSupport hgCompact).restrict Ω
-  let mh : MemLp h (2 : ℝ≥0∞) μ :=
+  let mh : MemLp h (2 ) μ :=
     (hhCont.memLp_of_hasCompactSupport hhCompact).restrict Ω
-  let mq : MemLp q (2 : ℝ≥0∞) μ :=
+  let mq : MemLp q (2 ) μ :=
     (hqSmooth.continuous.memLp_of_hasCompactSupport hqCompact).restrict Ω
   have hu_toLp : (Lp.memLp u).toLp (u : PDE.Vec d → ℝ) = u := by
     apply Lp.ext
@@ -276,12 +288,12 @@ private theorem exists_weakTestFunction_toScalarLp_dist_lt
     rw [← hu_toLp]
     simpa only [μ] using lp_dist_toLp_toLp_le (Lp.memLp u) mg hquarter.le hug
   have hgh' : dist (mg.toLp g) (mh.toLp h) ≤ ε / 4 := by
-    simpa only [μ] using lp_dist_toLp_toLp_le mg mh hquarter.le (le_of_lt hgh)
+    exact lp_dist_toLp_toLp_le mg mh hquarter.le (le_of_lt hgh)
   have hhq' : dist (mh.toLp h) (mq.toLp q) ≤ ε / 4 := by
-    simpa only [μ] using lp_dist_toLp_toLp_le mh mq hquarter.le hhq
-  have hqφ : mq.toLp q = φ.toScalarLp (2 : ℝ≥0∞) := by
+    exact lp_dist_toLp_toLp_le mh mq hquarter.le hhq
+  have hqφ : mq.toLp q = φ.toScalarLp (2 ) := by
     apply Lp.ext
-    filter_upwards [mq.coeFn_toLp, φ.coeFn_toScalarLp (2 : ℝ≥0∞)] with x hxq hxφ
+    filter_upwards [mq.coeFn_toLp, φ.coeFn_toScalarLp (2 )] with x hxq hxφ
     exact hxq.trans hxφ.symm
   refine ⟨φ, ?_⟩
   rw [← hqφ]
@@ -295,44 +307,36 @@ private theorem exists_weakTestFunction_toScalarLp_dist_lt
     _ ≤ ε / 4 + (ε / 4 + ε / 4) := by gcongr
     _ < ε := by linarith
 
+include hΩ in
 /-- Actual smooth compactly supported tests are dense in restricted-volume
 `L²` on every open native-vector domain. -/
 theorem weakTestFunction_toScalarLp_dense
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+     :
     Dense (Set.range fun φ : PDE.WeakTestFunction Ω =>
-      φ.toScalarLp (2 : ℝ≥0∞)) := by
+      φ.toScalarLp (2 )) := by
   intro u
   refine (mem_closure_iff_nhds_basis Metric.nhds_basis_closedBall).2 ?_
   intro ε hε
   rcases exists_weakTestFunction_toScalarLp_dist_lt hΩ u hε with ⟨φ, hφ⟩
-  exact ⟨φ.toScalarLp (2 : ℝ≥0∞), ⟨φ, rfl⟩, by
+  exact ⟨φ.toScalarLp (2 ), ⟨φ, rfl⟩, by
     rw [Metric.mem_closedBall, dist_comm]
     exact hφ.le⟩
 
 private theorem smoothTest_valueCLM_eq_toScalarLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+
     (φ : PDE.WeakTestFunction Ω) :
     valueCLM hΩ
       (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ) =
-        φ.toScalarLp (2 : ℝ≥0∞) := by
-  change (PDE.smoothCompactlySupportedW1pGraph
-    (p := (2 : ℝ≥0∞)) hΩ φ).1.1 = φ.toScalarLp (2 : ℝ≥0∞)
-  apply Lp.ext
-  filter_upwards [
-    PDE.W1pFunction.coeFn_toW1pGraph_fst
-      (PDE.W1pFunction.ofContDiff hΩ
-        (φ.contDiff.of_le (by simp)) φ.hasCompactSupport (2 : ℝ≥0∞)),
-    φ.coeFn_toScalarLp (2 : ℝ≥0∞)] with x hxGraph hxTest
-  exact hxGraph.trans hxTest.symm
+        φ.toScalarLp (2 ) := rfl
 
 /-- The spatial `H¹₀` value map has dense range in restricted-volume `L²`. -/
 theorem valueCLM_denseRange
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+     :
     DenseRange (valueCLM hΩ) := by
   change Dense (Set.range (valueCLM hΩ))
   refine (weakTestFunction_toScalarLp_dense hΩ).mono ?_
   rintro y ⟨φ, rfl⟩
-  exact ⟨smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ,
+  exact ⟨_,
     smoothTest_valueCLM_eq_toScalarLp hΩ φ⟩
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

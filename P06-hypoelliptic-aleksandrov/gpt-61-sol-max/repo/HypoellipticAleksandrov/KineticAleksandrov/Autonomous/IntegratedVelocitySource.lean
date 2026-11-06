@@ -2,13 +2,15 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.IntegratedVelocityComparison
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Actual compact convex-profile source tests -/
 
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
+
 open SectionTwo
 
 /-- Positive forcing density supplied by the convex velocity profile. -/
@@ -17,7 +19,7 @@ def velocityOccupationDensity (r v : ℝ) : ℝ :=
 
 /-- The convex forcing density is smooth. -/
 theorem velocityOccupationDensity_contDiff {r : ℝ} (hr : 0 < r) :
-    ContDiff ℝ (⊤ : ℕ∞) (velocityOccupationDensity r) := by
+    ContDiff ℝ PDE.smoothOrder (velocityOccupationDensity r) := by
   apply contDiff_const.div
     (((contDiff_const.add (contDiff_id.pow 2)).sqrt
       (fun v => ne_of_gt (by nlinarith [sq_pos_of_pos hr, sq_nonneg v]))).pow 3)
@@ -35,7 +37,7 @@ theorem velocity_profile_source_bound (hH : HormanderHypoellipticityStatement)
     {lam Lam r : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (hr : 0 < r) (T : ℝ)
-    (f : ℝ × EvolutionAmbientState 1 → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+    (f : ℝ × EvolutionAmbientState 1 → ℝ) (hf : ContDiff ℝ PDE.smoothOrder f)
     (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ {q | q.1 < T})
     (hf01 : ∀ q, 0 ≤ f q ∧ f q ≤ 1) (p : Point) (hp : p.time < T) :
     duhamelPotential E.2 T
@@ -44,7 +46,7 @@ theorem velocity_profile_source_bound (hH : HormanderHypoellipticityStatement)
       Real.sqrt (2 * Lam * (T - p.time)) := by
   let g := fun q : Point => f (q.time, q.position, q.velocity) *
     (lam * velocityOccupationDensity r (q.position 0))
-  have hgs : ContDiff ℝ (⊤ : ℕ∞) (rawLift g) := by
+  have hgs : ContDiff ℝ PDE.smoothOrder (rawLift g) := by
     exact hf.mul (contDiff_const.mul ((velocityOccupationDensity_contDiff hr).comp
       ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst)))
   have hc : HasCompactSupport g :=
@@ -52,14 +54,13 @@ theorem velocity_profile_source_bound (hH : HormanderHypoellipticityStatement)
   have hu : tsupport g ⊆ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T := by
     intro q hq
     have hqf := tsupport_mul_subset_left hq
-    have hraw : (q.time, q.position, q.velocity) ∈ tsupport f := by
-      exact tsupport_comp_subset_preimage f
+    have hraw  := tsupport_comp_subset_preimage f
         (KineticPoint.homeomorphProd 1).continuous hqf
     refine ⟨hfU hraw, ?_⟩
     change q.position ∈ movingDomain (wholeSpace 1) (fun _ => 0) q.time
     rw [movingDomain_wholeSpace]
     trivial
-  have hLn : 0 ≤ Lam := hlam.le.trans hLam
+  have hLn  := hlam.le.trans hLam
   have hpoint : p ∈ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T := by
     refine ⟨hp, ?_⟩
     change p.position ∈ movingDomain (wholeSpace 1) (fun _ => 0) p.time

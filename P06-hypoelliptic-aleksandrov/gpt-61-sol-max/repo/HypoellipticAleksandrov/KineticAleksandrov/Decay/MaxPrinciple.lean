@@ -11,32 +11,32 @@ semidefinite diffusion; the source's stronger hypotheses imply these directly.
 The transported coordinate remains unrestricted throughout.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+open Set
+
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
 
 /-- The source's bounded admissible domains have compact closure. -/
-theorem isCompact_closure_of_maximumPrinciple_domain {d : ℕ}
-    {Ω : Set (PDE.Vec d)}
+theorem isCompact_closure_of_maximumPrinciple_domain
     (hΩ : (∃ c R, 0 < R ∧ Ω = PDE.euclideanBall c R) ∨
       (∃ hd : d = 1, ∃ a b, a < b ∧ hd ▸ Ω = PDE.oneDimensionalAxisBox a b)) :
     IsCompact (closure Ω) := by
   rcases hΩ with ⟨c, R, hR, rfl⟩ | ⟨hd, a, b, hab, heq⟩
   · exact (Metric.isBounded_ball.subset (PDE.euclideanBall_subset_supBall hR)).isCompact_closure
   · cases hd
-    have heq' : Ω = PDE.oneDimensionalAxisBox a b := by simpa using heq
+    have heq' : Ω = PDE.oneDimensionalAxisBox a b := by exact heq
     rw [heq']
-    exact (PDE.isBoundedDomain_axisBox (fun _ : Fin 1 => a) (fun _ : Fin 1 => b)).isBounded
+    exact (PDE.isBoundedDomain_axisBox (fun _ : Fin 1 => a) (fun _  => b)).isBounded
       |>.isCompact_closure
 
 /-- Maximum principle on the entire closed moving tube over a finite subdivision.
 This includes initial, terminal, lateral, and subdivision slices. The source's
 piecewise C¹ curve assumption can be weakened to continuity. -/
-theorem movingDomain_maximumPrinciple {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
-    {u : KineticPoint d → ℝ}
+theorem movingDomain_maximumPrinciple  {γ : ℝ → PDE.Vec d}
+    {B : FullKineticCoefficient d} {drift : PDE.VectorField d}
+    {u : HypoellipticAleksandrov.KineticScalarField d}
     (hΩ : (∃ c R, 0 < R ∧ Ω = PDE.euclideanBall c R) ∨
       (∃ hd : d = 1, ∃ a b, a < b ∧ hd ▸ Ω = PDE.oneDimensionalAxisBox a b))
     (n : ℕ) :
@@ -60,9 +60,7 @@ theorem movingDomain_maximumPrinciple {d : ℕ}
       p.time = r (Fin.last (n + 1)) → u p ≤ 0)
     (_ : ∀ p ∈ maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 1))),
       p.position ∈ frontier (movingDomain Ω γ p.time) → u p ≤ 0),
-    ∀ q ∈ maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 1))), u q ≤ 0 := by
-  have hopen := isOpen_of_isAdmissibleEvolutionDomain (Or.inr hΩ)
-  exact nonpos_on_piecewise_maximumClosedTube hopen
-    (isCompact_closure_of_maximumPrinciple_domain hΩ) n
+    ∀ q ∈ maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 1))), u q ≤ 0 := (nonpos_on_piecewise_maximumClosedTube (isOpen_of_isAdmissibleEvolutionDomain (Or.inr hΩ))
+  (isCompact_closure_of_maximumPrinciple_domain hΩ) n)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

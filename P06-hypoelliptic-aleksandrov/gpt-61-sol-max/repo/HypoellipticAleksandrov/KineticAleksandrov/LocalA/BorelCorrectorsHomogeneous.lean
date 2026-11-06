@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BorelCorrectorsGreen
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundarySolution
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Smoothness and homogeneity of the literal compactly corrected solution -/
 
@@ -13,9 +15,9 @@ open scoped Topology Matrix.Norms.Elementwise
 
 /-- Correct the actual classical residual by the signed whole-space source integral. -/
 def borelCorrectedFunction {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (T : ℝ) (χ : KineticPoint d → ℝ) (B : CoefficientField d)
-    (U : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ :=
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+    (T : ℝ) (χ : HypoellipticAleksandrov.KineticScalarField d) (B : CoefficientField d)
+    (U : HypoellipticAleksandrov.KineticScalarField d) (P : KineticPoint d) : ℝ :=
   U P + borelCorrectorPotential K T (borelCorrectorSource χ B U) P
 
 /-- The literal correction is smooth and homogeneous where the cutoff equals one. -/
@@ -23,16 +25,16 @@ theorem borelCorrectedFunction_smooth_homogeneous
     (hH : HormanderHypoellipticityStatement) {d : ℕ} {lam Lam : ℝ}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (hBs : IsSmoothCoefficient B)
-    (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+    (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 )))
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+    (hreal : RealizesTerminalEvolution (wholeSpace d) _
       MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K)
     (T : ℝ) (D O : Set (KineticPoint d)) (hD : IsOpen D) (hO : IsOpen O)
     (hOD : O ⊆ D) (hDt : ∀ P ∈ D, P.time < T)
-    (U : KineticPoint d → ℝ) (hu : IsKineticC112On U D)
-    (χ : KineticPoint d → ℝ) (hχ : Continuous χ) (hχc : HasCompactSupport χ)
+    (U : HypoellipticAleksandrov.KineticScalarField d) (hu : IsKineticC112On U D)
+    (χ : HypoellipticAleksandrov.KineticScalarField d) (hχ : Continuous χ) (hχc : HasCompactSupport χ)
     (hχD : tsupport χ ⊆ D) (hχone : ∀ P ∈ O, χ P = 1) :
-    ContDiffOn ℝ (⊤ : ℕ∞)
+    ContDiffOn ℝ PDE.smoothOrder
       (borelCorrectedFunction K T χ B U ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' O) ∧
       ∀ P ∈ O, forwardKineticOperator (ofTimeVelocityCoefficient B)
@@ -51,7 +53,7 @@ theorem borelCorrectedFunction_smooth_homogeneous
   have hFd : tsupport F ⊆ D := by
     exact (tsupport_mul_subset_left).trans hχD
   have hFpast : ∀ Q, KineticPoint.equivProd d Q ∉
-      boundedSourcePast (wholeSpace d) (fun _ => (0 : PDE.Vec d)) T →
+      boundedSourcePast (wholeSpace d) (fun _ => (0 )) T →
       (F ∘ sectionTwoPoint) Q = 0 := by
     intro Q hQ
     change F (sectionTwoPoint Q) = 0
@@ -67,19 +69,19 @@ theorem borelCorrectedFunction_smooth_homogeneous
     (identityDrift_bounds d).2 T (F ∘ sectionTwoPoint)
     (hFc.measurable.comp (continuous_sectionTwoPoint d).measurable) (max M 0) hM0
     (fun Q => hFb _) hFpast
-  have hsub : O' ⊆ evolutionPastOpenCylinder (wholeSpace d) (fun _ => (0 : PDE.Vec d)) T := by
+  have hsub : O' ⊆ evolutionPastOpenCylinder (wholeSpace d) (fun _ => (0 )) T := by
     rintro Q ⟨P, hP, rfl⟩
     refine ⟨hDt P (hOD hP), ?_⟩
     simp only [movingDomain_wholeSpace, mem_univ]
   have hWweak := borelCorrectorPotential_weak B hB S K hreal T F hFc.measurable
     (max M 0) hM0 hFb
-  have hw := boundedSource_weak_restrict hsub (zIndependentCoefficient B) (identityDrift d)
-    (W ∘ sectionTwoPoint) (fun Q => -F (sectionTwoPoint Q)) hWweak
+  have hw := boundedSource_weak_restrict hsub _ _
+    _ _ hWweak
   have heqV : V = evolutionHomeomorph d ⁻¹' O' := by
     ext x
     constructor
     · intro hx
-      exact ⟨massPhysicalPoint x, hx, rfl⟩
+      exact ⟨_, hx, rfl⟩
     · rintro ⟨P, hP, hEq⟩
       have hp : massPhysicalPoint x = P := congrArg sectionTwoPoint hEq.symm
       change massPhysicalPoint x ∈ O
@@ -109,8 +111,8 @@ theorem borelCorrectedFunction_smooth_homogeneous
   have hjWeak : IsWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
       V (J ∘ massPhysicalPoint) (fun _ => 0) :=
     borelCorrector_weak_cancel _ _ hfull (identityDrift_smooth d) V
-      (U ∘ massPhysicalPoint) (W ∘ massPhysicalPoint)
-      (forwardKineticOperator (ofTimeVelocityCoefficient B) U ∘ massPhysicalPoint)
+      _ _
+      _
       huNative hwResidual
   have hWc : ContinuousOn W O :=
     hWcont.comp (continuous_sectionTwoPoint d).continuousOn
@@ -126,7 +128,7 @@ theorem borelCorrectedFunction_smooth_homogeneous
   have hjSmooth := hf.congr (fun x hx => hEq hx)
   have hjOp := duhamel_operator_eq_of_smooth_weak hV hfull hsym
     (identityDrift_smooth d) hjSmooth continuousOn_const hjWeak
-  have hjPhysical : ContDiffOn ℝ (⊤ : ℕ∞) (J ∘ (KineticPoint.equivProd d).symm)
+  have hjPhysical : ContDiffOn ℝ PDE.smoothOrder (J ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' O) := by
     apply boundary_native_smooth_to_physical O J
     rw [← heqV]

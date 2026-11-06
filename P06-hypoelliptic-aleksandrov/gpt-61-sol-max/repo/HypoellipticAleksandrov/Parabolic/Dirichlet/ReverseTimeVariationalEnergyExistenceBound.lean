@@ -10,12 +10,12 @@ This module assembles the same reverse-time Galerkin limit's canonical initial
 trace, literal residual equation, and inherited uniform Bochner-radius bound.
 -/
 
-@[expose] public section
+ public section
 
-open Set Topology
-open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
+open Set
+open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -23,13 +23,13 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 energy solution with the prescribed canonical initial trace and explicit
 uniform Bochner-radius bound. -/
 theorem exists_reverseTime_variational_energy_solution_norm_le_radius
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ lam Lam : ℝ) (h₀₁ : r₀ < r₁)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -50,7 +50,7 @@ theorem exists_reverseTime_variational_energy_solution_norm_le_radius
         a z.1 z.2 ≤ Lam • (1 : PDE.Mat d))
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    (initial : PDE.ScalarLp Ω (2 )) :
     ∃ (u : ReverseTimeL2V hΩ (r₁ - r₀)),
       ∃ (g : ReverseTimeL2VStar hΩ (r₁ - r₀)),
         ∃ hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)

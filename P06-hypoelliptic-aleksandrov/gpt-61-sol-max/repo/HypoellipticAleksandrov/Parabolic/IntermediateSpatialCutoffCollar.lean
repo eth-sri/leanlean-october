@@ -11,7 +11,7 @@ and uniform signed coordinate-shift collar used for interior spatial
 difference quotients.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -19,11 +19,11 @@ namespace HypoellipticAleksandrov.Parabolic
 choose an intermediate open set, a quantitative plateau cutoff, and a positive
 signed coordinate-shift radius whose full carrier remains in the ambient set. -/
 theorem exists_intermediateSpatialCutoff_signedCollar
-    {d : ℕ} (O₀ O₁ : Set (PDE.Vec d))
+    {d : ℕ} (O₀ O₁ : PDE.VelocityRegion d)
     (hO₀ : IsOpen O₀)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀) :
-    ∃ (O₂ : Set (PDE.Vec d)) (Keta : ℝ)
+    ∃ (O₂ : PDE.VelocityRegion d) (Keta : ℝ)
       (_η : PDE.QuantitativeSmoothCutoff (closure O₁) O₂ Keta)
       (δ : ℝ),
       IsOpen O₂ ∧
@@ -39,7 +39,7 @@ theorem exists_intermediateSpatialCutoff_signedCollar
   obtain ⟨Keta, ⟨η⟩⟩ :=
     exists_quantitativeSmoothCutoff_tsupport_subset
       hO₁compact hO₂open hO₁O₂
-  have hKeta : 0 ≤ Keta :=
+  have hKeta  :=
     (PDE.vecEuclideanNorm_nonneg (PDE.classicalGradient η.toFun 0)).trans
       (η.gradient_bound 0)
   obtain ⟨δ, hδ, hcarrier⟩ :=

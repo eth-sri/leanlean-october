@@ -9,12 +9,12 @@ The constant classical solution is compared with actual compact terminal solutio
 The quadratic-tail coefficient tends to zero, forcing the sub-Markov mass to equal one.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory Filter HypoellipticAleksandrov.Parabolic
+open Set MeasureTheory Filter
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped Topology ENNReal
+open scoped Topology
 
 /-- The supplied whole-space kernel conserves mass for every ordered query. -/
 theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
@@ -32,10 +32,10 @@ theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
     continuous_const hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
   have hbd (N : ℕ) : 1 - (E.2.master q univ).toReal ≤
       ((N : ℝ) + 1)⁻¹ ^ 2 * growthBarrier C τ p := by
-    obtain ⟨u, hu, hrep, _huniq⟩ := hE.1 τ (conservationDatum N)
+    obtain ⟨u, hu, hrep, _huniq⟩ := hE.1 τ _
       (conservationDatum_smoothCompact N τ)
-    have hc := hcmp τ (BoundedBorel.const 1) (conservationDatum N) (fun _ => 1) u
-      (((N : ℝ) + 1)⁻¹ ^ 2) (sq_nonneg _)
+    have hc := hcmp τ _ _ _ u
+      _ (sq_nonneg _)
       (fullspace_constant_solution _ _ τ 1) hu
       (fun x _ => conservationDatum_deficit N x) p hp
     let state : EvolutionState autonomousWholeDomain (fun _ => 0) σ :=
@@ -43,7 +43,7 @@ theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
     have hr := hrep σ q.2.1 state
     have hi := hE.2.1 σ τ q.2.1 state (terminalStateDatum (conservationDatum N))
     have he := integral_master_eq_fiber E.2 autonomousWholeDomain_measurable
-      σ τ q.2.1 state (conservationDatum N) (conservationDatum N).measurable
+      σ τ q.2.1 state _ (conservationDatum N).measurable
     have huq : u p = ∫ x, conservationDatum N x ∂E.2.master q :=
       hr.trans (hi.trans he.symm)
     have hmass : (∫ x, conservationDatum N x ∂E.2.master q) ≤
@@ -62,7 +62,7 @@ theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
   have ht := (tendsto_one_div_add_atTop_nhds_zero_nat.pow 2).mul_const (growthBarrier C τ p)
   have hzero : Tendsto (fun N : ℕ => ((N : ℝ) + 1)⁻¹ ^ 2 * growthBarrier C τ p)
       atTop (𝓝 0) := by
-    simpa only [one_div, zero_pow (by norm_num : (2 : ℕ) ≠ 0), zero_mul] using ht
+    simpa only [one_div, zero_pow (by norm_num : (2 ) ≠ 0), zero_mul] using ht
   have hle : 1 ≤ (E.2.master q univ).toReal := by
     have hz := ge_of_tendsto hzero (Filter.Eventually.of_forall hbd)
     linarith

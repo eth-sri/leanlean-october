@@ -22,25 +22,27 @@ theorem sphereRadialPoint_ne_zero {lam Lam : ℝ}
 def sphereRadialPoint {lam Lam : ℝ}
     (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam)) :
     BellmanPuncturedPlane :=
-  ⟨bellmanPlaneDilation w.1.val w.2.1.val, sphereRadialPoint_ne_zero w⟩
+  ⟨_, sphereRadialPoint_ne_zero w⟩
+
+variable (alpha : ℝ)
 
 /-- The radial weight has exponent one minus the homogeneous function degree. -/
-def bellmanRadiusWeight (alpha : ℝ) : BellmanPositiveTime → ENNReal :=
+def bellmanRadiusWeight  : BellmanPositiveTime → ENNReal :=
   fun r => ENNReal.ofReal (r.val ^ (1 - alpha))
 
 /-- The source's weighted positive radial volume. -/
-def bellmanRadiusMeasure (alpha : ℝ) : Measure BellmanPositiveTime :=
+def bellmanRadiusMeasure  : Measure BellmanPositiveTime :=
   bellmanPositiveTimeVolume.withDensity (bellmanRadiusWeight alpha)
 
+variable {lam Lam : ℝ} (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+
 /-- The first radial adjoint measure is the actual radial pushforward. -/
-def radialMu {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) :
+def radialMu  :
     Measure BellmanPuncturedPlane :=
   Measure.map sphereRadialPoint ((bellmanRadiusMeasure alpha).prod pi)
 
 /-- The second radial adjoint measure includes the actual diffusion coefficient density. -/
-def radialEta {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) :
+def radialEta  :
     Measure BellmanPuncturedPlane :=
   Measure.map sphereRadialPoint (((bellmanRadiusMeasure alpha).prod pi).withDensity
     (fun w => ENNReal.ofReal w.2.2.val))

@@ -12,7 +12,7 @@ assertion that the canonical visit masses satisfy the required decay.
 -/
 
 public section
-noncomputable section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open scoped BigOperators
 
@@ -22,7 +22,7 @@ theorem enlargedAdmissibleAlpha_gamma_range {lam Lam : ℝ}
     (ha : enlargedAdmissibleAlpha lam Lam hlam hLam alpha) :
     1 < 2 - alpha ∧ 2 - alpha < 2 := by
   have hb := bellmanAdjointExponent_two_le (Lam / lam) ((le_div_iff₀ hlam).2
-    (by simpa only [one_mul] using hLam))
+    (by simpa))
   obtain ⟨hal, hau⟩ := ha
   constructor <;> linarith
 

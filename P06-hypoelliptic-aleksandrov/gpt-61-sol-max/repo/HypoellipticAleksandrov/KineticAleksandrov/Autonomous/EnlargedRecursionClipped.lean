@@ -2,19 +2,22 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionLower
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassCount
+import Aesop
+
+
 
 /-! # Equality with a strictly earlier clipped recursion -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- On poles after `s`, the enlarged exit kernel agrees with a finite clipped kernel. -/
 theorem enlargedVisitExit_comp_eq_clipped
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ)
+     (H : FiniteIntervalUnion) (s T : ℝ)
     (mu : Measure Point) (hs : ∀ᵐ p ∂mu, s ≤ p.time) :
     enlargedVisitExitKernel hH hLE hlam hLam A H T ∘ₘ mu =
       visitUnionExitKernel hH hLE hlam hLam A H (s - 1) T ∘ₘ mu := by
@@ -33,21 +36,17 @@ theorem enlargedVisitExit_comp_eq_clipped
     · intro h
       exact ⟨by linarith, h⟩
     · exact fun h => h.2
-  by_cases h : p ∈ enlargedVisitPoleSet H T
-  · rw [dite_eq_left h, dite_eq_left (he.mp h)]
-    rfl
-  · rw [dite_eq_right h, dite_eq_right (fun hh => h (he.mpr hh))]
+  aesop
+
+variable (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
 
 /-- Lowering the clipped cutoff strictly below the initial pole preserves every entrance. -/
 theorem enlargedVisitEntrance_eq_clipped
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
+      (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     enlargedVisitEntrance hH hLE hlam hLam A c J s T P n =
       visitEntrancePiece hH hLE hlam hLam A c J (s - 1) T P n := by
   let EA := enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T
-  let EW := enlargedVisitExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) T
+
   have he (H : FiniteIntervalUnion) (mu : Measure Point) (hm : ∀ᵐ p ∂mu, s ≤ p.time) :=
     enlargedVisitExit_comp_eq_clipped hH hLE hlam hLam A H s T mu hm
   have hb (I : Interval) (mu : Measure Point) (hm : ∀ᵐ p ∂mu, s < p.time) :
@@ -59,15 +58,14 @@ theorem enlargedVisitEntrance_eq_clipped
     unfold enlargedVisitEntrance visitEntrancePiece visitGamma visitInitial
     split
     · rfl
-    · have hm : ∀ᵐ p ∂Measure.dirac P, s ≤ p.time :=
-        (ae_dirac_iff (isClosed_le continuous_const continuous_time).measurableSet).mpr hs
-      have hx := he (visitWaitingUnion c J) (Measure.dirac P) hm
+    ·
+      have hx := he (visitWaitingUnion c J) _ ((ae_dirac_iff (isClosed_le continuous_const continuous_time).measurableSet).mpr hs)
       simp only [visitKernel_comp_dirac] at hx
       rw [← hx]
       exact hb _ _ ((enlargedVisitExitKernel_ae_time_gt hH hLE hlam hLam A
         (visitWaitingUnion c J) T P).mono fun _ hp => hs.trans_lt hp)
   | succ n ih =>
-    change (EW ∘ₘ ((EA ∘ₘ enlargedVisitEntrance hH hLE hlam hLam A c J s T P n).restrict
+    change ((enlargedVisitExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) T) ∘ₘ ((EA ∘ₘ enlargedVisitEntrance hH hLE hlam hLam A c J s T P n).restrict
       (visitBoundary s T (visitActiveInterval c) J))).restrict
         (visitBoundary s T (visitEntranceInterval c) J) = _
     have hg := (enlargedVisitEntrance_ae_support hH hLE hlam hLam A c J s T P hs hT n).mono
@@ -85,10 +83,7 @@ theorem enlargedVisitEntrance_eq_clipped
 
 /-- The actual enlarged count is finite for every valid outer-strip initial pole. -/
 theorem enlargedVisitStarts_finite_of_outer_pole
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
+      (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     IsFiniteMeasure (enlargedVisitStarts hH hLE hlam hLam A c J s T P) := by
   have he : enlargedVisitStarts hH hLE hlam hLam A c J s T P =
       Measure.sum (visitEntrancePiece hH hLE hlam hLam A c J (s - 1) T P) := by

@@ -5,27 +5,27 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.UniversalBarrie
 
 /-! # The universal homogeneous Bellman barrier with the source adjoint exponent -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- One homogeneous barrier and constant work for all punctured points and coefficients. -/
 theorem exists_bellman_barrier (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     2 ≤ bellmanAdjointExponent (Lam / lam)
-      (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) ∧
+      (by apply (le_div_iff₀ hlam).2; simpa) ∧
     bellmanAdjointExponent (Lam / lam)
-      (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) < 3 ∧
+      (by apply (le_div_iff₀ hlam).2; simpa) < 3 ∧
     ∀ alpha : ℝ, bellmanAdjointExponent (Lam / lam)
-      (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) - 2 < alpha →
+      (by apply (le_div_iff₀ hlam).2; simpa) - 2 < alpha →
       alpha < 1 → ∃ phi : (ℝ × ℝ) → ℝ, ∃ c : ℝ,
         IsBellmanHomogeneous alpha phi ∧ 0 < c ∧
           ∀ q ∈ bellmanPuncturedSet, ∀ b ∈ Icc lam Lam,
             c * bellmanGauge q ^ (alpha - 2) ≤ bellmanOperator b phi q := by
-  have hr : 1 ≤ Lam / lam := by
-    apply (le_div_iff₀ hlam).2
-    simpa only [one_mul] using hLam
-  obtain ⟨hlo, hhi⟩ := bellmanAdjointExponent_range (Lam / lam) hr
+
+  obtain ⟨hlo, hhi⟩ := bellmanAdjointExponent_range (Lam / lam) (by
+      apply (le_div_iff₀ hlam).2
+      simpa)
   refine ⟨hlo, hhi, ?_⟩
   intro alpha ha ha1
   obtain ⟨phi, hhom, hpos⟩ := exists_positive_bellman_image lam Lam hlam hLam alpha ha ha1

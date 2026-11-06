@@ -8,65 +8,42 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.SourceTimeDri
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.StationaryComparisonDrift
 import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierPointwise
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletGeometry
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Ellipsoid source bounds assembled from exact upstream theorem surfaces -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
-open HypoellipticAleksandrov.Parabolic.Dirichlet HypoellipticAleksandrov.Parabolic.LocalHolder
-open Set MeasureTheory Filter
-open scoped Matrix ENNReal Topology MatrixOrder Matrix.Norms.Elementwise BigOperators
+ public section
 
+namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
+open HypoellipticAleksandrov.Parabolic
+open HypoellipticAleksandrov.Parabolic.Dirichlet HypoellipticAleksandrov.Parabolic.LocalHolder
+open Set MeasureTheory
+open scoped Matrix ENNReal MatrixOrder Matrix.Norms.Elementwise
+
+section
+variable (hOpen : ∀ {d : ℕ} (Q : PDE.Mat d), IsOpen (openEllipsoid Q)) (hGeom : ∀ {d : ℕ} {Q : PDE.Mat d}, Q.PosDef → Bornology.IsBounded (openEllipsoid Q) ∧ closure (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) ≤ 1} ∧ frontier (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) = 1} ∧ HasUniformNondegenerateExteriorCone (openEllipsoid Q)) (hDrift : ∀ {d : ℕ} {Ω : PDE.VelocityRegion d}, Bornology.IsBounded Ω → ∀ (a T : ℝ) (b : PDE.TimeVectorField d), Continuous (fun z : TimeVelocity d => b z.1 z.2) → ∃ B : ℝ, 0 ≤ B ∧ ∀ z ∈ scalarParabolicClosedCylinder a T Ω, PDE.vecEuclideanNorm (b z.1 z.2) ≤ B) (hBarrier : ∀ {d : ℕ}, 0 < d → ∀ {Q : PDE.Mat d}, Q.PosDef → ∀ (a T lam M B : ℝ), 0 < lam → 0 ≤ M → 0 ≤ B → ∀ (A : CoefficientField d) (b : PDE.TimeVectorField d), (∀ t y, (A t y).IsSymm) → (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q), lam • (1 : PDE.Mat d) ≤ A z.1 z.2) → (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q), PDE.vecEuclideanNorm (b z.1 z.2) ≤ B) → ∃ q : PDE.H10Function (openEllipsoid Q), ContDiff ℝ PDE.smoothOrder q.toH1Function.toFun ∧ (∀ y ∈ closure (openEllipsoid Q), 0 ≤ q.toH1Function.toFun y) ∧ (∀ y ∈ frontier (openEllipsoid Q), q.toH1Function.toFun y = 0) ∧ ∀ z ∈ Icc a T ×ˢ openEllipsoid Q, scalarParabolicZeroOrderOperator A b (fun _ _ => 0) (fun p => q.toH1Function.toFun p.2) z ≤ -M)
+
+include hOpen hGeom hDrift hBarrier
 /-- Interior source bounds, conditional on the complete exact upstream declarations. -/
 theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
-    (hOpen :
-      ∀ {d : ℕ} (Q : PDE.Mat d), IsOpen (openEllipsoid Q))
-    (hGeom :
-      ∀ {d : ℕ} {Q : PDE.Mat d}, Q.PosDef →
-        Bornology.IsBounded (openEllipsoid Q) ∧
-        closure (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) ≤ 1} ∧
-        frontier (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) = 1} ∧
-        HasUniformNondegenerateExteriorCone (openEllipsoid Q))
-    (hDrift :
-      ∀ {d : ℕ} {Ω : Set (PDE.Vec d)}, Bornology.IsBounded Ω →
-        ∀ (a T : ℝ) (b : ℝ → PDE.Vec d → PDE.Vec d),
-        Continuous (fun z : TimeVelocity d => b z.1 z.2) →
-        ∃ B : ℝ, 0 ≤ B ∧ ∀ z ∈ scalarParabolicClosedCylinder a T Ω,
-          PDE.vecEuclideanNorm (b z.1 z.2) ≤ B)
-    (hBarrier :
-      ∀ {d : ℕ}, 0 < d → ∀ {Q : PDE.Mat d}, Q.PosDef →
-        ∀ (a T lam M B : ℝ), 0 < lam → 0 ≤ M → 0 ≤ B →
-        ∀ (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d),
-        (∀ t y, (A t y).IsSymm) →
-        (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q),
-          lam • (1 : PDE.Mat d) ≤ A z.1 z.2) →
-        (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q),
-          PDE.vecEuclideanNorm (b z.1 z.2) ≤ B) →
-        ∃ q : PDE.H10Function (openEllipsoid Q),
-          ContDiff ℝ (⊤ : ℕ∞) q.toH1Function.toFun ∧
-          (∀ y ∈ closure (openEllipsoid Q), 0 ≤ q.toH1Function.toFun y) ∧
-          (∀ y ∈ frontier (openEllipsoid Q), q.toH1Function.toFun y = 0) ∧
-          ∀ z ∈ Icc a T ×ˢ openEllipsoid Q,
-            scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
-              (fun p => q.toH1Function.toFun p.2) z ≤ -M)
+
     (hInterior :
       ∀ {d : ℕ} (_hd : 0 < d)
-          {Ω : Set (PDE.Vec d)} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
+          {Ω : PDE.VelocityRegion d} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
           (a T : ℝ) (_haT : a < T) (lam Lam : ℝ) (_hlam : 0 < lam) (_hLam : lam ≤ Lam)
           (A : CoefficientField d)
-          (b : ℝ → PDE.Vec d → PDE.Vec d)
-          (_hb : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2))
+          (b : PDE.TimeVectorField d)
+          (_hb : ContDiff ℝ PDE.smoothOrder (fun z : TimeVelocity d => b z.1 z.2))
           (_hA : IsSmoothCoefficient A)
           (_hlo : HasLowerEllipticity lam A) (_hhi : HasUpperEllipticity Lam A)
-          (F : TimeVelocity d → ℝ) (_hF : ContDiff ℝ (⊤ : ℕ∞) F),
+          (F : HypoellipticAleksandrov.Parabolic.ScalarField d) (_hF : ContDiff ℝ PDE.smoothOrder F),
          ∃ (u : ReverseTimeL2V _hΩ (T - a)) (g : ReverseTimeL2VStar _hΩ (T - a))
             (_hdu : HasGelfandWeakTimeDerivative _hΩ (T - a) (sub_pos.mpr _haT) u g),
             IsReverseTimeVariationalEnergySolution a T _haT _hΩ _hΩb A
               b (fun _ _ => 0) (fun t y => F (t, y))
               ⟨univ, isOpen_univ, subset_univ _, _hF.contDiffOn⟩ 0 u g _hdu ∧
-            ∃ w : TimeVelocity d → ℝ,
+            ∃ w : HypoellipticAleksandrov.Parabolic.ScalarField d,
               MemLp w 2 (timeVelocityVolumeOn (Ioo a T ×ˢ Ω)) ∧
               (∀ᵐ t ∂volume.restrict (Ioo a T),
                 (fun y => w (t, y)) =ᵐ[PDE.volumeOn Ω] fun y => valueCLM _hΩ (u (T - t)) y) ∧
@@ -77,14 +54,14 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
                   PDE.vecDot (b z.1 z.2) (scalarSpatialGradient w z) = F z)
     (hTime :
       ∀ {d : ℕ}
-          {Ω : Set (PDE.Vec d)} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
+          {Ω : PDE.VelocityRegion d} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
           (a T lam : ℝ) (_haT : a < T) (_hlam : 0 < lam)
           (A : CoefficientField d)
-          (b : ℝ → PDE.Vec d → PDE.Vec d)
-          (_hb : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2))
+          (b : PDE.TimeVectorField d)
+          (_hb : ContDiff ℝ PDE.smoothOrder (fun z : TimeVelocity d => b z.1 z.2))
           (_hA : IsSmoothCoefficient A)
           (_hlo : HasLowerEllipticity lam A)
-          (F : TimeVelocity d → ℝ) (_hF : ContDiff ℝ (⊤ : ℕ∞) F)
+          (F : HypoellipticAleksandrov.Parabolic.ScalarField d) (_hF : ContDiff ℝ PDE.smoothOrder F)
           (M : ℝ) (_hM : 0 ≤ M)
           (_hFM : ∀ z ∈ scalarParabolicClosedCylinder a T Ω, |F z| ≤ M)
           (u : ReverseTimeL2V _hΩ (T - a)) (g : ReverseTimeL2VStar _hΩ (T - a))
@@ -92,21 +69,21 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
           (_hu : IsReverseTimeVariationalEnergySolution a T _haT _hΩ _hΩb A
             b (fun _ _ => 0) (fun t y => F (t, y))
             ⟨univ, isOpen_univ, subset_univ _, _hF.contDiffOn⟩ 0 u g _hdu)
-          (w : TimeVelocity d → ℝ)
+          (w : HypoellipticAleksandrov.Parabolic.ScalarField d)
           (_hw : ContinuousOn w (scalarParabolicOpenCylinder a T Ω))
           (_hwslice : ∀ᵐ t ∂volume.restrict (Ioo a T),
             (fun y => w (t, y)) =ᵐ[PDE.volumeOn Ω] fun y => valueCLM _hΩ (u (T - t)) y),
          ∀ z ∈ scalarParabolicOpenCylinder a T Ω, |w z| ≤ M * (T - z.1))
     (hCompare :
       ∀ {d : ℕ}
-          {Ω : Set (PDE.Vec d)} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
+          {Ω : PDE.VelocityRegion d} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
           (a T : ℝ) (_haT : a < T) (lam : ℝ) (_hlam : 0 < lam)
           (A : CoefficientField d)
-          (b : ℝ → PDE.Vec d → PDE.Vec d)
-          (_hb : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2))
+          (b : PDE.TimeVectorField d)
+          (_hb : ContDiff ℝ PDE.smoothOrder (fun z : TimeVelocity d => b z.1 z.2))
           (_hA : IsSmoothCoefficient A)
-          (_hlo : HasLowerEllipticity lam A) (F G : TimeVelocity d → ℝ)
-          (_hF : ContDiff ℝ (⊤ : ℕ∞) F) (_hG : ContDiff ℝ (⊤ : ℕ∞) G)
+          (_hlo : HasLowerEllipticity lam A) (F G : HypoellipticAleksandrov.Parabolic.ScalarField d)
+          (_hF : ContDiff ℝ PDE.smoothOrder F) (_hG : ContDiff ℝ PDE.smoothOrder G)
           (q : PDE.H10Function Ω) (_hq : ContDiff ℝ 2 q.toH1Function.toFun)
           (_hqn : ∀ y ∈ Ω, 0 ≤ q.toH1Function.toFun y)
           (_heq : ∀ z ∈ Icc a T ×ˢ Ω,
@@ -123,15 +100,15 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
               u g _hdu ⟨τ, _hτ⟩ y| ≤ q.toH1Function.toFun y)
     : ∀ {d : ℕ}, 0 < d → ∀ {Q : PDE.Mat d}, Q.PosDef →
   ∀ (a T lam Lam : ℝ), a < T → 0 < lam → lam ≤ Lam →
-  ∀ (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d),
+  ∀ (A : CoefficientField d) (b : PDE.TimeVectorField d),
   (∀ t y, (A t y).IsSymm) → IsSmoothCoefficient A →
   HasLowerEllipticity lam A → HasUpperEllipticity Lam A →
-  ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2) →
-  ∀ (F : TimeVelocity d → ℝ), ContDiff ℝ (⊤ : ℕ∞) F →
+  ContDiff ℝ PDE.smoothOrder (fun z : TimeVelocity d => b z.1 z.2) →
+  ∀ (F : HypoellipticAleksandrov.Parabolic.ScalarField d), ContDiff ℝ PDE.smoothOrder F →
   ∀ (M : ℝ), 0 ≤ M →
   (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q), |F z| ≤ M) →
-  ∃ (w : TimeVelocity d → ℝ) (q : PDE.H10Function (openEllipsoid Q)),
-    ContDiff ℝ (⊤ : ℕ∞) q.toH1Function.toFun ∧
+  ∃ (w : HypoellipticAleksandrov.Parabolic.ScalarField d) (q : PDE.H10Function (openEllipsoid Q)),
+    ContDiff ℝ PDE.smoothOrder q.toH1Function.toFun ∧
     (∀ y ∈ frontier (openEllipsoid Q), q.toH1Function.toFun y = 0) ∧
     IsScalarC12On w (scalarParabolicOpenCylinder a T (openEllipsoid Q)) ∧
     (∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
@@ -151,11 +128,11 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
     hInterior hd hΩ hΩb a T haT lam Lam hlam hLam A b hb hA hlo hhi F hF
   have htime := hTime hΩ hΩb a T lam haT hlam A b hb hA hlo F hF
     M hM hFM u g hdu hu w hw.continuousOn hs
-  let G : TimeVelocity d → ℝ := scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
+  let G  := scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
     (fun p => q.toH1Function.toFun p.2)
-  have hG : ContDiff ℝ (⊤ : ℕ∞) G := by
-    have h := (contDiff_terminal_lift_source A b q.toH1Function.toFun hA hb hq).neg
-    simpa only [neg_neg] using h
+  have hG : ContDiff ℝ PDE.smoothOrder G := by
+
+    simpa only [neg_neg] using ((contDiff_terminal_lift_source A b q.toH1Function.toFun hA hb hq).neg)
   have hcl : closure (scalarParabolicOpenCylinder a T (openEllipsoid Q)) =
       scalarParabolicClosedCylinder a T (openEllipsoid Q) := by
     unfold scalarParabolicOpenCylinder scalarParabolicClosedCylinder
@@ -166,11 +143,10 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
       (fun p hp => hqop p ⟨⟨hp.1.1.le, hp.1.2.le⟩, hp.2⟩)
       hG.continuous.continuousOn continuous_const.continuousOn
     rwa [hcl]
-  have hGF : ∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q), G z ≤ -|F z| :=
-    fun z hz => (hGM z hz).trans (neg_le_neg (hFM z hz))
+
   have henergy := hCompare hΩ hΩb a T haT lam hlam A b hb hA hlo F G hF hG q
     (hq.of_le (by simp)) (fun y hy => hqn y (subset_closure hy))
-    (fun _ _ => rfl) hGF u g hdu hu
+    (fun _ _ => rfl) (fun z hz => (hGM z hz).trans (neg_le_neg (hFM z hz))) u g hdu hu
   have hspace := classicalEnergyRepresentative_abs_le_continuous_barrier hΩ a T haT
     u g hdu q.toH1Function.toFun hq.continuous henergy w hw.continuousOn hs
   refine ⟨w, q, hq, hqf, hw, ?_, htime, hspace⟩
@@ -180,47 +156,18 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
 
 /-- Interior source bounds with the drift ports discharged. -/
 theorem exists_signed_source_ellipsoidInterior_with_bounds_of_geometry_barrier
-    (hOpen :
-      ∀ {d : ℕ} (Q : PDE.Mat d), IsOpen (openEllipsoid Q))
-    (hGeom :
-      ∀ {d : ℕ} {Q : PDE.Mat d}, Q.PosDef →
-        Bornology.IsBounded (openEllipsoid Q) ∧
-        closure (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) ≤ 1} ∧
-        frontier (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) = 1} ∧
-        HasUniformNondegenerateExteriorCone (openEllipsoid Q))
-    (hDrift :
-      ∀ {d : ℕ} {Ω : Set (PDE.Vec d)}, Bornology.IsBounded Ω →
-        ∀ (a T : ℝ) (b : ℝ → PDE.Vec d → PDE.Vec d),
-        Continuous (fun z : TimeVelocity d => b z.1 z.2) →
-        ∃ B : ℝ, 0 ≤ B ∧ ∀ z ∈ scalarParabolicClosedCylinder a T Ω,
-          PDE.vecEuclideanNorm (b z.1 z.2) ≤ B)
-    (hBarrier :
-      ∀ {d : ℕ}, 0 < d → ∀ {Q : PDE.Mat d}, Q.PosDef →
-        ∀ (a T lam M B : ℝ), 0 < lam → 0 ≤ M → 0 ≤ B →
-        ∀ (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d),
-        (∀ t y, (A t y).IsSymm) →
-        (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q),
-          lam • (1 : PDE.Mat d) ≤ A z.1 z.2) →
-        (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q),
-          PDE.vecEuclideanNorm (b z.1 z.2) ≤ B) →
-        ∃ q : PDE.H10Function (openEllipsoid Q),
-          ContDiff ℝ (⊤ : ℕ∞) q.toH1Function.toFun ∧
-          (∀ y ∈ closure (openEllipsoid Q), 0 ≤ q.toH1Function.toFun y) ∧
-          (∀ y ∈ frontier (openEllipsoid Q), q.toH1Function.toFun y = 0) ∧
-          ∀ z ∈ Icc a T ×ˢ openEllipsoid Q,
-            scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
-              (fun p => q.toH1Function.toFun p.2) z ≤ -M)
+
     : ∀ {d : ℕ}, 0 < d → ∀ {Q : PDE.Mat d}, Q.PosDef →
   ∀ (a T lam Lam : ℝ), a < T → 0 < lam → lam ≤ Lam →
-  ∀ (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d),
+  ∀ (A : CoefficientField d) (b : PDE.TimeVectorField d),
   (∀ t y, (A t y).IsSymm) → IsSmoothCoefficient A →
   HasLowerEllipticity lam A → HasUpperEllipticity Lam A →
-  ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2) →
-  ∀ (F : TimeVelocity d → ℝ), ContDiff ℝ (⊤ : ℕ∞) F →
+  ContDiff ℝ PDE.smoothOrder (fun z : TimeVelocity d => b z.1 z.2) →
+  ∀ (F : HypoellipticAleksandrov.Parabolic.ScalarField d), ContDiff ℝ PDE.smoothOrder F →
   ∀ (M : ℝ), 0 ≤ M →
   (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q), |F z| ≤ M) →
-  ∃ (w : TimeVelocity d → ℝ) (q : PDE.H10Function (openEllipsoid Q)),
-    ContDiff ℝ (⊤ : ℕ∞) q.toH1Function.toFun ∧
+  ∃ (w : HypoellipticAleksandrov.Parabolic.ScalarField d) (q : PDE.H10Function (openEllipsoid Q)),
+    ContDiff ℝ PDE.smoothOrder q.toH1Function.toFun ∧
     (∀ y ∈ frontier (openEllipsoid Q), q.toH1Function.toFun y = 0) ∧
     IsScalarC12On w (scalarParabolicOpenCylinder a T (openEllipsoid Q)) ∧
     (∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
@@ -228,24 +175,25 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_geometry_barrier
     (∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
       |w z| ≤ M * (T - z.1)) ∧
     ∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
-      |w z| ≤ q.toH1Function.toFun z.2 := by
-  exact exists_signed_source_ellipsoidInterior_with_bounds_of_upstream hOpen hGeom hDrift
+      |w z| ≤ q.toH1Function.toFun z.2 := exists_signed_source_ellipsoidInterior_with_bounds_of_upstream hOpen hGeom hDrift
     hBarrier (@exists_signed_source_classicalInterior_withDrift)
     (@classical_abs_le_source_time_withDrift) (@variational_abs_le_stationary_withDrift)
+end
+
 
 /-- Every smooth signed source has an interior correction with both ellipsoid envelopes. -/
 theorem exists_signed_source_ellipsoidInterior_with_bounds :
 ∀ {d : ℕ}, 0 < d → ∀ {Q : PDE.Mat d}, Q.PosDef →
   ∀ (a T lam Lam : ℝ), a < T → 0 < lam → lam ≤ Lam →
-  ∀ (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d),
+  ∀ (A : CoefficientField d) (b : PDE.TimeVectorField d),
   (∀ t y, (A t y).IsSymm) → IsSmoothCoefficient A →
   HasLowerEllipticity lam A → HasUpperEllipticity Lam A →
-  ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2) →
-  ∀ (F : TimeVelocity d → ℝ), ContDiff ℝ (⊤ : ℕ∞) F →
+  ContDiff ℝ PDE.smoothOrder (fun z : TimeVelocity d => b z.1 z.2) →
+  ∀ (F : HypoellipticAleksandrov.Parabolic.ScalarField d), ContDiff ℝ PDE.smoothOrder F →
   ∀ (M : ℝ), 0 ≤ M →
   (∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q), |F z| ≤ M) →
-  ∃ (w : TimeVelocity d → ℝ) (q : PDE.H10Function (openEllipsoid Q)),
-    ContDiff ℝ (⊤ : ℕ∞) q.toH1Function.toFun ∧
+  ∃ (w : HypoellipticAleksandrov.Parabolic.ScalarField d) (q : PDE.H10Function (openEllipsoid Q)),
+    ContDiff ℝ PDE.smoothOrder q.toH1Function.toFun ∧
     (∀ y ∈ frontier (openEllipsoid Q), q.toH1Function.toFun y = 0) ∧
     IsScalarC12On w (scalarParabolicOpenCylinder a T (openEllipsoid Q)) ∧
     (∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
@@ -253,8 +201,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds :
     (∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
       |w z| ≤ M * (T - z.1)) ∧
     ∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
-      |w z| ≤ q.toH1Function.toFun z.2 := by
-  exact exists_signed_source_ellipsoidInterior_with_bounds_of_geometry_barrier
+      |w z| ≤ q.toH1Function.toFun z.2 := exists_signed_source_ellipsoidInterior_with_bounds_of_geometry_barrier
     (@isOpen_openEllipsoid) (@openEllipsoid_geometry)
     (@exists_closedCylinder_drift_bound) (@exists_h10_ellipsoid_drift_barrier)
 

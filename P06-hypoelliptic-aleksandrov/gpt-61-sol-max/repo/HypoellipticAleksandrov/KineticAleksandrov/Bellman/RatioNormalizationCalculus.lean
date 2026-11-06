@@ -4,23 +4,30 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.RatioNormalizat
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureJets
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Chain rules and the stationary identity under position rescaling -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov
-open MeasureTheory Set
+ public section
 
+namespace HypoellipticAleksandrov.KineticAleksandrov
+open MeasureTheory
+
+variable (s : ℝ) (hs : 0 < s) (φ : ℝ × ℝ → ℝ)
+
+section
+variable (hφ : Differentiable ℝ φ) (q : ℝ × ℝ)
+
+include hφ
 /-- The position derivative acquires exactly the position-rescaling factor. -/
-theorem bellmanPositionEquiv_fderiv_position (s : ℝ) (hs : 0 < s)
-    (φ : ℝ × ℝ → ℝ) (hφ : Differentiable ℝ φ) (q : ℝ × ℝ) :
+theorem bellmanPositionEquiv_fderiv_position   :
     fderiv ℝ (fun z => φ (bellmanPositionEquiv s hs z)) q (1, 0) =
       s * fderiv ℝ φ (bellmanPositionEquiv s hs q) (1, 0) := by
   let T := bellmanPositionEquiv s hs
-  have h := ((hφ (T q)).hasFDerivAt.comp q T.hasFDerivAt).fderiv
+
   change fderiv ℝ (φ ∘ T) q (1, 0) = _
-  rw [h, ContinuousLinearMap.comp_apply]
+  rw [(((hφ (T q)).hasFDerivAt.comp q T.hasFDerivAt).fderiv), ContinuousLinearMap.comp_apply]
   have he : T (1, 0) = s • (1, 0) := by
     change (s * 1, (0 : ℝ)) = (s * 1, s * 0)
     simp
@@ -28,21 +35,21 @@ theorem bellmanPositionEquiv_fderiv_position (s : ℝ) (hs : 0 < s)
   rw [he, map_smul, smul_eq_mul]
 
 /-- Velocity differentiation is unchanged by position rescaling. -/
-theorem bellmanPositionEquiv_fderiv_velocity (s : ℝ) (hs : 0 < s)
-    (φ : ℝ × ℝ → ℝ) (hφ : Differentiable ℝ φ) (q : ℝ × ℝ) :
+theorem bellmanPositionEquiv_fderiv_velocity   :
     fderiv ℝ (fun z => φ (bellmanPositionEquiv s hs z)) q (0, 1) =
       fderiv ℝ φ (bellmanPositionEquiv s hs q) (0, 1) := by
   let T := bellmanPositionEquiv s hs
-  have h := ((hφ (T q)).hasFDerivAt.comp q T.hasFDerivAt).fderiv
+
   change fderiv ℝ (φ ∘ T) q (0, 1) = _
-  rw [h, ContinuousLinearMap.comp_apply]
+  rw [(((hφ (T q)).hasFDerivAt.comp q T.hasFDerivAt).fderiv), ContinuousLinearMap.comp_apply]
   change fderiv ℝ φ (T q) (s * 0, 1) = _
   simp only [mul_zero]
   rfl
+end
+
 
 /-- The second velocity derivative is unchanged by position rescaling. -/
-theorem bellmanPositionEquiv_fderiv_velocity_twice (s : ℝ) (hs : 0 < s)
-    (φ : ℝ × ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (q : ℝ × ℝ) :
+theorem bellmanPositionEquiv_fderiv_velocity_twice  (hφ : ContDiff ℝ PDE.smoothOrder φ) (q : ℝ × ℝ) :
     fderiv ℝ (fun z => fderiv ℝ (fun w => φ (bellmanPositionEquiv s hs w)) z (0, 1))
       q (0, 1) =
     fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) (bellmanPositionEquiv s hs q) (0, 1) := by
@@ -58,17 +65,16 @@ theorem IsBellmanStationaryAdjointPair.map_position {μ η : Measure BellmanPunc
   intro φ hφ hc haway
   let T := bellmanPositionEquiv s hs
   let H := bellmanPositionHomeomorph s hs
-  have hcomp : ContDiff ℝ (⊤ : ℕ∞) (fun q => φ (T q)) :=
-    hφ.comp T.contDiff
-  have hccomp : HasCompactSupport (fun q => φ (T q)) := hc.comp_homeomorph T.toHomeomorph
-  have hscomp : tsupport (fun q => φ (T q)) ⊆ {q | q ≠ (0, 0)} := by
-    intro q hq hzero
-    have h := tsupport_comp_subset_preimage φ T.continuous hq
-    have hn := haway h
-    apply hn
-    rw [hzero]
-    exact T.map_zero
-  have h := hp (fun q => φ (T q)) hcomp hccomp hscomp
+
+
+
+  have h := hp (fun q => φ (T q)) (hφ.comp T.contDiff) (hc.comp_homeomorph T.toHomeomorph) (by
+      intro q hq hzero
+      have h := tsupport_comp_subset_preimage φ T.continuous hq
+
+      apply (haway h)
+      rw [hzero]
+      exact T.map_zero)
   dsimp only [T] at h
   simp only [bellmanPositionEquiv_fderiv_position s hs φ (hφ.differentiable (by simp)),
     bellmanPositionEquiv_fderiv_velocity_twice s hs φ hφ] at h
@@ -86,7 +92,7 @@ theorem IsBellmanStationaryAdjointPair.map_position {μ η : Measure BellmanPunc
   change (∫ q : BellmanPuncturedPlane, q.val.2 * fderiv ℝ φ (T q.val) (1, 0) ∂μ) +
     s⁻¹ * (∫ q : BellmanPuncturedPlane,
       fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) (T q.val) (0, 1) ∂η) = 0
-  have hm := congrArg (fun a : ℝ => s⁻¹ * a) h
-  simpa only [mul_add, ← mul_assoc, inv_mul_cancel₀ hs.ne', one_mul, mul_zero] using hm
+
+  simpa only [mul_add, ← mul_assoc, inv_mul_cancel₀ hs.ne', one_mul, mul_zero] using (congrArg (fun a  => s⁻¹ * a) h)
 
 end HypoellipticAleksandrov.KineticAleksandrov

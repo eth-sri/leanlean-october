@@ -4,12 +4,17 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Holder.GaussianBarrierP
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.GaussianBarrierProfileTransport
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.BarrierSignMatrix
 import Mathlib.Tactic
+import Mathlib.Tactic.Ring
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-! # Exact multiplied operator formula for the constructed source barrier -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -18,8 +23,8 @@ open Parabolic Scaling
 /-- The source Gaussian operator identity without division by the amplitude. -/
 theorem gaussianBarrier_backwardOperator {d : ℕ} (A : FullKineticCoefficient d)
     {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell tminus sblock : ℝ)
-    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
-    (hv : ContDiff ℝ (⊤ : ℕ∞) v) (hkin : ∀ s, HasDerivAt x (v s) s)
+    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ PDE.smoothOrder x)
+    (hv : ContDiff ℝ PDE.smoothOrder v) (hkin : ∀ s, HasDerivAt x (v s) s)
     (P : KineticPoint d) (hs : 0 < P.time - tminus - sblock) :
     backwardOperator A (gaussianBarrier lam Lam H h L ell tminus sblock x v) P =
       ell * Real.exp (-Xi d lam Lam H h * (P.time - tminus - sblock) -
@@ -65,9 +70,6 @@ theorem gaussianBarrier_backwardOperator {d : ℕ} (A : FullKineticCoefficient d
     PDE.vecDot (deriv v s) _ - matrixContraction B _ = _
   rw [hg, hHess, matrixContraction_gaussian]
   rw [PDE.vecDot_comm (deriv v s), vecDot_smul_left, PDE.vecDot_comm pvec]
-  change _ = ell * G * (-Xi d lam Lam H h + lam * PDE.vecNormSq pvec +
-    2 * PDE.vecDot (deriv v s) pvec + 2 * (gramian lam h sigma)⁻¹ 1 1 * B.trace -
-    4 * PDE.vecDot pvec (B.mulVec pvec))
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

@@ -5,9 +5,9 @@ import Mathlib.Tactic
 
 /-! # Elliptic comparison of the literal radial measure pair -/
 
-@[expose] public section
-noncomputable section
-open MeasureTheory Set
+ public section
+
+open MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The coefficient interval bounds the two radial measures with the same ellipticity constants. -/

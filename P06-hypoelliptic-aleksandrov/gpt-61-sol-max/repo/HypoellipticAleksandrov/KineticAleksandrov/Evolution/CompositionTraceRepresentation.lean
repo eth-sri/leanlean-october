@@ -9,21 +9,21 @@ The same classical solution chosen from `hEx` represents all earlier point evalu
 This is the shared-witness clause of the shared witness, independent of kernel composition.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set
+open HypoellipticAleksandrov MeasureTheory Set
 
 section EvolutionData
 
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+variable (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -76,11 +76,11 @@ theorem terminalOperators_apply_smooth
 theorem terminalOperators_classical
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
-    ∃ u : KineticPoint n → ℝ,
+    ∃ u : HypoellipticAleksandrov.KineticScalarField n,
       IsClassicalTerminalSolution Ω γ B b τ F u ∧
       (∀ σ hστ (p : EvolutionState Ω γ σ),
         u ⟨σ, p.1.1, p.1.2⟩ = P₀ σ τ hστ (terminalStateDatum F) p) ∧
-      (∀ v : KineticPoint n → ℝ,
+      (∀ v : HypoellipticAleksandrov.KineticScalarField n,
         IsClassicalTerminalSolution Ω γ B b τ F v →
           EqOn v u (evolutionPastClosedCylinder Ω γ τ)) := by
   obtain ⟨u, hu, _, huniq⟩ := hEx τ F hF

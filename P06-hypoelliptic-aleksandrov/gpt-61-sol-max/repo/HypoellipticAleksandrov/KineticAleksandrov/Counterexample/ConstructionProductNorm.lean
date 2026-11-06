@@ -5,8 +5,8 @@ public import Mathlib.MeasureTheory.Measure.Prod
 
 /-! # Exact time factors for stationary source norms -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 open scoped ENNReal

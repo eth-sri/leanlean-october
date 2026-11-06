@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionLocalBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionNativeWeak
 public import PDEFoundation.Sobolev.WeakDerivative.Product
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # First weak derivatives of the literal zero extension -/
 
@@ -26,34 +28,29 @@ def constructionExtendedPackedGradient {d : ℕ} {alpha : ℝ}
 
 /-- The packed multiplier is smooth at every finite order. -/
 theorem contDiff_providerPackedCutoff (d : ℕ) (m R : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (constructionPackedCutoff d m R) :=
+    ContDiff ℝ PDE.smoothOrder (constructionPackedCutoff d m R) :=
   (contDiff_providerVelocityCutoff d m R).comp (spatialCoordinateCLE d).contDiff
 
+variable {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1) (h : CounterProfileStatement d alpha) (r mu R m : ℝ) (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2) (hscale : 2 * Real.rpow r alpha ≤ 1) (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m) (t : ℝ) (i : Fin (d + d))
+
+include hd ha ha1 hr hmu hR hm hscale hmargin
 /-- The exact zero extension satisfies the first compact-test identities globally. -/
-theorem construction_zero_extension_weak_first {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
-    (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
-    (hscale : 2 * Real.rpow r alpha ≤ 1)
-    (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m)
-    (t : ℝ) (i : Fin (d + d)) (test : PDE.Vec (d + d) → ℝ)
-    (ht : ContDiff ℝ (⊤ : ℕ∞) test) (hs : HasCompactSupport test) :
+theorem construction_zero_extension_weak_first  (test : PDE.Vec (d + d) → ℝ)
+    (ht : ContDiff ℝ PDE.smoothOrder test) (hs : HasCompactSupport test) :
     (∫ x, zeroExtendedProfile (profileFunction h) alpha r mu R
         ⟨t, (spatialCoordinateCLE d x).1, (spatialCoordinateCLE d x).2⟩ *
       fderiv ℝ test x (PDE.basisVec i)) =
       -(∫ x, constructionExtendedPackedGradient h r mu R m t x i * test x) := by
-  have hw := weakPartial_on_of_global univ i (spatialPackedCutoffValue h r mu R t)
-    (fun x => spatialPackedCutoffGradient h r mu R t x i)
+
+  have hw := weakPartial_on_of_global univ i _
+    (((fun x => spatialPackedCutoffGradient h r mu R t x i)))
     (spatialPackedCutoff_weak_first_of_profile hd ha ha1 h r hr mu R t i)
-  have hu : LocallyIntegrable (spatialPackedCutoffValue h r mu R t)
-      (PDE.volumeOn univ) := by
-    simpa only [PDE.volumeOn, Measure.restrict_univ] using
-      (construction_cutoffValue_continuous h r mu R t).locallyIntegrable
-  have hg : LocallyIntegrable (fun x => spatialPackedCutoffGradient h r mu R t x i)
-      (PDE.volumeOn univ) := by
-    simpa only [PDE.volumeOn, Measure.restrict_univ] using
-      construction_cutoffGradient_locallyIntegrable h r hr mu R t i
-  have he := hw.mul_contDiff (contDiff_providerPackedCutoff d m R) hu hg
+
+
+  have he := hw.mul_contDiff (contDiff_providerPackedCutoff d m R) (by
+      simpa only [PDE.volumeOn, Measure.restrict_univ] using
+        (construction_cutoffValue_continuous h r mu R t).locallyIntegrable) (by
+      simpa using construction_cutoffGradient_locallyIntegrable h r hr mu R t i)
     test ht hs (subset_univ _)
   have hz : ∀ x : PDE.Vec (d + d),
       zeroExtendedProfile (profileFunction h) alpha r mu R
@@ -64,14 +61,8 @@ theorem construction_zero_extension_weak_first {d : ℕ} (hd : 1 ≤ d)
   simpa only [Measure.restrict_univ, constructionExtendedPackedGradient, ← hz] using! he
 
 /-- The same selected representatives satisfy the first identities on the native carrier. -/
-theorem construction_zero_extension_weak_native {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
-    (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
-    (hscale : 2 * Real.rpow r alpha ≤ 1)
-    (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m)
-    (t : ℝ) (i : Fin (d + d)) (test : XV d → ℝ)
-    (ht : ContDiff ℝ (⊤ : ℕ∞) test) (hs : HasCompactSupport test) :
+theorem construction_zero_extension_weak_native  (test : XV d → ℝ)
+    (ht : ContDiff ℝ PDE.smoothOrder test) (hs : HasCompactSupport test) :
     (∫ q, zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, q.1, q.2⟩ *
       fderiv ℝ test q (spatialCoordinateCLE d (PDE.basisVec i))) =
       -(∫ q, constructionExtendedPackedGradient h r mu R m t
@@ -79,7 +70,7 @@ theorem construction_zero_extension_weak_native {d : ℕ} (hd : 1 ≤ d)
   have he := construction_weak_directional_native
     (fun x => zeroExtendedProfile (profileFunction h) alpha r mu R
       ⟨t, (spatialCoordinateCLE d x).1, (spatialCoordinateCLE d x).2⟩)
-    (fun x => constructionExtendedPackedGradient h r mu R m t x i) (PDE.basisVec i)
+    (fun x => constructionExtendedPackedGradient h r mu R m t x i) _
     (construction_zero_extension_weak_first hd ha ha1 h r mu R m hr hmu hR hm
       hscale hmargin t i) test ht hs
   simpa only [ContinuousLinearEquiv.apply_symm_apply] using! he

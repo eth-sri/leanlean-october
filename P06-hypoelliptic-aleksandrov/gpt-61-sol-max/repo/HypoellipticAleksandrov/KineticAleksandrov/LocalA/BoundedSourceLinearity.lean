@@ -5,16 +5,21 @@ import Mathlib.MeasureTheory.Integral.Bochner.Set
 
 /-! # Literal bounded-source linearity and terminal truncation -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
 
+variable (K : MovingFiberKernel Ω γ)
+
+section
+variable (f g : HypoellipticAleksandrov.KineticScalarField d) (hf : Measurable f) (hg : Measurable g) (M N : ℝ) (hfb : ∀ p, |f p| ≤ M) (hgb : ∀ p, |g p| ≤ N)
+
+include hf hg hfb hgb
 /-- The actual source integral is additive for signed bounded Borel data. -/
-theorem duhamelSourceIntegral_add_bounded (K : MovingFiberKernel Ω γ)
-    (f g : KineticPoint d → ℝ) (hf : Measurable f) (hg : Measurable g)
-    (M N : ℝ) (hfb : ∀ p, |f p| ≤ M) (hgb : ∀ p, |g p| ≤ N)
+theorem duhamelSourceIntegral_add_bounded
+
     (q : EvolutionQuery Ω γ) :
     duhamelSourceIntegral K (fun p => f p + g p) q =
       duhamelSourceIntegral K f q + duhamelSourceIntegral K g q := by
@@ -33,9 +38,8 @@ theorem duhamelSourceIntegral_add_bounded (K : MovingFiberKernel Ω γ)
   exact integral_add hfi hgi
 
 /-- The zero-extended source integrand retains the same literal additivity. -/
-theorem duhamelIntegrand_add_bounded (K : MovingFiberKernel Ω γ)
-    (f g : KineticPoint d → ℝ) (hf : Measurable f) (hg : Measurable g)
-    (M N : ℝ) (hfb : ∀ p, |f p| ≤ M) (hgb : ∀ p, |g p| ≤ N)
+theorem duhamelIntegrand_add_bounded
+
     (p : KineticPoint d) (r : ℝ) :
     duhamelIntegrand K (fun p => f p + g p) p r =
       duhamelIntegrand K f p r + duhamelIntegrand K g p r := by
@@ -43,11 +47,13 @@ theorem duhamelIntegrand_add_bounded (K : MovingFiberKernel Ω γ)
   split
   · exact duhamelSourceIntegral_add_bounded K f g hf hg M N hfb hgb _
   · exact (zero_add 0).symm
+end
+
 
 /-- Finite-horizon potentials are additive for the actual signed bounded sources. -/
-theorem duhamelPotential_add_bounded (K : MovingFiberKernel Ω γ)
+theorem duhamelPotential_add_bounded
     (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (f g : KineticPoint d → ℝ) (hf : Measurable f) (hg : Measurable g)
+    (f g : HypoellipticAleksandrov.KineticScalarField d) (hf : Measurable f) (hg : Measurable g)
     (M N : ℝ) (hM : 0 ≤ M) (hN : 0 ≤ N)
     (hfb : ∀ p, |f p| ≤ M) (hgb : ∀ p, |g p| ≤ N)
     (T : ℝ) (p : KineticPoint d) :
@@ -58,9 +64,11 @@ theorem duhamelPotential_add_bounded (K : MovingFiberKernel Ω γ)
   exact integral_add (integrableOn_duhamelIntegrand_bounded K hΩ hγ f hf M hM hfb p T)
     (integrableOn_duhamelIntegrand_bounded K hΩ hγ g hg N hN hgb p T)
 
+variable (g : HypoellipticAleksandrov.KineticScalarField d)
+
 /-- Negation is retained exactly by the master-kernel source integrand. -/
-theorem duhamelIntegrand_neg (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (p : KineticPoint d) (r : ℝ) :
+theorem duhamelIntegrand_neg
+     (p : KineticPoint d) (r : ℝ) :
     duhamelIntegrand K (fun p => -g p) p r = -duhamelIntegrand K g p r := by
   unfold duhamelIntegrand
   split
@@ -68,29 +76,26 @@ theorem duhamelIntegrand_neg (K : MovingFiberKernel Ω γ)
   · exact neg_zero.symm
 
 /-- Negation is retained exactly by the literal finite-horizon potential. -/
-theorem duhamelPotential_neg (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (T : ℝ) (p : KineticPoint d) :
+theorem duhamelPotential_neg
+     (T : ℝ) (p : KineticPoint d) :
     duhamelPotential K T (fun p => -g p) p = -duhamelPotential K T g p := by
   unfold duhamelPotential
   simp_rw [duhamelIntegrand_neg]
   exact integral_neg _
 
 /-- A source that vanishes above a source time has zero integrand at that time. -/
-theorem duhamelIntegrand_zero_above_source (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (s : ℝ) (hgz : ∀ p, s < p.time → g p = 0)
+theorem duhamelIntegrand_zero_above_source
+     (s : ℝ) (hgz : ∀ p, s < p.time → g p = 0)
     (p : KineticPoint d) (r : ℝ) (hr : s < r) : duhamelIntegrand K g p r = 0 := by
   unfold duhamelIntegrand
   split
   · change (∫ w, g ⟨r, w.1, w.2⟩ ∂K.master _) = 0
-    have hz (w : EvolutionAmbientState d) : g ⟨r, w.1, w.2⟩ = 0 :=
-      hgz ⟨r, w.1, w.2⟩ hr
-    simp_rw [hz]
-    exact integral_zero _ _
+    simp_all
   · rfl
 
 /-- Removing terminal times above the source support does not change the actual potential. -/
-theorem duhamelPotential_eq_short_terminal (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (s T : ℝ) (hsT : s ≤ T)
+theorem duhamelPotential_eq_short_terminal
+     (s T : ℝ) (hsT : s ≤ T)
     (hgz : ∀ p, s < p.time → g p = 0) (p : KineticPoint d) :
     duhamelPotential K T g p = duhamelPotential K s g p := by
   unfold duhamelPotential

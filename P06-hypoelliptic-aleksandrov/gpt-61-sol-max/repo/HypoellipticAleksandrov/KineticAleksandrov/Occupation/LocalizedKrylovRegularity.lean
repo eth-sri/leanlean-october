@@ -13,9 +13,9 @@ with zero terminal and lateral data (proof of the companion paper, Proposition 4
 maximum principle proves `V ≥ 0`. Jet congruence on open sets is also recorded here.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -26,20 +26,29 @@ variable {d : ℕ}
 
 section Congruence
 
-variable {V W : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
+variable {V W : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.Region d}
 
-private theorem eventually_slice_time (hD : IsOpen D) {z : TimeVelocity d} (hz : z ∈ D) :
+variable (hD : IsOpen D)
+
+section
+variable {z : TimeVelocity d} (hz : z ∈ D)
+
+include hD hz
+private theorem eventually_slice_time   :
     ∀ᶠ r in 𝓝 z.1, (r, z.2) ∈ D := by
-  have hcont : Continuous (fun r : ℝ => (r, z.2)) := by fun_prop
-  exact hcont.continuousAt.preimage_mem_nhds (hD.mem_nhds hz)
 
-private theorem eventually_slice_space (hD : IsOpen D) {z : TimeVelocity d} (hz : z ∈ D) :
+  exact (show Continuous (fun r : ℝ => (r, z.2)) by fun_prop).continuousAt.preimage_mem_nhds (hD.mem_nhds hz)
+
+private theorem eventually_slice_space   :
     ∀ᶠ y in 𝓝 z.2, (z.1, y) ∈ D := by
-  have hcont : Continuous (fun y : PDE.Vec d => (z.1, y)) := by fun_prop
-  exact hcont.continuousAt.preimage_mem_nhds (hD.mem_nhds hz)
 
+  exact (show Continuous (fun y : PDE.Vec d => (z.1, y)) by fun_prop).continuousAt.preimage_mem_nhds (hD.mem_nhds hz)
+end
+
+
+include hD in
 /-- Two functions agreeing on an open set have the same `C^{1,2}` jets there. -/
-theorem scalarJet_eqOn_of_eqOn_open (hD : IsOpen D) (hVW : EqOn V W D) :
+theorem scalarJet_eqOn_of_eqOn_open  (hVW : EqOn V W D) :
     EqOn (scalarTimeDerivative V) (scalarTimeDerivative W) D ∧
     EqOn (scalarSpatialGradient V) (scalarSpatialGradient W) D ∧
     EqOn (scalarSpatialHessian V) (scalarSpatialHessian W) D := by
@@ -52,30 +61,31 @@ theorem scalarJet_eqOn_of_eqOn_open (hD : IsOpen D) (hVW : EqOn V W D) :
     rw [hs.fderiv_eq (𝕜 := ℝ)]
   refine ⟨?_, hgrad, ?_⟩
   · intro z hz
-    have ht : (fun r => V (r, z.2)) =ᶠ[𝓝 z.1] (fun r => W (r, z.2)) := by
-      filter_upwards [eventually_slice_time hD hz] with r hr using hVW hr
-    exact ht.deriv_eq
+
+    exact (show (fun r => V (r, z.2)) =ᶠ[𝓝 z.1] (fun r => W (r, z.2)) by
+        filter_upwards [eventually_slice_time hD hz] with r hr using hVW hr).deriv_eq
   · intro z hz
-    have hg : (fun y => PDE.classicalGradient (fun w => V (z.1, w)) y) =ᶠ[𝓝 z.2]
-        (fun y => PDE.classicalGradient (fun w => W (z.1, w)) y) := by
+    have hg : ((PDE.classicalGradient (fun w => V (z.1, w)))) =ᶠ[𝓝 z.2]
+        ((PDE.classicalGradient (fun w => W (z.1, w)))) := by
       filter_upwards [eventually_slice_space hD hz] with y hy using hgrad hy
     unfold scalarSpatialHessian
     ext i j
     rw [hg.fderiv_eq (𝕜 := ℝ)]
 
+include hD in
 /-- `C^{1,2}` regularity on an open set is invariant under equality on that set. -/
-theorem isScalarC12On_congr_open (hD : IsOpen D) (hW : IsScalarC12On W D)
+theorem isScalarC12On_congr_open  (hW : IsScalarC12On W D)
     (hVW : EqOn V W D) : IsScalarC12On V D := by
   obtain ⟨ht, hg, hh⟩ := scalarJet_eqOn_of_eqOn_open hD hVW
   refine ⟨hW.continuousOn.congr hVW, ?_, ?_, ?_, ?_, ?_⟩
   · intro z hz
-    have h : (fun r => V (r, z.2)) =ᶠ[𝓝 z.1] (fun r => W (r, z.2)) := by
-      filter_upwards [eventually_slice_time hD hz] with r hr using hVW hr
-    exact (hW.timeSlice_differentiableAt hz).congr_of_eventuallyEq h
+
+    exact (hW.timeSlice_differentiableAt hz).congr_of_eventuallyEq (by
+        filter_upwards [eventually_slice_time hD hz] with r hr using hVW hr)
   · intro z hz
-    have h : (fun y => V (z.1, y)) =ᶠ[𝓝 z.2] (fun y => W (z.1, y)) := by
-      filter_upwards [eventually_slice_space hD hz] with y hy using hVW hy
-    exact (hW.spatialSlice_contDiffAt hz).congr_of_eventuallyEq h
+
+    exact (hW.spatialSlice_contDiffAt hz).congr_of_eventuallyEq (by
+        filter_upwards [eventually_slice_space hD hz] with y hy using hVW hy)
   · exact hW.continuousOn_scalarTimeDerivative.congr ht
   · exact hW.continuousOn_scalarSpatialGradient.congr hg
   · exact hW.continuousOn_scalarSpatialHessian.congr hh
@@ -91,10 +101,10 @@ variable {lam Lam : ℝ} {B : CoefficientField d} {F : TimeVelocity d → ℝ}
 theorem posSemidef_of_lower_loewner (hlam : 0 < lam)
     (hlow : ∀ r v, lam • (1 : PDE.Mat d) ≤ B r v) (r : ℝ) (v : PDE.Vec d) :
     (B r v).PosSemidef := by
-  have h0 : (0 : PDE.Mat d) ≤ lam • (1 : PDE.Mat d) := by
-    rw [Matrix.nonneg_iff_posSemidef]
-    exact Matrix.PosSemidef.one.smul hlam.le
-  exact Matrix.nonneg_iff_posSemidef.mp (h0.trans (hlow r v))
+
+  exact Matrix.nonneg_iff_posSemidef.mp ((show (0 : PDE.Mat d) ≤ lam • (1 : PDE.Mat d) by
+      rw [Matrix.nonneg_iff_posSemidef]
+      exact Matrix.PosSemidef.one.smul hlam.le).trans (hlow r v))
 
 /-- Nonnegativity of the localized source solution (weak maximum principle). -/
 theorem classical_solution_nonneg (hlam : 0 < lam) (hF0 : ∀ z, 0 ≤ F z)
@@ -120,15 +130,15 @@ theorem classical_solution_nonneg (hlam : 0 < lam) (hF0 : ∀ z, 0 ≤ F z)
       rintro ⟨r, y⟩ hz
       rw [mem_scalarParabolicTerminalFace_iff] at hz
       obtain ⟨rfl, hy⟩ := hz
-      have h0 : V (1, y) = 0 := hterm y hy
+
       show -1 * V (1, y) + 0 ≤ 0
-      rw [h0]
+      rw [(hterm y hy)]
       norm_num)
     (by
       intro z hz
-      have h0 : V z = 0 := hlat z hz
+
       show -1 * V z + 0 ≤ 0
-      rw [h0]
+      rw [(hlat z hz)]
       norm_num)
   intro z hz
   have := hw z hz

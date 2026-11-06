@@ -5,9 +5,9 @@ public import Mathlib.Analysis.Normed.Module.WeakDual
 
 /-! Sequential weak compactness for bounded sequences in separable real Hilbert spaces. -/
 
-@[expose] public section
+ public section
 
-open Filter Function Set
+open Filter
 open scoped Topology
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
@@ -31,7 +31,7 @@ theorem exists_strictMono_tendsto_inner_of_norm_le
     change ‖InnerProductSpace.toDual ℝ H (u n) - 0‖ ≤ R
     simpa using hu n
   obtain ⟨ℓ, hℓ, φ, hφ, hlim⟩ :=
-    (WeakDual.isSeqCompact_closedBall ℝ H (0 : StrongDual ℝ H) R) hf
+    (WeakDual.isSeqCompact_closedBall ℝ H (0 ) R) hf
   let v : H :=
     (InnerProductSpace.toDual ℝ H).symm (WeakDual.toStrongDual ℓ)
   refine ⟨v, φ, hφ, fun z => ?_⟩

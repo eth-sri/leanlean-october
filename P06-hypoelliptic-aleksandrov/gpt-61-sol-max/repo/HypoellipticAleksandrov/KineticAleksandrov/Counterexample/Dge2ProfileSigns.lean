@@ -15,18 +15,23 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 def fullVelocityQuadratic {d : ℕ} (H : XV d → ℝ) (q : XV d) (w : PDE.Vec d) : ℝ :=
   fderiv ℝ (fun z => fderiv ℝ H z (0, w)) q (0, w)
 
+variable {d : ℕ} (alpha C₀ sigma R : ℝ) (hsigma : 0 < sigma) (hR : 0 < R)
+
+section
+variable (q : XV d) (hx : q.1 ≠ 0)
+
+include hsigma hR hx
 /-- The profile's full velocity Hessian has the source cutoff prefactor at nonzero position. -/
-theorem geometricProfile_quadratic_nonzero_position {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) (q : XV d) (hx : q.1 ≠ 0) (w : PDE.Vec d) :
+theorem geometricProfile_quadratic_nonzero_position   (w : PDE.Vec d) :
     fullVelocityQuadratic (geometricProfile alpha C₀ sigma R) q w =
       Real.rpow (PDE.vecEuclideanNorm q.1) ((alpha - 2) / 3) *
         cutoffHessian alpha C₀ sigma R (normalizedVelocity q.1 q.2) (positionDirection q.1) w := by
-  have hq : q ≠ 0 := fun h => hx (congrArg Prod.fst h)
-  have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
+
+
   have hH := (geometricProfile_smooth_off_origin (d := d) alpha C₀ sigma R hsigma hR).contDiffAt
-    (hopen.mem_nhds hq)
+    (isClosed_singleton.isOpen_compl.mem_nhds (fun h => hx (congrArg Prod.fst h)))
   have heq : (fun v => geometricProfile alpha C₀ sigma R (q.1, v)) =
-      (fun v => homogeneousAnsatz alpha (cutoffProfile alpha C₀ sigma R) q.1 v) := by
+      ((homogeneousAnsatz alpha (cutoffProfile alpha C₀ sigma R) q.1)) := by
     funext v
     simp only [geometricProfile, ite_eq_right hx]
   unfold fullVelocityQuadratic
@@ -35,16 +40,15 @@ theorem geometricProfile_quadratic_nonzero_position {d : ℕ} (alpha C₀ sigma 
   exact homogeneousAnsatz_velocity_hessian alpha C₀ sigma R hsigma hR q.1 q.2 w w hx
 
 /-- The full profile transport has the same source prefactor at nonzero position. -/
-theorem geometricProfile_transport_nonzero_position {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) (q : XV d) (hx : q.1 ≠ 0) :
+theorem geometricProfile_transport_nonzero_position   :
     PDE.vecDot q.2 (dx (geometricProfile alpha C₀ sigma R) q) =
       Real.rpow (PDE.vecEuclideanNorm q.1) ((alpha - 2) / 3) *
         ansatzTransport alpha (cutoffProfile alpha C₀ sigma R)
           (normalizedVelocity q.1 q.2) (positionDirection q.1) := by
-  have hq : q ≠ 0 := fun h => hx (congrArg Prod.fst h)
-  have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
+
+
   have hH := (geometricProfile_smooth_off_origin (d := d) alpha C₀ sigma R hsigma hR).contDiffAt
-    (hopen.mem_nhds hq)
+    (isClosed_singleton.isOpen_compl.mem_nhds (fun h => hx (congrArg Prod.fst h)))
   rw [transport_eq_direction, ← fderiv_position_slice _ q.1 q.2 q.2
     (hH.differentiableAt (by simp))]
   have heq : (fun x => geometricProfile alpha C₀ sigma R (x, q.2)) =ᶠ[nhds q.1]
@@ -56,16 +60,18 @@ theorem geometricProfile_transport_nonzero_position {d : ℕ} (alpha C₀ sigma 
   apply homogeneousAnsatz_transport alpha _ q.1 q.2 hx
   exact (contDiff_cutoffProfile alpha C₀ sigma R hsigma hR).differentiable
     (by simp) (normalizedVelocity q.1 q.2, positionDirection q.1)
+end
 
+
+include hsigma hR in
 /-- The full velocity Hessian at zero position is the exact radial Hessian. -/
-theorem geometricProfile_quadratic_zero_position {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) (v w : PDE.Vec d) (hv : v ≠ 0) :
+theorem geometricProfile_quadratic_zero_position  (v w : PDE.Vec d) (hv : v ≠ 0) :
     fullVelocityQuadratic (geometricProfile alpha C₀ sigma R) (0, v) w =
       radialHessianForm alpha v w w := by
   have hq : ((0, v) : XV d) ≠ 0 := fun h => hv (congrArg Prod.snd h)
-  have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
+
   have hH := (geometricProfile_smooth_off_origin (d := d) alpha C₀ sigma R hsigma hR).contDiffAt
-    (hopen.mem_nhds hq)
+    (isClosed_singleton.isOpen_compl.mem_nhds hq)
   have heq : (fun a => geometricProfile alpha C₀ sigma R ((0 : PDE.Vec d), a)) =
       radialProfile alpha := by
     funext a
@@ -88,7 +94,7 @@ theorem exists_geometricProfile_sign_parameters (d : ℕ) (hd : 2 ≤ d) (alpha 
   refine ⟨C₀, sigma, R, hC₀, hsigma, hR2, ?_⟩
   intro q hq
   by_cases hx : q.1 = 0
-  · have hv : q.2 ≠ 0 := fun hv => hq (Prod.ext hx hv)
+  · have hv  := fun hv => hq (Prod.ext hx hv)
     obtain ⟨w, hw⟩ := radialHessian_positive_direction d hd alpha ha q.2 hv
     refine ⟨⟨w, ?_⟩, Or.inl ⟨q.2, ?_⟩⟩
     · rw [show q = (0, q.2) from Prod.ext hx rfl,
@@ -99,11 +105,10 @@ theorem exists_geometricProfile_sign_parameters (d : ℕ) (hd : 2 ≤ d) (alpha 
       exact radialHessian_radial_neg alpha ha ha1 q.2 hv
   · have hr : 0 < Real.rpow (PDE.vecEuclideanNorm q.1) ((alpha - 2) / 3) :=
       Real.rpow_pos_of_pos (PDE.vecEuclideanNorm_pos_iff.mpr hx) _
-    obtain ⟨⟨w, hw⟩, hneg⟩ := hsign (normalizedVelocity q.1 q.2) (positionDirection q.1)
+    obtain ⟨⟨w, hw⟩, hneg⟩ := hsign (normalizedVelocity q.1 q.2) _
       (positionDirection_normSq q.1 hx)
     refine ⟨⟨w, ?_⟩, ?_⟩
-    · rw [geometricProfile_quadratic_nonzero_position alpha C₀ sigma R hsigma hR q hx]
-      exact mul_pos hr hw
+    · simp_all [geometricProfile_quadratic_nonzero_position]
     · rcases hneg with ⟨u, hu⟩ | hb
       · left
         refine ⟨u, ?_⟩

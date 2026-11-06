@@ -5,8 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierModul
 
 /-! # Actual Bellman endpoint estimate with the modulus discharged -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory
 

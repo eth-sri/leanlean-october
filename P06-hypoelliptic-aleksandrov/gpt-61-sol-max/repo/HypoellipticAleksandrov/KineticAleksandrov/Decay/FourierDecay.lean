@@ -10,18 +10,18 @@ returns the Green family proposition, with only the unit-block estimate and the 
 evolution statement as hypotheses.
 -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
-open Set MeasureTheory HypoellipticAleksandrov
-open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped ENNReal
+ public section
 
+namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
+open Set MeasureTheory
+open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
+
+
+variable (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hEvol : IterationEvolutionStatement) (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl)
+
+include hEvol hblock
 /-- Source case W exponential decay for every characterized Fourier projection. -/
-theorem fourier_decay_whole_space_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-    (hEvol : IterationEvolutionStatement)
-    (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl) :
+theorem fourier_decay_whole_space_of_unitBlock  :
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
       ∀ (B : CoefficientField d), IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily univ stationary) (K : MovingFiberKernel univ stationary),
@@ -38,26 +38,22 @@ theorem fourier_decay_whole_space_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
   intro B hB S K hreal σ τ hστ v ξ q hq ν hν
   by_cases hξ : ξ = 0
   · subst ξ
-    have he := iteration_projection_eq K σ τ hστ.le v 0 q hq ν hν
-    rw [he]
+
+    rw [(iteration_projection_eq K σ τ hστ.le v 0 q hq ν hν)]
     have ht := ENNReal.toReal_mono ENNReal.one_ne_top
       (fourierKernel_totalVariation_le_one K σ τ hστ.le 0 v)
-    have hz : PDE.vecEuclideanNorm (0 : PDE.Vec d) = 0 :=
-      PDE.vecEuclideanNorm_eq_zero_iff.mpr rfl
-    simp only [hz, Real.zero_rpow (by norm_num : (2 / 3 : ℝ) ≠ 0), mul_zero,
+
+    simp only [(PDE.vecEuclideanNorm_eq_zero_iff.mpr rfl), Real.zero_rpow (by norm_num : (2 / 3 : ℝ) ≠ 0), mul_zero,
       Real.exp_zero, mul_one]
-    have htv : TV (fourierKernel K σ τ hστ.le 0 v) ≤ 1 := by
-      simpa only [ENNReal.toReal_one] using ht
-    exact htv.trans hC1
+
+    exact (show TV (fourierKernel K σ τ hστ.le 0 v) ≤ 1 by
+        exact ht).trans hC1
   · obtain ⟨h1, h2, h3⟩ := hiter B hB S K hreal ξ hξ σ τ hστ v q hq ν hν
     exact (h1.trans h2).trans_eq h3
 
 /-- The Green family, conditional on the unit-block estimate and the terminal evolution statement.
 -/
-theorem fourierDecayFamily_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-    (hEvol : IterationEvolutionStatement)
-    (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl) :
+theorem fourierDecayFamily_of_unitBlock  :
     HypoellipticAleksandrov.KineticAleksandrov.Green.FourierDecayFamily d lam Lam := by
   obtain ⟨C, c, hC, hc, hdecay⟩ :=
     fourier_decay_whole_space_of_unitBlock d hd lam Lam hlam hlamLam hEvol hblock
@@ -65,7 +61,7 @@ theorem fourierDecayFamily_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
   intro B hB S K hreal σ τ hστ v ξ
   have ht := hdecay B hB S K hreal σ τ hστ v ξ
     (wholeSpaceQuery σ τ hστ.le v 0) rfl _ (fourierKernel_spec K σ τ hστ.le ξ v)
-  have hf : totalVariationNorm (fourierKernel K σ τ hστ.le ξ v) ≠ ⊤ :=
+  have hf  :=
     ne_of_lt ((fourierKernel_totalVariation_le_one K σ τ hστ.le ξ v).trans_lt
       ENNReal.one_lt_top)
   calc

@@ -9,8 +9,8 @@ import Mathlib.Tactic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Set MeasureTheory
-open SectionTwo
+open Set MeasureTheory
+
 
 /-- The literal unit indicator of the physical velocity band. -/
 def velocityBandDatum (r : ℝ) : BoundedBorel (EvolutionAmbientState 1) := by
@@ -33,8 +33,7 @@ theorem velocityBandAction_eq_probability {lam Lam : ℝ} (A : SmoothAutonomous 
     velocityBandAction E r t z = (velocityBandProbability E r z t).toReal := by
   rw [velocityBandAction, fullSpacePhysicalSemigroup_eq_action A E hE,
     fullSpaceAction_eq_zeroTime A E hE _ _ (Real.toNNReal t).property]
-  have : IsFiniteMeasure (E.2.master (wholeQuery (Real.toNNReal t) z)) :=
-    ⟨(E.2.mass_le_one _).trans_lt ENNReal.one_lt_top⟩
+
   change (∫ w, (velocityNativeBand r).indicator (fun _ => (1 : ℝ)) w
     ∂E.2.master (wholeQuery (Real.toNNReal t) z)) = _
   rw [integral_indicator (velocityNativeBand_measurable r)]
@@ -53,10 +52,8 @@ theorem velocityBandProbability_eq_kernelXV (E : FullSpaceEvolution) (r t : ℝ)
 theorem velocityBandAction_integrable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (r T : ℝ) (z : Z) :
     Integrable (fun t => velocityBandAction E r t z) (volume.restrict (Ioc 0 T)) := by
-  have he : (fun t => velocityBandAction E r t z) =
-      fun t => (velocityBandProbability E r z t).toReal :=
-    funext fun t => velocityBandAction_eq_probability A E hE r t z
-  rw [he]
+
+  rw [(funext fun t => velocityBandAction_eq_probability A E hE r t z)]
   exact velocityBandProbability_toReal_integrable E r z T
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

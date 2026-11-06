@@ -28,14 +28,15 @@ def bellmanTestDerivativeLinearMap : BellmanRealTest →ₗ[ℝ] BellmanRealTest
     change deriv (fun y => c * φ y) x = c * deriv φ x
     exact deriv_const_mul c (φ.contDiff.differentiable (by simp) x)
 
+variable (μ : Measure ℝ) (g : ℝ → ℝ)
+
 /-- The actual weighted measure pairing, using Mathlib's integral-against-test linear map. -/
-def bellmanWeightedTestIntegral (μ : Measure ℝ) (g : ℝ → ℝ) : BellmanRealTest →ₗ[ℝ] ℝ :=
+def bellmanWeightedTestIntegral  : BellmanRealTest →ₗ[ℝ] ℝ :=
   (TestFunction.integralAgainstBilinCLM (ContinuousLinearMap.lsmul ℝ ℝ) μ g).toLinearMap
 
 /-- For a locally integrable weight the concrete test pairing is its literal measure integral. -/
-theorem bellmanWeightedTestIntegral_apply (μ : Measure ℝ) (g : ℝ → ℝ)
+theorem bellmanWeightedTestIntegral_apply
     (hg : LocallyIntegrable g μ) (φ : BellmanRealTest) :
-    bellmanWeightedTestIntegral μ g φ = ∫ x, φ x * g x ∂μ := by
-  exact TestFunction.integralAgainstBilinCLM_eq_integral (hg.locallyIntegrableOn Set.univ)
+    bellmanWeightedTestIntegral μ g φ = ∫ x, φ x * g x ∂μ := TestFunction.integralAgainstBilinCLM_eq_integral (hg.locallyIntegrableOn Set.univ)
 
 end HypoellipticAleksandrov.KineticAleksandrov

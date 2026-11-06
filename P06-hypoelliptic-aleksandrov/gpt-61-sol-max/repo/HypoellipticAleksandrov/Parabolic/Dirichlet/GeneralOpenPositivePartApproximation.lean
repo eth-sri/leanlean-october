@@ -4,6 +4,14 @@ public import PDEFoundation.Measure.LpDominatedConvergence
 public import PDEFoundation.Sobolev.H1.LevelSets
 public import PDEFoundation.Sobolev.H1.ZeroBoundary
 public import PDEFoundation.Sobolev.W1p.Truncation
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import all HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenH1PositivePart
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+open private PDE.H1Function.tendsto_eLpNorm_two_zero_of_ae_dominated from HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenH1PositivePart
+
 
 /-!
 # Positive-part approximation on a general open set
@@ -19,7 +27,7 @@ gradient vanishes almost everywhere on `{u = 0}`.  Thus positivity is gained
 without hiding a truncation or density theorem in an assumption.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal Topology
 
@@ -33,52 +41,11 @@ variable {d : ℕ} {U : Set (Vec d)} {u : H1Function U}
 
 /-- The `L²` dominated-convergence lemma needed below does not require the
 ambient measure to be finite. -/
-private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
-    {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
-    {μ : Measure α} {F : ℕ → α → E} {bound : α → E}
-    (hF : ∀ n, AEStronglyMeasurable (F n) μ)
-    (hboundMem : MemLp bound (2 : ℝ≥0∞) μ)
-    (hbound : ∀ n, ∀ᵐ x ∂μ, ‖F n x‖ ≤ ‖bound x‖)
-    (hzero : ∀ᵐ x ∂μ, Tendsto (fun n => F n x) atTop (𝓝 0)) :
-    Tendsto (fun n => eLpNorm (F n) (2 : ℝ≥0∞) μ) atTop (𝓝 0) := by
-  let G : ℕ → α → ℝ≥0∞ := fun n x => ‖F n x‖ₑ ^ (2 : ℝ)
-  let B : α → ℝ≥0∞ := fun x => ‖bound x‖ₑ ^ (2 : ℝ)
-  have hGMeas : ∀ n, AEMeasurable (G n) μ := by
-    intro n
-    exact (hF n).enorm.pow_const _
-  have hGBound : ∀ n, G n ≤ᵐ[μ] B := by
-    intro n
-    filter_upwards [hbound n] with x hx
-    have henorm : ‖F n x‖ₑ ≤ ‖bound x‖ₑ := by
-      simpa only [ofReal_norm_eq_enorm] using ENNReal.ofReal_le_ofReal hx
-    exact ENNReal.rpow_le_rpow henorm (by norm_num)
-  have hBFinite : ∫⁻ x, B x ∂μ ≠ ∞ := by
-    exact (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top
-      (p := (2 : ℝ≥0∞)) (by norm_num) (by norm_num)
-      hboundMem).ne
-  have hGZero : ∀ᵐ x ∂μ, Tendsto (fun n => G n x) atTop (𝓝 0) := by
-    filter_upwards [hzero] with x hx
-    have henorm : Tendsto (fun n => ‖F n x‖ₑ) atTop (𝓝 0) := by
-      simpa only [enorm_zero, Function.comp_def] using (continuous_enorm.tendsto 0).comp hx
-    simpa only [G, Function.comp_def, enorm_zero,
-      ENNReal.zero_rpow_of_pos (by norm_num : (0 : ℝ) < 2)] using
-      ((ENNReal.continuous_rpow_const :
-        Continuous (fun a : ℝ≥0∞ => a ^ (2 : ℝ))).tendsto 0).comp
-        henorm
-  have hint : Tendsto (fun n => ∫⁻ x, G n x ∂μ) atTop (𝓝 0) := by
-    simpa only [lintegral_zero] using
-      tendsto_lintegral_of_dominated_convergence'
-        B hGMeas hGBound hBFinite hGZero
-  simp_rw [eLpNorm_eq_lintegral_rpow_enorm_toReal
-    (by norm_num : (2 : ℝ≥0∞) ≠ 0)
-    (by norm_num : (2 : ℝ≥0∞) ≠ ∞) (hF _)]
-  simpa only [G, Function.comp_def, ENNReal.toReal_ofNat,
-      one_div, ENNReal.zero_rpow_of_pos (by norm_num : (0 : ℝ) < (2 : ℝ)⁻¹)] using
-    ((ENNReal.continuous_rpow_const :
-      Continuous (fun a : ℝ≥0∞ => a ^ ((2 : ℝ)⁻¹))).tendsto 0).comp hint
+private alias tendsto_eLpNorm_two_zero_of_ae_dominated := _root_.PDE.H1Function.tendsto_eLpNorm_two_zero_of_ae_dominated
+
 
 private theorem fderiv_smoothPositivePartApprox_comp_basisVec
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    {φ : Vec d → ℝ} (hφ : ContDiff ℝ PDE.smoothOrder φ)
     {δ : ℝ} (x : Vec d) (i : Fin d) :
     (fderiv ℝ (fun y => smoothPositivePartApprox 0 δ (φ y)) x) (basisVec i) =
       smoothPositivePartStep 0 δ (φ x) *
@@ -95,8 +62,8 @@ private theorem positivePart_gradient_error_decomposition
 
 private theorem memLp_max_zero
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {w : α → ℝ} (hw : MemLp w (2 : ℝ≥0∞) μ) :
-    MemLp (fun x => max (w x) 0) (2 : ℝ≥0∞) μ := by
+    {w : α → ℝ} (hw : MemLp w (2 ) μ) :
+    MemLp (fun x => max (w x) 0) (2 ) μ := by
   refine MemLp.of_le hw ?_ ?_
   · exact (continuous_id.max continuous_const).comp_aestronglyMeasurable
       hw.aestronglyMeasurable
@@ -109,15 +76,15 @@ private theorem memLp_max_zero
 private theorem hasWeakGradientOn_of_smooth_approximation
     {f : Vec d → ℝ} {Du : Vec d → Vec d} {φ : ℕ → Vec d → ℝ}
     (hf : MemL2On U f) (hDu : GradMemL2On U Du)
-    (hφSmooth : ∀ n, ContDiff ℝ (⊤ : ℕ∞) (φ n))
+    (hφSmooth : ∀ n, ContDiff ℝ PDE.smoothOrder (φ n))
     (hφCompact : ∀ n, HasCompactSupport (φ n))
     (hφSupport : ∀ n, tsupport (φ n) ⊆ U)
     (hvalue : Tendsto
-      (fun n => eLpNorm (φ n - f) (2 : ℝ≥0∞) (volumeOn U)) atTop (𝓝 0))
+      (fun n => eLpNorm (φ n - f) (2 ) (volumeOn U)) atTop (𝓝 0))
     (hgrad : ∀ i, Tendsto
       (fun n => eLpNorm
         (fun x => (fderiv ℝ (φ n) x) (basisVec i) - Du x i)
-        (2 : ℝ≥0∞) (volumeOn U)) atTop (𝓝 0)) :
+        (2 ) (volumeOn U)) atTop (𝓝 0)) :
     HasWeakGradientOn U f Du := by
   apply HasWeakGradientOn.of_tendsto_eLpNorm
     (uSeq := φ)
@@ -140,9 +107,10 @@ private theorem exists_positivePart_regularization_scale
     ∃ δ : ℝ, 0 < δ ∧ δ ≤ ε ∧
       eLpNorm
           (fun x => smoothPositivePartApprox 0 δ (φ x) - max (φ x) 0)
-          (2 : ℝ≥0∞) (volumeOn U) ≤ ENNReal.ofReal ε := by
+          (2 ) (volumeOn U) ≤ ENNReal.ofReal ε := by
+  let sharedTerm_cb49636531 := ((volumeOn U) (tsupport φ) ^ (1 / (2 : ℝ)))
   let δSeq : ℕ → ℝ := fun n => 1 / (n + 1)
-  let err : ℕ → Vec d → ℝ := fun n x =>
+  let err  := fun n x =>
     smoothPositivePartApprox 0 (δSeq n) (φ x) - max (φ x) 0
   have hδPos : ∀ n, 0 < δSeq n := by
     intro n
@@ -150,17 +118,13 @@ private theorem exists_positivePart_regularization_scale
     positivity
   have hδTendsto : Tendsto δSeq atTop (𝓝 0) :=
     tendsto_one_div_add_atTop_nhds_zero_nat
-  have herrSupport : ∀ n, Function.support (err n) ⊆ tsupport φ := by
-    intro n x hx
-    by_contra hxt
-    have hzero : φ x = 0 := image_eq_zero_of_notMem_tsupport hxt
-    simp [err, hzero, smoothPositivePartApprox] at hx
+
   have herrBound : ∀ n,
-      eLpNorm (err n) (2 : ℝ≥0∞) (volumeOn U) ≤
+      eLpNorm (err n) (2 ) (volumeOn U) ≤
         ENNReal.ofReal (2 * δSeq n) *
-          (volumeOn U) (tsupport φ) ^ (1 / (2 : ℝ)) := by
+          sharedTerm_cb49636531 := by
     intro n
-    apply eLpNorm_sub_le_of_dist_bdd (μ := volumeOn U) (p := (2 : ℝ≥0∞)) (by norm_num)
+    apply eLpNorm_sub_le_of_dist_bdd (μ := volumeOn U) (p := (2 )) (by norm_num)
       isClosed_closure.measurableSet.nullMeasurableSet (mul_nonneg (by norm_num) (hδPos n).le)
     · have hsmooth : Continuous (smoothPositivePartApprox 0 (δSeq n)) :=
         (smoothPositivePartApprox_contDiff_one 0 (δSeq n)).continuous
@@ -175,15 +139,15 @@ private theorem exists_positivePart_regularization_scale
         (subset_closure)
     · intro x hx
       by_contra hxt
-      have hzero : φ x = 0 := image_eq_zero_of_notMem_tsupport hxt
+      have hzero  := image_eq_zero_of_notMem_tsupport hxt
       simp only [Function.mem_support, hzero, max_self] at hx
       exact hx rfl
   have hconv : Tendsto
-      (fun n => eLpNorm (err n) (2 : ℝ≥0∞) (volumeOn U))
+      (fun n => eLpNorm (err n) (2 ) (volumeOn U))
       atTop (𝓝 0) := by
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le
       tendsto_const_nhds ?_ (fun n => zero_le') herrBound
-    have hfinite : (volumeOn U) (tsupport φ) ^ (1 / (2 : ℝ)) ≠ ∞ := by
+    have hfinite : sharedTerm_cb49636531 ≠ ∞ := by
       exact ENNReal.rpow_ne_top_of_nonneg (by positivity) (hφCompact.measure_lt_top.ne)
     have hofReal : Tendsto (fun n => ENNReal.ofReal (2 * δSeq n)) atTop (𝓝 0) := by
       simpa only [δSeq, ENNReal.ofReal_zero, mul_zero] using
@@ -191,7 +155,7 @@ private theorem exists_positivePart_regularization_scale
     simpa only [zero_mul] using
       ENNReal.Tendsto.mul_const hofReal (Or.inr hfinite)
   have heventNorm : ∀ᶠ n in atTop,
-      eLpNorm (err n) (2 : ℝ≥0∞) (volumeOn U) ≤ ENNReal.ofReal ε :=
+      eLpNorm (err n) (2 ) (volumeOn U) ≤ ENNReal.ofReal ε :=
     ((tendsto_order.1 hconv).2 _ (ENNReal.ofReal_pos.2 hε)).mono fun _ => le_of_lt
   have heventScale : ∀ᶠ n in atTop, δSeq n ≤ ε :=
     ((tendsto_order.1 hδTendsto).2 _ hε).mono fun _ => le_of_lt
@@ -211,7 +175,7 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
       u.toFun x = 0 → u.grad x = 0) :
     ∃ v : H1Function U,
       v.toFun = (fun x => max (u.toFun x) 0) ∧
-      v.grad = (fun x => {y | 0 < u.toFun y}.indicator u.grad x) ∧
+      v.grad = (({y | 0 < u.toFun y}.indicator u.grad)) ∧
       ∃ hv : v.SupportedSmoothApproximation,
         ∀ n x, 0 ≤ hv.approx n x := by
   have happroxMeas :
@@ -220,7 +184,7 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
     intro n
     exact
       (happrox.toWeakTestFunction n).memLp_toFun
-        (2 : ℝ≥0∞) |>.aestronglyMeasurable
+        (2 ) |>.aestronglyMeasurable
   obtain ⟨σ, hσStrictMono, hσAeRaw⟩ :=
     (tendstoInMeasure_of_tendsto_eLpNorm
       (by norm_num : (2 : ℝ≥0∞) ≠ 0)
@@ -230,7 +194,7 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
         Tendsto
           (fun i => happrox.approx (σ i) x)
           atTop (𝓝 (u.toFun x)) := by
-    simpa only [H1Function.toW1pFunction_toFun] using hσAeRaw
+    exact hσAeRaw
   let ε : ℕ → ℝ := fun n => 1 / (n + 1)
   have hεPos : ∀ n, 0 < ε n := by
     intro n
@@ -242,22 +206,21 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
       eLpNorm
           (fun x => smoothPositivePartApprox 0 δ (happrox.approx (σ n) x) -
             max (happrox.approx (σ n) x) 0)
-          (2 : ℝ≥0∞) (volumeOn U) ≤ ENNReal.ofReal (ε n) := by
+          (2 ) (volumeOn U) ≤ ENNReal.ofReal (ε n) := by
     intro n
     exact exists_positivePart_regularization_scale
-      (happrox.approx (σ n))
+      _
       (happrox.approx_hasCompactSupport (σ n)) (happroxMeas (σ n)) (ε n) (hεPos n)
-  let δ : ℕ → ℝ := fun n => Classical.choose (hscale n)
+  let δ  := fun n => Classical.choose (hscale n)
   have hδPos : ∀ n, 0 < δ n := fun n => (Classical.choose_spec (hscale n)).1
   have hδLe : ∀ n, δ n ≤ ε n := fun n => (Classical.choose_spec (hscale n)).2.1
-  have hδTendsto : Tendsto δ atTop (𝓝 0) := by
-    exact squeeze_zero (fun n => (hδPos n).le) hδLe hεTendsto
-  let positiveApprox : ℕ → Vec d → ℝ :=
+  have hδTendsto : Tendsto δ atTop (𝓝 0) := squeeze_zero (fun n => (hδPos n).le) hδLe hεTendsto
+  let positiveApprox  :=
     fun n x =>
       smoothPositivePartApprox 0 (δ n)
         (happrox.approx (σ n) x)
   have hpositiveSmooth :
-      ∀ n, ContDiff ℝ (⊤ : ℕ∞) (positiveApprox n) := by
+      ∀ n, ContDiff ℝ PDE.smoothOrder (positiveApprox n) := by
     intro n
     exact
       (smoothPositivePartApprox_contDiff 0 (δ n)).comp
@@ -283,35 +246,26 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
       ∀ n x, 0 ≤ positiveApprox n x := by
     intro n x
     exact smoothPositivePartApprox_nonneg
-      (hδPos n) (happrox.approx (σ n) x)
-  let valueRegularizationError : ℕ → Vec d → ℝ :=
+      (hδPos n) _
+  let valueRegularizationError  :=
     fun n x =>
       positiveApprox n x -
         max (happrox.approx (σ n) x) 0
-  have hvalueRegularizationErrorMeas :
-      ∀ n,
-        AEStronglyMeasurable
-          (valueRegularizationError n) (volumeOn U) := by
-    intro n
-    exact
-      (hpositiveSmooth n).continuous.aestronglyMeasurable.sub
-        (((happrox.approx_smooth (σ n)).continuous.max
-          continuous_const).aestronglyMeasurable)
+
   have hvalueRegularizationErrorTendsto :
       Tendsto
         (fun n =>
           eLpNorm
             (valueRegularizationError n)
-            (2 : ℝ≥0∞) (volumeOn U))
+            (2 ) (volumeOn U))
         atTop (𝓝 0) := by
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le
       tendsto_const_nhds
       (show Tendsto (fun n => ENNReal.ofReal (ε n)) atTop (𝓝 0) from ?_)
       (fun n => zero_le') (fun n => ?_)
     · simpa only [ENNReal.ofReal_zero] using ENNReal.tendsto_ofReal hεTendsto
-    · simpa only [valueRegularizationError, positiveApprox] using
-        (Classical.choose_spec (hscale n)).2.2
-  let valuePositivePartError : ℕ → Vec d → ℝ :=
+    · exact (Classical.choose_spec (hscale n)).2.2
+  let valuePositivePartError  :=
     fun n x =>
       max (happrox.approx (σ n) x) 0 - max (u.toFun x) 0
   have hvaluePositivePartErrorMeas :
@@ -328,11 +282,11 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
       ∀ n,
         eLpNorm
             (valuePositivePartError n)
-            (2 : ℝ≥0∞) (volumeOn U) ≤
+            (2 ) (volumeOn U) ≤
           eLpNorm
             (fun x =>
               happrox.approx (σ n) x - u.toFun x)
-            (2 : ℝ≥0∞) (volumeOn U) := by
+            (2 ) (volumeOn U) := by
     intro n
     apply eLpNorm_mono_ae (hvaluePositivePartErrorMeas n)
     filter_upwards with x
@@ -344,16 +298,8 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
         rfl
       _ ≤ |happrox.approx (σ n) x - u.toFun x| :=
         abs_max_sub_max_le_abs
-          (happrox.approx (σ n) x) (u.toFun x) 0
-  have hvaluePositivePartErrorTendsto :
-      Tendsto
-        (fun n =>
-          eLpNorm
-            (valuePositivePartError n)
-            (2 : ℝ≥0∞) (volumeOn U))
-        atTop (𝓝 0) := by
-    exact
-      tendsto_of_tendsto_of_tendsto_of_le_of_le
+          _ (u.toFun x) 0
+  have hvaluePositivePartErrorTendsto  := tendsto_of_tendsto_of_tendsto_of_le_of_le
         tendsto_const_nhds
         (happrox.tendsto_value.comp
           hσStrictMono.tendsto_atTop)
@@ -364,17 +310,17 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
         (fun n =>
           eLpNorm
             (fun x => positiveApprox n x - max (u.toFun x) 0)
-            (2 : ℝ≥0∞) (volumeOn U))
+            (2 ) (volumeOn U))
         atTop (𝓝 0) := by
     have hsum :
         Tendsto
           (fun n =>
             eLpNorm
                 (valueRegularizationError n)
-                (2 : ℝ≥0∞) (volumeOn U) +
+                (2 ) (volumeOn U) +
               eLpNorm
                 (valuePositivePartError n)
-                (2 : ℝ≥0∞) (volumeOn U))
+                (2 ) (volumeOn U))
           atTop (𝓝 0) := by
       simpa only [zero_add] using
         hvalueRegularizationErrorTendsto.add
@@ -396,7 +342,7 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
           exact
             eLpNorm_add_le
               (by norm_num))
-  let Du : Vec d → Vec d := fun x => {y | 0 < u.toFun y}.indicator u.grad x
+  let Du  := ({y | 0 < u.toFun y}.indicator u.grad)
   have hDuCoord : ∀ x i, Du x i = (if 0 < u.toFun x then 1 else 0) * u.grad x i := by
     intro x i
     by_cases hx : 0 < u.toFun x
@@ -424,16 +370,16 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
               (fun x =>
                 (fderiv ℝ (positiveApprox n) x) (basisVec i) -
                   Du x i)
-              (2 : ℝ≥0∞) (volumeOn U))
+              (2 ) (volumeOn U))
           atTop (𝓝 0) := by
     intro i
-    let first : ℕ → Vec d → ℝ :=
+    let first  :=
       fun n x =>
         smoothPositivePartStep 0 (δ n)
             (happrox.approx (σ n) x) *
           ((fderiv ℝ (happrox.approx (σ n)) x) (basisVec i) -
             u.grad x i)
-    let second : ℕ → Vec d → ℝ :=
+    let second  :=
       fun n x =>
         smoothPositivePartStep 0 (δ n) (happrox.approx (σ n) x) *
           u.grad x i - Du x i
@@ -446,16 +392,16 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
           |>.comp_aestronglyMeasurable
             (happroxMeas (σ n))).mul
           (((happrox.toWeakTestFunction (σ n)).memLp_partialDeriv
-              i (2 : ℝ≥0∞)).aestronglyMeasurable.sub
+              i (2 )).aestronglyMeasurable.sub
             (u.grad_memL2 i).aestronglyMeasurable)
     have hfirstBound :
         ∀ n,
-          eLpNorm (first n) (2 : ℝ≥0∞) (volumeOn U) ≤
+          eLpNorm (first n) (2 ) (volumeOn U) ≤
             eLpNorm
               (fun x =>
                 (fderiv ℝ (happrox.approx (σ n)) x) (basisVec i) -
                   u.grad x i)
-              (2 : ℝ≥0∞) (volumeOn U) := by
+              (2 ) (volumeOn U) := by
       intro n
       apply eLpNorm_mono_ae (hfirstMeas n)
       filter_upwards with x
@@ -470,14 +416,10 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
                 u.grad x i‖ :=
           mul_le_mul_of_nonneg_right
             (abs_smoothPositivePartStep_le_one
-              0 (δ n) (happrox.approx (σ n) x))
+              0 (δ n) _)
             (norm_nonneg _)
         _ = _ := one_mul _
-    have hfirstTendsto :
-        Tendsto
-          (fun n =>
-            eLpNorm (first n) (2 : ℝ≥0∞) (volumeOn U))
-          atTop (𝓝 0) :=
+    have hfirstTendsto  :=
       tendsto_of_tendsto_of_tendsto_of_le_of_le
         tendsto_const_nhds
         (happrox.tendsto_grad i |>.comp
@@ -549,23 +491,22 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
               happrox.approx (σ n) x ≤ 0 + δ n)
             simp only [second, hstep, zero_mul, hDuCoord, if_neg hpos, sub_zero]
           exact Tendsto.congr' (heventually.mono fun _ hn => hn.symm) tendsto_const_nhds
-        · have huZero : u.toFun x = 0 := le_antisymm (not_lt.mp hpos) (not_lt.mp hneg)
+        · have huZero  := le_antisymm (not_lt.mp hpos) (not_lt.mp hneg)
           have hg : u.grad x i = 0 := by rw [hzero huZero]; rfl
           simp only [second, hg, mul_zero, hDuCoord, if_neg hpos, sub_zero]
           exact tendsto_const_nhds
     have hsecondTendsto :
         Tendsto
           (fun n =>
-            eLpNorm (second n) (2 : ℝ≥0∞) (volumeOn U))
-          atTop (𝓝 0) := by
-      exact tendsto_eLpNorm_two_zero_of_ae_dominated
+            eLpNorm (second n) (2 ) (volumeOn U))
+          atTop (𝓝 0) := tendsto_eLpNorm_two_zero_of_ae_dominated
         hsecondMeas ((u.grad_memL2 i).const_mul 2)
         hsecondBound hsecondAe
     have hsum :
         Tendsto
           (fun n =>
-            eLpNorm (first n) (2 : ℝ≥0∞) (volumeOn U) +
-              eLpNorm (second n) (2 : ℝ≥0∞) (volumeOn U))
+            eLpNorm (first n) (2 ) (volumeOn U) +
+              eLpNorm (second n) (2 ) (volumeOn U))
           atTop (𝓝 0) := by
       simpa only [zero_add] using
         hfirstTendsto.add hsecondTendsto
@@ -595,16 +536,12 @@ theorem exists_positivePart_nonnegative_supportedSmoothApproximation
           exact
             eLpNorm_add_le
               (by norm_num))
-  let f : Vec d → ℝ := fun x => max (u.toFun x) 0
-  have hfMem : MemL2On U f := by
-    exact memLp_max_zero u.memL2
+  let f  := fun x => max (u.toFun x) 0
+  have hfMem : MemL2On U f := memLp_max_zero u.memL2
   have hweak : HasWeakGradientOn U f Du := by
     apply hasWeakGradientOn_of_smooth_approximation hfMem hDuMem
       hpositiveSmooth hpositiveCompact hpositiveSupport
-    · change Tendsto
-        (fun n => eLpNorm (fun x => positiveApprox n x - max (u.toFun x) 0)
-          (2 : ℝ≥0∞) (volumeOn U)) atTop (𝓝 0)
-      exact hvalueTendsto
+    · assumption
     · exact hgradTendsto
   let v : H1Function U :=
     { toFun := f
@@ -630,7 +567,7 @@ theorem exists_positivePart_supportedSmoothApproximation
       u.toFun x = 0 → u.grad x = 0) :
     ∃ v : H1Function U,
       v.toFun = (fun x => max (u.toFun x) 0) ∧
-      v.grad = (fun x => {y | 0 < u.toFun y}.indicator u.grad x) ∧
+      v.grad = (({y | 0 < u.toFun y}.indicator u.grad)) ∧
       Nonempty v.SupportedSmoothApproximation := by
   obtain ⟨v, hvValue, hvGrad, hv, _⟩ :=
     exists_positivePart_nonnegative_supportedSmoothApproximation

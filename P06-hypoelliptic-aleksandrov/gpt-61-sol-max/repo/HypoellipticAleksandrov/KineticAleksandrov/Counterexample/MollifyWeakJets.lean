@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyA
 import Mathlib.Analysis.Calculus.FDeriv.Comp
 import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 import Mathlib.Tactic.Ring
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Commutation of weak directional jets with spatial convolution
@@ -12,8 +14,8 @@ The hypothesis is the ordinary distributional integration-by-parts identity agai
 all smooth compactly supported tests. No classical differentiability of `u` is required.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory ContinuousLinearMap
 open scoped Convolution
@@ -59,15 +61,17 @@ theorem smooth_test_second_swap (test : G → ℝ) (ht : ContDiff ℝ 2 test)
     ContinuousLinearMap.flip_apply] using!
       ((ht.contDiffAt (x := q)).isSymmSndFDerivAt (by simp)).eq w z
 
+variable (phi : ContDiffBump (0 : G))
+
 /-- A locally integrable weak derivative commutes with smoothing by a compact smooth
 kernel, pointwise at every base point. -/
-theorem mollify_weak_directional_jet (phi : ContDiffBump (0 : G))
-    (u g : G → ℝ) (hu : LocallyIntegrable u volume) (w : G)
-    (hweak : ∀ test : G → ℝ, ContDiff ℝ (⊤ : ℕ∞) test → HasCompactSupport test →
+theorem mollify_weak_directional_jet
+    (u g : G → ℝ) (hu : LocallyIntegrable u ) (w : G)
+    (hweak : ∀ test : G → ℝ, ContDiff ℝ PDE.smoothOrder test → HasCompactSupport test →
       (∫ y, u y * fderiv ℝ test y w) = -(∫ y, g y * test y)) (q : G) :
     fderiv ℝ (spatialMollify phi u) q w = spatialMollify phi g q := by
   let k := phi.normed volume
-  have hk : ContDiff ℝ (⊤ : ℕ∞) k := phi.contDiff_normed
+  have hk : ContDiff ℝ PDE.smoothOrder k := phi.contDiff_normed
   have hkc : HasCompactSupport k := phi.hasCompactSupport_normed
   have hs : spatialMollify phi u = u ⋆[lsmul ℝ ℝ, volume] k := by
     unfold spatialMollify
@@ -81,42 +85,37 @@ theorem mollify_weak_directional_jet (phi : ContDiffBump (0 : G))
     (hk.of_le (by simp)) q).fderiv,
     convolution_precompR_apply (lsmul ℝ ℝ) hu (hkc.fderiv ℝ)
       ((hk.of_le (by simp) : ContDiff ℝ 1 k).continuous_fderiv one_ne_zero) q w]
-  have ht : ContDiff ℝ (⊤ : ℕ∞) (fun y => k (q - y)) :=
-    hk.comp (contDiff_const.sub contDiff_id)
-  have he := hweak (fun y => k (q - y)) ht
+
+  have he := hweak (fun y => k (q - y)) (hk.comp (contDiff_const.sub contDiff_id))
     (hasCompactSupport_translated_reflection k hkc q)
   simp_rw [fderiv_translated_reflection k (hk.of_le (by simp)), mul_neg,
     integral_neg] at he
-  have he' := neg_injective he
+
   rw [convolution_def]
   change (∫ y, u y * fderiv ℝ k (q - y) w) = _
-  rw [he', spatialMollify, convolution_lsmul_swap]
+  rw [(neg_injective he), spatialMollify, convolution_lsmul_swap]
   apply integral_congr_ae
   filter_upwards [] with y
   exact mul_comm _ _
 
 /-- A second distributional jet commutes with convolution. The second weak identity
 uses the reverse order on test derivatives, as required by two integrations by parts. -/
-theorem mollify_weak_second_jet (phi : ContDiffBump (0 : G))
-    (u g h : G → ℝ) (hu : LocallyIntegrable u volume) (hg : LocallyIntegrable g volume)
+theorem mollify_weak_second_jet
+    (u g h : G → ℝ) (hu : LocallyIntegrable u ) (hg : LocallyIntegrable g )
     (w z : G)
-    (hfirst : ∀ test : G → ℝ, ContDiff ℝ (⊤ : ℕ∞) test → HasCompactSupport test →
+    (hfirst : ∀ test : G → ℝ, ContDiff ℝ PDE.smoothOrder test → HasCompactSupport test →
       (∫ y, u y * fderiv ℝ test y w) = -(∫ y, g y * test y))
-    (hsecond : ∀ test : G → ℝ, ContDiff ℝ (⊤ : ℕ∞) test → HasCompactSupport test →
+    (hsecond : ∀ test : G → ℝ, ContDiff ℝ PDE.smoothOrder test → HasCompactSupport test →
       (∫ y, u y * fderiv ℝ (fun x => fderiv ℝ test x z) y w) =
         ∫ y, h y * test y) (q : G) :
     fderiv ℝ (fun x => fderiv ℝ (spatialMollify phi u) x w) q z =
       spatialMollify phi h q := by
-  have he : (fun x => fderiv ℝ (spatialMollify phi u) x w) = spatialMollify phi g :=
-    funext (mollify_weak_directional_jet phi u g hu w hfirst)
-  rw [he]
+
+  rw [(funext (mollify_weak_directional_jet phi u g hu w hfirst))]
   apply mollify_weak_directional_jet phi g h hg z
   intro test ht hs
-  have hd : ContDiff ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ test x z) := by
-    exact (ht.contDiff_fderiv_apply (by simp)).comp (contDiff_id.prodMk contDiff_const)
-  have ha := hfirst (fun x => fderiv ℝ test x z) hd (hs.fderiv_apply (𝕜 := ℝ) z)
-  have hb := hsecond test ht hs
-  rw [hb] at ha
-  simpa only [neg_neg] using (congrArg Neg.neg ha).symm
+
+  have ha := hfirst (fun x => fderiv ℝ test x z) ((ht.contDiff_fderiv_apply (by simp)).comp (contDiff_id.prodMk contDiff_const)) (hs.fderiv_apply (𝕜 := ℝ) z)
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -5,9 +5,9 @@ import Mathlib.Tactic
 
 /-! # The all-density kinetic growth lemma -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -21,7 +21,7 @@ theorem kinetic_growth_lemma_aux
     ∃ theta : ℝ, 0 < theta ∧ theta < 1 ∧
       ∃ (P_Sigma : KineticPoint d) (r_Sigma : ℝ), 0 < r_Sigma ∧
         closure (backwardCylinder P_Sigma r_Sigma) ⊆
-          backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 ∧
+          backwardCylinder (⟨0, 0, 0⟩ ) 1 ∧
         ∀ beta : ℝ, 0 < beta → beta ≤ 1 →
           ∃ kappa_beta : ℝ, 0 < kappa_beta ∧
             ∀ A : FullKineticCoefficient d,
@@ -34,7 +34,7 @@ theorem kinetic_growth_lemma_aux
               ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R →
               ∀ O : Set (KineticPoint d), IsOpen O →
                 closure (backwardCylinder P₀ R) ⊆ O →
-              ∀ u : KineticPoint d → ℝ,
+              ∀ u : HypoellipticAleksandrov.KineticScalarField d,
                 (∀ P ∈ O, 0 ≤ u P) → IsAdmissibleSupersolution A O p C_A u →
                 beta * (volume (kineticAffine P₀ R ''
                   backwardCylinder P_Sigma r_Sigma)).toReal ≤

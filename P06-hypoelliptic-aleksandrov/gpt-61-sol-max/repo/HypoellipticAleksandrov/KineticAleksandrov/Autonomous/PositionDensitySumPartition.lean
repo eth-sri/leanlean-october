@@ -2,24 +2,28 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionOverlap
 import Mathlib.Probability.Kernel.Composition.MeasureComp
+import Aesop
+
+
 
 /-! # Output-cell partition of the actual positive Green density -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory ProbabilityTheory Filter
+open Set MeasureTheory
 open scoped ENNReal
 
 /-- Raising the positive norm to its exponent recovers the power integral. -/
 theorem positionPositiveNorm_rpow {X : Type*} [MeasurableSpace X]
     (m : Measure X) (q : ℝ) (hq : 0 < q) (f : X → ℝ≥0∞) :
     positionPositiveNorm m q f ^ q = ∫⁻ z, f z ^ q ∂m := by
-  rw [positionPositiveNorm, ← ENNReal.rpow_mul,
-    one_div_mul_cancel hq.ne', ENNReal.rpow_one]
+  simp_all [positionPositiveNorm] <;> aesop
+
+variable (c : Clock) (s x : ℝ)
 
 /-- The output cells partition the region after the grid origin in the active interval. -/
-theorem enlargedOutputCell_iUnion (c : Clock) (s x : ℝ) :
+theorem enlargedOutputCell_iUnion  :
     (⋃ a : ℕ × ℤ, enlargedOutputCell c s x a.1 a.2) =
       {p | s ≤ p.time ∧ p.velocity 0 ∈ c.active} := by
   unfold enlargedOutputCell
@@ -27,24 +31,23 @@ theorem enlargedOutputCell_iUnion (c : Clock) (s x : ℝ) :
   rfl
 
 /-- The output-cell partition is pairwise disjoint. -/
-theorem enlargedOutputCell_pairwiseDisjoint (c : Clock) (s x : ℝ) :
+theorem enlargedOutputCell_pairwiseDisjoint  :
     Pairwise (fun a b : ℕ × ℤ =>
       Disjoint (enlargedOutputCell c s x a.1 a.2) (enlargedOutputCell c s x b.1 b.2)) := by
   intro a b hab
   exact (enlargedStartCell_pairwiseDisjoint c s x hab).mono inter_subset_left inter_subset_left
 
+variable (hpush : PushforwardStatement) (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (hc : |c.vbar| = 2 * c.r) (nu : Measure Point)
+
+include hpush hc
 /-- A mixture started after the origin stays after the origin in the active interval. -/
-theorem positionMixtureDensity_support (hpush : PushforwardStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (hc : |c.vbar| = 2 * c.r)
-    (nu : Measure Point) [SFinite nu] (s : ℝ)
+theorem positionMixtureDensity_support  [SFinite nu] (s : ℝ)
     (hnu : ∀ᵐ e ∂nu, s ≤ e.time ∧ e.velocity 0 ∈ c.active) :
     ∀ᵐ z ∂(volume : Measure Point),
       positionMixtureDensity hH hLE hlam hLam A c nu z ≠ 0 →
         s ≤ z.time ∧ z.velocity 0 ∈ c.active := by
-  have hm := measurable_positionMixtureDensity hH hLE hlam hLam A c nu
-  apply (ae_withDensity_iff hm).mp
+
+  apply (ae_withDensity_iff (measurable_positionMixtureDensity hH hLE hlam hLam A c nu)).mp
   rw [withDensity_positionMixtureDensity hpush hH hLE hlam hLam]
   have hS : MeasurableSet {z : Point | s ≤ z.time ∧ z.velocity 0 ∈ c.active} :=
     (measurableSet_Ici.preimage continuous_time.measurable).inter
@@ -59,13 +62,9 @@ theorem positionMixtureDensity_support (hpush : PushforwardStatement)
   exact ⟨he.1.trans (hz hnonzero).1.le, (hz hnonzero).2.1⟩
 
 /-- Summing output-cell q-power norms recovers the full density power integral. -/
-theorem positionMixtureDensity_power_partition (hpush : PushforwardStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (hc : |c.vbar| = 2 * c.r)
-    (nu : Measure Point) [SFinite nu] (s x q : ℝ) (hq : 0 < q)
+theorem positionMixtureDensity_power_partition  [SFinite nu] (s x q : ℝ) (hq : 0 < q)
     (hnu : ∀ᵐ e ∂nu, s ≤ e.time ∧ e.velocity 0 ∈ c.active) :
-    (∫⁻ z, positionMixtureDensity hH hLE hlam hLam A c nu z ^ q ∂volume) =
+    (∫⁻ z, positionMixtureDensity hH hLE hlam hLam A c nu z ^ q) =
       ∑' a : ℕ × ℤ,
         positionPositiveNorm (volume.restrict (enlargedOutputCell c s x a.1 a.2)) q
           (positionMixtureDensity hH hLE hlam hLam A c nu) ^ q := by
@@ -73,7 +72,7 @@ theorem positionMixtureDensity_power_partition (hpush : PushforwardStatement)
   let U := {z : Point | s ≤ z.time ∧ z.velocity 0 ∈ c.active}
   have hU : MeasurableSet U := (measurableSet_Ici.preimage continuous_time.measurable).inter
     (isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable)
-  have he : (∫⁻ z, F z ^ q ∂volume) = ∫⁻ z in U, F z ^ q ∂volume := by
+  have he : (∫⁻ z, F z ^ q) = ∫⁻ z in U, F z ^ q := by
     rw [← lintegral_indicator hU]
     apply lintegral_congr_ae
     filter_upwards [positionMixtureDensity_support hpush hH hLE hlam hLam A c hc nu s hnu]

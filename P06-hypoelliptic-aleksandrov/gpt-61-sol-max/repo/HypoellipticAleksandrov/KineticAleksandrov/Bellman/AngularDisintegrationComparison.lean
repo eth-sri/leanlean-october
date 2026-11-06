@@ -5,8 +5,8 @@ import Mathlib.Tactic
 
 /-! # Comparison of the actual angular measures -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -29,20 +29,24 @@ theorem bellman_withDensity_mono_measure {A : Type*} [MeasurableSpace A]
   rw [withDensity_apply _ hE, withDensity_apply _ hE]
   exact lintegral_mono' (Measure.restrict_mono Subset.rfl h) le_rfl
 
+variable (β : ℝ)
+
 /-- The canonical angular section preserves comparison of the original measures. -/
-theorem bellmanAngularMeasure_mono (β : ℝ)
+theorem bellmanAngularMeasure_mono
     {μ η : Measure BellmanPuncturedPlane} (h : μ ≤ η) :
-    bellmanAngularMeasure β μ ≤ bellmanAngularMeasure β η := by
-  have hp := bellman_withDensity_mono_measure (bellmanAngularPullback_mono h)
-    (bellmanRadialDegreeWeight β)
-  have hl := Measure.map_mono hp bellmanLogAngularHomeomorph.measurable
-  have hs := Measure.map_mono
-    (Measure.restrict_mono (s := Ioc (0 : ℝ) 1 ×ˢ univ) Subset.rfl hl) measurable_snd
-  unfold bellmanAngularMeasure bellmanUnitSection bellmanLogAngularMeasure
-  exact smul_le_smul_left _ hs
+    bellmanAngularMeasure β μ ≤ bellmanAngularMeasure β η := (id
+  (id
+    (id
+      (smul_le_smul_left bellmanRadialHaarFactor⁻¹
+        (Measure.map_mono
+          (Measure.restrict_mono Subset.rfl
+            (Measure.map_mono
+              (bellman_withDensity_mono_measure (bellmanAngularPullback_mono h) (bellmanRadialDegreeWeight β))
+              (Homeomorph.measurable bellmanLogAngularHomeomorph)))
+          measurable_snd)))))
 
 /-- Angular extraction commutes with multiplying the original measure by a scalar. -/
-theorem bellmanAngularMeasure_smul (β : ℝ) (c : ENNReal)
+theorem bellmanAngularMeasure_smul  (c : ENNReal)
     (μ : Measure BellmanPuncturedPlane) :
     bellmanAngularMeasure β (c • μ) = c • bellmanAngularMeasure β μ := by
   unfold bellmanAngularMeasure bellmanUnitSection bellmanLogAngularMeasure

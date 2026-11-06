@@ -2,6 +2,9 @@ module
 
 public import PDEFoundation.Sobolev.Cutoff.Basic
 public import Mathlib.Geometry.Manifold.PartitionOfUnity
+import Mathlib.Tactic.Bound
+
+
 
 /-!
 # Quantitative smooth cutoffs on open velocity sets
@@ -10,7 +13,7 @@ This module turns the smooth plateau construction into the project-specific
 quantitative cutoff data required for velocity localization.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -19,7 +22,7 @@ open scoped Manifold
 /-- A compact subset of an open velocity set admits a quantitative smooth
 cutoff with topological support in that open set. -/
 theorem exists_quantitativeSmoothCutoff_tsupport_subset
-    {d : ℕ} {E Ω : Set (PDE.Vec d)}
+    {d : ℕ} {E Ω : PDE.VelocityRegion d}
     (hE : IsCompact E) (hΩ : IsOpen Ω) (hEΩ : E ⊆ Ω) :
     ∃ K : ℝ, Nonempty (PDE.QuantitativeSmoothCutoff E Ω K) := by
   obtain ⟨V, hVopen, hEV, hclosureVΩ, hclosureVcompact⟩ :=
@@ -30,16 +33,15 @@ theorem exists_quantitativeSmoothCutoff_tsupport_subset
     change IsCompact (closure (Function.support f))
     rw [hfSupport]
     exact hclosureVcompact
-  have hgradientContinuous : Continuous (PDE.classicalGradient f) :=
-    PDE.ContDiff.continuous_classicalGradient (hfSmooth.contDiff.of_le (by simp))
-  have hgradientCompact : HasCompactSupport (PDE.classicalGradient f) := by
-    change HasCompactSupport
-      (fun x i => (fderiv ℝ f x) (PDE.basisVec i))
-    exact
-      (hfCompact.fderiv (𝕜 := ℝ)).comp_left
-        (g := fun L : PDE.Vec d →L[ℝ] ℝ => fun i => L (PDE.basisVec i)) (by rfl)
+
+
   obtain ⟨C, hC⟩ :=
-    hgradientContinuous.bounded_above_of_compact_support hgradientCompact
+    (PDE.ContDiff.continuous_classicalGradient (hfSmooth.contDiff.of_le (by simp))).bounded_above_of_compact_support (by
+        change HasCompactSupport
+          (fun x i => (fderiv ℝ f x) (PDE.basisVec i))
+        exact
+          (hfCompact.fderiv (𝕜 := ℝ)).comp_left
+            (g := fun L : PDE.Vec d →L[ℝ] ℝ => fun i => L (PDE.basisVec i)) (rfl))
   refine ⟨Real.sqrt d * C, ⟨?_⟩⟩
   refine
     { toFun := f
@@ -50,9 +52,7 @@ theorem exists_quantitativeSmoothCutoff_tsupport_subset
       le_one := ?_
       eq_one_on_inner := ?_
       gradient_bound := ?_ }
-  · change closure (Function.support f) ⊆ Ω
-    rw [hfSupport]
-    exact hclosureVΩ
+  · bound
   · intro x
     exact (hfRange ⟨x, rfl⟩).1
   · intro x

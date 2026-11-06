@@ -29,8 +29,7 @@ def horizonInclusion (d : ℕ) (S : ℝ≥0∞) :
 
 lemma measurableEmbedding_elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) :
     MeasurableEmbedding (elapsedInclusion hTS) := by
-  have hT : MeasurableEmbedding (Subtype.val : ElapsedTime T → ℝ) :=
-    MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime T)
+
   refine ⟨?_, measurable_elapsedInclusion hTS, ?_⟩
   · intro a b hab
     exact Subtype.ext (by simpa [elapsedInclusion] using congrArg Subtype.val hab)
@@ -44,7 +43,7 @@ lemma measurableEmbedding_elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) :
       · rintro ⟨σ, hσ, h⟩
         exact ⟨σ, hσ, Subtype.ext h⟩
     rw [this]
-    exact measurable_subtype_coe (hT.measurableSet_image.2 hB)
+    exact measurable_subtype_coe ((MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime T)).measurableSet_image.2 hB)
 
 lemma measurableEmbedding_horizonInclusion (d : ℕ) (S : ℝ≥0∞) :
     MeasurableEmbedding (horizonInclusion d S) :=
@@ -66,16 +65,17 @@ lemma map_horizonInclusion_lebesgue (d : ℕ) (S : ℝ≥0∞) :
     ((elapsedVolume S).prod (volume : Measure (EvolutionAmbientState d))).map
         (horizonInclusion d S) =
       (greenLebesgue d).restrict {p | ENNReal.ofReal p.1.1 < S} := by
-  have h1 := Measure.map_prod_map (elapsedVolume S) (volume : Measure (EvolutionAmbientState d))
+  let sharedTerm_0128ea7404 := ((volume : Measure (EvolutionAmbientState d)))
+  have h1 := Measure.map_prod_map (elapsedVolume S) sharedTerm_0128ea7404
     (measurable_elapsedInclusion (le_top : S ≤ ⊤)) measurable_id
   rw [Measure.map_id, elapsedInclusion_map] at h1
   have h2 := Measure.prod_restrict (μ := elapsedVolume ⊤)
-    (ν := (volume : Measure (EvolutionAmbientState d))) {τ : ElapsedTime ⊤ | ENNReal.ofReal τ.1 < S}
+    (ν := sharedTerm_0128ea7404) {τ : ElapsedTime ⊤ | ENNReal.ofReal τ.1 < S}
     univ
   rw [Measure.restrict_univ, Set.prod_univ] at h2
   have h3 : (greenLebesgue d).restrict {p | ENNReal.ofReal p.1.1 < S} =
       ((elapsedVolume ⊤).restrict {τ : ElapsedTime ⊤ | ENNReal.ofReal τ.1 < S}).prod
-        (volume : Measure (EvolutionAmbientState d)) := h2.symm
+        sharedTerm_0128ea7404 := h2.symm
   rw [h3]
   exact h1.symm
 

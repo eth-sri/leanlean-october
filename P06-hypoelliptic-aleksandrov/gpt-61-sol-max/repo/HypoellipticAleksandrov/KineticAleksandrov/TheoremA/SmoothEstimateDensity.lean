@@ -6,10 +6,10 @@ import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
 
 /-! # Real representatives of finite-power Green densities -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.TheoremA
-open MeasureTheory Filter
+open MeasureTheory
 open scoped ENNReal
 
 /-- A finite positive-power density norm gives a measurable nonnegative real representative. -/
@@ -21,7 +21,7 @@ theorem real_density_of_eLpNorm_bound {α : Type*} [MeasurableSpace α]
       Γ = μ.withDensity (fun x => ENNReal.ofReal (F x)) ∧
       (eLpNorm F (ENNReal.ofReal q) μ).toReal ≤ C ∧
       MemLp F (ENNReal.ofReal q) μ := by
-  have hfin : eLpNorm G (ENNReal.ofReal q) μ < ⊤ :=
+  have hfin  :=
     hnorm.trans_lt ENNReal.ofReal_lt_top
   have hl := lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top
     (ENNReal.ofReal_pos.mpr hq).ne' ENNReal.ofReal_ne_top hfin
@@ -30,7 +30,7 @@ theorem real_density_of_eLpNorm_bound {α : Type*} [MeasurableSpace α]
   have hae : ∀ᵐ x ∂μ, G x ≠ ⊤ := by
     filter_upwards [ae_lt_top (hG.pow_const q) hpow.ne] with x hx
     exact fun h => hx.ne ((ENNReal.rpow_eq_top_iff_of_pos hq).mpr h)
-  have hFm : Measurable (fun x => (G x).toReal) := hG.ennreal_toReal
+  have hFm  := hG.ennreal_toReal
   have heq : (fun x => ENNReal.ofReal ((G x).toReal)) =ᵐ[μ] G := by
     filter_upwards [hae] with x hx
     exact ENNReal.ofReal_toReal hx

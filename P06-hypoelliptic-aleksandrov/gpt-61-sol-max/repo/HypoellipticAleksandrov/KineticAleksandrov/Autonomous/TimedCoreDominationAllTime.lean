@@ -6,36 +6,37 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHori
 
 /-! # Genuine core domination by the all-time Green measure of the actual entrance count -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
+
+variable (T : ℝ)
+
 /-- Each actual clipped active Green kernel is bounded by the full all-time active-strip kernel. -/
 theorem enlargedActiveGreenKernel_le_allTime
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (p : Point) :
+      (p : Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T p ≤
       enlargedActiveGreenKernel hH hLE hlam hLam A c p := by
   classical
   by_cases hp : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T
-  · have hv : p.velocity 0 ∈ c.active :=
-      ((visitActiveUnion_carrier c J).le hp.2).1
+  ·
     let H := visitActiveUnion c J
     let e := enlargedVisitPole H T ⟨p, hp⟩
     let i := finiteUnionPoleIndex H T e
-    have hsub : (H.component i).carrier ⊆ (visitActiveInterval c).carrier := by
-      intro v hv'
-      exact ((visitActiveUnion_carrier c J).le (H.component_subset i hv')).1
-    have h := stripGreen_mono hH hLE hlam hLam A (H.component i) (visitActiveInterval c)
-      hsub T ⊤ le_top (finiteUnionComponentPole H T e)
+
+    have h := stripGreen_mono hH hLE hlam hLam A (H.component i) _
+      (show (H.component i).carrier ⊆ (visitActiveInterval c).carrier by
+          intro v hv'
+          exact ((visitActiveUnion_carrier c J).le (H.component_subset i hv')).1) T ⊤ le_top (finiteUnionComponentPole H T e)
     change (if ht : p ∈ enlargedVisitPoleSet H T then
       finiteUnionGreen hH hLE hlam hLam A H T (enlargedVisitPole H T ⟨p, ht⟩) else 0) ≤
         (if ht : p.velocity 0 ∈ c.active then
-          stripGreen hH hLE hlam hLam A (visitActiveInterval c) ⊤
+          stripGreen hH hLE hlam hLam A _ ⊤
             (densityClockPole c p ht) else 0)
-    rw [dite_eq_left hp, dite_eq_left hv]
+    rw [dite_eq_left hp, dite_eq_left (((visitActiveUnion_carrier c J).le hp.2).1)]
     exact h
   · change (if ht : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T then _ else 0) ≤ _
     rw [dite_eq_right hp]
@@ -44,9 +45,7 @@ theorem enlargedActiveGreenKernel_le_allTime
 
 /-- The genuine active Green mixture is bounded by its all-time active-strip extension. -/
 theorem enlargedActiveGreenMixture_le_allTime
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (mu : Measure Point) :
+      (mu : Measure Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu ≤
       enlargedActiveGreen hH hLE hlam hLam A c mu := by
   unfold enlargedActiveGreen
@@ -58,9 +57,7 @@ theorem enlargedActiveGreenMixture_le_allTime
 
 /-- Core occupation is dominated by the actual all-time Green measure of the full visit count. -/
 theorem enlargedOuterGreen_core_domination_of_finite_count
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (s T : ℝ) (hT : s < T)
     (P : Point) (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier)
     [IsFiniteMeasure (enlargedVisitStarts hH hLE hlam hLam A c J s T P)] :
     (enlargedVisitGreenKernel hH hLE hlam hLam A J.toFiniteUnion T P).restrict

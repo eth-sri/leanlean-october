@@ -6,10 +6,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominati
 
 /-! # Core occupation exhausted and dominated by the canonical enlarged visits -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+
 
 /-- The core domination statement, including initial poles at the named lower time. -/
 theorem coreDominationStatement_holds : CoreDominationStatement := by

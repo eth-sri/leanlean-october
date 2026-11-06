@@ -10,8 +10,8 @@ The supremum and infimum are those of the solution on each literal Euclidean cyl
 The preceding forced contraction proves their recurrence; no decay premise is assumed.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
@@ -22,10 +22,10 @@ theorem exists_forced_dyadic_range_decay
     ∃ q K : ℝ, (1 / 2 : ℝ) ≤ q ∧ q < 1 ∧ 0 < K ∧
       ∀ (A : CoefficientField N), IsSmoothCoefficient A → IsSymmetricCoefficient A →
         HasLowerEllipticity lam A → HasUpperEllipticity Lam A →
-      ∀ (U : Set (TimeVelocity N)) (T : ℝ) (v₀ : PDE.Vec N) (r : ℝ),
+      ∀ (U : HypoellipticAleksandrov.Parabolic.Region N) (T : ℝ) (v₀ : PDE.Vec N) (r : ℝ),
         0 < r → r ≤ 1 →
         scalarParabolicClosedCylinder (T - r ^ 2) T (PDE.euclideanBall v₀ r) ⊆ U →
-      ∀ (w : TimeVelocity N → ℝ) (M : ℝ), 0 ≤ M →
+      ∀ (w : HypoellipticAleksandrov.Parabolic.ScalarField N) (M : ℝ), 0 ≤ M →
         IsScalarC12On w U → (∀ z ∈ U, |w z| ≤ M) →
         (∀ z ∈ U, |scalarTimeDerivative w z -
           matrixContraction (coefficientAt A z) (scalarSpatialHessian w z)| ≤ M) →
@@ -53,14 +53,13 @@ theorem exists_forced_dyadic_range_decay
   intro A hA hs hlo hhi U T v₀ r hr hr1 hU w M hM hw hb hf
   let Q (n : ℕ) := scalarParabolicOpenCylinder (T - dyadicRadius r n ^ 2) T
     (PDE.euclideanBall v₀ (dyadicRadius r n))
-  have hclosed (n : ℕ) : scalarParabolicClosedCylinder (T - dyadicRadius r n ^ 2) T
-      (PDE.euclideanBall v₀ (dyadicRadius r n)) ⊆ U :=
+  have hclosed (n : ℕ)  :=
     (backward_ball_closed_mono T v₀ (dyadicRadius_pos hr n)
       (dyadicRadius_le hr.le n)).trans hU
   have hQU (n : ℕ) : Q n ⊆ U := by
     intro z hz
     exact hclosed n ⟨⟨hz.1.1.le, hz.1.2.le⟩, subset_closure hz.2⟩
-  have hne (n : ℕ) : (w '' Q n).Nonempty :=
+  have hne (n : ℕ)  :=
     (backward_ball_nonempty T v₀ (dyadicRadius_pos hr n)).image w
   have hab (n : ℕ) : BddAbove (w '' Q n) := by
     refine ⟨M, ?_⟩
@@ -83,10 +82,10 @@ theorem exists_forced_dyadic_range_decay
       intro z hz
       apply hbounds'
       simpa only [Q, dyadicRadius_succ] using hz
-    have hsup : sSup (w '' Q (n + 1)) ≤ b := csSup_le (hne _) (by
+    have hsup  := csSup_le (hne _) (by
       rintro _ ⟨z, hz, rfl⟩
       exact (hb' z hz).2)
-    have hinf : l ≤ sInf (w '' Q (n + 1)) := le_csInf (hne _) (by
+    have hinf  := le_csInf (hne _) (by
       rintro _ ⟨z, hz, rfl⟩
       exact (hb' z hz).1)
     have hwidth' := hwidth
@@ -95,10 +94,10 @@ theorem exists_forced_dyadic_range_decay
     dsimp only [f]
     nlinarith only [hsup, hinf, hwidth']
   have hbase : f 0 ≤ K * M := by
-    have hsup : sSup (w '' Q 0) ≤ M := csSup_le (hne _) (by
+    have hsup  := csSup_le (hne _) (by
       rintro _ ⟨z, hz, rfl⟩
       exact le_of_abs_le (hb z (hQU 0 hz)))
-    have hinf : -M ≤ sInf (w '' Q 0) := le_csInf (hne _) (by
+    have hinf  := le_csInf (hne _) (by
       rintro _ ⟨z, hz, rfl⟩
       exact neg_le_of_abs_le (hb z (hQU 0 hz)))
     have hkm := mul_le_mul_of_nonneg_right hK2 hM

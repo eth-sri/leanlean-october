@@ -9,7 +9,7 @@ This module augments the reverse-time scalar plateau cutoff with a global bound
 for its ordinary derivative.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -31,6 +31,6 @@ theorem exists_reverseTimeScalarTest_plateau_with_deriv_bound
   obtain ⟨C, hC⟩ := ζ.exists_norm_deriv_le
   refine ⟨ζ, max C 0, le_max_right C 0, hζnonneg, hζle_one, hζplateau, hζsupport, ?_⟩
   intro τ
-  simpa only [Real.norm_eq_abs] using (hC τ).trans (le_max_left C 0)
+  exact (hC τ).trans (le_max_left C 0)
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

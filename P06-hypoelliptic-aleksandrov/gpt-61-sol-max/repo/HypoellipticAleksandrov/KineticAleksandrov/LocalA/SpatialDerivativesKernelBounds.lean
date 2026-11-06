@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1Derivative
 
 /-! # Uniform integral bounds for the canonical real exit density -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory Parabolic SectionTwo
+open SectionTwo
 
 /-- A canonical density with a norm support bound is compactly supported. -/
 theorem spatialDensity_hasCompactSupport {d : ℕ} {E : Type} [NormedAddCommGroup E]

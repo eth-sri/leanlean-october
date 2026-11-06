@@ -27,21 +27,27 @@ variable {E : Type*} [AddCommGroup E] [TopologicalSpace E]
 def piBernsteinGrid {d n : ℕ} (k : Fin d → Fin (n + 1)) : Fin d → I :=
   fun i => bernstein.z (k i)
 
+variable {d : ℕ} (n : ℕ)
+
 /-- The scalar product Bernstein basis on the unit cube. -/
-def piBernsteinBasis {d : ℕ} (n : ℕ) (k : Fin d → Fin (n + 1)) :
+def piBernsteinBasis  (k : Fin d → Fin (n + 1)) :
     C(Fin d → I, ℝ) :=
   ∏ i : Fin d, (bernstein n (k i)).comp
     ⟨fun x => x i, continuous_apply i⟩
 
 /-- The product Bernstein approximation of a continuous map on the unit cube. -/
-def piBernsteinApproximation {d : ℕ} (n : ℕ) (f : C(Fin d → I, E)) :
+def piBernsteinApproximation  (f : C(Fin d → I, E)) :
     C(Fin d → I, E) :=
   ∑ k : Fin d → Fin (n + 1),
     piBernsteinBasis n k • ContinuousMap.const (Fin d → I) (f (piBernsteinGrid k))
 
+variable {d n : ℕ}
+
+variable (k : Fin d → Fin (n + 1)) (x : Fin d → I)
+
 /-- Failure of a product-metric proximity test bounds the summed squared displacement below. -/
 theorem sq_le_sum_sq_sub_of_not_dist_lt_piBernsteinGrid
-    {d n : ℕ} (k : Fin d → Fin (n + 1)) (x : Fin d → I) (δ : ℝ)
+      (δ : ℝ)
     (hδ : 0 ≤ δ) (hfar : ¬ dist (piBernsteinGrid k) x < δ) :
     δ ^ 2 ≤ ∑ i : Fin d,
       ((x i : ℝ) - (piBernsteinGrid k i : ℝ)) ^ 2 := by
@@ -58,19 +64,18 @@ theorem sq_le_sum_sq_sub_of_not_dist_lt_piBernsteinGrid
         rw [Subtype.dist_eq, Real.dist_eq]
         rw [abs_sub_comm, sq_abs]
       _ ≤ ∑ j : Fin d,
-          ((x j : ℝ) - (piBernsteinGrid k j : ℝ)) ^ 2 := by
-        exact Finset.single_le_sum (fun j _ => sq_nonneg
+          ((x j : ℝ) - (piBernsteinGrid k j : ℝ)) ^ 2 := Finset.single_le_sum (fun j _ => sq_nonneg
           ((x j : ℝ) - (piBernsteinGrid k j : ℝ))) (Finset.mem_univ i)
 
 /-- Every product Bernstein weight is nonnegative. -/
-theorem piBernsteinBasis_nonneg {d n : ℕ}
-    (k : Fin d → Fin (n + 1)) (x : Fin d → I) :
+theorem piBernsteinBasis_nonneg
+     :
     0 ≤ piBernsteinBasis n k x := by
   simp only [piBernsteinBasis, ContinuousMap.prod_apply]
   exact Finset.prod_nonneg fun _ _ => bernstein_nonneg
 
 /-- Product Bernstein weights have total mass one, including in dimension zero. -/
-theorem sum_piBernsteinBasis {d n : ℕ} (x : Fin d → I) :
+theorem sum_piBernsteinBasis  (x : Fin d → I) :
     (∑ k : Fin d → Fin (n + 1), piBernsteinBasis n k x) = 1 := by
   classical
   simp only [piBernsteinBasis, ContinuousMap.prod_apply, ContinuousMap.comp_apply,
@@ -84,7 +89,7 @@ theorem sum_piBernsteinBasis {d n : ℕ} (x : Fin d → I) :
 
 /-- The summed squared coordinate displacement has the product Bernstein variance. -/
 theorem sum_sq_sub_piBernsteinGrid_mul_piBernsteinBasis
-    {d n : ℕ} (hn : n ≠ 0) (x : Fin d → I) :
+     (hn : n ≠ 0) (x : Fin d → I) :
     (∑ k : Fin d → Fin (n + 1),
         (∑ i : Fin d, ((x i : ℝ) - (piBernsteinGrid k i : ℝ)) ^ 2) *
           piBernsteinBasis n k x) =

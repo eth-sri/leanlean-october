@@ -5,8 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentat
 
 /-! # The local solution equals its boundary-data convolution at translated inner poles -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 open scoped Convolution
@@ -18,7 +18,7 @@ theorem spatial_local_convolution
     {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (Z₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
-    (U : KineticPoint d → ℝ)
+    (U : HypoellipticAleksandrov.KineticScalarField d)
     (hUc : ContinuousOn U (closure (forwardCylinder Z₀ R hR)))
     (hUs : IsKineticC112On U (forwardCylinder Z₀ R hR))
     (hUe : ∀ Q ∈ forwardCylinder Z₀ R hR,

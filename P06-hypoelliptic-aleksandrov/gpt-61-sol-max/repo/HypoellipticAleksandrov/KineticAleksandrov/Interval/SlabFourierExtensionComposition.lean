@@ -8,11 +8,11 @@ No endpoint identity is asserted for exterior starts. Composition is preserved
 because every nonzero intermediate transition stays inside the interval.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov
-open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
+open Set MeasureTheory
+
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open scoped ProbabilityTheory
 
@@ -29,8 +29,7 @@ theorem intervalExtension_composition {a c : ℝ}
   intro A hA
   by_cases hp : p.1.1 ∈ PDE.oneDimensionalAxisBox a c
   · let pj : EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ :=
-      ⟨p.1, by simpa only [evolutionStateSet, mem_prod, movingDomain_stationary,
-        mem_univ, and_true] using hp⟩
+      ⟨p.1, by simp_all [evolutionStateSet]⟩
     have he : intervalStateInclusion σ pj = p := Subtype.ext rfl
     rw [← he, intervalExtension_fiber_inside,
       Measure.map_apply (measurable_intervalStateInclusion τ) hA,

@@ -13,21 +13,21 @@ the collar margin internally; actual finite Dirichlet sequences supply all the
 finite-slab steps. The gluing lemma gives the whole past solution.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter Evolution
-open scoped Topology MatrixOrder
+open HypoellipticAleksandrov Set Filter
+open scoped MatrixOrder
 
 section Data
 
 variable (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement)
 variable {n : ℕ} (hn : 1 ≤ n) {lam Lam m Lb : ℝ}
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ Lb)
-variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+variable {B : FullKineticCoefficient n} {b : PDE.VectorField n}
 variable (hBs : IsSmoothFullKineticCoefficient B) (hBsym : IsSymmetricFullKineticCoefficient B)
 variable (hB : HasEverywhereLoewnerBounds lam Lam B) (hbs : IsSmoothDrift b)
 variable (hb : HasEuclideanLipschitzDrift Lb b) (hbco : HasUnitDirectionDriftCoercivity m b)
@@ -42,7 +42,7 @@ theorem exists_finite_viscous_innerBall_solution
     (hF : IsSmoothCompactTerminalDatum (PDE.euclideanBall 0 r0) Γ τ F)
     (ε : ℝ) (hε : 0 < ε) (hε1 : ε ≤ 1)
     (C : ℝ) (hC : 0 ≤ C) (hFC : ∀ q, |F q| ≤ C) :
-    ∃ v : KineticPoint n → ℝ,
+    ∃ v : HypoellipticAleksandrov.KineticScalarField n,
       IsClassicalViscousFiniteSolution (PDE.euclideanBall 0 r0) Γ B b ε a τ F v ∧
         ∀ p ∈ movingClosedSlab (PDE.euclideanBall 0 r0) Γ a τ, |v p| ≤ C := by
   obtain ⟨d, hd, hdr, hsupp⟩ := exists_innerBall_terminal_support_margin hr0 F hF.2.1
@@ -50,7 +50,7 @@ theorem exists_finite_viscous_innerBall_solution
   obtain ⟨β, R, g, L, u, hL, hβ, hβlim, hR, hg, hgL, hclose, hu⟩ :=
     exists_innerBall_dirichlet_sequence hLE hlam hlamLam hBs hBsym hB hbs hΓ
       (show a - 1 < τ by linarith) hd hdr hε F hF.1 hF.2.1 hsupp
-  have hRlim : Tendsto R atTop atTop :=
+  have hRlim  :=
     tendsto_atTop_mono (fun k => (le_add_of_nonneg_right (by norm_num : (0 : ℝ) ≤ 1)).trans
       (hR k)) tendsto_natCast_atTop_atTop
   have hc (k : ℕ) (s : ℝ) (hs : s ∈ Icc a τ) :
@@ -72,10 +72,10 @@ theorem exists_viscous_terminalSolution_innerBall
     (hF : IsSmoothCompactTerminalDatum (PDE.euclideanBall 0 r0) Γ τ F)
     (ε : ℝ) (hε : 0 < ε) (hε1 : ε ≤ 1)
     (C : ℝ) (hC : 0 ≤ C) (hFC : ∀ q, |F q| ≤ C) :
-    ∃ v : KineticPoint n → ℝ,
+    ∃ v : HypoellipticAleksandrov.KineticScalarField n,
       IsClassicalViscousTerminalSolution (PDE.euclideanBall 0 r0) Γ B b ε τ F v ∧
       (∀ p ∈ evolutionPastClosedCylinder (PDE.euclideanBall 0 r0) Γ τ, |v p| ≤ C) ∧
-      (∀ w : KineticPoint n → ℝ,
+      (∀ w : HypoellipticAleksandrov.KineticScalarField n,
         IsClassicalViscousTerminalSolution (PDE.euclideanBall 0 r0) Γ B b ε τ F w →
           EqOn w v (evolutionPastClosedCylinder (PDE.euclideanBall 0 r0) Γ τ)) := by
   apply exists_viscous_terminalSolution_of_finiteSlabs (PDE.isOpen_euclideanBall 0 r0)

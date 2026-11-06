@@ -13,28 +13,28 @@ Fubini uses the exact native volume equivalence. Each scalar position slice is c
 through zero, so its two half-line boundary terms cancel.
 -/
 
-@[expose] public noncomputable section
+@[expose] public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-open MeasureTheory Filter Set
-open scoped Topology
+open MeasureTheory Filter
+
 
 /-- Position integration by parts for a continuous native function with an actual off-axis jet. -/
 theorem scalar_position_ibp (f g : XV 1 → ℝ) (hf : Continuous f)
-    (hgi : LocallyIntegrable g volume)
+    (hgi : LocallyIntegrable g )
     (hfd : ∀ q : XV 1, q.1 0 ≠ 0 → DifferentiableAt ℝ f q)
     (hfg : ∀ q : XV 1, q.1 0 ≠ 0 → fderiv ℝ f q (Pi.single 0 1, 0) = g q)
     (test : XV 1 → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
     (∫ q, f q * dx test q 0) = -(∫ q, g q * test q) := by
-  let L : XV 1 → ℝ := fun q => f q * dx test q 0
-  let R : XV 1 → ℝ := fun q => g q * test q
-  have hL : Integrable L volume := by
+  let L  := fun q => f q * dx test q 0
+  let R  := fun q => g q * test q
+  have hL : Integrable L  := by
     simpa only [L, dx, smul_eq_mul, mul_comm] using
       hf.locallyIntegrable.integrable_smul_left_of_hasCompactSupport
         ((ht.fderiv_right (m := 0) (by norm_num)).clm_apply contDiff_const).continuous
         (hs.fderiv_apply ℝ (Pi.single 0 1, 0))
-  have hR : Integrable R volume := by
+  have hR : Integrable R  := by
     simpa only [R, smul_eq_mul, mul_comm] using
       hgi.integrable_smul_left_of_hasCompactSupport ht.continuous hs
   have hLI := scalarNativeCoordinates_symm_measurePreserving.integrable_comp_of_integrable hL
@@ -67,16 +67,16 @@ theorem scalar_position_ibp (f g : XV 1 → ℝ) (hf : Continuous f)
     filter_upwards [eventually_gt_atTop B] with x hx
     apply image_eq_zero_of_notMem_tsupport
     intro hq
-    have hb := hB (scalarPoint x v) hq
-    have hl : x ≤ |x| := le_abs_self x
+    have hb := hB _ hq
+    have hl  := le_abs_self x
     simp only [scalarPoint, Real.norm_eq_abs] at hb
     linarith
   have hzBot : ∀ᶠ x in atBot, test (scalarPoint x v) = 0 := by
     filter_upwards [eventually_lt_atBot (-B)] with x hx
     apply image_eq_zero_of_notMem_tsupport
     intro hq
-    have hb := hB (scalarPoint x v) hq
-    have hl : -x ≤ |x| := neg_le_abs x
+    have hb := hB _ hq
+    have hl  := neg_le_abs x
     simp only [scalarPoint, Real.norm_eq_abs] at hb
     linarith
   apply scalar_integral_mul_deriv_off_zero

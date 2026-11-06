@@ -9,12 +9,12 @@ Almost-everywhere approximation for the literal occupation measure is disintegra
 through the master kernel. Two dominated-convergence steps recover the potential itself.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open scoped Topology ProbabilityTheory
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
 
 /-- Approximation for the actual finite source-action measure yields almost-everywhere
 convergence of the literal bounded potentials for the supplied starting measure. -/
@@ -22,8 +22,8 @@ theorem ae_tendsto_duhamelPotential_of_action_ae
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (ν : Measure (KineticPoint d)) [IsFiniteMeasure ν] (a T : ℝ)
     (hfloor : ∀ᵐ p ∂ν, a ≤ p.time)
-    (f : ℕ → KineticPoint d → ℝ) (hf : ∀ n, Measurable (f n))
-    (F : KineticPoint d → ℝ) (hF : Measurable F)
+    (f : ℕ → HypoellipticAleksandrov.KineticScalarField d) (hf : ∀ n, Measurable (f n))
+    (F : HypoellipticAleksandrov.KineticScalarField d) (hF : Measurable F)
     (C : ℝ) (hC : 0 ≤ C) (hb : ∀ n p, |f n p| ≤ C)
     (hae : ∀ᵐ q ∂boundedSourceActionMeasure K ν a T,
       Tendsto (fun n => f n ⟨q.1, q.2.1, q.2.2⟩) atTop
@@ -55,7 +55,7 @@ theorem ae_tendsto_duhamelPotential_of_action_ae
       (integrable_const C) (fun n => Eventually.of_forall fun w => by
         rw [Real.norm_eq_abs]
         exact hb n _) hq
-    have he (g : KineticPoint d → ℝ) :
+    have he (g : HypoellipticAleksandrov.KineticScalarField d) :
         duhamelIntegrand K g q.1.1 q.1.2 = ∫ w, g ⟨q.1.2, w.1, w.2⟩ ∂κ q := by
       unfold duhamelIntegrand
       have hqvalid : q.1.1.time ≤ q.1.2 ∧
@@ -82,7 +82,7 @@ theorem ae_tendsto_duhamelPotential_of_action_ae
     filter_upwards [(ae_restrict_iff' hD).mp hrestricted] with q hq
     by_cases hqm : q ∈ boundedSourcePairSet Ω γ
     · exact hq hqm
-    · have hz (g : KineticPoint d → ℝ) : duhamelIntegrand K g q.1 q.2 = 0 := by
+    · have hz (g : HypoellipticAleksandrov.KineticScalarField d) : duhamelIntegrand K g q.1 q.2 = 0 := by
         unfold duhamelIntegrand
         exact dite_eq_right hqm
       simpa only [hz] using (tendsto_const_nhds :
@@ -95,7 +95,7 @@ theorem ae_tendsto_duhamelPotential_of_action_ae
     (integrable_const C) (fun n => Eventually.of_forall fun r => by
       rw [Real.norm_eq_abs]
       exact abs_duhamelIntegrand_le K (f n) C hC (hb n) p r) hp
-  have he (g : KineticPoint d → ℝ) := duhamelPotential_eq_integral_window K g p (T := T) hpa
+  have he (g : HypoellipticAleksandrov.KineticScalarField d) := duhamelPotential_eq_integral_window K g p (T := T) hpa
   simpa only [Function.comp_apply, id_eq, ← he] using hi
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

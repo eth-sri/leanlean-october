@@ -34,7 +34,7 @@ beyond finiteness of the positive measures, because the phase has modulus one.
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 open MeasureTheory Set
-open scoped ENNReal
+
 
 /-- The phase factor `exp (-i θ)` of a real phase `θ`. -/
 noncomputable def phaseFactor (θ : ℝ) : ℂ := Complex.exp (-Complex.I * (θ : ℂ))
@@ -67,18 +67,22 @@ theorem continuous_phaseFactor : Continuous phaseFactor := by
   unfold phaseFactor
   fun_prop
 
-theorem measurable_phaseFactor_comp {ψ : α × β → ℝ} (hψ : Measurable ψ) :
+variable {ψ : α × β → ℝ}
+
+theorem measurable_phaseFactor_comp  (hψ : Measurable ψ) :
     Measurable fun x => phaseFactor (ψ x) :=
   continuous_phaseFactor.measurable.comp hψ
 
-theorem integrable_phaseFactor_comp {ψ : α × β → ℝ} (hψ : Measurable ψ)
+theorem integrable_phaseFactor_comp  (hψ : Measurable ψ)
     (N : Measure (α × β)) [IsFiniteMeasure N] :
     Integrable (fun x => phaseFactor (ψ x)) N :=
   Integrable.of_bound (measurable_phaseFactor_comp hψ).aestronglyMeasurable 1
     (Filter.Eventually.of_forall fun _ => (norm_phaseFactor _).le)
 
+variable {N : Measure (α × β)} {E : Set α}
+
 /-- The first marginal of a measure of a measurable set is the mass of its cylinder. -/
-theorem map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E) :
+theorem map_fst_apply_eq  (hE : MeasurableSet E) :
     (N.map Prod.fst) E = N (E ×ˢ (univ : Set β)) := by
   rw [Measure.map_apply measurable_fst hE]
   congr 1
@@ -86,7 +90,7 @@ theorem map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableS
   simp
 
 /-- The real mass of a cylinder is the real mass of the first marginal. -/
-theorem real_map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E) :
+theorem real_map_fst_apply_eq  (hE : MeasurableSet E) :
     (N.map Prod.fst).real E = N.real (E ×ˢ (univ : Set β)) := by
   simp [Measure.real, map_fst_apply_eq hE]
 
@@ -106,11 +110,10 @@ theorem norm_integral_phase_sub_le {ψ : α × β → ℝ} (hψ : Measurable ψ)
     {F : Measure (α × β)} [IsFiniteMeasure F] {Φ ε : ℝ}
     (hsupp : ∀ᵐ x ∂F, |ψ x - Φ| ≤ ε) (S : Set (α × β)) :
     ‖(∫ x in S, phaseFactor (ψ x) ∂F) - phaseFactor Φ * (F.real S : ℂ)‖ ≤ ε * F.real S := by
-  have hint : IntegrableOn (fun x => phaseFactor (ψ x)) S F :=
-    (integrable_phaseFactor_comp hψ F).integrableOn
+
   have hconst : (∫ _ in S, phaseFactor Φ ∂F) = phaseFactor Φ * (F.real S : ℂ) := by
     rw [setIntegral_const, Complex.real_smul, mul_comm]
-  rw [← hconst, ← integral_sub hint (integrableOn_const (measure_lt_top F S).ne)]
+  rw [← hconst, ← integral_sub ((integrable_phaseFactor_comp hψ F).integrableOn) (integrableOn_const (measure_lt_top F S).ne)]
   refine norm_setIntegral_le_of_norm_le_const_ae (measure_lt_top F S) ?_
   filter_upwards [ae_restrict_of_ae hsupp] with x hx
   exact (norm_phaseFactor_sub_le _ _).trans hx

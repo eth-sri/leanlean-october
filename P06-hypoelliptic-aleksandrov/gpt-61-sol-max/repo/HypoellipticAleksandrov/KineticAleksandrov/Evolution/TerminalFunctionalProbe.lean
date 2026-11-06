@@ -3,6 +3,8 @@ module
 public import Mathlib.Topology.ContinuousMap.CompactlySupported
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.SmoothProbeDensity
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalFunctionalExtension
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Smooth compactly supported terminal probes
@@ -22,12 +24,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set
 open scoped CompactlySupported ContDiff
 
-variable {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n) (τ : ℝ)
+variable {n : ℕ} (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n) (τ : ℝ)
 
 /-- Smooth compactly supported functions on the ambient state with support in the terminal
 fiber, as a real vector space of functions. -/
 def terminalProbeSubmodule : Submodule ℝ (EvolutionAmbientState n → ℝ) where
-  carrier := {F | ContDiff ℝ (⊤ : ℕ∞) F ∧ HasCompactSupport F ∧
+  carrier := {F | ContDiff ℝ PDE.smoothOrder F ∧ HasCompactSupport F ∧
     tsupport F ⊆ evolutionStateSet Ω γ τ}
   zero_mem' := ⟨contDiff_const, HasCompactSupport.zero, by simp⟩
   add_mem' := fun {F G} hF hG =>
@@ -39,34 +41,36 @@ def terminalProbeSubmodule : Submodule ℝ (EvolutionAmbientState n → ℝ) whe
 
 variable {Ω γ τ}
 
+variable (F : terminalProbeSubmodule Ω γ τ)
+
 /-- A probe vanishes outside the terminal fiber. -/
-theorem terminalProbe_apply_eq_zero (F : terminalProbeSubmodule Ω γ τ)
+theorem terminalProbe_apply_eq_zero
     {q : EvolutionAmbientState n} (hq : q ∉ evolutionStateSet Ω γ τ) : F.1 q = 0 := by
   by_contra h
   exact hq (F.2.2.2 (subset_tsupport _ h))
 
 /-- The bounded Borel datum underlying a probe. -/
-def terminalProbeDatum (F : terminalProbeSubmodule Ω γ τ) :
+def terminalProbeDatum  :
     BoundedBorel (EvolutionAmbientState n) :=
   ⟨F.1, F.2.1.continuous.measurable, by
     obtain ⟨C, hC⟩ := F.2.2.1.exists_bound_of_continuous F.2.1.continuous
     exact ⟨max C 0, le_max_right _ _, fun x => (hC x).trans (le_max_left _ _)⟩⟩
 
 /-- The datum of a probe is a smooth compactly supported terminal datum. -/
-theorem terminalProbeDatum_isSmoothCompact (F : terminalProbeSubmodule Ω γ τ) :
+theorem terminalProbeDatum_isSmoothCompact  :
     IsSmoothCompactTerminalDatum Ω γ τ (terminalProbeDatum F) := F.2
 
 @[simp]
-theorem terminalProbeDatum_apply (F : terminalProbeSubmodule Ω γ τ)
+theorem terminalProbeDatum_apply
     (q : EvolutionAmbientState n) : terminalProbeDatum F q = F.1 q := rfl
 
+variable (F : BoundedBorel (EvolutionAmbientState n)) (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
+
 /-- Every smooth compactly supported terminal datum is the datum of a probe. -/
-def terminalProbeOfDatum (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) : terminalProbeSubmodule Ω γ τ :=
+def terminalProbeOfDatum  : terminalProbeSubmodule Ω γ τ :=
   ⟨F.1, hF⟩
 
-theorem terminalProbeDatum_ofDatum (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
+theorem terminalProbeDatum_ofDatum  :
     terminalProbeDatum (terminalProbeOfDatum F hF) = F :=
   BoundedBorel.ext fun _ => rfl
 
@@ -83,17 +87,17 @@ theorem hasCompactSupport_comp_subtype_val {E : Type*} [TopologicalSpace E] {U :
   exact closure_minimal (fun x hx => subset_tsupport F hx)
     ((isClosed_tsupport F).preimage continuous_subtype_val)
 
+variable (F : terminalProbeSubmodule Ω γ τ)
+
 /-- The restriction of a probe to the terminal fiber, as a compactly supported continuous
 function on the open state fiber. -/
-def terminalProbeCc (F : terminalProbeSubmodule Ω γ τ) :
+def terminalProbeCc  :
     C_c(EvolutionState Ω γ τ, ℝ) where
   toFun x := F.1 x.1
   continuous_toFun := F.2.1.continuous.comp continuous_subtype_val
   hasCompactSupport' := hasCompactSupport_comp_subtype_val F.2.2.1 F.2.2.2
 
-@[simp]
-theorem terminalProbeCc_apply (F : terminalProbeSubmodule Ω γ τ)
-    (x : EvolutionState Ω γ τ) : terminalProbeCc F x = F.1 x.1 := rfl
+
 
 /-- Restriction of probes to the terminal fiber, as a linear map. -/
 def terminalProbeCcLinear :
@@ -106,8 +110,10 @@ def terminalProbeCcLinear :
 theorem terminalProbeCcLinear_apply (F : terminalProbeSubmodule Ω γ τ)
     (x : EvolutionState Ω γ τ) : terminalProbeCcLinear F x = F.1 x.1 := rfl
 
+variable {F : terminalProbeSubmodule Ω γ τ}
+
 /-- A probe is bounded by `c` everywhere iff its restriction to the fiber is. -/
-theorem terminalProbe_abs_le {F : terminalProbeSubmodule Ω γ τ} {c : ℝ} (hc : 0 ≤ c)
+theorem terminalProbe_abs_le  {c : ℝ} (hc : 0 ≤ c)
     (h : ∀ x : EvolutionState Ω γ τ, |terminalProbeCc F x| ≤ c) (q : EvolutionAmbientState n) :
     |F.1 q| ≤ c := by
   by_cases hq : q ∈ evolutionStateSet Ω γ τ
@@ -115,7 +121,7 @@ theorem terminalProbe_abs_le {F : terminalProbeSubmodule Ω γ τ} {c : ℝ} (hc
   · rw [terminalProbe_apply_eq_zero F hq]; simpa using hc
 
 /-- A probe is nonnegative everywhere iff its restriction to the fiber is. -/
-theorem terminalProbe_nonneg {F : terminalProbeSubmodule Ω γ τ}
+theorem terminalProbe_nonneg
     (h : ∀ x : EvolutionState Ω γ τ, 0 ≤ terminalProbeCc F x) (q : EvolutionAmbientState n) :
     0 ≤ F.1 q := by
   by_cases hq : q ∈ evolutionStateSet Ω γ τ

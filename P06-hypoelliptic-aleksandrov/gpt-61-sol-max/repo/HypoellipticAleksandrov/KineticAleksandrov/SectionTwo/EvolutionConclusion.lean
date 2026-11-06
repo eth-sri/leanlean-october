@@ -12,7 +12,7 @@ the definitionally equal realization predicates.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+open Set MeasureTheory
 open scoped ProbabilityTheory MatrixOrder
 
 /-- The terminal evolution statement, including the full context. -/
@@ -21,10 +21,10 @@ def TerminalEvolutionConclusion : Prop :=
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : PDE.VelocityRegion n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n)
+    (b : PDE.VectorField n)
     (hΩ : IsAdmissibleEvolutionDomain Ω)
     (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -49,13 +49,13 @@ def TerminalEvolutionConclusion : Prop :=
       ∃ K : MovingFiberKernel Ω γ,
         (∀ (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)),
           IsSmoothCompactTerminalDatum Ω γ τ F →
-            ∃ u : KineticPoint n → ℝ,
+            ∃ u : HypoellipticAleksandrov.KineticScalarField n,
               IsClassicalTerminalSolution Ω γ B b τ F u ∧
               (∀ (σ : ℝ) (hστ : σ ≤ τ)
                   (p : EvolutionState Ω γ σ),
                 u ⟨σ, p.1.1, p.1.2⟩ =
                   P σ τ hστ (terminalStateDatum F) p) ∧
-              (∀ v : KineticPoint n → ℝ,
+              (∀ v : HypoellipticAleksandrov.KineticScalarField n,
                 IsClassicalTerminalSolution Ω γ B b τ F v →
                   EqOn v u (evolutionPastClosedCylinder Ω γ τ))) ∧
         (∀ (σ : ℝ),
@@ -67,7 +67,7 @@ def TerminalEvolutionConclusion : Prop :=
             (f : BoundedBorel (EvolutionState Ω γ τ)),
           0 ≤ f → 0 ≤ P σ τ hστ f) ∧
         (∀ (σ τ : ℝ) (hστ : σ ≤ τ),
-          P σ τ hστ (1 : BoundedBorel (EvolutionState Ω γ τ)) ≤
+          P σ τ hστ (1 ) ≤
             (1 : BoundedBorel (EvolutionState Ω γ σ))) ∧
         (∀ (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ),
           P σ τ (hσr.trans hrτ) =
@@ -86,7 +86,7 @@ def TerminalEvolutionConclusion : Prop :=
         (∀ (E : Set (EvolutionAmbientState n))
             (hE : MeasurableSet E),
           let _ := hE
-          Measurable (fun q : EvolutionQuery Ω γ => K.master q E)) ∧
+          Measurable (fun q  => K.master q E)) ∧
         (∀ (σ τ : ℝ) (hστ : σ ≤ τ)
             (p : EvolutionState Ω γ σ),
           K.fiberKernel

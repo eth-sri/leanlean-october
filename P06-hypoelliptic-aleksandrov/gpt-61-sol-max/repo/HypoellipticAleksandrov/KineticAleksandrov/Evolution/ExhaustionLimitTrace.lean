@@ -5,22 +5,24 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLim
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCollarApproximation
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitGeometry
 public import Mathlib.Topology.UniformSpace.UniformApproximation
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Exact uniform bound and terminal/lateral traces of the exhaustion candidate -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter
+open HypoellipticAleksandrov.Parabolic Set Filter
 open scoped Topology MatrixOrder
 
 /-- The continuous zero extension has the original uniform bound and terminal
 values, and vanishes on the actual moving lateral boundary. -/
 theorem innerBallDirichletLimit_bound_terminal_lateral
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -33,7 +35,7 @@ theorem innerBallDirichletLimit_bound_terminal_lateral
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))
     (β R : ℕ → ℝ) (hβpos : ∀ k, 0 < β k)
     (hβlim : Tendsto β atTop (𝓝 0)) (hRlim : Tendsto R atTop atTop)
-    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (g k))
+    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ PDE.smoothOrder (g k))
     (hgL : ∀ k s t, PDE.vecEuclideanNorm (g k s - g k t) ≤ L * |s - t|)
     (hclose : ∀ k s, s ∈ Icc α τ → PDE.vecEuclideanNorm (g k s - Γ s) ≤ β k / 2)
     (u : ℕ → TimeVelocity (n + n) → ℝ)
@@ -80,15 +82,15 @@ theorem innerBallDirichletLimit_bound_terminal_lateral
         have hm := subset_closure (hk.2.2 p hpK)
         simp only [straightenedPoint, ht] at hm
         have het := (hu k).2.2.2.1 _ hm
-        simpa only [straightenedPullback, straightenedPoint, ht,
-          spatialY_spatialPack, spatialZ_spatialPack, add_sub_cancel] using het
+        simpa only [straightenedPullback, ht, spatialY_spatialPack, add_sub_cancel,
+          spatialZ_spatialPack] using het
       rw [innerBallDirichletLimit_eq_limit r0 Γ g u hi]
       exact tendsto_nhds_unique (hU.tendsto_at hpK)
         (tendsto_const_nhds.congr' (he.mono fun k hk => hk.symm))
     · have hzero : F (p.position, p.velocity) = 0 := by
         by_contra hne
-        have hs := hsupp (p.position, p.velocity)
-          (subset_tsupport (F : EvolutionAmbientState n → ℝ) hne)
+        have hs := hsupp _
+          (subset_tsupport _ hne)
         have hn := (mem_movingBall_iff_norm_lt hr0).not.mp hi
         rw [ht] at hn
         linarith

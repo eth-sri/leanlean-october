@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # Power decay of oscillation from the internally proved one-scale contraction -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -22,7 +22,7 @@ theorem oscillation_decay (d : ℕ) (hd : 1 ≤ d)
       ∀ O : Set (KineticPoint d), IsOpen O →
       ∀ (P0 : KineticPoint d) (R rho : ℝ), 0 < R → 0 < rho → rho ≤ R →
         closure (backwardCylinder P0 R) ⊆ O →
-      ∀ u : KineticPoint d → ℝ, IsAdmissibleSolution A O p C_A u →
+      ∀ u : HypoellipticAleksandrov.KineticScalarField d, IsAdmissibleSolution A O p C_A u →
         oscillationOn u (backwardCylinder P0 rho) ≤
           D * (rho / R) ^ alpha * oscillationOn u (backwardCylinder P0 R) := by
   obtain ⟨theta, q, ht, ht1, hq, hq1, hcontract⟩ :=
@@ -35,30 +35,30 @@ theorem oscillation_decay (d : ℕ) (hd : 1 ≤ d)
   have hcont := hu.1.1.mono hQ
   have hab := (hcompact.bddAbove_image hcont).mono (image_mono subset_closure)
   have hbb := (hcompact.bddBelow_image hcont).mono (image_mono subset_closure)
-  have hosc := oscillationOn_nonneg (backwardCylinder_nonempty P0 hR) hab hbb
-  have hrad (n : ℕ) : 0 < theta ^ n * R := mul_pos (pow_pos ht n) hR
+
+  have hrad (n : ℕ)  := mul_pos (pow_pos ht n) hR
   have hrads (n : ℕ) : theta ^ n * R ≤ R :=
     (mul_le_mul_of_nonneg_right (pow_le_one₀ ht.le ht1.le) hR.le).trans_eq (one_mul R)
   have hsub (n : ℕ) := backwardCylinder_radius_mono P0 (hrad n) (hrads n)
   have hiter (n : ℕ) : oscillationOn u (backwardCylinder P0 (theta ^ n * R)) ≤
       q ^ n * oscillationOn u (backwardCylinder P0 R) := by
     induction n with
-    | zero => simp only [pow_zero, one_mul, le_refl]
+    | zero => simp
     | succ n ih =>
       have hc := hcontract A hA O hO P0 (theta ^ n * R) (hrad n)
         ((closure_mono (hsub n)).trans hQ) u hu
       have he : theta * (theta ^ n * R) = theta ^ (n + 1) * R := by rw [pow_succ]; ring
       rw [he] at hc
-      have hb := hc.trans (mul_le_mul_of_nonneg_left ih hq.le)
-      exact hb.trans_eq (by rw [pow_succ]; ring)
-  have hx : 0 < rho / R := div_pos hrho hR
-  have hx1 : rho / R ≤ 1 := (div_le_one hR).mpr hrhoR
-  obtain ⟨n, hnlo, hnhi⟩ := exists_nat_pow_near_of_lt_one hx hx1 ht ht1
-  have hsmall : rho ≤ theta ^ n * R := (div_le_iff₀ hR).mp hnhi
+
+      exact (hc.trans (mul_le_mul_of_nonneg_left ih hq.le)).trans_eq (by rw [pow_succ]; ring)
+
+
+  obtain ⟨n, hnlo, hnhi⟩ := exists_nat_pow_near_of_lt_one (div_pos hrho hR) ((div_le_one hR).mpr hrhoR) ht ht1
+
   have hm := oscillationOn_mono (backwardCylinder_nonempty P0 hrho)
-    (backwardCylinder_radius_mono P0 hrho hsmall)
+    (backwardCylinder_radius_mono P0 hrho ((div_le_iff₀ hR).mp hnhi))
     (hab.mono (image_mono (hsub n))) (hbb.mono (image_mono (hsub n)))
-  have hpower := contraction_power_le_scale_power ht hq.le ha hqa n hnlo
-  exact (hm.trans (hiter n)).trans (mul_le_mul_of_nonneg_right hpower hosc)
+
+  exact (hm.trans (hiter n)).trans (mul_le_mul_of_nonneg_right (contraction_power_le_scale_power ht hq.le ha hqa n hnlo) (oscillationOn_nonneg (backwardCylinder_nonempty P0 hR) hab hbb))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

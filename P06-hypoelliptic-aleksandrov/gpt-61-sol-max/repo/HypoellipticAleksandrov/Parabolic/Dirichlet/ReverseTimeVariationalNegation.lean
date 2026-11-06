@@ -1,6 +1,9 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.VariationalEnergy
+import Aesop
+
+
 
 /-!
 # Negation of reverse-time variational energy solutions
@@ -12,15 +15,15 @@ negation.
 
 @[expose] public section
 
-open Filter MeasureTheory Set Topology
-open scoped ENNReal RealInnerProductSpace Matrix.Norms.Elementwise MatrixOrder
+open MeasureTheory Set
+open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder
 
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 local instance instReverseTimeL2VStarModuleNegation
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
+    {d : ℕ} {Ω : PDE.VelocityRegion d} (hΩ : IsOpen Ω) (T : ℝ) :
     Module ℝ (ReverseTimeL2VStar hΩ T) :=
   MeasureTheory.Lp.instModule
 
@@ -33,18 +36,20 @@ protected theorem IsSmoothOnNeighborhood.neg
   rcases hf with ⟨V, hVopen, hKV, hfV⟩
   exact ⟨V, hVopen, hKV, hfV.neg⟩
 
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
+
 /-- The selected canonical representative commutes with literal negation. -/
 theorem reverseTimeHilbertRepresentative_neg_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hdu : HasGelfandWeakTimeDerivative hΩ T hT u g) :
     reverseTimeHilbertRepresentative hΩ T hT
-        ((-1 : ℝ) • u) ((-1 : ℝ) • g) (hdu.smul (-1)) =
+        _ _ (hdu.smul (-1)) =
       -reverseTimeHilbertRepresentative hΩ T hT u g hdu := by
   obtain ⟨hU, _⟩ := reverseTimeHilbertRepresentative_spec hΩ T hT u g hdu
   obtain ⟨hN, _⟩ := reverseTimeHilbertRepresentative_spec hΩ T hT
-    ((-1 : ℝ) • u) ((-1 : ℝ) • g) (hdu.smul (-1))
+    _ _ (hdu.smul (-1))
   apply ReverseTimeHilbertRepresentativeAgrees.unique hN hT
   filter_upwards [hU, Lp.coeFn_smul (-1 : ℝ) u] with τ hUτ hneg
   intro hτ
@@ -58,39 +63,35 @@ theorem reverseTimeHilbertRepresentative_neg_eq
   rw [(valueCLM hΩ).map_smul, neg_one_smul]
 
 private theorem reverseTimeSourceSlice_neg_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₁ τ : ℝ) (F : ℝ → PDE.Vec d → ℝ)
-    (hF : MemLp (fun y : PDE.Vec d => F (r₁ - τ) y)
-      (2 : ℝ≥0∞) (PDE.volumeOn Ω))
-    (hnegF : MemLp (fun y : PDE.Vec d => -F (r₁ - τ) y)
-      (2 : ℝ≥0∞) (PDE.volumeOn Ω)) :
+
+    (r₁ τ : ℝ) (F : PDE.TimeScalarField d)
+    (hF : MemLp ((F (r₁ - τ)))
+      (2 ) (PDE.volumeOn Ω))
+    (hnegF : MemLp (fun y  => -F (r₁ - τ) y)
+      (2 ) (PDE.volumeOn Ω)) :
     reverseTimeSourceSlice r₁ τ (fun r y => -F r y) hnegF =
       (-1 : ℝ) • reverseTimeSourceSlice r₁ τ F hF := by
-  apply Lp.ext
-  filter_upwards [coeFn_reverseTimeSourceSlice r₁ τ (fun r y => -F r y) hnegF,
-    coeFn_reverseTimeSourceSlice r₁ τ F hF,
-    Lp.coeFn_smul (-1 : ℝ) (reverseTimeSourceSlice r₁ τ F hF)] with y hneg hy hsmul
-  rw [hneg, hsmul]
-  change -F (r₁ - τ) y = (-1 : ℝ) • (reverseTimeSourceSlice r₁ τ F hF) y
-  rw [hy, neg_one_smul]
+  aesop
+
+variable (q : PDE.ScalarField d)
 
 private theorem integral_hilbertVectorLpCoord_neg
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (q : PDE.Vec d → ℝ)
-    (i : Fin d) (U : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞))
-    (w : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    (∫ y in Ω, q y * (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (-U)) y * w y) =
-      -∫ y in Ω, q y * (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i U) y * w y := by
-  rw [(PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i).map_neg]
+
+    (i : Fin d) (U : PDE.HilbertVectorLp Ω (2 ))
+    (w : PDE.ScalarLp Ω (2 )) :
+    (∫ y in Ω, q y * (PDE.hilbertVectorLpCoord Ω (2 ) i (-U)) y * w y) =
+      -∫ y in Ω, q y * (PDE.hilbertVectorLpCoord Ω (2 ) i U) y * w y := by
+  rw [(PDE.hilbertVectorLpCoord Ω (2 ) i).map_neg]
   rw [← integral_neg]
   apply integral_congr_ae
-  filter_upwards [Lp.coeFn_neg (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i U)] with y hy
+  filter_upwards [Lp.coeFn_neg (PDE.hilbertVectorLpCoord Ω (2 ) i U)] with y hy
   rw [hy]
   rw [Pi.neg_apply]
   ring
 
 private theorem integral_scalarLp_neg
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (q : PDE.Vec d → ℝ)
-    (U w : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+
+    (U w : PDE.ScalarLp Ω (2 )) :
     (∫ y in Ω, q y * (-U) y * w y) = -∫ y in Ω, q y * U y * w y := by
   rw [← integral_neg]
   apply integral_congr_ae
@@ -99,28 +100,31 @@ private theorem integral_scalarLp_neg
   rw [Pi.neg_apply]
   ring
 
+variable (hΩ : IsOpen Ω)
+
+variable (q : PDE.ScalarField d)
+
 private theorem integral_gradientCLM_neg
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (q : PDE.Vec d → ℝ)
-    (i : Fin d) (u : H10HilbertGraph hΩ) (w : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+
+    (i : Fin d) (u : H10HilbertGraph hΩ) (w : PDE.ScalarLp Ω (2 )) :
     (∫ y in Ω, q y *
-      (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (-u))) y * w y) =
+      (PDE.hilbertVectorLpCoord Ω (2 ) i (gradientCLM hΩ (-u))) y * w y) =
       -∫ y in Ω, q y *
-        (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ u)) y * w y := by
-  rw [(gradientCLM hΩ).map_neg]
-  exact integral_hilbertVectorLpCoord_neg q i (gradientCLM hΩ u) w
+        (PDE.hilbertVectorLpCoord Ω (2 ) i (gradientCLM hΩ u)) y * w y := by
+  solve_by_elim (maxDepth := 4) [gradientCLM, integral_hilbertVectorLpCoord_neg]
 
 private theorem integral_valueCLM_neg
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (q : PDE.Vec d → ℝ)
-    (u : H10HilbertGraph hΩ) (w : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+
+    (u : H10HilbertGraph hΩ) (w : PDE.ScalarLp Ω (2 )) :
     (∫ y in Ω, q y * (valueCLM hΩ (-u)) y * w y) =
       -∫ y in Ω, q y * (valueCLM hΩ u) y * w y := by
-  rw [(valueCLM hΩ).map_neg]
-  exact integral_scalarLp_neg q (valueCLM hΩ u) w
+  solve_by_elim (maxDepth := 4) [valueCLM, integral_scalarLp_neg]
+
+variable (r₁ τ : ℝ) (a : CoefficientField d) (b : PDE.TimeVectorField d) (c : PDE.TimeScalarField d)
 
 private theorem reverseTimeSpatialForm_neg_left
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+
+
     (u v : H10HilbertGraph hΩ) :
     reverseTimeSpatialForm hΩ r₁ τ a b c (-u) v =
       -reverseTimeSpatialForm hΩ r₁ τ a b c u v := by
@@ -131,11 +135,10 @@ private theorem reverseTimeSpatialForm_neg_left
   ring
 
 private theorem reverseTimeVariationalEquation_neg
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (r₁ τ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+
+
     (q : H10HilbertGraph hΩ →L[ℝ] ℝ)
-    (s sneg : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (s sneg : PDE.ScalarLp Ω (2 ))
     (u v : H10HilbertGraph hΩ)
     (hs : sneg = (-1 : ℝ) • s)
     (heq : q v + reverseTimeSpatialForm hΩ r₁ τ a b c u v =
@@ -155,14 +158,14 @@ private theorem reverseTimeVariationalEquation_neg
 
 /-- Literal negation preserves the selected reverse-time variational energy solution. -/
 theorem IsReverseTimeVariationalEnergySolution.neg
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
+    (a : CoefficientField d) (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
     (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (initial : PDE.ScalarLp Ω (2 ))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
@@ -176,13 +179,13 @@ theorem IsReverseTimeVariationalEnergySolution.neg
   · have hrep := reverseTimeHilbertRepresentative_neg_eq hΩ (r₁ - r₀)
       (sub_pos.mpr h₀₁) u g hdu
     have htrace := congrArg
-      (fun Q : C(Set.Icc 0 (r₁ - r₀), PDE.ScalarLp Ω (2 : ℝ≥0∞)) =>
+      (fun Q : C(Set.Icc 0 (r₁ - r₀), PDE.ScalarLp Ω (2 )) =>
         Q ⟨0, ⟨le_rfl, (sub_pos.mpr h₀₁).le⟩⟩) hrep
-    have ht : reverseTimeInitialTrace hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
-        ((-1 : ℝ) • u) ((-1 : ℝ) • g) (hdu.smul (-1)) =
-        -reverseTimeInitialTrace hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g hdu := by
-      simpa only [reverseTimeInitialTrace, ContinuousMap.neg_apply] using htrace
-    exact ht.trans (congrArg Neg.neg hu.1)
+
+    exact (show reverseTimeInitialTrace hΩ (r₁ - r₀) _
+        _ _ (hdu.smul (-1)) =
+        -reverseTimeInitialTrace hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g hdu by
+        assumption).trans (congrArg Neg.neg hu.1)
   · filter_upwards [hu.2, Lp.coeFn_smul (-1 : ℝ) u,
       Lp.coeFn_smul (-1 : ℝ) g] with τ heq hnegU hnegG
     intro hτ v
@@ -191,7 +194,7 @@ theorem IsReverseTimeVariationalEnergySolution.neg
     let hnegF := reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
       r₀ r₁ hΩ hΩbounded (fun r y => -F r y) (IsSmoothOnNeighborhood.neg hFSmooth) τ
         ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
-    have hs := reverseTimeSourceSlice_neg_eq r₁ τ F hF hnegF
+
     have hnegU' : (((-1 : ℝ) • u) τ) = -(u τ) := by
       rw [hnegU]
       simp only [Pi.smul_apply, neg_one_smul]
@@ -202,6 +205,6 @@ theorem IsReverseTimeVariationalEnergySolution.neg
     exact reverseTimeVariationalEquation_neg hΩ r₁ τ a b c (g τ)
       (reverseTimeSourceSlice r₁ τ F hF)
       (reverseTimeSourceSlice r₁ τ (fun r y => -F r y) hnegF)
-      (u τ) v hs (heq hτ v)
+      (u τ) v (reverseTimeSourceSlice_neg_eq r₁ τ F hF hnegF) (heq hτ v)
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

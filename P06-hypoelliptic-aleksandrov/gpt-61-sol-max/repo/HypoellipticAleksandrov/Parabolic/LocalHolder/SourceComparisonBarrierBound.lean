@@ -3,25 +3,27 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierEnergy
 import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalComparison
 import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalNegation
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Two-sided variational bounds by stationary spatial barriers
 
 Comparison with the same barrier bounds the solution and its negative.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
-open Filter MeasureTheory Set Dirichlet
+open MeasureTheory Set Dirichlet
 open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 /-- A stationary source supersolution bounds the absolute value of the energy solution. -/
 theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+    {Ω : PDE.VelocityRegion d} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (lam : ℝ) (hlam : 0 < lam)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
-    (hlo : HasLowerEllipticity lam A) (F G : TimeVelocity d → ℝ)
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) (hG : ContDiff ℝ (⊤ : ℕ∞) G)
+    (hlo : HasLowerEllipticity lam A) (F G : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hF : ContDiff ℝ PDE.smoothOrder F) (hG : ContDiff ℝ PDE.smoothOrder G)
     (q : PDE.H10Function Ω) (hq : ContDiff ℝ 2 q.toH1Function.toFun)
     (hqn : ∀ y ∈ Ω, 0 ≤ q.toH1Function.toFun y)
     (heq : ∀ z ∈ Icc a T ×ˢ Ω,
@@ -36,6 +38,7 @@ theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
     ∀ τ : ℝ, ∀ hτ : τ ∈ Icc 0 (T - a), ∀ᵐ y ∂PDE.volumeOn Ω,
       |reverseTimeHilbertRepresentative hΩ (T - a) (sub_pos.mpr haT)
         u g hdu ⟨τ, hτ⟩ y| ≤ q.toH1Function.toFun y := by
+  let sharedTerm_27a2657dec := ((fun t y => G (t, y)))
   let Q := h10HilbertGraphOfH10Function hΩ q
   let hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
       (scalarParabolicClosedCylinder a T Ω) :=
@@ -52,7 +55,7 @@ theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
     ⟨univ, isOpen_univ, subset_univ _, hG.contDiffOn⟩
   have hinit : ∀ᵐ y ∂PDE.volumeOn Ω,
       (0 : PDE.ScalarLp Ω 2) y ≤ valueCLM hΩ Q y := by
-    filter_upwards [Lp.coeFn_zero ℝ 2 (PDE.volumeOn Ω),
+    filter_upwards [Lp.coeFn_zero ℝ 2 _,
       valueCLM_h10HilbertGraphOfH10Function hΩ q,
       ae_restrict_mem hΩ.measurableSet] with y hy hqy hyo
     rw [hy, hqy]
@@ -60,21 +63,20 @@ theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
   have hqenergy := stationarySourceCurve_isVariationalEnergySolution
     hΩ hΩb a T haT A hA G hG q hq heq
   have hupper := reverseTimeVariationalEnergySolution_le a T lam haT hlam hΩ hΩb
-    A (fun _ _ => 0) (fun _ _ => 0) (fun t y => F (t, y)) (fun t y => G (t, y))
+    A (fun _ _ => 0) (fun _ _ => 0) (fun t y => F (t, y)) sharedTerm_27a2657dec
     hAs hbs hcs hFs hGs (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl)
     (fun z hz => (hGF z hz).trans (neg_abs_le (F z)))
     0 (valueCLM hΩ Q) hinit u g hdu hu
     (stationarySourceCurve hΩ (T - a) Q) 0
     (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) Q) hqenergy
-  have hninit : ∀ᵐ y ∂PDE.volumeOn Ω,
-      (-(0 : PDE.ScalarLp Ω 2)) y ≤ valueCLM hΩ Q y := by
-    simpa only [neg_zero] using hinit
+
   have hneg := reverseTimeVariationalEnergySolution_le a T lam haT hlam hΩ hΩb
-    A (fun _ _ => 0) (fun _ _ => 0) (fun t y => -F (t, y)) (fun t y => G (t, y))
+    A (fun _ _ => 0) (fun _ _ => 0) (fun t y => -F (t, y)) sharedTerm_27a2657dec
     hAs hbs hcs (IsSmoothOnNeighborhood.neg hFs) hGs
     (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl)
     (fun z hz => (hGF z hz).trans (neg_le_neg (le_abs_self (F z))))
-    (-0) (valueCLM hΩ Q) hninit ((-1 : ℝ) • u) ((-1 : ℝ) • g)
+    (-0) (valueCLM hΩ Q) (by
+        simpa only [neg_zero] using hinit) ((-1 : ℝ) • u) ((-1 : ℝ) • g)
     (hdu.smul (-1)) hu.neg (stationarySourceCurve hΩ (T - a) Q) 0
     (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) Q) hqenergy
   rw [stationarySourceCurve_hilbertRepresentative] at hupper hneg
@@ -82,10 +84,10 @@ theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
   intro τ hτ
   filter_upwards [hupper τ hτ, hneg τ hτ,
     valueCLM_h10HilbertGraphOfH10Function hΩ q,
-    Lp.coeFn_neg (reverseTimeHilbertRepresentative hΩ (T - a) (sub_pos.mpr haT)
+    Lp.coeFn_neg (reverseTimeHilbertRepresentative hΩ (T - a) _
       u g hdu ⟨τ, hτ⟩)] with y hu₁ hu₂ hqy hn
   change _ ≤ valueCLM hΩ Q y at hu₁
-  change (-reverseTimeHilbertRepresentative hΩ (T - a) (sub_pos.mpr haT)
+  change (-reverseTimeHilbertRepresentative hΩ (T - a) _
     u g hdu ⟨τ, hτ⟩) y ≤ valueCLM hΩ Q y at hu₂
   rw [hn, Pi.neg_apply, hqy] at hu₂
   rw [hqy] at hu₁

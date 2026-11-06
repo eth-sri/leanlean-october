@@ -6,10 +6,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 
 /-! # Active-band terminal bound for starts in a time slab -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+open Set MeasureTheory
 
 /-- Deleting starts outside a slab preserves the full-space active terminal bound. -/
 theorem entranceSlab_partial_terminal_mass_le
@@ -24,6 +24,7 @@ theorem entranceSlab_partial_terminal_mass_le
           (enlargedActiveTerminalFamily hH hLE hlam hLam A c J (P.time + b))
             {q | q.velocity 0 ∈ c.active}).toReal) ≤
       S hH hLE hlam hLam A b (activeVelocityDatum c) (P.position 0, P.velocity 0) := by
+  let sharedTerm_9bb85719f7 := ((enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b)))
   let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J P.time (P.time + T) P
   let F := enlargedActiveTerminalFamily hH hLE hlam hLam A c J (P.time + b)
   let D : Set Point := {p | p.time ∈ Ioc (P.time + a) (P.time + b)}
@@ -31,21 +32,21 @@ theorem entranceSlab_partial_terminal_mass_le
   let tm := fun n => ((gamma n).restrict D).bind F
   have hB : MeasurableSet B := isOpen_Ioo.measurableSet.preimage
     ((continuous_apply 0).comp continuous_velocity).measurable
-  have hm : (∑ n ∈ Finset.range N, tm n) ≤
-      enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b) := by
-    calc
-      _ ≤ ∑ n ∈ Finset.range N, (gamma n).bind F :=
-        Finset.sum_le_sum fun n _ => entranceSlabTerminal_restrict_bind_le
-          hH hLE hlam hLam A c J (P.time + b) (gamma n) D
-      _ ≤ _ := enlarged_active_terminal_le_fullspace hH hLE hlam hLam A c J
-        P.time (P.time + T) P le_rfl (by linarith) hJ N (P.time + b)
-          (by linarith) (by linarith)
+
   have hr := ENNReal.toReal_mono
-    (measure_ne_top (enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b)) B)
-    (hm B)
+    (measure_ne_top sharedTerm_9bb85719f7 B)
+    ((show (∑ n ∈ Finset.range N, tm n) ≤
+      sharedTerm_9bb85719f7 by
+        calc
+          _ ≤ ∑ n ∈ Finset.range N, (gamma n).bind F :=
+            Finset.sum_le_sum fun n _ => entranceSlabTerminal_restrict_bind_le
+              hH hLE hlam hLam A c J (P.time + b) (gamma n) D
+          _ ≤ _ := enlarged_active_terminal_le_fullspace hH hLE hlam hLam A c J
+            P.time (P.time + T) P le_rfl (by linarith) hJ N (P.time + b)
+              (by linarith) (by linarith)) B)
   rw [visit_partial_real_mass tm N B hB] at hr
-  have he := entranceSlab_fullSpaceTerminal_active hH hLE hlam hLam A c P b
-  rw [he] at hr
+
+  rw [(entranceSlab_fullSpaceTerminal_active hH hLE hlam hLam A c P b)] at hr
   exact hr.trans_eq (activeVelocityDatum_action_eq hH hLE hlam hLam A c b hb
     (P.position 0, P.velocity 0)).symm
 

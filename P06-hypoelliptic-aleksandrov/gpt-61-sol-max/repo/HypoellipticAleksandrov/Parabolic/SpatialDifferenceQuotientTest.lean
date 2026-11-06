@@ -9,7 +9,7 @@ This module proves the compact-support and topological-support facts needed to
 use spatial difference quotients as raw parabolic tests.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -17,24 +17,19 @@ namespace HypoellipticAleksandrov.Parabolic
 theorem HasCompactSupport.spatialTranslate
     {d : ℕ} {α : Type*} [Zero α] {k : Fin d} {h : ℝ}
     {f : TimeVelocity d → α} (hf : HasCompactSupport f) :
-    HasCompactSupport (spatialTranslate k h f) := by
-  have heq : HypoellipticAleksandrov.Parabolic.spatialTranslate k h f =
-      f ∘ Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d) := by
-    funext z
-    exact congrArg f (show spatialShift k h z =
-      Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d) z from rfl)
-  rw [heq]
-  exact hf.comp_homeomorph
-    (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d))
+    HasCompactSupport (spatialTranslate k h f) := (Eq.mpr (id (congrArg (fun _a => HasCompactSupport _a) (funext fun z => congrArg f rfl)))
+  (HasCompactSupport.comp_homeomorph hf (Homeomorph.addRight (0, h • PDE.basisVec k))))
+
+variable {d : ℕ}
 
 /-- Compact support is preserved by a spatial difference quotient. -/
 theorem HasCompactSupport.spatialDifferenceQuotient
-    {d : ℕ} {k : Fin d} {h : ℝ} {f : TimeVelocity d → ℝ}
+     {k : Fin d} {h : ℝ} {f : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (hf : HasCompactSupport f) :
     HasCompactSupport (spatialDifferenceQuotient k h f) := by
   have htranslate : HasCompactSupport (HypoellipticAleksandrov.Parabolic.spatialTranslate k h f) :=
     HasCompactSupport.spatialTranslate hf
-  have hsub : HasCompactSupport (HypoellipticAleksandrov.Parabolic.spatialTranslate k h f - f) :=
+  have hsub  :=
     htranslate.sub hf
   have hquotient : HypoellipticAleksandrov.Parabolic.spatialDifferenceQuotient k h f =
       h⁻¹ • (HypoellipticAleksandrov.Parabolic.spatialTranslate k h f - f) := by
@@ -46,7 +41,7 @@ theorem HasCompactSupport.spatialDifferenceQuotient
 
 /-- The quotient support lies in the union of the translated and original supports. -/
 theorem tsupport_spatialDifferenceQuotient_subset
-    {d : ℕ} (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ) :
+     (k : Fin d) (h : ℝ) (f : HypoellipticAleksandrov.Parabolic.ScalarField d) :
     tsupport (spatialDifferenceQuotient k h f) ⊆
       tsupport (spatialTranslate k h f) ∪ tsupport f := by
   have hquotient : spatialDifferenceQuotient k h f =
@@ -61,8 +56,8 @@ theorem tsupport_spatialDifferenceQuotient_subset
 /-- A quotient is supported in `U` when the original carrier lies in `U` and
 the corresponding backward shift maps that carrier into `U`. -/
 theorem tsupport_spatialDifferenceQuotient_subset_of_mapsTo_spatialShift_neg
-    {d : ℕ} {K U : Set (TimeVelocity d)}
-    (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
+     {K U : HypoellipticAleksandrov.Parabolic.Region d}
+    (k : Fin d) (h : ℝ) (f : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hfK : tsupport f ⊆ K) (hKU : K ⊆ U)
     (hshift : Set.MapsTo (spatialShift k (-h)) K U) :
     tsupport (spatialDifferenceQuotient k h f) ⊆ U := by

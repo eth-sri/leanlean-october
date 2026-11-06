@@ -6,8 +6,8 @@ import Mathlib.MeasureTheory.Integral.Prod
 
 /-! # Local integrability from the anisotropic dimension four -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory
 
@@ -32,7 +32,7 @@ theorem bellman_abs_rpow_locallyIntegrable (p : ℝ) (hp : -1 < p) :
   have hm : Measurable (fun x : ℝ => |x| ^ p) :=
     measurable_of_continuousOn_compl_singleton 0
       (continuous_abs.continuousOn.rpow_const (fun x hx => Or.inl
-        (abs_pos.mpr (by simpa only [mem_compl_iff, mem_singleton_iff] using hx)).ne'))
+        (abs_pos.mpr (hx)).ne'))
   apply locallyIntegrable_of_norm_le_rpow (by simp) (C := 1) (α := -p)
   · simpa using (show -p < 1 by linarith)
   · filter_upwards [] with x

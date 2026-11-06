@@ -9,10 +9,10 @@ Killed slab densities are glued and logarithmically averaged over all positive t
 Constants depend only on the structural parameters, interval length and exponent.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov.KineticAleksandrov.Green
@@ -26,12 +26,12 @@ theorem interval_green_infinite_norm
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length)
     (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
     ∃ C k : ℝ, 0 < C ∧ 0 < k ∧
-    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
+    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.VectorField 1),
     SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
     ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
       (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
       (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-    RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
+    RealizesTerminalEvolution _ stationary hJ
       (zIndependentCoefficient B) b S K →
     c - a = length → ∀ (σ : ℝ),
     ∀ (μ : Measure (EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ))
@@ -39,13 +39,13 @@ theorem interval_green_infinite_norm
     ∃ G : GreenCarrier 1 → ℝ≥0∞, Measurable G ∧
       Γ = (greenLebesgue 1).withDensity G ∧
       eLpNorm G (ENNReal.ofReal q) (greenLebesgue 1) ≤ ENNReal.ofReal C * μ univ := by
-  have hq' : q < 2 := by linarith
+
   have hq0 : 0 < q := by linarith
-  have hδ : 0 < 3 - 2 * q := by linarith
+
   obtain ⟨A, k, _hA, hk, hslab⟩ := interval_slab_density hH hLE
-    lam Lam m Lb length hlam hlamLam hm hmLb hlength q hq hq'
+    lam Lam m Lb length hlam hlamLam hm hmLb hlength q hq (by linarith)
   let N := killedGreenConstant A (3 - 2 * q) k q
-  have hN : N ≠ ⊤ := killedGreenConstant_ne_top hδ hk hq0
+
   refine ⟨N.toReal + 1, k, by positivity, hk, ?_⟩
   intro a c hac B b hs hJ S K hr hlen σ μ _ Γ hΓ
   have hloc : ∀ T : ℝ, ∃ G : GreenCarrier 1 → ℝ≥0∞, 0 < T →
@@ -73,7 +73,7 @@ theorem interval_green_infinite_norm
       _ ≤ _ := (hGl T hT).2.2)
   apply hbd.trans
   apply mul_le_mul' ?_ le_rfl
-  calc N = ENNReal.ofReal N.toReal := (ENNReal.ofReal_toReal hN).symm
+  calc N = ENNReal.ofReal N.toReal := (ENNReal.ofReal_toReal (killedGreenConstant_ne_top (by linarith) hk hq0)).symm
     _ ≤ ENNReal.ofReal (N.toReal + 1) := ENNReal.ofReal_le_ofReal (by linarith)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

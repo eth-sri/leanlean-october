@@ -8,12 +8,14 @@ import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonLinear
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
-open scoped Topology
+open Set MeasureTheory HypoellipticAleksandrov
+open SectionTwo Evolution
+
+
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
 
 /-- The actual scalar kinetic source of a probe, as bounded Borel data. -/
-def exitProbeOperatorDatum {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+def exitProbeOperatorDatum
     (f : exitProbeSubmodule) : BoundedBorel Point :=
   ⟨forwardScalarOperator A.a (exitProbePhysical f), by
     have hm := (exitProbe_operator_smooth_compact A f).1.continuous.measurable.comp
@@ -27,13 +29,13 @@ def exitProbeOperatorDatum {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     exact ⟨max M 0, le_max_right _ _, fun p => (hM p).2.trans (le_max_left _ _)⟩⟩
 
 /-- The homogeneous value is the actual test value plus its actual kinetic-source integral. -/
-def exitProbeValue {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval)
+def exitProbeValue  (H : Interval)
     (E : StripEvolution H) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (f : exitProbeSubmodule) : ℝ :=
   exitProbePhysical f e.1 + ∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
     ∂stripGreenOfKernel H E.2 T e
 
-private theorem probe_operator_add {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+private theorem probe_operator_add
     (f g : exitProbeSubmodule) :
     forwardScalarOperator A.a (exitProbePhysical (f + g)) =
       fun p => forwardScalarOperator A.a (exitProbePhysical f) p +
@@ -45,7 +47,7 @@ private theorem probe_operator_add {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
   simp only [forwardOperator_autonomous] at h
   exact h
 
-private theorem probe_operator_smul {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+private theorem probe_operator_smul
     (c : ℝ) (f : exitProbeSubmodule) :
     forwardScalarOperator A.a (exitProbePhysical (c • f)) =
       fun p => c * forwardScalarOperator A.a (exitProbePhysical f) p := by
@@ -57,7 +59,7 @@ private theorem probe_operator_smul {lam Lam : ℝ} (A : SmoothAutonomous lam La
   exact h
 
 /-- Homogeneous probe values form a linear functional before boundary restriction. -/
-def exitProbeValueLinear {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval)
+def exitProbeValueLinear  (H : Interval)
     (E : StripEvolution H) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     exitProbeSubmodule →ₗ[ℝ] ℝ where
   toFun := exitProbeValue A H E T e

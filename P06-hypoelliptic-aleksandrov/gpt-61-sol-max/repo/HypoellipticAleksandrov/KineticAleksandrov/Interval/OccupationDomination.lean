@@ -9,10 +9,10 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeas
 Smooth terminal comparison and interior support imply domination as measures.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
@@ -22,10 +22,10 @@ theorem interval_parabolic_le_whole {a c lam Lam σ τ : ℝ}
     (hB : IsSectionTwoCoefficient lam Lam B)
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (hp : HasParabolicMarginalBundle (PDE.oneDimensionalAxisBox a c) stationary hJ
+    (hp : HasParabolicMarginalBundle _ stationary hJ
       (zIndependentCoefficient B) K)
-    (Kw : MovingFiberKernel (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)))
-    (hpw : HasParabolicMarginalBundle (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) MeasurableSet.univ
+    (Kw : MovingFiberKernel (wholeSpace 1) (fun _ => (0 )))
+    (hpw : HasParabolicMarginalBundle (wholeSpace 1) (fun _ => (0 )) MeasurableSet.univ
       (zIndependentCoefficient B) Kw)
     (v : PDE.Vec 1)
     (hv : v ∈ movingDomain (PDE.oneDimensionalAxisBox a c) stationary σ) :
@@ -52,7 +52,7 @@ theorem interval_parabolic_le_whole {a c lam Lam σ τ : ℝ}
       simp only [mem_preimage, mem_compl_iff, mem_empty_iff_false, iff_false, not_not]
       simpa only [movingDomain_stationary] using w.2
     rw [he, measure_empty]
-  have hs : ν.restrict (PDE.oneDimensionalAxisBox a c) = ν :=
+  have hs  :=
     Measure.restrict_eq_self_of_ae_mem (by
       rw [ae_iff]; exact hcompl)
   exact HypoellipticAleksandrov.KineticAleksandrov.measure_le_of_smooth_integral_le

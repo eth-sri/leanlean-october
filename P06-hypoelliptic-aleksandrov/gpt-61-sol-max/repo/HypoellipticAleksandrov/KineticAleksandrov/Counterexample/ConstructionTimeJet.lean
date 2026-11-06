@@ -12,8 +12,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set MeasureTheory HypoellipticAleksandrov.Parabolic
 open scoped Convolution
 
+variable {d : ℕ} {alpha : ℝ}
+
 /-- The time representative is the literal raw time derivative inside the profile domain. -/
-def constructionExtendedTimeJet {d : ℕ} {alpha : ℝ}
+def constructionExtendedTimeJet
     (h : CounterProfileStatement d alpha) (r mu R t : ℝ) (q : XV d) : ℝ :=
   {y | profileFunction h y < 1}.indicator
     (fun y => kineticTimeDerivative (timeCutoffProfile (profileFunction h) alpha r mu R)
@@ -21,7 +23,7 @@ def constructionExtendedTimeJet {d : ℕ} {alpha : ℝ}
 
 /-- The actual time derivative of the mollified value is convolution of its time representative.
 The fixed compact integration carrier includes the initial collar, so this holds at all times. -/
-theorem construction_mollified_time_jet {d : ℕ} {alpha : ℝ}
+theorem construction_mollified_time_jet
     (ha : 0 < alpha) (h : CounterProfileStatement d alpha) (r mu R : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R)
     (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2)
@@ -29,18 +31,18 @@ theorem construction_mollified_time_jet {d : ℕ} {alpha : ℝ}
     deriv (fun s => spatialMollify phi
       (fun y => zeroExtendedProfile (profileFunction h) alpha r mu R ⟨s, y.1, y.2⟩) q) t =
       spatialMollify phi (constructionExtendedTimeJet h r mu R t) q := by
-  let K : Set (XV d) := {y | profileFunction h y ≤ 1}
-  let Omega : Set (XV d) := {y | profileFunction h y < 1}
-  have hK : IsCompact K := isCompact_profile_unit_sublevel ha h
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hOmega : MeasurableSet Omega := (isOpen_lt hH continuous_const).measurableSet
+  let K  := {y | profileFunction h y ≤ 1}
+  let Omega  := {y | profileFunction h y < 1}
+  have hK  := isCompact_profile_unit_sublevel ha h
+
+  have hOmega : MeasurableSet Omega := (isOpen_lt ((selectedProfile_spec h).2.2.2.2.2.2.1) continuous_const).measurableSet
   have hOK : Omega ⊆ K := by
     intro y hy
     change profileFunction h y ≤ 1
     exact le_of_lt hy
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  let  := isCompact_iff_compactSpace.mp hK
   let nu : Measure K := Measure.comap Subtype.val (volume.restrict Omega)
-  have : IsFiniteMeasureOnCompacts nu := IsFiniteMeasureOnCompacts.comap'
+  have  := IsFiniteMeasureOnCompacts.comap'
     (volume.restrict Omega) continuous_subtype_val
     (MeasurableEmbedding.subtype_coe hK.measurableSet)
   have : IsFiniteMeasure nu := inferInstance
@@ -68,8 +70,8 @@ theorem construction_mollified_time_jet {d : ℕ} {alpha : ℝ}
     · rw [indicator_of_notMem hy,
         zeroExtendedProfile_eq_zero_of_profile _ alpha r mu R ⟨s, y.1, y.2⟩ (not_lt.mp hy),
         mul_zero]
-  rw [he, construction_deriv_cutoff_integral nu (fun y : K => (y : XV d))
-    continuous_subtype_val (fun y : K => selectedFlatProfile h r y)
+  rw [he, construction_deriv_cutoff_integral nu (fun y  => (y : XV d))
+    continuous_subtype_val (fun y  => selectedFlatProfile h r y)
     ((continuous_selectedFlatProfile h r).comp continuous_subtype_val)]
   dsimp only [nu]
   rw [integral_subtype_comap hK.measurableSet (fun y : XV d => phi.normed volume (q - y) *

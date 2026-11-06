@@ -4,6 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGeometr
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 public import PDEFoundation.Measure.OneDimensionalCoordinate
 import Mathlib.Tactic.FinCases
+import Aesop
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-! # Affine clock Jacobian in scalar coordinates
 
@@ -38,18 +43,22 @@ theorem scalarCoordinates_point (p : Fin 3 → ℝ) : scalarCoordinates (scalarP
   ext i
   fin_cases i <;> rfl
 
+variable (c : Clock)
+
 /-- The actual matrix of the inverse clock's linear part. -/
-def Clock.inverseMatrix (c : Clock) : Matrix (Fin 3) (Fin 3) ℝ :=
+def Clock.inverseMatrix  : Matrix (Fin 3) (Fin 3) ℝ :=
   !![c.r ^ 2, -(c.r ^ 3 / c.vbar), 0;
     c.vbar * c.r ^ 2, 0, 0;
     0, 0, c.r]
 
+variable (e : Point) (q : Fin 3 → ℝ)
+
 /-- The inverse clock written on native scalar coordinates. -/
-def Clock.inverseCoordinates (c : Clock) (e : Point) (q : Fin 3 → ℝ) : Fin 3 → ℝ :=
+def Clock.inverseCoordinates   : Fin 3 → ℝ :=
   scalarCoordinates (c.inverse e (scalarPoint q))
 
 /-- Its linear part plus its physical starting-point translation is exactly the inverse clock. -/
-theorem Clock.inverseCoordinates_eq (c : Clock) (e : Point) (q : Fin 3 → ℝ) :
+theorem Clock.inverseCoordinates_eq   :
     c.inverseCoordinates e q = c.inverseMatrix.mulVec q + ![e.time, e.position 0, c.vbar] := by
   ext i
   fin_cases i <;>
@@ -57,28 +66,28 @@ theorem Clock.inverseCoordinates_eq (c : Clock) (e : Point) (q : Fin 3 → ℝ) 
       scalarCoordinates, scalarPoint, dotProduct, Fin.sum_univ_succ] <;> ring
 
 /-- The inverse clock determinant is positive and equals the source factor `r^6`. -/
-theorem Clock.det_inverseMatrix (c : Clock) : c.inverseMatrix.det = c.r ^ 6 := by
+theorem Clock.det_inverseMatrix  : c.inverseMatrix.det = c.r ^ 6 := by
   simp [Clock.inverseMatrix, Matrix.det_fin_three]
   field_simp [c.nonzero]
 
 /-- The absolute Jacobian of the inverse is exactly the source normalization. -/
-theorem Clock.abs_det_inverseMatrix (c : Clock) : |c.inverseMatrix.det| = c.r ^ 6 := by
+theorem Clock.abs_det_inverseMatrix  : |c.inverseMatrix.det| = c.r ^ 6 := by
   rw [c.det_inverseMatrix, abs_of_nonneg (pow_nonneg c.positive.le 6)]
 
 /-- In scalar coordinates, the inverse clock pushes volume to `r^(-6)` times volume. -/
-theorem Clock.map_inverseCoordinates_volume (c : Clock) (e : Point) :
+theorem Clock.map_inverseCoordinates_volume  (e : Point) :
     Measure.map (c.inverseCoordinates e) volume =
       ENNReal.ofReal ((c.r ^ 6)⁻¹) • (volume : Measure (Fin 3 → ℝ)) := by
-  have hdet : c.inverseMatrix.det ≠ 0 := by
-    rw [c.det_inverseMatrix]
-    exact pow_ne_zero _ (ne_of_gt c.positive)
+
   have heq : c.inverseCoordinates e =
       (fun p : Fin 3 → ℝ => p + ![e.time, e.position 0, c.vbar]) ∘
         Matrix.toLin' c.inverseMatrix := by
     funext q
     exact c.inverseCoordinates_eq e q
   rw [heq, ← Measure.map_map (by fun_prop) (by fun_prop),
-    Real.map_matrix_volume_pi_eq_smul_volume_pi hdet, Measure.map_smul _ (by fun_prop),
+    Real.map_matrix_volume_pi_eq_smul_volume_pi (by
+        rw [c.det_inverseMatrix]
+        exact pow_ne_zero _ (ne_of_gt c.positive)), Measure.map_smul _ (by fun_prop),
     map_add_right_eq_self]
   rw [abs_inv, c.abs_det_inverseMatrix]
 
@@ -105,23 +114,21 @@ def scalarMeasurableEquiv : Point ≃ᵐ (Fin 3 → ℝ) where
 
 /-- The scalar coordinates preserve the source product volume without any factor. -/
 theorem scalarCoordinates_volumePreserving :
-    MeasurePreserving scalarMeasurableEquiv volume volume := by
-  have hp := KineticPoint.measurePreserving_equivProd 1
+    MeasurePreserving scalarMeasurableEquiv volume  := by
+
   have hv := PDE.volumePreserving_vecOneEquivReal.prod
     PDE.volumePreserving_vecOneEquivReal
-  have ht := (MeasurePreserving.id (volume : Measure ℝ)).prod hv
-  have hf := (volume_preserving_piFinTwo (fun _ : Fin 2 => ℝ)).symm
-  have hh := (MeasurePreserving.id (volume : Measure ℝ)).prod hf
-  have hs := (volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).symm
-  have hm := hs.comp (hh.comp (ht.comp hp))
-  apply hm.congr scalarMeasurableEquiv.measurable
-  apply Filter.Eventually.of_forall
-  intro p
-  ext i
-  fin_cases i <;> rfl
+
+
+
+
+  have hm := ((volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).symm).comp (((MeasurePreserving.id (volume : Measure ℝ)).prod ((volume_preserving_piFinTwo (fun _  => ℝ)).symm)).comp (((MeasurePreserving.id (volume : Measure ℝ)).prod hv).comp (KineticPoint.measurePreserving_equivProd 1)))
+  aesop
+
+variable (c : Clock) (e : Point)
 
 /-- The inverse clock rescales the actual kinetic volume, not a replacement measure. -/
-theorem Clock.map_inverse_volume (c : Clock) (e : Point) :
+theorem Clock.map_inverse_volume  :
     Measure.map (c.inverse e) volume = ENNReal.ofReal ((c.r ^ 6)⁻¹) •
       (volume : Measure Point) := by
   have hpoint := scalarCoordinates_volumePreserving.symm
@@ -144,31 +151,31 @@ theorem Clock.map_inverse_volume (c : Clock) (e : Point) :
   exact congrArg (fun m => ENNReal.ofReal ((c.r ^ 6)⁻¹) • m) hpoint.map_eq
 
 /-- The forward clock in the same native scalar coordinates as its inverse. -/
-def Clock.mapCoordinates (c : Clock) (e : Point) (q : Fin 3 → ℝ) : Fin 3 → ℝ :=
+def Clock.mapCoordinates  (q : Fin 3 → ℝ) : Fin 3 → ℝ :=
   scalarCoordinates (c.map e (scalarPoint q))
 
 /-- Smoothness of the global forward coordinate map. -/
-theorem Clock.mapCoordinates_smooth (c : Clock) (e : Point) :
-    ContDiff ℝ (⊤ : ℕ∞) (c.mapCoordinates e) := by
+theorem Clock.mapCoordinates_smooth  :
+    ContDiff ℝ PDE.smoothOrder (c.mapCoordinates e) := by
   apply contDiff_pi.mpr
   intro i
   fin_cases i <;>
     dsimp [Clock.mapCoordinates, Clock.map, scalarCoordinates, scalarPoint] <;> fun_prop
 
 /-- In the forward direction the source volume formula has factor `r^6`. -/
-theorem Clock.map_volume (c : Clock) (e : Point) :
+theorem Clock.map_volume  :
     Measure.map (c.map e) volume = ENNReal.ofReal (c.r ^ 6) •
       (volume : Measure Point) := by
   have hr : 0 < c.r ^ 6 := pow_pos c.positive 6
-  have hs : ENNReal.ofReal (c.r ^ 6) • Measure.map (c.inverse e) volume =
-      (volume : Measure Point) := by
-    rw [c.map_inverse_volume, smul_smul, ← ENNReal.ofReal_mul hr.le,
-      mul_inv_cancel₀ (ne_of_gt hr), ENNReal.ofReal_one, one_smul]
+
   have heq : c.map e ∘ c.inverse e = id := funext (c.map_inverse e)
   calc
     Measure.map (c.map e) volume =
         Measure.map (c.map e) (ENNReal.ofReal (c.r ^ 6) •
-          Measure.map (c.inverse e) volume) := congrArg (Measure.map (c.map e)) hs.symm
+          Measure.map (c.inverse e) volume) := congrArg _ (show ENNReal.ofReal (c.r ^ 6) • Measure.map (c.inverse e) volume =
+      (volume : Measure Point) by
+              rw [c.map_inverse_volume, smul_smul, ← ENNReal.ofReal_mul hr.le,
+                mul_inv_cancel₀ (ne_of_gt hr), ENNReal.ofReal_one, one_smul]).symm
     _ = ENNReal.ofReal (c.r ^ 6) • volume := by
       rw [Measure.map_smul _ (c.continuous_map e).measurable.aemeasurable,
         Measure.map_map (c.continuous_map e).measurable

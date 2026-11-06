@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstruction
 public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotentialsRegularity
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Physical smoothness after exchanging the native diffused and transported coordinates -/
 
@@ -17,7 +19,7 @@ def nestedSwapPacked : EvolutionVec 1 → EvolutionVec 1 := fun x =>
     ((evolutionProdCLE 1 x).1, (evolutionProdCLE 1 x).2.2, (evolutionProdCLE 1 x).2.1)
 
 /-- The packed exchange is globally C-infinity. -/
-theorem nestedSwapPacked_contDiff : ContDiff ℝ (⊤ : ℕ∞) nestedSwapPacked :=
+theorem nestedSwapPacked_contDiff : ContDiff ℝ PDE.smoothOrder nestedSwapPacked :=
   (evolutionProdCLE 1).symm.contDiff.comp
     ((evolutionProdCLE 1).contDiff.fst.prodMk
       ((evolutionProdCLE 1).contDiff.snd.snd.prodMk (evolutionProdCLE 1).contDiff.snd.fst))
@@ -29,20 +31,20 @@ theorem nestedSwapPacked_physical (x : EvolutionVec 1) :
     KineticPoint.isometryEquivProd, KineticPoint.equivProd]
   rfl
 
+variable {u : Point → ℝ} {D : Set Point}
+
 /-- Native smoothness transfers to physical smoothness on the exchanged open set. -/
-theorem nested_physical_contDiffOn {u : Point → ℝ} {D : Set Point}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
+theorem nested_physical_contDiffOn
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D)) :
-    ContDiffOn ℝ (⊤ : ℕ∞) ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1)
+    ContDiffOn ℝ PDE.smoothOrder ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' (sectionTwoPoint ⁻¹' D)) := by
-  have hm : MapsTo nestedSwapPacked
-      (evolutionHomeomorph 1 ⁻¹' (sectionTwoPoint ⁻¹' D))
-      (evolutionHomeomorph 1 ⁻¹' D) := by
-    intro x hx
-    change evolutionHomeomorph 1 (nestedSwapPacked x) ∈ D
-    rw [nestedSwapPacked_physical]
-    exact hx
-  have hs := hu.comp nestedSwapPacked_contDiff.contDiffOn hm
+
+  have hs := hu.comp nestedSwapPacked_contDiff.contDiffOn (by
+      intro x hx
+      change evolutionHomeomorph 1 (nestedSwapPacked x) ∈ D
+      rw [nestedSwapPacked_physical]
+      exact hx)
   have heq : (u ∘ evolutionHomeomorph 1) ∘ nestedSwapPacked =
       (u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1 := by
     funext x
@@ -52,24 +54,23 @@ theorem nested_physical_contDiffOn {u : Point → ℝ} {D : Set Point}
   rwa [heq] at hs
 
 /-- The same physical smoothness supplies the literal anisotropic C112 interface. -/
-theorem nested_physical_isKineticC112On {u : Point → ℝ} {D : Set Point}
+theorem nested_physical_isKineticC112On
     (hD : IsOpen D)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D)) :
     IsKineticC112On (u ∘ sectionTwoPoint) (sectionTwoPoint ⁻¹' D) :=
   isKineticC112On_of_contDiffOn (hD.preimage (continuous_sectionTwoPoint 1))
     (nested_physical_contDiffOn hu)
 
 /-- Raw physical smoothness on an open set supplies the literal C112 interface. -/
-theorem nested_raw_isKineticC112On {u : Point → ℝ} {D : Set Point}
+theorem nested_raw_isKineticC112On
     (hD : IsOpen D)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' D)) : IsKineticC112On u D := by
   apply isKineticC112On_of_contDiffOn hD
-  have hm : MapsTo (evolutionProdCLE 1) (evolutionHomeomorph 1 ⁻¹' D)
-      (KineticPoint.equivProd 1 '' D) := by
-    intro x hx
-    exact ⟨evolutionHomeomorph 1 x, hx, rfl⟩
-  exact hu.comp (evolutionProdCLE 1).contDiff.contDiffOn hm
+
+  exact hu.comp (evolutionProdCLE 1).contDiff.contDiffOn (by
+      intro x hx
+      exact ⟨_, hx, rfl⟩)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

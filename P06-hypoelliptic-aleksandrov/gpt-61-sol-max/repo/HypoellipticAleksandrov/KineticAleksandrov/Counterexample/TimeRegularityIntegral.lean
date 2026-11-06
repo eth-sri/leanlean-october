@@ -3,15 +3,17 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.HomogeneousTestLiftIntegral
 public import Mathlib.Analysis.Calculus.ContDiff.Comp
 import Mathlib.Analysis.Normed.Operator.Bilinear
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Smooth integration when a continuous compact parameter enters a smooth formula -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 universe u v
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set MeasureTheory
-open scoped Topology
+
 
 /-- A continuous compact parameter need not be differentiable: integration of a formula
 smooth in the external variables remains smooth to every specified finite order. -/
@@ -64,8 +66,8 @@ theorem compact_parameter_contDiff {E Y F : Type u} {A : Type v}
     [NormedAddCommGroup F] [NormedSpace ℝ F]
     [TopologicalSpace A] [CompactSpace A] [MeasurableSpace A] [BorelSpace A]
     (mu : Measure A) [IsFiniteMeasure mu] (radius : A → Y) (hr : Continuous radius)
-    (f : E × Y → F) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun q => ∫ a, f (q, radius a) ∂mu) := by
+    (f : E × Y → F) (hf : ContDiff ℝ PDE.smoothOrder f) :
+    ContDiff ℝ PDE.smoothOrder (fun q => ∫ a, f (q, radius a) ∂mu) := by
   apply contDiff_infty.mpr
   intro n
   exact compact_parameter_contDiff_nat mu radius hr n f (hf.of_le (by simp))

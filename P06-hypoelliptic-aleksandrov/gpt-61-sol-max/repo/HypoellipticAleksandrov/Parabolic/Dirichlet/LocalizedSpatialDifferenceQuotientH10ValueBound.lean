@@ -10,24 +10,24 @@ This module transfers the sharp smooth localized value estimate to every
 element of the zero-boundary spatial Sobolev graph.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
 
-open scoped ENNReal
+
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The value of the localized spatial quotient is uniformly controlled by
 the weak spatial gradient of its input. -/
 theorem norm_valueCLM_localizedSpatialDifferenceQuotientH10CLM_apply_le_gradient
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : PDE.VelocityRegion d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
+      (fun y  => y + h • PDE.basisVec k)
       (tsupport η.toFun) Ω)
     (u : H10HilbertGraph hΩ) :
     ‖valueCLM hΩ

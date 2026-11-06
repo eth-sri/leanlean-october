@@ -5,25 +5,26 @@ import Mathlib.MeasureTheory.Measure.Map
 
 /-! # Translation independence of displacement Fourier measures -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
-open scoped ENNReal ProbabilityTheory
+open scoped ProbabilityTheory
+
+variable {d : ℕ}
 
 /-- Ambient position translation is Borel. -/
-theorem measurable_evolutionAmbientStateShift {d : ℕ} (h : PDE.Vec d) :
-    Measurable (evolutionAmbientStateShift h) := by
-  exact measurable_fst.prodMk (measurable_snd.add_const h)
+theorem measurable_evolutionAmbientStateShift  (h : PDE.Vec d) :
+    Measurable (evolutionAmbientStateShift h) := measurable_fst.prodMk (measurable_snd.add_const h)
 
 /-- Translation on the terminal state subtype is Borel. -/
-theorem measurable_evolutionStateShift {d : ℕ} (Ω : Set (PDE.Vec d))
+theorem measurable_evolutionStateShift  (Ω : PDE.VelocityRegion d)
     (γ : ℝ → PDE.Vec d) (σ : ℝ) (h : PDE.Vec d) :
     Measurable (evolutionStateShift Ω γ σ h) :=
   ((measurable_evolutionAmbientStateShift h).comp measurable_subtype_coe).subtype_mk
 
 /-- Fiber covariance pushes forward to the ambient master measures. -/
-theorem master_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem master_translation  {Ω : PDE.VelocityRegion d}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (hcov : IsTranslationCovariantEvolution Ω γ hΩ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (h : PDE.Vec d) :
@@ -40,12 +41,12 @@ theorem master_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact hc
 
 /-- Translating both positions leaves the displacement Fourier phase unchanged. -/
-theorem fourierPhase_shift {d : ℕ} (ξ z h : PDE.Vec d) (w : EvolutionAmbientState d) :
+theorem fourierPhase_shift  (ξ z h : PDE.Vec d) (w : EvolutionAmbientState d) :
     fourierPhase ξ (z + h) (evolutionAmbientStateShift h w) = fourierPhase ξ z w := by
-  simp only [fourierPhase, evolutionAmbientStateShift, add_sub_add_right_eq_sub]
+  simp_all [fourierPhase, evolutionAmbientStateShift]
 
 /-- The Fourier projection is independent of simultaneous starting-position translation. -/
-theorem fourierProjection_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem fourierProjection_translation  {Ω : PDE.VelocityRegion d}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (hcov : IsTranslationCovariantEvolution Ω γ hΩ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (h ξ : PDE.Vec d) :
@@ -69,29 +70,26 @@ theorem fourierProjection_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
   by_cases hw : w.1 ∈ E
   · rw [indicator_of_mem (by exact ⟨hw, mem_univ _⟩),
       indicator_of_mem (by exact ⟨hw, mem_univ _⟩), fourierPhase_shift]
-  · rw [indicator_of_notMem (by exact fun hw' => hw hw'.1),
-      indicator_of_notMem (by exact fun hw' => hw hw'.1)]
+  · rw [indicator_of_notMem (fun hw' => hw hw'.1),
+      indicator_of_notMem (fun hw' => hw hw'.1)]
 
 /-- Starting position does not affect the whole-space Fourier kernel. -/
-theorem fourierKernel_eq_startingPosition {d : ℕ}
+theorem fourierKernel_eq_startingPosition
     (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0)
+    (hcov : IsTranslationCovariantEvolution (wholeSpace d) _
       MeasurableSet.univ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v z : PDE.Vec d) :
     fourierProjection K (wholeSpaceQuery σ τ hστ v z) ξ =
       fourierKernel K σ τ hστ ξ v := by
   let p : EvolutionState (wholeSpace d) (fun _ => 0) σ :=
     ⟨(v, 0), (wholeSpaceQuery σ τ hστ v 0).property.2⟩
-  have hq : evolutionQueryOfState (wholeSpace d) (fun _ => 0) σ τ hστ
-      (evolutionStateShift (wholeSpace d) (fun _ => 0) σ z p) =
-      wholeSpaceQuery σ τ hστ v z := by
-    apply Subtype.ext
-    simp only [evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift,
-      wholeSpaceQuery, p, zero_add]
-  have hp : evolutionQueryOfState (wholeSpace d) (fun _ => 0) σ τ hστ p =
-      wholeSpaceQuery σ τ hστ v 0 := rfl
-  have ht := fourierProjection_translation MeasurableSet.univ K hcov σ τ hστ p z ξ
-  exact (congrArg (fun q => fourierProjection K q ξ) hq).symm.trans
-    (ht.trans (congrArg (fun q => fourierProjection K q ξ) hp))
+
+
+
+  exact (congrArg (fun q => fourierProjection K q ξ) (by
+      apply Subtype.ext
+      simp only [evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift,
+        wholeSpaceQuery, p, zero_add])).symm.trans
+    ((fourierProjection_translation MeasurableSet.univ K hcov σ τ hστ p z ξ).trans (congrArg (fun q => fourierProjection K q ξ) rfl))
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

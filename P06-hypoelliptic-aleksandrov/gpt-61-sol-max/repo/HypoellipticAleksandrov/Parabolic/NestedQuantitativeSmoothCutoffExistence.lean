@@ -9,7 +9,7 @@ This module iterates quantitative smooth-cutoff existence to obtain a second
 cutoff whose plateau contains the first cutoff's topological support.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -17,7 +17,7 @@ namespace HypoellipticAleksandrov.Parabolic
 smooth cutoffs: the second equals one on the first cutoff's topological
 support, and both supports lie in the original open set. -/
 theorem exists_nestedQuantitativeSmoothCutoffs_tsupport_subset
-    {d : ℕ} {E Ω : Set (PDE.Vec d)}
+    {d : ℕ} {E Ω : PDE.VelocityRegion d}
     (hE : IsCompact E) (hΩ : IsOpen Ω) (hEΩ : E ⊆ Ω) :
     ∃ Kη : ℝ, Nonempty
       (Σ η : PDE.QuantitativeSmoothCutoff E Ω Kη,

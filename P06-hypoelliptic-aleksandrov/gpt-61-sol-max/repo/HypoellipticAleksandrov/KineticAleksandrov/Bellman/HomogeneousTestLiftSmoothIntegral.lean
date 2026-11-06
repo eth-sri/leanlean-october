@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # C² compact-parameter integrals of jointly C² functions -/
 
-@[expose] public section
-noncomputable section
-open Set MeasureTheory Filter Topology
+ public section
+
+open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Joint C² regularity gives spatial C² regularity after compact radius integration. -/
@@ -20,6 +20,7 @@ theorem bellman_joint_contDiff_integral {E F A : Type*}
     (radius : A → ℝ) (hr : Continuous radius) (hrp : ∀ a, 0 < radius a)
     (f : E × ℝ → F) (hf : ContDiffOn ℝ 2 f (U ×ˢ Ioi 0)) :
     ContDiffOn ℝ 2 (fun q => ∫ a, f (q, radius a) ∂mu) U := by
+  let sharedTerm_91fe40c154 := ((fun w : E × A => (w.1, radius w.2)))
   let L : E →L[ℝ] E × ℝ := (ContinuousLinearMap.id ℝ E).prod 0
   let J : ((E × ℝ) →L[ℝ] F) →L[ℝ] E →L[ℝ] F :=
     (ContinuousLinearMap.compL ℝ E (E × ℝ) F).flip L
@@ -36,34 +37,28 @@ theorem bellman_joint_contDiff_integral {E F A : Type*}
   have hg' : ContinuousOn g' (U ×ˢ Ioi 0) :=
     (J'.contDiff.comp_contDiffOn
       (hg.fderiv_of_isOpen hopen (m := 0) (by norm_num))).continuousOn
-  have hmap : MapsTo (fun w : E × A => (w.1, radius w.2))
+  have hmap : MapsTo sharedTerm_91fe40c154
       (U ×ˢ univ) (U ×ˢ Ioi 0) := fun w hw => ⟨hw.1, hrp w.2⟩
-  have hcm : Continuous (fun w : E × A => (w.1, radius w.2)) :=
+  have hcm : Continuous sharedTerm_91fe40c154 :=
     continuous_fst.prodMk (hr.comp continuous_snd)
-  have hc0 : ContinuousOn (fun w : E × A => f (w.1, radius w.2))
-      (U ×ˢ univ) := hf.continuousOn.comp hcm.continuousOn hmap
-  have hc1 : ContinuousOn (fun w : E × A => g (w.1, radius w.2))
-      (U ×ˢ univ) := hg.continuousOn.comp hcm.continuousOn hmap
-  have hc2 : ContinuousOn (fun w : E × A => g' (w.1, radius w.2))
-      (U ×ˢ univ) := hg'.comp hcm.continuousOn hmap
-  have hd0 : ∀ q ∈ U, ∀ a : A,
-      HasFDerivAt (fun x => f (x, radius a)) (g (q, radius a)) q := by
-    intro q hq a
-    have hd := ((hf (q, radius a) ⟨hq, hrp a⟩).contDiffAt
-      (hopen.mem_nhds ⟨hq, hrp a⟩)).differentiableAt (by norm_num)
-    have hc : HasFDerivAt (fun q : E => (q, radius a)) L q :=
-      (hasFDerivAt_id q).prodMk (hasFDerivAt_const (radius a) q)
-    exact hd.hasFDerivAt.comp q hc
-  have hd1 : ∀ q ∈ U, ∀ a : A,
-      HasFDerivAt (fun x => g (x, radius a)) (g' (q, radius a)) q := by
-    intro q hq a
-    have hd := ((hg (q, radius a) ⟨hq, hrp a⟩).contDiffAt
-      (hopen.mem_nhds ⟨hq, hrp a⟩)).differentiableAt (by norm_num)
-    have hc : HasFDerivAt (fun q : E => (q, radius a)) L q :=
-      (hasFDerivAt_id q).prodMk (hasFDerivAt_const (radius a) q)
-    exact hd.hasFDerivAt.comp q hc
+
+
+
+
+
   exact bellman_compact_parameter_contDiffOn_two mu hU
     (fun q a => f (q, radius a)) (fun q a => g (q, radius a))
-    (fun q a => g' (q, radius a)) hc0 hc1 hc2 hd0 hd1
+    (fun q a => g' (q, radius a)) (hf.continuousOn.comp hcm.continuousOn hmap) (hg.continuousOn.comp hcm.continuousOn hmap) (hg'.comp hcm.continuousOn hmap) (by
+        intro q hq a
+        have hd := ((hf (q, radius a) ⟨hq, hrp a⟩).contDiffAt
+          (hopen.mem_nhds ⟨hq, hrp a⟩)).differentiableAt (by norm_num)
+        have hc : HasFDerivAt (fun q : E => (q, radius a)) L q :=
+          (hasFDerivAt_id q).prodMk (hasFDerivAt_const (radius a) q)
+        exact hd.hasFDerivAt.comp q hc) (by
+        intro q hq a
+        have hd := ((hg (q, radius a) ⟨hq, hrp a⟩).contDiffAt
+          (hopen.mem_nhds ⟨hq, hrp a⟩)).differentiableAt (by norm_num)
+
+        exact hd.hasFDerivAt.comp q (show HasFDerivAt (fun q : E => (q, radius a)) L q from (hasFDerivAt_id q).prodMk (hasFDerivAt_const (radius a) q)))
 
 end HypoellipticAleksandrov.KineticAleksandrov

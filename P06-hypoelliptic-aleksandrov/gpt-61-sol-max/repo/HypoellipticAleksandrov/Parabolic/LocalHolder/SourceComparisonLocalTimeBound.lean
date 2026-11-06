@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLoca
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalCutoff
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Bounding the time term in localized value energy
 
@@ -11,22 +13,22 @@ Quadratic testing bounds the time pairing using only the square of the solution,
 than any derivative bound on the approximation sequence.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 
 /-- Quadratic testing bounds time energy by the value integral and a cutoff derivative bound. -/
 theorem integral_local_time_energy_le {d : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (u ρ : TimeVelocity d → ℝ) (hu : IsScalarC12On u U)
-    (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)
+    {U : HypoellipticAleksandrov.Parabolic.Region d} (hU : IsOpen U)
+    (u ρ : HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : IsScalarC12On u U)
+    (hρ : ContDiff ℝ PDE.smoothOrder ρ) (hc : HasCompactSupport ρ)
     (hsub : tsupport ρ ⊆ U) (K : ℝ)
     (hq : IntegrableOn (fun z => u z ^ 2) U)
     (hK : ∀ z ∈ U, |timeDerivative (fun y => ρ y ^ 2) z| ≤ K) :
     (∫ z in U, scalarTimeDerivative u z * u z * ρ z ^ 2) ≤
       (K / 2) * ∫ z in U, u z ^ 2 := by
-  have hχ : ContDiff ℝ (⊤ : ℕ∞) (fun z => ρ z ^ 2) := hρ.pow 2
+  have hχ : ContDiff ℝ PDE.smoothOrder (fun z => ρ z ^ 2) := hρ.pow 2
   have hχeq : (fun z => ρ z ^ 2) = ρ * ρ := by
     funext z
     exact pow_two _
@@ -36,12 +38,7 @@ theorem integral_local_time_energy_le {d : ℕ}
   have hsχ : tsupport (fun z => ρ z ^ 2) ⊆ U := by
     simpa only [pow_two] using
       (tsupport_mul_subset_left (f := ρ) (g := ρ)).trans hsub
-  have hw : IntegrableOn
-      (fun z => scalarTimeDerivative u z * u z * ρ z ^ 2) U :=
-    (integrable_local_cutoff_square_mul hU
-      (fun z => scalarTimeDerivative u z * u z) ρ
-      (hu.continuousOn_scalarTimeDerivative.mul hu.continuousOn)
-      hρ.continuous hc hsub).restrict
+
   have htest := integral_square_mul_timeDerivative_eq hu
     (fun z => ρ z ^ 2) hχ hcχ hsχ
   have hdt : IntegrableOn
@@ -51,7 +48,7 @@ theorem integral_local_time_energy_le {d : ℕ}
       hdcont.clm_apply continuous_const
     exact hq.mul_bdd hd.aestronglyMeasurable.restrict
       (ae_restrict_of_forall_mem hU.measurableSet
-        (fun z hz => by simpa only [Real.norm_eq_abs] using hK z hz))
+        (fun z hz => (id (hK z hz))))
   have hpoint : ∀ᵐ z ∂volume.restrict U,
       -(u z ^ 2 * timeDerivative (fun y => ρ y ^ 2) z) ≤ K * u z ^ 2 := by
     apply ae_restrict_of_forall_mem hU.measurableSet

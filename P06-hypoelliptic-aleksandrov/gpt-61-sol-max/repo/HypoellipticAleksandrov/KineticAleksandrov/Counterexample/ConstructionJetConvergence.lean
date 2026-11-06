@@ -4,25 +4,26 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 
 /-! # Almost-everywhere convergence of the selected spatial jets -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory
 open scoped Topology Convolution
 
+variable {d : ℕ}
+
 /-- The concrete normalized kernels recover every locally integrable native scalar field. -/
-theorem construction_spatialMollify_tendsto_ae {d : ℕ} (f : XV d → ℝ)
-    (hf : LocallyIntegrable f volume) :
-    ∀ᵐ q ∂volume, Tendsto
-      (fun n => spatialMollify (standardMollifierSequence n) f q) atTop (𝓝 (f q)) := by
-  exact ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable
+theorem construction_spatialMollify_tendsto_ae  (f : XV d → ℝ)
+    (hf : LocallyIntegrable f ) :
+    ∀ᵐ q, Tendsto
+      (fun n => spatialMollify (standardMollifierSequence n) f q) atTop (𝓝 (f q)) := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable
     standardMollifierSequence_rOut_tendsto
     (Eventually.of_forall standardMollifierSequence_radius_ratio) hf
 
 /-- At each time the selected first and second representatives are recovered simultaneously. -/
-theorem construction_selected_jets_tendsto_ae {d : ℕ} {alpha : ℝ}
+theorem construction_selected_jets_tendsto_ae  {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (mu R m t : ℝ) :
-    ∀ᵐ q ∂volume,
+    ∀ᵐ q,
       (∀ i : Fin (d + d), Tendsto
         (fun n => spatialMollify (standardMollifierSequence n)
           (fun y => constructionExtendedNativeGradient h r mu R m t y i) q)

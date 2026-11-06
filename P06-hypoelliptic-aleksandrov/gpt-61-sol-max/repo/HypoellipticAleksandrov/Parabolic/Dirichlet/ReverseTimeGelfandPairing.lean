@@ -10,17 +10,19 @@ This module rewrites the pivot Gelfand pairing against a separated bounded
 scalar multiplier as the literal spatial `L²` mass integral.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory Set Topology
+open MeasureTheory Set
 open scoped ENNReal
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
+
 private theorem scalarLpToH10HilbertGraphDual_apply_smul
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+
     (hΩ : IsOpen Ω) (u0 v0 : H10HilbertGraph hΩ) (q0 : ℝ) :
     scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ u0) (q0 • v0) =
       inner ℝ (valueCLM hΩ v0) (valueCLM hΩ u0) * q0 := by
@@ -32,11 +34,11 @@ private theorem scalarLpToH10HilbertGraphDual_apply_smul
 /-- Pairing the Gelfand image with a bounded separated multiplier is the
 literal spatial `L²` mass integral. -/
 theorem reverseTimeGelfand_pairing_multiplier_eq_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+     {T : ℝ}
     (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ T)
     (q : ℝ → ℝ)
-    (hq : MeasureTheory.MemLp q (∞ : ℝ≥0∞) (reverseTimeVolume T))
+    (hq : MeasureTheory.MemLp q (∞ ) (reverseTimeVolume T))
     (v : H10HilbertGraph hΩ) :
     reverseTimeDualPairingRightCLM hΩ T
         (reverseTimeSeparatedVTestOfMemLp hΩ q hq v)

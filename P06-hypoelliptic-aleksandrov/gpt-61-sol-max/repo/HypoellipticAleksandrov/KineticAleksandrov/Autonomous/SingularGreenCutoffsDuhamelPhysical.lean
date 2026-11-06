@@ -4,15 +4,17 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 
 /-! # Exact stationary Duhamel integration in physical coordinates -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic SectionTwo Evolution MeasureTheory Set Filter
+ public section
 
+namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+open SectionTwo MeasureTheory Set
+
+variable (E : FullSpaceEvolution) (z : Z) (T : ℝ) (g : Z → ℝ) (hg : Measurable g)
+
+include hg
 /-- On the open source time interval, the stationary source integral is the physical kernel
   action. -/
-theorem duhamelIntegrand_physical (E : FullSpaceEvolution) (z : Z) (T : ℝ)
-    (g : Z → ℝ) (hg : Measurable g) {s : ℝ} (hs : 0 < s) (hsT : s < T) :
+theorem duhamelIntegrand_physical  {s : ℝ} (hs : 0 < s) (hsT : s < T) :
     duhamelIntegrand E.2
       ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator
         (fun q => g (nativeToXV (q.position, q.velocity))))
@@ -21,7 +23,7 @@ theorem duhamelIntegrand_physical (E : FullSpaceEvolution) (z : Z) (T : ℝ)
   rw [duhamelIntegrand, dite_eq_left ⟨hs.le, by simp [movingDomain, autonomousWholeDomain,
     PDE.translateSet]⟩, duhamelSourceIntegral]
   rw [kernelXV, integral_map nativeToXV_measurable.aemeasurable hg.aestronglyMeasurable]
-  have hq : (⟨(0, (s, ((fun _ : Fin 1 => z.2), (fun _ : Fin 1 => z.1)))),
+  have hq : (⟨(0, (s, ((fun _  => z.2), (fun _  => z.1)))),
       hs.le, by simp [movingDomain, autonomousWholeDomain, PDE.translateSet], by trivial⟩ :
         EvolutionQuery autonomousWholeDomain (fun _ => 0)) =
       wholeQuery (Real.toNNReal s) z := by
@@ -34,8 +36,7 @@ theorem duhamelIntegrand_physical (E : FullSpaceEvolution) (z : Z) (T : ℝ)
   exact ⟨hsT, by simp [movingDomain, autonomousWholeDomain, PDE.translateSet]⟩
 
 /-- Stationary Duhamel potentials are literal iterated physical kernel integrals. -/
-theorem duhamelPotential_physical (E : FullSpaceEvolution) (z : Z) (T : ℝ)
-    (g : Z → ℝ) (hg : Measurable g) :
+theorem duhamelPotential_physical  :
     duhamelPotential E.2 T
       ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator
         (fun q => g (nativeToXV (q.position, q.velocity))))
@@ -47,8 +48,7 @@ theorem duhamelPotential_physical (E : FullSpaceEvolution) (z : Z) (T : ℝ)
   exact duhamelIntegrand_physical E z T g hg hmem.1 (lt_of_le_of_ne hmem.2 ht)
 
 /-- An integrable stationary test has the actual occupation measure as its Duhamel integral. -/
-theorem duhamelPotential_physical_occupation (E : FullSpaceEvolution) (z : Z) (T : ℝ)
-    (g : Z → ℝ) (hg : Measurable g)
+theorem duhamelPotential_physical_occupation
     (hgi : Integrable g (physicalOccupationMeasure E z T)) :
     duhamelPotential E.2 T
       ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator

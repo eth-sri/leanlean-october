@@ -8,45 +8,27 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FiniteUnionD
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open scoped ENNReal
+open Set MeasureTheory
+
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion)
 
 /-- The componentwise union Green mixture is the actual measurable measure integral. -/
 def finiteUnionGreenMixture
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ)
+     (T : WithTop ℝ)
     (nu : Measure (FiniteUnionPole H T)) : Measure Point :=
   nu.bind (finiteUnionGreen hH hLE hlam hLam A H T)
 
+variable (T : ℝ) (nu : Measure (FiniteUnionPole H (T : WithTop ℝ)))
+
 /-- The componentwise union exit mixture is the same measurable integral of actual exits. -/
 def finiteUnionExitMixture
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
-    (nu : Measure (FiniteUnionPole H (T : WithTop ℝ))) : Measure Point :=
+      : Measure Point :=
   nu.bind (finiteUnionExit hH hLE hlam hLam A H T)
 
-/-- Union exit mixtures preserve the total mass of their finite source measure. -/
-theorem finiteUnionExitMixture_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
-    (nu : Measure (FiniteUnionPole H (T : WithTop ℝ))) :
-    finiteUnionExitMixture hH hLE hlam hLam A H T nu univ = nu univ := by
-  unfold finiteUnionExitMixture
-  rw [Measure.bind_apply MeasurableSet.univ
-    (finiteUnionExit_measurable hH hLE hlam hLam A H T).aemeasurable]
-  simp only [measure_univ, lintegral_const, one_mul]
 
-/-- A finite source gives a finite actual union exit mixture. -/
-instance finiteUnionExitMixture_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
-    (nu : Measure (FiniteUnionPole H (T : WithTop ℝ))) [IsFiniteMeasure nu] :
-    IsFiniteMeasure (finiteUnionExitMixture hH hLE hlam hLam A H T nu) :=
-  ⟨by rw [finiteUnionExitMixture_mass]; exact measure_lt_top _ _⟩
+
+
 
 /-- With the source support restored, the whole exit mixture sits on the prescribed exit. -/
 theorem finiteUnionExitMixture_compl_exit

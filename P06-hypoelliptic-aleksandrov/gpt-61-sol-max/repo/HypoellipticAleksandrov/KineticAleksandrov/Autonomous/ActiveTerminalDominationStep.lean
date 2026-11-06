@@ -5,11 +5,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 
 /-! # One actual active piece spends its stopped potential only once -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory Parabolic
+
 open scoped Classical
 
 /-- Earlier active poles split their potential between the terminal cap and earlier exits. -/
@@ -42,9 +42,9 @@ theorem enlarged_active_stopped_step_earlier
       finiteUnionExit hH hLE hlam hLam A _ b (enlargedVisitPole _ _ ⟨p, ht⟩) else 0) = E
     rw [dite_eq_left hp']
     rfl
-  have hs : ∀ᵐ q ∂E, q.time ≤ b :=
+  have hs  :=
     (stripExitOfRealization_ae_closed_future hH hlam hLam A c.activeInterval
-      (stripEvolution hH hLE hlam hLam A c.activeInterval)
+      _
       (stripEvolution_spec hH hLE hlam hLam A c.activeInterval) b
       (stripPoleFinite c.activeInterval ep b hb)).mono fun _ hq => hq.2.1
   have hiE := enlargedStoppedPotential_integrable b u hc M hM hbound E

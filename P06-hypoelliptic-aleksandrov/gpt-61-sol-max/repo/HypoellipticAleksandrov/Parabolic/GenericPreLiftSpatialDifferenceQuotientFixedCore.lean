@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientFixedDirection
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Fixed-cylinder generic spatial difference-quotient estimate
@@ -8,9 +10,9 @@ public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQ
 This module aggregates the one-direction estimate over all spatial directions.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -22,30 +24,30 @@ tested divergence-form equation. -/
 theorem exists_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
     (d : ℕ) (s₀ t₁ t₂ s₁ : ℝ)
     (hs₀t₁ : s₀ < t₁) (ht₁t₂ : t₁ < t₂) (ht₂s₁ : t₂ < s₁)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : PDE.VelocityRegion d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
     (lam Lam Ma : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hMa : 0 ≤ Ma) :
     ∃ C δ : ℝ, 0 ≤ C ∧ 0 < δ ∧
-      ∀ (A : TimeVelocity d → PDE.Mat d) (q : TimeVelocity d → ℝ)
-        (G : Fin d → TimeVelocity d → ℝ) (R : TimeVelocity d → ℝ),
+      ∀ (A : TimeVelocity d → PDE.Mat d) (q : HypoellipticAleksandrov.Parabolic.ScalarField d)
+        (G : Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d) (R : HypoellipticAleksandrov.Parabolic.ScalarField d),
         (∀ z ∈ Set.Ioo s₀ s₁ ×ˢ O₀, (A z).IsSymm) →
         (∀ z ∈ Set.Ioo s₀ s₁ ×ˢ O₀,
           lam • (1 : PDE.Mat d) ≤ A z ∧ A z ≤ Lam • (1 : PDE.Mat d)) →
-        (∀ i j, ContDiffOn ℝ 1 (fun z : TimeVelocity d => A z i j)
+        (∀ i j, ContDiffOn ℝ 1 (fun z  => A z i j)
           (Set.Ioo s₀ s₁ ×ˢ O₀)) →
         (∀ i j k z, z ∈ Set.Ioo s₀ s₁ ×ˢ O₀ →
           |spatialPartial k
-              (fun y : PDE.Vec d => A (z.1, y) i j) z.2| ≤ Ma) →
+              (fun y  => A (z.1, y) i j) z.2| ≤ Ma) →
         ParabolicMemLpOn (Set.Ioo s₀ s₁ ×ˢ O₀) 2 q →
         (∀ j, ParabolicMemLpOn (Set.Ioo s₀ s₁ ×ˢ O₀) 2 (G j)) →
         ParabolicMemLpOn (Set.Ioo s₀ s₁ ×ˢ O₀) 2 R →
         (∀ j, HasWeakVelocityPartialDerivOn
           (Set.Ioo s₀ s₁ ×ˢ O₀) j q (G j)) →
-        (∀ φ : TimeVelocity d → ℝ,
-          ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ →
+        (∀ φ : HypoellipticAleksandrov.Parabolic.ScalarField d,
+          ContDiff ℝ PDE.smoothOrder φ → HasCompactSupport φ →
           tsupport φ ⊆ Set.Ioo s₀ s₁ ×ˢ O₀ →
           -(∫ z in Set.Ioo s₀ s₁ ×ˢ O₀,
               q z * timeDerivative φ z) -
@@ -83,9 +85,9 @@ theorem exists_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
       hWeak hEq k h hh hhd
     constructor
     · exact fun j k ↦ (hk k).1 j
-    · have hsum := Finset.sum_le_sum fun k (_hk : k ∈ Finset.univ) ↦ (hk k).2
+    ·
       rw [Finset.sum_comm]
-      simpa only [Finset.sum_const, Finset.card_univ, Fintype.card_fin,
-        nsmul_eq_mul, Nat.cast_ofNat, Nat.cast_id, mul_assoc] using hsum
+      simpa only [mul_assoc, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+        nsmul_eq_mul] using (Finset.sum_le_sum fun k (_hk : k ∈ Finset.univ) ↦ (hk k).2)
 
 end HypoellipticAleksandrov.Parabolic

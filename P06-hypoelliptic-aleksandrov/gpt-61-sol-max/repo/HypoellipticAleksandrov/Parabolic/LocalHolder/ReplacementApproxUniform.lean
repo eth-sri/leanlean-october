@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBoun
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.MetricSpace.Cauchy
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Uniformly convergent smooth boundary replacements
 
@@ -13,8 +15,8 @@ Uniform approximation of the prescribed data and the maximum principle produce a
 actual continuous limit on the closed cylinder. Interior regularity is a separate step.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter Set Dirichlet KineticAleksandrov
 open scoped Topology MatrixOrder Matrix.Norms.Elementwise
@@ -38,12 +40,12 @@ theorem exists_uniform_smooth_boundary_replacements {d : ℕ} (hd : 0 < d)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A)
-    (w : TimeVelocity d → ℝ)
+    (w : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hw : ContinuousOn w (scalarParabolicClosedCylinder a T (PDE.euclideanBall v₀ r))) :
-    ∃ (f v : ℕ → TimeVelocity d → ℝ)
+    ∃ (f v : ℕ → HypoellipticAleksandrov.Parabolic.ScalarField d)
       (U : ℕ → C(scalarParabolicClosedCylinder a T (PDE.euclideanBall v₀ r), ℝ))
       (V : C(scalarParabolicClosedCylinder a T (PDE.euclideanBall v₀ r), ℝ)),
-      (∀ n, ContDiff ℝ (⊤ : ℕ∞) (f n)) ∧
+      (∀ n, ContDiff ℝ PDE.smoothOrder (f n)) ∧
       (∀ n, ∀ z ∈ scalarParabolicClosedCylinder a T (PDE.euclideanBall v₀ r),
         |f n z - w z| < 1 / ((n : ℝ) + 1)) ∧
       (∀ n, IsClassicalBackwardDirichletSolution a T (PDE.euclideanBall v₀ r) A
@@ -54,16 +56,16 @@ theorem exists_uniform_smooth_boundary_replacements {d : ℕ} (hd : 0 < d)
         (z : TimeVelocity d) ∈ scalarParabolicTerminalLateralBoundary a T
         (PDE.euclideanBall v₀ r) → V z = w z := by
   classical
-  let Ω := PDE.euclideanBall v₀ r
-  let K := scalarParabolicClosedCylinder a T Ω
-  have hΩ : IsOpen Ω := PDE.isOpen_euclideanBall v₀ r
-  have hΩb : Bornology.IsBounded Ω := Occupation.isBounded_euclideanBall v₀ hr
-  have hK : IsCompact K := isCompact_scalarParabolicClosedCylinder a T hΩb
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK
+
+  let K := scalarParabolicClosedCylinder a T (PDE.euclideanBall v₀ r)
+
+  have hΩb  := Occupation.isBounded_euclideanBall v₀ hr
+  have hK  := isCompact_scalarParabolicClosedCylinder a T hΩb
+  let  := isCompact_iff_compactSpace.mp hK
   let ε : ℕ → ℝ := fun n => 1 / ((n : ℝ) + 1)
   have hεpos (n : ℕ) : 0 < ε n := one_div_pos.mpr (by positivity)
-  have happrox (n : ℕ) : ∃ f : TimeVelocity d → ℝ,
-      ContDiff ℝ (⊤ : ℕ∞) f ∧ ∀ z ∈ K, |f z - w z| < ε n := by
+  have happrox (n : ℕ) : ∃ f : HypoellipticAleksandrov.Parabolic.ScalarField d,
+      ContDiff ℝ PDE.smoothOrder f ∧ ∀ z ∈ K, |f z - w z| < ε n := by
     obtain ⟨f, hf, _, _, hb⟩ := exists_smooth_compact_boundary_approx hK
       isOpen_univ (subset_univ _) w hw (hεpos n)
     exact ⟨f, hf, hb⟩
@@ -72,13 +74,13 @@ theorem exists_uniform_smooth_boundary_replacements {d : ℕ} (hd : 0 < d)
     lam Lam hlam hLam A hA hlo hhi (f n) (hf n)
   choose v hv using hvex
   let U : ℕ → C(K, ℝ) := fun n =>
-    ⟨fun z => v n z, continuousOn_iff_continuous_domRestrict.mp (hv n).1⟩
+    ⟨_, continuousOn_iff_continuous_domRestrict.mp (hv n).1⟩
   have hdiff (n m : ℕ) : dist (U n) (U m) ≤ 2 * (ε n + ε m) := by
     rw [dist_eq_norm]
     apply (ContinuousMap.norm_le _ (by positivity)).2
     intro z
     change |v n z - v m z| ≤ _
-    apply abs_homogeneous_solution_sub_le_boundary_error hΩ hΩb a T haT A
+    apply abs_homogeneous_solution_sub_le_boundary_error (PDE.isOpen_euclideanBall v₀ r) hΩb a T haT A
       hA.continuous (Occupation.posSemidef_of_lower_loewner hlam hlo)
       (fun y => f n (T, y)) (fun y => f m (T, y)) (f n) (f m) (v n) (v m)
       (hv n) (hv m) (ε n + ε m) (by positivity) ?_ ?_ z z.property
@@ -107,18 +109,17 @@ theorem exists_uniform_smooth_boundary_replacements {d : ℕ} (hd : 0 < d)
     apply tendsto_iff_dist_tendsto_zero.2
     apply squeeze_zero (fun _ => dist_nonneg)
       (fun n => (show dist (f n z) (w z) < ε n by
-        simpa only [Real.dist_eq] using hfb n z z.property).le) hε
+        exact hfb n z z.property).le) hε
   have hUz : ∀ n, U n z = f n z := by
     intro n
     change v n z = f n z
     rcases hz with hz | hz
-    · have ht : z.val.1 = T := mem_singleton_iff.mp hz.1
-      simpa only [← ht, Prod.mk.eta] using (hv n).2.2.2.1 z.val.2 hz.2
+    ·
+      simpa only [← (mem_singleton_iff.mp hz.1), Prod.mk.eta] using (hv n).2.2.2.1 z.val.2 hz.2
     · exact (hv n).2.2.2.2 z hz
-  have hlim : Tendsto (fun n => U n z) atTop (𝓝 (V z)) :=
-    ((continuous_eval_const z).tendsto V).comp hV
-  have hlimw : Tendsto (fun n => U n z) atTop (𝓝 (w z)) := by
-    simpa only [hUz] using hfz
-  exact tendsto_nhds_unique hlim hlimw
+
+
+  exact tendsto_nhds_unique (((continuous_eval_const z).tendsto V).comp hV) (show Tendsto (fun n => U n z) atTop (𝓝 (w z)) by
+      simpa only [hUz] using hfz)
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

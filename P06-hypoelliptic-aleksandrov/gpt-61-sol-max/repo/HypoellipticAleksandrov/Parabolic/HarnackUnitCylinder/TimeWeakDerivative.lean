@@ -5,13 +5,13 @@ public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.DirectionalI
 
 /-! # Distributional time derivative from anisotropic classical regularity -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
 /-- An anisotropic C¹,² function has its scalar slice derivative as weak time derivative. -/
 theorem IsScalarC12On.hasWeakTimeDerivOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.Region d} {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (hU : IsOpen U) (hu : IsScalarC12On u U) :
     HasWeakTimeDerivOn U u (scalarTimeDerivative u) := by
   intro φ hφ hc hsub
@@ -24,7 +24,7 @@ theorem IsScalarC12On.hasWeakTimeDerivOn
   convert hs using 1
   · funext t
     congr 1
-    ext <;> simp [Function.comp_def]
+    ext <;> simp
   · simp
 
 end HypoellipticAleksandrov.Parabolic

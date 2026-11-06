@@ -10,15 +10,16 @@ The finite Sobolev representatives agree pointwise with the continuous limit on 
 open collars. Scalar classical regularity then follows by locality.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
-open Filter Set MeasureTheory
-open scoped Topology
+open Set MeasureTheory
+
+
+variable {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.Region d}
 
 /-- Scalar anisotropic classical regularity is local on its carrier. -/
-theorem scalarC12On_of_locally_scalarC12On {d : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+theorem scalarC12On_of_locally_scalarC12On  {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (hlocal : ∀ z ∈ U, ∃ V, IsOpen V ∧ z ∈ V ∧ IsScalarC12On u V) :
     IsScalarC12On u U := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -46,9 +47,8 @@ theorem scalarC12On_of_locally_scalarC12On {d : ℕ}
     exact ⟨V, hV, hzV, huV.continuousOn_scalarSpatialHessian.mono inter_subset_right⟩
 
 /-- A continuous function carrying the actual higher weak family is classical on its carrier. -/
-theorem scalarC12On_of_continuousOn_higher_weak_family {d : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    {u : TimeVelocity d → ℝ} (hu : ContinuousOn u U)
+theorem scalarC12On_of_continuousOn_higher_weak_family  (hU : IsOpen U)
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d} (hu : ContinuousOn u U)
     (D : ParabolicWeakDerivativeFamily d (2 * (d + 4)) U u) :
     IsScalarC12On u U := by
   apply scalarC12On_of_locally_scalarC12On
@@ -56,7 +56,7 @@ theorem scalarC12On_of_continuousOn_higher_weak_family {d : ℕ}
   obtain ⟨rho, hrho, v, hsub, hv, hv12, hvae, hjet⟩ :=
     exists_finiteOrderSobolevC12Representative hU (isCompact_singleton (x := z))
       (singleton_subset_iff.mpr hz) D
-  let V := Metric.thickening rho ({z} : Set (TimeVelocity d))
+  let V := Metric.thickening rho ({z} )
   have hV : IsOpen V := Metric.isOpen_thickening
   have heq : EqOn v u V := Measure.eqOn_open_of_ae_eq hvae hV
     hv.continuous.continuousOn (hu.mono hsub)

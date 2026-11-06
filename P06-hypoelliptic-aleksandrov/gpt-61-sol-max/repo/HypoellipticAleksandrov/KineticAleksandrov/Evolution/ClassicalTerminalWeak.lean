@@ -4,50 +4,52 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvo
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeTransfer
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitClassical
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeOperator
+import Aesop
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-! # Weak equations supplied by classical viscous terminal solutions -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open HypoellipticAleksandrov Set MeasureTheory Evolution
+open Set MeasureTheory Evolution
+
+variable {n : ℕ}
 
 /-- The exact product-coordinate interior is the image of the kinetic interior. -/
-theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : Set (PDE.Vec n))
+theorem evolutionPastInteriorRaw_eq_image  (Ω : PDE.VelocityRegion n)
     (γ : ℝ → PDE.Vec n) (τ : ℝ) :
     evolutionPastInteriorRaw Ω γ τ =
       KineticPoint.equivProd n '' evolutionPastOpenCylinder Ω γ τ := by
-  ext q
-  constructor
-  · intro hq
-    exact ⟨⟨q.1, q.2.1, q.2.2⟩, hq, rfl⟩
-  · rintro ⟨p, hp, rfl⟩
-    exact hp
+  aesop
 
+variable {Ω : PDE.VelocityRegion n} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+
+include hΩ hγ
 /-- The past kinetic interior is open for an open domain and a continuous curve. -/
-theorem isOpen_evolutionPastOpenCylinder {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (τ : ℝ) :
-    IsOpen (evolutionPastOpenCylinder Ω γ τ) := by
-  exact (isOpen_evolutionPastInteriorRaw hΩ hγ τ).preimage
+theorem isOpen_evolutionPastOpenCylinder   (τ : ℝ) :
+    IsOpen (evolutionPastOpenCylinder Ω γ τ) := (isOpen_evolutionPastInteriorRaw hΩ hγ τ).preimage
     (KineticPoint.homeomorphProd n).continuous
 
 /-- A classical viscous terminal solution satisfies the literal weak adjoint equation. -/
-theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n)}
-    (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+theorem classical_viscous_terminalSolution_isWeak
     {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
+    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.VectorField n}
     (hb : IsSmoothDrift b) {ε τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
-    {u : KineticPoint n → ℝ}
+    {u : HypoellipticAleksandrov.KineticScalarField n}
     (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u) :
     IsKineticWeakRegularizedSolution B b ε (evolutionPastOpenCylinder Ω γ τ) u
       (fun _ => 0) := by
   let U := evolutionPastOpenCylinder Ω γ τ
-  have hU := isOpen_evolutionPastOpenCylinder hΩ hγ τ
-  have hP := (evolutionHomeomorph n).continuous.isOpen_preimage U hU
-  have hs : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph n)
+
+  have hP := (evolutionHomeomorph n).continuous.isOpen_preimage U (isOpen_evolutionPastOpenCylinder hΩ hγ τ)
+  have hs : ContDiffOn ℝ PDE.smoothOrder (u ∘ evolutionHomeomorph n)
       (evolutionHomeomorph n ⁻¹' U) := by
     apply contDiffOn_comp_evolutionHomeomorph_iff.mpr
-    change ContDiffOn ℝ (⊤ : ℕ∞) _
+    change ContDiffOn ℝ PDE.smoothOrder _
       (KineticPoint.equivProd n '' evolutionPastOpenCylinder Ω γ τ)
     rw [← evolutionPastInteriorRaw_eq_image]
     exact hu.2.2.1

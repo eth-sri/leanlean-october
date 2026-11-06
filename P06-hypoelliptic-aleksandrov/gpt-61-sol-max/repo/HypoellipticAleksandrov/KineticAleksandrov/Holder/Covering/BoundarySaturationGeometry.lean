@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.Differentiation
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.NullFacesBoundary
 import Mathlib.Tactic
+import Mathlib.Tactic.Ring
+
+
 
 /-! # A boundary-aware path of admissible cylinders
 
@@ -21,13 +24,17 @@ open Set MeasureTheory
 /-- The unit backward cylinder used by the covering theorem. -/
 def unitCylinder (d : ℕ) : Set (KineticPoint d) := backwardCylinder ⟨0, 0, 0⟩ 1
 
+variable {d : ℕ}
+
+variable (X : KineticPoint d)
+
 /-- Centers of a path retaining X while shrinking velocity toward the origin. -/
-def saturationCenter {d : ℕ} (X : KineticPoint d) (r : ℝ) : KineticPoint d :=
+def saturationCenter   (r : ℝ) : KineticPoint d :=
   ⟨(1-r^2)*X.time, X.position+(((1-r^2)*X.time)-X.time) • ((1-r) • X.velocity),
     (1-r) • X.velocity⟩
 
 /-- Native coordinate inequalities for membership in the unit cylinder. -/
-theorem mem_unitCylinder_iff {d : ℕ} (X : KineticPoint d) :
+theorem mem_unitCylinder_iff   :
     X ∈ unitCylinder d ↔ -1 < X.time ∧ X.time < 0 ∧
       PDE.vecEuclideanNorm X.velocity < 1 ∧ PDE.vecEuclideanNorm X.position < 1 := by
   simp only [unitCylinder, mem_backwardCylinder_iff, zero_sub, one_pow,
@@ -35,15 +42,12 @@ theorem mem_unitCylinder_iff {d : ℕ} (X : KineticPoint d) :
     relativePosition, smul_zero]
 
 /-- The point retained by the admissible path has zero relative position. -/
-theorem relativePosition_saturationCenter {d : ℕ} (X : KineticPoint d) (r : ℝ) :
+theorem relativePosition_saturationCenter   (r : ℝ) :
     relativePosition (saturationCenter X r) X = 0 := by
-  ext i
-  simp only [relativePosition, saturationCenter, Pi.sub_apply, Pi.add_apply,
-    Pi.smul_apply, Pi.zero_apply, smul_eq_mul]
-  ring
+  ext <;> simp_all [relativePosition, saturationCenter] <;> ring
 
 /-- Every positive-radius path cylinder contains its point. -/
-theorem self_mem_saturationCylinder {d : ℕ} {X : KineticPoint d}
+theorem self_mem_saturationCylinder  {X : KineticPoint d}
     (hX : X ∈ unitCylinder d) {r : ℝ} (hr : 0 < r) :
     X ∈ backwardCylinder (saturationCenter X r) r := by
   obtain ⟨htlo, hthi, hv, _⟩ := (mem_unitCylinder_iff X).mp hX
@@ -64,21 +68,23 @@ theorem self_mem_saturationCylinder {d : ℕ} {X : KineticPoint d}
     exact PDE.center_mem_euclideanBall 0 (pow_pos hr 3)
 
 /-- Points of a path cylinder stay within r² in time of its retained point. -/
-theorem saturationCylinder_time_bound {d : ℕ} {X Y : KineticPoint d}
+theorem saturationCylinder_time_bound  {X Y : KineticPoint d}
     (hX : X ∈ unitCylinder d) {r : ℝ} (hr : 0 < r)
     (hY : Y ∈ backwardCylinder (saturationCenter X r) r) :
     |Y.time-X.time| < r^2 :=
   abs_time_sub_lt_sq hY (self_mem_saturationCylinder hX hr)
 
+variable {X : KineticPoint d} (hX : X ∈ unitCylinder d)
+
+include hX
 /-- The path is contained in the unit cylinder away from a spatial shell. -/
-theorem saturationCylinder_subset_unit {d : ℕ} {X : KineticPoint d}
-    (hX : X ∈ unitCylinder d) {r R : ℝ} (hr : 0 < r) (hrR : r ≤ R)
+theorem saturationCylinder_subset_unit   {r R : ℝ} (hr : 0 < r) (hrR : r ≤ R)
     (hR : R ≤ 1) (hx : PDE.vecEuclideanNorm X.position < 1-2*R^2) :
     backwardCylinder (saturationCenter X r) r ⊆ unitCylinder d := by
-  have hRp : 0 < R := hr.trans_le hrR
-  have hr1 : r ≤ 1 := hrR.trans hR
+
+  have hr1  := hrR.trans hR
   obtain ⟨htlo, hthi, hv, _⟩ := (mem_unitCylinder_iff X).mp hX
-  have hv0 := PDE.vecEuclideanNorm_nonneg X.velocity
+
   have hvc : PDE.vecEuclideanNorm (saturationCenter X r).velocity ≤ 1-r := by
     change PDE.vecEuclideanNorm ((1-r) • X.velocity) ≤ 1-r
     rw [PDE.vecEuclideanNorm_smul, abs_of_nonneg (sub_nonneg.mpr hr1)]
@@ -127,8 +133,7 @@ theorem saturationCylinder_subset_unit {d : ℕ} {X : KineticPoint d}
     linarith
 
 /-- A path cylinder fits in the centered kinetic cylinder of twice its radius. -/
-theorem saturationCylinder_subset_centered {d : ℕ} {X : KineticPoint d}
-    (hX : X ∈ unitCylinder d) {r : ℝ} (hr : 0 < r) :
+theorem saturationCylinder_subset_centered   {r : ℝ} (hr : 0 < r) :
     backwardCylinder (saturationCenter X r) r ⊆ centeredCylinder X (2*r) := by
   have hv := ((mem_unitCylinder_iff X).mp hX).2.2.1
   intro Y hY

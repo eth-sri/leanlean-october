@@ -33,21 +33,6 @@ lean_lib «HypoellipticAleksandrov» where
   globs := #[.submodules `HypoellipticAleksandrov]
   leanOptions := projectLeanOptions
 
-/-- Comparator configuration `AleksandrovComparators/FullCoefficient`: Mathlib-only statements, one intentional
-`sorry` per theorem. -/
-@[default_target]
-lean_lib «FullCoefficientChallenge» where
-  globs := #[]
-  roots := #[`AleksandrovComparators.FullCoefficient.Challenge]
-  leanOptions := projectLeanOptions
-
-/-- The `AleksandrovComparators/FullCoefficient` statements proved from the library. -/
-@[default_target]
-lean_lib «FullCoefficientSolution» where
-  globs := #[]
-  roots := #[`AleksandrovComparators.FullCoefficient.Solution]
-  leanOptions := projectLeanOptions
-
 /-- Comparator configuration `AleksandrovComparators/KineticAleksandrov`: Mathlib-only statements, one intentional
 `sorry` per theorem. -/
 @[default_target]

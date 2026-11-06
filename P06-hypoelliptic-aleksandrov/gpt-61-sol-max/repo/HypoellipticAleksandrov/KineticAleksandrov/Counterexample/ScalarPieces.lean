@@ -20,38 +20,43 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 /-- The source scalar exponent interval. -/
 abbrev ScalarGamma := {gamma : ℝ // 0 < gamma ∧ gamma < 1 / 3}
 
+variable (gamma : ScalarGamma)
+
 /-- The negative Kummer parameter belonging to a source scalar exponent. -/
-def ScalarGamma.negative (gamma : ScalarGamma) : Kummer.NegThird :=
+def ScalarGamma.negative  : Kummer.NegThird :=
   ⟨-gamma.1, by constructor <;> linarith only [gamma.2.1, gamma.2.2]⟩
 
+variable (Lam s : ℝ)
+
 /-- The positive-s source piece; only its values at positive `s` are consumed. -/
-def Fplus (gamma : ScalarGamma) (Lam s : ℝ) : ℝ :=
+def Fplus   : ℝ :=
   Kummer.UNr gamma.negative (s ^ 3 / (9 * Lam))
 
 /-- The negative-s source piece with its signed linear prefactor. -/
-def Fminus (gamma : ScalarGamma) (Lam s : ℝ) : ℝ :=
+def Fminus   : ℝ :=
   gammaA gamma.1 * Kummer.M (-gamma.1) Kummer.b23 (s ^ 3 / 9) +
     gammaB gamma.1 * s / Real.rpow (9 * Lam) (1 / 3) *
       Kummer.M (1 / 3 - gamma.1) Kummer.b43 (s ^ 3 / 9)
 
 /-- The piecewise source profile, with the connection value specified at zero. -/
-def F (gamma : ScalarGamma) (Lam s : ℝ) : ℝ :=
+def F   : ℝ :=
   if 0 < s then Fplus gamma Lam s
   else if s < 0 then Fminus gamma Lam s else gammaA gamma.1
 
+variable (Lam : ℝ)
+
 /-- The value at the joining point is the literal connection constant. -/
-@[simp] theorem F_zero (gamma : ScalarGamma) (Lam : ℝ) :
+@[simp] theorem F_zero   :
     F gamma Lam 0 = gammaA gamma.1 := by
   simp only [F, lt_self_iff_false, ↓reduceIte]
 
 /-- The entire negative piece already has the correct value at zero. -/
-@[simp] theorem Fminus_zero (gamma : ScalarGamma) (Lam : ℝ) :
+@[simp] theorem Fminus_zero   :
     Fminus gamma Lam 0 = gammaA gamma.1 := by
-  simp only [Fminus, zero_pow (by decide : 3 ≠ 0), zero_div, Kummer.M_zero,
-    mul_one, mul_zero, add_zero]
+  simp_all [Fminus]
 
 /-- The positive piece is strictly positive on its consumed half-line. -/
-theorem Fplus_pos (gamma : ScalarGamma) (Lam s : ℝ) (hLam : 0 < Lam) (hs : 0 < s) :
+theorem Fplus_pos  (Lam s : ℝ) (hLam : 0 < Lam) (hs : 0 < s) :
     0 < Fplus gamma Lam s :=
   Kummer.UNr_pos gamma.negative _ (div_pos (pow_pos hs 3) (mul_pos (by norm_num) hLam))
 

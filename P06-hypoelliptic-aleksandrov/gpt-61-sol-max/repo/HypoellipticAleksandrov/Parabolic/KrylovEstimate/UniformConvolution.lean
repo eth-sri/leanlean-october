@@ -7,15 +7,15 @@ public import Mathlib.Topology.UniformSpace.HeineCantor
 
 /-! # Uniform approximation of compactly supported continuous representatives -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Filter MeasureTheory
-open scoped Topology Convolution
+open scoped Convolution
 
 /-- Normalized mollification approximates a compactly supported continuous function uniformly. -/
 theorem eventually_uniform_parabolicConvolution_close
-    {N : ℕ} (f : TimeVelocity N → ℝ) (hf : Continuous f)
+    {N : ℕ} (f : HypoellipticAleksandrov.Parabolic.ScalarField N) (hf : Continuous f)
     (hc : HasCompactSupport f) {ε : ℝ} (hε : 0 < ε) :
     ∀ᶠ n : ℕ in atTop, ∀ z,
       |parabolicConvolution f (parabolicMollifier N n) z - f z| ≤ ε := by

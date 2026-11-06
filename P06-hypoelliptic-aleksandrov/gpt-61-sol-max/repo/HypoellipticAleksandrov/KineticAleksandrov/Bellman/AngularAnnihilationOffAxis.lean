@@ -6,8 +6,8 @@ import Mathlib.Tactic
 
 /-! # Vanishing off the position axis at degree at least three -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -18,7 +18,7 @@ theorem adjoint_vanishes_off_position_axis (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 
     μ {q | q.val.1 ≠ 0} = 0 ∧ η {q | q.val.1 ≠ 0} = 0 := by
   have hpos := bellmanAdjointPair_positive_position_zero R β hR hβ μ η hp
   have hneg := bellmanAdjointPair_positive_position_zero R β hR hβ
-    (Measure.map bellmanReflection μ) (Measure.map bellmanReflection η) hp.reflect
+    _ _ hp.reflect
   have hm : MeasurableSet {q : BellmanPuncturedPlane | 0 < q.val.1} := by measurability
   rw [Measure.map_apply bellmanReflection.measurable hm,
     Measure.map_apply bellmanReflection.measurable hm] at hneg

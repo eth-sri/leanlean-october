@@ -28,9 +28,14 @@ theorem scalarAnsatz_deriv_x_cancel (gamma : ScalarGamma) (Lam x v : ℝ)
   unfold scalarSimilarity
   ring
 
+variable (gamma : ScalarGamma)
+
+section
+variable (Lam x v : ℝ) (hLam : 0 < Lam) (hx : 0 < x)
+
+include hLam hx
 /-- Exact velocity derivative with the source kinetic degree. -/
-theorem scalarAnsatz_deriv_v_power (gamma : ScalarGamma) (Lam x v : ℝ)
-    (hLam : 0 < Lam) (hx : 0 < x) :
+theorem scalarAnsatz_deriv_v_power   :
     deriv (scalarAnsatz gamma Lam x) v = -Real.rpow x (gamma.1 - 1 / 3) *
       deriv (F gamma Lam) (scalarSimilarity x v) := by
   rw [(scalarAnsatz_hasDerivAt_v gamma Lam x v
@@ -38,8 +43,7 @@ theorem scalarAnsatz_deriv_v_power (gamma : ScalarGamma) (Lam x v : ℝ)
   simp only [Real.rpow_eq_pow, Real.rpow_sub hx]
 
 /-- Exact second velocity derivative with the source kinetic degree. -/
-theorem scalarAnsatz_deriv2_v_power (gamma : ScalarGamma) (Lam x v : ℝ)
-    (hLam : 0 < Lam) (hx : 0 < x) :
+theorem scalarAnsatz_deriv2_v_power   :
     deriv (deriv (scalarAnsatz gamma Lam x)) v = Real.rpow x (gamma.1 - 2 / 3) *
       deriv (deriv (F gamma Lam)) (scalarSimilarity x v) := by
   rw [scalarAnsatz_deriv2_v gamma Lam x v (F_contDiff_two gamma Lam hLam).contDiffAt]
@@ -47,10 +51,14 @@ theorem scalarAnsatz_deriv2_v_power (gamma : ScalarGamma) (Lam x v : ℝ)
   rw [Real.rpow_sub hx, ← Real.rpow_natCast (x ^ (1 / 3 : ℝ)) 2,
     ← Real.rpow_mul hx.le]
   norm_num
+end
 
+
+variable (Lam : ℝ) (hLam : 0 < Lam) (q : XV 1)
+
+include hLam
 /-- The positive-position velocity selector is the literal scalar velocity derivative. -/
-theorem scalarProfile_dv_positive (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (q : XV 1) (hx : 0 < q.1 0) :
+theorem scalarProfile_dv_positive   (hx : 0 < q.1 0) :
     dv (scalarProfile gamma Lam) q 0 = deriv (scalarAnsatz gamma Lam (q.1 0)) (q.2 0) := by
   rw [dv_eq_scalar_slice _ q
     ((scalarProfile_contDiffAt_off_axis gamma Lam hLam q hx.ne').differentiableAt
@@ -60,8 +68,7 @@ theorem scalarProfile_dv_positive (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < 
   simp only [scalarVelocitySlice, scalarProfile, hx, ↓reduceIte]
 
 /-- The negative-position velocity selector has the exact reflected sign. -/
-theorem scalarProfile_dv_negative (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (q : XV 1) (hx : q.1 0 < 0) :
+theorem scalarProfile_dv_negative   (hx : q.1 0 < 0) :
     dv (scalarProfile gamma Lam) q 0 =
       -deriv (scalarAnsatz gamma Lam (-q.1 0)) (-q.2 0) := by
   rw [dv_eq_scalar_slice _ q

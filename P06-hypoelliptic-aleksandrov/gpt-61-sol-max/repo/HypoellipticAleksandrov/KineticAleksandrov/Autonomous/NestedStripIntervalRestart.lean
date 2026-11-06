@@ -9,8 +9,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripK
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open scoped ENNReal
+open Set MeasureTheory
+
 
 /-- The larger-interval restart measure is the subtype pullback of the actual restricted exit. -/
 def nestedIntervalRestartPoles
@@ -38,12 +38,11 @@ theorem measurableSet_nestedIntervalPole (H : Interval) (T : ℝ) :
   ext p
   exact and_congr WithTop.coe_lt_coe Iff.rfl
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ) (e : StripPole H1 (T : WithTop ℝ))
+
 /-- The restart poles recover precisely the actual smaller exit restricted to the internal face. -/
 theorem nestedIntervalRestartPoles_map
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
-    (e : StripPole H1 (T : WithTop ℝ)) :
+     :
     (nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e).map Subtype.val =
       (stripExit hH hLE hlam hLam A H1 T e).restrict
         (nestedIntervalInternalExit H1 H2 sMinus T) := by
@@ -56,10 +55,7 @@ theorem nestedIntervalRestartPoles_map
 
 /-- Genuine restart poles retain the strict lower-time support of the internal face. -/
 theorem nestedIntervalRestartPoles_ae_time_gt
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
-    (e : StripPole H1 (T : WithTop ℝ)) :
+     :
     ∀ᵐ ep ∂nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e,
       sMinus < ep.1.time := by
   have ht : ∀ᵐ p ∂(stripExit hH hLE hlam hLam A H1 T e).restrict
@@ -72,10 +68,7 @@ theorem nestedIntervalRestartPoles_ae_time_gt
 
 /-- The larger Green mixture of internal restart poles is the actual measurable measure bind. -/
 def nestedIntervalRestartGreen
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
-    (e : StripPole H1 (T : WithTop ℝ)) : Measure Point :=
+     : Measure Point :=
   (nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e).bind
     (stripGreen hH hLE hlam hLam A H2 T)
 
@@ -104,7 +97,6 @@ instance nestedIntervalRestartGreen_isFiniteMeasure
     exact ENNReal.mul_lt_top
       (lt_top_iff_ne_top.mpr (finiteUnionGreenMassBound_ne_top lam H2.toFiniteUnion))
       (measure_lt_top τ univ)
-  · exact (Measure.measurable_measure.mpr (fun B hB =>
-      stripGreen_measurable_apply hH hLE hlam hLam A H2 T B hB)).aemeasurable
+  · exact (Measure.measurable_measure.mpr ((stripGreen_measurable_apply hH hLE hlam hLam A H2 T))).aemeasurable
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

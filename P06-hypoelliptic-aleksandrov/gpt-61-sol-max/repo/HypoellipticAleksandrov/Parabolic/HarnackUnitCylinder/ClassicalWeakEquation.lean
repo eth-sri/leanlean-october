@@ -7,7 +7,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakEquation
 
 /-! # Classical anisotropic solutions supply local weak parabolic jets -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -16,14 +16,14 @@ open scoped ENNReal
 
 /-- Every finite compact collar of a C¹,² solution supplies its exact scalar weak jet. -/
 theorem IsScalarC12On.isWeakParabolicEquationLoc
-    {d : ℕ} {U : Set (TimeVelocity d)} {B : CoefficientField d}
-    {u : TimeVelocity d → ℝ} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.Region d} {B : CoefficientField d}
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d} (hU : IsOpen U)
     (hu : IsScalarC12On u U)
     (heq : ∀ z ∈ U, scalarTimeDerivative u z =
       matrixContraction (coefficientAt B z) (scalarSpatialHessian u z))
     (p : ℝ≥0∞) : IsWeakParabolicEquationLoc B U p u := by
   intro V hV hcompact hVU
-  have hsub : V ⊆ U := subset_closure.trans hVU
+  have hsub  := subset_closure.trans hVU
   have hlocal : IsScalarC12On u V := by
     rcases hu with ⟨hv, ht, hs, hdt, hdg, hdh⟩
     exact ⟨hv.mono hsub, fun z hz => ht z (hsub hz), fun z hz => hs z (hsub hz),

@@ -1,20 +1,22 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTestGerm
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Actual normalized clock source potentials and their global strip equation -/
 
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo TheoremA Evolution
+
+open SectionTwo TheoremA
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
 
 /-- The clock test is the genuine normalized killed Duhamel potential. -/
 def clockSourcePotential
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (T : ℝ)
+     (T : ℝ)
     (f : exitProbeSubmodule) : Point → ℝ :=
   duhamelPotential (clockEvolution hH hLE hlam hLam A c e).2 T
     (exitProbePhysical f ∘ sectionTwoPoint)
@@ -22,16 +24,14 @@ def clockSourcePotential
 /-- The actual clock test is bounded, smooth on the whole normalized strip, vanishes late,
 and solves the literal extended transported equation there. -/
 theorem clockSourcePotential_regular
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
+     (R T : ℝ) (hRT : R < T)
     (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆
       {p | p.time < T ∧ p.velocity 0 ∈ clockNormalizedInterval.carrier})
     (hz : ∀ p, R ≤ p.time → exitProbePhysical f p = 0) :
     (∃ C : ℝ, 0 ≤ C ∧ ∀ p,
       |clockSourcePotential hH hLE hlam hLam A c e T f p| ≤ C) ∧
-    ContDiffOn ℝ (⊤ : ℕ∞)
+    ContDiffOn ℝ PDE.smoothOrder
       ((clockSourcePotential hH hLE hlam hLam A c e T f ∘ sectionTwoPoint) ∘ scalarPoint)
       {q : Fin 3 → ℝ | q 2 ∈ normalizedActive} ∧
     (∀ p, R ≤ p.time → clockSourcePotential hH hLE hlam hLam A c e T f p = 0) ∧
@@ -66,8 +66,8 @@ theorem clockSourcePotential_regular
       (clock_native_smooth_of_zero_after _ R T hRT hsm hzero), hzero, ?_⟩
   intro p hp
   by_cases ht : p.time < T
-  · exact hop p ⟨ht, mem_movingDomain_iff.mpr (by simpa using hp)⟩
-  · have hRp : R < p.time := hRT.trans_le (not_lt.mp ht)
+  · exact hop p ⟨ht, mem_movingDomain_iff.mpr (by simpa)⟩
+  · have hRp  := hRT.trans_le (not_lt.mp ht)
     exact (clock_transport_operator_zero_after _ _ _ R hzero p hRp).trans
       (by rw [hz (sectionTwoPoint p) hRp.le]; simp)
 

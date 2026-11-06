@@ -5,17 +5,17 @@ import Mathlib.Tactic
 
 /-! # Source terminal second moments of the canonical full-space kernel -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov MeasureTheory
-open scoped ENNReal
+open MeasureTheory
+
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal)
 
 /-- The exact deterministic second-moment conditions, with constants 2 and 4/3. -/
 theorem terminal_second_moments
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) :
+     :
     let E := fullSpaceEvolution hH hLE hlam hLam A
     (∫⁻ w, ENNReal.ofReal ((w.2-z.2)^2) ∂kernelXV E T z) ≤
       ENNReal.ofReal (2*Lam*(T : ℝ)) ∧
@@ -26,16 +26,14 @@ theorem terminal_second_moments
   refine ⟨kernelXV_velocity_2_moment hlam A E hE z T, ?_⟩
   apply (kernelXV_position_2_moment hlam A E hE z T).trans
   apply ENNReal.ofReal_le_ofReal
-  have hL : 0 ≤ Lam := hlam.le.trans hLam
-  have hT := T.property
+  have hL  := hlam.le.trans hLam
+
   have hh : 0 ≤ z.2^2*(T : ℝ)^2+(2/3 : ℝ)*Lam*(T : ℝ)^3 := by positivity
   linarith only [hh]
 
 /-- Both actual real second moments are integrable, rather than merely total integrals. -/
 theorem terminal_second_moments_integrable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) :
+     :
     let E := fullSpaceEvolution hH hLE hlam hLam A
     Integrable (fun w : Z => (w.2-z.2)^2) (kernelXV E T z) ∧
       Integrable (fun w : Z => (w.1-z.1)^2) (kernelXV E T z) := by

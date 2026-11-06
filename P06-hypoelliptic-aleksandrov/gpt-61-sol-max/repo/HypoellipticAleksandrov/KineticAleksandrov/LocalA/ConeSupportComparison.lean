@@ -3,21 +3,23 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryFunctionalGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonNodes
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierBound
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Bounded subsolution comparison on the full physical strip -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
-open scoped Topology
+open Set SectionTwo TheoremA
+
 
 /-- A bounded smooth subsolution is ordered by its terminal and lateral traces. -/
 theorem cone_bounded_subsolution_comparison {d : ℕ} {lam Lam : ℝ}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (a T : ℝ) (haT : a < T) (v₀ : PDE.Vec d) (R : ℝ)
-    (u : KineticPoint d → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
+    (u : HypoellipticAleksandrov.KineticScalarField d)
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' localStrip a T v₀ R))
     (he : ∀ P ∈ localStrip a T v₀ R,
       0 ≤ forwardKineticOperator (ofTimeVelocityCoefficient B) u P)
@@ -42,11 +44,9 @@ theorem cone_bounded_subsolution_comparison {d : ℕ} {lam Lam : ℝ}
         (localStrip a T v₀ R) := by
       intro Q hQ
       refine ⟨has.trans_le hQ.1, hQ.2.1, ?_⟩
-      simpa only [mem_movingDomain_iff, PDE.mem_translateSet_iff_sub_mem, sub_zero,
-        sectionTwoPoint] using hQ.2.2
+      simpa only [sectionTwoPoint, mem_movingDomain_iff, sub_zero] using hQ.2.2
     have hreg (Q : KineticPoint d)
-        (hQ : Q ∈ movingActiveSlab (PDE.euclideanBall v₀ R) (fun _ => 0) s T) :
-        IsSliceRegularAt (u ∘ sectionTwoPoint) Q :=
+        (hQ : Q ∈ movingActiveSlab (PDE.euclideanBall v₀ R) (fun _ => 0) s T)  :=
       boundary_swapped_slice_regular (isOpen_localStrip a T v₀ R) hu Q (hmactive hQ)
     have hmax := growth_comparison (PDE.isOpen_euclideanBall v₀ R) continuous_const
       hB.1 (sectionTwoCoefficient_fullBounds lam Lam B hB).2.2

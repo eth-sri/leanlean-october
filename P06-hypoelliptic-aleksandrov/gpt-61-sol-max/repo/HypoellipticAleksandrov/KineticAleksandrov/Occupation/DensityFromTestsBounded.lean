@@ -11,14 +11,14 @@ already given here; existence and absolute continuity are separate steps.
 Adapted from `PDEFoundation.Measure.LpConjugateBoundFromTests`.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
 open Filter MeasureTheory
-open scoped ENNReal Topology
+open scoped Topology
 
-noncomputable section
+section
 
 variable {α : Type*} [MeasurableSpace α] {μ : Measure α}
 
@@ -33,6 +33,7 @@ theorem memLp_and_eLpNorm_le_of_bounded_conjugate_tests
         M * (eLpNorm φ (ENNReal.ofReal (r / (r - 1))) μ).toReal) :
     MemLp g (ENNReal.ofReal r) μ ∧
       (eLpNorm g (ENNReal.ofReal r) μ).toReal ≤ M := by
+  let sharedTerm_f7cefa8750 := ((fun x => |g x|))
   have hnormTrunc (n : ℕ) :
       (eLpNorm (truncatedAbs g n) (ENNReal.ofReal r) μ).toReal ≤ M := by
     let N := (eLpNorm (truncatedAbs g n) (ENNReal.ofReal r) μ).toReal
@@ -73,17 +74,16 @@ theorem memLp_and_eLpNorm_le_of_bounded_conjugate_tests
     rw [truncatedAbs, Set.indicator_of_mem]
     have hceil : |g x| ≤ Nat.ceil |g x| := Nat.le_ceil _
     exact hceil.trans (by exact_mod_cast (hn.trans (Nat.le_add_right n 1)))
-  have habsNorm : eLpNorm (fun x => |g x|) (ENNReal.ofReal r) μ ≤
+  have habsNorm : eLpNorm sharedTerm_f7cefa8750 (ENNReal.ofReal r) μ ≤
       ENNReal.ofReal M := by
     refine (Lp.eLpNorm_lim_le_liminf_eLpNorm
       (fun n => (measurable_truncatedAbs hgMeas n).aestronglyMeasurable)
-      (fun x => |g x|) (continuous_abs.measurable.comp hgMeas).aestronglyMeasurable
+      sharedTerm_f7cefa8750 (continuous_abs.measurable.comp hgMeas).aestronglyMeasurable
       (ae_of_all _ hlim)).trans ?_
     exact liminf_le_of_frequently_le (Frequently.of_forall htruncNormENN)
-  have habsLp : MemLp (fun x => |g x|) (ENNReal.ofReal r) μ := by
-    exact habsNorm.trans_lt ENNReal.ofReal_lt_top
+  have habsLp : MemLp sharedTerm_f7cefa8750 (ENNReal.ofReal r) μ := habsNorm.trans_lt ENNReal.ofReal_lt_top
   have hnormEq : eLpNorm g (ENNReal.ofReal r) μ =
-      eLpNorm (fun x => |g x|) (ENNReal.ofReal r) μ := by
+      eLpNorm sharedTerm_f7cefa8750 (ENNReal.ofReal r) μ := by
     apply eLpNorm_congr_norm_ae hgMeas.aestronglyMeasurable
       (continuous_abs.measurable.comp hgMeas).aestronglyMeasurable
     exact ae_of_all _ fun x => by simp [Real.norm_eq_abs]

@@ -3,11 +3,14 @@ module
 public import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
 public import Mathlib.MeasureTheory.Integral.CompactlySupported
 import Mathlib.Tactic
+import Aesop
+
+
 
 /-! # Riesz reconstruction from limits of all compactly supported tests -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set MeasureTheory Filter Topology
 open scoped CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -40,11 +43,9 @@ theorem bellman_riesz_of_test_limits (mu : ℕ → Measure X)
         exact integral_smul c f
       monotone' := fun f g hfg =>
         le_of_tendsto_of_tendsto' (hL f) (hL g) (fun n => integral_mono (hi n f) (hi n g) hfg) }
-  let nu := RealRMK.rieszMeasure ell
-  refine ⟨nu, inferInstance, ?_, ?_⟩
+
+  refine ⟨(RealRMK.rieszMeasure ell), inferInstance, ?_, ?_⟩
   · infer_instance
-  · intro f
-    rw [RealRMK.integral_rieszMeasure ell f]
-    exact hL f
+  · aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

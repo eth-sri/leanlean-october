@@ -3,6 +3,8 @@ module
 public import PDEFoundation.Sobolev.Inequalities.Poincare
 public import PDEFoundation.Sobolev.Inequalities.SmoothPoincareNorm
 public import PDEFoundation.Sobolev.W1p.ConvexApprox.Density
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Mean-zero Poincaré inequality on bounded convex domains
@@ -29,7 +31,7 @@ retains the exact Euclidean-gradient norm.
   `sqrt d * L`.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal Topology
 
@@ -40,98 +42,39 @@ open Filter MeasureTheory
 /-- The constant `2 ^ d` is a mean-zero Poincaré constant on every bounded
 open convex domain, uniformly for all finite real exponents `p ≥ 1`. -/
 theorem isUniformMeanZeroPoincareConstant_two_pow (d : ℕ) :
-    IsUniformMeanZeroPoincareConstant d ((2 : ℝ) ^ d) := by
-  refine ⟨by positivity, ?_⟩
-  intro p hp U D hU hUDiameter hD hUPos hUTop u huMean
-  have hpENNReal : 1 ≤ ENNReal.ofReal p := by
-    rw [ENNReal.one_le_ofReal]
-    exact hp
-  have hpTop : ENNReal.ofReal p ≠ ∞ :=
-    ENNReal.ofReal_ne_top
-  have hUNonempty : U.Nonempty :=
-    nonempty_of_measure_ne_zero hUPos.ne'
-  obtain ⟨x0, r, hr, hball⟩ :=
-    exists_metricClosedBall_subset_of_isOpenBoundedConvexDomain
-      hU hUNonempty
-  let ψ : ℕ → W1pFunction U (ENNReal.ofReal p) :=
-    fun n =>
-      W1pFunction.convexApproxSmoothW1p
-        hU hpENNReal u x0 hr n
-  have hBound :
-      ∀ n,
-        eLpMeanNormOn U (ENNReal.ofReal p)
-            (fun x =>
-              (ψ n).toFun x -
-                integralAverage U (ψ n).toFun) ≤
-          ENNReal.ofReal ((2 : ℝ) ^ d * D) *
-            euclideanFieldELpMeanNormOn U
-              (ENNReal.ofReal p) (ψ n).grad := by
-    intro n
-    have hSmooth :
-        ContDiff ℝ (⊤ : ℕ∞) (ψ n).toFun := by
-      simpa only [ψ] using
-        W1pFunction.contDiff_convexApproxSmoothW1p_toFun
-          hU hpENNReal u x0 hr n
-    have hPoincare :=
-      eLpMeanNormOn_sub_integralAverage_le_two_pow_mul_of_contDiff
-        hU hUDiameter hD hSmooth hp hUPos hUTop
-    simpa only [ψ,
-      W1pFunction.convexApproxSmoothW1p_grad] using!
-      hPoincare
-  have hLeft :
-      Tendsto
-        (fun n =>
-          eLpMeanNormOn U (ENNReal.ofReal p)
-            (fun x =>
-              (ψ n).toFun x -
-                integralAverage U (ψ n).toFun))
-        atTop
-        (𝓝
-          (eLpMeanNormOn U (ENNReal.ofReal p)
-            (fun x =>
-              u.toFun x -
-                integralAverage U u.toFun))) := by
-    simpa only [ψ] using
-      W1pFunction.tendsto_convexApproxSmoothW1p_centered_eLpMeanNorm
-        hU hpENNReal hpTop u hball hr hUPos
-  have hGradient :
-      Tendsto
-        (fun n =>
-          euclideanFieldELpMeanNormOn U
-            (ENNReal.ofReal p) (ψ n).grad)
-        atTop
-        (𝓝
-          (euclideanFieldELpMeanNormOn U
-            (ENNReal.ofReal p) u.grad)) := by
-    simpa only [ψ, euclideanFieldELpMeanNormOn] using
-      W1pFunction.tendsto_convexApproxSmoothW1p_grad_euclidean_eLpMeanNorm
-        hU hpENNReal hpTop u hball hr hUPos
-  have hRight :
-      Tendsto
-        (fun n =>
-          ENNReal.ofReal ((2 : ℝ) ^ d * D) *
-            euclideanFieldELpMeanNormOn U
-              (ENNReal.ofReal p) (ψ n).grad)
-        atTop
-        (𝓝
-          (ENNReal.ofReal ((2 : ℝ) ^ d * D) *
-            euclideanFieldELpMeanNormOn U
-              (ENNReal.ofReal p) u.grad)) :=
-    ENNReal.Tendsto.const_mul hGradient
-      (Or.inr ENNReal.ofReal_ne_top)
-  have hCentered :
-      eLpMeanNormOn U (ENNReal.ofReal p)
-          (fun x =>
-            u.toFun x - integralAverage U u.toFun) ≤
-        ENNReal.ofReal ((2 : ℝ) ^ d * D) *
-          euclideanFieldELpMeanNormOn U
-            (ENNReal.ofReal p) u.grad :=
-    le_of_tendsto_of_tendsto'
-      hLeft hRight hBound
-  have hAverage :
-      integralAverage U u.toFun = 0 :=
-    integralAverage_eq_zero_of_meanZeroOn huMean
-  simpa only [hAverage, sub_zero] using hCentered
+    IsUniformMeanZeroPoincareConstant d ((2 : ℝ) ^ d) := (⟨le_of_lt
+    (pow_pos
+      (Mathlib.Meta.Positivity.pos_of_isNat (Mathlib.Meta.NormNum.isNat_ofNat ℝ (Eq.refl 2)) (Eq.refl (Nat.ble 1 2)))
+      d),
+  fun p hp U D hU hUDiameter hD hUPos hUTop u huMean =>
+  Exists.casesOn
+    (exists_metricClosedBall_subset_of_isOpenBoundedConvexDomain hU (nonempty_of_measure_ne_zero (LT.lt.ne' hUPos)))
+    fun x0 h =>
+    Exists.casesOn h fun r h =>
+      And.casesOn h fun hr hball =>
+        Eq.mp
+          (congrFun'
+            (congrArg LE.le
+              (congrArg (eLpMeanNormOn U (ENNReal.ofReal p))
+                (funext fun x =>
+                  Eq.trans (congrArg (HSub.hSub (u.toFun x)) (integralAverage_eq_zero_of_meanZeroOn huMean))
+                    (sub_zero (u.toFun x)))))
+            (ENNReal.ofReal (2 ^ d * D) * euclideanFieldELpMeanNormOn U (ENNReal.ofReal p) u.grad))
+          (le_of_tendsto_of_tendsto'
+            (W1pFunction.tendsto_convexApproxSmoothW1p_centered_eLpMeanNorm hU
+              (Eq.mpr (id (congrArg (fun _a => _a) (propext ENNReal.one_le_ofReal))) hp) ENNReal.ofReal_ne_top u hball
+              hr hUPos)
+            (ENNReal.Tendsto.const_mul
+              (W1pFunction.tendsto_convexApproxSmoothW1p_grad_euclidean_eLpMeanNorm hU
+                (Eq.mpr (id (congrArg (fun _a => _a) (propext ENNReal.one_le_ofReal))) hp) ENNReal.ofReal_ne_top u hball
+                hr hUPos)
+              (Or.inr ENNReal.ofReal_ne_top))
+            fun n =>
+            id
+              (eLpMeanNormOn_sub_integralAverage_le_two_pow_mul_of_contDiff hU hUDiameter hD
+                (W1pFunction.contDiff_convexApproxSmoothW1p_toFun hU
+                  (Eq.mpr (id (congrArg (fun _a => _a) (propext ENNReal.one_le_ofReal))) hp) u x0 hr n)
+                hp hUPos hUTop))⟩)
 
 /-- Direct unnormalized mean-zero Poincaré inequality on an axis cube, with
 its exact Euclidean diameter factor `sqrt d * L`. -/
@@ -140,14 +83,8 @@ theorem meanZeroPoincare_on_axisCube_unnormalized
     (z : Vec d) {L : ℝ} (hL : 0 < L)
     (u :
       W1pFunction (axisCube z L) (ENNReal.ofReal p))
-    (huMean : MeanZeroOn (axisCube z L) u.toFun) :
-    eLpNormOn (axisCube z L)
-        (ENNReal.ofReal p) u.toFun ≤
-      ENNReal.ofReal
-          ((2 : ℝ) ^ d *
-            (Real.sqrt d * L)) *
-        euclideanFieldELpNormOn (axisCube z L)
-          (ENNReal.ofReal p) u.grad :=
+    (huMean : MeanZeroOn (axisCube z L) u.toFun) : type_of% ((isUniformMeanZeroPoincareConstant_two_pow d).on_axisCube_unnormalized
+    hp z hL u huMean) :=
   (isUniformMeanZeroPoincareConstant_two_pow d).on_axisCube_unnormalized
     hp z hL u huMean
 

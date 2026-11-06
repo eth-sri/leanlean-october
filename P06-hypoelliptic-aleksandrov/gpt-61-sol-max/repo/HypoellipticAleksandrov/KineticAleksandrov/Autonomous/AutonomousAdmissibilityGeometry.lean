@@ -10,10 +10,10 @@ import Mathlib.Tactic
 
 /-! # The autonomous lift and smooth-near test regularity -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Holder Set MeasureTheory Evolution TheoremA
+open Parabolic Holder Set Evolution TheoremA
 open scoped MatrixOrder
 
 /-- The scalar autonomous lift is Borel on the literal kinetic carrier. -/
@@ -82,13 +82,14 @@ theorem autonomous_operator_const_mul {u : Point → ℝ} {D : Set Point}
     (hu : IsKineticC112On u D) (c : ℝ) (a : ℝ → ℝ → ℝ)
     {P : Point} (hP : P ∈ D) :
     autonomousScalarOperator a (fun Q => c * u Q) P = c * autonomousScalarOperator a u P := by
+  let sharedTerm_5611cc9749 := ((fun Q => c * u Q))
   rw [autonomousScalarOperator_apply,
-    show kineticTimeDerivative (fun Q => c * u Q) P = c * kineticTimeDerivative u P from
+    show kineticTimeDerivative sharedTerm_5611cc9749 P = c * kineticTimeDerivative u P from
       deriv_const_mul c (hu.timeSlice_differentiableAt hP),
-    show kineticPositionGradient (fun Q => c * u Q) P = c • kineticPositionGradient u P from
+    show kineticPositionGradient sharedTerm_5611cc9749 P = c • kineticPositionGradient u P from
       classicalGradient_const_mul c
         ((hu.positionSlice_contDiffAt hP).differentiableAt (by norm_num))]
-  have hh : kineticVelocityHessian (fun Q => c * u Q) P = c • kineticVelocityHessian u P := by
+  have hh : kineticVelocityHessian sharedTerm_5611cc9749 P = c • kineticVelocityHessian u P := by
     simp only [kineticVelocityHessian_eq_sliceHessian]
     exact sliceHessian_const_mul c (hu.velocitySlice_contDiffAt hP)
   rw [hh]

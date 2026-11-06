@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassSum
 
 /-! # Uniform short-time bounds for the full actual entrance counting measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+open Set MeasureTheory
 
 /-- The full genuine visit count in every closed clock-time interval has uniformly bounded mass. -/
 theorem exists_visitTime_mass_constant {lam Lam : ℝ}

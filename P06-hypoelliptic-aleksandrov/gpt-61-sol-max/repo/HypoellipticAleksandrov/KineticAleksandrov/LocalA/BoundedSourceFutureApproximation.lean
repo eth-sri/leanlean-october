@@ -12,10 +12,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
 
 /-- The literal source domain strictly after a chosen separating time. -/
-def boundedSourceFutureSet (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (s T : ℝ) :
+def boundedSourceFutureSet (Ω : PDE.VelocityRegion d) (γ : ℝ → PDE.Vec d) (s T : ℝ) :
     Set (ℝ × EvolutionAmbientState d) :=
   {q | s < q.1 ∧ q ∈ boundedSourcePast Ω γ T}
 
@@ -28,16 +28,16 @@ theorem isOpen_boundedSourceFutureSet (hΩ : IsOpen Ω) (hγ : Continuous γ) (s
 converging for any supplied finite starting measure. -/
 theorem exists_duhamelFuture_approximating_sequence
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
+    (B : FullKineticCoefficient d) (b : PDE.VectorField d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
     (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
     (hb : IsSmoothDrift b) (a s T : ℝ) (hsT : s ≤ T)
     (ν : Measure (KineticPoint d)) [IsFiniteMeasure ν] (hfloor : ∀ᵐ p ∂ν, a ≤ p.time)
-    (F : KineticPoint d → ℝ) (hF : Measurable F) (M : ℝ) (hM : 0 ≤ M)
+    (F : HypoellipticAleksandrov.KineticScalarField d) (hF : Measurable F) (M : ℝ) (hM : 0 ≤ M)
     (hFb : ∀ p, 0 ≤ F p ∧ F p ≤ M)
     (hFz : ∀ p, KineticPoint.equivProd d p ∉ boundedSourceFutureSet Ω γ s T → F p = 0) :
-    ∃ f : ℕ → KineticPoint d → ℝ,
+    ∃ f : ℕ → HypoellipticAleksandrov.KineticScalarField d,
       (∀ n, Measurable (f n)) ∧ (∀ n p, 0 ≤ f n p ∧ f n p ≤ M + 2) ∧
       (∀ n, ContinuousOn (duhamelPotential K T (f n))
         (evolutionPastClosedCylinder Ω γ T)) ∧
@@ -47,21 +47,19 @@ theorem exists_duhamelFuture_approximating_sequence
       (∀ᵐ p ∂ν, Tendsto (fun n => duhamelPotential K T (f n) p) atTop
         (𝓝 (duhamelPotential K T F p))) := by
   classical
-  let μ := boundedSourceActionMeasure K ν a T
-  let G : ℝ × EvolutionAmbientState d → ℝ :=
-    fun q => F ⟨q.1, q.2.1, q.2.2⟩
-  have hG : Measurable G := hF.comp (KineticPoint.measurable_equivProd_symm d)
+
+
+
   have hU := isOpen_boundedSourceFutureSet (isOpen_of_isAdmissibleEvolutionDomain hΩa)
     hγ s T
-  obtain ⟨φ, hφ, hφb, hφlim⟩ := exists_boundedSourceSmoothApproximation μ
-    (boundedSourceFutureSet Ω γ s T) hU G hG M hM (fun q => hFb _) (by
+  obtain ⟨φ, hφ, hφb, hφlim⟩ := exists_boundedSourceSmoothApproximation (boundedSourceActionMeasure K ν a T)
+    (boundedSourceFutureSet Ω γ s T) hU (fun q => F ⟨q.1, q.2.1, q.2.2⟩) (hF.comp (KineticPoint.measurable_equivProd_symm d)) M hM (fun q => hFb _) (by
       intro q hq
       exact hFz _ hq)
   let f (n : ℕ) := φ n ∘ KineticPoint.equivProd d
   have hfc (n : ℕ) : Continuous (f n) :=
     (hφ n).1.continuous.comp (KineticPoint.homeomorphProd d).continuous
-  have hfs (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      f n ⟨q.1, q.2.1, q.2.2⟩) := (hφ n).1
+  have hfs (n : ℕ)  := (hφ n).1
   have hfn (n : ℕ) : ∀ p, 0 ≤ f n p := fun p => (hφb n _).1
   have hfb (n : ℕ) : ∀ p, |f n p| ≤ M + 2 := fun p => by
     rw [abs_of_nonneg (hfn n p)]
@@ -77,8 +75,8 @@ theorem exists_duhamelFuture_approximating_sequence
     intro hm
     change p ∈ tsupport (φ n ∘ KineticPoint.equivProd d) at hm
     rw [boundedSourceTest_support] at hm
-    have hs := ((hφ n).2.2 hm).1
-    exact (not_lt_of_gt hp) hs
+
+    exact (not_lt_of_gt hp) (((hφ n).2.2 hm).1)
   refine ⟨f, fun n => (hfc n).measurable, fun n p => hφb n _, ?_, ?_, ?_⟩
   · intro n
     exact continuousOn_duhamelPotential hΩa hΩ hγ B b S K hreal (f n) (hfn n)

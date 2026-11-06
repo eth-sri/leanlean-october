@@ -25,9 +25,9 @@ nested time--velocity product boxes. -/
 def IsHigherOrderNestedProductBoxChain
     (d N : ℕ)
     (q₀ s₀ s₁ q₁ : ℝ)
-    (Ω O₀ O : Set (PDE.Vec d))
+    (Ω O₀ O : PDE.VelocityRegion d)
     (left right : ℕ → ℝ)
-    (spatial : ℕ → Set (PDE.Vec d)) : Prop :=
+    (spatial : ℕ → PDE.VelocityRegion d) : Prop :=
   left 0 = q₀ ∧
   right 0 = q₁ ∧
   spatial 0 = O₀ ∧
@@ -51,7 +51,7 @@ of precompact open intermediate product boxes. -/
 theorem exists_higherOrderNestedProductBoxChain
     (d N : ℕ)
     (q₀ s₀ s₁ q₁ : ℝ)
-    (Ω O₀ O : Set (PDE.Vec d))
+    (Ω O₀ O : PDE.VelocityRegion d)
     (hq₀s₀ : q₀ < s₀)
     (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁)
@@ -63,46 +63,44 @@ theorem exists_higherOrderNestedProductBoxChain
     (hOcompact : IsCompact (closure O))
     (hOO₀ : closure O ⊆ O₀) :
     ∃ (left right : ℕ → ℝ)
-      (spatial : ℕ → Set (PDE.Vec d)),
+      (spatial : ℕ → PDE.VelocityRegion d),
       IsHigherOrderNestedProductBoxChain
         d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial := by
   induction N generalizing q₀ q₁ O₀ with
   | zero =>
       obtain ⟨V, hVopen, hOV, hVO₀, hVcompact⟩ :=
         exists_open_between_and_isCompact_closure hOcompact hO₀open hOO₀
-      let left : ℕ → ℝ := fun k =>
+      let left  := fun k =>
         match k with
         | 0 => q₀
         | 1 => (q₀ + s₀) / 2
         | _ => s₀
-      let right : ℕ → ℝ := fun k =>
+      let right  := fun k =>
         match k with
         | 0 => q₁
         | 1 => (s₁ + q₁) / 2
         | _ => s₁
-      let spatial : ℕ → Set (PDE.Vec d) := fun k =>
+      let spatial  := fun k =>
         match k with
         | 0 => O₀
         | 1 => V
         | _ => O
       refine ⟨left, right, spatial, ?_⟩
-      have hO₀ne : O₀.Nonempty :=
-        hOne.mono ((subset_closure : O ⊆ closure O).trans hOO₀)
-      have hVne : V.Nonempty := hOne.mono ((subset_closure : O ⊆ closure O).trans hOV)
-      have hVΩ : closure V ⊆ Ω :=
-        hVO₀.trans (subset_closure.trans hO₀Ω)
-      have hOΩ : closure O ⊆ Ω := hOO₀.trans (subset_closure.trans hO₀Ω)
+
+
+
+
       refine ⟨rfl, rfl, rfl, rfl, rfl, rfl, ?_, ?_⟩
       · intro k hk
         interval_cases k <;>
           simp only [left, right, spatial] <;>
           constructor
         · exact hO₀open
-        · exact ⟨hO₀ne, hO₀compact, hO₀Ω, by linarith⟩
+        · exact ⟨(hOne.mono ((subset_closure : O ⊆ closure O).trans hOO₀)), hO₀compact, hO₀Ω, by linarith⟩
         · exact hVopen
-        · exact ⟨hVne, hVcompact, hVΩ, by linarith⟩
+        · exact ⟨(hOne.mono ((subset_closure : O ⊆ closure O).trans hOV)), hVcompact, (hVO₀.trans (subset_closure.trans hO₀Ω)), by linarith⟩
         · exact hOopen
-        · exact ⟨hOne, hOcompact, hOΩ, hs₀s₁⟩
+        · exact ⟨hOne, hOcompact, (hOO₀.trans (subset_closure.trans hO₀Ω)), hs₀s₁⟩
       · intro k hk
         interval_cases k <;> simp only [left, right, spatial]
         · exact ⟨by linarith, by linarith, by linarith, hVO₀⟩
@@ -110,21 +108,20 @@ theorem exists_higherOrderNestedProductBoxChain
   | succ N ih =>
       obtain ⟨V, hVopen, hOV, hVO₀, hVcompact⟩ :=
         exists_open_between_and_isCompact_closure hOcompact hO₀open hOO₀
-      have hVne : V.Nonempty := hOne.mono ((subset_closure : O ⊆ closure O).trans hOV)
-      have hVΩ : closure V ⊆ Ω :=
-        hVO₀.trans (subset_closure.trans hO₀Ω)
+
+
       obtain ⟨left', right', spatial', hchain⟩ := ih
         ((q₀ + s₀) / 2) ((s₁ + q₁) / 2) V
-        (by linarith) (by linarith) hVopen hVcompact hVΩ hOV
-      let left : ℕ → ℝ := fun k =>
+        (by linarith) (by linarith) hVopen hVcompact (hVO₀.trans (subset_closure.trans hO₀Ω)) hOV
+      let left  := fun k =>
         match k with
         | 0 => q₀
         | k + 1 => left' k
-      let right : ℕ → ℝ := fun k =>
+      let right  := fun k =>
         match k with
         | 0 => q₁
         | k + 1 => right' k
-      let spatial : ℕ → Set (PDE.Vec d) := fun k =>
+      let spatial  := fun k =>
         match k with
         | 0 => O₀
         | k + 1 => spatial' k
@@ -132,16 +129,15 @@ theorem exists_higherOrderNestedProductBoxChain
         ⟨hleft0, hright0, hspatial0, hleftEnd, hrightEnd, hspatialEnd,
           hboxes, hsteps⟩
       refine ⟨left, right, spatial, ?_⟩
-      have hO₀ne : O₀.Nonempty :=
-        hOne.mono ((subset_closure : O ⊆ closure O).trans hOO₀)
+
       refine ⟨rfl, rfl, rfl, ?_, ?_, ?_, ?_, ?_⟩
-      · simpa only [left, Nat.succ_add] using hleftEnd
-      · simpa only [right, Nat.succ_add] using hrightEnd
-      · simpa only [spatial, Nat.succ_add] using hspatialEnd
+      · exact hleftEnd
+      · exact hrightEnd
+      · exact hspatialEnd
       · intro k hk
         cases k with
         | zero =>
-            exact ⟨hO₀open, hO₀ne, hO₀compact, hO₀Ω, by
+            exact ⟨hO₀open, (hOne.mono ((subset_closure : O ⊆ closure O).trans hOO₀)), hO₀compact, hO₀Ω, by
               simp only [left, right]
               linarith⟩
         | succ k =>
@@ -153,16 +149,15 @@ theorem exists_higherOrderNestedProductBoxChain
             rw [hleft0, hright0, hspatial0]
             exact ⟨by linarith, by linarith, by linarith, hVO₀⟩
         | succ k =>
-            simpa only [left, right, spatial, Nat.succ_eq_add_one,
-              Nat.add_assoc] using hsteps k (by omega)
+            simpa only [Nat.add_assoc, left, right, spatial] using hsteps k (by omega)
 
 /-- Extract the complete geometric input for one adjacent step of a
 higher-order nested product-box chain. -/
 theorem IsHigherOrderNestedProductBoxChain.step
     {d N : ℕ} {q₀ s₀ s₁ q₁ : ℝ}
-    {Ω O₀ O : Set (PDE.Vec d)}
+    {Ω O₀ O : PDE.VelocityRegion d}
     {left right : ℕ → ℝ}
-    {spatial : ℕ → Set (PDE.Vec d)}
+    {spatial : ℕ → PDE.VelocityRegion d}
     (h : IsHigherOrderNestedProductBoxChain
       d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial)
     {k : ℕ} (hk : k < N + 2) :
@@ -176,10 +171,10 @@ theorem IsHigherOrderNestedProductBoxChain.step
     closure (spatial (k + 1)) ⊆ spatial k := by
   rcases h with ⟨_, _, _, _, _, _, hboxes, hsteps⟩
   rcases hsteps k hk with ⟨hleft, hmiddle, hright, hclosure⟩
-  have hk_le : k ≤ N + 2 := by omega
-  have hk1_le : k + 1 ≤ N + 2 := by omega
-  rcases hboxes k hk_le with ⟨hkOpen, _, _, _, _⟩
-  rcases hboxes (k + 1) hk1_le with ⟨hk1Open, hk1ne, hk1compact, _, _⟩
+
+
+  rcases hboxes k (by omega) with ⟨hkOpen, _, _, _, _⟩
+  rcases hboxes (k + 1) (by omega) with ⟨hk1Open, hk1ne, hk1compact, _, _⟩
   exact ⟨hleft, hmiddle, hright, hkOpen, hk1Open, hk1ne, hk1compact, hclosure⟩
 
 end HypoellipticAleksandrov.Parabolic

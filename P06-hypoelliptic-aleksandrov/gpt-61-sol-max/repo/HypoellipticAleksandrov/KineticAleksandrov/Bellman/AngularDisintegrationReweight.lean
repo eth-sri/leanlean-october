@@ -11,18 +11,22 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+variable (β : ℝ)
+
 /-- The exact weight which removes the radial density degree. -/
-def bellmanRadialDegreeWeight (β : ℝ) (w : BellmanPositiveTime × ℝ) : ENNReal :=
+def bellmanRadialDegreeWeight  (w : BellmanPositiveTime × ℝ) : ENNReal :=
   ENNReal.ofReal (w.1.val ^ (β - 4))
 
 /-- The degree-removing radial weight is measurable. -/
-theorem measurable_bellmanRadialDegreeWeight (β : ℝ) :
+theorem measurable_bellmanRadialDegreeWeight  :
     Measurable (bellmanRadialDegreeWeight β) := by
   unfold bellmanRadialDegreeWeight
   fun_prop
 
+variable (β r : ℝ) (hr : 0 < r)
+
 /-- The exact degree weight at the inverse radial scaling. -/
-theorem bellmanRadialDegreeWeight_inverse_scale (β r : ℝ) (hr : 0 < r)
+theorem bellmanRadialDegreeWeight_inverse_scale
     (w : BellmanPositiveTime × ℝ) :
     bellmanRadialDegreeWeight β
       (((bellmanRadialScale r hr).prodCongr (Homeomorph.refl ℝ)).symm w) =
@@ -37,8 +41,9 @@ theorem bellmanRadialDegreeWeight_inverse_scale (β r : ℝ) (hr : 0 < r)
     ring
   rw [hp]
 
+include hr in
 /-- The reciprocal degree factors multiply to one. -/
-theorem bellmanRadial_degreeFactors_cancel (β r : ℝ) (hr : 0 < r) :
+theorem bellmanRadial_degreeFactors_cancel  :
     ENNReal.ofReal (r ^ (β - 4)) * ENNReal.ofReal (r ^ (4 - β)) = 1 := by
   rw [← ENNReal.ofReal_mul (Real.rpow_nonneg hr.le _), ← Real.rpow_add hr]
   simp only [show β - 4 + (4 - β) = 0 by ring, Real.rpow_zero, ENNReal.ofReal_one]

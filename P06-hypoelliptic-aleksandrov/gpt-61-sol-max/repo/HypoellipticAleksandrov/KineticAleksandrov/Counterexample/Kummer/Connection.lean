@@ -24,17 +24,17 @@ theorem tendsto_M_fractional_increment_zero (a : ℝ) (b : Pos) :
     Tendsto (fun z : ℝ => (M a b z - 1) / z ^ (1 / 3 : ℝ)) (𝓝[>] 0) (𝓝 0) := by
   have hs := (hasDerivAt_M a b 0).tendsto_slope_zero_right
   simp only [zero_add, M_zero, mul_one, smul_eq_mul] at hs
-  have hp : Tendsto (fun z : ℝ => z ^ (2 / 3 : ℝ)) (𝓝[>] 0) (𝓝 0) := by
-    simpa using (Real.continuousAt_rpow_const 0 (2 / 3 : ℝ)
-      (Or.inr (by norm_num))).tendsto.mono_left nhdsWithin_le_nhds
-  have hl := hs.mul hp
+
+  have hl := hs.mul (by
+      simpa using (Real.continuousAt_rpow_const 0 (2 / 3 : ℝ)
+        (Or.inr (by norm_num))).tendsto.mono_left nhdsWithin_le_nhds)
   simp only [mul_zero] at hl
   apply hl.congr'
   filter_upwards [self_mem_nhdsWithin] with z hz
   have he : z ^ (2 / 3 : ℝ) * z ^ (1 / 3 : ℝ) = z := by
     rw [← Real.rpow_add hz, show (2 / 3 : ℝ) + 1 / 3 = 1 by ring, Real.rpow_one]
-  have hn := ne_of_gt (Real.rpow_pos_of_pos hz (1 / 3 : ℝ))
-  apply (eq_div_iff hn).mpr
+
+  apply (eq_div_iff (ne_of_gt (Real.rpow_pos_of_pos hz (1 / 3 : ℝ)))).mpr
   rw [mul_assoc, he]
   field_simp [ne_of_gt hz]
 
@@ -53,7 +53,7 @@ theorem UNr_connection (a : NegThird) (z : ℝ) (hz : 0 < z) :
   have hl := ((tendsto_M_fractional_increment_zero a.1 b23).const_mul A).add
     (hm.const_mul B)
   simp only [mul_zero, mul_one, zero_add] at hl
-  have he : Tendsto (fun w : ℝ => (UNr a w - A) / w ^ (1 / 3 : ℝ))
+  have he : Tendsto (fun w  => (UNr a w - A) / w ^ (1 / 3 : ℝ))
       (𝓝[>] 0) (𝓝 B) := by
     apply hl.congr'
     filter_upwards [self_mem_nhdsWithin] with w hw
@@ -61,7 +61,7 @@ theorem UNr_connection (a : NegThird) (z : ℝ) (hz : 0 < z) :
     have hp := ne_of_gt (Real.rpow_pos_of_pos hw (1 / 3 : ℝ))
     field_simp [hp]
     ring
-  have hcoeff : B = Real.Gamma (-(1 / 3 : ℝ)) / Real.Gamma a.1 :=
+  have hcoeff  :=
     tendsto_nhds_unique he (tendsto_UNr_finitePart_zero a)
   rw [hB z hz, hcoeff, secondM, Real.rpow_eq_pow]
   dsimp only [A]

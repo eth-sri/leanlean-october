@@ -8,16 +8,18 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLim
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyParameters
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitMeasure
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Whole-past classical recovery for the actual expanding-ball limit -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov Set Filter MeasureTheory
+open HypoellipticAleksandrov Set Filter
 open Evolution
 open scoped Topology MatrixOrder
 
@@ -26,16 +28,16 @@ theorem movingDomain_univ_eq {n : ℕ} (Γ : ℝ → PDE.Vec n) (t : ℝ) :
     movingDomain univ Γ t = univ := by
   ext y
   rw [mem_movingDomain_iff]
-  simp only [mem_univ]
+  rfl
 
 section Data
 
 variable {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n}
-variable {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+variable {b : PDE.VectorField n} (hlam : 0 < lam)
 variable (hB : HasEverywhereLoewnerBounds lam Lam B) (hb : HasEuclideanLipschitzDrift Lb b)
 variable {ε τ α S0 C : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) (hC : 0 ≤ C)
 variable (F : BoundedBorel (EvolutionAmbientState n)) (hFC : ∀ q, |F q| ≤ C)
-variable (r : ℕ → ℝ) (hrlim : Tendsto r atTop atTop) (v : ℕ → KineticPoint n → ℝ)
+variable (r : ℕ → ℝ) (hrlim : Tendsto r atTop atTop) (v : ℕ → HypoellipticAleksandrov.KineticScalarField n)
 variable (hv : ∀ j, IsClassicalViscousTerminalSolution (PDE.euclideanBall 0 (r j))
   (fun _ => 0) B b ε τ F (v j))
 variable (hBs : IsSmoothFullKineticCoefficient B) (hBsym : IsSymmetricFullKineticCoefficient B)
@@ -51,6 +53,7 @@ theorem isClassicalViscousTerminalSolution_wholeSpace_ball_limit
       (fun p => limUnder atTop (fun j => v j p)) ∧
     ∀ p ∈ evolutionPastClosedCylinder univ (fun _ => 0) τ,
       |limUnder atTop (fun j => v j p)| ≤ C := by
+  let sharedTerm_075581f398 := ((fun _ : ℝ => (0 : PDE.Vec n)))
   let f (p : KineticPoint n) := limUnder atTop (fun j => v j p)
   have hUnif (α S : ℝ) := tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S)
     hlam hB hb hε.le hε1 hC F hFC r hrlim v hv
@@ -70,7 +73,7 @@ theorem isClassicalViscousTerminalSolution_wholeSpace_ball_limit
     let α := p.time - 1
     obtain ⟨S, -, hrad, hKmem⟩ := exists_wholeSpace_closedCylinder_mem_nhdsWithin (hcl p hp.1)
     have hc := (hUnif α S).2.1 p ⟨hcl p hp.1, hrad.le⟩
-    have hslab : movingClosedSlab univ (fun _ : ℝ => (0 : PDE.Vec n)) α τ ∈
+    have hslab : movingClosedSlab univ sharedTerm_075581f398 α τ ∈
         𝓝[evolutionPastClosedCylinder univ (fun _ => 0) τ] p := by
       filter_upwards [self_mem_nhdsWithin,
         (continuous_time.continuousAt.eventually (lt_mem_nhds (by
@@ -78,8 +81,8 @@ theorem isClassicalViscousTerminalSolution_wholeSpace_ball_limit
         with q hq ht
       exact ⟨ht.le, hq.1, hq.2⟩
     have hKe : ∀ᶠ q in 𝓝[movingClosedSlab univ
-        (fun _ : ℝ => (0 : PDE.Vec n)) α τ] p,
-        q ∈ movingClosedSlab univ (fun _ : ℝ => (0 : PDE.Vec n)) α τ ∩
+        sharedTerm_075581f398 α τ] p,
+        q ∈ movingClosedSlab univ sharedTerm_075581f398 α τ ∩
           {p | radialSq p ≤ S ^ 2} := hKmem
     exact hc.mono_of_mem_nhdsWithin (hKe.filter_mono (nhdsWithin_le_of_mem hslab))
   · intro q hq
@@ -111,7 +114,7 @@ theorem isClassicalViscousTerminalSolution_wholeSpace_ball_limit
       apply (KineticPoint.equivProd n).injective
       change (evolutionProdCLE n) ((evolutionProdCLE n).symm q) = q
       exact (evolutionProdCLE n).apply_symm_apply q
-    change ContDiffAt ℝ (⊤ : ℕ∞) ((f ∘ evolutionHomeomorph n) ∘
+    change ContDiffAt ℝ PDE.smoothOrder ((f ∘ evolutionHomeomorph n) ∘
       (evolutionProdCLE n).symm) q at hc
     rw [hfun] at hc
     exact hc.contDiffWithinAt
@@ -125,7 +128,7 @@ theorem isClassicalViscousTerminalSolution_wholeSpace_ball_limit
     let α := τ - 1
     obtain ⟨S, -, hrad, -⟩ := exists_wholeSpace_closedCylinder_mem_nhdsWithin
       (hcl p hp.1.le)
-    have hpK : p ∈ movingClosedSlab univ (fun _ : ℝ => (0 : PDE.Vec n)) α τ ∩
+    have hpK : p ∈ movingClosedSlab univ sharedTerm_075581f398 α τ ∩
         {p | radialSq p ≤ S ^ 2} := by
       refine ⟨⟨by dsimp [α]; rw [hp.1]; linarith, hp.1.le, ?_⟩, hrad.le⟩
       rw [movingDomain_univ_eq, closure_univ]
@@ -135,7 +138,7 @@ theorem isClassicalViscousTerminalSolution_wholeSpace_ball_limit
       have hi := mem_movingBall_of_radialSq_le (abs_nonneg S) hj
         (by simpa only [sq_abs] using hrad.le)
       exact (hv j).2.2.2.2.1 p
-        ⟨hp.1, by simpa only [hp.1] using subset_closure hi⟩
+        ⟨hp.1, by exact subset_closure hi⟩
     exact tendsto_nhds_unique ((hUnif α S).1.tendsto_at hpK)
       (tendsto_const_nhds.congr' (he.mono fun j hj => hj.symm))
   · intro p hp

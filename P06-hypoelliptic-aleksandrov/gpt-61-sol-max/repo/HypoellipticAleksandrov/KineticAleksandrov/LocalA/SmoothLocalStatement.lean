@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.LocalStatement
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Smooth joint local regularity input
 
@@ -32,7 +34,7 @@ def SmoothLocalRegularityStatement : Prop :=
         (∀ᵐ P ∂volume.restrict (backwardCylinder P₀ R),
           backwardOperatorOfTimeVelocityCoefficient A u P = 0) →
         (∀ P ∈ backwardCylinder P₀ R,
-          ContDiffAt ℝ (⊤ : ℕ∞) (physicalPositionSlice u P) P.position) ∧
+          ContDiffAt ℝ PDE.smoothOrder (physicalPositionSlice u P) P.position) ∧
         (∀ (m : ℕ), 1 ≤ m → ∀ P ∈ backwardCylinder P₀ (3 * R / 4),
           R ^ (3 * m) * ‖iteratedFDeriv ℝ m (physicalPositionSlice u P) P.position‖ ≤
             C_m m * Holder.oscillationOn u (backwardCylinder P₀ R)) ∧

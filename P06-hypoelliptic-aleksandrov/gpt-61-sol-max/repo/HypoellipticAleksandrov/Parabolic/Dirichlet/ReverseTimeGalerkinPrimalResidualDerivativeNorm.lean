@@ -10,23 +10,23 @@ This module transfers the existing uniform Galerkin Bochner-radius bound to
 the common weak limit carrying the reverse-time residual derivative.
 -/
 
-@[expose] public section
+ public section
 
 open Filter
 open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder Topology
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The common weak Galerkin limit with its residual derivative retains the
 explicit uniform Bochner radius. -/
 theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_residual_derivative_norm_le_radius
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d) (c F : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -44,7 +44,7 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_residual_derivat
         lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    (initial : PDE.ScalarLp Ω (2 )) :
     ∃ (U : ReverseTimeL2V hΩ (r₁ - r₀)) (φ : ℕ → ℕ),
       StrictMono φ ∧
       (∀ ell : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ,

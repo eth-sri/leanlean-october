@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyBound
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvolution
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Uniform bounds on the actual truncation solutions
@@ -11,23 +13,23 @@ The scalar maximum principle is applied directly to the centered ellipsoid and i
 supplied classical Dirichlet solution. No full-domain solution is used.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+open HypoellipticAleksandrov.Parabolic
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
 /-- Every actual straightened finite Dirichlet solution has the original datum bound,
 independent of the curve, both ellipsoid radii, and positive viscosity. -/
 theorem abs_le_straightened_dirichlet {n : ℕ} {lam Lam : ℝ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     {a τ r R : ℝ} (haτ : a < τ) (hr : 0 < r) (hR : 0 < R)
-    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ PDE.smoothOrder g)
     {ε : ℝ} (hε : 0 ≤ ε) (F : BoundedBorel (EvolutionAmbientState n))
     (u : TimeVelocity (n + n) → ℝ)
     (hu : IsClassicalBackwardDirichletSolution a τ

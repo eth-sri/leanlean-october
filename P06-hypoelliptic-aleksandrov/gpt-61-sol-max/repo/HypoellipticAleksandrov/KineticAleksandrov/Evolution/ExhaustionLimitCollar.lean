@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLim
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCollarApproximation
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitGeometry
 public import Mathlib.Topology.UniformSpace.UniformApproximation
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Passing the finite collar estimate to the actual limit
@@ -12,19 +14,19 @@ The collar distance is measured from the original moving boundary. Its modulus
 has no approximation-index or transported-radius dependence.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter
+open HypoellipticAleksandrov.Parabolic Set Filter
 open scoped Topology MatrixOrder
 
 /-- The actual limit inherits the original-boundary collar estimate from the
 actual finite approximants. -/
 theorem abs_le_collar_innerBall_dirichlet_limit
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -37,7 +39,7 @@ theorem abs_le_collar_innerBall_dirichlet_limit
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))
     (β R : ℕ → ℝ) (hβpos : ∀ k, 0 < β k)
     (hβlim : Tendsto β atTop (𝓝 0)) (hRlim : Tendsto R atTop atTop)
-    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (g k))
+    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ PDE.smoothOrder (g k))
     (hgL : ∀ k s t, PDE.vecEuclideanNorm (g k s - g k t) ≤ L * |s - t|)
     (hclose : ∀ k s, s ∈ Icc α τ → PDE.vecEuclideanNorm (g k s - Γ s) ≤ β k / 2)
     (u : ℕ → TimeVelocity (n + n) → ℝ)

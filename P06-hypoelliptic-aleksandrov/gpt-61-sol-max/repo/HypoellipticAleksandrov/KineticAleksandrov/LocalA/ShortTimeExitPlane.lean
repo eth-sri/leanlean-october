@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ShortTimeExitComparison
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Coordinate exponential planes for the ball exit barrier
 
@@ -12,22 +14,27 @@ its backward scalar operator.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open HypoellipticAleksandrov Parabolic Set
+open Parabolic
 open scoped MatrixOrder
 
+variable {d : ℕ}
+
+variable (i : Fin d)
+
+variable (a b c : ℝ)
+
 /-- A scalar exponential plane in one velocity coordinate and time. -/
-def ballExitPlane {d : ℕ} (i : Fin d) (a b c : ℝ) (p : TimeVelocity d) : ℝ :=
+def ballExitPlane    (p : TimeVelocity d) : ℝ :=
   Real.exp (a * p.1 + b * p.2 i + c)
 
 /-- Coordinate exponential planes are smooth at every order. -/
-theorem ballExitPlane_contDiff {d : ℕ} (i : Fin d) (a b c : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (ballExitPlane i a b c) := by
-  exact ((contDiff_const.mul contDiff_fst).add
+theorem ballExitPlane_contDiff    :
+    ContDiff ℝ PDE.smoothOrder (ballExitPlane i a b c) := ((contDiff_const.mul contDiff_fst).add
     (contDiff_const.mul ((contDiff_apply ℝ ℝ i).comp contDiff_snd)) |>.add
       contDiff_const).exp
 
 /-- The affine exponential has an explicit coordinate gradient. -/
-theorem ballExitPlane_gradient {d : ℕ} (i : Fin d) (a b c t : ℝ) (v : PDE.Vec d) :
+theorem ballExitPlane_gradient   (a b c t : ℝ) (v : PDE.Vec d) :
     PDE.classicalGradient (fun w => ballExitPlane i a b c (t, w)) v =
       (b * ballExitPlane i a b c (t, v)) • PDE.basisVec i := by
   have h := (((hasFDerivAt_apply (𝕜 := ℝ) i v).const_mul b).const_add (a * t)
@@ -41,19 +48,17 @@ theorem ballExitPlane_gradient {d : ℕ} (i : Fin d) (a b c t : ℝ) (v : PDE.Ve
     ring
   · simp [hj, Ne.symm hj, PDE.basisVec_apply, smul_eq_mul]
 
+variable (a b c : ℝ) (p : TimeVelocity d)
+
 /-- Its Hessian has a single nonzero diagonal entry. -/
-theorem ballExitPlane_hessian {d : ℕ} (i : Fin d) (a b c : ℝ)
-    (p : TimeVelocity d) (j k : Fin d) :
+theorem ballExitPlane_hessian    (j k : Fin d) :
     scalarSpatialHessian (ballExitPlane i a b c) p j k =
       if j = i ∧ k = i then b ^ 2 * ballExitPlane i a b c p else 0 := by
-  have hg : (fun w => PDE.classicalGradient
-      (fun y => ballExitPlane i a b c (p.1, y)) w) =
-      fun w => (b * ballExitPlane i a b c (p.1, w)) • PDE.basisVec i :=
-    funext (ballExitPlane_gradient i a b c p.1)
+
   have h := ((((hasFDerivAt_apply (𝕜 := ℝ) i p.2).const_mul b).const_add (a * p.1)
     |>.add_const c).exp.const_mul b).smul_const (PDE.basisVec i)
   unfold scalarSpatialHessian
-  rw [hg]
+  rw [(funext (ballExitPlane_gradient i a b c p.1))]
   unfold ballExitPlane
   rw [h.fderiv]
   by_cases hj : j = i
@@ -68,13 +73,13 @@ theorem ballExitPlane_hessian {d : ℕ} (i : Fin d) (a b c : ℝ)
   · simp [hj, Ne.symm hj, PDE.basisVec_apply, smul_eq_mul]
 
 /-- The time derivative differentiates the affine time coefficient only. -/
-theorem ballExitPlane_time {d : ℕ} (i : Fin d) (a b c : ℝ) (p : TimeVelocity d) :
+theorem ballExitPlane_time    :
     scalarTimeDerivative (ballExitPlane i a b c) p = a * ballExitPlane i a b c p := by
-  have h := ((((hasDerivAt_id p.1).const_mul a).add_const (b * p.2 i)).add_const c).exp
-  simpa only [scalarTimeDerivative, ballExitPlane, id_eq, mul_one, mul_comm] using h.deriv
+
+  simpa only [scalarTimeDerivative, ballExitPlane, id_eq, mul_one, mul_comm] using (((((hasDerivAt_id p.1).const_mul a).add_const (b * p.2 i)).add_const c).exp).deriv
 
 /-- The backward operator of a plane has no derivatives of the coefficient. -/
-theorem ballExitPlane_operator {d : ℕ} (B : CoefficientField d) (i : Fin d)
+theorem ballExitPlane_operator  (B : CoefficientField d) (i : Fin d)
     (a b c : ℝ) (p : TimeVelocity d) :
     scalarParabolicOperator B 0 (ballExitPlane i a b c) p =
       (a + B p.1 p.2 i i * b ^ 2) * ballExitPlane i a b c p := by
@@ -87,17 +92,18 @@ theorem ballExitPlane_operator {d : ℕ} (B : CoefficientField d) (i : Fin d)
     Finset.sum_const_zero]
   ring
 
+variable {lam Lam : ℝ} (B : CoefficientField d) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
+
+include hB
 /-- Upper ellipticity controls every diagonal coefficient. -/
-theorem ballExit_coefficient_diagonal_upper {d : ℕ} {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
+theorem ballExit_coefficient_diagonal_upper
     (t : ℝ) (v : PDE.Vec d) (i : Fin d) : B t v i i ≤ Lam := by
-  have h := (hB.2.2.2.2.2 t v).diag_nonneg (i := i)
+
   simpa only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply_eq,
-    smul_eq_mul, mul_one, sub_nonneg] using h
+    smul_eq_mul, mul_one, sub_nonneg] using ((hB.2.2.2.2.2 t v).diag_nonneg (i := i))
 
 /-- An upper-ellipticity exponential plane is a backward supersolution. -/
-theorem ballExitPlane_operator_nonpos {d : ℕ} {lam Lam : ℝ}
-    (B : CoefficientField d) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
+theorem ballExitPlane_operator_nonpos
     (i : Fin d) (b c : ℝ) (p : TimeVelocity d) :
     scalarParabolicOperator B 0 (ballExitPlane i (-Lam * b ^ 2) b c) p ≤ 0 := by
   rw [ballExitPlane_operator]

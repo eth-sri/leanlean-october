@@ -5,7 +5,7 @@ import Mathlib.Tactic.Linarith
 
 /-! # Bounds for homogeneous derivative components -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
@@ -18,29 +18,29 @@ theorem homogeneous_component_bound {d : ℕ} (f : XV d → ℝ) (beta : ℝ)
       ∃ M : ℝ, ∀ q ∈ K, |f q| ≤ M) :
     ∃ C : ℝ, 0 < C ∧ ∀ q : XV d, q ≠ 0 → |f q| ≤ C * Real.rpow (rho q) beta := by
   let K : Set (XV d) := {q | rho q = 1}
-  have hK : IsCompact K := (isCompact_rho_sublevel d 1).of_isClosed_subset
+  have hK  := (isCompact_rho_sublevel d 1).of_isClosed_subset
     (isClosed_eq (continuous_rho d) continuous_const) (fun q hq => hq.le)
-  have hzero : (0 : XV d) ∉ K := by simp [K]
-  obtain ⟨M, hM⟩ := hbound K hK hzero
+
+  obtain ⟨M, hM⟩ := hbound K hK (by simp [K])
   refine ⟨max M 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), ?_⟩
   intro q hq
-  have hp : 0 < rho q := lt_of_le_of_ne (rho_nonneg q)
+  have hp  := lt_of_le_of_ne (rho_nonneg q)
     (Ne.symm (mt (rho_eq_zero_iff q).mp hq))
-  have hn : dilate (rho q)⁻¹ q ∈ K := by
-    change rho (dilate (rho q)⁻¹ q) = 1
-    rw [rho_dilate _ (inv_pos.mpr hp), inv_mul_cancel₀ hp.ne']
-  have h := (hM _ hn).trans (le_max_left M 1)
+
+  have h := (hM _ (by
+      change rho (dilate (rho q)⁻¹ q) = 1
+      rw [rho_dilate _ (inv_pos.mpr hp), inv_mul_cancel₀ hp.ne'])).trans (le_max_left M 1)
   rw [hhom _ (inv_pos.mpr hp), abs_mul] at h
   simp only [Real.rpow_eq_pow] at h ⊢
   rw [abs_of_pos (Real.rpow_pos_of_pos (inv_pos.mpr hp) beta)] at h
   have hi : Real.rpow (rho q)⁻¹ beta * Real.rpow (rho q) beta = 1 := by
     simp only [Real.rpow_eq_pow]
     rw [Real.inv_rpow hp.le, inv_mul_cancel₀ (Real.rpow_pos_of_pos hp beta).ne']
-  have hh := mul_le_mul_of_nonneg_right h (Real.rpow_nonneg hp.le beta)
+
   calc
     |f q| = (Real.rpow (rho q)⁻¹ beta * |f q|) * Real.rpow (rho q) beta := by
       rw [mul_right_comm, hi, one_mul]
-    _ ≤ max M 1 * Real.rpow (rho q) beta := hh
+    _ ≤ max M 1 * Real.rpow (rho q) beta := (mul_le_mul_of_nonneg_right h (Real.rpow_nonneg hp.le beta))
 
 /-- Homogeneous components of degree above minus four are locally integrable. -/
 theorem homogeneous_component_locallyIntegrable (d : ℕ) (hd : 1 ≤ d)
@@ -60,29 +60,29 @@ theorem homogeneous_component_bound_off_origin {d : ℕ} (f : XV d → ℝ) (bet
       ∃ M : ℝ, ∀ q ∈ K, |f q| ≤ M) :
     ∃ C : ℝ, 0 < C ∧ ∀ q : XV d, q ≠ 0 → |f q| ≤ C * Real.rpow (rho q) beta := by
   let K : Set (XV d) := {q | rho q = 1}
-  have hK : IsCompact K := (isCompact_rho_sublevel d 1).of_isClosed_subset
+  have hK  := (isCompact_rho_sublevel d 1).of_isClosed_subset
     (isClosed_eq (continuous_rho d) continuous_const) (fun q hq => hq.le)
-  have hzero : (0 : XV d) ∉ K := by simp [K]
-  obtain ⟨M, hM⟩ := hbound K hK hzero
+
+  obtain ⟨M, hM⟩ := hbound K hK (by simp [K])
   refine ⟨max M 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), ?_⟩
   intro q hq
-  have hp : 0 < rho q := lt_of_le_of_ne (rho_nonneg q)
+  have hp  := lt_of_le_of_ne (rho_nonneg q)
     (Ne.symm (mt (rho_eq_zero_iff q).mp hq))
-  have hn : dilate (rho q)⁻¹ q ∈ K := by
-    change rho (dilate (rho q)⁻¹ q) = 1
-    rw [rho_dilate _ (inv_pos.mpr hp), inv_mul_cancel₀ hp.ne']
-  have h := (hM _ hn).trans (le_max_left M 1)
+
+  have h := (hM _ (by
+      change rho (dilate (rho q)⁻¹ q) = 1
+      rw [rho_dilate _ (inv_pos.mpr hp), inv_mul_cancel₀ hp.ne'])).trans (le_max_left M 1)
   rw [hhom _ (inv_pos.mpr hp) q hq, abs_mul] at h
   simp only [Real.rpow_eq_pow] at h ⊢
   rw [abs_of_pos (Real.rpow_pos_of_pos (inv_pos.mpr hp) beta)] at h
   have hi : Real.rpow (rho q)⁻¹ beta * Real.rpow (rho q) beta = 1 := by
     simp only [Real.rpow_eq_pow]
     rw [Real.inv_rpow hp.le, inv_mul_cancel₀ (Real.rpow_pos_of_pos hp beta).ne']
-  have hh := mul_le_mul_of_nonneg_right h (Real.rpow_nonneg hp.le beta)
+
   calc
     |f q| = (Real.rpow (rho q)⁻¹ beta * |f q|) * Real.rpow (rho q) beta := by
       rw [mul_right_comm, hi, one_mul]
-    _ ≤ max M 1 * Real.rpow (rho q) beta := hh
+    _ ≤ max M 1 * Real.rpow (rho q) beta := (mul_le_mul_of_nonneg_right h (Real.rpow_nonneg hp.le beta))
 
 /-- Homogeneous components of degree above minus four are locally integrable. -/
 theorem homogeneous_component_locallyIntegrable_off_origin (d : ℕ) (hd : 1 ≤ d)

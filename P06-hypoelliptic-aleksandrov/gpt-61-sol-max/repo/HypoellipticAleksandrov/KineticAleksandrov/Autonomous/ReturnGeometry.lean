@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AutonomyPhys
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TerminalMomentBoundsKernel
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SmoothAutonomousP6Statement
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Literal physical semigroup notation for the return-time argument
 
@@ -14,7 +16,7 @@ evolution, with the existence hypotheses visible in the definitions.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Set MeasureTheory
+open MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- Embed scalar physical coordinates in the one-dimensional vector carrier. -/
@@ -30,11 +32,10 @@ def scalarTerminalDatum (F : BoundedBorel Z) : BoundedBorel (EvolutionAmbientSta
 /-- The scalar physical spacetime point, with order `(t,X,v)`. -/
 def point (t X v : ℝ) : Point := ⟨t, fun _ => X, fun _ => v⟩
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (t : ℝ)
+
 /-- The full-space terminal measure pushed into physical scalar coordinate order. -/
-def Kphysical (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
-    (t : ℝ) (z : Z) : Measure Z :=
+def Kphysical  (z : Z) : Measure Z :=
   if ht : 0 ≤ t then
     ((fullSpaceEvolution hH hLE hlam hLam A).2.master
       (wholeSpaceQuery 0 t ht (physicalState z).2 (physicalState z).1)).map
@@ -42,17 +43,14 @@ def Kphysical (hH : HormanderHypoellipticityStatement)
   else Measure.dirac z
 
 /-- The literal elapsed-time action of the canonical kernel on scalar physical data. -/
-def S (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
-    (t : ℝ) (F : BoundedBorel Z) (z : Z) : ℝ :=
+def S  (F : BoundedBorel Z) (z : Z) : ℝ :=
   fullSpaceAction (fullSpaceEvolution hH hLE hlam hLam A)
     (scalarTerminalDatum F) (point t z.1 z.2)
 
 /-- Smooth scalar data remain smooth on the terminal-data carrier. -/
 theorem scalarTerminalDatum_smooth (F : BoundedBorel Z)
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
-    ContDiff ℝ (⊤ : ℕ∞) (scalarTerminalDatum F) := by
+    (hF : ContDiff ℝ PDE.smoothOrder F) :
+    ContDiff ℝ PDE.smoothOrder (scalarTerminalDatum F) := by
   apply hF.comp
   unfold scalarState
   fun_prop

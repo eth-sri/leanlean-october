@@ -19,8 +19,8 @@ section EvolutionData
 
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+variable (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)
 variable (hB_symm : IsSymmetricFullKineticCoefficient B)
@@ -38,7 +38,7 @@ local notation "κ" => terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hm
 
 /-- The ambient master is literally the family of terminal measures, with joint measurability
 supplied explicitly. -/
-def constructionTerminalKernel (hJoint : Measurable (fun q : EvolutionQuery Ω γ => μ q)) :
+def constructionTerminalKernel (hJoint : Measurable (fun q  => μ q)) :
     MovingFiberKernel Ω γ where
   master := ⟨μ, hJoint⟩
   terminal_support q := (terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -48,7 +48,7 @@ def constructionTerminalKernel (hJoint : Measurable (fun q : EvolutionQuery Ω �
 
 /-- The fiber identification follows from the identical map/comap constructions. -/
 theorem constructionTerminalKernel_fiber_eq
-    (hJoint : Measurable (fun q : EvolutionQuery Ω γ => μ q))
+    (hJoint : Measurable (fun q  => μ q))
     (σ τ : ℝ) (hστ : σ ≤ τ) :
     (constructionTerminalKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hJoint).fiberKernel

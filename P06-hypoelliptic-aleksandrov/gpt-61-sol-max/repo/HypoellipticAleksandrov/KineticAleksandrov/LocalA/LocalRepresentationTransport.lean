@@ -1,57 +1,73 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationProduct
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The cutoff transport speed in the actual free-transport frame -/
 
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set Filter Parabolic
-open scoped Topology
+open Set Parabolic
+
+
+variable {d : ℕ}
+
+variable (Z₀ : KineticPoint d)
+
+variable (χ : PDE.ScalarField d)
 
 /-- The multiplier on the literal time-position carrier. -/
-def localPositionMultiplier {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localPositionMultiplier
     (z : TimeVelocity d) : ℝ := χ (z.2 - Z₀.position - (z.1 - Z₀.time) • Z₀.velocity)
 
 /-- The free-transport defect is the cutoff differential applied to relative velocity. -/
-def localCutoffTransport {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localCutoffTransport
     (P : KineticPoint d) : ℝ :=
   fderiv ℝ χ (relativePosition Z₀ P) (P.velocity - Z₀.velocity)
 
+section
+variable {χ : PDE.ScalarField d} (hχ : ContDiff ℝ PDE.smoothOrder χ)
+
+include hχ
 /-- The time-position multiplier is globally smooth. -/
-theorem contDiff_localPositionMultiplier {d : ℕ} (Z₀ : KineticPoint d)
-    {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
-    ContDiff ℝ (⊤ : ℕ∞) (localPositionMultiplier Z₀ χ) :=
+theorem contDiff_localPositionMultiplier
+     :
+    ContDiff ℝ PDE.smoothOrder (localPositionMultiplier Z₀ χ) :=
   hχ.comp ((contDiff_snd.sub contDiff_const).sub
     ((contDiff_fst.sub contDiff_const).smul contDiff_const))
 
 /-- The cutoff transport defect is continuous on the full physical carrier. -/
-theorem continuous_localCutoffTransport {d : ℕ} (Z₀ : KineticPoint d)
-    {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
+theorem continuous_localCutoffTransport
+     :
     Continuous (localCutoffTransport Z₀ χ) := by
   have hrel : Continuous (relativePosition Z₀) :=
     (continuous_position.sub continuous_const).sub
       ((continuous_time.sub continuous_const).smul continuous_const)
   exact ((hχ.continuous_fderiv (by simp)).comp hrel).clm_apply
     (continuous_velocity.sub continuous_const)
+end
+
+
+variable (Z₀ P : KineticPoint d)
 
 /-- Outside the cutoff support there is no transport defect. -/
-theorem localCutoffTransport_zero {d : ℕ} (Z₀ P : KineticPoint d)
-    (χ : PDE.Vec d → ℝ) (hx : relativePosition Z₀ P ∉ tsupport χ) :
+theorem localCutoffTransport_zero
+    (χ : PDE.ScalarField d) (hx : relativePosition Z₀ P ∉ tsupport χ) :
     localCutoffTransport Z₀ χ P = 0 := by
   rw [localCutoffTransport, fderiv_of_notMem_tsupport ℝ hx, zero_apply]
 
 /-- The two coordinate transport terms equal the differential on relative velocity. -/
-theorem localPositionMultiplier_transport {d : ℕ} (Z₀ P : KineticPoint d)
-    {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
+theorem localPositionMultiplier_transport
+    {χ : PDE.ScalarField d} (hχ : ContDiff ℝ PDE.smoothOrder χ) :
     scalarTimeDerivative (localPositionMultiplier Z₀ χ) (P.time, P.position) +
       PDE.vecDot P.velocity
         (scalarSpatialGradient (localPositionMultiplier Z₀ χ) (P.time, P.position)) =
       localCutoffTransport Z₀ χ P := by
   have hd := hχ.differentiable (by norm_num)
   have ht : HasDerivAt
-      (fun t : ℝ => P.position - Z₀.position - (t - Z₀.time) • Z₀.velocity)
+      (fun t  => P.position - Z₀.position - (t - Z₀.time) • Z₀.velocity)
       (-Z₀.velocity) P.time := by
     convert (hasDerivAt_const P.time (P.position - Z₀.position)).sub
       (((hasDerivAt_id P.time).sub_const Z₀.time).smul_const Z₀.velocity) using 1
@@ -81,15 +97,15 @@ theorem localPositionMultiplier_transport {d : ℕ} (Z₀ P : KineticPoint d)
   ring
 
 /-- The exact local cutoff residual, at a point where the original solution is classical. -/
-theorem localCutoffSolution_operator {d : ℕ} (Z₀ : KineticPoint d)
-    (A : FullKineticCoefficient d) {χ : PDE.Vec d → ℝ}
-    (hχ : ContDiff ℝ (⊤ : ℕ∞) χ)
-    {u : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
+theorem localCutoffSolution_operator  (Z₀ : KineticPoint d)
+    (A : FullKineticCoefficient d) {χ : PDE.ScalarField d}
+    (hχ : ContDiff ℝ PDE.smoothOrder χ)
+    {u : HypoellipticAleksandrov.KineticScalarField d} {D : Set (KineticPoint d)}
     (hu : IsKineticC112On u D) {P : KineticPoint d} (hP : P ∈ D) :
     forwardKineticOperator A (localCutoffSolution Z₀ χ u) P =
       localPositionCutoff Z₀ χ P * forwardKineticOperator A u P +
         localCutoffTransport Z₀ χ P * u P := by
-  have h := forward_operator_position_multiplier A (localPositionMultiplier Z₀ χ)
+  have h := forward_operator_position_multiplier A _
     (contDiff_localPositionMultiplier Z₀ hχ) hu hP
   rw [localPositionMultiplier_transport Z₀ P hχ] at h
   exact h

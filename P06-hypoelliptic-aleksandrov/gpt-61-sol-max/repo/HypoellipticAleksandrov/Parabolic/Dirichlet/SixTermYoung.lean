@@ -12,26 +12,26 @@ public import Mathlib.Tactic.Positivity
 This elementary real-algebra leaf is independent of the PDE application.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem young_eps
     (ε B g n : ℝ) (hε : 0 < ε) :
     B * g * n ≤ ε * g ^ 2 + (B ^ 2 / (4 * ε)) * n ^ 2 := by
-  have hsq : 0 ≤ (2 * ε * g - B * n) ^ 2 := sq_nonneg _
   field_simp
-  nlinarith
+  nlinarith [sq_nonneg (2 * ε * g - B * n)]
 
 private theorem abs_six_terms_le (s a b c e f : ℝ) :
     |(-s) - a - b - c + e + f| ≤ |s| + |a| + |b| + |c| + |e| + |f| := by
+  let sharedTerm_b66be7fccd := ((-s) - a - b)
   calc
-    |(-s) - a - b - c + e + f| ≤ |(-s) - a - b - c + e| + |f| :=
+    |sharedTerm_b66be7fccd - c + e + f| ≤ |sharedTerm_b66be7fccd - c + e| + |f| :=
       abs_add_le _ _
-    _ ≤ (|(-s) - a - b - c| + |e|) + |f| := by
+    _ ≤ (|sharedTerm_b66be7fccd - c| + |e|) + |f| := by
       gcongr
       exact abs_add_le _ _
-    _ ≤ ((|(-s) - a - b| + |c|) + |e|) + |f| := by
+    _ ≤ ((|sharedTerm_b66be7fccd| + |c|) + |e|) + |f| := by
       gcongr
       exact abs_sub _ _
     _ ≤ (((|(-s) - a| + |b|) + |c|) + |e|) + |f| := by
@@ -56,12 +56,13 @@ theorem abs_six_terms_le_young
     (hε : 0 < ε) :
     |(-s) - a - b - c + e + f| ≤
       ε * g ^ 2 + (1 + S + 5 * A + (2 * B) ^ 2 / (4 * ε)) * (1 + n ^ 2) := by
+  let sharedTerm_2be72b530d := ((2 * B) ^ 2 / (4 * ε))
   have hy := young_eps ε (2 * B) g n hε
-  have hQ : 0 ≤ (2 * B) ^ 2 / (4 * ε) := by positivity
-  have hCoeff : 0 ≤ 1 + S + 5 * A + (2 * B) ^ 2 / (4 * ε) := by positivity
+  have hQ : 0 ≤ sharedTerm_2be72b530d := by positivity
+  have hCoeff : 0 ≤ 1 + S + 5 * A + sharedTerm_2be72b530d := by positivity
   calc
     _ ≤ |s| + |a| + |b| + |c| + |e| + |f| := abs_six_terms_le s a b c e f
-    _ ≤ ε * g ^ 2 + (1 + S + 5 * A + (2 * B) ^ 2 / (4 * ε)) * (1 + n ^ 2) := by
+    _ ≤ ε * g ^ 2 + (1 + S + 5 * A + sharedTerm_2be72b530d) * (1 + n ^ 2) := by
       nlinarith [mul_nonneg hCoeff (sq_nonneg n)]
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

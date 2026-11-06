@@ -7,12 +7,14 @@ import Mathlib.Tactic
 
 /-! # The nested-strip internal exits are exactly the alternating visit faces -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set
+
+variable (c : Clock)
 
 /-- Clipping the active interval by the outer interval leaves the same internal exit face. -/
-theorem visitActive_internalExit (c : Clock) (J : Interval) (s T : ℝ) :
+theorem visitActive_internalExit  (J : Interval) (s T : ℝ) :
     finiteUnionInternalExit (visitActiveUnion c J) J.toFiniteUnion s T =
       visitBoundary s T (visitActiveInterval c) J := by
   unfold finiteUnionInternalExit visitBoundary
@@ -21,13 +23,13 @@ theorem visitActive_internalExit (c : Clock) (J : Interval) (s T : ℝ) :
   rfl
 
 /-- The closed entrance interval has exactly the frontier of its open interior. -/
-theorem visitClosedEntrance_frontier (c : Clock) :
+theorem visitClosedEntrance_frontier  :
     frontier (closure c.entrance) = frontier c.entrance := by
   have ho : c.vbar - c.r / 2 < c.vbar + c.r / 2 := by linarith [c.positive]
   rw [Clock.entrance, closure_Ioo ho.ne, frontier_Icc ho.le, frontier_Ioo ho]
 
 /-- The possibly disconnected waiting union has precisely the incoming internal face. -/
-theorem visitWaiting_internalExit (c : Clock) (J : Interval) (s T : ℝ) :
+theorem visitWaiting_internalExit  (J : Interval) (s T : ℝ) :
     finiteUnionInternalExit (visitWaitingUnion c J) J.toFiniteUnion s T =
       visitBoundary s T (visitEntranceInterval c) J := by
   unfold finiteUnionInternalExit visitBoundary

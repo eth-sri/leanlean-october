@@ -5,13 +5,13 @@ public import HypoellipticAleksandrov.KineticAleksandrov.BoundedBorel
 
 /-! # Deriving the collar margin from compact interior terminal support -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov Set
+open Set
 
 /-- Compact terminal support strictly inside the original moving ball has the
 positive support margin required by the source collar construction. -/

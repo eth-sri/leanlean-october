@@ -23,64 +23,68 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open Filter Set
+
 open scoped Topology
 
 /-- The collar profile `w(r₀ - √s)` with `w(t) = (1 - exp (-κ t)) / κ`. -/
 def collarProfile (κ r₀ s : ℝ) : ℝ :=
   (1 - Real.exp (-κ * (r₀ - Real.sqrt s))) / κ
 
+section
+variable {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s)
+
+include hκ hs
 /-- First derivative of the collar profile in the squared distance. -/
-theorem hasDerivAt_collarProfile {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
+theorem hasDerivAt_collarProfile  :
     HasDerivAt (collarProfile κ r₀) (-(Real.exp (-κ * (r₀ - Real.sqrt s)) /
       (2 * Real.sqrt s))) s := by
-  have hsq : Real.sqrt s ≠ 0 := (Real.sqrt_pos.mpr hs).ne'
-  have h1 : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt s)) s := Real.hasDerivAt_sqrt hs.ne'
-  have h2 : HasDerivAt (fun s => -κ * (r₀ - Real.sqrt s))
-      (-κ * (-(1 / (2 * Real.sqrt s)))) s := (h1.const_sub r₀).const_mul (-κ)
-  have h3 := h2.exp
-  have h4 := ((hasDerivAt_const s (1 : ℝ)).sub h3).div_const κ
-  refine h4.congr_deriv ?_
+  have hsq  := (Real.sqrt_pos.mpr hs).ne'
+
+
+
+
+  refine (((hasDerivAt_const s (1 : ℝ)).sub (((Real.hasDerivAt_sqrt hs.ne').const_sub r₀).const_mul (-κ)).exp).div_const κ).congr_deriv ?_
   field_simp
   ring
 
 /-- The first derivative of the collar profile. -/
-theorem deriv_collarProfile {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
+theorem deriv_collarProfile  :
     deriv (collarProfile κ r₀) s =
       -(Real.exp (-κ * (r₀ - Real.sqrt s)) / (2 * Real.sqrt s)) :=
   (hasDerivAt_collarProfile hκ r₀ hs).deriv
 
 /-- Second derivative of the collar profile in the squared distance. -/
-theorem hasDerivAt_collarProfile_deriv {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
+theorem hasDerivAt_collarProfile_deriv  :
     HasDerivAt (deriv (collarProfile κ r₀))
       (-(Real.exp (-κ * (r₀ - Real.sqrt s)) / (4 * s)) * (κ - 1 / Real.sqrt s)) s := by
-  have hsq : Real.sqrt s ≠ 0 := (Real.sqrt_pos.mpr hs).ne'
-  have h1 : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt s)) s := Real.hasDerivAt_sqrt hs.ne'
-  have h2 : HasDerivAt (fun s => -κ * (r₀ - Real.sqrt s))
-      (-κ * (-(1 / (2 * Real.sqrt s)))) s := (h1.const_sub r₀).const_mul (-κ)
-  have h3 := h2.exp
-  have h4 : HasDerivAt (fun s => 2 * Real.sqrt s) (2 * (1 / (2 * Real.sqrt s))) s :=
+  have hsq  := (Real.sqrt_pos.mpr hs).ne'
+  have h1  := Real.hasDerivAt_sqrt hs.ne'
+
+
+  have h4  :=
     h1.const_mul 2
-  have h5 := (h3.div h4 (by positivity)).neg
-  have heq : deriv (collarProfile κ r₀) =ᶠ[𝓝 s]
-      fun s => -(Real.exp (-κ * (r₀ - Real.sqrt s)) / (2 * Real.sqrt s)) := by
-    filter_upwards [lt_mem_nhds hs] with t ht
-    exact deriv_collarProfile hκ r₀ ht
-  refine (h5.congr_of_eventuallyEq heq).congr_deriv ?_
-  have hs2 : Real.sqrt s ^ 2 = s := Real.sq_sqrt hs.le
+
+
+  refine ((((((h1.const_sub r₀).const_mul (-κ)).exp).div h4 (by positivity)).neg).congr_of_eventuallyEq (show _ by
+      filter_upwards [lt_mem_nhds hs] with t ht
+      exact deriv_collarProfile hκ r₀ ht)).congr_deriv ?_
+  have hs2  := Real.sq_sqrt hs.le
   generalize Real.sqrt s = ρ at *
   subst hs2
   field_simp
   ring
+end
+
 
 /-- The collar profile is `C²` away from the centre. -/
 theorem contDiffAt_collarProfile (κ r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
-    ContDiffAt ℝ 2 (collarProfile κ r₀) s := by
-  have h1 : ContDiffAt ℝ 2 Real.sqrt s := contDiffAt_id.sqrt hs.ne'
-  unfold collarProfile
-  have h2 : ContDiffAt ℝ 2 (fun s => -κ * (r₀ - Real.sqrt s)) s :=
-    contDiffAt_const.mul (contDiffAt_const.sub h1)
-  exact (contDiffAt_const.sub h2.exp).div_const κ
+    ContDiffAt ℝ 2 (collarProfile κ r₀) s := (id
+  (ContDiffAt.div_const
+    (ContDiffAt.sub contDiffAt_const
+      (ContDiffAt.exp
+        (ContDiffAt.mul contDiffAt_const
+          (ContDiffAt.sub contDiffAt_const (ContDiffAt.sqrt contDiffAt_id (LT.lt.ne' hs))))))
+    κ))
 
 /-- The second derivative of the collar profile. -/
 theorem deriv_deriv_collarProfile {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s) :

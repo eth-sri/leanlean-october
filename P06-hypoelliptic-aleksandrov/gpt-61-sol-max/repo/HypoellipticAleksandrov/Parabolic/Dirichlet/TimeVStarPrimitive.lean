@@ -15,35 +15,33 @@ weak PDE, or Lions--Magenes assertion.
 
 @[expose] public section
 
-open Function MeasureTheory Set
-open scoped ENNReal
+open MeasureTheory Set
+
 
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
+
 private theorem integrable_vstar
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T) :
+     :
     Integrable (fun tau => g tau) (reverseTimeVolume T) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
     change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
     infer_instance
-  have hg : MemLp (g : ℝ → H10HilbertGraphDual hΩ) 2 (reverseTimeVolume T) :=
-    MeasureTheory.Lp.memLp g
-  exact hg.integrable (by norm_num)
+
+  exact (MeasureTheory.Lp.memLp g).integrable (by norm_num)
 
 /-- The restricted-measure Bochner primitive of a reverse-time dual curve. -/
-noncomputable def reverseTimeVStarPrimitive
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T) :
+def reverseTimeVStarPrimitive
+     :
     ℝ → H10HilbertGraphDual hΩ :=
   fun t => ∫ tau in Set.Ioc 0 t, g tau ∂reverseTimeVolume T
 
 /-- The dual primitive is continuous on the closed reverse-time interval. -/
 theorem continuousOn_reverseTimeVStarPrimitive
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T) :
+     :
     ContinuousOn (reverseTimeVStarPrimitive hΩ T g) (Set.Icc 0 T) := by
   letI : NullSingletonClass (reverseTimeVolume T) := by
     change NullSingletonClass (volume.restrict (Ioo (0 : ℝ) T))
@@ -53,16 +51,14 @@ theorem continuousOn_reverseTimeVStarPrimitive
 
 /-- The restricted-measure primitive vanishes at time zero. -/
 theorem reverseTimeVStarPrimitive_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T) :
+     :
     reverseTimeVStarPrimitive hΩ T g 0 = 0 := by
   change ∫ tau in Set.Ioc 0 0, g tau ∂reverseTimeVolume T = 0
   simp
 
 /-- Increments of the dual primitive are the corresponding restricted-time integrals. -/
 theorem reverseTimeVStarPrimitive_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
+
     {s t : ℝ} (hs : s ∈ Set.Icc 0 T) (ht : t ∈ Set.Icc 0 T)
     (hst : s ≤ t) :
     reverseTimeVStarPrimitive hΩ T g t -
@@ -77,43 +73,38 @@ theorem reverseTimeVStarPrimitive_sub
       (integrable_vstar hΩ T g).intervalIntegrable,
     intervalIntegral.integral_of_le hst]
 
+variable (v : H10HilbertGraph hΩ)
+
 /-- Evaluation by a fixed spatial test commutes with the dual primitive. -/
 theorem reverseTimeVStarPrimitive_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
-    (v : H10HilbertGraph hΩ) (t : ℝ) :
+
+     (t : ℝ) :
     reverseTimeVStarPrimitive hΩ T g t v =
-      ∫ tau in Set.Ioc 0 t, (g tau) v ∂reverseTimeVolume T := by
-  exact ContinuousLinearMap.integral_apply
+      ∫ tau in Set.Ioc 0 t, (g tau) v ∂reverseTimeVolume T := ContinuousLinearMap.integral_apply
     ((integrable_vstar hΩ T g).integrableOn) v
 
 /-- A fixed-vector evaluation of the dual primitive is integrable in reverse time. -/
 theorem integrable_reverseTimeVStarPrimitive_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
-    (v : H10HilbertGraph hΩ) :
+
+     :
     MeasureTheory.Integrable
       (fun tau => reverseTimeVStarPrimitive hΩ T g tau v)
-      (reverseTimeVolume T) := by
-  change IntegrableOn
-    (fun tau => reverseTimeVStarPrimitive hΩ T g tau v)
-    (Ioo (0 : ℝ) T) volume
-  have hcont : ContinuousOn
-      (fun tau => reverseTimeVStarPrimitive hΩ T g tau v) (Icc 0 T) :=
-    (ContinuousLinearMap.apply ℝ ℝ v).continuous.comp_continuousOn
-      (continuousOn_reverseTimeVStarPrimitive hΩ T g)
-  exact (hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self)
+      (reverseTimeVolume T) := (id
+  (IntegrableOn.mono_set
+    (ContinuousOn.integrableOn_Icc
+      (Continuous.comp_continuousOn (ContinuousLinearMap.continuous ((ContinuousLinearMap.apply ℝ ℝ) v))
+        (continuousOn_reverseTimeVStarPrimitive hΩ T g)))
+    Ioo_subset_Icc_self))
 
 private theorem primitive_apply_on_Ioo
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
-    (v : H10HilbertGraph hΩ) {t : ℝ} (ht : t ∈ Ioo 0 T) :
+
+     {t : ℝ} (ht : t ∈ Ioo 0 T) :
     reverseTimeVStarPrimitive hΩ T g t v =
       PDE.intervalPrimitive 0 (fun s => (g s) v) t := by
   rw [reverseTimeVStarPrimitive_apply]
   change (∫ s in Ioc 0 t, (g s) v ∂reverseTimeVolume T) = _
   rw [show (∫ s in Ioc 0 t, (g s) v ∂reverseTimeVolume T) =
-      ∫ s in Ioc 0 t, (g s) v ∂volume by
+      ∫ s in Ioc 0 t, (g s) v by
     simp only [reverseTimeVolume, reverseTimeOpenInterval,
       Measure.restrict_restrict measurableSet_Ioc]
     rw [inter_eq_left.mpr]
@@ -123,9 +114,8 @@ private theorem primitive_apply_on_Ioo
 
 /-- The dual primitive has weak derivative `g` against compact scalar tests. -/
 theorem reverseTimeVStarPrimitive_test_deriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) :
+
+     (eta : ReverseTimeScalarTest T) :
     MeasureTheory.Integrable
       (fun tau => reverseTimeVStarPrimitive hΩ T g tau v * eta.deriv tau)
       (reverseTimeVolume T) ∧
@@ -135,46 +125,42 @@ theorem reverseTimeVStarPrimitive_test_deriv
       reverseTimeVStarPrimitive hΩ T g tau v * eta.deriv tau
       ∂reverseTimeVolume T) =
       -(∫ tau, (g tau) v * eta tau ∂reverseTimeVolume T) := by
-  have hleft : Integrable
-      (fun tau => reverseTimeVStarPrimitive hΩ T g tau v * eta.deriv tau)
-      (reverseTimeVolume T) := by
-    change IntegrableOn
-      (fun tau => reverseTimeVStarPrimitive hΩ T g tau v * eta.deriv tau)
-      (Ioo (0 : ℝ) T) volume
-    have hcont : ContinuousOn
-        (fun tau => reverseTimeVStarPrimitive hΩ T g tau v * eta.deriv tau)
-        (Icc 0 T) :=
-      ((ContinuousLinearMap.apply ℝ ℝ v).continuous.comp_continuousOn
-        (continuousOn_reverseTimeVStarPrimitive hΩ T g)).mul
-        eta.contDiff_deriv.continuous.continuousOn
-    exact hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self
+  let sharedTerm_b2f8ccb809 := ((fun tau => reverseTimeVStarPrimitive hΩ T g tau v * eta.deriv tau))
+
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
     change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
     infer_instance
   have hqLp : MemLp (fun tau => (g tau) v) 2 (reverseTimeVolume T) :=
     (MeasureTheory.Lp.memLp g).continuousLinearMap_comp
       (ContinuousLinearMap.apply ℝ ℝ v)
-  have hright : Integrable (fun tau => (g tau) v * eta tau)
-      (reverseTimeVolume T) := by
-    simpa only [Pi.mul_def] using hqLp.integrable_mul (eta.memLp 2)
-  refine ⟨hleft, hright, ?_⟩
-  have hqIcc : IntegrableOn (fun tau => (g tau) v) (Icc (0 : ℝ) T) volume := by
-    change Integrable (fun tau => (g tau) v) (volume.restrict (Icc (0 : ℝ) T))
-    simpa only [reverseTimeVolume, reverseTimeOpenInterval,
-      restrict_Ioo_eq_restrict_Icc] using hqLp.integrable (by norm_num)
-  have hae : (fun tau => reverseTimeVStarPrimitive hΩ T g tau v * eta.deriv tau) =ᵐ[
-      reverseTimeVolume T] fun tau =>
-        PDE.intervalPrimitive 0 (fun s => (g s) v) tau * _root_.deriv eta tau := by
-    filter_upwards [ae_restrict_mem measurableSet_Ioo] with tau ht
-    rw [primitive_apply_on_Ioo hΩ T g v ht, eta.deriv_apply]
+
+  refine ⟨(by
+      change IntegrableOn
+        sharedTerm_b2f8ccb809
+        (Ioo (0 ) T)
+      have hcont : ContinuousOn
+          sharedTerm_b2f8ccb809
+          (Icc 0 T) :=
+        ((ContinuousLinearMap.apply ℝ ℝ v).continuous.comp_continuousOn
+          (continuousOn_reverseTimeVStarPrimitive hΩ T g)).mul
+          eta.contDiff_deriv.continuous.continuousOn
+      exact hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self), (by
+      simpa only [Pi.mul_def] using hqLp.integrable_mul (eta.memLp 2)), ?_⟩
+
+
   calc
     (∫ tau, reverseTimeVStarPrimitive hΩ T g tau v * eta.deriv tau
       ∂reverseTimeVolume T) =
         ∫ tau, PDE.intervalPrimitive 0 (fun s => (g s) v) tau * _root_.deriv eta tau
-          ∂reverseTimeVolume T := integral_congr_ae hae
+          ∂reverseTimeVolume T := integral_congr_ae (by
+              filter_upwards [ae_restrict_mem measurableSet_Ioo] with tau ht
+              rw [primitive_apply_on_Ioo hΩ T g v ht, eta.deriv_apply])
     _ = -(∫ tau, (g tau) v * eta tau ∂reverseTimeVolume T) := by
       simpa only [reverseTimeVolume, reverseTimeOpenInterval] using
-        PDE.intervalPrimitive_scalar_weak_identity_Ioo hqIcc
+        PDE.intervalPrimitive_scalar_weak_identity_Ioo (by
+            change Integrable (fun tau => (g tau) v) (volume.restrict (Icc (0 ) T))
+            simpa only [reverseTimeVolume, reverseTimeOpenInterval,
+              restrict_Ioo_eq_restrict_Icc] using hqLp.integrable (by norm_num))
           (eta.contDiff.of_le (by simp)) eta.tsupport_subset
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

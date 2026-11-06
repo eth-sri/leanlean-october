@@ -10,22 +10,22 @@ This module rewrites the dual pairing of the already-negative reverse-time
 source against a separated test as its literal raw-source integral.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory Set Topology
-open scoped ENNReal
+open MeasureTheory Set
 
-noncomputable section
+
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- Pairing the negative reverse-time source with a separated test equals its
 literal raw-source integral. -/
 theorem reverseTimeNegativeSource_pairing_eq_integral_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    (F : PDE.TimeScalarField d)
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -41,10 +41,7 @@ theorem reverseTimeNegativeSource_pairing_eq_integral_raw
   let S := reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
   let z := reverseTimeSeparatedVTest hΩ eta v
   change reverseTimeDualPairingRightCLM hΩ (r₁ - r₀) z S = _
-  have hSeval : ∀ᵐ tau ∂reverseTimeVolume (r₁ - r₀),
-      S tau = reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau := by
-    exact
-      (memLp_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).coeFn_toLp
+
   calc
     reverseTimeDualPairingRightCLM hΩ (r₁ - r₀) z S =
         reverseTimeDualPairingCLM hΩ (r₁ - r₀) S z :=
@@ -53,7 +50,7 @@ theorem reverseTimeNegativeSource_pairing_eq_integral_raw
       reverseTimeDualPairingCLM_apply hΩ (r₁ - r₀) S z
     _ = _ := by
       apply integral_congr_ae
-      filter_upwards [hSeval, ae_reverseTimeSeparatedVTest hΩ eta v] with tau hS hz
+      filter_upwards [((memLp_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).coeFn_toLp), ae_reverseTimeSeparatedVTest hΩ eta v] with tau hS hz
       calc
         S tau (z tau) = S tau (eta tau • v) := congrArg (S tau) hz
         _ = eta tau * S tau v := by

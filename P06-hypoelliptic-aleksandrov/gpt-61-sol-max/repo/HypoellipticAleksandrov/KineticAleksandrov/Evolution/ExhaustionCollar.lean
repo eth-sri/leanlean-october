@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCollarGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyTruncation
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierTwo
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # The pre-construction collar estimate on actual finite ellipsoids
@@ -12,24 +14,24 @@ cylinder with the collar. Every artificial lateral face has the supplied zero da
 The estimate does not require a full-domain solution or Hörmander smoothing.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter
+open HypoellipticAleksandrov.Parabolic Set
 open scoped Topology MatrixOrder
 
 /-- The actual finite Dirichlet solution obeys the collar estimate uniformly in the
 transported truncation radius. The lower comparison time is strictly inside its slab. -/
 theorem abs_le_collar_straightened_dirichlet
-    {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     {a α τ r R d L C ε : ℝ} (haα : a < α) (hατ : α < τ)
     (hr : 0 < r) (hR : 0 < R) (hd : 0 < d) (hdr : d < r)
-    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hL : 0 ≤ L)
+    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ PDE.smoothOrder g) (hL : 0 ≤ L)
     (hgL : ∀ s t, PDE.vecEuclideanNorm (g s - g t) ≤ L * |s - t|)
     (hε : 0 ≤ ε) (hC : 0 ≤ C)
     (F : BoundedBorel (EvolutionAmbientState n)) (hFC : ∀ q, |F q| ≤ C)
@@ -121,7 +123,7 @@ theorem abs_le_collar_straightened_dirichlet
       exact sub_nonneg.mpr (hGop p hp)
     · intro p hp hn
       by_cases ht : p.time = τ
-      · have hz := hu.2.2.2.1 (straightenedPoint g p).2 hp.1.2
+      · have hz := hu.2.2.2.1 _ hp.1.2
         have he : v p = F (p.position, p.velocity) := by
           simpa only [v, straightenedPullback, straightenedPoint, ht,
             spatialY_spatialPack, spatialZ_spatialPack, add_sub_cancel] using hz
@@ -140,7 +142,7 @@ theorem abs_le_collar_straightened_dirichlet
       · have hfr : (straightenedPoint g p).2 ∈ frontier D := by
           rw [hDo.frontier_eq]
           exact ⟨hp.1.2, hx⟩
-        have hz := hu.2.2.2.2 (straightenedPoint g p)
+        have hz := hu.2.2.2.2 _
           ⟨⟨haα.le.trans hp.1.1.1, hp.1.1.2⟩, hfr⟩
         change v p = 0 at hz
         rw [hz, mul_zero]

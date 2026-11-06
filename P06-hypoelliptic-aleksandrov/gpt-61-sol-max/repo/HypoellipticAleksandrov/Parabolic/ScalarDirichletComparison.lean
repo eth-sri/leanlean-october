@@ -2,6 +2,12 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ScalarZeroOrderMaximum
 public import Mathlib.Tactic.Ring
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import all HypoellipticAleksandrov.KineticAleksandrov.Lieberman.TerminalLift
+
+open private HypoellipticAleksandrov.KineticAleksandrov.Lieberman.scalarSpatialHessian_apply_eq_sndFDeriv from HypoellipticAleksandrov.KineticAleksandrov.Lieberman.TerminalLift
+
 
 /-!
 # Classical scalar backward Dirichlet comparison
@@ -11,74 +17,61 @@ of the bounded scalar backward Dirichlet problem from the zero-order maximum
 principle.  It constructs neither solutions nor a Dirichlet solver.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Filter Set Matrix
 open scoped MatrixOrder Topology
 
-private theorem scalarTimeDerivative_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
-    {z : TimeVelocity n} (hz : z ∈ D) :
-    scalarTimeDerivative (fun q => u q - v q) z =
-      scalarTimeDerivative u z - scalarTimeDerivative v z := by
-  exact ((hu.timeSlice_hasDerivAt hz).sub (hv.timeSlice_hasDerivAt hz)).deriv
+variable {n : ℕ}
 
-private theorem scalarSpatialGradient_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
-    {z : TimeVelocity n} (hz : z ∈ D) :
+section
+variable {u v : HypoellipticAleksandrov.Parabolic.ScalarField n} {D : HypoellipticAleksandrov.Parabolic.Region n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) {z : TimeVelocity n} (hz : z ∈ D)
+
+include hu hv hz
+private theorem scalarTimeDerivative_sub   :
+    scalarTimeDerivative (fun q => u q - v q) z =
+      scalarTimeDerivative u z - scalarTimeDerivative v z := ((hu.timeSlice_hasDerivAt hz).sub (hv.timeSlice_hasDerivAt hz)).deriv
+
+private theorem scalarSpatialGradient_sub   :
     scalarSpatialGradient (fun q => u q - v q) z =
       scalarSpatialGradient u z - scalarSpatialGradient v z := by
   ext i
-  change fderiv ℝ (fun y : PDE.Vec n => u (z.1, y) - v (z.1, y)) z.2
+  change fderiv ℝ (fun y  => u (z.1, y) - v (z.1, y)) z.2
       (PDE.basisVec i) = _
   rw [fderiv_fun_sub ((hu.spatialSlice_contDiffAt hz).differentiableAt (by norm_num))
     ((hv.spatialSlice_contDiffAt hz).differentiableAt (by norm_num))]
   rfl
+end
 
-private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
-    (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
-    (i j : Fin n) :
-    scalarSpatialHessian u z i j =
-      fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2
-        (PDE.basisVec i) (PDE.basisVec j) := by
-  let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  have hsecond : HasFDerivAt (fderiv ℝ g) (fderiv ℝ (fderiv ℝ g) z.2) z.2 :=
-    ((hu.fderiv_right (m := 1) (by norm_num)).differentiableAt
-      (by norm_num)).hasFDerivAt
-  have hdiff : ∀ j : Fin n,
-      DifferentiableAt ℝ (fun y : PDE.Vec n => fderiv ℝ g y (PDE.basisVec j)) z.2 := by
-    intro j
-    exact (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).differentiableAt
-  change (fderiv ℝ (fun y : PDE.Vec n => fun j =>
-      fderiv ℝ g y (PDE.basisVec j)) z.2 (PDE.basisVec i)) j = _
-  rw [fderiv_pi hdiff]
-  have hj := (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv
-  have hjApply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
-  simpa [ContinuousLinearMap.flip_apply] using hjApply
 
-private theorem scalarSpatialHessian_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+
+
+
+section
+variable {u v : HypoellipticAleksandrov.Parabolic.ScalarField n} {D : HypoellipticAleksandrov.Parabolic.Region n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+
+include hu hv
+private theorem scalarSpatialHessian_sub
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialHessian (fun q => u q - v q) z =
       scalarSpatialHessian u z - scalarSpatialHessian v z := by
-  let g_u : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  let g_v : PDE.Vec n → ℝ := fun y => v (z.1, y)
+  let g_u  := fun y => u (z.1, y)
+  let g_v  := fun y => v (z.1, y)
   have hfirst : fderiv ℝ (fun y => g_u y - g_v y) =ᶠ[𝓝 z.2]
       fun y => fderiv ℝ g_u y - fderiv ℝ g_v y := by
     filter_upwards [(hu.spatialSlice_contDiffAt hz).eventually (by norm_num),
       (hv.spatialSlice_contDiffAt hz).eventually (by norm_num)] with y huy hvy
     exact fderiv_fun_sub (huy.differentiableAt (by norm_num))
       (hvy.differentiableAt (by norm_num))
-  have huSecond : HasFDerivAt (fun y : PDE.Vec n => fderiv ℝ g_u y)
+  have huSecond : HasFDerivAt ((fderiv ℝ g_u))
       (fderiv ℝ (fderiv ℝ g_u) z.2) z.2 :=
     ((hu.spatialSlice_contDiffAt hz).fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num) |>.hasFDerivAt
-  have hvSecond : HasFDerivAt (fun y : PDE.Vec n => fderiv ℝ g_v y)
+  have hvSecond : HasFDerivAt ((fderiv ℝ g_v))
       (fderiv ℝ (fderiv ℝ g_v) z.2) z.2 :=
     ((hv.spatialSlice_contDiffAt hz).fderiv_right (m := 1) (by norm_num)).differentiableAt
       (by norm_num) |>.hasFDerivAt
@@ -92,15 +85,14 @@ private theorem scalarSpatialHessian_sub {n : ℕ} {u v : TimeVelocity n → ℝ
         fderiv_fun_sub huSecond.differentiableAt hvSecond.differentiableAt
   ext i j
   rw [Matrix.sub_apply,
-    scalarSpatialHessian_apply_eq_sndFDeriv
+    _root_.HypoellipticAleksandrov.KineticAleksandrov.Lieberman.scalarSpatialHessian_apply_eq_sndFDeriv
     ((hu.spatialSlice_contDiffAt hz).sub (hv.spatialSlice_contDiffAt hz)) i j,
-    scalarSpatialHessian_apply_eq_sndFDeriv (hu.spatialSlice_contDiffAt hz) i j,
-    scalarSpatialHessian_apply_eq_sndFDeriv (hv.spatialSlice_contDiffAt hz) i j,
+    _root_.HypoellipticAleksandrov.KineticAleksandrov.Lieberman.scalarSpatialHessian_apply_eq_sndFDeriv (hu.spatialSlice_contDiffAt hz) i j,
+    _root_.HypoellipticAleksandrov.KineticAleksandrov.Lieberman.scalarSpatialHessian_apply_eq_sndFDeriv (hv.spatialSlice_contDiffAt hz) i j,
     hsecond]
   rfl
 
-private theorem isScalarC12On_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) :
+private theorem isScalarC12On_sub   :
     IsScalarC12On (fun q => u q - v q) D := by
   refine ⟨hu.continuousOn.sub hv.continuousOn, ?_, ?_, ?_, ?_, ?_⟩
   · intro z hz
@@ -119,11 +111,13 @@ private theorem isScalarC12On_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
       hv.continuousOn_scalarSpatialHessian).congr
     intro z hz
     exact scalarSpatialHessian_sub hu hv hz
+end
 
-private theorem scalarParabolicZeroOrderOperator_sub {n : ℕ}
-    (a : CoefficientField n) (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c : ℝ → PDE.Vec n → ℝ) {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+
+private theorem scalarParabolicZeroOrderOperator_sub
+    (a : CoefficientField n) (b : PDE.TimeVectorField n)
+    (c : PDE.TimeScalarField n) {u v : HypoellipticAleksandrov.Parabolic.ScalarField n}
+    {D : HypoellipticAleksandrov.Parabolic.Region n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarParabolicZeroOrderOperator a b c (fun q => u q - v q) z =
       scalarParabolicZeroOrderOperator a b c u z -
@@ -146,22 +140,20 @@ private theorem scalarParabolicZeroOrderOperator_sub {n : ℕ}
   rw [hHessian, hGradient]
   ring
 
+variable {Ω : PDE.VelocityRegion n} {r₀ r₁ : ℝ} (hΩOpen : IsOpen Ω) (hΩBounded : Bornology.IsBounded Ω) (hr : r₀ < r₁) (a : CoefficientField n) (b : PDE.TimeVectorField n)
+
+include hΩOpen hΩBounded hr
 /-- Ordered source, terminal, and lateral data order supplied classical backward solutions. -/
 theorem le_on_closedCylinder_of_isClassicalBackwardDirichletSolution
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ r₁ : ℝ}
-    (hΩOpen : IsOpen Ω)
-    (hΩBounded : Bornology.IsBounded Ω)
-    (hr : r₀ < r₁)
-    (a : CoefficientField n)
-    (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c : ℝ → PDE.Vec n → ℝ)
+
+    (c : PDE.TimeScalarField n)
     (haContinuous : IsContinuousCoefficient a)
     (hbContinuous : Continuous (fun z : TimeVelocity n => b z.1 z.2))
     (haPsd : ∀ r y, (a r y).PosSemidef)
     (hc : ∀ z ∈ scalarParabolicOpenCylinder r₀ r₁ Ω, c z.1 z.2 ≤ 0)
-    (F_u F_v : ℝ → PDE.Vec n → ℝ)
-    (phi_u phi_v : PDE.Vec n → ℝ)
-    (h_u h_v u v : TimeVelocity n → ℝ)
+    (F_u F_v : PDE.TimeScalarField n)
+    (phi_u phi_v : PDE.ScalarField n)
+    (h_u h_v u v : HypoellipticAleksandrov.Parabolic.ScalarField n)
     (hu : IsClassicalBackwardDirichletSolution r₀ r₁ Ω a b c F_u phi_u h_u u)
     (hv : IsClassicalBackwardDirichletSolution r₀ r₁ Ω a b c F_v phi_v h_v v)
     (hF : ∀ z ∈ scalarParabolicOpenCylinder r₀ r₁ Ω,
@@ -191,14 +183,9 @@ theorem le_on_closedCylinder_of_isClassicalBackwardDirichletSolution
 
 /-- Classical backward Dirichlet solutions with identical data agree on the closed cylinder. -/
 theorem eqOn_closedCylinder_of_isClassicalBackwardDirichletSolution
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ r₁ : ℝ}
-    (hΩOpen : IsOpen Ω)
-    (hΩBounded : Bornology.IsBounded Ω)
-    (hr : r₀ < r₁)
-    (a : CoefficientField n)
-    (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c F : ℝ → PDE.Vec n → ℝ)
-    (phi : PDE.Vec n → ℝ) (h u v : TimeVelocity n → ℝ)
+
+    (c F : PDE.TimeScalarField n)
+    (phi : PDE.ScalarField n) (h u v : HypoellipticAleksandrov.Parabolic.ScalarField n)
     (haContinuous : IsContinuousCoefficient a)
     (hbContinuous : Continuous (fun z : TimeVelocity n => b z.1 z.2))
     (haPsd : ∀ r y, (a r y).PosSemidef)

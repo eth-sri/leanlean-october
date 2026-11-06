@@ -27,26 +27,24 @@ theorem stripGreen_mono
   have hd := stripGreen_domain_mono_infinite hH hLE hlam hLam A H1 H2 hsub ei
   cases T1 with
   | top =>
-    have he : T2 = ⊤ := top_le_iff.mp hT
+    have he  := top_le_iff.mp hT
     subst T2
     exact hd
   | coe t1 =>
-    have ht1 : e.1.time < t1 := WithTop.coe_lt_coe.mp e.2.1
-    have h1 := stripGreen_finite_restrict_infinite hH hLE hlam hLam A H1 ei t1 ht1
-    have hp1 : stripPoleFinite H1 ei t1 ht1 = e := Subtype.ext rfl
-    have h1' := (congrArg (stripGreen hH hLE hlam hLam A H1 t1) hp1).symm.trans h1
-    apply h1' ▸ le_trans (Measure.restrict_mono_measure hd _)
+    have ht1  := WithTop.coe_lt_coe.mp e.2.1
+
+
+
+    apply ((congrArg (stripGreen hH hLE hlam hLam A H1 t1) (Subtype.ext rfl)).symm.trans (stripGreen_finite_restrict_infinite hH hLE hlam hLam A H1 ei t1 ht1)) ▸ le_trans (Measure.restrict_mono_measure hd _)
     cases T2 with
     | top => exact Measure.restrict_le_self
     | coe t2 =>
-      have ht12 : t1 ≤ t2 := WithTop.coe_le_coe.mp hT
-      have ht2 : e.1.time < t2 := ht1.trans_le ht12
+      have ht12  := WithTop.coe_le_coe.mp hT
+
       have h2 := stripGreen_finite_restrict_infinite hH hLE hlam hLam A H2
-        (nestedPoleInclusion H1 H2 hsub ⊤ ei) t2 ht2
-      have hp2 : stripPoleFinite H2 (nestedPoleInclusion H1 H2 hsub ⊤ ei) t2 ht2 =
-          stripEnlargePole H1 H2 hsub t1 t2 hT e := Subtype.ext rfl
-      have h2' :=
-        (congrArg (stripGreen hH hLE hlam hLam A H2 t2) hp2).symm.trans h2
-      exact h2'.symm ▸ Measure.restrict_mono_set _ (fun p hp => hp.trans_le ht12)
+        (nestedPoleInclusion H1 H2 hsub ⊤ ei) t2 (ht1.trans_le ht12)
+
+
+      exact ((congrArg (stripGreen hH hLE hlam hLam A H2 t2) (Subtype.ext rfl)).symm.trans h2).symm ▸ Measure.restrict_mono_set _ (fun p hp => hp.trans_le ht12)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

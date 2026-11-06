@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.Parabolic.Geometry
 public import PDEFoundation.Ambient.Basis
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Lean.Elab.Tactic.Omega
+
+
 
 /-!
 # Ordinary multi-indices on time--velocity space
@@ -26,12 +29,14 @@ abbrev TimeVelocityCoord (d : ℕ) := Unit ⊕ Fin d
 def timeCoord (d : ℕ) : TimeVelocityCoord d :=
   Sum.inl ()
 
+variable {d : ℕ}
+
 /-- The velocity coordinate associated to `i`. -/
-def velocityCoord {d : ℕ} (i : Fin d) : TimeVelocityCoord d :=
+def velocityCoord  (i : Fin d) : TimeVelocityCoord d :=
   Sum.inr i
 
 /-- The literal coordinate basis vector in `TimeVelocity d`. -/
-def timeVelocityBasis {d : ℕ} : TimeVelocityCoord d → TimeVelocity d
+def timeVelocityBasis  : TimeVelocityCoord d → TimeVelocity d
   | Sum.inl _ => (1, 0)
   | Sum.inr i => (0, PDE.basisVec i)
 
@@ -45,14 +50,16 @@ def VelocityMultiIndex.order (alpha : VelocityMultiIndex d) : ℕ :=
 /-- An ordinary multi-index in all time--velocity coordinates. -/
 abbrev TimeVelocityMultiIndex (d : ℕ) := TimeVelocityCoord d → ℕ
 
+variable (beta : TimeVelocityMultiIndex d)
+
 /-- Time order of an ordinary time--velocity multi-index. -/
 def TimeVelocityMultiIndex.timeOrder
-    (beta : TimeVelocityMultiIndex d) : ℕ :=
+     : ℕ :=
   beta (timeCoord d)
 
 /-- Velocity restriction of an ordinary time--velocity multi-index. -/
 def TimeVelocityMultiIndex.velocity
-    (beta : TimeVelocityMultiIndex d) : VelocityMultiIndex d :=
+     : VelocityMultiIndex d :=
   fun i => beta (velocityCoord i)
 
 /-- Assemble an ordinary multi-index from its time and velocity orders. -/
@@ -85,13 +92,15 @@ def TimeVelocityMultiIndex.parabolicWeight
       ((0, PDE.basisVec i) : TimeVelocity d) :=
   rfl
 
+variable (q : ℕ) (alpha : VelocityMultiIndex d)
+
 @[simp] theorem TimeVelocityMultiIndex.timeOrder_ofTimeVelocity
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     (ofTimeVelocity q alpha).timeOrder = q :=
   rfl
 
 @[simp] theorem TimeVelocityMultiIndex.velocity_ofTimeVelocity
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     (ofTimeVelocity q alpha).velocity = alpha :=
   rfl
 
@@ -102,28 +111,24 @@ def TimeVelocityMultiIndex.parabolicWeight
   funext i
   cases i <;> rfl
 
-@[simp] theorem TimeVelocityMultiIndex.order_ofTimeVelocity
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
-    (ofTimeVelocity q alpha).order = q + alpha.order :=
-  rfl
+variable (q : ℕ) (alpha : VelocityMultiIndex d)
+
+
 
 @[simp] theorem TimeVelocityMultiIndex.parabolicWeight_ofTimeVelocity
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     (ofTimeVelocity q alpha).parabolicWeight = alpha.parabolicWeight q :=
   rfl
 
 theorem VelocityMultiIndex.parabolicWeight_le_two_mul_order
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     alpha.parabolicWeight q ≤ 2 * (q + alpha.order) := by
   unfold VelocityMultiIndex.parabolicWeight
-  rw [Nat.mul_add]
-  rw [two_mul alpha.order]
-  exact Nat.add_le_add_left (Nat.le_add_left alpha.order alpha.order) (2 * q)
+  omega
 
 theorem TimeVelocityMultiIndex.parabolicWeight_le_two_mul_order
     (beta : TimeVelocityMultiIndex d) :
-    beta.parabolicWeight ≤ 2 * beta.order := by
-  exact VelocityMultiIndex.parabolicWeight_le_two_mul_order
+    beta.parabolicWeight ≤ 2 * beta.order := VelocityMultiIndex.parabolicWeight_le_two_mul_order
     beta.timeOrder beta.velocity
 
 theorem TimeVelocityMultiIndex.parabolicWeight_le_two_mul

@@ -1,13 +1,16 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitFourierSplit
+import Mathlib.Tactic.Linarith
+
+
 
 /-! # Uniform two-exponential bound for the actual full exit Fourier measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Parabolic
+open Set MeasureTheory SectionTwo
 
 /-- Combining loss and killed bounds only enlarges their structural prefactor. -/
 theorem exitFourier_add_positive_bounds {A B X Y : ℝ} (hA : 0 ≤ A) (hY : 0 ≤ Y) :
@@ -18,7 +21,7 @@ theorem exitFourier_add_positive_bounds {A B X Y : ℝ} (hA : 0 ≤ A) (hY : 0 �
 theorem exitFourier_exp_rate {a c x : ℝ} (hca : c ≤ a) (hx : 0 ≤ x) :
     Real.exp (-a * x) ≤ Real.exp (-c * x) :=
   Real.exp_le_exp.mpr (by
-    simpa only [neg_mul] using neg_le_neg (mul_le_mul_of_nonneg_right hca hx))
+    nlinarith)
 
 /-- The actual exit Fourier measure has both short-time exponentials, uniformly over all data. -/
 theorem ballExit_fourier_two_exponentials
@@ -44,11 +47,11 @@ theorem ballExit_fourier_two_exponentials
   intro B hB v₀ R hR P T H hv hsmall ξ
   let x := R ^ 2 / (H.1 - P.1.time)
   let y := (H.1 - P.1.time) * PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ)
-  have hh : 0 < H.1 - P.1.time := sub_pos.mpr H.2.1
-  have hx : 0 ≤ x := div_nonneg (sq_nonneg R) hh.le
-  have hy : 0 ≤ y := mul_nonneg hh.le (Real.rpow_nonneg (PDE.vecEuclideanNorm_nonneg _) _)
+  have hh  := sub_pos.mpr H.2.1
+  have hx  := div_nonneg (sq_nonneg R) hh.le
+
   have hs := hloss B hB v₀ R hR P ⟨H.1, H.2.1⟩ hv hsmall
-  have hk := hkilled B hB v₀ R hR P ⟨H.1, H.2.1⟩ hv hsmall ξ
+  have hk := hkilled B hB v₀ R hR P _ hv hsmall ξ
     (ballEvolutionQuery P ⟨H.1, H.2.1⟩) rfl
   have es : -cs * R ^ 2 / (H.1 - P.1.time) = -cs * x := by dsimp only [x]; ring
   have ek : -ck * R ^ 2 / (H.1 - P.1.time) = -ck * x := by dsimp only [x]; ring
@@ -61,7 +64,7 @@ theorem ballExit_fourier_two_exponentials
     (exitFourier_exp_rate (min_le_left cs ck) hx) hCs.le)
   have hk' := hk.trans (mul_le_mul_of_nonneg_left
     (add_le_add (exitFourier_exp_rate (min_le_right cs ck) hx)
-      (exitFourier_exp_rate (min_le_right cs ck) hy)) hCk.le)
+      (exitFourier_exp_rate (min_le_right cs ck) (mul_nonneg hh.le (Real.rpow_nonneg (PDE.vecEuclideanNorm_nonneg _) _)))) hCk.le)
   have hb := (ballExit_fourier_short_strip_bound hH hLE hd hlam hLam B hB v₀ hR
     P T H ξ).trans (add_le_add hs' hk')
   have he := exitFourier_add_positive_bounds (B := Ck) (X := Real.exp (-c * x))

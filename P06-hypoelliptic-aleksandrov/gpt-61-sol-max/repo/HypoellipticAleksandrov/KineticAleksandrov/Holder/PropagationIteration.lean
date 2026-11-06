@@ -2,12 +2,17 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationIterationOverlap
 import Mathlib.Tactic
+import Mathlib.Tactic.Linarith
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-! # Source overlap induction on the finite Gaussian block chain -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -21,11 +26,11 @@ theorem propagation_overlap_induction {d : ℕ} (hd : 1 ≤ d)
     (n : ℕ) (hnTP : (n : ℝ) * h ≤ TP)
     (A : FullKineticCoefficient d) (hA : FullElliptic lam Lam A)
     (O : Set (KineticPoint d)) (tminus : ℝ)
-    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
-    (hv : ContDiff ℝ (⊤ : ℕ∞) v) (hkin : ∀ s, HasDerivAt x (v s) s)
+    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ PDE.smoothOrder x)
+    (hv : ContDiff ℝ PDE.smoothOrder v) (hkin : ∀ s, HasDerivAt x (v s) s)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|)
     (htube : corridor tminus (-T0) TP (kx / 2) (kv / 2) x v ⊆ O)
-    {p C_A : ℝ} (u : KineticPoint d → ℝ) (hnonneg : ∀ P ∈ O, 0 ≤ u P)
+    {p C_A : ℝ} (u : HypoellipticAleksandrov.KineticScalarField d) (hnonneg : ∀ P ∈ O, 0 ≤ u P)
     (hu : IsAdmissibleSupersolution A O p C_A u)
     (hinitial : ∀ P ∈ corridor tminus (-T0) TP (kx / 2) (kv / 2) x v,
       P.time ≤ tminus → ell ≤ u P) :
@@ -39,7 +44,7 @@ theorem propagation_overlap_induction {d : ℕ} (hd : 1 ≤ d)
   let L := barrierL d lam Lam H T1
   let gamma := barrierGamma L
   let a := fun k : ℕ => gamma ^ k * Real.exp (-L ^ 2 / 512) * ell
-  have hL : 0 < L := barrierL_pos (H := H) hd hlam hLam (hT0.le.trans hT1)
+  have hL : 0 < L := barrierL_pos  hd hlam hLam (hT0.le.trans hT1)
   have hgamma := (barrierGamma_bounds hL).1
   have ha : ∀ k, 0 ≤ a k := fun k =>
     mul_nonneg (mul_nonneg (pow_nonneg hgamma.le k) (Real.exp_pos _).le) hell
@@ -59,14 +64,12 @@ theorem propagation_overlap_induction {d : ℕ} (hd : 1 ≤ d)
       norm_num at he
       exact he.trans hnTP
     apply propagation_one_block hd hlam hLam hH hT0 hT1 hkx hkv hh hhstar (ha 0)
-      A hA O tminus 0 TP (by norm_num) (by simpa only [zero_add] using hb)
+      A hA O tminus 0 TP (by norm_num) (by simpa using hb)
       hx hv hkin hLip htube u hnonneg hu
     intro P hP ht
     have hcont := propagation_block_containment hH hT0 hT1 hkx hkv hh hhstar
       tminus 0 TP (by norm_num) (by
-        have he := mul_le_mul_of_nonneg_right (Nat.cast_le.mpr hkn) hh.le
-        norm_num at he ⊢
-        exact he.trans hnTP) hv.continuous hkin hLip hP
+        linarith) hv.continuous hkin hLip hP
     have hupper := gaussianBarrier_initial_upper hlam hh Lam H L (a 0) tminus 0
       hLam (ha 0) hbudget x v P ht
     have heq : a 0 * Real.exp (L ^ 2 / 512) = ell := by

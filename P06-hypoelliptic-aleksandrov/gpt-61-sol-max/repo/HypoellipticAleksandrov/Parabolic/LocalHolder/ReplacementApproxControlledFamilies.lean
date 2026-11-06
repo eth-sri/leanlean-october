@@ -12,15 +12,15 @@ Uniform seed energy produces actual higher families with the literal homogeneous
 retained. The norm bound is independent of the sequence index.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
 /-- Uniform homogeneous seed jets give a common sequence of controlled higher families. -/
 theorem exists_controlled_homogeneous_higher_families {d : ℕ}
-    {Ω O₀ O : Set (PDE.Vec d)}
+    {Ω O₀ O : PDE.VelocityRegion d}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)
@@ -62,22 +62,19 @@ theorem exists_controlled_homogeneous_higher_families {d : ℕ}
   choose D hlow hnorm using hex
   refine ⟨Ci * N + 1, D, by positivity, ?_, ?_⟩
   · intro n
-    have hb := (hnorm n).trans (mul_le_mul_of_nonneg_left (hseed n) hCi)
-    have hp : 0 ≤ Ci * N := mul_nonneg hCi hN
-    nlinarith only [hb, hp, sq_nonneg (Ci * N)]
+
+
+    nlinarith only [((hnorm n).trans (mul_le_mul_of_nonneg_left (hseed n) hCi)), (mul_nonneg hCi hN), sq_nonneg (Ci * N)]
   · intro n
-    have hEqfull : (fun z => (J n).timeDeriv z +
-        (∑ i, ∑ j, A z.1 z.2 i j * (J n).velocityHessian z j i) +
-        (∑ j, (0 : PDE.Vec d) j * (J n).velocityGrad z j) +
-        0 * (J n).toFun z) =ᵐ[timeVelocityVolumeOn (Ioo q₀ q₁ ×ˢ O₀)] 0 := by
-      filter_upwards [hEq n] with z hz
-      simpa using hz
+
     have hcanon := (J n).toWeakDerivativeFamily_originalTimeEquation
-      (isOpen_Ioo.prod hO₀open) A (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => 0) hEqfull
-    have hsub : Ioo s₀ s₁ ×ˢ O ⊆ Ioo q₀ q₁ ×ˢ O₀ := by
-      intro z hz
-      exact ⟨⟨hq₀s₀.trans hz.1.1, hz.1.2.trans hs₁q₁⟩, hOO₀ (subset_closure hz.2)⟩
-    filter_upwards [hcanon.filter_mono (ae_mono (Measure.restrict_mono_set volume hsub))]
+      (isOpen_Ioo.prod hO₀open) A (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => 0) (by
+          filter_upwards [hEq n] with z hz
+          simpa using hz)
+
+    filter_upwards [hcanon.filter_mono (ae_mono (Measure.restrict_mono_set volume (by
+        intro z hz
+        exact ⟨⟨hq₀s₀.trans hz.1.1, hz.1.2.trans hs₁q₁⟩, hOO₀ (subset_closure hz.2)⟩)))]
       with z hz
     simp only [homogeneousWeakFamilyResidual, hlow n] at ⊢
     simpa only [Pi.zero_apply, zero_mul, Finset.sum_const_zero, add_zero] using hz

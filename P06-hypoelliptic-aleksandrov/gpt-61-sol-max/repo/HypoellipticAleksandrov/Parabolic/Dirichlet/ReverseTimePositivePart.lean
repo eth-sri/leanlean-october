@@ -21,12 +21,14 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
+
+variable (hΩ : IsOpen Ω) (T : ℝ)
 
 /-- The pointwise positive part remains in reverse-time Bochner L². -/
 theorem reverseTimePositivePart_memLp
-    (hΩ : IsOpen Ω) (T : ℝ) (u : ReverseTimeL2V hΩ T) :
-    MemLp (fun τ => h10PositivePart hΩ (u τ)) (2 : ℝ≥0∞)
+     (u : ReverseTimeL2V hΩ T) :
+    MemLp (fun τ => h10PositivePart hΩ (u τ)) (2 )
       (reverseTimeVolume T) := by
   apply MemLp.of_le (Lp.memLp u)
   · exact continuous_h10PositivePart hΩ |>.comp_aestronglyMeasurable
@@ -36,15 +38,17 @@ theorem reverseTimePositivePart_memLp
 
 /-- The pointwise spatial positive part, canonically lifted to reverse-time
 Bochner `L²(V)`. -/
-noncomputable def reverseTimePositivePart
-    (hΩ : IsOpen Ω) (T : ℝ) : ReverseTimeL2V hΩ T → ReverseTimeL2V hΩ T :=
+def reverseTimePositivePart
+     : ReverseTimeL2V hΩ T → ReverseTimeL2V hΩ T :=
   fun u => (reverseTimePositivePart_memLp hΩ T u).toLp
     (fun τ => h10PositivePart hΩ (u τ))
+
+variable (u : ReverseTimeL2V hΩ T)
 
 /-- The reverse-time Bochner positive part agrees almost everywhere with the
 pointwise spatial `H¹₀` positive part. -/
 theorem coeFn_reverseTimePositivePart
-    (hΩ : IsOpen Ω) (T : ℝ) (u : ReverseTimeL2V hΩ T) :
+      :
     reverseTimePositivePart hΩ T u =ᵐ[reverseTimeVolume T]
       fun τ => h10PositivePart hΩ (u τ) :=
   (reverseTimePositivePart_memLp hΩ T u).coeFn_toLp
@@ -52,8 +56,8 @@ theorem coeFn_reverseTimePositivePart
 /-- Pairing a reverse-time `L²(V*)` curve with the pointwise positive part of
 a reverse-time `L²(V)` curve is integrable. -/
 theorem integrable_reverseTimeDualPairing_positivePart
-    (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
+
+     (g : ReverseTimeL2VStar hΩ T) :
     Integrable (fun τ => (g τ) (h10PositivePart hΩ (u τ)))
       (reverseTimeVolume T) := by
   refine (integrable_reverseTimeDualPairing hΩ T

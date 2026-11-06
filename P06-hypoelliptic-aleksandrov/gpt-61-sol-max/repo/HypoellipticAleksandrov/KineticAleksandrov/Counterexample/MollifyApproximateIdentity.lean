@@ -7,6 +7,8 @@ public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
 import Mathlib.Tactic.Positivity
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Bounded approximate identities on finite-measure regions
@@ -23,12 +25,7 @@ open scoped Topology Convolution ENNReal
 
 /-- Native spatial volume is the product of the two coordinate Lebesgue Haar measures. -/
 instance nativeSpatialVolume_isAddHaarMeasure (d : ℕ) :
-    Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec d × PDE.Vec d)) := by
-  change Measure.IsAddHaarMeasure
-    ((volume : Measure (PDE.Vec d)).prod (volume : Measure (PDE.Vec d)))
-  let : Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec d)) :=
-    isAddHaarMeasure_volume_pi (Fin d)
-  exact Measure.prod.instIsAddHaarMeasure _ _
+    Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec d × PDE.Vec d)) := (id (Measure.prod.instIsAddHaarMeasure volume volume))
 
 /-- Bounded almost-everywhere convergence implies finite-exponent norm convergence. -/
 theorem bounded_convergence_eLpNorm {X : Type*} [MeasurableSpace X]
@@ -37,28 +34,28 @@ theorem bounded_convergence_eLpNorm {X : Type*} [MeasurableSpace X]
     (C : ℝ) (hbound : ∀ n, ∀ᵐ x ∂ν, ‖F n x‖ ≤ C)
     (hlim : ∀ᵐ x ∂ν, Tendsto (fun n => F n x) atTop (𝓝 0)) :
     Tendsto (fun n => eLpNorm (F n) p ν) atTop (𝓝 0) := by
-  have hpow : 0 < p.toReal := ENNReal.toReal_pos hp0 hp
-  have hi : Tendsto (fun n => ∫⁻ x, ‖F n x‖ₑ ^ p.toReal ∂ν) atTop (𝓝 0) := by
-    have hh := tendsto_lintegral_of_dominated_convergence'
-      (μ := ν) (F := fun n x => ‖F n x‖ₑ ^ p.toReal) (f := fun _ => 0)
-      (fun _ => ENNReal.ofReal C ^ p.toReal)
-      (fun n => (hF n).enorm.pow_const p.toReal) ?_ ?_ ?_
-    · simpa only [lintegral_zero] using! hh
-    · intro n
-      filter_upwards [hbound n] with x hx
-      apply ENNReal.rpow_le_rpow _ hpow.le
-      simpa only [ofReal_norm] using! ENNReal.ofReal_le_ofReal hx
-    · simp only [lintegral_const]
-      exact ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg hpow.le
-        ENNReal.ofReal_ne_top) (measure_ne_top ν Set.univ)
-    · filter_upwards [hlim] with x hx
-      have hn : Tendsto (fun n => ‖F n x‖ₑ) atTop (𝓝 0) := by
-        simpa only [Function.comp_apply, enorm_zero] using!
-          (continuous_enorm.tendsto (0 : ℝ)).comp hx
-      simpa only [Function.comp_apply, ENNReal.zero_rpow_of_pos hpow] using!
-        (ENNReal.continuous_rpow_const (y := p.toReal).tendsto (0 : ℝ≥0∞)).comp hn
+  have hpow  := ENNReal.toReal_pos hp0 hp
+
   have hr := (ENNReal.continuous_rpow_const (y := 1 / p.toReal).tendsto
-    (0 : ℝ≥0∞)).comp hi
+    (0 )).comp (by
+        have hh := tendsto_lintegral_of_dominated_convergence'
+          (μ := ν) (F := fun n x => ‖F n x‖ₑ ^ p.toReal) (f := fun _ => 0)
+          (fun _ => ENNReal.ofReal C ^ p.toReal)
+          (fun n => (hF n).enorm.pow_const p.toReal) ?_ ?_ ?_
+        · simpa only [lintegral_zero] using! hh
+        · intro n
+          filter_upwards [hbound n] with x hx
+          apply ENNReal.rpow_le_rpow _ hpow.le
+          simpa only [ofReal_norm] using! ENNReal.ofReal_le_ofReal hx
+        · simp only [lintegral_const]
+          exact ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg hpow.le
+            ENNReal.ofReal_ne_top) (measure_ne_top ν Set.univ)
+        · filter_upwards [hlim] with x hx
+
+          simpa only [Function.comp_apply, ENNReal.zero_rpow_of_pos hpow] using!
+            (ENNReal.continuous_rpow_const (y := p.toReal).tendsto (0 )).comp (by
+                simpa only [Function.comp_apply, enorm_zero] using!
+                  (continuous_enorm.tendsto (0 : ℝ)).comp hx))
   have hresult : Tendsto (fun n =>
       (∫⁻ x, ‖F n x‖ₑ ^ p.toReal ∂ν) ^ (1 / p.toReal)) atTop (𝓝 0) := by
     simpa only [Function.comp_apply, ENNReal.zero_rpow_of_pos (one_div_pos.mpr hpow)] using! hr
@@ -98,13 +95,15 @@ variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
   [MeasureSpace G] [BorelSpace G] [FiniteDimensional ℝ G]
    [Measure.IsAddHaarMeasure (volume : Measure G)]
 
+variable (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+
 /-- Spatial smoothing by an actual normalized bump kernel. -/
-def spatialMollify (φ : ContDiffBump (0 : G)) (g : G → ℝ) : G → ℝ :=
+def spatialMollify  : G → ℝ :=
   φ.normed volume ⋆[lsmul ℝ ℝ, volume] g
 
 /-- Bounded input gives the same uniform bound after normalized convolution. -/
-theorem spatialMollify_norm_le (φ : ContDiffBump (0 : G)) (g : G → ℝ)
-    (hg : AEStronglyMeasurable g volume) (C : ℝ) (hC : 0 ≤ C)
+theorem spatialMollify_norm_le
+    (hg : AEStronglyMeasurable g ) (C : ℝ) (hC : 0 ≤ C)
     (hbound : ∀ x, ‖g x‖ ≤ C) (x : G) : ‖spatialMollify φ g x‖ ≤ C := by
   have h := dist_convolution_le (μ := volume) (x₀ := x) (z₀ := (0 : ℝ)) hC
     φ.support_normed_eq.subset φ.nonneg_normed φ.integral_normed hg
@@ -112,9 +111,9 @@ theorem spatialMollify_norm_le (φ : ContDiffBump (0 : G)) (g : G → ℝ)
   simpa only [spatialMollify, dist_zero_right] using! h
 
 /-- Spatial convolution is smooth; this does not assert joint time smoothness. -/
-theorem spatialMollify_contDiff (φ : ContDiffBump (0 : G)) (g : G → ℝ)
-    (hg : LocallyIntegrable g volume) :
-    ContDiff ℝ (⊤ : ℕ∞) (spatialMollify φ g) :=
+theorem spatialMollify_contDiff
+    (hg : LocallyIntegrable g ) :
+    ContDiff ℝ PDE.smoothOrder (spatialMollify φ g) :=
   φ.hasCompactSupport_normed.contDiff_convolution_left (lsmul ℝ ℝ)
     φ.contDiff_normed hg
 

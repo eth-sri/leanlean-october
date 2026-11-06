@@ -17,15 +17,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory
 open scoped Classical
 
+variable (P : Point) (I : Interval)
+
 /-- Occupation before the first entrance; zero if the initial point is already inside. -/
-def visitInitialGreen (P : Point) (I : Interval)
+def visitInitialGreen
     (greenWaiting : Kernel Point Point) : Measure Point :=
   if P.velocity 0 ∈ closure I.carrier then 0 else greenWaiting P
 
 /-- The finite alternating identity under the exact three consumed AU-06 Green splits.
 Index `N` in the remainder is the source's entrance number `N + 1`. -/
 theorem alternating_green_of_nested_splitting
-    (P : Point) (I : Interval) (Sin Sout : Set Point)
+     (Sin Sout : Set Point)
     (exitActive exitWaiting greenActive greenWaiting greenOuter : Kernel Point Point)
     (hinitial : greenOuter P = visitInitialGreen P I greenWaiting +
       greenOuter ∘ₘ visitGamma P I Sin Sout exitActive exitWaiting 0)

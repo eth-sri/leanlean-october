@@ -11,16 +11,17 @@ This uses the vendored representative-level Sobolev calculus. The hypotheses are
 ordinary Sobolev regularity of arbitrary functions on an open bounded convex domain.
 -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
-open MeasureTheory
+
 open scoped ENNReal
 
+variable {n : ℕ} {D : PDE.VelocityRegion n} {p : ℝ≥0∞} (hD : PDE.IsOpenBoundedConvexDomain D) (hp : 1 ≤ p) (hpTop : p ≠ ∞) (u B : PDE.W1pFunction D p)
+
+include hD hp hpTop
 /-- A bounded-derivative `C¹` cutoff of two Sobolev representatives has the chain-rule
 weak gradient, including the derivative of the subtracted function. -/
-theorem weakGradient_cutoff_sub {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
-    (hD : PDE.IsOpenBoundedConvexDomain D) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u B : PDE.W1pFunction D p) (theta : ℝ → ℝ) (htheta : ContDiff ℝ 1 theta)
+theorem weakGradient_cutoff_sub  (theta : ℝ → ℝ) (htheta : ContDiff ℝ 1 theta)
     (M : ℝ) (hM : 0 ≤ M) (hbound : ∀ s, |deriv theta s| ≤ M) :
     PDE.HasWeakGradientOn D
       (fun x => theta (u.toFun x - B.toFun x))
@@ -31,9 +32,7 @@ theorem weakGradient_cutoff_sub {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
       hD hp hpTop (u - B) htheta hM hbound
 
 /-- The fixed Appendix C cutoff has multiplier bound one in the weak chain rule. -/
-theorem weakGradient_timeCutoff_sub {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
-    (hD : PDE.IsOpenBoundedConvexDomain D) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u B : PDE.W1pFunction D p) :
+theorem weakGradient_timeCutoff_sub  :
     PDE.HasWeakGradientOn D
       (fun x => timeCutoffTheta (u.toFun x - B.toFun x))
       (fun x i => deriv timeCutoffTheta (u.toFun x - B.toFun x) *

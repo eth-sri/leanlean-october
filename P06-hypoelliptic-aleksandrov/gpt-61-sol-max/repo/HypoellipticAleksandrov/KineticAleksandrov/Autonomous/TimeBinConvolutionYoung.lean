@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionDens
 
 /-! # Young's inequality for the literal one-index time convolution -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory
+
 open scoped ENNReal Classical
 
 /-- Source-index convolution obeys Young's q-power counting estimate on the integer grid. -/
@@ -17,13 +17,16 @@ theorem entrance_time_young (w a : ℤ → ℝ≥0∞) (q : ℝ) (hq : 1 < q) :
       (∑' k : ℤ, w k) ^ q * ∑' j : ℤ, a j ^ q := by
   have he (j : ℤ) : (∑' k : ℤ, w (j - k) * a k) =
       ∑' k : ℤ, w k * a (j - k) := by
-    have h := (Equiv.subLeft j).tsum_eq (fun k => w (j - k) * a k)
-    simpa only [Equiv.subLeft_apply, sub_sub_cancel] using h.symm
+
+    simpa only [Equiv.subLeft_apply, sub_sub_cancel] using ((Equiv.subLeft j).tsum_eq (fun k => w (j - k) * a k)).symm
   simp_rw [he]
   exact position_two_index_young w a q hq
 
+variable (c₀ : ℝ) (hc₀ : 0 < c₀)
+
+include hc₀
 /-- Exponential time-bin weights have a summable integer majorant. -/
-theorem entranceBinWeight_le (c₀ : ℝ) (hc₀ : 0 < c₀) (j k : ℤ) :
+theorem entranceBinWeight_le  (j k : ℤ) :
     entranceBinWeight c₀ j k ≤ ENNReal.ofReal (Real.exp c₀) *
       ENNReal.ofReal (Real.exp (-c₀ * |((j - k : ℤ) : ℝ)|)) := by
   unfold entranceBinWeight
@@ -32,15 +35,15 @@ theorem entranceBinWeight_le (c₀ : ℝ) (hc₀ : 0 < c₀) (j k : ℤ) :
     apply ENNReal.ofReal_le_ofReal
     rw [← Real.exp_add]
     apply Real.exp_le_exp.mpr
-    have hh : 0 ≤ (j : ℝ) - (k : ℝ) := by exact_mod_cast sub_nonneg.mpr hkj
-    rw [Int.cast_sub, abs_of_nonneg hh]
-    have hm := le_max_left ((j : ℝ) - (k : ℝ) - 1) 0
+
+    rw [Int.cast_sub, abs_of_nonneg (by exact_mod_cast sub_nonneg.mpr hkj)]
+
     change -c₀ * max ((j : ℝ) - (k : ℝ) - 1) 0 ≤ _
-    nlinarith only [hc₀, hm]
+    nlinarith only [hc₀, (le_max_left ((j : ℝ) - (k : ℝ) - 1) 0)]
   · exact zero_le
 
 /-- The actual causal time convolution has its q-power sum bounded by the input mass sum. -/
-theorem entrance_convolution_power_sum (c₀ : ℝ) (hc₀ : 0 < c₀)
+theorem entrance_convolution_power_sum
     (a : ℤ → ℝ≥0∞) (q : ℝ) (hq : 1 < q) :
     (∑' j : ℤ, (∑' k : ℤ, entranceBinWeight c₀ j k * a k) ^ q) ≤
       (ENNReal.ofReal (Real.exp c₀) *

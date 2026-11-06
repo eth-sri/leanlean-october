@@ -1,23 +1,25 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionNative
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Comparison of smooth homogeneous solutions against a genuine spatial tail barrier -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open Set
+open SectionTwo TheoremA
 
 /-- Growth comparison controls a homogeneous solution gap by its actual exit discrepancy. -/
 theorem reconstruction_homogeneous_gap_le_barrier
     {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
     (H : Interval) (lower T : ℝ) (e : StripPole H (T : WithTop ℝ)) (he : lower < e.1.time)
     (u v : Point → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' reconstructionStrip H lower T))
-    (hv : ContDiffOn ℝ (⊤ : ℕ∞) (v ∘ (KineticPoint.equivProd 1).symm)
+    (hv : ContDiffOn ℝ PDE.smoothOrder (v ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' reconstructionStrip H lower T))
     (huop : ∀ p ∈ reconstructionStrip H lower T, forwardScalarOperator A.a u p = 0)
     (hvop : ∀ p ∈ reconstructionStrip H lower T, forwardScalarOperator A.a v p = 0)
@@ -38,9 +40,8 @@ theorem reconstruction_homogeneous_gap_le_barrier
       sectionTwoPoint p ∈ reconstructionStrip H lower T := by
     intro p hp
     refine ⟨he.trans_le hp.1, hp.2.1, ?_⟩
-    simpa only [mem_movingDomain_iff, PDE.mem_translateSet_iff_sub_mem, sub_zero,
-      intervalDomain, PDE.mem_oneDimensionalAxisBox_iff, PDE.vecOneCoordinate, Interval.carrier,
-      sectionTwoPoint] using hp.2.2
+    simpa only [Interval.carrier, sectionTwoPoint, intervalDomain, mem_movingDomain_iff, sub_zero,
+      PDE.mem_oneDimensionalAxisBox_iff, PDE.vecOneCoordinate] using hp.2.2
   have hslab : ∀ p ∈ movingClosedSlab (intervalDomain H) (fun _ => 0) a T,
       sectionTwoPoint p ∈ reconstructionClosedSlab H a T := by
     intro p hp

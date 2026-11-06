@@ -60,19 +60,16 @@ theorem on_domain {d : ℕ} {C : ℝ}
     (hD : 0 ≤ D) (hUPos : 0 < volume U)
     (hUTop : volume U < ∞)
     (u : W1pFunction U (ENNReal.ofReal p))
-    (huMean : MeanZeroOn U u.toFun) :
-    eLpMeanNormOn U (ENNReal.ofReal p) u.toFun ≤
-      ENNReal.ofReal (C * D) *
-        euclideanFieldELpMeanNormOn U
-          (ENNReal.ofReal p) u.grad :=
+    (huMean : MeanZeroOn U u.toFun) : type_of% (hC.2 p hp U D hU hUDiameter hD hUPos hUTop u huMean) :=
   hC.2 p hp U D hU hUDiameter hD hUPos hUTop u huMean
 
+variable {d : ℕ} {C : ℝ} (hC : IsUniformMeanZeroPoincareConstant d C) {p : ℝ} (hp : 1 ≤ p)
+
+include hC hp
 /-- The unnormalized form on a bounded open convex domain. The same exponent
 appears on both sides, so the exact volume factors cancel without changing
 the constant. -/
-theorem on_domain_unnormalized {d : ℕ} {C : ℝ}
-    (hC : IsUniformMeanZeroPoincareConstant d C)
-    {p : ℝ} (hp : 1 ≤ p) {U : Set (Vec d)}
+theorem on_domain_unnormalized  {U : Set (Vec d)}
     {D : ℝ}
     (hU : IsOpenBoundedConvexDomain U)
     (hUDiameter : HasEuclideanDiameterLE U D)
@@ -83,30 +80,28 @@ theorem on_domain_unnormalized {d : ℕ} {C : ℝ}
     eLpNormOn U (ENNReal.ofReal p) u.toFun ≤
       ENNReal.ofReal (C * D) *
         euclideanFieldELpNormOn U (ENNReal.ofReal p) u.grad := by
-  have hNormalized :=
-    hC.on_domain hp hU hUDiameter hD hUPos hUTop u huMean
+  let sharedTerm_3ff299bc37 := (volume U ^ (1 / ENNReal.ofReal p).toReal)
+
   rw [eLpNormOn_eq_volume_rpow_mul_eLpMeanNormOn
       hUPos hUTop,
     euclideanFieldELpNormOn_eq_volume_rpow_mul
       hUPos hUTop]
   calc
-    volume U ^ (1 / ENNReal.ofReal p).toReal *
+    sharedTerm_3ff299bc37 *
           eLpMeanNormOn U (ENNReal.ofReal p) u.toFun ≤
-        volume U ^ (1 / ENNReal.ofReal p).toReal *
+        sharedTerm_3ff299bc37 *
           (ENNReal.ofReal (C * D) *
             euclideanFieldELpMeanNormOn U
               (ENNReal.ofReal p) u.grad) :=
-      mul_le_mul_right hNormalized _
+      mul_le_mul_right (hC.on_domain hp hU hUDiameter hD hUPos hUTop u huMean) _
     _ = ENNReal.ofReal (C * D) *
-        (volume U ^ (1 / ENNReal.ofReal p).toReal *
+        (sharedTerm_3ff299bc37 *
           euclideanFieldELpMeanNormOn U
             (ENNReal.ofReal p) u.grad) := by
       ac_rfl
 
 /-- Unnormalized axis-cube specialization. -/
-theorem on_axisCube_unnormalized {d : ℕ} {C : ℝ}
-    (hC : IsUniformMeanZeroPoincareConstant d C)
-    {p : ℝ} (hp : 1 ≤ p) (z : Vec d)
+theorem on_axisCube_unnormalized  (z : Vec d)
     {L : ℝ} (hL : 0 < L)
     (u : W1pFunction (axisCube z L) (ENNReal.ofReal p))
     (huMean : MeanZeroOn (axisCube z L) u.toFun) :
@@ -114,9 +109,7 @@ theorem on_axisCube_unnormalized {d : ℕ} {C : ℝ}
         (ENNReal.ofReal p) u.toFun ≤
       ENNReal.ofReal (C * (Real.sqrt d * L)) *
         euclideanFieldELpNormOn (axisCube z L)
-          (ENNReal.ofReal p) u.grad := by
-  exact
-    hC.on_domain_unnormalized hp
+          (ENNReal.ofReal p) u.grad := hC.on_domain_unnormalized hp
       (isOpenBoundedConvexDomain_axisCube z L)
       (hasEuclideanDiameterLE_axisCube z hL.le)
       (mul_nonneg (Real.sqrt_nonneg d) hL.le)

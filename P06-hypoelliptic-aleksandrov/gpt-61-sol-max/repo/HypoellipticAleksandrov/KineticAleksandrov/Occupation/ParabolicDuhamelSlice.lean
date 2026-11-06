@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelDefs
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Source slices and their classical solutions
@@ -21,26 +23,38 @@ open MeasureTheory Set
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open scoped ENNReal ProbabilityTheory
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
+
+section
+variable (Ω : PDE.VelocityRegion d) (γ : ℝ → PDE.Vec d)
+
+section
+variable (T : ℝ)
 
 /-- The open starting set `U₀ = {(s,v) : s < T, v ∈ Ω_s}` of the Duhamel potential. -/
-def duhamelFiber (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (T : ℝ) : Set (TimeVelocity d) :=
+def duhamelFiber   : HypoellipticAleksandrov.Parabolic.Region d :=
   {p | p.1 < T ∧ p.2 ∈ movingDomain Ω γ p.1}
 
 /-- The closed region `{(s,v) : s ≤ T, v ∈ closure Ω_s}` carrying the continuous extension. -/
-def duhamelClosedFiber (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (T : ℝ) :
-    Set (TimeVelocity d) :=
+def duhamelClosedFiber   :
+    HypoellipticAleksandrov.Parabolic.Region d :=
   {p | p.1 ≤ T ∧ p.2 ∈ closure (movingDomain Ω γ p.1)}
+end
+
+
+variable (r : ℝ)
 
 /-- The open past cylinder at the source time `r`. -/
-def sliceOpenCylinder (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (r : ℝ) :
-    Set (TimeVelocity d) :=
+def sliceOpenCylinder   :
+    HypoellipticAleksandrov.Parabolic.Region d :=
   ParabolicProbe.scalarPastOpenCylinder Ω γ r
 
 /-- The closed past cylinder at the source time `r`. -/
-def sliceClosedCylinder (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (r : ℝ) :
-    Set (TimeVelocity d) :=
+def sliceClosedCylinder   :
+    HypoellipticAleksandrov.Parabolic.Region d :=
   ParabolicProbe.scalarPastClosedCylinder Ω γ r
+end
+
 
 /-- The fiber `U₀` is open when the curve is continuous and the base domain is open. -/
 theorem isOpen_duhamelFiber (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ) :
@@ -60,26 +74,32 @@ theorem duhamelFiber_subset_closedFiber (T : ℝ) :
     duhamelFiber Ω γ T ⊆ duhamelClosedFiber Ω γ T := fun _ hp =>
   ⟨hp.1.le, subset_closure hp.2⟩
 
+section
+variable (g : HypoellipticAleksandrov.Parabolic.ScalarField d)
+
+section
+variable (hg : Continuous g) (hc : HasCompactSupport g) (r : ℝ)
+
 /-- The slice `v ↦ g(r,v)` of a continuous compactly supported source, as a bounded Borel
 function. -/
-def sliceBorel (g : TimeVelocity d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g) (r : ℝ) :
+def sliceBorel   :
     BoundedBorel (PDE.Vec d) :=
   ⟨fun v => g (r, v), (hg.comp (continuous_const.prodMk continuous_id)).measurable, by
     obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hc
     refine ⟨max C 0, le_max_right _ _, fun v => ?_⟩
-    simpa only [Real.norm_eq_abs] using (hC (r, v)).trans (le_max_left _ _)⟩
+    exact (hC (r, v)).trans (le_max_left _ _)⟩
 
-@[simp] theorem sliceBorel_apply (g : TimeVelocity d → ℝ) (hg : Continuous g)
-    (hc : HasCompactSupport g) (r : ℝ) (v : PDE.Vec d) : sliceBorel g hg hc r v = g (r, v) :=
-  rfl
+
+end
+
 
 /-- Slices of a smooth compactly supported source in `U₀` are smooth compact terminal data. -/
-theorem isSmoothCompactScalarTerminalDatum_slice (g : TimeVelocity d → ℝ)
-    (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
+theorem isSmoothCompactScalarTerminalDatum_slice
+    (hgs : ContDiff ℝ PDE.smoothOrder g) (hgc : HasCompactSupport g) (T : ℝ)
     (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (r : ℝ) :
     ParabolicProbe.IsSmoothCompactScalarTerminalDatum Ω γ r
       (sliceBorel g hgs.continuous hgc r) := by
-  have hsub : tsupport (fun v : PDE.Vec d => g (r, v)) ⊆
+  have hsub : tsupport (fun v  => g (r, v)) ⊆
       Prod.snd '' (tsupport g ∩ Prod.fst ⁻¹' {r}) := by
     apply closure_minimal
     · intro v hv
@@ -91,10 +111,12 @@ theorem isSmoothCompactScalarTerminalDatum_slice (g : TimeVelocity d → ℝ)
       continuous_snd).of_isClosed_subset (isClosed_tsupport _) hsub
   · intro v hv
     obtain ⟨p, ⟨hp1, hp2⟩, rfl⟩ := hsub hv
-    have : p = (r, p.2) := Prod.ext hp2 rfl
+
     have h := (hgU hp1).2
     rw [hp2] at h
     exact h
+end
+
 
 variable (K : MovingFiberKernel Ω γ)
 
@@ -103,9 +125,9 @@ marginal-kernel source integral. -/
 theorem exists_slice_solution {B : CoefficientField d}
     (hΩ : MeasurableSet Ω)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ hΩ (zIndependentCoefficient B) K)
-    (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
+    (g : HypoellipticAleksandrov.Parabolic.ScalarField d) (hgs : ContDiff ℝ PDE.smoothOrder g) (hgc : HasCompactSupport g) (T : ℝ)
     (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (r : ℝ) :
-    ∃ V : TimeVelocity d → ℝ,
+    ∃ V : HypoellipticAleksandrov.Parabolic.ScalarField d,
       ParabolicProbe.IsClassicalScalarTerminalSolution Ω γ (zIndependentCoefficient B) r
         (sliceBorel g hgs.continuous hgc r) V ∧
       ∀ (s : ℝ) (hsr : s ≤ r) (y : EvolutionPosition Ω γ s),

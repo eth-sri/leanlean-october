@@ -9,10 +9,10 @@ The shared signed Borel-source identity supplies the forcing equation. No smooth
 separation from the velocity faces is imposed on the source.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov MeasureTheory
+
 open SectionTwo Evolution
 
 /-- Every bounded Borel source has the actual weak Duhamel forcing equation on the strip. -/

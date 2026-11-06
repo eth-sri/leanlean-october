@@ -18,39 +18,41 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 /-- The ordinary scalar Wronskian, with the source solution first. -/
 def scalarWronskian (f g : ℝ → ℝ) (s : ℝ) : ℝ := f s * deriv g s - deriv f s * g s
 
+variable (f g : ℝ → ℝ)
+
 /-- The Wronskian of two solutions satisfies Abel's differential equation. -/
-theorem scalarWronskian_hasDerivAt (f g : ℝ → ℝ) (gamma s : ℝ)
+theorem scalarWronskian_hasDerivAt  (gamma s : ℝ)
     (hf : ContDiff ℝ 2 f) (hg : ContDiff ℝ 2 g)
     (hfo : deriv (deriv f) s - s ^ 2 / 3 * deriv f s + gamma * s * f s = 0)
     (hgo : deriv (deriv g) s - s ^ 2 / 3 * deriv g s + gamma * s * g s = 0) :
     HasDerivAt (scalarWronskian f g) (s ^ 2 / 3 * scalarWronskian f g s) s := by
-  have hdf := (hf.differentiable (by norm_num) s).hasDerivAt
-  have hdg := (hg.differentiable (by norm_num) s).hasDerivAt
-  have hdf' := (hf.differentiable_deriv_two s).hasDerivAt
-  have hdg' := (hg.differentiable_deriv_two s).hasDerivAt
-  have hd := (hdf.mul hdg').sub (hdf'.mul hdg)
+
+
+
+
+  have hd := (((hf.differentiable (by norm_num) s).hasDerivAt).mul ((hg.differentiable_deriv_two s).hasDerivAt)).sub (((hf.differentiable_deriv_two s).hasDerivAt).mul ((hg.differentiable (by norm_num) s).hasDerivAt))
   simp only [Pi.sub_def, Pi.mul_def] at hd
   unfold scalarWronskian
   convert hd using 1
   linear_combination g s * hfo - f s * hgo
 
 /-- The scalar Wronskian has exactly the exponential source normalization. -/
-theorem scalarWronskian_identity (f g : ℝ → ℝ) (gamma : ℝ)
+theorem scalarWronskian_identity  (gamma : ℝ)
     (hf : ContDiff ℝ 2 f) (hg : ContDiff ℝ 2 g)
     (hfo : ∀ s, deriv (deriv f) s - s ^ 2 / 3 * deriv f s + gamma * s * f s = 0)
     (hgo : ∀ s, deriv (deriv g) s - s ^ 2 / 3 * deriv g s + gamma * s * g s = 0)
     (s : ℝ) : scalarWronskian f g s * Real.exp (-(s ^ 3 / 9)) =
       scalarWronskian f g 0 := by
-  let w : ℝ → ℝ := fun t => scalarWronskian f g t * Real.exp (-(t ^ 3 / 9))
+  let w  := fun t => scalarWronskian f g t * Real.exp (-(t ^ 3 / 9))
   have hd (t : ℝ) : HasDerivAt w 0 t := by
-    have hpoly : HasDerivAt (fun t : ℝ => -(t ^ 3 / 9)) (-(t ^ 2 / 3)) t := by
-      have hp := (((hasDerivAt_id t).pow 3).div_const 9).neg
-      simp only [Pi.neg_def, id_eq] at hp
-      convert hp using 1
-      norm_num
-      ring
-    have he := hpoly.exp
-    have hw := (scalarWronskian_hasDerivAt f g gamma t hf hg (hfo t) (hgo t)).mul he
+
+
+    have hw := (scalarWronskian_hasDerivAt f g gamma t hf hg (hfo t) (hgo t)).mul (show HasDerivAt (fun t : ℝ => -(t ^ 3 / 9)) (-(t ^ 2 / 3)) t by
+        have hp := (((hasDerivAt_id t).pow 3).div_const 9).neg
+        simp only [Pi.neg_def, id_eq] at hp
+        convert hp using 1
+        norm_num
+        ring).exp
     simp only [Pi.mul_def] at hw
     change HasDerivAt (fun t => scalarWronskian f g t * Real.exp (-(t ^ 3 / 9))) 0 t
     convert hw using 1
@@ -60,18 +62,20 @@ theorem scalarWronskian_identity (f g : ℝ → ℝ) (gamma : ℝ)
   simpa only [w, zero_pow (by decide : 3 ≠ 0), zero_div, neg_zero, Real.exp_zero,
     mul_one] using hc
 
+variable (gamma : ScalarGamma)
+
 /-- The signed second M solution of the s equation. -/
-def scalarSecondM (gamma : ScalarGamma) (s : ℝ) : ℝ :=
+def scalarSecondM  (s : ℝ) : ℝ :=
   s * Kummer.M (1 / 3 - gamma.1) Kummer.b43 (scalarCubic 1 s)
 
 /-- The signed second solution is smooth on the full real s carrier. -/
-theorem contDiff_scalarSecondM (gamma : ScalarGamma) :
+theorem contDiff_scalarSecondM  :
     ContDiff ℝ 2 (scalarSecondM gamma) :=
   contDiff_id.mul ((Kummer.analyticOnNhd_M _ _).contDiff.comp
     ((contDiff_scalarCubic 1).of_le (by norm_num)))
 
 /-- The signed second solution obeys the exact nonsingular s equation. -/
-theorem scalarSecondM_ode (gamma : ScalarGamma) (s : ℝ) :
+theorem scalarSecondM_ode  (s : ℝ) :
     deriv (deriv (scalarSecondM gamma)) s - s ^ 2 / 3 * deriv (scalarSecondM gamma) s +
       gamma.1 * s * scalarSecondM gamma s = 0 := by
   have h := scalarCubic_second_ode (Kummer.M (1 / 3 - gamma.1) Kummer.b43) gamma.1 1 s
@@ -82,7 +86,7 @@ theorem scalarSecondM_ode (gamma : ScalarGamma) (s : ℝ) :
   simpa only [one_mul] using h
 
 /-- The second solution is normalized by a unit derivative at zero. -/
-theorem scalarSecondM_zero_jets (gamma : ScalarGamma) :
+theorem scalarSecondM_zero_jets  :
     scalarSecondM gamma 0 = 0 ∧ deriv (scalarSecondM gamma) 0 = 1 := by
   have hc : scalarCubic 1 0 = 0 := by simp [scalarCubic]
   have hm := (Kummer.hasDerivAt_M (1 / 3 - gamma.1) Kummer.b43 (scalarCubic 1 0)).comp
@@ -94,7 +98,7 @@ theorem scalarSecondM_zero_jets (gamma : ScalarGamma) :
   exact ⟨by simp, hd.deriv⟩
 
 /-- The actual negative scalar piece never has a simultaneous zero value and derivative. -/
-theorem Fminus_no_zero_jet (gamma : ScalarGamma) (Lam s : ℝ) :
+theorem Fminus_no_zero_jet  (Lam s : ℝ) :
     ¬ (Fminus gamma Lam s = 0 ∧ deriv (Fminus gamma Lam) s = 0) := by
   intro hz
   have hw := scalarWronskian_identity (Fminus gamma Lam) (scalarSecondM gamma) gamma.1

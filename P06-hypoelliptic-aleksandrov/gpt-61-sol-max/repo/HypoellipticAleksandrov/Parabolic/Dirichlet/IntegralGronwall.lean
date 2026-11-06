@@ -13,9 +13,9 @@ the differential Grönwall theorem, so every interval integral is justified by
 continuity on a compact interval.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -32,23 +32,19 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
     (hEle : ∀ t ∈ Set.Icc 0 T,
       E t ≤ K * (∫ r in Set.Ioc 0 t, E r)) :
     ∀ t ∈ Set.Icc 0 T, E t = 0 := by
-  let F : ℝ → ℝ := Set.IccExtend hT.le ((Set.Icc 0 T).restrict E)
+  let F  := Set.IccExtend hT.le ((Set.Icc 0 T).restrict E)
   have hFcont : Continuous F := by
     exact hEcont.restrict.Icc_extend'
   have hF_eq_E {t : ℝ} (ht : t ∈ Set.Icc 0 T) : F t = E t := by
     dsimp [F]
     rw [Set.IccExtend_of_mem hT.le _ ht]
     rfl
-  have hEint : MeasureTheory.IntegrableOn E (Set.Icc 0 T) :=
-    hEcont.integrableOn_Icc
-  have hEintIoc {t : ℝ} (ht : t ∈ Set.Icc 0 T) :
-      MeasureTheory.IntegrableOn E (Set.Ioc 0 t) :=
-    hEint.mono_set (Set.Ioc_subset_Icc_self.trans fun r hr =>
-      ⟨hr.1, hr.2.trans ht.2⟩)
-  let P : ℝ → ℝ := fun t => ∫ r in 0..t, F r
+
+
+  let P  := fun t => ∫ r in 0..t, F r
   have hPderiv (t : ℝ) : HasDerivAt P (F t) t := by
     simpa only [P] using (hFcont.integral_hasStrictDerivAt 0 t).hasDerivAt
-  have hPcont : Continuous P :=
+  have hPcont  :=
     continuous_iff_continuousAt.mpr fun t => (hPderiv t).continuousAt
   have hPzero : P 0 = 0 := by
     simp only [P, intervalIntegral.integral_same]
@@ -75,7 +71,7 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
       _ ≤ K * (∫ r in Set.Ioc 0 t, E r) := hEle t htcc
       _ = K * P t := by rw [← hP_eq htcc]
       _ = K * ‖P t‖ := by rw [Real.norm_of_nonneg (hPnonneg htcc)]
-  have hPvanish : ∀ t ∈ Set.Icc 0 T, P t = 0 :=
+  have hPvanish  :=
     eq_zero_of_abs_deriv_le_mul_abs_self_of_eq_zero_right hPcont.continuousOn
       (fun t ht => (hPderiv t).hasDerivWithinAt) hPzero hPbound
   intro t ht

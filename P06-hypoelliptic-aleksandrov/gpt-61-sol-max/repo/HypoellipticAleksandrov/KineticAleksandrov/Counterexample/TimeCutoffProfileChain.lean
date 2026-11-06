@@ -7,6 +7,8 @@ public import PDEFoundation.Sobolev.W1p.Smooth
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoffWeakSecond
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoffSecondBounds
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The first weak chain rule applied to the literal flattened profile and barrier -/
 
@@ -20,21 +22,18 @@ def spatialPackedBarrier (d : ℕ) (mu R t : ℝ) (x : PDE.Vec (d + d)) : ℝ :=
 
 /-- The packed barrier is globally smooth at every finite order. -/
 theorem contDiff_spatialPackedBarrier (d : ℕ) (mu R t : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (spatialPackedBarrier d mu R t) := by
+    ContDiff ℝ PDE.smoothOrder (spatialPackedBarrier d mu R t) := by
   simpa only [spatialPackedBarrier, barrier, Function.comp_apply] using!
     (contDiff_const (c := Real.exp (-mu * t))).mul ((contDiff_const (c := (2 : ℝ))).sub
       ((PDE.contDiff_vecNormSq.comp (spatialCoordinateCLE d).contDiff.snd).div_const (R ^ 2)))
 
+variable (hflat : ∀ {d : ℕ}, 1 ≤ d → ∀ {alpha : ℝ}, 0 < alpha → alpha < 1 → ∀ h : CounterProfileStatement d alpha, ∀ r : ℝ, 0 < r → FlatProfileSourceStatement h r) {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1) (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) {D : Set (PDE.Vec (d + d))} (hD : PDE.IsOpenBoundedConvexDomain D) (mu R t : ℝ)
+
+include hflat hd ha ha1 hr hD
 /-- The first weak chain rule for the actual cutoff profile. All regularity of the
 flattened profile is discharged by the complete published upstream source theorem. -/
 theorem weakGradient_timeCutoffProfile_of_flatProfile_source
-    (hflat : ∀ {d : ℕ}, 1 ≤ d → ∀ {alpha : ℝ}, 0 < alpha → alpha < 1 →
-      ∀ h : CounterProfileStatement d alpha, ∀ r : ℝ, 0 < r →
-        FlatProfileSourceStatement h r)
-    {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
-    {D : Set (PDE.Vec (d + d))} (hD : PDE.IsOpenBoundedConvexDomain D)
-    (mu R t : ℝ) :
+     :
     PDE.HasWeakGradientOn D
       (fun x => timeCutoffTheta
         (selectedFlatProfile h r (spatialCoordinateCLE d x) - spatialPackedBarrier d mu R t x))
@@ -53,13 +52,7 @@ theorem weakGradient_timeCutoffProfile_of_flatProfile_source
 /-- The actual velocity Hessian chain rule for the cutoff profile, proved using the
 same first and second upstream weak representatives and the smooth barrier. -/
 theorem weakSecond_timeCutoffProfile_of_flatProfile_source
-    (hflat : ∀ {d : ℕ}, 1 ≤ d → ∀ {alpha : ℝ}, 0 < alpha → alpha < 1 →
-      ∀ h : CounterProfileStatement d alpha, ∀ r : ℝ, 0 < r →
-        FlatProfileSourceStatement h r)
-    {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
-    {D : Set (PDE.Vec (d + d))} (hD : PDE.IsOpenBoundedConvexDomain D)
-    (mu R t : ℝ) (i k : Fin d) :
+     (i k : Fin d) :
     let u := fun x => selectedFlatProfile h r (spatialCoordinateCLE d x)
     let B := spatialPackedBarrier d mu R t
     let gv := fun x j => flatProfileVelocityJet h r (spatialCoordinateCLE d x) j -
@@ -72,18 +65,16 @@ theorem weakSecond_timeCutoffProfile_of_flatProfile_source
             (fun y => PDE.classicalGradient B y (Fin.natAdd d k)) x (Fin.natAdd d i)) +
         deriv (deriv timeCutoffTheta) (u x - B x) * gv x i * gv x k) := by
   let u := flatProfileW1p_of_flatProfile_source hflat hd ha ha1 h r hr hD
-  have hw : PDE.HasWeakPartialDerivOn D (Fin.natAdd d i)
-      (fun x => u.grad x (Fin.natAdd d k))
-      (fun x => flatProfileHessian h r (spatialCoordinateCLE d x) i k) := by
-    simpa only [u, flatProfileW1p_of_flatProfile_source, spatialPackedGradient,
-      Fin.addCases_right] using!
-      weak_velocityJet_spatialCoordinate_of_flatProfile_source hflat hd ha ha1 h r hr D i k
+
   have hm := memLp_flatProfileHessian_spatialCoordinate_of_flatProfile_source
     hflat hd ha ha1 h r hr hD i k 2
   obtain ⟨M, hM, hb⟩ := timeCutoffTheta_deriv2_abs_bound
   have he := weakSecond_cutoff_sub_smooth hD u (spatialPackedBarrier d mu R t)
     (contDiff_spatialPackedBarrier d mu R t) (Fin.natAdd d i) (Fin.natAdd d k)
-    _ hm hw timeCutoffTheta (contDiff_timeCutoffTheta.of_le (by simp)) M hM.le hb
+    _ hm (by
+        simpa only [u, flatProfileW1p_of_flatProfile_source, spatialPackedGradient,
+          Fin.addCases_right] using!
+          weak_velocityJet_spatialCoordinate_of_flatProfile_source hflat hd ha ha1 h r hr D i k) timeCutoffTheta (contDiff_timeCutoffTheta.of_le (by simp)) M hM.le hb
   simpa only [u, flatProfileW1p_of_flatProfile_source, spatialPackedGradient,
     Fin.addCases_right] using! he
 

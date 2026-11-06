@@ -10,9 +10,9 @@ marginal of `μ` and `S = 2T`: the `(τ,w)`-marginal of `Γ` on `T < τ < 2T` ha
 `L^γ` norm at most `C_γ 2^{β_γ} M T^{β_γ}`.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Green
 
@@ -20,20 +20,22 @@ open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal NNReal ProbabilityTheory
 
+variable {d : ℕ}
+
 /-- `L^γ` norms of a time-shifted occupation density on the slab. -/
-lemma eLpNorm_slabShift_le {d : ℕ} (g : ℝ × PDE.Vec d → ℝ) (hgm : Measurable g)
+lemma eLpNorm_slabShift_le  (g : ℝ × PDE.Vec d → ℝ) (hgm : Measurable g)
     (hgn : ∀ q, 0 ≤ g q) (s T S γ Cn : ℝ) (hT : 0 ≤ T) (hs : 0 ≤ T - s) (hTS : 2 * T - s ≤ S)
     (hbound : eLpNorm g (ENNReal.ofReal γ)
-      (volume.restrict (Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d)))) ≤ ENNReal.ofReal Cn) :
+      (volume.restrict (Ioo (0 : ℝ) S ×ˢ (univ : PDE.VelocityRegion d))) ≤ ENNReal.ofReal Cn) :
     eLpNorm (fun y => ENNReal.ofReal (g (slabShift d s y))) (ENNReal.ofReal γ) (slabBase d T) ≤
       ENNReal.ofReal Cn := by
+
   have hemb := measurableEmbedding_slabShift d s
-  have h1 : eLpNorm (fun y => ENNReal.ofReal (g (slabShift d s y))) (ENNReal.ofReal γ)
+  have h1 : eLpNorm (((fun y => ENNReal.ofReal (g (slabShift d s y))))) (ENNReal.ofReal γ)
       (slabBase d T) = eLpNorm g (ENNReal.ofReal γ) ((slabBase d T).map (slabShift d s)) := by
     rw [hemb.eLpNorm_map_measure]
-    have hm1 : Measurable (fun y => ENNReal.ofReal (g (slabShift d s y))) :=
-      ENNReal.measurable_ofReal.comp (hgm.comp hemb.measurable)
-    refine eLpNorm_congr_enorm_ae hm1.aestronglyMeasurable
+
+    refine eLpNorm_congr_enorm_ae (ENNReal.measurable_ofReal.comp (hgm.comp hemb.measurable)).aestronglyMeasurable
       (hgm.comp hemb.measurable).aestronglyMeasurable (Filter.Eventually.of_forall (fun y => ?_))
     rw [Function.comp_apply, enorm_eq_self, Real.enorm_of_nonneg (hgn _)]
   rw [h1, map_slabBase_slabShift d T s hT]
@@ -43,11 +45,13 @@ lemma eLpNorm_slabShift_le {d : ℕ} (g : ℝ × PDE.Vec d → ℝ) (hgm : Measu
   constructor <;> linarith [hq.1, hq.2]
 
 
+variable (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+
 /-- The occupation-kernel integral over the slab sections of `E`, as a function of `v`. -/
-lemma measurable_slab_occupation {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ₁ s T : ℝ)
+lemma measurable_slab_occupation
+     (σ₁ s T : ℝ)
     {E : Set (SlabBase d)} (hE : MeasurableSet E) :
-    Measurable (fun v : PDE.Vec d => ∫⁻ τ in slabTimeSet T,
+    Measurable (fun v  => ∫⁻ τ in slabTimeSet T,
       occupationKernel K σ₁ (τ.1 - s) v {w | (τ, w) ∈ E} ∂elapsedVolume ⊤) := by
   have hE' : MeasurableSet {z : (PDE.Vec d × ElapsedTime ⊤) × PDE.Vec d | (z.1.2, z.2) ∈ E} :=
     hE.preimage (by fun_prop)
@@ -57,10 +61,10 @@ lemma measurable_slab_occupation {d : ℕ}
   exact hm.lintegral_prod_right'
 
 /-- Slab mass of the Green measure in terms of the occupation kernel of the velocity marginal. -/
-theorem green_slab_marginal_eq {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
-    (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
+theorem green_slab_marginal_eq
+
+    (hcov : IsTranslationCovariantEvolution (wholeSpace d) _ MeasurableSet.univ K)
+    (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 )) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     (T : ℝ) {E : Set (SlabBase d)} (hE : MeasurableSet E) :
     Γ {p | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} =
@@ -68,12 +72,12 @@ theorem green_slab_marginal_eq {d : ℕ}
         ∂elapsedVolume ⊤) ∂μ.map (fun p => p.1.1) := by
   have hSE : {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} =
       (fun p : GreenCarrier d => (p.1, p.2.1)) ⁻¹' E ∩ slabSet T := by
-    ext p; simp [slabSet, slabTimeSet]
+    ext p; rfl
   have hSEm : MeasurableSet
       {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} := by
     rw [hSE]
     exact (hE.preimage (by fun_prop)).inter (measurableSet_slabSet T)
-  have hmapm : Measurable (fun p : EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀ =>
+  have hmapm : Measurable (fun p : EvolutionState (wholeSpace d) (fun _ => (0 )) σ₀ =>
       p.1.1) := measurable_fst.comp measurable_subtype_coe
   rw [← lintegral_indicator_one hSEm, hΓ _ (measurable_one.indicator hSEm),
     lintegral_map (measurable_slab_occupation K σ₀ 0 T hE |> fun h => by simpa using h) hmapm]
@@ -83,7 +87,7 @@ theorem green_slab_marginal_eq {d : ℕ}
   by_cases hτ : τ ∈ slabTimeSet T
   · rw [indicator_of_mem hτ]
     have hsec : MeasurableSet {w' : PDE.Vec d | (τ, w') ∈ E} := measurable_prodMk_left hE
-    have hfun : (fun w : EvolutionAmbientState d =>
+    have hfun : (fun w  =>
         {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T}.indicator
           (1 : GreenCarrier d → ℝ≥0∞) (τ, w)) =
         {w : EvolutionAmbientState d | w.1 ∈ {w' : PDE.Vec d | (τ, w') ∈ E}}.indicator
@@ -95,10 +99,7 @@ theorem green_slab_marginal_eq {d : ℕ}
         have h2 : w ∈ {w : EvolutionAmbientState d | w.1 ∈ {w' : PDE.Vec d | (τ, w') ∈ E}} := h
         rw [Set.indicator_of_mem h1, Set.indicator_of_mem h2]
         rfl
-      · have h1 : (τ, w) ∉ {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} :=
-          fun h' => h h'.1
-        have h2 : w ∉ {w : EvolutionAmbientState d | w.1 ∈ {w' : PDE.Vec d | (τ, w') ∈ E}} := h
-        rw [Set.indicator_of_notMem h1, Set.indicator_of_notMem h2]
+      · simp_all
     have hli := lintegral_indicator_one (μ := K.master (elapsedQuery σ₀ p τ))
       (s := {w : EvolutionAmbientState d | w.1 ∈ {w' : PDE.Vec d | (τ, w') ∈ E}})
       (measurable_fst hsec)
@@ -114,7 +115,7 @@ theorem green_slab_marginal_eq {d : ℕ}
     exact (lintegral_congr hz).trans lintegral_zero
 
 
-lemma one_le_slabGamma0 {d : ℕ} (hd : 0 < d) : 1 ≤ slabGamma0 d := by
+lemma one_le_slabGamma0  (hd : 0 < d) : 1 ≤ slabGamma0 d := by
   unfold slabGamma0
   have : (0 : ℝ) < d := by exact_mod_cast hd
   rw [le_div_iff₀ this]
@@ -125,8 +126,8 @@ lemma ofReal_marginal_bound (C a M b : ℝ) (hC : 0 ≤ C) (hM : 0 ≤ M) (T : �
     (β : ℝ) (hb : b = (2 * T) ^ β) (ha : a = (2 : ℝ) ^ β) :
     ENNReal.ofReal (C * M * b) =
       ENNReal.ofReal (C * a) * ENNReal.ofReal M * ENNReal.ofReal (T ^ β) := by
-  have h2 : (0 : ℝ) ≤ 2 := by norm_num
-  rw [hb, ha, Real.mul_rpow h2 hT, ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul
+
+  rw [hb, ha, Real.mul_rpow (by norm_num) hT, ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul
     (by positivity)]
   congr 1
   ring
@@ -134,10 +135,10 @@ lemma ofReal_marginal_bound (C a M b : ℝ) (hC : 0 ≤ C) (hM : 0 ≤ M) (T : �
 /-- **Lemma 5.1, first sentence ((5.1)).**  The `(τ,w)`-marginal of the Green
 measure on `T < τ < 2T` has a density with `‖g‖_{L^γ} ≤ C_γ 2^{β_γ} M T^{β_γ}`. -/
 theorem slab_marginal_density {d : ℕ} (hd : 0 < d)
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+    (hcov : IsTranslationCovariantEvolution (wholeSpace d) _ MeasurableSet.univ K)
     (C : ℝ → ℝ) (hocc : OccupationBoundedBy K C)
-    (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
+    (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 )) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) :
     ∃ g : SlabBase d → ℝ≥0∞, Measurable g ∧
@@ -147,38 +148,36 @@ theorem slab_marginal_density {d : ℕ} (hd : 0 < d)
         eLpNorm g (ENNReal.ofReal γ) (slabBase d T) ≤
           ENNReal.ofReal (C γ * (2 : ℝ) ^ slabBeta d γ) * μ univ *
             ENNReal.ofReal (T ^ slabBeta d γ) := by
-  have hmapm : Measurable (fun p : EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀ =>
-      p.1.1) := measurable_fst.comp measurable_subtype_coe
-  have : IsFiniteMeasure (μ.map (fun p : EvolutionState (wholeSpace d)
-      (fun _ => (0 : PDE.Vec d)) σ₀ => p.1.1)) := Measure.isFiniteMeasure_map _ _
-  obtain ⟨g, hg, hnorm⟩ := hocc.2 (μ.map (fun p => p.1.1)) σ₀ (2 * T) (by linarith)
-  have hint : Integrable g (volume.restrict (Ioo (0 : ℝ) (2 * T) ×ˢ (univ : Set (PDE.Vec d)))) := by
-    have := (hnorm 1 le_rfl (one_le_slabGamma0 hd)).1
-    rw [ENNReal.ofReal_one] at this
-    exact memLp_one_iff_integrable.1 this
+  let sharedTerm_0e4ac6f02f := ((fun p : EvolutionState (wholeSpace d) (fun _ => (0 )) σ₀ => p.1.1))
+  let sharedTerm_dd344e9848 := ((volume.restrict (Ioo (0 : ℝ) (2 * T) ×ˢ (univ : PDE.VelocityRegion d))))
+  have hmapm : Measurable sharedTerm_0e4ac6f02f := measurable_fst.comp measurable_subtype_coe
+  have : IsFiniteMeasure (μ.map sharedTerm_0e4ac6f02f) := Measure.isFiniteMeasure_map _ _
+  obtain ⟨g, hg, hnorm⟩ := hocc.2 (μ.map sharedTerm_0e4ac6f02f) σ₀ (2 * T) (by linarith)
+
   refine ⟨fun y => ENNReal.ofReal (g (slabShift d 0 y)), ?_, ?_, ?_⟩
   · exact ENNReal.measurable_ofReal.comp (hg.1.comp (measurable_slabShift d 0))
   · intro E hE
     rw [green_slab_marginal_eq K hcov σ₀ μ Γ hΓ T hE]
     have := slab_occupation_identity K σ₀ 0 T (2 * T) hT.le hT (by linarith) (by linarith)
-      (μ.map (fun p => p.1.1)) g hg hint hE
+      (μ.map sharedTerm_0e4ac6f02f) g hg (show _ by
+          have := (hnorm 1 le_rfl (one_le_slabGamma0 hd)).1
+          rw [ENNReal.ofReal_one] at this
+          exact memLp_one_iff_integrable.1 this) hE
     simp only [sub_zero] at this
     exact this.symm
   · intro γ hγ1 hγ2
     obtain ⟨hmem, hbd⟩ := hnorm γ hγ1 hγ2
-    have hCn : 0 ≤ C γ := hocc.1 γ hγ1 hγ2
-    set Cn : ℝ := C γ * ((μ.map (fun p => p.1.1)) univ).toReal * (2 * T) ^ slabBeta d γ with hCn_def
-    have hbd' : eLpNorm g (ENNReal.ofReal γ)
-        (volume.restrict (Ioo (0 : ℝ) (2 * T) ×ˢ (univ : Set (PDE.Vec d)))) ≤
-          ENNReal.ofReal Cn := by
-      rw [← ENNReal.ofReal_toReal hmem.eLpNorm_ne_top]
-      exact ENNReal.ofReal_le_ofReal hbd
+    have hCn  := hocc.1 γ hγ1 hγ2
+    set Cn : ℝ := C γ * ((μ.map sharedTerm_0e4ac6f02f) univ).toReal * (2 * T) ^ slabBeta d γ with hCn_def
+
     have := eLpNorm_slabShift_le g hg.1 hg.2.1 0 T (2 * T) γ Cn hT.le (by linarith)
-      (by linarith) hbd'
+      (by linarith) (show _ by
+          rw [← ENNReal.ofReal_toReal hmem.eLpNorm_ne_top]
+          exact ENNReal.ofReal_le_ofReal hbd)
     refine this.trans (le_of_eq ?_)
     rw [hCn_def, Measure.map_apply hmapm MeasurableSet.univ, preimage_univ]
-    rw [ofReal_marginal_bound (C γ) ((2 : ℝ) ^ slabBeta d γ) ((μ univ).toReal)
-      ((2 * T) ^ slabBeta d γ) hCn ENNReal.toReal_nonneg T hT.le (slabBeta d γ) rfl rfl,
+    rw [ofReal_marginal_bound (C γ) _ ((μ univ).toReal)
+      _ hCn ENNReal.toReal_nonneg T hT.le (slabBeta d γ) rfl rfl,
       ENNReal.ofReal_toReal (measure_ne_top _ _)]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

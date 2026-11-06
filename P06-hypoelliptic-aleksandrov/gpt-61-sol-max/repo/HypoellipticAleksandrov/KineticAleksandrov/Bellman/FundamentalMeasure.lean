@@ -19,12 +19,11 @@ open MeasureTheory Set
 
 /-- Lebesgue measure restricted to positive time, on its actual subtype. -/
 def bellmanPositiveTimeVolume : Measure BellmanPositiveTime :=
-  Measure.comap Subtype.val (volume.restrict (Ioi (0 : ℝ)))
+  Measure.comap Subtype.val (volume.restrict (Ioi (0 )))
 
 /-- The positive-time measure is finite on compact subsets. -/
 instance bellmanPositiveTimeVolume_finiteOnCompacts :
-    IsFiniteMeasureOnCompacts bellmanPositiveTimeVolume := by
-  exact IsFiniteMeasureOnCompacts.comap' _ continuous_subtype_val
+    IsFiniteMeasureOnCompacts bellmanPositiveTimeVolume := IsFiniteMeasureOnCompacts.comap' _ continuous_subtype_val
     (MeasurableEmbedding.subtype_coe measurableSet_Ioi)
 
 /-- The positive-time measure is sigma finite. -/
@@ -34,7 +33,7 @@ instance bellmanPositiveTimeVolume_sigmaFinite : SigmaFinite bellmanPositiveTime
 
 /-- Lebesgue measure on the actual punctured position-velocity plane. -/
 def bellmanPuncturedVolume : Measure BellmanPuncturedPlane :=
-  Measure.comap Subtype.val (volume : Measure (ℝ × ℝ))
+  Measure.comap Subtype.val (volume )
 
 /-- The source's nonnegative time-integrated Gaussian density, without a finiteness premise. -/
 def bellmanFundamentalDensity (q : BellmanPuncturedPlane) : ENNReal :=
@@ -54,12 +53,9 @@ theorem continuous_bellmanGaussianKernel :
   fun_prop (disch := aesop)
 
 /-- Measurability of the time-integrated density follows from Tonelli measurability. -/
-theorem measurable_bellmanFundamentalDensity : Measurable bellmanFundamentalDensity := by
-  have h : Measurable (fun w : BellmanPuncturedPlane × BellmanPositiveTime =>
-      ENNReal.ofReal (bellmanGaussianKernel w.2 w.1.val)) := by
-    apply ENNReal.measurable_ofReal.comp
-    exact continuous_bellmanGaussianKernel.measurable.comp
-      (measurable_snd.prodMk (measurable_subtype_coe.comp measurable_fst))
-  exact h.lintegral_prod_right'
+theorem measurable_bellmanFundamentalDensity : Measurable bellmanFundamentalDensity := (Measurable.lintegral_prod_right'
+  (Measurable.comp ENNReal.measurable_ofReal
+    (Measurable.comp (Continuous.measurable continuous_bellmanGaussianKernel)
+      (Measurable.prodMk measurable_snd (Measurable.comp measurable_subtype_coe measurable_fst)))))
 
 end HypoellipticAleksandrov.KineticAleksandrov

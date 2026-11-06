@@ -7,10 +7,10 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierCollar
 
 /-! # Identifying genuine terminal probes in the actual local boundary measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Parabolic TheoremA
+open Set MeasureTheory SectionTwo TheoremA
 
 variable (hH : HormanderHypoellipticityStatement)
   (hLE : LiebermanEllipsoidDirichletStatement)
@@ -64,6 +64,6 @@ theorem ballExit_terminal_probe_identity
   rw [← integral_indicator hside]
   rw [← integral_congr_ae heq, ← hi]
   exact (hval P.1.time T.2.le (ballStartState P)).trans
-    (hreal.2.1 P.1.time T.1 T.2.le (ballStartState P) (terminalStateDatum F))
+    (hreal.2.1 P.1.time T.1 T.2.le _ _)
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

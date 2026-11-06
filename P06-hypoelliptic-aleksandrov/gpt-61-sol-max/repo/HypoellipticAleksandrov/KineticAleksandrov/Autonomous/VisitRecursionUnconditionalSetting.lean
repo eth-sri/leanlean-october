@@ -10,22 +10,23 @@ import Mathlib.Tactic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
+
+variable (c : Clock)
 
 /-- The clock entrance interval in the existing scalar interval API. -/
-def visitEntranceInterval (c : Clock) : Interval :=
+def visitEntranceInterval  : Interval :=
   ⟨c.vbar - c.r / 2, c.vbar + c.r / 2, by linarith [c.positive]⟩
 
 /-- The clock active interval in the existing scalar interval API. -/
-def visitActiveInterval (c : Clock) : Interval :=
+def visitActiveInterval  : Interval :=
   ⟨c.vbar - 3 * c.r / 4, c.vbar + 3 * c.r / 4, by linarith [c.positive]⟩
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point) (n : ℕ)
 
 /-- Actual entrance measure number `n+1`, with the source's clipped active and waiting domains. -/
 def visitEntrancePiece
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (n : ℕ) : Measure Point :=
+     : Measure Point :=
   visitGamma P (visitEntranceInterval c)
     (visitBoundary s T (visitEntranceInterval c) J)
     (visitBoundary s T (visitActiveInterval c) J)
@@ -34,10 +35,7 @@ def visitEntrancePiece
 
 /-- Actual outgoing measure after entrance number `n+1`. -/
 def visitOutgoingPiece
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (n : ℕ) : Measure Point :=
+     : Measure Point :=
   visitBeta P (visitEntranceInterval c)
     (visitBoundary s T (visitEntranceInterval c) J)
     (visitBoundary s T (visitActiveInterval c) J)

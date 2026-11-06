@@ -11,13 +11,13 @@ a common positive diffused-radius gap gives a transported cutoff threshold, and 
 sufficiently small inner-ball error preserves the compact terminal support margin.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+
 
 /-- A fixed common inner cylinder is contained in all sufficiently large ellipsoids
 whose diffused radii have a common lower bound separated from the inner cylinder. -/

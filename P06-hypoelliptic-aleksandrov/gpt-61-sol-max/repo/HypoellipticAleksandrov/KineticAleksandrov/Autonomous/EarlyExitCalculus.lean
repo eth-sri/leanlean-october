@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitMeasureProbability
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Exact kinetic calculus of the two exponential early-face barriers -/
 
@@ -9,23 +11,24 @@ import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open Evolution
+
+variable (alpha beta gamma : ℝ)
 
 /-- An exponential plane depending only on time and physical velocity. -/
-def reconstructionExponentialPlane (alpha beta gamma : ℝ) (p : Point) : ℝ :=
+def reconstructionExponentialPlane  (p : Point) : ℝ :=
   Real.exp (alpha * p.time + beta * p.velocity 0 + gamma)
 
 /-- The exponential plane is smooth in the prescribed packed physical coordinates. -/
-theorem reconstructionExponentialPlane_smooth (alpha beta gamma : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞)
-      (reconstructionExponentialPlane alpha beta gamma ∘ reconstructionPhysicalHomeomorph) := by
-  change ContDiff ℝ (⊤ : ℕ∞)
-    (fun x => Real.exp (alpha * Evolution.timeCoord 1 x + beta * diffusedCoord 1 x 0 + gamma))
-  have ht : ContDiff ℝ (⊤ : ℕ∞) (Evolution.timeCoord 1) :=
-    (Evolution.timeCoord 1).contDiff
-  exact ((contDiff_const.mul ht).add
-    (contDiff_const.mul ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp
-      (diffusedCoord 1).contDiff)) |>.add contDiff_const).exp
+theorem reconstructionExponentialPlane_smooth  :
+    ContDiff ℝ PDE.smoothOrder
+      (reconstructionExponentialPlane alpha beta gamma ∘ reconstructionPhysicalHomeomorph) := (id
+  (ContDiff.exp
+    (ContDiff.add
+      (ContDiff.add (ContDiff.mul contDiff_const (ContinuousLinearMap.contDiff (Evolution.timeCoord 1)))
+        (ContDiff.mul contDiff_const
+          (ContDiff.comp (contDiff_apply ℝ ℝ 0) (ContinuousLinearMap.contDiff (diffusedCoord 1)))))
+      contDiff_const)))
 
 private theorem exponentialPlane_second_deriv (c beta : ℝ) (v : ℝ) :
     deriv (deriv (fun w => Real.exp (c + beta * w))) v =
@@ -34,9 +37,8 @@ private theorem exponentialPlane_second_deriv (c beta : ℝ) (v : ℝ) :
       (Real.exp (c + beta * w) * beta) w :=
     by simpa only [id_eq, mul_one] using
       (((hasDerivAt_id w).const_mul beta).const_add c).exp
-  have heq : deriv (fun w => Real.exp (c + beta * w)) =
-      fun w => Real.exp (c + beta * w) * beta := funext (fun w => (hd w).deriv)
-  rw [heq, (hd v |>.mul_const beta).deriv]
+
+  rw [(funext (fun w => (hd w).deriv)), (hd v |>.mul_const beta).deriv]
   ring
 
 /-- No coefficient derivative occurs in the exponential plane operator. -/

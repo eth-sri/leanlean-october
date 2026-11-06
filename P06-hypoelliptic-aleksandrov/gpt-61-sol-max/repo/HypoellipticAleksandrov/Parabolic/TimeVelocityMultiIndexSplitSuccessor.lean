@@ -2,6 +2,17 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.GenericParabolicIndexArithmetic
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLeibniz
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import Lean.Elab.Tactic.Grind
+import Mathlib.Tactic.Bound
+import all HypoellipticAleksandrov.Parabolic.GenericParabolicWeakDerivativeFamilyAddTwo
+
+section
+open private HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndex.coe_velocitySucc_eq_add_single from HypoellipticAleksandrov.Parabolic.GenericParabolicWeakDerivativeFamilyAddTwo
+private alias _sharedProof_118_0 := HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndex.coe_velocitySucc_eq_add_single
+end
+
 
 /-!
 # Successor reindexing for time--velocity multi-indices
@@ -25,41 +36,34 @@ private noncomputable instance splitTailCoordFintype {d : ℕ}
     (c : TimeVelocityCoord d) : Fintype {j : TimeVelocityCoord d // j ≠ c} :=
   Fintype.ofFinite _
 
-private def mkOld {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) : Split beta :=
-  fun j => ⟨if h : j = c then k else a ⟨j, h⟩, by
-    by_cases h : j = c
-    · subst j; simp; omega
-    · simp [h]; omega⟩
+variable {d : ℕ} (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
 
-private def mkSucc {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 2)) (a : SplitTail beta c) :
+private def mkOld  (k : Fin (beta c + 1)) (a : SplitTail beta c) : Split beta :=
+  fun j => ⟨if h : j = c then k else a ⟨j, h⟩, by
+    grind⟩
+
+private def mkSucc  (k : Fin (beta c + 2)) (a : SplitTail beta c) :
     Split (beta + Pi.single c 1) := fun j =>
   ⟨if h : j = c then k else a ⟨j, h⟩, by
     by_cases h : j = c
     · subst j; simp; omega
     · simp [h]; omega⟩
 
-@[simp] private theorem mkOld_apply_same {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) :
+@[simp] private theorem mkOld_apply_same  (k : Fin (beta c + 1)) (a : SplitTail beta c) :
     ((mkOld beta c k a) c : ℕ) = k := by simp [mkOld]
 
-@[simp] private theorem mkOld_apply_ne {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c)
+@[simp] private theorem mkOld_apply_ne  (k : Fin (beta c + 1)) (a : SplitTail beta c)
     (j : TimeVelocityCoord d) (h : j ≠ c) :
     ((mkOld beta c k a) j : ℕ) = a ⟨j, h⟩ := by simp [mkOld, h]
 
-@[simp] private theorem mkSucc_apply_same {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 2)) (a : SplitTail beta c) :
+@[simp] private theorem mkSucc_apply_same  (k : Fin (beta c + 2)) (a : SplitTail beta c) :
     ((mkSucc beta c k a) c : ℕ) = k := by simp [mkSucc]
 
-@[simp] private theorem mkSucc_apply_ne {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 2)) (a : SplitTail beta c)
+@[simp] private theorem mkSucc_apply_ne  (k : Fin (beta c + 2)) (a : SplitTail beta c)
     (j : TimeVelocityCoord d) (h : j ≠ c) :
     ((mkSucc beta c k a) j : ℕ) = a ⟨j, h⟩ := by simp [mkSucc, h]
 
-private def splitAtEquiv {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) : Split beta ≃ Fin (beta c + 1) × SplitTail beta c where
+private def splitAtEquiv  : Split beta ≃ Fin (beta c + 1) × SplitTail beta c where
   toFun g := ⟨g c, fun j => g j⟩
   invFun p := mkOld beta c p.1 p.2
   left_inv g := by
@@ -74,8 +78,7 @@ private def splitAtEquiv {d : ℕ} (beta : TimeVelocityMultiIndex d)
     · funext j
       simp [mkOld, j.2]
 
-private def splitSuccAtEquiv {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) :
+private def splitSuccAtEquiv  :
     Split (beta + Pi.single c 1) ≃ Fin (beta c + 2) × SplitTail beta c where
   toFun g := ⟨⟨g c, by have hc := (g c).isLt; simp at hc; omega⟩,
     fun j => ⟨g j, by simpa [Pi.single_apply, j.2] using g j |>.isLt⟩⟩
@@ -96,23 +99,19 @@ private def splitSuccAtEquiv {d : ℕ} (beta : TimeVelocityMultiIndex d)
       apply Fin.ext
       simp [j.2]
 
-@[simp] private theorem splitAtEquiv_symm_apply {d : ℕ}
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
+@[simp] private theorem splitAtEquiv_symm_apply
     (p : Fin (beta c + 1) × SplitTail beta c) :
     (splitAtEquiv beta c).symm p = mkOld beta c p.1 p.2 := rfl
 
-@[simp] private theorem splitSuccAtEquiv_symm_apply {d : ℕ}
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
+@[simp] private theorem splitSuccAtEquiv_symm_apply
     (p : Fin (beta c + 2) × SplitTail beta c) :
     (splitSuccAtEquiv beta c).symm p = mkSucc beta c p.1 p.2 := rfl
 
-private noncomputable def tailChoose {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (a : SplitTail beta c) : ℕ :=
+private noncomputable def tailChoose  (a : SplitTail beta c) : ℕ :=
   ∏ j : {j : TimeVelocityCoord d // j ≠ c},
     Nat.choose (beta (j : TimeVelocityCoord d)) (a j)
 
-private theorem choose_mkOld {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) :
+private theorem choose_mkOld  (k : Fin (beta c + 1)) (a : SplitTail beta c) :
     beta.choose (mkOld beta c k a).left =
       Nat.choose (beta c) k * tailChoose beta c a := by
   classical
@@ -129,8 +128,7 @@ private theorem choose_mkOld {d : ℕ} (beta : TimeVelocityMultiIndex d)
   · intro j
     simp
 
-private theorem choose_mkSucc {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 2)) (a : SplitTail beta c) :
+private theorem choose_mkSucc  (k : Fin (beta c + 2)) (a : SplitTail beta c) :
     (beta + Pi.single c 1).choose (mkSucc beta c k a).left =
       Nat.choose (beta c + 1) k * tailChoose beta c a := by
   classical
@@ -148,8 +146,7 @@ private theorem choose_mkSucc {d : ℕ} (beta : TimeVelocityMultiIndex d)
   · intro j
     simp
 
-private theorem mkSucc_left_eq_old_left_add {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) :
+private theorem mkSucc_left_eq_old_left_add  (k : Fin (beta c + 1)) (a : SplitTail beta c) :
     (mkSucc beta c ⟨k + 1, by omega⟩ a).left =
       (mkOld beta c k a).left + Pi.single c 1 := by
   funext j
@@ -160,8 +157,7 @@ private theorem mkSucc_left_eq_old_left_add {d : ℕ} (beta : TimeVelocityMultiI
     simp
   · simp [h]
 
-private theorem mkSucc_right_eq_old_right {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) :
+private theorem mkSucc_right_eq_old_right  (k : Fin (beta c + 1)) (a : SplitTail beta c) :
     (mkSucc beta c ⟨k + 1, by omega⟩ a).right = (mkOld beta c k a).right := by
   funext j
   change (beta + Pi.single c 1 : TimeVelocityMultiIndex d) j -
@@ -172,17 +168,10 @@ private theorem mkSucc_right_eq_old_right {d : ℕ} (beta : TimeVelocityMultiInd
     simp
   · simp [h]
 
-private theorem mkSucc_left_eq_old_left {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) :
-    (mkSucc beta c ⟨k, by omega⟩ a).left = (mkOld beta c k a).left := by
-  funext j
-  change ((mkSucc beta c ⟨k, by omega⟩ a) j : ℕ) = (mkOld beta c k a) j
-  by_cases h : j = c
-  · subst j; simp
-  · simp [h]
+private theorem mkSucc_left_eq_old_left  (k : Fin (beta c + 1)) (a : SplitTail beta c) :
+    (mkSucc beta c ⟨k, by omega⟩ a).left = (mkOld beta c k a).left := rfl
 
-private theorem mkSucc_right_eq_old_right_add {d : ℕ} (beta : TimeVelocityMultiIndex d)
-    (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) :
+private theorem mkSucc_right_eq_old_right_add  (k : Fin (beta c + 1)) (a : SplitTail beta c) :
     (mkSucc beta c ⟨k, by omega⟩ a).right =
       (mkOld beta c k a).right + Pi.single c 1 := by
   funext j
@@ -230,13 +219,9 @@ theorem sum_choose_split_add_single
   let rhsTerm := fun delta : Split (beta + Pi.single c 1) =>
     ((beta + Pi.single c 1).choose delta.left : ℝ) * F delta.left delta.right
   change (∑ gamma, lhsTerm gamma) = ∑ delta, rhsTerm delta
-  have hleft : (∑ gamma, lhsTerm gamma) =
-      ∑ p, lhsTerm ((splitAtEquiv beta c).symm p) :=
-    (Equiv.sum_comp (splitAtEquiv beta c).symm lhsTerm).symm
-  have hright : (∑ delta, rhsTerm delta) =
-      ∑ p, rhsTerm ((splitSuccAtEquiv beta c).symm p) :=
-    (Equiv.sum_comp (splitSuccAtEquiv beta c).symm rhsTerm).symm
-  rw [hleft, hright]
+
+
+  rw [((Equiv.sum_comp (splitAtEquiv beta c).symm lhsTerm).symm), ((Equiv.sum_comp (splitSuccAtEquiv beta c).symm rhsTerm).symm)]
   dsimp only [lhsTerm, rhsTerm]
   rw [Fintype.sum_prod_type, Fintype.sum_prod_type]
   simp_rw [splitAtEquiv_symm_apply, splitSuccAtEquiv_symm_apply,
@@ -261,21 +246,21 @@ theorem sum_choose_split_add_single
   rw [← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro k hk
-  have hk' : k < beta c + 1 := Finset.mem_range.mp hk
-  have hk0succ : k < (beta c + 1) + 1 := by omega
-  have hk1succ : k + 1 < (beta c + 1) + 1 := by omega
+  have hk'  := Finset.mem_range.mp hk
+
+
   have hrep0 : finRangeRep (beta c + 1) k =
       ⟨(finRangeRep (beta c) k : ℕ), by omega⟩ := by
     apply Fin.ext
     change (finRangeRep (beta c + 1) k : ℕ) =
       (finRangeRep (beta c) k : ℕ)
-    rw [finRangeRep_val hk0succ, finRangeRep_val hk']
+    rw [finRangeRep_val (by omega), finRangeRep_val hk']
   have hrep1 : finRangeRep (beta c + 1) (k + 1) =
       ⟨(finRangeRep (beta c) k : ℕ) + 1, by omega⟩ := by
     apply Fin.ext
     change (finRangeRep (beta c + 1) (k + 1) : ℕ) =
       (finRangeRep (beta c) k : ℕ) + 1
-    rw [finRangeRep_val hk1succ, finRangeRep_val hk']
+    rw [finRangeRep_val (by omega), finRangeRep_val hk']
   rw [hrep0, hrep1]
   rw [mul_add, mul_add]
   rw [mkSucc_left_eq_old_left, mkSucc_right_eq_old_right_add,
@@ -286,40 +271,22 @@ end TimeVelocityMultiIndex
 
 namespace ParabolicDerivativeIndex
 
+variable {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+
 @[simp] theorem coe_timeSucc_eq_add_single
-    {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+
     (h : beta.1.parabolicWeight + 2 ≤ L) :
     (timeSucc beta h).1 =
       beta.1 + Pi.single (timeCoord d) 1 := by
-  classical
-  funext c
-  rcases c with _ | i
-  · simp [timeSucc, TimeVelocityMultiIndex.ofTimeVelocity,
-      TimeVelocityMultiIndex.timeOrder, timeCoord]
-  · simp [timeSucc, TimeVelocityMultiIndex.ofTimeVelocity,
-      TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
-      timeCoord, velocityCoord]
+  bound
 
 @[simp] theorem coe_velocitySucc_eq_add_single
-    {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+
     (i : Fin d)
     (h : beta.1.parabolicWeight + 1 ≤ L) :
     (velocitySucc beta i h).1 =
-      beta.1 + Pi.single (velocityCoord i) 1 := by
-  classical
-  funext c
-  rcases c with _ | j
-  · simp [velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,
-      TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
-      timeCoord, velocityCoord]
-  · by_cases hji : j = i
-    · subst j
-      simp [velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,
-        TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
-        timeCoord, velocityCoord]
-    · simp [velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,
-        TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
-        timeCoord, velocityCoord, hji]
+      beta.1 + Pi.single (velocityCoord i) 1 := (_sharedProof_118_0 beta i h)
+
 
 end ParabolicDerivativeIndex
 end HypoellipticAleksandrov.Parabolic

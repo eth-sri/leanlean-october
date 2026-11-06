@@ -6,10 +6,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativ
 
 /-! # Time–velocity Hölder estimate from the proved spatial derivative bounds -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open Set MeasureTheory Holder LocalA
+
 open scoped MatrixOrder
 
 namespace LocalA

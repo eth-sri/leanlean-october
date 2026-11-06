@@ -10,6 +10,11 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Ring
+import Batteries.Tactic.Alias
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceBarrier
+import Mathlib.Tactic.Ring
+
+
 
 /-!
 # Appendix C's decaying velocity barrier
@@ -24,22 +29,26 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open HypoellipticAleksandrov.Parabolic
 open scoped BigOperators MatrixOrder
 
+variable {d : ℕ}
+
+variable (mu R : ℝ) (P : KineticPoint d)
+
 /-- Decaying quadratic barrier from Appendix C. -/
-def barrier {d : ℕ} (mu R : ℝ) (P : KineticPoint d) : ℝ :=
+def barrier   : ℝ :=
   Real.exp (-mu * P.time) * (2 - PDE.vecNormSq P.velocity / R ^ 2)
 
 /-- Exact time derivative. -/
-theorem barrier_timeDerivative {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
+theorem barrier_timeDerivative   :
     kineticTimeDerivative (barrier mu R) P =
       -mu * Real.exp (-mu * P.time) * (2 - PDE.vecNormSq P.velocity / R ^ 2) := by
   have h := (((hasDerivAt_id P.time).const_mul (-mu)).exp).mul_const
     (2 - PDE.vecNormSq P.velocity / R ^ 2)
   change deriv (fun t => Real.exp (-mu * t) *
     (2 - PDE.vecNormSq P.velocity / R ^ 2)) P.time = _
-  simpa only [id_eq, mul_one, mul_assoc, mul_comm, mul_left_comm] using h.deriv
+  simpa only [mul_comm, mul_left_comm, id_eq, mul_one] using h.deriv
 
 /-- Independence of position. -/
-theorem barrier_positionGradient {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
+theorem barrier_positionGradient   :
     kineticPositionGradient (barrier mu R) P = 0 := by
   ext i
   change fderiv ℝ (fun _x : PDE.Vec d =>
@@ -49,7 +58,7 @@ theorem barrier_positionGradient {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
   rfl
 
 /-- Exact coordinate velocity gradient. -/
-theorem barrier_velocityGradient {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
+theorem barrier_velocityGradient   :
     kineticVelocityGradient (barrier mu R) P =
       fun i => -(2 * Real.exp (-mu * P.time) / R ^ 2) * P.velocity i := by
   have h := ((hasFDerivAt_const (c := (2 : ℝ)) P.velocity).sub
@@ -68,11 +77,10 @@ theorem barrier_velocityGradient {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
   ring
 
 /-- Exact velocity Hessian, including its diagonal factor two. -/
-theorem barrier_velocityHessian {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
+theorem barrier_velocityHessian   :
     kineticVelocityHessian (barrier mu R) P =
       (-(2 * Real.exp (-mu * P.time) / R ^ 2)) • (1 : PDE.Mat d) := by
-  have hg : (fun v : PDE.Vec d => PDE.classicalGradient
-      (fun w => barrier mu R ⟨P.time, P.position, w⟩) v) =
+  have hg : ((PDE.classicalGradient (fun w => barrier mu R ⟨P.time, P.position, w⟩))) =
       fun v => (-(2 * Real.exp (-mu * P.time) / R ^ 2)) • v := by
     funext v
     exact barrier_velocityGradient mu R ⟨P.time, P.position, v⟩
@@ -89,7 +97,7 @@ theorem barrier_velocityHessian {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
   simp only [eq_comm]
 
 /-- Contraction of the barrier Hessian with an arbitrary coefficient. -/
-theorem barrier_hessianContraction {d : ℕ} (A : PDE.Mat d) (mu R : ℝ)
+theorem barrier_hessianContraction  (A : PDE.Mat d) (mu R : ℝ)
     (P : KineticPoint d) :
     matrixContraction A (kineticVelocityHessian (barrier mu R) P) =
       -(2 * Real.exp (-mu * P.time) / R ^ 2) * A.trace := by
@@ -99,63 +107,56 @@ theorem barrier_hessianContraction {d : ℕ} (A : PDE.Mat d) (mu R : ℝ)
     Finset.sum_ite_eq, Finset.mem_univ, ite_true, Matrix.trace, Matrix.diag_apply]
 
 /-- Exact backward operator formula, before ellipticity is used. -/
-theorem barrier_operator {d : ℕ}
+theorem barrier_operator
     (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d) (mu R : ℝ) (P : KineticPoint d) :
     backwardOperator (fun _t x v => A (x, v)) (barrier mu R) P =
       Real.exp (-mu * P.time) *
         (2 * (A (P.position, P.velocity)).trace / R ^ 2 -
           mu * (2 - PDE.vecNormSq P.velocity / R ^ 2)) := by
-  rw [backwardOperator_apply, barrier_timeDerivative, barrier_positionGradient]
-  simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero, add_zero]
-  rw [barrier_hessianContraction, fullKineticCoefficientAt_apply]
-  ring
+  simp_all [barrier_timeDerivative, barrier_positionGradient, PDE.vecDot, barrier_hessianContraction] <;> ring
 
 /-- Loewner lower control implies the dimension-normalized trace lower bound. -/
-theorem barrier_trace_lower {d : ℕ} (A : PDE.Mat d) (lam : ℝ)
-    (hA : lam • (1 : PDE.Mat d) ≤ A) : (d : ℝ) * lam ≤ A.trace := by
-  have hdiag : ∀ i : Fin d, lam ≤ A i i := by
-    intro i
-    have h := (Matrix.le_iff.mp hA).diag_nonneg (i := i)
-    simpa only [Matrix.sub_apply, Matrix.smul_apply, smul_eq_mul, Matrix.one_apply,
-      ite_eq_left, mul_one, sub_nonneg] using h
-  have hsum := Finset.sum_le_sum (s := Finset.univ) (fun i _ => hdiag i)
-  simpa only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul,
-    Matrix.trace, Matrix.diag_apply] using hsum
+theorem barrier_trace_lower  (A : PDE.Mat d) (lam : ℝ)
+    (hA : lam • (1 : PDE.Mat d) ≤ A) : (d : ℝ) * lam ≤ A.trace := (SectionTwo.trace_ge_of_smul_one_le hA)
+
 
 /-- The prescribed decay rate gives a nonnegative backward operator globally. -/
-theorem barrier_operator_nonneg {d : ℕ} (hd : 1 ≤ d)
+theorem barrier_operator_nonneg  (hd : 1 ≤ d)
     (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d) (lam R : ℝ)
     (hlam : 0 < lam) (hR : 0 < R)
     (hA : ∀ q, lam • (1 : PDE.Mat d) ≤ A q) (P : KineticPoint d) :
     0 ≤ backwardOperator (fun _t x v => A (x, v))
       (barrier ((d : ℝ) * lam / R ^ 2) R) P := by
+
+
   rw [barrier_operator]
   apply mul_nonneg (Real.exp_pos _).le
-  have htrace := barrier_trace_lower _ lam (hA (P.position, P.velocity))
-  have hdpos : 0 < (d : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hd)
-  have hbase : 0 ≤ (d : ℝ) * lam := (mul_pos hdpos hlam).le
-  have hs : 0 < R ^ 2 := sq_pos_of_pos hR
-  have hn := PDE.vecNormSq_nonneg P.velocity
-  have hfirst : 0 ≤ 2 * ((A (P.position, P.velocity)).trace - d * lam) / R ^ 2 :=
-    div_nonneg (mul_nonneg (by norm_num) (sub_nonneg.mpr htrace)) hs.le
-  have hsecond : 0 ≤ (d * lam / R ^ 2) * (PDE.vecNormSq P.velocity / R ^ 2) :=
-    mul_nonneg (div_nonneg hbase hs.le) (div_nonneg hn hs.le)
+
+
+
+  have hs  := sq_pos_of_pos hR
+
+
+
   have heq : 2 * (A (P.position, P.velocity)).trace / R ^ 2 -
       (d * lam / R ^ 2) * (2 - PDE.vecNormSq P.velocity / R ^ 2) =
-      2 * ((A (P.position, P.velocity)).trace - d * lam) / R ^ 2 +
-        (d * lam / R ^ 2) * (PDE.vecNormSq P.velocity / R ^ 2) := by ring
+      ((2 * ((A (P.position, P.velocity)).trace - d * lam) / R ^ 2)) +
+        (((d * lam / R ^ 2) * (PDE.vecNormSq P.velocity / R ^ 2))) := by ring
   rw [heq]
-  exact add_nonneg hfirst hsecond
+  exact add_nonneg (div_nonneg (mul_nonneg (by norm_num) (sub_nonneg.mpr (barrier_trace_lower _ lam (hA (P.position, P.velocity))))) hs.le) (mul_nonneg (div_nonneg ((mul_pos (show 0 < (d : ℝ) by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hd)) hlam).le) hs.le) (div_nonneg (PDE.vecNormSq_nonneg P.velocity) hs.le))
 
 /-- Source terminal time, fixed independently of the flattening scale. -/
 def barrierTime (mu : ℝ) : ℝ := Real.log 8 / mu
 
+variable {mu : ℝ} (hmu : 0 < mu)
+
+include hmu
 /-- The chosen terminal time is positive for positive decay rate. -/
-theorem barrierTime_pos {mu : ℝ} (hmu : 0 < mu) : 0 < barrierTime mu :=
+theorem barrierTime_pos  : 0 < barrierTime mu :=
   div_pos (Real.log_pos (by norm_num)) hmu
 
 /-- The terminal exponential factor is exactly one eighth. -/
-theorem barrier_terminal_factor {mu : ℝ} (hmu : 0 < mu) :
+theorem barrier_terminal_factor  :
     Real.exp (-mu * barrierTime mu) = (1 / 8 : ℝ) := by
   have he : -mu * barrierTime mu = -Real.log 8 := by
     unfold barrierTime

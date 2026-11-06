@@ -28,21 +28,25 @@ namespace PDE
 
 open MeasureTheory
 
+variable {d : ℕ}
+
+variable (F : Vec d → Vec d)
+
 /-- Reinterpret a native vector field in the internal Euclidean Hilbert
 carrier. -/
-def toHilbertVecField {d : ℕ} (F : Vec d → Vec d) :
+def toHilbertVecField   :
     Vec d → HilbertVec d :=
   fun x => (F x).toHilbertVec
 
 @[simp]
-theorem toHilbertVecField_apply {d : ℕ} (F : Vec d → Vec d)
+theorem toHilbertVecField_apply
     (x : Vec d) :
     toHilbertVecField F x = (F x).toHilbertVec :=
   rfl
 
 /-- The internal Hilbert lift commutes exactly with pointwise subtraction. -/
 @[simp]
-theorem toHilbertVecField_sub {d : ℕ}
+theorem toHilbertVecField_sub
     (F G : Vec d → Vec d) :
     toHilbertVecField F - toHilbertVecField G =
       toHilbertVecField (fun x => F x - G x) := by
@@ -52,7 +56,7 @@ theorem toHilbertVecField_sub {d : ℕ}
 
 /-- The Hilbert norm of a lifted native field is exactly its explicit
 Euclidean magnitude.  There is no dimension-dependent comparison factor. -/
-theorem norm_toHilbertVecField_apply {d : ℕ} (F : Vec d → Vec d)
+theorem norm_toHilbertVecField_apply  (F : Vec d → Vec d)
     (x : Vec d) :
     ‖toHilbertVecField F x‖ = vecEuclideanNorm (F x) :=
   (Vec.vecEuclideanNorm_eq_norm_toHilbertVec (F x)).symm
@@ -61,7 +65,7 @@ theorem norm_toHilbertVecField_apply {d : ℕ} (F : Vec d → Vec d)
 seminorm of the explicit Euclidean magnitude, for an a.e. strongly measurable
 field. -/
 theorem eLpNorm_toHilbertVecField_eq
-    {d : ℕ} (μ : Measure (Vec d)) (p : ℝ≥0∞)
+     (μ : Measure (Vec d)) (p : ℝ≥0∞)
     (F : Vec d → Vec d) (hF : AEStronglyMeasurable F μ) :
     eLpNorm (toHilbertVecField F) p μ =
       eLpNorm (fun x => vecEuclideanNorm (F x)) p μ := by
@@ -78,15 +82,10 @@ theorem eLpNorm_toHilbertVecField_eq
 /-- Coordinatewise `L^p` membership of a native gradient is exactly
 `L^p` membership of its Euclidean Hilbert lift. -/
 theorem gradMemLpOn_iff_memLp_toHilbertVecField
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+     {U : Set (Vec d)} {p : ℝ≥0∞}
     {Du : Vec d → Vec d} :
     GradMemLpOn U p Du ↔
-      MemLp (toHilbertVecField Du) p (volumeOn U) := by
-  simpa only [GradMemLpOn, MemLpOn, toHilbertVecField,
-    Vec.toHilbertVec_apply] using
-    (memLp_piLp_iff
-      (f := toHilbertVecField Du)
-      (p := p) (μ := volumeOn U)).symm
+      MemLp (toHilbertVecField Du) p (volumeOn U) := (id (Iff.symm memLp_piLp_iff))
 
 namespace MemLpOn
 
@@ -115,19 +114,19 @@ def toHilbertVectorLp {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
   (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu).toLp
     (toHilbertVecField Du)
 
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du)
+
 /-- The Hilbert-vector quotient class agrees almost everywhere with the
 lifted native gradient used to construct it. -/
 theorem coeFn_toHilbertVectorLp
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du) :
+     :
     ⇑hDu.toHilbertVectorLp =ᵐ[volumeOn U] toHilbertVecField Du :=
   (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu).coeFn_toLp
 
 /-- Coordinatewise form of
 `PDE.GradMemLpOn.coeFn_toHilbertVectorLp`. -/
 theorem coeFn_toHilbertVectorLp_apply
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du)
+
     (i : Fin d) :
     (fun x => hDu.toHilbertVectorLp x i) =ᵐ[volumeOn U]
       fun x => Du x i := by

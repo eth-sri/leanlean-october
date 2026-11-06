@@ -7,8 +7,8 @@ import Mathlib.Tactic
 
 /-! # Compact exhaustion and simultaneous Radon reconstruction -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set MeasureTheory Filter Topology
 open scoped ENNReal NNReal CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -43,7 +43,7 @@ theorem bellman_radon_family_subsequence {iota : Type*} [Countable iota]
         (𝓝 (∫ x, f x ∂nu)) := by
   let K := CompactExhaustion.choice X
   let Y (w : iota × ℕ) := {x : X // x ∈ K w.2}
-  let (w : iota × ℕ) : CompactSpace (Y w) :=
+  let (w : iota × ℕ)  :=
     isCompact_iff_compactSpace.mp (K.isCompact w.2)
   let m (n : ℕ) (w : iota × ℕ) : Measure (Y w) := Measure.comap Subtype.val (mu w.1 n)
   have hm (n : ℕ) (w : iota × ℕ) : m n w univ = mu w.1 n (K w.2) :=
@@ -54,8 +54,8 @@ theorem bellman_radon_family_subsequence {iota : Type*} [Countable iota]
   choose C hC using hbound
   have hmreal (n : ℕ) (w : iota × ℕ) : (m n w).real univ ≤ (C w : ℝ) := by
     rw [measureReal_def, hm]
-    have h := ENNReal.toReal_mono (by simp : (C w : ℝ≥0∞) ≠ ∞) (hC w n)
-    simpa only [ENNReal.coe_toReal] using h
+
+    exact (ENNReal.toReal_mono (by simp : (C w : ℝ≥0∞) ≠ ∞) (hC w n))
   obtain ⟨k, hk, ht⟩ := bellman_compact_functionals_subsequence Y m
     (fun w => (C w : ℝ)) (fun w => (C w).property) hmreal
   refine ⟨k, hk, ?_⟩

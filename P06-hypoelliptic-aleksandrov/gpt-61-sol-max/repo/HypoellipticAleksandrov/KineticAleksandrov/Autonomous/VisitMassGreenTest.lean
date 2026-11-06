@@ -3,13 +3,15 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursionUnconditionalDomains
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassQuadratic
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FiniteUnionDomainsMeasures
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The actual bounded quadratic Green identity on each active component -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+
 
 /-- Bounded smooth physical tests obey the Green identity on actual finite unions. -/
 theorem visitUnion_identity_bounded_smooth
@@ -17,13 +19,13 @@ theorem visitUnion_identity_bounded_smooth
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
     (e : FiniteUnionPole H (T : WithTop ℝ)) (phi : Point → ℝ)
-    (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ (KineticPoint.equivProd 1).symm))
+    (hphi : ContDiff ℝ PDE.smoothOrder (phi ∘ (KineticPoint.equivProd 1).symm))
     (hb : ∃ M : ℝ, ∀ p, p.velocity 0 ∈ H.carrier →
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
     phi e.1 = (∫ p, phi p ∂finiteUnionExit hH hLE hlam hLam A H T e) -
       ∫ p, forwardScalarOperator A.a phi p ∂finiteUnionGreen hH hLE hlam hLam A H T e := by
   apply strip_identity_bounded_smooth hH hLE hlam hLam A
-    (H.component (finiteUnionPoleIndex H T e)) T (finiteUnionComponentPole H T e) phi hphi
+    _ T (finiteUnionComponentPole H T e) phi hphi
   obtain ⟨M, hM⟩ := hb
   exact ⟨M, fun p hp => hM p (H.component_subset _ hp)⟩
 
@@ -35,10 +37,9 @@ theorem visitQuadratic_active_bounded {lam Lam : ℝ} (hlam : 0 < lam)
       |forwardScalarOperator A.a (fun q => visitQuadratic c (q.velocity 0)) p| ≤ M := by
   refine ⟨max (9 * c.r ^ 2 / 16) (2 * Lam), ?_⟩
   intro p hp
-  have hv : p.velocity 0 ∈ closure c.active :=
-    subset_closure ((visitActiveUnion_carrier c J).le hp).1
+
   constructor
-  · rw [abs_of_nonneg (visitQuadratic_nonneg c hv)]
+  · rw [abs_of_nonneg (visitQuadratic_nonneg c (subset_closure ((visitActiveUnion_carrier c J).le hp).1))]
     exact (visitQuadratic_le c _).trans (le_max_left _ _)
   · rw [visitQuadratic_operator]
     have ha := A.bounds (p.position 0) (p.velocity 0)
@@ -54,16 +55,16 @@ theorem visitQuadratic_active_identity
     (e : FiniteUnionPole (visitActiveUnion c J) (T : WithTop ℝ)) :
     visitQuadratic c (e.1.velocity 0) =
       (∫ p, visitQuadratic c (p.velocity 0)
-        ∂finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T e) -
+        ∂finiteUnionExit hH hLE hlam hLam A _ T e) -
       ∫ p, -2 * A.a (p.position 0) (p.velocity 0)
-        ∂finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T e := by
-  have hs : ContDiff ℝ (⊤ : ℕ∞)
+        ∂finiteUnionGreen hH hLE hlam hLam A _ T e := by
+  have hs : ContDiff ℝ PDE.smoothOrder
       ((fun q : Point => visitQuadratic c (q.velocity 0)) ∘
         (KineticPoint.equivProd 1).symm) :=
     (visitQuadratic_smooth c).comp
       ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd)
   simpa only [visitQuadratic_operator] using
-    visitUnion_identity_bounded_smooth hH hLE hlam hLam A (visitActiveUnion c J) T e
+    visitUnion_identity_bounded_smooth hH hLE hlam hLam A _ T e
       (fun q => visitQuadratic c (q.velocity 0)) hs
       (visitQuadratic_active_bounded hlam hLam A c J)
 

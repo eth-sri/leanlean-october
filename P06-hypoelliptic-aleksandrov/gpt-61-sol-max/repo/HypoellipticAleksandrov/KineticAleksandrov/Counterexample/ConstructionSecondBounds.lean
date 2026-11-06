@@ -2,25 +2,29 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionLocalBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoffSecondBounds
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Local integrability of the literal second cutoff representatives -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 
 /-- A continuous scalar field has a nonnegative compact bound. -/
-theorem construction_continuous_compact_bound {n : ℕ} (f : PDE.Vec n → ℝ)
-    (hf : Continuous f) (K : Set (PDE.Vec n)) (hK : IsCompact K) :
+theorem construction_continuous_compact_bound {n : ℕ} (f : PDE.ScalarField n)
+    (hf : Continuous f) (K : PDE.VelocityRegion n) (hK : IsCompact K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ x ∈ K, |f x| ≤ M := by
   obtain ⟨M, hb⟩ := hK.bddAbove_image hf.abs.continuousOn
   exact ⟨max M 0, le_max_right _ _, fun x hx =>
     (hb ⟨x, hx, rfl⟩).trans (le_max_left _ _)⟩
 
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+
+include hr
 /-- Subtraction of a smooth barrier preserves the compact bounds of the first jets. -/
-theorem construction_gradient_difference_compact_bound {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem construction_gradient_difference_compact_bound
     (mu R t : ℝ) (i : Fin (d + d)) (K : Set (PDE.Vec (d + d))) (hK : IsCompact K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ x ∈ K,
       |spatialPackedGradient (flatProfilePositionJet h r) (flatProfileVelocityJet h r) x i -
@@ -35,8 +39,7 @@ theorem construction_gradient_difference_compact_bound {d : ℕ} {alpha : ℝ}
     (abs_sub _ _).trans (add_le_add (hbM x hx) (hbN x hx))⟩
 
 /-- The packed Hessian representatives of the flattening are locally integrable. -/
-theorem construction_packedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i k : Fin d) :
+theorem construction_packedHessian_locallyIntegrable  (i k : Fin d) :
     LocallyIntegrable (fun x => flatProfileHessian h r (spatialCoordinateCLE d x) i k)
       volume := by
   obtain ⟨_, _, hm⟩ := measurable_flatProfile_jets h r
@@ -44,12 +47,11 @@ theorem construction_packedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
     ((hm i k).comp (spatialCoordinateCLE d).continuous.measurable)
   intro K hK
   obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr
-    ((spatialCoordinateCLE d) '' K) (hK.image (spatialCoordinateCLE d).continuous)
+    _ (hK.image (spatialCoordinateCLE d).continuous)
   exact ⟨M, hM, fun x hx => (hb _ ⟨x, hx, rfl⟩).2.2 i k⟩
 
 /-- The explicit second weak cutoff representative is locally integrable. -/
-theorem construction_cutoffHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem construction_cutoffHessian_locallyIntegrable
     (mu R t : ℝ) (i k : Fin d) :
     LocallyIntegrable (fun x => spatialPackedCutoffVelocityHessian h r mu R t x i k)
       volume := by
@@ -57,10 +59,10 @@ theorem construction_cutoffHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
   let s := fun x => selectedFlatProfile h r (spatialCoordinateCLE d x) - B x
   let g := fun j x => flatProfileVelocityJet h r (spatialCoordinateCLE d x) j -
     PDE.classicalGradient B x (Fin.natAdd d j)
-  have hs : Continuous s :=
+  have hs  :=
     ((continuous_selectedFlatProfile h r).comp (spatialCoordinateCLE d).continuous).sub
       (contDiff_spatialPackedBarrier d mu R t).continuous
-  have hBG (j : Fin d) : ContDiff ℝ (⊤ : ℕ∞)
+  have hBG (j : Fin d) : ContDiff ℝ PDE.smoothOrder
       (fun x => PDE.classicalGradient B x (Fin.natAdd d j)) :=
     ((contDiff_spatialPackedBarrier d mu R t).contDiff_fderiv_apply (by simp)).comp
       (contDiff_id.prodMk contDiff_const)
@@ -77,7 +79,7 @@ theorem construction_cutoffHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
   have hH : Continuous (fun x => PDE.classicalGradient
       (fun y => PDE.classicalGradient B y (Fin.natAdd d k)) x (Fin.natAdd d i)) :=
     ((hBG k).continuous_fderiv (by simp)).clm_apply continuous_const
-  have ht1 : Continuous (fun x => deriv timeCutoffTheta (s x)) :=
+  have ht1  :=
     (contDiff_timeCutoffTheta.continuous_deriv (by simp)).comp hs
   have ht2 : Continuous (fun x => deriv (deriv timeCutoffTheta) (s x)) := by
     have hc : Continuous (deriv (deriv timeCutoffTheta)) := by

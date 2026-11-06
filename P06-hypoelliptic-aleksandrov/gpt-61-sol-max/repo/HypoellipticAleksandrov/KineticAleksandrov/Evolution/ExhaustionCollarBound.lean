@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCollar
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # The two-part collar bound on the entire actual finite ellipsoid
@@ -9,24 +11,24 @@ The bound combines the finite-cylinder constant estimate and the proved collar e
 No whole-domain solution is consumed. Constants are independent of the transported radius.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+open HypoellipticAleksandrov.Parabolic
 open scoped MatrixOrder
 
 /-- The actual finite Dirichlet solution obeys the full minimum-form collar bound on
 its entire inset closed cylinder, uniformly in the transported truncation radius. -/
 theorem abs_le_min_collar_straightened_dirichlet
-    {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     {a α τ r R d L C ε : ℝ} (haα : a < α) (hατ : α < τ)
     (hr : 0 < r) (hR : 0 < R) (hd : 0 < d) (hdr : d < r)
-    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hL : 0 ≤ L)
+    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ PDE.smoothOrder g) (hL : 0 ≤ L)
     (hgL : ∀ s t, PDE.vecEuclideanNorm (g s - g t) ≤ L * |s - t|)
     (hε : 0 ≤ ε) (hC : 0 ≤ C)
     (F : BoundedBorel (EvolutionAmbientState n)) (hFC : ∀ q, |F q| ≤ C)
@@ -45,7 +47,7 @@ theorem abs_le_min_collar_straightened_dirichlet
           barrierW (collarKappa L lam) d) := by
   intro p hp
   have hκ : 0 < collarKappa L lam := div_pos (by linarith) hlam
-  have hW := barrierW_pos hκ hd
+
   have hbound := abs_le_straightened_dirichlet hlam hB hBs hbs (haα.trans hατ) hr hR
     hg hε F u hu hC hFC (straightenedPoint g p)
     ⟨⟨haα.le.trans hp.1.1, hp.1.2⟩, hp.2⟩
@@ -54,16 +56,14 @@ theorem abs_le_min_collar_straightened_dirichlet
         barrierW (collarKappa L lam) d
   · rw [min_eq_left hratio, mul_one]
     exact hbound
-  · have hw : barrierW (collarKappa L lam) (r - PDE.vecEuclideanNorm (p.position - g p.time)) ≤
-        barrierW (collarKappa L lam) d := by
-      exact (div_le_one hW).mp (le_of_lt (not_le.mp hratio))
-    have hd' := le_of_barrierW_le hκ hw
-    have hn : r - d ≤ PDE.vecEuclideanNorm (p.position - g p.time) := by linarith
-    have hS : (r - d) ^ 2 ≤ centreSq 0 g p := by
-      have he := pow_le_pow_left₀ (by linarith : 0 ≤ r - d) hn 2
-      simpa only [PDE.vecEuclideanNorm_sq, centreSq, add_zero] using he
+  ·
+    have hd' := le_of_barrierW_le hκ ((div_le_one (barrierW_pos hκ hd)).mp (le_of_lt (not_le.mp hratio)))
+
+
     have he := abs_le_collar_straightened_dirichlet hlam hB hBs hbs haα hατ hr hR hd hdr
-      hg hL hgL hε hC F hFC hsupp u hu p hp hS
+      hg hL hgL hε hC F hFC hsupp u hu p hp (by
+          have he := pow_le_pow_left₀ (by linarith : 0 ≤ r - d) (by linarith) 2
+          simpa only [PDE.vecEuclideanNorm_sq, centreSq, add_zero] using he)
     rw [min_eq_right (le_of_lt (not_le.mp hratio))]
     simpa only [collarSupersolution, collarBarrier, collarProfile, barrierW, add_zero,
       PDE.vecEuclideanNorm, mul_div_assoc, div_mul_eq_mul_div] using he

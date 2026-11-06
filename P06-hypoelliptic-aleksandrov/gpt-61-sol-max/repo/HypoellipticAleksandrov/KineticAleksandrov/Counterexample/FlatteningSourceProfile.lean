@@ -10,7 +10,7 @@ witnesses. Their weak identities and source equation are proved here, rather tha
 assumed as an additional profile field.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 

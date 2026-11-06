@@ -37,18 +37,10 @@ theorem uExpansion_eq_sum_rpow (a b : ℝ) (N : ℕ) (z : ℝ) (hz : 0 < z) :
 /-- Parameter recurrence for the derivative of a finite U expansion. -/
 theorem hasDerivAt_uExpansion (a b : ℝ) (N : ℕ) (z : ℝ) (hz : 0 < z) :
     HasDerivAt (uExpansion a b N) (-a * uExpansion (a + 1) (b + 1) N z) z := by
-  let k : ℕ → ℝ := fun n =>
+  let k  := fun n =>
     (-1 : ℝ) ^ n * poch a n * poch (a - b + 1) n / (n.factorial : ℝ)
-  have hd : HasDerivAt (fun w => ∑ n ∈ Finset.range N, k n * w ^ (-a - (n : ℝ)))
-      (∑ n ∈ Finset.range N, k n * ((-a - (n : ℝ)) *
-        z ^ (-a - (n : ℝ) - 1))) z := by
-    apply HasDerivAt.fun_sum
-    intro n _
-    exact (Real.hasDerivAt_rpow_const (Or.inl hz.ne')).const_mul (k n)
-  have heq : uExpansion a b N =ᶠ[𝓝 z]
-      fun w => ∑ n ∈ Finset.range N, k n * w ^ (-a - (n : ℝ)) := by
-    filter_upwards [Ioi_mem_nhds hz] with w hw
-    exact uExpansion_eq_sum_rpow a b N w hw
+
+
   have hv : -a * uExpansion (a + 1) (b + 1) N z =
       ∑ n ∈ Finset.range N, k n * ((-a - (n : ℝ)) * z ^ (-a - (n : ℝ) - 1)) := by
     rw [uExpansion_eq_sum_rpow (a + 1) (b + 1) N z hz, Finset.mul_sum]
@@ -64,37 +56,49 @@ theorem hasDerivAt_uExpansion (a b : ℝ) (N : ℕ) (z : ℝ) (hz : 0 < z) :
           poch (a - b + 1) n / (n.factorial : ℝ)) * z ^ (-a - (n : ℝ) - 1) := by ring
       _ = _ := by rw [hp]; ring
   rw [hv]
-  exact hd.congr_of_eventuallyEq heq
+  exact (show HasDerivAt (fun w => ∑ n ∈ Finset.range N, k n * w ^ (-a - (n : ℝ)))
+      (∑ n ∈ Finset.range N, k n * ((-a - (n : ℝ)) *
+        z ^ (-a - (n : ℝ) - 1))) z by
+      apply HasDerivAt.fun_sum
+      intro n _
+      exact (Real.hasDerivAt_rpow_const (Or.inl hz.ne')).const_mul (k n)).congr_of_eventuallyEq (by
+      filter_upwards [Ioi_mem_nhds hz] with w hw
+      exact uExpansion_eq_sum_rpow a b N w hw)
+
+variable (a : Pos)
 
 /-- Shape shift of the normalized integral derivative. -/
-theorem hasDerivAt_UIr_shift (a : Pos) (b z : ℝ) (hz : 0 < z) :
+theorem hasDerivAt_UIr_shift  (b z : ℝ) (hz : 0 < z) :
     HasDerivAt (UIr a b)
       (-a.1 * UIr ⟨a.1 + 1, add_pos a.2 zero_lt_one⟩ (b + 1) z) z := by
+  let sharedTerm_a2ddc61c49 := (laplaceIntegral (a.1 + 1) (b + 1) z)
   have heq : -a.1 * UIr ⟨a.1 + 1, add_pos a.2 zero_lt_one⟩ (b + 1) z =
-      -(Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 1) (b + 1) z := by
-    change -a.1 * ((Real.Gamma (a.1 + 1))⁻¹ * laplaceIntegral (a.1 + 1) (b + 1) z) = _
+      -(Real.Gamma a.1)⁻¹ * sharedTerm_a2ddc61c49 := by
+    change -a.1 * ((Real.Gamma (a.1 + 1))⁻¹ * sharedTerm_a2ddc61c49) = _
     rw [Real.Gamma_add_one a.2.ne']
     field_simp [a.2.ne', (Real.Gamma_pos_of_pos a.2).ne']
   rw [heq]
   exact hasDerivAt_UIr a b z hz
 
+variable (b : ℝ) (N : ℕ)
+
 /-- The derivative remainder is exactly a simultaneous parameter shift. -/
-theorem hasDerivAt_UIr_remainder (a : Pos) (b : ℝ) (N : ℕ) (z : ℝ) (hz : 0 < z) :
+theorem hasDerivAt_UIr_remainder   (z : ℝ) (hz : 0 < z) :
     HasDerivAt (fun w => UIr a b w - uExpansion a.1 b N w)
       (-a.1 * (UIr ⟨a.1 + 1, add_pos a.2 zero_lt_one⟩ (b + 1) z -
         uExpansion (a.1 + 1) (b + 1) N z)) z := by
-  have h := (hasDerivAt_UIr_shift a b z hz).sub (hasDerivAt_uExpansion a.1 b N z hz)
-  convert h using 1
+
+  convert ((hasDerivAt_UIr_shift a b z hz).sub (hasDerivAt_uExpansion a.1 b N z hz)) using 1
   ring
 
 /-- First derivative expansion of the integral, proved from shifted remainders. -/
-theorem UIr_expansion_deriv (a : Pos) (b : ℝ) (N : ℕ) :
+theorem UIr_expansion_deriv   :
     Asymptotics.IsBigO atTop
       (deriv (fun z => UIr a b z - uExpansion a.1 b N z))
       (fun z => Real.rpow z (-a.1 - (N : ℝ) - 1)) := by
   let c : Pos := ⟨a.1 + 1, add_pos a.2 zero_lt_one⟩
-  have h := (UIr_expansion c (b + 1) N).const_mul_left (-a.1)
-  apply h.congr' _ _
+
+  apply ((UIr_expansion c (b + 1) N).const_mul_left (-a.1)).congr' _ _
   · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with z hz
     exact (hasDerivAt_UIr_remainder a b N z hz).deriv.symm
   · filter_upwards with z
@@ -103,30 +107,29 @@ theorem UIr_expansion_deriv (a : Pos) (b : ℝ) (N : ℕ) :
     ring
 
 /-- The second remainder derivative is another exact integral shift. -/
-theorem hasDerivAt_deriv_UIr_remainder (a : Pos) (b : ℝ) (N : ℕ) (z : ℝ) (hz : 0 < z) :
+theorem hasDerivAt_deriv_UIr_remainder   (z : ℝ) (hz : 0 < z) :
     HasDerivAt (deriv (fun w => UIr a b w - uExpansion a.1 b N w))
       (a.1 * (a.1 + 1) *
         (UIr ⟨a.1 + 1 + 1, add_pos (add_pos a.2 zero_lt_one) zero_lt_one⟩ (b + 1 + 1) z -
           uExpansion (a.1 + 1 + 1) (b + 1 + 1) N z)) z := by
   let c : Pos := ⟨a.1 + 1, add_pos a.2 zero_lt_one⟩
-  have hd := (hasDerivAt_UIr_remainder c (b + 1) N z hz).const_mul (-a.1)
-  have heq : deriv (fun w => UIr a b w - uExpansion a.1 b N w) =ᶠ[𝓝 z]
-      fun w => -a.1 * (UIr c (b + 1) w - uExpansion c.1 (b + 1) N w) := by
-    filter_upwards [Ioi_mem_nhds hz] with w hw
-    exact (hasDerivAt_UIr_remainder a b N w hw).deriv
-  have h := hd.congr_of_eventuallyEq heq
+
+
+  have h := ((hasDerivAt_UIr_remainder c (b + 1) N z hz).const_mul (-a.1)).congr_of_eventuallyEq (by
+      filter_upwards [Ioi_mem_nhds hz] with w hw
+      exact (hasDerivAt_UIr_remainder a b N w hw).deriv)
   convert h using 1
   dsimp only [c]
   ring
 
 /-- Second derivative expansion of the integral, using two proved shifts. -/
-theorem UIr_expansion_deriv2 (a : Pos) (b : ℝ) (N : ℕ) :
+theorem UIr_expansion_deriv2   :
     Asymptotics.IsBigO atTop
       (deriv (deriv (fun z => UIr a b z - uExpansion a.1 b N z)))
       (fun z => Real.rpow z (-a.1 - (N : ℝ) - 2)) := by
   let d : Pos := ⟨a.1 + 1 + 1, add_pos (add_pos a.2 zero_lt_one) zero_lt_one⟩
-  have h := (UIr_expansion d (b + 1 + 1) N).const_mul_left (a.1 * (a.1 + 1))
-  apply h.congr' _ _
+
+  apply ((UIr_expansion d (b + 1 + 1) N).const_mul_left (a.1 * (a.1 + 1))).congr' _ _
   · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with z hz
     exact (hasDerivAt_deriv_UIr_remainder a b N z hz).deriv.symm
   · filter_upwards with z

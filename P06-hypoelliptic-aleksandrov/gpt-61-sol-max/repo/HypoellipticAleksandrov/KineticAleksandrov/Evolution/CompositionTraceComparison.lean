@@ -11,25 +11,21 @@ ending at the intermediate time is used. The terminal error is propagated by the
 explicit Euclidean growth barrier, without applying existence to noncompact data.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+open Set
 
+variable {n : ℕ} {Ω : PDE.VelocityRegion n} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.VectorField n} (hb : HasEuclideanLipschitzDrift Lb b) {r τ δ : ℝ} (hrτ : r ≤ τ) (hδ : 0 ≤ δ) {F G : BoundedBorel (EvolutionAmbientState n)} {u v : HypoellipticAleksandrov.KineticScalarField n} (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hv : IsClassicalTerminalSolution Ω γ B b r G v)
+
+include hΩ hγ hlam hB hb hrτ hδ hu hv
 /-- A weighted terminal error between two classical solutions propagates to every
 point of the earlier closed cylinder. The first solution may end at a later time. -/
 theorem classical_intermediate_sub_le_growth
-    {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {r τ δ : ℝ} (hrτ : r ≤ τ) (hδ : 0 ≤ δ)
-    {F G : BoundedBorel (EvolutionAmbientState n)} {u v : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u)
-    (hv : IsClassicalTerminalSolution Ω γ B b r G v)
+
     (hterm : ∀ p ∈ evolutionTerminalClosure Ω γ r,
       u p - v p ≤ δ * (1 + radialSq p)) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ r,
@@ -38,14 +34,10 @@ theorem classical_intermediate_sub_le_growth
   have hu' := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F u).2 hu
   have hv' := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b r G v).2 hv
   let cg := growthConstant n Lam (PDE.vecEuclideanNorm (b 0)) Lb
-  let Φ := growthBarrier (n := n) cg r
-  have hcg : 0 ≤ cg := by
-    dsimp [cg, growthConstant]
-    have := PDE.vecEuclideanNorm_nonneg (b 0)
-    positivity
-  have hΦpos (p : KineticPoint n) : 0 ≤ Φ p := (growthBarrier_pos cg r p).le
-  have hΦop (p : KineticPoint n) :
-      viscousTransportedOperator B b 0 Φ p ≤ -Φ p :=
+
+
+  have hΦpos (p : KineticPoint n)  := (growthBarrier_pos cg r p).le
+  have hΦop (p : KineticPoint n)  :=
     viscousTransportedOperator_growthBarrier_le zero_le_one
       (fun t y z => (hB t y z).2) hb r p
   obtain ⟨C₁, _, hC₁⟩ := hu'.1
@@ -64,16 +56,16 @@ theorem classical_intermediate_sub_le_growth
   have hvreg (p : KineticPoint n) (hp : p ∈ movingActiveSlab Ω γ p₀.time r) :=
     hv'.isSliceRegularAt hΩ hγ (hopen p hp)
   have hmax := growth_comparison hΩ hγ hlam hB hb (le_refl 0) zero_le_one
-    (a := p₀.time) (T := r) (u := fun p => u p - v p - δ * Φ p)
+    (a := p₀.time) (T := r) (u := fun p => u p - v p - δ * (growthBarrier (n := n) cg r) p)
     ?_ ?_ ?_ ?_ ?_ ?_ p₀ ⟨le_rfl, hp₀.1, hp₀.2⟩
   · linarith only [hmax]
   · refine ⟨C₁ + C₂, fun p hp => ?_⟩
-    have h₁ := (abs_le.mp (hC₁ p (hlater p hp))).2
-    have h₂ := (abs_le.mp (hC₂ p (hclosed p hp))).1
+
+
     have hnon := mul_nonneg hδ (hΦpos p)
-    linarith only [h₁, h₂, hnon]
-  · exact ((hu'.2.1.mono (fun p hp => hlater p hp)).sub
-      (hv'.2.1.mono (fun p hp => hclosed p hp))).sub
+    linarith only [((abs_le.mp (hC₁ p (hlater p hp))).2), ((abs_le.mp (hC₂ p (hclosed p hp))).1), hnon]
+  · exact ((hu'.2.1.mono (hlater)).sub
+      (hv'.2.1.mono (hclosed))).sub
       ((continuous_const.mul (continuous_growthBarrier cg r)).continuousOn)
   · intro p hp
     exact ((hureg p hp).sub (hvreg p hp)).sub
@@ -88,9 +80,12 @@ theorem classical_intermediate_sub_le_growth
       ((hΦop p).trans (neg_nonpos.mpr (hΦpos p)))
     linarith only [hnon]
   · intro p hp ht
-    have he := hterm p ⟨ht, ht ▸ hp.2.2⟩
-    have hg := one_add_radialSq_le_growthBarrier hcg hp.2.1
-    have hbound := he.trans (mul_le_mul_of_nonneg_left hg hδ)
+
+
+    have hbound := (hterm p ⟨ht, ht ▸ hp.2.2⟩).trans (mul_le_mul_of_nonneg_left (one_add_radialSq_le_growthBarrier (show 0 ≤ cg by
+        dsimp [cg, growthConstant]
+        have := PDE.vecEuclideanNorm_nonneg (b 0)
+        positivity) hp.2.1) hδ)
     linarith only [hbound]
   · intro p hp hfr
     rw [hu'.2.2.2.2.2 p ⟨hp.2.1.trans hrτ, hfr⟩,
@@ -99,14 +94,7 @@ theorem classical_intermediate_sub_le_growth
 
 /-- Absolute weighted terminal errors propagate under the same Euclidean growth barrier. -/
 theorem classical_intermediate_abs_sub_le_growth
-    {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {r τ δ : ℝ} (hrτ : r ≤ τ) (hδ : 0 ≤ δ)
-    {F G : BoundedBorel (EvolutionAmbientState n)} {u v : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u)
-    (hv : IsClassicalTerminalSolution Ω γ B b r G v)
+
     (hterm : ∀ p ∈ evolutionTerminalClosure Ω γ r,
       |u p - v p| ≤ δ * (1 + radialSq p)) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ r,
@@ -116,10 +104,10 @@ theorem classical_intermediate_abs_sub_le_growth
     (fun p hp => (le_abs_self _).trans (hterm p hp))
   have hlower := classical_intermediate_sub_le_growth hΩ hγ hlam hB hb hrτ hδ
     (hu.smul hΩ hγ (-1)) (hv.smul hΩ hγ (-1)) (fun p hp => by
-      have hh := (abs_le.mp (hterm p hp)).1
-      linarith only [hh])
+
+      linarith only [((abs_le.mp (hterm p hp)).1)])
   intro p hp
-  have hh := hlower p hp
-  exact abs_le.mpr ⟨by linarith only [hh], hupper p hp⟩
+
+  exact abs_le.mpr ⟨by linarith only [(hlower p hp)], hupper p hp⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitMeasure
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Compact-test passage for the actual exhaustion limit
@@ -14,20 +16,20 @@ The finite weak equation is obtained from the actual Dirichlet solution.
 Integral convergence and locality of the adjoint pass it to the limit.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter MeasureTheory
+open HypoellipticAleksandrov.Parabolic Set Filter MeasureTheory
 open Evolution
 open scoped Topology MatrixOrder
 
 /-- Every smooth compact test supported in a fixed bounded inner cylinder satisfies
 the regularized adjoint identity for the actual exhaustion limit. -/
 theorem integral_regularizedAdjoint_innerBall_dirichlet_limit_eq_zero
-    {n : ℕ} {lam Lam Lb m : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb m : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hn : 1 ≤ n) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B)
@@ -43,7 +45,7 @@ theorem integral_regularizedAdjoint_innerBall_dirichlet_limit_eq_zero
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))
     (β R : ℕ → ℝ) (hβpos : ∀ k, 0 < β k)
     (hβlim : Tendsto β atTop (𝓝 0)) (hRlim : Tendsto R atTop atTop)
-    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (g k))
+    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ PDE.smoothOrder (g k))
     (hgL : ∀ k s t, PDE.vecEuclideanNorm (g k s - g k t) ≤ L * |s - t|)
     (hclose : ∀ k s, s ∈ Icc α τ → PDE.vecEuclideanNorm (g k s - Γ s) ≤ β k / 2)
     (u : ℕ → TimeVelocity (n + n) → ℝ)
@@ -52,7 +54,7 @@ theorem integral_regularizedAdjoint_innerBall_dirichlet_limit_eq_zero
       (straightenedCoefficient B (g k) ε) (straightenedDrift b (g k))
       (fun _ _ => 0) (fun _ _ => 0)
       (fun x => F (g k τ + spatialY x, spatialZ x)) (fun _ => 0) (u k))
-    (ψ : EvolutionVec n → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
+    (ψ : EvolutionVec n → ℝ) (hψ : ContDiff ℝ PDE.smoothOrder ψ)
     (hc : HasCompactSupport ψ)
     (hs : tsupport ψ ⊆ evolutionHomeomorph n ⁻¹'
       {p : KineticPoint n | α < p.time ∧ p.time < τ ∧
@@ -64,7 +66,7 @@ theorem integral_regularizedAdjoint_innerBall_dirichlet_limit_eq_zero
     {p | radialSq p ≤ S0 ^ 2}
   let φ (p : KineticPoint n) := regularizedAdjoint B b ε ψ
     ((evolutionHomeomorph n).symm p)
-  have hφ : Continuous φ := (contDiff_regularizedAdjoint hBs hbs hψ ε).continuous.comp
+  have hφ  := (contDiff_regularizedAdjoint hBs hbs hψ ε).continuous.comp
     (evolutionHomeomorph n).symm.continuous
   have hKs (x : EvolutionVec n) (hx : x ∈ tsupport ψ) :
       evolutionHomeomorph n x ∈ K := by
@@ -105,15 +107,13 @@ theorem integral_regularizedAdjoint_innerBall_dirichlet_limit_eq_zero
       exact hp (by simpa using hsD hx)
     have he := hw.2 ψ hψ hc hsD
     have he' : (∫ p in D, straightenedPullback (g k) (u k) p * φ p) = 0 := by
-      simpa only [straightenedPullback, straightenedPoint, φ, zero_mul, integral_zero]
-        using he
+      simpa only [φ, straightenedPullback, zero_mul, integral_zero] using he
     rw [setIntegral_eq_integral_of_forall_compl_eq_zero
       (fun p hp => by rw [hzeroK p hp, mul_zero])]
     rw [setIntegral_eq_integral_of_forall_compl_eq_zero
       (fun p hp => by rw [hzeroD p hp, mul_zero])] at he'
     exact he'
-  have hlim0 : (∫ p in K, limUnder atTop
-      (fun k => straightenedPullback (g k) (u k) p) * φ p) = 0 :=
+  have hlim0  :=
     tendsto_nhds_unique hInt (tendsto_const_nhds.congr' (hIz.mono fun k hk => hk.symm))
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero
     (fun p hp => by rw [hzeroK p hp, mul_zero])] at hlim0

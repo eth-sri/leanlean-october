@@ -20,12 +20,12 @@ space. -/
 def axisBox {d : ℕ} (a b : Vec d) : Set (Vec d) :=
   Set.pi Set.univ fun i => Set.Ioo (a i) (b i)
 
-theorem isOpen_axisBox {d : ℕ} (a b : Vec d) :
-    IsOpen (axisBox a b) := by
-  dsimp [axisBox]
-  exact isOpen_set_pi Set.finite_univ fun _ _ => isOpen_Ioo
+variable {d : ℕ} (a b : Vec d)
 
-theorem isBoundedDomain_axisBox {d : ℕ} (a b : Vec d) :
+theorem isOpen_axisBox  :
+    IsOpen (axisBox a b) := (id (isOpen_set_pi Set.finite_univ fun x x_1 => isOpen_Ioo))
+
+theorem isBoundedDomain_axisBox  :
     IsBoundedDomain (axisBox a b) := by
   dsimp [axisBox]
   exact Bornology.IsBounded.isBoundedDomain <|

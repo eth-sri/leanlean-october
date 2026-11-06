@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # One buffered reference region and one scale for every growth-lemma consumer -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -21,8 +21,10 @@ theorem referenceBound_large (m : ℕ) : 1 < referenceBound m := by
   unfold referenceBound
   linarith only [hb, hm]
 
+variable (d m : ℕ)
+
 /-- The target unit cylinder lies in the same reference region as the sampling closure. -/
-theorem unitCylinder_subset_reference (d m : ℕ) :
+theorem unitCylinder_subset_reference  :
     backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 ⊆
       referenceRegion d m (referenceBound m) := by
   intro P hP
@@ -37,7 +39,7 @@ theorem unitCylinder_subset_reference (d m : ℕ) :
   exact ⟨by linarith only [htlo, hm], hP.2.1, hpx.trans hL, hpv.trans hL⟩
 
 /-- One smaller reference scale preserves all positivity and admissibility data. -/
-theorem exists_reference_geometry (d m : ℕ) :
+theorem exists_reference_geometry  :
     ∃ eps : ℝ, 0 < eps ∧ eps < 1 ∧
       IsOpen (referenceRegion d m (referenceBound m)) ∧
       Bornology.IsBounded (referenceRegion d m (referenceBound m)) ∧
@@ -46,9 +48,9 @@ theorem exists_reference_geometry (d m : ℕ) :
         referenceRegion d m (referenceBound m) ∧
       kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps ''
         referenceRegion d m (referenceBound m) ⊆
-        backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 ∧
+        backwardCylinder (⟨0, 0, 0⟩ ) 1 ∧
       closure (kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps '' samplingCylinder d m) ⊆
-        backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
+        backwardCylinder (⟨0, 0, 0⟩ ) 1 := by
   have hL := referenceBound_large m
   obtain ⟨eps, heps, heps1, himage⟩ := exists_buffered_reference_scale d m
     (lt_trans (by norm_num) hL)

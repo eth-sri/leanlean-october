@@ -14,11 +14,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStar
 Composition discharges all four autonomous steps and preserves the statements' types.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open HypoellipticAleksandrov MeasureTheory Set Autonomous Holder
-open scoped ENNReal
+
+
 
 namespace Autonomous
 
@@ -36,8 +36,7 @@ theorem timeBinCountStatement_holds : TimeBinCountStatement := by
       (smoothAutonomousP6_holds hH hLE lam Lam hlam hLam))
 
 /-- All autonomous frontier steps hold relative to the source theorem. -/
-theorem autonomousRemainingFrontier_holds : AutonomousRemainingFrontier := by
-  exact ⟨timeBinCountStatement_holds,
+theorem autonomousRemainingFrontier_holds : AutonomousRemainingFrontier := ⟨timeBinCountStatement_holds,
     positionStartSlabBound_holds terminalDominationStatement_holds,
     terminalDominationStatement_holds, coreDominationStatement_holds⟩
 

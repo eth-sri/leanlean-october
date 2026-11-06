@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Geometry
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Explicit profile statements for Appendix C
@@ -29,7 +31,7 @@ def CounterProfileGeTwoStatement (d : ℕ) (alpha : ℝ) : Prop :=
     (∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q) ∧
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
-    ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d)) ∧
+    ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d)) ∧
     (∀ q : XV d, q ≠ 0 → matrixContraction (A q) (dvv H q) =
       PDE.vecDot q.2 (dx H q)) ∧
     (∀ q : XV d, q ≠ 0 →
@@ -48,8 +50,8 @@ def CounterProfileOneStatement (alpha : ℝ) : Prop :=
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (scalarProfileCoefficient Lam q) (hess q) =
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (scalarProfileCoefficient Lam q) (hess q) =
       PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV 1, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
@@ -78,30 +80,30 @@ def CounterProfileStatement (d : ℕ) (alpha : ℝ) : Prop :=
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q)
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q)
+
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha)
 
 /-- The lam witness selected from the shared conditional profile statement. -/
-noncomputable def profileLowerEllipticity {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : ℝ :=
+noncomputable def profileLowerEllipticity  : ℝ :=
   h.choose
 
 /-- The remaining source conclusions for the selected lam witness. -/
-theorem profileLowerEllipticity_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem profileLowerEllipticity_spec  :
     let lam := profileLowerEllipticity h
     ∃ Lam : ℝ,
     ∃ c : ℝ,
@@ -119,31 +121,28 @@ theorem profileLowerEllipticity_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact h.choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := h.choose_spec
 
 /-- The Lam witness selected from the shared conditional profile statement. -/
-noncomputable def profileUpperEllipticity {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : ℝ :=
+noncomputable def profileUpperEllipticity  : ℝ :=
   (profileLowerEllipticity_spec h).choose
 
 /-- The remaining source conclusions for the selected Lam witness. -/
-theorem profileUpperEllipticity_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem profileUpperEllipticity_spec  :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
     ∃ c : ℝ,
@@ -161,31 +160,28 @@ theorem profileUpperEllipticity_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileLowerEllipticity_spec h).choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := (profileLowerEllipticity_spec h).choose_spec
 
 /-- The c witness selected from the shared conditional profile statement. -/
-noncomputable def profileLowerComparison {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : ℝ :=
+noncomputable def profileLowerComparison  : ℝ :=
   (profileUpperEllipticity_spec h).choose
 
 /-- The remaining source conclusions for the selected c witness. -/
-theorem profileLowerComparison_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem profileLowerComparison_spec  :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
     let c := profileLowerComparison h
@@ -203,31 +199,28 @@ theorem profileLowerComparison_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileUpperEllipticity_spec h).choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := (profileUpperEllipticity_spec h).choose_spec
 
 /-- The C witness selected from the shared conditional profile statement. -/
-noncomputable def profileUpperComparison {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : ℝ :=
+noncomputable def profileUpperComparison  : ℝ :=
   (profileLowerComparison_spec h).choose
 
 /-- The remaining source conclusions for the selected C witness. -/
-theorem profileUpperComparison_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem profileUpperComparison_spec  :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
     let c := profileLowerComparison h
@@ -245,31 +238,28 @@ theorem profileUpperComparison_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileLowerComparison_spec h).choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := (profileLowerComparison_spec h).choose_spec
 
 /-- The A witness selected from the shared conditional profile statement. -/
-noncomputable def profileMatrix {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : XV d → PDE.Mat d :=
+noncomputable def profileMatrix  : XV d → PDE.Mat d :=
   (profileUpperComparison_spec h).choose
 
 /-- The remaining source conclusions for the selected A witness. -/
-theorem profileMatrix_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem profileMatrix_spec  :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
     let c := profileLowerComparison h
@@ -287,31 +277,28 @@ theorem profileMatrix_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileUpperComparison_spec h).choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := (profileUpperComparison_spec h).choose_spec
 
 /-- The H witness selected from the shared conditional profile statement. -/
-noncomputable def profileFunction {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : XV d → ℝ :=
+noncomputable def profileFunction  : XV d → ℝ :=
   (profileMatrix_spec h).choose
 
 /-- The remaining source conclusions for the selected H witness. -/
-theorem profileFunction_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem profileFunction_spec  :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
     let c := profileLowerComparison h
@@ -329,31 +316,28 @@ theorem profileFunction_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileMatrix_spec h).choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := (profileMatrix_spec h).choose_spec
 
 /-- The gx witness selected from the shared conditional profile statement. -/
-noncomputable def profilePositionJet {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : XV d → PDE.Vec d :=
+noncomputable def profilePositionJet  : XV d → PDE.Vec d :=
   (profileFunction_spec h).choose
 
 /-- The remaining source conclusions for the selected gx witness. -/
-theorem profilePositionJet_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem profilePositionJet_spec  :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
     let c := profileLowerComparison h
@@ -371,31 +355,28 @@ theorem profilePositionJet_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileFunction_spec h).choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := (profileFunction_spec h).choose_spec
 
 /-- The gv witness selected from the shared conditional profile statement. -/
-noncomputable def profileVelocityJet {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : XV d → PDE.Vec d :=
+noncomputable def profileVelocityJet  : XV d → PDE.Vec d :=
   (profilePositionJet_spec h).choose
 
 /-- The remaining source conclusions for the selected gv witness. -/
-theorem profileVelocityJet_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem profileVelocityJet_spec  :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
     let c := profileLowerComparison h
@@ -413,31 +394,28 @@ theorem profileVelocityJet_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profilePositionJet_spec h).choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := (profilePositionJet_spec h).choose_spec
 
 /-- The hess witness selected from the shared conditional profile statement. -/
-noncomputable def profileHessian {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) : XV d → PDE.Mat d :=
+noncomputable def profileHessian  : XV d → PDE.Mat d :=
   (profileVelocityJet_spec h).choose
 
 /-- The remaining source conclusions for the selected hess witness. -/
-theorem selectedProfile_spec {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) :
+theorem selectedProfile_spec  :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
     let c := profileLowerComparison h
@@ -455,21 +433,20 @@ theorem selectedProfile_spec {d : ℕ} {alpha : ℝ}
     (∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha) ∧
     Measurable gx ∧ Measurable gv ∧ (∀ i k, Measurable (fun q => hess q i k)) ∧
-    (∀ᵐ q ∂volume, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
-    (∀ᵐ q ∂volume, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
+    (∀ᵐ q, gx q = dx H q ∧ gv q = dv H q ∧ hess q = dvv H q) ∧
+    (∀ᵐ q, matrixContraction (A q) (hess q) = PDE.vecDot q.2 (gx q)) ∧
     (∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (gv q) ≤ C * Real.rpow (rho q) (alpha - 1)) ∧
     (∀ K : Set (XV d), IsCompact K → 0 ∉ K →
       ∃ M : ℝ, ∀ q ∈ K, ‖gx q‖ ≤ M ∧ ‖gv q‖ ≤ M ∧ ∀ i k, |hess q i k| ≤ M) ∧
-    (∀ i, LocallyIntegrable (fun q => gx q i) volume) ∧
-    (∀ i, LocallyIntegrable (fun q => gv q i) volume) ∧
-    (∀ i k, LocallyIntegrable (fun q => hess q i k) volume) ∧
+    (∀ i, LocallyIntegrable (fun q => gx q i) ) ∧
+    (∀ i, LocallyIntegrable (fun q => gv q i) ) ∧
+    (∀ i k, LocallyIntegrable (fun q => hess q i k) ) ∧
     (∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, H q * dx test q i) = -(∫ q, gx q i * test q)) ∧
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
-    (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileVelocityJet_spec h).choose_spec
+    (2 ≤ d → ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ : Set (XV d))) ∧
+    (∀ᵐ q, ContDiffAt ℝ 2 H q) := (profileVelocityJet_spec h).choose_spec
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

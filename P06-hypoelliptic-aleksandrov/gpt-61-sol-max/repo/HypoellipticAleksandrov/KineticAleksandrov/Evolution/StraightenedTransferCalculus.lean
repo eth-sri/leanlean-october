@@ -42,7 +42,7 @@ def embedYCLM : PDE.Vec n →L[ℝ] PDE.Vec (n + n) :=
 /-- The linear inclusion `z ↦ (0, z)` of the transported block. -/
 def embedZCLM : PDE.Vec n →L[ℝ] PDE.Vec (n + n) :=
   LinearMap.toContinuousLinearMap
-    { toFun := fun z => spatialPack 0 z
+    { toFun := (spatialPack 0)
       map_add' := fun z z' => by
         funext k
         refine Fin.addCases (fun i => ?_) (fun i => ?_) k <;> simp
@@ -50,19 +50,9 @@ def embedZCLM : PDE.Vec n →L[ℝ] PDE.Vec (n + n) :=
         funext k
         refine Fin.addCases (fun i => ?_) (fun i => ?_) k <;> simp }
 
-/-- The linear projection onto the diffused block. -/
-def projYCLM : PDE.Vec (n + n) →L[ℝ] PDE.Vec n :=
-  LinearMap.toContinuousLinearMap
-    { toFun := spatialY
-      map_add' := fun _ _ => rfl
-      map_smul' := fun _ _ => rfl }
 
-/-- The linear projection onto the transported block. -/
-def projZCLM : PDE.Vec (n + n) →L[ℝ] PDE.Vec n :=
-  LinearMap.toContinuousLinearMap
-    { toFun := spatialZ
-      map_add' := fun _ _ => rfl
-      map_smul' := fun _ _ => rfl }
+
+
 
 variable {n}
 
@@ -72,13 +62,15 @@ variable {n}
 @[simp] theorem embedZCLM_apply (z : PDE.Vec n) : embedZCLM n z = spatialPack 0 z :=
   rfl
 
-@[simp] theorem projYCLM_apply (x : PDE.Vec (n + n)) : projYCLM n x = spatialY x :=
-  rfl
+variable (x : PDE.Vec (n + n))
 
-@[simp] theorem projZCLM_apply (x : PDE.Vec (n + n)) : projZCLM n x = spatialZ x :=
-  rfl
 
-theorem embedYCLM_basisVec (i : Fin n) :
+
+
+
+variable (i : Fin n)
+
+theorem embedYCLM_basisVec  :
     embedYCLM n (PDE.basisVec i) = PDE.basisVec (Fin.castAdd n i) := by
   funext k
   refine Fin.addCases (fun j => ?_) (fun j => ?_) k
@@ -91,7 +83,7 @@ theorem embedYCLM_basisVec (i : Fin n) :
       omega
     simp [hne]
 
-theorem embedZCLM_basisVec (i : Fin n) :
+theorem embedZCLM_basisVec  :
     embedZCLM n (PDE.basisVec i) = PDE.basisVec (Fin.natAdd n i) := by
   funext k
   refine Fin.addCases (fun j => ?_) (fun j => ?_) k
@@ -111,16 +103,16 @@ section Slices
 variable {n : ℕ}
 
 theorem hasFDerivAt_pack_left (c z y : PDE.Vec n) :
-    HasFDerivAt (fun y' : PDE.Vec n => spatialPack (y' - c) z) (embedYCLM n) y := by
-  have h := (embedYCLM n).hasFDerivAt (x := y) |>.add_const (spatialPack (-c) z)
-  convert h using 1
+    HasFDerivAt (fun y'  => spatialPack (y' - c) z) (embedYCLM n) y := by
+
+  convert ((embedYCLM n).hasFDerivAt (x := y) |>.add_const (spatialPack (-c) z)) using 1
   funext y'
   rw [embedYCLM_apply, ← spatialPack_add, sub_eq_add_neg, zero_add]
 
 theorem hasFDerivAt_pack_right (w z : PDE.Vec n) :
-    HasFDerivAt (fun z' : PDE.Vec n => spatialPack w z') (embedZCLM n) z := by
-  have h := (embedZCLM n).hasFDerivAt (x := z) |>.add_const (spatialPack w 0)
-  convert h using 1
+    HasFDerivAt ((spatialPack w)) (embedZCLM n) z := by
+
+  convert ((embedZCLM n).hasFDerivAt (x := z) |>.add_const (spatialPack w 0)) using 1
   funext z'
   rw [embedZCLM_apply, ← spatialPack_add, add_zero, zero_add]
 
@@ -133,17 +125,17 @@ theorem classicalGradient_comp_block
     PDE.classicalGradient (fun y' => f (ι y')) y =
       fun i => PDE.classicalGradient f (ι y) (e i) := by
   funext i
-  have h := hf.hasFDerivAt.comp y hι
+
   simp only [PDE.classicalGradient_apply]
-  rw [show fderiv ℝ (fun y' => f (ι y')) y = (fderiv ℝ f (ι y)).comp E from h.fderiv]
+  rw [show fderiv ℝ (fun y' => f (ι y')) y = (fderiv ℝ f (ι y)).comp E from (hf.hasFDerivAt.comp y hι).fderiv]
   simp [he]
 
 /-- The gradient of a `C²` function is differentiable. -/
-theorem differentiableAt_classicalGradient {m : ℕ} {f : PDE.Vec m → ℝ} {x : PDE.Vec m}
+theorem differentiableAt_classicalGradient {m : ℕ} {f : PDE.ScalarField m} {x : PDE.Vec m}
     (hf : ContDiffAt ℝ 2 f x) : DifferentiableAt ℝ (PDE.classicalGradient f) x := by
   refine differentiableAt_pi.2 fun i => ?_
-  have h1 : ContDiffAt ℝ 1 (fderiv ℝ f) x := hf.fderiv_right (by norm_num)
-  exact (h1.clm_apply contDiffAt_const).differentiableAt one_ne_zero
+
+  exact ((hf.fderiv_right (by norm_num)).clm_apply contDiffAt_const).differentiableAt one_ne_zero
 
 /-- Hessian of a restriction along an affine block embedding. -/
 theorem hessian_comp_block
@@ -151,26 +143,23 @@ theorem hessian_comp_block
     {E : PDE.Vec n →L[ℝ] PDE.Vec (n + n)} {y : PDE.Vec n} (hι : ∀ y', HasFDerivAt ι E y')
     (hf : ContDiffAt ℝ 2 f (ι y)) {e : Fin n → Fin (n + n)}
     (he : ∀ i, E (PDE.basisVec i) = PDE.basisVec (e i)) (i j : Fin n) :
-    (fderiv ℝ (fun y' => PDE.classicalGradient (fun w => f (ι w)) y') y (PDE.basisVec i)) j =
+    (fderiv ℝ ((PDE.classicalGradient (fun w => f (ι w)))) y (PDE.basisVec i)) j =
       (fderiv ℝ (PDE.classicalGradient f) (ι y) (PDE.basisVec (e i))) (e j) := by
   set P : PDE.Vec (n + n) →L[ℝ] PDE.Vec n :=
-    ContinuousLinearMap.pi fun j => ContinuousLinearMap.proj (R := ℝ) (φ := fun _ => ℝ) (e j)
+    ContinuousLinearMap.pi fun j => ContinuousLinearMap.proj   (e j)
     with hP
   have hPapply : ∀ v j, P v j = v (e j) := fun v j => rfl
-  have hev : ∀ᶠ y' in 𝓝 y, DifferentiableAt ℝ f (ι y') := by
-    have h1 : ∀ᶠ x in 𝓝 (ι y), ContDiffAt ℝ 2 f x := hf.eventually (by simp)
-    exact (hι y).continuousAt.eventually h1 |>.mono fun y' h => h.differentiableAt (by norm_num)
-  have heq : (fun y' => PDE.classicalGradient (fun w => f (ι w)) y') =ᶠ[𝓝 y]
-      fun y' => P (PDE.classicalGradient f (ι y')) := by
-    filter_upwards [hev] with y' hy'
-    rw [classicalGradient_comp_block (hι y') hy' he]
-    rfl
-  have hD := (differentiableAt_classicalGradient hf).hasFDerivAt
-  have hcomp : HasFDerivAt (fun y' => P (PDE.classicalGradient f (ι y')))
-      (P.comp ((fderiv ℝ (PDE.classicalGradient f) (ι y)).comp E)) y :=
-    P.hasFDerivAt.comp y (hD.comp y (hι y))
-  have hfin := hcomp.congr_of_eventuallyEq heq
-  rw [hfin.fderiv]
+
+
+
+
+
+  rw [((P.hasFDerivAt.comp y (((differentiableAt_classicalGradient hf).hasFDerivAt).comp y (hι y))).congr_of_eventuallyEq (by
+      filter_upwards [(by
+          have h1  := hf.eventually (by simp)
+          exact (hι y).continuousAt.eventually h1 |>.mono fun y' h => h.differentiableAt (by norm_num))] with y' hy'
+      rw [classicalGradient_comp_block (hι y') hy' he]
+      rfl)).fderiv]
   change P (fderiv ℝ (PDE.classicalGradient f) (ι y) (E (PDE.basisVec i))) j = _
   rw [he i, hPapply]
 

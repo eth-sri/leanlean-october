@@ -5,9 +5,9 @@ import Mathlib.Tactic
 
 /-! # Constructed Hermite and tangent corridors in the buffered reference region -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -54,42 +54,7 @@ theorem exists_reference_corridor {d : ℕ} (m : ℕ) (S P : KineticPoint d)
       rw [projIcc_of_le_left hT.le hs]
       exact hermiteVelocity_zero _ _ _ _ _
   have hB : 0 ≤ stackPathBound m := by unfold stackPathBound; positivity
-  have hbounds : ∀ s ∈ Icc (-1) T,
-      PDE.vecEuclideanNorm (x s) ≤ (m : ℝ) + 4 + 8 * stackPathBound m ∧
-        PDE.vecEuclideanNorm (v s) ≤ 1 + 2 * stackPathBound m := by
-    intro s hs
-    by_cases h : s ≤ 0
-    · rw [(hleft s h).1, (hleft s h).2]
-      have habs : |s| ≤ 1 := by rw [abs_of_nonpos h]; linarith only [hs.1]
-      have hvbound := mul_le_mul habs hsv (PDE.vecEuclideanNorm_nonneg _) (by norm_num)
-      have hb := PDE.vecEuclideanNorm_add_le S.position (s • S.velocity)
-      rw [PDE.vecEuclideanNorm_smul] at hb
-      constructor <;> linarith only [hb, hvbound, hsx, hsv, hm, hB]
-    · have hs' : s ∈ Icc 0 T := ⟨(lt_of_not_ge h).le, hs.2⟩
-      have hb := stack_hermite_bounds (by norm_num : (0 : ℝ) < 2) m
-        (by norm_num; linarith only [hTlo, hm] : (2 : ℝ) ^ 2 / 8 ≤ T)
-        (by norm_num; linarith only [hThi, hm] : T ≤ ((m : ℝ) + 1) * (2 : ℝ) ^ 2)
-        S.position S.velocity P.position P.velocity
-        (by norm_num; linarith only [hx, hm]) (by exact hv) hs'
-      norm_num only [show (2 : ℝ) ^ 3 = 8 by norm_num] at hb
-      have hxs : x s = xh s := extendPosition_eq hT.le hsk hs'
-      have hvs : v s = vh s := extendVelocity_eq vh hT.le hs'
-      rw [hxs, hvs]
-      have heq : xh s = S.position + s • S.velocity +
-          (xh s - S.position - s • S.velocity) := by abel
-      have hvq : vh s = S.velocity + (vh s - S.velocity) := by abel
-      have hsbound : s ≤ (m : ℝ) + 3 := hs.2.trans hThi
-      have hvnorm := mul_le_mul_of_nonneg_left hsv hs'.1
-      have hxp := PDE.vecEuclideanNorm_add_le S.position (s • S.velocity)
-      rw [PDE.vecEuclideanNorm_smul, abs_of_nonneg hs'.1] at hxp
-      constructor
-      · rw [heq]
-        have he := PDE.vecEuclideanNorm_add_le (S.position + s • S.velocity)
-          (xh s - S.position - s • S.velocity)
-        linarith only [he, hxp, hvnorm, hsx, hsbound, hb.1]
-      · rw [hvq]
-        have he := PDE.vecEuclideanNorm_add_le S.velocity (vh s - S.velocity)
-        linarith only [he, hsv, hb.2]
+
   refine ⟨x, v, skeleton_mono_bound
     (extendPosition_isSkeleton hT.le hH hsk _ _)
     (reference_hermite_acceleration m hTlo _ _ _ _ hx hv),
@@ -108,14 +73,49 @@ theorem exists_reference_corridor {d : ℕ} (m : ℕ) (S P : KineticPoint d)
       (mul_le_mul_of_nonneg_right
         (reference_hermite_acceleration m hTlo _ _ _ _ hx hv) (abs_nonneg _))
   · intro Q hQ
-    have hb := hbounds (Q.time - S.time) hQ.1
-    have hpt : P.time < 0 := hP.2.1
+    have hb := (show ∀ s ∈ Icc (-1) T,
+      PDE.vecEuclideanNorm (x s) ≤ (m : ℝ) + 4 + 8 * stackPathBound m ∧
+        PDE.vecEuclideanNorm (v s) ≤ 1 + 2 * stackPathBound m by
+        intro s hs
+        by_cases h : s ≤ 0
+        · rw [(hleft s h).1, (hleft s h).2]
+
+          have hvbound := mul_le_mul (show |s| ≤ 1 by rw [abs_of_nonpos h]; linarith only [hs.1]) hsv (PDE.vecEuclideanNorm_nonneg _) (by norm_num)
+          have hb := PDE.vecEuclideanNorm_add_le S.position (s • S.velocity)
+          rw [PDE.vecEuclideanNorm_smul] at hb
+          constructor <;> linarith only [hb, hvbound, hsx, hsv, hm, hB]
+        · have hs' : s ∈ Icc 0 T := ⟨(lt_of_not_ge h).le, hs.2⟩
+          have hb := stack_hermite_bounds (by norm_num : (0 : ℝ) < 2) m
+            (by norm_num; linarith only [hTlo, hm] : (2 : ℝ) ^ 2 / 8 ≤ T)
+            (by norm_num; linarith only [hThi, hm] : T ≤ ((m : ℝ) + 1) * (2 : ℝ) ^ 2)
+            S.position S.velocity P.position P.velocity
+            (by norm_num; linarith only [hx, hm]) (hv) hs'
+          norm_num only [show (2 : ℝ) ^ 3 = 8 by norm_num] at hb
+
+
+          rw [(show x s = xh s from extendPosition_eq hT.le hsk hs'), (show v s = vh s from extendVelocity_eq vh hT.le hs')]
+          have heq : xh s = S.position + s • S.velocity +
+              (xh s - S.position - s • S.velocity) := by abel
+          have hvq : vh s = S.velocity + (vh s - S.velocity) := by abel
+
+          have hvnorm := mul_le_mul_of_nonneg_left hsv hs'.1
+          have hxp := PDE.vecEuclideanNorm_add_le S.position (s • S.velocity)
+          rw [PDE.vecEuclideanNorm_smul, abs_of_nonneg hs'.1] at hxp
+          constructor
+          · rw [heq]
+            have he := PDE.vecEuclideanNorm_add_le (S.position + s • S.velocity)
+              (xh s - S.position - s • S.velocity)
+            linarith only [he, hxp, hvnorm, hsx, (show s ≤ (m : ℝ) + 3 from hs.2.trans hThi), hb.1]
+          · rw [hvq]
+            have he := PDE.vecEuclideanNorm_add_le S.velocity (vh s - S.velocity)
+            linarith only [he, hsv, hb.2]) _ hQ.1
+
     have hxq : Q.position = (Q.position - x (Q.time - S.time)) +
         x (Q.time - S.time) := by abel
     have hvq : Q.velocity = (Q.velocity - v (Q.time - S.time)) +
         v (Q.time - S.time) := by abel
     refine ⟨by linarith only [hQ.1.1, hstlo],
-      by linarith only [hQ.1.2, hpt], ?_, ?_⟩
+      by linarith only [hQ.1.2, hP.2.1], ?_, ?_⟩
     · rw [hxq]
       apply (PDE.vecEuclideanNorm_add_le _ _).trans_lt
       dsimp only [referenceBound]

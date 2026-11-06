@@ -12,7 +12,7 @@ Precomposition by each fixed convex-approximation sampling map transports weak
 partial derivatives and weak gradients with the exact affine factor `1 - ε`.
 -/
 
-@[expose] public section
+ public section
 
 open scoped Pointwise
 
@@ -37,24 +37,19 @@ theorem comp_convexApproxSample
         (1 - ε) * gi (convexApproxSample x0 z r ε x)) := by
   let a : ℝ := 1 - ε
   let b : Vec d := ε • (x0 - r • z)
-  let V : Set (Vec d) := translateSet b (a • U)
+  let V  := translateSet b (a • U)
   have ha : 0 < a := by
     dsimp only [a]
     linarith
-  have hmap :
-      Set.MapsTo (convexApproxSample x0 z r ε) U U :=
+  have hmap  :=
     convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
       hU hball hr hz hε0 hε1.le
-  have hVU : V ⊆ U := by
-    exact
-      translateSet_smul_subset_of_convexApproxSample_mapsTo
-        (x0 := x0) (z := z) (r := r) (ε := ε) hmap
+  have hVU  := translateSet_smul_subset_of_convexApproxSample_mapsTo
+            hmap
   have hV :
       IsOpenBoundedConvexDomain V := by
-    simpa only [V] using
-      (hU.smul_of_pos ha).translateSet b
-  have hRestricted :
-      HasWeakPartialDerivOn V i u gi :=
+    exact (hU.smul_of_pos ha).translateSet b
+  have hRestricted  :=
     hu.restrict hV.isOpen hVU
   have hTranslated :
       HasWeakPartialDerivOn (a • U) i
@@ -75,14 +70,10 @@ theorem comp_convexApproxSample
     HasWeakPartialDerivOn U i
       (fun x => a * (a⁻¹ * u (a • x + b)))
       (fun x => a * gi (a • x + b)) at hScaled
-  simpa only [Pi.smul_apply, smul_eq_mul, ← mul_assoc,
-    mul_inv_cancel₀ ha.ne', one_mul, a, b,
-    convexApproxSample] using hScaled
+  simpa only [a, b, convexApproxSample, ← mul_assoc, mul_inv_cancel₀ ha.ne', one_mul] using hScaled
 
 end HasWeakPartialDerivOn
 
-namespace HasWeakGradientOn
 
-end HasWeakGradientOn
 
 end PDE

@@ -10,7 +10,7 @@ This elementary lemma is the final algebraic step after the localized comparison
 It does not assert that comparison for the occupation potential.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 

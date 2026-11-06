@@ -5,6 +5,11 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import Mathlib.Tactic.GCongr
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Positivity
+
+
 
 /-!
 # Real Laplace moments and exponential tails
@@ -24,7 +29,7 @@ def laplaceMoment (a X t : ℝ) : ℝ := t ^ (a - 1) * Real.exp (-(X * t))
 /-- The positive-scale Gamma moment is integrable. -/
 theorem integrable_laplaceMoment (a X : ℝ) (ha : 0 < a) (hX : 0 < X) :
     IntegrableOn (laplaceMoment a X) (Ioi 0) volume := by
-  change IntegrableOn (fun t : ℝ => t ^ (a - 1) * Real.exp (-(X * t))) (Ioi 0) volume
+  change IntegrableOn (fun t  => t ^ (a - 1) * Real.exp (-(X * t))) (Ioi 0) volume
   simpa only [Real.rpow_one, neg_mul] using
     integrableOn_rpow_mul_exp_neg_mul_rpow (p := 1) (s := a - 1)
       (b := X) (by linarith only [ha]) zero_lt_one hX
@@ -58,22 +63,22 @@ theorem laplaceMoment_tail_pointwise (a X t : ℝ) (hX : 0 ≤ X) (ht : 1 / 2 �
 theorem laplaceMoment_tail_bound (a X : ℝ) (ha : 0 < a) (hX : 0 < X) :
     (∫ t in Ioi (1 / 2 : ℝ), laplaceMoment a X t) ≤
       Real.exp (-(X / 4)) * ((X / 2) ^ (-a) * Real.Gamma a) := by
+  let sharedTerm_63f606c6d1 := ((Real.exp (-(X / 4))))
   have hi := integrable_laplaceMoment a X ha hX
   have hi2 := integrable_laplaceMoment a (X / 2) ha (half_pos hX)
   have hsub : Ioi (1 / 2 : ℝ) ⊆ Ioi 0 := Ioi_subset_Ioi (by norm_num)
   have hn : ∀ᵐ t ∂volume.restrict (Ioi (0 : ℝ)), 0 ≤ laplaceMoment a (X / 2) t :=
     ae_restrict_of_forall_mem measurableSet_Ioi (fun t ht => laplaceMoment_nonneg a _ t ht.le)
   calc
-    _ ≤ ∫ t in Ioi (1 / 2 : ℝ), Real.exp (-(X / 4)) * laplaceMoment a (X / 2) t := by
+    _ ≤ ∫ t in Ioi (1 / 2 : ℝ), sharedTerm_63f606c6d1 * laplaceMoment a (X / 2) t := by
       apply setIntegral_mono_on (hi.mono_set hsub)
-        ((hi2.mono_set hsub).const_mul (Real.exp (-(X / 4)))) measurableSet_Ioi
+        ((hi2.mono_set hsub).const_mul sharedTerm_63f606c6d1) measurableSet_Ioi
       intro t ht
       exact laplaceMoment_tail_pointwise a X t hX.le ht.le
-    _ = Real.exp (-(X / 4)) * ∫ t in Ioi (1 / 2 : ℝ), laplaceMoment a (X / 2) t :=
+    _ = sharedTerm_63f606c6d1 * ∫ t in Ioi (1 / 2 : ℝ), laplaceMoment a (X / 2) t :=
       integral_const_mul _ _
-    _ ≤ Real.exp (-(X / 4)) * ∫ t in Ioi (0 : ℝ), laplaceMoment a (X / 2) t := by
-      apply mul_le_mul_of_nonneg_left _ (Real.exp_pos _).le
-      exact setIntegral_mono_set hi2 hn (Filter.Eventually.of_forall hsub)
+    _ ≤ sharedTerm_63f606c6d1 * ∫ t in Ioi (0 : ℝ), laplaceMoment a (X / 2) t := by
+      gcongr <;> first | positivity | assumption | norm_num
     _ = _ := by rw [integral_laplaceMoment a (X / 2) ha (half_pos hX)]
 
 /-- Every discarded Gamma moment is smaller than any prescribed algebraic order. -/
@@ -82,7 +87,7 @@ theorem laplaceMoment_tail_isBigO (a r : ℝ) (ha : 0 < a) :
       (fun X => X ^ r) := by
   have he : IsBigO atTop (fun X : ℝ => Real.exp (-(X / 4)))
       (fun X => X ^ (r + a)) := by
-    simpa only [neg_div, div_eq_mul_inv, mul_comm, one_mul, mul_neg] using
+    simpa only [div_eq_mul_inv, one_mul, mul_comm, mul_neg] using
       (isLittleO_exp_neg_mul_rpow_atTop (a := 1 / 4) (by norm_num) (r + a)).isBigO
   have hp : IsBigO atTop (fun X : ℝ => (X / 2) ^ (-a) * Real.Gamma a)
       (fun X => X ^ (-a)) := by

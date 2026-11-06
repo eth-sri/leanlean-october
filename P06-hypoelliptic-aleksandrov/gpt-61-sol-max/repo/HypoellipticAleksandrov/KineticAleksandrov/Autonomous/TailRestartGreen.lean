@@ -4,8 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TailRestartA
 
 /-! # Exact Green restart from the surviving terminal measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov SectionTwo ProbabilityTheory
 open scoped ENNReal
@@ -42,10 +42,8 @@ theorem tailRestart_green_identity {lam Lam : ℝ}
   have : IsFiniteMeasure nu :=
     ⟨(E.2.fiberKernel_mass_le_one (intervalDomain_measurable H)
       e.1.time r (le_add_of_nonneg_right ht) z).trans_lt ENNReal.one_lt_top⟩
-  have hk : Measurable (fun a =>
-      stripGreenOfKernel H E.2 ⊤ (tailRestartPole H r a)) :=
-    (Measure.measurable_measure.mpr (fun B hB =>
-      stripGreenOfKernel_infinite_measurable_apply H E.2 B hB)).comp
+  have hk  :=
+    (Measure.measurable_measure.mpr ((stripGreenOfKernel_infinite_measurable_apply H E.2))).comp
         (measurable_tailRestartPole H r)
   apply Measure.ext_of_lintegral
   intro F hF
@@ -53,7 +51,7 @@ theorem tailRestart_green_identity {lam Lam : ℝ}
     continuous_time.measurable measurableSet_Ioi
   rw [← lintegral_indicator hL,
     stripGreenOfKernel_spec H E.2 ⊤ e _ (hF.indicator hL)]
-  have hi := tailGreen_integrand_measurable H E.2 e.1.time z F hF
+
   have heq : (fun tau : ElapsedTime ⊤ => ∫⁻ w,
       {p : Point | e.1.time + t < p.time}.indicator F
         (elapsedPhysicalPoint e.1.time (tau, w))
@@ -63,18 +61,15 @@ theorem tailRestart_green_identity {lam Lam : ℝ}
           ∂E.2.master (elapsedQuery e.1.time z tau)) := by
     funext tau
     by_cases hh : t < tau.1
-    · have hh' : e.1.time + t < e.1.time + tau.1 := by linarith
-      simp only [Set.indicator, Set.mem_ofPred_eq, elapsedPhysicalPoint, hh, hh', ite_true]
-    · have hh' : ¬e.1.time + t < e.1.time + tau.1 := by simpa using hh
-      simp only [Set.indicator, Set.mem_ofPred_eq, elapsedPhysicalPoint,
-        hh, hh', ite_false, lintegral_zero]
+    · simp_all [elapsedPhysicalPoint]
+    · simp_all [elapsedPhysicalPoint]
   change (∫⁻ tau, (fun tau : ElapsedTime ⊤ => ∫⁻ w,
     {p : Point | e.1.time + t < p.time}.indicator F
       (elapsedPhysicalPoint e.1.time (tau, w))
       ∂E.2.master (elapsedQuery e.1.time z tau)) tau ∂elapsedVolume ⊤) = _
   rw [heq, lintegral_indicator (show MeasurableSet {tau : ElapsedTime ⊤ | t < tau.1}
       from measurable_subtype_coe measurableSet_Ioi),
-    ← tailElapsedShift_map t ht, lintegral_map hi (measurable_tailElapsedShift t ht)]
+    ← tailElapsedShift_map t ht, lintegral_map (tailGreen_integrand_measurable H E.2 e.1.time z F hF) (measurable_tailElapsedShift t ht)]
   have hc : (∫⁻ tau : ElapsedTime ⊤, ∫⁻ w,
       F (elapsedPhysicalPoint e.1.time (tailElapsedShift t ht tau, w))
       ∂E.2.master (elapsedQuery e.1.time z (tailElapsedShift t ht tau))

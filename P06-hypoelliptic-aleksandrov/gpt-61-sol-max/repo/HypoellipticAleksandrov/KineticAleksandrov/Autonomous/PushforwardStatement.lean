@@ -15,12 +15,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
+variable (c : Clock) (e : Point)
+
 /-- The physical initial pole in the all-time active strip. -/
-def densityClockPole (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
+def densityClockPole  (he : e.velocity 0 ∈ c.active) :
     StripPole c.activeInterval ⊤ := ⟨e, WithTop.coe_lt_top _, he⟩
 
 /-- The physical all-time strip on which the clock density is estimated. -/
-def densityClockStrip (c : Clock) (e : Point) : Set Point :=
+def densityClockStrip  : Set Point :=
   {z | e.time < z.time ∧ z.velocity 0 ∈ c.active}
 
 /-- The complete source clock-pushforward proposition, currently a conditional premise. -/

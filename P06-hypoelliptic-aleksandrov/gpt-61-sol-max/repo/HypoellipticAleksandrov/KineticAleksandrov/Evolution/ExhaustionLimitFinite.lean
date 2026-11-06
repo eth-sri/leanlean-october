@@ -12,6 +12,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitMeasure
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Actual finite-slab classical ball solutions
@@ -20,13 +22,13 @@ All finite-slab steps are supplied by the actual exhaustion construction:
 bounds, continuity, interior smoothness, the pointwise equation, and both traces.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter MeasureTheory
+open HypoellipticAleksandrov.Parabolic Set Filter
 open Evolution
 open scoped Topology MatrixOrder
 
@@ -34,7 +36,7 @@ open scoped Topology MatrixOrder
 to the explicit Hörmander input. No boundary estimate or weak equation is assumed. -/
 theorem isClassicalViscousFiniteSolution_innerBallDirichletLimit
     (hH : HormanderHypoellipticityStatement)
-    {n : ℕ} {lam Lam Lb m : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb m : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hn : 1 ≤ n) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B)
@@ -50,7 +52,7 @@ theorem isClassicalViscousFiniteSolution_innerBallDirichletLimit
       4 * d ≤ r0 - PDE.vecEuclideanNorm (q.1 - Γ τ))
     (β R : ℕ → ℝ) (hβpos : ∀ k, 0 < β k)
     (hβlim : Tendsto β atTop (𝓝 0)) (hRlim : Tendsto R atTop atTop)
-    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ (⊤ : ℕ∞) (g k))
+    (g : ℕ → ℝ → PDE.Vec n) (hg : ∀ k, ContDiff ℝ PDE.smoothOrder (g k))
     (hgL : ∀ k s t, PDE.vecEuclideanNorm (g k s - g k t) ≤ L * |s - t|)
     (hclose : ∀ k s, s ∈ Icc α τ → PDE.vecEuclideanNorm (g k s - Γ s) ≤ β k / 2)
     (u : ℕ → TimeVelocity (n + n) → ℝ)
@@ -82,14 +84,13 @@ theorem isClassicalViscousFiniteSolution_innerBallDirichletLimit
       apply (KineticPoint.equivProd n).injective
       change (evolutionProdCLE n) ((evolutionProdCLE n).symm q) = q
       exact (evolutionProdCLE n).apply_symm_apply q
-    have hx : x ∈ evolutionHomeomorph n ⁻¹'
-        boundedInnerOpenCylinder (r0 - δ) Γ α τ S := by
-      change evolutionHomeomorph n x ∈ boundedInnerOpenCylinder (r0 - δ) Γ α τ S
-      rw [hxp]
-      exact hp
+
     have hV := (isOpen_boundedInnerOpenCylinder (r0 - δ) hΓ.1 α τ S).preimage
       (evolutionHomeomorph n).continuous
-    have hc := ((hlocal δ S hδ hδr).1.contDiffAt (hV.mem_nhds hx)).comp q
+    have hc := ((hlocal δ S hδ hδr).1.contDiffAt (hV.mem_nhds (by
+        change evolutionHomeomorph n x ∈ boundedInnerOpenCylinder (r0 - δ) Γ α τ S
+        rw [hxp]
+        exact hp))).comp q
       (evolutionProdCLE n).symm.contDiff.contDiffAt
     have hfun : (innerBallDirichletLimit r0 Γ g u ∘ evolutionHomeomorph n) ∘
         (evolutionProdCLE n).symm = fun q =>
@@ -108,9 +109,8 @@ theorem isClassicalViscousFiniteSolution_innerBallDirichletLimit
       ⟨ha, hp.2.1⟩ hp.2.2
     exact (hlocal δ S hδ hδr).2 p hpU
   · intro p hp
-    have hpc : p ∈ movingClosedSlab (PDE.euclideanBall 0 r0) Γ α τ :=
-      ⟨by rw [hp.1]; exact hατ.le, hp.1.le, by simpa only [hp.1] using hp.2⟩
-    exact htrace.2.1 p hpc hp.1
+
+    exact htrace.2.1 p (⟨by rw [hp.1]; exact hατ.le, hp.1.le, by simpa only [hp.1] using hp.2⟩) hp.1
   · intro p _ hp
     exact htrace.2.2 p hp
 

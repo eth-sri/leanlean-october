@@ -11,11 +11,8 @@ open MeasureTheory
 
 /-- The native spatial volume is invariant under simultaneous coordinate negation. -/
 instance nativeSpatialVolume_isNegInvariant (d : ℕ) :
-    Measure.IsNegInvariant (volume : Measure (PDE.Vec d × PDE.Vec d)) := by
-  constructor
-  change Measure.map (fun q : PDE.Vec d × PDE.Vec d => (-q.1, -q.2))
-    ((volume : Measure (PDE.Vec d)).prod volume) = volume.prod volume
-  exact ((volume : Measure (PDE.Vec d)).measurePreserving_neg.prod
-    (volume : Measure (PDE.Vec d)).measurePreserving_neg).map_eq
+    Measure.IsNegInvariant (volume : Measure (PDE.Vec d × PDE.Vec d)) := ({
+  neg_eq_self :=
+    id (MeasurePreserving.prod (Measure.measurePreserving_neg volume) (Measure.measurePreserving_neg volume)).map_eq })
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

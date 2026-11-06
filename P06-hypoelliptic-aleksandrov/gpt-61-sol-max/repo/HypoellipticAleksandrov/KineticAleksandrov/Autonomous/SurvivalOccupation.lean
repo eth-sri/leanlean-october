@@ -10,12 +10,12 @@ Source: companion paper, Corollary 8.4. The estimate is derived by integrating t
 nonincreasing remaining mass; no survival or restart estimate is assumed.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open SectionTwo
-open scoped ENNReal
+
 
 /-- Green occupation over a finite interval dominates its length times the final mass. -/
 theorem stripSurvivingMass_mul_time_le_green {lam Lam : ℝ}
@@ -43,21 +43,21 @@ theorem stripSurvivingMass_mul_time_le_green {lam Lam : ℝ}
   rw [hc]
   apply lintegral_mono
   intro tau
-  have htau : tau.1 < dt := (ENNReal.ofReal_lt_ofReal_iff hdt).mp tau.2.2
+  have htau  := (ENNReal.ofReal_lt_ofReal_iff hdt).mp tau.2.2
   have hst : e.1.time ≤ e.1.time + tau.1 := le_add_of_nonneg_right tau.2.1.le
-  have htu : e.1.time + tau.1 ≤ T := by dsimp [dt] at htau; linarith
+
   have hm := stripSurvivingMass_antitone A H E hE e.1.time
-    (e.1.time + tau.1) T hst htu z
+    _ T hst (by dsimp [dt] at htau; linarith) z
   have hmap := E.2.map_fiberKernel_eq_master (intervalDomain_measurable H)
-    e.1.time (e.1.time + tau.1) hst z
+    e.1.time _ hst z
   have hun := congrArg (fun mu => mu univ) hmap
   rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ, preimage_univ] at hun
   have hmass := stripSurvivingMass_eq_kernel_mass A H E hE e.1.time
-    (e.1.time + tau.1) hst z
+    _ hst z
   apply (ENNReal.ofReal_le_ofReal hm).trans
   rw [hmass, ENNReal.ofReal_toReal
     ((E.2.fiberKernel_mass_le_one (intervalDomain_measurable H)
-      e.1.time (e.1.time + tau.1) hst z).trans_lt ENNReal.one_lt_top).ne]
+      e.1.time _ hst z).trans_lt ENNReal.one_lt_top).ne]
   exact hun.le
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

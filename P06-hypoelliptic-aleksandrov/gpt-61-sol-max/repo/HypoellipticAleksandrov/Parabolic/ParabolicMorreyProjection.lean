@@ -19,40 +19,39 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open scoped BigOperators
 
+variable {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d)
+
+variable (r : Real) (u : HypoellipticAleksandrov.Parabolic.ScalarField d)
+
 /-- The canonical average transported from the unit forward parabolic box. -/
-noncomputable def parabolicMorreyBoxAverage {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
-    (u : TimeVelocity d -> Real) : Real :=
+def parabolicMorreyBoxAverage   : Real :=
   parabolicMorreyUnitAverage (pullbackScalar u t₀ v₀ r)
 
 /-- The dimensional physical velocity slope of the transported moment projection. -/
-noncomputable def parabolicMorreyBoxVelocitySlope {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
-    (u : TimeVelocity d -> Real) (i : Fin d) : Real :=
+def parabolicMorreyBoxVelocitySlope   (i : Fin d) : Real :=
   r⁻¹ * parabolicMorreyUnitVelocityCoeff (pullbackScalar u t₀ v₀ r) i
 
 /-- The canonical time-independent velocity-affine projection on a forward box. -/
-noncomputable def parabolicMorreyBoxAffineProjection {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
-    (u : TimeVelocity d -> Real) : TimeVelocity d -> Real :=
+def parabolicMorreyBoxAffineProjection   : HypoellipticAleksandrov.Parabolic.ScalarField d :=
   fun z => parabolicMorreyBoxAverage t₀ v₀ r u +
     ∑ i : Fin d, parabolicMorreyBoxVelocitySlope t₀ v₀ r u i *
       (z.2 i - v₀ i)
 
+variable {r : Real} (hr : 0 < r)
+
+include hr
 /-- A positive-radius affine scaling maps the unit forward box onto the
 corresponding physical forward box. -/
 theorem parabolicAffine_image_parabolicMorreyUnitBox
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) :
+      :
     parabolicAffine t₀ v₀ r '' parabolicMorreyUnitBox d =
-      parabolicBox 1 r t₀ v₀ := by
-  simpa only [parabolicMorreyUnitBox] using
-    (parabolicAffine_image_parabolicBox (t₀ := t₀) (v₀ := v₀) (vartheta := 1) hr)
+      parabolicBox 1 r t₀ v₀ := (parabolicAffine_image_parabolicBox hr)
 
 /-- The physical projection evaluated in affine coordinates is exactly the
 unit-box projection of the scalar pullback. -/
 @[simp] theorem parabolicMorreyBoxAffineProjection_parabolicAffine
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
-    (u : TimeVelocity d -> Real) (z : TimeVelocity d) :
+
+    (u : HypoellipticAleksandrov.Parabolic.ScalarField d) (z : TimeVelocity d) :
     parabolicMorreyBoxAffineProjection t₀ v₀ r u
         (parabolicAffine t₀ v₀ r z) =
       parabolicMorreyUnitAffineProjection

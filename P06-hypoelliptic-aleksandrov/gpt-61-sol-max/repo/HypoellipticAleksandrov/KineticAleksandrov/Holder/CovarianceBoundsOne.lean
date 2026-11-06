@@ -6,7 +6,7 @@ import Mathlib.Tactic
 
 /-! # Sharp source covariance lower bound at one full block -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 

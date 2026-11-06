@@ -5,7 +5,7 @@ import Mathlib.Tactic
 
 /-! # Combining the structural constants of exit loss and Fourier decay -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 
 /-- Enlarging the prefactor and decreasing the positive exponential rate combines

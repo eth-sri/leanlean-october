@@ -4,8 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionDens
 
 /-! # Summing the source overlap convolution on the two-index lattice -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
@@ -16,8 +16,8 @@ theorem position_two_index_young_source (w a : ℤ × ℤ → ℝ≥0∞) (q : �
       (∑' h, w h) ^ q * ∑' g, a g ^ q := by
   have he (g : ℤ × ℤ) : (∑' h, w (g - h) * a h) =
       ∑' h, w h * a (g - h) := by
-    have h := (Equiv.subLeft g).tsum_eq (fun h => w (g - h) * a h)
-    simpa only [Equiv.subLeft_apply, sub_sub_cancel] using h.symm
+
+    simpa only [Equiv.subLeft_apply, sub_sub_cancel] using ((Equiv.subLeft g).tsum_eq (fun h => w (g - h) * a h)).symm
   simp_rw [he]
   exact position_two_index_young w a q hq
 

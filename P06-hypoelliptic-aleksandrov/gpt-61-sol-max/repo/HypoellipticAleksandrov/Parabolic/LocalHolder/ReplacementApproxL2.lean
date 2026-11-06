@@ -8,8 +8,8 @@ import Mathlib.Topology.MetricSpace.Algebra
 On a finite measure carrier, a vanishing uniform error controls the actual quotient L2 norm.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory
 open scoped Topology ENNReal
@@ -30,9 +30,9 @@ theorem tendsto_toLp_two_of_ae_sub_le {X : Type*} [MeasurableSpace X]
     filter_upwards [((hu n).sub hv).coeFn_toLp, hb n] with x hx hbx
     rw [hx, Real.norm_eq_abs]
     exact hbx
-  have hzero : Tendsto (fun n => K * ε n) atTop (𝓝 0) := by
-    simpa only [mul_zero] using hlim.const_mul K
+
   exact tendsto_iff_norm_sub_tendsto_zero.2
-    (squeeze_zero (fun _ => norm_nonneg _) hnorm hzero)
+    (squeeze_zero (fun _ => norm_nonneg _) hnorm (by
+        simpa only [mul_zero] using hlim.const_mul K))
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

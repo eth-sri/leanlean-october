@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonNodes
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonPrinciple
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Transported cutoffs and the growth tail comparison (outside context)
@@ -29,51 +31,61 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set MeasureTheory
-open scoped Topology MatrixOrder
+open Set
+open scoped MatrixOrder
 
 section Cutoff
 
 variable {n : ℕ}
 
+section
+variable (n : ℕ)
+
 /-- A smooth bump in the transported coordinate: equal to one on the unit ball, supported in the
 ball of radius two, with values in `[0, 1]`. -/
-theorem exists_zCutoff (n : ℕ) :
-    ∃ χ : PDE.Vec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ HasCompactSupport χ ∧
+theorem exists_zCutoff  :
+    ∃ χ : PDE.ScalarField n, ContDiff ℝ PDE.smoothOrder χ ∧ HasCompactSupport χ ∧
       (∀ z, 0 ≤ χ z ∧ χ z ≤ 1) ∧ ∀ z, ‖z‖ ≤ 1 → χ z = 1 := by
   obtain ⟨f, hs, hc, -, h01, h1⟩ := exists_smooth_bump_of_isCompact_subset_isOpen
-    (K := Metric.closedBall (0 : PDE.Vec n) 1) (V := Metric.ball (0 : PDE.Vec n) 2)
+    (K := Metric.closedBall (0 : PDE.Vec n) 1) (V := Metric.ball (0 ) 2)
     (isCompact_closedBall 0 1) Metric.isOpen_ball
     (Metric.closedBall_subset_ball (by norm_num))
   exact ⟨f, hs, hc, h01, fun z hz => h1 z (by simpa using hz)⟩
 
 /-- The chosen bump. -/
-def zCutoff (n : ℕ) : PDE.Vec n → ℝ := (exists_zCutoff n).choose
+def zCutoff  : PDE.ScalarField n := (exists_zCutoff n).choose
 
-theorem contDiff_zCutoff (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (zCutoff n) :=
+theorem contDiff_zCutoff  : ContDiff ℝ PDE.smoothOrder (zCutoff n) :=
   (exists_zCutoff n).choose_spec.1
 
-theorem hasCompactSupport_zCutoff (n : ℕ) : HasCompactSupport (zCutoff n) :=
+theorem hasCompactSupport_zCutoff  : HasCompactSupport (zCutoff n) :=
   (exists_zCutoff n).choose_spec.2.1
 
-theorem zCutoff_mem_Icc (n : ℕ) (z : PDE.Vec n) : 0 ≤ zCutoff n z ∧ zCutoff n z ≤ 1 :=
+theorem zCutoff_mem_Icc  (z : PDE.Vec n) : 0 ≤ zCutoff n z ∧ zCutoff n z ≤ 1 :=
   (exists_zCutoff n).choose_spec.2.2.1 z
 
-theorem zCutoff_eq_one (n : ℕ) {z : PDE.Vec n} (hz : ‖z‖ ≤ 1) : zCutoff n z = 1 :=
+theorem zCutoff_eq_one  {z : PDE.Vec n} (hz : ‖z‖ ≤ 1) : zCutoff n z = 1 :=
   (exists_zCutoff n).choose_spec.2.2.2 z hz
+end
+
+
+section
+variable (n N : ℕ)
 
 /-- The cutoff at scale `N + 1`. -/
-def zCutoffN (n N : ℕ) (z : PDE.Vec n) : ℝ := zCutoff n (((N : ℝ) + 1)⁻¹ • z)
+def zCutoffN  (z : PDE.Vec n) : ℝ := zCutoff n (((N : ℝ) + 1)⁻¹ • z)
 
-theorem contDiff_zCutoffN (n N : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (zCutoffN n N) :=
+theorem contDiff_zCutoffN  : ContDiff ℝ PDE.smoothOrder (zCutoffN n N) :=
   (contDiff_zCutoff n).comp (contDiff_const_smul _)
 
-theorem hasCompactSupport_zCutoffN (n N : ℕ) : HasCompactSupport (zCutoffN n N) := by
+theorem hasCompactSupport_zCutoffN  : HasCompactSupport (zCutoffN n N) := by
   have hne : ((N : ℝ) + 1)⁻¹ ≠ 0 := by positivity
   exact (hasCompactSupport_zCutoff n).comp_homeomorph (Homeomorph.smulOfNeZero _ hne)
 
-theorem zCutoffN_mem_Icc (n N : ℕ) (z : PDE.Vec n) : 0 ≤ zCutoffN n N z ∧ zCutoffN n N z ≤ 1 :=
+theorem zCutoffN_mem_Icc  (z : PDE.Vec n) : 0 ≤ zCutoffN n N z ∧ zCutoffN n N z ≤ 1 :=
   zCutoff_mem_Icc n _
+end
+
 
 theorem zCutoffN_eq_one {n N : ℕ} {z : PDE.Vec n} (hz : ‖z‖ ≤ (N : ℝ) + 1) :
     zCutoffN n N z = 1 := by
@@ -82,8 +94,11 @@ theorem zCutoffN_eq_one {n N : ℕ} {z : PDE.Vec n} (hz : ‖z‖ ≤ (N : ℝ) 
   rw [inv_mul_le_iff₀ (by positivity)]
   linarith
 
+section
+variable (F : BoundedBorel (PDE.Vec n))
+
 /-- The cutoff datum `F(y) χ_N(z)` as a bounded Borel kinetic datum. -/
-def cutoffDatum (F : BoundedBorel (PDE.Vec n)) (N : ℕ) : BoundedBorel (EvolutionAmbientState n) :=
+def cutoffDatum  (N : ℕ) : BoundedBorel (EvolutionAmbientState n) :=
   ⟨fun x => F x.1 * zCutoffN n N x.2,
     ⟨(F.measurable.comp measurable_fst).mul
       ((contDiff_zCutoffN n N).continuous.measurable.comp measurable_snd),
@@ -98,30 +113,28 @@ def cutoffDatum (F : BoundedBorel (PDE.Vec n)) (N : ℕ) : BoundedBorel (Evoluti
         _ = C := mul_one C⟩⟩
 
 /-- The `z`-independent datum `F(y)` as a bounded Borel kinetic datum. -/
-def lowerDatum (F : BoundedBorel (PDE.Vec n)) : BoundedBorel (EvolutionAmbientState n) :=
+def lowerDatum  : BoundedBorel (EvolutionAmbientState n) :=
   F.pullback Prod.fst measurable_fst
 
-@[simp] theorem cutoffDatum_apply (F : BoundedBorel (PDE.Vec n)) (N : ℕ)
+@[simp] theorem cutoffDatum_apply  (N : ℕ)
     (x : EvolutionAmbientState n) : cutoffDatum F N x = F x.1 * zCutoffN n N x.2 := rfl
 
-@[simp] theorem lowerDatum_apply (F : BoundedBorel (PDE.Vec n)) (x : EvolutionAmbientState n) :
+@[simp] theorem lowerDatum_apply  (x : EvolutionAmbientState n) :
     lowerDatum F x = F x.1 := rfl
+end
+
 
 /-- The cutoff data are smooth compactly supported terminal data in the open fiber. -/
-theorem cutoffDatum_isSmoothCompact {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {τ : ℝ}
+theorem cutoffDatum_isSmoothCompact {Ω : PDE.VelocityRegion n} {γ : ℝ → PDE.Vec n} {τ : ℝ}
     {F : BoundedBorel (PDE.Vec n)}
     (hF : ParabolicProbe.IsSmoothCompactScalarTerminalDatum Ω γ τ F) (N : ℕ) :
     IsSmoothCompactTerminalDatum Ω γ τ (cutoffDatum F N) := by
   have hsub : tsupport (cutoffDatum F N : EvolutionAmbientState n → ℝ) ⊆
-      tsupport (F : PDE.Vec n → ℝ) ×ˢ tsupport (zCutoffN n N) := by
+      tsupport (F : PDE.ScalarField n) ×ˢ tsupport (zCutoffN n N) := by
     have h : Function.support (cutoffDatum F N : EvolutionAmbientState n → ℝ) ⊆
-        Function.support (F : PDE.Vec n → ℝ) ×ˢ Function.support (zCutoffN n N) := by
+        Function.support (F : PDE.ScalarField n) ×ˢ Function.support (zCutoffN n N) := by
       intro x hx
-      refine ⟨?_, ?_⟩
-      · intro h0
-        exact hx (by simp [h0])
-      · intro h0
-        exact hx (by simp [h0])
+      simp_all
     refine (closure_mono h).trans ?_
     rw [closure_prod_eq]
     exact Subset.rfl
@@ -159,8 +172,10 @@ theorem abs_cutoffDatum_sub_le {F : BoundedBorel (PDE.Vec n)} {C : ℝ} (hC : �
     (hC0 : 0 ≤ C) {N M : ℕ} (hNM : N ≤ M) (x : EvolutionAmbientState n) :
     |cutoffDatum F M x - cutoffDatum F N x| ≤
       C / ((N : ℝ) + 1) ^ 2 * (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
+  let sharedTerm_f6465a0cdb := (((N : ℝ) + 1) ^ 2)
+  let sharedTerm_56c4862946 := (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2)
   have hN : (0 : ℝ) < (N : ℝ) + 1 := by positivity
-  have hRHS : 0 ≤ C / ((N : ℝ) + 1) ^ 2 * (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
+  have hRHS : 0 ≤ C / sharedTerm_f6465a0cdb * (sharedTerm_56c4862946) := by
     have := PDE.vecNormSq_nonneg x.1
     have := PDE.vecNormSq_nonneg x.2
     positivity
@@ -182,17 +197,17 @@ theorem abs_cutoffDatum_sub_le {F : BoundedBorel (PDE.Vec n)} {C : ℝ} (hC : �
       have := zCutoffN_mem_Icc n N x.2
       rw [abs_le]
       constructor <;> linarith
-    have h2 : 1 ≤ PDE.vecNormSq x.2 / ((N : ℝ) + 1) ^ 2 := by
+    have h2 : 1 ≤ PDE.vecNormSq x.2 / sharedTerm_f6465a0cdb := by
       rw [le_div_iff₀ (by positivity)]
       linarith
-    have h3 : PDE.vecNormSq x.2 / ((N : ℝ) + 1) ^ 2 ≤
-        (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) / ((N : ℝ) + 1) ^ 2 := by
+    have h3 : PDE.vecNormSq x.2 / sharedTerm_f6465a0cdb ≤
+        (sharedTerm_56c4862946) / sharedTerm_f6465a0cdb := by
       apply div_le_div_of_nonneg_right _ (by positivity)
       have := PDE.vecNormSq_nonneg x.1
       linarith
     calc |F x.1| * |zCutoffN n M x.2 - zCutoffN n N x.2| ≤ C * 1 :=
           mul_le_mul (hC x.1) h1 (abs_nonneg _) hC0
-      _ ≤ C * ((1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) / ((N : ℝ) + 1) ^ 2) :=
+      _ ≤ C * ((sharedTerm_56c4862946) / sharedTerm_f6465a0cdb) :=
           mul_le_mul_of_nonneg_left (h2.trans h3) hC0
       _ = _ := by ring
 
@@ -206,12 +221,12 @@ variable {n : ℕ}
 depending only on `Λ`, `b 0` and `L_b` such that, for classical terminal solutions `u₁, u₂` whose
 terminal data satisfy `F₁ - F₂ ≤ c (1 + |y|² + |z|²)` over the closed fiber, one has
 `u₁ - u₂ ≤ c Φ_τ` on the whole past closed cylinder, `Φ_τ = e^{C(τ-σ)}(1 + |y|² + |z|²)`. -/
-theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem classical_sub_le_growthBarrier {Ω : PDE.VelocityRegion n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ}
-    {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b) :
+    {b : PDE.VectorField n} (hb : HasEuclideanLipschitzDrift Lb b) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (τ : ℝ) (F₁ F₂ : BoundedBorel (EvolutionAmbientState n))
-      (u₁ u₂ : KineticPoint n → ℝ) (c : ℝ), 0 ≤ c →
+      (u₁ u₂ : HypoellipticAleksandrov.KineticScalarField n) (c : ℝ), 0 ≤ c →
       IsClassicalTerminalSolution Ω γ B b τ F₁ u₁ →
       IsClassicalTerminalSolution Ω γ B b τ F₂ u₂ →
       (∀ x : EvolutionAmbientState n, x.1 ∈ closure (movingDomain Ω γ τ) →
@@ -237,7 +252,7 @@ theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     have h2 := hC₂ p (hslab _ hp)
     have h3 := le_abs_self (u₁ p)
     have h4 := neg_abs_le (u₂ p)
-    have h5 : 0 ≤ c * growthBarrier C τ p := mul_nonneg hc (growthBarrier_pos C τ p).le
+    have h5  := mul_nonneg hc (growthBarrier_pos C τ p).le
     show u₁ p - u₂ p - c * growthBarrier C τ p ≤ C₁ + C₂
     linarith
   · exact ((h₁'.2.1.mono (hslab _)).sub (h₂'.2.1.mono (hslab _))).sub
@@ -273,7 +288,7 @@ theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     have hlat : p ∈ evolutionLateralFrontier Ω γ τ := ⟨hp.2.1, hfr⟩
     show u₁ p - u₂ p - c * growthBarrier C τ p ≤ 0
     rw [h₁'.2.2.2.2.2 p hlat, h₂'.2.2.2.2.2 p hlat]
-    have h5 : 0 ≤ c * growthBarrier C τ p := mul_nonneg hc (growthBarrier_pos C τ p).le
+    have h5  := mul_nonneg hc (growthBarrier_pos C τ p).le
     linarith
 
 end Comparison

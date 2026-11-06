@@ -5,9 +5,9 @@ import Mathlib.Tactic
 
 /-! # Propagation along C-one-one skeletons with uniform source constants -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -29,7 +29,7 @@ theorem propagation (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
       x (P.time-tminus) = P.position → v (P.time-tminus) = P.velocity →
       corridor tminus (-T0) (P.time-tminus) kx kv x v ⊆ O →
     ∀ ell : ℝ, 0 ≤ ell →
-    ∀ u : KineticPoint d → ℝ,
+    ∀ u : HypoellipticAleksandrov.KineticScalarField d,
       (∀ Q ∈ O, 0 ≤ u Q) → IsAdmissibleSupersolution A O p C_A u →
       (∀ Q ∈ corridor tminus (-T0) (P.time-tminus) kx kv x v,
         Q.time ≤ tminus → ell ≤ u Q) → cprop*ell ≤ u P := by

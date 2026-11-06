@@ -10,13 +10,15 @@ import Mathlib.Tactic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Set Holder
+open Set
+
+variable (n : ℕ)
 
 /-- The nested radii in the source iteration. -/
-def returnIterationRadius (n : ℕ) : ℝ := 1 - (1 / 2 : ℝ) ^ (n + 1)
+def returnIterationRadius  : ℝ := 1 - (1 / 2 : ℝ) ^ (n + 1)
 
 /-- Every radius belongs to the permitted half-to-one interval. -/
-theorem returnIterationRadius_bounds (n : ℕ) :
+theorem returnIterationRadius_bounds  :
     1 / 2 ≤ returnIterationRadius n ∧ returnIterationRadius n < 1 := by
   have hp := pow_pos (by norm_num : (0 : ℝ) < 1 / 2) (n + 1)
   have hb : (1 / 2 : ℝ) ^ (n + 1) ≤ 1 / 2 := by
@@ -28,14 +30,14 @@ theorem returnIterationRadius_bounds (n : ℕ) :
   constructor <;> linarith
 
 /-- The consecutive radius gap is the exact dyadic gap in the source. -/
-theorem returnIterationRadius_gap (n : ℕ) :
+theorem returnIterationRadius_gap  :
     returnIterationRadius (n + 1) - returnIterationRadius n =
       (1 / 4 : ℝ) * (1 / 2 : ℝ) ^ n := by
   simp only [returnIterationRadius, pow_succ]
   ring
 
 /-- The error term grows by the fixed factor `2^beta` at each iteration. -/
-theorem returnIterationRadius_gap_power (n : ℕ) (beta : ℝ) :
+theorem returnIterationRadius_gap_power  (beta : ℝ) :
     (returnIterationRadius (n + 1) - returnIterationRadius n) ^ (-beta) =
       (4 : ℝ) ^ beta * ((2 : ℝ) ^ beta) ^ n := by
   rw [returnIterationRadius_gap,
@@ -63,7 +65,7 @@ theorem return_time_unit_solution (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam �
     apply (div_lt_one (by positivity : 0 < 2 * r)).mpr
     linarith
   have her : eps * r = 1 / 2 := by dsimp [eps]; field_simp
-  have hK : 0 < K := by dsimp [K]; positivity
+
   have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro A u hu v hv zStar hstar
@@ -85,10 +87,10 @@ theorem return_time_unit_solution (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam �
       (le_csSup hbd (mem_image_of_mem u hcenter)), csSup_le hne (by
         rintro _ ⟨q, hq, rfl⟩
         exact (le_abs_self _).trans (hM q (hpos hq)))⟩
-  let f : ℕ → ℝ := fun n => sSup (u '' returnBox v (returnIterationRadius n))
-  have hf0 (n : ℕ) : 0 ≤ f n :=
+  let f  := fun n => sSup (u '' returnBox v (returnIterationRadius n))
+  have hf0 (n : ℕ)  :=
     (hprops _ (returnIterationRadius_bounds n).1 (returnIterationRadius_bounds n).2.le).2.1
-  have hfM (n : ℕ) : f n ≤ M :=
+  have hfM (n : ℕ)  :=
     (hprops _ (returnIterationRadius_bounds n).1 (returnIterationRadius_bounds n).2.le).2.2
   have hU : 0 ≤ u zStar := hu.2.1 zStar (by linarith [hstar.1.1])
   have hstep (n : ℕ) : f n ≤ eps * f (n + 1) +

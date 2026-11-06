@@ -7,10 +7,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionVisi
 
 /-! # The entrance slab estimate for the actual enlarged visit count -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+open Set MeasureTheory
 
 /-- The source slab estimate charges actual terminal and occupation mass, with no additive term. -/
 theorem entranceSlab_mass_le
@@ -46,19 +46,18 @@ theorem entranceSlab_mass_le
       hT (ha.trans hab) hbT hJ P N
     have ho := entranceSlab_partial_occupation_mass_le hH hLE hlam hLam A c J T a b
       hT ha hbT hJ P hv N
-    have hL : 0 ≤ Lam := (hlam.trans_le hLam).le
+    have hL  := (hlam.trans_le hLam).le
     have hq' : 5 * c.r ^ 2 / 16 * (∑ n ∈ Finset.range N, (mu n univ).toReal) ≤
         9 * c.r ^ 2 / 16 * f b + 2 * Lam * ∫ t in Ioc a b, f t :=
       hq.trans (add_le_add (mul_le_mul_of_nonneg_left ht (by positivity))
         (mul_le_mul_of_nonneg_left ho (by positivity)))
     have hr := entranceSlab_mass_arithmetic c.positive hL hp hg hq'
     rw [← visit_partial_real_mass mu N univ MeasurableSet.univ] at hr
-    exact (ENNReal.le_ofReal_iff_toReal_le (measure_ne_top _ univ) (by
-      exact mul_nonneg (entranceSlabConstant_pos hlam hLam).le
+    exact (ENNReal.le_ofReal_iff_toReal_le (measure_ne_top _ univ) (mul_nonneg (entranceSlabConstant_pos hlam hLam).le
         (add_nonneg hp (mul_nonneg (by positivity) hg)))).mpr hr
   have hm := visit_sum_mass_le_of_partial_mass_le mu _ hbound
   have hD : MeasurableSet D := measurableSet_Ioc.preimage continuous_time.measurable
-  have he : Measure.sum mu = (Measure.sum gamma).restrict D :=
+  have he  :=
     (Measure.restrict_sum gamma hD).symm
   rw [he, Measure.restrict_apply MeasurableSet.univ, univ_inter] at hm
   exact hm

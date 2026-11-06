@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyComparison
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyRadius
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # The source Cauchy bound with inner-ball approximation errors
@@ -12,19 +14,19 @@ The bound is proved, not assumed; the support and containment conditions of the
 comparison core are discharged from the inner-ball approximation data.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+open HypoellipticAleksandrov.Parabolic Set
 open scoped MatrixOrder
 
 /-- The manuscript Cauchy estimate for actual inner-ball ellipsoid approximants, with
 constant independent of both approximation indices and transported truncation radii. -/
 theorem exists_transportedRadius_dirichlet_cauchy_bound
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.VectorField n}
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -39,7 +41,7 @@ theorem exists_transportedRadius_dirichlet_cauchy_bound
     ∃ R0 : ℝ, 0 < R0 ∧ ∀ (β R : Fin 2 → ℝ),
       (∀ i, 0 < β i ∧ β i ≤ A) → (∀ i, R0 ≤ R i) →
       ∀ (g : Fin 2 → ℝ → PDE.Vec n),
-      (∀ i, ContDiff ℝ (⊤ : ℕ∞) (g i)) →
+      (∀ i, ContDiff ℝ PDE.smoothOrder (g i)) →
       (∀ i s t, PDE.vecEuclideanNorm (g i s - g i t) ≤ L * |s - t|) →
       (∀ i s, s ∈ Icc α τ → PDE.vecEuclideanNorm (g i s - Γ s) ≤ β i / 2) →
       ∀ (u : Fin 2 → TimeVelocity (n + n) → ℝ),
@@ -64,8 +66,7 @@ theorem exists_transportedRadius_dirichlet_cauchy_bound
   have hc (i : Fin 2) (s : ℝ) (hs : s ∈ Icc α τ) :
       PDE.vecEuclideanNorm (g i s - Γ s) ≤ A / 2 :=
     (hclose i s hs).trans (by linarith [(hβ i).2])
-  have ht (i : Fin 2) : ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
-      2 * d ≤ (r0 - β i) - PDE.vecEuclideanNorm (q.1 - g i τ) :=
+  have ht (i : Fin 2)  :=
     terminal_support_margin_of_innerBall_close ((hβ i).2.trans hAd) hsupp
       (hclose i τ ⟨hατ.le, le_rfl⟩)
   have he := abs_sub_le_common_innerCylinder_straightened_dirichlet
@@ -75,14 +76,13 @@ theorem exists_transportedRadius_dirichlet_cauchy_bound
     (fun i => hR0.trans_le (hR i)) (fun i => by linarith [(hβ i).1]) hd' hc
     (fun i => hsize _ _ (by linarith [(hβ i).2]) (hR i)) F hFC ht u hu p hp
   have hκ : 0 < collarKappa L lam := div_pos (by linarith) hlam
-  have hW := barrierW_pos hκ hd
-  have hm : barrierW (collarKappa L lam) (r0 - (r0 - δ) + A / 2) ≤
-      barrierW (collarKappa L lam) (δ + 3 / 2 * A) := by
-    have hb' : r0 - (r0 - δ) + A / 2 ≤ δ + 3 / 2 * A := by linarith
-    rcases hb'.lt_or_eq with h | h
-    · exact (barrierW_strictMono hκ h).le
-    · rw [h]
+
+
   exact he.trans (mul_le_mul_of_nonneg_left
-    (add_le_add (le_refl _) (div_le_div_of_nonneg_right hm hW.le)) (by positivity))
+    (add_le_add (le_refl _) (div_le_div_of_nonneg_right (by
+        have hb' : r0 - (r0 - δ) + A / 2 ≤ δ + 3 / 2 * A := by linarith
+        rcases hb'.lt_or_eq with h | h
+        · exact (barrierW_strictMono hκ h).le
+        · rw [h]) (barrierW_pos hκ hd).le)) (by positivity))
 
 end HypoellipticAleksandrov.KineticAleksandrov

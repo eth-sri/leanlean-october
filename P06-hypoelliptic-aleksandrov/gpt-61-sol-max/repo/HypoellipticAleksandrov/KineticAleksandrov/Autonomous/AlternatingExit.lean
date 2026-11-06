@@ -16,14 +16,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory
 open scoped Classical
 
+variable (P : Point) (I : Interval)
+
 /-- Exit onto the outer face before the first entrance, with zero for an initial visit. -/
-def visitInitialExit (P : Point) (I : Interval) (outer : Set Point)
+def visitInitialExit  (outer : Set Point)
     (exitWaiting : Kernel Point Point) : Measure Point :=
   if P.velocity 0 ∈ closure I.carrier then 0 else (exitWaiting P).restrict outer
 
 /-- The finite alternating exit identity under the exact consumed AU-06 exit splits. -/
 theorem alternating_exit_of_nested_splitting
-    (P : Point) (I : Interval) (Sin Sout outer : Set Point)
+     (Sin Sout outer : Set Point)
     (exitActive exitWaiting exitOuter : Kernel Point Point)
     (hinitial : exitOuter P = visitInitialExit P I outer exitWaiting +
       exitOuter ∘ₘ visitGamma P I Sin Sout exitActive exitWaiting 0)

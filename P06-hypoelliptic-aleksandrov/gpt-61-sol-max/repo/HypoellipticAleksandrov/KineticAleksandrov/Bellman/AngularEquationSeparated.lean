@@ -6,8 +6,8 @@ import Mathlib.Tactic
 
 /-! # The first derivatives of separated angular tests -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The chain rule for a separated expression in the actual angular coordinates. -/
@@ -29,17 +29,18 @@ theorem bellmanSeparatedExpression_hasFDerivAt (ζ φ : ℝ → ℝ)
       (bellmanTestAngle (bellmanAngularPoint w).val) := by
     rw [bellmanTestAngle_angularPoint]
     exact hφ.hasDerivAt
-  have hd := (hz.comp_hasFDerivAt (bellmanAngularPoint w).val
+  have hd := (hz.comp_hasFDerivAt _
     (bellmanTestRadius_hasFDerivAt w)).mul
-    (hp.comp_hasFDerivAt (bellmanAngularPoint w).val (bellmanTestAngle_hasFDerivAt w))
+    (hp.comp_hasFDerivAt _ (bellmanTestAngle_hasFDerivAt w))
   convert! hd using 1
   simp only [Function.comp_apply, bellmanTestRadius_angularPoint,
     bellmanTestAngle_angularPoint, smul_smul, mul_assoc]
 
+variable (ζ φ : ℝ → ℝ) (w : BellmanPositiveTime × ℝ) (hζ : DifferentiableAt ℝ ζ w.1.val) (hφ : DifferentiableAt ℝ φ w.2)
+
+include hζ hφ
 /-- The transport derivative has exactly the source factors y/(3s) and -y²/(3s²). -/
-theorem bellmanSeparatedExpression_transport (ζ φ : ℝ → ℝ)
-    (w : BellmanPositiveTime × ℝ) (hζ : DifferentiableAt ℝ ζ w.1.val)
-    (hφ : DifferentiableAt ℝ φ w.2) :
+theorem bellmanSeparatedExpression_transport  :
     (bellmanAngularPoint w).val.2 *
       fderiv ℝ (bellmanSeparatedExpression ζ φ) (bellmanAngularPoint w).val (1, 0) =
       w.2 / (3 * w.1.val) * deriv ζ w.1.val * φ w.2 -
@@ -52,9 +53,7 @@ theorem bellmanSeparatedExpression_transport (ζ φ : ℝ → ℝ)
   ring
 
 /-- The first velocity derivative is ζ(s)φ'(y)/s. -/
-theorem bellmanSeparatedExpression_velocity (ζ φ : ℝ → ℝ)
-    (w : BellmanPositiveTime × ℝ) (hζ : DifferentiableAt ℝ ζ w.1.val)
-    (hφ : DifferentiableAt ℝ φ w.2) :
+theorem bellmanSeparatedExpression_velocity  :
     fderiv ℝ (bellmanSeparatedExpression ζ φ) (bellmanAngularPoint w).val (0, 1) =
       ζ w.1.val * deriv φ w.2 / w.1.val := by
   rw [(bellmanSeparatedExpression_hasFDerivAt ζ φ w hζ hφ).fderiv]

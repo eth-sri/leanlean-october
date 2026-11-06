@@ -29,33 +29,22 @@ variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 theorem integrableOn [Fact (1 ≤ p)]
     [IsFiniteMeasure (volumeOn U)]
     (u : W1pFunction U p) :
-    IntegrableOn u.toFun U volume := by
-  simpa only [IntegrableOn, volumeOn] using
-    u.memLp.integrable Fact.out
+    IntegrableOn u.toFun U  := u.memLp.integrable Fact.out
 
 /-- The constant representative with zero weak gradient. -/
 noncomputable def const [IsFiniteMeasure (volumeOn U)]
     (c : ℝ) : W1pFunction U p where
   toFun := fun _ => c
   grad := fun _ => 0
-  memLp := by
-    simpa using
-      (memLp_const (μ := volumeOn U) (p := p) (c := c))
-  gradMemLp := by
-    intro i
-    exact
-      memLp_const (μ := volumeOn U) (p := p) (c := (0 : ℝ))
+  memLp := (memLp_const c)
+  gradMemLp := (fun i => memLp_const 0)
   hasWeakGradient := by
     convert HasWeakGradientOn.of_contDiff
-      (U := U) (f := fun _ : Vec d => c) contDiff_const using 1
+      (U := U) (f := fun _  => c) contDiff_const using 1
     funext x i
     simp
 
-@[simp]
-theorem const_apply [IsFiniteMeasure (volumeOn U)]
-    (c : ℝ) (x : Vec d) :
-    (const (U := U) (p := p) c) x = c :=
-  rfl
+
 
 @[simp]
 theorem const_grad [IsFiniteMeasure (volumeOn U)]
@@ -94,8 +83,7 @@ noncomputable def subAverage [Fact (1 ≤ p)]
 theorem subAverage_apply [Fact (1 ≤ p)]
     [IsFiniteMeasure (volumeOn U)]
     (u : W1pFunction U p) (x : Vec d) :
-    u.subAverage x = u x - integralAverage U u.toFun := by
-  simp only [subAverage, addConst_apply, sub_eq_add_neg]
+    u.subAverage x = u x - integralAverage U u.toFun := rfl
 
 @[simp]
 theorem subAverage_grad [Fact (1 ≤ p)]

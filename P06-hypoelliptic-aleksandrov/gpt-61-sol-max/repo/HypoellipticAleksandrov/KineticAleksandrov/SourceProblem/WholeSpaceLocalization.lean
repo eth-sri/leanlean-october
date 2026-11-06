@@ -6,29 +6,31 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKry
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.PotentialWhole
 public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
 public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.SourceCorrection
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Localization of the whole-space occupation potential -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Set
+open HypoellipticAleksandrov.Parabolic SectionTwo Set
 
 /-- The whole-space potential admits the source quadratic comparison on every ball. -/
 theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityStatement)
     (hd : 0 < d)
     {lam Lam : ℝ} {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+    (hP : HasParabolicMarginalBundle (wholeSpace d) _
       MeasurableSet.univ (zIndependentCoefficient B) K)
-    (F : TimeVelocity d → ℝ) (hF0 : ∀ q, 0 ≤ F q)
-    (hFs : ContDiff ℝ (⊤ : ℕ∞) F) (hFc : HasCompactSupport F)
+    (F : HypoellipticAleksandrov.Parabolic.ScalarField d) (hF0 : ∀ q, 0 ≤ F q)
+    (hFs : ContDiff ℝ PDE.smoothOrder F) (hFc : HasCompactSupport F)
     (hFsupp : tsupport F ⊆ Ioo (0 : ℝ) 1 ×ˢ univ)
     (α : ℝ) (hα0 : 0 ≤ α) (hα1 : α < 1) (vStar : PDE.Vec d)
     (R : ℝ) (hR : 0 < R) (hRsq : R ^ 2 = max 1 (4 * d * Lam)) :
     let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
     let H := sSup (W '' (Icc (0 : ℝ) 1 ×ˢ univ))
-    ∃ V : TimeVelocity d → ℝ,
+    ∃ V : HypoellipticAleksandrov.Parabolic.ScalarField d,
       IsClassicalBackwardDirichletSolution α 1 (PDE.euclideanBall vStar R) B
         (fun _ _ => 0) (fun _ _ => 0) (fun r v => -F (r, v))
         (fun _ => 0) (fun _ => 0) V ∧
@@ -37,13 +39,13 @@ theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityS
       (2 * d * Lam * (1 - α)) / R ^ 2 ≤ 1 / 2 := by
   dsimp only
   let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
-  let H := sSup (W '' (Icc (0 : ℝ) 1 ×ˢ univ))
+
   obtain ⟨hW0, hbdd, -, hWt, hWs, hWe⟩ :=
     occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
-  have hH0 : 0 ≤ H := (hW0 (0, 0)).trans
+  have hH0  := (hW0 (0, 0)).trans
     (le_csSup hbdd ⟨(0, 0), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩, rfl⟩)
   have hU : tsupport F ⊆ {p : TimeVelocity d | p.1 < 1 ∧
-      p.2 ∈ movingDomain (wholeSpace d) (fun _ => (0 : PDE.Vec d)) p.1} := by
+      p.2 ∈ movingDomain (wholeSpace d) (fun _ => (0 )) p.1} := by
     intro p hp
     exact ⟨(hFsupp hp).1.2, by simp [movingDomain_wholeSpace]⟩
   have hWcont := (parabolic_duhamel hH (wholeSpace_admissible d)
@@ -69,7 +71,7 @@ theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityS
     exact hWt p.2
   · intro p hp
     have hz := mem_scalarParabolicLateralFace_iff.mp hp
-    have hw : W p ≤ H := le_csSup hbdd
+    have hw  := le_csSup hbdd
       ⟨p, ⟨⟨hα0.trans hz.1, hz.2.1⟩, mem_univ _⟩, rfl⟩
     have hs := radius_sq_le_frontier_sum vStar R hz.2.2
     have ht : 0 ≤ 2 * (d : ℝ) * Lam * (1 - p.1) :=

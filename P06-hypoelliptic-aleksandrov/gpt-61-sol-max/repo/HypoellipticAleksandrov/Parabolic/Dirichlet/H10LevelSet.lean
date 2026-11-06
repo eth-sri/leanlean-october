@@ -20,18 +20,20 @@ domain, and the proof does not use the zero-boundary closure property.
 @[expose] public section
 
 open Filter MeasureTheory Set
-open scoped ENNReal
+
 
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
+
+variable (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ)
 
 /-- The concrete representatives selected by a Hilbert `H¹₀` graph point,
 viewed as a representative-level `H¹` function. -/
 private def h1FunctionOfH10HilbertGraph
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : PDE.H1Function Ω where
+     : PDE.H1Function Ω where
   toFun := valueCLM hΩ u
   grad := fun x => (gradientCLM hΩ u x).ofLp
   memL2 := Lp.memLp (valueCLM hΩ u)
@@ -50,65 +52,53 @@ private def h1FunctionOfH10HilbertGraph
       PDE.volumeOn, PDE.H1HilbertGraph.toH1Graph, PDE.h1HilbertAmbientEquiv,
         WithLp.prodContinuousLinearEquiv] using! hconstraint
 
-@[simp]
-private theorem h1FunctionOfH10HilbertGraph_toFun
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    (h1FunctionOfH10HilbertGraph hΩ u).toFun = valueCLM hΩ u :=
-  rfl
 
-@[simp]
-private theorem h1FunctionOfH10HilbertGraph_grad
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
-    (h1FunctionOfH10HilbertGraph hΩ u).grad =
-      fun x => (gradientCLM hΩ u x).ofLp :=
-  rfl
+
+
 
 /-- On an arbitrary open domain, the selected weak gradient of a spatial
 `H¹₀` graph point vanishes almost everywhere on each fixed level set of
 its selected value representative. -/
 theorem gradientCLM_ae_zero_on_level_set
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (c : ℝ) :
+     (c : ℝ) :
     ∀ᵐ x ∂(PDE.volumeOn Ω),
       valueCLM hΩ u x = c → gradientCLM hΩ u x = 0 := by
-  let w : PDE.H1Function Ω := h1FunctionOfH10HilbertGraph hΩ u
+
   have hballs : ∀ x : Ω, ∃ r : ℝ, 0 < r ∧ Metric.ball (x : PDE.Vec d) r ⊆ Ω := by
     intro x
     exact Metric.isOpen_iff.mp hΩ x x.property
   choose r hrPos hrSub using hballs
-  let B : Ω → Set (PDE.Vec d) := fun x => Metric.ball (x : PDE.Vec d) (r x)
-  have hBOpen : ∀ x, IsOpen (B x) := fun x => Metric.isOpen_ball
-  have hcover : Ω ⊆ ⋃ x, B x := by
-    intro y hy
-    exact mem_iUnion.mpr ⟨⟨y, hy⟩, Metric.mem_ball_self (hrPos ⟨y, hy⟩)⟩
+  let B : Ω → PDE.VelocityRegion d := fun x => Metric.ball (x : PDE.Vec d) (r x)
+
+
   obtain ⟨s, hsCountable, hsCover⟩ :=
     (HereditarilyLindelofSpace.isLindelof Ω).elim_countable_subcover
-      B hBOpen hcover
-  have hUnionSub : (⋃ x ∈ s, B x) ⊆ Ω := by
-    intro y hy
-    simp only [mem_iUnion] at hy
-    obtain ⟨x, _hx, hxy⟩ := hy
-    exact hrSub x hxy
-  have hUnion : (⋃ x ∈ s, B x) = Ω :=
-    Subset.antisymm hUnionSub hsCover
-  have hOnUnion :
-      ∀ᵐ y ∂volume.restrict (⋃ x ∈ s, B x),
-        valueCLM hΩ u y = c → gradientCLM hΩ u y = 0 := by
-    rw [ae_restrict_biUnion_iff B hsCountable]
-    intro x hx
-    have hBDomain : PDE.IsOpenBoundedConvexDomain (B x) := by
-      refine ⟨Metric.isOpen_ball, ?_, convex_ball (x : PDE.Vec d) (r x)⟩
-      exact PDE.Bornology.IsBounded.isBoundedDomain Metric.isBounded_ball
-    have hlocal := PDE.H1Function.grad_ae_zero_on_level_set
-      hBDomain (w.restrict Metric.isOpen_ball (hrSub x)) c
-    filter_upwards [hlocal] with y hy
-    intro hyLevel
-    apply (WithLp.ofLp_eq_zero 2).mp
-    exact hy hyLevel
-  have hmeasure :
-      PDE.volumeOn Ω = volume.restrict (⋃ x ∈ s, B x) := by
-    rw [hUnion]
-  have hae : ae (PDE.volumeOn Ω) =
-      ae (volume.restrict (⋃ x ∈ s, B x)) := congrArg ae hmeasure
-  exact hOnUnion.filter_mono hae.le
+      B (fun x => Metric.isOpen_ball) (by
+          intro y hy
+          exact mem_iUnion.mpr ⟨⟨y, hy⟩, Metric.mem_ball_self (hrPos ⟨y, hy⟩)⟩)
+
+  have hUnion  :=
+    Subset.antisymm (by
+        intro y hy
+        simp only [mem_iUnion] at hy
+        obtain ⟨x, _hx, hxy⟩ := hy
+        exact hrSub x hxy) hsCover
+
+
+
+  exact (show ∀ᵐ y ∂volume.restrict (⋃ x ∈ s, B x),
+        valueCLM hΩ u y = c → gradientCLM hΩ u y = 0 by
+      rw [ae_restrict_biUnion_iff B hsCountable]
+      intro x hx
+
+      have hlocal := PDE.H1Function.grad_ae_zero_on_level_set
+        (by
+            refine ⟨Metric.isOpen_ball, ?_, convex_ball (x : PDE.Vec d) (r x)⟩
+            exact PDE.Bornology.IsBounded.isBoundedDomain Metric.isBounded_ball) ((h1FunctionOfH10HilbertGraph hΩ u).restrict Metric.isOpen_ball (hrSub x)) c
+      filter_upwards [hlocal] with y hy
+      intro hyLevel
+      apply (WithLp.ofLp_eq_zero 2).mp
+      exact hy hyLevel).filter_mono (congrArg ae (show PDE.volumeOn Ω = volume.restrict (⋃ x ∈ s, B x) by
+      rw [hUnion])).le
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

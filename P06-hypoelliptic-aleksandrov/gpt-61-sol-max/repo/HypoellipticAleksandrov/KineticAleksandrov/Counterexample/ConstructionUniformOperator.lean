@@ -6,10 +6,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 
 /-! # Uniform bounds on the actual spatially mollified operator -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
-open MeasureTheory Set HypoellipticAleksandrov.Parabolic
+open MeasureTheory Set
 
 /-- The actual operator is bounded uniformly over all smoothing radii on a bounded
 velocity region and compact time interval. All convolution bounds are essential bounds
@@ -62,13 +62,13 @@ theorem construction_smoothedOperator_uniform_bound {d : ℕ} (hd : 1 ≤ d)
   apply add_le_add
   · apply (abs_add_le _ _).trans
     apply add_le_add
-    · simpa only [Real.norm_eq_abs] using htg
+    · exact htg
     · unfold PDE.vecDot
       apply (Finset.abs_sum_le_sum_abs _ _).trans
       apply Finset.sum_le_sum
       intro i hi
       rw [abs_mul]
-      exact mul_le_mul (hv i) (by simpa only [Real.norm_eq_abs] using hgg i)
+      exact mul_le_mul (hv i) (hgg i)
         (abs_nonneg _) hS
   · unfold matrixContraction
     apply (Finset.abs_sum_le_sum_abs _ _).trans
@@ -78,7 +78,7 @@ theorem construction_smoothedOperator_uniform_bound {d : ℕ} (hd : 1 ≤ d)
     apply Finset.sum_le_sum
     intro k hk
     rw [abs_mul]
-    exact mul_le_mul (hAb _ i k) (by simpa only [Real.norm_eq_abs] using hhh i k)
+    exact mul_le_mul (hAb _ i k) (hhh i k)
       (abs_nonneg _) hAC
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

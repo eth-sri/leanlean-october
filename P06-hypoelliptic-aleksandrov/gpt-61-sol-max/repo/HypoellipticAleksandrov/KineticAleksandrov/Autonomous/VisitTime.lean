@@ -5,12 +5,14 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassCyl
 
 /-! # The source short-time entrance estimate, including the initial atom -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
 /-- A closed time window includes an initial visit even when it is at the lower endpoint. -/
-theorem visit_short_time_mass_closed {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+theorem visit_short_time_mass_closed  :
     ∃ C : ℝ, 0 < C ∧
       ∀ (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
         (A : SmoothAutonomous lam Lam) (c : Clock) (Z0 : Point) (R : ℝ) (hR : 0 < R)
@@ -24,7 +26,7 @@ theorem visit_short_time_mass_closed {lam Lam : ℝ} (hlam : 0 < lam) (hLam : la
     (by nlinarith [sq_pos_of_pos hR]) P (visitCylinderStart_mem Z0 R hR P hP)
 
 /-- The literal source half-open short-time window satisfies the same uniform count bound. -/
-theorem visit_short_time_mass {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+theorem visit_short_time_mass  :
     ∃ C : ℝ, 0 < C ∧
       ∀ (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
         (A : SmoothAutonomous lam Lam) (c : Clock) (Z0 : Point) (R : ℝ) (hR : 0 < R)

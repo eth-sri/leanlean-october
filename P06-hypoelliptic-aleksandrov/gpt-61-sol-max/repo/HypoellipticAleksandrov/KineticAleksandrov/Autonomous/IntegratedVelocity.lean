@@ -10,10 +10,10 @@ This is the source node `l:timed-entrance#integrated-velocity` for smooth autono
 coefficients. The band test is the literal bounded Borel indicator under the actual semigroup.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Set MeasureTheory
+open Set MeasureTheory
 
 /-- Source occupation bound for any realizing full-space evolution. -/
 theorem velocity_occupation_le (hH : HormanderHypoellipticityStatement)
@@ -22,9 +22,9 @@ theorem velocity_occupation_le (hH : HormanderHypoellipticityStatement)
     (hr : 0 < r) (hT : 0 < T) (z : Z) :
     (∫ t in Ioc 0 T, velocityBandAction E r t z) ≤
       (64 * Real.sqrt (2 * Lam) / lam) * r * Real.sqrt T := by
-  have hLn : 0 ≤ Lam := hlam.le.trans hLam
-  have h := velocityGreenRaw_band_mass_le hH hlam hLam A E hE hr hT z
-  have hb := ENNReal.toReal_mono ENNReal.ofReal_ne_top h
+  have hLn  := hlam.le.trans hLam
+
+  have hb := ENNReal.toReal_mono ENNReal.ofReal_ne_top (velocityGreenRaw_band_mass_le hH hlam hLam A E hE hr hT z)
   rw [ENNReal.toReal_ofReal (by positivity)] at hb
   have ha : (∫ t in Ioc 0 T, velocityBandAction E r t z) =
       (∫ t in Ioc 0 T, (velocityBandProbability E r z t).toReal) := by
@@ -46,13 +46,13 @@ theorem velocity_occupation_and_moment
       (∫ t in Ioc 0 T, velocityBandAction E r t z) ≤ C * r * Real.sqrt T ∧
         (∫ w, (w.2 - z.2) ^ 2 ∂kernelXV E (Real.toNNReal T) z) ≤ 2 * Lam * T := by
   refine ⟨64 * Real.sqrt (2 * Lam) / lam, ?_, ?_⟩
-  · have hLp : 0 < Lam := hlam.trans_le hLam
+  · have hLp  := hlam.trans_le hLam
     positivity
   · intro A r T z hr hT
     let E := fullSpaceEvolution hH hLE hlam hLam A
     have hE := fullSpaceEvolution_spec hH hLE hlam hLam A
     refine ⟨velocity_occupation_le hH hlam hLam A E hE hr hT z, ?_⟩
-    have hm := velocity_moment_le hlam A E hE (Real.toNNReal T) z
-    simpa only [Real.coe_toNNReal T hT.le] using hm
+
+    simpa only [Real.coe_toNNReal T hT.le] using (velocity_moment_le hlam A E hE (Real.toNNReal T) z)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

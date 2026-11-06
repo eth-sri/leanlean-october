@@ -11,7 +11,7 @@ Time translation is proved on classical solutions and then transferred by smooth
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- Full-space state membership has no spatial restriction. -/
@@ -44,25 +44,23 @@ theorem fullspace_kernel_timeShift {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
     ⟨hφ, hφc, by rw [autonomous_stateSet]; exact subset_univ _⟩
   obtain ⟨u, hu, hru, _⟩ := hE.1 (q.1.2.1 + h) F (hF _)
   obtain ⟨v, hv, hrv, hvuniq⟩ := hE.1 q.1.2.1 F (hF _)
-  have hshift := fullspace_classical_timeShift h q.1.2.1 F u hu
+
   have hp : (⟨q.1.1, q.1.2.2.1, q.1.2.2.2⟩ : KineticPoint 1) ∈
       evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) q.1.2.1 :=
     ⟨q.2.1, subset_closure q.2.2.1⟩
-  have heq := hvuniq _ hshift hp
+
   let p : EvolutionState autonomousWholeDomain (fun _ => 0) q.1.1 :=
     ⟨q.1.2.2, q.2.2⟩
   let ph : EvolutionState autonomousWholeDomain (fun _ => 0) (q.1.1 + h) :=
     ⟨q.1.2.2, by rw [autonomous_stateSet]; trivial⟩
   have hrep (σ τ : ℝ) (hστ : σ ≤ τ)
-      (s : EvolutionState autonomousWholeDomain (fun _ => 0) σ) :
-      E.1 σ τ hστ (terminalStateDatum F) s =
-        ∫ x, F x ∂E.2.master (evolutionQueryOfState _ _ σ τ hστ s) :=
+      (s : EvolutionState autonomousWholeDomain (fun _ => 0) σ)  :=
     (hE.2.1 σ τ hστ s (terminalStateDatum F)).trans
       (integral_master_eq_fiber E.2 autonomousWholeDomain_measurable
         σ τ hστ s F F.measurable).symm
   have h1 := (hru (q.1.1 + h) (autonomousQueryShift h q).2.1 ph).trans
     (hrep _ _ _ ph)
-  have h2 := (hrv q.1.1 q.2.1 p).trans (hrep _ _ _ p)
-  exact h1.symm.trans (heq.trans h2)
+
+  exact h1.symm.trans ((hvuniq _ (fullspace_classical_timeShift h q.1.2.1 F u hu) hp).trans ((hrv q.1.1 q.2.1 p).trans (hrep _ _ _ p)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

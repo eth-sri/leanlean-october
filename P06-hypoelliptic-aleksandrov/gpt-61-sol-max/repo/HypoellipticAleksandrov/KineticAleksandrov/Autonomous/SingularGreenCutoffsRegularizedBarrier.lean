@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionMoll
 
 /-! # Joint-plane regularity of the position-regularized barrier -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov
+
 
 /-- The position convolution agrees with the literal parameter integral. -/
 theorem positionConvolution_barrier_eq (eta : ℝ → ℝ) (phi : (ℝ × ℝ) → ℝ) :

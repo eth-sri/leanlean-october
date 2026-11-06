@@ -21,7 +21,7 @@ def BelowFourDensityStatement : Prop :=
     (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha q : ℝ),
     (bellmanAdjointExponent (Lam / lam) ((le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)) - 2 < alpha ∧ alpha < 1) →
+      (by simpa)) - 2 < alpha ∧ alpha < 1) →
     (1 < q ∧ q < (4 - (1 - alpha)) / (3 - (1 - alpha))) →
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (Z₀ : Point) (R : ℝ) (hR : 0 < R) (P : Point)

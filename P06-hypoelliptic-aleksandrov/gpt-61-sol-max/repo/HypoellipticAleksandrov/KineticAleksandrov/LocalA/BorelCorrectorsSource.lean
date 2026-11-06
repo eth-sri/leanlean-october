@@ -5,11 +5,11 @@ import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
 
 /-! # Vanishing compact residual norms for Borel homogeneous solutions -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic Filter
-open scoped Topology ENNReal Matrix.Norms.Elementwise
+open scoped Topology Matrix.Norms.Elementwise
 
 /-- The cutoff residual vanishes in each finite Lp norm under coefficient mollification. -/
 theorem borelCorrectorSource_norm_tendsto {d : ℕ} {lam Lam : ℝ}
@@ -22,18 +22,18 @@ theorem borelCorrectorSource_norm_tendsto {d : ℕ} {lam Lam : ℝ}
     (hconv : ∀ᵐ z ∂(volume : Measure (ℝ × PDE.Vec d)),
       Tendsto (fun j => coefficientAt (B j) z) atTop (𝓝 (coefficientAt A z)))
     {D : Set (KineticPoint d)} (hD : IsOpen D)
-    (U : KineticPoint d → ℝ) (hu : IsKineticC112On U D)
+    (U : HypoellipticAleksandrov.KineticScalarField d) (hu : IsKineticC112On U D)
     (he : ∀ᵐ P ∂volume.restrict D,
       forwardKineticOperator (ofTimeVelocityCoefficient A) U P = 0)
-    (χ : KineticPoint d → ℝ) (hχ : Continuous χ) (hχc : HasCompactSupport χ)
+    (χ : HypoellipticAleksandrov.KineticScalarField d) (hχ : Continuous χ) (hχc : HasCompactSupport χ)
     (hs : tsupport χ ⊆ D) (hχb : ∀ P, 0 ≤ χ P ∧ χ P ≤ 1)
     {p : ℝ} (hp : 0 < p) :
-    (∀ j, MemLp (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p) volume) ∧
+    (∀ j, MemLp (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p) ) ∧
     Tendsto (fun j => (eLpNorm (borelCorrectorSource χ (B j) U)
-      (ENNReal.ofReal p) volume).toReal) atTop (𝓝 0) := by
+      (ENNReal.ofReal p) ).toReal) atTop (𝓝 0) := by
   let K := tsupport χ
-  have hK : IsCompact K := hχc
-  have hhm : ContinuousOn (kineticVelocityHessian U) K :=
+  have hK  := hχc
+  have hhm  :=
     hu.continuousOn_kineticVelocityHessian.mono hs
   obtain ⟨_, hErr, hErr0⟩ := borel_inner_error hlam hLam A hA hlo hhi
     B hB hconv K hK (kineticVelocityHessian U) hhm hp
@@ -45,7 +45,7 @@ theorem borelCorrectorSource_norm_tendsto {d : ℕ} {lam Lam : ℝ}
       intro hz
       apply hP
       simp only [borelCorrectorSource, hz, zero_mul])
-  have hnorm j : eLpNorm (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p) volume =
+  have hnorm j : eLpNorm (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p)  =
       eLpNorm (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p) (volume.restrict K) := by
     rw [← eLpNorm_indicator_eq_eLpNorm_restrict hK.measurableSet, hEq j]
   have hb j : ∀ᵐ P ∂volume.restrict K,
@@ -63,7 +63,7 @@ theorem borelCorrectorSource_norm_tendsto {d : ℕ} {lam Lam : ℝ}
       (B j) (hB j).1 U hu).1
     exact (hErr j).of_le hc.measurable.aestronglyMeasurable.restrict (hb j)
   have hbound j : (eLpNorm (borelCorrectorSource χ (B j) U)
-      (ENNReal.ofReal p) volume).toReal ≤
+      (ENNReal.ofReal p) ).toReal ≤
       (eLpNorm (borelCoefficientError (B j) A (kineticVelocityHessian U))
         (ENNReal.ofReal p) (volume.restrict K)).toReal := by
     rw [hnorm j]

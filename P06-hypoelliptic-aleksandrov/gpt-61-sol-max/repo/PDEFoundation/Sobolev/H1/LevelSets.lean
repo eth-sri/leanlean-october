@@ -10,11 +10,11 @@ The theorem in this file is a direct `p = 2` facade for the finite-exponent
 result.  It concerns the selected concrete weak-gradient representative.
 -/
 
-@[expose] public section
+ public section
 
 namespace PDE
 
-open Filter MeasureTheory
+
 
 namespace H1Function
 

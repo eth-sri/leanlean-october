@@ -1,13 +1,15 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDecompositionHelpers
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Exact short-strip decomposition for compact smooth boundary tests -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Parabolic
+open Set MeasureTheory SectionTwo
 
 variable (hH : HormanderHypoellipticityStatement)
   (hLE : LiebermanEllipsoidDirichletStatement)
@@ -20,8 +22,8 @@ variable (hH : HormanderHypoellipticityStatement)
 theorem ballExit_smooth_short_strip_decomposition
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (H : {t : ℝ // P.1.time < t ∧ t < T.1})
-    (φ : KineticPoint d → ℝ)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
+    (φ : HypoellipticAleksandrov.KineticScalarField d)
+    (hφ : ContDiff ℝ PDE.smoothOrder (φ ∘ (KineticPoint.equivProd d).symm))
     (hc : HasCompactSupport φ) :
     (∫ Q, φ Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) =
       (∫ Q in {Q | Q.velocity ∈ frontier (PDE.euclideanBall v₀ R)},
@@ -57,7 +59,7 @@ theorem ballExit_smooth_short_strip_decomposition
     apply integral_congr_ae
     filter_upwards [ae_restrict_mem hL,
       ae_restrict_of_ae (ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR
-        P ⟨H.1, H.2.1⟩)] with Q hv hQ
+        P _)] with Q hv hQ
     have hQc := localTrace_subset_closed H.2.1.le v₀ R hQ
     exact hu.2.2.2 (Or.inr ⟨hQc.1, hQc.2.1.trans H.2.2.le, hv⟩)
   have hterminal : (∫ Q in S, u Q ∂μ) =

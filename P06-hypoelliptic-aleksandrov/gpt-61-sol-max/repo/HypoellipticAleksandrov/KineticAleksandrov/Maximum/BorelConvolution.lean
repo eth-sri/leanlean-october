@@ -18,13 +18,15 @@ attribute [local instance] borelMatrixContinuousENorm
 private instance {d : ℕ} : CompleteSpace (PDE.Mat d) :=
   inferInstanceAs (CompleteSpace (Fin d → Fin d → ℝ))
 
+variable {d : ℕ}
+
 /-- Normalised convolution acts only in the time and velocity variables. -/
-def borelSmoothCoefficient {d : ℕ} (φ : ContDiffBump (0 : ℝ × PDE.Vec d))
+def borelSmoothCoefficient  (φ : ContDiffBump (0 : ℝ × PDE.Vec d))
     (A : CoefficientField d) : CoefficientField d := fun t v =>
   (φ.normed volume ⋆[lsmul ℝ ℝ,volume] coefficientAt A) (t,v)
 
 /-- Convolution preserves the exact source bounds while making the coefficient smooth. -/
-theorem borelSmoothCoefficient_spec {d : ℕ} {lam Lam : ℝ}
+theorem borelSmoothCoefficient_spec  {lam Lam : ℝ}
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : CoefficientField d)
     (hBorel : IsBorelCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A)
@@ -33,12 +35,10 @@ theorem borelSmoothCoefficient_spec {d : ℕ} {lam Lam : ℝ}
     IsSymmetricCoefficient (borelSmoothCoefficient φ A) ∧
     HasLowerEllipticity lam (borelSmoothCoefficient φ A) ∧
     HasUpperEllipticity Lam (borelSmoothCoefficient φ A) := by
-  let : TopologicalSpace (PDE.Mat d) :=
+  let  :=
     let M := Matrix.normedAddCommGroup (m := Fin d) (n := Fin d) (α := ℝ)
     M.toMetricSpace.toUniformSpace.toTopologicalSpace
-  let : ContinuousENorm (PDE.Mat d) :=
-    let M := Matrix.normedAddCommGroup (m := Fin d) (n := Fin d) (α := ℝ)
-    M.toSeminormedAddCommGroup.toSeminormedAddGroup.toContinuousENorm
+
   have : (volume : Measure (ℝ × PDE.Vec d)).IsAddHaarMeasure :=
     Measure.prod.instIsAddHaarMeasure volume volume
   have : IsOrderedModule ℝ (PDE.Mat d) :=
@@ -52,11 +52,11 @@ theorem borelSmoothCoefficient_spec {d : ℕ} {lam Lam : ℝ}
       coefficientAt (borelSmoothCoefficient φ A) z ≤ Lam • (1 : PDE.Mat d) := by
     have hgi := φ.hasCompactSupport_normed.convolutionExists_left
       (μ := volume) (lsmul ℝ ℝ) (φ.continuous_normed (μ := volume)) hloc z
-    have hli := (φ.integrable_normed (μ := volume)).smul_const (lam • (1 : PDE.Mat d))
-    have hui := (φ.integrable_normed (μ := volume)).smul_const (Lam • (1 : PDE.Mat d))
-    have hl := integral_mono (E := PDE.Mat d) hli hgi fun y =>
+
+
+    have hl := integral_mono  ((φ.integrable_normed (μ := volume)).smul_const (lam • (1 : PDE.Mat d))) hgi fun y =>
       smul_le_smul_of_nonneg_left (hlo (z - y).1 (z - y).2) (φ.nonneg_normed y)
-    have hh := integral_mono (E := PDE.Mat d) hgi hui fun y =>
+    have hh := integral_mono  hgi ((φ.integrable_normed (μ := volume)).smul_const (Lam • (1 : PDE.Mat d))) fun y =>
       smul_le_smul_of_nonneg_left (hhi (z - y).1 (z - y).2) (φ.nonneg_normed y)
     simpa only [integral_smul_const,φ.integral_normed,one_smul,
       coefficientAt,borelSmoothCoefficient,convolution,lsmul_apply] using And.intro hl hh
@@ -87,16 +87,15 @@ theorem borel_coefficient_approximation {d : ℕ} (lam Lam : ℝ)
   let B := borelEllipticRepresentative lam Lam A
   obtain ⟨hB,_,hBl,hBu,hBA⟩ :=
     borelEllipticRepresentative_spec lam Lam hlam hLam A hBorel hsymm hlo hhi
-  let C := fun j => borelSmoothCoefficient (borelCoefficientBump d j) B
-  refine ⟨C,fun j => borelSmoothCoefficient_spec hlam hLam B hB hBl hBu _,?_⟩
-  have hr : Tendsto (fun j => (borelCoefficientBump d j).rOut) atTop (𝓝 0) :=
-    tendsto_one_div_add_atTop_nhds_zero_nat
-  have hratio : ∀ᶠ j in atTop,
-      (borelCoefficientBump d j).rOut ≤ 2 * (borelCoefficientBump d j).rIn := by
-    filter_upwards with j
-    dsimp only [borelCoefficientBump]
-    linarith
-  have hc := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable hr hratio
+
+  refine ⟨(fun j => borelSmoothCoefficient (borelCoefficientBump d j) B),fun j => borelSmoothCoefficient_spec hlam hLam B hB hBl hBu _,?_⟩
+
+
+  have hc := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable tendsto_one_div_add_atTop_nhds_zero_nat (show ∀ᶠ j in atTop,
+      (borelCoefficientBump d j).rOut ≤ 2 * (borelCoefficientBump d j).rIn by
+      filter_upwards with j
+      dsimp only [borelCoefficientBump]
+      linarith)
     (borel_coefficient_locallyIntegrable hlam hLam B hB hBl hBu)
   filter_upwards [hc,hBA] with z hz heq
   rw [heq] at hz

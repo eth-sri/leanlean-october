@@ -4,20 +4,20 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.FrequencyBlocksCo
 
 /-! # Local supplied evolutions from the authorized evolution statement -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
-open Set MeasureTheory
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+open Set
+
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- The sole authorized evolution input constructs a local tube realization
 with the structural clauses on the same constructed kernel. -/
 theorem exists_unitBlock_evolution (hEvol : IterationEvolutionStatement)
     {d : ℕ} (hd : 1 ≤ d) (lam Lam m Lb : ℝ)
-    (D : Set (PDE.Vec d)) (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
+    (D : PDE.VelocityRegion d) (B : CoefficientField d) (b : PDE.VectorField d)
     (hsetting : SourceSetting lam Lam m Lb D B b)
-    (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
+    (Ω : PDE.VelocityRegion d) (γ : ℝ → PDE.Vec d)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ) :
     ∃ (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ),
       RealizesTerminalEvolution Ω γ (measurableSet_of_isAdmissibleEvolutionDomain hΩ)

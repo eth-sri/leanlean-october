@@ -9,10 +9,10 @@ public import Mathlib.MeasureTheory.Function.LpSeminorm.TriangleInequality
 
 /-! # The unconditional measurable family from flattening and spatial smoothing -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
-open MeasureTheory Filter Set
+open MeasureTheory Filter
 open scoped Topology ENNReal
 
 /-- For any fixed internally justified geometry, the literal measurable family is
@@ -34,24 +34,24 @@ theorem construction_measurableFamily_of_geometry {d : ℕ} (hd : 1 ≤ d)
   obtain ⟨r, hr, hlim⟩ := construction_exists_scales r0 hr0
   have hscale (j : ℕ) : 2 * Real.rpow (r j) alpha ≤ 1 :=
     ((hsmall (r j) (hr j).1 (hr j).2).2).trans (by norm_num)
-  have hheight (j : ℕ) : flatteningOffset * Real.rpow (r j) alpha ≤ 1 / 4 :=
+  have hheight (j : ℕ)  :=
     (hsmall (r j) (hr j).1 (hr j).2).1
   let T := barrierTime mu
   let Q := backwardCylinder (⟨T, 0, 0⟩ : KineticPoint d) S
   let nu := volume.restrict Q
   let pE := ENNReal.ofReal p
-  have hpE : 1 ≤ pE := by simpa only [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal hp
-  have hp0 : pE ≠ 0 := (ENNReal.ofReal_pos.mpr (zero_lt_one.trans_le hp)).ne'
-  have hpTop : pE ≠ ∞ := ENNReal.ofReal_ne_top
+
+
+
   let U := fun j n => smoothedZeroExtendedProfile h (r j) mu R (standardMollifierSequence n)
   let g := fun j P => max (constructionIndicatorSource h (r j) mu R
     (KineticPoint.equivProd d P)) 0
   let f := fun j n P => max (backwardOperator (fun _t x v => profileMatrix h (x, v))
     (U j n) P) 0
   let error := fun j n => eLpNorm (fun P => f j n P - g j P) pE nu
-  have herr (j : ℕ) : Tendsto (error j) atTop (𝓝 0) :=
+  have herr (j : ℕ)  :=
     construction_positiveSource_error_tendsto hd ha ha1 h (r j) mu R m T S
-      (hr j).1 hmu hR hm hS (hscale j) hmargin pE hp0 hpTop
+      (hr j).1 hmu hR hm hS (hscale j) hmargin pE ((ENNReal.ofReal_pos.mpr (zero_lt_one.trans_le hp)).ne') ENNReal.ofReal_ne_top
   let good := fun j n =>
     (∀ P, P ∈ initialFullLateralBoundary (⟨T, 0, 0⟩ : KineticPoint d) S → U j n P = 0) ∧
     (∃ P ∈ Q, (1 / 4 : ℝ) ≤ U j n P)
@@ -73,20 +73,20 @@ theorem construction_measurableFamily_of_geometry {d : ℕ} (hd : 1 ≤ d)
     exact (hs j).1.1 P hP
   · intro j
     exact (hs j).1.2
-  · have hgLim : Tendsto (fun j => eLpNorm (g j) pE nu) atTop (𝓝 0) :=
+  · have hgLim  :=
       construction_indicatorSource_norm_tendsto hd ha ha1 h mu R m T S p hmu hR hm hS
         hrate hmargin hp he r (fun j => (hr j).1) hscale hlim
-    have hu : Tendsto (fun j => error j (scale j) + eLpNorm (g j) pE nu)
-        atTop (𝓝 0) := by
-      simpa only [add_zero] using heLim.add hgLim
-    apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hu
+
+    apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (show Tendsto (fun j => error j (scale j) + eLpNorm (g j) pE nu)
+        atTop (𝓝 0) by
+        simpa only [add_zero] using heLim.add hgLim)
       (fun _ => bot_le)
     intro j
     have hn := eLpNorm_add_le (p := pE) (μ := nu)
-      (f := fun P => f j (scale j) P - g j P) (g := g j) hpE
+      (f := fun P => f j (scale j) P - g j P) (g := g j) (by simpa only [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal hp)
     have heq : (fun P => f j (scale j) P - g j P) + g j = f j (scale j) := by
       funext P
-      simp only [Pi.add_apply, sub_add_cancel]
+      simp
     rw [heq] at hn
     exact hn
 
@@ -100,11 +100,11 @@ theorem measurableFamily_holds (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
   let h := counterProfileFor d hd p hp hpd
   have ha := counterAlpha_spec d hd p hp hpd
   let geom := construction_fixed_geometry_of_profile hd ha.1 h
-  let R := geom.choose
-  let mu := geom.choose_spec.choose
-  let S := geom.choose_spec.choose_spec.choose
+
+
+
   have hg := geom.choose_spec.choose_spec.choose_spec
-  have hh := construction_measurableFamily_of_geometry hd ha.1 ha.2.1 h p R mu S hp ha.2.2
+  have hh := construction_measurableFamily_of_geometry hd ha.1 ha.2.1 h p geom.choose geom.choose_spec.choose geom.choose_spec.choose_spec.choose hp ha.2.2
     hg.1 hg.2.1 hg.2.2.1 hg.2.2.2.1 hg.2.2.2.2.1 hg.2.2.2.2.2.1 hg.2.2.2.2.2.2.1
   simpa only [counterParameters, dite_eq_left (And.intro hd (And.intro hp hpd))] using! hh
 

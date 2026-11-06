@@ -14,7 +14,7 @@ The proof uses Mathlib's finite-measure Vitali theorem.  Domination supplies
 uniform integrability directly, with no exponent-dependent loss.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal Topology
 
@@ -60,10 +60,10 @@ theorem tendsto_eLpNorm_sub_zero_of_tendsto_ae_of_dominated
     (hbound : ∀ n, ∀ᵐ x ∂μ, ‖F n x‖ ≤ ‖bound x‖)
     (hFf :
       ∀ᵐ x ∂μ,
-        Tendsto (fun n => F n x) atTop (𝓝 (f x))) :
-    Tendsto
-      (fun n => eLpNorm (F n - f) p μ)
-      atTop (𝓝 0) :=
+        Tendsto (fun n => F n x) atTop (𝓝 (f x))) : type_of% (tendsto_Lp_finite_of_tendsto_ae
+    hp hpTop hF hf
+    (unifIntegrable_of_ae_norm_le hp hpTop hF hboundMem hbound)
+    hFf) :=
   tendsto_Lp_finite_of_tendsto_ae
     hp hpTop hF hf
     (unifIntegrable_of_ae_norm_le hp hpTop hF hboundMem hbound)

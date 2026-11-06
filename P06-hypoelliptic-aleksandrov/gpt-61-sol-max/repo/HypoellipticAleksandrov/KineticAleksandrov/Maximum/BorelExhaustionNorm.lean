@@ -7,7 +7,7 @@ import Mathlib.MeasureTheory.Function.L1Space.Integrable
 
 /-! # Exhaustion of the source norm without a sign assumption on the estimate constant -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Filter Set
 open scoped Topology
@@ -20,13 +20,13 @@ theorem borel_indicator_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measu
     Tendsto (fun j => (eLpNorm ((S j).indicator F) (ENNReal.ofReal p) μ).toReal)
       atTop (𝓝 (eLpNorm F (ENNReal.ofReal p) μ).toReal) := by
   let G := fun j => (S j).indicator F
-  have hG j : MemLp (G j) (ENNReal.ofReal p) μ := hF.indicator (hS j)
+  have hG j  := hF.indicator (hS j)
   have hGn j : ∀ᵐ z ∂μ, 0 ≤ G j z := by
     filter_upwards [hnn] with z hz
     by_cases hs : z ∈ S j
     · simpa only [G,indicator_of_mem hs] using hz
     · simp only [G,indicator_of_notMem hs,le_refl]
-  have hmeas j : AEStronglyMeasurable (fun z => ‖G j z‖ ^ p) μ :=
+  have hmeas j  :=
     (Real.continuous_rpow_const hp.le).comp_aestronglyMeasurable (hG j).aestronglyMeasurable.norm
   have hi : Integrable (fun z => ‖F z‖ ^ p) μ := by
     have ht := hF.integrable_norm_rpow (ENNReal.ofReal_pos.mpr hp).ne' ENNReal.ofReal_ne_top

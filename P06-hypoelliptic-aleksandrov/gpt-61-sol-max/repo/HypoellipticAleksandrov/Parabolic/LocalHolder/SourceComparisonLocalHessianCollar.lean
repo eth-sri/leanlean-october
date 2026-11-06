@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLoca
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxCoefficientBounds
 public import HypoellipticAleksandrov.Parabolic.QuantitativeSmoothCutoffExistence
 public import HypoellipticAleksandrov.Parabolic.OriginalTimePlateau
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Removing Hessian cutoff weights on smaller product collars
 
@@ -11,8 +13,8 @@ Coefficient derivative bounds and smooth plateau cutoffs are chosen before the w
 The resulting estimate controls the actual unweighted Hessian on the inner collar.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
@@ -20,7 +22,7 @@ open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 /-- A fixed inner collar has a uniform unweighted Hessian estimate for homogeneous jets. -/
 theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
     (a t₀ t₁ T : ℝ) (hat₀ : a < t₀) (ht₀t₁ : t₀ ≤ t₁) (ht₁T : t₁ < T)
-    (O V : Set (PDE.Vec d)) (hO : IsOpen O) (hOc : IsCompact (closure O))
+    (O V : PDE.VelocityRegion d) (hO : IsOpen O) (hOc : IsCompact (closure O))
     (hV : IsOpen V) (hVc : IsCompact (closure V)) (hVO : closure V ⊆ O)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
@@ -34,7 +36,7 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
             (timeVelocityVolumeOn (Ioo a T ×ˢ O))).toReal ^ 2) := by
   classical
   let Q := Ioo a T ×ˢ O
-  have hQ : IsOpen Q := isOpen_Ioo.prod hO
+
   have hQc : IsCompact (closure Q) := by
     rw [closure_prod_eq]
     exact (isCompact_Icc.of_isClosed_subset isClosed_closure
@@ -42,13 +44,13 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
   obtain ⟨M, hM, hDA⟩ :=
     exists_compact_coefficient_spatial_derivative_bound A hA (closure Q) hQc
   obtain ⟨Kη, ⟨η⟩⟩ := exists_quantitativeSmoothCutoff_tsupport_subset hVc hO hVO
-  have hKη : 0 ≤ Kη := (PDE.vecEuclideanNorm_nonneg _).trans (η.gradient_bound 0)
+  have hKη  := (PDE.vecEuclideanNorm_nonneg _).trans (η.gradient_bound 0)
   obtain ⟨ζ, Kζ, hζ, hcζ, hKζ, hζ0, hζ1, hζone, hsζ, hdζ⟩ :=
     exists_smooth_timePlateau_with_deriv_bound a t₀ t₁ T hat₀ ht₀t₁ ht₁T
   have hAs : ∀ t ∈ Ioo a T, ∀ i j,
       ContDiffOn ℝ 1 (fun y => A t y i j) O := by
     intro t _ i j
-    have hc : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
+    have hc : ContDiff ℝ PDE.smoothOrder (fun z : TimeVelocity d => A z.1 z.2 i j) :=
       (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
     exact ((hc.comp (contDiff_const.prodMk contDiff_id)).of_le (by simp)).contDiffOn
   obtain ⟨C, hC, hrun⟩ := exists_local_homogeneous_hessian_constant a T O hO
@@ -66,7 +68,7 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
     intro k _
     apply integrable_finsetSum
     intro i _
-    simpa only [Real.norm_eq_abs, sq_abs, timeVelocityVolumeOn, IntegrableOn] using
+    simpa only [Real.norm_eq_abs, sq_abs, timeVelocityVolumeOn] using
       (J.velocityHessian_memLp k i).integrable_norm_pow (by norm_num)
   have hwcont : Continuous (fun z : TimeVelocity d => ζ z.1 * η.toFun z.2 ^ 2) :=
     (hζ.continuous.comp continuous_fst).mul ((η.smooth.continuous.comp continuous_snd).pow 2)

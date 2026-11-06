@@ -9,21 +9,23 @@ Occupation, killing and frequency decay are discharged by their proved interval
 lemmas. The only hypotheses are the explicit analytic inputs.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov.KineticAleksandrov.Green
 open scoped ENNReal NNReal
 
+variable (γ : ℝ)
+
 /-- The scalar slab exponent is the literal exponent in case I. -/
-theorem interval_slab_beta (γ : ℝ) : slabBeta 1 γ = 3 / (2 * γ) - 1 / 2 := by
+theorem interval_slab_beta  : slabBeta 1 γ = 3 / (2 * γ) - 1 / 2 := by
   norm_num [slabBeta]
 
 /-- Integrating frequencies gives the scalar slab height exponent. -/
-theorem interval_slab_height_exponent (γ : ℝ) :
+theorem interval_slab_height_exponent  :
     slabBeta 1 γ - 3 * (1 : ℝ) / 2 = 3 / (2 * γ) - 2 := by
   rw [interval_slab_beta]
   ring
@@ -35,12 +37,12 @@ theorem interval_slab_fourier
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length) :
     ∃ C : ℝ → ℝ≥0, ∃ k : ℝ, 0 < k ∧
-    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
+    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.VectorField 1),
     SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
     ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
       (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
       (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-    RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
+    RealizesTerminalEvolution _ stationary hJ
       (zIndependentCoefficient B) b S K →
     c - a = length → ∀ (σ T : ℝ), 0 < T →
     ∀ (μ : Measure (EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ))
@@ -53,7 +55,7 @@ theorem interval_slab_fourier
       (∀ ξ, Integrable (f ξ) (slabBase 1 T) ∧
         ∀ E : Set (SlabBase 1), MeasurableSet E → ∫ y in E, f ξ y ∂slabBase 1 T =
           ∫ p in {p : GreenCarrier 1 | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
-            Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ) ∧
+            Complex.exp (-((PDE.vecDot ξ p.2.2 ) * Complex.I)) ∂Γ) ∧
       ∀ γ : ℝ, 1 ≤ γ → γ ≤ 2 →
         (∀ ξ, eLpNorm (f ξ) (ENNReal.ofReal γ) (slabBase 1 T) ≤
           (C γ : ℝ≥0∞) * μ univ * ENNReal.ofReal (T ^ (3 / (2 * γ) - 1 / 2) *
@@ -67,17 +69,15 @@ theorem interval_slab_fourier
     lam Lam m Lb length hlam hlamLam hm hmLb hlength
   refine ⟨slabConstant' 1 Co Cd kd, kd / 2, div_pos hkd (by norm_num), ?_⟩
   intro a c hac B b hs hJ S K hr hlen σ T hT μ _ Γ hΓ
-  let Kw := intervalExtension hJ K
+
   let μw := μ.map (intervalStateInclusion σ)
-  have hc : IsTranslationCovariantEvolution (wholeSpace 1) (fun _ => (0 : PDE.Vec 1))
-      MeasurableSet.univ Kw := intervalExtension_covariance hJ K
+  have hc  := intervalExtension_covariance hJ K
     (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.2
-  have hcomp : Kw.HasComposition MeasurableSet.univ :=
-    intervalExtension_composition hJ K hr.2.2.2
-  have hΓw := intervalExtension_isGreenMeasure hJ K σ μ Γ hΓ
+
+
   obtain ⟨g, hgm, hgE, hgb, f, hfm, hfE, hfb⟩ := killed_slab_fourier_of_bounds
-    (by norm_num) Kw hc hcomp Co (hoc m Lb hm hmLb a c hac B b hs hJ S K hr)
-    Cd kd hCd hkd (hdec a c hac B b hs hJ S K hr hlen) σ μw Γ hΓw hT
+    (by norm_num) (intervalExtension hJ K) hc (intervalExtension_composition hJ K hr.2.2.2) Co (hoc m Lb hm hmLb a c hac B b hs hJ S K hr)
+    Cd kd hCd hkd (hdec a c hac B b hs hJ S K hr hlen) σ μw Γ (intervalExtension_isGreenMeasure hJ K σ μ Γ hΓ) hT
   have hM : μw univ = μ univ := by
     dsimp only [μw]
     rw [Measure.map_apply (measurable_intervalStateInclusion σ) MeasurableSet.univ,

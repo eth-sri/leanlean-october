@@ -16,10 +16,10 @@ def returnHolderRadiusFactor (alpha D : ℝ) : ℝ := (1 / (2 * (D + 1))) ^ (1 /
 theorem returnHolderRadiusFactor_bounds (alpha D : ℝ) (ha : 0 < alpha) (hD : 0 < D) :
     0 < returnHolderRadiusFactor alpha D ∧ returnHolderRadiusFactor alpha D ≤ 1 := by
   have hb : 0 < 1 / (2 * (D + 1)) := by positivity
-  have hb1 : 1 / (2 * (D + 1)) ≤ 1 := by
-    apply (div_le_one (by positivity : 0 < 2 * (D + 1))).mpr
-    linarith
-  exact ⟨Real.rpow_pos_of_pos hb _, Real.rpow_le_one hb.le hb1 (by positivity)⟩
+
+  exact ⟨Real.rpow_pos_of_pos hb _, Real.rpow_le_one hb.le (by
+      apply (div_le_one (by positivity : 0 < 2 * (D + 1))).mpr
+      linarith) (by positivity)⟩
 
 /-- A value-relative radius makes the absolute modulus smaller than half that value. -/
 theorem return_holder_radius (alpha D h value M : ℝ)
@@ -29,11 +29,10 @@ theorem return_holder_radius (alpha D h value M : ℝ)
     0 < ell ∧ ell ≤ h ∧ D * M * (ell / h) ^ alpha ≤ value / 2 := by
   let δ := returnHolderRadiusFactor alpha D
   have hδ := returnHolderRadiusFactor_bounds alpha D ha hD
-  have hratio : 0 < value / M := div_pos hvalue hM
-  have hratio1 : value / M ≤ 1 := (div_le_one hM).mpr hvalueM
+  have hratio  := div_pos hvalue hM
+
   have hroot : 0 < (value / M) ^ (1 / alpha) := Real.rpow_pos_of_pos hratio _
-  have hroot1 : (value / M) ^ (1 / alpha) ≤ 1 :=
-    Real.rpow_le_one hratio.le hratio1 (by positivity)
+
   have hδpower : δ ^ alpha = 1 / (2 * (D + 1)) := by
     dsimp [δ, returnHolderRadiusFactor]
     rw [← Real.rpow_mul (by positivity : 0 ≤ 1 / (2 * (D + 1)))]
@@ -45,8 +44,8 @@ theorem return_holder_radius (alpha D h value M : ℝ)
     rw [he, Real.mul_rpow hδ.1.le hroot.le, hδpower,
       ← Real.rpow_mul hratio.le, one_div_mul_cancel ha.ne', Real.rpow_one]
   refine ⟨mul_pos (mul_pos hδ.1 hh) hroot, ?_, ?_⟩
-  · have hprod := mul_le_mul hδ.2 hroot1 hroot.le zero_le_one
-    have he := mul_le_mul_of_nonneg_right hprod hh.le
+  ·
+    have he := mul_le_mul_of_nonneg_right (mul_le_mul hδ.2 (Real.rpow_le_one hratio.le ((div_le_one hM).mpr hvalueM) (by positivity)) hroot.le zero_le_one) hh.le
     dsimp only [δ] at *
     nlinarith
   · change D * M * (δ * h * (value / M) ^ (1 / alpha) / h) ^ alpha ≤ value / 2
@@ -54,10 +53,10 @@ theorem return_holder_radius (alpha D h value M : ℝ)
     have he : D * M * (1 / (2 * (D + 1)) * (value / M)) =
         (D / (2 * (D + 1))) * value := by field_simp
     rw [he]
-    have hcoef : D / (2 * (D + 1)) ≤ 1 / 2 := by
-      apply (div_le_iff₀ (by positivity : 0 < 2 * (D + 1))).mpr
-      linarith
-    exact (mul_le_mul_of_nonneg_right hcoef hvalue.le).trans_eq (by ring)
+
+    exact (mul_le_mul_of_nonneg_right (show D / (2 * (D + 1)) ≤ 1 / 2 by
+        apply (div_le_iff₀ (by positivity : 0 < 2 * (D + 1))).mpr
+        linarith) hvalue.le).trans_eq (by ring)
 
 /-- The height-relative radius produces the source nonlinear height expression. -/
 theorem return_holder_height_factor (alpha beta c δ h value M : ℝ)

@@ -54,8 +54,14 @@ theorem integral_gammaKernel (a z : ℝ) (ha : 0 < a) (hz : 0 < z) :
   rw [one_div, ← Real.rpow_neg_eq_inv_rpow] at h
   simpa only [mul_comm] using h
 
+variable (a : Pos)
+
+section
+variable (z : ℝ) (hz : 0 < z) (n : ℕ)
+
+include hz
 /-- The nth Gamma moment has precisely the source rising-factorial coefficient. -/
-theorem integral_gammaKernel_moment (a : Pos) (z : ℝ) (hz : 0 < z) (n : ℕ) :
+theorem integral_gammaKernel_moment   :
     (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n) =
       Real.Gamma a.1 * poch a.1 n * z ^ (-a.1) * z⁻¹ ^ n := by
   have heq : (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n) =
@@ -73,8 +79,8 @@ theorem integral_gammaKernel_moment (a : Pos) (z : ℝ) (hz : 0 < z) (n : ℕ) :
   ring
 
 /-- Integrability of each Taylor moment before finite summation. -/
-theorem integrableOn_gammaKernel_moment (a : Pos) (z : ℝ) (hz : 0 < z) (n : ℕ) :
-    IntegrableOn (fun t : ℝ => Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n)
+theorem integrableOn_gammaKernel_moment   :
+    IntegrableOn (fun t  => Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n)
       (Ioi 0) volume := by
   apply IntegrableOn.congr_fun
     (integrableOn_gammaKernel (a.1 + n) z
@@ -84,10 +90,12 @@ theorem integrableOn_gammaKernel_moment (a : Pos) (z : ℝ) (hz : 0 < z) (n : �
   rw [show a.1 + (n : ℝ) - 1 = (a.1 - 1) + (n : ℝ) by ring,
     Real.rpow_add ht, Real.rpow_natCast]
   ring
+end
+
 
 /-- Integrability of the complete finite Taylor polynomial against the Gamma kernel. -/
-theorem integrableOn_gammaKernel_powerTaylor (a : Pos) (q z : ℝ) (hz : 0 < z) (N : ℕ) :
-    IntegrableOn (fun t : ℝ => Real.exp (-(z * t)) * t ^ (a.1 - 1) * powerTaylor q N t)
+theorem integrableOn_gammaKernel_powerTaylor  (q z : ℝ) (hz : 0 < z) (N : ℕ) :
+    IntegrableOn (fun t  => Real.exp (-(z * t)) * t ^ (a.1 - 1) * powerTaylor q N t)
       (Ioi 0) volume := by
   have h := integrable_finsetSum (Finset.range N)
     (fun n _ => (integrableOn_gammaKernel_moment a z hz n).const_mul (Ring.choose q n))
@@ -99,17 +107,18 @@ theorem integrableOn_gammaKernel_powerTaylor (a : Pos) (q z : ℝ) (hz : 0 < z) 
   ring
 
 /-- The integral of the finite binomial polynomial equals the normalized expansion. -/
-theorem integral_powerTaylor (a : Pos) (b z : ℝ) (hz : 0 < z) (N : ℕ) :
+theorem integral_powerTaylor  (b z : ℝ) (hz : 0 < z) (N : ℕ) :
     (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) *
       powerTaylor (b - a.1 - 1) N t) = Real.Gamma a.1 * uExpansion a.1 b N z := by
+  let sharedTerm_b12aa02a47 := ((b - a.1 - 1))
   have hsum : (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) *
-      powerTaylor (b - a.1 - 1) N t) =
-      ∑ n ∈ Finset.range N, Ring.choose (b - a.1 - 1) n *
+      powerTaylor sharedTerm_b12aa02a47 N t) =
+      ∑ n ∈ Finset.range N, Ring.choose sharedTerm_b12aa02a47 n *
         (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n) := by
     simp only [powerTaylor, Finset.mul_sum]
-    have heq : (fun t : ℝ => ∑ n ∈ Finset.range N,
-        Real.exp (-(z * t)) * t ^ (a.1 - 1) * (Ring.choose (b - a.1 - 1) n * t ^ n)) =
-        (fun t => ∑ n ∈ Finset.range N, Ring.choose (b - a.1 - 1) n *
+    have heq : (fun t  => ∑ n ∈ Finset.range N,
+        Real.exp (-(z * t)) * t ^ (a.1 - 1) * (Ring.choose sharedTerm_b12aa02a47 n * t ^ n)) =
+        (fun t => ∑ n ∈ Finset.range N, Ring.choose sharedTerm_b12aa02a47 n *
           (Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n)) := by
       funext t
       apply Finset.sum_congr rfl

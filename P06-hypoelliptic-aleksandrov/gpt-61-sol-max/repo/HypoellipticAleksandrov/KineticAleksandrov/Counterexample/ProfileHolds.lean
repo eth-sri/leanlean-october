@@ -9,11 +9,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SourceNo
 
 /-! # The internally constructed shared profile and its unconditional flattening consequences -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-open MeasureTheory Set
+
 
 /-- The scalar and higher-dimensional constructions supply the complete shared profile. -/
 theorem counterProfile_holds (d : ℕ) (hd : 1 ≤ d) (alpha : ℝ)

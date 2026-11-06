@@ -3,21 +3,23 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionPotentialIdentity
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AutonomyBoundedData
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripCoordinates
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Full-space classical potentials in physical coordinates -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory Parabolic
+open SectionTwo TheoremA
 
 /-- Full-space evolution supplies every regularity and positivity premise of stopped tests. -/
 theorem enlarged_exists_fullspace_potential
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (b : ℝ)
-    (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+    (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ PDE.smoothOrder F)
     (hF0 : ∀ z, 0 ≤ F z) :
     ∃ u : Point → ℝ, IsKineticC112On u {p | p.time < b} ∧
       ContinuousOn u {p | p.time ≤ b} ∧
@@ -29,7 +31,7 @@ theorem enlarged_exists_fullspace_potential
         (fullSpaceEvolution hH hLE hlam hLam A).2.master
           (wholeSpaceQuery p.time b hp p.velocity p.position)) := by
   obtain ⟨v, hv, hr⟩ := fullspace_bounded_smooth_solution hH hlam hLam A
-    (fullSpaceEvolution hH hLE hlam hLam A)
+    _
     (fullSpaceEvolution_spec hH hLE hlam hLam A) b F hF
   have hwhole (t : ℝ) : movingDomain autonomousWholeDomain (fun _ => 0) t = univ :=
     movingDomain_wholeSpace 1 t
@@ -45,7 +47,7 @@ theorem enlarged_exists_fullspace_potential
     apply nested_raw_isKineticC112On (isOpen_lt continuous_time continuous_const)
     let g : ℝ × (PDE.Vec 1 × PDE.Vec 1) → ℝ × (PDE.Vec 1 × PDE.Vec 1) :=
       fun q => (q.1, q.2.2, q.2.1)
-    have hg : ContDiff ℝ (⊤ : ℕ∞) g := by unfold g; fun_prop
+    have hg : ContDiff ℝ PDE.smoothOrder g := by unfold g; fun_prop
     have hmaps : MapsTo g ((KineticPoint.equivProd 1) '' {p : Point | p.time < b})
         (evolutionPastInteriorRaw autonomousWholeDomain (fun _ => 0) b) := by
       rintro q ⟨p, hp, rfl⟩
@@ -66,7 +68,7 @@ theorem enlarged_exists_fullspace_potential
       refine ⟨hp, ?_⟩
       rw [hwhole]
       trivial
-    have ho := hv.2.2.2.1 (sectionTwoPoint p) hmem
+    have ho := hv.2.2.2.1 _ hmem
     have he : v = u ∘ sectionTwoPoint := by
       funext q
       exact congrArg v (sectionTwoPoint_involutive q).symm

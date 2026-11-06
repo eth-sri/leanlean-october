@@ -10,10 +10,10 @@ Uniform smooth approximation is applied only to the terminal datum. The test's
 actual C² operator stays fixed, so no convergence of coefficient derivatives is used.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set MeasureTheory Filter
+open SectionTwo Evolution Set MeasureTheory Filter
 open scoped Topology
 
 /-- A bounded C² test with uniformly continuous terminal datum obeys the exact actual
@@ -60,14 +60,8 @@ theorem fullspace_green_terminal_c2
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
     apply squeeze_zero (fun _ => norm_nonneg _) (fun n => ?_) hεlim
     rw [Real.norm_eq_abs]
-    simpa only [Real.dist_eq] using (hGa n x).le
-  have hIl : Tendsto (fun n => ∫ x, Fn n x ∂μ) atTop (𝓝 (∫ x, F x ∂μ)) := by
-    apply tendsto_integral_of_dominated_convergence (fun _ => C + 1)
-      (fun n => (Fn n).measurable.aestronglyMeasurable) (integrable_const _)
-    · intro n
-      exact Eventually.of_forall (fun x => by
-        rw [Real.norm_eq_abs]; exact hGb n x)
-    · exact Eventually.of_forall hGl
+    exact (hGa n x).le
+
   let V := duhamelPotential E.2 T
     ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator
       (fun q => -transportedForwardOperator (evolutionCoefficient A.a)
@@ -78,9 +72,15 @@ theorem fullspace_green_terminal_c2
     intro q hq
     rw [hFt q hq, abs_sub_comm]
     exact (hGa n _).le
-  have hh : |V - (f p - ∫ x, F x ∂μ)| ≤ 0 :=
+  have hh  :=
     le_of_tendsto_of_tendsto' ((tendsto_const_nhds.sub
-      (tendsto_const_nhds.sub hIl)).abs) hεlim herr
+      (tendsto_const_nhds.sub (by
+          apply tendsto_integral_of_dominated_convergence (fun _ => C + 1)
+            (fun n => (Fn n).measurable.aestronglyMeasurable) (integrable_const _)
+          · intro n
+            exact Eventually.of_forall (fun x => by
+              rw [Real.norm_eq_abs]; exact hGb n x)
+          · exact Eventually.of_forall hGl))).abs) hεlim herr
   exact sub_eq_zero.mp (abs_nonpos_iff.mp hh)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

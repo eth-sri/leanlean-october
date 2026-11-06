@@ -6,11 +6,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisi
 
 /-! # Actual finite terminal visits telescope against a homogeneous stopped potential -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory Parabolic
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory ProbabilityTheory Parabolic
+
 open scoped Classical
 
 /-- A supplied homogeneous potential bounds the actual finite enlarged terminal sum. -/
@@ -45,7 +45,7 @@ theorem enlarged_terminal_stopped_potential_le
   let U := fun n => ∫ p, V p ∂gamma n
   let R := fun n => ∫ p, V p ∂(beta n).restrict D
   let W := fun n => ∫ p, V p ∂KT ∘ₘ gamma n
-  have hint (mu : Measure Point) [IsFiniteMeasure mu] : Integrable V mu :=
+  have hint (mu : Measure Point) [IsFiniteMeasure mu]  :=
     enlargedStoppedPotential_integrable b u hc M hM hbound mu
   have hnV (p : Point) : 0 ≤ V p := by
     dsimp [V, enlargedStoppedPotential]
@@ -63,7 +63,7 @@ theorem enlarged_terminal_stopped_potential_le
     rw [← nested_bind_restrict (beta n) EW EW.measurable Sin hi]
     rfl
   have ha (n : ℕ) : W n + R n ≤ U n := by
-    have hp : ∀ᵐ p ∂gamma n, p.velocity 0 ∈ c.active :=
+    have hp  :=
       (enlargedVisitEntrance_ae_support hH hLE hlam hLam A c J s T P hs hT n).mono
         fun _ hp => enlarged_closedEntrance_subset_active c hp.2.2
     have hh := enlarged_integral_kernel_pair_le KT KA (gamma n) V V
@@ -79,20 +79,20 @@ theorem enlarged_terminal_stopped_potential_le
           u hphi hc M hM hbound hop hn p Sin hi)
     rw [hkw n, integral_indicator hD] at hh
     exact hh
-  have hinit : U 0 ≤ V P := by
-    change (∫ p, V p ∂visitInitial P (visitEntranceInterval c) Sin EW) ≤ V P
-    unfold visitInitial
-    split
-    · rw [integral_dirac]
-    · have hh := enlarged_waiting_stopped_step hH hLE hlam hLam A (visitWaitingUnion c J)
-        b T hBT u hphi hc M hM hbound hop hn P Sin hi
-      apply hh.trans
-      by_cases hp : P ∈ D
-      · rw [Set.indicator_of_mem hp]
-      · rw [Set.indicator_of_notMem hp]
-        exact hnV P
+
   have hsum := (enlarged_terminal_values_telescope U R W
-    (fun n => integral_nonneg hnV) ha hw N).trans hinit
+    (fun n => integral_nonneg hnV) ha hw N).trans (by
+        change (∫ p, V p ∂visitInitial P (visitEntranceInterval c) Sin EW) ≤ V P
+        unfold visitInitial
+        split
+        · rw [integral_dirac]
+        · have hh := enlarged_waiting_stopped_step hH hLE hlam hLam A (visitWaitingUnion c J)
+            b T hBT u hphi hc M hM hbound hop hn P Sin hi
+          apply hh.trans
+          by_cases hp : P ∈ D
+          · rw [Set.indicator_of_mem hp]
+          · rw [Set.indicator_of_notMem hp]
+            exact hnV P)
   change (∫ p, V p ∂∑ n ∈ Finset.range N, KT ∘ₘ gamma n) ≤ V P
   rw [integral_finsetSum_measure (fun n _ => hint (KT ∘ₘ gamma n))]
   exact hsum

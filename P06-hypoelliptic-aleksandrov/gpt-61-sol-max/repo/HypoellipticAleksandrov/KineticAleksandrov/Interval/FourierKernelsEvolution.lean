@@ -8,10 +8,10 @@ The existence theorem produces a second evolution. Uniqueness identifies its ker
 supplied realizing kernel, transferring all structural clauses without new premises.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov
+
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
@@ -20,22 +20,22 @@ theorem interval_evolution_clauses
     (hH : HormanderHypoellipticityStatement)
     (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam m Lb a c : ℝ} (hac : a < c)
-    (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1)
+    (B : CoefficientField 1) (b : PDE.VectorField 1)
     (hs : SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b)
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (hr : RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
+    (hr : RealizesTerminalEvolution _ stationary hJ
       (zIndependentCoefficient B) b S K) :
-    IsDomainMonotoneEvolution (PDE.oneDimensionalAxisBox a c) stationary
+    IsDomainMonotoneEvolution _ stationary
       (zIndependentCoefficient B) b K ∧
-    HasParabolicMarginalBundle (PDE.oneDimensionalAxisBox a c) stationary hJ
+    HasParabolicMarginalBundle _ stationary hJ
       (zIndependentCoefficient B) K ∧
-    IsTranslationCovariantEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ K := by
+    IsTranslationCovariantEvolution _ stationary hJ K := by
   obtain ⟨S₀, K₀, hr₀, hm, hp, hc⟩ :=
     exists_interval_evolution hH hLE lam Lam m Lb a c hac B b hs
-  have hK := (terminalEvolution_unique (PDE.oneDimensionalAxisBox a c) stationary
-    (interval_admissible hac) (zIndependentCoefficient B) b S S₀ K K₀ hr hr₀).2
+  have hK := (terminalEvolution_unique _ stationary
+    (interval_admissible hac) _ b S S₀ K K₀ hr hr₀).2
   subst K₀
   exact ⟨hm, hp, hc⟩
 

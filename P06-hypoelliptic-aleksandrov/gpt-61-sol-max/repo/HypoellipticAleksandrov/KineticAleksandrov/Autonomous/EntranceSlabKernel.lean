@@ -22,11 +22,11 @@ theorem entranceSlabTerminal_guard_measurable (c : Clock) (J : Interval) (b : �
     ((visitActiveUnion c J).isOpen_carrier.measurableSet.preimage
       ((continuous_apply 0).comp continuous_velocity).measurable)
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+
 /-- The existing terminal family, packaged as a measurable finite kernel. -/
 def entranceSlabTerminalKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
+     :
     Kernel Point Point :=
   Kernel.piecewise (entranceSlabTerminal_guard_measurable c J b) Kernel.id
     ((enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b).restrict
@@ -35,9 +35,7 @@ def entranceSlabTerminalKernel
 
 /-- The finite kernel is exactly the canonical terminal family at every pole. -/
 theorem entranceSlabTerminalKernel_apply
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (p : Point) :
+     (p : Point) :
     entranceSlabTerminalKernel hH hLE hlam hLam A c J b p =
       enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p := rfl
 
@@ -68,12 +66,11 @@ instance entranceSlabTerminal_bind_isFiniteMeasure
   inferInstanceAs (IsFiniteMeasure
     (entranceSlabTerminalKernel hH hLE hlam hLam A c J b ∘ₘ mu))
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (mu : Measure Point)
+
 /-- Actual terminal mixtures remain in the closed active velocity interval. -/
 theorem entranceSlabTerminal_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
-    (mu : Measure Point) :
+     :
     ∀ᵐ q ∂mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b),
       q.velocity 0 ∈ closure c.active := by
   change ∀ᵐ q ∂(entranceSlabTerminalKernel hH hLE hlam hLam A c J b ∘ₘ mu), _
@@ -98,10 +95,7 @@ theorem entranceSlabTerminal_ae_velocity
 
 /-- The source quadratic is integrable on every finite actual terminal mixture. -/
 theorem entranceSlabTerminal_quadratic_integrable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
-    (mu : Measure Point) [IsFiniteMeasure mu] :
+     [IsFiniteMeasure mu] :
     Integrable (fun q => visitQuadratic c (q.velocity 0))
       (mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b)) := by
   apply Integrable.mono' (integrable_const (9 * c.r ^ 2 / 16))
@@ -112,20 +106,22 @@ theorem entranceSlabTerminal_quadratic_integrable
   rw [Real.norm_eq_abs, abs_of_nonneg (visitQuadratic_nonneg c hq)]
   exact visitQuadratic_le c _
 
+variable (c : Clock)
+
 /-- Outside the open active interval the source quadratic is nonpositive. -/
-theorem entranceSlabQuadratic_nonpos (c : Clock) (v : ℝ) (hv : v ∉ c.active) :
+theorem entranceSlabQuadratic_nonpos  (v : ℝ) (hv : v ∉ c.active) :
     visitQuadratic c v ≤ 0 := by
   have hr := c.positive
   change ¬(c.vbar - 3 * c.r / 4 < v ∧ v < c.vbar + 3 * c.r / 4) at hv
   rw [visitQuadratic]
   by_cases hl : c.vbar - 3 * c.r / 4 < v
-  · have hu : c.vbar + 3 * c.r / 4 ≤ v := le_of_not_gt (fun h => hv ⟨hl, h⟩)
-    exact mul_nonpos_of_nonneg_of_nonpos (sub_nonneg.mpr hl.le) (sub_nonpos.mpr hu)
-  · have hl' : v ≤ c.vbar - 3 * c.r / 4 := le_of_not_gt hl
-    exact mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hl') (by linarith)
+  ·
+    exact mul_nonpos_of_nonneg_of_nonpos (sub_nonneg.mpr hl.le) (sub_nonpos.mpr (le_of_not_gt (fun h => hv ⟨hl, h⟩)))
+  ·
+    exact mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr (le_of_not_gt hl)) (by linarith)
 
 /-- The quadratic terminal contribution charges only the open active band. -/
-theorem entranceSlabQuadratic_integral_le_active (c : Clock) (mu : Measure Point)
+theorem entranceSlabQuadratic_integral_le_active  (mu : Measure Point)
     [IsFiniteMeasure mu] (hi : Integrable (fun q => visitQuadratic c (q.velocity 0)) mu) :
     (∫ q, visitQuadratic c (q.velocity 0) ∂mu) ≤
       9 * c.r ^ 2 / 16 * (mu {q | q.velocity 0 ∈ c.active}).toReal := by

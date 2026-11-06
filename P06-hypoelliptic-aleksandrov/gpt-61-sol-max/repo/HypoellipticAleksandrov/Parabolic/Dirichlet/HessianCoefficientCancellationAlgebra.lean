@@ -9,7 +9,7 @@ This module isolates the finite-sum integral algebra used to cancel divergence-f
 derivatives against weak Hessian identities.
 -/
 
-@[expose] public section
+ public section
 
 open MeasureTheory
 open scoped BigOperators
@@ -41,15 +41,17 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
       -(∫ x,
         (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
         (∑ j : Fin d, drift j x) + scalar x - source x ∂mu) := by
-  have hgroupedSum : Integrable
-      (fun x => ∑ i : Fin d, ∑ j : Fin d, grouped i j x) mu :=
+  let sharedTerm_847d4091fd := (((∫ x, mass x ∂mu) - ∫ x, ∑ i : Fin d, ∑ j : Fin d, grouped i j x ∂mu) + ∫ x, ∑ j : Fin d, drift j x ∂mu)
+  let sharedTerm_c85348b9bb := (∫ x, ∑ j : Fin d, drift j x ∂mu)
+  let sharedTerm_b5b049973a := (∫ x, scalar x ∂mu)
+  let sharedTerm_12cb8e9843 := (∫ x, source x ∂mu)
+  have hgroupedSum  :=
     integrable_finset_sum Finset.univ fun i _ =>
       integrable_finset_sum Finset.univ fun j _ => hgrouped i j
-  have hhessianSum : Integrable
-      (fun x => ∑ i : Fin d, ∑ j : Fin d, hessian i j x) mu :=
+  have hhessianSum  :=
     integrable_finset_sum Finset.univ fun i _ =>
       integrable_finset_sum Finset.univ fun j _ => hhessian i j
-  have hdriftSum : Integrable (fun x => ∑ j : Fin d, drift j x) mu :=
+  have hdriftSum  :=
     integrable_finset_sum Finset.univ fun j _ => hdrift j
   have hgroupedIntegral :
       (∫ x, ∑ i : Fin d, ∑ j : Fin d, grouped i j x ∂mu) =
@@ -58,47 +60,36 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
       integrable_finset_sum Finset.univ fun j _ => hgrouped i j)]
     simp_rw [integral_finset_sum Finset.univ (fun j _ => hgrouped _ j)]
   have hdriftIntegral :
-      (∫ x, ∑ j : Fin d, drift j x ∂mu) =
+      (sharedTerm_c85348b9bb) =
         ∑ j : Fin d, ∫ x, drift j x ∂mu :=
     integral_finset_sum Finset.univ fun j _ => hdrift j
   have hraw' :
       (∫ x, mass x ∂mu) -
         (∑ i : Fin d, ∑ j : Fin d, ∫ x, grouped i j x ∂mu) +
         (∑ j : Fin d, ∫ x, drift j x ∂mu) +
-        (∫ x, scalar x ∂mu) - (∫ x, source x ∂mu) = 0 := by
-    have e₁ : (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) ∂mu) =
-        (∫ x, mass x ∂mu) - ∫ x, ∑ i : Fin d, ∑ j : Fin d, grouped i j x ∂mu :=
-      integral_sub hmass hgroupedSum
+        (sharedTerm_b5b049973a) - (sharedTerm_12cb8e9843) = 0 := by
+
     have e₂ : (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
         (∑ j : Fin d, drift j x) ∂mu) =
-        ((∫ x, mass x ∂mu) - ∫ x, ∑ i : Fin d, ∑ j : Fin d, grouped i j x ∂mu) +
-          ∫ x, ∑ j : Fin d, drift j x ∂mu := by
+        sharedTerm_847d4091fd := by
       calc
         _ = (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) ∂mu) +
-            ∫ x, ∑ j : Fin d, drift j x ∂mu := by
-          simpa only [Pi.sub_apply, Pi.add_apply] using
-            integral_add (hmass.sub hgroupedSum) hdriftSum
-        _ = _ := by rw [e₁]
+            sharedTerm_c85348b9bb := (integral_add (Integrable.sub hmass hgroupedSum) hdriftSum)
+        _ = _ := by rw [(integral_sub hmass hgroupedSum)]
     have e₃ : (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
         (∑ j : Fin d, drift j x) + scalar x ∂mu) =
-        (((∫ x, mass x ∂mu) - ∫ x, ∑ i : Fin d, ∑ j : Fin d, grouped i j x ∂mu) +
-          ∫ x, ∑ j : Fin d, drift j x ∂mu) + ∫ x, scalar x ∂mu := by
+        (sharedTerm_847d4091fd) + sharedTerm_b5b049973a := by
       calc
         _ = (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
-            (∑ j : Fin d, drift j x) ∂mu) + ∫ x, scalar x ∂mu := by
-          simpa only [Pi.sub_apply, Pi.add_apply] using
-            integral_add ((hmass.sub hgroupedSum).add hdriftSum) hscalar
+            (∑ j : Fin d, drift j x) ∂mu) + sharedTerm_b5b049973a := (integral_add (Integrable.add (Integrable.sub hmass hgroupedSum) hdriftSum) hscalar)
         _ = _ := by rw [e₂]
     have e₄ : (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
         (∑ j : Fin d, drift j x) + scalar x - source x ∂mu) =
-        ((((∫ x, mass x ∂mu) - ∫ x, ∑ i : Fin d, ∑ j : Fin d, grouped i j x ∂mu) +
-          ∫ x, ∑ j : Fin d, drift j x ∂mu) + ∫ x, scalar x ∂mu) -
-          ∫ x, source x ∂mu := by
+        ((sharedTerm_847d4091fd) + sharedTerm_b5b049973a) -
+          sharedTerm_12cb8e9843 := by
       calc
         _ = (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
-            (∑ j : Fin d, drift j x) + scalar x ∂mu) - ∫ x, source x ∂mu := by
-          simpa only [Pi.sub_apply, Pi.add_apply] using
-            integral_sub (((hmass.sub hgroupedSum).add hdriftSum).add hscalar) hsource
+            (∑ j : Fin d, drift j x) + scalar x ∂mu) - sharedTerm_12cb8e9843 := (integral_sub (Integrable.add (Integrable.add (Integrable.sub hmass hgroupedSum) hdriftSum) hscalar) hsource)
         _ = _ := by rw [e₃]
     rw [← hgroupedIntegral, ← hdriftIntegral, ← e₄]
     exact hraw
@@ -117,26 +108,21 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
       (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
           (∑ j : Fin d, drift j x) + scalar x - source x ∂mu) =
         ((∑ i : Fin d, ∑ j : Fin d, ∫ x, hessian i j x ∂mu) +
-          (∑ j : Fin d, ∫ x, drift j x ∂mu) + ∫ x, scalar x ∂mu) -
-          ∫ x, source x ∂mu := by
+          (∑ j : Fin d, ∫ x, drift j x ∂mu) + sharedTerm_b5b049973a) -
+          sharedTerm_12cb8e9843 := by
     calc
       _ = (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
-          (∑ j : Fin d, drift j x) + scalar x ∂mu) - ∫ x, source x ∂mu := by
-        simpa only [Pi.sub_apply, Pi.add_apply] using
-          integral_sub ((hhessianSum.add hdriftSum).add hscalar) hsource
+          (∑ j : Fin d, drift j x) + scalar x ∂mu) - sharedTerm_12cb8e9843 := (integral_sub (Integrable.add (Integrable.add hhessianSum hdriftSum) hscalar) hsource)
       _ = (((∫ x, ∑ i : Fin d, ∑ j : Fin d, hessian i j x ∂mu) +
-          ∫ x, ∑ j : Fin d, drift j x ∂mu) + ∫ x, scalar x ∂mu) -
-          ∫ x, source x ∂mu := by
+          sharedTerm_c85348b9bb) + sharedTerm_b5b049973a) -
+          sharedTerm_12cb8e9843 := by
+        let sharedTerm_bb5ca0450c := (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) + (∑ j : Fin d, drift j x) ∂mu)
         rw [show (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
             (∑ j : Fin d, drift j x) + scalar x ∂mu) =
-            (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
-              (∑ j : Fin d, drift j x) ∂mu) + ∫ x, scalar x ∂mu from by
-              simpa only [Pi.add_apply] using integral_add (hhessianSum.add hdriftSum) hscalar]
-        rw [show (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
-            (∑ j : Fin d, drift j x) ∂mu) =
+            (sharedTerm_bb5ca0450c) + sharedTerm_b5b049973a from (integral_add (Integrable.add hhessianSum hdriftSum) hscalar)]
+        rw [show (sharedTerm_bb5ca0450c) =
             (∫ x, ∑ i : Fin d, ∑ j : Fin d, hessian i j x ∂mu) +
-              ∫ x, ∑ j : Fin d, drift j x ∂mu from by
-                simpa only [Pi.add_apply] using integral_add hhessianSum hdriftSum]
+              sharedTerm_c85348b9bb from (integral_add hhessianSum hdriftSum)]
       _ = _ := by rw [hhessianIntegral, hdriftIntegral]
   rw [hright]
   rw [hweakSum] at hraw'

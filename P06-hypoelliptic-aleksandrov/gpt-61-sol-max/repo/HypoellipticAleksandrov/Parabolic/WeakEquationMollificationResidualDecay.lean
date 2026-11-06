@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.WeakEquationMollification
 public import HypoellipticAleksandrov.Parabolic.ParabolicConvolutionCommutator
+public import HypoellipticAleksandrov.Measure.TimeVelocity
+
 
 /-!
 # Compact decay of weak-equation mollification residuals
@@ -11,14 +13,14 @@ with the parabolic convolution commutator and obtains its compact finite-norm
 decay from Borel elliptic coefficient data.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Filter MeasureTheory Set
-open scoped ENNReal Topology
+
 
 /-- The residual of weak-equation mollification is definitionally the
 coefficient--Hessian parabolic convolution commutator. -/
@@ -34,7 +36,7 @@ weak jet converges to zero in finite parabolic norm on every compact carrier. -/
 theorem tendsto_eLpNorm_weakEquationMollificationResidual_on_compact
     (d : Nat) (lam Lam : Real) (Aext : CoefficientField d)
     (g : ParabolicW12Function d Set.univ (parabolicExponent d))
-    (K : Set (TimeVelocity d)) (hK : IsCompact K)
+    (K : HypoellipticAleksandrov.Parabolic.Region d) (hK : IsCompact K)
     (hExtBorel : IsBorelCoefficient Aext)
     (hExtLower : HasLowerEllipticity lam Aext)
     (hExtUpper : HasUpperEllipticity Lam Aext) :
@@ -56,7 +58,7 @@ theorem tendsto_eLpNorm_weakEquationMollificationResidual_on_compact
       (fun i j => by
         have h := g.velocityHessian_memLp i j
         change MemLp (fun z => g.velocityHessian z i j) (parabolicExponent d)
-          ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
+          ((HypoellipticAleksandrov.Parabolic.timeVelocityVolume d).restrict Set.univ) at h
         simpa only [Measure.restrict_univ] using h)
 
 end HypoellipticAleksandrov.Parabolic

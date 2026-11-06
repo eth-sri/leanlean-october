@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamel
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Proposition 4.2: the parabolic source potential on the whole space
@@ -13,14 +15,14 @@ In the whole-space case (`Ω = ℝ^d`, stationary curve, `σ₀ = 0`, `S = 1`) a
 Duhamel lemma.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
-open MeasureTheory Set
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+open Set
+open HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 variable {d : ℕ}
@@ -28,11 +30,11 @@ variable {d : ℕ}
 /-- **Proposition 4.2.** -/
 theorem occupation_potential (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
     {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
+    (hP : HasParabolicMarginalBundle (wholeSpace d) _
       (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
       (zIndependentCoefficient B) K)
-    (F : TimeVelocity d → ℝ) (hF0 : ∀ p, 0 ≤ F p) (hFs : ContDiff ℝ (⊤ : ℕ∞) F)
+    (F : HypoellipticAleksandrov.Parabolic.ScalarField d) (hF0 : ∀ p, 0 ≤ F p) (hFs : ContDiff ℝ PDE.smoothOrder F)
     (hFc : HasCompactSupport F) (hFsupp : tsupport F ⊆ Ioo (0 : ℝ) 1 ×ˢ univ) :
     (∀ p, 0 ≤ parabolicDuhamelPotential K
         (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d)) 1 F p) ∧
@@ -44,7 +46,7 @@ theorem occupation_potential (hH : HormanderHypoellipticityStatement) {lam Lam :
           (Icc (0 : ℝ) 1 ×ˢ univ)) ≤ ⨆ z, F z ∧
       (∀ v, parabolicDuhamelPotential K
         (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d)) 1 F (1, v) = 0) ∧
-      ContDiffOn ℝ (⊤ : ℕ∞) (parabolicDuhamelPotential K
+      ContDiffOn ℝ PDE.smoothOrder (parabolicDuhamelPotential K
         (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d)) 1 F)
         {p : TimeVelocity d | p.1 < 1} ∧
       ∀ p : TimeVelocity d, p.1 < 1 →
@@ -52,27 +54,26 @@ theorem occupation_potential (hH : HormanderHypoellipticityStatement) {lam Lam :
           (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d)) 1 F) p =
           -F p := by
   have hΩ := wholeSpace_admissible d
-  have hγ := zeroCurve_piecewiseC1 d
-  have hU : tsupport F ⊆ {p : TimeVelocity d | p.1 < 1 ∧
-      p.2 ∈ movingDomain (wholeSpace d) (fun _ => (0 : PDE.Vec d)) p.1} := by
-    intro p hp
-    have := hFsupp hp
-    exact ⟨this.1.2, by rw [movingDomain_wholeSpace]; exact mem_univ _⟩
-  obtain ⟨hsm, -, heq, -, -, -⟩ := parabolic_duhamel hH hΩ hγ hB K hP 1 F hF0 hFs hFc hU
+
+
+  obtain ⟨hsm, -, heq, -, -, -⟩ := parabolic_duhamel hH hΩ (zeroCurve_piecewiseC1 d) hB K hP 1 F hF0 hFs hFc (by
+      intro p hp
+      have := hFsupp hp
+      exact ⟨this.1.2, by rw [movingDomain_wholeSpace]; exact mem_univ _⟩)
   have hΩm := measurableSet_of_isAdmissibleEvolutionDomain hΩ
-  have hg : ∀ r, Measurable (fun v : PDE.Vec d => F (r, v)) := fun r =>
+  have hg : ∀ r, Measurable (fun v  => F (r, v)) := fun r =>
     hFs.continuous.measurable.comp (measurable_const.prodMk measurable_id)
   obtain ⟨C, hC⟩ := hFs.continuous.bounded_above_of_compact_support hFc
   have hbdd : BddAbove (range F) := ⟨C, by
     rintro _ ⟨p, rfl⟩
-    exact (le_abs_self _).trans (by simpa using hC p)⟩
-  have hgb : ∀ p, F p ≤ ⨆ q, F q := fun p => le_ciSup hbdd p
-  have hsup0 : 0 ≤ ⨆ q, F q := (hF0 (0, 0)).trans (hgb _)
+    exact (le_abs_self _).trans (hC p)⟩
+  have hgb  := fun p => le_ciSup hbdd p
+
   have hle : ∀ p : TimeVelocity d, p.1 ∈ Icc (0 : ℝ) 1 →
       parabolicDuhamelPotential K hΩm 1 F p ≤ ⨆ q, F q := by
     intro p hp
     refine (parabolicDuhamelPotential_le K hΩm 1 F hg hF0 _ hgb p hp.2).trans ?_
-    exact mul_le_of_le_one_left hsup0 (by linarith [hp.1])
+    exact mul_le_of_le_one_left ((hF0 (0, 0)).trans (hgb _)) (by linarith [hp.1])
   refine ⟨fun p => parabolicDuhamelPotential_nonneg K hΩm 1 F hg hF0 p, ?_, ?_,
     fun v => parabolicDuhamelPotential_eq_zero_of_terminal_le K hΩm 1 F (1, v) le_rfl, ?_, ?_⟩
   · exact ⟨⨆ q, F q, by

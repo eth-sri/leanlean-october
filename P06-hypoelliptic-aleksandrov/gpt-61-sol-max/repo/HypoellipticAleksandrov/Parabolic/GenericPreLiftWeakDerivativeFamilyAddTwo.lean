@@ -23,15 +23,15 @@ open scoped BigOperators ENNReal MatrixOrder
 /-- Exact recovered-Hessian and coherent add-two-family conclusion of one
 generic pre-lift bootstrap step. -/
 def GenericPreliftAddTwoFamilyConclusion
-    {d M : ℕ} (V : Set (TimeVelocity d))
+    {d M : ℕ} (V : HypoellipticAleksandrov.Parabolic.Region d)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
-    {F : ℝ → PDE.Vec d → ℝ}
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
+    {U : HypoellipticAleksandrov.Parabolic.Region d} {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
+    {F : PDE.TimeScalarField d}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
-      (fun z : TimeVelocity d => F z.1 z.2))
+      (fun z  => F z.1 z.2))
     (Cnext : ℝ) : Prop :=
   ∃ H : TimeVelocity d → ParabolicDerivativeIndex d M →
       Fin d → Fin d → ℝ,
@@ -61,7 +61,7 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
     (d M : ℕ) (hM : 1 ≤ M)
     (t₀ t₁ t₂ t₃ : ℝ)
     (ht₀₁ : t₀ < t₁) (ht₁₂ : t₁ < t₂) (ht₂₃ : t₂ < t₃)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : PDE.VelocityRegion d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
@@ -74,14 +74,14 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
     (hBc : ∀ alpha, 0 ≤ Bc alpha) :
     ∃ Cnext : ℝ, 0 ≤ Cnext ∧
       ∀ (a : CoefficientField d)
-        (b : ℝ → PDE.Vec d → PDE.Vec d)
-        (c F : ℝ → PDE.Vec d → ℝ)
-        (u : TimeVelocity d → ℝ)
+        (b : PDE.TimeVectorField d)
+        (c F : PDE.TimeScalarField d)
+        (u : HypoellipticAleksandrov.Parabolic.ScalarField d)
         (D : ParabolicWeakDerivativeFamily d (M + 1)
           (Set.Ioo t₀ t₃ ×ˢ O₀) u)
         (E : ParabolicWeakDerivativeFamily d M
           (Set.Ioo t₀ t₃ ×ˢ O₀)
-          (fun z : TimeVelocity d => F z.1 z.2)),
+          (fun z  => F z.1 z.2)),
         (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀, (a z.1 z.2).IsSymm) →
         (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀,
           lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
@@ -135,38 +135,27 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
   let N : ℝ := Fintype.card (ParabolicDerivativeIndex d (M + 2))
   let Cnext : ℝ := N * (1 + C_HW)
   have hN : 0 ≤ N := by dsimp only [N]; positivity
-  have hCnext : 0 ≤ Cnext := mul_nonneg hN (add_nonneg zero_le_one hC_HW)
-  refine ⟨Cnext, hCnext, ?_⟩
+
+  refine ⟨Cnext, (mul_nonneg hN (add_nonneg zero_le_one hC_HW)), ?_⟩
   intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
   obtain ⟨H, hHmem, hHweak, hWmem, hWweak, hHWnorm⟩ :=
     hpredecessor a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
-  let U := Set.Ioo t₀ t₃ ×ˢ O₀
+
   let V := Set.Ioo t₁ t₂ ×ˢ O₁
-  have hVopen : IsOpen V := isOpen_Ioo.prod hO₁
-  have hVU : V ⊆ U := Set.prod_mono
+
+  have hVU  := Set.prod_mono
     (Set.Ioo_subset_Ioo ht₀₁.le ht₂₃.le) (subset_closure.trans hO₁O₀)
   obtain ⟨Dnext, hDold, hDtime, hDvelocity, hDnorm⟩ :=
     ParabolicDerivativeIndex.exists_parabolicWeakDerivativeFamily_add_two_of_hessian_timeSuccessors
-      d M hM hVopen (D.restrict hVU) H
-        (fun beta => genericPreliftTimeSuccessorResidual a b c D E H beta)
-        hHmem (by
-          intro beta j i
-          simpa only [ParabolicWeakDerivativeFamily.restrict_representative] using
-            hHweak beta j i)
-        hWmem (by
-          intro beta
-          simpa only [ParabolicWeakDerivativeFamily.restrict_representative] using
-            hWweak beta)
+      d M hM (isOpen_Ioo.prod hO₁) (D.restrict hVU) H
+        ((genericPreliftTimeSuccessorResidual a b c D E H))
+        hHmem (hHweak)
+        hWmem (hWweak)
   refine ⟨H, Dnext, ?_, hDtime, hDvelocity, ?_⟩
-  · intro alpha
-    simpa only [ParabolicWeakDerivativeFamily.restrict_representative] using hDold alpha
-  · have hDrestrict :=
-      ParabolicWeakDerivativeFamily.squaredL2Norm_restrict_le D hVU
-    have hEnorm : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm E :=
-      ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E
-    have htotal : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm D +
-        ParabolicWeakDerivativeFamily.squaredL2Norm E := add_nonneg
-      (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D) hEnorm
+  · assumption
+  ·
+
+
     calc
       ParabolicWeakDerivativeFamily.squaredL2Norm Dnext ≤
           N * (ParabolicWeakDerivativeFamily.squaredL2Norm (D.restrict hVU) +
@@ -181,8 +170,7 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
         simpa only [N, add_assoc] using hDnorm
       _ ≤ N * (ParabolicWeakDerivativeFamily.squaredL2Norm D +
           C_HW * (ParabolicWeakDerivativeFamily.squaredL2Norm D +
-            ParabolicWeakDerivativeFamily.squaredL2Norm E)) := by
-        exact mul_le_mul_of_nonneg_left (add_le_add hDrestrict hHWnorm) hN
+            ParabolicWeakDerivativeFamily.squaredL2Norm E)) := mul_le_mul_of_nonneg_left (add_le_add (ParabolicWeakDerivativeFamily.squaredL2Norm_restrict_le D hVU) hHWnorm) hN
       _ ≤ N * ((1 + C_HW) *
           (ParabolicWeakDerivativeFamily.squaredL2Norm D +
             ParabolicWeakDerivativeFamily.squaredL2Norm E)) := by
@@ -192,7 +180,7 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
                 ParabolicWeakDerivativeFamily.squaredL2Norm E) +
               C_HW * (ParabolicWeakDerivativeFamily.squaredL2Norm D +
                 ParabolicWeakDerivativeFamily.squaredL2Norm E) :=
-            add_le_add (le_add_of_nonneg_right hEnorm) le_rfl
+            add_le_add (le_add_of_nonneg_right (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E)) le_rfl
           _ = _ := by ring
       _ = Cnext * (ParabolicWeakDerivativeFamily.squaredL2Norm D +
           ParabolicWeakDerivativeFamily.squaredL2Norm E) := by

@@ -11,9 +11,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierDomina
   `‖k(τ,w)‖ ≤ g^ξ(τ - T/2, w)` a.e., where `g^ξ` is the occupation density of `|η_T^ξ|`.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Green
 
@@ -26,38 +26,37 @@ theorem ae_enorm_le_of_setIntegral_enorm_le {α : Type*} [MeasurableSpace α] (m
     [SigmaFinite m] (k : α → ℂ) (hk : Integrable k m) (G : α → ℝ≥0∞)
     (h : ∀ E, MeasurableSet E → ‖∫ y in E, k y ∂m‖ₑ ≤ ∫⁻ y in E, G y ∂m) :
     ∀ᵐ y ∂m, ‖k y‖ₑ ≤ G y := by
-  have hv : (m.withDensityᵥ k).variation = m.withDensity (fun y => ‖k y‖ₑ) :=
-    Measure.variation_withDensityᵥ hk
+
   have hle : (m.withDensityᵥ k).variation ≤ m.withDensity G := by
     refine VectorMeasure.variation_le_of_forall_enorm_le (fun E hE => ?_)
     rw [withDensityᵥ_apply hk hE, withDensity_apply _ hE]
     exact h E hE
-  rw [hv] at hle
+  rw [(Measure.variation_withDensityᵥ hk)] at hle
   refine ae_le_of_forall_setLIntegral_le_of_sigmaFinite₀ hk.aestronglyMeasurable.enorm
     (fun E hE _ => ?_)
   have := Measure.le_iff.1 hle E hE
   rwa [withDensity_apply _ hE, withDensity_apply _ hE] at this
 
 
-variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
 
 /-- **Lemma 5.1: pointwise domination of any density `k^ξ`.**
 `gξ` is the occupation density of `|η_T^ξ|` (start time `σ₀ + T/2`, horizon `3T/2`); `k` is any
 integrable density of the Fourier marginal. -/
 theorem slab_fourier_ae_bound
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
+    (hcov : IsTranslationCovariantEvolution (wholeSpace d) _ MeasurableSet.univ K)
     (hcomp : K.HasComposition MeasurableSet.univ) (σ₀ : ℝ)
-    (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
+    (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 )) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (ξ : PDE.Vec d) (gξ : ℝ × PDE.Vec d → ℝ)
     (hgξ : SlabOccupationDensity K (σ₀ + T / 2) (3 * T / 2)
       (halfMeasure K σ₀ T hT.le μ ξ).variation gξ)
-    (hint : Integrable gξ (volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : Set (PDE.Vec d)))))
+    (hint : Integrable gξ (volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : PDE.VelocityRegion d))))
     (k : SlabBase d → ℂ) (hk : Integrable k (slabBase d T))
     (hkE : ∀ E : Set (SlabBase d), MeasurableSet E →
       ∫ y in E, k y ∂slabBase d T =
         ∫ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
-          Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ) :
+          Complex.exp (-((PDE.vecDot ξ p.2.2 ) * Complex.I)) ∂Γ) :
     ∀ᵐ y ∂slabBase d T, ‖k y‖ₑ ≤ ENNReal.ofReal (gξ (slabShift d (T / 2) y)) := by
   have hρfin : IsFiniteMeasure (halfMeasure K σ₀ T hT.le μ ξ).variation :=
     evolved_variation_finite μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)

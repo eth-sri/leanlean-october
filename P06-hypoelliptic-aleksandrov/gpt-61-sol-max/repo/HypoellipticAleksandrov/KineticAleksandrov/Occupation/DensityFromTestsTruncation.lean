@@ -17,26 +17,27 @@ theorem is assumed.
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
 open MeasureTheory Set
-open scoped ENNReal
+
 
 noncomputable section
 
 variable {α : Type*} [MeasurableSpace α] {μ : Measure α}
 
+variable (g : α → ℝ)
+
 /-- The absolute value of `g`, truncated to the set where it is at most
 `n + 1`. -/
-def truncatedAbs (g : α → ℝ) (n : ℕ) (x : α) : ℝ :=
+def truncatedAbs  (n : ℕ) (x : α) : ℝ :=
   {x | |g x| ≤ n + 1}.indicator (fun x => |g x|) x
 
 /-- The signed conjugate power of the bounded absolute-value truncation. -/
-def signedTruncatedDualPower (g : α → ℝ) (r : ℝ) (n : ℕ) (x : α) : ℝ :=
+def signedTruncatedDualPower  (r : ℝ) (n : ℕ) (x : α) : ℝ :=
   if 0 ≤ g x then (truncatedAbs g n x) ^ (r - 1)
   else -(truncatedAbs g n x) ^ (r - 1)
 
 /-- The absolute-value truncation is measurable. -/
 theorem measurable_truncatedAbs {g : α → ℝ} (hg : Measurable g) (n : ℕ) :
-    Measurable (truncatedAbs g n) := by
-  exact hg.norm.indicator (measurableSet_le hg.norm measurable_const)
+    Measurable (truncatedAbs g n) := hg.norm.indicator (measurableSet_le hg.norm measurable_const)
 
 omit [MeasurableSpace α] in
 /-- The absolute-value truncation is nonnegative. -/
@@ -62,16 +63,19 @@ theorem memLp_truncatedAbs [IsFiniteMeasure μ] {g : α → ℝ}
     (hg : Measurable g) (n : ℕ) (p : ENNReal) :
     MemLp (truncatedAbs g n) p μ := by
   apply MemLp.of_bound (measurable_truncatedAbs hg n).aestronglyMeasurable (n + 1)
-  exact ae_of_all _ fun x => by
-    simpa only [Real.norm_eq_abs] using abs_truncatedAbs_le g n x
+  exact ae_of_all _ fun x => abs_truncatedAbs_le g n x
 
+section
+variable {g : α → ℝ} (hg : Measurable g) {r : ℝ} (hr : 1 < r) (n : ℕ)
+
+include hg hr
 /-- The signed truncated dual power is measurable and globally bounded. -/
 theorem signedTruncatedDualPower_measurable_bounded
-    {g : α → ℝ} (hg : Measurable g) {r : ℝ} (hr : 1 < r) (n : ℕ) :
+     :
     Measurable (signedTruncatedDualPower g r n) ∧
       ∀ x, |signedTruncatedDualPower g r n x| ≤
         (n + 1 : ℝ) ^ (r - 1) := by
-  have hpow : Measurable (fun x => (truncatedAbs g n x) ^ (r - 1)) :=
+  have hpow  :=
     (Real.continuous_rpow_const (sub_nonneg.mpr hr.le)).measurable.comp
       (measurable_truncatedAbs hg n)
   refine ⟨Measurable.ite (measurableSet_le measurable_const hg) hpow hpow.neg,
@@ -93,7 +97,7 @@ theorem signedTruncatedDualPower_measurable_bounded
 
 /-- The signed test has the same conjugate norm as the unsigned dual power. -/
 theorem eLpNorm_signedTruncatedDualPower
-    {g : α → ℝ} (hg : Measurable g) {r : ℝ} (hr : 1 < r) (n : ℕ) :
+     :
     eLpNorm (signedTruncatedDualPower g r n)
         (ENNReal.ofReal (r / (r - 1))) μ =
       eLpNorm (truncatedAbs g n) (ENNReal.ofReal r) μ ^ (r - 1) := by
@@ -106,7 +110,7 @@ theorem eLpNorm_signedTruncatedDualPower
         ‖(truncatedAbs g n x) ^ (r - 1)‖
       rw [signedTruncatedDualPower]
       split_ifs <;> simp)]
-  have hrSub : 0 < r - 1 := sub_pos.mpr hr
+  have hrSub  := sub_pos.mpr hr
   have hexp : ENNReal.ofReal (r / (r - 1)) * ENNReal.ofReal (r - 1) =
       ENNReal.ofReal r := by
     rw [← ENNReal.ofReal_mul (div_nonneg (zero_le_one.trans hr.le) hrSub.le)]
@@ -117,21 +121,24 @@ theorem eLpNorm_signedTruncatedDualPower
     funext x
     rw [Real.norm_of_nonneg (truncatedAbs_nonneg g n x)]
   rw [hfun, eLpNorm_norm_rpow _ hTrunc.aestronglyMeasurable hrSub, hexp]
+end
+
 
 omit [MeasurableSpace α] in
 private theorem signedTruncatedDualPower_mul
     (g : α → ℝ) {r : ℝ} (hr : 1 < r) (n : ℕ) (x : α) :
     signedTruncatedDualPower g r n x * g x =
       truncatedAbs g n x ^ r := by
+  let sharedTerm_8ae1c70165 := ((-g x) ^ (r - 1))
   by_cases hxmem : x ∈ {x | |g x| ≤ n + 1}
   · rw [truncatedAbs, indicator_of_mem hxmem]
     by_cases hxzero : |g x| = 0
-    · have hgzero : g x = 0 := abs_eq_zero.mp hxzero
-      rw [signedTruncatedDualPower, truncatedAbs, indicator_of_mem hxmem, hgzero,
+    ·
+      rw [signedTruncatedDualPower, truncatedAbs, indicator_of_mem hxmem, (abs_eq_zero.mp hxzero),
         abs_zero, Real.zero_rpow (sub_ne_zero.mpr (ne_of_gt hr)),
         Real.zero_rpow (ne_of_gt (zero_lt_one.trans hr))]
       simp
-    · have habsPos : 0 < |g x| := lt_of_le_of_ne (abs_nonneg _) (Ne.symm hxzero)
+    ·
       by_cases hx : 0 ≤ g x
       · rw [signedTruncatedDualPower, ite_eq_left hx, truncatedAbs,
           indicator_of_mem hxmem, abs_of_nonneg hx]
@@ -139,17 +146,17 @@ private theorem signedTruncatedDualPower_mul
           g x ^ (r - 1) * g x = g x ^ (r - 1) * g x ^ (1 : ℝ) := by
             rw [Real.rpow_one]
           _ = g x ^ ((r - 1) + 1) := (Real.rpow_add (by simpa [abs_of_nonneg hx]
-            using habsPos) _ _).symm
+            using (lt_of_le_of_ne (abs_nonneg _) (Ne.symm hxzero))) _ _).symm
           _ = g x ^ r := by
             congr 1
             ring
-      · have hxneg : g x < 0 := lt_of_not_ge hx
+      ·
         rw [signedTruncatedDualPower, ite_eq_right hx, truncatedAbs,
-          indicator_of_mem hxmem, abs_of_neg hxneg]
+          indicator_of_mem hxmem, abs_of_neg (lt_of_not_ge hx)]
         calc
-          -(-g x) ^ (r - 1) * g x = (-g x) ^ (r - 1) * (-g x) := by ring
+          -sharedTerm_8ae1c70165 * g x = sharedTerm_8ae1c70165 * (-g x) := by ring
           _ =
-              (-g x) ^ (r - 1) * (-g x) ^ (1 : ℝ) := by rw [Real.rpow_one]
+              sharedTerm_8ae1c70165 * (-g x) ^ (1 : ℝ) := by rw [Real.rpow_one]
           _ = (-g x) ^ ((r - 1) + 1) :=
             (Real.rpow_add (by linarith) _ _).symm
           _ = (-g x) ^ r := by

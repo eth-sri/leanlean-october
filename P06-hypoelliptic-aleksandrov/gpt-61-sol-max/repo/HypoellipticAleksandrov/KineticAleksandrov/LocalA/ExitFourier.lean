@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitFourierOptim
 
 /-! # Optimized Fourier decay of the full local ball exit measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Parabolic
+open Set MeasureTheory SectionTwo
 
 /-- The actual exit measure retains time and velocity and has the source's optimized decay. -/
 theorem ballExit_fourier_decay
@@ -31,20 +31,15 @@ theorem ballExit_fourier_decay
   let A := 2 * C₀ + 1
   have hc : 0 < c := div_pos hc₀ (by norm_num)
   have hA : 1 ≤ A := by dsimp only [A]; linarith only [hC₀]
-  have hec : 1 ≤ Real.exp c := by
-    simpa only [Real.exp_zero] using Real.exp_le_exp.mpr hc.le
-  have hCf : 2 * C₀ ≤ A * Real.exp c := by
-    calc
-      2 * C₀ ≤ A := by dsimp only [A]; linarith
-      _ ≤ A * Real.exp c := by
-        simpa only [mul_one] using mul_le_mul_of_nonneg_left hec (zero_le_one.trans hA)
+
+
   refine ⟨A * Real.exp c, c, mul_pos (zero_lt_one.trans_le hA) (Real.exp_pos _), hc, ?_⟩
   intro B hB v₀ R hR P T hv htime
   dsimp only
   intro ξ
   let n := PDE.vecEuclideanNorm ξ
   let y := (R ^ 3 * n) ^ (1 / 3 : ℝ)
-  have hn : 0 ≤ n := PDE.vecEuclideanNorm_nonneg ξ
+  have hn  := PDE.vecEuclideanNorm_nonneg ξ
   by_cases hhigh : 1 ≤ R ^ 3 * n
   · let h := R ^ 2 / (16 * y)
     have hopt := exitFrequency_optimizing_step hR hn hhigh
@@ -60,14 +55,19 @@ theorem ballExit_fourier_decay
     have he := exitFrequency_exponential_pair hC₀.le hc₀.le (zero_le_one.trans hy)
       hfirst hsecond
     exact (hb.trans he).trans
-      (mul_le_mul_of_nonneg_right hCf (Real.exp_pos (-(c₀ / 16) * y)).le)
-  · have hy : y ≤ 1 := by
-      simpa only [Real.one_rpow] using Real.rpow_le_rpow
-        (mul_nonneg (pow_nonneg hR.le _) hn) (le_of_not_ge hhigh)
-        (by norm_num : 0 ≤ (1 / 3 : ℝ))
+      (mul_le_mul_of_nonneg_right (by
+          calc
+            2 * C₀ ≤ A := by dsimp only [A]; linarith
+            _ ≤ A * Real.exp c := by
+              simpa only [mul_one] using mul_le_mul_of_nonneg_left (show 1 ≤ Real.exp c by
+                  simpa only [Real.exp_zero] using Real.exp_le_exp.mpr hc.le) (zero_le_one.trans hA)) (Real.exp_pos (-(c₀ / 16) * y)).le)
+  ·
     have hb := ENNReal.toReal_mono ENNReal.one_ne_top
       (ballExit_fourier_totalVariation_le_one hH hLE hd hlam hLam B hB v₀ hR P T ξ)
     simp only [ENNReal.toReal_one] at hb
-    exact hb.trans (exitFrequency_low_bound hA hc.le hy)
+    exact hb.trans (exitFrequency_low_bound hA hc.le (by
+        simpa only [Real.one_rpow] using Real.rpow_le_rpow
+          (mul_nonneg (pow_nonneg hR.le _) hn) (le_of_not_ge hhigh)
+          (by norm_num : 0 ≤ (1 / 3 : ℝ))))
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

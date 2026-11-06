@@ -7,10 +7,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnGeomet
 
 /-! # Pointwise velocity return from occupation and the full source return-time comparison -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov MeasureTheory Set
+open MeasureTheory Set
 
 /-- The band itself has square-root decay; the constant precedes all coefficient and pole data. -/
 theorem velocity_band_return_of_return_time
@@ -24,13 +24,14 @@ theorem velocity_band_return_of_return_time
       0 < r → |z.2| ≤ 3 * r →
       (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) t z
         {w | |w.2| ≤ 3 * r}).toReal ≤ C * (1 + (t : ℝ) / r ^ 2) ^ (-(1 : ℝ) / 2) := by
+  let sharedTerm_579816ae5c := (((1 : ℝ) / 2))
   obtain ⟨CR, hCR, hreturn⟩ := return_time_ambient_of_scalar hH hLE hlam hLam hReturn
   obtain ⟨B, hB, hocc⟩ := velocity_occupation_and_moment hH hLE hlam hLam
   let K := CR * B * Real.sqrt 3
-  have hK : 0 < K := by dsimp only [K]; positivity
-  let C := (10 : ℝ) ^ ((1 : ℝ) / 2) + K * (2 : ℝ) ^ ((1 : ℝ) / 2)
-  have hC : 0 < C := by dsimp only [C]; positivity
-  refine ⟨C, hC, ?_⟩
+
+  let C := (10 : ℝ) ^ sharedTerm_579816ae5c + K * (2 : ℝ) ^ sharedTerm_579816ae5c
+
+  refine ⟨C, (by dsimp only [C]; positivity), ?_⟩
   intro A r z t hr hz
   let E := fullSpaceEvolution hH hLE hlam hLam A
   have hE := fullSpaceEvolution_spec hH hLE hlam hLam A
@@ -50,10 +51,7 @@ theorem velocity_band_return_of_return_time
     have hfcomp (s : ℝ) (hs : s ∈ Ioc (2 * (t : ℝ)) (3 * (t : ℝ))) :
         f t ≤ CR * f s := by
       have hs0 : 0 ≤ s := by linarith [hs.1]
-      have hh := hreturn A (velocityBandDatum r) (fun p => by
-        change 0 ≤ ({w : EvolutionAmbientState 1 | |w.2 0| ≤ 3 * r}).indicator
-          (fun _ => (1 : ℝ)) p
-        exact indicator_nonneg (fun _ _ => zero_le_one) _)
+      have hh := hreturn A (velocityBandDatum r) (fun p => (id (indicator_nonneg (fun x x_1 => zero_le_one) p)))
         t (Real.toNNReal s) z ht
         (by simpa only [Real.coe_toNNReal s hs0] using hs.1.le)
         (by simpa only [Real.coe_toNNReal s hs0] using hs.2) hv
@@ -66,9 +64,9 @@ theorem velocity_band_return_of_return_time
         ← fullSpacePhysicalSemigroup_eq_action A E hE (Real.toNNReal s)
           (velocityBandDatum r) (fun _ => z.1, fun _ => z.2)] at hh
       simpa only [f, velocityBandAction, Real.toNNReal_coe] using hh
-    have hav := velocity_return_time_average A E hE z r t CR ht hCR.le hfcomp
-    have hoc := (hocc A r (3 * (t : ℝ)) z hr (by positivity)).1
-    have hprod := hav.trans (mul_le_mul_of_nonneg_left hoc hCR.le)
+
+
+    have hprod := (velocity_return_time_average A E hE z r t CR ht hCR.le hfcomp).trans (mul_le_mul_of_nonneg_left ((hocc A r (3 * (t : ℝ)) z hr (by positivity)).1) hCR.le)
     rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 3)] at hprod
     have hraw : f t ≤ K * (r * Real.sqrt (t : ℝ) / (t : ℝ)) := by
       have hdiv : f t ≤ (CR * (B * r * (Real.sqrt 3 * Real.sqrt (t : ℝ)))) /
@@ -81,29 +79,29 @@ theorem velocity_band_return_of_return_time
       norm_num only [gamma, Real.rpow_one, one_div, show (2 : ℝ) - 1 = 1 by norm_num] at hh
       simpa only [Real.sqrt_eq_rpow, x, neg_div] using hh
     rw [hscale] at hraw
-    have hxlarge : 1 ≤ x := by
-      dsimp only [x]
-      apply (le_div_iff₀ (by positivity : 0 < r ^ 2)).mpr
-      nlinarith
+
     have hfinal := hraw.trans (mul_le_mul_of_nonneg_left
-      (box_decay_large_comparison (g := 1) hxlarge (by norm_num)) hK.le)
-    have hKC : K * (2 : ℝ) ^ ((1 : ℝ) / 2) ≤ C := by
-      dsimp only [C]
-      exact le_add_of_nonneg_left (by positivity)
-    have hbound : K * ((2 : ℝ) ^ ((1 : ℝ) / 2) *
+      (box_decay_large_comparison (g := 1) (by
+          dsimp only [x]
+          apply (le_div_iff₀ (by positivity : 0 < r ^ 2)).mpr
+          nlinarith) (by norm_num)) (show 0 < K by dsimp only [K]; positivity).le)
+
+    have hbound : K * ((2 : ℝ) ^ sharedTerm_579816ae5c *
         (1 + x) ^ (-(1 : ℝ) / 2)) ≤ C * (1 + x) ^ (-(1 : ℝ) / 2) := by
       rw [← mul_assoc]
-      exact mul_le_mul_of_nonneg_right hKC hdecay
+      exact mul_le_mul_of_nonneg_right (by
+          dsimp only [C]
+          exact le_add_of_nonneg_left (by positivity)) hdecay
     rw [hf] at hfinal
     exact hfinal.trans hbound
-  · have hxsmall : 1 + x ≤ 10 := by
-      dsimp only [x]
-      have hh := (div_lt_iff₀ (by positivity : 0 < r ^ 2)).mpr (lt_of_not_ge hlarge)
-      linarith
-    have hp := Real.rpow_le_rpow_of_nonpos hx1 hxsmall (by norm_num : -(1 : ℝ) / 2 ≤ 0)
-    have hm := mul_le_mul_of_nonneg_left hp
-      (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 10) ((1 : ℝ) / 2))
-    have hone : (10 : ℝ) ^ ((1 : ℝ) / 2) * 10 ^ (-(1 : ℝ) / 2) = 1 := by
+  ·
+
+    have hm := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos hx1 (show 1 + x ≤ 10 by
+        dsimp only [x]
+        have hh := (div_lt_iff₀ (by positivity : 0 < r ^ 2)).mpr (lt_of_not_ge hlarge)
+        linarith) (by norm_num : -(1 : ℝ) / 2 ≤ 0))
+      (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 10) sharedTerm_579816ae5c)
+    have hone : (10 : ℝ) ^ sharedTerm_579816ae5c * 10 ^ (-(1 : ℝ) / 2) = 1 := by
       rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 10)]
       norm_num
     rw [hone] at hm
@@ -111,9 +109,9 @@ theorem velocity_band_return_of_return_time
       exact (ENNReal.toReal_mono ENNReal.one_ne_top
         ((measure_mono (subset_univ _)).trans (kernelXV_mass_le_one E t z))).trans_eq
           ENNReal.toReal_one
-    have hsmallC : (10 : ℝ) ^ ((1 : ℝ) / 2) ≤ C := by
-      dsimp only [C]
-      exact le_add_of_nonneg_right (by positivity)
-    exact (hmass.trans hm).trans (mul_le_mul_of_nonneg_right hsmallC hdecay)
+
+    exact (hmass.trans hm).trans (mul_le_mul_of_nonneg_right (by
+        dsimp only [C]
+        exact le_add_of_nonneg_right (by positivity)) hdecay)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

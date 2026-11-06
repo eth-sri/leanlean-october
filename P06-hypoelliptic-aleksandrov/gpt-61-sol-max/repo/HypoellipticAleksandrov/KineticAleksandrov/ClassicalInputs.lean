@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.EllipsoidDirichlet
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
 public import PDEFoundation.Geometry.EuclideanBall.Basic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Classical theorems as ordinary propositions
@@ -27,24 +29,24 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 section Hormander
 
 open Set MeasureTheory
-open HypoellipticAleksandrov
-open scoped BigOperators
+
+
 
 /-- Hörmander's hypoellipticity theorem for
 locally integrable weak solutions, L. Hörmander, *Hypoelliptic second order differential
 equations*, Acta Math. 119 (1967), Thm 1.1.  Mirrors
 `HypoellipticAleksandrov.KineticAleksandrov.exists_smooth_aeRepresentative_of_hormander`. -/
 def HormanderHypoellipticityStatement : Prop :=
-  ∀ {k N : ℕ} {Ω : Set (PDE.Vec N)}
+  ∀ {k N : ℕ} {Ω : PDE.VelocityRegion N}
     (_ : IsOpen Ω)
-    (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N)
-    (c g u : PDE.Vec N → ℝ)
-    (_ : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (X i) Ω)
+    (X : Fin (k + 1) → PDE.VectorField N)
+    (c g u : PDE.ScalarField N)
+    (_ : ∀ i, ContDiffOn ℝ PDE.smoothOrder (X i) Ω)
     (_ : LieAlgebraSpansOn Ω X)
-    (_ : ContDiffOn ℝ (⊤ : ℕ∞) c Ω)
+    (_ : ContDiffOn ℝ PDE.smoothOrder c Ω)
     (_ : HasWeakHormanderEquation Ω X c g u),
-    ∃ f : PDE.Vec N → ℝ,
-      ContDiffOn ℝ (⊤ : ℕ∞) f Ω ∧
+    ∃ f : PDE.ScalarField N,
+      ContDiffOn ℝ PDE.smoothOrder f Ω ∧
         u =ᵐ[Measure.restrict volume Ω] f
 
 end Hormander
@@ -52,7 +54,7 @@ end Hormander
 section LiebermanEllipsoid
 
 open Set
-open HypoellipticAleksandrov
+
 open HypoellipticAleksandrov.Parabolic
 open scoped MatrixOrder
 
@@ -70,22 +72,22 @@ def LiebermanEllipsoidDirichletStatement : Prop :=
     (_ : 0 < lam)
     (_ : lam ≤ Lam)
     (a : CoefficientField N)
-    (b : ℝ → PDE.Vec N → PDE.Vec N)
+    (b : PDE.TimeVectorField N)
     (_ : ∀ t v, (a t v).IsSymm)
     (_ : IsSmoothCoefficient a)
     (_ : ∀ t v, lam • (1 : PDE.Mat N) ≤ a t v)
     (_ : ∀ t v, a t v ≤ Lam • (1 : PDE.Mat N))
-    (_ : ContDiff ℝ (⊤ : ℕ∞)
+    (_ : ContDiff ℝ PDE.smoothOrder
       (fun z : TimeVelocity N => b z.1 z.2))
-    (φ : PDE.Vec N → ℝ)
-    (_ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (φ : PDE.ScalarField N)
+    (_ : ContDiff ℝ PDE.smoothOrder φ)
     (_ : HasCompactSupport φ)
     (_ : tsupport φ ⊆ openEllipsoid Q),
-    ∃ u : TimeVelocity N → ℝ,
+    ∃ u : HypoellipticAleksandrov.Parabolic.ScalarField N,
       IsClassicalBackwardDirichletSolution
         r₀ r₁ (openEllipsoid Q) a b
         (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) u ∧
-      ∀ v : TimeVelocity N → ℝ,
+      ∀ v : HypoellipticAleksandrov.Parabolic.ScalarField N,
         IsClassicalBackwardDirichletSolution
           r₀ r₁ (openEllipsoid Q) a b
           (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) v →
@@ -94,11 +96,6 @@ def LiebermanEllipsoidDirichletStatement : Prop :=
 
 end LiebermanEllipsoid
 
-section LiebermanSource
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
-open scoped MatrixOrder
-
-end LiebermanSource
 
 end HypoellipticAleksandrov.KineticAleksandrov

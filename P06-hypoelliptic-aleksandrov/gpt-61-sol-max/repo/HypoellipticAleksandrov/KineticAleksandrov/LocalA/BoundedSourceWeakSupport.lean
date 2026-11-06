@@ -9,10 +9,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
 
 /-- The past moving cylinder in product coordinates used by the source-action measure. -/
-def boundedSourcePast (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (T : ℝ) :
+def boundedSourcePast (Ω : PDE.VelocityRegion d) (γ : ℝ → PDE.Vec d) (T : ℝ) :
     Set (ℝ × EvolutionAmbientState d) :=
   {q | q.1 < T ∧ q.2.1 ∈ movingDomain Ω γ q.1}
 
@@ -56,29 +56,27 @@ theorem boundedSourceActionMeasure_compl_past (K : MovingFiberKernel Ω γ)
   have hr : ∀ᵐ q ∂ρ, q.2 ∈ Ioo a T :=
     (Measure.ae_prod_iff_ae_ae (measurableSet_Ioo.preimage measurable_snd)).2
       (Filter.Eventually.of_forall fun _ => ae_restrict_mem measurableSet_Ioo)
-  have hrη : ∀ᵐ q ∂η, q.1.2 ∈ Ioo a T := by
-    have hmapped : ∀ᵐ q ∂Measure.map Subtype.val η, q.2 ∈ Ioo a T := by
-      dsimp only [η]
-      rw [map_comap_subtype_coe hD]
-      exact ae_restrict_of_ae hr
-    exact ae_of_ae_map (p := fun q : KineticPoint d × ℝ => q.2 ∈ Ioo a T)
-      measurable_subtype_coe.aemeasurable hmapped
-  have houtput : ∀ᵐ q ∂η.compProd κ,
-      boundedSourceOutput q ∈ boundedSourcePast Ω γ T := by
-    apply (Measure.ae_compProd_iff (hU.preimage measurable_boundedSourceOutput)).2
-    filter_upwards [hrη] with q hq
-    have hstate : ∀ᵐ w ∂κ q,
-        w ∈ evolutionStateSet Ω γ q.1.2 := by
-      change ∀ᵐ w ∂K.master (boundedSourcePairQuery q),
-        w ∈ evolutionStateSet Ω γ q.1.2
-      rw [← K.terminal_support (boundedSourcePairQuery q)]
-      exact ae_restrict_mem (measurableSet_evolutionStateSet hΩ _)
-    filter_upwards [hstate] with w hw
-    exact ⟨hq.2, hw.1⟩
+
+
   change (Measure.map boundedSourceOutput (η.compProd κ)) _ = 0
   rw [measure_eq_zero_iff_ae_notMem]
   simpa only [Set.mem_compl_iff, not_not] using
     (ae_map_iff (p := fun q => q ∈ boundedSourcePast Ω γ T)
-      measurable_boundedSourceOutput.aemeasurable hU).2 houtput
+      measurable_boundedSourceOutput.aemeasurable hU).2 (by
+          apply (Measure.ae_compProd_iff (hU.preimage measurable_boundedSourceOutput)).2
+          filter_upwards [(by
+
+              exact ae_of_ae_map
+                measurable_subtype_coe.aemeasurable (by
+                    dsimp only [η]
+                    rw [map_comap_subtype_coe hD]
+                    exact ae_restrict_of_ae hr))] with q hq
+
+          filter_upwards [(by
+              change ∀ᵐ w ∂K.master (boundedSourcePairQuery q),
+                w ∈ evolutionStateSet Ω γ q.1.2
+              rw [← K.terminal_support (boundedSourcePairQuery q)]
+              exact ae_restrict_mem (measurableSet_evolutionStateSet hΩ _))] with w hw
+          exact ⟨hq.2, hw.1⟩)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

@@ -13,16 +13,15 @@ An affine terminal perturbation reduces the weak operator inequality to strict
 maximum exclusion. No derivative at the initial or terminal time is assumed.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+open Set
+
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d} {a b : ℝ} {B : FullKineticCoefficient d} {drift : PDE.VectorField d} {u : HypoellipticAleksandrov.KineticScalarField d}
 
 /-- Moving-domain comparison at every strictly later time. -/
-theorem nonpos_at_later_time_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
-    {u : KineticPoint d → ℝ}
+theorem nonpos_at_later_time_maximumClosedTube
     (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω))
     (hγ : ContinuousOn γ (Icc a b))
     (hu : ContinuousOn u (maximumClosedTube Ω γ a b))
@@ -42,45 +41,43 @@ theorem nonpos_at_later_time_maximumClosedTube {d : ℕ}
     u q ≤ 0 := by
   by_cases hqb : q.time = b
   · exact hterminal q hq hqb
-  have hqt : q.time < b := lt_of_le_of_ne hq.1.2 hqb
+
   by_contra hnot
-  have hpos : 0 < u q := lt_of_not_ge hnot
+
   let ε : ℝ := u q / (2 * (b - q.time))
-  have hε : 0 < ε := div_pos hpos (mul_pos (by norm_num) (sub_pos.mpr hqt))
+  have hε : 0 < ε := div_pos (lt_of_not_ge hnot) (mul_pos (by norm_num) (sub_pos.mpr (lt_of_le_of_ne hq.1.2 hqb)))
   let w := maximumTerminalTilt u ε b
   have hwle : ∀ p ∈ maximumClosedTube Ω γ a b, w p ≤ u p := by
     intro p hp
     exact sub_le_self _ (mul_nonneg hε.le (sub_nonneg.mpr hp.1.2))
-  have hwCont : ContinuousOn w (maximumClosedTube Ω γ a b) :=
-    hu.sub (continuousOn_const.mul (continuousOn_const.sub continuous_time.continuousOn))
-  have hwControl : IsTransportIndependentOn w (maximumClosedTube Ω γ a b) ∨
-      IsUniformlyNegAtInfinityOn w (maximumClosedTube Ω γ a b) := by
-    rcases hcontrol with hi | hn
-    · left
-      intro p hp z
-      dsimp [w, maximumTerminalTilt]
-      rw [hi p hp z]
-    · right
-      intro M
-      obtain ⟨R, hR, hb⟩ := hn M
-      exact ⟨R, hR, fun p hp hz => (hwle p hp).trans (hb p hp hz)⟩
-  have hwReg : ∀ p ∈ maximumOpenTube Ω γ a b,
+
+
+
+
+  have hresult := nonpos_on_inset_maximumClosedTube_of_strict hΩ hcΩ
+    (show a < (a + q.time) / 2 by linarith) hγ (hu.sub (continuousOn_const.mul (continuousOn_const.sub continuous_time.continuousOn))) (by
+        rcases hcontrol with hi | hn
+        · left
+          intro p hp z
+          dsimp [w, maximumTerminalTilt]
+          rw [hi p hp z]
+        · right
+          intro M
+          obtain ⟨R, hR, hb⟩ := hn M
+          exact ⟨R, hR, fun p hp hz => (hwle p hp).trans (hb p hp hz)⟩) (show ∀ p ∈ maximumOpenTube Ω γ a b,
       DifferentiableAt ℝ (fun t => w ⟨t, p.position, p.velocity⟩) p.time ∧
       ContDiffAt ℝ 2 (fun v => w ⟨p.time, v, p.velocity⟩) p.position ∧
-      DifferentiableAt ℝ (fun z => w ⟨p.time, p.position, z⟩) p.velocity := by
-    intro p hp
-    obtain ⟨ht, hv, hz⟩ := hreg p hp
-    dsimp only [w, maximumTerminalTilt]
-    refine ⟨?_, hv.sub contDiffAt_const, hz.sub_const (ε * (b - p.time))⟩
-    exact ht.sub ((differentiableAt_const ε).mul
-      ((differentiableAt_const b).sub differentiableAt_id))
-  have hwStrict : ∀ p ∈ maximumOpenTube Ω γ a b,
-      0 < transportedForwardOperator B drift w p := by
-    intro p hp
-    rw [transportedForwardOperator_maximumTerminalTilt B drift (hreg p hp).1]
-    exact add_pos_of_nonneg_of_pos (hsub p hp) hε
-  have hresult := nonpos_on_inset_maximumClosedTube_of_strict hΩ hcΩ
-    (show a < (a + q.time) / 2 by linarith) hγ hwCont hwControl hwReg hB hwStrict
+      DifferentiableAt ℝ (fun z => w ⟨p.time, p.position, z⟩) p.velocity by
+              intro p hp
+              obtain ⟨ht, hv, hz⟩ := hreg p hp
+              dsimp only [w, maximumTerminalTilt]
+              refine ⟨?_, hv.sub contDiffAt_const, hz.sub_const (ε * (b - p.time))⟩
+              exact ht.sub ((differentiableAt_const ε).mul
+                ((differentiableAt_const b).sub differentiableAt_id))) hB (show ∀ p ∈ maximumOpenTube Ω γ a b,
+      0 < transportedForwardOperator B drift w p by
+              intro p hp
+              rw [transportedForwardOperator_maximumTerminalTilt B drift (hreg p hp).1]
+              exact add_pos_of_nonneg_of_pos (hsub p hp) hε)
     (fun p hp heq => (hwle p hp).trans (hterminal p hp heq))
     (fun p hp hf => (hwle p hp).trans (hlateral p hp hf))
     q ⟨⟨by linarith, hq.1.2⟩, hq.2⟩
@@ -93,10 +90,7 @@ theorem nonpos_at_later_time_maximumClosedTube {d : ℕ}
 
 
 /-- Moving-domain comparison on the entire closed time slab, including its initial slice. -/
-theorem nonpos_on_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
-    {u : KineticPoint d → ℝ}
+theorem nonpos_on_maximumClosedTube
     (hab : a < b) (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω))
     (hγ : ContinuousOn γ (Icc a b))
     (hu : ContinuousOn u (maximumClosedTube Ω γ a b))
@@ -122,24 +116,24 @@ theorem nonpos_on_maximumClosedTube {d : ℕ}
   by_cases hqa : q.time = a
   · let f : ℝ → KineticPoint d :=
       fun t => ⟨t, q.position - γ a + γ t, q.velocity⟩
-    have hf : ContinuousOn f (Icc a b) := by
-      change ContinuousOn ((KineticPoint.homeomorphProd d).symm ∘
-        (fun t => (t, (q.position - γ a + γ t, q.velocity)))) _
-      exact (KineticPoint.homeomorphProd d).symm.continuous.comp_continuousOn
-        (continuousOn_id.prodMk ((continuousOn_const.add hγ).prodMk continuousOn_const))
+
     have hfmem : ∀ t ∈ Icc a b, f t ∈ maximumClosedTube Ω γ a b := by
       intro t ht
       refine ⟨ht, ?_⟩
       rw [mem_closure_movingDomain_iff]
-      have hv := (mem_closure_movingDomain_iff Ω γ q.time q.position).mp hq.2
-      simpa only [f, add_sub_cancel_right, hqa] using hv
-    have hfc : ContinuousWithinAt (u ∘ f) (Icc a b) a :=
-      (hu.comp hf hfmem) a ⟨le_rfl, hab.le⟩
-    have haClosure : a ∈ closure (Ioc a b) := by
-      rw [closure_Ioc hab.ne]
-      exact ⟨le_rfl, hab.le⟩
-    have hbound : (u ∘ f) a ≤ (0 : ℝ) :=
-      (hfc.mono Ioc_subset_Icc_self).closure_le haClosure continuousWithinAt_const
+
+      simpa only [f, add_sub_cancel_right, hqa] using ((mem_closure_movingDomain_iff Ω γ q.time q.position).mp hq.2)
+    have hfc  :=
+      (hu.comp (by
+          change ContinuousOn ((KineticPoint.homeomorphProd d).symm ∘
+            (fun t => (t, (q.position - γ a + γ t, q.velocity)))) _
+          exact (KineticPoint.homeomorphProd d).symm.continuous.comp_continuousOn
+            (continuousOn_id.prodMk ((continuousOn_const.add hγ).prodMk continuousOn_const))) hfmem) a ⟨le_rfl, hab.le⟩
+
+    have hbound  :=
+      (hfc.mono Ioc_subset_Icc_self).closure_le (by
+          rw [closure_Ioc hab.ne]
+          exact ⟨le_rfl, hab.le⟩) continuousWithinAt_const
         (fun t ht => hlater (hfmem t ⟨ht.1.le, ht.2⟩) ht.1)
     have hfa : f a = q := by
       simp only [f, sub_add_cancel, ← hqa]

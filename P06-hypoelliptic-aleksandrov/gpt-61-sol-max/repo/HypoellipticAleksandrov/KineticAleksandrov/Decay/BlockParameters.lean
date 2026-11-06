@@ -22,19 +22,25 @@ Steps 1-4 of the source proof.  The constants `C_*`, `h`, `q₀` are the previou
 source constants and enter only as positive reals.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
-theorem blockL0_pos {m : ℝ} (hm : 0 < m) : 0 < blockL0 m := by
+section
+variable {m : ℝ} (hm : 0 < m)
+
+include hm
+theorem blockL0_pos  : 0 < blockL0 m := by
   unfold blockL0
   have : 0 < 2 * Real.pi / m := by positivity
   linarith
 
-theorem two_le_blockL0 {m : ℝ} (hm : 0 < m) : 2 ≤ blockL0 m := by
+theorem two_le_blockL0  : 2 ≤ blockL0 m := by
   unfold blockL0
   have : 0 < 2 * Real.pi / m := by positivity
   linarith
+end
+
 
 theorem blockRho_pos {Lb : ℝ} (hLb : 0 < Lb) : 0 < blockRho Lb := by
   unfold blockRho
@@ -44,49 +50,50 @@ theorem blockRho_le_one (Lb : ℝ) : blockRho Lb ≤ 1 := min_le_left _ _
 
 theorem blockRho_pow_three_le {Lb : ℝ} (hLb : 0 < Lb) :
     blockRho Lb ^ 3 ≤ 1 / (128 * Lb) := by
-  have h128 : 0 < 128 * Lb := by positivity
-  have h0 : 0 ≤ blockRho Lb := (blockRho_pos hLb).le
-  have hle : blockRho Lb ≤ (128 * Lb) ^ (-(1 / 3 : ℝ)) := min_le_right _ _
-  calc blockRho Lb ^ 3 ≤ ((128 * Lb) ^ (-(1 / 3 : ℝ))) ^ 3 := pow_le_pow_left₀ h0 hle 3
-    _ = (128 * Lb) ^ (-(1 / 3 : ℝ) * (3 : ℕ)) := by
-        rw [← Real.rpow_natCast, ← Real.rpow_mul h128.le]
+  let sharedTerm_5365c7903a := ((-(1 / 3 : ℝ)))
+
+
+
+  calc blockRho Lb ^ 3 ≤ ((128 * Lb) ^ sharedTerm_5365c7903a) ^ 3 := pow_le_pow_left₀ ((blockRho_pos hLb).le) (min_le_right _ _) 3
+    _ = (128 * Lb) ^ (sharedTerm_5365c7903a * (3 : ℕ)) := by
+        rw [← Real.rpow_natCast, ← Real.rpow_mul (show 0 < 128 * Lb by positivity).le]
     _ = 1 / (128 * Lb) := by
-        rw [show -(1 / 3 : ℝ) * ((3 : ℕ) : ℝ) = -1 by norm_num, Real.rpow_neg_one, one_div]
+        rw [show sharedTerm_5365c7903a * ((3 : ℕ) : ℝ) = -1 by norm_num, Real.rpow_neg_one, one_div]
 
 theorem blockEta_pos {m Lb : ℝ} (hm : 0 < m) (hLb : 0 < Lb) : 0 < blockEta m Lb := by
-  unfold blockEta
-  have hL0 := blockL0_pos hm
-  exact lt_min (by have := blockRho_pos hLb; positivity) (by positivity)
+  simp_all [blockEta, blockL0_pos, blockRho_pos]
 
 theorem blockEta_le_rho_div_four (m Lb : ℝ) : blockEta m Lb ≤ blockRho Lb / 4 :=
   min_le_left _ _
 
-theorem blockEta_lt_rho {m Lb : ℝ} (hLb : 0 < Lb) :
+variable {m Lb : ℝ}
+
+theorem blockEta_lt_rho  (hLb : 0 < Lb) :
     blockEta m Lb < blockRho Lb := by
   have := blockRho_pos hLb
   have := blockEta_le_rho_div_four m Lb
   linarith
 
-theorem blockEta_le_quarter {m Lb : ℝ} : blockEta m Lb ≤ 1 / 4 := by
+theorem blockEta_le_quarter  : blockEta m Lb ≤ 1 / 4 := by
   have := blockRho_le_one Lb
   have := blockEta_le_rho_div_four m Lb
   linarith
 
-theorem Lb_mul_blockEta_mul_blockL0_le {m Lb : ℝ} (hm : 0 < m) (hLb : 0 < Lb) :
+theorem Lb_mul_blockEta_mul_blockL0_le  (hm : 0 < m) (hLb : 0 < Lb) :
     Lb * blockEta m Lb * blockL0 m ≤ 1 / 8 := by
   have hL0 := blockL0_pos hm
-  have hη : blockEta m Lb ≤ 1 / (8 * Lb * blockL0 m) := min_le_right _ _
-  have h8 : 0 < 8 * Lb * blockL0 m := by positivity
+
+
   calc Lb * blockEta m Lb * blockL0 m = (blockEta m Lb) * (Lb * blockL0 m) := by ring
     _ ≤ 1 / (8 * Lb * blockL0 m) * (Lb * blockL0 m) :=
-        mul_le_mul_of_nonneg_right hη (by positivity)
+        mul_le_mul_of_nonneg_right (min_le_right _ _) (by positivity)
     _ = 1 / 8 := by field_simp
 
 theorem sixteen_Lb_mul_blockRho_pow_three_le {Lb : ℝ} (hLb : 0 < Lb) :
     16 * Lb * blockRho Lb ^ 3 ≤ 1 / 8 := by
-  have h := blockRho_pow_three_le hLb
+
   calc 16 * Lb * blockRho Lb ^ 3 ≤ 16 * Lb * (1 / (128 * Lb)) :=
-        mul_le_mul_of_nonneg_left h (by positivity)
+        mul_le_mul_of_nonneg_left (blockRho_pow_three_le hLb) (by positivity)
     _ = 1 / 8 := by field_simp; norm_num
 
 /-- Proposition 3.9, (3.15), (3.16): positivity and the

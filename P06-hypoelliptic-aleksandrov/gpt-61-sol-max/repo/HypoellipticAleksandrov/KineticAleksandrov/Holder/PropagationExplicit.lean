@@ -7,9 +7,9 @@ import Mathlib.Tactic
 
 /-! # Propagation with the explicit source constant for C-one-one skeletons -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -26,7 +26,7 @@ theorem propagation_explicit (d : ℕ) (hd : 1 ≤ d) (lam Lam H T0 T1 kx kv : �
     (x v : ℝ → PDE.Vec d) (hsk : IsSkeleton x v H (-T0) (P.time - tminus))
     (hxP : x (P.time - tminus) = P.position) (hvP : v (P.time - tminus) = P.velocity)
     (htube : corridor tminus (-T0) (P.time - tminus) kx kv x v ⊆ O)
-    (ell : ℝ) (hell : 0 ≤ ell) (u : KineticPoint d → ℝ)
+    (ell : ℝ) (hell : 0 ≤ ell) (u : HypoellipticAleksandrov.KineticScalarField d)
     (hnonneg : ∀ Q ∈ O, 0 ≤ u Q) (hu : IsAdmissibleSupersolution A O p C_A u)
     (hinitial : ∀ Q ∈ corridor tminus (-T0) (P.time - tminus) kx kv x v,
       Q.time ≤ tminus → ell ≤ u Q) :

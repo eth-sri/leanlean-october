@@ -26,10 +26,8 @@ namespace PDE
 the normed linear structure are inherited definitionally from `W1pGraph U 2`.
 -/
 abbrev H1Graph {d : ℕ} (U : Set (Vec d)) :=
-  W1pGraph U (2 : ℝ≥0∞)
+  W1pGraph U (2 )
 
-namespace H1Graph
 
-end H1Graph
 
 end PDE

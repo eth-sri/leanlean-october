@@ -5,11 +5,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripB
 
 /-! # Genuine continuity and lateral traces of normalized clock tests -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo TheoremA Evolution
+
+open SectionTwo TheoremA
 open scoped Topology
 
 /-- Past closed-strip continuity and an earlier zero half-space give full closed-strip
@@ -22,15 +22,13 @@ theorem clock_continuous_of_zero_after (u : Point → ℝ) (R T : ℝ) (hRT : R 
   intro p hp
   by_cases ht : p.time < T
   · apply (hu p ⟨ht.le, hp⟩).mono_of_mem_nhdsWithin
-    have hn : ∀ᶠ q in 𝓝 p, q.time < T :=
-      (isOpen_lt continuous_time continuous_const).mem_nhds ht
-    filter_upwards [hn.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with q hq hmem
+
+    filter_upwards [(show ∀ᶠ q in 𝓝 p, q.time < T from (isOpen_lt continuous_time continuous_const).mem_nhds ht).filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with q hq hmem
     exact ⟨hq.le, hmem⟩
-  · have hRp : R < p.time := hRT.trans_le (not_lt.mp ht)
-    have hn : ∀ᶠ q in 𝓝 p, R < q.time :=
-      (isOpen_lt continuous_const continuous_time).mem_nhds hRp
-    have heq : u =ᶠ[𝓝 p] (fun _ => (0 : ℝ)) := hn.mono (fun q hq => hz q hq.le)
-    exact (continuousAt_const.congr_of_eventuallyEq heq).continuousWithinAt
+  ·
+
+
+    exact (continuousAt_const.congr_of_eventuallyEq ((show ∀ᶠ q in 𝓝 p, R < q.time from (isOpen_lt continuous_const continuous_time).mem_nhds (hRT.trans_le (not_lt.mp ht))).mono (fun q hq => hz q hq.le))).continuousWithinAt
 
 /-- The actual normalized test is continuous on the full closed velocity strip and zero on
 both lateral faces; the boundary conclusions come from the genuine Duhamel theorem. -/
@@ -49,7 +47,7 @@ theorem clockSourcePotential_boundary
   let E := clockEvolution hH hLE hlam hLam A c e
   have hsetting := c.extended_sourceSetting hlam hLam A e
   obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds (3 * lam / 5) (3 * Lam)
-    (c.extendedCoefficient lam A.a e) hsetting.1
+    _ hsetting.1
   obtain ⟨-, -, -, -, -, hc, -, hv, -⟩ :=
     kinetic_duhamel hH (by omega)
       (intervalDomain_admissible clockNormalizedInterval) (zeroCurve_piecewiseC1 1)

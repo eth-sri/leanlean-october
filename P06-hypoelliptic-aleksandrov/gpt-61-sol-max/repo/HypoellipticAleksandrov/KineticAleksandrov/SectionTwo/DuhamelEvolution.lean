@@ -9,8 +9,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 
+variable {d : ℕ}
+
 /-- A bounded Borel spacetime source restricted to one absolute-time state slice. -/
-def duhamelSlice {d : ℕ} (g : BoundedBorel (KineticPoint d)) (r : ℝ) :
+def duhamelSlice  (g : BoundedBorel (KineticPoint d)) (r : ℝ) :
     BoundedBorel (EvolutionAmbientState d) := by
   refine ⟨fun w => g ⟨r, w.1, w.2⟩, ?_, ?_⟩
   · convert g.measurable.comp ((KineticPoint.measurable_equivProd_symm d).comp
@@ -20,9 +22,9 @@ def duhamelSlice {d : ℕ} (g : BoundedBorel (KineticPoint d)) (r : ℝ) :
     exact ⟨C, hC, fun w => hg ⟨r, w.1, w.2⟩⟩
 
 /-- Each source-time kernel integral equals the supplied terminal evolution action. -/
-theorem duhamelSourceIntegral_eq_evolution {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem duhamelSourceIntegral_eq_evolution  {Ω : PDE.VelocityRegion d}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
+    (B : FullKineticCoefficient d) (b : PDE.VectorField d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
     (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (g : BoundedBorel (KineticPoint d)) (σ r : ℝ) (hσr : σ ≤ r)

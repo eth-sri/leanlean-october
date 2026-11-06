@@ -13,19 +13,19 @@ compact-time identity.  It remains entirely finite dimensional in the spatial
 test and does not construct a weak time derivative or a limiting solution.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open MeasureTheory Set
-open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
+open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder
+
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} (hΩ : IsOpen Ω) (N : ℕ) (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
 
 private theorem hasDerivWithinAt_fixed_galerkin_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
+
     (xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
     (v : galerkinSpace hΩ N) {s : Set ℝ} {τ : ℝ}
     (hx : HasDerivWithinAt x xdot s τ) :
@@ -36,51 +36,46 @@ private theorem hasDerivWithinAt_fixed_galerkin_pairing
             (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ)))
       (inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
         (valueCLM hΩ (galerkinReconstruct hΩ N xdot : H10HilbertGraph hΩ))) s τ := by
-  let R : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
+  let sharedTerm_c2bbea9d56 := ((Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ))
+  let R : sharedTerm_c2bbea9d56 →L[ℝ]
       H10HilbertGraph hΩ :=
     (galerkinSpace hΩ N).subtypeL.comp
       (LinearMap.toContinuousLinearMap (galerkinReconstruct hΩ N))
-  let V : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let V : sharedTerm_c2bbea9d56 →L[ℝ]
+      PDE.ScalarLp Ω (2 ) :=
     (valueCLM hΩ).comp R
-  let I : PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ] ℝ :=
+  let I : PDE.ScalarLp Ω (2 ) →L[ℝ] ℝ :=
     innerSL ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-  have hV := (V.hasFDerivAt).comp_hasDerivWithinAt τ hx
-  have hI := (I.hasFDerivAt).comp_hasDerivWithinAt τ hV
-  simpa only [I, V, R, ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_coe,
-    Submodule.subtypeL_apply, innerSL_apply_apply, Function.comp_def,
-    LinearMap.coe_toContinuousLinearMap'] using hI
+
+
+  simpa only [I, V, R, Function.comp_def, ContinuousLinearMap.comp_apply,
+    LinearMap.coe_toContinuousLinearMap', Submodule.subtypeL_apply, innerSL_apply_apply] using ((I.hasFDerivAt).comp_hasDerivWithinAt τ ((V.hasFDerivAt).comp_hasDerivWithinAt τ hx))
 
 private theorem continuousOn_fixed_galerkin_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
+
     (v : galerkinSpace hΩ N) (s : Set ℝ) (hx : ContinuousOn x s) :
     ContinuousOn
       (fun t =>
         inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
           (valueCLM hΩ
             (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ))) s := by
-  let R : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
+  let sharedTerm_6b6fb50e3f := ((Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ))
+  let R : sharedTerm_6b6fb50e3f →L[ℝ]
       H10HilbertGraph hΩ :=
     (galerkinSpace hΩ N).subtypeL.comp
       (LinearMap.toContinuousLinearMap (galerkinReconstruct hΩ N))
-  let V : (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let V : sharedTerm_6b6fb50e3f →L[ℝ]
+      PDE.ScalarLp Ω (2 ) :=
     (valueCLM hΩ).comp R
-  let I : PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ] ℝ :=
+  let I : PDE.ScalarLp Ω (2 ) →L[ℝ] ℝ :=
     innerSL ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-  have hV : ContinuousOn (fun t => V (x t)) s :=
-    V.continuous.continuousOn.comp hx fun _ _ => Set.mem_univ _
-  simpa only [I, V, R, ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_coe,
-    Submodule.subtypeL_apply, innerSL_apply_apply, Function.comp_def,
-    LinearMap.coe_toContinuousLinearMap'] using
-    I.continuous.continuousOn.comp hV fun _ _ => Set.mem_univ _
+
+  simpa only [I, V, R, ContinuousLinearMap.comp_apply, LinearMap.coe_toContinuousLinearMap',
+    Submodule.subtypeL_apply, Function.comp_def, innerSL_apply_apply] using
+    I.continuous.continuousOn.comp (V.continuous.continuousOn.comp hx fun _ _ => Set.mem_univ _) fun _ _ => Set.mem_univ _
 
 private theorem continuousOn_galerkin_reconstruct
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
+
     (s : Set ℝ) (hx : ContinuousOn x s) :
     ContinuousOn
       (fun t => (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ)) s := by
@@ -90,13 +85,13 @@ private theorem continuousOn_galerkin_reconstruct
       (LinearMap.toContinuousLinearMap (galerkinReconstruct hΩ N))
   have hR : ContinuousOn (fun t => R (x t)) s :=
     R.continuous.continuousOn.comp hx fun _ _ => Set.mem_univ _
-  simpa only [R, ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_coe,
-    Submodule.subtypeL_apply, LinearMap.coe_toContinuousLinearMap'] using hR
+  simpa only [R, ContinuousLinearMap.comp_apply, LinearMap.coe_toContinuousLinearMap',
+    Submodule.subtypeL_apply] using hR
 
 private theorem compactTime_scalar_identity
     (T : ℝ) (hT : 0 < T) (pairing residual : ℝ → ℝ)
     (hpairing : ContinuousOn pairing (Icc 0 T))
-    (hresidual : IntegrableOn residual (Icc 0 T) volume)
+    (hresidual : IntegrableOn residual (Icc 0 T) )
     (hderivPairing : ∀ τ ∈ Icc 0 T,
       HasDerivWithinAt pairing (residual τ) (Icc 0 T) τ)
     (eta : ReverseTimeScalarTest T) :
@@ -104,11 +99,7 @@ private theorem compactTime_scalar_identity
     Integrable (fun τ => residual τ * eta τ) (reverseTimeVolume T) ∧
     (∫ τ, pairing τ * eta.deriv τ ∂reverseTimeVolume T) =
       -(∫ τ, residual τ * eta τ ∂reverseTimeVolume T) := by
-  have hetaDeriv : ∀ τ ∈ Icc 0 T,
-      HasDerivWithinAt (eta : ℝ → ℝ) (eta.deriv τ) (Icc 0 T) τ := by
-    intro τ _
-    rw [ReverseTimeScalarTest.deriv_apply]
-    exact ((eta.contDiff.differentiable (by simp)).differentiableAt.hasDerivAt).hasDerivWithinAt
+
   have hpairingIntegrable : IntervalIntegrable residual volume 0 T :=
     (intervalIntegrable_iff_integrableOn_Icc_of_le hT.le).mpr hresidual
   have hetaIntegrable : IntervalIntegrable eta.deriv volume 0 T :=
@@ -117,9 +108,9 @@ private theorem compactTime_scalar_identity
     apply image_eq_zero_of_notMem_tsupport
     intro hsupport
     have hmem := eta.tsupport_subset hsupport
-    have hmem' : (0 : ℝ) < 0 ∧ 0 < T := by
-      simpa only [reverseTimeOpenInterval, mem_Ioo] using hmem
-    exact lt_irrefl 0 hmem'.1
+
+    exact lt_irrefl 0 (show (0 : ℝ) < 0 ∧ 0 < T by
+        exact hmem).1
   have hetaT : eta T = 0 := by
     apply image_eq_zero_of_notMem_tsupport
     intro hsupport
@@ -128,7 +119,11 @@ private theorem compactTime_scalar_identity
   have hinterval := intervalIntegral.integral_mul_deriv_eq_deriv_mul_of_hasDerivWithinAt
     (a := 0) (b := T) (u := pairing) (u' := residual) (v := eta) (v' := eta.deriv)
     (by rw [uIcc_of_le hT.le]; exact hderivPairing)
-    (by rw [uIcc_of_le hT.le]; exact hetaDeriv) hpairingIntegrable hetaIntegrable
+    (by rw [uIcc_of_le hT.le]; exact (show ∀ τ ∈ Icc 0 T,
+      HasDerivWithinAt (eta : ℝ → ℝ) (eta.deriv τ) (Icc 0 T) τ by
+        intro τ _
+        rw [ReverseTimeScalarTest.deriv_apply]
+        exact ((eta.contDiff.differentiable (by simp)).differentiableAt.hasDerivAt).hasDerivWithinAt)) hpairingIntegrable hetaIntegrable
   have hintervalZero : (∫ τ in 0..T, pairing τ * eta.deriv τ) =
       -(∫ τ in 0..T, residual τ * eta τ) := by
     calc
@@ -137,34 +132,34 @@ private theorem compactTime_scalar_identity
       _ = -(∫ τ in 0..T, residual τ * eta τ) := by
         rw [heta0, hetaT]
         ring
-  have hleftIcc : IntegrableOn (fun τ => pairing τ * eta.deriv τ) (Icc 0 T) volume :=
+  have hleftIcc : IntegrableOn (fun τ => pairing τ * eta.deriv τ) (Icc 0 T)  :=
     (hpairing.mul eta.contDiff_deriv.continuous.continuousOn).integrableOn_Icc
   obtain ⟨C, hC⟩ := eta.exists_norm_le
-  have hrightIcc : IntegrableOn (fun τ => residual τ * eta τ) (Icc 0 T) volume :=
+  have hrightIcc : IntegrableOn (fun τ => residual τ * eta τ) (Icc 0 T)  :=
     hresidual.mul_bdd eta.contDiff.continuous.aestronglyMeasurable (ae_of_all _ hC)
-  have hleft : Integrable (fun τ => pairing τ * eta.deriv τ) (reverseTimeVolume T) := by
-    simpa only [reverseTimeVolume, reverseTimeOpenInterval,
-      restrict_Ioo_eq_restrict_Icc, IntegrableOn] using
-      hleftIcc
-  have hright : Integrable (fun τ => residual τ * eta τ) (reverseTimeVolume T) := by
-    simpa only [reverseTimeVolume, reverseTimeOpenInterval,
-      restrict_Ioo_eq_restrict_Icc, IntegrableOn] using
-      hrightIcc
-  have hcompact : (∫ τ, pairing τ * eta.deriv τ ∂reverseTimeVolume T) =
-      -(∫ τ, residual τ * eta τ ∂reverseTimeVolume T) := by
-    simpa only [reverseTimeVolume, reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc,
-      restrict_Ioc_eq_restrict_Icc,
-      intervalIntegral.integral_of_le hT.le] using hintervalZero
-  exact ⟨hleft, hright, hcompact⟩
+
+
+
+  exact ⟨(by
+      simpa only [reverseTimeVolume, reverseTimeOpenInterval,
+        restrict_Ioo_eq_restrict_Icc, IntegrableOn] using
+        hleftIcc), (by
+      simpa only [reverseTimeVolume, reverseTimeOpenInterval,
+        restrict_Ioo_eq_restrict_Icc, IntegrableOn] using
+        hrightIcc), (show (∫ τ, pairing τ * eta.deriv τ ∂reverseTimeVolume T) =
+      -(∫ τ, residual τ * eta τ ∂reverseTimeVolume T) by
+      simpa only [reverseTimeVolume, reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc,
+        restrict_Ioc_eq_restrict_Icc,
+        intervalIntegral.integral_of_le hT.le] using hintervalZero)⟩
 
 /-- The finite Galerkin row equation yields the compactly supported scalar time identity. -/
 theorem reverseTimeGalerkin_compactTime_identity_of_basisRows
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -239,15 +234,9 @@ theorem reverseTimeGalerkin_compactTime_identity_of_basisRows
       haSmooth hbSmooth hcSmooth τ
       (galerkinReconstruct hΩ N (x τ) : H10HilbertGraph hΩ)
       (v : H10HilbertGraph hΩ)
-  have hT : 0 < T := by
-    dsimp only [T]
-    linarith
-  have hpairing : ContinuousOn pairing (Icc 0 T) := by
-    simpa only [pairing, T] using continuousOn_fixed_galerkin_pairing hΩ N x v
-      (Icc 0 (r₁ - r₀)) hx
-  have hrec : ContinuousOn
-      (fun τ => (galerkinReconstruct hΩ N (x τ) : H10HilbertGraph hΩ)) (Icc 0 T) := by
-    simpa only [T] using continuousOn_galerkin_reconstruct hΩ N x (Icc 0 (r₁ - r₀)) hx
+
+
+
   have hsource : Continuous
       (fun τ => reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ
         (v : H10HilbertGraph hΩ)) :=
@@ -259,54 +248,60 @@ theorem reverseTimeGalerkin_compactTime_identity_of_basisRows
         (galerkinReconstruct hΩ N (x τ) : H10HilbertGraph hΩ)
         (v : H10HilbertGraph hΩ)) (Icc 0 T) :=
     ((continuous_reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
-      haSmooth hbSmooth hcSmooth).continuousOn.clm_apply hrec).clm_apply
+      haSmooth hbSmooth hcSmooth).continuousOn.clm_apply (show ContinuousOn
+      (fun τ => (galerkinReconstruct hΩ N (x τ) : H10HilbertGraph hΩ)) (Icc 0 T) by
+          simpa only [T] using continuousOn_galerkin_reconstruct hΩ N x _ hx)).clm_apply
       continuous_const.continuousOn
-  have hclampedResidual : ContinuousOn clampedResidual (Icc 0 T) := by
-    simpa only [clampedResidual, Pi.sub_def] using hsource.continuousOn.sub hclampedForm
-  have hformAE : ∀ᵐ τ ∂volume.restrict (Icc 0 T),
+
+
+  have hclampedResidualIcc : IntegrableOn clampedResidual (Icc 0 T)  :=
+    (show ContinuousOn clampedResidual (Icc 0 T) by
+        simpa only [clampedResidual, Pi.sub_def] using hsource.continuousOn.sub hclampedForm).integrableOn_Icc
+
+
+  exact compactTime_scalar_identity T (show 0 < T by
+      dsimp only [T]
+      linarith) pairing residual (show ContinuousOn pairing (Icc 0 T) by
+      simpa only [pairing, T] using continuousOn_fixed_galerkin_pairing hΩ N x v
+        _ hx) (by
+      apply Integrable.congr hclampedResidualIcc
+      filter_upwards [(show ∀ᵐ τ ∂volume.restrict (Icc 0 T),
       reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
         haSmooth hbSmooth hcSmooth τ
         (galerkinReconstruct hΩ N (x τ) : H10HilbertGraph hΩ)
         (v : H10HilbertGraph hΩ) =
       reverseTimeSpatialForm hΩ r₁ τ a b c
         (galerkinReconstruct hΩ N (x τ) : H10HilbertGraph hΩ)
-        (v : H10HilbertGraph hΩ) := by
-    have hformAEall : ∀ᵐ τ ∂volume.restrict (Icc 0 T), ∀ u v : H10HilbertGraph hΩ,
-        reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth τ u v =
-        reverseTimeSpatialForm hΩ r₁ τ a b c u v := by
-      simpa only [T, reverseTimeVolume, reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc]
-        using ae_reverseTimeSpatialFormOperatorClamp_apply r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth
-    filter_upwards [hformAEall] with τ hτ
-    exact hτ _ _
-  have hclampedResidualIcc : IntegrableOn clampedResidual (Icc 0 T) volume :=
-    hclampedResidual.integrableOn_Icc
-  have hresidualIcc : IntegrableOn residual (Icc 0 T) volume := by
-    apply Integrable.congr hclampedResidualIcc
-    filter_upwards [hformAE] with τ hτ
-    dsimp only [residual, clampedResidual]
-    exact congrArg
-      (fun z : ℝ => reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ
-        (v : H10HilbertGraph hΩ) - z) hτ
-  have hderivPairing : ∀ τ ∈ Icc 0 T,
-      HasDerivWithinAt pairing (residual τ) (Icc 0 T) τ := by
-    intro τ hτ
-    have hfixed := hasDerivWithinAt_fixed_galerkin_pairing hΩ N x (xdot τ) v
-      (hderiv τ (by simpa only [T] using hτ))
-    have hrow := reverseTimeGalerkin_basisRows_forall r₀ r₁ h₀₁ hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth N ⟨τ, by simpa only [T] using hτ⟩
-      (x τ) (xdot τ) (hrows ⟨τ, by simpa only [T] using hτ⟩) v
-    have hrate :
-        inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-          (valueCLM hΩ (galerkinReconstruct hΩ N (xdot τ) : H10HilbertGraph hΩ)) =
-        residual τ := by
-      rw [real_inner_comm]
-      dsimp only [residual, T]
-      linarith
-    rw [← hrate]
-    simpa only [pairing] using hfixed
-  exact compactTime_scalar_identity T hT pairing residual hpairing hresidualIcc
-    hderivPairing eta
+        (v : H10HilbertGraph hΩ) by
+
+          filter_upwards [(show ∀ᵐ τ ∂volume.restrict (Icc 0 T), ∀ u v : H10HilbertGraph hΩ,
+              reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
+                haSmooth hbSmooth hcSmooth τ u v =
+              reverseTimeSpatialForm hΩ r₁ τ a b c u v by
+              simpa only [T, reverseTimeVolume, reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc]
+                using ae_reverseTimeSpatialFormOperatorClamp_apply r₀ r₁ h₀₁ hΩ hΩbounded a b c
+                  haSmooth hbSmooth hcSmooth)] with τ hτ
+          exact hτ _ _)] with τ hτ
+      dsimp only [residual, clampedResidual]
+      exact congrArg
+        (fun z  => reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ
+          (v : H10HilbertGraph hΩ) - z) hτ)
+    (show ∀ τ ∈ Icc 0 T,
+      HasDerivWithinAt pairing (residual τ) (Icc 0 T) τ by
+        intro τ hτ
+        have hfixed := hasDerivWithinAt_fixed_galerkin_pairing hΩ N x (xdot τ) v
+          (hderiv τ (hτ))
+        have hrow := reverseTimeGalerkin_basisRows_forall r₀ r₁ h₀₁ hΩ hΩbounded a b c F
+          haSmooth hbSmooth hcSmooth hFSmooth N ⟨τ, hτ⟩
+          (x τ) (xdot τ) (hrows ⟨τ, hτ⟩) v
+        have hrate :
+            inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
+              (valueCLM hΩ (galerkinReconstruct hΩ N (xdot τ) : H10HilbertGraph hΩ)) =
+            residual τ := by
+          rw [real_inner_comm]
+          dsimp only [residual, T]
+          linarith
+        rw [← hrate]
+        exact hfixed) eta
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

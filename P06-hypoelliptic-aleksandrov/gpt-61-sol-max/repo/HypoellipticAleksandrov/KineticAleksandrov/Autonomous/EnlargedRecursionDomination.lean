@@ -9,16 +9,16 @@ import Mathlib.Tactic
 The lower observation endpoint is included in the canonical enlarged recursion.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
+
 /-- Actual active Green mixtures are supported in the open active velocity interval. -/
 theorem enlargedGreenMixture_ae_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+     (T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu),
       q.velocity 0 ∈ c.active := by
@@ -28,20 +28,18 @@ theorem enlargedGreenMixture_ae_active
   apply Filter.Eventually.of_forall
   intro p
   change ∀ᵐ q ∂(if hp : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T then
-    finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
+    finiteUnionGreen hH hLE hlam hLam A _ T
       (enlargedVisitPole _ T ⟨p, hp⟩) else 0), q.velocity 0 ∈ c.active
   split
   · rename_i hp
-    exact (visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
+    exact (visitUnionGreen_ae_velocity hH hLE hlam hLam A _ T
       (enlargedVisitPole _ T ⟨p, hp⟩)).mono fun q hq =>
         ((visitActiveUnion_carrier c J).le hq).1
-  · simp only [ae_zero, Filter.eventually_bot]
+  · rfl
 
 /-- Literal finite-piece active domination in the source open physical observation strip. -/
 theorem enlarged_piece_domination
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+     (s T : ℝ) (P : Point)
     (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
     let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J s T P
     let GA := enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T

@@ -12,9 +12,9 @@ import Mathlib.Tactic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov MeasureTheory Set Filter
-open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped ENNReal
+open MeasureTheory Set Filter
+
+
 
 /-- The source gauge, using the existing Bellman geometry. -/
 def rho (z : Z) : ℝ := Real.rpow (z.1^2+z.2^6) (1/6)
@@ -25,12 +25,13 @@ def gamma (alpha : ℝ) : ℝ := 2-alpha
 /-- The singular extended weight retains infinite value at the origin. -/
 def rhoWeight (g : ℝ) (z : Z) : ENNReal := (ENNReal.ofReal (rho z))^(-g)
 
+variable (A0 r Y : ℝ)
+
 /-- The literal position-velocity box of the source. -/
-def box (A0 r Y : ℝ) : Set Z := {z | |z.1-Y| ≤ A0*r^3 ∧ |z.2| ≤ A0*r}
+def box  : Set Z := {z | |z.1-Y| ≤ A0*r^3 ∧ |z.2| ≤ A0*r}
 
 /-- Source boxes are Borel. -/
-theorem box_measurable (A0 r Y : ℝ) : MeasurableSet (box A0 r Y) := by
-  exact (isClosed_le (continuous_fst.sub continuous_const).abs continuous_const |>.inter
+theorem box_measurable  : MeasurableSet (box A0 r Y) := (isClosed_le (continuous_fst.sub continuous_const).abs continuous_const |>.inter
     (isClosed_le continuous_snd.abs continuous_const)).measurableSet
 
 /-- The physical scalar kernel inherits the actual master sub-Markov bound. -/
@@ -41,40 +42,40 @@ theorem kernelXV_mass_le_one (E : FullSpaceEvolution) (t : NNReal) (z : Z) :
 
 /-- Nonnegative elapsed queries depend measurably on real time. -/
 theorem wholeQuery_realTime_measurable (z : Z) :
-    Measurable (fun t : ℝ => wholeQuery (Real.toNNReal t) z) := by
+    Measurable (fun t  => wholeQuery (Real.toNNReal t) z) := by
   apply Measurable.subtype_mk
   change Measurable (fun t : ℝ => (0, ((Real.toNNReal t : ℝ),
     ((fun _ : Fin 1 => z.2), (fun _ : Fin 1 => z.1)))))
   fun_prop
 
+variable (E : FullSpaceEvolution) (z : Z)
+
 /-- Evaluation of the actual physical kernel on any Borel set is measurable in elapsed time. -/
-theorem kernelXV_realTime_measurable (E : FullSpaceEvolution) (z : Z)
+theorem kernelXV_realTime_measurable
     (s : Set Z) (hs : MeasurableSet s) :
-    Measurable (fun t : ℝ => kernelXV E (Real.toNNReal t) z s) := by
-  have he (t : ℝ) : kernelXV E (Real.toNNReal t) z s =
-      E.2.master (wholeQuery (Real.toNNReal t) z) (nativeToXV ⁻¹' s) :=
-    Measure.map_apply nativeToXV_measurable hs
-  simp_rw [he]
-  exact (E.2.jointlyMeasurable_apply _ (nativeToXV_measurable hs)).comp
-    (wholeQuery_realTime_measurable z)
+    Measurable (fun t  => kernelXV E (Real.toNNReal t) z s) := (Eq.mpr (id (congrArg Measurable (funext fun t => (fun t => Measure.map_apply nativeToXV_measurable hs) t)))
+  (Measurable.comp (MovingFiberKernel.jointlyMeasurable_apply E.2 (nativeToXV ⁻¹' s) (nativeToXV_measurable hs))
+    (wholeQuery_realTime_measurable z)))
+
+variable (A0 r Y T : ℝ)
 
 /-- Real box actions are genuinely integrable over finite time intervals. -/
-theorem box_action_integrableOn (E : FullSpaceEvolution) (z : Z) (A0 r Y T : ℝ) :
-    IntegrableOn (fun t : ℝ => (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal)
+theorem box_action_integrableOn   :
+    IntegrableOn (fun t  => (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal)
       (Ioc 0 T) := by
-  have hm := (kernelXV_realTime_measurable E z _ (box_measurable A0 r Y)).ennreal_toReal
-  have ht : volume (Ioc 0 T) ≠ ⊤ := by
-    rw [Real.volume_Ioc]
-    exact ENNReal.ofReal_lt_top.ne
-  apply Integrable.mono' (integrableOn_const (C := (1 : ℝ)) ht) hm.aestronglyMeasurable
+
+
+  apply Integrable.mono' (integrableOn_const (C := (1 : ℝ)) (by
+      rw [Real.volume_Ioc]
+      exact ENNReal.ofReal_lt_top.ne)) ((kernelXV_realTime_measurable E z _ (box_measurable A0 r Y)).ennreal_toReal).aestronglyMeasurable
   filter_upwards with t
   rw [Real.norm_of_nonneg ENNReal.toReal_nonneg]
   have hmass := (measure_mono (subset_univ (box A0 r Y))).trans
     (kernelXV_mass_le_one E (Real.toNNReal t) z)
-  simpa only [ENNReal.toReal_one] using ENNReal.toReal_mono ENNReal.one_ne_top hmass
+  exact ENNReal.toReal_mono ENNReal.one_ne_top hmass
 
 /-- The extended and source real box occupations agree, with finiteness established first. -/
-theorem box_occupation_ofReal_integral (E : FullSpaceEvolution) (z : Z) (A0 r Y T : ℝ) :
+theorem box_occupation_ofReal_integral   :
     ENNReal.ofReal (∫ t in Ioc 0 T,
       (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal) =
       ∫⁻ t in Ioc 0 T, kernelXV E (Real.toNNReal t) z (box A0 r Y) := by

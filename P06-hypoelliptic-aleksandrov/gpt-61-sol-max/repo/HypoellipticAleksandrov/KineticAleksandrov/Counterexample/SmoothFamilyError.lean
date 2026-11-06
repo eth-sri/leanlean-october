@@ -7,31 +7,35 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothCo
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyApproximateIdentity
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 import HypoellipticAleksandrov.Coefficients.ParabolicRegularization
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Coefficient errors vanish for each fixed smooth function -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory HypoellipticAleksandrov.Parabolic
 open scoped Topology ENNReal MatrixOrder Matrix.Norms.Elementwise
 
+variable {d : ℕ}
+
 /-- A spatial almost everywhere statement lifts to native kinetic spacetime volume. -/
-theorem ae_spatial_lift {d : ℕ} {P : XV d → Prop} (hP : ∀ᵐ q ∂volume, P q) :
-    ∀ᵐ z : KineticPoint d ∂volume, P (z.position, z.velocity) := by
+theorem ae_spatial_lift  {P : XV d → Prop} (hP : ∀ᵐ q, P q) :
+    ∀ᵐ z : KineticPoint d, P (z.position, z.velocity) := by
   have hs : Measure.QuasiMeasurePreserving Prod.snd
-      (volume : Measure (ℝ × XV d)) (volume : Measure (XV d)) := by
+      (volume : Measure (ℝ × XV d))  := by
     rw [Measure.volume_eq_prod]
     exact Measure.quasiMeasurePreserving_snd
   exact (hs.comp (KineticPoint.measurePreserving_equivProd d).quasiMeasurePreserving).ae hP
 
 /-- Fixed-function coefficient mollification has vanishing full contraction error in Lp. -/
-theorem smooth_coefficient_error_tendsto {d : ℕ}
+theorem smooth_coefficient_error_tendsto
     (A : XV d → PDE.Mat d) (lam Lam : ℝ)
     (hA : ∀ i k, Measurable (fun q => A q i k))
     (hbound : ∀ q, lam • (1 : PDE.Mat d) ≤ A q ∧ A q ≤ Lam • (1 : PDE.Mat d))
-    (u : KineticPoint d → ℝ)
-    (hu : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × XV d =>
+    (u : HypoellipticAleksandrov.KineticScalarField d)
+    (hu : ContDiff ℝ PDE.smoothOrder (fun q : ℝ × XV d =>
       u ((KineticPoint.equivProd d).symm q)))
     (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (p : ℝ≥0∞) (hp0 : p ≠ 0) (hp : p ≠ ∞) :
@@ -40,12 +44,12 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
         A (P.position, P.velocity)) (kineticVelocityHessian u P))
       p (volume.restrict (backwardCylinder P₀ R))) atTop (𝓝 0) := by
   let C := 3 * (|lam| + |Lam|)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+
   obtain ⟨M, hM, hH⟩ := kineticVelocityHessian_bound_on_cylinder P₀ R hR u hu
-  have hcv := continuous_kineticVelocityHessian_of_joint_smooth u hu
+
   have hsp : Continuous (fun P : KineticPoint d => (P.position, P.velocity)) :=
     continuous_position.prodMk continuous_velocity
-  have hqmeas := (isOpen_backwardCylinder P₀ R hR).measurableSet
+
   let : IsFiniteMeasure (volume.restrict (backwardCylinder P₀ R)) :=
     ⟨by rw [Measure.restrict_apply_univ]; exact backwardCylinder_volume_lt_top P₀ R hR⟩
   have hs n := smooth_coefficients_same_bounds (standardMollifierSequence n)
@@ -69,9 +73,9 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
     intro k hk
     exact (((hc n i k).measurable.comp hsp.measurable).sub
       ((hA i k).comp hsp.measurable)).mul
-      (((continuous_apply k).comp ((continuous_apply i).comp hcv)).measurable)
+      (((continuous_apply k).comp ((continuous_apply i).comp (continuous_kineticVelocityHessian_of_joint_smooth u hu))).measurable)
   · intro n
-    apply ae_restrict_of_forall_mem hqmeas
+    apply ae_restrict_of_forall_mem ((isOpen_backwardCylinder P₀ R hR).measurableSet)
     intro P hP
     have hb i k : ‖(mollifiedMatrix (standardMollifierSequence n) A (P.position, P.velocity) i k -
         A (P.position, P.velocity) i k) * kineticVelocityHessian u P i k‖ ≤ 2 * C * M := by

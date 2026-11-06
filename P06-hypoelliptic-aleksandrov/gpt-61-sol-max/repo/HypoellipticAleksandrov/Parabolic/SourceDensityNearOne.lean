@@ -11,6 +11,11 @@ public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+import Mathlib.Tactic.GCongr
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Positivity
+
+
 
 /-!
 # Source-aware near-one density-to-point estimate
@@ -21,14 +26,14 @@ are selected uniformly before the local coefficient, solution, domain, source,
 and terminal velocity.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Filter MeasureTheory Set
-open scoped MatrixOrder Topology
+open scoped MatrixOrder
 
 private theorem parabolicOperator_add_of_contDiffAt {d : Nat}
     (B : CoefficientField d) (u v : TimeVelocity d → Real)
@@ -36,34 +41,33 @@ private theorem parabolicOperator_add_of_contDiffAt {d : Nat}
     (hv : ContDiffAt Real 2 v z) :
     parabolicOperator B (fun y ↦ u y + v y) z =
       parabolicOperator B u z + parabolicOperator B v z := by
-  have huDiff : DifferentiableAt Real u z := hu.differentiableAt (by norm_num)
-  have hvDiff : DifferentiableAt Real v z := hv.differentiableAt (by norm_num)
-  have hfirst :
-      fderiv Real (fun y ↦ u y + v y) =ᶠ[nhds z]
-        fun y ↦ fderiv Real u y + fderiv Real v y := by
-    filter_upwards [hu.eventually (by norm_num), hv.eventually (by norm_num)]
-      with y huy hvy
-    exact fderiv_fun_add (huy.differentiableAt (by norm_num))
-      (hvy.differentiableAt (by norm_num))
-  have huFirstDiff : DifferentiableAt Real (fderiv Real u) z :=
-    (hu.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-  have hvFirstDiff : DifferentiableAt Real (fderiv Real v) z :=
-    (hv.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
+  let sharedTerm_5804b67efc := ((fun y ↦ u y + v y))
+  let sharedTerm_42d8ef21fd := ((fun y ↦ fderiv Real u y + fderiv Real v y))
+
+
+
+
+
   have hsecond :
-      fderiv Real (fderiv Real (fun y ↦ u y + v y)) z =
+      fderiv Real (fderiv Real sharedTerm_5804b67efc) z =
         fderiv Real (fderiv Real u) z + fderiv Real (fderiv Real v) z := by
     calc
-      fderiv Real (fderiv Real (fun y ↦ u y + v y)) z =
-          fderiv Real (fun y ↦ fderiv Real u y + fderiv Real v y) z :=
-        hfirst.fderiv_eq
+      fderiv Real (fderiv Real sharedTerm_5804b67efc) z =
+          fderiv Real sharedTerm_42d8ef21fd z :=
+        (show fderiv Real sharedTerm_5804b67efc =ᶠ[nhds z]
+        sharedTerm_42d8ef21fd by
+            filter_upwards [hu.eventually (by norm_num), hv.eventually (by norm_num)]
+              with y huy hvy
+            exact fderiv_fun_add (huy.differentiableAt (by norm_num))
+              (hvy.differentiableAt (by norm_num))).fderiv_eq
       _ = fderiv Real (fderiv Real u) z + fderiv Real (fderiv Real v) z :=
-        fderiv_fun_add huFirstDiff hvFirstDiff
-  have htime : timeDerivative (fun y ↦ u y + v y) z =
+        fderiv_fun_add ((hu.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)) ((hv.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num))
+  have htime : timeDerivative sharedTerm_5804b67efc z =
       timeDerivative u z + timeDerivative v z := by
     unfold timeDerivative
-    rw [fderiv_fun_add huDiff hvDiff]
+    rw [fderiv_fun_add (hu.differentiableAt (by norm_num)) (hv.differentiableAt (by norm_num))]
     rfl
-  have hhessian : velocityHessian (fun y ↦ u y + v y) z =
+  have hhessian : velocityHessian sharedTerm_5804b67efc z =
       velocityHessian u z + velocityHessian v z := by
     ext i j
     unfold velocityHessian
@@ -86,28 +90,28 @@ private theorem exists_rho_gt_one_inv_cosh_le
     dsimp only [s]
     have : 0 ≤ 4 * x / a := div_nonneg (mul_nonneg (by norm_num) hx) ha.le
     linarith
-  have hs0 : 0 ≤ s := hs.le.trans' zero_le_one
-  have hrho : 1 < rho := by
-    dsimp only [rho]
-    nlinarith
+
+
   have hsqrt : Real.sqrt rho = s := by
     dsimp only [rho]
-    rw [Real.sqrt_sq_eq_abs, abs_of_nonneg hs0]
+    rw [Real.sqrt_sq_eq_abs, abs_of_nonneg (hs.le.trans' zero_le_one)]
   have harg : x ≤ a * Real.sqrt rho / 4 := by
     rw [hsqrt]
     dsimp only [s]
     field_simp [ha.ne']
     nlinarith [ha]
   have harg0 : 0 ≤ a * Real.sqrt rho / 4 := by positivity
-  have hcosh : eps⁻¹ ≤ Real.cosh (a * Real.sqrt rho / 4) := by
-    calc
-      eps⁻¹ ≤ max 1 eps⁻¹ := le_max_right _ _
-      _ = Real.cosh x := (Real.cosh_arcosh hmax).symm
-      _ ≤ Real.cosh (a * Real.sqrt rho / 4) := by
-        rw [Real.cosh_le_cosh]
-        simpa only [abs_of_nonneg hx, abs_of_nonneg harg0] using harg
-  refine ⟨rho, hrho, ?_⟩
-  exact (inv_le_comm₀ (Real.cosh_pos _) heps).2 hcosh
+
+  refine ⟨rho, (by
+      dsimp only [rho]
+      nlinarith), ?_⟩
+  exact (inv_le_comm₀ (Real.cosh_pos _) heps).2 (by
+      calc
+        eps⁻¹ ≤ max 1 eps⁻¹ := le_max_right _ _
+        _ = Real.cosh x := (Real.cosh_arcosh hmax).symm
+        _ ≤ Real.cosh (a * Real.sqrt rho / 4) := by
+          rw [Real.cosh_le_cosh]
+          simpa only [abs_of_nonneg hx, abs_of_nonneg harg0] using harg)
 
 private theorem exists_eta_for_near_one_error
     (d : Nat) (C rho eps : Real)
@@ -115,6 +119,7 @@ private theorem exists_eta_for_near_one_error
     ∃ eta : Real, 0 < eta ∧ eta < 1 ∧
       C * (1 / 2 : Real) ^ ((d : Real) / ((d : Real) + 1)) * rho *
         Real.rpow (eta * (2 : Real) ^ d) (1 / ((d : Real) + 1)) ≤ eps := by
+  let sharedTerm_2f99adf446 := ((1 / ((d : Real) + 1)))
   let n : Nat := d + 1
   let K : Real :=
     C * (1 / 2 : Real) ^ ((d : Real) / ((d : Real) + 1)) * rho
@@ -122,72 +127,73 @@ private theorem exists_eta_for_near_one_error
   let x : Real := eps / K
   let eta0 : Real := x ^ n / q
   let eta : Real := min (1 / 2) eta0
-  have hhalf : 0 < (1 / 2 : Real) := by norm_num
-  have hpow : 0 < (1 / 2 : Real) ^ ((d : Real) / ((d : Real) + 1)) :=
-    Real.rpow_pos_of_pos hhalf _
+
+
   have hK : 0 < K := by
     dsimp only [K]
     positivity
   have hq : 0 < q := by
     dsimp only [q]
     positivity
-  have hx : 0 < x := by
-    dsimp only [x]
-    positivity
-  have hn : n ≠ 0 := by
-    dsimp only [n]
-    omega
-  have heta0 : 0 < eta0 := by
-    dsimp only [eta0]
-    positivity
-  have heta : 0 < eta := lt_min (by norm_num) heta0
-  have heta_lt_one : eta < 1 := (min_le_left _ _).trans_lt (by norm_num)
-  have heta_bound : eta * q ≤ x ^ n := by
-    have := mul_le_mul_of_nonneg_right (min_le_right (1 / 2 : Real) eta0) hq.le
-    dsimp only [eta0] at this
-    field_simp [hq.ne'] at this
-    simpa only [eta, mul_comm] using this
-  have hp : 0 ≤ 1 / ((d : Real) + 1) := by positivity
-  have hbase : 0 ≤ eta * q := mul_nonneg heta.le hq.le
-  have hrpow : Real.rpow (eta * q) (1 / ((d : Real) + 1)) ≤ x := by
-    calc
-      Real.rpow (eta * q) (1 / ((d : Real) + 1)) ≤
-          Real.rpow (x ^ n) (1 / ((d : Real) + 1)) :=
-        Real.rpow_le_rpow hbase heta_bound hp
-      _ = x := by
-        have hcast : (n : Real) = (d : Real) + 1 := by
-          dsimp only [n]
-          norm_num
-        rw [show 1 / ((d : Real) + 1) = ((n : Real))⁻¹ by
-          rw [hcast]
-          exact one_div _]
-        exact Real.pow_rpow_inv_natCast hx.le hn
-  refine ⟨eta, heta, heta_lt_one, ?_⟩
-  change K * Real.rpow (eta * q) (1 / ((d : Real) + 1)) ≤ eps
+
+
+
+  have heta : 0 < eta := lt_min (by norm_num) (by
+      dsimp only [eta0]
+      positivity)
+
+
+
+
+
+  refine ⟨eta, heta, ((min_le_left _ _).trans_lt (by norm_num)), ?_⟩
+  change K * Real.rpow (eta * q) sharedTerm_2f99adf446 ≤ eps
   calc
-    K * Real.rpow (eta * q) (1 / ((d : Real) + 1)) ≤ K * x :=
-      mul_le_mul_of_nonneg_left hrpow hK.le
+    K * Real.rpow (eta * q) sharedTerm_2f99adf446 ≤ K * x :=
+      mul_le_mul_of_nonneg_left (by
+          calc
+            Real.rpow (eta * q) sharedTerm_2f99adf446 ≤
+                Real.rpow (x ^ n) sharedTerm_2f99adf446 :=
+              Real.rpow_le_rpow (mul_nonneg heta.le hq.le) (by
+                  have := mul_le_mul_of_nonneg_right (min_le_right (1 / 2 : Real) eta0) hq.le
+                  dsimp only [eta0] at this
+                  field_simp [hq.ne'] at this
+                  simpa only [eta, mul_comm] using this) (by positivity)
+            _ = x := by
+              have hcast : (n : Real) = (d : Real) + 1 := by
+                dsimp only [n]
+                norm_num
+              rw [show sharedTerm_2f99adf446 = ((n : Real))⁻¹ by
+                rw [hcast]
+                exact one_div _]
+              exact Real.pow_rpow_inv_natCast (show 0 < x by
+                  dsimp only [x]
+                  positivity).le (by
+                  dsimp only [n]
+                  omega)) hK.le
     _ = eps := by
       dsimp only [x]
       field_simp [hK.ne']
 
+variable {d : Nat}
+
 private theorem sub_center_mem_velocityCube_of_mem_localABPInterior
-    {d : Nat} {v0 : PDE.Vec d} {z : TimeVelocity d}
+     {v0 : PDE.Vec d} {z : TimeVelocity d}
     (hz : z ∈ localABPInterior v0) : z.2 - v0 ∈ velocityCube 0 1 := by
   rcases hz with ⟨w, hw, rfl⟩
   have hwv := (mem_parabolicInterior_iff.mp hw).2.2
-  have hwcube := euclideanBall_subset_velocityCube (by norm_num) hwv
+
   have heq : (localABPAffine v0 w).2 - v0 = (1 / 2 : Real) • w.2 := by
     simp [localABPAffine, parabolicAffine]
   rw [heq]
   intro i
-  have hi := hwcube i
+  have hi := (euclideanBall_subset_velocityCube (by norm_num) hwv) i
   simp only [Pi.smul_apply, smul_eq_mul, Pi.zero_apply, sub_zero] at hi ⊢
   rw [abs_mul, abs_of_nonneg (by norm_num : 0 ≤ (1 / 2 : Real))]
   nlinarith [abs_nonneg (w.2 i)]
 
 private theorem nonneg_on_localABPForwardBoundary
-    {d : Nat} (U : Set (TimeVelocity d)) (u : TimeVelocity d → Real)
+     (U : HypoellipticAleksandrov.Parabolic.Region d) (u : TimeVelocity d → Real)
     (hU : IsOpen U)
     (hclosed : parabolicClosedBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
     (hu : ContDiffOn Real 2 u U)
@@ -195,19 +201,15 @@ private theorem nonneg_on_localABPForwardBoundary
     (v0 : PDE.Vec d) (hv0 : v0 ∈ velocityClosedCube 0 (1 / 2 : Real)) :
     ∀ z ∈ localABPForwardBoundary v0, 0 ≤ u z := by
   intro z hz
-  have hzK : z ∈ localABPClosure v0 :=
-    localABPForwardBoundary_subset_closure v0 hz
-  have hzU : z ∈ U :=
-    hclosed (localABPClosure_subset_parabolicClosedBox_one hv0 hzK)
-  have hzClosure : z ∈ closure (localABPInterior v0) :=
-    localABPForwardBoundary_subset_closure_interior v0 hz
-  have hmaps : MapsTo u (localABPInterior v0) (Ici 0) := by
-    intro y hy
-    exact hnonneg y (localABPInterior_subset_parabolicBox_one hv0 hy)
-  have hcont : ContinuousAt u z :=
-    (contDiffAt_of_contDiffOn_of_isOpen hU hu hzU).continuousAt
-  have hzImage : u z ∈ closure (Ici 0) :=
-    hcont.continuousWithinAt.mem_closure hzClosure hmaps
+
+
+
+
+
+  have hzImage  :=
+    ((contDiffAt_of_contDiffOn_of_isOpen hU hu (hclosed (localABPClosure_subset_parabolicClosedBox_one hv0 (localABPForwardBoundary_subset_closure v0 hz)))).continuousAt).continuousWithinAt.mem_closure (localABPForwardBoundary_subset_closure_interior v0 hz) (show MapsTo u (localABPInterior v0) (Ici 0) by
+        intro y hy
+        exact hnonneg y (localABPInterior_subset_parabolicBox_one hv0 hy))
   simpa only [isClosed_Ici.closure_eq, Set.mem_Ici] using hzImage
 
 /-- For every target value strictly between zero and one, a sufficiently
@@ -233,8 +235,8 @@ theorem exists_sourceDensityToPoint_near_one
   let eps : Real := (1 - g) / 4
   have heps : 0 < eps := by
     dsimp only [eps]
-    have hone : 0 < (1 : Real) := hg0.trans hg1
-    have hfour : 0 < (4 : Real) := hone.trans (by norm_num)
+
+    have hfour : 0 < (4 : Real) := (hg0.trans hg1).trans (by norm_num)
     exact div_pos (sub_pos.mpr hg1) hfour
   obtain ⟨rho, hrho, htargetBarrier⟩ :=
     exists_rho_gt_one_inv_cosh_le a eps ha heps
@@ -242,131 +244,106 @@ theorem exists_sourceDensityToPoint_near_one
   obtain ⟨eta, heta, hetaOne, herror⟩ :=
     exists_eta_for_near_one_error d CABP rho eps hCABP hrhoPos heps
   let beta : Real := 1 - eta
-  have hbeta : 0 < beta := by
-    dsimp only [beta]
-    linarith
-  have hbetaOne : beta < 1 := by
-    dsimp only [beta]
-    linarith
-  refine ⟨beta, hbeta, hbetaOne, Csource, hCsource, ?_⟩
+
+
+  refine ⟨beta, (by
+      dsimp only [beta]
+      linarith), (by
+      dsimp only [beta]
+      linarith), Csource, hCsource, ?_⟩
   intro U B Fsrc u hU hclosed hB hu hFsrc hu_nonneg hFsrc_nonneg
     hlower hupper hsuper hdensity v0 hv0
-  let psi : TimeVelocity d → Real :=
+  let psi  :=
     normalizedTranslatedResolventBarrier a rho v0
-  let w : TimeVelocity d → Real := fun z ↦ -(u z + psi z - 1 + eps)
-  let Ftot : TimeVelocity d → Real :=
+  let w  := fun z ↦ -(u z + psi z - 1 + eps)
+  let Ftot  :=
     fun z ↦ Fsrc z + rho * max (1 - u z) 0
   have hQU : parabolicBox 1 1 0 (0 : PDE.Vec d) ⊆ U := by
     intro z hz
     apply hclosed
     rcases hz with ⟨⟨ht0, ht1⟩, hzv⟩
     exact ⟨⟨ht0.le, ht1.le⟩, fun i ↦ (hzv i).le⟩
-  have hKU : localABPClosure v0 ⊆ U :=
-    (localABPClosure_subset_parabolicClosedBox_one hv0).trans hclosed
+
   have hpsi : ContDiffOn Real 2 psi U := by
     dsimp only [psi]
     exact (contDiff_normalizedTranslatedResolventBarrier a rho v0).contDiffOn
-  have hw : ContDiffOn Real 2 w U := by
-    dsimp only [w]
-    fun_prop
-  have hFtot : ContinuousOn Ftot U := by
-    dsimp only [Ftot]
-    exact hFsrc.add (continuousOn_const.mul
-      ((continuousOn_const.sub hu.continuousOn).sup continuousOn_const))
-  have hlowClosure : HasLowerEllipticityOn lam B (localABPClosure v0) :=
-    hasLowerEllipticityOn_localABPClosure hclosed hB hlower hv0
-  have hFtot_nonneg : IsNonnegativeOn Ftot (localABPInterior v0) := by
-    intro z hz
-    have hzQ : z ∈ parabolicBox 1 1 0 (0 : PDE.Vec d) :=
-      localABPInterior_subset_parabolicBox_one hv0 hz
-    dsimp only [Ftot]
-    exact add_nonneg (hFsrc_nonneg z hzQ)
-      (mul_nonneg hrhoPos.le (le_max_right _ _))
-  have hineq : ∀ z ∈ localABPInterior v0,
-      parabolicOperator B w z + rho * w z ≤ Ftot z := by
-    intro z hz
-    have hzQ : z ∈ parabolicBox 1 1 0 (0 : PDE.Vec d) :=
-      localABPInterior_subset_parabolicBox_one hv0 hz
-    have hzU : z ∈ U := hQU hzQ
-    have huAt : ContDiffAt Real 2 u z :=
-      contDiffAt_of_contDiffOn_of_isOpen hU hu hzU
-    have hpsiAt : ContDiffAt Real 2 psi z :=
-      contDiffAt_of_contDiffOn_of_isOpen hU hpsi hzU
-    have hadd : parabolicOperator B (fun y ↦ u y + psi y) z =
-        parabolicOperator B u z + parabolicOperator B psi z :=
-      parabolicOperator_add_of_contDiffAt B u psi z huAt hpsiAt
-    have hconst :
-        parabolicOperator B (fun y ↦ u y + psi y - 1 + eps) z =
-          parabolicOperator B (fun y ↦ u y + psi y) z := by
-      calc
-        parabolicOperator B (fun y ↦ u y + psi y - 1 + eps) z =
-            parabolicOperator B (fun y ↦ (u y + psi y) + (-1 + eps)) z := by
-          congr 2
-          funext y
-          ring
-        _ = parabolicOperator B (fun y ↦ u y + psi y) z :=
-          parabolicOperator_add_const B (fun y ↦ u y + psi y) (-1 + eps) z
-    have hop : parabolicOperator B w z + rho * w z =
-        -parabolicOperator B u z -
-            (parabolicOperator B psi z + rho * psi z) +
-          rho * (1 - u z - eps) := by
+
+
+
+
+
+
+  have habp := hABP U B w Ftot v0 rho hU ((localABPClosure_subset_parabolicClosedBox_one hv0).trans hclosed) hB (by
+      change TimeVelocity d → ℝ at u
       dsimp only [w]
-      rw [parabolicOperator_neg, hconst, hadd]
-      ring
-    have hsourceOperator : -parabolicOperator B u z ≤ Fsrc z := by
-      have hsup := hsuper z hzQ
-      linarith
-    have hpsiOperator :
-        0 < parabolicOperator B psi z + rho * psi z := by
-      apply hbarrier rho hrho B z v0
-      · exact sub_center_mem_velocityCube_of_mem_localABPInterior hz
-      · exact hlower z hzQ
-      · exact hupper z hzQ
-    have hscalar : rho * (1 - u z - eps) ≤ rho * max (1 - u z) 0 := by
-      apply mul_le_mul_of_nonneg_left _ hrhoPos.le
-      exact (sub_le_self (1 - u z) heps.le).trans (le_max_left _ _)
-    rw [hop]
-    dsimp only [Ftot]
-    linarith only [hsourceOperator, hpsiOperator, hscalar]
-  have hboundary : ∀ z ∈ localABPForwardBoundary v0, w z ≤ 0 := by
-    intro z hz
-    have huz : 0 ≤ u z :=
-      nonneg_on_localABPForwardBoundary U u hU hclosed hu hu_nonneg v0 hv0 z hz
-    have hpsiz : 1 ≤ psi z := by
-      dsimp only [psi]
-      exact one_le_normalizedTranslatedResolventBarrier_on_localABPForwardBoundary
-        ha hrho hz
-    dsimp only [w]
-    linarith
-  have habp := hABP U B w Ftot v0 rho hU hKU hB hw hFtot hlowClosure
-    hFtot_nonneg hineq hboundary
-  let E : Set (TimeVelocity d) :=
+      fun_prop) (by
+      dsimp only [Ftot]
+      exact hFsrc.add (continuousOn_const.mul
+        ((continuousOn_const.sub hu.continuousOn).sup continuousOn_const))) (hasLowerEllipticityOn_localABPClosure hclosed hB hlower hv0)
+    (by
+        intro z hz
+        have hzQ  :=
+          localABPInterior_subset_parabolicBox_one hv0 hz
+        dsimp only [Ftot]
+        exact add_nonneg (hFsrc_nonneg z hzQ)
+          (mul_nonneg hrhoPos.le (le_max_right _ _))) (by
+        intro z hz
+        have hzQ  :=
+          localABPInterior_subset_parabolicBox_one hv0 hz
+        have hzU  := hQU hzQ
+        have huAt  :=
+          contDiffAt_of_contDiffOn_of_isOpen hU hu hzU
+
+        have hadd  :=
+          parabolicOperator_add_of_contDiffAt B u psi z huAt (contDiffAt_of_contDiffOn_of_isOpen hU hpsi hzU)
+        have hconst :
+            parabolicOperator B (fun y ↦ u y + psi y - 1 + eps) z =
+              parabolicOperator B (fun y ↦ u y + psi y) z := by
+          calc
+            parabolicOperator B (fun y ↦ u y + psi y - 1 + eps) z =
+                parabolicOperator B (fun y ↦ (u y + psi y) + (-1 + eps)) z := by
+              congr 2
+              funext y
+              ring
+            _ = parabolicOperator B (fun y ↦ u y + psi y) z :=
+              parabolicOperator_add_const B _ (-1 + eps) z
+        have hop : parabolicOperator B w z + rho * w z =
+            -parabolicOperator B u z -
+                (parabolicOperator B psi z + rho * psi z) +
+              rho * (1 - u z - eps) := by
+          dsimp only [w]
+          rw [parabolicOperator_neg, hconst, hadd]
+          ring
+        have hsourceOperator : -parabolicOperator B u z ≤ Fsrc z := by
+          have hsup := hsuper z hzQ
+          linarith
+        have hpsiOperator :
+            0 < parabolicOperator B psi z + rho * psi z := by
+          apply hbarrier rho hrho B z v0
+          · exact sub_center_mem_velocityCube_of_mem_localABPInterior hz
+          · exact hlower z hzQ
+          · exact hupper z hzQ
+        have hscalar : rho * (1 - u z - eps) ≤ rho * max (1 - u z) 0 := by
+          apply mul_le_mul_of_nonneg_left _ hrhoPos.le
+          exact (sub_le_self (1 - u z) heps.le).trans (le_max_left _ _)
+        rw [hop]
+        dsimp only [Ftot]
+        linarith only [hsourceOperator, hpsiOperator, hscalar]) (by
+        intro z hz
+        have huz  :=
+          nonneg_on_localABPForwardBoundary U u hU hclosed hu hu_nonneg v0 hv0 z hz
+        have hpsiz : 1 ≤ psi z := by
+          dsimp only [psi]
+          exact one_le_normalizedTranslatedResolventBarrier_on_localABPForwardBoundary
+            ha hrho hz
+        dsimp only [w]
+        linarith)
+  let E  :=
     parabolicBox 1 1 0 0 ∩ {z | u z < 1}
   have hnorm :=
     exp_neg_quarter_mul_parabolicLpNormOn_localABP_weighted_source_add_one_sub_le
       d hd rho hrhoPos.le U Fsrc u hclosed hu hFsrc hu_nonneg hFsrc_nonneg v0 hv0
-  have habpLow : w (1, v0) ≤
-      Csource * parabolicLpNormOn d Fsrc (parabolicBox 1 1 0 0) +
-        Csource * rho *
-          Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) := by
-    calc
-      w (1, v0) ≤ Csource *
-          (Real.exp (-rho / 4) *
-            parabolicLpNormOn d
-              (fun z ↦ Real.exp (rho * (z.1 - 3 / 4)) * Ftot z)
-              (localABPInterior v0)) := by
-        simpa only [Csource, mul_assoc] using habp
-      _ ≤ Csource *
-          (parabolicLpNormOn d Fsrc (parabolicBox 1 1 0 0) +
-            rho * Real.rpow (volume E).toReal
-              (1 / ((d : Real) + 1))) := by
-        apply mul_le_mul_of_nonneg_left
-        · simpa only [Ftot, E] using hnorm
-        · exact hCsource.le
-      _ = Csource * parabolicLpNormOn d Fsrc (parabolicBox 1 1 0 0) +
-          Csource * rho *
-            Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) := by
-        ring
+
   have hvolume := volume_parabolicBox_inter_lt_one_toReal_le_one_sub_mul
     d beta U u hQU hu hdensity
   have hEvolume : (volume E).toReal ≤ eta * (2 : Real) ^ d := by
@@ -374,31 +351,38 @@ theorem exists_sourceDensityToPoint_near_one
     rw [volume_parabolicBox_one_toReal] at hvolume
     simpa only [beta, sub_sub_cancel] using hvolume
   have hexponent : 0 ≤ 1 / ((d : Real) + 1) := by positivity
-  have hrpowVolume :
-      Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) ≤
-        Real.rpow (eta * (2 : Real) ^ d) (1 / ((d : Real) + 1)) :=
-    Real.rpow_le_rpow ENNReal.toReal_nonneg hEvolume hexponent
-  have hsourcePref : 0 ≤ Csource * rho :=
-    mul_nonneg hCsource.le hrhoPos.le
+
+
   have habpError : w (1, v0) ≤
       Csource * parabolicLpNormOn d Fsrc (parabolicBox 1 1 0 0) + eps := by
     calc
       w (1, v0) ≤ Csource * parabolicLpNormOn d Fsrc
           (parabolicBox 1 1 0 0) + Csource * rho *
-            Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) := habpLow
+            Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) := (by
+                calc
+                  w (1, v0) ≤ Csource *
+                      (Real.exp (-rho / 4) *
+                        parabolicLpNormOn d
+                          (fun z ↦ Real.exp (rho * (z.1 - 3 / 4)) * Ftot z)
+                          (localABPInterior v0)) := by
+                    simpa only [Csource, mul_assoc] using habp
+                  _ ≤ Csource *
+                      (parabolicLpNormOn d Fsrc (parabolicBox 1 1 0 0) +
+                        rho * Real.rpow (volume E).toReal
+                          (1 / ((d : Real) + 1))) := (mul_le_mul_of_nonneg_left hnorm (LT.lt.le hCsource))
+                  _ = Csource * parabolicLpNormOn d Fsrc (parabolicBox 1 1 0 0) +
+                      Csource * rho *
+                        Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) := by
+                    ring)
       _ ≤ Csource * parabolicLpNormOn d Fsrc
           (parabolicBox 1 1 0 0) + Csource * rho *
             Real.rpow (eta * (2 : Real) ^ d) (1 / ((d : Real) + 1)) :=
         by simpa [add_comm] using
-          (add_le_add_left (mul_le_mul_of_nonneg_left hrpowVolume hsourcePref)
+          (add_le_add_left (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow ENNReal.toReal_nonneg hEvolume hexponent) (mul_nonneg hCsource.le hrhoPos.le))
             (Csource * parabolicLpNormOn d Fsrc (parabolicBox 1 1 0 0)))
       _ ≤ Csource * parabolicLpNormOn d Fsrc
           (parabolicBox 1 1 0 0) + eps := by
-        simpa [add_comm] using
-          (add_le_add_left (by
-              dsimp only [Csource]
-              simpa only [mul_assoc, one_div, Real.rpow_eq_pow] using herror)
-            (Csource * parabolicLpNormOn d Fsrc (parabolicBox 1 1 0 0)))
+        gcongr <;> first | positivity | assumption | norm_num
   have hpsiTarget : psi (1, v0) ≤ eps := by
     dsimp only [psi]
     rw [normalizedTranslatedResolventBarrier_target]

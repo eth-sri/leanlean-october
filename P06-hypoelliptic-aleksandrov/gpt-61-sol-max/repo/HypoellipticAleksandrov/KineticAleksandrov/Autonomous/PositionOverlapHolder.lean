@@ -5,8 +5,8 @@ import Mathlib.Tactic
 
 /-! # Holder control of a finite positive mixture with a uniform Lq bound -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory
 open scoped ENNReal

@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.WeakHessianDifferenceQuotientEnergy
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Local Hessian energy for homogeneous replacement jets
 
@@ -10,15 +12,15 @@ The generic residual estimate is applied to the actual selected jet, with zero d
 zero zeroth-order coefficient, and zero source.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 open scoped BigOperators MatrixOrder
 
 /-- One constant controls Hessian energy of all homogeneous weak jets on the fixed collar. -/
 theorem exists_local_homogeneous_hessian_constant {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (a T : ℝ) (O : PDE.VelocityRegion d) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d)
     (hAm : AEStronglyMeasurable A (timeVelocityVolumeOn (Ioo a T ×ˢ O)))
     (hAs : ∀ t ∈ Ioo a T, ∀ i j, ContDiffOn ℝ 1 (fun y => A (t, y) i j) O)
@@ -27,12 +29,12 @@ theorem exists_local_homogeneous_hessian_constant {d : ℕ}
     (hhi : ∀ z ∈ Ioo a T ×ˢ O, A z ≤ Lam • (1 : PDE.Mat d))
     (hDA : ∀ z ∈ Ioo a T ×ˢ O, ∀ i j k,
       |spatialPartial k (fun y => A (z.1, y) i j) z.2| ≤ M)
-    (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
+    (η : PDE.ScalarField d) (hη : ContDiff ℝ PDE.smoothOrder η)
     (hcη : HasCompactSupport η) (hsη : tsupport η ⊆ O)
     (hη0 : ∀ y, 0 ≤ η y) (hη1 : ∀ y, η y ≤ 1)
     (Kη : ℝ) (hKη : 0 ≤ Kη)
     (hdη : ∀ y ∈ O, ∀ i, |spatialPartial i η y| ≤ Kη)
-    (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
+    (ζ : ℝ → ℝ) (hζ : ContDiff ℝ PDE.smoothOrder ζ)
     (hcζ : HasCompactSupport ζ) (hsζ : tsupport ζ ⊆ Ioo a T)
     (hζ0 : ∀ t, 0 ≤ ζ t) (hζ1 : ∀ t, ζ t ≤ 1)
     (Kζ : ℝ) (hKζ : 0 ≤ Kζ) (hdζ : ∀ t ∈ Ioo a T, |deriv ζ t| ≤ Kζ) :
@@ -48,18 +50,16 @@ theorem exists_local_homogeneous_hessian_constant {d : ℕ}
     d lam Lam M Kη Kζ hlam hlamLam hM hKη hKζ
   refine ⟨C, hC, ?_⟩
   intro J heq
-  have hpde : ∀ᵐ z ∂timeVelocityVolumeOn (Ioo a T ×ˢ O),
-      J.timeDeriv z + (∑ i, ∑ j, A z i j * J.velocityHessian z j i) +
-        (∑ j, (0 : PDE.Vec d) j * J.velocityGrad z j) + 0 * J.toFun z = 0 := by
-    filter_upwards [heq] with z hz
-    simpa using hz
+
   have hb := hbound a T O hO A (fun _ => 0) (fun _ => 0)
     J.toFun J.timeDeriv (fun _ => 0) J.velocityGrad J.velocityHessian hAm
     aestronglyMeasurable_const aestronglyMeasurable_const hAs hlo hhi hDA
     (fun _ _ _ => by simpa using hM) (fun _ _ => by simpa using hM)
     J.memLp J.timeDeriv_memLp J.velocityGrad_memLp J.velocityHessian_memLp
     MemLp.zero' J.hasWeakTimeDeriv J.hasWeakVelocityPartialDeriv
-    J.hasWeakVelocitySecondPartialDeriv hpde η hη hcη hsη hη0 hη1 hdη
+    J.hasWeakVelocitySecondPartialDeriv (by
+        filter_upwards [heq] with z hz
+        simpa using hz) η hη hcη hsη hη0 hη1 hdη
     ζ hζ hcζ hsζ hζ0 hζ1 hdζ
   simpa using hb
 

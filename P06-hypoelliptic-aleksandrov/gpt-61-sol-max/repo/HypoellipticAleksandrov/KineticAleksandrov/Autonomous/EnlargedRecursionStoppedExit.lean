@@ -5,18 +5,18 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 
 /-! # Stopped homogeneous actions of the actual finite-union exit kernels -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open MeasureTheory Parabolic
+
 open scoped Classical
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion)
 
 /-- A stopped potential vanishes on every strictly later exit from a pole at or after `b`. -/
 theorem enlarged_exit_stopped_integral_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T b : ℝ)
+     (T b : ℝ)
     (u : Point → ℝ) (p : Point) (hp : b ≤ p.time) :
     (∫ q, enlargedStoppedPotential b u q
       ∂enlargedVisitExitKernel hH hLE hlam hLam A H T p) = 0 := by
@@ -26,9 +26,7 @@ theorem enlarged_exit_stopped_integral_zero
 
 /-- The true enlarged exit kernel is sub-Markov for a stopped homogeneous potential. -/
 theorem enlarged_exit_stopped_integral_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (b T : ℝ) (hBT : b ≤ T)
+     (b T : ℝ) (hBT : b ≤ T)
     (u : Point → ℝ) (hphi : IsKineticC112On u {p | p.time < b})
     (hc : ContinuousOn u {p | p.time ≤ b}) (M : ℝ) (hM : 0 ≤ M)
     (hbound : ∀ p, p.time ≤ b → |u p| ≤ M)

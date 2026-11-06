@@ -8,7 +8,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Set MeasureTheory
+
 
 /-- Literal position, second velocity and cross velocity errors of the rectangular cutoff. -/
 def barrierRectError (a : ℝ → ℝ → ℝ) (f : Z → ℝ) (Y R : ℝ) (z : Z) : ℝ :=
@@ -23,9 +23,9 @@ def barrierRectError (a : ℝ → ℝ → ℝ) (f : Z → ℝ) (Y R : ℝ) (z : 
 theorem barrier_position_cutoff_deriv (Y R x : ℝ) :
     deriv (fun X => barrierCutoff ((X - Y) / R ^ 3)) x =
       deriv barrierCutoff ((x - Y) / R ^ 3) / R ^ 3 := by
-  have hc := (barrierCutoff_contDiff.differentiable (by simp) ((x - Y) / R ^ 3)).hasDerivAt
-  have hx := ((hasDerivAt_id x).sub_const Y).div_const (R ^ 3)
-  simpa only [one_div, div_eq_mul_inv, Function.comp_def, id_eq, one_mul] using (hc.comp x hx).deriv
+
+
+  simpa only [div_eq_mul_inv, id_eq, Function.comp_def, one_mul] using (((barrierCutoff_contDiff.differentiable (by simp) ((x - Y) / R ^ 3)).hasDerivAt).comp x (((hasDerivAt_id x).sub_const Y).div_const (R ^ 3))).deriv
 
 /-- The literal error is exactly the generator product rule for a joint C² physical test. -/
 theorem barrierRectError_eq_operator (a : ℝ → ℝ → ℝ) (f : Z → ℝ)
@@ -39,17 +39,13 @@ theorem barrierRectError_eq_operator (a : ℝ → ℝ → ℝ) (f : Z → ℝ)
   have hc : ContDiff ℝ 2 barrierCutoff := barrierCutoff_contDiff.of_le (by simp)
   have hchi : ContDiff ℝ 2 chi := hc.comp ((contDiff_id.sub contDiff_const).div_const _)
   have hpsi : ContDiff ℝ 2 psi := scaledScalarCutoff_contDiff _ hc _
-  have ht : DifferentiableAt ℝ (fun t => Phi ⟨t, p.position, p.velocity⟩) p.time := by
-    change DifferentiableAt ℝ (fun _ : ℝ => f z) 0
-    exact differentiableAt_const _
-  have hx : DifferentiableAt ℝ (fun X => Phi ⟨p.time, fun _ => X, p.velocity⟩)
-      (p.position 0) := by
-    have hs : ContDiff ℝ 2 (fun X : ℝ => f (X, z.2)) :=
-      hf.comp (contDiff_id.prodMk contDiff_const)
-    exact hs.differentiable (by norm_num) z.1
+
+
   have hv : ContDiff ℝ 2 (fun v => Phi ⟨p.time, p.position, fun _ => v⟩) :=
     hf.comp (contDiff_const.prodMk contDiff_id)
-  have hh := spatialCutoffTest_operator a chi psi hchi hpsi Phi p ht hx hv
+  have hh := spatialCutoffTest_operator a chi psi hchi hpsi Phi p (show _ by
+      change DifferentiableAt ℝ (fun _ : ℝ => f z) 0
+      exact differentiableAt_const _) ((hf.comp (contDiff_id.prodMk contDiff_const)).differentiable (by norm_num) z.1) hv
   have he : spatialCutoffTest chi psi Phi =
       fun q : Point => (fun w => barrierRectCutoff Y R w * f w)
         (q.position 0, q.velocity 0) := rfl

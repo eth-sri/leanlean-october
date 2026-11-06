@@ -57,7 +57,7 @@ theorem enlargedActiveGreenKernel_absolutelyContinuous (hpush : PushforwardState
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) :
-    enlargedActiveGreenKernel hH hLE hlam hLam A c e ≪ (volume : Measure Point) := by
+    enlargedActiveGreenKernel hH hLE hlam hLam A c e ≪ (volume ) := by
   by_cases he : e.velocity 0 ∈ c.active
   · obtain ⟨C, _, hd⟩ := (hpush hH hLE lam Lam hlam hLam).2 (5 / 4) (by norm_num)
     obtain ⟨G, _, _, hG, _, _⟩ := hd A c e he
@@ -71,24 +71,22 @@ theorem enlargedActiveGreenKernel_absolutelyContinuous (hpush : PushforwardState
     intro B _
     rfl
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock)
+
 /-- The actual joint extended density of the all-time active Green kernel. -/
 def positionActiveDensity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) : Point → Point → ℝ≥0∞ := by
+     : Point → Point → ℝ≥0∞ := by
   letI := density_volume_sigmaFinite
   exact positionKernelDensity (enlargedActiveGreenKernel hH hLE hlam hLam A c) volume
 
 /-- The active density is jointly measurable in the physical starting and observed points. -/
 theorem measurable_positionActiveDensity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) :
+     :
     Measurable (fun p : Point × Point =>
       positionActiveDensity hH hLE hlam hLam A c p.1 p.2) := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   exact measurable_positionKernelDensity
-    (enlargedActiveGreenKernel hH hLE hlam hLam A c) (volume : Measure Point)
+    (enlargedActiveGreenKernel hH hLE hlam hLam A c) _
 
 /-- The jointly measurable density represents the same canonical active kernel. -/
 theorem withDensity_positionActiveDensity (hpush : PushforwardStatement)
@@ -97,9 +95,9 @@ theorem withDensity_positionActiveDensity (hpush : PushforwardStatement)
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) :
     volume.withDensity (positionActiveDensity hH hLE hlam hLam A c e) =
       enlargedActiveGreenKernel hH hLE hlam hLam A c e := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   exact withDensity_positionKernelDensity
-    (enlargedActiveGreenKernel hH hLE hlam hLam A c) (volume : Measure Point) e
+    (enlargedActiveGreenKernel hH hLE hlam hLam A c) _ e
     (enlargedActiveGreenKernel_absolutelyContinuous hpush hH hLE hlam hLam A c e)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

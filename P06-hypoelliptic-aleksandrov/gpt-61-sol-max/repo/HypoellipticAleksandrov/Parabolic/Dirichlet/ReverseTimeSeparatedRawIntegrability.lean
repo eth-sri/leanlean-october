@@ -5,6 +5,12 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTests
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import all HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10NonprincipalRemainder
+
+open private HypoellipticAleksandrov.Parabolic.Dirichlet.reverseTimeMap_image_closedCylinder_subset from HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10NonprincipalRemainder
+
 
 /-!
 # Integrability of reverse-time separated raw terms
@@ -13,41 +19,38 @@ This module isolates the analytic integrability of the five raw families used
 in the reverse-time separated product distribution identity.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory Set Topology
+open MeasureTheory Set
 open scoped BigOperators ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem reverseTimeCompactCylinder_mapsTo
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) :
-    reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) ⊆
-      scalarParabolicClosedCylinder r₀ r₁ Ω := by
-  rintro _ ⟨z, hz, rfl⟩
-  rcases z with ⟨τ, y⟩
-  rcases hz with ⟨hτ, hy⟩
-  simp only [reverseTimeMap_apply]
-  exact ⟨⟨by linarith [hτ.2], by linarith [hτ.1]⟩, hy⟩
+variable {d : ℕ}
+
+variable {Ω : PDE.VelocityRegion d}
+
+
+
 
 private theorem reverseTime_openCylinder_volume_lt_top
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+      {T : ℝ}
     (hΩbounded : Bornology.IsBounded Ω) :
-    volume (reverseTimeOpenInterval T ×ˢ Ω : Set (TimeVelocity d)) < ⊤ := by
-  exact ((Metric.isBounded_Ioo 0 T).prod hΩbounded).measure_lt_top
+    volume (reverseTimeOpenInterval T ×ˢ Ω ) < ⊤ := ((Metric.isBounded_Ioo 0 T).prod hΩbounded).measure_lt_top
 
+section
+variable {S K : HypoellipticAleksandrov.Parabolic.Region d} (hSmeas : MeasurableSet S) (hSK : S ⊆ K) (hKcompact : IsCompact K) (hSfinite : volume S < ⊤)
+
+include hSmeas hSK hKcompact hSfinite
 private theorem integrable_mul_of_memLp_two_of_continuousOn_reverseTime
-    {d : ℕ} {S K : Set (TimeVelocity d)} (hSmeas : MeasurableSet S)
-    (hSK : S ⊆ K) (hKcompact : IsCompact K) (hSfinite : volume S < ⊤)
-    (W q : TimeVelocity d → ℝ)
+
+    (W q : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hW : MemLp W 2 (timeVelocityVolumeOn S)) (hq : ContinuousOn q K) :
     Integrable (fun z => W z * q z) (timeVelocityVolumeOn S) := by
   letI : Fact (volume S < ⊤) := ⟨hSfinite⟩
-  letI : IsFiniteMeasure (timeVelocityVolumeOn S) := by
-    change IsFiniteMeasure (volume.restrict S)
-    infer_instance
+  letI : IsFiniteMeasure (timeVelocityVolumeOn S) := (id inferInstance)
   obtain ⟨C, hC⟩ := hKcompact.exists_bound_of_continuousOn hq
   refine (hW.integrable (by norm_num)).mul_bdd
     ((hq.mono hSK).aestronglyMeasurable hSmeas) (c := C) ?_
@@ -55,34 +58,35 @@ private theorem integrable_mul_of_memLp_two_of_continuousOn_reverseTime
   exact hC z (hSK hz)
 
 private theorem integrable_of_continuousOn_reverseTime
-    {d : ℕ} {S K : Set (TimeVelocity d)} (hSmeas : MeasurableSet S)
-    (hSK : S ⊆ K) (hKcompact : IsCompact K) (hSfinite : volume S < ⊤)
-    (q : TimeVelocity d → ℝ) (hq : ContinuousOn q K) :
+
+    (q : HypoellipticAleksandrov.Parabolic.ScalarField d) (hq : ContinuousOn q K) :
     Integrable q (timeVelocityVolumeOn S) := by
   letI : Fact (volume S < ⊤) := ⟨hSfinite⟩
-  letI : IsFiniteMeasure (timeVelocityVolumeOn S) := by
-    change IsFiniteMeasure (volume.restrict S)
-    infer_instance
+  letI : IsFiniteMeasure (timeVelocityVolumeOn S) := (id inferInstance)
   obtain ⟨C, hC⟩ := hKcompact.exists_bound_of_continuousOn hq
-  have hqLp : MemLp q (2 : ℝ≥0∞) (timeVelocityVolumeOn S) :=
+  have hqLp : MemLp q (2 ) (timeVelocityVolumeOn S) :=
     MemLp.of_bound ((hq.mono hSK).aestronglyMeasurable hSmeas) C (by
       filter_upwards [ae_restrict_mem hSmeas] with z hz
       exact hC z (hSK hz))
   exact hqLp.integrable (by norm_num)
+end
+
 
 private theorem continuousOn_of_smoothOnNeighborhood
-    {d : ℕ} {K : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
+     {K : HypoellipticAleksandrov.Parabolic.Region d} {f : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (hf : IsSmoothOnNeighborhood f K) : ContinuousOn f K := by
   rcases hf with ⟨V, hVopen, hKV, hV⟩
   exact hV.continuousOn.mono hKV
 
+variable {Ω : PDE.VelocityRegion d}
+
 /-- The five families in the reverse-time separated raw expression are integrable. -/
 theorem raw_reverseTime_separated_product_families_integrable
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+
     (r₀ r₁ : ℝ)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
+    (a : CoefficientField d) (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -95,31 +99,31 @@ theorem raw_reverseTime_separated_product_families_integrable
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (U : TimeVelocity d → ℝ)
-    (hU : MemLp U (2 : ℝ≥0∞)
+    (U : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hU : MemLp U (2 )
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)))
-    (G : Fin d → TimeVelocity d → ℝ)
-    (hG : ∀ j, MemLp (G j) (2 : ℝ≥0∞)
+    (G : Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hG : ∀ j, MemLp (G j) (2 )
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)))
     (eta : ReverseTimeScalarTest (r₁ - r₀))
     (psi : PDE.WeakTestFunction Ω) :
-    Integrable (fun z : TimeVelocity d =>
+    Integrable (fun z  =>
       U z * eta.deriv z.1 * psi z.2)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) ∧
-    (∀ i j : Fin d, Integrable (fun z : TimeVelocity d =>
+    (∀ i j : Fin d, Integrable (fun z  =>
       reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
         psi.partialDeriv i z.2 * eta z.1)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω))) ∧
-    (∀ j : Fin d, Integrable (fun z : TimeVelocity d =>
+    (∀ j : Fin d, Integrable (fun z  =>
       reverseTimeDivergenceDrift r₁ a b z.1 z.2 j *
         G j z * psi z.2 * eta z.1)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω))) ∧
-    Integrable (fun z : TimeVelocity d =>
+    Integrable (fun z  =>
       reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z *
         psi z.2 * eta z.1)
       (timeVelocityVolumeOn
@@ -129,8 +133,8 @@ theorem raw_reverseTime_separated_product_families_integrable
         psi z.2 * eta z.1)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) := by
-  let S : Set (TimeVelocity d) := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
-  let K : Set (TimeVelocity d) := Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω
+  let S  := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
+  let K  := Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω
   have hSmeas : MeasurableSet S := by
     have htime : IsOpen (reverseTimeOpenInterval (r₁ - r₀)) := by
       simpa only [reverseTimeOpenInterval] using isOpen_Ioo
@@ -141,7 +145,7 @@ theorem raw_reverseTime_separated_product_families_integrable
   have hKcompact : IsCompact K := isCompact_Icc.prod hΩbounded.isCompact_closure
   have hSfinite : volume S < ⊤ :=
     reverseTime_openCylinder_volume_lt_top hΩbounded
-  have hmap := reverseTimeCompactCylinder_mapsTo (d := d) (Ω := Ω) r₀ r₁
+  have hmap := _root_.HypoellipticAleksandrov.Parabolic.Dirichlet.reverseTimeMap_image_closedCylinder_subset (d := d) (Ω := Ω) r₀ r₁
   have hpsi : Continuous (fun z : TimeVelocity d => psi z.2 * eta z.1) :=
     (psi.contDiff.continuous.comp continuous_snd).mul
       (eta.contDiff.continuous.comp continuous_fst)
@@ -150,96 +154,91 @@ theorem raw_reverseTime_separated_product_families_integrable
       (psi.contDiff.continuous.comp continuous_snd)
   have hmass := integrable_mul_of_memLp_two_of_continuousOn_reverseTime
     hSmeas hSK hKcompact hSfinite U _ hU hmassMultiplier.continuousOn
-  have hprincipal : ∀ i j : Fin d, Integrable (fun z : TimeVelocity d =>
-      reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
-        psi.partialDeriv i z.2 * eta z.1) (timeVelocityVolumeOn S) := by
-    intro i j
-    have hsmooth := IsSmoothOnNeighborhood.reverseTime r₁ hmap
-      (IsSmoothOnNeighborhood.coefficientEntry a haSmooth i j)
-    have hcoeff : ContinuousOn (fun z : TimeVelocity d =>
-        reverseTimeCoefficient r₁ a z.1 z.2 i j) K := by
-      simpa only [Function.comp_def, reverseTimeMap_apply,
-        reverseTimeCoefficient_apply] using continuousOn_of_smoothOnNeighborhood hsmooth
-    have hpartial : Continuous (fun z : TimeVelocity d =>
-        psi.partialDeriv i z.2 * eta z.1) :=
-      ((psi.contDiff.continuous_fderiv (by simp)).clm_apply continuous_const |>.comp
-        continuous_snd).mul (eta.contDiff.continuous.comp continuous_fst)
-    have h := integrable_mul_of_memLp_two_of_continuousOn_reverseTime hSmeas hSK
-      hKcompact hSfinite (G j) (fun z =>
-        reverseTimeCoefficient r₁ a z.1 z.2 i j *
-          (psi.partialDeriv i z.2 * eta z.1)) (hG j)
-        (hcoeff.mul hpartial.continuousOn)
-    refine h.congr (ae_of_all _ fun z => ?_)
-    ring
-  have hdrift : ∀ j : Fin d, Integrable (fun z : TimeVelocity d =>
-      reverseTimeDivergenceDrift r₁ a b z.1 z.2 j * G j z *
-        psi z.2 * eta z.1) (timeVelocityVolumeOn S) := by
-    intro j
-    have hsmooth := IsSmoothOnNeighborhood.reverseTime r₁ hmap
-      (IsSmoothOnNeighborhood.divergenceDriftEntry a b haSmooth hbSmooth j)
-    have hcoeff : ContinuousOn (fun z : TimeVelocity d =>
-        reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) K := by
-      simpa only [Function.comp_def, reverseTimeMap_apply,
-        reverseTimeDivergenceDrift, scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
-        reverseTimeVectorCoefficient_apply, Pi.sub_apply] using
-          continuousOn_of_smoothOnNeighborhood hsmooth
-    have h := integrable_mul_of_memLp_two_of_continuousOn_reverseTime hSmeas hSK
-      hKcompact hSfinite (G j) (fun z =>
-        reverseTimeDivergenceDrift r₁ a b z.1 z.2 j * (psi z.2 * eta z.1))
-        (hG j) (hcoeff.mul hpsi.continuousOn)
-    refine h.congr (ae_of_all _ fun z => ?_)
-    ring
-  have hscalarSmooth := IsSmoothOnNeighborhood.reverseTime r₁ hmap hcSmooth
-  have hscalarCoeff : ContinuousOn (fun z : TimeVelocity d =>
-      reverseTimeScalarCoefficient r₁ c z.1 z.2) K := by
-    simpa only [Function.comp_def, reverseTimeMap_apply,
-      reverseTimeScalarCoefficient_apply] using
-        continuousOn_of_smoothOnNeighborhood hscalarSmooth
+
+
+
+
   have hscalar := integrable_mul_of_memLp_two_of_continuousOn_reverseTime hSmeas hSK
     hKcompact hSfinite U (fun z =>
       reverseTimeScalarCoefficient r₁ c z.1 z.2 * (psi z.2 * eta z.1)) hU
-      (hscalarCoeff.mul hpsi.continuousOn)
-  have hsourceSmooth := IsSmoothOnNeighborhood.reverseTime r₁ hmap hFSmooth
+      ((show ContinuousOn (fun z : TimeVelocity d =>
+      reverseTimeScalarCoefficient r₁ c z.1 z.2) K by
+          exact continuousOn_of_smoothOnNeighborhood (IsSmoothOnNeighborhood.reverseTime r₁ hmap hcSmooth)).mul hpsi.continuousOn)
+
   have hsourceCoeff : ContinuousOn (fun z : TimeVelocity d =>
       reverseTimeScalarCoefficient r₁ F z.1 z.2) K := by
-    simpa only [Function.comp_def, reverseTimeMap_apply,
-      reverseTimeScalarCoefficient_apply] using
-        continuousOn_of_smoothOnNeighborhood hsourceSmooth
+    exact continuousOn_of_smoothOnNeighborhood (IsSmoothOnNeighborhood.reverseTime r₁ hmap hFSmooth)
   have hsource := integrable_of_continuousOn_reverseTime hSmeas hSK hKcompact hSfinite
     (fun z => reverseTimeScalarCoefficient r₁ F z.1 z.2 * psi z.2 * eta z.1)
     ((hsourceCoeff.mul (psi.contDiff.continuous.comp continuous_snd).continuousOn).mul
       (eta.contDiff.continuous.comp continuous_fst).continuousOn)
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · simpa only [S, mul_assoc] using hmass
-  · intro i j; simpa only [S] using hprincipal i j
-  · intro j; simpa only [S] using hdrift j
+  · intro i j; exact (show ∀ i j : Fin d, Integrable (fun z  =>
+      reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
+        psi.partialDeriv i z.2 * eta z.1) (timeVelocityVolumeOn S) by
+      intro i j
+      have hsmooth := IsSmoothOnNeighborhood.reverseTime r₁ hmap
+        (IsSmoothOnNeighborhood.coefficientEntry a haSmooth i j)
+
+      have hpartial : Continuous (fun z : TimeVelocity d =>
+          psi.partialDeriv i z.2 * eta z.1) :=
+        ((psi.contDiff.continuous_fderiv (by simp)).clm_apply continuous_const |>.comp
+          continuous_snd).mul (eta.contDiff.continuous.comp continuous_fst)
+      have h := integrable_mul_of_memLp_two_of_continuousOn_reverseTime hSmeas hSK
+        hKcompact hSfinite (G j) (fun z =>
+          reverseTimeCoefficient r₁ a z.1 z.2 i j *
+            (psi.partialDeriv i z.2 * eta z.1)) (hG j)
+          ((show ContinuousOn (fun z : TimeVelocity d =>
+          reverseTimeCoefficient r₁ a z.1 z.2 i j) K by
+              exact continuousOn_of_smoothOnNeighborhood hsmooth).mul hpartial.continuousOn)
+      refine h.congr (ae_of_all _ fun z => ?_)
+      ring) i j
+  · intro j; exact (show ∀ j : Fin d, Integrable (fun z  =>
+      reverseTimeDivergenceDrift r₁ a b z.1 z.2 j * G j z *
+        psi z.2 * eta z.1) (timeVelocityVolumeOn S) by
+      intro j
+      have hsmooth := IsSmoothOnNeighborhood.reverseTime r₁ hmap
+        (IsSmoothOnNeighborhood.divergenceDriftEntry a b haSmooth hbSmooth j)
+
+      have h := integrable_mul_of_memLp_two_of_continuousOn_reverseTime hSmeas hSK
+        hKcompact hSfinite (G j) (fun z =>
+          reverseTimeDivergenceDrift r₁ a b z.1 z.2 j * (psi z.2 * eta z.1))
+          (hG j) ((show ContinuousOn (fun z : TimeVelocity d =>
+          reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) K by
+              simpa only [Function.comp_def, reverseTimeMap_apply,
+                reverseTimeDivergenceDrift, scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
+                reverseTimeVectorCoefficient_apply, Pi.sub_apply] using
+                  continuousOn_of_smoothOnNeighborhood hsmooth).mul hpsi.continuousOn)
+      refine h.congr (ae_of_all _ fun z => ?_)
+      ring) j
   · refine hscalar.congr (ae_of_all _ fun z => ?_)
     ring
-  · simpa only [S] using hsource
+  · exact hsource
 
 /-- Integrability of the five families implies integrability of the literal raw sum. -/
 theorem integrable_full_reverseTime_separated_product_of_raw_families
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
-    (U : TimeVelocity d → ℝ) (G : Fin d → TimeVelocity d → ℝ)
+      {r₀ r₁ : ℝ}
+    (a : CoefficientField d) (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
+    (U : HypoellipticAleksandrov.Parabolic.ScalarField d) (G : Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d)
     (eta : ReverseTimeScalarTest (r₁ - r₀))
     (psi : PDE.WeakTestFunction Ω)
-    (hmass : Integrable (fun z : TimeVelocity d =>
+    (hmass : Integrable (fun z  =>
       U z * eta.deriv z.1 * psi z.2)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)))
-    (hprincipal : ∀ i j : Fin d, Integrable (fun z : TimeVelocity d =>
+    (hprincipal : ∀ i j : Fin d, Integrable (fun z  =>
       reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
         psi.partialDeriv i z.2 * eta z.1)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)))
-    (hdrift : ∀ j : Fin d, Integrable (fun z : TimeVelocity d =>
+    (hdrift : ∀ j : Fin d, Integrable (fun z  =>
       reverseTimeDivergenceDrift r₁ a b z.1 z.2 j *
         G j z * psi z.2 * eta z.1)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)))
-    (hscalar : Integrable (fun z : TimeVelocity d =>
+    (hscalar : Integrable (fun z  =>
       reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z *
         psi z.2 * eta z.1)
       (timeVelocityVolumeOn
@@ -249,7 +248,7 @@ theorem integrable_full_reverseTime_separated_product_of_raw_families
         psi z.2 * eta z.1)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω))) :
-    Integrable (fun z : TimeVelocity d =>
+    Integrable (fun z  =>
       U z * eta.deriv z.1 * psi z.2 -
         (∑ i : Fin d, ∑ j : Fin d,
           reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
@@ -263,42 +262,31 @@ theorem integrable_full_reverseTime_separated_product_of_raw_families
           psi z.2 * eta z.1)
       (timeVelocityVolumeOn
         (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) := by
-  have hprincipalSum : Integrable (fun z : TimeVelocity d =>
+  let sharedTerm_398f0ffdf7 := ((timeVelocityVolumeOn (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)))
+
+
+
+
+  exact (((hmass.sub (by
+      refine (show Integrable (fun z  =>
       ∑ i : Fin d, ∑ j : Fin d,
         reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
           psi.partialDeriv i z.2 * eta z.1)
-      (timeVelocityVolumeOn
-        (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) := by
-    apply integrable_finset_sum Finset.univ
-    intro i _
-    apply integrable_finset_sum Finset.univ
-    intro j _
-    exact hprincipal i j
-  have hdriftSum : Integrable (fun z : TimeVelocity d =>
+      sharedTerm_398f0ffdf7 by
+          apply integrable_finset_sum Finset.univ
+          intro i _
+          apply integrable_finset_sum Finset.univ
+          intro j _
+          exact hprincipal i j).congr (ae_of_all _ fun z => ?_)
+      simp only [Finset.sum_mul])).sub (by
+      refine (show Integrable (fun z  =>
       ∑ j : Fin d,
         reverseTimeDivergenceDrift r₁ a b z.1 z.2 j *
           G j z * psi z.2 * eta z.1)
-      (timeVelocityVolumeOn
-        (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) := by
-    apply integrable_finset_sum Finset.univ
-    intro j _
-    exact hdrift j
-  have hprincipal' : Integrable (fun z : TimeVelocity d =>
-      (∑ i : Fin d, ∑ j : Fin d,
-        reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
-          psi.partialDeriv i z.2) * eta z.1)
-      (timeVelocityVolumeOn
-        (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) := by
-    refine hprincipalSum.congr (ae_of_all _ fun z => ?_)
-    simp only [Finset.sum_mul]
-  have hdrift' : Integrable (fun z : TimeVelocity d =>
-      (∑ j : Fin d,
-        reverseTimeDivergenceDrift r₁ a b z.1 z.2 j *
-          G j z * psi z.2) * eta z.1)
-      (timeVelocityVolumeOn
-        (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) := by
-    refine hdriftSum.congr (ae_of_all _ fun z => ?_)
-    simp only [Finset.sum_mul]
-  exact (((hmass.sub hprincipal').sub hdrift').add hscalar).sub hsource
+      sharedTerm_398f0ffdf7 by
+          apply integrable_finset_sum Finset.univ
+          intro j _
+          exact hdrift j).congr (ae_of_all _ fun z => ?_)
+      simp only [Finset.sum_mul])).add hscalar).sub hsource
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

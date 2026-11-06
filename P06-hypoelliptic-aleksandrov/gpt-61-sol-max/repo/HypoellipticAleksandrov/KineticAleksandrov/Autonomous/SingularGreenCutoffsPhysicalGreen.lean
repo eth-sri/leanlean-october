@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 
 /-! # Derived compact Green identity for the finite actual physical occupation measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic SectionTwo Evolution MeasureTheory Set
+open SectionTwo MeasureTheory Set
 
 /-- Compact physical C² tests satisfy the actual occupation Green identity.
 The source term and terminal kernel use the same explicit native-to-physical exchange. -/
@@ -19,12 +19,13 @@ theorem fullspace_physical_green_compact_c2
     (z : Z) (T : NNReal) (hT : 0 < (T : ℝ)) :
     (∫ w, physicalSpatialOperator A.a f w ∂physicalOccupationMeasure E z T) =
       (∫ w, f w ∂kernelXV E T z) - f z := by
+  let sharedTerm_e3b5137891 := (∫ x, f (nativeToXV x) ∂E.2.master (wholeQuery T z))
   let F := physicalCompactDatum f hf.continuous hc
   have hh := fullspace_green_spatial_compact_c2 hH hlam hLam A E hE T F
     (physicalCompactDatum_contDiff f hf hc) (physicalCompactDatum_hasCompactSupport f _ hc)
     ⟨0, fun _ => z.2, fun _ => z.1⟩ hT
-  have hL := physicalSpatialOperator_continuous_compact A f hf hc
-  have hLi := physicalSpatialOperator_occupation_integrable A f hf hc E z T
+
+
   have heSource :
       ((evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T).indicator
         (fun q => -transportedForwardOperator (evolutionCoefficient A.a)
@@ -35,14 +36,14 @@ theorem fullspace_physical_green_compact_c2
     funext q
     exact congrArg Neg.neg (physicalSpatialOperator_eq_native A.a f q)
   rw [heSource, duhamelPotential_physical_occupation E z T
-    (fun w => -physicalSpatialOperator A.a f w) hL.1.measurable.neg hLi.neg,
+    (fun w => -physicalSpatialOperator A.a f w) (physicalSpatialOperator_continuous_compact A f hf hc).1.measurable.neg (physicalSpatialOperator_occupation_integrable A f hf hc E z T).neg,
     integral_neg] at hh
   have heTerminal := integral_map nativeToXV_measurable.aemeasurable
     (hf.continuous.measurable.aestronglyMeasurable (μ := kernelXV E T z))
   change (∫ w, f w ∂kernelXV E T z) =
-    ∫ x, f (nativeToXV x) ∂E.2.master (wholeQuery T z) at heTerminal
+    sharedTerm_e3b5137891 at heTerminal
   change -(∫ w, physicalSpatialOperator A.a f w ∂physicalOccupationMeasure E z T) =
-    f z - ∫ x, f (nativeToXV x) ∂E.2.master (wholeQuery T z) at hh
+    f z - sharedTerm_e3b5137891 at hh
   rw [← heTerminal] at hh
   linarith only [hh]
 

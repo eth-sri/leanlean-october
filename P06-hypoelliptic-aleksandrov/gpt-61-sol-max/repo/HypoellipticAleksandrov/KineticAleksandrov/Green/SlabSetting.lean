@@ -47,29 +47,31 @@ def slabTimeSet (T : ℝ) : Set (ElapsedTime ⊤) := {τ | T < τ.1 ∧ τ.1 < 2
 /-- The slab `(T,2T) × ℝ^d × ℝ^d` inside the Green carrier. -/
 def slabSet {d : ℕ} (T : ℝ) : Set (GreenCarrier d) := Prod.fst ⁻¹' slabTimeSet T
 
+variable (d : ℕ)
+
 /-- Lebesgue measure on the base `(T,2T) × ℝ^d` of the slab, as a measure on `SlabBase d`. -/
-def slabBase (d : ℕ) (T : ℝ) : Measure (SlabBase d) :=
+def slabBase  (T : ℝ) : Measure (SlabBase d) :=
   ((elapsedVolume ⊤).restrict (slabTimeSet T)).prod volume
 
 /-- Lebesgue measure on `(0,∞) × ℝ^d × ℝ^d`, the reference measure of the Green density. -/
-def greenLebesgue (d : ℕ) : Measure (GreenCarrier d) :=
-  (elapsedVolume ⊤).prod (volume : Measure (EvolutionAmbientState d))
+def greenLebesgue  : Measure (GreenCarrier d) :=
+  (elapsedVolume ⊤).prod (volume )
 
 /-- The exponent `β_γ = (d+2)/(2γ) - d/2` of Proposition Proposition 4.2. -/
-def slabBeta (d : ℕ) (γ : ℝ) : ℝ := ((d : ℝ) + 2) / (2 * γ) - (d : ℝ) / 2
+def slabBeta  (γ : ℝ) : ℝ := ((d : ℝ) + 2) / (2 * γ) - (d : ℝ) / 2
 
 /-- The upper Lebesgue exponent `γ₀ = (d+1)/d`. -/
-def slabGamma0 (d : ℕ) : ℝ := ((d : ℝ) + 1) / (d : ℝ)
+def slabGamma0  : ℝ := ((d : ℝ) + 1) / (d : ℝ)
 
 /-- The slab restriction of `Γ`, regrouped from `(τ, (w, z))` to `((τ, w), z)`. -/
-def slabRegroup (d : ℕ) : GreenCarrier d ≃ᵐ SlabBase d × PDE.Vec d :=
+def slabRegroup  : GreenCarrier d ≃ᵐ SlabBase d × PDE.Vec d :=
   MeasurableEquiv.prodAssoc.symm
 
 /-- **The outputs of Lemma 5.1 (case W) for one `(μ, T)`.**
 
 `M` is the mass of `μ`, `C : ℝ → ℝ≥0` the constants `C_γ`, `c` the decay rate and `Γ` the
 infinite-horizon Green measure.  See the module docstring. -/
-def SlabFourierBounds (d : ℕ) (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ≥0∞) (T : ℝ)
+def SlabFourierBounds  (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ≥0∞) (T : ℝ)
     (Γ : Measure (GreenCarrier d)) : Prop :=
   (∃ g : SlabBase d → ℝ≥0∞, AEMeasurable g (slabBase d T) ∧
       (∀ E : Set (SlabBase d), MeasurableSet E →
@@ -83,7 +85,7 @@ def SlabFourierBounds (d : ℕ) (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ≥0∞)
         ∀ E : Set (SlabBase d), MeasurableSet E →
           ∫ y in E, k ξ y ∂slabBase d T =
             ∫ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
-              Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ) ∧
+              Complex.exp (-((PDE.vecDot ξ p.2.2 ) * Complex.I)) ∂Γ) ∧
       ∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
         (∀ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
           (C γ : ℝ≥0∞) * M * ENNReal.ofReal (T ^ slabBeta d γ) *
@@ -93,15 +95,11 @@ def SlabFourierBounds (d : ℕ) (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ≥0∞)
           (C γ : ℝ≥0∞) * M * ENNReal.ofReal (T ^ (slabBeta d γ - 3 * (d : ℝ) / 2)))
 
 /-- The slab regrouped measure `Γ.restrict (slab)` on `(SlabBase d) × ℝ^d`. -/
-def slabMeasure (d : ℕ) (T : ℝ) (Γ : Measure (GreenCarrier d)) :
+def slabMeasure  (T : ℝ) (Γ : Measure (GreenCarrier d)) :
     Measure (SlabBase d × PDE.Vec d) :=
   (Γ.restrict (slabSet T)).map (slabRegroup d)
 
-lemma measurableSet_slabTimeSet (T : ℝ) : MeasurableSet (slabTimeSet T) := by
-  have h : slabTimeSet T = (Subtype.val : ElapsedTime ⊤ → ℝ) ⁻¹' Set.Ioo T (2 * T) := by
-    ext τ; simp [slabTimeSet]
-  rw [h]
-  exact measurable_subtype_coe measurableSet_Ioo
+lemma measurableSet_slabTimeSet (T : ℝ) : MeasurableSet (slabTimeSet T) := (Eq.mpr (id (congrArg (fun _a => MeasurableSet _a) (ext fun τ => Iff.rfl))) (measurable_subtype_coe measurableSet_Ioo))
 
 lemma measurableSet_slabSet {d : ℕ} (T : ℝ) : MeasurableSet (slabSet (d := d) T) :=
   measurable_fst (measurableSet_slabTimeSet T)
@@ -125,7 +123,7 @@ instance slabBase_sigmaFinite (d : ℕ) (T : ℝ) : SigmaFinite (slabBase d T) :
   unfold slabBase; infer_instance
 
 /-- A Green measure has mass at most `M T` on the slab `(T, 2T)`. -/
-lemma green_slab_le {d : ℕ} {γ : ℝ → PDE.Vec d} {Ω : Set (PDE.Vec d)}
+lemma green_slab_le {d : ℕ} {γ : ℝ → PDE.Vec d} {Ω : PDE.VelocityRegion d}
     (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d))
     (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ) {T : ℝ} (hT : 0 < T) :

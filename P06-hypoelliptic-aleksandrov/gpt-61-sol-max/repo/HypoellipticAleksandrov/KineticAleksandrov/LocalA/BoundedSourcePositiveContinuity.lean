@@ -12,25 +12,25 @@ A separating time splits the actual source into a continuous future potential an
 potential uniformly controlled by the short time barrier. No continuity of the source is used.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open MeasureTheory Set Filter Evolution Metric
-open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+open Set Filter
+
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
 
 /-- The literal positive bounded Borel potential is continuous on the open past cylinder. -/
 theorem continuousOn_duhamelPotential_bounded_nonneg
     (hH : HormanderHypoellipticityStatement)
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
+    (B : FullKineticCoefficient d) (b : PDE.VectorField d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
     (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
     (hb : IsSmoothDrift b) (lam Lam m : ℝ) (hlam : 0 < lam) (hm : 0 < m)
     (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hcoerc : HasUnitDirectionDriftCoercivity m b)
-    (T : ℝ) (F : KineticPoint d → ℝ) (hF : Measurable F) (M : ℝ) (hM : 0 ≤ M)
+    (T : ℝ) (F : HypoellipticAleksandrov.KineticScalarField d) (hF : Measurable F) (M : ℝ) (hM : 0 ≤ M)
     (hFb : ∀ p, 0 ≤ F p ∧ F p ≤ M)
     (hFz : ∀ p, KineticPoint.equivProd d p ∉ boundedSourcePast Ω γ T → F p = 0) :
     ContinuousOn (duhamelPotential K T F) (evolutionPastOpenCylinder Ω γ T) := by
@@ -69,7 +69,7 @@ theorem continuousOn_duhamelPotential_bounded_nonneg
         f q = 0 := by
       intro q hq
       by_cases hqt : s < q.time
-      · have hqpast : KineticPoint.equivProd d q ∉ boundedSourcePast Ω γ T :=
+      · have hqpast  :=
           fun h => hq ⟨hqt, h⟩
         simp only [f, indicator_apply, mem_ofPred_eq, ite_eq_left hqt, hFz q hqpast]
       · simp only [f, indicator_apply, mem_ofPred_eq, ite_eq_right hqt]

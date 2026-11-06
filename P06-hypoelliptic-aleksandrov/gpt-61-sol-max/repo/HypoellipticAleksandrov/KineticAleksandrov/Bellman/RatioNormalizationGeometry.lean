@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.Geometry
 public import Mathlib.Topology.Algebra.Module.Equiv
 import Mathlib.Tactic
+import Mathlib.Tactic.FunProp
+
+
 
 /-! # The position rescaling used to normalize the ellipticity ratio -/
 
@@ -21,8 +24,10 @@ def bellmanPositionEquiv (s : ℝ) (hs : 0 < s) : (ℝ × ℝ) ≃L[ℝ] (ℝ ×
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
 
+variable (s : ℝ) (hs : 0 < s)
+
 /-- Position rescaling preserves the punctured plane. -/
-theorem bellmanPositionEquiv_ne_zero (s : ℝ) (hs : 0 < s) (q : BellmanPuncturedPlane) :
+theorem bellmanPositionEquiv_ne_zero  (q : BellmanPuncturedPlane) :
     bellmanPositionEquiv s hs q.val ≠ (0, 0) := by
   intro h
   apply q.property
@@ -33,7 +38,7 @@ theorem bellmanPositionEquiv_ne_zero (s : ℝ) (hs : 0 < s) (q : BellmanPuncture
   exact Prod.ext ((mul_eq_zero.mp hx).resolve_left hs.ne') hv
 
 /-- The position rescaling is a homeomorphism of the literal punctured carrier. -/
-def bellmanPositionHomeomorph (s : ℝ) (hs : 0 < s) :
+def bellmanPositionHomeomorph  :
     BellmanPuncturedPlane ≃ₜ BellmanPuncturedPlane where
   toFun q := ⟨bellmanPositionEquiv s hs q.val, bellmanPositionEquiv_ne_zero s hs q⟩
   invFun q := ⟨bellmanPositionEquiv s⁻¹ (inv_pos.mpr hs) q.val,
@@ -47,13 +52,12 @@ def bellmanPositionHomeomorph (s : ℝ) (hs : 0 < s) :
     change (s * (s⁻¹ * q.val.1), q.val.2) = q.val
     simp [hs.ne']
   continuous_toFun := by
-    exact ((bellmanPositionEquiv s hs).continuous.comp continuous_subtype_val).subtype_mk _
+    fun_prop
   continuous_invFun := by
-    exact ((bellmanPositionEquiv s⁻¹ (inv_pos.mpr hs)).continuous.comp
-      continuous_subtype_val).subtype_mk _
+    fun_prop
 
 /-- Position rescaling commutes with every kinetic dilation. -/
-theorem bellmanPositionHomeomorph_dilation (s : ℝ) (hs : 0 < s)
+theorem bellmanPositionHomeomorph_dilation
     (r : ℝ) (hr : 0 < r) (q : BellmanPuncturedPlane) :
     bellmanPositionHomeomorph s hs (bellmanDilation r hr q) =
       bellmanDilation r hr (bellmanPositionHomeomorph s hs q) := by

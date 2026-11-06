@@ -4,8 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.Deterministi
 
 /-! # Averaging a return-time comparison over the literal later time window -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set
 
@@ -18,14 +18,14 @@ theorem box_return_time_average (E : FullSpaceEvolution) (z : Z) (A0 r Y t C : �
     t * (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal ≤
       C * ∫ s in Ioc 0 (3 * t),
         (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal := by
-  let f := fun s : ℝ => (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal
+
   have hi := box_action_integrableOn E z A0 r Y (3 * t)
   have hs : Ioc (2 * t) (3 * t) ⊆ Ioc 0 (3 * t) :=
     fun s hs => ⟨by linarith [hs.1], hs.2⟩
-  have hsmall := hi.mono_set hs
+
   have hmono := setIntegral_mono_on
-    (integrableOn_const (C := f t) (by simp : volume (Ioc (2 * t) (3 * t)) ≠ ⊤))
-    (hsmall.const_mul C) measurableSet_Ioc hcomp
+    (integrableOn_const (C := (fun s  => (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal) t) (by simp : volume (Ioc (2 * t) (3 * t)) ≠ ⊤))
+    ((hi.mono_set hs).const_mul C) measurableSet_Ioc hcomp
   have hvol : volume.real (Ioc (2 * t) (3 * t)) = t := by
     rw [measureReal_def, Real.volume_Ioc, ENNReal.toReal_ofReal (by linarith)]
     ring
@@ -51,11 +51,11 @@ theorem box_decay_scaling {r t alpha : ℝ} (hr : 0 < r) (ht : 0 < t) :
 /-- Negative powers yield the source's `1+t/r²` decay, with a uniform large-time factor. -/
 theorem box_decay_large_comparison {x g : ℝ} (hx : 1 ≤ x) (hg : 0 ≤ g) :
     x ^ (-g / 2) ≤ 2 ^ (g / 2) * (1 + x) ^ (-g / 2) := by
-  have hx0 : 0 < x := by linarith
-  have h1 : 0 < 1 + x := by linarith
-  have hh := Real.rpow_le_rpow_of_nonpos h1 (by linarith : 1 + x ≤ 2 * x)
+
+
+  have hh := Real.rpow_le_rpow_of_nonpos (by linarith) (by linarith : 1 + x ≤ 2 * x)
     (by linarith : -g / 2 ≤ 0)
-  rw [Real.mul_rpow (by norm_num) hx0.le] at hh
+  rw [Real.mul_rpow (by norm_num) (show 0 < x by linarith).le] at hh
   have hm := mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
     (g / 2))
   have he : (2 : ℝ) ^ (g / 2) * 2 ^ (-g / 2) = 1 := by

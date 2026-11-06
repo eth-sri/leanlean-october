@@ -7,7 +7,7 @@ import Mathlib.Tactic
 
 /-! # Exact volume scaling and the homogeneous cancellation in the near-full estimate -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 

@@ -4,11 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 
 /-! # Quantitative compact Green bounds for the actual regularized-barrier cutoff -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov MeasureTheory Set Filter
-open scoped ENNReal
+open MeasureTheory Filter
+
 
 /-- Derived compact Green bounds have a vanishing, explicit inverse-radius error.
 The premises describe the actual test and its generator, and no Green identity is assumed. -/
@@ -66,7 +66,7 @@ theorem barrier_cutoff_green_bounds
     filter_upwards with q
     rw [Real.norm_eq_abs, abs_of_nonneg (hGn q)]
     have hLb : physicalSpatialOperator A.a F q ≤ K :=
-      (le_abs_self _).trans (by simpa only [Real.norm_eq_abs] using hbK q)
+      (le_abs_self _).trans (by exact hbK q)
     exact (hGb q).trans (add_le_add hLb le_rfl)
   have hi := integral_mono hGi (hFi.add (integrable_const (C / R))) hGb
   change (∫ q, G q ∂physicalOccupationMeasure E z T) ≤

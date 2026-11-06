@@ -9,7 +9,7 @@ import Mathlib.Tactic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+
 
 /-- The velocity interval of the forward cylinder. -/
 def capacityCylinderInterval (Z0 : Point) (R : ℝ) (hR : 0 < R) : Interval :=
@@ -35,7 +35,7 @@ theorem cylinder_strip_velocity_slice_zero
     (hP : P ∈ forwardCylinder Z0 R hR) (v : ℝ) :
     stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z0 R hR)
       (Z0.time + R ^ 2) (capacityCylinderPole Z0 P R hR hP) {p | p.velocity 0 = v} = 0 :=
-  stripGreen_velocity_slice_zero hH hLE hlam hLam A (capacityCylinderInterval Z0 R hR)
-    (Z0.time + R ^ 2) (capacityCylinderPole Z0 P R hR hP) v
+  stripGreen_velocity_slice_zero hH hLE hlam hLam A _
+    _ _ v
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

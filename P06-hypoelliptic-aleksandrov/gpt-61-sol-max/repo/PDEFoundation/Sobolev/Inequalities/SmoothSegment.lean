@@ -8,6 +8,8 @@ public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import Mathlib.Analysis.Calculus.Deriv.Mul
 public import Mathlib.Analysis.Calculus.FDeriv.Add
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Smooth Euclidean estimates along affine segments
@@ -19,38 +21,41 @@ Euclidean dot product, so no norm from the inherited finite-product metric
 enters the estimate.
 -/
 
-@[expose] public section
+ public section
 
 namespace PDE
 
-private theorem hasDerivAt_segmentBlend {d : ℕ}
+variable {d : ℕ}
+
+private theorem hasDerivAt_segmentBlend
     (x y : Vec d) (t : ℝ) :
-    HasDerivAt (fun s : ℝ => segmentBlend x s y)
+    HasDerivAt (fun s  => segmentBlend x s y)
       (x - y) t := by
   have hsmul :
       HasDerivAt (fun s : ℝ => s • (x - y))
         (x - y) t := by
     simpa using
       (hasDerivAt_id t).smul_const (x - y)
-  have hadd :
-      HasDerivAt (fun s : ℝ => y + s • (x - y))
-        (x - y) t :=
+  have hadd  :=
     hsmul.const_add y
   convert hadd using 1
   funext s
   exact segmentBlend_eq_add_smul_sub x y s
 
+section
+variable {u : Vec d → ℝ} (hu : ContDiff ℝ PDE.smoothOrder u) (x y : Vec d)
+
+include hu
 /-- Fundamental theorem of calculus along the segment from `y` to `x`. -/
-theorem sub_eq_integral_fderiv_along_segment {d : ℕ}
-    {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
-    (x y : Vec d) :
+theorem sub_eq_integral_fderiv_along_segment
+     :
     u x - u y =
-      ∫ t in (0 : ℝ)..1,
+      ∫ t in (0 )..1,
         (fderiv ℝ u (segmentBlend x t y)) (x - y) := by
-  let γ : ℝ → Vec d := fun t => segmentBlend x t y
+  let γ  := fun t => segmentBlend x t y
   have hγ : ∀ t : ℝ, HasDerivAt γ (x - y) t := by
     intro t
-    simpa [γ] using hasDerivAt_segmentBlend x y t
+    exact hasDerivAt_segmentBlend x y t
   have huγ :
       ∀ t : ℝ,
         HasDerivAt (u ∘ γ)
@@ -59,7 +64,7 @@ theorem sub_eq_integral_fderiv_along_segment {d : ℕ}
     exact
       ((hu.differentiable (by norm_num)).differentiableAt).hasFDerivAt
         |>.comp_hasDerivAt t (hγ t)
-  have hγCont : Continuous γ :=
+  have hγCont  :=
     continuous_iff_continuousAt.2 fun t =>
       (hγ t).continuousAt
   have hfderivCont : Continuous (fderiv ℝ u) := by
@@ -74,7 +79,7 @@ theorem sub_eq_integral_fderiv_along_segment {d : ℕ}
       ((hfderivCont.comp hγCont).clm_apply continuous_const)
         |>.intervalIntegrable _ _
   have hftc :
-      ∫ t in (0 : ℝ)..1,
+      ∫ t in (0 )..1,
           (fderiv ℝ u (γ t)) (x - y) =
         u x - u y := by
     simpa [Function.comp, γ] using
@@ -84,35 +89,38 @@ theorem sub_eq_integral_fderiv_along_segment {d : ℕ}
 
 /-- Exact Euclidean-gradient form of the segment fundamental theorem. -/
 theorem sub_eq_integral_vecDot_classicalGradient_along_segment
-    {d : ℕ} {u : Vec d → ℝ}
-    (hu : ContDiff ℝ (⊤ : ℕ∞) u) (x y : Vec d) :
+      :
     u x - u y =
-      ∫ t in (0 : ℝ)..1,
+      ∫ t in (0 )..1,
         vecDot (classicalGradient u (segmentBlend x t y))
           (x - y) := by
   simpa only [fderiv_apply_eq_vecDot_classicalGradient] using
     sub_eq_integral_fderiv_along_segment hu x y
+end
 
+
+variable {p : ℝ} (hp : 1 ≤ p)
+
+include hp
 /-- Jensen along the unit segment followed by Euclidean Cauchy--Schwarz. -/
 theorem abs_sub_rpow_le_integral_euclideanGradient_mul_distance_rpow
-    {d : ℕ} {p : ℝ} (hp : 1 ≤ p)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
+
+    {u : Vec d → ℝ} (hu : ContDiff ℝ PDE.smoothOrder u)
     (x y : Vec d) :
     |u x - u y| ^ p ≤
-      ∫ t in (0 : ℝ)..1,
+      ∫ t in (0 )..1,
         (vecEuclideanNorm
             (classicalGradient u (segmentBlend x t y)) *
           vecEuclideanNorm (x - y)) ^ p := by
-  have hpNonneg : 0 ≤ p :=
+  have hpNonneg  :=
     zero_le_one.trans hp
-  let γ : ℝ → Vec d :=
+  let γ  :=
     fun t => segmentBlend x t y
   have hγCont : Continuous γ := by
     refine continuous_iff_continuousAt.2 ?_
     intro t
     exact (hasDerivAt_segmentBlend x y t).continuousAt
-  have hgradCont :
-      Continuous (classicalGradient u) :=
+  have hgradCont  :=
     PDE.ContDiff.continuous_classicalGradient
       (hu.of_le (by norm_num) : ContDiff ℝ 1 u)
   have hdotCont :
@@ -125,10 +133,7 @@ theorem abs_sub_rpow_le_integral_euclideanGradient_mul_distance_rpow
     exact
       ((continuous_apply i).comp
         (hgradCont.comp hγCont)).mul continuous_const
-  have hdotPowCont :
-      Continuous
-        (fun t =>
-          |vecDot (classicalGradient u (γ t)) (x - y)| ^ p) :=
+  have hdotPowCont  :=
     (Real.continuous_rpow_const hpNonneg).comp hdotCont.abs
   have hboundCont :
       Continuous
@@ -143,23 +148,22 @@ theorem abs_sub_rpow_le_integral_euclideanGradient_mul_distance_rpow
             (hgradCont.comp hγCont)).mul continuous_const)
   calc
     |u x - u y| ^ p =
-        |∫ t in (0 : ℝ)..1,
+        |∫ t in (0 )..1,
           vecDot (classicalGradient u (γ t))
             (x - y)| ^ p := by
       rw [show u x - u y =
-        ∫ t in (0 : ℝ)..1,
+        ∫ t in (0 )..1,
           vecDot (classicalGradient u (γ t))
             (x - y) by
-          simpa [γ] using
-            sub_eq_integral_vecDot_classicalGradient_along_segment
+          exact sub_eq_integral_vecDot_classicalGradient_along_segment
               hu x y]
-    _ ≤ ∫ t in (0 : ℝ)..1,
+    _ ≤ ∫ t in (0 )..1,
         |vecDot (classicalGradient u (γ t))
           (x - y)| ^ p :=
       abs_intervalIntegral_rpow_le_intervalIntegral_abs_rpow
         hp (hdotCont.intervalIntegrable _ _)
           (hdotPowCont.intervalIntegrable _ _)
-    _ ≤ ∫ t in (0 : ℝ)..1,
+    _ ≤ ∫ t in (0 )..1,
         (vecEuclideanNorm
             (classicalGradient u (γ t)) *
           vecEuclideanNorm (x - y)) ^ p := by
@@ -170,29 +174,27 @@ theorem abs_sub_rpow_le_integral_euclideanGradient_mul_distance_rpow
       intro t _ht
       exact Real.rpow_le_rpow (abs_nonneg _)
         (abs_vecDot_le_vecEuclideanNorm_mul
-          (classicalGradient u (γ t)) (x - y))
+          _ (x - y))
         hpNonneg
 
 /-- Diameter form of the segment estimate at every finite real exponent. -/
 theorem abs_sub_rpow_le_diameter_rpow_mul_integral_euclideanGradient_rpow
-    {d : ℕ} {p : ℝ} (hp : 1 ≤ p)
+
     {U : Set (Vec d)} {D : ℝ}
     (hUDiameter : HasEuclideanDiameterLE U D)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
+    {u : Vec d → ℝ} (hu : ContDiff ℝ PDE.smoothOrder u)
     {x y : Vec d} (hx : x ∈ U) (hy : y ∈ U) :
     |u x - u y| ^ p ≤
       D ^ p *
-        ∫ t in (0 : ℝ)..1,
+        ∫ t in (0 )..1,
           vecEuclideanNorm
             (classicalGradient u (segmentBlend x t y)) ^ p := by
-  have hpNonneg : 0 ≤ p :=
+  have hpNonneg  :=
     zero_le_one.trans hp
-  have hD : 0 ≤ D :=
-    (vecEuclideanNorm_nonneg (x - y)).trans
-      (hUDiameter hx hy)
+
   have hgradCont :
       Continuous
-        (fun t : ℝ =>
+        (fun t  =>
           vecEuclideanNorm
             (classicalGradient u (segmentBlend x t y))) := by
     exact
@@ -203,7 +205,7 @@ theorem abs_sub_rpow_le_diameter_rpow_mul_integral_euclideanGradient_rpow
               (hasDerivAt_segmentBlend x y t).continuousAt))
   have hleftCont :
       Continuous
-        (fun t : ℝ =>
+        (fun t  =>
           (vecEuclideanNorm
               (classicalGradient u (segmentBlend x t y)) *
             vecEuclideanNorm (x - y)) ^ p) :=
@@ -211,7 +213,7 @@ theorem abs_sub_rpow_le_diameter_rpow_mul_integral_euclideanGradient_rpow
       (hgradCont.mul continuous_const)
   have hrightCont :
       Continuous
-        (fun t : ℝ =>
+        (fun t  =>
           vecEuclideanNorm
               (classicalGradient u (segmentBlend x t y)) ^ p *
             D ^ p) :=
@@ -219,13 +221,13 @@ theorem abs_sub_rpow_le_diameter_rpow_mul_integral_euclideanGradient_rpow
       |>.mul continuous_const
   calc
     |u x - u y| ^ p ≤
-        ∫ t in (0 : ℝ)..1,
+        ∫ t in (0 )..1,
           (vecEuclideanNorm
               (classicalGradient u (segmentBlend x t y)) *
             vecEuclideanNorm (x - y)) ^ p :=
       abs_sub_rpow_le_integral_euclideanGradient_mul_distance_rpow
         hp hu x y
-    _ ≤ ∫ t in (0 : ℝ)..1,
+    _ ≤ ∫ t in (0 )..1,
         vecEuclideanNorm
             (classicalGradient u (segmentBlend x t y)) ^ p *
           D ^ p := by
@@ -241,7 +243,7 @@ theorem abs_sub_rpow_le_diameter_rpow_mul_integral_euclideanGradient_rpow
           (hUDiameter hx hy) hpNonneg)
         (Real.rpow_nonneg (vecEuclideanNorm_nonneg _) p)
     _ = D ^ p *
-        ∫ t in (0 : ℝ)..1,
+        ∫ t in (0 )..1,
           vecEuclideanNorm
             (classicalGradient u (segmentBlend x t y)) ^ p := by
       rw [intervalIntegral.integral_mul_const]

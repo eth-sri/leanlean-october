@@ -7,10 +7,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassSum
 
 /-! # Finiteness and uniform mass bounds for the actual entrance counting measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+open Set MeasureTheory
 
 /-- The actual finite entrance count satisfies the quadratic source estimate. -/
 theorem visitCount_partial_quadratic_bound
@@ -45,7 +45,7 @@ theorem exists_visitCount_mass_constant {lam Lam : ℝ}
   intro hH hLE A c J s T hT P hP
   apply visit_sum_mass_le_of_partial_mass_le
   intro N
-  have hw : 0 < J.hi - J.lo := sub_pos.mpr J.ordered
+  have hw  := sub_pos.mpr J.ordered
   have hr := c.positive
   apply (ENNReal.le_ofReal_iff_toReal_le (measure_ne_top _ univ) (by positivity)).mpr
   exact hc ((J.hi - J.lo) / 2) c.r _ (by linarith [J.ordered]) c.positive

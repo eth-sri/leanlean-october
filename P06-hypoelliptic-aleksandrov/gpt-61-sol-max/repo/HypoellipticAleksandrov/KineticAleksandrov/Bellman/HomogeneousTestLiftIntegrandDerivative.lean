@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # The literal spatial derivative of the radial lift integrand -/
 
-@[expose] public section
-noncomputable section
-open Set Filter Topology
+ public section
+
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The joint derivative in a spatial direction has the literal dilation chain factor. -/

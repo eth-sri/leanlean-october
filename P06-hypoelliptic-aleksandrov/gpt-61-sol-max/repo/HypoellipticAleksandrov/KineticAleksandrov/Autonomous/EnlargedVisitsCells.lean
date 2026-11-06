@@ -28,17 +28,19 @@ def enlargedStartCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) : Set Point :=
   {p | p.time ∈ enlargedTimeBin c.r s j ∧
     p.position 0 ∈ enlargedPositionCell c.r x k}
 
+variable (nu : Measure Point) (c : Clock)
+
+variable (s x : ℝ) (j : ℕ) (k : ℤ)
+
 /-- The real starting mass in a time-position cell. -/
-def enlargedStartCellMass (nu : Measure Point) (c : Clock) (s x : ℝ)
-    (j : ℕ) (k : ℤ) : ℝ := (nu (enlargedStartCell c s x j k)).toReal
+def enlargedStartCellMass   : ℝ := (nu (enlargedStartCell c s x j k)).toReal
 
 /-- The position-resolved visit mass, retaining the source entrance support explicitly. -/
-def enlargedPositionVisitMass (nu : Measure Point) (c : Clock) (s x : ℝ)
-    (j : ℕ) (k : ℤ) : ℝ :=
+def enlargedPositionVisitMass   : ℝ :=
   (nu (enlargedStartCell c s x j k ∩ {p | p.velocity 0 ∈ closure c.entrance})).toReal
 
 /-- The source time count, summed over all positions. -/
-def enlargedTimeVisitMass (nu : Measure Point) (c : Clock) (s : ℝ) (j : ℕ) : ℝ :=
+def enlargedTimeVisitMass  (s : ℝ) (j : ℕ) : ℝ :=
   (nu {p | p.time ∈ enlargedTimeBin c.r s j ∧
     p.velocity 0 ∈ closure c.entrance}).toReal
 
@@ -58,15 +60,17 @@ theorem measurableSet_enlargedTimeBin (r s : ℝ) (j : ℕ) :
 theorem measurableSet_enlargedPositionCell (r x : ℝ) (k : ℤ) :
     MeasurableSet (enlargedPositionCell r x k) := measurableSet_Ico
 
+variable (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ)
+
 /-- Starting cells are measurable in the physical spacetime carrier. -/
-theorem measurableSet_enlargedStartCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) :
+theorem measurableSet_enlargedStartCell  :
     MeasurableSet (enlargedStartCell c s x j k) :=
   ((measurableSet_enlargedTimeBin c.r s j).preimage continuous_time.measurable).inter
     ((measurableSet_enlargedPositionCell c.r x k).preimage
       ((continuous_apply 0).comp continuous_position).measurable)
 
 /-- Output cells are measurable in physical spacetime. -/
-theorem measurableSet_enlargedOutputCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) :
+theorem measurableSet_enlargedOutputCell  :
     MeasurableSet (enlargedOutputCell c s x j k) :=
   (measurableSet_enlargedStartCell c s x j k).inter
     (isOpen_Ioo.measurableSet.preimage

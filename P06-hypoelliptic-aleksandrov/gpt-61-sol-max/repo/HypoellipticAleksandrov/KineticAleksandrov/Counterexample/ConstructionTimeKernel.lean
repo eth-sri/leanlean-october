@@ -3,11 +3,13 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionCompactDerivative
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeRegularityCompact
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The time derivative of the fixed compact cutoff integral -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 
@@ -25,7 +27,7 @@ theorem construction_deriv_cutoff_integral {d : ℕ} {A : Type*}
   let f : ℝ × (XV d × ℝ) → ℝ := fun z =>
     phi.normed volume (q - z.2.1) * timeCutoffTheta
       (z.2.2 - Real.exp (-mu * z.1) * (2 - PDE.vecNormSq z.2.1.2 / R ^ 2))
-  have hf : ContDiff ℝ (⊤ : ℕ∞) f :=
+  have hf : ContDiff ℝ PDE.smoothOrder f :=
     (phi.contDiff_normed.comp (contDiff_const.sub contDiff_snd.fst)).mul
       (contDiff_timeCutoffTheta.comp (contDiff_snd.snd.sub
         ((Real.contDiff_exp.comp (contDiff_const.mul contDiff_fst)).mul

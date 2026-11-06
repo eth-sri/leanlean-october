@@ -38,28 +38,27 @@ theorem killed_green_norm_bound {d : ℕ} (G : GreenCarrier d → ℝ≥0∞)
           ENNReal.ofReal (T ^ δ * Real.exp (-k * T))) :
     eLpNorm G (ENNReal.ofReal q) (greenLebesgue d) ≤
       killedGreenConstant A δ k q * M := by
+  let sharedTerm_7e21f40ef1 := (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal (T ^ (δ - 1) * Real.exp (-k * T)))
   let ν := (greenLebesgue d).withDensity (fun p => G p ^ q)
   have hlog := log_mul_measure_univ_le ν
     (measurable_subtype_coe.comp measurable_fst) (fun p => p.1.2.1)
-  have hν : ∀ T : ℝ, 0 < T → ν (slabSet T) ≤
+
+
+
+  have hbound := (ENNReal.mul_le_iff_le_inv ((ENNReal.ofReal_pos.mpr (Real.log_pos one_lt_two)).ne') ENNReal.ofReal_ne_top).mp (show ENNReal.ofReal (Real.log 2) * ν univ ≤
+      (ENNReal.ofReal A * M ^ q) * (sharedTerm_7e21f40ef1) by
+      refine hlog.trans ?_
+      rw [← lintegral_inv_killed_power]
+      refine setLIntegral_mono' measurableSet_Ioi fun T hT => ?_
+      exact mul_le_mul_right ((show ∀ T : ℝ, 0 < T → ν (slabSet T) ≤
       ENNReal.ofReal A * M ^ q *
-        ENNReal.ofReal (T ^ δ * Real.exp (-k * T)) := by
-    intro T hT
-    dsimp only [ν]
-    rw [withDensity_apply _ (measurableSet_slabSet T)]
-    exact hslab T hT
-  have hint : ENNReal.ofReal (Real.log 2) * ν univ ≤
-      (ENNReal.ofReal A * M ^ q) * (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
-        (T ^ (δ - 1) * Real.exp (-k * T))) := by
-    refine hlog.trans ?_
-    rw [← lintegral_inv_killed_power]
-    refine setLIntegral_mono' measurableSet_Ioi fun T hT => ?_
-    exact mul_le_mul_right (hν T hT) _
-  have hL0 : ENNReal.ofReal (Real.log 2) ≠ 0 :=
-    (ENNReal.ofReal_pos.mpr (Real.log_pos one_lt_two)).ne'
-  have hbound := (ENNReal.mul_le_iff_le_inv hL0 ENNReal.ofReal_ne_top).mp hint
-  have hp0 : ENNReal.ofReal q ≠ 0 := (ENNReal.ofReal_pos.mpr hq).ne'
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 ENNReal.ofReal_ne_top
+        ENNReal.ofReal (T ^ δ * Real.exp (-k * T)) by
+          intro T hT
+          dsimp only [ν]
+          rw [withDensity_apply _ (measurableSet_slabSet T)]
+          exact hslab T hT) T hT) _)
+
+  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal ((ENNReal.ofReal_pos.mpr hq).ne') ENNReal.ofReal_ne_top
     hGm.aestronglyMeasurable, ENNReal.toReal_ofReal hq.le]
   simp only [enorm_eq_self]
   have hmass : (∫⁻ p, G p ^ q ∂greenLebesgue d) = ν univ := by
@@ -69,10 +68,8 @@ theorem killed_green_norm_bound {d : ℕ} (G : GreenCarrier d → ℝ≥0∞)
   refine (ENNReal.rpow_le_rpow hbound (by positivity : 0 ≤ 1 / q)).trans (le_of_eq ?_)
   unfold killedGreenConstant
   rw [show (ENNReal.ofReal (Real.log 2))⁻¹ *
-      ((ENNReal.ofReal A * M ^ q) * (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
-        (T ^ (δ - 1) * Real.exp (-k * T)))) =
-      (ENNReal.ofReal A * (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
-        (T ^ (δ - 1) * Real.exp (-k * T))) *
+      ((ENNReal.ofReal A * M ^ q) * (sharedTerm_7e21f40ef1)) =
+      (ENNReal.ofReal A * (sharedTerm_7e21f40ef1) *
         (ENNReal.ofReal (Real.log 2))⁻¹) * M ^ q by ring]
   rw [ENNReal.mul_rpow_of_nonneg _ _ (by positivity : 0 ≤ 1 / q),
     ← ENNReal.rpow_mul, mul_one_div_cancel hq.ne', ENNReal.rpow_one]

@@ -6,8 +6,8 @@ import Mathlib.Tactic
 
 /-! # Product factorization of a locally finite measure invariant in its first coordinate -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -30,14 +30,14 @@ theorem bellman_translation_factorization (ρ : Measure (ℝ × ℝ))
     [IsFiniteMeasureOnCompacts ρ]
     (hρ : ∀ a : ℝ, Measure.map (fun q : ℝ × ℝ => (a + q.1, q.2)) ρ = ρ) :
     ρ = (volume : Measure ℝ).prod (bellmanUnitSection ρ) := by
-  let F := bellmanUnitSection ρ
-  let : IsFiniteMeasureOnCompacts F := bellmanUnitSection_finiteOnCompacts ρ
-  let C : Set (Set ℝ) := {S | ∃ a b : ℝ, a ≤ b ∧ Icc a b = S}
-  have hgen : MeasurableSpace.generateFrom C = (inferInstance : MeasurableSpace ℝ) :=
+
+  let  := bellmanUnitSection_finiteOnCompacts ρ
+
+  have hgen  :=
     (BorelSpace.measurable_eq.trans (borel_eq_generateFrom_Icc ℝ)).symm
-  have hpi : IsPiSystem C := isPiSystem_Icc id id
-  obtain ⟨hvol⟩ := bellman_finiteSpanning_closedIntervals (volume : Measure ℝ)
-  obtain ⟨hF⟩ := bellman_finiteSpanning_closedIntervals F
+  have hpi : IsPiSystem ({S | ∃ a b : ℝ, a ≤ b ∧ Icc a b = S}) := isPiSystem_Icc id id
+  obtain ⟨hvol⟩ := bellman_finiteSpanning_closedIntervals (volume )
+  obtain ⟨hF⟩ := bellman_finiteSpanning_closedIntervals (bellmanUnitSection ρ)
   apply Eq.symm
   apply Measure.prod_eq_generateFrom hgen hgen hpi hpi hvol hF
   rintro A ⟨a, b, hab, rfl⟩ B ⟨c, d, hcd, rfl⟩

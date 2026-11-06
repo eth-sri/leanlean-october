@@ -11,14 +11,14 @@ open forward-box containments.  It contains no projection estimate,
 tail, chain, residual, or representative result.
 -/
 
-@[expose] public section
+ public section
 
-open Filter Set
-open scoped Topology
+
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
-noncomputable section
+section
 
 /-- A literal closed dyadic forward child box is contained in its literal
 closed forward parent box. -/
@@ -36,22 +36,17 @@ theorem parabolicDyadicClosedForwardBox_child_subset
         (parabolicDyadicSourceBox index).radius
         (parabolicDyadicSourceBox index).baseTime
         (parabolicDyadicSourceBox index).center := by
-  have hchildRadius : 0 <
-      (parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)).radius :=
-    parabolicDyadicSourceBox_radius_pos (parabolicDyadicChildIndex index child)
-  have hparentRadius : 0 < (parabolicDyadicSourceBox index).radius :=
-    parabolicDyadicSourceBox_radius_pos index
-  rw [← closure_parabolicBox_of_pos (d := d) (vartheta := (1 : Real))
-        (r := (parabolicDyadicSourceBox
-          (parabolicDyadicChildIndex index child)).radius)
-        (t0 := (parabolicDyadicSourceBox
-          (parabolicDyadicChildIndex index child)).baseTime)
-        (v0 := (parabolicDyadicSourceBox
-          (parabolicDyadicChildIndex index child)).center) (by norm_num) hchildRadius,
-    ← closure_parabolicBox_of_pos (d := d) (vartheta := (1 : Real))
+  let sharedTerm_1922ee65a3 := ((parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)))
+
+
+  rw [← closure_parabolicBox_of_pos (d := d) (vartheta := (1 ))
+        (r := sharedTerm_1922ee65a3.radius)
+        (t0 := sharedTerm_1922ee65a3.baseTime)
+        (v0 := sharedTerm_1922ee65a3.center) (by norm_num) (parabolicDyadicSourceBox_radius_pos (parabolicDyadicChildIndex index child)),
+    ← closure_parabolicBox_of_pos (d := d) (vartheta := (1 ))
         (r := (parabolicDyadicSourceBox index).radius)
         (t0 := (parabolicDyadicSourceBox index).baseTime)
-        (v0 := (parabolicDyadicSourceBox index).center) (by norm_num) hparentRadius]
+        (v0 := (parabolicDyadicSourceBox index).center) (by norm_num) (parabolicDyadicSourceBox_radius_pos index)]
   exact closure_mono (parabolicDyadicForwardBox_child_subset index child)
 
 end

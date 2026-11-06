@@ -10,7 +10,7 @@ The selection theorem is abstract; the enlargement conclusion is discharged by t
 Euclidean kinetic engulfing lemma rather than by a product-metric ball comparison.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
@@ -25,13 +25,13 @@ theorem exists_disjoint_cylinder_selection {d : ℕ} {ι : Type*}
       u.PairwiseDisjoint (fun i => backwardCylinder (P i) (r i)) ∧
       (⋃ i ∈ t, backwardCylinder (P i) (r i)) ⊆
         ⋃ i ∈ u, inflatedCylinder (P i) (r i) 8 := by
-  let : SecondCountableTopology (KineticPoint d) :=
+  let  :=
     (KineticPoint.homeomorphProd d).secondCountableTopology
   obtain ⟨u, hut, hdisj, hcover⟩ :=
     Vitali.exists_disjoint_subfamily_covering_enlargement
       (fun i => backwardCylinder (P i) (r i)) t r 2 (by norm_num)
       (fun i hi => (hr i hi).le) R hR (fun i hi => cylinder_nonempty (P i) (hr i hi))
-  have hcount : u.Countable := hdisj.countable_of_nonempty_interior fun i hi => by
+  have hcount  := hdisj.countable_of_nonempty_interior fun i hi => by
     rw [(isOpen_cylinder (P i) (r i)).interior_eq]
     exact cylinder_nonempty (P i) (hr i (hut hi))
   refine ⟨u, hut, hcount, hdisj, ?_⟩

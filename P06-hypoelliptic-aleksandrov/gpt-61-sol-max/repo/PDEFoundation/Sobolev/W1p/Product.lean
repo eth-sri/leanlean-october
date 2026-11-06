@@ -6,6 +6,8 @@ public import PDEFoundation.Sobolev.W1p.Algebra
 public import PDEFoundation.Sobolev.WeakDerivative.Product
 public import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
 public import Mathlib.MeasureTheory.Function.LpSeminorm.TriangleInequality
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Smooth multipliers on representative-level `W^{1,p}`
@@ -35,7 +37,7 @@ whose value and first coordinate derivatives are essentially bounded on the
 domain. -/
 noncomputable def mulContDiffMemLpTop [Fact (1 ≤ p)]
     (u : W1pFunction U p) {φ : Vec d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφTop : MemLpOn U ∞ φ)
     (hDφTop : ∀ i : Fin d,
       MemLpOn U ∞
@@ -63,13 +65,12 @@ noncomputable def mulContDiffMemLpTop [Fact (1 ≤ p)]
     convert u.hasWeakGradient.mul_contDiff hφ
       u.locallyIntegrable_toFun u.locallyIntegrable_grad using 1
     funext x i
-    simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-      classicalGradient_apply]
+    rfl
 
 @[simp]
 theorem mulContDiffMemLpTop_toFun [Fact (1 ≤ p)]
     (u : W1pFunction U p) {φ : Vec d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφTop : MemLpOn U ∞ φ)
     (hDφTop : ∀ i : Fin d,
       MemLpOn U ∞
@@ -81,7 +82,7 @@ theorem mulContDiffMemLpTop_toFun [Fact (1 ≤ p)]
 @[simp]
 theorem mulContDiffMemLpTop_grad [Fact (1 ≤ p)]
     (u : W1pFunction U p) {φ : Vec d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφTop : MemLpOn U ∞ φ)
     (hDφTop : ∀ i : Fin d,
       MemLpOn U ∞
@@ -94,23 +95,21 @@ theorem mulContDiffMemLpTop_grad [Fact (1 ≤ p)]
 /-- Exact multiplier cost for the value component. -/
 theorem eLpNormOn_mulContDiffMemLpTop_toFun_le
     [Fact (1 ≤ p)] (u : W1pFunction U p)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    {φ : Vec d → ℝ} (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφTop : MemLpOn U ∞ φ)
     (hDφTop : ∀ i : Fin d,
       MemLpOn U ∞
         (fun x => classicalGradient φ x i)) :
     eLpNormOn U p
         (u.mulContDiffMemLpTop hφ hφTop hDφTop).toFun ≤
-      eLpNormOn U ∞ φ * eLpNormOn U p u.toFun := by
-  exact
-    MeasureTheory.eLpNorm_smul_le_eLpNorm_top_mul_eLpNorm
+      eLpNormOn U ∞ φ * eLpNormOn U p u.toFun := MeasureTheory.eLpNorm_smul_le_eLpNorm_top_mul_eLpNorm
       (f := u.toFun) p hφTop.aestronglyMeasurable
 
 /-- Coordinatewise gradient cost of a smooth `L∞` multiplier. Both terms in
 the product rule remain visible. -/
 theorem eLpNormOn_mulContDiffMemLpTop_grad_coord_le
     [Fact (1 ≤ p)] (u : W1pFunction U p)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    {φ : Vec d → ℝ} (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφTop : MemLpOn U ∞ φ)
     (hDφTop : ∀ i : Fin d,
       MemLpOn U ∞
@@ -123,61 +122,24 @@ theorem eLpNormOn_mulContDiffMemLpTop_grad_coord_le
           eLpNormOn U p (fun x => u.grad x i) +
         eLpNormOn U ∞
             (fun x => classicalGradient φ x i) *
-          eLpNormOn U p u.toFun := by
-  let first : Vec d → ℝ :=
-    fun x => φ x * u.grad x i
-  let second : Vec d → ℝ :=
-    fun x => u x * classicalGradient φ x i
-  have hfirstMem : MemLpOn U p first := by
-    simpa only [first, mul_comm] using
-      (u.gradMemLp i).fun_mul hφTop
-  have hsecondMem : MemLpOn U p second := by
-    simpa only [second, mul_comm] using
-      u.memLp.fun_mul (hDφTop i)
-  have hfirstBound :
-      eLpNormOn U p first ≤
-        eLpNormOn U ∞ φ *
-          eLpNormOn U p (fun x => u.grad x i) := by
-    exact
-      MeasureTheory.eLpNorm_smul_le_eLpNorm_top_mul_eLpNorm
-        (f := fun x => u.grad x i) p hφTop.aestronglyMeasurable
-  have hsecondBound :
-      eLpNormOn U p second ≤
-        eLpNormOn U ∞
-            (fun x => classicalGradient φ x i) *
-          eLpNormOn U p u.toFun := by
-    calc
-      eLpNormOn U p second =
-          eLpNormOn U p
-            (fun x => classicalGradient φ x i * u x) := by
-        apply MeasureTheory.eLpNorm_congr_ae
-        exact Filter.Eventually.of_forall fun x => by
-          simp only [second, mul_comm]
-      _ ≤ eLpNormOn U ∞
-            (fun x => classicalGradient φ x i) *
-          eLpNormOn U p u.toFun := by
-        exact
-          MeasureTheory.eLpNorm_smul_le_eLpNorm_top_mul_eLpNorm
-            (f := u.toFun) p (hDφTop i).aestronglyMeasurable
-  calc
-    eLpNormOn U p
-        (fun x =>
-          (u.mulContDiffMemLpTop hφ hφTop hDφTop).grad x i) =
-        eLpNormOn U p (first + second) := by
-      rfl
-    _ ≤ eLpNormOn U p first + eLpNormOn U p second := by
-      exact MeasureTheory.eLpNorm_add_le Fact.out
-    _ ≤ eLpNormOn U ∞ φ *
-          eLpNormOn U p (fun x => u.grad x i) +
-        eLpNormOn U ∞
-            (fun x => classicalGradient φ x i) *
-          eLpNormOn U p u.toFun :=
-      add_le_add hfirstBound hsecondBound
+          eLpNormOn U p u.toFun := (Trans.trans
+  (Trans.trans (Eq.refl (eLpNormOn U p fun x => (u.mulContDiffMemLpTop hφ hφTop hDφTop).grad x i))
+    (MeasureTheory.eLpNorm_add_le Fact.out))
+  (add_le_add (MeasureTheory.eLpNorm_smul_le_eLpNorm_top_mul_eLpNorm p (MeasureTheory.MemLp.aestronglyMeasurable hφTop))
+    (Trans.trans
+      (MeasureTheory.eLpNorm_congr_ae
+        (Filter.Eventually.of_forall fun x =>
+          of_eq_true
+            (Eq.trans
+              (congrFun' (congrArg Eq (congrFun' (funext fun x => mul_comm (u.toFun x) (classicalGradient φ x i)) x))
+                (classicalGradient φ x i * u.toFun x))
+              (eq_self (classicalGradient φ x i * u.toFun x)))))
+      (MeasureTheory.eLpNorm_smul_le_eLpNorm_top_mul_eLpNorm p (MeasureTheory.MemLp.aestronglyMeasurable (hDφTop i))))))
 
 /-- Compact support supplies the required `L∞` hypotheses automatically. -/
 noncomputable def mulContDiffHasCompactSupport
     [Fact (1 ≤ p)] (u : W1pFunction U p)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    {φ : Vec d → ℝ} (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφCompact : HasCompactSupport φ) :
     W1pFunction U p := by
   have hφTop : MemLpOn U ∞ φ :=
@@ -204,23 +166,21 @@ noncomputable def mulContDiffHasCompactSupport
 @[simp]
 theorem mulContDiffHasCompactSupport_toFun
     [Fact (1 ≤ p)] (u : W1pFunction U p)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    {φ : Vec d → ℝ} (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφCompact : HasCompactSupport φ) :
     (u.mulContDiffHasCompactSupport hφ hφCompact).toFun =
       fun x => φ x * u x := by
-  simp only [mulContDiffHasCompactSupport,
-    mulContDiffMemLpTop_toFun]
+  rfl
 
 @[simp]
 theorem mulContDiffHasCompactSupport_grad
     [Fact (1 ≤ p)] (u : W1pFunction U p)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    {φ : Vec d → ℝ} (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφCompact : HasCompactSupport φ) :
     (u.mulContDiffHasCompactSupport hφ hφCompact).grad =
       fun x =>
         φ x • u.grad x + u x • classicalGradient φ x := by
-  simp only [mulContDiffHasCompactSupport,
-    mulContDiffMemLpTop_grad]
+  rfl
 
 end W1pFunction
 

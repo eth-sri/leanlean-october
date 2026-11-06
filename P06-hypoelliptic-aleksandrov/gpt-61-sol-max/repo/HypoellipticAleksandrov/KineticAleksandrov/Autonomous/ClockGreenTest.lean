@@ -4,11 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTe
 
 /-! # The genuine normalized Duhamel test satisfies the physical clock equation -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+
+open TheoremA
 
 /-- Local and extended normalized operators agree on the normalized active strip. -/
 theorem clock_extended_operator_eq {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
@@ -42,7 +42,7 @@ theorem clockSourcePotential_physical_equation
   obtain ⟨-, hsm, -, hop⟩ :=
     clockSourcePotential_regular hH hLE hlam hLam A c e R T hRT f hfn hs hz
   rw [c.conjugacy A.a e _ hsm p hp]
-  have hi : (sectionTwoPoint (c.map e p)).position 0 ∈ normalizedActive :=
+  have hi  :=
     (c.mem_active_iff (p.velocity 0)).mp hp
   rw [clock_extended_operator_eq A c e _ _ hi]
   have heq : (clockSourcePotential hH hLE hlam hLam A c e T f ∘ sectionTwoPoint) ∘

@@ -8,7 +8,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripI
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 
 /-- The actual larger exit mixture restarted from the smaller internal boundary. -/
 def nestedIntervalRestartExit
@@ -59,29 +59,28 @@ theorem nestedIntervalExit_probe_identity
   have hsum := integral_add_measure
     (hi.restrict (s := reconstructionExit H2 sMinus T))
     (hi.restrict (s := nestedIntervalInternalExit H1 H2 sMinus T))
-  have houter : (∫ p, u p ∂μ.restrict (reconstructionExit H2 sMinus T)) =
-      ∫ p, exitProbePhysical f p ∂μ.restrict (reconstructionExit H2 sMinus T) := by
-    apply integral_congr_ae
-    filter_upwards [ae_restrict_mem (measurableSet_nestedIntervalExit H2 sMinus T)] with p hp
-    apply htrace
-    rcases hp with hp | hp
-    · exact Or.inl hp
-    · exact Or.inr ⟨by linarith [hp.1], hp.2⟩
-  have hmap : (∫ p, u p ∂μ.restrict (nestedIntervalInternalExit H1 H2 sMinus T)) =
-      ∫ ep, u ep.1 ∂τ := by
-    rw [← nestedIntervalRestartPoles_map hH hLE hlam hLam A H1 H2 sMinus T e]
-    exact (MeasurableEmbedding.subtype_coe (measurableSet_nestedIntervalPole H2 T)).integral_map u
-  have hvalues : (∫ ep, u ep.1 ∂τ) = ∫ ep,
-      ∫ p, exitProbePhysical f p ∂stripExit hH hLE hlam hLam A H2 T ep ∂τ := by
-    apply integral_congr_ae
-    filter_upwards [nestedIntervalRestartPoles_ae_time_gt
-      hH hLE hlam hLam A H1 H2 sMinus T e] with ep hep
-    exact hrep ep hep.le
-  have hbind := nested_integral_bind τ (stripExit hH hLE hlam hLam A H2 T)
-    (stripExit_measurable hH hLE hlam hLam A H2 T) (exitProbePhysical f)
+
+
+
+  have hbind := nested_integral_bind τ _
+    (stripExit_measurable hH hLE hlam hLam A H2 T) _
     (nestedProbe_integrable A f
       (nestedIntervalRestartExit hH hLE hlam hLam A H1 H2 sMinus T e))
-  exact hid.trans (hsplit.trans (hsum.trans (congrArg₂ (· + ·) houter
-    (hmap.trans (hvalues.trans hbind.symm)))))
+  exact hid.trans (hsplit.trans (hsum.trans (congrArg₂ (· + ·) (by
+      apply integral_congr_ae
+      filter_upwards [ae_restrict_mem (measurableSet_nestedIntervalExit H2 sMinus T)] with p hp
+      apply htrace
+      rcases hp with hp | hp
+      · exact Or.inl hp
+      · exact Or.inr ⟨by linarith [hp.1], hp.2⟩)
+    ((show (∫ p, u p ∂μ.restrict (nestedIntervalInternalExit H1 H2 sMinus T)) =
+      ∫ ep, u ep.1 ∂τ by
+        rw [← nestedIntervalRestartPoles_map hH hLE hlam hLam A H1 H2 sMinus T e]
+        exact (MeasurableEmbedding.subtype_coe (measurableSet_nestedIntervalPole H2 T)).integral_map u).trans ((show (∫ ep, u ep.1 ∂τ) = ∫ ep,
+      ∫ p, exitProbePhysical f p ∂stripExit hH hLE hlam hLam A H2 T ep ∂τ by
+        apply integral_congr_ae
+        filter_upwards [nestedIntervalRestartPoles_ae_time_gt
+          hH hLE hlam hLam A H1 H2 sMinus T e] with ep hep
+        exact hrep ep hep.le).trans hbind.symm)))))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

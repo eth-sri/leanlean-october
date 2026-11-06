@@ -14,24 +14,26 @@ the region.  The proof compares `u - δ Φ` on bounded truncations and lets `δ 
 the Lyapunov inequality `L_ε Φ ≤ -Φ`.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set Matrix
+open Set Matrix
 open scoped Topology MatrixOrder
 
+variable {n : ℕ}
+
 /-- Continuity of the growth barrier. -/
-theorem continuous_growthBarrier {n : ℕ} (C T : ℝ) : Continuous (growthBarrier (n := n) C T) := by
+theorem continuous_growthBarrier  (C T : ℝ) : Continuous (growthBarrier (n := n) C T) := by
   unfold growthBarrier
   have := @continuous_radialSq n
   have h2 := @continuous_time n
   fun_prop
 
 /-- Growth comparison on a closed region, for bounded-above functions. -/
-theorem le_zero_of_viscous_nonneg_growth {n : ℕ} {B : FullKineticCoefficient n}
+theorem le_zero_of_viscous_nonneg_growth  {B : FullKineticCoefficient n}
     {b : PDE.Vec n → PDE.Vec n} {ε Lam Lb : ℝ} {K D : Set (KineticPoint n)}
     {u : KineticPoint n → ℝ} {a T : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
     (hBLam : ∀ σ y z, B σ y z ≤ Lam • (1 : PDE.Mat n))
@@ -63,25 +65,25 @@ theorem le_zero_of_viscous_nonneg_growth {n : ℕ} {B : FullKineticCoefficient n
   have key : ∀ δ : ℝ, 0 < δ → ∀ p₀ ∈ K, u p₀ ≤ δ * growthBarrier C T p₀ := by
     intro δ hδ p₀ hp₀
     obtain ⟨R2, hR2⟩ : ∃ R2, R2 = max (max M 0 / δ) (radialSq p₀) := ⟨_, rfl⟩
-    have hR2nn' : 0 ≤ R2 := hR2 ▸ hR2nn δ p₀
+    have hR2nn'  := hR2 ▸ hR2nn δ p₀
     obtain ⟨R, hR⟩ : ∃ R, R = Real.sqrt R2 := ⟨_, rfl⟩
     have hRsq : R ^ 2 = R2 := by rw [hR]; exact Real.sq_sqrt hR2nn'
     have hMR : max M 0 ≤ δ * R2 := by
-      have : max M 0 / δ ≤ R2 := hR2 ▸ le_max_left _ _
+      have  := hR2 ▸ le_max_left _ _
       rw [div_le_iff₀ hδ] at this
       linarith
     have hp₀R : radialSq p₀ ≤ R ^ 2 := by rw [hRsq, hR2]; exact le_max_right _ _
-    have hKR : IsCompact (K ∩ {p | radialSq p ≤ R ^ 2}) := isCompact_inter_radialSq hK hKt R
+    have hKR  := isCompact_inter_radialSq hK hKt R
     have hw := le_zero_of_strict_viscous_compact (B := B) (b := b) (ε := ε)
       (K := K ∩ {p | radialSq p ≤ R ^ 2}) (D := D ∩ {p | radialSq p < R ^ 2})
       (w := fun q => u q + (-δ) * growthBarrier C T q) hε0 hKR ?_ ?_ ?_ ?_ ?_ ?_
-    · have : u p₀ + (-δ) * growthBarrier C T p₀ ≤ 0 := hw p₀ ⟨hp₀, hp₀R⟩
+    · have  := hw p₀ ⟨hp₀, hp₀R⟩
       linarith
     · exact (hcont.mono inter_subset_left).add
         ((continuous_const.mul (continuous_growthBarrier C T)).continuousOn)
     · intro p hp
       have h1 := hfut p hp.1
-      have h2 : ∀ᶠ q in 𝓝 p, radialSq q < R ^ 2 :=
+      have h2  :=
         (isOpen_lt continuous_radialSq continuous_const).mem_nhds hp.2
       filter_upwards [h1, h2] with q hq1 hq2 hqt
       exact ⟨hq1 hqt, hq2.le⟩
@@ -99,13 +101,13 @@ theorem le_zero_of_viscous_nonneg_growth {n : ℕ} {B : FullKineticCoefficient n
       nlinarith
     · intro p hp hnot
       by_cases hpD : p ∈ D
-      · have hrad : ¬ radialSq p < R ^ 2 := fun h => hnot ⟨hpD, h⟩
+      · have hrad  := fun h => hnot ⟨hpD, h⟩
         have heq : R ^ 2 ≤ radialSq p := not_lt.mp hrad
         have hΦge := one_add_radialSq_le_growthBarrier hCpos (hKt p hp.1).2
         have hu := hM p hp.1
-        have h1 : δ * (1 + radialSq p) ≤ δ * growthBarrier C T p :=
+        have h1  :=
           mul_le_mul_of_nonneg_left hΦge hδ.le
-        have h2 : δ * R ^ 2 ≤ δ * radialSq p := mul_le_mul_of_nonneg_left heq hδ.le
+        have h2  := mul_le_mul_of_nonneg_left heq hδ.le
         have h3 := le_max_left M 0
         show u p + (-δ) * growthBarrier C T p ≤ 0
         rw [hRsq] at h2

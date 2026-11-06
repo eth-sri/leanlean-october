@@ -5,17 +5,17 @@ import Mathlib.Tactic.Linarith
 
 /-! # A global bound on the second derivative of the fixed cutoff -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 /-- The exact rescaling factor in the second derivative of the cutoff. -/
 theorem deriv2_timeCutoffTheta (s : ℝ) :
     deriv (deriv timeCutoffTheta) s = 16 * deriv flatteningSlope (16 * s + 1) := by
-  have h := ((contDiff_flatteningSlope.differentiable (by simp)) (16 * s + 1)).hasDerivAt
-  have he := h.comp s (((hasDerivAt_id s).const_mul 16).add_const 1)
+
+
   rw [funext deriv_timeCutoffTheta]
-  simpa only [Function.comp_def, id_eq, mul_one, one_mul, mul_comm] using! he.deriv
+  simpa only [Function.comp_def, id_eq, mul_one, one_mul, mul_comm] using! ((((contDiff_flatteningSlope.differentiable (by simp)) (16 * s + 1)).hasDerivAt).comp s (((hasDerivAt_id s).const_mul 16).add_const 1)).deriv
 
 /-- A fixed bound, independent of the profile and flattening scale, controls the second
 derivative used by the weak second chain rule. -/

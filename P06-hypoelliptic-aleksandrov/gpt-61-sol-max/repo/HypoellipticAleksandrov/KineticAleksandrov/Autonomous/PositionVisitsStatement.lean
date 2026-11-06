@@ -17,7 +17,7 @@ open Set MeasureTheory
 def enlargedAdmissibleAlpha (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (alpha : ℝ) : Prop :=
   bellmanAdjointExponent (Lam / lam) ((le_div_iff₀ hlam).2
-    (by simpa only [one_mul] using hLam)) - 2 < alpha ∧ alpha < 1
+    (by simpa)) - 2 < alpha ∧ alpha < 1
 
 /-- The canonical count with time measured from its starting pole. -/
 def visitsFromZero

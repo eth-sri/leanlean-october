@@ -5,8 +5,8 @@ import Mathlib.Tactic.Ring
 
 /-! # Literal barrier jets in the measure-preserving spatial chart -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 /-- The packed barrier differential acts only on the native velocity component. -/
@@ -15,9 +15,9 @@ theorem spatialPackedBarrier_fderiv (d : ℕ) (mu R t : ℝ)
     fderiv ℝ (spatialPackedBarrier d mu R t) x w =
       -(2 * Real.exp (-mu * t) / R ^ 2) *
         PDE.vecDot (spatialCoordinateCLE d x).2 (spatialCoordinateCLE d w).2 := by
-  have hv := ((spatialCoordinateCLE d).hasFDerivAt (x := x)).snd
+
   have h := ((hasFDerivAt_const (c := (2 : ℝ)) x).sub
-    (((hasFDerivAt_vecNormSq (spatialCoordinateCLE d x).2).comp x hv).mul_const
+    (((hasFDerivAt_vecNormSq (spatialCoordinateCLE d x).2).comp x (((spatialCoordinateCLE d).hasFDerivAt (x := x)).snd)).mul_const
       ((R ^ 2)⁻¹))).const_mul (Real.exp (-mu * t))
   have he : HasFDerivAt (spatialPackedBarrier d mu R t)
       (Real.exp (-mu * t) • (0 - (R ^ 2)⁻¹ •
@@ -34,17 +34,19 @@ theorem spatialPackedBarrier_fderiv (d : ℕ) (mu R t : ℝ)
   rw [div_eq_mul_inv]
   ring
 
+variable {d : ℕ} (mu R t : ℝ) (x : PDE.Vec (d + d))
+
+variable (i : Fin d)
+
 /-- The position gradient of the barrier is exactly zero in packed coordinates. -/
-theorem spatialPackedBarrier_positionGradient {d : ℕ} (mu R t : ℝ)
-    (x : PDE.Vec (d + d)) (i : Fin d) :
+theorem spatialPackedBarrier_positionGradient   :
     PDE.classicalGradient (spatialPackedBarrier d mu R t) x (Fin.castAdd d i) = 0 := by
   change fderiv ℝ (spatialPackedBarrier d mu R t) x (PDE.basisVec (Fin.castAdd d i)) = 0
   rw [spatialPackedBarrier_fderiv, spatialCoordinate_basis_position]
   simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero]
 
 /-- The velocity gradient has the same normalization as the native barrier. -/
-theorem spatialPackedBarrier_velocityGradient {d : ℕ} (mu R t : ℝ)
-    (x : PDE.Vec (d + d)) (i : Fin d) :
+theorem spatialPackedBarrier_velocityGradient   :
     PDE.classicalGradient (spatialPackedBarrier d mu R t) x (Fin.natAdd d i) =
       -(2 * Real.exp (-mu * t) / R ^ 2) * (spatialCoordinateCLE d x).2 i := by
   change fderiv ℝ (spatialPackedBarrier d mu R t) x (PDE.basisVec (Fin.natAdd d i)) = _
@@ -52,17 +54,13 @@ theorem spatialPackedBarrier_velocityGradient {d : ℕ} (mu R t : ℝ)
   rw [PDE.vecDot_basisVec_right]
 
 /-- The packed second velocity derivative is the exact diagonal barrier Hessian. -/
-theorem spatialPackedBarrier_velocityHessian {d : ℕ} (mu R t : ℝ)
-    (x : PDE.Vec (d + d)) (i k : Fin d) :
+theorem spatialPackedBarrier_velocityHessian  (i k : Fin d) :
     PDE.classicalGradient
       (fun y => PDE.classicalGradient (spatialPackedBarrier d mu R t) y (Fin.natAdd d k))
       x (Fin.natAdd d i) =
         -(2 * Real.exp (-mu * t) / R ^ 2) * (1 : PDE.Mat d) i k := by
-  have hg : (fun y => PDE.classicalGradient (spatialPackedBarrier d mu R t) y
-      (Fin.natAdd d k)) =
-      fun y => -(2 * Real.exp (-mu * t) / R ^ 2) * (spatialCoordinateCLE d y).2 k :=
-    funext (fun y => spatialPackedBarrier_velocityGradient mu R t y k)
-  rw [hg]
+
+  rw [(funext (fun y => spatialPackedBarrier_velocityGradient mu R t y k))]
   let L : PDE.Vec (d + d) →L[ℝ] ℝ :=
     (ContinuousLinearMap.proj k).comp
       ((ContinuousLinearMap.snd ℝ (PDE.Vec d) (PDE.Vec d)).comp

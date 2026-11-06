@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryFunctional
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryMeasureUnique
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitMeasureRiesz
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Existence and uniqueness of the actual finite ball exit measure
 
@@ -20,14 +22,14 @@ open scoped CompactlySupported ENNReal
 /-- The actual closed physical trace is locally compact. -/
 instance localTrace_locallyCompactSpace {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
     LocallyCompactSpace (localTrace a T v₀ R) := by
-  let : LocallyCompactSpace (KineticPoint d) :=
+  let  :=
     (KineticPoint.homeomorphProd d).isClosedEmbedding.locallyCompactSpace
   exact (isClosed_localTrace a T v₀ R).locallyCompactSpace
 
 /-- The trace carrier has a countable topological basis. -/
 instance localTrace_secondCountableTopology {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
     SecondCountableTopology (localTrace a T v₀ R) := by
-  let : SecondCountableTopology (KineticPoint d) :=
+  let  :=
     (KineticPoint.homeomorphProd d).secondCountableTopology
   infer_instance
 
@@ -44,32 +46,24 @@ theorem existsUnique_ballExitMeasure
     ∃! μ : Measure (KineticPoint d),
       IsFiniteMeasure μ ∧
       μ ((localTrace P.1.time T.1 v₀ R)ᶜ) = 0 ∧
-      ∀ φ : KineticPoint d → ℝ,
-        ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
+      ∀ φ : HypoellipticAleksandrov.KineticScalarField d,
+        ContDiff ℝ PDE.smoothOrder (φ ∘ (KineticPoint.equivProd d).symm) →
         HasCompactSupport φ →
         (∫ Q, φ Q ∂μ) =
           ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 φ P.1 := by
+  let sharedTerm_f062037a52 := ((localTrace P.1.time T.1 v₀ R))
   obtain ⟨ℓ, hℓ, -⟩ := existsUnique_ballBoundaryFunctional hH hLE hd hlam hLam B hB v₀ hR P T
   obtain ⟨ν, hν, -⟩ := existsUnique_boundaryFunctional_measure ℓ hℓ.1
   let : IsFiniteMeasure ν := ⟨hν.1.trans_lt (by simp)⟩
-  let μ := ν.map (Subtype.val : localTrace P.1.time T.1 v₀ R → KineticPoint d)
-  have hμ : IsFiniteMeasure μ := by dsimp [μ]; infer_instance
-  have hsupport : μ (localTrace P.1.time T.1 v₀ R)ᶜ = 0 := by
-    dsimp only [μ]
-    rw [Measure.map_apply measurable_subtype_coe
-      (measurableSet_localTrace P.1.time T.1 v₀ R).compl]
-    have heq : (Subtype.val : localTrace P.1.time T.1 v₀ R → KineticPoint d) ⁻¹'
-        (localTrace P.1.time T.1 v₀ R)ᶜ = ∅ := by
-      ext Q
-      simp only [mem_preimage, mem_compl_iff, mem_empty_iff_false, iff_false]
-      exact not_not.mpr Q.2
-    rw [heq, measure_empty]
-  have htests : ∀ φ : KineticPoint d → ℝ,
-      ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
+  let μ := ν.map (Subtype.val : sharedTerm_f062037a52 → KineticPoint d)
+
+
+  have htests : ∀ φ : HypoellipticAleksandrov.KineticScalarField d,
+      ContDiff ℝ PDE.smoothOrder (φ ∘ (KineticPoint.equivProd d).symm) →
       HasCompactSupport φ → (∫ Q, φ Q ∂μ) =
         ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 φ P.1 := by
     intro φ hφ hc
-    let f : boundaryProbeSubmodule d := ⟨φ ∘ (KineticPoint.equivProd d).symm,
+    let f : boundaryProbeSubmodule d := ⟨_,
       hφ, hc.comp_homeomorph (KineticPoint.homeomorphProd d).symm⟩
     have heq : boundaryProbePhysical f = φ := by
       funext Q
@@ -83,9 +77,18 @@ theorem existsUnique_ballExitMeasure
         (boundaryProbePhysical f) P.1 at h
     rw [heq] at h
     exact h
-  refine ⟨μ, ⟨hμ, hsupport, htests⟩, ?_⟩
+  refine ⟨μ, ⟨(by dsimp [μ]; infer_instance), (by
+      dsimp only [μ]
+      rw [Measure.map_apply measurable_subtype_coe
+        (measurableSet_localTrace P.1.time T.1 v₀ R).compl]
+      have heq : (Subtype.val : sharedTerm_f062037a52 → KineticPoint d) ⁻¹'
+          sharedTerm_f062037a52ᶜ = ∅ := by
+        ext Q
+        simp only [mem_preimage, mem_compl_iff, mem_empty_iff_false, iff_false]
+        exact not_not.mpr Q.2
+      rw [heq, measure_empty]), htests⟩, ?_⟩
   intro μ' hμ'
-  let : IsFiniteMeasure μ' := hμ'.1
+  let  := hμ'.1
   exact boundary_measure_ext μ' μ (fun φ hφ hc =>
     (hμ'.2.2 φ hφ hc).trans (htests φ hφ hc).symm)
 

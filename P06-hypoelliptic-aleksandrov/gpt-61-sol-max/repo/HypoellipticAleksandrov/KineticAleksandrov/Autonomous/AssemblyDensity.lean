@@ -13,8 +13,8 @@ Entrance discharges preliminary exponent-six admissibility. The improved density
 still depends on precisely the four source steps in the remaining frontier.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 
 /-- Preliminary exponent-six admissibility, relative only to the three classical inputs. -/
@@ -34,9 +34,9 @@ theorem below_four_density_of_frontier (hfront : AutonomousRemainingFrontier)
   have hpush := pushforwardStatement_holds
   have hvisits := positionVisitsStatement_holds_of_start_time
     (smoothAutonomousP6_holds hH hLE) hTime hStart
-  have hmasses := positionVisitMassesStatement_holds_of_terminal_domination hTerminal
+
   exact below_four_density_of_band
     (below_four_band_of_predecessors hpush (restartTailStatement_holds)
-      hvisits hmasses hCore) hpush
+      hvisits (positionVisitMassesStatement_holds_of_terminal_domination hTerminal) hCore) hpush
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

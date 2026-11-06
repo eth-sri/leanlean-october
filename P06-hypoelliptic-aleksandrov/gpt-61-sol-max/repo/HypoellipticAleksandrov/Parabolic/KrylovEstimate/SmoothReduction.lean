@@ -3,28 +3,29 @@ module
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.SmoothApproximation
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.CoefficientExtension
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ApproximationBounds
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import all HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.InteriorReduction
+
+open private HypoellipticAleksandrov.KineticAleksandrov.LsuFree.small_tolerance from HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.InteriorReduction
+
 
 /-! # Interior smoothing and boundary correction for the Krylov estimate -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
-open Set Filter MeasureTheory
-open scoped Topology MatrixOrder Matrix.Norms.Elementwise
+ public section
 
-private theorem small_tolerance {η c k : ℝ} (hη : 0 < η) (hc : 0 ≤ c) (hk : 0 ≤ k) :
-    ∃ δ : ℝ, 0 < δ ∧ δ ≤ η ∧ δ * c * k ≤ η := by
-  let δ := η / (c * k + 1)
-  have hd : 0 < c * k + 1 := by positivity
-  have he : δ * (c * k + 1) = η := div_mul_cancel₀ η (ne_of_gt hd)
-  have hp : 0 < δ := div_pos hη hd
-  refine ⟨δ, hp, ?_, ?_⟩ <;> nlinarith [mul_nonneg hc hk]
+namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
+open Set MeasureTheory
+open scoped MatrixOrder Matrix.Norms.Elementwise
+
+
+
 
 /-- Interior smoothing controls the residual norm and corrects the boundary. -/
 theorem exists_smooth_subsolution_close
     (N : ℕ) (hN : 1 ≤ N) (lam : ℝ) (hlam : 0 < lam)
     (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
-    (a : TimeVelocity N → PDE.Mat N) (f u : TimeVelocity N → ℝ)
+    (a : TimeVelocity N → PDE.Mat N) (f u : HypoellipticAleksandrov.Parabolic.ScalarField N)
     (ha : ContinuousOn a (krylovClosedCylinder t₀ h v₀))
     (hlo : ∀ z ∈ krylovClosedCylinder t₀ h v₀,
       lam • (1 : PDE.Mat N) ≤ a z)
@@ -35,33 +36,33 @@ theorem exists_smooth_subsolution_close
     (hsub : ∀ᵐ z ∂volume.restrict (krylovCylinder t₀ h v₀), residual a u z ≤ f z)
     (hb : ∀ z ∈ krylovParabolicBoundary t₀ h v₀, u z ≤ 0)
     {ε : ℝ} (hε : 0 < ε) :
-    ∃ (A : CoefficientField N) (F w : TimeVelocity N → ℝ),
+    ∃ (A : CoefficientField N) (F w : HypoellipticAleksandrov.Parabolic.ScalarField N),
       IsContinuousCoefficient A ∧ Continuous F ∧ ContDiff ℝ 2 w ∧
       (∀ z ∈ closedParabolicCylinder h (0 : PDE.Vec N),
         lam • (1 : PDE.Mat N) ≤ coefficientAt A z) ∧
-      IsParabolicSubsolutionOn A F w (parabolicInterior h (0 : PDE.Vec N)) ∧
+      IsParabolicSubsolutionOn A F w (parabolicInterior h (0 )) ∧
       (∀ z ∈ forwardParabolicBoundary h (0 : PDE.Vec N), w z ≤ 0) ∧
       (∀ z ∈ closedParabolicCylinder h (0 : PDE.Vec N),
         |w z - u (innerMap t₀ h v₀ 1 z)| ≤ ε) ∧
       parabolicLpNormOn N (fun z => max (F z) 0)
-          (parabolicInterior h (0 : PDE.Vec N)) ≤
+          (parabolicInterior h (0 )) ≤
         parabolicLpNormOn N f (krylovCylinder t₀ h v₀) + ε := by
   let Q := krylovCylinder t₀ h v₀
   let K := krylovClosedCylinder t₀ h v₀
   let S := parabolicInterior h (0 : PDE.Vec N)
   let L := closedParabolicCylinder h (0 : PDE.Vec N)
-  have hQ : IsOpen Q := isOpen_krylovCylinder t₀ h v₀
+  have hQ  := isOpen_krylovCylinder t₀ h v₀
   have hQK : Q ⊆ K := by
     intro z hz
     exact ⟨⟨hz.1.1.le, hz.1.2.le⟩,
       PDE.euclideanBall_subset_euclideanClosedBall v₀ 1 hz.2⟩
   have hL : IsCompact L := isCompact_closedParabolicCylinder h 0
   have hSL : S ⊆ L := parabolicInterior_subset_closedParabolicCylinder h 0
-  have hg : ContinuousOn (residual a u) Q :=
+  have hg  :=
     continuousOn_residual a u (ha.mono hQK) hu.isScalarC12On
   obtain ⟨hgp, hgnorm⟩ := positive_residual_memLp_norm_le hQ.measurableSet a u f
     (hg.aestronglyMeasurable hQ.measurableSet) hf hsub
-  let gp : TimeVelocity N → ℝ := fun z => max (residual a u z) 0
+  let gp  := fun z => max (residual a u z) 0
   let η := ε / 4
   have hη : 0 < η := div_pos hε (by norm_num)
   obtain ⟨ρ, hρ, hρ1, hvalue⟩ :=
@@ -71,15 +72,15 @@ theorem exists_smooth_subsolution_close
   let q := u ∘ Φ
   let ar := a ∘ Φ
   have hΦ : Continuous Φ := (contDiff_parabolicAffine _ _ _).continuous
-  have hLV : L ⊆ V := innerMap_mapsTo t₀ h v₀ hh hρ hρ1
+  have hLV  := innerMap_mapsTo t₀ h v₀ hh hρ hρ1
   have hVK : MapsTo Φ V K := fun z hz => hQK hz
-  have hV : IsOpen V := hQ.preimage hΦ
+  have hV  := hQ.preimage hΦ
   obtain ⟨hq, hjet⟩ := scalarC12On_affine_pullback hQ u hu.isScalarC12On
     (t₀ - h + (1 - ρ ^ 2) * h / 2) v₀ hρ
-  have har : ContinuousOn ar L := ha.comp hΦ.continuousOn (fun z hz => hVK (hLV hz))
+  have har  := ha.comp hΦ.continuousOn (fun z hz => hVK (hLV hz))
   obtain ⟨ae, hae, he⟩ := exists_continuous_matrix_extension hL.isClosed ar har
-  let A : CoefficientField N := fun t v => ae (t, v)
-  let total : TimeVelocity N → ℝ := fun z => ∑ i, ∑ j, |ar z i j|
+  let A  := fun t v => ae (t, v)
+  let total  := fun z => ∑ i, ∑ j, |ar z i j|
   have htotal : ContinuousOn total L := by
     apply continuousOn_finset_sum
     intro i _
@@ -92,13 +93,13 @@ theorem exists_smooth_subsolution_close
   have hM : 0 ≤ M := le_max_right _ _
   have hbound (z : TimeVelocity N) (hz : z ∈ L) : total z ≤ M :=
     (le_abs_self _).trans ((hM₀ z hz).trans (le_max_left _ _))
-  let k := parabolicLpNormOn N (fun _ : TimeVelocity N => (1 : ℝ)) S
+  let k := parabolicLpNormOn N (fun _  => (1 )) S
   have hk : 0 ≤ k := ENNReal.toReal_nonneg
-  obtain ⟨δ, hδ, hδη, hδnorm⟩ := small_tolerance hη (add_nonneg zero_le_one hM) hk
+  obtain ⟨δ, hδ, hδη, hδnorm⟩ := _root_.HypoellipticAleksandrov.KineticAleksandrov.LsuFree.small_tolerance hη (add_nonneg zero_le_one hM) hk
   obtain ⟨w₀, hw₀, hwjet⟩ := exists_smooth_scalar_jet_close hV hL hLV q hq hδ
-  let w : TimeVelocity N → ℝ := fun z => w₀ z + (-2 * η)
+  let w  := fun z => w₀ z + (-2 * η)
   let F := residual ae w₀
-  let G : TimeVelocity N → ℝ := fun z => ρ ^ 2 * gp (Φ z)
+  let G  := fun z => ρ ^ 2 * gp (Φ z)
   have hG := compressed_source_memLp_norm_le hN t₀ h v₀ hh hρ hρ1 gp hgp
   have hG0 (z : TimeVelocity N) : 0 ≤ G z :=
     mul_nonneg (sq_nonneg ρ) (le_max_right _ _)
@@ -146,7 +147,7 @@ theorem exists_smooth_subsolution_close
     have hbu := hb _ (innerMap_one_boundary t₀ h v₀ hz)
     have hv := (hwjet z hzL).1
     have hi := hvalue z hzL
-    have hval : |w₀ z - u (innerMap t₀ h v₀ 1 z)| ≤ δ + η :=
+    have hval  :=
       (abs_sub_le _ _ _).trans (add_le_add hv hi)
     have hupper := (le_abs_self _).trans hval
     change w₀ z + (-2 * η) ≤ 0
@@ -154,7 +155,7 @@ theorem exists_smooth_subsolution_close
   · intro z hz
     have hv := (hwjet z hz).1
     have hi := hvalue z hz
-    have hval : |w₀ z - u (innerMap t₀ h v₀ 1 z)| ≤ δ + η :=
+    have hval  :=
       (abs_sub_le _ _ _).trans (add_le_add hv hi)
     have heq : w z - u (innerMap t₀ h v₀ 1 z) =
         (w₀ z - u (innerMap t₀ h v₀ 1 z)) + (-2 * η) := by dsimp [w]; ring

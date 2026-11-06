@@ -3,6 +3,13 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeProductRepresentative
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.MeasureTheory.Integral.Prod
+import Aesop
+import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalCutoff
+import Lean.Elab.Tactic.SolveByElim
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Reverse-time spatial weak derivatives
@@ -20,55 +27,42 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem isClosedEmbedding_timeSlice {d : ℕ} (τ : ℝ) :
+variable {d : ℕ}
+
+variable (τ : ℝ)
+
+private theorem isClosedEmbedding_timeSlice   :
     IsClosedEmbedding (Prod.mk τ : PDE.Vec d → TimeVelocity d) := by
   refine IsClosedEmbedding.of_continuous_injective_isClosedMap
-    (continuous_const.prodMk continuous_id) (fun x y h => by
-      simpa using congrArg Prod.snd h) ?_
+    (continuous_const.prodMk continuous_id) (fun x y h => congrArg Prod.snd h) ?_
   intro s hs
   have himage : Prod.mk τ '' s = ({τ} : Set ℝ) ×ˢ s := by
     ext z
     constructor
-    · rintro ⟨y, hy, rfl⟩
-      exact ⟨Set.mem_singleton τ, hy⟩
-    · rintro ⟨hτ, hy⟩
-      rw [Set.mem_singleton_iff] at hτ
-      subst hτ
-      exact ⟨z.2, hy, rfl⟩
+    · aesop
+    · aesop
   rw [himage]
   exact isClosed_singleton.prod hs
 
 private theorem hasCompactSupport_timeSlice
-    {d : ℕ} (τ : ℝ) (φ : TimeVelocity d → ℝ) (hφ : HasCompactSupport φ) :
-    HasCompactSupport (fun y : PDE.Vec d => φ (τ, y)) := by
-  refine HasCompactSupport.of_support_subset_isCompact
-    ((isClosedEmbedding_timeSlice (d := d) τ).isCompact_preimage hφ) ?_
-  intro y hy
-  change φ (τ, y) ≠ 0 at hy
-  exact subset_tsupport φ hy
+      (φ : HypoellipticAleksandrov.Parabolic.ScalarField d) (hφ : HasCompactSupport φ) :
+    HasCompactSupport (fun y  => φ (τ, y)) := (HasCompactSupport.of_support_subset_isCompact (IsClosedEmbedding.isCompact_preimage (isClosedEmbedding_timeSlice τ) hφ)
+  fun ⦃y⦄ hy => id (fun hy => subset_tsupport φ hy) hy)
+
+variable {Ω : PDE.VelocityRegion d}
+
+variable {T : ℝ} (τ : ℝ) (φ : HypoellipticAleksandrov.Parabolic.ScalarField d)
 
 private theorem tsupport_timeSlice_subset
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ} (τ : ℝ) (φ : TimeVelocity d → ℝ)
-    (hφ : tsupport φ ⊆ reverseTimeOpenInterval T ×ˢ Ω) :
-    tsupport (fun y : PDE.Vec d => φ (τ, y)) ⊆ Ω := by
-  intro y hy
-  have hclosed : IsClosed ((Prod.mk τ : PDE.Vec d → TimeVelocity d) ⁻¹' tsupport φ) :=
-    (isClosed_tsupport φ).preimage (continuous_const.prodMk continuous_id)
-  have hsupport : Function.support (fun y : PDE.Vec d => φ (τ, y)) ⊆
-      (Prod.mk τ : PDE.Vec d → TimeVelocity d) ⁻¹' tsupport φ := by
-    intro x hx
-    change φ (τ, x) ≠ 0 at hx
-    exact subset_tsupport φ hx
-  have hmem : y ∈ (Prod.mk τ : PDE.Vec d → TimeVelocity d) ⁻¹' tsupport φ := by
-    change y ∈ closure (Function.support (fun x : PDE.Vec d => φ (τ, x))) at hy
-    exact closure_minimal hsupport hclosed hy
-  exact (hφ hmem).2
 
-private noncomputable def timeSliceWeakTestFunction
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (τ : ℝ) (φ : TimeVelocity d → ℝ)
-    (hφsmooth : ContDiff ℝ (⊤ : ℕ∞) φ) (hφcompact : HasCompactSupport φ)
-    (hφsupport : tsupport φ ⊆ reverseTimeOpenInterval T ×ˢ Ω) :
+    (hφ : tsupport φ ⊆ reverseTimeOpenInterval T ×ˢ Ω) :
+    tsupport (fun y  => φ (τ, y)) ⊆ Ω := (LocalHolder.tsupport_local_cutoff_time_slice_subset φ hφ τ)
+
+variable (hφsmooth : ContDiff ℝ PDE.smoothOrder φ) (hφcompact : HasCompactSupport φ) (hφsupport : tsupport φ ⊆ reverseTimeOpenInterval T ×ˢ Ω)
+
+private def timeSliceWeakTestFunction
+
+     :
     PDE.WeakTestFunction Ω where
   toFun := fun y => φ (τ, y)
   contDiff := hφsmooth.comp (contDiff_const.prodMk contDiff_id)
@@ -76,10 +70,8 @@ private noncomputable def timeSliceWeakTestFunction
   tsupport_subset := tsupport_timeSlice_subset τ φ hφsupport
 
 private theorem velocityGradient_timeSlice_eq_partialDeriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (τ : ℝ) (φ : TimeVelocity d → ℝ)
-    (hφsmooth : ContDiff ℝ (⊤ : ℕ∞) φ) (hφcompact : HasCompactSupport φ)
-    (hφsupport : tsupport φ ⊆ reverseTimeOpenInterval T ×ˢ Ω)
+
+
     (y : PDE.Vec d) (i : Fin d) :
     velocityGradient φ (τ, y) i =
       (timeSliceWeakTestFunction τ φ hφsmooth hφcompact hφsupport).partialDeriv i y := by
@@ -91,41 +83,38 @@ private theorem velocityGradient_timeSlice_eq_partialDeriv
   rfl
 
 private theorem h10HilbertGraph_integral_partialDeriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+      (hΩ : IsOpen Ω)
     (v : H10HilbertGraph hΩ) (i : Fin d) (ψ : PDE.WeakTestFunction Ω) :
     (∫ y, valueCLM hΩ v y * ψ.partialDeriv i y ∂PDE.volumeOn Ω) =
       -∫ y, gradientCLM hΩ v y i * ψ y ∂PDE.volumeOn Ω := by
-  let w : PDE.H1Graph Ω := PDE.H1HilbertGraph.toH1Graph (v : PDE.H1HilbertGraph Ω)
-  have hzero :
-      (∫ y, w.1.1 y * ψ.partialDeriv i y ∂PDE.volumeOn Ω) +
-        ∫ y, w.1.2 y i * ψ y ∂PDE.volumeOn Ω = 0 := by
-    exact (PDE.mem_weakGradientGraph_iff_integral w.1).mp w.2 i ψ
-  exact eq_neg_of_add_eq_zero_left hzero
+  let w  := PDE.H1HilbertGraph.toH1Graph (v : PDE.H1HilbertGraph Ω)
+
+  exact eq_neg_of_add_eq_zero_left ((PDE.mem_weakGradientGraph_iff_integral w.1).mp w.2 i ψ)
 
 private theorem integrable_mul_of_memLp_two_of_continuous_compact
-    {d : ℕ} {W q : TimeVelocity d → ℝ}
-    {S : Set (TimeVelocity d)}
-    (hW : MemLp W (2 : ℝ≥0∞) (timeVelocityVolumeOn S))
+     {W q : HypoellipticAleksandrov.Parabolic.ScalarField d}
+    {S : HypoellipticAleksandrov.Parabolic.Region d}
+    (hW : MemLp W (2 ) (timeVelocityVolumeOn S))
     (hq : Continuous q) (hqcompact : HasCompactSupport q) :
     Integrable (fun z => W z * q z) (timeVelocityVolumeOn S) := by
-  have hqLp : MemLp q (2 : ℝ≥0∞) (timeVelocityVolumeOn S) :=
+  have hqLp : MemLp q (2 ) (timeVelocityVolumeOn S) :=
     (hq.memLp_of_hasCompactSupport hqcompact).restrict S
   simpa only [Pi.mul_def] using hW.integrable_mul hqLp
 
 /-- Reverse-time product representatives of a spatial Sobolev curve retain
 their joint raw weak velocity derivatives. -/
 theorem reverseTime_hasWeakVelocityPartialDerivOn_of_product_representatives
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+     {Ω : PDE.VelocityRegion d}
     (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T)
-    (U : TimeVelocity d → ℝ)
-    (hU : MemLp U (2 : ℝ≥0∞)
+    (U : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hU : MemLp U (2 )
       (timeVelocityVolumeOn (reverseTimeOpenInterval T ×ˢ Ω)))
     (hUslice : ∀ᵐ τ ∂reverseTimeVolume T,
       (fun y => U (τ, y)) =ᵐ[PDE.volumeOn Ω]
         fun y => valueCLM hΩ (u τ) y)
-    (G : Fin d → TimeVelocity d → ℝ)
-    (hG : ∀ j, MemLp (G j) (2 : ℝ≥0∞)
+    (G : Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hG : ∀ j, MemLp (G j) (2 )
       (timeVelocityVolumeOn (reverseTimeOpenInterval T ×ˢ Ω)))
     (hGslice : ∀ᵐ τ ∂reverseTimeVolume T, ∀ j,
       (fun y => G j (τ, y)) =ᵐ[PDE.volumeOn Ω]
@@ -137,20 +126,18 @@ theorem reverseTime_hasWeakVelocityPartialDerivOn_of_product_representatives
   letI : SFinite (reverseTimeVolume T) := by
     dsimp only [reverseTimeVolume]
     infer_instance
-  let ψ : ℝ → PDE.WeakTestFunction Ω := fun τ =>
+  let ψ  := fun τ =>
     timeSliceWeakTestFunction τ φ hφsmooth hφcompact hφsupport
-  let dφ : TimeVelocity d → ℝ := fun z => velocityGradient φ z i
-  have hdφcontinuous : Continuous dφ := by
-    unfold dφ velocityGradient
-    exact (hφsmooth.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hdφcompact : HasCompactSupport dφ := by
-    unfold dφ velocityGradient
-    exact hφcompact.fderiv_apply (𝕜 := ℝ) (0, Pi.single i 1)
-  have hleft : Integrable (fun z => U z * dφ z)
-      (timeVelocityVolumeOn (reverseTimeOpenInterval T ×ˢ Ω)) :=
-    integrable_mul_of_memLp_two_of_continuous_compact hU hdφcontinuous hdφcompact
-  have hright : Integrable (fun z => G i z * φ z)
-      (timeVelocityVolumeOn (reverseTimeOpenInterval T ×ˢ Ω)) :=
+  let dφ  := fun z => velocityGradient φ z i
+
+
+  have hleft  :=
+    integrable_mul_of_memLp_two_of_continuous_compact hU (show Continuous dφ by
+        unfold dφ velocityGradient
+        exact (hφsmooth.continuous_fderiv (by simp)).clm_apply continuous_const) (show HasCompactSupport dφ by
+        unfold dφ velocityGradient
+        exact hφcompact.fderiv_apply (𝕜 := ℝ) _)
+  have hright  :=
     integrable_mul_of_memLp_two_of_continuous_compact (hG i) hφsmooth.continuous hφcompact
   change (∫ z, U z * velocityGradient φ z i
       ∂timeVelocityVolumeOn (reverseTimeOpenInterval T ×ˢ Ω)) =

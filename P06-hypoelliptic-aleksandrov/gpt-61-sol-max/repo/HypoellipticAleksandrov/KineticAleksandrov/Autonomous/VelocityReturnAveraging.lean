@@ -5,8 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoxConcentra
 
 /-! # Averaging the velocity-band comparison over the later time window -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set
 
@@ -18,15 +18,15 @@ theorem velocity_return_time_average {lam Lam : ℝ} (A : SmoothAutonomous lam L
       velocityBandAction E r t z ≤ C * velocityBandAction E r s z) :
     t * velocityBandAction E r t z ≤
       C * ∫ s in Ioc 0 (3 * t), velocityBandAction E r s z := by
-  let f := fun s => velocityBandAction E r s z
+
   have hi : IntegrableOn (fun s => velocityBandAction E r s z) (Ioc 0 (3 * t)) :=
     velocityBandAction_integrable A E hE r (3 * t) z
   have hs : Ioc (2 * t) (3 * t) ⊆ Ioc 0 (3 * t) :=
     fun s hs => ⟨by linarith [hs.1], hs.2⟩
-  have hsmall := hi.mono_set hs
+
   have hmono := setIntegral_mono_on
-    (integrableOn_const (C := f t) (by simp : volume (Ioc (2 * t) (3 * t)) ≠ ⊤))
-    (hsmall.const_mul C) measurableSet_Ioc hcomp
+    (integrableOn_const (C := (fun s => velocityBandAction E r s z) t) (by simp : volume (Ioc (2 * t) (3 * t)) ≠ ⊤))
+    ((hi.mono_set hs).const_mul C) measurableSet_Ioc hcomp
   have hvol : volume.real (Ioc (2 * t) (3 * t)) = t := by
     rw [measureReal_def, Real.volume_Ioc, ENNReal.toReal_ofReal (by linarith)]
     ring

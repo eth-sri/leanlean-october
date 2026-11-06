@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 @[expose] public section
 
@@ -22,24 +24,20 @@ def IsSmoothOnNeighborhood
     {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [NormedAddCommGroup F] [NormedSpace ℝ F]
     (f : E → F) (K : Set E) : Prop :=
-  ∃ V : Set E, IsOpen V ∧ K ⊆ V ∧ ContDiffOn ℝ (⊤ : ℕ∞) f V
+  ∃ V : Set E, IsOpen V ∧ K ⊆ V ∧ ContDiffOn ℝ PDE.smoothOrder f V
+
+variable {n : ℕ}
+
+variable (a : CoefficientField n) (b : PDE.TimeVectorField n) (c : PDE.TimeScalarField n) (u : HypoellipticAleksandrov.Parabolic.ScalarField n) (z : TimeVelocity n)
 
 /-- The backward scalar operator with its source zero-order term. -/
-def scalarParabolicZeroOrderOperator {n : ℕ}
-    (a : CoefficientField n)
-    (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c : ℝ → PDE.Vec n → ℝ)
-    (u : TimeVelocity n → ℝ)
-    (z : TimeVelocity n) : ℝ :=
+def scalarParabolicZeroOrderOperator
+     : ℝ :=
   scalarParabolicOperator a b u z + c z.1 z.2 * u z
 
 /-- Evaluation of the scalar parabolic operator with its zero-order term. -/
-@[simp] theorem scalarParabolicZeroOrderOperator_apply {n : ℕ}
-    (a : CoefficientField n)
-    (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c : ℝ → PDE.Vec n → ℝ)
-    (u : TimeVelocity n → ℝ)
-    (z : TimeVelocity n) :
+@[simp] theorem scalarParabolicZeroOrderOperator_apply
+     :
     scalarParabolicZeroOrderOperator a b c u z =
       scalarTimeDerivative u z +
         matrixContraction (a z.1 z.2) (scalarSpatialHessian u z) +
@@ -48,12 +46,12 @@ def scalarParabolicZeroOrderOperator {n : ℕ}
   rfl
 
 /-- A supplied classical solution of the backward scalar Dirichlet problem. -/
-def IsClassicalBackwardDirichletSolution {n : ℕ}
-    (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n))
+def IsClassicalBackwardDirichletSolution
+    (r₀ r₁ : ℝ) (Ω : PDE.VelocityRegion n)
     (a : CoefficientField n)
-    (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c F : ℝ → PDE.Vec n → ℝ)
-    (phi : PDE.Vec n → ℝ) (h u : TimeVelocity n → ℝ) : Prop :=
+    (b : PDE.TimeVectorField n)
+    (c F : PDE.TimeScalarField n)
+    (phi : PDE.ScalarField n) (h u : HypoellipticAleksandrov.Parabolic.ScalarField n) : Prop :=
   ContinuousOn u (scalarParabolicClosedCylinder r₀ r₁ Ω) ∧
     IsScalarC12On u (scalarParabolicOpenCylinder r₀ r₁ Ω) ∧
     (∀ z ∈ scalarParabolicOpenCylinder r₀ r₁ Ω,

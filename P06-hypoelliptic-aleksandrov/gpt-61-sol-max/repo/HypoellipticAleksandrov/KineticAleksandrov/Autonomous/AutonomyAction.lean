@@ -8,9 +8,9 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.PastGluingLocality
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory Filter
+
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped Topology
+
 
 /-- Elapsed-time kernel action, with physical state order `(X,v)`. -/
 def fullSpaceAction (E : FullSpaceEvolution) (F : BoundedBorel (EvolutionAmbientState 1))

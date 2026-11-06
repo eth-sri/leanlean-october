@@ -5,11 +5,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 
 /-! # Passing actual finite-piece occupation domination to the canonical starting measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
-open scoped Classical ENNReal
+open MeasureTheory ProbabilityTheory
+open scoped Classical
 
 /-- Domination of every initial partial sum dominates the complete positive measure sum. -/
 theorem positionStart_sum_le_of_partial_le {X : Type*} [MeasurableSpace X]
@@ -20,14 +20,17 @@ theorem positionStart_sum_le_of_partial_le {X : Type*} [MeasurableSpace X]
   rw [Measure.sum_apply _ hB]
   apply ENNReal.tsum_le_of_sum_range_le
   intro N
-  simpa only [Measure.finsetSum_apply, hB] using h N B
+  simpa only [Measure.finsetSum_apply] using h N B
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
+
+section
+variable (a b U : ℝ) (hJ : closure c.active ⊆ J.carrier)
+
+include hJ
 /-- On a slab ending before the horizon, the genuine all-time active Green is its finite one. -/
 theorem positionStartGreen_slab_eq_finite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b U : ℝ)
-    (hJ : closure c.active ⊆ J.carrier) (p : Point)
+      (p : Point)
     (hv : p.velocity 0 ∈ c.active) (hp : p.time < U) (hb : b ≤ U) :
     (coreAllTimeGreenKernel hH hLE hlam hLam A c p).restrict
       {q : Point | a < q.time ∧ q.time ≤ b} =
@@ -53,17 +56,14 @@ theorem positionStartGreen_slab_eq_finite
 
 /-- Restricting actual starting mixtures preserves the finite-horizon slab identity. -/
 theorem positionStartGreenMixture_slab_eq_finite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b U : ℝ)
-    (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point)
+      (mu : Measure Point)
     (hmu : ∀ᵐ p ∂mu, p.velocity 0 ∈ c.active ∧ p.time < U) (hb : b ≤ U) :
     (coreAllTimeGreenKernel hH hLE hlam hLam A c ∘ₘ mu).restrict
       {q : Point | a < q.time ∧ q.time ≤ b} =
     (enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) U ∘ₘ mu).restrict
       {q : Point | a < q.time ∧ q.time ≤ b} := by
-  let S := {q : Point | a < q.time ∧ q.time ≤ b}
-  have hS : MeasurableSet S :=
+
+  have hS : MeasurableSet ({q : Point | a < q.time ∧ q.time ≤ b}) :=
     (isOpen_lt continuous_const continuous_time).measurableSet.inter
       (isClosed_le continuous_time continuous_const).measurableSet
   ext B hB
@@ -75,18 +75,18 @@ theorem positionStartGreenMixture_slab_eq_finite
   have h := congrArg (fun rho : Measure Point => rho B)
     (positionStartGreen_slab_eq_finite hH hLE hlam hLam A c J a b U hJ p hp.1 hp.2 hb)
   simpa only [Measure.restrict_apply hB] using h
+end
+
 
 /-- All actual active occupations are dominated by full-space occupation. -/
 theorem positionStart_all_occupation_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (P : Point)
+     (T : ℝ) (P : Point)
     (hT : 0 < T) (hv : P.velocity 0 ∈ J.carrier) :
     enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) (P.time + T) ∘ₘ
       enlargedVisitStarts hH hLE hlam hLam A c J P.time (P.time + T) P ≤
         enlargedFullSpaceOccupation hH hLE hlam hLam A P T := by
-  let mu := enlargedVisitEntrance hH hLE hlam hLam A c J P.time (P.time + T) P
-  change (Measure.sum mu).bind
+
+  change (Measure.sum (enlargedVisitEntrance hH hLE hlam hLam A c J P.time (P.time + T) P)).bind
     (enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) (P.time + T)) ≤ _
   rw [Measure.bind_sum _ _ (Kernel.aemeasurable _)]
   apply positionStart_sum_le_of_partial_le

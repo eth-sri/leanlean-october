@@ -7,11 +7,11 @@ import Mathlib.MeasureTheory.Group.Arithmetic
 
 /-! # Passing the coefficient limit on a fixed compact inner cylinder -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
-open scoped MatrixOrder Matrix.Norms.Elementwise Topology ENNReal
+open scoped MatrixOrder Matrix.Norms.Elementwise Topology
 
 /-- The coefficient limit preserves the complete source estimate on a fixed inner cylinder. -/
 theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
@@ -24,7 +24,7 @@ theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLa
       HasLowerEllipticity lam (C j) ∧ HasUpperEllipticity Lam (C j))
     (hc : ∀ᵐ z ∂(volume : Measure (ℝ × PDE.Vec d)),
       Tendsto (fun j => coefficientAt (C j) z) atTop (𝓝 (coefficientAt A z)))
-    {D : Set (KineticPoint d)} (u f : KineticPoint d → ℝ) (hreg : IsKineticC112On u D)
+    {D : Set (KineticPoint d)} (u f : HypoellipticAleksandrov.KineticScalarField d) (hreg : IsKineticC112On u D)
     (P₁ : KineticPoint d) (r : ℝ) (hr : 0 < r)
     (hK : IsCompact (closure (backwardCylinder P₁ r)))
     (hKD : closure (backwardCylinder P₁ r) ⊆ D) (hf : Measurable f)
@@ -40,25 +40,24 @@ theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLa
   let Q := backwardCylinder P₁ r
   let K := closure Q
   let H := kineticVelocityHessian u
-  have hH : ContinuousOn H K := hreg.continuousOn_kineticVelocityHessian.mono hKD
+  have hH  := hreg.continuousOn_kineticVelocityHessian.mono hKD
   let Hext := K.indicator H
   let e := fun j => borelCoefficientError (C j) A Hext
   have he0 j P : 0 ≤ e j P := abs_nonneg _
-  have hQ : IsOpen Q := isOpen_backwardCylinder P₁ r hr
+  have hQ  := isOpen_backwardCylinder P₁ r hr
   have hQK : Q ⊆ K := subset_closure
   have hregQ := comparison_regular_mono hreg (hQK.trans hKD)
   have hcontK := hreg.continuousOn.mono hKD
-  let : SecondCountableTopology (PDE.Mat d) :=
-    inferInstanceAs (SecondCountableTopology (Fin d → Fin d → ℝ))
+
   let : BorelSpace (PDE.Mat d) := inferInstanceAs (BorelSpace (Fin d → Fin d → ℝ))
   have hHext : Measurable Hext :=
     hH.measurable_piecewise continuousOn_const hK.measurableSet
   have hproj : Measurable (fun P : KineticPoint d => (P.time,P.velocity)) :=
     (continuous_time.prodMk continuous_velocity).measurable
-  have hA : Measurable (fun P : KineticPoint d => A P.time P.velocity) := hBorel.comp hproj
+  have hA  := hBorel.comp hproj
   have hem j : Measurable (e j) := by
     have hCs : Continuous (coefficientAt (C j)) := (hC j).1.continuous
-    have hs : Measurable (fun P : KineticPoint d =>
+    have hs : Measurable (fun P  =>
         matrixContraction (C j P.time P.velocity - A P.time P.velocity) (Hext P)) := by
       unfold matrixContraction
       exact Finset.measurable_fun_sum _ fun i _ =>
@@ -70,10 +69,10 @@ theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLa
     simp only [e,borelCoefficientError,Hext,indicator_of_mem hP]
   obtain ⟨_,hmraw,htraw⟩ := borel_inner_error hlam hLam A hBorel hlo hhi C hC hc K hK H hH
     (lt_of_lt_of_le zero_lt_one hp)
-  have hmK j : MemLp (e j) (ENNReal.ofReal p) (volume.restrict K) :=
+  have hmK j  :=
     (hmraw j).ae_eq (heq j).symm
-  have hμ : volume.restrict Q ≤ volume.restrict K := Measure.restrict_mono_set volume hQK
-  have hme j : MemLp (e j) (ENNReal.ofReal p) (volume.restrict Q) := (hmK j).mono_measure hμ
+  have hμ  := Measure.restrict_mono_set volume hQK
+  have hme j  := (hmK j).mono_measure hμ
   have hte : Tendsto (fun j => (eLpNorm (e j) (ENNReal.ofReal p)
       (volume.restrict Q)).toReal) atTop (𝓝 0) := by
     have htK : Tendsto (fun j => (eLpNorm (e j) (ENNReal.ofReal p)

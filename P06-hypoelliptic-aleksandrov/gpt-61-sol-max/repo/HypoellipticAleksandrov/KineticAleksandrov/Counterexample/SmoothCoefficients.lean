@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyN
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import HypoellipticAleksandrov.Coefficients.ParabolicRegularization
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Spatial smoothing preserves the same Loewner interval
@@ -34,9 +36,7 @@ local instance matrixSecondCountable (d : ℕ) : SecondCountableTopology (PDE.Ma
 
 /-- The entrywise topology has its existing finite product metric. -/
 local instance matrixPseudoMetrizable (d : ℕ) :
-    TopologicalSpace.PseudoMetrizableSpace (PDE.Mat d) := by
-  change TopologicalSpace.PseudoMetrizableSpace (Fin d → Fin d → ℝ)
-  infer_instance
+    TopologicalSpace.PseudoMetrizableSpace (PDE.Mat d) := (id inferInstance)
 
 /-- The existing entrywise norm is continuous. -/
 local instance matrixContinuousENorm (d : ℕ) : ContinuousENorm (PDE.Mat d) := by
@@ -50,41 +50,38 @@ local instance matrixClosedIci (d : ℕ) : ClosedIciTopology (PDE.Mat d) where
     simp only [Matrix.le_iff]
     exact Matrix.posSemidef_is_closed.preimage (continuous_id.sub continuous_const)
 
-private theorem matrix_orderedModule (d : ℕ) : IsOrderedModule ℝ (PDE.Mat d) := by
-  apply IsOrderedModule.of_smul_nonneg
-  intro a ha B hB
-  rw [Matrix.le_iff] at hB ⊢
-  simpa only [sub_zero] using (show B.PosSemidef by simpa only [sub_zero] using hB).smul ha
+private theorem matrix_orderedModule (d : ℕ) : IsOrderedModule ℝ (PDE.Mat d) := inferInstance
+
+variable {d : ℕ}
+
+variable (phi : ContDiffBump (0 : PDE.Vec d × PDE.Vec d)) (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d)
 
 /-- Spatial convolution of an autonomous matrix field. -/
-def mollifiedMatrix {d : ℕ} (phi : ContDiffBump (0 : PDE.Vec d × PDE.Vec d))
-    (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d) :
+def mollifiedMatrix   :
     (PDE.Vec d × PDE.Vec d) → PDE.Mat d :=
   phi.normed volume ⋆[lsmul ℝ ℝ, volume] A
 
 /-- Entrywise smoothness follows from smoothing a locally integrable matrix field. -/
-theorem mollifiedMatrix_contDiff {d : ℕ}
-    (phi : ContDiffBump (0 : PDE.Vec d × PDE.Vec d))
-    (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d) (hA : LocallyIntegrable A volume) :
-    ContDiff ℝ (⊤ : ℕ∞) (mollifiedMatrix phi A) :=
+theorem mollifiedMatrix_contDiff
+     (hA : LocallyIntegrable A ) :
+    ContDiff ℝ PDE.smoothOrder (mollifiedMatrix phi A) :=
   (phi.hasCompactSupport_normed (μ := volume)).contDiff_convolution_left (lsmul ℝ ℝ)
     phi.contDiff_normed hA
 
 /-- Positive normalized convolution preserves the exact lower and upper ellipticity
 constants; local integrability is the genuine analytic hypothesis for this general lemma. -/
-theorem smooth_coefficients_same_bounds_of_locallyIntegrable {d : ℕ}
-    (phi : ContDiffBump (0 : PDE.Vec d × PDE.Vec d))
-    (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d) (hA : LocallyIntegrable A volume)
+theorem smooth_coefficients_same_bounds_of_locallyIntegrable
+     (hA : LocallyIntegrable A )
     (lam Lam : ℝ)
     (hbound : ∀ y, lam • (1 : PDE.Mat d) ≤ A y ∧ A y ≤ Lam • (1 : PDE.Mat d))
     (q : PDE.Vec d × PDE.Vec d) :
     lam • (1 : PDE.Mat d) ≤ mollifiedMatrix phi A q ∧
       mollifiedMatrix phi A q ≤ Lam • (1 : PDE.Mat d) := by
-  have : IsOrderedModule ℝ (PDE.Mat d) := matrix_orderedModule d
+  have  := matrix_orderedModule d
   have hi := (phi.hasCompactSupport_normed (μ := volume)).convolutionExists_left (lsmul ℝ ℝ)
     (phi.contDiff_normed (n := 0)).continuous hA q
   have hc (c : ℝ) : Integrable (fun y => phi.normed volume y •
-      (c • (1 : PDE.Mat d))) volume := phi.integrable_normed.smul_const _
+      (c • (1 : PDE.Mat d)))  := phi.integrable_normed.smul_const _
   have he (c : ℝ) : (∫ y, phi.normed volume y • (c • (1 : PDE.Mat d))) =
       c • (1 : PDE.Mat d) := by
     rw [integral_smul_const, phi.integral_normed, one_smul]
@@ -105,33 +102,33 @@ theorem smooth_coefficients_same_bounds_of_locallyIntegrable {d : ℕ}
 
 /-- A Borel matrix field in a fixed scalar Loewner interval is locally integrable
 on the native spatial carrier, with no continuity assumption. -/
-theorem locallyIntegrable_matrix_of_ellipticity {d : ℕ}
+theorem locallyIntegrable_matrix_of_ellipticity
     (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d) (lam Lam : ℝ)
     (hA : ∀ i k, Measurable (fun y => A y i k))
     (hbound : ∀ y, lam • (1 : PDE.Mat d) ≤ A y ∧ A y ≤ Lam • (1 : PDE.Mat d)) :
-    LocallyIntegrable A volume := by
-  have hm : Measurable A := measurable_pi_iff.mpr
+    LocallyIntegrable A  := by
+  have hm  := measurable_pi_iff.mpr
     (fun i => measurable_pi_iff.mpr (hA i))
-  have hC : 0 ≤ 3 * (|lam| + |Lam|) := by positivity
+
   intro q
   obtain ⟨D, hD, hDf⟩ :=
     (volume : Measure (PDE.Vec d × PDE.Vec d)).finiteAt_nhds q
   refine ⟨D, hD, IntegrableOn.of_bound hDf hm.aestronglyMeasurable
     (3 * (|lam| + |Lam|)) ?_⟩
   filter_upwards [] with y
-  apply (Matrix.norm_le_iff hC).2
+  apply (Matrix.norm_le_iff (by positivity)).2
   intro i k
   rw [Real.norm_eq_abs]
   exact HypoellipticAleksandrov.Parabolic.coefficient_entry_abs_le_of_ellipticity
     (hbound y).1 (hbound y).2 i k
 
 /-- Measurable elliptic coefficients can be smoothed without changing either bound. -/
-theorem smooth_coefficients_same_bounds {d : ℕ}
+theorem smooth_coefficients_same_bounds
     (phi : ContDiffBump (0 : PDE.Vec d × PDE.Vec d))
     (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d) (lam Lam : ℝ)
     (hA : ∀ i k, Measurable (fun y => A y i k))
     (hbound : ∀ y, lam • (1 : PDE.Mat d) ≤ A y ∧ A y ≤ Lam • (1 : PDE.Mat d)) :
-    ContDiff ℝ (⊤ : ℕ∞) (mollifiedMatrix phi A) ∧
+    ContDiff ℝ PDE.smoothOrder (mollifiedMatrix phi A) ∧
       ∀ q, lam • (1 : PDE.Mat d) ≤ mollifiedMatrix phi A q ∧
         mollifiedMatrix phi A q ≤ Lam • (1 : PDE.Mat d) := by
   have hi := locallyIntegrable_matrix_of_ellipticity A lam Lam hA hbound
@@ -140,14 +137,13 @@ theorem smooth_coefficients_same_bounds {d : ℕ}
 
 /-- The concrete smoothed matrix sequence tends to the original measurable elliptic
 matrix almost everywhere in native spatial volume. -/
-theorem ae_tendsto_mollifiedMatrix {d : ℕ}
+theorem ae_tendsto_mollifiedMatrix
     (A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d) (lam Lam : ℝ)
     (hA : ∀ i k, Measurable (fun y => A y i k))
     (hbound : ∀ y, lam • (1 : PDE.Mat d) ≤ A y ∧ A y ≤ Lam • (1 : PDE.Mat d)) :
-    ∀ᵐ q ∂volume,
+    ∀ᵐ q,
       Tendsto (fun n => mollifiedMatrix (standardMollifierSequence n) A q)
-        atTop (𝓝 (A q)) := by
-  exact ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable
+        atTop (𝓝 (A q)) := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable
     standardMollifierSequence_rOut_tendsto
     (Filter.Eventually.of_forall standardMollifierSequence_radius_ratio)
     (locallyIntegrable_matrix_of_ellipticity A lam Lam hA hbound)

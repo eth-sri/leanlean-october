@@ -10,14 +10,16 @@ import Mathlib.Tactic.Ring
 Euler's representation and its moment expansion give the literal Kummer normalization.
 -/
 
-@[expose] public noncomputable section
+@[expose] public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
-open MeasureTheory Set Filter Asymptotics
+open Filter Asymptotics
+
+variable (a : ℝ) (b : Pos)
 
 /-- The full Gamma polynomial equals the normalized algebraic expansion. -/
-theorem gammaPolynomial_normalized (a : ℝ) (b : Pos) (N : ℕ) (X : ℝ)
+theorem gammaPolynomial_normalized  (N : ℕ) (X : ℝ)
     (ha : 0 < a) (hab : a < b.1) (hX : 0 < X) :
     Real.Gamma b.1 / (Real.Gamma a * Real.Gamma (b.1 - a)) *
       gammaPolynomial a (b.1 - a) N X = mExpansion a b.1 N X := by
@@ -37,7 +39,7 @@ theorem gammaPolynomial_normalized (a : ℝ) (b : Pos) (N : ℕ) (X : ℝ)
   ring
 
 /-- The negative-axis expansion for a positive first parameter. -/
-theorem M_negative_expansion_positive (a : ℝ) (b : Pos)
+theorem M_negative_expansion_positive
     (ha : 0 < a) (hab : a < b.1) (N : ℕ) :
     IsBigO atTop (fun X => M a b (-X) - mExpansion a b.1 N X)
       (fun X => X ^ (-a - (N : ℝ))) := by
@@ -46,8 +48,8 @@ theorem M_negative_expansion_positive (a : ℝ) (b : Pos)
   apply h.congr'
   · filter_upwards [eventually_gt_atTop (0 : ℝ)] with X hX
     rw [M_euler_integral a b ha hab (-X)]
-    have he : (∫ t in (0 : ℝ)..1, Real.exp (-X * t) * betaWeight a (b.1 - a) t) =
-        ∫ t in (0 : ℝ)..1, eulerLaplace a (b.1 - a) X t := by
+    have he : (∫ t in (0 )..1, Real.exp (-X * t) * betaWeight a (b.1 - a) t) =
+        ∫ t in (0 )..1, eulerLaplace a (b.1 - a) X t := by
       apply intervalIntegral.integral_congr
       intro t _
       change Real.exp (-X * t) * betaWeight a (b.1 - a) t =

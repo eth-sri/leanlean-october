@@ -27,7 +27,7 @@ def localBallEvolution : LocalBallEvolution v₀ R :=
 
 /-- The selected pair satisfies the full terminal-evolution characterization. -/
 theorem localBallEvolution_realizes :
-    RealizesTerminalEvolution (PDE.euclideanBall v₀ R) (fun _ => 0)
+    RealizesTerminalEvolution _ _
       (PDE.isOpen_euclideanBall v₀ R).measurableSet
       (zIndependentCoefficient B) (identityDrift d)
       (localBallEvolution hH hLE hd hlam hLam B hB v₀ hR).1
@@ -36,7 +36,7 @@ theorem localBallEvolution_realizes :
 
 /-- Every actual realizing pair equals the chosen ball evolution. -/
 theorem localBallEvolution_unique (E : LocalBallEvolution v₀ R)
-    (hE : RealizesTerminalEvolution (PDE.euclideanBall v₀ R) (fun _ => 0)
+    (hE : RealizesTerminalEvolution _ _
       (PDE.isOpen_euclideanBall v₀ R).measurableSet
       (zIndependentCoefficient B) (identityDrift d) E.1 E.2) :
     E = localBallEvolution hH hLE hd hlam hLam B hB v₀ hR := by
@@ -45,17 +45,21 @@ theorem localBallEvolution_unique (E : LocalBallEvolution v₀ R)
     (localBallEvolution_realizes hH hLE hd hlam hLam B hB v₀ hR)).symm
 
 /-- The master kernel is the second projection of that same unique evolution pair. -/
-def localBallKernel : MovingFiberKernel (PDE.euclideanBall v₀ R) (fun _ => 0) :=
+def localBallKernel  :=
   (localBallEvolution hH hLE hd hlam hLam B hB v₀ hR).2
 
+variable (a T : ℝ)
+
+variable (F : HypoellipticAleksandrov.KineticScalarField d)
+
 /-- The literal canonical signed finite-strip source potential in physical coordinates. -/
-def ballSourcePotential (a T : ℝ) (F : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ :=
+def ballSourcePotential   (P : KineticPoint d) : ℝ :=
   duhamelPotential (localBallKernel hH hLE hd hlam hLam B hB v₀ hR) T
     ((localStrip a T v₀ R).indicator F ∘ sectionTwoPoint) (sectionTwoPoint P)
 
 /-- The canonical definition is exactly the potential used in the proof. -/
-theorem ballSourcePotential_eq_boundedBallSourcePotential (a T : ℝ)
-    (F : KineticPoint d → ℝ) :
+theorem ballSourcePotential_eq_boundedBallSourcePotential
+     :
     ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F =
       boundedBallSourcePotential (localBallKernel hH hLE hd hlam hLam B hB v₀ hR) a T F := by
   funext P
@@ -63,7 +67,7 @@ theorem ballSourcePotential_eq_boundedBallSourcePotential (a T : ℝ)
 
 /-- The exact planned signed bounded-source weak equation for the canonical ball potential. -/
 theorem ballSourcePotential_weak
-    (a T : ℝ) (haT : a < T) (F : KineticPoint d → ℝ)
+     (haT : a < T) (F : HypoellipticAleksandrov.KineticScalarField d)
     (hF : Measurable F) (hFb : ∃ M : ℝ, ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M) :
     IsKineticWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
       (sectionTwoPoint '' localStrip a T v₀ R)
@@ -82,7 +86,7 @@ theorem ballSourcePotential_weak
 continuity at initial and interior points of the literal canonical potential. -/
 theorem ballSourcePotential_bounded_traces
     (a T M : ℝ) (haT : a < T) (hM : 0 ≤ M)
-    (F : KineticPoint d → ℝ) (hF : Measurable F)
+    (F : HypoellipticAleksandrov.KineticScalarField d) (hF : Measurable F)
     (hFb : ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M) :
     ContinuousOn (ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F)
       (localClosedStrip a T v₀ R) ∧

@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.MollifiedJetUniformCauchy
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Coordinate assembly of Fréchet derivatives
@@ -14,8 +16,8 @@ derivatives with the first and second Fréchet derivatives.
 
 namespace HypoellipticAleksandrov.Parabolic
 
-open Filter
-open scoped Topology BigOperators
+
+open scoped BigOperators
 
 noncomputable section
 
@@ -33,8 +35,12 @@ def coordinateContinuousLinearMap
         (ContinuousLinearMap.snd ℝ ℝ (PDE.Vec d))).smulRight
           (a (velocityCoord i)))
 
+variable {d : ℕ}
+
+variable {F : Type*}
+
 @[simp] theorem coordinateContinuousLinearMap_apply_timeVelocityBasis
-    {d : ℕ} {F : Type*}
+
     [NormedAddCommGroup F] [NormedSpace ℝ F]
     (a : TimeVelocityCoord d → F) (c : TimeVelocityCoord d) :
     coordinateContinuousLinearMap a (timeVelocityBasis c) = a c := by
@@ -46,7 +52,7 @@ def coordinateContinuousLinearMap
       simp [coordinateContinuousLinearMap, timeVelocityBasis, velocityCoord, PDE.basisVec]
 
 theorem coordinateContinuousLinearMap_eq
-    {d : ℕ} {F : Type*}
+
     [NormedAddCommGroup F] [NormedSpace ℝ F]
     (L : TimeVelocity d →L[ℝ] F) :
     coordinateContinuousLinearMap
@@ -75,22 +81,21 @@ theorem coordinateContinuousLinearMap_eq
       rw [hv]
       simp [timeVelocityBasis, timeCoord]
 
+variable (a : TimeVelocityCoord d → TimeVelocityCoord d → ℝ)
+
 /-- Assemble scalar values on ordered pairs of canonical coordinates. -/
 def coordinateBilinearOperator
-    {d : ℕ} (a : TimeVelocityCoord d → TimeVelocityCoord d → ℝ) :
+      :
     TimeVelocity d →L[ℝ] (TimeVelocity d →L[ℝ] ℝ) :=
   coordinateContinuousLinearMap
     (fun c => coordinateContinuousLinearMap (a c))
 
-@[simp] theorem coordinateBilinearOperator_apply_timeVelocityBasis
-    {d : ℕ} (a : TimeVelocityCoord d → TimeVelocityCoord d → ℝ)
-    (c e : TimeVelocityCoord d) :
-    coordinateBilinearOperator a (timeVelocityBasis c)
-      (timeVelocityBasis e) = a c e := by
-  simp [coordinateBilinearOperator]
+
+
+variable (f : HypoellipticAleksandrov.Parabolic.ScalarField d) (z : TimeVelocity d)
 
 theorem coordinateContinuousLinearMap_coordinateIteratedFDeriv_one_eq_fderiv
-    {d : ℕ} (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+
     (hf : ContDiffAt ℝ 1 f z) :
     coordinateContinuousLinearMap
       (fun c => TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -100,9 +105,7 @@ theorem coordinateContinuousLinearMap_coordinateIteratedFDeriv_one_eq_fderiv
   funext c
   have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
       (0 : TimeVelocityMultiIndex d) c f z (by
-        convert hf using 1
-        simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-          TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order])
+        simp_all [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order])
   rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
       (0 : TimeVelocityMultiIndex d) f = f by
     funext y
@@ -110,24 +113,21 @@ theorem coordinateContinuousLinearMap_coordinateIteratedFDeriv_one_eq_fderiv
   simpa only [zero_add] using h
 
 theorem coordinateBilinearOperator_coordinateIteratedFDeriv_two_eq
-    {d : ℕ} (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+
+    (hf : ContDiff ℝ PDE.smoothOrder f) :
     coordinateBilinearOperator
       (fun c e => TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (Pi.single c 1 + Pi.single e 1) f z) =
-      fderiv ℝ (fun y => fderiv ℝ f y) z := by
-  let H := fderiv ℝ (fun y => fderiv ℝ f y) z
-  have hgrad : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ f) :=
-    (contDiff_infty_iff_fderiv.mp hf).2
+      fderiv ℝ ((fderiv ℝ f)) z := by
+  let H := fderiv ℝ ((fderiv ℝ f)) z
+
   have hentry (c e : TimeVelocityCoord d) :
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
           (Pi.single c 1 + Pi.single e 1) f z =
         H (timeVelocityBasis c) (timeVelocityBasis e) := by
     rw [add_comm]
     rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at]
-    · have hfirst : (fun y =>
-          TimeVelocityMultiIndex.coordinateIteratedFDeriv
-            (Pi.single e 1) f y) =
+    · have hfirst : ((TimeVelocityMultiIndex.coordinateIteratedFDeriv (Pi.single e 1) f)) =
           (fun y => fderiv ℝ f y (timeVelocityBasis e)) := by
         funext y
         have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
@@ -141,11 +141,9 @@ theorem coordinateBilinearOperator_coordinateIteratedFDeriv_two_eq
           funext x
           exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f x] at h
         simpa only [zero_add] using h
-      change (fderiv ℝ (fun y =>
-        TimeVelocityMultiIndex.coordinateIteratedFDeriv
-          (Pi.single e 1) f y) z) (timeVelocityBasis c) = _
+      change (fderiv ℝ ((TimeVelocityMultiIndex.coordinateIteratedFDeriv (Pi.single e 1) f)) z) (timeVelocityBasis c) = _
       rw [hfirst, fderiv_clm_apply
-        (hgrad.differentiable (by simp) z)
+        (((contDiff_infty_iff_fderiv.mp hf).2).differentiable (by simp) z)
         (differentiableAt_const (c := timeVelocityBasis e))]
       simp only [fderiv_const_apply, ContinuousLinearMap.comp_zero, zero_add,
         ContinuousLinearMap.flip_apply]

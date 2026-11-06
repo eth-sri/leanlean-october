@@ -4,28 +4,31 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FullSpaceIdentificationDomination
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.Autonomy
 import Mathlib.Tactic
+import Batteries.Tactic.Alias
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitMassCapacity
+
+
 
 /-! # Full-space occupation action in the enlarged recursion's physical coordinates -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open scoped ENNReal
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- Reinserting physical time is a measurable coordinate map. -/
-theorem enlargedTerminalPoint_measurable (b : ℝ) : Measurable (enlargedTerminalPoint b) := by
-  unfold enlargedTerminalPoint
-  exact (KineticPoint.measurable_equivProd_symm 1).comp
-    (measurable_const.prodMk ((measurable_pi_iff.mpr (fun _ => measurable_fst)).prodMk
-      (measurable_pi_iff.mpr (fun _ => measurable_snd))))
+alias enlargedTerminalPoint_measurable := _root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.measurable_enlargedTerminalPoint
+
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (P : Point)
+
+variable (T : ℝ)
 
 /-- The full-space occupation has the literal iterated physical kernel action. -/
 theorem enlargedFullSpaceOccupation_lintegral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (P : Point) (T : ℝ)
+
     (F : Point → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F p ∂enlargedFullSpaceOccupation hH hLE hlam hLam A P T) =
       ∫⁻ t in Ioc 0 T, ∫⁻ z, F (enlargedTerminalPoint (P.time + t) z)
@@ -43,9 +46,7 @@ theorem enlargedFullSpaceOccupation_lintegral
 
 /-- Full-space occupation can equally be integrated over the literal elapsed-time subtype. -/
 theorem enlargedFullSpaceOccupation_elapsed_lintegral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (P : Point) (T : ℝ) (hT : 0 < T)
+      (hT : 0 < T)
     (F : Point → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F p ∂enlargedFullSpaceOccupation hH hLE hlam hLam A P T) =
       ∫⁻ t : ElapsedTime (ENNReal.ofReal T),
@@ -53,23 +54,22 @@ theorem enlargedFullSpaceOccupation_elapsed_lintegral
           ∂kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t.1)
             (P.position 0, P.velocity 0) ∂elapsedVolume (ENNReal.ofReal T) := by
   let E := fullSpaceEvolution hH hLE hlam hLam A
-  let f := fun t : ℝ => ∫⁻ z, F (enlargedTerminalPoint (P.time + t) z)
+  let f := fun t  => ∫⁻ z, F (enlargedTerminalPoint (P.time + t) z)
     ∂kernelXV E (Real.toNNReal t) (P.position 0, P.velocity 0)
-  have hm : Measurable (fun tz : ℝ × Z => F (enlargedTerminalPoint (P.time + tz.1) tz.2)) := by
-    apply hF.comp
-    unfold enlargedTerminalPoint
-    exact (KineticPoint.measurable_equivProd_symm 1).comp
-      ((measurable_const.add measurable_fst).prodMk
-        ((measurable_pi_iff.mpr (fun _ => measurable_fst.comp measurable_snd)).prodMk
-          (measurable_pi_iff.mpr (fun _ => measurable_snd.comp measurable_snd))))
-  have hf : Measurable f := hm.lintegral_kernel_prod_right'
+
+  have hf : Measurable f := (show Measurable (fun tz : ℝ × Z => F (enlargedTerminalPoint (P.time + tz.1) tz.2)) by
+      apply hF.comp
+      unfold enlargedTerminalPoint
+      exact (KineticPoint.measurable_equivProd_symm 1).comp
+        ((measurable_const.add measurable_fst).prodMk
+          ((measurable_pi_iff.mpr (fun _ => measurable_fst.comp measurable_snd)).prodMk
+            (measurable_pi_iff.mpr (fun _ => measurable_snd.comp measurable_snd))))).lintegral_kernel_prod_right'
     (κ := physicalElapsedKernel E (P.position 0, P.velocity 0))
-  have he : {t : ℝ | 0 < t ∧ ENNReal.ofReal t < ENNReal.ofReal T} = Ioo 0 T := by
-    ext t
-    simp only [mem_ofPred_eq, mem_Ioo, ENNReal.ofReal_lt_ofReal_iff hT]
-  have hmap : (elapsedVolume (ENNReal.ofReal T)).map Subtype.val = volume.restrict (Ioo 0 T) := by
-    exact (map_comap_subtype_coe (measurableSet_elapsedTime (ENNReal.ofReal T)) volume).trans
-      (congrArg (fun B => volume.restrict B) he)
+
+  have hmap : (elapsedVolume (ENNReal.ofReal T)).map Subtype.val = volume.restrict (Ioo 0 T) := (map_comap_subtype_coe (measurableSet_elapsedTime (ENNReal.ofReal T)) volume).trans
+      (congrArg (fun B => volume.restrict B) (by
+          ext t
+          simp only [mem_ofPred_eq, mem_Ioo, ENNReal.ofReal_lt_ofReal_iff hT]))
   rw [enlargedFullSpaceOccupation_lintegral hH hLE hlam hLam A P T F hF]
   change (∫⁻ t in Ioc 0 T, f t) = ∫⁻ t, f t.1 ∂elapsedVolume (ENNReal.ofReal T)
   rw [← lintegral_map hf measurable_subtype_coe, hmap]
@@ -77,9 +77,7 @@ theorem enlargedFullSpaceOccupation_elapsed_lintegral
 
 /-- Time autonomy identifies an absolute native query with the scalar elapsed kernel. -/
 theorem enlargedFullSpace_native_elapsed_lintegral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (P : Point) (t : ℝ) (ht : 0 ≤ t)
+     (t : ℝ) (ht : 0 ≤ t)
     (F : Point → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ w, F ⟨P.time + t, w.2, w.1⟩
       ∂(fullSpaceEvolution hH hLE hlam hLam A).2.master

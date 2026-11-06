@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 
 /-! # Uniform bounds for the time representative on compact time intervals -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
-open MeasureTheory Set HypoellipticAleksandrov.Parabolic
+open Set
 
 /-- The time representative is bounded globally in space, uniformly over compact time. -/
 theorem construction_extendedTimeJet_uniform_bound {d : ℕ} {alpha : ℝ}

@@ -5,13 +5,13 @@ import Mathlib.Tactic
 
 /-! # Spatial inclusion of positive initial-strip points in the preceding block -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
-open Set
+
 
 /-- An initial-strip positive point lies strictly inside the preceding block spatial faces. -/
 theorem gaussianBarrier_initial_previous_spatial {d : ℕ} (hd : 1 ≤ d)
@@ -29,6 +29,7 @@ theorem gaussianBarrier_initial_previous_spatial {d : ℕ} (hd : 1 ≤ d)
         (barrierW d lam Lam H T1 * Real.sqrt h) ∧
       relativePosition ⟨tminus + sblock, x sblock, v sblock⟩ P ∈
         PDE.euclideanBall (0 : PDE.Vec d) ((barrierW d lam Lam H T1 * Real.sqrt h) ^ 3) := by
+  let sharedTerm_92122d1e62 := (h ^ (3 / 2 : ℝ))
   let L := barrierL d lam Lam H T1
   let W := barrierW d lam Lam H T1
   let C := (3 / 2 : ℝ) * L * Real.sqrt lam
@@ -53,8 +54,8 @@ theorem gaussianBarrier_initial_previous_spatial {d : ℕ} (hd : 1 ≤ d)
   have hhalf : h ≤ Real.sqrt T1 * Real.sqrt h := by
     have he := mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt hhT1) (Real.sqrt_nonneg h)
     nlinarith only [he, Real.sq_sqrt hh.le]
-  have hthree : h ^ 2 ≤ Real.sqrt T1 * h ^ (3 / 2 : ℝ) := by
-    have he : h ^ 2 = h ^ (3 / 2 : ℝ) * Real.sqrt h := by
+  have hthree : h ^ 2 ≤ Real.sqrt T1 * sharedTerm_92122d1e62 := by
+    have he : h ^ 2 = sharedTerm_92122d1e62 * Real.sqrt h := by
       rw [Real.sqrt_eq_rpow, ← Real.rpow_add hh]
       norm_num
     rw [he]
@@ -85,16 +86,16 @@ theorem gaussianBarrier_initial_previous_spatial {d : ℕ} (hd : 1 ≤ d)
   have hdeltaSq : (b - s) ^ 2 ≤ (2 * h) ^ 2 :=
     (sq_le_sq₀ hdelta.1 (by positivity)).mpr hdelta.2
   have hxb : PDE.vecEuclideanNorm (relativePosition P₀ P) ≤
-      (C + 2 * H * Real.sqrt T1) * h ^ (3 / 2 : ℝ) := by
+      (C + 2 * H * Real.sqrt T1) * sharedTerm_92122d1e62 := by
     rw [hrel]
     apply (PDE.vecEuclideanNorm_add_le _ _).trans
     calc
-      _ ≤ C * h ^ (3 / 2 : ℝ) + H * (b - s) ^ 2 / 2 := add_le_add hy hrem
-      _ ≤ C * h ^ (3 / 2 : ℝ) + H * (2 * h) ^ 2 / 2 :=
+      _ ≤ C * sharedTerm_92122d1e62 + H * (b - s) ^ 2 / 2 := add_le_add hy hrem
+      _ ≤ C * sharedTerm_92122d1e62 + H * (2 * h) ^ 2 / 2 :=
         add_le_add le_rfl (div_le_div_of_nonneg_right
           (mul_le_mul_of_nonneg_left hdeltaSq hH) (by norm_num))
-      _ = C * h ^ (3 / 2 : ℝ) + (2 * H) * h ^ 2 := by ring
-      _ ≤ C * h ^ (3 / 2 : ℝ) + (2 * H) * (Real.sqrt T1 * h ^ (3 / 2 : ℝ)) :=
+      _ = C * sharedTerm_92122d1e62 + (2 * H) * h ^ 2 := by ring
+      _ ≤ C * sharedTerm_92122d1e62 + (2 * H) * (Real.sqrt T1 * sharedTerm_92122d1e62) :=
         add_le_add le_rfl (mul_le_mul_of_nonneg_left hthree (by positivity))
       _ = _ := by ring
   have hCW : C + 2 * H * Real.sqrt T1 < W := by dsimp only [C, L, W, barrierW]; linarith

@@ -1,6 +1,9 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDyadicPointSelector
+import Mathlib.Tactic.Linarith
+
+
 
 /-!
 # Two-centre parabolic dyadic geometry
@@ -11,14 +14,14 @@ analytic assertion: the enclosing box is an ordinary (non-dyadic) forward
 parabolic box.
 -/
 
-@[expose] public section
+ public section
 
 open Filter Set
-open scoped Topology
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
-noncomputable section
+section
 
 /-- Two distinct points in the reference carrier have a least dyadic scale
 whose source-box radius is no greater than their coordinate distance. -/
@@ -35,8 +38,9 @@ theorem exists_parabolicDyadicGeneration_radius_le_coordinateDist_lt_two_mul_rad
       parabolicCoordinateDist z w <
         2 * (parabolicDyadicSourceBox
           (parabolicDyadicAddressContaining d z hz n).2).radius := by
+  let sharedTerm_782967417c := (Set.univ.pi (fun _ : Fin d => Ioc (-1 : Real) 1))
   let rho : Real := parabolicCoordinateDist z w
-  let radius : Nat → Real := fun n =>
+  let radius  := fun n =>
     (parabolicDyadicSourceBox
       (parabolicDyadicAddressContaining d z hz n).2).radius
   have hrhoPos : 0 < rho := by
@@ -46,9 +50,9 @@ theorem exists_parabolicDyadicGeneration_radius_le_coordinateDist_lt_two_mul_rad
     exact (parabolicCoordinateDist_eq_zero_iff z w).mp hzero.symm
   have htime : Real.sqrt |z.1 - w.1| < 1 := by
     change z.1 ∈ Ioc (0 : Real) 1 ∧
-      z.2 ∈ Set.univ.pi (fun _ : Fin d => Ioc (-1 : Real) 1) at hz
+      z.2 ∈ sharedTerm_782967417c at hz
     change w.1 ∈ Ioc (0 : Real) 1 ∧
-      w.2 ∈ Set.univ.pi (fun _ : Fin d => Ioc (-1 : Real) 1) at hw
+      w.2 ∈ sharedTerm_782967417c at hw
     apply (Real.sqrt_lt' (by norm_num : (0 : Real) < 1)).mpr
     rw [abs_lt]
     constructor <;> linarith [hz.1.1, hz.1.2, hw.1.1, hw.1.2]
@@ -65,7 +69,7 @@ theorem exists_parabolicDyadicGeneration_radius_le_coordinateDist_lt_two_mul_rad
     apply max_lt
     · linarith
     · exact hvelocity
-  let P : Nat → Prop := fun n => radius n ≤ rho
+  let P  := fun n => radius n ≤ rho
   have hP : ∃ n, P n := by
     have heventually : ∀ᶠ n in atTop, 2 * radius n < 2 * rho := by
       have hlimit := tendsto_two_mul_parabolicDyadicIndexContaining_radius_atTop d z hz
@@ -88,7 +92,7 @@ theorem exists_parabolicDyadicGeneration_radius_le_coordinateDist_lt_two_mul_rad
       have hmin := Nat.find_min' hP hmP
       rw [hm] at hmin
       omega
-    have hltPrevious : rho < radius m := lt_of_not_ge hnot
+    have hltPrevious  := lt_of_not_ge hnot
     rw [hm]
     change rho < 2 * ((2 : Real) ^ (m + 1))⁻¹
     calc
@@ -165,6 +169,8 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
           (parabolicDyadicSourceBox
             (parabolicDyadicAddressContaining d w hw n).2).baseTime)
         ((z.2 + w.2) / 2) := by
+  let sharedTerm_b1ee03d878 := ((parabolicDyadicSourceBox (parabolicDyadicIndexContaining d z hz n)))
+  let sharedTerm_42524e2480 := ((parabolicDyadicSourceBox (parabolicDyadicIndexContaining d w hw n)))
   let rho : Real := parabolicCoordinateDist z w
   let qz := parabolicDyadicSourceBox
     (parabolicDyadicAddressContaining d z hz n).2
@@ -175,28 +181,22 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
     change 0 < (parabolicDyadicSourceBox
       (parabolicDyadicAddressContaining d z hz n).2).radius
     exact parabolicDyadicSourceBox_radius_pos _
-  have hrhoPos : 0 < rho := lt_of_lt_of_le hqzRadiusPos hr
+  have hrhoPos  := lt_of_lt_of_le hqzRadiusPos hr
   have hRadius : qz.radius = qw.radius := by
     change ((2 : Real) ^ n)⁻¹ = ((2 : Real) ^ n)⁻¹
     rfl
   have hRadiusSq : qz.radius ^ 2 = qw.radius ^ 2 := by rw [hRadius]
   have hzClosed : z ∈ parabolicClosedBox 1 qz.radius qz.baseTime qz.center := by
     change z ∈ parabolicClosedBox 1
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).radius
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).baseTime
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).center
+      sharedTerm_b1ee03d878.radius
+      sharedTerm_b1ee03d878.baseTime
+      sharedTerm_b1ee03d878.center
     exact parabolicDyadicAddressContaining_mem_closedForwardBox d z hz n
   have hwClosed : w ∈ parabolicClosedBox 1 qw.radius qw.baseTime qw.center := by
     change w ∈ parabolicClosedBox 1
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).radius
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).baseTime
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).center
+      sharedTerm_42524e2480.radius
+      sharedTerm_42524e2480.baseTime
+      sharedTerm_42524e2480.center
     exact parabolicDyadicAddressContaining_mem_closedForwardBox d w hw n
   have hzClosedMem := hzClosed
   have hwClosedMem := hwClosed
@@ -212,14 +212,11 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
       dsimp only [rho, parabolicCoordinateDist]
       exact le_max_right _ _
     have hcoordinate := (pi_norm_le_iff_of_nonneg hrhoPos.le).mp hnorm coordinate
-    simpa only [Pi.sub_apply, Real.norm_eq_abs] using hcoordinate
-  have hzwTime : z.1 - w.1 ≤ rho ^ 2 := (le_abs_self _).trans htime
+    exact hcoordinate
+  have hzwTime  := (le_abs_self _).trans htime
   have hwzTime : w.1 - z.1 ≤ rho ^ 2 := by
     nlinarith [neg_le_abs (z.1 - w.1), htime]
-  have hRadiusSqLe : qz.radius ^ 2 ≤ rho ^ 2 := by
-    have hnonneg : 0 ≤ (rho - qz.radius) * (rho + qz.radius) :=
-      mul_nonneg (sub_nonneg.mpr hr) (add_nonneg hrhoPos.le hqzRadiusPos.le)
-    nlinarith
+
   have hqzBase : qz.baseTime ≤ tMin + qz.radius ^ 2 + rho ^ 2 := by
     dsimp only [tMin]
     rcases le_total qz.baseTime qw.baseTime with hbase | hbase
@@ -231,8 +228,7 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
   have hqwBase : qw.baseTime ≤ tMin + qw.radius ^ 2 + rho ^ 2 := by
     dsimp only [tMin]
     rcases le_total qw.baseTime qz.baseTime with hbase | hbase
-    · rw [min_eq_right hbase]
-      nlinarith [sq_nonneg qw.radius, sq_nonneg rho]
+    · linarith
     · rw [min_eq_left hbase]
       nlinarith [hzClosed.1, hzClosed.2.1, hwClosed.1, hwClosed.2.1,
         hwzTime, hRadiusSq]
@@ -251,7 +247,7 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
     intro q c other hc hmin hbase hqRadiusNonneg hrad hcoordinate hmidpoint
     rw [mem_parabolicClosedBox_iff] at hc
     have hqRadiusSqLe : q.radius ^ 2 ≤ rho ^ 2 := by
-      have hnonneg : 0 ≤ (rho - q.radius) * (rho + q.radius) :=
+      have hnonneg  :=
         mul_nonneg (sub_nonneg.mpr hrad) (add_nonneg hrhoPos.le hqRadiusNonneg)
       nlinarith
     have velocityEstimate (x : TimeVelocity d) (coordinate : Fin d) :

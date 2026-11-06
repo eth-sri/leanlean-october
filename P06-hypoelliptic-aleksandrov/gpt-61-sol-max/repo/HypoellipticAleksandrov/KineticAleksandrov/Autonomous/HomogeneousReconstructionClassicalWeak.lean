@@ -10,8 +10,8 @@ The forcing is the literal scalar kinetic operator. The directional-jet identity
 discharges the weak equation without requiring extra transported derivatives.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Evolution SectionTwo MeasureTheory Set
 
@@ -22,22 +22,18 @@ theorem reconstruction_test_isWeakTransportedSolution {lam Lam : ℝ}
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1)
       (reconstructionPhysicalPoint ⁻¹' D) (phi ∘ reconstructionPhysicalPoint)
       (forwardScalarOperator A.a phi ∘ reconstructionPhysicalPoint) := by
-  let U := reconstructionPhysicalPoint ⁻¹' D
-  have hU : IsOpen U := hD.preimage continuous_reconstructionPhysicalPoint
-  have hc {f : Point → ℝ} (hf : ContinuousOn f D) :
-      ContinuousOn (f ∘ reconstructionPhysicalPoint) U :=
+
+
+  have hc {f : Point → ℝ} (hf : ContinuousOn f D)  :=
     hf.comp continuous_reconstructionPhysicalPoint.continuousOn (fun _ hx => hx)
-  have hV (i : Fin 1) : ContinuousOn
-      (fun x => kineticVelocityGradient phi (reconstructionPhysicalPoint x) i) U :=
+  have hV (i : Fin 1)  :=
     hc ((continuous_apply i).comp_continuousOn hphi.continuousOn_kineticVelocityGradient)
-  have hZ (i : Fin 1) : ContinuousOn
-      (fun x => kineticPositionGradient phi (reconstructionPhysicalPoint x) i) U :=
+  have hZ (i : Fin 1)  :=
     hc ((continuous_apply i).comp_continuousOn hphi.continuousOn_kineticPositionGradient)
-  have hH (i j : Fin 1) : ContinuousOn
-      (fun x => kineticVelocityHessian phi (reconstructionPhysicalPoint x) j i) U :=
+  have hH (i j : Fin 1)  :=
     hc ((continuous_apply i).comp_continuousOn
       ((continuous_apply j).comp_continuousOn hphi.continuousOn_kineticVelocityHessian))
-  refine ⟨(hc hphi.continuousOn).locallyIntegrableOn hU.measurableSet, ?_⟩
+  refine ⟨(hc hphi.continuousOn).locallyIntegrableOn (hD.preimage continuous_reconstructionPhysicalPoint).measurableSet, ?_⟩
   intro ψ hψ hcompact hs
   have h := integral_transportedAdjoint_of_anisotropic_jets
     (evolutionCoefficient A.a) (identityDrift 1) (evolutionCoefficient_smooth A)

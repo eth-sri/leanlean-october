@@ -7,13 +7,13 @@ import Mathlib.Tactic
 
 /-! # The preceding Gaussian dominates each positive initial-strip point -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
-open Set
+
 
 /-- The source overlap contraction gives both preceding-block membership and height control. -/
 theorem gaussianBarrier_overlap_compare {d : ℕ} (hd : 1 ≤ d)
@@ -32,12 +32,15 @@ theorem gaussianBarrier_overlap_compare {d : ℕ} (hd : 1 ≤ d)
         (barrierGamma (barrierL d lam Lam H T1) * ell) tminus sblock x v P ≤
       gaussianBarrier lam Lam H h (barrierL d lam Lam H T1)
         ell tminus (sblock - h) x v P := by
+  let sharedTerm_b6305b0ec9 := ((P.time - tminus - (sblock - h)))
+  let sharedTerm_4b1376d7f2 := ((P.velocity - v (P.time - tminus)))
+  let sharedTerm_f75fe47d1a := ((P.position - x (P.time - tminus)))
   let L := barrierL d lam Lam H T1
   let W := barrierW d lam Lam H T1
   let sigma := P.time - tminus - sblock
   have hL : 0 < L := barrierL_pos hd hlam hLam (hT0.le.trans hT1)
   have hgamma := (barrierGamma_bounds hL).1
-  have hell' : 0 ≤ barrierGamma L * ell := mul_nonneg hgamma.le hell
+  have hell'  := mul_nonneg hgamma.le hell
   have hbudget := propagation_step_damping hd hlam hLam hH hT0 hT1 hh hhstar
   obtain ⟨hs, hq⟩ := gaussianBarrier_pos_quadratic hlam hh Lam H L
     (barrierGamma L * ell) tminus sblock hLam hell' hbudget x v P hp
@@ -56,22 +59,22 @@ theorem gaussianBarrier_overlap_compare {d : ℕ} (hd : 1 ≤ d)
     · change P.time ≤ tminus + sblock
       linarith only [ht]
   · have hqover := qform_overlap hlam hh hs.le ht
-      (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus))
+      sharedTerm_f75fe47d1a sharedTerm_4b1376d7f2
     have hqhalf : qform lam h (sigma + h)
-        (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus)) ≤ L ^ 2 / 2 := by
+        sharedTerm_f75fe47d1a sharedTerm_4b1376d7f2 ≤ L ^ 2 / 2 := by
       have he := mul_le_mul_of_nonneg_left hq.le (by norm_num : (0 : ℝ) ≤ 13 / 50)
       nlinarith only [hqover, he, sq_nonneg L]
-    have hs' : 0 ≤ P.time - tminus - (sblock - h) := by linarith only [hs, hh]
-    have ht' : P.time - tminus - (sblock - h) ≤ h := by linarith only [ht]
-    have hq' : qform lam h (P.time - tminus - (sblock - h))
-        (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus)) ≤ L ^ 2 / 2 := by
-      have he : P.time - tminus - (sblock - h) = sigma + h := by
+    have hs' : 0 ≤ sharedTerm_b6305b0ec9 := by linarith only [hs, hh]
+    have ht' : sharedTerm_b6305b0ec9 ≤ h := by linarith only [ht]
+    have hq' : qform lam h sharedTerm_b6305b0ec9
+        sharedTerm_f75fe47d1a sharedTerm_4b1376d7f2 ≤ L ^ 2 / 2 := by
+      have he : sharedTerm_b6305b0ec9 = sigma + h := by
         dsimp only [sigma]
         ring
       rw [he]
       exact hqhalf
     have hlower := gaussianBarrier_terminal_lower hh Lam H L ell tminus (sblock - h)
-      hell (Xi_nonneg d (H := H) hlam hLam hh) hbudget x v P hs' ht' hq'
+      hell (Xi_nonneg d  hlam hLam hh) hbudget x v P hs' ht' hq'
     have hupper := gaussianBarrier_initial_upper hlam hh Lam H L (barrierGamma L * ell)
       tminus sblock hLam hell' hbudget x v P ht
     have heq : barrierGamma L * ell * Real.exp (L ^ 2 / 512) = ell * barrierCb L := by

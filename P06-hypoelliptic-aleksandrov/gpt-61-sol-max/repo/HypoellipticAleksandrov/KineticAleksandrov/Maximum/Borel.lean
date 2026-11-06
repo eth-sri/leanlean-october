@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelBoundary
 
 /-! # The source smooth-to-Borel passage for time--velocity coefficient class (a) -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open HypoellipticAleksandrov.Parabolic MeasureTheory Set
+open HypoellipticAleksandrov.Parabolic MeasureTheory
 open scoped MatrixOrder
 
 /-- Source lemma Lemma 6.4, class (a), with C₀ fixed before all coefficient and solution data. -/
@@ -20,7 +20,7 @@ theorem kinetic_abp_smooth_to_borel {d : ℕ}
         IsSmoothCoefficient A → IsSymmetricCoefficient A →
         HasLowerEllipticity lam A → HasUpperEllipticity Lam A →
         ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R →
-        ∀ u f : KineticPoint d → ℝ,
+        ∀ u f : HypoellipticAleksandrov.KineticScalarField d,
         ContinuousOn u (closure (backwardCylinder P₀ R)) →
         IsKineticC112On u (backwardCylinder P₀ R) →
         Measurable f → MemLp (fun P => max (f P) 0)
@@ -35,7 +35,7 @@ theorem kinetic_abp_smooth_to_borel {d : ℕ}
     (hsymm : IsSymmetricCoefficient A)
     (hlo : HasLowerEllipticityAE lam A) (hhi : HasUpperEllipticityAE Lam A)
     (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (u f : KineticPoint d → ℝ)
+    (u f : HypoellipticAleksandrov.KineticScalarField d)
     (hcont : ContinuousOn u (closure (backwardCylinder P₀ R)))
     (hreg : IsKineticC112On u (backwardCylinder P₀ R))
     (hf : Measurable f) (hLp : MemLp (fun P => max (f P) 0)
@@ -49,9 +49,9 @@ theorem kinetic_abp_smooth_to_borel {d : ℕ}
   obtain ⟨C,hC,hc⟩ := borel_coefficient_approximation lam Lam hlam hLam A hBorel hsymm hlo hhi
   apply borel_boundary_limit p hp alpha C₀ localised P₀ R hR u f hcont hLp
   intro n P hP
-  have hk := isCompact_closure_reflected_innerCylinder P₀ R hR (borelInnerDelta R n)
+  have hk := isCompact_closure_reflected_innerCylinder P₀ R hR _
     (borelInnerDelta_valid R hR n).1 (borelInnerDelta_valid R hR n).2
-  have hKD := closure_reflected_innerCylinder_subset P₀ R hR (borelInnerDelta R n)
+  have hKD := closure_reflected_innerCylinder_subset P₀ R hR _
     (borelInnerDelta_valid R hR n).1 (borelInnerDelta_valid R hR n).2
   rw [kineticReflection_image_innerCylinder] at hk hKD
   have hμ := Measure.restrict_mono_set volume (subset_closure.trans hKD)

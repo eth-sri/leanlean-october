@@ -2,12 +2,14 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2CoordinatesTransport
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2CutoffScaling
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Exact velocity-Hessian prefactor in homogeneous coordinates -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
@@ -21,7 +23,7 @@ theorem homogeneousAnsatz_velocity_hessian {d : ℕ} (alpha C₀ sigma R : ℝ)
           (fun a => cutoffProfile alpha C₀ sigma R a (positionDirection x)) z w)
           (normalizedVelocity x v) u := by
   have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
-  have hF : ContDiff ℝ (⊤ : ℕ∞)
+  have hF : ContDiff ℝ PDE.smoothOrder
       (fun a => cutoffProfile alpha C₀ sigma R a (positionDirection x)) :=
     (contDiff_cutoffProfile alpha C₀ sigma R hsigma hR).comp
       (contDiff_id.prodMk contDiff_const)

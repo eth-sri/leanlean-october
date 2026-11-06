@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExtensionCutoffs
 import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Uniform smooth time cutoffs for intervals of length r squared -/
 
@@ -11,20 +13,22 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
+variable (a r : ℝ) (hr : 0 < r)
+
 /-- A translated cutoff with inner radius three quarters of the interval length. -/
-def visitTimeCutoff (a r : ℝ) (hr : 0 < r) (t : ℝ) : ℝ :=
+def visitTimeCutoff  (t : ℝ) : ℝ :=
   reconstructionPositionBump (3 * r ^ 2 / 4) (by positivity) (t - (a + r ^ 2 / 2))
 
 /-- The time cutoff is smooth and lies between zero and one. -/
-theorem visitTimeCutoff_properties (a r : ℝ) (hr : 0 < r) :
-    ContDiff ℝ (⊤ : ℕ∞) (visitTimeCutoff a r hr) ∧
+theorem visitTimeCutoff_properties  :
+    ContDiff ℝ PDE.smoothOrder (visitTimeCutoff a r hr) ∧
       (∀ t, 0 ≤ visitTimeCutoff a r hr t ∧ visitTimeCutoff a r hr t ≤ 1) :=
   ⟨(reconstructionPositionBump _ _).contDiff.comp (contDiff_id.sub contDiff_const),
     fun _ => ⟨(reconstructionPositionBump _ _).nonneg,
       (reconstructionPositionBump _ _).le_one⟩⟩
 
 /-- It equals one on the whole closed interval, including a possible initial atom. -/
-theorem visitTimeCutoff_eq_one (a r : ℝ) (hr : 0 < r) {t : ℝ}
+theorem visitTimeCutoff_eq_one  {t : ℝ}
     (ht : t ∈ Icc a (a + r ^ 2)) : visitTimeCutoff a r hr t = 1 := by
   apply (reconstructionPositionBump _ _).one_of_mem_closedBall
   rw [Metric.mem_closedBall, Real.dist_eq, sub_zero]
@@ -33,7 +37,7 @@ theorem visitTimeCutoff_eq_one (a r : ℝ) (hr : 0 < r) {t : ℝ}
   constructor <;> nlinarith [ht.1, ht.2, sq_nonneg r]
 
 /-- Its nonzero support is confined to an interval of length three r squared. -/
-theorem visitTimeCutoff_support (a r : ℝ) (hr : 0 < r) :
+theorem visitTimeCutoff_support  :
     Function.support (visitTimeCutoff a r hr) ⊆ Ioo (a - r ^ 2) (a + 2 * r ^ 2) := by
   intro t ht
   have hb : t - (a + r ^ 2 / 2) ∈
@@ -50,7 +54,7 @@ theorem visitTimeCutoff_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧
   obtain ⟨D, hD, hd⟩ := reconstructionUnitBump_properties.2.2.2
   refine ⟨4 * D / 3, by positivity, ?_⟩
   intro a r hr t
-  have hs : ContDiff ℝ (⊤ : ℕ∞)
+  have hs : ContDiff ℝ PDE.smoothOrder
       (reconstructionPositionBump (3 * r ^ 2 / 4) (by positivity) : ℝ → ℝ) :=
     (reconstructionPositionBump _ _).contDiff
   have hc := (hs.differentiable (by norm_num) (t - (a + r ^ 2 / 2))).hasDerivAt.comp t
@@ -69,15 +73,17 @@ theorem visitTimeCutoff_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧
   convert hb using 1
   field_simp
 
+variable (a r : ℝ) (hr : 0 < r)
+
 /-- The closed support has the same length-three bounding interval. -/
-theorem visitTimeCutoff_tsupport (a r : ℝ) (hr : 0 < r) :
+theorem visitTimeCutoff_tsupport  :
     tsupport (visitTimeCutoff a r hr) ⊆ Icc (a - r ^ 2) (a + 2 * r ^ 2) := by
   have h := closure_mono (visitTimeCutoff_support a r hr)
   have ho : a - r ^ 2 < a + 2 * r ^ 2 := by nlinarith [sq_pos_of_pos hr]
   rwa [closure_Ioo ho.ne] at h
 
 /-- The cutoff derivative vanishes outside the same closed time window. -/
-theorem visitTimeCutoff_deriv_tsupport (a r : ℝ) (hr : 0 < r) :
+theorem visitTimeCutoff_deriv_tsupport  :
     tsupport (deriv (visitTimeCutoff a r hr)) ⊆ Icc (a - r ^ 2) (a + 2 * r ^ 2) :=
   tsupport_deriv_subset.trans (visitTimeCutoff_tsupport a r hr)
 

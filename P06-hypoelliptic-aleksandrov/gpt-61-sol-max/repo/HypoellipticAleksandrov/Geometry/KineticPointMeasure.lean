@@ -33,21 +33,23 @@ open MeasureTheory
 /-- Product Lebesgue measure transported to kinetic points in the order (t,x,v). -/
 @[expose] instance KineticPoint.instMeasureSpace (d : ℕ) : MeasureSpace (KineticPoint d) where
   volume := Measure.map (KineticPoint.equivProd d).symm
-    (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d)))
+    (volume )
+
+variable (d : ℕ)
 
 /-- The kinetic coordinate equivalence is Borel measurable. -/
-theorem KineticPoint.measurable_equivProd (d : ℕ) :
+theorem KineticPoint.measurable_equivProd  :
     Measurable (KineticPoint.equivProd d) :=
   (KineticPoint.homeomorphProd d).continuous.measurable
 
 /-- The inverse coordinate equivalence is Borel measurable. -/
-theorem KineticPoint.measurable_equivProd_symm (d : ℕ) :
+theorem KineticPoint.measurable_equivProd_symm  :
     Measurable (KineticPoint.equivProd d).symm :=
   (KineticPoint.homeomorphProd d).symm.continuous.measurable
 
 /-- Kinetic volume is exactly product Lebesgue volume in coordinate space. -/
-theorem KineticPoint.measurePreserving_equivProd (d : ℕ) :
-    MeasurePreserving (KineticPoint.equivProd d) volume volume := by
+theorem KineticPoint.measurePreserving_equivProd  :
+    MeasurePreserving (KineticPoint.equivProd d) volume  := by
   refine ⟨KineticPoint.measurable_equivProd d, ?_⟩
   change Measure.map (KineticPoint.equivProd d)
     (Measure.map (KineticPoint.equivProd d).symm volume) = volume

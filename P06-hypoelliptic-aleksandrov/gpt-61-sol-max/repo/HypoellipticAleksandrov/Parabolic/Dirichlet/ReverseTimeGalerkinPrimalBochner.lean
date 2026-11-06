@@ -18,15 +18,15 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-open MeasureTheory Set
-open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
+open Set
+open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
   (a : CoefficientField d)
-  (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
+  (b : PDE.TimeVectorField d) (c F : PDE.TimeScalarField d)
   (haSmooth : IsSmoothOnNeighborhood
     (fun z : TimeVelocity d => a z.1 z.2)
     (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -47,18 +47,19 @@ variable
 
 /-- The canonical quotient-valued representative of the selected raw
 reverse-time Galerkin curve. -/
-noncomputable def reverseTimeGalerkinPrimal
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+def reverseTimeGalerkinPrimal
+    (N : ℕ) (initial : PDE.ScalarLp Ω (2 )) :
     ReverseTimeL2V hΩ (r₁ - r₀) :=
   reverseTimeL2OfContinuousOn (r₁ - r₀)
-    (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
+    _
     (continuousOn_reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
       a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
 
+variable (initial : PDE.ScalarLp Ω (2 ))
+
 /-- The uniform value-energy bound for every selected Galerkin curve. -/
-noncomputable def reverseTimeGalerkinPrimalValueBound
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) : ℝ :=
+def reverseTimeGalerkinPrimalValueBound
+     : ℝ :=
   gronwallBound (‖initial‖ ^ 2)
     (2 * reverseTimeGalerkinPrimalK r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos + 1)
@@ -67,8 +68,8 @@ noncomputable def reverseTimeGalerkinPrimalValueBound
     (r₁ - r₀)
 
 /-- The uniform gradient-energy bound for every selected Galerkin curve. -/
-noncomputable def reverseTimeGalerkinPrimalGradientBound
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) : ℝ :=
+def reverseTimeGalerkinPrimalGradientBound
+     : ℝ :=
   ‖initial‖ ^ 2 +
     (2 * reverseTimeGalerkinPrimalK r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos + 1) * (r₁ - r₀) *
@@ -78,8 +79,8 @@ noncomputable def reverseTimeGalerkinPrimalGradientBound
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos ^ 2) * (r₁ - r₀)
 
 /-- The uniform squared `L²(V)` bound for every selected Galerkin curve. -/
-noncomputable def reverseTimeGalerkinPrimalNormSqBound
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) : ℝ :=
+def reverseTimeGalerkinPrimalNormSqBound
+     : ℝ :=
   (r₁ - r₀) *
       reverseTimeGalerkinPrimalValueBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial +
@@ -87,114 +88,116 @@ noncomputable def reverseTimeGalerkinPrimalNormSqBound
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial / lam
 
 /-- The explicit uniform radius associated with the squared Bochner bound. -/
-noncomputable def reverseTimeGalerkinPrimalRadius
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) : ℝ :=
+def reverseTimeGalerkinPrimalRadius
+     : ℝ :=
   Real.sqrt
     (reverseTimeGalerkinPrimalNormSqBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial)
 
+variable (N : ℕ) (initial : PDE.ScalarLp Ω (2 ))
+
 /-- The canonical quotient representative agrees almost everywhere with its
 selected raw Galerkin curve. -/
 theorem ae_reverseTimeGalerkinPrimal_eq_raw
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial =ᵐ[
         reverseTimeVolume (r₁ - r₀)]
       reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-        haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial := by
-  exact coeFn_reverseTimeL2OfContinuousOn (r₁ - r₀)
-    (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
-    (continuousOn_reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-      a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
+        haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial := coeFn_reverseTimeL2OfContinuousOn (r₁ - r₀)
+    _
+    _
 
 private theorem reverseTimeGalerkinPrimal_value_energy_le_bound
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+
     (t : ℝ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
     ‖valueCLM hΩ
       (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial t)‖ ^ 2 ≤
       reverseTimeGalerkinPrimalValueBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := by
-  have hK : 0 ≤ 2 * reverseTimeGalerkinPrimalK r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-      a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos + 1 := by
-    nlinarith [reverseTimeGalerkinPrimalK_nonneg r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-      a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos]
+  let sharedTerm_2b3726d9f2 := ((2 *
+      reverseTimeGalerkinPrimalK r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower
+        hcNonpos +
+    1))
+  let sharedTerm_b296d887ac := (reverseTimeGalerkinPrimalM r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos)
+
   calc
     ‖valueCLM hΩ
         (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
           haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial t)‖ ^ 2 ≤
         gronwallBound (‖initial‖ ^ 2)
-          (2 * reverseTimeGalerkinPrimalK r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-            haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos + 1)
-          (reverseTimeGalerkinPrimalM r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-            haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos ^ 2) t :=
+          sharedTerm_2b3726d9f2
+          (sharedTerm_b296d887ac ^ 2) t :=
       reverseTimeGalerkinPrimal_value_energy r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial t ht
     _ ≤ gronwallBound (‖initial‖ ^ 2)
-          (2 * reverseTimeGalerkinPrimalK r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-            haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos + 1)
-          (reverseTimeGalerkinPrimalM r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-            haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos ^ 2) (r₁ - r₀) :=
-      gronwallBound_mono (sq_nonneg ‖initial‖) (sq_nonneg _ ) hK ht.2
+          sharedTerm_2b3726d9f2
+          (sharedTerm_b296d887ac ^ 2) (r₁ - r₀) :=
+      gronwallBound_mono (sq_nonneg ‖initial‖) (sq_nonneg _ ) (by
+          nlinarith [reverseTimeGalerkinPrimalK_nonneg r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
+            a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos]) ht.2
     _ = reverseTimeGalerkinPrimalValueBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
           haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := rfl
 
 private theorem reverseTimeGalerkinPrimal_gradient_energy_le_bound
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     lam * ∫ τ in Set.Ioc 0 (r₁ - r₀),
       ‖gradientCLM hΩ
         (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
           haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial τ)‖ ^ 2 ≤
       reverseTimeGalerkinPrimalGradientBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-        haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := by
-  simpa only [reverseTimeGalerkinPrimalGradientBound,
-    reverseTimeGalerkinPrimalValueBound] using
-    (reverseTimeGalerkinPrimal_gradient_energy r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial (r₁ - r₀)
-      ⟨sub_nonneg.mpr h₀₁.le, le_rfl⟩)
+        haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := (id
+  (reverseTimeGalerkinPrimal_gradient_energy r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth hFSmooth
+    hLower hcNonpos N initial (r₁ - r₀) ⟨sub_nonneg.mpr (LT.lt.le h₀₁), le_rfl⟩))
+
+variable (initial : PDE.ScalarLp Ω (2 ))
 
 /-- The canonical reverse-time Galerkin class satisfies the explicit uniform
 squared Bochner bound. -/
 theorem norm_sq_reverseTimeGalerkinPrimal_le
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (N : ℕ) :
+     (N : ℕ) :
     ‖reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial‖ ^ 2 ≤
       reverseTimeGalerkinPrimalNormSqBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-        haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := by
-  have hT : 0 < r₁ - r₀ := sub_pos.mpr h₀₁
-  obtain ⟨W, hWraw, hWbound⟩ := exists_reverseTimeL2V_of_continuousOn_energy hΩ hT hlam
-    (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
-    (continuousOn_reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
-    (reverseTimeGalerkinPrimal_value_energy_le_bound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-      a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
-    (reverseTimeGalerkinPrimal_gradient_energy_le_bound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-      a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
-  have hW : W = reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial := by
-    apply MeasureTheory.Lp.ext
-    exact hWraw.trans
-      (ae_reverseTimeGalerkinPrimal_eq_raw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-        haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial).symm
-  calc
-    ‖reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-        haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial‖ ^ 2 = ‖W‖ ^ 2 := by
-      rw [hW]
-    _ ≤ (r₁ - r₀) *
-          reverseTimeGalerkinPrimalValueBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-            haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial +
-        reverseTimeGalerkinPrimalGradientBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-          haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial / lam := hWbound
-    _ = reverseTimeGalerkinPrimalNormSqBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-          haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := rfl
+        haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := (Exists.casesOn
+  (exists_reverseTimeL2V_of_continuousOn_energy hΩ (sub_pos.mpr h₀₁) hlam
+    (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower
+      hcNonpos N initial)
+    (continuousOn_reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth
+      hFSmooth hLower hcNonpos N initial)
+    (reverseTimeGalerkinPrimal_value_energy_le_bound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth
+      hFSmooth hLower hcNonpos N initial)
+    (reverseTimeGalerkinPrimal_gradient_energy_le_bound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth
+      hcSmooth hFSmooth hLower hcNonpos N initial))
+  fun W h =>
+  And.casesOn h fun hWraw hWbound =>
+    Trans.trans
+      (Trans.trans
+        (Eq.mpr
+          (id
+            (congrArg
+              (fun _a =>
+                ‖reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth hFSmooth
+                        hLower hcNonpos N initial‖ ^
+                    2 =
+                  ‖_a‖ ^ 2)
+              (MeasureTheory.Lp.ext
+                (Filter.EventuallyEq.trans hWraw
+                  (Filter.EventuallyEq.symm
+                    (ae_reverseTimeGalerkinPrimal_eq_raw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth
+                      hcSmooth hFSmooth hLower hcNonpos N initial))))))
+          (Eq.refl
+            (‖reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth hFSmooth
+                  hLower hcNonpos N initial‖ ^
+              2)))
+        hWbound)
+      rfl)
 
 private theorem reverseTimeGalerkinPrimalNormSqBound_nonneg
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     0 ≤ reverseTimeGalerkinPrimalNormSqBound r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := by
-  exact (sq_nonneg ‖reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
+      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := (sq_nonneg ‖reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
     haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos 0 initial‖).trans
     (norm_sq_reverseTimeGalerkinPrimal_le r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial 0)
@@ -202,7 +205,7 @@ private theorem reverseTimeGalerkinPrimalNormSqBound_nonneg
 /-- The canonical reverse-time Galerkin class lies in its explicit uniform
 Bochner radius. -/
 theorem norm_reverseTimeGalerkinPrimal_le_radius
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (N : ℕ) :
+     (N : ℕ) :
     ‖reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial‖ ≤
       reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
@@ -210,8 +213,7 @@ theorem norm_reverseTimeGalerkinPrimal_le_radius
   apply (Real.le_sqrt (norm_nonneg _)
     (reverseTimeGalerkinPrimalNormSqBound_nonneg r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial)).mpr
-  simpa only [reverseTimeGalerkinPrimalRadius] using
-    (norm_sq_reverseTimeGalerkinPrimal_le r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
+  exact (norm_sq_reverseTimeGalerkinPrimal_le r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial N)
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

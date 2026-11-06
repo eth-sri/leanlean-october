@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.QuadraticCalculus
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The fixed smooth cutoff for kinetic Gaussian barriers -/
 
@@ -16,20 +18,22 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 def barrierCutoff (theta : ℝ) : ℝ := Real.smoothTransition (128 * theta + 1)
 
 /-- The internally chosen barrier cutoff is infinitely differentiable. -/
-theorem contDiff_barrierCutoff : ContDiff ℝ (⊤ : ℕ∞) barrierCutoff :=
+theorem contDiff_barrierCutoff : ContDiff ℝ PDE.smoothOrder barrierCutoff :=
   Real.smoothTransition.contDiff.comp (contDiff_const.mul contDiff_id |>.add contDiff_const)
 
 /-- The barrier cutoff has values in the closed unit interval. -/
 theorem barrierCutoff_bounds (theta : ℝ) : 0 ≤ barrierCutoff theta ∧ barrierCutoff theta ≤ 1 :=
   ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
 
+variable {theta : ℝ}
+
 /-- The barrier cutoff vanishes throughout the left cutoff region. -/
-theorem barrierCutoff_zero {theta : ℝ} (htheta : theta ≤ -(1 / 128 : ℝ)) :
+theorem barrierCutoff_zero  (htheta : theta ≤ -(1 / 128 : ℝ)) :
     barrierCutoff theta = 0 :=
   Real.smoothTransition.zero_of_nonpos (by linarith only [htheta])
 
 /-- The barrier cutoff is exactly one on all nonnegative times. -/
-theorem barrierCutoff_one {theta : ℝ} (htheta : 0 ≤ theta) : barrierCutoff theta = 1 :=
+theorem barrierCutoff_one  (htheta : 0 ≤ theta) : barrierCutoff theta = 1 :=
   Real.smoothTransition.one_of_one_le (by linarith only [htheta])
 
 /-- The source damping coefficient, fixed before the block and amplitude. -/
@@ -39,7 +43,7 @@ def Xi (d : ℕ) (lam Lam H h : ℝ) : ℝ :=
 /-- The raw quadratic form is smooth at every point of the positive-definite strip. -/
 theorem contDiffAt_qform_raw {d : ℕ} {lam h s : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (hs : -(h / 128) ≤ s) (y V : PDE.Vec d) :
-    ContDiffAt ℝ (⊤ : ℕ∞)
+    ContDiffAt ℝ PDE.smoothOrder
       (fun Q : ℝ × (PDE.Vec d × PDE.Vec d) => qform lam h Q.1 Q.2.1 Q.2.2)
       (s, (y, V)) := by
   have heq : (fun Q : ℝ × (PDE.Vec d × PDE.Vec d) =>

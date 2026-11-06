@@ -5,12 +5,14 @@ import Mathlib.Tactic
 
 /-! # Strict cap margins and uniform comparison-box containment -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 open Set
 
+variable {d : ℕ}
+
 /-- The initial tangent corridor lies in the source cap with strict spatial margins. -/
-theorem initial_corridor_subset_cap {d : ℕ} (P0 : KineticPoint d) {r : ℝ}
+theorem initial_corridor_subset_cap  (P0 : KineticPoint d) {r : ℝ}
     (hr : 0 < r) (x v : ℝ → PDE.Vec d)
     (hleft : ∀ s ≤ 0, x s = stackStartPosition P0 r+s • P0.velocity ∧
       v s = P0.velocity) :
@@ -25,8 +27,8 @@ theorem initial_corridor_subset_cap {d : ℕ} (P0 : KineticPoint d) {r : ℝ}
     simp only [relativePosition, stackStartTime, stackStartPosition, Pi.sub_apply,
       Pi.add_apply, Pi.smul_apply, smul_eq_mul]
     ring
-  have hsq : 0 < r^2 := pow_pos hr 2
-  have hcube : 0 < r^3 := pow_pos hr 3
+  have hsq  := pow_pos hr 2
+  have hcube  := pow_pos hr 3
   refine ⟨?_, ?_, ?_, ?_⟩
   · change -(1/4 : ℝ) < (Z.time-P0.time)/r^2
     apply (lt_div_iff₀ hsq).mpr
@@ -52,7 +54,7 @@ theorem initial_corridor_subset_cap {d : ℕ} (P0 : KineticPoint d) {r : ℝ}
     linarith
 
 /-- A uniformly bounded path corridor stays in the fixed comparison box. -/
-theorem full_corridor_subset_comparison {d : ℕ} (P0 P : KineticPoint d) {r : ℝ}
+theorem full_corridor_subset_comparison  (P0 P : KineticPoint d) {r : ℝ}
     (hr : 0 < r) (m : ℕ) (hhi : stackTravelTime P0 P r ≤ ((m : ℝ)+1)*r^2)
     (x v : ℝ → PDE.Vec d)
     (hb : ∀ s ∈ Icc (-(r^2/32)) (stackTravelTime P0 P r),
@@ -63,8 +65,8 @@ theorem full_corridor_subset_comparison {d : ℕ} (P0 P : KineticPoint d) {r : �
       (r^3/(2*8^3)) (r/16) x v ⊆ kineticAffine P0 r '' stackComparisonRegion d m := by
   intro Z hZ
   apply (mem_kineticAffine_image_iff P0 Z hr.ne' _).mpr
-  have hsq : 0 < r^2 := pow_pos hr 2
-  have hcube : 0 < r^3 := pow_pos hr 3
+  have hsq  := pow_pos hr 2
+  have hcube  := pow_pos hr 3
   obtain ⟨hx, hv⟩ := hb _ hZ.1
   have hrel : relativePosition P0 Z =
       (Z.position-x (Z.time-stackStartTime P0 r))+

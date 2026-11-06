@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionClassicalWeak
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The actual homogeneous reconstruction in distributions
 
@@ -9,12 +11,14 @@ difference therefore has a homogeneous smooth representative by
 Hörmander's theorem. Almost-everywhere equality is not asserted to be pointwise equality.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Evolution SectionTwo MeasureTheory Set
 
-private theorem source_congr {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+
+private theorem source_congr
     {U : Set (EvolutionVec 1)} (hU : IsOpen U) {u g f : EvolutionVec 1 → ℝ}
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u g)
     (hg : EqOn g f U) :
@@ -26,7 +30,7 @@ private theorem source_congr {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   change g x * ψ x = f x * ψ x
   rw [hg hx]
 
-private theorem candidate_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+private theorem candidate_weak
     (H : Interval) (E : StripEvolution H) (hE : IsStripEvolution A H E)
     (sMinus T : ℝ) (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
@@ -38,7 +42,7 @@ private theorem candidate_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
       (stripReconstructionCandidate H E.2 T phi g ∘ reconstructionPhysicalPoint)
       (fun _ => 0) := by
   let U := reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T
-  have hU : IsOpen U := (isOpen_reconstructionStrip H sMinus T).preimage
+  have hU  := (isOpen_reconstructionStrip H sMinus T).preimage
     continuous_reconstructionPhysicalPoint
   have htest := reconstruction_test_isWeakTransportedSolution A
     (isOpen_reconstructionStrip H sMinus T) hphi
@@ -75,7 +79,7 @@ theorem exists_reconstruction_smooth_ae
     ∃ (g : BoundedBorel Point) (f : EvolutionVec 1 → ℝ),
       (∀ p ∈ reconstructionStrip H sMinus T, g p = -forwardScalarOperator A.a phi p) ∧
       (∀ p ∉ reconstructionStrip H sMinus T, g p = 0) ∧
-      ContDiffOn ℝ (⊤ : ℕ∞) f
+      ContDiffOn ℝ PDE.smoothOrder f
         (reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T) ∧
       (stripReconstructionCandidate H E.2 T phi g ∘ reconstructionPhysicalPoint)
         =ᵐ[volume.restrict

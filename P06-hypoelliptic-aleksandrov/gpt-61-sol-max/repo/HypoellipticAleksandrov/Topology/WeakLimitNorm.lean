@@ -10,7 +10,7 @@ This module records the dual-functional proof that a uniformly norm-bounded
 sequence has a norm-bounded weak limit.
 -/
 
-@[expose] public section
+ public section
 
 open Filter
 open scoped Topology
@@ -25,15 +25,10 @@ theorem norm_le_of_tendsto_clm_of_norm_le
     (hu : ∀ n, ‖u n‖ ≤ R)
     (hweak : ∀ ell : H →L[ℝ] ℝ,
       Tendsto (fun n => ell (u n)) atTop (𝓝 (ell v))) :
-    ‖v‖ ≤ R := by
-  have hR : 0 ≤ R := (norm_nonneg (u 0)).trans (hu 0)
-  refine NormedSpace.norm_le_dual_bound ℝ v hR ?_
-  intro ell
-  refine le_of_tendsto' ((hweak ell).norm) ?_
-  intro n
-  calc
-    ‖ell (u n)‖ ≤ ‖ell‖ * ‖u n‖ := ContinuousLinearMap.le_opNorm ell (u n)
-    _ ≤ ‖ell‖ * R := mul_le_mul_of_nonneg_left (hu n) (norm_nonneg ell)
-    _ = R * ‖ell‖ := mul_comm _ _
+    ‖v‖ ≤ R := (NormedSpace.norm_le_dual_bound ℝ v (LE.le.trans (norm_nonneg (u 0)) (hu 0)) fun ell =>
+  le_of_tendsto' (Tendsto.norm (hweak ell)) fun n =>
+    Trans.trans
+      (Trans.trans (ContinuousLinearMap.le_opNorm ell (u n)) (mul_le_mul_of_nonneg_left (hu n) (norm_nonneg ell)))
+      (mul_comm ‖ell‖ R))
 
 end HypoellipticAleksandrov

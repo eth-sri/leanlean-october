@@ -7,9 +7,9 @@ import Mathlib.Tactic
 
 /-! # The radial constructions have the exact adjoint density degree two plus alpha -/
 
-@[expose] public section
-noncomputable section
-open MeasureTheory Set
+ public section
+
+open MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Scaling only the radius transforms the product by its literal radial factor. -/
@@ -23,8 +23,10 @@ theorem bellman_radial_product_scale {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r
   rw [← Measure.map_prod_map _ _ (bellmanRadialScale r hr).measurable measurable_id,
     Measure.map_id, map_bellmanRadiusMeasure_radialScale, Measure.prod_smul_left]
 
+variable {lam Lam : ℝ}
+
 /-- The coefficient-weighted product has the same radial scaling factor. -/
-theorem bellman_radial_weighted_product_scale {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r)
+theorem bellman_radial_weighted_product_scale  (alpha r : ℝ) (hr : 0 < r)
     (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
     Measure.map ((bellmanRadialScale r hr).prodCongr (Homeomorph.refl
       (BellmanSphere × BellmanCoefficient lam Lam)))
@@ -33,15 +35,14 @@ theorem bellman_radial_weighted_product_scale {lam Lam : ℝ} (alpha r : ℝ) (h
       ENNReal.ofReal (r ^ (alpha - 2)) •
         (((bellmanRadiusMeasure alpha).prod pi).withDensity
           (fun w => ENNReal.ofReal w.2.2.val)) := by
-  have hf : Measurable (fun w : BellmanPositiveTime ×
-      (BellmanSphere × BellmanCoefficient lam Lam) => ENNReal.ofReal w.2.2.val) := by
-    fun_prop
-  rw [bellman_map_withDensity _ _ _ hf, bellman_radial_product_scale,
+
+  rw [bellman_map_withDensity _ _ _ (by
+      fun_prop), bellman_radial_product_scale,
     withDensity_smul_measure]
   rfl
 
 /-- Dilation of the projected point equals scaling its radius before projection. -/
-theorem bellman_radial_projection_commute {lam Lam : ℝ} (r : ℝ) (hr : 0 < r) :
+theorem bellman_radial_projection_commute  (r : ℝ) (hr : 0 < r) :
     bellmanDilation r hr ∘ (sphereRadialPoint (lam := lam) (Lam := Lam)) =
       sphereRadialPoint ∘ ((bellmanRadialScale r hr).prodCongr
         (Homeomorph.refl (BellmanSphere × BellmanCoefficient lam Lam))) := by
@@ -49,9 +50,10 @@ theorem bellman_radial_projection_commute {lam Lam : ℝ} (r : ℝ) (hr : 0 < r)
   apply Subtype.ext
   exact bellmanPlaneDilation_comp r w.1.val w.2.1.val
 
+variable (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+
 /-- The first radial measure has degree two plus alpha in the source convention. -/
-theorem radialMu_densityDegree {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem radialMu_densityDegree   [IsFiniteMeasure pi] :
     HasBellmanDensityDegree (2 + alpha) (radialMu alpha pi) := by
   apply bellman_degree_of_map_dilation
   intro r hr
@@ -68,8 +70,7 @@ theorem radialMu_densityDegree {lam Lam : ℝ} (alpha : ℝ)
   rw [he]
 
 /-- The second radial measure has the same degree despite its diffusion coefficient weight. -/
-theorem radialEta_densityDegree {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem radialEta_densityDegree   [IsFiniteMeasure pi] :
     HasBellmanDensityDegree (2 + alpha) (radialEta alpha pi) := by
   apply bellman_degree_of_map_dilation
   intro r hr

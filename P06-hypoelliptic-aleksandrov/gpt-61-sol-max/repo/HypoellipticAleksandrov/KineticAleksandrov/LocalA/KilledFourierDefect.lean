@@ -10,17 +10,17 @@ The defect is the literal positive difference of the ambient terminal measures.
 Its Fourier variation is at most its mass because the displacement phase has modulus one.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo
-open scoped ENNReal
+
 
 /-- Fourier variation of a smaller terminal measure is bounded by full Fourier
 variation plus the lost mass. Query coordinates, including the physical position,
 are retained exactly. -/
 theorem killedFourier_variation_le_full_add_loss {d : ℕ}
-    {D D' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+    {D D' : PDE.VelocityRegion d} {γ γ' : ℝ → PDE.Vec d}
     (Kb : MovingFiberKernel D γ) (Kf : MovingFiberKernel D' γ')
     (qb : EvolutionQuery D γ) (qf : EvolutionQuery D' γ')
     (hq : qb.1 = qf.1) (hdom : Kb.master qb ≤ Kf.master qf) (ξ : PDE.Vec d) :
@@ -64,7 +64,7 @@ theorem killedFourier_variation_le_full_add_loss {d : ℕ}
   have hη : η.variation univ ≤ ρ univ := by
     have h := Measure.le_iff.mp hηvar univ MeasurableSet.univ
     rwa [Measure.map_apply measurable_fst MeasurableSet.univ, preimage_univ] at h
-  have hηfin : η.variation univ ≠ ⊤ := ne_of_lt (hη.trans_lt (measure_lt_top ρ univ))
+  have hηfin  := ne_of_lt (hη.trans_lt (measure_lt_top ρ univ))
   have hfvar := fourierProjection_totalVariation_le_one Kf qf ξ _
     (fourierProjection_spec Kf qf ξ)
   have hff : (fourierProjection Kf qf ξ).variation univ ≠ ⊤ :=
@@ -85,7 +85,7 @@ theorem killedFourier_variation_le_full_add_loss {d : ℕ}
   have hr := ENNReal.toReal_mono (measure_ne_top ρ univ) hη
   have hm : μ.real univ ≤ 1 := by
     change (Kf.master qf univ).toReal ≤ 1
-    simpa only [ENNReal.toReal_one] using ENNReal.toReal_mono ENNReal.one_ne_top
+    exact ENNReal.toReal_mono ENNReal.one_ne_top
       (Kf.mass_le_one qf)
   rw [hd] at hr
   change _ ≤ _ + 1 - ν.real univ

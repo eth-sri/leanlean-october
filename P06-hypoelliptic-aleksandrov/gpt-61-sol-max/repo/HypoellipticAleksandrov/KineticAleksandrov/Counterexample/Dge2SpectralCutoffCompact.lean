@@ -5,9 +5,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2Spec
 
 /-! # A uniform canonical spectral solver on the cutoff parameter compact set -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 open scoped MatrixOrder Matrix.Norms.L2Operator
 

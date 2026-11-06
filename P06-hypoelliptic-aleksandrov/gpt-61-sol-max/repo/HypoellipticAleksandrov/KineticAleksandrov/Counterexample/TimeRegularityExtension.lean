@@ -5,11 +5,13 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Flatteni
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeRegularityCompact
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ExtensionInitial
 import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Joint smoothness after the actual fixed-domain zero extension -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set MeasureTheory
 
@@ -20,25 +22,22 @@ theorem spatial_zeroExtendedProfile_contDiff_of_profile {d : ℕ} {alpha : ℝ}
     (r mu R : ℝ) (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R)
     (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2)
     (phi : ContDiffBump (0 : XV d)) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z : ℝ × XV d => spatialMollify phi
+    ContDiff ℝ PDE.smoothOrder (fun z : ℝ × XV d => spatialMollify phi
       (fun y => zeroExtendedProfile (profileFunction h) alpha r mu R ⟨z.1, y.1, y.2⟩) z.2) := by
-  let K : Set (XV d) := {q | profileFunction h q ≤ 1}
-  let Omega : Set (XV d) := {q | profileFunction h q < 1}
-  have hK : IsCompact K := isCompact_profile_unit_sublevel ha h
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hOmega : MeasurableSet Omega := (isOpen_lt hH continuous_const).measurableSet
-  have hOK : Omega ⊆ K := by
-    intro q hq
-    change profileFunction h q ≤ 1
-    exact le_of_lt hq
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  let K  := {q | profileFunction h q ≤ 1}
+  let Omega  := {q | profileFunction h q < 1}
+  have hK  := isCompact_profile_unit_sublevel ha h
+
+
+
+  let  := isCompact_iff_compactSpace.mp hK
   let nu : Measure K := Measure.comap Subtype.val (volume.restrict Omega)
-  have : IsFiniteMeasureOnCompacts nu := IsFiniteMeasureOnCompacts.comap'
+  have  := IsFiniteMeasureOnCompacts.comap'
     (volume.restrict Omega) continuous_subtype_val
     (MeasurableEmbedding.subtype_coe hK.measurableSet)
   have : IsFiniteMeasure nu := inferInstance
-  have hc := compact_cutoff_mollification_contDiff nu (fun y : K => (y : XV d))
-    continuous_subtype_val (fun y : K => selectedFlatProfile h r y)
+  have hc := compact_cutoff_mollification_contDiff nu (fun y  => (y : XV d))
+    continuous_subtype_val (fun y  => selectedFlatProfile h r y)
     ((continuous_selectedFlatProfile h r).comp continuous_subtype_val) phi mu R
   have he : (fun z : ℝ × XV d => spatialMollify phi
       (fun y => zeroExtendedProfile (profileFunction h) alpha r mu R ⟨z.1, y.1, y.2⟩) z.2) =
@@ -53,8 +52,11 @@ theorem spatial_zeroExtendedProfile_contDiff_of_profile {d : ℕ} {alpha : ℝ}
       phi.normed volume (z.2 - y) * timeCutoffTheta
         (selectedFlatProfile h r y - Real.exp (-mu * z.1) *
           (2 - PDE.vecNormSq y.2 / R ^ 2)))]
-    rw [Measure.restrict_restrict hK.measurableSet, inter_eq_right.mpr hOK]
-    rw [← integral_indicator hOmega]
+    rw [Measure.restrict_restrict hK.measurableSet, inter_eq_right.mpr (by
+        intro q hq
+        change profileFunction h q ≤ 1
+        exact le_of_lt hq)]
+    rw [← integral_indicator ((isOpen_lt ((selectedProfile_spec h).2.2.2.2.2.2.1) continuous_const).measurableSet)]
     apply integral_congr_ae
     filter_upwards [] with y
     by_cases hy : y ∈ Omega

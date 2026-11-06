@@ -4,8 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 
 /-! # Positive extended sources are controlled by the literal stationary shell source -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 
@@ -18,15 +18,15 @@ theorem construction_extended_positive_source_le_shell_ae {d : ℕ} (hd : 1 ≤ 
     (hrate : mu = (d : ℝ) * profileLowerEllipticity h / R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)
     (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < m) (t : ℝ) :
-    ∀ᵐ q : XV d ∂volume,
+    ∀ᵐ q : XV d,
       max (constructionExtendedSource h r mu R m (profileMatrix h) ⟨t, q.1, q.2⟩) 0 ≤
         {y | profileFunction h y < 1}.indicator
           (flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r) q := by
   have he := construction_extendedSource_eq_indicator_ae hd ha ha1 h r mu R m
     hr hmu hR hm hscale hmargin t
-  have hb := timeCutoff_source_le_of_profile hd h r hr R hR t
-  have hn := flatSource_nonneg_ae_of_profile h r hr
-  filter_upwards [he, hb, hn] with q hq hbq hnq
+
+
+  filter_upwards [he, (timeCutoff_source_le_of_profile hd h r hr R hR t), (flatSource_nonneg_ae_of_profile h r hr)] with q hq hbq hnq
   rw [hq]
   by_cases hprof : q ∈ {y | profileFunction h y < 1}
   · rw [indicator_of_mem hprof, indicator_of_mem hprof]

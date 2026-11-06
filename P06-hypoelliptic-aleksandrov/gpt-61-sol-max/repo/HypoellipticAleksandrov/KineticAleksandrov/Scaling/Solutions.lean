@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Calculus
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Cylinders
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Classical terminal solutions under an affine change of variables
@@ -14,9 +16,9 @@ continuity, smoothness, the equation, terminal values, lateral values) is transp
 the chain rule `Scaling.Calculus` and the cylinder identities of `Scaling.Cylinders`.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Scaling
 
@@ -29,17 +31,21 @@ variable {d : ℕ} (Φ : KineticAffineScaling d)
 
 /-! ### Transport of quantifiers and regularity -/
 
-theorem forall_mem_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
+section
+variable {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
+
+include hS
+theorem forall_mem_iff
     {f : KineticPoint d → Prop} : (∀ p ∈ S', f (Φ.point p)) ↔ ∀ p ∈ S, f p := by
   constructor
   · intro h p hp
-    have hmem : Φ.pointInv p ∈ S' := (hS _).2 (by rwa [Φ.point_pointInv])
+    have hmem  := (hS _).2 (by rwa [Φ.point_pointInv])
     simpa only [Φ.point_pointInv] using h _ hmem
   · intro h p hp
     exact h _ ((hS p).1 hp)
 
-theorem continuousOn_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
-    {u : KineticPoint d → ℝ} :
+theorem continuousOn_iff
+    {u : HypoellipticAleksandrov.KineticScalarField d} :
     ContinuousOn (fun p => u (Φ.point p)) S' ↔ ContinuousOn u S := by
   constructor
   · intro h
@@ -51,10 +57,12 @@ theorem continuousOn_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔
     simp only [Function.comp_apply, Φ.point_pointInv]
   · intro h
     exact h.comp Φ.continuous_point.continuousOn (fun p hp => (hS p).1 hp)
+end
+
 
 theorem contDiffOn_raw_iff {S S' : Set (ℝ × (PDE.Vec d × PDE.Vec d))}
     (hS : ∀ q, q ∈ S' ↔ Φ.raw q ∈ S) {g : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ} :
-    ContDiffOn ℝ (⊤ : ℕ∞) (fun q => g (Φ.raw q)) S' ↔ ContDiffOn ℝ (⊤ : ℕ∞) g S := by
+    ContDiffOn ℝ PDE.smoothOrder (fun q => g (Φ.raw q)) S' ↔ ContDiffOn ℝ PDE.smoothOrder g S := by
   constructor
   · intro h
     have hmaps : Set.MapsTo Φ.rawInv S S' := fun q hq =>
@@ -66,7 +74,7 @@ theorem contDiffOn_raw_iff {S S' : Set (ℝ × (PDE.Vec d × PDE.Vec d))}
   · intro h
     exact h.comp Φ.contDiff_raw.contDiffOn (fun q hq => (hS q).1 hq)
 
-variable {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+variable {Ω Ω' : PDE.VelocityRegion d} {γ γ' : ℝ → PDE.Vec d}
 
 /-- **Classical solutions are transported by the change of variables.**  If the moving
 domains correspond, `Ω` is open, `γ` is continuous, and the terminal data correspond
@@ -74,47 +82,46 @@ domains correspond, `Ω` is open, `γ` is continuous, and the terminal data corr
 (`B̂`, `b̂`, `Ω'`, `γ'`, `τ`, `F'`) exactly when `u` is one for `(B, b, Ω, γ, σ₀ + a τ, F)`. -/
 theorem isClassicalTerminalSolution_comp_point_iff
     (h : Φ.MapsDomain Ω γ Ω' γ') (hΩ : IsOpen Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d) (τ : ℝ)
+    (B : FullKineticCoefficient d) (b : PDE.VectorField d) (τ : ℝ)
     (F F' : BoundedBorel (EvolutionAmbientState d))
-    (hF : ∀ x, F' x = F (Φ.ambientEquiv τ x)) (u : KineticPoint d → ℝ) :
+    (hF : ∀ x, F' x = F (Φ.ambientEquiv τ x)) (u : HypoellipticAleksandrov.KineticScalarField d) :
     IsClassicalTerminalSolution Ω' γ' (Φ.coefficient B) (Φ.drift b) τ F'
         (fun p => u (Φ.point p)) ↔
       IsClassicalTerminalSolution Ω γ B b (Φ.time τ) F u := by
-  have hopen := isOpen_evolutionPastInteriorRaw hΩ hγ (Φ.time τ)
+  let sharedTerm_7ab07a6e51 := ((fun p => u (Φ.point p)))
+
   -- the individual clause transports
   have c1 : (∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ evolutionPastClosedCylinder Ω' γ' τ,
         |u (Φ.point p)| ≤ C) ↔
       (∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ evolutionPastClosedCylinder Ω γ (Φ.time τ), |u p| ≤ C) := by
     refine exists_congr fun C => and_congr_right fun _ => ?_
     exact Φ.forall_mem_iff (f := fun q => |u q| ≤ C) (h.mem_closedCylinder_iff τ)
-  have c2 : ContinuousOn (fun p => u (Φ.point p)) (evolutionPastClosedCylinder Ω' γ' τ) ↔
+  have c2 : ContinuousOn sharedTerm_7ab07a6e51 (evolutionPastClosedCylinder Ω' γ' τ) ↔
       ContinuousOn u (evolutionPastClosedCylinder Ω γ (Φ.time τ)) :=
     Φ.continuousOn_iff (h.mem_closedCylinder_iff τ)
-  have c3 : ContDiffOn ℝ (⊤ : ℕ∞) (fun q => rawLift (fun p => u (Φ.point p)) q)
-        (evolutionPastInteriorRaw Ω' γ' τ) ↔
-      ContDiffOn ℝ (⊤ : ℕ∞) (rawLift u) (evolutionPastInteriorRaw Ω γ (Φ.time τ)) :=
+  have c3  :=
     Φ.contDiffOn_raw_iff (g := rawLift u) (h.mem_interiorRaw_iff τ)
-  have hnhds : ∀ p : KineticPoint d, p ∈ evolutionPastOpenCylinder Ω' γ' τ →
-      evolutionPastInteriorRaw Ω γ (Φ.time τ) ∈
-        nhds (rawPoint (Φ.point p)) := by
-    intro p hp
-    refine hopen.mem_nhds ?_
-    have := (h.mem_openCylinder_iff τ p).1 hp
-    exact this
-  have c4 : ContDiffOn ℝ (⊤ : ℕ∞) (rawLift u) (evolutionPastInteriorRaw Ω γ (Φ.time τ)) →
+
+  have c4 : ContDiffOn ℝ PDE.smoothOrder (rawLift u) (evolutionPastInteriorRaw Ω γ (Φ.time τ)) →
       ((∀ p ∈ evolutionPastOpenCylinder Ω' γ' τ,
-        transportedForwardOperator (Φ.coefficient B) (Φ.drift b) (fun p => u (Φ.point p)) p = 0)
+        transportedForwardOperator (Φ.coefficient B) (Φ.drift b) sharedTerm_7ab07a6e51 p = 0)
         ↔ ∀ p ∈ evolutionPastOpenCylinder Ω γ (Φ.time τ),
           transportedForwardOperator B b u p = 0) := by
     intro hsm
     have hop : ∀ p ∈ evolutionPastOpenCylinder Ω' γ' τ,
-        transportedForwardOperator (Φ.coefficient B) (Φ.drift b) (fun p => u (Φ.point p)) p =
+        transportedForwardOperator (Φ.coefficient B) (Φ.drift b) sharedTerm_7ab07a6e51 p =
           Φ.a * transportedForwardOperator B b u (Φ.point p) := by
       intro p hp
       refine transportedForwardOperator_comp_point Φ B b ?_
-      exact (hsm.contDiffAt (hnhds p hp)).of_le (by norm_cast)
+      exact (hsm.contDiffAt ((show ∀ p : KineticPoint d, p ∈ evolutionPastOpenCylinder Ω' γ' τ →
+      evolutionPastInteriorRaw Ω γ (Φ.time τ) ∈
+        nhds (rawPoint (Φ.point p)) by
+          intro p hp
+          refine (isOpen_evolutionPastInteriorRaw hΩ hγ (Φ.time τ)).mem_nhds ?_
+          have := (h.mem_openCylinder_iff τ p).1 hp
+          exact this) p hp)).of_le (by norm_cast)
     have key : (∀ p ∈ evolutionPastOpenCylinder Ω' γ' τ,
-        transportedForwardOperator (Φ.coefficient B) (Φ.drift b) (fun p => u (Φ.point p)) p = 0)
+        transportedForwardOperator (Φ.coefficient B) (Φ.drift b) sharedTerm_7ab07a6e51 p = 0)
         ↔ ∀ p ∈ evolutionPastOpenCylinder Ω' γ' τ,
           transportedForwardOperator B b u (Φ.point p) = 0 := by
       refine forall_congr' fun p => forall_congr' fun hp => ?_
@@ -129,13 +136,12 @@ theorem isClassicalTerminalSolution_comp_point_iff
         F' (p.position, p.velocity) = F ((Φ.point p).position, (Φ.point p).velocity) := by
       intro p hp
       rw [hF]
-      have hpt : p.time = τ := hp.1
-      simp only [ambientEquiv_apply, point_position, point_velocity, hpt]
+
+      simp only [ambientEquiv_apply, point_position, point_velocity, hp.1]
     rw [forall_congr' fun p => forall_congr' fun hp => by rw [hFp p hp]]
     exact Φ.forall_mem_iff
       (f := fun q => u q = F (q.position, q.velocity)) (h.mem_terminalClosure_iff τ)
-  have c6 : (∀ p ∈ evolutionLateralFrontier Ω' γ' τ, u (Φ.point p) = 0) ↔
-      ∀ p ∈ evolutionLateralFrontier Ω γ (Φ.time τ), u p = 0 :=
+  have c6  :=
     Φ.forall_mem_iff (f := fun q => u q = 0) (h.mem_lateralFrontier_iff τ)
   unfold IsClassicalTerminalSolution
   constructor

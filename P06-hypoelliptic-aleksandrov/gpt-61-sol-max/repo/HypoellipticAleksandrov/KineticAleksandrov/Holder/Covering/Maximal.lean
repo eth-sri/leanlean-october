@@ -16,16 +16,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+variable {d : ℕ}
+
 /-- The union of radius-at-most-one cylinders where E occupies at least the threshold.
 The threshold is in ENNReal so the measure calculation stays exact before finite conversions. -/
-def maximalCylinderUnion {d : ℕ} (E : Set (KineticPoint d)) (tau : ENNReal) :
+def maximalCylinderUnion  (E : Set (KineticPoint d)) (tau : ENNReal) :
     Set (KineticPoint d) :=
   ⋃ z ∈ {z : KineticPoint d × ℝ | 0 < z.2 ∧ z.2 ≤ 1 ∧
     tau * volume (backwardCylinder z.1 z.2) ≤ volume (E ∩ backwardCylinder z.1 z.2)},
     backwardCylinder z.1 z.2
 
 /-- A density-threshold cylinder family satisfies the homogeneous weak measure estimate. -/
-theorem cylinder_family_weak_type {d : ℕ} {ι : Type*}
+theorem cylinder_family_weak_type  {ι : Type*}
     (P : ι → KineticPoint d) (r : ι → ℝ) (t : Set ι) (R : ℝ)
     (hr : ∀ i ∈ t, 0 < r i) (hR : ∀ i ∈ t, r i ≤ R)
     (E : Set (KineticPoint d)) (tau : ENNReal)
@@ -50,12 +52,10 @@ theorem cylinder_family_weak_type {d : ℕ} {ι : Type*}
     _ ≤ C * volume E := mul_le_mul_right hcharge C
 
 /-- The literal kinetic maximal set satisfies a weak (1,1) estimate for indicators. -/
-theorem maximalCylinderUnion_weak_type {d : ℕ} (E : Set (KineticPoint d)) (tau : ENNReal) :
+theorem maximalCylinderUnion_weak_type  (E : Set (KineticPoint d)) (tau : ENNReal) :
     tau * volume (maximalCylinderUnion E tau) ≤
-      ENNReal.ofReal ((8 : ℝ) ^ (4*d+2)) * volume E := by
-  exact cylinder_family_weak_type Prod.fst Prod.snd
-    {z : KineticPoint d × ℝ | 0 < z.2 ∧ z.2 ≤ 1 ∧
-      tau * volume (backwardCylinder z.1 z.2) ≤ volume (E ∩ backwardCylinder z.1 z.2)}
+      ENNReal.ofReal ((8 : ℝ) ^ (4*d+2)) * volume E := cylinder_family_weak_type Prod.fst Prod.snd
+    _
     1 (fun _ hz => hz.1) (fun _ hz => hz.2.1) E tau (fun _ hz => hz.2.2)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

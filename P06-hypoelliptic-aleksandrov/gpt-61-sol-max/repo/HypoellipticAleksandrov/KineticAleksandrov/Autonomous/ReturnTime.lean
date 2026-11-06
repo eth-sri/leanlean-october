@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnIteration
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnTimeScaling
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The canonical full-space return-time comparison
 
@@ -10,18 +12,19 @@ The only conditional analytic input beyond the classical inputs is the prelimina
 admissibility statement. The constant is chosen before coefficients, data, times and points.
 -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Set MeasureTheory
+ public section
 
+namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp6 : SmoothAutonomousP6Statement lam Lam)
+
+include hp6
 /-- Smooth terminal data satisfy the return comparison at every kinetic scale. -/
 theorem return_time_smooth
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (hp6 : SmoothAutonomousP6Statement lam Lam) :
+     :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
-      (∀ z, 0 ≤ F z) → ContDiff ℝ (⊤ : ℕ∞) F →
+      (∀ z, 0 ≤ F z) → ContDiff ℝ PDE.smoothOrder F →
       ∀ t s X v : ℝ, 0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →
       S hH hLE hlam hLam A t F (X, v) ≤ C * S hH hLE hlam hLam A s F (X, v) := by
   obtain ⟨C, hC, hunit⟩ := return_time_unit_solution lam Lam hlam hLam hp6
@@ -48,9 +51,7 @@ theorem return_time_smooth
 
 /-- Bounded nonnegative Borel data satisfy the same full-space return comparison. -/
 theorem return_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (hp6 : SmoothAutonomousP6Statement lam Lam) :
+     :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
       0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →

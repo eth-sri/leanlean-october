@@ -5,10 +5,10 @@ import Mathlib.Tactic
 
 /-! # Radial scaling used in the angular tail estimate -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open MeasureTheory Set
+open MeasureTheory
 
 /-- The degree-dependent radial measure transforms with exponent beta minus four. -/
 theorem bellmanRadialWeight_map_scale (β r : ℝ) (hr : 0 < r) :
@@ -16,7 +16,7 @@ theorem bellmanRadialWeight_map_scale (β r : ℝ) (hr : 0 < r) :
       ENNReal.ofReal (r ^ (β - 4)) • bellmanRadialWeight β := by
   rw [bellmanRadialWeight, bellman_map_withDensity _ _ _ (by fun_prop),
     map_bellmanPositiveTimeVolume_radialScale, withDensity_smul_measure]
-  have he : (fun s : BellmanPositiveTime =>
+  have he : (fun s  =>
       ENNReal.ofReal (((bellmanRadialScale r hr).symm s).val ^ (3 - β))) =
       ENNReal.ofReal (r ^ (β - 3)) •
         (fun s : BellmanPositiveTime => ENNReal.ofReal (s.val ^ (3 - β))) := by
@@ -44,11 +44,11 @@ theorem bellmanRadialWeight_velocity_strip (β y : ℝ) (hy : 0 < y) :
     bellmanRadialWeight β {s | 1 ≤ y * s.val ∧ y * s.val ≤ 2} =
       ENNReal.ofReal (y ^ (β - 4)) *
         bellmanRadialWeight β {s | 1 ≤ s.val ∧ s.val ≤ 2} := by
-  have hm : MeasurableSet {s : BellmanPositiveTime | 1 ≤ s.val ∧ s.val ≤ 2} := by
-    measurability
+
   have he := congrArg (fun μ : Measure BellmanPositiveTime =>
       μ {s | 1 ≤ s.val ∧ s.val ≤ 2}) (bellmanRadialWeight_map_scale β y hy)
-  rw [Measure.map_apply (bellmanRadialScale y hy).measurable hm,
+  rw [Measure.map_apply (bellmanRadialScale y hy).measurable (by
+      measurability),
     Measure.smul_apply, smul_eq_mul] at he
   exact he
 

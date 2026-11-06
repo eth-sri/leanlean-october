@@ -6,22 +6,24 @@ import Mathlib.Tactic
 
 /-! # Positive compact tests determine the order of Radon measures -/
 
-@[expose] public section
-noncomputable section
-open Set MeasureTheory Filter Topology
+ public section
+
+open Set MeasureTheory
 open scoped CompactlySupported ENNReal NNReal
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [LocallyCompactSpace X]
   [MeasurableSpace X] [BorelSpace X]
 
+variable (mu nu : Measure X)
+
 /-- Nonnegative compact tests control the mass of every compact subset. -/
-theorem bellman_compact_measure_le_of_positive_tests (mu nu : Measure X)
+theorem bellman_compact_measure_le_of_positive_tests
     [IsFiniteMeasureOnCompacts mu] [IsFiniteMeasureOnCompacts nu] [nu.OuterRegular]
     (ht : ∀ f : C_c(X, ℝ), (∀ x, 0 ≤ f x) → ∫ x, f x ∂mu ≤ ∫ x, f x ∂nu)
     {K : Set X} (hK : IsCompact K) : mu K ≤ nu K := by
   refine ENNReal.le_of_forall_pos_le_add fun eps heps hnu => ?_
-  have hnuK : nu K ≠ ⊤ := hnu.ne
+
   have hmuK : mu K ≠ ⊤ := hK.measure_lt_top.ne
   obtain ⟨V, hKV, hV, hmass⟩ :=
     exists_isOpen_le_add K nu (ne_of_gt (ENNReal.coe_lt_coe.mpr heps))
@@ -56,11 +58,11 @@ theorem bellman_compact_measure_le_of_positive_tests (mu nu : Measure X)
     _ ≤ nu.real K + eps := by
       rw [integral_indicator_one hV.measurableSet]
       have hh := ENNReal.toReal_mono (by finiteness : nu K + (eps : ℝ≥0∞) ≠ ∞) hmass
-      rw [ENNReal.toReal_add hnuK ENNReal.coe_ne_top, ENNReal.coe_toReal] at hh
+      rw [ENNReal.toReal_add hnu.ne ENNReal.coe_ne_top, ENNReal.coe_toReal] at hh
       exact hh
 
 /-- Inner regularity upgrades positive compact-test order to actual measure order. -/
-theorem bellman_measure_le_of_positive_tests (mu nu : Measure X)
+theorem bellman_measure_le_of_positive_tests
     [IsFiniteMeasureOnCompacts mu] [IsFiniteMeasureOnCompacts nu]
     [mu.InnerRegular] [nu.OuterRegular]
     (ht : ∀ f : C_c(X, ℝ), (∀ x, 0 ≤ f x) → ∫ x, f x ∂mu ≤ ∫ x, f x ∂nu) :

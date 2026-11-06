@@ -1,33 +1,32 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExtensionBounds
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Removing the compact position cutoff in the actual Green identity -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory Filter
+
 open scoped Topology
 
+variable (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H) (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) (phi : Point → ℝ) (hphi : ContDiff ℝ PDE.smoothOrder (phi ∘ reconstructionPhysicalHomeomorph))
+
+include hphi
 /-- The actual identity holds for every globally smooth test bounded, together with its
 operator, on the open velocity strip. No derivative of the coefficient enters the bound. -/
 theorem strip_identity_bounded_smooth_future_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    (phi : Point → ℝ)
-    (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph))
+
     (hb : ∃ M : ℝ, ∀ p, e.1.time ≤ p.time → p.time ≤ T →
       p.velocity 0 ∈ H.carrier →
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
     phi e.1 = (∫ p, phi p ∂stripExitOfRealization hH hlam hLam A H E hE T e) -
       ∫ p, forwardScalarOperator A.a phi p ∂stripGreenOfKernel H E.2 T e := by
   obtain ⟨M, hM⟩ := hb
-  have hMn : 0 ≤ M := (abs_nonneg (phi e.1)).trans (hM e.1 le_rfl (WithTop.coe_lt_coe.mp
-    e.2.1).le e.2.2).1
+
   have hpc := reconstruction_smooth_physical_continuous phi hphi
   let bx (n : ℕ) := reconstructionPositionBump ((n : ℝ) + 1) (by positivity)
   choose F hF hK using fun n => exists_reconstruction_position_probe A H e.1.time T phi hphi
@@ -39,11 +38,11 @@ theorem strip_identity_bounded_smooth_future_of_realization
     filter_upwards [stripGreenOfKernel_ae_mem_stripPast H E.2 T e,
       reconstruction_green_ae_time_gt H E.2 T e] with p hp ht
     exact ⟨ht.le, hp.1.le, hp.2.1.le, hp.2.2.le⟩
-  have hval (n : ℕ) : (fun p => exitProbePhysical (F n) p) =ᵐ[Ω]
+  have hval (n : ℕ) : ((exitProbePhysical (F n))) =ᵐ[Ω]
       fun p => bx n (p.position 0) * phi p := by
     filter_upwards [hΩ] with p hp
     exact hF n p hp.1 hp.2.1 hp.2.2
-  have hsrc (n : ℕ) : (fun p => forwardScalarOperator A.a (exitProbePhysical (F n)) p) =ᵐ[Γ]
+  have hsrc (n : ℕ) : ((forwardScalarOperator A.a (exitProbePhysical (F n)))) =ᵐ[Γ]
       fun p => bx n (p.position 0) * forwardScalarOperator A.a phi p +
         p.velocity 0 * deriv (bx n) (p.position 0) * phi p := by
     filter_upwards [hΓ] with p hp
@@ -127,12 +126,7 @@ theorem strip_identity_bounded_smooth_future_of_realization
 
 /-- The bounded smooth identity under the source's time-uniform open-velocity bounds. -/
 theorem strip_identity_bounded_smooth_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    (phi : Point → ℝ)
-    (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph))
+
     (hb : ∃ M : ℝ, ∀ p, p.velocity 0 ∈ H.carrier →
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
     phi e.1 = (∫ p, phi p ∂stripExitOfRealization hH hlam hLam A H E hE T e) -

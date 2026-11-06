@@ -7,7 +7,7 @@ import Mathlib.Tactic
 
 /-! # The literal first-arrival waiting component outside the closed entrance band -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set
 
@@ -21,15 +21,15 @@ theorem belowFour_waiting_interval (c : Clock) (H : Interval) (v : ℝ)
   rw [Clock.entrance, closure_Ioo hlo.ne] at hnot ⊢
   change H.lo < v ∧ v < H.hi at hv
   by_cases hl : v < c.vbar - c.r / 2
-  · have hp : H.lo < min H.hi (c.vbar - c.r / 2) := lt_min H.ordered (hv.1.trans hl)
-    let W : Interval := ⟨H.lo, min H.hi (c.vbar - c.r / 2), hp⟩
-    refine ⟨W, ⟨hv.1, lt_min hv.2 hl⟩, ?_, ?_, ?_⟩
+  ·
+
+    refine ⟨(⟨H.lo, _, (lt_min H.ordered (hv.1.trans hl))⟩), ⟨hv.1, lt_min hv.2 hl⟩, ?_, ?_, ?_⟩
     · intro w hw
       exact ⟨hw.1, hw.2.trans_le (min_le_left _ _)⟩
     · apply disjoint_left.mpr
       intro w hw hc
       change c.vbar - c.r / 4 ≤ w ∧ w ≤ c.vbar + c.r / 4 at hc
-      have hh := hw.2.trans_le (min_le_right H.hi (c.vbar - c.r / 2))
+      have hh := hw.2.trans_le (min_le_right H.hi _)
       linarith [hc.1, c.positive]
     · intro w hw hwH
       rcases hw with hw | hw
@@ -46,9 +46,9 @@ theorem belowFour_waiting_interval (c : Clock) (H : Interval) (v : ℝ)
   · have hr : c.vbar + c.r / 2 < v := by
       by_contra hh
       exact hnot ⟨le_of_not_gt hl, le_of_not_gt hh⟩
-    have hp : max H.lo (c.vbar + c.r / 2) < H.hi := max_lt H.ordered (hr.trans hv.2)
-    let W : Interval := ⟨max H.lo (c.vbar + c.r / 2), H.hi, hp⟩
-    refine ⟨W, ⟨max_lt hv.1 hr, hv.2⟩, ?_, ?_, ?_⟩
+
+
+    refine ⟨(⟨_, H.hi, (max_lt H.ordered (hr.trans hv.2))⟩), ⟨max_lt hv.1 hr, hv.2⟩, ?_, ?_, ?_⟩
     · intro w hw
       exact ⟨(le_max_left _ _).trans_lt hw.1, hw.2⟩
     · apply disjoint_left.mpr

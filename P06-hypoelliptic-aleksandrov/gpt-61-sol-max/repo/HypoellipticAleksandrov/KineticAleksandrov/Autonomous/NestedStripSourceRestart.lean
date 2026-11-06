@@ -10,13 +10,15 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+variable (H1 H2 : Interval) (sMinus T : ℝ)
+
 /-- Internal exits for a pair of single intervals in physical coordinates. -/
-def nestedIntervalInternalExit (H1 H2 : Interval) (sMinus T : ℝ) : Set Point :=
+def nestedIntervalInternalExit  : Set Point :=
   {p | sMinus < p.time ∧ p.time < T ∧
     (p.velocity 0 = H1.lo ∨ p.velocity 0 = H1.hi) ∧ p.velocity 0 ∈ H2.carrier}
 
 /-- The actual interval internal-exit set is Borel. -/
-theorem measurableSet_nestedIntervalInternalExit (H1 H2 : Interval) (sMinus T : ℝ) :
+theorem measurableSet_nestedIntervalInternalExit  :
     MeasurableSet (nestedIntervalInternalExit H1 H2 sMinus T) := by
   have hv : Measurable (fun p : Point => p.velocity 0) :=
     ((continuous_apply 0).comp continuous_velocity).measurable
@@ -41,7 +43,7 @@ theorem nestedSourcePotential_zero_outer
   have hz := nestedSourcePotential_continuous_zero_exit hH hlam hLam A H2 E hE T f hfn hs
   rcases hp with hp | hp
   · exact hz.2.1 p hp.1
-  · have hv : p.velocity 0 ∉ H2.carrier := fun hv => hn ⟨hp.1, hp.2.1, hp.2.2, hv⟩
+  · have hv  := fun hv => hn ⟨hp.1, hp.2.1, hp.2.2, hv⟩
     have hc := (nested_strip_union_exit_subset_closed H1 H2 hsub sMinus T
       (Or.inr (Or.inr hp))).2
     apply hz.2.2 p

@@ -4,22 +4,22 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripGreenCh
 
 /-! # Finite-horizon mass of the physical killed Green measure -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped ENNReal
+
 
 /-- Finite time bounds the actual killed Green measure, without a normalization factor. -/
 theorem stripGreenOfKernel_finite_time_mass (H : Interval)
     (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
     (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripGreenOfKernel H K T e univ ≤ ENNReal.ofReal (T - e.1.time) := by
-  have hR : 0 < T - e.1.time := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
+
   rw [stripGreenOfKernel, Measure.map_apply (measurable_elapsedPhysicalPoint _ _)
     MeasurableSet.univ, preimage_univ]
-  have h := greenMeasure_mass_le K e.1.time (T - e.1.time) hR
+  have h := greenMeasure_mass_le K e.1.time (T - e.1.time) (sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1))
     (Measure.dirac (stripPoleState H T e)) _
     (greenMeasure_spec K e.1.time _ (stripHorizon_pos H T e) _)
   simpa only [Measure.dirac_apply_of_mem (mem_univ _), one_mul] using! h

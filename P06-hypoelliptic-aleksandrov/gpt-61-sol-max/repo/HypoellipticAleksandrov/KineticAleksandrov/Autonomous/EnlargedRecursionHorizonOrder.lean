@@ -5,11 +5,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripR
 
 /-! # Closed early-time exit domination at an intermediate observation time -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory Filter
+
 open scoped Topology
 
 /-- Nonnegative compact smooth physical probes determine order of finite measures. -/

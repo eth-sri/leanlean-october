@@ -9,12 +9,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (c : Clock) (Y : ℝ)
+
 /-- Pull the literal phase-space source box back to physical spacetime. -/
-def positionStartBox (c : Clock) (Y : ℝ) : Set Point :=
+def positionStartBox  : Set Point :=
   {q | (q.position 0, q.velocity 0) ∈ box 4 c.r Y}
 
 /-- The physical source box is measurable. -/
-theorem measurableSet_positionStartBox (c : Clock) (Y : ℝ) :
+theorem measurableSet_positionStartBox  :
     MeasurableSet (positionStartBox c Y) :=
   (box_measurable 4 c.r Y).preimage
     (((continuous_apply 0).comp continuous_position).measurable.prodMk
@@ -43,20 +45,18 @@ theorem positionStartQuadratic_slab_mass_bound {lam Lam : ℝ}
   let Y := x + ((k : ℝ) + 1 / 2) * c.r ^ 3
   let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
     visitQuadratic c (q.velocity 0)
-  let g := fun q : Point => forwardScalarOperator A.a f q
+  let g := (forwardScalarOperator A.a f)
   let S := {q : Point | s + a < q.time ∧ q.time ≤ s + b}
   let W := positionStartBox c Y
   let B := positionStartTerminalKernel hH hLE hlam hLam A c J (s + b) ∘ₘ mu
   let D := positionStartTerminalKernel hH hLE hlam hLam A c J (s + a) ∘ₘ mu
   let G := coreAllTimeGreenKernel hH hLE hlam hLam A c ∘ₘ mu
-  have hS : MeasurableSet S :=
-    (isOpen_lt continuous_const continuous_time).measurableSet.inter
-      (isClosed_le continuous_time continuous_const).measurableSet
-  have hW : MeasurableSet W := measurableSet_positionStartBox c Y
-  have hactive := hmu.mono fun _ hp => enlarged_closedEntrance_subset_active c hp
-  have hfB : Integrable f B := positionStartQuadratic_integrable c Y B
+
+  have hW  := measurableSet_positionStartBox c Y
+
+  have hfB  := positionStartQuadratic_integrable c Y B
     (positionStartTerminalMixture_ae_closedActive hH hLE hlam hLam A c J (s + b) mu)
-  have hgG : Integrable g G := positionStartQuadratic_operator_integrable
+  have hgG  := positionStartQuadratic_operator_integrable
     hlam hLam A c Y hc G (positionStartAllTimeMixture_ae_active hH hLE hlam hLam A c mu)
   have hterm : (∫ q, f q ∂B) ≤ 9 * c.r ^ 2 / 16 * (B W).toReal := by
     have hh : (∫ q, f q ∂B) ≤ ∫ q, W.indicator (fun _ => 9 * c.r ^ 2 / 16) q ∂B := by
@@ -96,7 +96,7 @@ theorem positionStartQuadratic_slab_mass_bound {lam Lam : ℝ}
       Measure.restrict_apply MeasurableSet.univ, univ_inter,
       Measure.restrict_apply hW, inter_comm, mul_comm] using hh
   have hi := positionStartQuadratic_integrated_slab_identity
-    hH hLE hlam hLam A c J Y (s + a) (s + b) hc hJ mu hactive (by linarith only [hab])
+    hH hLE hlam hLam A c J Y (s + a) (s + b) hc hJ mu (hmu.mono fun _ hp => enlarged_closedEntrance_subset_active c hp) (by linarith only [hab])
   have hlo := positionStartQuadratic_slab_lower mu c s x a b k hmu
   have hn := positionStartQuadratic_terminal_integral_nonneg
     hH hLE hlam hLam A c J Y (s + a) mu

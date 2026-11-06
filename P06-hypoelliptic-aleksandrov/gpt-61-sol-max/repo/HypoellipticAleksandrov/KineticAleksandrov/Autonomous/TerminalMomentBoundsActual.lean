@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TerminalMome
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TerminalMomentBoundsRegularity
 import Mathlib.MeasureTheory.Integral.Lebesgue.Map
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Actual terminal moments of every realizing autonomous full-space kernel
 
@@ -11,31 +13,32 @@ Compact polynomial tests, epsilon-Lyapunov comparison and Fatou establish the
 unbounded terminal moments without a diffusion realization or coefficient derivatives.
 -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory Filter
-open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped ENNReal Topology
+ public section
 
+namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+open MeasureTheory
+open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
+open scoped ENNReal
+
+variable {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (z : Z) (T : NNReal)
+
+include hlam hE
 /-- The actual velocity terminal moment, with the polynomial's sharp start value. -/
-theorem kernelXV_velocity_2_moment {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (z : Z) (T : NNReal) :
+theorem kernelXV_velocity_2_moment  :
     (∫⁻ w, ENNReal.ofReal ((w.2-z.2)^2) ∂kernelXV E T z) ≤
       ENNReal.ofReal (2*Lam*(T : ℝ)) := by
-  have hLam : 0 ≤ Lam := (hlam.le.trans (A.bounds 0 0).1).trans (A.bounds 0 0).2
+
   let W := velocitySecondBarrier Lam z.2 T ∘ terminalPhysicalPoint
   let g := fun x : EvolutionAmbientState 1 => (x.1 0-z.2)^2
-  have hg : ContDiff ℝ (⊤ : ℕ∞) g := by dsimp only [g]; fun_prop
+
   have hw := velocitySecondBarrier_raw_smooth Lam z.2 T
-  have h := terminal_polynomial_lintegral_le hlam A E hE g hg
+  have h := terminal_polynomial_lintegral_le hlam A E hE g (by dsimp only [g]; fun_prop)
     (fun x => sq_nonneg _) W (terminal_raw_continuous W hw)
     (terminal_raw_regular W hw) T
-    (fun p hp => velocitySecondBarrier_nonneg hLam z.2 T (terminalPhysicalPoint p) hp)
+    (fun p hp => velocitySecondBarrier_nonneg ((hlam.le.trans (A.bounds 0 0).1).trans (A.bounds 0 0).2) z.2 T _ hp)
     (fun p hp => by
       rw [terminalPhysicalPoint_operator]
-      exact velocitySecondBarrier_operator_nonpos A.a Lam z.2 T (terminalPhysicalPoint p)
+      exact velocitySecondBarrier_operator_nonpos A.a Lam z.2 T _
         (A.bounds _ _).2)
     (fun p hp => by
       dsimp only [g, W, Function.comp_apply, terminalPhysicalPoint]
@@ -47,23 +50,21 @@ theorem kernelXV_velocity_2_moment {lam Lam : ℝ} (hlam : 0 < lam)
     Function.comp_apply, nativeToXV, velocitySecondBarrier_start] using h
 
 /-- The actual position terminal moment, with the polynomial's sharp start value. -/
-theorem kernelXV_position_2_moment {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (z : Z) (T : NNReal) :
+theorem kernelXV_position_2_moment  :
     (∫⁻ w, ENNReal.ofReal ((w.1-z.1)^2) ∂kernelXV E T z) ≤
       ENNReal.ofReal (z.2^2*(T : ℝ)^2+(2/3 : ℝ)*Lam*(T : ℝ)^3) := by
-  have hLam : 0 ≤ Lam := (hlam.le.trans (A.bounds 0 0).1).trans (A.bounds 0 0).2
+
   let W := positionSecondBarrier Lam z.1 T ∘ terminalPhysicalPoint
   let g := fun x : EvolutionAmbientState 1 => (x.2 0-z.1)^2
-  have hg : ContDiff ℝ (⊤ : ℕ∞) g := by dsimp only [g]; fun_prop
+
   have hw := positionSecondBarrier_raw_smooth Lam z.1 T
-  have h := terminal_polynomial_lintegral_le hlam A E hE g hg
+  have h := terminal_polynomial_lintegral_le hlam A E hE g (by dsimp only [g]; fun_prop)
     (fun x => sq_nonneg _) W (terminal_raw_continuous W hw)
     (terminal_raw_regular W hw) T
-    (fun p hp => positionSecondBarrier_nonneg hLam z.1 T (terminalPhysicalPoint p) hp)
+    (fun p hp => positionSecondBarrier_nonneg ((hlam.le.trans (A.bounds 0 0).1).trans (A.bounds 0 0).2) z.1 T _ hp)
     (fun p hp => by
       rw [terminalPhysicalPoint_operator]
-      exact positionSecondBarrier_operator_nonpos A.a Lam z.1 T (terminalPhysicalPoint p)
+      exact positionSecondBarrier_operator_nonpos A.a Lam z.1 T _
         (A.bounds _ _).2)
     (fun p hp => by
       dsimp only [g, W, Function.comp_apply, terminalPhysicalPoint]

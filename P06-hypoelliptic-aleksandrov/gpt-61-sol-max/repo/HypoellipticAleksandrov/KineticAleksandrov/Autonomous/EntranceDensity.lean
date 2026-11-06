@@ -11,11 +11,11 @@ Source: companion paper, (8.21). The counting and domination
 estimates are used as proved; no analytic premise replaces their conclusions.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open scoped ENNReal
+open Set MeasureTheory
+
 
 /-- The source core Green density has the exact radius and entrance-count scaling. -/
 theorem entrance_density
@@ -36,10 +36,10 @@ theorem entrance_density
   obtain ⟨C, hC, hc⟩ := entrance_density_from_counts hH hLE hlam hLam q hq B M hB hM
   refine ⟨C, hC, ?_⟩
   intro A c Z0 R hR P hP _hcore
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   let nu := visitStartsQ hH hLE hlam hLam A c Z0 R hR P hP
-  have : IsFiniteMeasure nu := visitStartsQ_isFiniteMeasure hH hLE hlam hLam A c Z0 R hR P hP
-  have hnu : ∀ᵐ e ∂nu, e.velocity 0 ∈ c.active :=
+  have  := visitStartsQ_isFiniteMeasure hH hLE hlam hLam A c Z0 R hR P hP
+  have hnu  :=
     (entrance_visitStartsQ_ae_closedEntrance hH hLE hlam hLam A c Z0 R hR P hP).mono
       (fun _ h => visitClosedEntrance_subset_active c h)
   have hshort (k : ℤ) : nu (entranceTimeBin c.r k) ≤ ENNReal.ofReal M := by
@@ -52,16 +52,16 @@ theorem entrance_density
     (Z0.time + R ^ 2) (capacityCylinderPole Z0 P R hR hP)).restrict Q
   have hdom := core_green_le_visitGreen hH hLE hlam hLam A c Z0 R hR P hP
   have hbridge := entrance_coreAllTimeGreen_eq hH hLE hlam hLam A c nu
-  have hmajor : mu ≤ enlargedActiveGreen hH hLE hlam hLam A c nu :=
+  have hmajor  :=
     (hdom.trans_eq (congrArg (fun rho : Measure Point => rho.restrict Q) hbridge)).trans
       Measure.restrict_le_self
-  have : IsFiniteMeasure (enlargedActiveGreen hH hLE hlam hLam A c nu) :=
+  have  :=
     enlargedActiveGreen_isFiniteMeasure hH hLE hlam hLam A c nu
-  have : IsFiniteMeasure mu := isFiniteMeasure_of_le _ hmajor
-  have hle : mu ≤ volume.withDensity (fun p => ENNReal.ofReal (G p)) :=
+  have  := isFiniteMeasure_of_le _ hmajor
+  have hle  :=
     hmajor.trans_eq hGd
   obtain ⟨g, hgm, hg0, hgd, hgp, hgn⟩ :=
-    density_of_le_withDensity volume mu G hGm hG0 (ENNReal.ofReal q) hGp hle
+    density_of_le_withDensity volume mu G hGm hG0 _ hGp hle
   let D := densityObservationStrip Z0 R hR
   have hD : MeasurableSet D :=
     (continuous_time.measurable measurableSet_Ioi).inter
@@ -71,7 +71,7 @@ theorem entrance_density
   have hmu : ∀ᵐ p ∂mu, p ∈ D :=
     ae_restrict_of_ae (entrance_cylinderGreen_ae_observation hH hLE hlam hLam A Z0 R hR P hP)
   have hr := Measure.restrict_eq_self_of_ae_mem hmu
-  have hden : mu = (volume.restrict D).withDensity (fun p => ENNReal.ofReal (g p)) :=
+  have hden  :=
     hr.symm.trans ((congrArg (fun rho : Measure Point => rho.restrict D) hgd).trans
       (restrict_withDensity hD (fun p => ENNReal.ofReal (g p))))
   refine ⟨g, ⟨hgm, hg0, hden⟩, hgp.restrict D, ?_⟩

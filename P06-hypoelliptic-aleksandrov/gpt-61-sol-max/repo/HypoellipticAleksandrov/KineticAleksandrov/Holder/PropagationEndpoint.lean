@@ -3,12 +3,14 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationIteration
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationEndpointQuadratic
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Endpoint closure of the finite source Gaussian chain -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -22,11 +24,11 @@ theorem propagation_smooth_endpoint {d : ℕ} (hd : 1 ≤ d)
     (n : ℕ) (hn : 0 < n) (hnTP : (n : ℝ) * h = TP)
     (A : FullKineticCoefficient d) (hA : FullElliptic lam Lam A)
     (O : Set (KineticPoint d)) (tminus : ℝ)
-    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
-    (hv : ContDiff ℝ (⊤ : ℕ∞) v) (hkin : ∀ s, HasDerivAt x (v s) s)
+    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ PDE.smoothOrder x)
+    (hv : ContDiff ℝ PDE.smoothOrder v) (hkin : ∀ s, HasDerivAt x (v s) s)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|)
     (htube : corridor tminus (-T0) TP (kx / 2) (kv / 2) x v ⊆ O)
-    {p C_A : ℝ} (u : KineticPoint d → ℝ) (hnonneg : ∀ P ∈ O, 0 ≤ u P)
+    {p C_A : ℝ} (u : HypoellipticAleksandrov.KineticScalarField d) (hnonneg : ∀ P ∈ O, 0 ≤ u P)
     (hu : IsAdmissibleSupersolution A O p C_A u)
     (hinitial : ∀ Q ∈ corridor tminus (-T0) TP (kx / 2) (kv / 2) x v,
       Q.time ≤ tminus → ell ≤ u Q)
@@ -36,6 +38,7 @@ theorem propagation_smooth_endpoint {d : ℕ} (hd : 1 ≤ d)
     (hvelocity : PDE.vecEuclideanNorm (P.velocity - v TP) ≤
       (barrierL d lam Lam H T1 * Real.sqrt lam / 8) * Real.sqrt h) :
     (barrierGamma (barrierL d lam Lam H T1)) ^ n * ell ≤ u P := by
+  let sharedTerm_ae28f402e8 := ((((n - 1 : ℕ) : ℝ) * h))
   let L := barrierL d lam Lam H T1
   let W := barrierW d lam Lam H T1
   let C := L * Real.sqrt lam / 8
@@ -52,16 +55,16 @@ theorem propagation_smooth_endpoint {d : ℕ} (hd : 1 ≤ d)
     have hw : 0 ≤ W := by linarith only [hW]
     have hw2 : 1 ≤ W ^ 2 := by nlinarith only [hW]
     nlinarith only [mul_nonneg hw (sub_nonneg.mpr hw2)]
-  have hR : 0 < W * Real.sqrt h := mul_pos (by linarith only [hW])
+  have hR  := mul_pos (by linarith only [hW])
     (Real.sqrt_pos.mpr hh)
-  have hnstep : ((n - 1 : ℕ) : ℝ) * h + h = TP := by
-    have he : n - 1 + 1 = n := Nat.sub_add_cancel hn
+  have hnstep : sharedTerm_ae28f402e8 + h = TP := by
+    have he  := Nat.sub_add_cancel hn
     have he' := congrArg (fun k : ℕ => (k : ℝ) * h) he
     push_cast at he'
     linarith only [he', hnTP]
   have hclosure : P ∈ closure (backwardCylinder
-      ⟨tminus + ((n - 1 : ℕ) : ℝ) * h + h,
-        x (((n - 1 : ℕ) : ℝ) * h + h), v (((n - 1 : ℕ) : ℝ) * h + h)⟩
+      ⟨tminus + sharedTerm_ae28f402e8 + h,
+        x (sharedTerm_ae28f402e8 + h), v (sharedTerm_ae28f402e8 + h)⟩
       (W * Real.sqrt h)) := by
     rw [add_assoc tminus, hnstep]
     apply mem_closure_backwardCylinder_of_strict_spatial _ P hR
@@ -82,16 +85,16 @@ theorem propagation_smooth_endpoint {d : ℕ} (hd : 1 ≤ d)
     hh hhstar hell n hnTP.le A hA O tminus hx hv hkin hLip htube u hnonneg hu
     hinitial (n - 1) (Nat.sub_lt hn (by norm_num)) P hclosure
   have hbudget := propagation_step_damping hd hlam hLam hH hT0 hT1 hh hhstar
-  have hs : P.time - tminus - ((n - 1 : ℕ) : ℝ) * h = h := by
+  have hs : P.time - tminus - sharedTerm_ae28f402e8 = h := by
     linarith only [htime, hnstep]
   have hPt : P.time - tminus = TP := by linarith only [htime]
   have hq := qform_endpoint_half hlam hh hL.le
-    (P.position - x TP) (P.velocity - v TP) hposition hvelocity
+    _ _ hposition hvelocity
   have hlower := gaussianBarrier_terminal_lower hh Lam H L a tminus
-    (((n - 1 : ℕ) : ℝ) * h) ha (Xi_nonneg d (H := H) hlam hLam hh)
+    sharedTerm_ae28f402e8 ha (Xi_nonneg d  hlam hLam hh)
     hbudget x v P (by rw [hs]; exact hh.le) (by rw [hs]) (by rw [hs, hPt]; exact hq)
   have heq : a * barrierCb L = (barrierGamma L) ^ n * ell := by
-    have hn' : n = (n - 1) + 1 := (Nat.sub_add_cancel hn).symm
+    have hn'  := (Nat.sub_add_cancel hn).symm
     rw [hn', pow_succ]
     dsimp only [a, barrierGamma]
     ring

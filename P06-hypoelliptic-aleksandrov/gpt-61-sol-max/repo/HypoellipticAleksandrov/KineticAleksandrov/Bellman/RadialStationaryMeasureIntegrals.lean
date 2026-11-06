@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # Literal integral formulas for the two radial adjoint measures -/
 
-@[expose] public section
-noncomputable section
-open Set MeasureTheory
+ public section
+
+open MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Integrating the first radial measure integrates the actual radial density before projection. -/

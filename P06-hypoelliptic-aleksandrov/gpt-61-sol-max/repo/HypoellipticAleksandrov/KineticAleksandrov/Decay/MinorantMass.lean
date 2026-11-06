@@ -11,13 +11,13 @@ A smooth terminal cutoff and the stationary polynomial comparison give a
 positive mass independent of the center, radius, terminal time and coefficients.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
+open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped MatrixOrder
 
@@ -28,7 +28,7 @@ theorem minorant_mass_floor (d : ℕ) (hd : 1 ≤ d)
       ∀ (B : CoefficientField d), IsSectionTwoCoefficient lam Lam B →
       ∀ (v0 : PDE.Vec d) (ρ T R : ℝ), 0 < ρ → R = 4 * ρ →
       ∀ (K : MovingFiberKernel (PDE.euclideanBall v0 R) stationary),
-        HasParabolicMarginalBundle (PDE.euclideanBall v0 R) stationary
+        HasParabolicMarginalBundle _ stationary
           (PDE.isOpen_euclideanBall v0 R).measurableSet
           (zIndependentCoefficient B) K →
       ∀ (qlate : ParabolicEvolutionQuery (PDE.euclideanBall v0 R) stationary),
@@ -38,9 +38,9 @@ theorem minorant_mass_floor (d : ℕ) (hd : 1 ≤ d)
             (PDE.euclideanBall v0 R) := by
   obtain ⟨N, hN, _hchoice, hc⟩ := exists_retention_barrier_order d hd lam Lam hlam hlamLam
   let Cstar : ℝ := 2 * N * d * Lam
-  have hLam : 0 < Lam := hlam.trans_le hlamLam
-  have hNp : 0 < (N : ℝ) := by exact_mod_cast (show 0 < N by omega)
-  have hdp : 0 < (d : ℝ) := by exact_mod_cast hd
+  have hLam  := hlam.trans_le hlamLam
+
+
   have hC : 0 < Cstar := by dsimp [Cstar]; positivity
   refine ⟨Cstar, Real.exp (-Cstar / 9), hC, rfl, Real.exp_pos _, ?_⟩
   intro B hB v0 ρ T R hρ hR K hpar qlate hql
@@ -53,16 +53,16 @@ theorem minorant_mass_floor (d : ℕ) (hd : 1 ≤ d)
     exists_smooth_cutoff hcompact hΩ hsub
   obtain ⟨V, hV, -, hVeval⟩ := exists_scalar_probe hΩ.measurableSet B K hpar
     φ hφ hφc hφsupp T
-  let φ' : PDE.Vec d → ℝ := fun y => φ (parabolicAffine v0 ρ y)
-  have hφ' : ContDiff ℝ (⊤ : ℕ∞) φ' := hφ.comp (contDiff_parabolicAffine v0 ρ)
-  have hc' : HasCompactSupport φ' := hφc.comp_homeomorph (parabolicAffineHomeo v0 hρ)
+  let φ'  := fun y => φ (parabolicAffine v0 ρ y)
+  have hφ'  := hφ.comp (contDiff_parabolicAffine v0 ρ)
+  have hc'  := hφc.comp_homeomorph (parabolicAffineHomeo v0 hρ)
   have hV0 : ParabolicProbe.IsClassicalScalarTerminalSolution
       (PDE.euclideanBall v0 (4 * ρ)) stationary (zIndependentCoefficient B)
       (T + ρ ^ 2 * 0) (smoothTestBorel φ hφ.continuous hφc) V := by
     simpa only [mul_zero, add_zero] using hV
   have hW := isClassicalScalarTerminalSolution_comp_minorantAffine hΩ B T v0 hρ
     (parabolicAffine_preimage_ball v0 hρ).symm 0
-    (smoothTestBorel φ hφ.continuous hφc) (smoothTestBorel φ' hφ'.continuous hc')
+    _ (smoothTestBorel φ' hφ'.continuous hc')
     (fun _ => rfl) hV0
   have hdom : ∀ y : PDE.Vec d, barrier N 3 y ≤
       smoothTestBorel φ' hφ'.continuous hc' y := by
@@ -81,7 +81,7 @@ theorem minorant_mass_floor (d : ℕ) (hd : 1 ≤ d)
     · rw [((retention_polynomial_barrier hN 3 (by norm_num)).2.2.2.2 y hy).1]
       exact (hφbound _).1
   have hfloor := minorant_scalar_barrier_floor hN lam Lam hlam hlamLam hc
-    (normalizedParabolicCoefficient B T ρ v0)
+    _
     (normalizedParabolicCoefficient_sectionTwo lam Lam B hB T v0 ρ hρ)
     _ _ hW hdom
   have hpoint : minorantAffine T ρ v0 (-1, 0) = (T - ρ ^ 2, v0) := by

@@ -12,7 +12,7 @@ have squared integral at most the squared distance in the complete `H¹`
 graph.  Both component comparisons have constant one.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal
 
@@ -25,7 +25,7 @@ noncomputable section
 /-- The squared integral of a representative of a scalar `L²` class is its
 squared `L²` norm. -/
 theorem integral_sq_eq_sq_norm_of_ae_eq
-    {d : ℕ} {U : Set (Vec d)} (F : ScalarLp U (2 : ℝ≥0∞))
+    {d : ℕ} {U : Set (Vec d)} (F : ScalarLp U (2 ))
     (f : Vec d → ℝ)
     (hF : ⇑F =ᵐ[volumeOn U] f) :
     (∫ x, f x ^ 2 ∂(volumeOn U)) = ‖F‖ ^ 2 := by
@@ -46,7 +46,7 @@ theorem integral_sq_eq_sq_norm_of_ae_eq
 `L²` class is its squared `L²` norm. -/
 theorem integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert
     {d : ℕ} {U : Set (Vec d)}
-    (F : HilbertVectorLp U (2 : ℝ≥0∞))
+    (F : HilbertVectorLp U (2 ))
     (f : Vec d → ℝ)
     (hF : (fun x => ‖F x‖) =ᵐ[volumeOn U] f) :
     (∫ x, f x ^ 2 ∂(volumeOn U)) = ‖F‖ ^ 2 := by
@@ -63,9 +63,7 @@ theorem integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert
       simp
     _ = ‖F‖ ^ 2 := inner_self_eq_norm_sq F
 
-namespace H1Function
 
-end H1Function
 
 end
 

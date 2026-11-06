@@ -19,8 +19,12 @@ open scoped Pointwise
 
 namespace PDE
 
-theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
-    {U : Set (Vec d)} (hU : Bornology.IsBounded U) :
+variable {d : ℕ}
+
+variable {U : Set (Vec d)}
+
+theorem Bornology.IsBounded.isBoundedDomain
+     (hU : Bornology.IsBounded U) :
     IsBoundedDomain U := by
   classical
   by_cases hd : d = 0
@@ -29,9 +33,8 @@ theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
     intro x hx i
     exact Fin.elim0 i
   · have : NeZero d := ⟨hd⟩
-    have hcoord :
-        ∀ i : Fin d, Bornology.IsBounded (Function.eval i '' U) :=
-      fun i => hU.image_eval i
+    have hcoord  :=
+      hU.image_eval
     have hcoordBound :
         ∀ i : Fin d, ∃ R : ℝ, 0 < R ∧
           ∀ y ∈ Function.eval i '' U, ‖y‖ ≤ R := by
@@ -48,82 +51,76 @@ theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
       let i₀ : Fin d := 0
       have hi₀ : i₀ ∈ (Finset.univ : Finset (Fin d)) := by
         simp
-      have hle : R i₀ ≤ Rmax := by
-        exact Finset.le_sup' (s := Finset.univ) (f := R) hi₀
+      have hle  := Finset.le_sup' (s := Finset.univ) (f := R) hi₀
       exact lt_of_lt_of_le (hRpos i₀) hle
     refine ⟨Rmax, hRmaxPos, ?_⟩
     intro x hx i
-    have hxi : ‖x i‖ ≤ R i :=
+    have hxi  :=
       hR i (x i) ⟨x, hx, rfl⟩
-    have hRi : R i ≤ Rmax := by
-      exact Finset.le_sup' (s := Finset.univ) (f := R) (Finset.mem_univ i)
+    have hRi  := Finset.le_sup' (s := Finset.univ) (f := R) (Finset.mem_univ i)
     simpa [Real.norm_eq_abs] using! hxi.trans hRi
 
-theorem IsBoundedDomain.isBounded {d : ℕ}
-    {U : Set (Vec d)} (hU : IsBoundedDomain U) :
+theorem IsBoundedDomain.isBounded
+     (hU : IsBoundedDomain U) :
     Bornology.IsBounded U := by
   rcases hU with ⟨R, hRpos, hR⟩
   refine isBounded_iff_forall_norm_le.2 ⟨R, ?_⟩
   intro x hx
   refine (pi_norm_le_iff_of_nonneg hRpos.le).2 ?_
   intro i
-  simpa [Real.norm_eq_abs] using hR x hx i
+  exact hR x hx i
 
 /-- Bounded open convex sets in the native ambient space.
 
 This is definitionally compatible with LIH's existing predicate and therefore
 does not encode nonemptiness. Results involving an integral mean add a
 nonemptiness or positive-volume hypothesis at their theorem boundary. -/
-def IsOpenBoundedConvexDomain {d : ℕ}
+def IsOpenBoundedConvexDomain
     (U : Set (Vec d)) : Prop :=
   IsOpen U ∧ IsBoundedDomain U ∧ Convex ℝ U
 
 namespace IsOpenBoundedConvexDomain
 
-theorem isOpen {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+variable {d : ℕ} {U : Set (Vec d)} (hU : IsOpenBoundedConvexDomain U)
+
+include hU
+theorem isOpen  :
     IsOpen U :=
   hU.1
 
-theorem isBoundedDomain {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+theorem isBoundedDomain  :
     IsBoundedDomain U :=
   hU.2.1
 
-theorem convex {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+theorem convex  :
     Convex ℝ U :=
   hU.2.2
 
-theorem measurableSet {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+theorem measurableSet  :
     MeasurableSet U :=
   hU.isOpen.measurableSet
 
-theorem isSobolevRegularDomain {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+theorem isSobolevRegularDomain  :
     IsSobolevRegularDomain U :=
   ⟨hU.measurableSet, hU.isBoundedDomain⟩
 
-theorem translateSet {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) (z : Vec d) :
+theorem translateSet  (z : Vec d) :
     IsOpenBoundedConvexDomain (PDE.translateSet z U) := by
   refine ⟨?_, ?_, ?_⟩
   · have hopen :
-        IsOpen ((fun x : Vec d => x - z) ⁻¹' U) :=
+        IsOpen ((fun x  => x - z) ⁻¹' U) :=
       hU.isOpen.preimage (continuous_id.sub continuous_const)
     simpa [preimage_subRight_eq_translateSet] using hopen
   · rcases hU.isBoundedDomain with ⟨R, hRpos, hR⟩
     refine ⟨R + ‖z‖ + 1, ?_, ?_⟩
     · linarith [norm_nonneg z]
     · intro x hx i
-      have hxpre :
-          x - z ∈ U :=
+      have hxpre  :=
         (mem_translateSet_iff_sub_mem).1 hx
-      have hcoord : |(x - z) i| ≤ R :=
+      have hcoord  :=
         hR (x - z) hxpre i
       have hzcoord : |z i| ≤ ‖z‖ := by
-        simpa [Real.norm_eq_abs] using norm_le_pi_norm z i
+        exact norm_le_pi_norm z i
       have hxi : x i = (x - z) i + z i := by
         simp
       calc
@@ -134,13 +131,12 @@ theorem translateSet {d : ℕ} {U : Set (Vec d)}
         _ ≤ R + ‖z‖ + 1 := by
           linarith
   · have hconv :
-        Convex ℝ ((fun x : Vec d => x + -z) ⁻¹' U) := by
+        Convex ℝ ((fun x  => x + -z) ⁻¹' U) := by
       simpa using hU.convex.translate_preimage_left (-z)
     simpa [preimage_addNeg_eq_translateSet] using hconv
 
 /-- Positive scalar dilation preserves bounded open convex domains. -/
-theorem smul_of_pos {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) {r : ℝ} (hr : 0 < r) :
+theorem smul_of_pos  {r : ℝ} (hr : 0 < r) :
     IsOpenBoundedConvexDomain (r • U) := by
   refine ⟨hU.isOpen.smul₀ hr.ne', ?_, hU.convex.smul r⟩
   rcases hU.isBoundedDomain with ⟨R, hRpos, hR⟩

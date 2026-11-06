@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementSmoothRes
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonCalculus
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparison
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Homogeneous replacement for smooth ambient boundary extensions
 
@@ -12,10 +14,10 @@ Subtracting the internally proved signed correction leaves the homogeneous equat
 and preserves the actual terminal and lateral boundary data.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
-open Set KineticAleksandrov
+
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
 /-- Smooth ambient boundary data have a homogeneous classical backward replacement. -/
@@ -24,16 +26,16 @@ theorem exists_smooth_backward_homogeneous_replacement {d : ℕ} (hd : 0 < d)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A)
-    (w : TimeVelocity d → ℝ) (hw : ContDiff ℝ (⊤ : ℕ∞) w) :
-    ∃ v : TimeVelocity d → ℝ,
+    (w : HypoellipticAleksandrov.Parabolic.ScalarField d) (hw : ContDiff ℝ PDE.smoothOrder w) :
+    ∃ v : HypoellipticAleksandrov.Parabolic.ScalarField d,
       IsClassicalBackwardDirichletSolution a T (PDE.euclideanBall v₀ r) A
         (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => 0)
         (fun y => w (T, y)) w v := by
-  let F : TimeVelocity d → ℝ := fun z => scalarTimeDerivative w z +
+  let F  := fun z => scalarTimeDerivative w z +
     matrixContraction (coefficientAt A z) (scalarSpatialHessian w z)
-  have hF : ContDiff ℝ (⊤ : ℕ∞) F := contDiff_smooth_backward_residual A hA w hw
+
   obtain ⟨u, hu⟩ := exists_signed_source_ball_correction hd v₀ r hr a T haT
-    lam Lam hlam hLam A hA hlo hhi F hF
+    lam Lam hlam hLam A hA hlo hhi F (contDiff_smooth_backward_residual A hA w hw)
   have hwr := isScalarC12On_of_contDiff_two (hw.of_le (by simp))
     (scalarParabolicOpenCylinder a T (PDE.euclideanBall v₀ r))
   refine ⟨fun z => w z - u z,

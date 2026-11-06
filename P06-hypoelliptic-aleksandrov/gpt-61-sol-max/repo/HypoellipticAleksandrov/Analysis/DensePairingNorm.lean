@@ -10,7 +10,7 @@ inner-product pairings on a dense subset extends to the whole space and hence
 controls the norm.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Analysis
 
@@ -32,7 +32,7 @@ theorem norm_le_of_abs_real_inner_le_on_dense
     exact hD.induction hpair hclosed y
   by_cases hx : x = 0
   · simp [hx, hC]
-  · have hnorm_pos : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  · have hnorm_pos  := norm_pos_iff.mpr hx
     have hself := hpair_all x
     rw [real_inner_self_eq_norm_sq, abs_of_nonneg (sq_nonneg ‖x‖)] at hself
     nlinarith

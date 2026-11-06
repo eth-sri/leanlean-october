@@ -1,12 +1,14 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2ProfileBounds
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Exact homogeneity and gauge bound for the velocity gradient -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
@@ -14,34 +16,37 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 theorem dilate_ne_zero {d : ℕ} (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
     dilate r q ≠ 0 := by
   intro hzero
-  have hx := congrArg Prod.fst hzero
-  have hv := congrArg Prod.snd hzero
-  exact hq (Prod.ext ((smul_eq_zero_iff_right (pow_ne_zero 3 hr.ne')).mp hx)
-    ((smul_eq_zero_iff_right hr.ne').mp hv))
 
+
+  exact hq (Prod.ext ((smul_eq_zero_iff_right (pow_ne_zero 3 hr.ne')).mp (congrArg Prod.fst hzero))
+    ((smul_eq_zero_iff_right hr.ne').mp (congrArg Prod.snd hzero)))
+
+variable {d : ℕ}
+
+variable (alpha : ℝ) (H : XV d → ℝ) (hsmooth : ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ)) (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
+
+section
+variable (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0)
+
+include hsmooth hhom hr hq
 /-- The derivative of a homogeneous smooth function has the source velocity weight. -/
-theorem homogeneous_velocity_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
-    (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) (w : PDE.Vec d) :
+theorem homogeneous_velocity_jet
+     (w : PDE.Vec d) :
     fderiv ℝ H (dilate r q) (0, w) =
       Real.rpow r (alpha - 1) * fderiv ℝ H q (0, w) := by
-  have hqmem : q ∈ ({0}ᶜ : Set (XV d)) := hq
-  have hrqmem : dilate r q ∈ ({0}ᶜ : Set (XV d)) := dilate_ne_zero r hr q hq
-  have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
-  have hqd := (hsmooth.contDiffAt (hopen.mem_nhds hqmem)).differentiableAt (by simp)
-  have hrqd := (hsmooth.contDiffAt (hopen.mem_nhds hrqmem)).differentiableAt (by simp)
-  have hd : HasFDerivAt (dilate (d := d) r)
-      ((r ^ 3 • ContinuousLinearMap.fst ℝ (PDE.Vec d) (PDE.Vec d)).prod
-        (r • ContinuousLinearMap.snd ℝ (PDE.Vec d) (PDE.Vec d))) q :=
-    (hasFDerivAt_fst.const_smul (r ^ 3)).prodMk (hasFDerivAt_snd.const_smul r)
-  have hh := hrqd.hasFDerivAt.comp q hd
-  have hother : HasFDerivAt (fun z => H (dilate r z))
-      (Real.rpow r alpha • fderiv ℝ H q) q := by
-    convert hqd.hasFDerivAt.const_mul (Real.rpow r alpha) using 1
-    funext z
-    exact hhom r hr z
-  have heq := congrArg (fun L : XV d →L[ℝ] ℝ => L (0, w)) (hh.unique hother)
+
+
+
+  have hopen : IsOpen ((({0}ᶜ : Set (XV d)))) := isClosed_singleton.isOpen_compl
+
+
+
+
+
+  have heq := congrArg (fun L : XV d →L[ℝ] ℝ => L (0, w)) ((((hsmooth.contDiffAt (hopen.mem_nhds (dilate_ne_zero r hr q hq))).differentiableAt (by simp)).hasFDerivAt.comp q ((hasFDerivAt_fst.const_smul (r ^ 3)).prodMk (hasFDerivAt_snd.const_smul r))).unique (by
+      convert ((hsmooth.contDiffAt (hopen.mem_nhds hq)).differentiableAt (by simp)).hasFDerivAt.const_mul (Real.rpow r alpha) using 1
+      funext z
+      exact hhom r hr z))
   have hsmul : (0, r • w) = r • ((0, w) : XV d) := by simp
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.prod_apply,
     smul_apply, ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd',
@@ -56,18 +61,17 @@ theorem homogeneous_velocity_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   simpa only [mul_comm] using heq
 
 /-- The native selector vector has the same exact velocity homogeneity. -/
-theorem homogeneous_dv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
-    (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
+theorem homogeneous_dv
+     :
     dv H (dilate r q) = Real.rpow r (alpha - 1) • dv H q := by
   ext i
   exact homogeneous_velocity_jet alpha H hsmooth hhom r hr q hq (Pi.single i 1)
+end
 
+
+include hsmooth hhom in
 /-- Smooth homogeneous profiles satisfy the source velocity-gradient bound. -/
-theorem homogeneous_velocity_gradient_bound {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q) :
+theorem homogeneous_velocity_gradient_bound   :
     ∃ C : ℝ, 0 < C ∧ ∀ q, q ≠ 0 →
       PDE.vecEuclideanNorm (dv H q) ≤ C * Real.rpow (rho q) (alpha - 1) := by
   let K : Set (XV d) := {q | rho q = 1}
@@ -76,14 +80,14 @@ theorem homogeneous_velocity_gradient_bound {d : ℕ} (alpha : ℝ) (H : XV d �
     have hh : rho q = 1 := hq
     simp [hz] at hh
   have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
-  have hd : ContinuousOn (fun q => PDE.vecEuclideanNorm (dv H q)) K := by
-    apply PDE.continuous_vecEuclideanNorm.comp_continuousOn
-    apply continuousOn_pi.mpr
-    intro i
-    have hc := (hsmooth.continuousOn_fderiv_of_isOpen hopen (by simp)).clm_apply
-      (continuousOn_const (c := ((0, Pi.single i 1) : XV d)))
-    exact hc.mono (fun q hq => hKnz q hq)
-  obtain ⟨B, hB⟩ := (isCompact_unitGaugeShell d).bddAbove_image hd
+
+  obtain ⟨B, hB⟩ := (isCompact_unitGaugeShell d).bddAbove_image (by
+      apply PDE.continuous_vecEuclideanNorm.comp_continuousOn
+      apply continuousOn_pi.mpr
+      intro i
+      have hc := (hsmooth.continuousOn_fderiv_of_isOpen hopen (by simp)).clm_apply
+        (continuousOn_const (c := ((0, Pi.single i 1) : XV d)))
+      exact hc.mono (hKnz))
   let C := max 1 B
   have hC : 0 < C := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   refine ⟨C, hC, ?_⟩
@@ -108,13 +112,11 @@ theorem homogeneous_velocity_gradient_bound {d : ℕ} (alpha : ℝ) (H : XV d �
   simpa only [mul_comm] using mul_le_mul_of_nonneg_left hb hpow.le
 
 /-- The actual profile satisfies the required velocity-gradient estimate. -/
-theorem geometricProfile_velocity_gradient_bound {d : ℕ} (alpha C₀ sigma R : ℝ)
+theorem geometricProfile_velocity_gradient_bound  (alpha C₀ sigma R : ℝ)
     (hsigma : 0 < sigma) (hR : 0 < R) :
     ∃ C : ℝ, 0 < C ∧ ∀ q : XV d, q ≠ 0 →
       PDE.vecEuclideanNorm (dv (geometricProfile alpha C₀ sigma R) q) ≤
-        C * Real.rpow (rho q) (alpha - 1) := by
-  apply homogeneous_velocity_gradient_bound alpha (geometricProfile alpha C₀ sigma R)
-    (geometricProfile_smooth_off_origin alpha C₀ sigma R hsigma hR)
-  exact fun r hr q => geometricProfile_homogeneous alpha C₀ sigma R r hr q
+        C * Real.rpow (rho q) (alpha - 1) := (homogeneous_velocity_gradient_bound alpha (geometricProfile alpha C₀ sigma R)
+  (geometricProfile_smooth_off_origin alpha C₀ sigma R hsigma hR) (geometricProfile_homogeneous alpha C₀ sigma R))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

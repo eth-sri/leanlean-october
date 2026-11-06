@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 
 /-! # Reference position and velocity increments from the actual homogeneous jets -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Set MeasureTheory Filter
+
 open scoped Topology
 
 /-- Off the origin the extension has the original local germ. -/

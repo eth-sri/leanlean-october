@@ -5,8 +5,8 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 /-! # Integrating killed slab bounds over all positive times -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.Green
@@ -16,7 +16,7 @@ open scoped ENNReal
 theorem killed_power_moment_finite {δ k : ℝ} (hδ : 0 < δ) (hk : 0 < k) :
     (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
       (T ^ (δ - 1) * Real.exp (-k * T))) < ⊤ := by
-  have hi : IntegrableOn (fun T : ℝ => T ^ (δ - 1) * Real.exp (-k * T)) (Ioi 0) := by
+  have hi : IntegrableOn (fun T  => T ^ (δ - 1) * Real.exp (-k * T)) (Ioi 0) := by
     simpa only [Real.rpow_one] using integrableOn_rpow_mul_exp_neg_mul_rpow
       (p := 1) (s := δ - 1) (by linarith) (by norm_num) hk
   rw [← ofReal_integral_eq_lintegral_ofReal hi]
@@ -30,7 +30,7 @@ theorem lintegral_inv_killed_power (δ k : ℝ) (A : ℝ≥0∞) :
       (A * ENNReal.ofReal (T ^ δ * Real.exp (-k * T)))) =
     A * ∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
       (T ^ (δ - 1) * Real.exp (-k * T)) := by
-  have hm : Measurable (fun T : ℝ => ENNReal.ofReal
+  have hm : Measurable (fun T  => ENNReal.ofReal
       (T ^ (δ - 1) * Real.exp (-k * T))) :=
     ENNReal.measurable_ofReal.comp
       ((measurable_id.pow_const _).mul (Real.measurable_exp.comp
@@ -51,7 +51,7 @@ theorem log_mul_measure_univ_le {X : Type*} [MeasurableSpace X]
     (hpos : ∀ x, 0 < h x) :
     ENNReal.ofReal (Real.log 2) * ν univ ≤
       ∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal T⁻¹ * ν {x | T < h x ∧ h x < 2 * T} := by
-  have hm : Monotone (fun S : ℝ => {x | h x < S}) := by
+  have hm : Monotone (fun S  => {x | h x < S}) := by
     intro S R hSR x hx
     exact hx.trans_le hSR
   have hu : (⋃ S : ℝ, {x | h x < S}) = univ := by

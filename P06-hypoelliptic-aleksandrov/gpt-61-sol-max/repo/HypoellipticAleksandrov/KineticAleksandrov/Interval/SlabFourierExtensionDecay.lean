@@ -8,19 +8,18 @@ Interior Fourier measures are unchanged. Exterior ones vanish. Thus the proved
 interval killing and frequency decay apply on the full ambient starting carrier.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
-open scoped ENNReal
+
+
+variable {a c : ℝ} (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c)) (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) (σ τ : ℝ) (hστ : σ ≤ τ)
 
 /-- Interior Fourier measures of the carrier adapter are exactly the interval Fourier measures. -/
-theorem intervalExtension_fourier_inside {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1) (v : PDE.oneDimensionalAxisBox a c) :
+theorem intervalExtension_fourier_inside  (ξ : PDE.Vec 1) (v : PDE.oneDimensionalAxisBox a c) :
     fourierKernel (intervalExtension hJ K) σ τ hστ ξ v.1 =
       intervalFourierKernel K σ τ hστ ξ v := by
   have he : (intervalExtension hJ K).master (wholeSpaceQuery σ τ hστ v.1 0) =
@@ -37,10 +36,7 @@ theorem intervalExtension_fourier_inside {a c : ℝ}
   rfl
 
 /-- Exterior Fourier measures of the carrier adapter vanish. -/
-theorem intervalExtension_fourier_outside {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec 1)
+theorem intervalExtension_fourier_outside  (ξ v : PDE.Vec 1)
     (hv : v ∉ PDE.oneDimensionalAxisBox a c) :
     fourierKernel (intervalExtension hJ K) σ τ hστ ξ v = 0 := by
   have he : (intervalExtension hJ K).master (wholeSpaceQuery σ τ hστ v 0) = 0 :=
@@ -57,12 +53,12 @@ theorem intervalExtension_fourier_decay
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length) :
     ∃ C k : ℝ, 0 < C ∧ 0 < k ∧
-    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
+    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.VectorField 1),
     SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
     ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
       (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
       (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-    RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
+    RealizesTerminalEvolution _ stationary hJ
       (zIndependentCoefficient B) b S K →
     c - a = length → ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec 1),
     totalVariationNorm (fourierKernel (intervalExtension hJ K) σ τ hστ ξ v) ≤

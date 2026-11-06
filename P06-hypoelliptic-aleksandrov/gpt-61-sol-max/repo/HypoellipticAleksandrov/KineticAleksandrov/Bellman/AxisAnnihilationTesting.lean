@@ -3,13 +3,15 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AxisAnnihilationJets
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.FundamentalMeasureFubini
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Axis-supported stationarity tested with a normal position factor -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open MeasureTheory Set
+open MeasureTheory
 
 /-- Ellipticity passes zero off-axis mass from the first measure to the second. -/
 theorem bellman_axis_support_comparison (R : ℝ) (μ η : Measure BellmanPuncturedPlane)
@@ -23,24 +25,23 @@ theorem bellman_axis_support_comparison (R : ℝ) (μ η : Measure BellmanPunctu
 theorem bellman_axis_velocity_test_zero (μ η : Measure BellmanPuncturedPlane)
     (hstationary : IsBellmanStationaryAdjointPair μ η)
     (haxisμ : μ {q | q.val.1 ≠ 0} = 0) (haxisη : η {q | q.val.1 ≠ 0} = 0)
-    (χ : ℝ × ℝ → ℝ) (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) (hc : HasCompactSupport χ)
+    (χ : ℝ × ℝ → ℝ) (hχ : ContDiff ℝ PDE.smoothOrder χ) (hc : HasCompactSupport χ)
     (hs : tsupport χ ⊆ {q : ℝ × ℝ | q ≠ (0, 0)}) :
     (∫ q : BellmanPuncturedPlane, q.val.2 ^ 2 * χ q.val ∂μ) = 0 := by
-  let g := fun q : ℝ × ℝ => q.2 * χ q
-  let φ := fun q : ℝ × ℝ => q.1 * g q
-  have hg : ContDiff ℝ (⊤ : ℕ∞) g := contDiff_snd.mul hχ
-  have hφ : ContDiff ℝ (⊤ : ℕ∞) φ := contDiff_fst.mul hg
-  have hcφ : HasCompactSupport φ := (hc.mul_left).mul_left
-  have hsφ : tsupport φ ⊆ {q : ℝ × ℝ | q ≠ (0, 0)} :=
-    tsupport_mul_subset_right.trans (tsupport_mul_subset_right.trans hs)
-  have he := hstationary φ hφ hcφ hsφ
-  have haμ : ∀ᵐ q ∂μ, q.val.1 = 0 := by simpa only [ae_iff] using haxisμ
-  have haη : ∀ᵐ q ∂η, q.val.1 = 0 := by simpa only [ae_iff] using haxisη
+  let g := fun q  => q.2 * χ q
+  let φ := fun q  => q.1 * g q
+  have hg : ContDiff ℝ PDE.smoothOrder g := contDiff_snd.mul hχ
+
+
+
+  have he := hstationary φ (contDiff_fst.mul hg) ((hc.mul_left).mul_left) (tsupport_mul_subset_right.trans (tsupport_mul_subset_right.trans hs))
+
+
   have h1 : (∫ q : BellmanPuncturedPlane,
       q.val.2 * fderiv ℝ φ q.val (1, 0) ∂μ) =
       ∫ q : BellmanPuncturedPlane, q.val.2 ^ 2 * χ q.val ∂μ := by
     apply integral_congr_ae
-    filter_upwards [haμ] with q hq
+    filter_upwards [(haxisμ)] with q hq
     change q.val.2 * fderiv ℝ (fun z => z.1 * g z) q.val (1, 0) = _
     rw [bellman_position_mul_fderiv g hg, hq]
     dsimp [g]
@@ -50,7 +51,7 @@ theorem bellman_axis_velocity_test_zero (μ η : Measure BellmanPuncturedPlane)
     calc
       _ = ∫ _q : BellmanPuncturedPlane, (0 : ℝ) ∂η := by
         apply integral_congr_ae
-        filter_upwards [haη] with q hq
+        filter_upwards [(haxisη)] with q hq
         change fderiv ℝ (fun z => fderiv ℝ (fun w => w.1 * g w) z (0, 1))
           q.val (0, 1) = 0
         rw [bellman_position_mul_second_velocity g hg, hq, zero_mul]

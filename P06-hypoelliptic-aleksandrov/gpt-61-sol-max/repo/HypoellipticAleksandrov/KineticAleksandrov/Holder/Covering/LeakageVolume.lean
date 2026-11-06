@@ -13,15 +13,21 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+variable (d : ℕ)
+
 /-- Round product boxes are open. -/
-theorem isOpen_roundBox (d : ℕ) (a b R : ℝ) : IsOpen (roundBox d a b R) :=
+theorem isOpen_roundBox  (a b R : ℝ) : IsOpen (roundBox d a b R) :=
   (isOpen_lt continuous_const continuous_time).inter
     ((isOpen_lt continuous_time continuous_const).inter
       (((PDE.isOpen_euclideanBall 0 R).preimage continuous_position).inter
         ((PDE.isOpen_euclideanBall 0 1).preimage continuous_velocity)))
 
+section
+variable (a b : ℝ) {R : ℝ} (hR : 0 < R)
+
+include hR
 /-- Exact volume of a product box in the coordinate measure. -/
-theorem volume_roundBox (d : ℕ) (a b : ℝ) {R : ℝ} (hR : 0 < R) :
+theorem volume_roundBox   :
     volume (roundBox d a b R) = ENNReal.ofReal (b-a)*ENNReal.ofReal (R^d)*
       volume (unitCylinder d) := by
   let s := Ioo a b ×ˢ (PDE.euclideanBall (0 : PDE.Vec d) R ×ˢ
@@ -45,20 +51,22 @@ theorem volume_roundBox (d : ℕ) (a b : ℝ) {R : ℝ} (hR : 0 < R) :
   ring
 
 /-- Finite volume of every positive-radius product box. -/
-theorem volume_roundBox_ne_top (d : ℕ) (a b : ℝ) {R : ℝ} (hR : 0 < R) :
+theorem volume_roundBox_ne_top   :
     volume (roundBox d a b R) ≠ ⊤ := by
   rw [volume_roundBox d a b hR]
   exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)
     (volume_cylinder_pos_ne_top _ zero_lt_one).2
+end
+
 
 /-- Real volume formula for a nonempty round product box. -/
-theorem volume_roundBox_toReal (d : ℕ) {a b R : ℝ} (hab : a ≤ b) (hR : 0 < R) :
+theorem volume_roundBox_toReal  {a b R : ℝ} (hab : a ≤ b) (hR : 0 < R) :
     (volume (roundBox d a b R)).toReal = (b-a)*R^d*(volume (unitCylinder d)).toReal := by
   rw [volume_roundBox d a b hR, ENNReal.toReal_mul, ENNReal.toReal_mul,
     ENNReal.toReal_ofReal (sub_nonneg.mpr hab), ENNReal.toReal_ofReal (by positivity)]
 
 /-- Convex chord bound for the particular polynomial controlling spatial leakage. -/
-theorem one_add_four_mul_pow_le (d : ℕ) {h : ℝ} (h0 : 0 ≤ h) (h1 : h ≤ 1) :
+theorem one_add_four_mul_pow_le  {h : ℝ} (h0 : 0 ≤ h) (h1 : h ≤ 1) :
     (1+4*h)^d ≤ 1+((5 : ℝ)^d-1)*h := by
   induction d with
   | zero => simp
@@ -80,8 +88,8 @@ theorem leakage_envelope_volume {d : ℕ} {h : ℝ} (h0 : 0 < h) (h1 : h ≤ 1) 
   have hpow : 1 ≤ (5 : ℝ)^d := one_le_pow₀ (by norm_num)
   have hs : h^2 ≤ h := by nlinarith
   have hmul := mul_le_mul_of_nonneg_left hp (by linarith : 0 ≤ h-(-1))
-  have hpoly : (h-(-1))*(1+4*h)^d ≤ 1+2*(5 : ℝ)^d*h := by nlinarith
-  nlinarith only [mul_le_mul_of_nonneg_right hpoly hv]
+
+  nlinarith only [mul_le_mul_of_nonneg_right (show (h-(-1))*(1+4*h)^d ≤ 1+2*(5 : ℝ)^d*h by nlinarith) hv]
 
 /-- Bernoulli's lower bound for the inner spatial radius. -/
 theorem one_sub_pow_lower (d : ℕ) {z : ℝ} (_hz : 0 ≤ z) (hz1 : z ≤ 1) :
@@ -92,53 +100,64 @@ theorem one_sub_pow_lower (d : ℕ) {z : ℝ} (_hz : 0 ≤ z) (hz1 : z ≤ 1) :
     rw [pow_succ]
     push_cast
     have hm := mul_le_mul_of_nonneg_right ih (sub_nonneg.mpr hz1)
-    have hd : 0 ≤ (d : ℝ) := Nat.cast_nonneg d
-    nlinarith [mul_nonneg hd (sq_nonneg z)]
+
+    nlinarith [mul_nonneg (Nat.cast_nonneg d) (sq_nonneg z)]
 
 /-- Finite-volume subtraction for a null-measurable subset. -/
 theorem volume_sdiff_toReal_of_subset {d : ℕ} {A B : Set (KineticPoint d)}
-    (hB : NullMeasurableSet B volume) (hBA : B ⊆ A) (hA : volume A ≠ ⊤) :
+    (hB : NullMeasurableSet B ) (hBA : B ⊆ A) (hA : volume A ≠ ⊤) :
     (volume (A \ B)).toReal = (volume A).toReal-(volume B).toReal := by
-  have hBn : volume B ≠ ⊤ := ne_top_of_le_ne_top hA (measure_mono hBA)
+  have hBn  := ne_top_of_le_ne_top hA (measure_mono hBA)
   have hDn : volume (A \ B) ≠ ⊤ := ne_top_of_le_ne_top hA (measure_mono sdiff_subset)
-  have hs := congrArg ENNReal.toReal (measure_inter_add_sdiff₀ (μ := volume) A hB)
+  have hs := congrArg ENNReal.toReal (measure_inter_add_sdiff₀  A hB)
   rw [inter_eq_right.mpr hBA, ENNReal.toReal_add hBn hDn] at hs
   linarith
 
-/-- The spatial core whose complement is charged in the critical-cylinder proof. -/
-def spatialCore (d : ℕ) (R : ℝ) : Set (KineticPoint d) := roundBox d (-1) 0 (1-2*R^2)
+variable (d : ℕ)
 
+/-- The spatial core whose complement is charged in the critical-cylinder proof. -/
+def spatialCore  (R : ℝ) : Set (KineticPoint d) := roundBox d (-1) 0 (1-2*R^2)
+
+section
+variable {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1/4)
+
+include hR hRsmall
 /-- The spatial core is contained in the unit cylinder for small positive cutoff. -/
-theorem spatialCore_subset_unit (d : ℕ) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1/4) :
+theorem spatialCore_subset_unit   :
     spatialCore d R ⊆ unitCylinder d := by
-  have hrad : 0 < 1-2*R^2 := by nlinarith
+
   intro X hX
   apply (mem_unitCylinder_iff X).mpr
   refine ⟨hX.1, hX.2.1, ?_, ?_⟩
   · simpa only [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt zero_lt_one, sub_zero]
       using hX.2.2.2
-  · have hp := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hrad).mp hX.2.2.1
+  · have hp := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (by nlinarith)).mp hX.2.2.1
     rw [sub_zero] at hp
     nlinarith [sq_nonneg R]
 
 /-- The excluded spatial layer costs at most twice dimension times unit volume times R². -/
-theorem spatial_shell_volume (d : ℕ) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1/4) :
+theorem spatial_shell_volume   :
     (volume (unitCylinder d \ spatialCore d R)).toReal ≤
       2*(d : ℝ)*(volume (unitCylinder d)).toReal*R^2 := by
-  have hrad : 0 < 1-2*R^2 := by nlinarith
-  have hcore : NullMeasurableSet (spatialCore d R) volume :=
+
+  have hcore : NullMeasurableSet (spatialCore d R)  :=
     (isOpen_roundBox d (-1) 0 (1-2*R^2)).measurableSet.nullMeasurableSet
   rw [volume_sdiff_toReal_of_subset hcore
     (spatialCore_subset_unit d hR hRsmall)
     (volume_cylinder_pos_ne_top _ zero_lt_one).2]
-  rw [spatialCore, volume_roundBox_toReal d (by norm_num) hrad]
+  rw [spatialCore, volume_roundBox_toReal d (by norm_num) (show _ by nlinarith)]
   have hp := one_sub_pow_lower d (by positivity : 0 ≤ 2*R^2)
     (by nlinarith : 2*R^2 ≤ 1)
   have hv := ENNReal.toReal_nonneg (a := volume (unitCylinder d))
   nlinarith only [mul_le_mul_of_nonneg_right hp hv]
+end
 
+
+variable {h : ℝ} (h0 : 0 < h)
+
+include h0
 /-- Q is contained in the positive-height leakage envelope. -/
-theorem unit_subset_leakage_envelope (d : ℕ) {h : ℝ} (h0 : 0 < h) :
+theorem unit_subset_leakage_envelope   :
     unitCylinder d ⊆ roundBox d (-1) h (1+4*h) := by
   intro X hX
   obtain ⟨htlo, hthi, hv, hx⟩ := (mem_unitCylinder_iff X).mp hX
@@ -149,10 +168,10 @@ theorem unit_subset_leakage_envelope (d : ℕ) {h : ℝ} (h0 : 0 < h) :
     exact hv
 
 /-- Linear volume bound for the portion of the leakage envelope outside Q. -/
-theorem leakage_shell_volume (d : ℕ) {h : ℝ} (h0 : 0 < h) (h1 : h ≤ 1) :
+theorem leakage_shell_volume   (h1 : h ≤ 1) :
     (volume (roundBox d (-1) h (1+4*h) \ unitCylinder d)).toReal ≤
       2*(5 : ℝ)^d*(volume (unitCylinder d)).toReal*h := by
-  have hQ : NullMeasurableSet (unitCylinder d) volume :=
+  have hQ : NullMeasurableSet (unitCylinder d)  :=
     (isOpen_cylinder _ _).measurableSet.nullMeasurableSet
   rw [volume_sdiff_toReal_of_subset hQ
     (unit_subset_leakage_envelope d h0)

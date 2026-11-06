@@ -7,9 +7,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockPushfor
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo TheoremA Evolution Green
-open scoped ENNReal NNReal
+open MeasureTheory
+
+
 
 /-- The actual normalized infinite Green measure has finite mass, by the interval density
   estimate. -/
@@ -58,7 +58,7 @@ instance clockWeightedGreen_isFiniteMeasure
   apply lt_of_le_of_lt
     (lintegral_mono_ae (g := fun _ => ENNReal.ofReal (3 * |c.vbar| / 2)) ?_) ?_
   · filter_upwards [stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
-      ⟨e, WithTop.coe_lt_top _, he⟩] with p hp
+      _] with p hp
     exact ENNReal.ofReal_le_ofReal (c.active_abs_bounds hp.2).2
   · rw [lintegral_const]
     exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top _ _)

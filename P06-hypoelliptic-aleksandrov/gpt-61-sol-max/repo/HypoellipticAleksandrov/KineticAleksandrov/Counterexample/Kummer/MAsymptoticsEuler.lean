@@ -22,9 +22,8 @@ def eulerLaplace (a c X t : ℝ) : ℝ := betaWeight a c t * Real.exp (-(X * t))
 
 /-- Integrability of the Euler kernel for positive endpoint parameters. -/
 theorem intervalIntegrable_eulerLaplace (a c X : ℝ) (ha : 0 < a) (hc : 0 < c) :
-    IntervalIntegrable (eulerLaplace a c X) volume 0 1 := by
-  exact (intervalIntegrable_betaWeight a c ha hc).mul_continuousOn
-    (by fun_prop : Continuous (fun t : ℝ => Real.exp (-(X * t)))).continuousOn
+    IntervalIntegrable (eulerLaplace a c X) volume 0 1 := (intervalIntegrable_betaWeight a c ha hc).mul_continuousOn
+    (by fun_prop : Continuous (fun t  => Real.exp (-(X * t)))).continuousOn
 
 /-- Integrability of a Gamma moment on the first half interval. -/
 theorem intervalIntegrable_laplaceMoment (a X : ℝ) (ha : 0 < a) (hX : 0 < X) :
@@ -35,7 +34,7 @@ theorem intervalIntegrable_laplaceMoment (a X : ℝ) (ha : 0 < a) (hX : 0 < X) :
 /-- The first half Gamma moment differs from its full value by an exponentially small tail. -/
 theorem laplaceMoment_half_isBigO (a r : ℝ) (ha : 0 < a) :
     IsBigO atTop
-      (fun X => (∫ t in (0 : ℝ)..(1 / 2), laplaceMoment a X t) -
+      (fun X => (∫ t in (0 )..(1 / 2), laplaceMoment a X t) -
         X ^ (-a) * Real.Gamma a) (fun X => X ^ r) := by
   apply (laplaceMoment_tail_isBigO a r ha).neg_left.congr'
   · filter_upwards [eventually_gt_atTop (0 : ℝ)] with X hX
@@ -49,22 +48,23 @@ theorem laplaceMoment_half_isBigO (a r : ℝ) (ha : 0 < a) :
 theorem eulerLaplace_tail_bound (a c X : ℝ) (ha : 0 < a) (hc : 0 < c)
     (hX : 0 ≤ X) :
     |∫ t in (1 / 2 : ℝ)..1, eulerLaplace a c X t| ≤
-      Real.exp (-(X / 2)) * (∫ t in (0 : ℝ)..1, betaWeight a c t) := by
+      Real.exp (-(X / 2)) * (∫ t in (0 )..1, betaWeight a c t) := by
+  let sharedTerm_13ef450eb0 := (Real.exp (-(X / 2)))
   have hb := intervalIntegrable_betaWeight a c ha hc
-  have he := intervalIntegrable_eulerLaplace a c X ha hc
-  have hsub : Set.uIcc (1 / 2 : ℝ) 1 ⊆ Set.uIcc (0 : ℝ) 1 := by
+
+  have hsub : Set.uIcc (1 / 2 : ℝ) 1 ⊆ Set.uIcc (0 ) 1 := by
     rw [uIcc_of_le (by norm_num), uIcc_of_le (by norm_num)]
     intro t ht
     exact ⟨by linarith only [ht.1], ht.2⟩
-  have hn : 0 ≤ ∫ t in (1 / 2 : ℝ)..1, eulerLaplace a c X t := by
-    apply intervalIntegral.integral_nonneg (by norm_num)
-    intro t ht
-    exact mul_nonneg (betaWeight_nonneg a c t ⟨by linarith only [ht.1], ht.2⟩)
-      (Real.exp_pos _).le
-  rw [abs_of_nonneg hn]
+
+  rw [abs_of_nonneg (by
+      apply intervalIntegral.integral_nonneg (by norm_num)
+      intro t ht
+      exact mul_nonneg (betaWeight_nonneg a c t ⟨by linarith only [ht.1], ht.2⟩)
+        (Real.exp_pos _).le)]
   calc
-    _ ≤ ∫ t in (1 / 2 : ℝ)..1, Real.exp (-(X / 2)) * betaWeight a c t := by
-      apply intervalIntegral.integral_mono_on (by norm_num) (he.mono_set hsub)
+    _ ≤ ∫ t in (1 / 2 : ℝ)..1, sharedTerm_13ef450eb0 * betaWeight a c t := by
+      apply intervalIntegral.integral_mono_on (by norm_num) ((intervalIntegrable_eulerLaplace a c X ha hc).mono_set hsub)
         ((hb.mono_set hsub).const_mul _)
       intro t ht
       rw [eulerLaplace, mul_comm]
@@ -72,9 +72,9 @@ theorem eulerLaplace_tail_bound (a c X : ℝ) (ha : 0 < a) (hc : 0 < c)
         (betaWeight_nonneg a c t ⟨by linarith only [ht.1], ht.2⟩)
       apply Real.exp_le_exp.mpr
       nlinarith only [mul_nonneg hX (sub_nonneg.mpr ht.1)]
-    _ = Real.exp (-(X / 2)) * ∫ t in (1 / 2 : ℝ)..1, betaWeight a c t :=
+    _ = sharedTerm_13ef450eb0 * ∫ t in (1 / 2 : ℝ)..1, betaWeight a c t :=
       intervalIntegral.integral_const_mul _ _
-    _ ≤ Real.exp (-(X / 2)) * ∫ t in (0 : ℝ)..1, betaWeight a c t := by
+    _ ≤ sharedTerm_13ef450eb0 * ∫ t in (0 )..1, betaWeight a c t := by
       apply mul_le_mul_of_nonneg_left _ (Real.exp_pos _).le
       rw [intervalIntegral.integral_of_le (by norm_num),
         intervalIntegral.integral_of_le (by norm_num)]
@@ -87,11 +87,11 @@ theorem eulerLaplace_tail_bound (a c X : ℝ) (ha : 0 < a) (hc : 0 < c)
 theorem eulerLaplace_tail_isBigO (a c r : ℝ) (ha : 0 < a) (hc : 0 < c) :
     IsBigO atTop (fun X => ∫ t in (1 / 2 : ℝ)..1, eulerLaplace a c X t)
       (fun X => X ^ r) := by
-  have he : IsBigO atTop (fun X : ℝ => Real.exp (-(X / 2))) (fun X => X ^ r) := by
-    simpa only [neg_div, div_eq_mul_inv, mul_comm, one_mul, mul_neg] using
-      (isLittleO_exp_neg_mul_rpow_atTop (a := 1 / 2) (by norm_num) r).isBigO
-  apply IsBigO.trans ?_ he
-  refine IsBigO.of_bound (∫ t in (0 : ℝ)..1, betaWeight a c t) ?_
+
+  apply IsBigO.trans ?_ (show IsBigO atTop (fun X : ℝ => Real.exp (-(X / 2))) (fun X => X ^ r) by
+      simpa only [div_eq_mul_inv, one_mul, mul_comm, mul_neg] using
+        (isLittleO_exp_neg_mul_rpow_atTop (a := 1 / 2) (by norm_num) r).isBigO)
+  refine IsBigO.of_bound (∫ t in (0 )..1, betaWeight a c t) ?_
   filter_upwards [eventually_ge_atTop (0 : ℝ)] with X hX
   simpa only [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), mul_comm] using
     eulerLaplace_tail_bound a c X ha hc hX
@@ -109,8 +109,10 @@ theorem laplaceMoment_mul_pow (a X t : ℝ) (ht : 0 < t) (n : ℕ) :
   congr 2
   ring
 
+variable (a c : ℝ) (N : ℕ)
+
 /-- The polynomial Gamma kernel is the Taylor polynomial times the zeroth kernel. -/
-theorem polynomialLaplace_eq (a c : ℝ) (N : ℕ) (X t : ℝ) (ht : 0 < t) :
+theorem polynomialLaplace_eq  (X t : ℝ) (ht : 0 < t) :
     polynomialLaplace a c N X t = laplaceMoment a X t * betaPolynomial (1 - c) N t := by
   simp only [polynomialLaplace, betaPolynomial, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -119,7 +121,7 @@ theorem polynomialLaplace_eq (a c : ℝ) (N : ℕ) (X t : ℝ) (ht : 0 < t) :
   ring
 
 /-- Integrability of the polynomial Gamma kernel on the first half interval. -/
-theorem intervalIntegrable_polynomialLaplace (a c : ℝ) (N : ℕ) (X : ℝ)
+theorem intervalIntegrable_polynomialLaplace  (X : ℝ)
     (ha : 0 < a) (hX : 0 < X) :
     IntervalIntegrable (polynomialLaplace a c N X) volume 0 (1 / 2) := by
   have hs := IntervalIntegrable.sum (Finset.range N) (fun n _ =>
@@ -131,7 +133,7 @@ theorem intervalIntegrable_polynomialLaplace (a c : ℝ) (N : ℕ) (X : ℝ)
   simp only [polynomialLaplace, Finset.sum_apply]
 
 /-- The Taylor remainder is dominated by the next positive Gamma moment. -/
-theorem eulerLaplace_remainder_pointwise (a c : ℝ) (N : ℕ) :
+theorem eulerLaplace_remainder_pointwise  :
     ∃ C : ℝ, 0 < C ∧ ∀ X t : ℝ, 0 < t → t ≤ 1 / 2 →
       |eulerLaplace a c X t - polynomialLaplace a c N X t| ≤
         C * laplaceMoment (a + N) X t := by
@@ -153,33 +155,33 @@ theorem eulerLaplace_remainder_pointwise (a c : ℝ) (N : ℕ) :
       ring
 
 /-- The first half Taylor error has the required algebraic order. -/
-theorem eulerLaplace_near_remainder_isBigO (a c : ℝ) (N : ℕ)
+theorem eulerLaplace_near_remainder_isBigO
     (ha : 0 < a) (hc : 0 < c) :
     IsBigO atTop
-      (fun X => (∫ t in (0 : ℝ)..(1 / 2), eulerLaplace a c X t) -
-        ∫ t in (0 : ℝ)..(1 / 2), polynomialLaplace a c N X t)
+      (fun X => (∫ t in (0 )..(1 / 2), eulerLaplace a c X t) -
+        ∫ t in (0 )..(1 / 2), polynomialLaplace a c N X t)
       (fun X => X ^ (-a - (N : ℝ))) := by
   obtain ⟨C, hC, hb⟩ := eulerLaplace_remainder_pointwise a c N
-  have haN : 0 < a + N := add_pos_of_pos_of_nonneg ha (Nat.cast_nonneg N)
+  have haN  := add_pos_of_pos_of_nonneg ha (Nat.cast_nonneg N)
   refine IsBigO.of_bound (C * Real.Gamma (a + N)) ?_
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with X hX
   have he := (intervalIntegrable_eulerLaplace a c X ha hc).mono_set
-    (show uIcc (0 : ℝ) (1 / 2) ⊆ uIcc (0 : ℝ) 1 by
+    (show uIcc (0 : ℝ) (1 / 2) ⊆ uIcc (0 ) 1 by
       rw [uIcc_of_le (by norm_num), uIcc_of_le (by norm_num)]
       intro t ht
       exact ⟨ht.1, by linarith only [ht.2]⟩)
   have hp := intervalIntegrable_polynomialLaplace a c N X ha hX
   rw [← intervalIntegral.integral_sub he hp]
   calc
-    _ ≤ ∫ t in (0 : ℝ)..(1 / 2),
+    _ ≤ ∫ t in (0 )..(1 / 2),
         ‖eulerLaplace a c X t - polynomialLaplace a c N X t‖ :=
       intervalIntegral.norm_integral_le_integral_norm (by norm_num)
-    _ ≤ ∫ t in (0 : ℝ)..(1 / 2), C * laplaceMoment (a + N) X t := by
+    _ ≤ ∫ t in (0 )..(1 / 2), C * laplaceMoment (a + N) X t := by
       apply intervalIntegral.integral_mono_on_of_le_Ioo (by norm_num)
         (he.sub hp).norm ((intervalIntegrable_laplaceMoment (a + N) X haN hX).const_mul C)
       intro t ht
       exact hb X t ht.1 ht.2.le
-    _ = C * ∫ t in (0 : ℝ)..(1 / 2), laplaceMoment (a + N) X t :=
+    _ = C * ∫ t in (0 )..(1 / 2), laplaceMoment (a + N) X t :=
       intervalIntegral.integral_const_mul _ _
     _ ≤ C * ∫ t in Ioi (0 : ℝ), laplaceMoment (a + N) X t := by
       apply mul_le_mul_of_nonneg_left _ hC.le
@@ -195,18 +197,18 @@ theorem eulerLaplace_near_remainder_isBigO (a c : ℝ) (N : ℕ)
       ring
 
 /-- Full moments evaluate the polynomial Gamma kernel. -/
-def gammaPolynomial (a c : ℝ) (N : ℕ) (X : ℝ) : ℝ :=
+def gammaPolynomial  (X : ℝ) : ℝ :=
   ∑ n ∈ Finset.range N, poch (1 - c) n / (n.factorial : ℝ) *
     (X ^ (-(a + n)) * Real.Gamma (a + n))
 
 /-- Replacing all half moments by full moments costs less than every algebraic order. -/
 theorem polynomialLaplace_half_isBigO (a c r : ℝ) (N : ℕ) (ha : 0 < a) :
     IsBigO atTop
-      (fun X => (∫ t in (0 : ℝ)..(1 / 2), polynomialLaplace a c N X t) -
+      (fun X => (∫ t in (0 )..(1 / 2), polynomialLaplace a c N X t) -
         gammaPolynomial a c N X) (fun X => X ^ r) := by
   have hs : IsBigO atTop
       (fun X => ∑ n ∈ Finset.range N, poch (1 - c) n / (n.factorial : ℝ) *
-        ((∫ t in (0 : ℝ)..(1 / 2), laplaceMoment (a + n) X t) -
+        ((∫ t in (0 )..(1 / 2), laplaceMoment (a + n) X t) -
           X ^ (-(a + n)) * Real.Gamma (a + n))) (fun X => X ^ r) := by
     have hn (n : ℕ) (_ : n ∈ Finset.range N) :=
       (laplaceMoment_half_isBigO (a + n) r
@@ -228,11 +230,11 @@ theorem polynomialLaplace_half_isBigO (a c r : ℝ) (N : ℕ) (ha : 0 < a) :
 /-- The complete Euler integral has its algebraic moment expansion. -/
 theorem eulerLaplace_expansion (a c : ℝ) (N : ℕ) (ha : 0 < a) (hc : 0 < c) :
     IsBigO atTop
-      (fun X => (∫ t in (0 : ℝ)..1, eulerLaplace a c X t) - gammaPolynomial a c N X)
+      (fun X => (∫ t in (0 )..1, eulerLaplace a c X t) - gammaPolynomial a c N X)
       (fun X => X ^ (-a - (N : ℝ))) := by
   have h := ((eulerLaplace_near_remainder_isBigO a c N ha hc).add
-    (polynomialLaplace_half_isBigO a c (-a - (N : ℝ)) N ha)).add
-    (eulerLaplace_tail_isBigO a c (-a - (N : ℝ)) ha hc)
+    (polynomialLaplace_half_isBigO a c _ N ha)).add
+    (eulerLaplace_tail_isBigO a c _ ha hc)
   apply h.congr_left
   intro X
   have he := intervalIntegrable_eulerLaplace a c X ha hc

@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CompositionTraceWeight
 import Mathlib.Tactic.Linarith
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Compact approximation of a genuine intermediate trace
@@ -10,20 +12,20 @@ Only the compact cutoff data are eligible inputs to classical terminal existence
 The trace itself is never passed to `hEx`.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Function
+open Set Function
 
 /-- A strictly earlier classical slice has smooth compact interior approximants with
 an arbitrarily small Euclidean weighted error and the same uniform bound. -/
 theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
-    {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r C ε : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
+    {n : ℕ} {Ω : PDE.VelocityRegion n} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.VectorField n}
+    {τ r C ε : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : HypoellipticAleksandrov.KineticScalarField n}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r < τ)
     (hC0 : 0 ≤ C) (hC : ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u p| ≤ C)
     (hε : 0 < ε) :
@@ -35,13 +37,13 @@ theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
   let f : EvolutionAmbientState n → ℝ := fun x => u ⟨r, x.1, x.2⟩
   let g := U.indicator f
   have hU : IsOpen U := (isOpen_movingDomain hΩ r).prod isOpen_univ
-  have hg : Continuous g := hu.continuous_zeroExtended_slice hrτ.le
+  have hg  := hu.continuous_zeroExtended_slice hrτ.le
   have hgb : ∀ x, |g x| ≤ C := by
     intro x
     dsimp only [g]
     by_cases hx : x ∈ U
     · rw [indicator_of_mem hx]
-      exact hC ⟨r, x.1, x.2⟩ ⟨hrτ.le, subset_closure hx.1⟩
+      exact hC _ ⟨hrτ.le, subset_closure hx.1⟩
     · rw [indicator_of_notMem hx, abs_zero]
       exact hC0
   obtain ⟨χ, hχ, hc, hs, hr, herr⟩ := exists_smooth_cutoff_weighted_error hU g
@@ -53,10 +55,10 @@ theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
     dsimp only [g]
     by_cases hx : x ∈ U
     · rw [indicator_of_mem hx]
-    · have hz : χ x = 0 := notMem_support.mp
+    · have hz  := notMem_support.mp
         (fun hxχ => hx (hs (subset_closure hxχ)))
       rw [hz, zero_mul, zero_mul]
-  have hprod : ContDiff ℝ (⊤ : ℕ∞) (fun x => χ x * g x) := by
+  have hprod : ContDiff ℝ PDE.smoothOrder (fun x => χ x * g x) := by
     rw [heq]
     exact contDiff_mul_of_tsupport_subset hU hχ (hu.contDiffOn_slice hrτ) hs
   have hbound : ∀ x, |χ x * g x| ≤ C := by
@@ -75,7 +77,7 @@ theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
       change u ⟨r, p.position, p.velocity⟩ = u p
       congr 1
       exact KineticPoint.ext hp.1.symm rfl rfl
-    · have hnot : p.position ∉ movingDomain Ω γ r :=
+    · have hnot  :=
         fun hy => hx ⟨hy, mem_univ _⟩
       have hfr : p.position ∈ frontier (movingDomain Ω γ r) := by
         rw [(isOpen_movingDomain hΩ r).frontier_eq]

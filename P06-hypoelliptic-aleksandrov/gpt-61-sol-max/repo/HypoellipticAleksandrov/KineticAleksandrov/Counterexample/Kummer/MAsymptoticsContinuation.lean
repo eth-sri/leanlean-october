@@ -10,14 +10,17 @@ import Mathlib.Tactic.Ring
 A proved contiguous relation raises the first parameter above zero without changing the theorem.
 -/
 
-@[expose] public noncomputable section
+@[expose] public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
-open Filter Asymptotics
 
+
+variable (a : ℝ) (b : Pos) (hab : a < b.1)
+
+include hab
 /-- The second contiguous coefficient after Gamma cancellation. -/
-theorem expansionCoeff_contiguous_second (a : ℝ) (b : Pos) (hab : a < b.1) (n : ℕ) :
+theorem expansionCoeff_contiguous_second  (n : ℕ) :
     -((a - b.1) / (b.1 * (b.1 + 1))) *
       expansionCoeff (a + 1) (b.1 + 2) n =
       Real.Gamma b.1 / Real.Gamma (b.1 - a) *
@@ -34,14 +37,14 @@ theorem expansionCoeff_contiguous_second (a : ℝ) (b : Pos) (hab : a < b.1) (n 
   ring
 
 /-- The constant coefficient of the contiguous expansion. -/
-theorem expansionCoeff_contiguous_zero (a : ℝ) (b : Pos) (hab : a < b.1) :
+theorem expansionCoeff_contiguous_zero  :
     expansionCoeff a b.1 0 = -((a - b.1) / (b.1 * (b.1 + 1))) *
       expansionCoeff (a + 1) (b.1 + 2) 0 := by
   rw [expansionCoeff_contiguous_second a b hab]
   simp only [expansionCoeff, poch_zero, Nat.factorial_zero, Nat.cast_one, mul_one, div_one]
 
 /-- The higher coefficients of the contiguous expansion. -/
-theorem expansionCoeff_contiguous_succ (a : ℝ) (b : Pos) (hab : a < b.1) (n : ℕ) :
+theorem expansionCoeff_contiguous_succ  (n : ℕ) :
     expansionCoeff a b.1 (n + 1) = expansionCoeff (a + 1) (b.1 + 1) n +
       -((a - b.1) / (b.1 * (b.1 + 1))) *
         expansionCoeff (a + 1) (b.1 + 2) (n + 1) := by
@@ -58,7 +61,7 @@ theorem expansionCoeff_contiguous_succ (a : ℝ) (b : Pos) (hab : a < b.1) (n : 
   ring
 
 /-- The exact matching of finite contiguous expansions at adjacent truncation orders. -/
-theorem mExpansion_contiguous (a : ℝ) (b : Pos) (hab : a < b.1) (N : ℕ)
+theorem mExpansion_contiguous  (N : ℕ)
     (X : ℝ) (hX : 0 < X) :
     mExpansion a b.1 (N + 1) X = mExpansion (a + 1) (b.1 + 1) N X +
       (-((a - b.1) / (b.1 * (b.1 + 1))) * X) *

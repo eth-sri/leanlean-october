@@ -5,11 +5,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripGreenHo
 
 /-! # Physical finite-speed Green support for every finite or infinite horizon -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory
+
 
 /-- Finite-horizon zero-set statements pass to the actual infinite-horizon Green measure. -/
 theorem reconstruction_green_infinite_zero_of_finite
@@ -36,9 +36,7 @@ theorem reconstruction_green_infinite_zero_of_finite
       change p.time < t n
       dsimp only [t]
       linarith
-    · intro hp
-      rcases mem_iUnion.mp hp with ⟨n, hn⟩
-      exact hn.1
+    · simp_all
   rw [hcover]
   apply le_antisymm _ bot_le
   exact (measure_iUnion_le _).trans (by simp [hzero])

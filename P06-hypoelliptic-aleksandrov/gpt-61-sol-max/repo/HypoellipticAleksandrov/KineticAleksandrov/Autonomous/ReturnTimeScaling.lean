@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnGeometryRegularity
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Calculus
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Normalization of the actual canonical autonomous solution at arbitrary scales -/
 
@@ -15,18 +17,20 @@ open HypoellipticAleksandrov Parabolic Set MeasureTheory SectionTwo Evolution Th
 def returnScaling (r : ℝ) (hr : 0 < r) (X : ℝ) : Scaling.KineticAffineScaling 1 :=
   ⟨r ^ 2, r, r ^ 3, 0, 0, fun _ => X, 0, by positivity, hr, by positivity⟩
 
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+
 /-- The scaled autonomous coefficient retains exactly the original ellipticity constants. -/
-def returnScaledCoefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (r X : ℝ) :
+def returnScaledCoefficient  (r X : ℝ) :
     SmoothAutonomous lam Lam where
   a x v := A.a (X + r ^ 3 * x) (r * v)
   smooth := by
-    change ContDiff ℝ (⊤ : ℕ∞)
+    change ContDiff ℝ PDE.smoothOrder
       ((Function.uncurry A.a) ∘ fun z : ℝ × ℝ => (X + r ^ 3 * z.1, r * z.2))
     exact A.smooth.comp (by fun_prop)
   bounds x v := A.bounds _ _
 
 /-- The scaled full coefficient is the literal autonomous coefficient of the scaled scalar. -/
-theorem returnScaling_coefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem returnScaling_coefficient
     (r : ℝ) (hr : 0 < r) (X : ℝ) :
     (returnScaling r hr X).coefficient (evolutionCoefficient A.a) =
       evolutionCoefficient (returnScaledCoefficient A r X).a := by
@@ -50,7 +54,7 @@ theorem exists_return_scaled_solution
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z)
-    (hF0 : ∀ z, 0 ≤ F z) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+    (hF0 : ∀ z, 0 ≤ F z) (hF : ContDiff ℝ PDE.smoothOrder F)
     (r : ℝ) (hr : 0 < r) (X : ℝ) :
     ∃ U : Point → ℝ, IsNonnegativeHomogeneousSolution
       (returnReflectedCoefficient (returnScaledCoefficient A r X)) U ∧
@@ -59,13 +63,13 @@ theorem exists_return_scaled_solution
           (X - r ^ 3 * p.position 0, r * p.velocity 0) := by
   let E := fullSpaceEvolution hH hLE hlam hLam A
   let G := physicalTerminalDatum (scalarTerminalDatum F)
-  have hG : ContDiff ℝ (⊤ : ℕ∞) G :=
+  have hG : ContDiff ℝ PDE.smoothOrder G :=
     (scalarTerminalDatum_smooth F hF).comp (contDiff_snd.prodMk contDiff_fst)
   obtain ⟨w, hw, hrep⟩ := fullspace_bounded_smooth_solution hH hlam hLam A E
     (fullSpaceEvolution_spec hH hLE hlam hLam A) 0 G hG
   let Φ := returnScaling r hr X
   let W : Point → ℝ := w ∘ Φ.point
-  let U : Point → ℝ := W ∘ autonomousReversal ∘ autonomousPositionReflection
+  let U  := W ∘ autonomousReversal ∘ autonomousPositionReflection
   have heq (p : Point) (hp : 0 < p.time) :
       U p = S hH hLE hlam hLam A (r ^ 2 * p.time) F
         (X - r ^ 3 * p.position 0, r * p.velocity 0) := by
@@ -97,7 +101,7 @@ theorem exists_return_scaled_solution
   let T : EvolutionVec 1 → ℝ × (PDE.Vec 1 × PDE.Vec 1) := fun q =>
     (-(r ^ 2 * timeCoord 1 q), r • transportedCoord 1 q,
       (fun _ => X) - r ^ 3 • diffusedCoord 1 q)
-  have hT : ContDiff ℝ (⊤ : ℕ∞) T := by unfold T; fun_prop
+  have hT : ContDiff ℝ PDE.smoothOrder T := by unfold T; fun_prop
   have hmaps : MapsTo T (evolutionHomeomorph 1 ⁻¹' O)
       (evolutionPastInteriorRaw autonomousWholeDomain (fun _ => 0) 0) := by
     intro q hq
@@ -159,7 +163,7 @@ theorem exists_return_scaled_solution
       rw [he]
       exact isOpen_lt continuous_fst continuous_const
     have hw2 := (hw.2.2.1.contDiffAt (hopen.mem_nhds hrawmem)).of_le
-      (by norm_num : (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))
+      (by norm_num : (2 : WithTop ℕ∞) ≤ PDE.smoothOrder)
     have hscaled := Scaling.KineticAffineScaling.transportedForwardOperator_comp_point (Φ := Φ)
       (u := w) (p := q) (evolutionCoefficient A.a) (identityDrift 1) hw2
     rw [returnScaling_coefficient A r hr X, returnScaling_drift r hr X] at hscaled

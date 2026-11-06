@@ -11,7 +11,7 @@ for the right parabolic mollifier.  It uses only the native product
 metric on `TimeVelocity d` and has no coefficient or PDE content.
 -/
 
-@[expose] public section
+ public section
 
 open Filter Set
 
@@ -20,7 +20,7 @@ namespace HypoellipticAleksandrov.Parabolic
 /-- A compact subset of an open set admits a positive native-metric collar
 that contains every sufficiently small mollifier scale. -/
 theorem exists_native_kernel_collar
-    (d : Nat) (K U : Set (TimeVelocity d))
+    (d : Nat) (K U : HypoellipticAleksandrov.Parabolic.Region d)
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∃ delta : Real, 0 < delta ∧ Metric.cthickening delta K ⊆ U ∧
       ∀ᶠ n in Filter.atTop, parabolicMollifierScale n < delta := by
@@ -31,7 +31,7 @@ theorem exists_native_kernel_collar
 /-- Eventually, every point sampled by the translated right mollifier at a
 compact carrier lies in the surrounding open set. -/
 theorem eventually_translated_parabolicMollifier_support_subset
-    (d : Nat) (K U : Set (TimeVelocity d))
+    (d : Nat) (K U : HypoellipticAleksandrov.Parabolic.Region d)
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∀ᶠ n in Filter.atTop, ∀ z ∈ K,
       {y | parabolicMollifier d n (z - y) ≠ 0} ⊆ U := by

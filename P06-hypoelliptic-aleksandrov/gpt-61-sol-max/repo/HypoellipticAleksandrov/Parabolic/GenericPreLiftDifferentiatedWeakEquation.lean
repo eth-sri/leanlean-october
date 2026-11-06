@@ -1,6 +1,38 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementSmoothResidual
+import Lean.Elab.Tactic.SolveByElim
+import Mathlib.Tactic.Bound
+import all HypoellipticAleksandrov.Parabolic.CrossVelocityWeakDerivativeCommutation
+import all HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport
+import all HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientEnergyIdentity
+import all HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientFixedDirection
+import all HypoellipticAleksandrov.Parabolic.GenericProperCommutatorResidual
+import all HypoellipticAleksandrov.Parabolic.MixedTimeVelocityWeakDerivativeCommutation
+import all HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyPairing
+import all HypoellipticAleksandrov.Parabolic.WeakDerivativesAlgebra
+import all HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+public import HypoellipticAleksandrov.Measure.TimeVelocity
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
+open private HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport.continuousOn_bounded_mul_memLp from HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport
+open private HypoellipticAleksandrov.Parabolic.coordinateIteratedFDeriv_continuousOn from HypoellipticAleksandrov.Parabolic.GenericProperCommutatorResidual
+open private HypoellipticAleksandrov.Parabolic.coordinateIteratedFDeriv_tsupport_subset from HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyPairing
+open private HypoellipticAleksandrov.Parabolic.splitLeft_order_le from HypoellipticAleksandrov.Parabolic.GenericProperCommutatorResidual
+section
+open private HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_tsupport_subset from HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+private alias _semanticProof_77a760a65596 := HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_tsupport_subset
+end
+section
+open private HypoellipticAleksandrov.Parabolic.timeDerivative_tsupport_subset from HypoellipticAleksandrov.Parabolic.MixedTimeVelocityWeakDerivativeCommutation
+private alias _semanticProof_2e5cb35f552a := HypoellipticAleksandrov.Parabolic.timeDerivative_tsupport_subset
+end
+
 
 /-!
 # Generic pre-lift differentiated weak equation
@@ -9,32 +41,26 @@ This module exposes the source-facing differentiated scalar equation before
 the next spatial lift.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 open scoped BigOperators ENNReal Topology
 
-private theorem coordinateIteratedFDeriv_tsupport_subset
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ) :
-    tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) ⊆ tsupport f := by
-  apply closure_minimal _ isClosed_closure
-  intro z hz
-  apply support_iteratedFDeriv_subset (f := f) (𝕜 := ℝ) gamma.coordinateList.length
-  intro hzero
-  exact hz (by
-    unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-    rw [hzero]
-    exact ContinuousMultilinearMap.zero_apply _)
+section
+variable {d : ℕ}
+
+
+
 
 private theorem setIntegral_mul_eq_of_tsupport_subset
-    {d : ℕ} {V U : Set (TimeVelocity d)} (hU : MeasurableSet U)
-    (hVU : V ⊆ U) (f g : TimeVelocity d → ℝ) (hgV : tsupport g ⊆ V) :
-    (∫ z in U, f z * g z ∂(volume : Measure (TimeVelocity d))) =
-      ∫ z in V, f z * g z ∂(volume : Measure (TimeVelocity d)) := by
+     {V U : HypoellipticAleksandrov.Parabolic.Region d} (hU : MeasurableSet U)
+    (hVU : V ⊆ U) (f g : HypoellipticAleksandrov.Parabolic.ScalarField d) (hgV : tsupport g ⊆ V) :
+    (∫ z in U, f z * g z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) =
+      ∫ z in V, f z * g z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d) := by
   apply setIntegral_eq_of_subset_of_forall_diff_eq_zero hU hVU
   intro z hz
   have hgz : g z = 0 := by
@@ -42,117 +68,45 @@ private theorem setIntegral_mul_eq_of_tsupport_subset
     exact hz.2 (hgV (subset_closure hn))
   simp [hgz]
 
+section
+variable (f : HypoellipticAleksandrov.Parabolic.ScalarField d) (hf : ContDiff ℝ PDE.smoothOrder f)
+
+include hf in
 private theorem timeDerivative_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  have heq : timeDerivative f =
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single (timeCoord d) 1) f := by
-    funext z
-    have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-      (0 : TimeVelocityMultiIndex d) (timeCoord d) f z
-        (by
-          simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-            TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, Pi.zero_apply] using
-            hf.contDiffAt.of_le
-              (show (1 : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) by simp))
-    simp only [zero_add, timeVelocityBasis_time] at h
-    rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (0 : TimeVelocityMultiIndex d) f = f by
-      funext x
-      exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f x] at h
-    exact h.symm
-  rw [heq]
-  exact coordinateIteratedFDeriv_tsupport_subset _ f
+      :
+    tsupport (timeDerivative f) ⊆ tsupport f := _semanticProof_2e5cb35f552a
 
+include hf in
 private theorem velocityGradient_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+
     (i : Fin d) :
-    tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := by
-  have heq : (fun z ↦ velocityGradient f z i) =
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single (velocityCoord i) 1) f := by
-    funext z
-    have h := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-      (0 : TimeVelocityMultiIndex d) (velocityCoord i) f z
-        (by
-          simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-            TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, Pi.zero_apply] using
-            hf.contDiffAt.of_le
-              (show (1 : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) by simp))
-    simp only [zero_add, timeVelocityBasis_velocity] at h
-    rw [show TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (0 : TimeVelocityMultiIndex d) f = f by
-      funext x
-      exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f x] at h
-    simpa [velocityGradient, PDE.basisVec] using h.symm
-  rw [heq]
-  exact coordinateIteratedFDeriv_tsupport_subset _ f
+    tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := _semanticProof_77a760a65596
+end
 
-private theorem bounded_mul_memLp
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
-    (q f : TimeVelocity d → ℝ) (C : ℝ) (hC : 0 ≤ C)
-    (hq : ContinuousOn q V) (hqBound : ∀ z ∈ V, |q z| ≤ C)
-    (hf : ParabolicMemLpOn V 2 f) :
-    ParabolicMemLpOn V 2 (fun z ↦ q z * f z) := by
-  have hqMeas : AEStronglyMeasurable q (timeVelocityVolumeOn V) :=
-    hq.aestronglyMeasurable hV.measurableSet
-  have hqBoundAE : ∀ᵐ z ∂timeVelocityVolumeOn V, |q z| ≤ C := by
-    filter_upwards [ae_restrict_mem hV.measurableSet] with z hz
-    exact hqBound z hz
-  have hprodMeas : AEStronglyMeasurable (fun z ↦ q z * f z)
-      (timeVelocityVolumeOn V) := hqMeas.mul hf.aestronglyMeasurable
-  apply MemLp.of_le_mul hf hprodMeas
-  filter_upwards [hqBoundAE] with z hz
-  simpa only [Real.norm_eq_abs, abs_mul] using
-    mul_le_mul hz le_rfl (abs_nonneg (f z)) hC
 
-private theorem coordinateIteratedFDeriv_contDiff
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞)
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) := by
-  rw [contDiff_infty]
-  intro m
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := (contDiff_infty.mp hf (m + gamma.order)).iteratedFDeriv_right
-    (m := m) (i := gamma.coordinateList.length) (by simp)
-  exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (gamma.coordinateList.get i)))).clm_apply hi
 
-private theorem coordinateIteratedFDeriv_continuousOn
-    {d N : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ N q V)
-    (alpha : TimeVelocityMultiIndex d) (halpha : alpha.order ≤ N) :
-    ContinuousOn (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha q) V := by
-  intro z hz
-  apply ContinuousAt.continuousWithinAt
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := (hq.contDiffAt (hV.mem_nhds hz)).iteratedFDeriv_right
-    (m := 0) (i := alpha.coordinateList.length) (by simpa using halpha)
-  exact (contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi |>.continuousAt
 
-private theorem splitLeft_order_le
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) :
-    gamma.left.order ≤ M := by
-  have horder_weight : beta.1.order ≤ beta.1.parabolicWeight := by
-    simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-      TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-      TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
-    omega
-  exact gamma.order_left_le.trans (horder_weight.trans beta.2)
+
+
+
+end
+
+
+
+
+
+
+
 
 private theorem properAtom_memLp
-    {d M N : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ N q V)
+    {d M N : ℕ} {V : HypoellipticAleksandrov.Parabolic.Region d} (hV : IsOpen V)
+    (q : HypoellipticAleksandrov.Parabolic.ScalarField d) (hq : ContDiffOn ℝ N q V)
     (B : ParabolicDerivativeIndex d N → ℝ) (hB : ∀ alpha, 0 ≤ B alpha)
     (hqBound : ∀ alpha z, z ∈ V →
       |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 q z| ≤ B alpha)
     (hMN : M ≤ N) (beta : ParabolicDerivativeIndex d M)
     (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (f : gamma.left ≠ 0 → TimeVelocity d → ℝ)
+    (f : gamma.left ≠ 0 → HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hf : ∀ hproper, ParabolicMemLpOn V 2 (f hproper)) :
     ParabolicMemLpOn V 2 (fun z ↦
       if hproper : gamma.left ≠ 0 then
@@ -163,30 +117,29 @@ private theorem properAtom_memLp
   classical
   by_cases hproper : gamma.left ≠ 0
   · simp only [dif_pos hproper]
-    let alpha : ParabolicDerivativeIndex d N :=
+    let alpha  :=
       ParabolicDerivativeIndex.castLE hMN
         (ParabolicDerivativeIndex.splitLeft beta gamma)
-    apply bounded_mul_memLp hV _ _
+    apply _root_.HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport.continuousOn_bounded_mul_memLp hV _ _
       ((beta.1.choose gamma.left : ℝ) * B alpha)
       (mul_nonneg (Nat.cast_nonneg _) (hB alpha))
     · exact continuousOn_const.mul
-        (coordinateIteratedFDeriv_continuousOn hV q hq gamma.left
-          ((splitLeft_order_le beta gamma).trans hMN))
+        (_root_.HypoellipticAleksandrov.Parabolic.coordinateIteratedFDeriv_continuousOn hV q hq gamma.left
+          ((_root_.HypoellipticAleksandrov.Parabolic.splitLeft_order_le beta gamma).trans hMN))
     · intro z hz
       rw [abs_mul, abs_of_nonneg (Nat.cast_nonneg _)]
       apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
-      simpa only [alpha, ParabolicDerivativeIndex.coe_castLE,
-        ParabolicDerivativeIndex.coe_splitLeft] using hqBound alpha z hz
+      exact hqBound alpha z hz
     · exact hf hproper
   · simp only [dif_neg hproper]
     exact MemLp.zero'
 
 private theorem properCommutatorComponents_memLp
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.Region d} (hV : IsOpen V)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    {u : TimeVelocity d → ℝ}
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (Ba : Fin d → Fin d → ParabolicDerivativeIndex d (M + 1) → ℝ)
     (Bb : Fin d → ParabolicDerivativeIndex d M → ℝ)
@@ -238,45 +191,32 @@ private theorem properCommutatorComponents_memLp
             D.representative
               (ParabolicDerivativeIndex.properSplitRightValue
                 beta gamma hproper) z
-        else 0) := by
-  classical
-  have hAatom (i j : Fin d) (gamma : TimeVelocityMultiIndex.Split beta.1) :=
-    properAtom_memLp hV (fun x : TimeVelocity d ↦ a x.1 x.2 i j) (ha i j)
-      (Ba i j) (hBa i j) (haBound i j) (Nat.le_succ M) beta gamma
-      (fun hproper ↦ D.representative
-        (ParabolicDerivativeIndex.properSplitRightVelocityTwo
-          beta gamma hproper j i))
-      (fun hproper ↦ D.memLp _)
-  have hBatom (j : Fin d) (gamma : TimeVelocityMultiIndex.Split beta.1) :=
-    properAtom_memLp hV (fun x : TimeVelocity d ↦ b x.1 x.2 j) (hb j)
-      (Bb j) (hBb j) (hbBound j) (le_refl M) beta gamma
-      (fun hproper ↦ D.representative
-        (ParabolicDerivativeIndex.properSplitRightVelocity beta gamma hproper j))
-      (fun hproper ↦ D.memLp _)
-  have hCatom (gamma : TimeVelocityMultiIndex.Split beta.1) :=
-    properAtom_memLp hV (fun x : TimeVelocity d ↦ c x.1 x.2) hc
-      Bc hBc hcBound (le_refl M) beta gamma
-      (fun hproper ↦ D.representative
-        (ParabolicDerivativeIndex.properSplitRightValue beta gamma hproper))
-      (fun hproper ↦ D.memLp _)
-  refine ⟨?_, ?_, ?_⟩
-  · exact memLp_finset_sum Finset.univ fun i _ ↦
-      memLp_finset_sum Finset.univ fun j _ ↦
-        memLp_finset_sum Finset.univ fun gamma _ ↦ hAatom i j gamma
-  · exact memLp_finset_sum Finset.univ fun j _ ↦
-      memLp_finset_sum Finset.univ fun gamma _ ↦ hBatom j gamma
-  · exact memLp_finset_sum Finset.univ fun gamma _ ↦ hCatom gamma
+        else 0) := (⟨memLp_finset_sum Finset.univ fun i x =>
+    memLp_finset_sum Finset.univ fun j x =>
+      memLp_finset_sum Finset.univ fun gamma x =>
+        properAtom_memLp hV (fun z => a z.1 z.2 i j) (ha i j) (Ba i j) (hBa i j) (haBound i j) (Nat.le_succ M) beta
+          gamma (fun hproper => D.representative (beta.properSplitRightVelocityTwo gamma hproper j i)) fun hproper =>
+          D.memLp (beta.properSplitRightVelocityTwo gamma hproper j i),
+  ⟨memLp_finset_sum Finset.univ fun j x =>
+      memLp_finset_sum Finset.univ fun gamma x =>
+        properAtom_memLp hV (fun z => b z.1 z.2 j) (hb j) (Bb j) (hBb j) (hbBound j) (le_refl M) beta gamma
+          (fun hproper => D.representative (beta.properSplitRightVelocity gamma hproper j)) fun hproper =>
+          D.memLp (beta.properSplitRightVelocity gamma hproper j),
+    memLp_finset_sum Finset.univ fun gamma x =>
+      properAtom_memLp hV (fun z => c z.1 z.2) hc Bc hBc hcBound (le_refl M) beta gamma
+        (fun hproper => D.representative (beta.properSplitRightValue gamma hproper)) fun hproper =>
+        D.memLp (beta.properSplitRightValue gamma hproper)⟩⟩)
 
 private theorem originalEquation_integral
     {d M : ℕ} (hM : 1 ≤ M)
-    {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {V : HypoellipticAleksandrov.Parabolic.Region d} (hV : IsOpen V)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
-    {u : TimeVelocity d → ℝ}
+    (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (E : ParabolicWeakDerivativeFamily d M V
-      (fun z : TimeVelocity d ↦ F z.1 z.2))
+      (fun z  ↦ F z.1 z.2))
     (Ba : Fin d → Fin d → ParabolicDerivativeIndex d (M + 1) → ℝ)
     (Bb : Fin d → ParabolicDerivativeIndex d M → ℝ)
     (Bc : ParabolicDerivativeIndex d M → ℝ)
@@ -315,7 +255,7 @@ private theorem originalEquation_integral
               (ParabolicDerivativeIndex.zeroTwo d)) z)
         =ᵐ[timeVelocityVolumeOn V] fun z ↦ F z.1 z.2)
     (beta : ParabolicDerivativeIndex d M)
-    (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (φ : HypoellipticAleksandrov.Parabolic.ScalarField d) (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφCompact : HasCompactSupport φ) :
     (∫ z in V, D.representative
           (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
@@ -337,22 +277,23 @@ private theorem originalEquation_integral
         TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z ∂volume) =
       ∫ z in V, F z.1 z.2 *
         TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z ∂volume := by
+  let sharedTerm_3b19dc29b2 := ((by omega : 2 ≤ M + 1))
   classical
   let θ := TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ
-  have hθSmooth := coordinateIteratedFDeriv_contDiff beta.1 φ hφ
+
   have hθCompact : HasCompactSupport θ :=
     hφCompact.of_isClosed_subset isClosed_closure
       (coordinateIteratedFDeriv_tsupport_subset beta.1 φ)
   have hθLp : ParabolicMemLpOn V 2 θ :=
-    (hθSmooth.continuous.memLp_of_hasCompactSupport hθCompact).restrict V
-  let zeroM1 : ParabolicDerivativeIndex d (M + 1) :=
+    ((coordinateIteratedFDeriv_contDiff beta.1 φ hφ).continuous.memLp_of_hasCompactSupport hθCompact).restrict V
+  let zeroM1  :=
     ParabolicDerivativeIndex.zero d (M + 1)
-  let zeroM : ParabolicDerivativeIndex d M := ParabolicDerivativeIndex.zero d M
+  let zeroM  := ParabolicDerivativeIndex.zero d M
   have haLp (i j : Fin d) : ParabolicMemLpOn V 2 (fun z ↦
       a z.1 z.2 i j * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+        (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
           (ParabolicDerivativeIndex.velocityTwo j i)) z) := by
-    apply bounded_mul_memLp hV _ _ (Ba i j zeroM1) (hBa i j zeroM1)
+    apply _root_.HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport.continuousOn_bounded_mul_memLp hV _ _ (Ba i j zeroM1) (hBa i j zeroM1)
     · exact (ha i j).continuousOn
     · intro z hz
       simpa [zeroM1, TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] using
@@ -360,55 +301,41 @@ private theorem originalEquation_integral
     · exact D.memLp _
   have hbLp (j : Fin d) : ParabolicMemLpOn V 2 (fun z ↦
       b z.1 z.2 j * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+        (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
           (ParabolicDerivativeIndex.velocityOne j)) z) := by
-    apply bounded_mul_memLp hV _ _ (Bb j zeroM) (hBb j zeroM)
+    apply _root_.HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport.continuousOn_bounded_mul_memLp hV _ _ (Bb j zeroM) (hBb j zeroM)
     · exact (hb j).continuousOn
     · intro z hz
       simpa [zeroM, TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] using
         hbBound j zeroM z hz
     · exact D.memLp _
-  have hcLp : ParabolicMemLpOn V 2 (fun z ↦
-      c z.1 z.2 * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
-          (ParabolicDerivativeIndex.zeroTwo d)) z) := by
-    apply bounded_mul_memLp hV _ _ (Bc zeroM) (hBc zeroM)
-    · exact hc.continuousOn
-    · intro z hz
-      simpa [zeroM, TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] using
-        hcBound zeroM z hz
-    · exact D.memLp _
+
   have htInt : Integrable (fun z ↦ D.representative
-      (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+      (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
         (ParabolicDerivativeIndex.timeOne d)) z * θ z)
       (timeVelocityVolumeOn V) := by
     simpa only [Pi.mul_def] using
       (D.memLp (ParabolicDerivativeIndex.castLE
-        (by omega : 2 ≤ M + 1)
+        sharedTerm_3b19dc29b2
         (ParabolicDerivativeIndex.timeOne d))).integrable_mul hθLp
   have haInt (i j : Fin d) := (haLp i j).integrable_mul hθLp
   have hbInt (j : Fin d) := (hbLp j).integrable_mul hθLp
   have haInt' (i j : Fin d) : Integrable (fun z ↦
       a z.1 z.2 i j * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+        (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
           (ParabolicDerivativeIndex.velocityTwo j i)) z * θ z)
       (timeVelocityVolumeOn V) := by
-    simpa only [Pi.mul_def] using haInt i j
+    exact haInt i j
   have hbInt' (j : Fin d) : Integrable (fun z ↦
       b z.1 z.2 j * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+        (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
           (ParabolicDerivativeIndex.velocityOne j)) z * θ z)
       (timeVelocityVolumeOn V) := by
-    simpa only [Pi.mul_def] using hbInt j
-  have hcInt : Integrable (fun z ↦
-      (c z.1 z.2 * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
-          (ParabolicDerivativeIndex.zeroTwo d)) z) * θ z)
-      (timeVelocityVolumeOn V) := by
-    simpa only [Pi.mul_def] using hcLp.integrable_mul hθLp
+    exact hbInt j
+
   have haSumInt : Integrable (fun z ↦
       (∑ i, ∑ j, a z.1 z.2 i j * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+        (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
           (ParabolicDerivativeIndex.velocityTwo j i)) z) * θ z)
       (timeVelocityVolumeOn V) := by
     simpa only [Finset.sum_mul] using
@@ -416,31 +343,30 @@ private theorem originalEquation_integral
         integrable_finset_sum Finset.univ (fun j _ ↦ haInt' i j))
   have hbSumInt : Integrable (fun z ↦
       (∑ j, b z.1 z.2 j * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+        (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
           (ParabolicDerivativeIndex.velocityOne j)) z) * θ z)
       (timeVelocityVolumeOn V) := by
     simpa only [Finset.sum_mul] using
       integrable_finset_sum Finset.univ (fun j _ ↦ hbInt' j)
-  have hFLp : ParabolicMemLpOn V 2 (fun z ↦ F z.1 z.2) :=
-    (memLp_congr_ae E.zero_ae).mp (E.memLp zeroM)
-  have hFInt := hFLp.integrable_mul hθLp
-  have hEqMul : (fun z ↦
+
+
+
+  have hraw := integral_congr_ae (show (fun z ↦
       (D.representative
-            (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+            (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
               (ParabolicDerivativeIndex.timeOne d)) z +
         (∑ i, ∑ j, a z.1 z.2 i j * D.representative
-          (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+          (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
             (ParabolicDerivativeIndex.velocityTwo j i)) z) +
         (∑ j, b z.1 z.2 j * D.representative
-          (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+          (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
             (ParabolicDerivativeIndex.velocityOne j)) z) +
         c z.1 z.2 * D.representative
-          (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+          (ParabolicDerivativeIndex.castLE sharedTerm_3b19dc29b2
             (ParabolicDerivativeIndex.zeroTwo d)) z) * θ z) =ᵐ[
-      timeVelocityVolumeOn V] fun z ↦ F z.1 z.2 * θ z := by
-    filter_upwards [hEq] with z hz
-    rw [hz]
-  have hraw := integral_congr_ae hEqMul
+      timeVelocityVolumeOn V] fun z ↦ F z.1 z.2 * θ z by
+      filter_upwards [hEq] with z hz
+      rw [hz])
   simp only [add_mul] at hraw
   rw [integral_add, integral_add, integral_add] at hraw
   · simp only [Finset.sum_mul] at hraw
@@ -455,65 +381,19 @@ private theorem originalEquation_integral
   · exact htInt.add haSumInt
   · exact hbSumInt
   · exact (htInt.add haSumInt).add hbSumInt
-  · exact hcInt
+  · exact ((MemLp.integrable_mul (by
+      apply _root_.HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport.continuousOn_bounded_mul_memLp hV _ _ (Bc zeroM) (hBc zeroM)
+      · exact hc.continuousOn
+      · intro z hz
+        simpa [zeroM, TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] using
+          hcBound zeroM z hz
+      · exact D.memLp _) hθLp))
 
 
-private theorem principalComponent_pairing_explicit
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ (M + 1) q V)
-    (Bq : ParabolicDerivativeIndex d (M + 1) → ℝ)
-    (hBq : ∀ alpha, 0 ≤ Bq alpha)
-    (hqBound : ∀ alpha z, z ∈ V →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 q z| ≤ Bq alpha)
-    {u : TimeVelocity d → ℝ}
-    (hM : 1 ≤ M) (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
-    (beta : ParabolicDerivativeIndex d M) (j i : Fin d)
-    (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) (hφV : tsupport φ ⊆ V) :
-    -(∫ z in V,
-        q z *
-            D.representative
-              (ParabolicDerivativeIndex.velocitySucc
-                (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
-                (by
-                  change beta.1.parabolicWeight + 1 ≤ M + 1
-                  omega)) z *
-          velocityGradient φ z i
-        ∂(volume : Measure (TimeVelocity d))) -
-      ∫ z in V,
-        TimeVelocityMultiIndex.coordinateIteratedFDeriv
-              (Pi.single (velocityCoord i) 1) q z *
-            D.representative
-              (ParabolicDerivativeIndex.velocitySucc
-                (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
-                (by
-                  change beta.1.parabolicWeight + 1 ≤ M + 1
-                  omega)) z *
-          φ z
-        ∂(volume : Measure (TimeVelocity d)) =
-      ((-1 : ℝ) ^ beta.1.order) *
-        ∫ z in V,
-          (q z *
-            D.representative
-              (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
-                (ParabolicDerivativeIndex.velocityTwo j i)) z) *
-            TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d)) -
-      ∫ z in V,
-        (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
-          if hproper : gamma.left ≠ 0 then
-            (beta.1.choose gamma.left : ℝ) *
-              TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z *
-              D.representative
-                (ParabolicDerivativeIndex.properSplitRightVelocityTwo
-                  beta gamma hproper j i) z
-          else 0) * φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
-  exact GenericPreLiftDifferentiatedWeakEquationSupport.principalComponent_pairing
-    hV q hq Bq hBq hqBound hM D beta j i φ hφ hφCompact hφV
+private alias principalComponent_pairing_explicit := _root_.HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport.principalComponent_pairing
 
 private theorem principalComponents_pairing_explicit
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.Region d} (hV : IsOpen V)
     (a : CoefficientField d)
     (ha : ∀ i j, ContDiffOn ℝ (M + 1)
       (fun z : TimeVelocity d ↦ a z.1 z.2 i j) V)
@@ -522,10 +402,10 @@ private theorem principalComponents_pairing_explicit
     (haBound : ∀ i j alpha z, z ∈ V →
       |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
         (fun x : TimeVelocity d ↦ a x.1 x.2 i j) z| ≤ Ba i j alpha)
-    {u : TimeVelocity d → ℝ}
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (hM : 1 ≤ M) (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (beta : ParabolicDerivativeIndex d M)
-    (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (φ : HypoellipticAleksandrov.Parabolic.ScalarField d) (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφCompact : HasCompactSupport φ) (hφV : tsupport φ ⊆ V) :
     (∑ i, ∑ j,
         (-(∫ z in V,
@@ -534,22 +414,20 @@ private theorem principalComponents_pairing_explicit
                   (ParabolicDerivativeIndex.velocitySucc
                     (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
                     (by
-                      change beta.1.parabolicWeight + 1 ≤ M + 1
-                      omega)) z *
+                      bound)) z *
               velocityGradient φ z i
-            ∂(volume : Measure (TimeVelocity d))) -
+            ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) -
           ∫ z in V,
             TimeVelocityMultiIndex.coordinateIteratedFDeriv
                   (Pi.single (velocityCoord i) 1)
-                  (fun x : TimeVelocity d ↦ a x.1 x.2 i j) z *
+                  (fun x  ↦ a x.1 x.2 i j) z *
                 D.representative
                   (ParabolicDerivativeIndex.velocitySucc
                     (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
                     (by
-                      change beta.1.parabolicWeight + 1 ≤ M + 1
-                      omega)) z *
+                      bound)) z *
               φ z
-            ∂(volume : Measure (TimeVelocity d)))) =
+            ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d))) =
       ((-1 : ℝ) ^ beta.1.order) *
         (∑ i, ∑ j, ∫ z in V,
           (a z.1 z.2 i j *
@@ -557,21 +435,21 @@ private theorem principalComponents_pairing_explicit
               (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
                 (ParabolicDerivativeIndex.velocityTwo j i)) z) *
             TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d))) -
+          ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) -
       (∑ i, ∑ j, ∫ z in V,
         (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
           if hproper : gamma.left ≠ 0 then
             (beta.1.choose gamma.left : ℝ) *
               TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-                (fun x : TimeVelocity d ↦ a x.1 x.2 i j) z *
+                (fun x  ↦ a x.1 x.2 i j) z *
               D.representative
                 (ParabolicDerivativeIndex.properSplitRightVelocityTwo
                   beta gamma hproper j i) z
           else 0) * φ z
-        ∂(volume : Measure (TimeVelocity d))) := by
+        ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) := by
   classical
   have hcomponent (i j : Fin d) := principalComponent_pairing_explicit hV
-    (fun z : TimeVelocity d ↦ a z.1 z.2 i j) (ha i j) (Ba i j)
+    (fun z  ↦ a z.1 z.2 i j) (ha i j) (Ba i j)
     (hBa i j) (haBound i j) hM D beta j i φ hφ hφCompact hφV
   calc
     _ = ∑ i, ∑ j,
@@ -582,18 +460,18 @@ private theorem principalComponents_pairing_explicit
                   (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
                     (ParabolicDerivativeIndex.velocityTwo j i)) z) *
                 TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-              ∂(volume : Measure (TimeVelocity d)) -
+              ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d) -
           ∫ z in V,
             (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
               if hproper : gamma.left ≠ 0 then
                 (beta.1.choose gamma.left : ℝ) *
                   TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-                    (fun x : TimeVelocity d ↦ a x.1 x.2 i j) z *
+                    (fun x  ↦ a x.1 x.2 i j) z *
                   D.representative
                     (ParabolicDerivativeIndex.properSplitRightVelocityTwo
                       beta gamma hproper j i) z
               else 0) * φ z
-            ∂(volume : Measure (TimeVelocity d))) := by
+            ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) := by
       apply Finset.sum_congr rfl
       intro i hi
       apply Finset.sum_congr rfl
@@ -604,14 +482,14 @@ private theorem principalComponents_pairing_explicit
 
 private theorem integral_genericPreliftDifferentiatedScalarEquationOn
     {d M : ℕ} (hM : 1 ≤ M)
-    {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {V : HypoellipticAleksandrov.Parabolic.Region d} (hV : IsOpen V)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
-    {u : TimeVelocity d → ℝ}
+    (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
+    {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (E : ParabolicWeakDerivativeFamily d M V
-      (fun z : TimeVelocity d ↦ F z.1 z.2))
+      (fun z  ↦ F z.1 z.2))
     (Ba : Fin d → Fin d → ParabolicDerivativeIndex d (M + 1) → ℝ)
     (Bb : Fin d → ParabolicDerivativeIndex d M → ℝ)
     (Bc : ParabolicDerivativeIndex d M → ℝ)
@@ -650,51 +528,54 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
               (ParabolicDerivativeIndex.zeroTwo d)) z)
         =ᵐ[timeVelocityVolumeOn V] fun z ↦ F z.1 z.2)
     (beta : ParabolicDerivativeIndex d M)
-    (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (φ : HypoellipticAleksandrov.Parabolic.ScalarField d) (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (hφCompact : HasCompactSupport φ) (hφV : tsupport φ ⊆ V) :
     -(∫ z in V,
         D.representative
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
-          timeDerivative φ z ∂(volume : Measure (TimeVelocity d))) -
+          timeDerivative φ z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) -
       (∑ i, ∑ j, ∫ z in V,
         a z.1 z.2 i j *
             D.representative
               (ParabolicDerivativeIndex.velocitySucc
                 (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
                 (by
-                  change beta.1.parabolicWeight + 1 ≤ M + 1
-                  omega)) z *
-          velocityGradient φ z i ∂(volume : Measure (TimeVelocity d))) -
+                  bound)) z *
+          velocityGradient φ z i ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) -
       (∑ i, ∑ j, ∫ z in V,
         TimeVelocityMultiIndex.coordinateIteratedFDeriv
               (Pi.single (velocityCoord i) 1)
-              (fun x : TimeVelocity d ↦ a x.1 x.2 i j) z *
+              (fun x  ↦ a x.1 x.2 i j) z *
             D.representative
               (ParabolicDerivativeIndex.velocitySucc
                 (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
                 (by
-                  change beta.1.parabolicWeight + 1 ≤ M + 1
-                  omega)) z *
-          φ z ∂(volume : Measure (TimeVelocity d))) +
+                  bound)) z *
+          φ z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) +
       (∑ j, ∫ z in V,
         b z.1 z.2 j *
             D.representative
               (ParabolicDerivativeIndex.velocitySucc
                 (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
                 (by
-                  change beta.1.parabolicWeight + 1 ≤ M + 1
-                  omega)) z *
-          φ z ∂(volume : Measure (TimeVelocity d))) +
+                  bound)) z *
+          φ z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) +
       (∫ z in V, c z.1 z.2 *
           D.representative
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
-          φ z ∂(volume : Measure (TimeVelocity d))) =
+          φ z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) =
       ∫ z in V,
         properDifferentiatedScalarCommutatorResidual a b c D E beta z * φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d) := by
+  let sharedTerm_6d161793a7 := ((by omega : 2 ≤ M + 1))
+  let sharedTerm_c9cad725b3 := ((ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta))
+  let sharedTerm_1d7cff950d := ((by
+    change beta.1.parabolicWeight + 1 ≤ M + 1
+    omega))
+  let sharedTerm_4576f3c2c7 := ((-1 : ℝ) ^ beta.1.order)
   classical
-  let s : ℝ := (-1 : ℝ) ^ beta.1.order
-  let A : TimeVelocity d → ℝ := fun z ↦
+  let s : ℝ := sharedTerm_4576f3c2c7
+  let A  := fun z ↦
     ∑ i, ∑ j, ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
       if hproper : gamma.left ≠ 0 then
         (beta.1.choose gamma.left : ℝ) *
@@ -704,7 +585,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
             (ParabolicDerivativeIndex.properSplitRightVelocityTwo
               beta gamma hproper j i) z
       else 0
-  let B : TimeVelocity d → ℝ := fun z ↦
+  let B  := fun z ↦
     ∑ j, ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
       if hproper : gamma.left ≠ 0 then
         (beta.1.choose gamma.left : ℝ) *
@@ -714,7 +595,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
             (ParabolicDerivativeIndex.properSplitRightVelocity
               beta gamma hproper j) z
       else 0
-  let C : TimeVelocity d → ℝ := fun z ↦
+  let C  := fun z ↦
     ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
       if hproper : gamma.left ≠ 0 then
         (beta.1.choose gamma.left : ℝ) *
@@ -740,7 +621,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
   have horiginal := originalEquation_integral hM hV a b c F D E Ba Bb Bc
     hBa hBb hBc ha hb hc haBound hbBound hcBound hEq beta φ hφ hφCompact
   have htime := GenericPreLiftDifferentiatedWeakEquationSupport.timeComponent_pairing
-    D (by omega : 2 ≤ M + 1) beta φ hφ hφCompact hφV
+    D sharedTerm_6d161793a7 beta φ hφ hφCompact hφV
   have hprincipal := principalComponents_pairing_explicit hV a ha Ba hBa haBound
     hM D beta φ hφ hφCompact hφV
   have hsource := GenericPreLiftDifferentiatedWeakEquationSupport.sourceComponent_pairing
@@ -766,11 +647,9 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
                 beta gamma hproper j i) z
         else 0) := by
     exact memLp_finset_sum Finset.univ fun gamma _ ↦
-      properAtom_memLp hV (fun x : TimeVelocity d ↦ a x.1 x.2 i j) (ha i j)
+      properAtom_memLp hV _ (ha i j)
         (Ba i j) (hBa i j) (haBound i j) (Nat.le_succ M) beta gamma
-        (fun hproper ↦ D.representative
-          (ParabolicDerivativeIndex.properSplitRightVelocityTwo
-            beta gamma hproper j i)) (fun hproper ↦ D.memLp _)
+        _ (fun hproper ↦ D.memLp _)
   have hBjLp (j : Fin d) : ParabolicMemLpOn V 2 (fun z ↦
       ∑ gamma : TimeVelocityMultiIndex.Split beta.1,
         if hproper : gamma.left ≠ 0 then
@@ -780,22 +659,17 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
             D.representative
               (ParabolicDerivativeIndex.properSplitRightVelocity
                 beta gamma hproper j) z
-        else 0) := by
-    exact memLp_finset_sum Finset.univ fun gamma _ ↦
-      properAtom_memLp hV (fun x : TimeVelocity d ↦ b x.1 x.2 j) (hb j)
+        else 0) := memLp_finset_sum Finset.univ fun gamma _ ↦
+      properAtom_memLp hV _ (hb j)
         (Bb j) (hBb j) (hbBound j) (le_refl M) beta gamma
-        (fun hproper ↦ D.representative
-          (ParabolicDerivativeIndex.properSplitRightVelocity
-            beta gamma hproper j)) (fun hproper ↦ D.memLp _)
-  let zeroM : ParabolicDerivativeIndex d M := ParabolicDerivativeIndex.zero d M
+        _ (fun hproper ↦ D.memLp _)
+  let zeroM  := ParabolicDerivativeIndex.zero d M
   have hbRootLp (j : Fin d) : ParabolicMemLpOn V 2 (fun z ↦
       b z.1 z.2 j * D.representative
         (ParabolicDerivativeIndex.velocitySucc
-          (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
-          (by
-            change beta.1.parabolicWeight + 1 ≤ M + 1
-            omega)) z) := by
-    apply bounded_mul_memLp hV _ _ (Bb j zeroM) (hBb j zeroM)
+          sharedTerm_c9cad725b3 j
+          sharedTerm_1d7cff950d) z) := by
+    apply _root_.HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport.continuousOn_bounded_mul_memLp hV _ _ (Bb j zeroM) (hBb j zeroM)
     · exact (hb j).continuousOn
     · intro z hz
       simpa [zeroM, TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] using
@@ -803,8 +677,8 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
     · exact D.memLp _
   have hcRootLp : ParabolicMemLpOn V 2 (fun z ↦
       c z.1 z.2 * D.representative
-        (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z) := by
-    apply bounded_mul_memLp hV _ _ (Bc zeroM) (hBc zeroM)
+        sharedTerm_c9cad725b3 z) := by
+    apply _root_.HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport.continuousOn_bounded_mul_memLp hV _ _ (Bc zeroM) (hBc zeroM)
     · exact hc.continuousOn
     · intro z hz
       simpa [zeroM, TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] using
@@ -814,23 +688,21 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
       (∫ z in V, b z.1 z.2 j *
           D.representative
             (ParabolicDerivativeIndex.velocitySucc
-              (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
-              (by
-                change beta.1.parabolicWeight + 1 ≤ M + 1
-                omega)) z * φ z ∂volume) +
+              sharedTerm_c9cad725b3 j
+              sharedTerm_1d7cff950d) z * φ z ∂volume) +
         (∫ z in V,
           (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
             if hproper : gamma.left ≠ 0 then
               (beta.1.choose gamma.left : ℝ) *
                 TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-                  (fun x : TimeVelocity d ↦ b x.1 x.2 j) z *
+                  (fun x  ↦ b x.1 x.2 j) z *
                 D.representative
                   (ParabolicDerivativeIndex.properSplitRightVelocity
                     beta gamma hproper j) z
             else 0) * φ z ∂volume) =
-        ((-1 : ℝ) ^ beta.1.order) *
+        (sharedTerm_4576f3c2c7) *
           ∫ z in V, (b z.1 z.2 j * D.representative
-            (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+            (ParabolicDerivativeIndex.castLE sharedTerm_6d161793a7
               (ParabolicDerivativeIndex.velocityOne j)) z) *
             TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z ∂volume := by
     have h := hdrift j
@@ -843,43 +715,37 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
       (∑ j, ((∫ z in V, b z.1 z.2 j *
           D.representative
             (ParabolicDerivativeIndex.velocitySucc
-              (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
-              (by
-                change beta.1.parabolicWeight + 1 ≤ M + 1
-                omega)) z * φ z ∂volume) +
+              sharedTerm_c9cad725b3 j
+              sharedTerm_1d7cff950d) z * φ z ∂volume) +
         ∫ z in V,
           (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
             if hproper : gamma.left ≠ 0 then
               (beta.1.choose gamma.left : ℝ) *
                 TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-                  (fun x : TimeVelocity d ↦ b x.1 x.2 j) z *
+                  (fun x  ↦ b x.1 x.2 j) z *
                 D.representative
                   (ParabolicDerivativeIndex.properSplitRightVelocity
                     beta gamma hproper j) z
             else 0) * φ z ∂volume)) =
-        ∑ j, ((-1 : ℝ) ^ beta.1.order) *
+        ∑ j, (sharedTerm_4576f3c2c7) *
           ∫ z in V, (b z.1 z.2 j * D.representative
-            (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+            (ParabolicDerivativeIndex.castLE sharedTerm_6d161793a7
               (ParabolicDerivativeIndex.velocityOne j)) z) *
             TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z ∂volume := by
     exact Finset.sum_congr rfl fun j _ ↦ hdrift' j
   have hzero' := hzero
   simp only [add_mul] at hzero'
-  have hcRootInt : Integrable (fun z ↦
-      (c z.1 z.2 * D.representative
-        (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z) * φ z)
-      (timeVelocityVolumeOn V) := by
-    simpa only [Pi.mul_def] using hcRootLp.integrable_mul hφLp
-  have hcProperInt : Integrable (fun z ↦ C z * φ z)
-      (timeVelocityVolumeOn V) := hCInt
-  rw [integral_add hcRootInt (by simpa only [C] using hcProperInt)] at hzero'
+
+
+  rw [integral_add (by
+      simpa only [Pi.mul_def] using hcRootLp.integrable_mul hφLp) (hCInt)] at hzero'
   have hAExpand : (∫ z in V, A z * φ z ∂volume) =
       ∑ i, ∑ j, ∫ z in V,
         (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
           if hproper : gamma.left ≠ 0 then
             (beta.1.choose gamma.left : ℝ) *
               TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-                (fun x : TimeVelocity d ↦ a x.1 x.2 i j) z *
+                (fun x  ↦ a x.1 x.2 i j) z *
               D.representative
                 (ParabolicDerivativeIndex.properSplitRightVelocityTwo
                   beta gamma hproper j i) z
@@ -890,7 +756,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
             if hproper : gamma.left ≠ 0 then
               (beta.1.choose gamma.left : ℝ) *
                 TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-                  (fun x : TimeVelocity d ↦ a x.1 x.2 i j) z *
+                  (fun x  ↦ a x.1 x.2 i j) z *
                 D.representative
                   (ParabolicDerivativeIndex.properSplitRightVelocityTwo
                     beta gamma hproper j i) z
@@ -904,19 +770,17 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
           rw [Finset.sum_mul]
       _ = _ := by
         rw [integral_finset_sum Finset.univ (fun i _ ↦
-          integrable_finset_sum Finset.univ fun j _ ↦ by
-            simpa only [Pi.mul_def] using (hAijLp i j).integrable_mul hφLp)]
+          integrable_finset_sum Finset.univ fun j _ ↦ by exact (MemLp.integrable_mul (hAijLp i j) hφLp))]
         apply Finset.sum_congr rfl
         intro i hi
-        rw [integral_finset_sum Finset.univ (fun j _ ↦ by
-          simpa only [Pi.mul_def] using (hAijLp i j).integrable_mul hφLp)]
+        rw [integral_finset_sum Finset.univ (fun j _ ↦ by exact (MemLp.integrable_mul (hAijLp i j) hφLp))]
   have hBExpand : (∫ z in V, B z * φ z ∂volume) =
       ∑ j, ∫ z in V,
         (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
           if hproper : gamma.left ≠ 0 then
             (beta.1.choose gamma.left : ℝ) *
               TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-                (fun x : TimeVelocity d ↦ b x.1 x.2 j) z *
+                (fun x  ↦ b x.1 x.2 j) z *
               D.representative
                 (ParabolicDerivativeIndex.properSplitRightVelocity
                   beta gamma hproper j) z
@@ -927,7 +791,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
             if hproper : gamma.left ≠ 0 then
               (beta.1.choose gamma.left : ℝ) *
                 TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-                  (fun x : TimeVelocity d ↦ b x.1 x.2 j) z *
+                  (fun x  ↦ b x.1 x.2 j) z *
                 D.representative
                   (ParabolicDerivativeIndex.properSplitRightVelocity
                     beta gamma hproper j) z
@@ -937,8 +801,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
           dsimp only [B]
           rw [Finset.sum_mul]
       _ = _ := by
-        rw [integral_finset_sum Finset.univ (fun j _ ↦ by
-          simpa only [Pi.mul_def] using (hBjLp j).integrable_mul hφLp)]
+        rw [integral_finset_sum Finset.univ (fun j _ ↦ by exact (MemLp.integrable_mul (hBjLp j) hφLp))]
   have hresidual :
       (∫ z in V,
         properDifferentiatedScalarCommutatorResidual a b c D E beta z * φ z
@@ -962,28 +825,28 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
       (∫ z in V, (c z.1 z.2 * u z) *
         TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z ∂volume) =
       ∫ z in V, (c z.1 z.2 * D.representative
-        (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+        (ParabolicDerivativeIndex.castLE sharedTerm_6d161793a7
           (ParabolicDerivativeIndex.zeroTwo d)) z) *
         TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z ∂volume := by
     apply integral_congr_ae
     filter_upwards [D.zero_ae] with z hz
-    have hindex : ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
+    have hindex : ParabolicDerivativeIndex.castLE sharedTerm_6d161793a7
         (ParabolicDerivativeIndex.zeroTwo d) =
         ParabolicDerivativeIndex.zero d (M + 1) := by
       apply Subtype.ext
-      simp [ParabolicDerivativeIndex.zeroTwo, ParabolicDerivativeIndex.zero]
+      rfl
     rw [hindex, hz]
   rw [hresidual, hAExpand, hBExpand]
   rw [hzeroRootEq] at hzero'
   simp only [Finset.sum_add_distrib] at hdriftSum
   simp only [Finset.sum_sub_distrib, Finset.sum_neg_distrib] at hprincipal
   rw [← Finset.mul_sum] at hdriftSum
-  have htime' := congrArg (fun x : ℝ ↦ s * x) htime
+  have htime' := congrArg (fun x  ↦ s * x) htime
   change s * _ = s * _ at htime'
   rw [← mul_assoc, hsquare, one_mul] at htime'
   dsimp only [s] at htime hprincipal hsource hdriftSum hzero' hsquare ⊢
   linear_combination
-    ((-1 : ℝ) ^ beta.1.order) * horiginal - htime' + hprincipal +
+    (sharedTerm_4576f3c2c7) * horiginal - htime' + hprincipal +
       hdriftSum + hzero' - hsource
 
 /-- The differentiated scalar equation tested before the next spatial lift.
@@ -992,14 +855,14 @@ coordinate, retaining both the coefficient and coefficient-derivative terms. -/
 theorem integral_genericPreliftDifferentiatedScalarEquation
     {d M : ℕ}
     (hM : 1 ≤ M)
-    (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (U : HypoellipticAleksandrov.Parabolic.Region d) (hU : IsOpen U)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
-    (u : TimeVelocity d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
+    (u : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
-      (fun z : TimeVelocity d => F z.1 z.2))
+      (fun z  => F z.1 z.2))
     (ha : ∀ i j, ContDiffOn ℝ (M + 1)
       (fun z : TimeVelocity d => a z.1 z.2 i j) U)
     (hb : ∀ j, ContDiffOn ℝ M
@@ -1032,8 +895,8 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
         =ᵐ[timeVelocityVolumeOn U]
       (fun z => F z.1 z.2))
     (beta : ParabolicDerivativeIndex d M)
-    (φ : TimeVelocity d → ℝ)
-    (hφSmooth : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (φ : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hφSmooth : ContDiff ℝ PDE.smoothOrder φ)
     (hφCompact : HasCompactSupport φ)
     (hφSupport : tsupport φ ⊆ U) :
     -(∫ z in U,
@@ -1041,7 +904,7 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
             (ParabolicDerivativeIndex.castLE
               (Nat.le_succ M) beta) z *
           timeDerivative φ z
-        ∂(volume : Measure (TimeVelocity d))) -
+        ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) -
       (∑ i, ∑ j,
         ∫ z in U,
           a z.1 z.2 i j *
@@ -1050,24 +913,22 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
                   (ParabolicDerivativeIndex.castLE
                     (Nat.le_succ M) beta) j
                   (by
-                    change beta.1.parabolicWeight + 1 ≤ M + 1
-                    omega)) z *
+                    bound)) z *
             velocityGradient φ z i
-          ∂(volume : Measure (TimeVelocity d))) -
+          ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) -
       (∑ i, ∑ j,
         ∫ z in U,
           TimeVelocityMultiIndex.coordinateIteratedFDeriv
                 (Pi.single (velocityCoord i) 1)
-                (fun x : TimeVelocity d => a x.1 x.2 i j) z *
+                (fun x  => a x.1 x.2 i j) z *
               D.representative
                 (ParabolicDerivativeIndex.velocitySucc
                   (ParabolicDerivativeIndex.castLE
                     (Nat.le_succ M) beta) j
                   (by
-                    change beta.1.parabolicWeight + 1 ≤ M + 1
-                    omega)) z *
+                    bound)) z *
             φ z
-          ∂(volume : Measure (TimeVelocity d))) +
+          ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) +
       (∑ j,
         ∫ z in U,
           b z.1 z.2 j *
@@ -1076,21 +937,21 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
                   (ParabolicDerivativeIndex.castLE
                     (Nat.le_succ M) beta) j
                   (by
-                    change beta.1.parabolicWeight + 1 ≤ M + 1
-                    omega)) z *
+                    bound)) z *
             φ z
-          ∂(volume : Measure (TimeVelocity d))) +
+          ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) +
       (∫ z in U,
         c z.1 z.2 *
             D.representative
               (ParabolicDerivativeIndex.castLE
                 (Nat.le_succ M) beta) z *
           φ z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) =
       ∫ z in U,
         properDifferentiatedScalarCommutatorResidual a b c D E beta z *
           φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d) := by
+  let sharedTerm_0a49a1053d := ((by change beta.1.parabolicWeight + 1 ≤ M + 1; omega))
   classical
   obtain ⟨V, Ba, Bb, Bc, hV, hφV, hclosureVU, _hVCompact,
       hBa, hBb, hBc, haBoundClosure, hbBoundClosure, hcBoundClosure⟩ :=
@@ -1099,61 +960,35 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
   have hVU : V ⊆ U := subset_closure.trans hclosureVU
   let DV := D.restrict hVU
   let EV := E.restrict hVU
-  have haV : ∀ i j, ContDiffOn ℝ (M + 1)
-      (fun z : TimeVelocity d ↦ a z.1 z.2 i j) V :=
-    fun i j ↦ (ha i j).mono hVU
-  have hbV : ∀ j, ContDiffOn ℝ M
-      (fun z : TimeVelocity d ↦ b z.1 z.2 j) V :=
-    fun j ↦ (hb j).mono hVU
-  have hcV : ContDiffOn ℝ M
-      (fun z : TimeVelocity d ↦ c z.1 z.2) V := hc.mono hVU
-  have haBound : ∀ i j alpha z, z ∈ V →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d ↦ a x.1 x.2 i j) z| ≤ Ba i j alpha :=
-    fun i j alpha z hz ↦ haBoundClosure i j alpha z (subset_closure hz)
-  have hbBound : ∀ j alpha z, z ∈ V →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d ↦ b x.1 x.2 j) z| ≤ Bb j alpha :=
-    fun j alpha z hz ↦ hbBoundClosure j alpha z (subset_closure hz)
-  have hcBound : ∀ alpha z, z ∈ V →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d ↦ c x.1 x.2) z| ≤ Bc alpha :=
-    fun alpha z hz ↦ hcBoundClosure alpha z (subset_closure hz)
-  have hEqV := ae_restrict_of_ae_restrict_of_subset hVU hEq
+
+
+
+
+
+
+
   have hlocal := integral_genericPreliftDifferentiatedScalarEquationOn hM hV
-    a b c F DV EV Ba Bb Bc hBa hBb hBc haV hbV hcV haBound hbBound hcBound
-    (by
-      filter_upwards [hEqV] with z hz
-      simpa only [DV, ParabolicWeakDerivativeFamily.restrict_representative] using hz)
+    a b c F DV EV Ba Bb Bc hBa hBb hBc (fun i j ↦ (ha i j).mono hVU) (fun j ↦ (hb j).mono hVU) (hc.mono hVU) (fun i j alpha z hz ↦ haBoundClosure i j alpha z (subset_closure hz)) (fun j alpha z hz ↦ hbBoundClosure j alpha z (subset_closure hz)) (fun alpha z hz ↦ hcBoundClosure alpha z (subset_closure hz))
+    ((ae_restrict_of_ae_restrict_of_subset hVU hEq))
     beta φ hφSmooth hφCompact hφV
-  have htimeSupport : tsupport (timeDerivative φ) ⊆ V :=
-    (timeDerivative_tsupport_subset φ hφSmooth).trans hφV
-  have htime :
-      (∫ z in U, D.representative
-          (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
-          timeDerivative φ z ∂(volume : Measure (TimeVelocity d))) =
-        ∫ z in V, D.representative
-          (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
-          timeDerivative φ z ∂(volume : Measure (TimeVelocity d)) :=
-    setIntegral_mul_eq_of_tsupport_subset hU.measurableSet hVU _ _ htimeSupport
+
+
   have hprincipal (i j : Fin d) :
       (∫ z in U, (a z.1 z.2 i j * D.representative
           (ParabolicDerivativeIndex.velocitySucc
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
-            (by change beta.1.parabolicWeight + 1 ≤ M + 1; omega)) z) *
-          velocityGradient φ z i ∂(volume : Measure (TimeVelocity d))) =
+            sharedTerm_0a49a1053d) z) *
+          velocityGradient φ z i ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) =
         ∫ z in V, (a z.1 z.2 i j * D.representative
           (ParabolicDerivativeIndex.velocitySucc
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
-            (by change beta.1.parabolicWeight + 1 ≤ M + 1; omega)) z) *
-          velocityGradient φ z i ∂(volume : Measure (TimeVelocity d)) :=
+            sharedTerm_0a49a1053d) z) *
+          velocityGradient φ z i ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d) :=
     setIntegral_mul_eq_of_tsupport_subset hU.measurableSet hVU _ _
       ((velocityGradient_tsupport_subset φ hφSmooth i).trans hφV)
-  have hphiMul (f : TimeVelocity d → ℝ) :
-      (∫ z in U, f z * φ z ∂(volume : Measure (TimeVelocity d))) =
-        ∫ z in V, f z * φ z ∂(volume : Measure (TimeVelocity d)) :=
+  have hphiMul (f : HypoellipticAleksandrov.Parabolic.ScalarField d)  :=
     setIntegral_mul_eq_of_tsupport_subset hU.measurableSet hVU f φ hφV
   simpa only [DV, EV, ParabolicWeakDerivativeFamily.restrict_representative,
-    htime, hprincipal, hphiMul, properDifferentiatedScalarCommutatorResidual] using hlocal
+    (setIntegral_mul_eq_of_tsupport_subset hU.measurableSet hVU _ _ ((timeDerivative_tsupport_subset φ hφSmooth).trans hφV)), hprincipal, hphiMul, properDifferentiatedScalarCommutatorResidual] using hlocal
 
 end HypoellipticAleksandrov.Parabolic

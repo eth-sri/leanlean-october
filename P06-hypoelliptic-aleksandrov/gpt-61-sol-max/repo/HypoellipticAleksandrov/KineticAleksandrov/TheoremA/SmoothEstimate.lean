@@ -9,11 +9,11 @@ import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 
 /-! # Uniform smooth time--velocity Aleksandrov estimate from the Green density bound -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.TheoremA
 open Set MeasureTheory SectionTwo Green Parabolic
-open scoped ENNReal NNReal MatrixOrder Matrix.Norms.Elementwise
+open scoped NNReal MatrixOrder Matrix.Norms.Elementwise
 variable {d : ℕ}
 
 /-- The localized smooth estimate, with its constant fixed before all coefficient and PDE data. -/
@@ -22,23 +22,23 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hH : HormanderHypoellipticityStatement)
     (hbounds : ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
-      ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))),
-      RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
+      ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 )))
+        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 ))),
+      RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 )) MeasurableSet.univ
         (zIndependentCoefficient B) (identityDrift d) S K →
-      ∀ (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
+      ∀ (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 )) σ₀))
         [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)), IsGreenMeasure K σ₀ ⊤ μ Γ →
       ∀ T : ℝ, 0 < T → SlabFourierBounds d C c (μ univ) T Γ)
     (hevolution : ∀ B : CoefficientField d, IsSectionTwoCoefficient lam Lam B →
-      ∃ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))),
-        RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
+      ∃ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 )))
+        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 ))),
+        RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 )) MeasurableSet.univ
           (zIndependentCoefficient B) (identityDrift d) S K) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (A : CoefficientField d),
       IsSmoothCoefficient A → IsSymmetricCoefficient A →
       HasLowerEllipticityAE lam A → HasUpperEllipticityAE Lam A →
       ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R →
-      ∀ (u f : KineticPoint d → ℝ),
+      ∀ (u f : HypoellipticAleksandrov.KineticScalarField d),
       ContinuousOn u (closure (backwardCylinder P₀ R)) →
       IsKineticC112On u (backwardCylinder P₀ R) → Measurable f →
       MemLp (fun P => max (f P) 0) (ENNReal.ofReal p)
@@ -70,8 +70,8 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
   let B := kineticReflectedCoefficient A
   have hBs := isSmoothCoefficient_kineticReflectedCoefficient A hAs
   have hBsym := isSymmetricCoefficient_kineticReflectedCoefficient A hsym
-  have hBlo : HasLowerEllipticity lam B := fun t v => hlo (-t) v
-  have hBhi : HasUpperEllipticity Lam B := fun t v => hhi (-t) v
+  have hBlo  := fun t v => hlo (-t) v
+  have hBhi  := fun t v => hhi (-t) v
   obtain ⟨S, K, hreal⟩ := hevolution B
     ⟨hlam, hLam, isSmoothFullKineticCoefficient_zIndependent hBs, hBsym, hBlo, hBhi⟩
   let Z₀ := kineticReflection P₀
@@ -89,7 +89,7 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
       ((ofTimeVelocityCoefficient B) P.time P.position P.velocity).PosSemidef :=
     fun P _ => (posDef_of_loewner_lower hlam (hBlo P.time P.velocity)).posSemidef
   have hpotential := green_potentials hH hlam hLam B hBs hBsym hBlo hBhi S K hreal Z₀ R hR
-  have hdensity : ∀ P ∈ Q, ∃ G : KineticPoint d → ℝ, Measurable G ∧
+  have hdensity : ∀ P ∈ Q, ∃ G : HypoellipticAleksandrov.KineticScalarField d, Measurable G ∧
       (∀ z, 0 ≤ G z) ∧ Γ P = (volume.restrict Q).withDensity (fun z => ENNReal.ofReal (G z)) ∧
       (eLpNorm G (ENNReal.ofReal q) (volume.restrict Q)).toReal ≤ (C + 1) * R ^ α ∧
       MemLp G (ENNReal.ofReal q) (volume.restrict Q) := by
@@ -101,15 +101,14 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
       (ENNReal.ofReal_pos.mpr (sub_pos.mpr ht)) (Measure.dirac (kineticStartState d P))
     obtain ⟨G, hG, hden, hnorm, hscale⟩ := hgreen P₀ R hR A hAs hsym hlo hhi S K hreal P hP
       GP hGP
-    have hnorm' : eLpNorm G (ENNReal.ofReal q) (volume.restrict Q) ≤
-        ENNReal.ofReal (C * R ^ α) := hnorm.trans (ENNReal.ofReal_le_ofReal hscale)
+    have hnorm'  := hnorm.trans (ENNReal.ofReal_le_ofReal hscale)
     have hden' : Γ P = (volume.restrict Q).withDensity G := by
       dsimp only [Γ, cylinderGreenMeasure]
       rw [dite_eq_left ht]
       convert hden using 1
       rfl
     obtain ⟨F, hFm, hFn, hFd, hFN, hFLp⟩ := real_density_of_eLpNorm_bound
-      (volume.restrict Q) (Γ P) G hG hden' q (C * R ^ α) (lt_trans zero_lt_one hq)
+      _ (Γ P) G hG hden' q (C * R ^ α) (lt_trans zero_lt_one hq)
       (mul_nonneg hC hRp.le) hnorm'
     refine ⟨F, hFm, hFn, hFd, hFN.trans ?_, hFLp⟩
     exact mul_le_mul_of_nonneg_right (by linarith) hRp.le
@@ -121,7 +120,7 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
     simpa only [preimage_closure_backwardCylinder_reflection P₀ R hR] using hc
   have hUr : IsKineticC112On U Q := by
     simpa only [preimage_backwardCylinder_reflection P₀ R hR] using
-      isKineticC112On_kineticReflection u (backwardCylinder P₀ R) hreg
+      isKineticC112On_kineticReflection u _ hreg
   have hgLp : MemLp g₀ (ENNReal.ofReal (q / (q - 1))) (volume.restrict Q) := by
     rw [hqp]
     exact hLp.comp_measurePreserving hmp
@@ -138,7 +137,7 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
     change kineticReflection (kineticReflection P) ∈ closure (backwardCylinder P₀ R)
     rw [kineticReflection_involutive P]
     exact hP
-  have hresult := hbound (kineticReflection P) hPr
+  have hresult := hbound _ hPr
   have hnorm : eLpNorm ({P | 0 < U P}.indicator g₀) (ENNReal.ofReal p)
       (volume.restrict Q) =
       eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)

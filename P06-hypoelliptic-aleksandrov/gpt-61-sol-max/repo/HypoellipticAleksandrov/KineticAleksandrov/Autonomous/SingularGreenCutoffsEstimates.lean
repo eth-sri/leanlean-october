@@ -9,10 +9,10 @@ These lemmas isolate the spatial and velocity derivative scales and require no
 coefficient derivatives. They are estimates on cutoffs, not a singular Green function.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov.Parabolic
+
 
 /-- Bound the three product-error terms from scalar cutoff and barrier bounds. -/
 theorem cutoff_error_abs_le (a Lam v chi psi dx dv dvv phi phiv DX DV DVV B0 B1 : ℝ)
@@ -24,8 +24,8 @@ theorem cutoff_error_abs_le (a Lam v chi psi dx dv dvv phi phiv DX DV DVV B0 B1 
   have hDX := (abs_nonneg dx).trans hx
   have hDV := (abs_nonneg dv).trans hv
   have hDVV := (abs_nonneg dvv).trans hvv
-  have hB0 := (abs_nonneg phi).trans hb
-  have hB1 := (abs_nonneg phiv).trans hbv
+
+
   have hLam := ha.trans haL
   have ha' : |a| ≤ Lam := by rwa [abs_of_nonneg ha]
   have h₁ : |v*dx*psi*phi| ≤ |v| *DX*B0 := by

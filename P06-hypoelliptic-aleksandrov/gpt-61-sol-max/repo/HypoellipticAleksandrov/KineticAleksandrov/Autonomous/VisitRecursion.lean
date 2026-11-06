@@ -17,12 +17,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory
 open scoped Classical
 
+variable (s T : ℝ) (I J : Interval)
+
 /-- Internal velocity boundary in the literal open physical time slab. -/
-def visitBoundary (s T : ℝ) (I J : Interval) : Set Point :=
+def visitBoundary  : Set Point :=
   {p | s < p.time ∧ p.time < T ∧ p.velocity 0 ∈ frontier I.carrier ∩ J.carrier}
 
 /-- The internal boundary is measurable in physical coordinates. -/
-theorem measurableSet_visitBoundary (s T : ℝ) (I J : Interval) :
+theorem measurableSet_visitBoundary  :
     MeasurableSet (visitBoundary s T I J) := by
   have ht : MeasurableSet {p : Point | p.time ∈ Ioo s T} :=
     isOpen_Ioo.measurableSet.preimage continuous_time.measurable
@@ -72,17 +74,8 @@ instance visitBeta_isFiniteMeasure (P : Point) (I : Interval) (Sin Sout : Set Po
   dsimp only [visitBeta]
   infer_instance
 
-/-- A finite partial sum of entrance measures, including the initial visit once. -/
-def visitPartialStarts (P : Point) (I : Interval) (Sin Sout : Set Point)
-    (exitActive exitWaiting : Kernel Point Point) (N : ℕ) : Measure Point :=
-  ∑ n ∈ Finset.range N, visitGamma P I Sin Sout exitActive exitWaiting n
 
-/-- Every finite partial visit sum is finite; total visit mass is a separate later result. -/
-instance visitPartialStarts_isFiniteMeasure (P : Point) (I : Interval) (Sin Sout : Set Point)
-    (exitActive exitWaiting : Kernel Point Point)
-    [IsFiniteKernel exitActive] [IsFiniteKernel exitWaiting] (N : ℕ) :
-    IsFiniteMeasure (visitPartialStarts P I Sin Sout exitActive exitWaiting N) := by
-  dsimp only [visitPartialStarts]
-  infer_instance
+
+
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

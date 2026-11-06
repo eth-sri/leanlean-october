@@ -10,13 +10,13 @@ then supplies a threshold R0 beyond which the actual ellipsoids contain that sup
 throughout the common terminal window.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+
 
 /-- A compact terminal support has a uniform Euclidean transported-coordinate bound. -/
 theorem exists_transported_terminal_support_bound
@@ -45,7 +45,7 @@ theorem exists_transportedRadius_terminal_window {r d : ℝ} (hr : 0 < r) (hd : 
     have : 0 < (Z ^ 2 + 1) / η := div_pos (by positivity) hη
     linarith
   refine ⟨R0, by linarith, fun R hR => ?_⟩
-  have hR1 : 1 ≤ R := hR01.le.trans hR
+  have hR1  := hR01.le.trans hR
   have hRsq : R0 ≤ R ^ 2 := by nlinarith
   have he : η * R0 = η + (Z ^ 2 + 1) := by
     dsimp only [R0]

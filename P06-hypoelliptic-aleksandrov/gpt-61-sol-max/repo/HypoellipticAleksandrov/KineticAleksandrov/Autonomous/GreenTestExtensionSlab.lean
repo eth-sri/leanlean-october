@@ -7,8 +7,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeOneS
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set HypoellipticAleksandrov
-open SectionTwo TheoremA Evolution
+open Set
+
 
 /-- Scalar physical coordinates retain the source's time-position-velocity order. -/
 def reconstructionScalarHomeomorph : (ℝ × ℝ × ℝ) ≃ₜ Point :=
@@ -17,12 +17,16 @@ def reconstructionScalarHomeomorph : (ℝ × ℝ × ℝ) ≃ₜ Point :=
       PDE.scalarToVecOneContinuousLinearEquiv.toHomeomorph)).trans
     (KineticPoint.homeomorphProd 1).symm
 
+variable (H : Interval)
+
+variable (a T : ℝ)
+
 /-- The full physical closed slab at finite times. -/
-def reconstructionClosedSlab (H : Interval) (a T : ℝ) : Set Point :=
+def reconstructionClosedSlab   : Set Point :=
   {p | a ≤ p.time ∧ p.time ≤ T ∧ p.velocity 0 ∈ Icc H.lo H.hi}
 
 /-- The closure of a nonempty physical open strip is its literal closed slab. -/
-theorem closure_reconstructionStrip (H : Interval) (a T : ℝ) (ha : a < T) :
+theorem closure_reconstructionStrip   (ha : a < T) :
     closure (reconstructionStrip H a T) = reconstructionClosedSlab H a T := by
   let S : Set (ℝ × ℝ × ℝ) := Ioo a T ×ˢ (univ ×ˢ Ioo H.lo H.hi)
   have heq : reconstructionStrip H a T = reconstructionScalarHomeomorph '' S := by
@@ -57,27 +61,30 @@ theorem closure_reconstructionStrip (H : Interval) (a T : ℝ) (ha : a < T) :
       fin_cases i
       rfl
 
+variable {lower a T : ℝ} (ha : lower < a)
+
+include ha
 /-- Every closed future slab lies in the regular strip together with its prescribed exit. -/
-theorem reconstructionClosedSlab_subset_strip_union_exit (H : Interval)
-    {lower a T : ℝ} (ha : lower < a) :
+theorem reconstructionClosedSlab_subset_strip_union_exit
+     :
     reconstructionClosedSlab H a T ⊆ reconstructionStrip H lower T ∪ reconstructionExit H
       lower T := by
   intro p hp
   by_cases ht : p.time = T
   · exact Or.inr (Or.inl ⟨ht, hp.2.2⟩)
-  · have hpt : p.time < T := lt_of_le_of_ne hp.2.1 ht
+  · have hpt  := lt_of_le_of_ne hp.2.1 ht
     by_cases hv : p.velocity 0 ∈ H.carrier
     · exact Or.inl ⟨ha.trans_le hp.1, hpt, hv⟩
-    · have hf : p.velocity 0 = H.lo ∨ p.velocity 0 = H.hi := by
-        change ¬(H.lo < p.velocity 0 ∧ p.velocity 0 < H.hi) at hv
-        rcases not_and_or.mp hv with hv | hv
-        · exact Or.inl (le_antisymm (not_lt.mp hv) hp.2.2.1)
-        · exact Or.inr (le_antisymm hp.2.2.2 (not_lt.mp hv))
-      exact Or.inr (Or.inr ⟨ha.trans_le hp.1, hpt, hf⟩)
+    ·
+      exact Or.inr (Or.inr ⟨ha.trans_le hp.1, hpt, (by
+          change ¬(H.lo < p.velocity 0 ∧ p.velocity 0 < H.hi) at hv
+          rcases not_and_or.mp hv with hv | hv
+          · exact Or.inl (le_antisymm (not_lt.mp hv) hp.2.2.1)
+          · exact Or.inr (le_antisymm hp.2.2.2 (not_lt.mp hv)))⟩)
 
 /-- The original interior bound extends to every closed future slab by the prescribed continuity. -/
 theorem reconstruction_closed_slab_test_bound
-    (H : Interval) {lower a T : ℝ} (ha : lower < a) (hT : a < T)
+      (hT : a < T)
     (phi : Point → ℝ)
     (hc : ContinuousOn phi (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
     (M : ℝ) (hM : ∀ p ∈ reconstructionStrip H lower T, |phi p| ≤ M) :

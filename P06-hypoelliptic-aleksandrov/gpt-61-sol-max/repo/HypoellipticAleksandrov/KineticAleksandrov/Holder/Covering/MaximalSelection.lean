@@ -12,7 +12,7 @@ and charges the selected intersections to the original set. The homogeneous volu
 comparison needed for the weak maximal estimate is a separate dependency.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 

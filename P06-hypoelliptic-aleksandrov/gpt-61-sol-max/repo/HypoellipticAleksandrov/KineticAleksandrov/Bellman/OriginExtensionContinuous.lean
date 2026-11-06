@@ -11,16 +11,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set Filter
 open scoped Topology
 
+variable (phi : (ℝ × ℝ) → ℝ)
+
 /-- Extend the punctured homogeneous function by its forced value zero at the origin. -/
-def bellmanOriginExtension (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanOriginExtension  (q : ℝ × ℝ) : ℝ :=
   if q = (0, 0) then 0 else phi q
 
 /-- The extension has zero origin value. -/
-theorem bellmanOriginExtension_zero (phi : (ℝ × ℝ) → ℝ) :
+theorem bellmanOriginExtension_zero  :
     bellmanOriginExtension phi (0, 0) = 0 := ite_eq_left rfl
 
 /-- The extension retains the given punctured function. -/
-theorem bellmanOriginExtension_eqOn (phi : (ℝ × ℝ) → ℝ) :
+theorem bellmanOriginExtension_eqOn  :
     EqOn (bellmanOriginExtension phi) phi bellmanPuncturedSet :=
   fun _ hq => ite_eq_right hq
 
@@ -42,15 +44,14 @@ theorem IsBellmanHomogeneous.origin_extension_continuous {alpha : ℝ}
   · subst q
     rw [ContinuousAt, bellmanOriginExtension_zero]
     apply tendsto_zero_iff_norm_tendsto_zero.mpr
-    have hb : Tendsto (fun q => C * bellmanGauge q ^ alpha) (𝓝 (0, 0)) (𝓝 0) := by
-      have hc : Continuous (fun q : ℝ × ℝ => C * bellmanGauge q ^ alpha) :=
-        continuous_const.mul ((Real.continuous_rpow_const ha.le).comp bellmanGauge_continuous)
-      have hh := hc.continuousAt.tendsto (x := (0, 0))
-      simpa only [bellmanGauge, bellmanGaugePower, zero_pow (by decide : (2 : ℕ) ≠ 0),
-        zero_pow (by decide : (6 : ℕ) ≠ 0), zero_add,
-        Real.zero_rpow (by norm_num : (1 / 6 : ℝ) ≠ 0), Real.zero_rpow ha.ne',
-        mul_zero] using hh
-    apply squeeze_zero (fun _ => norm_nonneg _) (fun q => ?_) hb
+
+    apply squeeze_zero (fun _ => norm_nonneg _) (fun q => ?_) (by
+
+
+        simpa only [bellmanGauge, bellmanGaugePower, zero_pow (by decide : (2 ) ≠ 0),
+          zero_pow (by decide : (6 ) ≠ 0), zero_add,
+          Real.zero_rpow (by norm_num : (1 / 6 : ℝ) ≠ 0), Real.zero_rpow ha.ne',
+          mul_zero] using ((show Continuous (fun q  => C * bellmanGauge q ^ alpha) from continuous_const.mul ((Real.continuous_rpow_const ha.le).comp bellmanGauge_continuous)).continuousAt.tendsto (x := (0, 0))))
     rw [Real.norm_eq_abs]
     exact hbound q
   · have he : bellmanOriginExtension phi =ᶠ[𝓝 q] phi := by

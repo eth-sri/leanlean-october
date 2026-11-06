@@ -4,11 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominati
 
 /-! # The cylinder core domination and continuation conclusions -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory Filter
-open scoped Topology
+open MeasureTheory
+
 
 /-- The original cylinder strip Green is dominated on the core by the actual visit Green measure. -/
 theorem core_green_le_visitGreen

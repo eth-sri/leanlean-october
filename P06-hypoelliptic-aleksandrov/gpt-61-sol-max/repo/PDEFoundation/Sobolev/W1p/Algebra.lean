@@ -2,6 +2,9 @@ module
 
 public import PDEFoundation.Sobolev.W1p.Basic
 public import PDEFoundation.Sobolev.WeakDerivative.Algebra
+import Aesop
+
+
 
 /-!
 # Linear algebra for representative-level `W^{1,p}`
@@ -36,9 +39,7 @@ theorem locallyIntegrable_toFun [Fact (1 ≤ p)]
 /-- Every chosen gradient component of a `W1pFunction` is locally integrable
 with respect to restricted volume when `1 ≤ p`. -/
 theorem locallyIntegrable_grad [Fact (1 ≤ p)]
-    (u : W1pFunction U p) (i : Fin d) :
-    MeasureTheory.LocallyIntegrable
-      (fun x => u.grad x i) (volumeOn U) :=
+    (u : W1pFunction U p) (i : Fin d) : type_of% ((u.gradMemLp i).locallyIntegrable Fact.out) :=
   (u.gradMemLp i).locallyIntegrable Fact.out
 
 instance : Zero (W1pFunction U p) where
@@ -46,10 +47,7 @@ instance : Zero (W1pFunction U p) where
     { toFun := 0
       grad := 0
       memLp := MeasureTheory.MemLp.zero
-      gradMemLp := by
-        intro i
-        exact (MeasureTheory.MemLp.zero :
-            MeasureTheory.MemLp (0 : Vec d → ℝ) p (volumeOn U))
+      gradMemLp := (fun i => MeasureTheory.MemLp.zero)
       hasWeakGradient := HasWeakGradientOn.zero }
 
 instance [Fact (1 ≤ p)] : Add (W1pFunction U p) where
@@ -108,23 +106,22 @@ theorem zero_grad :
     (0 : W1pFunction U p).grad = 0 :=
   rfl
 
-@[simp]
-theorem add_toFun [Fact (1 ≤ p)] (u v : W1pFunction U p) :
-    (u + v).toFun = fun x => u x + v x :=
-  rfl
+
 
 @[simp]
 theorem add_grad [Fact (1 ≤ p)] (u v : W1pFunction U p) :
     (u + v).grad = fun x => u.grad x + v.grad x :=
   rfl
 
+variable (u : W1pFunction U p)
+
 @[simp]
-theorem neg_toFun (u : W1pFunction U p) :
+theorem neg_toFun  :
     (-u).toFun = fun x => -u x :=
   rfl
 
 @[simp]
-theorem neg_grad (u : W1pFunction U p) :
+theorem neg_grad  :
     (-u).grad = fun x => -u.grad x :=
   rfl
 
@@ -138,13 +135,15 @@ theorem sub_grad [Fact (1 ≤ p)] (u v : W1pFunction U p) :
     (u - v).grad = fun x => u.grad x - v.grad x :=
   rfl
 
+variable (c : ℝ) (u : W1pFunction U p)
+
 @[simp]
-theorem smul_toFun (c : ℝ) (u : W1pFunction U p) :
+theorem smul_toFun  :
     (c • u).toFun = fun x => c * u x :=
   rfl
 
 @[simp]
-theorem smul_grad (c : ℝ) (u : W1pFunction U p) :
+theorem smul_grad  :
     (c • u).grad = fun x => c • u.grad x :=
   rfl
 
@@ -158,26 +157,18 @@ instance [Fact (1 ≤ p)] : SMul ℤ (W1pFunction U p) where
 additional data. -/
 theorem toFunGrad_injective :
     Function.Injective
-      (fun u : W1pFunction U p => (u.toFun, u.grad)) := by
-  intro u v h
-  exact W1pFunction.ext
-    (by simpa only using congrArg Prod.fst h)
-    (by simpa only using congrArg Prod.snd h)
+      (fun u : W1pFunction U p => (u.toFun, u.grad)) := (fun ⦃u v⦄ h => ext (congrArg Prod.fst h) (congrArg Prod.snd h))
 
 instance [Fact (1 ≤ p)] : AddCommGroup (W1pFunction U p) :=
   Function.Injective.addCommGroup
-    (fun u : W1pFunction U p => (u.toFun, u.grad))
+    (fun u  => (u.toFun, u.grad))
     toFunGrad_injective
     rfl
     (fun _ _ => rfl)
     (fun _ => by
-      ext x <;>
-        simp only [neg_toFun, neg_grad, Prod.fst_neg, Prod.snd_neg,
-          Pi.neg_apply])
+      rfl)
     (fun _ _ => by
-      ext x <;>
-        simp only [sub_toFun, sub_grad, Prod.fst_sub, Prod.snd_sub,
-          Pi.sub_apply])
+      rfl)
     (fun u n => by
       apply Prod.ext
       · funext x
@@ -189,15 +180,7 @@ instance [Fact (1 ≤ p)] : AddCommGroup (W1pFunction U p) :=
         simp only [smul_grad, Pi.smul_apply, nsmul_eq_mul,
           smul_eq_mul])
     (fun u n => by
-      apply Prod.ext
-      · funext x
-        change (((n : ℝ) • u).toFun x) = (n • u.toFun) x
-        simp only [smul_toFun, Pi.smul_apply, zsmul_eq_mul]
-      · funext x
-        ext i
-        change (((n : ℝ) • u).grad x i) = (n • u.grad) x i
-        simp only [smul_grad, Pi.smul_apply, zsmul_eq_mul,
-          smul_eq_mul])
+      simp_all <;> aesop)
 
 /-- Additive value-gradient projection used to transfer the real module laws
 without inspecting proof fields. -/

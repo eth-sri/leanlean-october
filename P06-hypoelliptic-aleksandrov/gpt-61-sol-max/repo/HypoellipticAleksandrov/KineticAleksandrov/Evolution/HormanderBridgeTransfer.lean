@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeCoord
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeWeak
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Transferring weak equations and smooth representatives across the coordinate bridge
@@ -27,7 +29,7 @@ noncomputable section
 set_option autoImplicit false
 
 open MeasureTheory Set
-open HypoellipticAleksandrov
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 
@@ -39,29 +41,26 @@ theorem measurableEmbedding_evolutionHomeomorph :
   (evolutionMeasurableEquiv n).measurableEmbedding
 
 /-- Change of variables for set integrals along the coordinate bridge. -/
-theorem setIntegral_comp_evolutionHomeomorph (F : KineticPoint n → ℝ) (Ω : Set (KineticPoint n)) :
-    (∫ x in evolutionHomeomorph n ⁻¹' Ω, F (evolutionHomeomorph n x)) = ∫ z in Ω, F z :=
+theorem setIntegral_comp_evolutionHomeomorph (F : HypoellipticAleksandrov.KineticScalarField n) (Ω : Set (KineticPoint n)) : type_of% (measurePreserving_evolutionHomeomorph.setIntegral_preimage_emb
+    measurableEmbedding_evolutionHomeomorph F Ω) :=
   measurePreserving_evolutionHomeomorph.setIntegral_preimage_emb
     measurableEmbedding_evolutionHomeomorph F Ω
 
 /-- Local integrability transfers across the coordinate bridge (in both directions). -/
-theorem locallyIntegrableOn_comp_evolutionHomeomorph_iff {f : KineticPoint n → ℝ}
+theorem locallyIntegrableOn_comp_evolutionHomeomorph_iff {f : HypoellipticAleksandrov.KineticScalarField n}
     {Ω : Set (KineticPoint n)} :
-    LocallyIntegrableOn (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω) volume ↔
-      LocallyIntegrableOn f Ω volume := by
-  have hmp := measurePreserving_evolutionHomeomorph (n := n)
-  have hem := measurableEmbedding_evolutionHomeomorph (n := n)
+    LocallyIntegrableOn (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω)  ↔
+      LocallyIntegrableOn f Ω  := by
+
+
   have hI : ∀ t : Set (KineticPoint n), IntegrableOn (f ∘ evolutionHomeomorph n)
-      (evolutionHomeomorph n ⁻¹' t) volume ↔ IntegrableOn f t volume := fun t =>
-    hmp.integrableOn_comp_preimage hem
-  have hmap : ∀ x : EvolutionVec n, Filter.map (evolutionHomeomorph n)
-      (nhdsWithin x (evolutionHomeomorph n ⁻¹' Ω)) =
-        nhdsWithin (evolutionHomeomorph n x) Ω := fun x =>
-    (evolutionHomeomorph n).isOpenEmbedding.map_nhdsWithin_preimage_eq Ω x
+      (evolutionHomeomorph n ⁻¹' t)  ↔ IntegrableOn f t  := fun t =>
+    (measurePreserving_evolutionHomeomorph (n := n)).integrableOn_comp_preimage (measurableEmbedding_evolutionHomeomorph (n := n))
+  have hmap  := ((evolutionHomeomorph n).isOpenEmbedding.map_nhdsWithin_preimage_eq Ω)
   constructor
   · intro h z hz
-    have hz' : (evolutionHomeomorph n).symm z ∈ evolutionHomeomorph n ⁻¹' Ω := by simpa using hz
-    obtain ⟨t, ht, hti⟩ := h _ hz'
+
+    obtain ⟨t, ht, hti⟩ := h _ (show (evolutionHomeomorph n).symm z ∈ evolutionHomeomorph n ⁻¹' Ω by simpa using hz)
     have hpre : evolutionHomeomorph n ⁻¹' ((evolutionHomeomorph n).symm ⁻¹' t) = t := by
       ext x; simp
     refine ⟨(evolutionHomeomorph n).symm ⁻¹' t, ?_, (hI _).1 (by rwa [hpre])⟩
@@ -70,13 +69,13 @@ theorem locallyIntegrableOn_comp_evolutionHomeomorph_iff {f : KineticPoint n →
     rw [← this, Filter.mem_map, hpre]
     exact ht
   · intro h x hx
-    obtain ⟨t, ht, hti⟩ := h (evolutionHomeomorph n x) hx
+    obtain ⟨t, ht, hti⟩ := h _ hx
     refine ⟨evolutionHomeomorph n ⁻¹' t, ?_, (hI t).2 hti⟩
     rw [← Filter.mem_map, hmap]
     exact ht
 
 /-- Almost-everywhere equality transfers across the coordinate bridge. -/
-theorem ae_eq_comp_evolutionHomeomorph_iff {f g : KineticPoint n → ℝ}
+theorem ae_eq_comp_evolutionHomeomorph_iff {f g : HypoellipticAleksandrov.KineticScalarField n}
     {Ω : Set (KineticPoint n)} :
     (f ∘ evolutionHomeomorph n) =ᵐ[volume.restrict (evolutionHomeomorph n ⁻¹' Ω)]
         (g ∘ evolutionHomeomorph n) ↔ f =ᵐ[volume.restrict Ω] g := by
@@ -89,10 +88,10 @@ theorem ae_eq_comp_evolutionHomeomorph_iff {f g : KineticPoint n → ℝ}
 /-- Smoothness of `f ∘ e` on `e ⁻¹' Ω` is smoothness of `f` on `Ω` read through the continuous
 linear equivalence `evolutionProdCLE n : EvolutionVec n ≃L[ℝ] ℝ × (ℝ^d × ℝ^d)`, i.e. in the
 convention of `IsSmoothFullKineticCoefficient`. -/
-theorem contDiffOn_comp_evolutionHomeomorph_iff {f : KineticPoint n → ℝ}
+theorem contDiffOn_comp_evolutionHomeomorph_iff {f : HypoellipticAleksandrov.KineticScalarField n}
     {Ω : Set (KineticPoint n)} :
-    ContDiffOn ℝ (⊤ : ℕ∞) (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω) ↔
-      ContDiffOn ℝ (⊤ : ℕ∞) (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => f ⟨q.1, q.2.1, q.2.2⟩)
+    ContDiffOn ℝ PDE.smoothOrder (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω) ↔
+      ContDiffOn ℝ PDE.smoothOrder (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => f ⟨q.1, q.2.1, q.2.2⟩)
         (KineticPoint.equivProd n '' Ω) := by
   have h1 : (f ∘ evolutionHomeomorph n) =
       (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => f ⟨q.1, q.2.1, q.2.2⟩) ∘ evolutionProdCLE n :=
@@ -117,11 +116,11 @@ theorem contDiffOn_comp_evolutionHomeomorph_iff {f : KineticPoint n → ℝ}
 for the `KineticPoint` volume. -/
 theorem isDistributionalSolution_comp_iff
     (Ladj : (EvolutionVec n → ℝ) → EvolutionVec n → ℝ) (Ω : Set (KineticPoint n))
-    (u g : KineticPoint n → ℝ) :
+    (u g : HypoellipticAleksandrov.KineticScalarField n) :
     IsDistributionalSolution Ladj (evolutionHomeomorph n ⁻¹' Ω) (u ∘ evolutionHomeomorph n)
         (g ∘ evolutionHomeomorph n) ↔
-      LocallyIntegrableOn u Ω volume ∧
-        ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ →
+      LocallyIntegrableOn u Ω  ∧
+        ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ PDE.smoothOrder ψ → HasCompactSupport ψ →
           tsupport ψ ⊆ evolutionHomeomorph n ⁻¹' Ω →
           (∫ z in Ω, u z * Ladj ψ ((evolutionHomeomorph n).symm z)) =
             ∫ z in Ω, g z * ψ ((evolutionHomeomorph n).symm z) := by
@@ -133,51 +132,48 @@ theorem isDistributionalSolution_comp_iff
     (fun z => u z * Ladj ψ ((evolutionHomeomorph n).symm z)) Ω
   have h2 := setIntegral_comp_evolutionHomeomorph
     (fun z => g z * ψ ((evolutionHomeomorph n).symm z)) Ω
-  simp only [Homeomorph.symm_apply_apply] at h1 h2
-  rw [Function.comp_def, Function.comp_def, h1, h2]
+  simp_all
+
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 
 /-- The kinetic-side weak equation for `Lop`: `u` is locally integrable on `Ω ⊆ KineticPoint n` and
 `∫_Ω u(z) · Lop^*ψ(e⁻¹ z) dz = ∫_Ω g(z) ψ(e⁻¹ z) dz` for every smooth `ψ` on `ℝ^{1+2d}`
 with compact support inside `e ⁻¹' Ω`. -/
-def IsKineticWeakTransportedSolution (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) : Prop :=
-  LocallyIntegrableOn u Ω volume ∧
-    ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ →
+def IsKineticWeakTransportedSolution  (Ω : Set (KineticPoint n)) (u g : HypoellipticAleksandrov.KineticScalarField n) : Prop :=
+  LocallyIntegrableOn u Ω  ∧
+    ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ PDE.smoothOrder ψ → HasCompactSupport ψ →
       tsupport ψ ⊆ evolutionHomeomorph n ⁻¹' Ω →
       (∫ z in Ω, u z * transportedAdjoint B b ψ ((evolutionHomeomorph n).symm z)) =
         ∫ z in Ω, g z * ψ ((evolutionHomeomorph n).symm z)
 
 /-- The kinetic-side weak equation for `L_ε = Lop + ε Δ_z`. -/
-def IsKineticWeakRegularizedSolution (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+def IsKineticWeakRegularizedSolution  (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : HypoellipticAleksandrov.KineticScalarField n) :
     Prop :=
-  LocallyIntegrableOn u Ω volume ∧
-    ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ →
+  LocallyIntegrableOn u Ω  ∧
+    ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ PDE.smoothOrder ψ → HasCompactSupport ψ →
       tsupport ψ ⊆ evolutionHomeomorph n ⁻¹' Ω →
       (∫ z in Ω, u z * regularizedAdjoint B b ε ψ ((evolutionHomeomorph n).symm z)) =
         ∫ z in Ω, g z * ψ ((evolutionHomeomorph n).symm z)
 
-theorem isWeakTransportedSolution_comp_iff (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+theorem isWeakTransportedSolution_comp_iff  (Ω : Set (KineticPoint n)) (u g : HypoellipticAleksandrov.KineticScalarField n) :
     IsWeakTransportedSolution B b (evolutionHomeomorph n ⁻¹' Ω) (u ∘ evolutionHomeomorph n)
         (g ∘ evolutionHomeomorph n) ↔ IsKineticWeakTransportedSolution B b Ω u g :=
-  isDistributionalSolution_comp_iff (transportedAdjoint B b) Ω u g
+  isDistributionalSolution_comp_iff _ Ω u g
 
-theorem isWeakRegularizedSolution_comp_iff (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+theorem isWeakRegularizedSolution_comp_iff  (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : HypoellipticAleksandrov.KineticScalarField n) :
     IsWeakRegularizedSolution B b ε (evolutionHomeomorph n ⁻¹' Ω) (u ∘ evolutionHomeomorph n)
         (g ∘ evolutionHomeomorph n) ↔ IsKineticWeakRegularizedSolution B b ε Ω u g :=
-  isDistributionalSolution_comp_iff (regularizedAdjoint B b ε) Ω u g
+  isDistributionalSolution_comp_iff _ Ω u g
 
 /-- **Kinetic weak equation ⇒ Hörmander weak equation (`ε = 0`).**  A kinetic distributional
 solution of `Lop u = g` on `Ω ⊆ KineticPoint n`, with `g ∘ e` smooth on `e ⁻¹' Ω`, gives the
 carrier `HasWeakHormanderEquation` for `u ∘ e` on `e ⁻¹' Ω`. -/
 theorem hasWeakHormanderEquation_comp_transportedFields {lam Lam : ℝ}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+    {B : FullKineticCoefficient n} {b : PDE.VectorField n} (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) {Ω : Set (KineticPoint n)} {u g : KineticPoint n → ℝ}
+    (hb : IsSmoothDrift b) {Ω : Set (KineticPoint n)} {u g : HypoellipticAleksandrov.KineticScalarField n}
     (hu : IsKineticWeakTransportedSolution B b Ω u g)
-    (hg : ContDiffOn ℝ (⊤ : ℕ∞) (g ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω)) :
+    (hg : ContDiffOn ℝ PDE.smoothOrder (g ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω)) :
     HasWeakHormanderEquation (evolutionHomeomorph n ⁻¹' Ω) (transportedFields B b)
       (fun _ => 0) (g ∘ evolutionHomeomorph n) (u ∘ evolutionHomeomorph n) :=
   hasWeakHormanderEquation_transportedFields hlam hB hell hb
@@ -186,11 +182,11 @@ theorem hasWeakHormanderEquation_comp_transportedFields {lam Lam : ℝ}
 /-- **Kinetic weak equation ⇒ Hörmander weak equation (`ε ≥ 0`).**  As above for
 `L_ε = Lop + ε Δ_z` and `regularizedFields B b ε`. -/
 theorem hasWeakHormanderEquation_comp_regularizedFields {lam Lam ε : ℝ} (hε : 0 ≤ ε)
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
+    {B : FullKineticCoefficient n} {b : PDE.VectorField n} (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) {Ω : Set (KineticPoint n)} {u g : KineticPoint n → ℝ}
+    (hb : IsSmoothDrift b) {Ω : Set (KineticPoint n)} {u g : HypoellipticAleksandrov.KineticScalarField n}
     (hu : IsKineticWeakRegularizedSolution B b ε Ω u g)
-    (hg : ContDiffOn ℝ (⊤ : ℕ∞) (g ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω)) :
+    (hg : ContDiffOn ℝ PDE.smoothOrder (g ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω)) :
     HasWeakHormanderEquation (evolutionHomeomorph n ⁻¹' Ω) (regularizedFields B b ε)
       (fun _ => 0) (g ∘ evolutionHomeomorph n) (u ∘ evolutionHomeomorph n) :=
   hasWeakHormanderEquation_regularizedFields hε hlam hB hell hb
@@ -199,11 +195,11 @@ theorem hasWeakHormanderEquation_comp_regularizedFields {lam Lam ε : ℝ} (hε 
 /-- **Conclusion transfer.**  A smooth representative of `u ∘ e` on `e ⁻¹' Ω` (the conclusion of
 the Hörmander theorem on the packed space) yields a representative `f ∘ e.symm` of `u` on `Ω`
 that is smooth in packed coordinates and equals `u` almost everywhere on `Ω`. -/
-theorem exists_kinetic_representative {Ω : Set (KineticPoint n)} {u : KineticPoint n → ℝ}
-    (h : ∃ f : EvolutionVec n → ℝ, ContDiffOn ℝ (⊤ : ℕ∞) f (evolutionHomeomorph n ⁻¹' Ω) ∧
+theorem exists_kinetic_representative {Ω : Set (KineticPoint n)} {u : HypoellipticAleksandrov.KineticScalarField n}
+    (h : ∃ f : EvolutionVec n → ℝ, ContDiffOn ℝ PDE.smoothOrder f (evolutionHomeomorph n ⁻¹' Ω) ∧
       (u ∘ evolutionHomeomorph n) =ᵐ[volume.restrict (evolutionHomeomorph n ⁻¹' Ω)] f) :
-    ∃ f : KineticPoint n → ℝ,
-      ContDiffOn ℝ (⊤ : ℕ∞) (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω) ∧
+    ∃ f : HypoellipticAleksandrov.KineticScalarField n,
+      ContDiffOn ℝ PDE.smoothOrder (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω) ∧
         u =ᵐ[volume.restrict Ω] f := by
   obtain ⟨f, hf, hae⟩ := h
   refine ⟨f ∘ (evolutionHomeomorph n).symm, ?_, ?_⟩

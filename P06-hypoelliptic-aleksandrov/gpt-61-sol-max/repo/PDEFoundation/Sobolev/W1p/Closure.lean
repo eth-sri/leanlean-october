@@ -17,7 +17,7 @@ remain on `Vec d`, and coordinatewise convergence is converted to the exact
 Euclidean-gradient norm without a dimension-dependent loss.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal Topology
 
@@ -51,81 +51,43 @@ theorem HasWeakGradientOn.of_tendsto_eLpNorm
               (fun x => DuSeq n x i - Du x i)
               p (volumeOn U))
           atTop (𝓝 0)) :
-    HasWeakGradientOn U u Du := by
-  have hValueLp :
-      Tendsto
-        (fun n => (huSeq n).toScalarLp)
-        atTop (𝓝 hu.toScalarLp) := by
-    exact
-      (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-        uSeq huSeq u hu).mpr hValue
-  have hGradientEuclidean :
-      Tendsto
-        (fun n =>
-          eLpNorm
-            (fun x =>
-              vecEuclideanNorm (DuSeq n x - Du x))
-            p (volumeOn U))
-        atTop (𝓝 0) := by
-    apply
-      tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
-        Fact.out
-    · intro n i
-      exact
-        ((hDuSeq n i).aestronglyMeasurable.sub
-          (hDu i).aestronglyMeasurable)
-    · exact hGradient
-  have hGradientHilbert :
-      Tendsto
-        (fun n =>
-          eLpNorm
-            (toHilbertVecField (DuSeq n) -
-              toHilbertVecField Du)
-            p (volumeOn U))
-        atTop (𝓝 0) := by
-    have hEq : ∀ n,
-        eLpNorm (toHilbertVecField fun x => DuSeq n x - Du x) p (volumeOn U) =
-          eLpNorm (fun x => vecEuclideanNorm (DuSeq n x - Du x)) p (volumeOn U) :=
-      fun n => eLpNorm_toHilbertVecField_eq _ _ _
-        (aemeasurable_pi_iff.2 fun i =>
-          ((hDuSeq n i).aestronglyMeasurable.sub
-            (hDu i).aestronglyMeasurable).aemeasurable).aestronglyMeasurable
-    simpa only [toHilbertVecField_sub, hEq] using
-      hGradientEuclidean
-  have hGradientLp :
-      Tendsto
-        (fun n => (hDuSeq n).toHilbertVectorLp)
-        atTop (𝓝 hDu.toHilbertVectorLp) := by
-    exact
-      (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-        (fun n => toHilbertVecField (DuSeq n))
-        (fun n =>
-          gradMemLpOn_iff_memLp_toHilbertVecField.mp
-            (hDuSeq n))
-        (toHilbertVecField Du)
-        (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu)).mpr
-        hGradientHilbert
-  have hPair :
-      Tendsto
-        (fun n =>
-          weakGradientLpPairOfRepresentatives
-            (huSeq n) (hDuSeq n))
-        atTop
-        (𝓝
-          (weakGradientLpPairOfRepresentatives hu hDu)) := by
-    simpa only [weakGradientLpPairOfRepresentatives] using
-      hValueLp.prodMk_nhds hGradientLp
-  have hPairMem :
-      weakGradientLpPairOfRepresentatives hu hDu ∈
-        weakGradientGraph U p := by
-    exact
-      (weakGradientGraph U p).isClosed.mem_of_tendsto
-        hPair
-        (Eventually.of_forall fun n =>
-          weakGradientLpPairOfRepresentatives_mem_weakGradientGraph
-            (huSeq n) (hDuSeq n) (hweak n))
-  exact
-    hasWeakGradientOn_of_weakGradientLpPairOfRepresentatives_mem
-      hu hDu hPairMem
+    HasWeakGradientOn U u Du := (hasWeakGradientOn_of_weakGradientLpPairOfRepresentatives_mem hu hDu
+  (IsClosed.mem_of_tendsto (ClosedSubmodule.isClosed (weakGradientGraph U p))
+    (id
+      (Tendsto.prodMk_nhds ((Lp.tendsto_Lp_iff_tendsto_eLpNorm'' uSeq huSeq u hu).mpr hValue)
+        ((Lp.tendsto_Lp_iff_tendsto_eLpNorm'' (fun n => toHilbertVecField (DuSeq n))
+              (fun n => gradMemLpOn_iff_memLp_toHilbertVecField.mp (hDuSeq n)) (toHilbertVecField Du)
+              (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu)).mpr
+          (Eq.mpr
+            (id
+              (congrFun'
+                (congrFun'
+                  (congrArg Tendsto
+                    (funext fun n =>
+                      Eq.trans
+                        (congrFun'
+                          (congrFun'
+                            (congrArg
+                              (@eLpNorm (Vec d) (HilbertVec d) SeminormedAddGroup.toContinuousENorm.toENorm
+                                (PiLp.topologicalSpace 2 fun x => ℝ) MeasureSpace.pi.toMeasurableSpace)
+                              (toHilbertVecField_sub (DuSeq n) Du))
+                            p)
+                          (volumeOn U))
+                        ((fun n =>
+                            eLpNorm_toHilbertVecField_eq (volumeOn U) p (fun x => DuSeq n x - Du x)
+                              (AEMeasurable.aestronglyMeasurable
+                                (aemeasurable_pi_iff.mpr fun i =>
+                                  AEStronglyMeasurable.aemeasurable
+                                    (AEStronglyMeasurable.sub (MemLp.aestronglyMeasurable (hDuSeq n i))
+                                      (MemLp.aestronglyMeasurable (hDu i))))))
+                          n)))
+                  atTop)
+                (𝓝 0)))
+            (tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate Fact.out
+              (fun n i =>
+                AEStronglyMeasurable.sub (MemLp.aestronglyMeasurable (hDuSeq n i)) (MemLp.aestronglyMeasurable (hDu i)))
+              hGradient)))))
+    (Eventually.of_forall fun n =>
+      weakGradientLpPairOfRepresentatives_mem_weakGradientGraph (huSeq n) (hDuSeq n) (hweak n))))
 
 end PDE

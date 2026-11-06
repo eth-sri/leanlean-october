@@ -9,7 +9,7 @@ The comparison region depends only on dimension and stack height. The path is He
 on the travel interval and tangent before its initial time, as in the companion paper.
 -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 open Set
 

@@ -5,13 +5,13 @@ import Mathlib.Tactic
 
 /-! # Every local stack comparison region lies in the same buffered reference box -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
-open Set
+
 
 /-- All subcylinder comparison boxes share the same reference region. -/
 theorem sampling_comparison_image_subset {d : ℕ} (m : ℕ) (P : KineticPoint d) {r : ℝ}
@@ -43,7 +43,7 @@ theorem sampling_comparison_image_subset {d : ℕ} (m : ℕ) (P : KineticPoint d
   have htransport : PDE.vecEuclideanNorm ((r ^ 2 * Y.time) • P.velocity) ≤ (m : ℝ) + 3 := by
     rw [PDE.vecEuclideanNorm_smul, abs_mul, abs_of_nonneg (sq_nonneg r)]
     have he := mul_le_mul_of_nonneg_left hv (mul_nonneg (sq_nonneg r) (abs_nonneg Y.time))
-    simpa only [mul_one] using he.trans (by simpa only [mul_one] using htimescaled)
+    simpa only using he.trans (by simpa only [mul_one] using htimescaled)
   refine ⟨?_, ?_, ?_, ?_⟩
   · change -((m : ℝ) + 5) < P.time + r ^ 2 * Y.time
     linarith only [htxlo, hr2, htlo]

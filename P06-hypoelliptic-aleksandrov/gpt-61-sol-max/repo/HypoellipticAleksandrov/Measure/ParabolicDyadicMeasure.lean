@@ -3,6 +3,10 @@ module
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicGrid
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+import Lean.Elab.Tactic.Grind
+import Mathlib.Tactic.Ring
+
+
 
 /-!
 # Finite parabolic dyadic measure geometry
@@ -32,38 +36,41 @@ namespace HypoellipticAleksandrov.Parabolic
 noncomputable section
 
 /-- The half-open reference rectangle for the parabolic dyadic subdivision. -/
-def parabolicDyadicReferenceCell (d : ℕ) : Set (TimeVelocity d) :=
+def parabolicDyadicReferenceCell (d : ℕ) : HypoellipticAleksandrov.Parabolic.Region d :=
   Ioc (0 : ℝ) 1 ×ˢ Set.univ.pi fun _ : Fin d => Ioc (-1 : ℝ) 1
 
+variable (n : ℕ)
+
 /-- The time width of a generation-`n` parabolic dyadic cell. -/
-def parabolicDyadicTimeWidth (n : ℕ) : ℝ :=
+def parabolicDyadicTimeWidth  : ℝ :=
   ((4 : ℝ) ^ n)⁻¹
 
 /-- The width in each velocity coordinate of a generation-`n` cell. -/
-def parabolicDyadicVelocityWidth (n : ℕ) : ℝ :=
+def parabolicDyadicVelocityWidth  : ℝ :=
   2 * ((2 : ℝ) ^ n)⁻¹
 
 /-- The finite, unbundled family of generation-`n` half-open dyadic cells. -/
-def parabolicDyadicGenerationCells (d n : ℕ) : Finset (Set (TimeVelocity d)) := by
+def parabolicDyadicGenerationCells (d n : ℕ) : Finset (HypoellipticAleksandrov.Parabolic.Region d) := by
   classical
   exact Finset.univ.image (fun index : ParabolicDyadicIndex d n =>
     parabolicDyadicHalfOpenCell index)
 
 /-- Membership in the finite generation family is exactly representation by an
 address of that generation. -/
-theorem mem_parabolicDyadicGenerationCells_iff {d n : ℕ} {s : Set (TimeVelocity d)} :
+theorem mem_parabolicDyadicGenerationCells_iff {d n : ℕ} {s : HypoellipticAleksandrov.Parabolic.Region d} :
     s ∈ parabolicDyadicGenerationCells d n ↔
       ∃ index : ParabolicDyadicIndex d n, parabolicDyadicHalfOpenCell index = s := by
-  classical
-  simp only [parabolicDyadicGenerationCells, Finset.mem_image, Finset.mem_univ, true_and]
+  simp_all [parabolicDyadicGenerationCells]
+
+variable (d : ℕ)
 
 /-- The reference cell is measurable for product Lebesgue measure. -/
-theorem measurableSet_parabolicDyadicReferenceCell (d : ℕ) :
+theorem measurableSet_parabolicDyadicReferenceCell  :
     MeasurableSet (parabolicDyadicReferenceCell d) :=
   measurableSet_Ioc.prod (MeasurableSet.univ_pi fun _ => measurableSet_Ioc)
 
 /-- Generation zero has precisely the reference half-open cell. -/
-theorem parabolicDyadicHalfOpenCell_zero_eq_reference (d : ℕ)
+theorem parabolicDyadicHalfOpenCell_zero_eq_reference
     (index : ParabolicDyadicIndex d 0) :
     parabolicDyadicHalfOpenCell index = parabolicDyadicReferenceCell d := by
   ext z
@@ -76,7 +83,7 @@ theorem parabolicDyadicHalfOpenCell_zero_eq_reference (d : ℕ)
   norm_num
 
 /-- The generation-zero finite family is the singleton reference cell. -/
-theorem parabolicDyadicGenerationCells_zero (d : ℕ) :
+theorem parabolicDyadicGenerationCells_zero  :
     parabolicDyadicGenerationCells d 0 = {parabolicDyadicReferenceCell d} := by
   classical
   ext s
@@ -85,23 +92,19 @@ theorem parabolicDyadicGenerationCells_zero (d : ℕ) :
     obtain ⟨index, hindex⟩ := mem_parabolicDyadicGenerationCells_iff.mp hs
     simp only [Finset.mem_singleton]
     exact hindex.symm.trans (parabolicDyadicHalfOpenCell_zero_eq_reference d index)
-  · intro hs
-    have hs' : s = parabolicDyadicReferenceCell d := by
-      simpa only [Finset.mem_singleton] using hs
-    subst s
-    let index : ParabolicDyadicIndex d 0 := fun j => Fin.elim0 j
-    rw [mem_parabolicDyadicGenerationCells_iff]
-    exact ⟨index, parabolicDyadicHalfOpenCell_zero_eq_reference d index⟩
+  · simp_all [parabolicDyadicReferenceCell, ParabolicDyadicIndex, mem_parabolicDyadicGenerationCells_iff, parabolicDyadicHalfOpenCell_zero_eq_reference]
 
 /-- The generation-zero family has union the reference cell. -/
-theorem iUnion_parabolicDyadicGenerationCells_zero (d : ℕ) :
+theorem iUnion_parabolicDyadicGenerationCells_zero  :
     ⋃ s ∈ parabolicDyadicGenerationCells d 0, s = parabolicDyadicReferenceCell d := by
   rw [parabolicDyadicGenerationCells_zero]
   simp
 
+variable (a h : ℝ)
+
 /-- The four consecutive half-open intervals of equal width partition their
 parent interval. -/
-private theorem iUnion_Ioc_four_eq_Ioc (a h : ℝ) :
+private theorem iUnion_Ioc_four_eq_Ioc  :
     (⋃ c : Fin 4, Ioc (a + c.1 * h) (a + (c.1 + 1) * h)) =
       Ioc a (a + 4 * h) := by
   ext x
@@ -122,7 +125,7 @@ private theorem iUnion_Ioc_four_eq_Ioc (a h : ℝ) :
 
 /-- The two consecutive half-open intervals of equal width partition their
 parent interval. -/
-private theorem iUnion_Ioc_two_eq_Ioc (a h : ℝ) :
+private theorem iUnion_Ioc_two_eq_Ioc  :
     (⋃ c : Fin 2, Ioc (a + c.1 * h) (a + (c.1 + 1) * h)) =
       Ioc a (a + 2 * h) := by
   ext x
@@ -138,33 +141,30 @@ private theorem iUnion_Ioc_two_eq_Ioc (a h : ℝ) :
     · exact ⟨1, by norm_num; exact ⟨by linarith, hx.2⟩⟩
 
 /-- Distinct consecutive `Fin 4` half-open intervals are disjoint. -/
-private theorem disjoint_Ioc_four_of_ne (a h : ℝ)
+private theorem disjoint_Ioc_four_of_ne
     {c c' : Fin 4} (hcc' : c ≠ c') :
     Disjoint (Ioc (a + c.1 * h) (a + (c.1 + 1) * h))
       (Ioc (a + c'.1 * h) (a + (c'.1 + 1) * h)) := by
   fin_cases c <;> fin_cases c' <;> try { exact (hcc' rfl).elim }
   all_goals
-    apply Set.disjoint_left.2
-    intro x hx hx'
-    norm_num at hx hx' ⊢
-    linarith
+    grind
 
 /-- Distinct consecutive `Fin 2` half-open intervals are disjoint. -/
-private theorem disjoint_Ioc_two_of_ne (a h : ℝ)
+private theorem disjoint_Ioc_two_of_ne
     {c c' : Fin 2} (hcc' : c ≠ c') :
     Disjoint (Ioc (a + c.1 * h) (a + (c.1 + 1) * h))
       (Ioc (a + c'.1 * h) (a + (c'.1 + 1) * h)) := by
   fin_cases c <;> fin_cases c' <;> try { exact (hcc' rfl).elim }
   all_goals
-    apply Set.disjoint_left.2
-    intro x hx hx'
-    norm_num at hx hx' ⊢
-    linarith
+    grind
+
+variable {d n : ℕ} (index : ParabolicDyadicIndex d n)
+
+variable (child : ParabolicDyadicChild d)
 
 /-- The time interval of a child is one of four consecutive equal subintervals
 of its parent interval. -/
-private theorem parabolicDyadicTimeCell_childIndex_eq {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) :
+private theorem parabolicDyadicTimeCell_childIndex_eq   :
     parabolicDyadicTimeCell (parabolicDyadicChildIndex index child) =
       Ioc
         ((parabolicDyadicTimeCode n index : ℝ) / (4 : ℝ) ^ n +
@@ -176,8 +176,7 @@ private theorem parabolicDyadicTimeCell_childIndex_eq {d n : ℕ}
 
 /-- One velocity coordinate interval of a child is one of two consecutive
 equal subintervals of its parent's coordinate interval. -/
-private theorem parabolicDyadicVelocityCell_childIndex_apply {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d)
+private theorem parabolicDyadicVelocityCell_childIndex_apply
     (coordinate : Fin d) :
     (fun coordinate =>
       Ioc (-1 + 2 * (parabolicDyadicVelocityCode (n + 1)
@@ -196,8 +195,7 @@ private theorem parabolicDyadicVelocityCell_childIndex_apply {d n : ℕ}
 
 /-- The full velocity rectangle of a child is the product of its two-way
 coordinate subdivisions. -/
-private theorem parabolicDyadicVelocityCell_childIndex_eq {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) :
+private theorem parabolicDyadicVelocityCell_childIndex_eq   :
     parabolicDyadicVelocityCell (parabolicDyadicChildIndex index child) =
       Set.univ.pi fun coordinate =>
         Ioc
@@ -205,15 +203,11 @@ private theorem parabolicDyadicVelocityCell_childIndex_eq {d n : ℕ}
             2 * ((child.2 coordinate).1 : ℝ) / (2 : ℝ) ^ (n + 1))
           (-1 + 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) / (2 : ℝ) ^ n +
             2 * ((child.2 coordinate).1 + 1 : ℝ) / (2 : ℝ) ^ (n + 1)) := by
-  unfold parabolicDyadicVelocityCell
-  congr 2
-  funext coordinate
-  exact parabolicDyadicVelocityCell_childIndex_apply index child coordinate
+  simp_all [parabolicDyadicVelocityCell, parabolicDyadicVelocityCell_childIndex_apply]
 
 /-- The half-open children of an addressed cell have union exactly equal to
 their parent cell. -/
-theorem iUnion_parabolicDyadicHalfOpenCell_child_eq {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem iUnion_parabolicDyadicHalfOpenCell_child_eq  :
     (⋃ child : ParabolicDyadicChild d,
       parabolicDyadicHalfOpenCell (parabolicDyadicChildIndex index child)) =
       parabolicDyadicHalfOpenCell index := by
@@ -237,7 +231,7 @@ theorem iUnion_parabolicDyadicHalfOpenCell_child_eq {d n : ℕ}
     · rw [parabolicDyadicTimeCell_childIndex_eq] at htime
       have htimeChild : time ∈
           Ioc (a + child.1.1 * h) (a + (child.1.1 + 1) * h) := by
-        simpa only [a, h, div_eq_mul_inv] using htime
+        exact htime
       rw [← htimePartition]
       exact Set.mem_iUnion.mpr ⟨child.1, htimeChild⟩
     · intro coordinate _
@@ -250,10 +244,7 @@ theorem iUnion_parabolicDyadicHalfOpenCell_child_eq {d n : ℕ}
         unfold b k
         field_simp
         ring
-      have hpartition :
-          (⋃ c : Fin 2, Ioc (b + c.1 * k) (b + (c.1 + 1) * k)) =
-            Ioc b (b + 2 * k) :=
-        iUnion_Ioc_two_eq_Ioc b k
+
       rw [parabolicDyadicVelocityCell_childIndex_eq] at hvelocity
       have hvelocityChild : velocity coordinate ∈
           Ioc (b + (child.2 coordinate).1 * k)
@@ -270,16 +261,16 @@ theorem iUnion_parabolicDyadicHalfOpenCell_child_eq {d n : ℕ}
             unfold b k
             field_simp
       have hparent : velocity coordinate ∈ Ioc b (b + 2 * k) := by
-        rw [← hpartition]
-        exact Set.mem_iUnion.mpr ⟨child.2 coordinate, hvelocityChild⟩
+        rw [← (iUnion_Ioc_two_eq_Ioc b k)]
+        exact Set.mem_iUnion.mpr ⟨_, hvelocityChild⟩
       rw [mem_Ioc] at hparent ⊢
       simpa only [b, hright] using hparent
   · rintro ⟨htime, hvelocity⟩
     rw [mem_parabolicDyadicVelocityCell_iff] at hvelocity
-    have htime' : time ∈ ⋃ c : Fin 4, Ioc (a + c.1 * h) (a + (c.1 + 1) * h) := by
-      rw [htimePartition]
-      exact htime
-    obtain ⟨timeChild, htimeChild⟩ := Set.mem_iUnion.mp htime'
+
+    obtain ⟨timeChild, htimeChild⟩ := Set.mem_iUnion.mp (by
+        rw [htimePartition]
+        exact htime)
     have hvelocityChildExists : ∀ coordinate : Fin d, ∃ velocityChild : Fin 2,
         velocity coordinate ∈
           Ioc
@@ -297,32 +288,20 @@ theorem iUnion_parabolicDyadicHalfOpenCell_child_eq {d n : ℕ}
         unfold b k
         field_simp
         ring
-      have hpartition :
-          (⋃ c : Fin 2, Ioc (b + c.1 * k) (b + (c.1 + 1) * k)) =
-            Ioc b (b + 2 * k) :=
-        iUnion_Ioc_two_eq_Ioc b k
-      have hparent : velocity coordinate ∈ Ioc b (b + 2 * k) := by
-        rw [mem_Ioc]
-        rw [hright]
-        exact hvelocity coordinate
+
+
       obtain ⟨velocityChild, hvelocityChild⟩ := Set.mem_iUnion.mp (by
-        rw [hpartition]
-        exact hparent)
+        rw [(iUnion_Ioc_two_eq_Ioc b k)]
+        exact (by
+            rw [mem_Ioc]
+            rw [hright]
+            exact hvelocity coordinate))
       exact ⟨velocityChild, by
-        rw [mem_Ioc] at hvelocityChild ⊢
-        constructor
-        · convert hvelocityChild.1 using 1
-          all_goals
-            unfold b k at *
-            field_simp
-        · convert hvelocityChild.2 using 1
-          all_goals
-            unfold b k at *
-            field_simp⟩
+        grind⟩
     choose velocityChild hvelocityChild using hvelocityChildExists
     refine ⟨(timeChild, velocityChild), ?_, ?_⟩
     · rw [parabolicDyadicTimeCell_childIndex_eq]
-      simpa only [a, h, div_eq_mul_inv, Nat.cast_add, Nat.cast_one] using htimeChild
+      exact htimeChild
     · rw [mem_parabolicDyadicVelocityCell_iff]
       intro coordinate
       rw [parabolicDyadicVelocityCode_childIndex]
@@ -341,19 +320,18 @@ theorem iUnion_parabolicDyadicHalfOpenCell_child_eq {d n : ℕ}
           ring
 
 /-- Two distinct children of an addressed cell are disjoint. -/
-theorem disjoint_parabolicDyadicHalfOpenCell_child_of_ne {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) {child child' : ParabolicDyadicChild d}
+theorem disjoint_parabolicDyadicHalfOpenCell_child_of_ne  {child child' : ParabolicDyadicChild d}
     (hchild : child ≠ child') :
     Disjoint (parabolicDyadicHalfOpenCell (parabolicDyadicChildIndex index child))
       (parabolicDyadicHalfOpenCell (parabolicDyadicChildIndex index child')) := by
   by_cases htime : child.1 = child'.1
-  · have hvelocity : child.2 ≠ child'.2 := by
-      intro hvelocity
-      exact hchild (Prod.ext htime hvelocity)
+  ·
     obtain ⟨coordinate, hcoordinate⟩ : ∃ coordinate, child.2 coordinate ≠ child'.2 coordinate := by
       by_contra h
       push_neg at h
-      exact hvelocity (funext h)
+      exact (show child.2 ≠ child'.2 by
+          intro hvelocity
+          exact hchild (Prod.ext htime hvelocity)) (funext h)
     apply Set.disjoint_left.2
     intro z hz hz'
     rcases z with ⟨time, velocity⟩
@@ -365,35 +343,19 @@ theorem disjoint_parabolicDyadicHalfOpenCell_child_of_ne {d n : ℕ}
     let b : ℝ := -1 + 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) /
       (2 : ℝ) ^ n
     let k : ℝ := 2 * ((2 : ℝ) ^ (n + 1))⁻¹
-    have hleft :
-        velocity coordinate ∈
+
+
+    exact (Set.disjoint_left.1 (disjoint_Ioc_two_of_ne b k hcoordinate) (show velocity coordinate ∈
           Ioc (b + (child.2 coordinate).1 * k)
-            (b + ((child.2 coordinate).1 + 1) * k) := by
-      rw [mem_Ioc]
-      constructor
-      · convert hzcoordinate.1 using 1
-        all_goals
-          unfold b k
-          field_simp
-      · convert hzcoordinate.2 using 1
-        all_goals
-          unfold b k
-          field_simp
-    have hright :
-        velocity coordinate ∈
-          Ioc (b + (child'.2 coordinate).1 * k)
-            (b + ((child'.2 coordinate).1 + 1) * k) := by
-      rw [mem_Ioc]
-      constructor
-      · convert hzcoordinate'.1 using 1
-        all_goals
-          unfold b k
-          field_simp
-      · convert hzcoordinate'.2 using 1
-        all_goals
-          unfold b k
-          field_simp
-    exact (Set.disjoint_left.1 (disjoint_Ioc_two_of_ne b k hcoordinate) hleft hright)
+            (b + ((child.2 coordinate).1 + 1) * k) by
+        rw [mem_Ioc]
+        constructor
+        · grind
+        · grind) (by
+        rw [mem_Ioc]
+        constructor
+        · grind
+        · grind))
   · apply Set.disjoint_left.2
     intro z hz hz'
     rcases z with ⟨time, velocity⟩
@@ -401,15 +363,14 @@ theorem disjoint_parabolicDyadicHalfOpenCell_child_of_ne {d n : ℕ}
     rw [parabolicDyadicTimeCell_childIndex_eq] at hz hz'
     let a : ℝ := (parabolicDyadicTimeCode n index : ℝ) / (4 : ℝ) ^ n
     let h : ℝ := ((4 : ℝ) ^ (n + 1))⁻¹
-    have hleft : time ∈ Ioc (a + child.1.1 * h) (a + (child.1.1 + 1) * h) := by
-      simpa only [a, h, div_eq_mul_inv] using hz.1
-    have hright : time ∈ Ioc (a + child'.1.1 * h) (a + (child'.1.1 + 1) * h) := by
-      simpa only [a, h, div_eq_mul_inv] using hz'.1
-    exact (Set.disjoint_left.1 (disjoint_Ioc_four_of_ne a h htime) hleft hright)
+
+
+    exact (Set.disjoint_left.1 (disjoint_Ioc_four_of_ne a h htime) (show time ∈ Ioc (a + child.1.1 * h) (a + (child.1.1 + 1) * h) by
+        exact hz.1) (show time ∈ Ioc (a + child'.1.1 * h) (a + (child'.1.1 + 1) * h) by
+        exact hz'.1))
 
 /-- Every addressed child is contained in its parent cell. -/
-theorem parabolicDyadicHalfOpenCell_child_subset {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) :
+theorem parabolicDyadicHalfOpenCell_child_subset  (child : ParabolicDyadicChild d) :
     parabolicDyadicHalfOpenCell (parabolicDyadicChildIndex index child) ⊆
       parabolicDyadicHalfOpenCell index := by
   rw [← iUnion_parabolicDyadicHalfOpenCell_child_eq index]
@@ -432,17 +393,14 @@ theorem iUnion_parabolicDyadicGenerationCells (d n : ℕ) :
       rw [← hindex] at hzs
       let parent := parabolicDyadicParent index
       let child := index (Fin.last n)
-      have hdecompose : parabolicDyadicChildIndex parent child = index := by
-        exact parabolicDyadicChildIndex_parent_last index
-      have hzparent : z ∈ parabolicDyadicHalfOpenCell parent :=
-        parabolicDyadicHalfOpenCell_child_subset parent child (by simpa only [hdecompose] using hzs)
-      have hparentMem : parabolicDyadicHalfOpenCell parent ∈
-          parabolicDyadicGenerationCells d n := by
-        rw [mem_parabolicDyadicGenerationCells_iff]
-        exact ⟨parent, rfl⟩
+      have hdecompose : parabolicDyadicChildIndex parent child = index := parabolicDyadicChildIndex_parent_last index
+
+
       rw [← ih]
-      exact Set.mem_iUnion.mpr ⟨parabolicDyadicHalfOpenCell parent,
-        Set.mem_iUnion.mpr ⟨hparentMem, hzparent⟩⟩
+      exact Set.mem_iUnion.mpr ⟨_,
+        Set.mem_iUnion.mpr ⟨(show _ by
+            rw [mem_parabolicDyadicGenerationCells_iff]
+            exact ⟨parent, rfl⟩), (parabolicDyadicHalfOpenCell_child_subset parent child (by simpa only [hdecompose] using hzs))⟩⟩
     · intro hz
       rw [← ih] at hz
       simp only [Set.mem_iUnion] at hz
@@ -452,12 +410,11 @@ theorem iUnion_parabolicDyadicGenerationCells (d n : ℕ) :
       rw [← iUnion_parabolicDyadicHalfOpenCell_child_eq parent] at hzs
       obtain ⟨child, hzchild⟩ := Set.mem_iUnion.mp hzs
       let index := parabolicDyadicChildIndex parent child
-      have hindexMem : parabolicDyadicHalfOpenCell index ∈
-          parabolicDyadicGenerationCells d (n + 1) := by
-        rw [mem_parabolicDyadicGenerationCells_iff]
-        exact ⟨index, rfl⟩
-      exact Set.mem_iUnion.mpr ⟨parabolicDyadicHalfOpenCell index,
-        Set.mem_iUnion.mpr ⟨hindexMem, hzchild⟩⟩
+
+      exact Set.mem_iUnion.mpr ⟨_,
+        Set.mem_iUnion.mpr ⟨(show _ by
+            rw [mem_parabolicDyadicGenerationCells_iff]
+            exact ⟨index, rfl⟩), hzchild⟩⟩
 
 /-- Distinct addresses at a fixed generation define disjoint half-open cells. -/
 private theorem disjoint_parabolicDyadicHalfOpenCell_of_ne {d : ℕ} :
@@ -469,31 +426,28 @@ private theorem disjoint_parabolicDyadicHalfOpenCell_of_ne {d : ℕ} :
       funext j
       exact Fin.elim0 j
   | n + 1, index, index', hindex => by
-      let child := index (Fin.last n)
+
       let child' := index' (Fin.last n)
       have hchildIndex :
-          parabolicDyadicChildIndex (parabolicDyadicParent index) child = index :=
+          parabolicDyadicChildIndex (parabolicDyadicParent index) (index (Fin.last n)) = index :=
         parabolicDyadicChildIndex_parent_last index
       have hchildIndex' :
           parabolicDyadicChildIndex (parabolicDyadicParent index') child' = index' :=
         parabolicDyadicChildIndex_parent_last index'
       by_cases hparent : parabolicDyadicParent index = parabolicDyadicParent index'
-      · have hchild : child ≠ child' := by
-          intro hchild
-          apply hindex
-          rw [← hchildIndex, ← hchildIndex', hparent, hchild]
+      ·
         have hchildIndex'' : parabolicDyadicChildIndex (parabolicDyadicParent index) child' =
             index' := by
           simpa only [hparent] using hchildIndex'
         rw [← hchildIndex, ← hchildIndex'']
         exact disjoint_parabolicDyadicHalfOpenCell_child_of_ne
-          (parabolicDyadicParent index) hchild
-      · have hparents : Disjoint
-          (parabolicDyadicHalfOpenCell (parabolicDyadicParent index))
-          (parabolicDyadicHalfOpenCell (parabolicDyadicParent index')) :=
-          disjoint_parabolicDyadicHalfOpenCell_of_ne _ _ hparent
+          _ (by
+              intro hchild
+              apply hindex
+              rw [← hchildIndex, ← hchildIndex', hparent, hchild])
+      ·
         rw [← hchildIndex, ← hchildIndex']
-        exact hparents.mono
+        exact (disjoint_parabolicDyadicHalfOpenCell_of_ne _ _ hparent).mono
           (parabolicDyadicHalfOpenCell_child_subset _ _)
           (parabolicDyadicHalfOpenCell_child_subset _ _)
 
@@ -503,7 +457,7 @@ theorem parabolicDyadicHalfOpenCell_subset_reference {d n : ℕ}
     parabolicDyadicHalfOpenCell index ⊆ parabolicDyadicReferenceCell d := by
   intro z hz
   rw [← iUnion_parabolicDyadicGenerationCells d n]
-  exact Set.mem_iUnion.mpr ⟨parabolicDyadicHalfOpenCell index,
+  exact Set.mem_iUnion.mpr ⟨_,
     Set.mem_iUnion.mpr ⟨mem_parabolicDyadicGenerationCells_iff.mpr ⟨index, rfl⟩, hz⟩⟩
 
 /-- The union of all addressed half-open cells at one generation is the
@@ -516,20 +470,24 @@ theorem iUnion_parabolicDyadicHalfOpenCell_eq_reference (d n : ℕ) :
   simp only [Set.mem_iUnion]
   constructor
   · rintro ⟨index, hz⟩
-    exact ⟨parabolicDyadicHalfOpenCell index,
+    exact ⟨_,
       ⟨mem_parabolicDyadicGenerationCells_iff.mpr ⟨index, rfl⟩, hz⟩⟩
   · rintro ⟨s, hs, hz⟩
     obtain ⟨index, hindex⟩ := mem_parabolicDyadicGenerationCells_iff.mp hs
     exact ⟨index, hindex ▸ hz⟩
 
+variable {d n : ℕ}
+
 /-- Distinct addresses at one generation define disjoint half-open cells. -/
-theorem parabolicDyadicHalfOpenCell_disjoint_of_ne {d n : ℕ}
+theorem parabolicDyadicHalfOpenCell_disjoint_of_ne
     {index index' : ParabolicDyadicIndex d n} (hindex : index ≠ index') :
     Disjoint (parabolicDyadicHalfOpenCell index) (parabolicDyadicHalfOpenCell index') :=
   disjoint_parabolicDyadicHalfOpenCell_of_ne index index' hindex
 
+variable (index : ParabolicDyadicIndex d n)
+
 /-- The exact width of the time interval of an addressed cell. -/
-theorem parabolicDyadicTimeCell_width {d n : ℕ} (index : ParabolicDyadicIndex d n) :
+theorem parabolicDyadicTimeCell_width   :
     ((parabolicDyadicTimeCode n index + 1 : ℝ) / (4 : ℝ) ^ n) -
         (parabolicDyadicTimeCode n index : ℝ) / (4 : ℝ) ^ n =
       parabolicDyadicTimeWidth n := by
@@ -538,7 +496,7 @@ theorem parabolicDyadicTimeCell_width {d n : ℕ} (index : ParabolicDyadicIndex 
   ring
 
 /-- The exact width of one velocity coordinate interval of an addressed cell. -/
-theorem parabolicDyadicVelocityCell_width {d n : ℕ} (index : ParabolicDyadicIndex d n)
+theorem parabolicDyadicVelocityCell_width
     (coordinate : Fin d) :
     (-1 + 2 * (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
           (2 : ℝ) ^ n) -
@@ -552,7 +510,7 @@ theorem parabolicDyadicVelocityCell_width {d n : ℕ} (index : ParabolicDyadicIn
 /-- The time widths shrink to zero. -/
 theorem tendsto_parabolicDyadicTimeWidth_atTop :
     Tendsto parabolicDyadicTimeWidth atTop (𝓝 0) := by
-  change Tendsto (fun n : ℕ => ((4 : ℝ) ^ n)⁻¹) atTop (𝓝 0)
+  change Tendsto (fun n  => ((4 : ℝ) ^ n)⁻¹) atTop (𝓝 0)
   simpa only [← inv_pow] using
     (tendsto_pow_atTop_nhds_zero_of_lt_one (show 0 ≤ (4 : ℝ)⁻¹ by positivity)
       (show (4 : ℝ)⁻¹ < 1 by norm_num))
@@ -565,30 +523,23 @@ theorem tendsto_parabolicDyadicVelocityWidth_atTop :
     (tendsto_pow_atTop_nhds_zero_of_lt_one (show 0 ≤ (2 : ℝ)⁻¹ by positivity)
       (show (2 : ℝ)⁻¹ < 1 by norm_num)).const_mul 2
 
+variable {d n : ℕ} (index : ParabolicDyadicIndex d n)
+
 /-- The open addressed cell agrees almost everywhere with its half-open
 counterpart under product Lebesgue measure. -/
-theorem parabolicDyadicOpenCell_ae_eq_halfOpenCell {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem parabolicDyadicOpenCell_ae_eq_halfOpenCell  :
     parabolicDyadicOpenCell index =ᵐ[volume] parabolicDyadicHalfOpenCell index := by
   rw [volume_timeVelocity_eq_prod]
   exact Measure.set_prod_ae_eq Ioo_ae_eq_Ioc Measure.pi_Ioo_ae_eq_pi_Ioc
 
 /-- The real volume of an addressed time interval is its exact dyadic width. -/
-theorem volume_parabolicDyadicTimeCell_toReal {d n : ℕ} (index : ParabolicDyadicIndex d n) :
+theorem volume_parabolicDyadicTimeCell_toReal  :
     (volume (parabolicDyadicTimeCell index)).toReal = parabolicDyadicTimeWidth n := by
-  have hnonneg : 0 ≤
-      ((parabolicDyadicTimeCode n index + 1 : ℝ) / (4 : ℝ) ^ n) -
-        (parabolicDyadicTimeCode n index : ℝ) / (4 : ℝ) ^ n := by
-    rw [parabolicDyadicTimeCell_width]
-    unfold parabolicDyadicTimeWidth
-    positivity
-  rw [parabolicDyadicTimeCell, Real.volume_Ioc, ENNReal.toReal_ofReal hnonneg]
-  rw [parabolicDyadicTimeCell_width]
+  simp_all [parabolicDyadicTimeCode, parabolicDyadicTimeCell_width, parabolicDyadicTimeWidth, parabolicDyadicTimeCell]
 
 /-- The real volume of an addressed velocity rectangle is the product of its
 equal coordinate widths. -/
-theorem volume_parabolicDyadicVelocityCell_toReal {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem volume_parabolicDyadicVelocityCell_toReal  :
     (volume (parabolicDyadicVelocityCell index)).toReal =
       (parabolicDyadicVelocityWidth n) ^ d := by
   rw [parabolicDyadicVelocityCell, Real.volume_pi_Ioc_toReal]
@@ -600,8 +551,7 @@ theorem volume_parabolicDyadicVelocityCell_toReal {d n : ℕ}
     exact mul_nonneg (by norm_num) (inv_nonneg.mpr (by positivity))
 
 /-- The product-volume factorization of an addressed half-open cell. -/
-theorem volume_parabolicDyadicHalfOpenCell_toReal_factor {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem volume_parabolicDyadicHalfOpenCell_toReal_factor  :
     (volume (parabolicDyadicHalfOpenCell index)).toReal =
       parabolicDyadicTimeWidth n * (parabolicDyadicVelocityWidth n) ^ d := by
   rw [volume_timeVelocity_eq_prod, parabolicDyadicHalfOpenCell, Measure.prod_prod,
@@ -610,30 +560,16 @@ theorem volume_parabolicDyadicHalfOpenCell_toReal_factor {d n : ℕ}
 
 /-- The real volume of an addressed half-open cell has the source's exact
 parabolic normalization. -/
-theorem volume_parabolicDyadicHalfOpenCell_toReal {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem volume_parabolicDyadicHalfOpenCell_toReal  :
     (volume (parabolicDyadicHalfOpenCell index)).toReal =
       (2 : ℝ) ^ d / (2 : ℝ) ^ ((d + 2) * n) := by
   rw [volume_parabolicDyadicHalfOpenCell_toReal_factor]
   unfold parabolicDyadicTimeWidth parabolicDyadicVelocityWidth
   rw [show (4 : ℝ) = 2 ^ 2 by norm_num, ← pow_mul]
-  rw [mul_pow, inv_pow, div_eq_mul_inv]
-  rw [← pow_mul]
-  have hexponent : d * n + 2 * n = (d + 2) * n := (Nat.add_mul d 2 n).symm
-  calc
-    ((2 : ℝ) ^ (2 * n))⁻¹ * ((2 : ℝ) ^ d * ((2 : ℝ) ^ (n * d))⁻¹) =
-        (2 : ℝ) ^ d * (((2 : ℝ) ^ (2 * n))⁻¹ * ((2 : ℝ) ^ (n * d))⁻¹) := by
-      ring
-    _ = (2 : ℝ) ^ d * ((2 : ℝ) ^ (2 * n) * (2 : ℝ) ^ (n * d))⁻¹ := by
-      rw [← mul_inv]
-    _ = (2 : ℝ) ^ d * ((2 : ℝ) ^ (2 * n + n * d))⁻¹ := by
-      rw [← pow_add]
-    _ = (2 : ℝ) ^ d * ((2 : ℝ) ^ ((d + 2) * n))⁻¹ := by
-      congr 3
-      rw [Nat.mul_comm n d, Nat.add_comm, hexponent]
+  ring
 
 /-- Two times in one addressed cell differ by at most its exact time width. -/
-theorem abs_sub_le_parabolicDyadicTimeWidth {d n : ℕ} (index : ParabolicDyadicIndex d n)
+theorem abs_sub_le_parabolicDyadicTimeWidth
     {time time' : ℝ} {velocity velocity' : PDE.Vec d}
     (h : (time, velocity) ∈ parabolicDyadicHalfOpenCell index)
     (h' : (time', velocity') ∈ parabolicDyadicHalfOpenCell index) :
@@ -645,8 +581,7 @@ theorem abs_sub_le_parabolicDyadicTimeWidth {d n : ℕ} (index : ParabolicDyadic
 
 /-- Two velocity coordinates in one addressed cell differ by at most its exact
 coordinate width. -/
-theorem abs_sub_le_parabolicDyadicVelocityWidth {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (coordinate : Fin d)
+theorem abs_sub_le_parabolicDyadicVelocityWidth  (coordinate : Fin d)
     {time time' : ℝ} {velocity velocity' : PDE.Vec d}
     (h : (time, velocity) ∈ parabolicDyadicHalfOpenCell index)
     (h' : (time', velocity') ∈ parabolicDyadicHalfOpenCell index) :

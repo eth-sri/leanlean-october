@@ -6,10 +6,10 @@ import Mathlib.Probability.Kernel.Composition.Comp
 
 /-! # Restart of the actual physical transition action -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov SectionTwo ProbabilityTheory
+open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
 /-- Killed-kernel composition restarts every measurable nonnegative physical terminal test. -/
@@ -28,7 +28,7 @@ theorem tailRestart_master_lintegral {lam Lam : ℝ}
   have hmap := E.2.map_fiberKernel_eq_master (intervalDomain_measurable H)
     s u (hsr.trans hru) z
   change (∫⁻ w, F ⟨u, w.2, w.1⟩ ∂E.2.master
-    (evolutionQueryOfState (intervalDomain H) (fun _ => 0) s u (hsr.trans hru) z)) = _
+    (evolutionQueryOfState _ _ s u (hsr.trans hru) z)) = _
   rw [← hmap, lintegral_map hG measurable_subtype_coe,
     hE.2.2.2 s r u hsr hru]
   refine (Kernel.lintegral_comp _ _ z
@@ -37,9 +37,9 @@ theorem tailRestart_master_lintegral {lam Lam : ℝ}
     (hG.comp measurable_subtype_coe)).trans ?_
   apply lintegral_congr
   intro a
-  have hm := E.2.map_fiberKernel_eq_master (intervalDomain_measurable H) r u hru a
+
   change _ = (∫⁻ w, F ⟨u, w.2, w.1⟩ ∂E.2.master
-    (evolutionQueryOfState (intervalDomain H) (fun _ => 0) r u hru a))
-  rw [← hm, lintegral_map hG measurable_subtype_coe]
+    (evolutionQueryOfState _ _ r u hru a))
+  rw [← (E.2.map_fiberKernel_eq_master (intervalDomain_measurable H) r u hru a), lintegral_map hG measurable_subtype_coe]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

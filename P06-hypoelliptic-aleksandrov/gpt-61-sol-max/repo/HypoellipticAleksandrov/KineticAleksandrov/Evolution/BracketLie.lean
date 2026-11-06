@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BracketSpan
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # The bracket condition for `Lop` (`ε = 0`)
@@ -12,9 +14,9 @@ directions by the drift coercivity `ξ · Db(v) ξ ≥ m |ξ|²`, `m > 0`, and m
 `X_0` supplies `∂_σ`.  The argument holds also when `B` depends on `z`.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 set_option autoImplicit false
 
 open scoped MatrixOrder
@@ -23,9 +25,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 
 variable {n : ℕ}
 
+variable {F : Type*}
+
 /-- A coordinate projection of the derivative of a field is the derivative of the projected
 field. -/
-theorem coord_fderiv_comp {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+theorem coord_fderiv_comp  [NormedAddCommGroup F] [NormedSpace ℝ F]
     (L : EvolutionVec n →L[ℝ] F) {W : EvolutionVec n → EvolutionVec n} {g : EvolutionVec n → F}
     {x : EvolutionVec n} (hW : DifferentiableAt ℝ W x)
     (h : ∀ y, L (W y) = g y) (w : EvolutionVec n) :
@@ -37,15 +41,15 @@ theorem coord_fderiv_comp {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
   rfl
 
 /-- A coordinate projection of the derivative of a field with constant coordinate vanishes. -/
-theorem coord_fderiv_const {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+theorem coord_fderiv_const  [NormedAddCommGroup F] [NormedSpace ℝ F]
     (L : EvolutionVec n →L[ℝ] F) {W : EvolutionVec n → EvolutionVec n} {x : EvolutionVec n}
     (hW : DifferentiableAt ℝ W x) (c : F) (h : ∀ y, L (W y) = c) (w : EvolutionVec n) :
     L (fderiv ℝ W x w) = 0 := by
-  rw [coord_fderiv_comp L hW (g := fun _ => c) h w]
+  rw [coord_fderiv_comp L hW  h w]
   simp
 
 /-- A drift with `m ≤ ξ · Db(v) ξ` for unit `ξ`, `m > 0`, has surjective derivative. -/
-theorem fderiv_surjective_of_coercive {m : ℝ} {b : PDE.Vec n → PDE.Vec n} (hm : 0 < m)
+theorem fderiv_surjective_of_coercive {m : ℝ} {b : PDE.VectorField n} (hm : 0 < m)
     (hcoerc : HasUnitDirectionDriftCoercivity m b) (y : PDE.Vec n) :
     Function.Surjective (fderiv ℝ b y) := by
   suffices hinj : Function.Injective (fderiv ℝ b y).toLinearMap from
@@ -76,31 +80,41 @@ theorem fderiv_surjective_of_coercive {m : ℝ} {b : PDE.Vec n → PDE.Vec n} (h
 
 section Bracket
 
-variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+variable {B : FullKineticCoefficient n} {b : PDE.VectorField n}
 
+section
+variable (hβ : ∀ i j, ContDiff ℝ PDE.smoothOrder (fun x => sqrtCoeffAt B x i j))
+
+include hβ in
 private theorem differentiableAt_diffusionField
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j)) (i : Fin n)
+     (i : Fin n)
     (x : EvolutionVec n) : DifferentiableAt ℝ (diffusionField B i) x :=
   ((contDiff_diffusionField hβ i).differentiable (by simp)) x
 
+variable (hb : ContDiff ℝ PDE.smoothOrder b)
+
+include hβ hb in
 private theorem differentiableAt_driftField
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
-    (hb : ContDiff ℝ (⊤ : ℕ∞) b) (x : EvolutionVec n) :
+
+     (x : EvolutionVec n) :
     DifferentiableAt ℝ (driftField B b) x :=
   ((contDiff_driftField hβ hb).differentiable (by simp)) x
 
+variable (i : Fin n) (x : EvolutionVec n)
+
+include hβ hb
 /-- The transported component of the bracket `[X_i, X_0]` is `Db(v) β_i`, where `β_i` is the
 `i`-th row of `β` (equal to its `i`-th column by symmetry). -/
 theorem transportedCoord_lieBracket
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
-    (hb : ContDiff ℝ (⊤ : ℕ∞) b) (i : Fin n) (x : EvolutionVec n) :
+
+      :
     transportedCoord n
         (VectorField.lieBracket ℝ (diffusionField B i) (driftField B b) x) =
-      fderiv ℝ b (diffusedCoord n x) (fun j => sqrtCoeffAt B x i j) := by
+      fderiv ℝ b (diffusedCoord n x) ((sqrtCoeffAt B x i)) := by
   unfold VectorField.lieBracket
   rw [map_sub]
   have h1 : transportedCoord n (fderiv ℝ (driftField B b) x (diffusionField B i x)) =
-      fderiv ℝ b (diffusedCoord n x) (fun j => sqrtCoeffAt B x i j) := by
+      fderiv ℝ b (diffusedCoord n x) ((sqrtCoeffAt B x i)) := by
     rw [coord_fderiv_comp (transportedCoord n) (differentiableAt_driftField hβ hb x)
       (g := fun y => b (diffusedCoord n y)) (fun y => by simp [driftField])]
     have hd : HasFDerivAt (fun y => b (diffusedCoord n y))
@@ -115,18 +129,20 @@ theorem transportedCoord_lieBracket
 
 /-- The time component of the bracket `[X_i, X_0]` vanishes. -/
 theorem timeCoord_lieBracket
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
-    (hb : ContDiff ℝ (⊤ : ℕ∞) b) (i : Fin n) (x : EvolutionVec n) :
+
+      :
     timeCoord n (VectorField.lieBracket ℝ (diffusionField B i) (driftField B b) x) = 0 := by
   unfold VectorField.lieBracket
   rw [map_sub]
   have h1 : timeCoord n (fderiv ℝ (driftField B b) x (diffusionField B i x)) = 0 :=
     coord_fderiv_const (timeCoord n) (differentiableAt_driftField hβ hb x) 1
-      (fun y => by simp [driftField]) _
+      (fun y => by rfl) _
   have h2 : timeCoord n (fderiv ℝ (diffusionField B i) x (driftField B b x)) = 0 :=
     coord_fderiv_const (timeCoord n) (differentiableAt_diffusionField hβ i x) 0
-      (fun y => by simp [diffusionField]) _
+      (fun y => by rfl) _
   rw [h1, h2, sub_zero]
+end
+
 
 /-- **Bracket (Lie-algebra spanning) condition for `Lop`.**  Under the standing hypotheses
 (`B` smooth with `lam • 1 ≤ B`, `0 < lam`; `b` smooth with `ξ · Db(v) ξ ≥ m` for unit `ξ`,
@@ -139,15 +155,15 @@ theorem lieAlgebraSpansOn_transportedFields {lam Lam m : ℝ} (hlam : 0 < lam)
   intro x _
   have hβ := contDiff_sqrtCoeffAt_entry hlam hB hell
   set W := Submodule.span ℝ
-    (Set.range (fun w : LieWord n => LieWord.eval (transportedFields B b) w x)) with hW
+    (Set.range (fun w  => LieWord.eval (transportedFields B b) w x)) with hW
   have hX : ∀ i, diffusionField B i x ∈ W := fun i =>
-    Submodule.subset_span ⟨LieWord.generator i.succ, by simp [LieWord.eval, transportedFields]⟩
+    Submodule.subset_span ⟨LieWord.generator i.succ, by rfl⟩
   have h0 : driftField B b x ∈ W :=
-    Submodule.subset_span ⟨LieWord.generator 0, by simp [LieWord.eval, transportedFields]⟩
+    Submodule.subset_span ⟨LieWord.generator 0, by rfl⟩
   have hBr : ∀ i, VectorField.lieBracket ℝ (diffusionField B i) (driftField B b) x ∈ W :=
     fun i => Submodule.subset_span
       ⟨LieWord.bracket (LieWord.generator i.succ) (LieWord.generator 0),
-        by simp [LieWord.eval, transportedFields]⟩
+        by rfl⟩
   have hv := packPoint_diffused_mem (posDef_sqrtCoeffAt hlam hell x) hX
   have hz : ∀ w, packPoint 0 0 w ∈ W := by
     intro w
@@ -164,7 +180,7 @@ theorem lieAlgebraSpansOn_transportedFields {lam Lam m : ℝ} (hlam : 0 < lam)
       · simp only [hS, map_sub, map_sum, map_smul, transportedCoord_lieBracket hβ hb,
           transportedCoord_packPoint, sub_zero, transportedCoord_packPoint]
         rw [← hξ]
-        have hξ' : ξ = ∑ i, a i • (fun j => sqrtCoeffAt B x i j) := by
+        have hξ' : ξ = ∑ i, a i • ((sqrtCoeffAt B x i)) := by
           funext j
           simp [Finset.sum_apply, ha j]
         rw [hξ', map_sum]

@@ -11,10 +11,10 @@ only the whole-space, identity-drift specialization with the same shared witness
 Consumer files are read-only; the common definition is independent of these imports.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+
 open scoped ProbabilityTheory MatrixOrder
 
 /-- The iteration input is exactly the shared terminal evolution statement. -/
@@ -29,18 +29,18 @@ theorem occupationEvolutionStatement_of_conclusion (h : TerminalEvolutionConclus
 theorem taAssemblyEvolution_of_conclusion (h : TerminalEvolutionConclusion)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∀ B : CoefficientField d, IsSectionTwoCoefficient lam Lam B →
-      ∃ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))),
-        RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
+      ∃ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 )))
+        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 ))),
+        RealizesTerminalEvolution (wholeSpace d) _ MeasurableSet.univ
           (zIndependentCoefficient B) (identityDrift d) S K ∧
         (∀ (hBz : ∀ (σ : ℝ) (y z z' : PDE.Vec d),
           (zIndependentCoefficient B) σ y z = (zIndependentCoefficient B) σ y z'),
           let _ := hBz
-          IsTranslationCovariantEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+          IsTranslationCovariantEvolution (wholeSpace d) _
             MeasurableSet.univ K) ∧
-        IsDomainMonotoneEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+        IsDomainMonotoneEvolution (wholeSpace d) _
           (zIndependentCoefficient B) (identityDrift d) K ∧
-        HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+        HasParabolicMarginalBundle (wholeSpace d) _
           MeasurableSet.univ (zIndependentCoefficient B) K := by
   intro B hB
   obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB

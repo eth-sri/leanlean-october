@@ -4,6 +4,8 @@ public import PDEFoundation.Sobolev.W1p.ConvexApprox.Density
 public import PDEFoundation.Sobolev.W1p.Cutoff
 public import PDEFoundation.Sobolev.W1p.Truncation
 public import PDEFoundation.Sobolev.W1p.ZeroBoundary
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Compactly supported multipliers have zero boundary values
@@ -61,12 +63,13 @@ noncomputable def zeroSupportedSmoothApproximation [Fact (1 ≤ p)] :
       simpa only [hZero] using
         (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0)) }
 
+variable (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞) (u : W1pFunction U p)
+
 /-- A globally smooth multiplier supported in `U` turns a finite-exponent
 Sobolev representative into one with a supported smooth approximation. -/
 noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
-    (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) {φ : Vec d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφCompact : HasCompactSupport φ)
+     {φ : Vec d → ℝ}
+    (hφ : ContDiff ℝ PDE.smoothOrder φ) (hφCompact : HasCompactSupport φ)
     (hφU : tsupport φ ⊆ U) :
     letI : Fact (1 ≤ p) := ⟨hp⟩
     (u.mulContDiffHasCompactSupport hφ hφCompact).SupportedSmoothApproximation := by
@@ -81,17 +84,17 @@ noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
       apply W1pFunction.ext
       · rw [mulContDiffHasCompactSupport_toFun, hφZero, zero_toFun]
         funext x
-        simp only [Pi.zero_apply, zero_mul]
+        simp
       · rw [mulContDiffHasCompactSupport_grad, hφZero, hGradientZero, zero_grad]
         funext x
         ext i
         simp only [Pi.zero_apply, zero_smul, smul_zero, Pi.add_apply, add_zero]
     simpa only [hMulZero] using (zeroSupportedSmoothApproximation (U := U) (p := p))
   · let x0 : Vec d := Classical.choose (Set.nonempty_iff_ne_empty.mpr htsupport)
-    have hx0 : x0 ∈ tsupport φ :=
+    have hx0  :=
       Classical.choose_spec (Set.nonempty_iff_ne_empty.mpr htsupport)
-    have hx0U : x0 ∈ U := hφU hx0
-    have hnhds : ∃ r : ℝ, 0 < r ∧ Metric.ball x0 r ⊆ U :=
+    have hx0U  := hφU hx0
+    have hnhds  :=
       Metric.mem_nhds_iff.mp (hU.isOpen.mem_nhds hx0U)
     let r : ℝ := Classical.choose hnhds / 2
     have hr : 0 < r := by
@@ -100,15 +103,14 @@ noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
     have hball : Metric.closedBall x0 r ⊆ U := by
       apply (Metric.closedBall_subset_ball (half_lt_self (Classical.choose_spec hnhds).1)).trans
       exact (Classical.choose_spec hnhds).2
-    let v : ℕ → W1pFunction U p :=
+    let v  :=
       convexApproxSmoothW1p hU hp u x0 hr
     refine
       { approx := fun n => φ * (v n).toFun
         approx_smooth := fun n => hφ.mul
           (contDiff_convexApproxSmoothW1p_toFun hU hp u x0 hr n)
         approx_hasCompactSupport := fun n => by
-          simpa only [Pi.mul_apply, mul_comm] using hφCompact.mul_left
-            (f := (v n).toFun)
+          simpa only [mul_comm] using hφCompact.mul_left (f := (v n).toFun)
         approx_tsupport_subset := fun n =>
           (tsupport_mul_subset_left (f := φ) (g := (v n).toFun)).trans hφU
         tendsto_value := ?_
@@ -119,7 +121,7 @@ noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
               eLpNormOn U p
                 ((v n - u).mulContDiffHasCompactSupport hφ hφCompact).toFun)
             atTop (𝓝 0) := by
-        let C : ℝ≥0∞ := eLpNormOn U ∞ φ
+        let C  := eLpNormOn U ∞ φ
         have hCFinite : C ≠ ∞ := by
           dsimp only [C]
           exact ((hφ.continuous.memLp_of_hasCompactSupport hφCompact).restrict U).eLpNorm_lt_top.ne
@@ -134,19 +136,19 @@ noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
           exact h
         refine tendsto_of_tendsto_of_tendsto_of_le_of_le'
           tendsto_const_nhds hUpper (Eventually.of_forall fun _ => zero_le) ?_
-        exact Eventually.of_forall fun n => by
-          exact
-            (v n - u).eLpNormOn_mulContDiffMemLpTop_toFun_le
+        exact Eventually.of_forall fun n => (v n - u).eLpNormOn_mulContDiffMemLpTop_toFun_le
               hφ
               ((hφ.continuous.memLp_of_hasCompactSupport hφCompact).restrict U)
-              (fun i => by
-                have hContinuous : Continuous (fun x => classicalGradient φ x i) := by
-                  simpa only [classicalGradient_apply] using
-                    (hφ.continuous_fderiv (by simp)).clm_apply continuous_const
-                have hCompact : HasCompactSupport (fun x => classicalGradient φ x i) := by
-                  simpa only [classicalGradient_apply] using
-                    hφCompact.fderiv_apply (𝕜 := ℝ) (basisVec i)
-                exact (hContinuous.memLp_of_hasCompactSupport hCompact).restrict U)
+              (fun i => (MemLp.restrict U
+  (Continuous.memLp_of_hasCompactSupport
+    (id
+      (Continuous.clm_apply
+        (ContDiff.continuous_fderiv hφ
+          (of_eq_true
+            (Eq.trans (congrArg Not (Eq.trans WithTop.coe_eq_zero._simp_1 ENat.top_ne_zero._simp_1))
+              not_false_eq_true)))
+        continuous_const))
+    (id (HasCompactSupport.fderiv_apply ℝ hφCompact (basisVec i))))))
       refine hRaw.congr' ?_
       filter_upwards with n
       apply congrArg (fun f => eLpNorm f p (volumeOn U))
@@ -180,8 +182,8 @@ noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
                 eLpNormOn U ∞ (fun x => classicalGradient φ x i) *
                   eLpNormOn U p (fun x => (v n).toFun x - u.toFun x))
             atTop (𝓝 0) := by
-        have hφFinite : eLpNormOn U ∞ φ ≠ ∞ := hφTop.eLpNorm_lt_top.ne
-        have hDφFinite : eLpNormOn U ∞ (fun x => classicalGradient φ x i) ≠ ∞ :=
+        have hφFinite  := hφTop.eLpNorm_lt_top.ne
+        have hDφFinite  :=
           (hDφTop i).eLpNorm_lt_top.ne
         have h := (ENNReal.Tendsto.const_mul hGradient (Or.inr hφFinite)).add
           (ENNReal.Tendsto.const_mul hValue (Or.inr hDφFinite))
@@ -216,16 +218,7 @@ noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
       rw [hGrad]
       ring
 
-/-- The squared-cutoff positive part has the literal expected value
-representative. -/
-@[simp]
-theorem mulCutoff_sq_positivePartSubConst_toFun
-    (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) (k : ℝ)
-    (η : QuantitativeSmoothCutoff inner outer K) :
-    ((u.positivePartSubConst hU hp hpTop k).mulCutoff η.sq hp).toFun =
-      fun x => η x ^ 2 * max (u.toFun x - k) 0 := by
-  rw [mulCutoff_sq_toFun, positivePartSubConst_toFun]
+
 
 end W1pFunction
 

@@ -7,14 +7,16 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 
 /-! # Identification of the full extended source with the raw cutoff source -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
-open MeasureTheory Set HypoellipticAleksandrov.Parabolic
+open MeasureTheory Set
+
+variable {d : ℕ}
 
 /-- On the profile domain the extended source is exactly the raw cutoff source, with no
 extra multiplier terms. The same jointly selected flattened jets occur on both sides. -/
-theorem construction_extendedSource_eq_raw_on_profile {d : ℕ} {alpha : ℝ}
+theorem construction_extendedSource_eq_raw_on_profile  {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r mu R m t : ℝ) (hm : m < R ^ 2)
     (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < m)
     (q : XV d) (hq : profileFunction h q < 1) :
@@ -39,7 +41,7 @@ theorem construction_extendedSource_eq_raw_on_profile {d : ℕ} {alpha : ℝ}
 
 /-- The full extended source is the raw source inside the profile domain and zero outside,
 almost everywhere at every fixed time. -/
-theorem construction_extendedSource_eq_indicator_ae {d : ℕ} (hd : 1 ≤ d)
+theorem construction_extendedSource_eq_indicator_ae  (hd : 1 ≤ d)
     {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
@@ -60,10 +62,9 @@ theorem construction_extendedSource_eq_indicator_ae {d : ℕ} (hd : 1 ≤ d)
   · have hmem : q ∈ {y | profileFunction h y < 1} := hprof
     rw [indicator_of_mem hmem]
     exact construction_extendedSource_eq_raw_on_profile h r mu R m t hm hmargin q hprof
-  · have hn : 1 ≤ profileFunction h
-        (spatialCoordinateCLE d ((spatialCoordinateCLE d).symm q)) := by
-      simpa only [ContinuousLinearEquiv.apply_symm_apply] using (not_lt.mp hprof)
-    have hh := hq hn
+  ·
+    have hh := hq (by
+        simpa only [ContinuousLinearEquiv.apply_symm_apply] using (not_lt.mp hprof))
     have hmem : q ∉ {y | profileFunction h y < 1} := hprof
     rw [indicator_of_notMem hmem]
     simp only [constructionExtendedSource, constructionExtendedTimeJet,

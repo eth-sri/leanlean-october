@@ -14,14 +14,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology
 
+variable {d : ℕ}
+
+variable (u : HypoellipticAleksandrov.KineticScalarField d) (P : KineticPoint d)
+
 /-- The position differential encoded by the existing classical gradient. -/
-def comparisonPositionDifferential {d : ℕ} (u : KineticPoint d → ℝ)
-    (P : KineticPoint d) : PDE.Vec d →L[ℝ] ℝ :=
+def comparisonPositionDifferential   : PDE.Vec d →L[ℝ] ℝ :=
   ∑ i : Fin d, kineticPositionGradient u P i • ContinuousLinearMap.proj i
 
 /-- The encoded differential agrees with the actual position-slice differential. -/
-theorem comparisonPositionDifferential_eq_fderiv {d : ℕ}
-    (u : KineticPoint d → ℝ) (P : KineticPoint d) :
+theorem comparisonPositionDifferential_eq_fderiv
+     :
     comparisonPositionDifferential u P =
       fderiv ℝ (fun x => u ⟨P.time,x,P.velocity⟩) P.position := by
   ext v
@@ -31,8 +34,8 @@ theorem comparisonPositionDifferential_eq_fderiv {d : ℕ}
     kineticPositionGradient, PDE.vecDot]
 
 /-- Continuity of the existing position gradient implies continuity of its differential. -/
-theorem continuousOn_comparisonPositionDifferential {d : ℕ}
-    {u : KineticPoint d → ℝ} {D : Set (KineticPoint d)} (hu : IsKineticC112On u D) :
+theorem continuousOn_comparisonPositionDifferential
+    {u : HypoellipticAleksandrov.KineticScalarField d} {D : Set (KineticPoint d)} (hu : IsKineticC112On u D) :
     ContinuousOn (comparisonPositionDifferential u) D := by
   unfold comparisonPositionDifferential
   apply continuousOn_finsetSum
@@ -41,20 +44,20 @@ theorem continuousOn_comparisonPositionDifferential {d : ℕ}
     hu.continuousOn_kineticPositionGradient).smul continuousOn_const
 
 /-- Continuous partial derivatives give the derivative along physical free transport. -/
-theorem hasDerivAt_freeTransport {d : ℕ} {D : Set (KineticPoint d)}
-    (hD : IsOpen D) {u : KineticPoint d → ℝ} (hu : IsKineticC112On u D)
+theorem hasDerivAt_freeTransport  {D : Set (KineticPoint d)}
+    (hD : IsOpen D) {u : HypoellipticAleksandrov.KineticScalarField d} (hu : IsKineticC112On u D)
     {P : KineticPoint d} (hP : P ∈ D) :
-    HasDerivAt (fun r : ℝ => u ⟨P.time + r,P.position + r • P.velocity,P.velocity⟩)
+    HasDerivAt (fun r  => u ⟨P.time + r,P.position + r • P.velocity,P.velocity⟩)
       (kineticTimeDerivative u P + PDE.vecDot P.velocity (kineticPositionGradient u P)) 0 := by
   let ι : ℝ × PDE.Vec d → KineticPoint d := fun z => ⟨z.1,z.2,P.velocity⟩
   have hι : Continuous ι :=
     KineticPoint.continuous_mk continuous_fst continuous_snd continuous_const
   have hev : ∀ᶠ z in 𝓝 (P.time,P.position), ι z ∈ D :=
     hι.continuousAt (hD.mem_nhds hP)
-  let f : ℝ → PDE.Vec d → ℝ := fun s x => u ⟨s,x,P.velocity⟩
-  let ft : ℝ → PDE.Vec d → ℝ →L[ℝ] ℝ := fun s x =>
+  let f  := fun s x => u ⟨s,x,P.velocity⟩
+  let ft  := fun s x =>
     ContinuousLinearMap.toSpanSingleton ℝ (kineticTimeDerivative u ⟨s,x,P.velocity⟩)
-  let fx : ℝ → PDE.Vec d → PDE.Vec d →L[ℝ] ℝ := fun s x =>
+  let fx  := fun s x =>
     comparisonPositionDifferential u ⟨s,x,P.velocity⟩
   have ht : ∀ᶠ z in 𝓝 (P.time,P.position), HasFDerivAt (f · z.2) (ft z.1 z.2) z.1 := by
     filter_upwards [hev] with z hz
@@ -69,7 +72,7 @@ theorem hasDerivAt_freeTransport {d : ℕ} {D : Set (KineticPoint d)}
     have hc : ContinuousAt (kineticTimeDerivative u) (ι (P.time,P.position)) := by
       rw [hiP]
       exact hu.continuousOn_kineticTimeDerivative.continuousAt (hD.mem_nhds hP)
-    have hcι : ContinuousAt (kineticTimeDerivative u ∘ ι) (P.time,P.position) :=
+    have hcι  :=
       hc.comp hι.continuousAt
     exact (ContinuousLinearMap.toSpanSingletonCLE (𝕜 := ℝ) (E := ℝ)).continuous.continuousAt.comp
       hcι
@@ -81,7 +84,7 @@ theorem hasDerivAt_freeTransport {d : ℕ} {D : Set (KineticPoint d)}
     exact hc.comp hι.continuousAt
   have hj := (hasStrictFDerivAt_uncurry_coprod (f := f) (f₁ := ft) (f₂ := fx)
     (u := (P.time,P.position)) ht hx hct hcx).hasFDerivAt
-  have hline : HasDerivAt (fun r : ℝ => (P.time + r,P.position + r • P.velocity))
+  have hline : HasDerivAt (fun r  => (P.time + r,P.position + r • P.velocity))
       (1,P.velocity) 0 := by
     simpa only [one_smul, id_eq] using
       ((hasDerivAt_id 0).const_add P.time).prodMk

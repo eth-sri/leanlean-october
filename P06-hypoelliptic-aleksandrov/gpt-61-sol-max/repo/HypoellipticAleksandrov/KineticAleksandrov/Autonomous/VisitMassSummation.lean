@@ -6,7 +6,7 @@ import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 
 /-! # Passing uniform finite partial counting bounds to the full counting measure -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
@@ -19,6 +19,6 @@ theorem visit_sum_mass_le_of_partial_mass_le {X : Type*} [MeasurableSpace X]
   rw [Measure.sum_apply _ MeasurableSet.univ]
   apply ENNReal.tsum_le_of_sum_range_le
   intro N
-  simpa only [Measure.finsetSum_apply, MeasurableSet.univ] using hC N
+  simpa only [Measure.finsetSum_apply] using hC N
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

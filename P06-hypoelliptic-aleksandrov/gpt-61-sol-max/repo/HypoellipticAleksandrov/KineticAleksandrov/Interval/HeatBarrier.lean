@@ -6,6 +6,8 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.Analysis.Calculus.ContDiff.Deriv
 import Mathlib.Analysis.Calculus.Deriv.MeanValue
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The literal error-function heat barrier
 
@@ -35,10 +37,10 @@ theorem hasDerivAt_intervalErf (x : ℝ) :
 
 /-- The error function vanishes at the origin. -/
 @[simp] theorem intervalErf_zero : intervalErf 0 = 0 := by
-  simp only [intervalErf, intervalIntegral.integral_same, mul_zero]
+  simp_all [intervalErf]
 
 /-- The error function is smooth, with the source C-infinity order. -/
-theorem contDiff_intervalErf : ContDiff ℝ (⊤ : ℕ∞) intervalErf := by
+theorem contDiff_intervalErf : ContDiff ℝ PDE.smoothOrder intervalErf := by
   apply contDiff_infty_iff_deriv.2
   refine ⟨fun x => (hasDerivAt_intervalErf x).differentiableAt, ?_⟩
   have heq : deriv intervalErf =
@@ -55,40 +57,43 @@ theorem strictMono_intervalErf : StrictMono intervalErf := by
   rw [(hasDerivAt_intervalErf x).deriv]
   exact mul_pos (div_pos (by norm_num) (Real.sqrt_pos.2 Real.pi_pos)) (Real.exp_pos _)
 
+section
+variable {x : ℝ} (hx : 0 ≤ x)
+
+include hx
 /-- Nonnegativity of the error function on the nonnegative half-line. -/
-theorem intervalErf_nonneg {x : ℝ} (hx : 0 ≤ x) : 0 ≤ intervalErf x := by
+theorem intervalErf_nonneg  : 0 ≤ intervalErf x := by
   simpa only [intervalErf_zero] using strictMono_intervalErf.monotone hx
 
 /-- Every finite nonnegative argument leaves a strictly positive Gaussian tail. -/
-theorem intervalErf_lt_one {x : ℝ} (hx : 0 ≤ x) : intervalErf x < 1 := by
+theorem intervalErf_lt_one  : intervalErf x < 1 := by
   have hi : Integrable (fun t : ℝ => Real.exp (-t ^ 2)) := by
     simpa only [neg_mul, one_mul] using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)
-  have : NeZero (volume.restrict (Ioi x) : Measure ℝ) := ⟨by
-    intro h
-    have he := congrArg (fun ν : Measure ℝ => ν univ) h
-    simp at he⟩
-  have htail : 0 < ∫ t in Ioi x, Real.exp (-t ^ 2) :=
-    integral_exp_pos hi.integrableOn
+  have : NeZero (volume.restrict (Ioi x) ) := ⟨by
+    simp_all⟩
+
   have hsplit := intervalIntegral.integral_Ioi_sub_Ioi
     (hi.integrableOn (s := Ioi (0 : ℝ))) hx
   have hfull : (∫ t in Ioi (0 : ℝ), Real.exp (-t ^ 2)) = Real.sqrt Real.pi / 2 := by
     simpa only [neg_mul, one_mul, div_one] using integral_gaussian_Ioi 1
   rw [hfull] at hsplit
-  have hlt : (∫ t in (0:ℝ)..x, Real.exp (-t ^ 2)) < Real.sqrt Real.pi / 2 := by
-    linarith only [hsplit, htail]
+
   have hk : 0 < 2 / Real.sqrt Real.pi := div_pos (by norm_num)
     (Real.sqrt_pos.2 Real.pi_pos)
-  have hbound := mul_lt_mul_of_pos_left hlt hk
+
   have hnorm : (2 / Real.sqrt Real.pi) * (Real.sqrt Real.pi / 2) = 1 := by
     field_simp
-  simpa only [intervalErf, hnorm] using hbound
+  simpa only [intervalErf, hnorm] using (mul_lt_mul_of_pos_left (show (∫ t in (0)..x, Real.exp (-t ^ 2)) < Real.sqrt Real.pi / 2 by
+      linarith only [hsplit, (show 0 < ∫ t in Ioi x, Real.exp (-t ^ 2) from integral_exp_pos hi.integrableOn)]) hk)
+end
+
 
 /-- Gaussian normalization gives the error-function limit at positive infinity. -/
 theorem tendsto_intervalErf_atTop :
-    Filter.Tendsto intervalErf Filter.atTop (nhds (1 : ℝ)) := by
-  have hi : Integrable (fun t : ℝ => Real.exp (-t ^ 2)) := by
-    simpa only [neg_mul, one_mul] using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)
-  have ht := (intervalIntegral_tendsto_integral_Ioi 0 hi.integrableOn
+    Filter.Tendsto intervalErf Filter.atTop (nhds (1 )) := by
+
+  have ht := (intervalIntegral_tendsto_integral_Ioi 0 (show Integrable (fun t : ℝ => Real.exp (-t ^ 2)) by
+      simpa only [neg_mul, one_mul] using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)).integrableOn
     Filter.tendsto_id).const_mul (2 / Real.sqrt Real.pi)
   have hfull : (∫ t in Ioi (0 : ℝ), Real.exp (-t ^ 2)) = Real.sqrt Real.pi / 2 := by
     simpa only [neg_mul, one_mul, div_one] using integral_gaussian_Ioi 1
@@ -98,8 +103,10 @@ theorem tendsto_intervalErf_atTop :
   rw [hnorm] at ht
   exact ht
 
+variable (lam θ : ℝ)
+
 /-- Spatial derivative of the heat barrier. -/
-theorem hasDerivAt_intervalHeat_space (lam θ : ℝ)
+theorem hasDerivAt_intervalHeat_space
     (x : ℝ) :
     HasDerivAt (intervalHeat lam θ)
       ((2 / Real.sqrt Real.pi) * Real.exp (-(x / (2 * Real.sqrt (lam * θ))) ^ 2) /
@@ -110,16 +117,19 @@ theorem hasDerivAt_intervalHeat_space (lam θ : ℝ)
       ((hasDerivAt_id x).div_const (2 * Real.sqrt (lam * θ)))
 
 /-- Spatial derivative written as an equality of functions. -/
-theorem deriv_intervalHeat_space (lam θ : ℝ) :
+theorem deriv_intervalHeat_space  :
     deriv (intervalHeat lam θ) = fun x =>
       (2 / Real.sqrt Real.pi) * Real.exp (-(x / (2 * Real.sqrt (lam * θ))) ^ 2) /
         (2 * Real.sqrt (lam * θ)) := by
   funext x
   exact (hasDerivAt_intervalHeat_space lam θ x).deriv
 
+section
+variable {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ) (x : ℝ)
+
+include hlam hθ
 /-- Second spatial derivative of the barrier. -/
-theorem deriv2_intervalHeat_space {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
-    (x : ℝ) :
+theorem deriv2_intervalHeat_space  :
     deriv (deriv (intervalHeat lam θ)) x =
       -(2 * x * (2 / Real.sqrt Real.pi) *
         Real.exp (-(x / (2 * Real.sqrt (lam * θ))) ^ 2)) /
@@ -134,17 +144,16 @@ theorem deriv2_intervalHeat_space {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
   ring
 
 /-- Time derivative of the barrier. -/
-theorem hasDerivAt_intervalHeat_time {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
-    (x : ℝ) :
+theorem hasDerivAt_intervalHeat_time  :
     HasDerivAt (fun t => intervalHeat lam t x)
       (-(2 * x * lam * (2 / Real.sqrt Real.pi) *
         Real.exp (-(x / (2 * Real.sqrt (lam * θ))) ^ 2)) /
         (2 * Real.sqrt (lam * θ)) ^ 3) θ := by
-  have hs : Real.sqrt (lam * θ) ≠ 0 := (Real.sqrt_pos.2 (mul_pos hlam hθ)).ne'
-  have hd : 2 * Real.sqrt (lam * θ) ≠ 0 := mul_ne_zero (by norm_num) hs
-  have hg := (((hasDerivAt_id θ).const_mul lam).sqrt (mul_pos hlam hθ).ne').const_mul 2
+
+
+
   have h := (hasDerivAt_intervalErf (x / (2 * Real.sqrt (lam * θ)))).comp θ
-    ((hasDerivAt_const θ x).div hg hd)
+    ((hasDerivAt_const θ x).div ((((hasDerivAt_id θ).const_mul lam).sqrt (mul_pos hlam hθ).ne').const_mul 2) (mul_ne_zero (by norm_num) ((Real.sqrt_pos.2 (mul_pos hlam hθ)).ne')))
   dsimp only [id_eq, Function.comp_def, Pi.div_apply] at h
   convert h using 1
   · rfl
@@ -152,13 +161,14 @@ theorem hasDerivAt_intervalHeat_time {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < 
     ring
 
 /-- The barrier solves the half-line heat equation with diffusivity `lam`. -/
-theorem intervalHeat_heatEquation {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
-    (x : ℝ) :
+theorem intervalHeat_heatEquation  :
     deriv (fun t => intervalHeat lam t x) θ =
       lam * deriv (deriv (intervalHeat lam θ)) x := by
   rw [(hasDerivAt_intervalHeat_time hlam hθ x).deriv,
     deriv2_intervalHeat_space hlam hθ]
   ring
+end
+
 
 /-- Concavity on the nonnegative half-line. -/
 theorem intervalHeat_secondDerivative_nonpos {lam θ x : ℝ}

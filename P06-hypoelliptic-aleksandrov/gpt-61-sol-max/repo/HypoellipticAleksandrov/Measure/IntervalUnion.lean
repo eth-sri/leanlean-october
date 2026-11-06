@@ -36,7 +36,7 @@ private theorem connectedComponentIn_eq_ordConnectedComponent_of_mem
       isPreconnected_connectedComponentIn.ordConnected
     exact Set.subset_ordConnectedComponent (mem_connectedComponentIn hx)
       (connectedComponentIn_subset U x)
-  · have hpre : IsPreconnected (ordConnectedComponent U x) :=
+  · have hpre  :=
       Set.OrdConnected.isPreconnected
         (show OrdConnected (ordConnectedComponent U x) from inferInstance)
     exact IsPreconnected.subset_connectedComponentIn hpre
@@ -60,19 +60,17 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
     (hmono : ∀ I₁ I₂, IsOpenSubinterval J I₁ → IsOpenSubinterval J I₂ →
       I₁ ⊆ I₂ → g I₁ ⊆ g I₂) :
     volume (⋃₀ (g '' B)) ≤ ENNReal.ofReal kappa * volume (⋃₀ B) := by
-  have _hkappa : 0 < kappa := lt_trans zero_lt_one hkappa
-  have _hJopen : IsOpen J := hJopen
-  have _hJord : J.OrdConnected := hJord
-  have _hg : ∀ I, IsOpenSubinterval J I → IsOpenSubinterval J (g I) := hg
-  let U : Set ℝ := ⋃₀ B
-  have hUopen : IsOpen U := by
-    exact isOpen_sUnion fun I hI => (hB I hI).2.1
-  have hUJ : U ⊆ J := by
-    exact sUnion_subset fun I hI => (hB I hI).2.2.2
-  let R : Set ℝ := ordConnectedSection U
+
+
+
+
+  let U  := ⋃₀ B
+  have hUopen : IsOpen U := isOpen_sUnion fun I hI => (hB I hI).2.1
+  have hUJ : U ⊆ J := sUnion_subset fun I hI => (hB I hI).2.2.2
+  let R  := ordConnectedSection U
   have hRsub : R ⊆ U := by
-    simpa only [R] using (ordConnectedSection_subset (s := U))
-  let C : ℝ → Set ℝ := fun x => connectedComponentIn U x
+    exact (ordConnectedSection_subset )
+  let C  := (connectedComponentIn U)
   have hCeligible : ∀ r ∈ R, IsOpenSubinterval J (C r) := by
     intro r hr
     constructor
@@ -98,7 +96,7 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
       ((isPreconnected_connectedComponentIn.ordConnected.uIcc_subset
         (mem_connectedComponentIn (hRsub hr)) hsCr).trans
         (connectedComponentIn_subset U r)))
-  have hRcountable : R.Countable :=
+  have hRcountable  :=
     hRdisjoint.countable_of_isOpen
       (fun r hr => hUopen.connectedComponentIn)
       (fun r hr => connectedComponentIn_nonempty_iff.mpr (hRsub hr))
@@ -108,8 +106,7 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
       let r : ℝ := ordConnectedProj U ⟨x, hx⟩
       have hrR : r ∈ R := by
         exact ⟨⟨x, hx⟩, rfl⟩
-      have hxOrd : x ∈ ordConnectedComponent U r := by
-        exact mem_ordConnectedComponent_ordConnectedProj U ⟨x, hx⟩
+      have hxOrd : x ∈ ordConnectedComponent U r := mem_ordConnectedComponent_ordConnectedProj U ⟨x, hx⟩
       have hxCr : x ∈ C r := by
         change x ∈ connectedComponentIn U r
         rw [connectedComponentIn_eq_ordConnectedComponent_of_mem U (hRsub hrR)]
@@ -119,14 +116,13 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
   have htarget_subset : (⋃₀ (g '' B)) ⊆ ⋃ r : R, g (C r) := by
     refine sUnion_subset fun T hT => ?_
     rcases hT with ⟨I, hIB, rfl⟩
-    have hI : IsOpenSubinterval J I := hB I hIB
+    have hI  := hB I hIB
     obtain ⟨x, hxI⟩ := hI.1
     have hxU : x ∈ U := subset_sUnion_of_mem hIB hxI
     let r : ℝ := ordConnectedProj U ⟨x, hxU⟩
     have hrR : r ∈ R := by
       exact ⟨⟨x, hxU⟩, rfl⟩
-    have hxOrd : x ∈ ordConnectedComponent U r := by
-      exact mem_ordConnectedComponent_ordConnectedProj U ⟨x, hxU⟩
+    have hxOrd : x ∈ ordConnectedComponent U r := mem_ordConnectedComponent_ordConnectedProj U ⟨x, hxU⟩
     have hxCr : x ∈ C r := by
       change x ∈ connectedComponentIn U r
       rw [connectedComponentIn_eq_ordConnectedComponent_of_mem U (hRsub hrR)]

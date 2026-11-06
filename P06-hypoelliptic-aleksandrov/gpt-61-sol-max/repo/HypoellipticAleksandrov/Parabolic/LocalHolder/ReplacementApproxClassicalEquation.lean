@@ -11,16 +11,16 @@ Local weak derivative uniqueness identifies every selected derivative with the l
 classical jet. Continuous residuals then vanish pointwise on open collars.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators Matrix.Norms.Elementwise
 
 /-- A classical root satisfying the actual coherent weak-family equation solves it pointwise. -/
 theorem classical_homogeneous_equation_of_weak_family {d L : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U) (hL : 2 ≤ L)
-    (u : TimeVelocity d → ℝ) (hu : IsScalarC12On u U)
+    {U : HypoellipticAleksandrov.Parabolic.Region d} (hU : IsOpen U) (hL : 2 ≤ L)
+    (u : HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : IsScalarC12On u U)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (E : ParabolicWeakDerivativeFamily d L U u)
     (hEq : homogeneousWeakFamilyResidual hL A E =ᵐ[timeVelocityVolumeOn U] 0) :

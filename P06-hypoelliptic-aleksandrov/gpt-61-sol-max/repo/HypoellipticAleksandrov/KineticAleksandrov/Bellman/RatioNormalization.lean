@@ -5,10 +5,10 @@ import Mathlib.Tactic
 
 /-! # Ratio-only dependence of the Bellman admissible degree set -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open MeasureTheory Set
+open MeasureTheory
 
 /-- Division by a positive position scale gives the literal finite measure multiplier. -/
 theorem bellman_ofReal_div (a s : ℝ) (hs : 0 < s) :
@@ -26,7 +26,7 @@ theorem IsBellmanAdjointPair.rescale_position {lam Lam β : ℝ}
       (ENNReal.ofReal s⁻¹ • Measure.map (bellmanPositionHomeomorph s hs) η) := by
   let H := bellmanPositionHomeomorph s hs
   rcases hp with ⟨hμ, hη, hne, hlo, hhi, hstat, hdμ, hdη⟩
-  have hμne : μ ≠ 0 :=
+  have hμne  :=
     IsBellmanAdjointPair.left_ne_zero ⟨hμ, hη, hne, hlo, hhi, hstat, hdμ, hdη⟩
   refine ⟨hμ.map_homeomorph H,
     (hη.map_homeomorph H).smul _ ENNReal.ofReal_ne_top,

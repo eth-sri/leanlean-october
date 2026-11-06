@@ -4,22 +4,26 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Holder.NearFullCutoffOp
 import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
 import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Measurability and finite localized source norm for the near-full cutoff -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
-open MeasureTheory Set Parabolic
+open MeasureTheory Set
 open scoped ENNReal
 
+variable {d : ℕ}
+
 /-- The full Borel coefficient and smooth jets give a measurable cutoff operator. -/
-theorem measurable_scaledUnitCutoff_backwardOperator {d : ℕ}
+theorem measurable_scaledUnitCutoff_backwardOperator
     {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) {A : FullKineticCoefficient d}
+    (hf : ContDiff ℝ PDE.smoothOrder f) {A : FullKineticCoefficient d}
     (hA : Measurable (fullKineticCoefficientAt A))
     (P₀ : KineticPoint d) (R ell : ℝ) :
     Measurable (backwardOperator A (scaledUnitCutoff f P₀ R ell)) := by
@@ -43,8 +47,8 @@ theorem measurable_scaledUnitCutoff_backwardOperator {d : ℕ}
   exact scaledUnitCutoff_backwardOperator hf A P₀ P R ell
 
 /-- Smooth tests with a measurable operator have measurable localized sources on open sets. -/
-theorem localizedSource_aestronglyMeasurable {d : ℕ} (A : FullKineticCoefficient d)
-    {psi u : KineticPoint d → ℝ} {Q : Set (KineticPoint d)} (hQ : IsOpen Q)
+theorem localizedSource_aestronglyMeasurable  (A : FullKineticCoefficient d)
+    {psi u : HypoellipticAleksandrov.KineticScalarField d} {Q : Set (KineticPoint d)} (hQ : IsOpen Q)
     (hpsi : ContinuousOn psi Q) (hu : ContinuousOn u Q)
     (hop : Measurable (backwardOperator A psi)) :
     AEStronglyMeasurable (localizedSource A psi u) (volume.restrict Q) := by

@@ -7,8 +7,8 @@ import Mathlib.Tactic
 
 /-! # Turning a finite number of uniform doubling losses into a power -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 
 /-- A fixed contraction dominates a sufficiently large integer power of one half. -/
@@ -37,20 +37,18 @@ theorem return_doubling_cutoff (r ell : ℝ) (_hr : 0 < r) (hell : 0 < ell)
 theorem return_loss_power {c ell : ℝ} {m N : ℕ}
     (_hc : 0 ≤ c) (hell : 0 ≤ ell) (hbase : (1 / 2 : ℝ) ^ m ≤ c)
     (hrad : returnExpandedRadius ell N ≤ 1) : ell ^ m ≤ c ^ N := by
-  have hR : 0 ≤ returnExpandedRadius ell N := by
-    dsimp [returnExpandedRadius]
-    positivity
-  have hpow : (returnExpandedRadius ell N) ^ m ≤ 1 :=
-    pow_le_one₀ hR hrad
-  have hcoeff : ((1 / 2 : ℝ) ^ m) ^ N ≤ c ^ N :=
-    pow_le_pow_left₀ (pow_nonneg (by norm_num) m) hbase N
+
+
+
   have he : ((1 / 2 : ℝ) ^ m) ^ N * (returnExpandedRadius ell N) ^ m = ell ^ m := by
     dsimp [returnExpandedRadius]
     rw [mul_pow, ← pow_mul, ← pow_mul, Nat.mul_comm m N]
     rw [← mul_assoc, ← mul_pow]
     norm_num
   rw [← he]
-  exact (mul_le_mul_of_nonneg_left hpow (pow_nonneg (pow_nonneg (by norm_num) m) N)).trans
-    (by simpa only [mul_one] using hcoeff)
+  exact (mul_le_mul_of_nonneg_left (pow_le_one₀ (by
+      dsimp [returnExpandedRadius]
+      positivity) hrad) (pow_nonneg (pow_nonneg (by norm_num) m) N)).trans
+    (by simpa only [mul_one] using (pow_le_pow_left₀ (pow_nonneg (by norm_num) m) hbase N))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

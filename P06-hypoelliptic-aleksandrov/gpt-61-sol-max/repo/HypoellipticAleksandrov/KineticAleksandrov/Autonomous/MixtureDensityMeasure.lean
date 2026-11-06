@@ -12,17 +12,17 @@ absolute continuity and density existence. The quantitative Lq norm estimate is
 a separate step, not a premise or a conclusion of these measure lemmas.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
-open scoped ENNReal
+open Set MeasureTheory ProbabilityTheory
+
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock)
 
 /-- The all-time active Green kernel is uniformly finite by the quadratic occupation bound. -/
 theorem mixtureActiveGreenKernel_isFiniteKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) :
+     :
     IsFiniteKernel (enlargedActiveGreenKernel hH hLE hlam hLam A c) := by
   classical
   refine ⟨ENNReal.ofReal (activeHalfMassTime lam c / 2), ENNReal.ofReal_lt_top, ?_⟩
@@ -39,9 +39,7 @@ theorem mixtureActiveGreenKernel_isFiniteKernel
 
 /-- A finite starting measure gives a finite all-time Green mixture. -/
 theorem enlargedActiveGreen_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [IsFiniteMeasure nu] :
+     (nu : Measure Point) [IsFiniteMeasure nu] :
     IsFiniteMeasure (enlargedActiveGreen hH hLE hlam hLam A c nu) := by
   unfold enlargedActiveGreen
   have := mixtureActiveGreenKernel_isFiniteKernel hH hLE hlam hLam A c

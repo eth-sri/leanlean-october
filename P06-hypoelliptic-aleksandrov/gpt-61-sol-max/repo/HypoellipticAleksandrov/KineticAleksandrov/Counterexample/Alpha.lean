@@ -17,15 +17,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 theorem exists_subcritical_alpha (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
     (hp : 1 ≤ p) (hpd : p < 4 * (d : ℝ)) :
     ∃ alpha : ℝ, 0 < alpha ∧ alpha < 1 ∧ 0 < alpha - 2 + 4 * (d : ℝ) / p := by
+  let sharedTerm_83d1fca427 := (4 * (d : ℝ) / p)
   have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
-  have hratio : 1 < 4 * (d : ℝ) / p := (lt_div_iff₀ hp0).2 (by simpa using hpd)
-  have hd0 : 0 < (d : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hd)
-  have hratio0 : 0 < 4 * (d : ℝ) / p := div_pos (by positivity) hp0
+  have hratio : 1 < sharedTerm_83d1fca427 := (lt_div_iff₀ hp0).2 (by simpa using hpd)
+
+
   obtain ⟨alpha, ha, ha1⟩ := exists_between
-    (show max (0 : ℝ) (2 - 4 * (d : ℝ) / p) < 1 from
+    (show max (0 : ℝ) (2 - sharedTerm_83d1fca427) < 1 from
       max_lt zero_lt_one (by linarith only [hratio]))
   refine ⟨alpha, lt_of_le_of_lt (le_max_left _ _) ha, ha1, ?_⟩
-  have hlow := lt_of_le_of_lt (le_max_right (0 : ℝ) (2 - 4 * (d : ℝ) / p)) ha
-  linarith only [hlow, hratio0]
+
+  linarith only [(lt_of_le_of_lt (le_max_right (0 : ℝ) (2 - sharedTerm_83d1fca427)) ha), (div_pos (by positivity) hp0)]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

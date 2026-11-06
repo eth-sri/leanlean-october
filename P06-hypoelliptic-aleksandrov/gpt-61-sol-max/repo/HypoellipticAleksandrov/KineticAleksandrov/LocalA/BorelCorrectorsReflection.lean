@@ -5,11 +5,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ReflectionCalcu
 
 /-! # Backward homogeneous correctors in the source geometry -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory Parabolic SectionTwo TheoremA Filter
-open scoped Topology Matrix.Norms.Elementwise
+open Set MeasureTheory Parabolic TheoremA Filter
+open scoped Matrix.Norms.Elementwise
 
 /-- Reflection gives actual backward correctors on every compact interior set. -/
 theorem exists_backward_homogeneous_correctors
@@ -20,11 +20,11 @@ theorem exists_backward_homogeneous_correctors
     (hs : IsSymmetricCoefficient A) (hlo : HasLowerEllipticityAE lam A)
     (hhi : HasUpperEllipticityAE Lam A)
     (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (u : KineticPoint d → ℝ) (hu : IsKineticC112On u (backwardCylinder P₀ R))
+    (u : HypoellipticAleksandrov.KineticScalarField d) (hu : IsKineticC112On u (backwardCylinder P₀ R))
     (he : ∀ᵐ P ∂volume.restrict (backwardCylinder P₀ R),
       backwardOperatorOfTimeVelocityCoefficient A u P = 0)
     (L : Set (KineticPoint d)) (hL : IsCompact L) (hLD : L ⊆ backwardCylinder P₀ R) :
-    ∃ (B : ℕ → CoefficientField d) (w : ℕ → KineticPoint d → ℝ)
+    ∃ (B : ℕ → CoefficientField d) (w : ℕ → HypoellipticAleksandrov.KineticScalarField d)
       (O : Set (KineticPoint d)), IsOpen O ∧ L ⊆ O ∧
       (∀ j, IsSmoothCoefficient (B j) ∧ IsSymmetricCoefficient (B j) ∧
         HasLowerEllipticityAE lam (B j) ∧ HasUpperEllipticityAE Lam (B j)) ∧
@@ -35,32 +35,30 @@ theorem exists_backward_homogeneous_correctors
   let D := forwardCylinder Z R hR
   have hmap : MapsTo (kineticReflection (d := d)) D (backwardCylinder P₀ R) := by
     intro P hP
-    have hi := kineticReflection_image_backwardCylinder P₀ R hR
+
     dsimp only [D, Z] at hP
-    rw [← hi] at hP
+    rw [← (kineticReflection_image_backwardCylinder P₀ R hR)] at hP
     rcases hP with ⟨Q, hQ, rfl⟩
     simpa only [kineticReflection_involutive Q] using hQ
-  have hreg := comparison_regular_mono (isKineticC112On_kineticReflection u _ hu) hmap
-  have hμ := (measurePreserving_kineticReflection d).quasiMeasurePreserving.restrict hmap
-  have he' : ∀ᵐ P ∂volume.restrict D,
-      forwardKineticOperator (ofTimeVelocityCoefficient (kineticReflectedCoefficient A))
-        (u ∘ kineticReflection) P = 0 := by
-    filter_upwards [hμ.ae he] with P hP
-    rw [reflectedKineticOperator_reflection, hP, neg_zero]
-  have hKL : kineticReflection '' L ⊆ D := by
-    dsimp only [D, Z]
-    rw [← kineticReflection_image_backwardCylinder P₀ R hR]
-    exact image_mono hLD
+
+
+
+
   obtain ⟨B, W, V, hV, hKV, _, hB, hW, heW, ht⟩ :=
     exists_borel_homogeneous_correctors hH hLE hd lam Lam hlam hLam
       (kineticReflectedCoefficient A) (isBorelCoefficient_kineticReflectedCoefficient A hA)
       (isSymmetricCoefficient_kineticReflectedCoefficient A hs)
       (ellipticityAE_kineticReflectedCoefficient A lam Lam hlo hhi).1
       (ellipticityAE_kineticReflectedCoefficient A lam Lam hlo hhi).2 Z R hR
-      (u ∘ kineticReflection) hreg he' (kineticReflection '' L)
-      (hL.image (continuous_kineticReflection d)) hKL
-  let O := kineticReflection ⁻¹' V
-  have hO : IsOpen O := hV.preimage (continuous_kineticReflection d)
+      (u ∘ kineticReflection) (comparison_regular_mono (isKineticC112On_kineticReflection u _ hu) hmap) (by
+          filter_upwards [((measurePreserving_kineticReflection d).quasiMeasurePreserving.restrict hmap).ae he] with P hP
+          rw [reflectedKineticOperator_reflection, hP, neg_zero]) (kineticReflection '' L)
+      (hL.image (continuous_kineticReflection d)) (by
+          dsimp only [D, Z]
+          rw [← kineticReflection_image_backwardCylinder P₀ R hR]
+          exact image_mono hLD)
+
+
   have hWs j := isKineticC112On_of_contDiffOn hV
     (boundary_physical_smooth_to_native (hW j))
   have hBs j : IsSmoothCoefficient (B j) := by
@@ -71,7 +69,7 @@ theorem exists_backward_homogeneous_correctors
     exact (hB j).2.2.1 i k |>.comp
       (contDiff_fst.prodMk (contDiff_snd.prodMk (contDiff_const (c := (0 : PDE.Vec d)))))
   refine ⟨fun j => kineticReflectedCoefficient (B j), fun j => W j ∘ kineticReflection,
-    O, hO, fun P hP => hKV (mem_image_of_mem _ hP), ?_, ?_, ?_, ?_⟩
+    (kineticReflection ⁻¹' V), (hV.preimage (continuous_kineticReflection d)), fun P hP => hKV (mem_image_of_mem _ hP), ?_, ?_, ?_, ?_⟩
   · intro j
     have hlo' : HasLowerEllipticityAE lam (B j) :=
       Eventually.of_forall (fun x => (hB j).2.2.2.2.1 x.1 x.2)
@@ -94,12 +92,11 @@ theorem exists_backward_homogeneous_correctors
       simp only [Function.comp_apply, kineticReflection_involutive Q]
     rw [hc, hw, kineticReflection_involutive P, heW j _ hP] at hh
     linarith
-  · have hh := ht.comp (kineticReflection (d := d))
-    have hsubset : L ⊆ kineticReflection ⁻¹' (kineticReflection '' L) :=
-      fun _ h => mem_image_of_mem _ h
+  ·
+
     have hu' : (u ∘ kineticReflection) ∘ kineticReflection = u := by
       funext P
       simp only [Function.comp_apply, kineticReflection_involutive P]
-    simpa only [hu'] using hh.mono hsubset
+    simpa only [hu'] using (ht.comp (kineticReflection )).mono (fun _ h => mem_image_of_mem _ h)
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

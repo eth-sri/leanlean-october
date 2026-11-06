@@ -8,16 +8,18 @@ import Mathlib.Basic.NNReal.Basic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Set MeasureTheory
-open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
+
+
+
+variable (t : ℝ)
 
 /-- Insert an ambient state into the unrestricted full-space fiber. -/
-def fullspaceState (t : ℝ) (x : EvolutionAmbientState 1) :
+def fullspaceState  (x : EvolutionAmbientState 1) :
     EvolutionState autonomousWholeDomain (fun _ => 0) t :=
   ⟨x, by rw [autonomous_stateSet]; trivial⟩
 
 /-- State insertion is measurable. -/
-theorem measurable_fullspaceState (t : ℝ) : Measurable (fullspaceState t) :=
+theorem measurable_fullspaceState  : Measurable (fullspaceState t) :=
   measurable_id.subtype_mk
 
 /-- The autonomous full-space operator at a nonnegative elapsed time. -/

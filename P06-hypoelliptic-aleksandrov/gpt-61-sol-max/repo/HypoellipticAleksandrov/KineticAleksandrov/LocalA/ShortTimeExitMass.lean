@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ShortTimeExitLinear
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.MarginalOperator
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Compact terminal cutoffs recover the lost parabolic mass
 
@@ -10,10 +12,10 @@ The supersolution is an internal comparison argument. Compact smooth terminal da
 are constructed here, so no additional terminal-solver input is assumed.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open HypoellipticAleksandrov Parabolic Set MeasureTheory
+open Parabolic Set MeasureTheory
 open SectionTwo Decay
 
 /-- A smooth positive supersolution dominating one on the lateral face bounds
@@ -22,28 +24,29 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
     (v₀ : PDE.Vec d) (hR : 0 < R) (hστ : σ < τ)
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (K : MovingFiberKernel (PDE.euclideanBall v₀ R) stationary)
-    (hpar : HasParabolicMarginalBundle (PDE.euclideanBall v₀ R) stationary
+    (hpar : HasParabolicMarginalBundle _ stationary
       (PDE.isOpen_euclideanBall v₀ R).measurableSet (zIndependentCoefficient B) K)
-    (Ψ : TimeVelocity d → ℝ) (hΨ : ContDiff ℝ (⊤ : ℕ∞) Ψ)
+    (Ψ : HypoellipticAleksandrov.Parabolic.ScalarField d) (hΨ : ContDiff ℝ PDE.smoothOrder Ψ)
     (hΨpos : ∀ p ∈ scalarParabolicClosedCylinder σ τ (PDE.euclideanBall v₀ R), 0 ≤ Ψ p)
     (hΨop : ∀ p ∈ scalarParabolicOpenCylinder σ τ (PDE.euclideanBall v₀ R),
       scalarParabolicOperator B 0 Ψ p ≤ 0)
     (hΨlat : ∀ p ∈ scalarParabolicLateralFace σ τ (PDE.euclideanBall v₀ R), 1 ≤ Ψ p)
     (v : PDE.Vec d) (hv : v ∈ PDE.euclideanBall v₀ R) :
     1 - (parabolicMarginalKernel K (PDE.isOpen_euclideanBall v₀ R).measurableSet
-      σ τ hστ.le ⟨v, by simpa only [movingDomain_stationary] using hv⟩).real univ ≤
+      σ τ hστ.le ⟨v, by simpa using hv⟩).real univ ≤
         Ψ (σ, v) := by
+  let sharedTerm_a258f6015d := (1 - Ψ (σ, v))
   let D := PDE.euclideanBall v₀ R
   let hD := (PDE.isOpen_euclideanBall v₀ R).measurableSet
   let y : EvolutionPosition D stationary σ :=
-    ⟨v, by simpa only [movingDomain_stationary] using hv⟩
+    ⟨v, by simpa using hv⟩
   let μ := parabolicMarginalKernel K hD σ τ hστ.le y
   have := isFiniteKernel_parabolicMarginalKernel K hD σ τ hστ.le
   obtain ⟨Q, _hfirst, _hid, _hpos, _hsub, _hcomp, hrepr,
     _hmeas, _hend, _hkc, hsolve⟩ := hpar (fun _ _ _ _ => rfl)
-  have hεbound : ∀ ε : ℝ, 0 < ε → 1 - Ψ (σ, v) - ε ≤ μ.real univ := by
+  have hεbound : ∀ ε : ℝ, 0 < ε → sharedTerm_a258f6015d - ε ≤ μ.real univ := by
     intro ε hε
-    let C : Set (PDE.Vec d) := closure D ∩ {w | ε ≤ 1 - Ψ (τ, w)}
+    let C  := closure D ∩ {w | ε ≤ 1 - Ψ (τ, w)}
     have hclosed : IsClosed {w : PDE.Vec d | ε ≤ 1 - Ψ (τ, w)} :=
       isClosed_le continuous_const
         (continuous_const.sub (hΨ.continuous.comp (continuous_const.prodMk continuous_id)))
@@ -67,8 +70,8 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
         exact (hφrange w).2⟩⟩
     obtain ⟨V, hV, heval, _huniq⟩ := hsolve τ F
       ⟨hφs, hφc, by simpa only [movingDomain_stationary] using hφD⟩
-    let U : TimeVelocity d → ℝ := fun p => (1 - ε) + (-1) * Ψ p
-    have hU : ContDiff ℝ (⊤ : ℕ∞) U := contDiff_const.add (contDiff_const.mul hΨ)
+    let U  := fun p => (1 - ε) + (-1) * Ψ p
+    have hU : ContDiff ℝ PDE.smoothOrder U := contDiff_const.add (contDiff_const.mul hΨ)
     have hUV := ball_terminal_lower_comparison v₀ hR hστ hB.1 B hB F V U hV
       hU.continuous.continuousOn (fun p _ => hU.contDiffAt.of_le (by simp))
       (fun p hp => by
@@ -102,12 +105,12 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
           exact (hφrange w.1).2
         _ = μ.real univ := (integral_const (μ := μ) (1 : ℝ)).trans
           (by simp only [smul_eq_mul, mul_one])
-    have hh : 1 - Ψ (σ, v) - ε ≤ V (σ, v) := by
+    have hh : sharedTerm_a258f6015d - ε ≤ V (σ, v) := by
       convert hUV using 1
       dsimp only [U]
       ring
     exact hh.trans hi
-  have hlim : 1 - Ψ (σ, v) ≤ μ.real univ := by
+  have hlim : sharedTerm_a258f6015d ≤ μ.real univ := by
     apply le_of_forall_pos_le_add
     intro ε hε
     have h := hεbound ε hε

@@ -2,6 +2,11 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
 import Mathlib.Tactic.Linarith
+import Lean.Elab.Tactic.Grind
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Smooth compact interior cutoffs
@@ -10,13 +15,13 @@ Cutoffs equal one on a prescribed compact subset of an open finite-dimensional s
 space. Their entire topological support remains in the open set.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open Set Function
+open Set
 
 /-- A continuous bounded function vanishing outside an open set can be cut off with
 arbitrarily small error relative to any continuous positive proper weight. -/
@@ -26,15 +31,14 @@ theorem exists_smooth_cutoff_weighted_error
     (hW : Continuous W) (hW1 : ∀ x, 1 ≤ W x)
     (hproper : ∀ R : ℝ, IsCompact {x | W x ≤ R})
     (hzero : ∀ x ∉ U, g x = 0) {C ε : ℝ} (hC : ∀ x, |g x| ≤ C) (hε : 0 < ε) :
-    ∃ χ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ HasCompactSupport χ ∧
+    ∃ χ : E → ℝ, ContDiff ℝ PDE.smoothOrder χ ∧ HasCompactSupport χ ∧
       tsupport χ ⊆ U ∧ (∀ x, 0 ≤ χ x ∧ χ x ≤ 1) ∧
       (∀ x, |g x - χ x * g x| ≤ ε * W x) := by
   let K : Set E := {x | ε * W x ≤ |g x|}
   have hKclosed : IsClosed K := isClosed_le (continuous_const.mul hW) hg.abs
-  have hKcompact : IsCompact K := (hproper (C / ε)).of_isClosed_subset hKclosed
+  have hKcompact  := (hproper (C / ε)).of_isClosed_subset hKclosed
     (fun x hx => (le_div_iff₀ hε).mpr (by
-      have hh := (show ε * W x ≤ |g x| from hx).trans (hC x)
-      simpa only [mul_comm] using hh))
+      grind))
   have hKU : K ⊆ U := by
     intro x hx
     by_contra hxu

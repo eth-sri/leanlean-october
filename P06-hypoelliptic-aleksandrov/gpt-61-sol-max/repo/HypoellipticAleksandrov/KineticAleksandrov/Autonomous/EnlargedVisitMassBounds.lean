@@ -11,16 +11,16 @@ Only the exact finite-piece occupation and terminal domination conclusions
 are hypotheses here, as they belong to the enlarged recursion.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+open Set MeasureTheory
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
 
 /-- Actual active pieces have the physical active-velocity support. -/
 theorem enlargedActivePiece_ae_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     ∀ᵐ q ∂enlargedActivePiece hH hLE hlam hLam A c J s T P n,
       q.velocity 0 ∈ c.active := by
@@ -32,9 +32,7 @@ theorem enlargedActivePiece_ae_active
 
 /-- Finite active occupation sums inherit the full-space velocity-band capacity. -/
 theorem enlargedActivePiece_partial_capacity_of_domination
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+     (T : ℝ)
     (P : Point) (hT : 0 < T) (hbar : |c.vbar| = 2 * c.r) (N : ℕ)
     (hOccupation : (∑ n ∈ Finset.range N,
       enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P n) ≤
@@ -44,13 +42,11 @@ theorem enlargedActivePiece_partial_capacity_of_domination
         (64 * c.r / lam) * Real.sqrt (2 * Lam * T) := by
   let gm := enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P
   have hPT : P.time < P.time + T := by linarith
-  have : ∀ n, IsFiniteMeasure (gm n) := fun n =>
+  have  := fun n =>
     enlargedActivePiece_isFiniteMeasure hH hLE hlam hLam A c J P.time (P.time + T)
       P le_rfl hPT n
   let B : Set Point := {q | |q.velocity 0| ≤ 3 * c.r}
-  have hB : MeasurableSet B := measurableSet_le
-    (continuous_abs.measurable.comp ((continuous_apply 0).comp continuous_velocity).measurable)
-    measurable_const
+
   have hs : ∀ᵐ q ∂(∑ n ∈ Finset.range N, gm n), q ∈ B := by
     apply ae_finsetSum_measure_iff.mpr
     intro n _
@@ -83,7 +79,7 @@ theorem enlarged_mass_arithmetic {r R M D : ℝ} (hr : 0 < r) (hR : 0 ≤ R)
         (by simpa only [mul_comm] using hM)
     convert hd using 1
     field_simp
-  have hx : 0 ≤ R / r := div_nonneg hR hr.le
+  have hx  := div_nonneg hR hr.le
   nlinarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

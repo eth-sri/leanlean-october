@@ -6,10 +6,10 @@ import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 
 /-! # Reflection of the preliminary smooth estimate -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic TheoremA
+open Set MeasureTheory Parabolic TheoremA
 
 /-- The backward smooth estimate retains the positive-set source and the same constant. -/
 theorem preliminary_backward_abp_of_entrance
@@ -34,7 +34,7 @@ theorem preliminary_backward_abp_of_entrance
   refine ⟨C, hC, ?_⟩
   intro A P₀ R hR u f hcont hreg hLp hsub P hP
   let B : SmoothAutonomous lam Lam :=
-    ⟨reflectedAutonomous A.a, reflectedAutonomous_smooth A, reflectedAutonomous_bounds A⟩
+    ⟨_, reflectedAutonomous_smooth A, reflectedAutonomous_bounds A⟩
   let Z₀ := kineticReflection P₀
   let Q := forwardCylinder Z₀ R hR
   let U := u ∘ kineticReflection
@@ -47,8 +47,8 @@ theorem preliminary_backward_abp_of_entrance
     simpa only [preimage_closure_backwardCylinder_reflection P₀ R hR] using hc
   have hUr : IsKineticC112On U Q := by
     simpa only [preimage_backwardCylinder_reflection P₀ R hR] using
-      isKineticC112On_kineticReflection u (backwardCylinder P₀ R) hreg
-  have hgLp : MemLp g (ENNReal.ofReal 6) (volume.restrict Q) :=
+      isKineticC112On_kineticReflection u _ hreg
+  have hgLp  :=
     hLp.comp_measurePreserving hmp
   have hUs : ∀ᵐ P ∂volume.restrict Q, -g P ≤ forwardScalarOperator B.a U P := by
     filter_upwards [hmp.quasiMeasurePreserving.ae hsub] with P hP
@@ -60,7 +60,7 @@ theorem preliminary_backward_abp_of_entrance
     change kineticReflection (kineticReflection P) ∈ closure (backwardCylinder P₀ R)
     rw [kineticReflection_involutive P]
     exact hP
-  have hresult := hbound (kineticReflection P) hPr
+  have hresult := hbound _ hPr
   have hnorm : eLpNorm ({P | 0 < U P}.indicator g) (ENNReal.ofReal 6)
       (volume.restrict Q) =
       eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal 6)

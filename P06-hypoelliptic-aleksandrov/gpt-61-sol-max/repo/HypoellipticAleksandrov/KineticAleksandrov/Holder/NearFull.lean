@@ -7,26 +7,29 @@ import Mathlib.Tactic
 
 /-! # The source nearly-full superlevel estimate with uniform constants -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set MeasureTheory
 
+variable (d : ℕ)
+
 /-- The source near-full estimate, with the nonnegative constant needed by its threshold. -/
-theorem near_full_with_nonneg_constant (d : ℕ) (Lam p C_A : ℝ) (hp : 1 ≤ p) :
+theorem near_full_with_nonneg_constant  (Lam p C_A : ℝ) (hp : 1 ≤ p) :
     ∃ C₁ : ℝ, 0 ≤ C₁ ∧ ∀ lam : ℝ, 0 < lam → lam ≤ Lam →
       ∀ A : FullKineticCoefficient d, FullElliptic lam Lam A →
       ∀ (P₀ : KineticPoint d) (R ell eta : ℝ),
         0 < R → 0 ≤ ell → 0 < eta → eta < 1 →
       ∀ O : Set (KineticPoint d), IsOpen O → closure (backwardCylinder P₀ R) ⊆ O →
-      ∀ u : KineticPoint d → ℝ, (∀ P ∈ O, 0 ≤ u P) →
+      ∀ u : HypoellipticAleksandrov.KineticScalarField d, (∀ P ∈ O, 0 ≤ u P) →
         IsAdmissibleSupersolution A O p C_A u →
         (1 - eta) * (volume (backwardCylinder P₀ R)).toReal ≤
           (volume ({P | ell ≤ u P} ∩ backwardCylinder P₀ R)).toReal →
       ∀ P ∈ kineticAffine P₀ R '' cap d, (1 - C₁ * eta ^ (1 / p)) * ell ≤ u P := by
+  let sharedTerm_bccd949f41 := ((2 - (4 * (d : ℝ) + 2) / p))
   obtain ⟨f, hf, hrange, hcap, _, hsupport⟩ := exists_unit_cutoff d
   obtain ⟨C₀, hC₀, hop⟩ := exists_scaledUnitCutoff_operator_bound hf Lam
   let V := (volume (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1)).toReal
@@ -61,18 +64,18 @@ theorem near_full_with_nonneg_constant (d : ℕ) (Lam p C_A : ℝ) (hp : 1 ≤ p
     Real.mul_rpow hEta.1.le (mul_nonneg (pow_pos hR _).le hV),
     Real.mul_rpow (pow_pos hR _).le hV] at hnorm'
   have hscale := near_full_radius_cancellation d hR p
-  have hmul : max C_A 0 * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
+  have hmul : max C_A 0 * R ^ sharedTerm_bccd949f41 *
       (eLpNorm (localizedSource A psi u) (ENNReal.ofReal p) (volume.restrict Q)).toReal ≤
         C₁ * eta ^ (1 / p) * ell := by
     calc
-      _ ≤ max C_A 0 * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
+      _ ≤ max C_A 0 * R ^ sharedTerm_bccd949f41 *
           (C₀ * ell * (R ^ 2)⁻¹ *
             (eta ^ (1 / p) * ((R ^ (4 * d + 2)) ^ (1 / p) * V ^ (1 / p)))) :=
         mul_le_mul_of_nonneg_left hnorm' (mul_nonneg hCA (Real.rpow_nonneg hR.le _))
       _ = C₁ * eta ^ (1 / p) * ell := by
         calc
           _ = (max C_A 0 * C₀ * V ^ (1 / p)) * eta ^ (1 / p) * ell *
-              (R ^ (2 - (4 * (d : ℝ) + 2) / p) * (R ^ 2)⁻¹ *
+              (R ^ sharedTerm_bccd949f41 * (R ^ 2)⁻¹ *
                 (R ^ (4 * d + 2)) ^ (1 / p)) := by ring
           _ = _ := by rw [hscale, mul_one]
   have hboundary : sSup ((fun T => max (psi T - u T) 0) '' kineticBoundary P₀ R) ≤ 0 := by
@@ -99,13 +102,13 @@ theorem near_full_with_nonneg_constant (d : ℕ) (Lam p C_A : ℝ) (hp : 1 ≤ p
   linarith only [hlast]
 
 /-- The exact source near-full conditions, with its constant fixed before ellipticity data. -/
-theorem near_full (d : ℕ) (hd : 1 ≤ d) (Lam p C_A : ℝ) (hp : 1 ≤ p) :
+theorem near_full  (hd : 1 ≤ d) (Lam p C_A : ℝ) (hp : 1 ≤ p) :
     ∃ C₁ : ℝ, ∀ lam : ℝ, 0 < lam → lam ≤ Lam →
       ∀ A : FullKineticCoefficient d, FullElliptic lam Lam A →
       ∀ (P₀ : KineticPoint d) (R ell eta : ℝ),
         0 < R → 0 ≤ ell → 0 < eta → eta < 1 →
       ∀ O : Set (KineticPoint d), IsOpen O → closure (backwardCylinder P₀ R) ⊆ O →
-      ∀ u : KineticPoint d → ℝ, (∀ P ∈ O, 0 ≤ u P) →
+      ∀ u : HypoellipticAleksandrov.KineticScalarField d, (∀ P ∈ O, 0 ≤ u P) →
         IsAdmissibleSupersolution A O p C_A u →
         (1 - eta) * (volume (backwardCylinder P₀ R)).toReal ≤
           (volume ({P | ell ≤ u P} ∩ backwardCylinder P₀ R)).toReal →

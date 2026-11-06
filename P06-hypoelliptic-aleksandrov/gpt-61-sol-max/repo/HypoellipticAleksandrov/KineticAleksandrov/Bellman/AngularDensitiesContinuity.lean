@@ -7,14 +7,16 @@ import Mathlib.Tactic
 
 /-! # Continuity and positivity of actual absolutely continuous angular representatives -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+variable {h : ℝ → ℝ}
+
 /-- Absolute continuity on every compact interval gives global continuity of the
 representative. -/
-theorem bellman_locallyAC_continuous {h : ℝ → ℝ}
+theorem bellman_locallyAC_continuous
     (hh : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval h a b) : Continuous h := by
   apply continuous_iff_continuousAt.mpr
   intro y
@@ -24,22 +26,20 @@ theorem bellman_locallyAC_continuous {h : ℝ → ℝ}
   exact hc.continuousAt (Icc_mem_nhds (by linarith) (by linarith))
 
 /-- A continuous angular representative that is nonnegative almost everywhere is nonnegative. -/
-theorem bellman_continuous_nonneg_of_ae {h : ℝ → ℝ} (hh : Continuous h)
-    (hn : ∀ᵐ y ∂volume, 0 ≤ h y) : ∀ y : ℝ, 0 ≤ h y := by
-  have hc : IsClosed {y : ℝ | 0 ≤ h y} := isClosed_le continuous_const hh
-  have he : {y : ℝ | 0 ≤ h y} =ᵐ[volume] univ := by
-    filter_upwards [hn] with y hy
-    change (0 ≤ h y) = True
-    exact propext ⟨fun _ => trivial, fun _ => hy⟩
-  have hs := (hc.ae_eq_univ_iff_eq (μ := volume)).mp he
-  intro y
-  have hy : y ∈ {y : ℝ | 0 ≤ h y} := by rw [hs]; trivial
-  exact hy
+theorem bellman_continuous_nonneg_of_ae  (hh : Continuous h)
+    (hn : ∀ᵐ y, 0 ≤ h y) : ∀ y : ℝ, 0 ≤ h y := (fun y =>
+  Eq.mpr
+    (id
+      (congrArg (fun _a => y ∈ _a)
+        ((IsClosed.ae_eq_univ_iff_eq (isClosed_le continuous_const hh)).mp
+          (Filter.mp_mem hn
+            (Filter.univ_mem' (id fun y hy => id (propext { mp := fun x => trivial, mpr := fun x => hy })))))))
+    True.intro)
 
 /-- Almost everywhere ellipticity gives nonnegativity of the continuous angular density. -/
 theorem bellmanAngularDensity_nonneg {f h : ℝ → ℝ}
     (hh : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval h a b)
-    (hf : ∀ᵐ y ∂volume, 0 ≤ f y) (hfh : ∀ᵐ y ∂volume, f y ≤ h y) :
+    (hf : ∀ᵐ y, 0 ≤ f y) (hfh : ∀ᵐ y, f y ≤ h y) :
     ∀ y : ℝ, 0 ≤ h y := by
   apply bellman_continuous_nonneg_of_ae (bellman_locallyAC_continuous hh)
   filter_upwards [hf, hfh] with y hy hfy

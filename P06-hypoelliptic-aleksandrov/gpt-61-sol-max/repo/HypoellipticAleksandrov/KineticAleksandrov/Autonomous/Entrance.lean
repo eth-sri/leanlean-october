@@ -9,10 +9,10 @@ clipped-cylinder count, the mass, time and domination estimates and the proved
 time-bin density estimate.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 
 /-- The exact source entrance proposition holds relative to the PDE classical inputs. -/
 theorem entranceStatement_holds :
@@ -23,7 +23,7 @@ theorem entranceStatement_holds :
     obtain ⟨M, hM, hm⟩ := visit_short_time_mass hlam hLam
     refine ⟨B + M, add_pos hB hM, ?_⟩
     intro A c Z0 R hR P hP _hcore
-    let nu := visitStartsQ hH hLE hlam hLam A c Z0 R hR P hP
+
     refine ⟨visitStartsQ_isFiniteMeasure hH hLE hlam hLam A c Z0 R hR P hP,
       entrance_visitStartsQ_ae_closedEntrance hH hLE hlam hLam A c Z0 R hR P hP,
       ?_, ?_, ?_⟩
@@ -36,7 +36,7 @@ theorem entranceStatement_holds :
         (ENNReal.ofReal_le_ofReal (le_add_of_nonneg_left hB.le))
     · exact (core_green_le_visitGreen hH hLE hlam hLam A c Z0 R hR P hP).trans_eq
         (congrArg (fun rho : Measure Point => rho.restrict {p | p.velocity 0 ∈ c.core})
-          (entrance_coreAllTimeGreen_eq hH hLE hlam hLam A c nu))
+          (entrance_coreAllTimeGreen_eq hH hLE hlam hLam A c (visitStartsQ hH hLE hlam hLam A c Z0 R hR P hP)))
   · intro q hq
     exact entrance_density hH hLE hlam hLam q hq
 

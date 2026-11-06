@@ -8,15 +8,15 @@ import Mathlib.Analysis.Calculus.FDeriv.Congr
 Equality on an open spatial set identifies both levels of the spatial derivative.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter Set
 open scoped Topology
 
 /-- Stationary scalar operators agree wherever their spatial representatives agree openly. -/
-theorem stationary_scalarOperator_eqOn {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (f q : PDE.Vec d → ℝ) (heq : EqOn f q Ω)
+theorem stationary_scalarOperator_eqOn {d : ℕ} {Ω : PDE.VelocityRegion d}
+    (hΩ : IsOpen Ω) (f q : PDE.ScalarField d) (heq : EqOn f q Ω)
     (A : CoefficientField d) (z : TimeVelocity d) (hz : z.2 ∈ Ω) :
     scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
       (fun z => f z.2) z =

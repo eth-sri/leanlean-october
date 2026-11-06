@@ -41,7 +41,7 @@ private theorem weak_limit_le_on_finite_set {α : Type*} [MeasurableSpace α]
     simpa only [Real.norm_eq_abs, abs_of_nonneg ((abs_nonneg _).trans hx)] using hx
   refine ae_le_of_forall_setIntegral_le hui (integrable_const a) ?_
   intro S hS _
-  have hSE : MeasurableSet (S ∩ E) := hS.inter hE
+  have hSE  := hS.inter hE
   have hSEf : μ (S ∩ E) ≠ ⊤ := ne_of_lt ((measure_mono inter_subset_right).trans_lt hEf)
   let ψ : α → ℝ := (S ∩ E).indicator (fun _ => 1)
   have hψ : Integrable ψ μ := (integrable_indicator_iff hSE).2 (integrableOn_const hSEf)
@@ -67,21 +67,20 @@ private theorem weak_limit_le_on_finite_set {α : Type*} [MeasurableSpace α]
 
 /-- The existing kinetic volume assigns positive mass to every nonempty open set. -/
 instance kineticVolume_isOpenPosMeasure (n : ℕ) :
-    Measure.IsOpenPosMeasure (volume : Measure (KineticPoint n)) := by
-  change Measure.IsOpenPosMeasure
-    (Measure.map (KineticPoint.equivProd n).symm volume)
-  exact (KineticPoint.homeomorphProd n).symm.continuous.isOpenPosMeasure_map
-    (KineticPoint.equivProd n).symm.surjective
+    Measure.IsOpenPosMeasure (volume : Measure (KineticPoint n)) := (id
+  (Continuous.isOpenPosMeasure_map (Homeomorph.continuous (KineticPoint.homeomorphProd n).symm)
+    (Equiv.surjective (KineticPoint.equivProd n).symm)))
 
+variable {n : ℕ} (U W : Set (KineticPoint n)) (hW : IsOpen W) (hWU : W ⊆ U) (v : ℕ → HypoellipticAleksandrov.KineticScalarField n) (u V : HypoellipticAleksandrov.KineticScalarField n)
+
+include hW hWU
 /-- A smooth representative inherits every uniform upper bound on an open subregion. -/
-theorem bounded_weak_limit_le_on_open {n : ℕ}
-    (U W : Set (KineticPoint n)) (hW : IsOpen W) (hWU : W ⊆ U)
-    (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ) (C a : ℝ)
+theorem bounded_weak_limit_le_on_open  (C a : ℝ)
     (hv : ∀ j, AEStronglyMeasurable (v j) (volume.restrict U))
     (hb : ∀ j, ∀ᵐ x ∂volume.restrict U, |v j x| ≤ C)
     (hu : AEStronglyMeasurable u (volume.restrict U))
     (hub : ∀ᵐ x ∂volume.restrict U, |u x| ≤ C)
-    (hlim : ∀ ψ : KineticPoint n → ℝ, IntegrableOn ψ U volume →
+    (hlim : ∀ ψ : HypoellipticAleksandrov.KineticScalarField n, IntegrableOn ψ U  →
       Tendsto (fun j => ∫ x in U, v j x * ψ x) atTop (𝓝 (∫ x in U, u x * ψ x)))
     (hV : ContinuousOn V U) (hrep : u =ᵐ[volume.restrict U] V)
     (hle : ∀ j, ∀ x ∈ W, v j x ≤ a) : ∀ x ∈ W, V x ≤ a := by
@@ -110,14 +109,12 @@ theorem bounded_weak_limit_le_on_open {n : ℕ}
   exact min_le_right _ _
 
 /-- Uniform local absolute trace bounds pass to the continuous weak-limit representative. -/
-theorem bounded_weak_limit_abs_sub_le_on_open {n : ℕ}
-    (U W : Set (KineticPoint n)) (hW : IsOpen W) (hWU : W ⊆ U)
-    (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ) (C a η : ℝ)
+theorem bounded_weak_limit_abs_sub_le_on_open  (C a η : ℝ)
     (hv : ∀ j, AEStronglyMeasurable (v j) (volume.restrict U))
     (hb : ∀ j, ∀ᵐ x ∂volume.restrict U, |v j x| ≤ C)
     (hu : AEStronglyMeasurable u (volume.restrict U))
     (hub : ∀ᵐ x ∂volume.restrict U, |u x| ≤ C)
-    (hlim : ∀ ψ : KineticPoint n → ℝ, IntegrableOn ψ U volume →
+    (hlim : ∀ ψ : HypoellipticAleksandrov.KineticScalarField n, IntegrableOn ψ U  →
       Tendsto (fun j => ∫ x in U, v j x * ψ x) atTop (𝓝 (∫ x in U, u x * ψ x)))
     (hV : ContinuousOn V U) (hrep : u =ᵐ[volume.restrict U] V)
     (hbound : ∀ j, ∀ x ∈ W, |v j x - a| ≤ η) :
@@ -126,7 +123,7 @@ theorem bounded_weak_limit_abs_sub_le_on_open {n : ℕ}
     hv hb hu hub hlim hV hrep (fun j x hx => by
       have h := (abs_le.mp (hbound j x hx)).2
       linarith)
-  have hlimneg : ∀ ψ : KineticPoint n → ℝ, IntegrableOn ψ U volume →
+  have hlimneg : ∀ ψ : HypoellipticAleksandrov.KineticScalarField n, IntegrableOn ψ U  →
       Tendsto (fun j => ∫ x in U, (-v j x) * ψ x)
         atTop (𝓝 (∫ x in U, (-u x) * ψ x)) := by
     intro ψ hψ

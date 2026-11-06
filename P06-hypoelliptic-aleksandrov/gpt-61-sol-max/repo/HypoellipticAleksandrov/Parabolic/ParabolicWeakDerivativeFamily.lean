@@ -7,21 +7,21 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 
 namespace HypoellipticAleksandrov.Parabolic
 
-open MeasureTheory
+
 open scoped ENNReal
 
 /-- A coherent finite family of selected original-time weak derivatives
 through parabolic weight `L`, all locally represented in `L²`. -/
 structure ParabolicWeakDerivativeFamily
-    (d L : ℕ) (U : Set (TimeVelocity d))
-    (u : TimeVelocity d → ℝ) where
+    (d L : ℕ) (U : HypoellipticAleksandrov.Parabolic.Region d)
+    (u : HypoellipticAleksandrov.Parabolic.ScalarField d) where
   /-- Selected raw representative for each bounded parabolic multi-index. -/
   representative :
-    ParabolicDerivativeIndex d L → TimeVelocity d → ℝ
+    ParabolicDerivativeIndex d L → HypoellipticAleksandrov.Parabolic.ScalarField d
 
   /-- Every selected entry belongs to restricted-product-volume `L²`. -/
   memLp : ∀ beta : ParabolicDerivativeIndex d L,
-    ParabolicMemLpOn U (2 : ℝ≥0∞) (representative beta)
+    ParabolicMemLpOn U (2 ) (representative beta)
 
   /-- The zero-index entry represents the supplied root function. -/
   zero_ae :

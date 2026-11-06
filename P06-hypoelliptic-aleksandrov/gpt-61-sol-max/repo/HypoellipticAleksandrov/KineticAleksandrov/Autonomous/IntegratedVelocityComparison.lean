@@ -2,6 +2,14 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.IntegratedVelocityBarrier
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelTheorem
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import all HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassComparison
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+open private HypoellipticAleksandrov.KineticAleksandrov.Autonomous.sliceRegular_of_smooth from HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassComparison
+
 
 /-! # Full-space occupation supersolution comparison
 
@@ -9,34 +17,14 @@ The source
 potential is the existing actual Duhamel integral, not a separately supplied solution.
 -/
 
-@[expose] public section
-noncomputable section
-namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Parabolic
-open SectionTwo Evolution Occupation
+ public section
 
-private theorem source_slice_regular {u : Point → ℝ} {D : Set Point}
-    (hD : IsOpen D)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
-      (evolutionHomeomorph 1 ⁻¹' D)) (p : Point) (hp : p ∈ D) :
-    IsSliceRegularAt u p := by
-  have hx : (evolutionHomeomorph 1).symm p ∈ evolutionHomeomorph 1 ⁻¹' D := by
-    simpa only [mem_preimage, Homeomorph.apply_symm_apply] using hp
-  have hj := hu.contDiffAt
-    ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds hx)
-  have h := (hj.of_le (by simp : (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).comp
-    (p.time, p.position, p.velocity) (evolutionProdCLE 1).symm.contDiff.contDiffAt
-  apply IsSliceRegularAt.of_contDiffAt
-  have heq : (fun q => (u ∘ evolutionHomeomorph 1) ((evolutionProdCLE 1).symm q)) =
-      rawLift u := by
-    funext q
-    simp [evolutionHomeomorph, rawLift, KineticPoint.homeomorphProd,
-      KineticPoint.isometryEquivProd, KineticPoint.equivProd]
-    rfl
-  change ContDiffAt ℝ 2
-    (fun q => (u ∘ evolutionHomeomorph 1) ((evolutionProdCLE 1).symm q))
-    (p.time, p.position, p.velocity) at h
-  rwa [heq] at h
+namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+open Set HypoellipticAleksandrov
+open SectionTwo Evolution
+
+
+
 
 /-- A nonnegative supersolution bounds the actual compact interior source potential. -/
 theorem velocity_duhamel_le_barrier
@@ -45,7 +33,7 @@ theorem velocity_duhamel_le_barrier
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution)
     (hE : IsFullSpaceEvolution A E) (T : ℝ) (g q : Point → ℝ)
     (hgn : ∀ p, 0 ≤ g p)
-    (hgs : ContDiff ℝ (⊤ : ℕ∞) (rawLift g)) (hgc : HasCompactSupport g)
+    (hgs : ContDiff ℝ PDE.smoothOrder (rawLift g)) (hgc : HasCompactSupport g)
     (hgU : tsupport g ⊆ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T)
     (hqc : Continuous q) (hqr : ∀ p, p.time ≤ T → IsSliceRegularAt q p)
     (hqn : ∀ p ∈ evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) T, 0 ≤ q p)
@@ -60,28 +48,28 @@ theorem velocity_duhamel_le_barrier
       (identityDrift 1) (identityDrift_smooth 1) (identityDrift_bounds 1)
       E.1 E.2 hE T g hgn hgs hgc hgU
   have hΩ := isOpen_of_isAdmissibleEvolutionDomain autonomousWholeDomain_admissible
-  have hD := isOpen_duhamelCylinder (γ := fun _ => 0) hΩ continuous_const T
+
   have hs : movingClosedSlab autonomousWholeDomain (fun _ => 0) p₀.time T ⊆
       evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) T :=
     fun _ hp => ⟨hp.2.1, hp.2.2⟩
   have ha : movingActiveSlab autonomousWholeDomain (fun _ => 0) p₀.time T ⊆
       evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T :=
     fun _ hp => ⟨hp.2.1, hp.2.2⟩
-  have hreg := fun p hp => source_slice_regular hD hsm p (ha hp)
+  have hreg := fun p hp => _root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.sliceRegular_of_smooth (isOpen_duhamelCylinder (γ := fun _ => 0) hΩ continuous_const T) hsm p (ha hp)
   have hmax := growth_comparison hΩ continuous_const hlam (evolutionCoefficient_bounds A)
     (identityDrift_bounds 1).1 (le_refl 0) zero_le_one
     (a := p₀.time) (T := T) (u := fun p => duhamelPotential E.2 T g p - q p)
     ⟨C, fun p hp => by
-      have h1 := (le_abs_self (duhamelPotential E.2 T g p)).trans (hCb p)
-      have h2 := hqn p (hs hp)
-      linarith only [h1, h2]⟩
+
+
+      linarith only [((le_abs_self (duhamelPotential E.2 T g p)).trans (hCb p)), (hqn p (hs hp))]⟩
     ((hc.mono hs).sub hqc.continuousOn)
     (fun p hp => (hreg p hp).sub (hqr p hp.2.1.le))
     (fun p hp => by
       rw [viscousTransportedOperator_sub (hreg p hp) (hqr p hp.2.1.le),
         viscousTransportedOperator_zero, viscousTransportedOperator_zero, heq p (ha hp)]
-      have h := hqo p (ha hp)
-      linarith only [h])
+
+      linarith only [(hqo p (ha hp))])
     (fun p hp hpt => by rw [ht p hpt]; linarith only [hqn p (hs hp)])
     (fun p hp hpf => by rw [hl p hpf]; linarith only [hqn p (hs hp)])
   exact sub_nonpos.mp (hmax p₀ ⟨le_rfl, hp₀.1.le, subset_closure hp₀.2⟩)

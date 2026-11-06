@@ -6,14 +6,16 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.RestartTailS
 
 /-! # Quantitative density tails from the genuine terminal restart -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 open scoped ENNReal
 
+variable {X : Type*}
+
 /-- Equal nonnegative density measures have equal real densities almost everywhere. -/
-theorem mixture_density_unique {X : Type*} [MeasurableSpace X] (m : Measure X)
+theorem mixture_density_unique  [MeasurableSpace X] (m : Measure X)
     [SigmaFinite m] (f g : X → ℝ) (hf : Measurable f) (hg : Measurable g)
     (hf0 : ∀ x, 0 ≤ f x) (hg0 : ∀ x, 0 ≤ g x)
     (he : m.withDensity (fun x => ENNReal.ofReal (f x)) =
@@ -21,11 +23,10 @@ theorem mixture_density_unique {X : Type*} [MeasurableSpace X] (m : Measure X)
   have hh := (withDensity_eq_iff_of_sigmaFinite
     hf.ennreal_ofReal.aemeasurable hg.ennreal_ofReal.aemeasurable).mp he
   filter_upwards [hh] with x hx
-  have ht := congrArg ENNReal.toReal hx
-  simpa only [ENNReal.toReal_ofReal (hf0 x), ENNReal.toReal_ofReal (hg0 x)] using ht
+  simp_all
 
 /-- A restarted density bounds the restriction of the original density, independently of choices. -/
-theorem mixture_density_restrict_bound {X : Type*} [MeasurableSpace X] (m : Measure X)
+theorem mixture_density_restrict_bound  [MeasurableSpace X] (m : Measure X)
     [SigmaFinite m] (f g : X → ℝ) (hf : Measurable f) (hg : Measurable g)
     (hf0 : ∀ x, 0 ≤ f x) (hg0 : ∀ x, 0 ≤ g x) (L : Set X)
     (hL : MeasurableSet L) (p : ℝ≥0∞) (hgp : MemLp g p m)
@@ -39,10 +40,11 @@ theorem mixture_density_restrict_bound {X : Type*} [MeasurableSpace X] (m : Meas
   exact ⟨(eLpNorm_congr_ae ha).trans_lt (hgp.restrict L),
     (eLpNorm_congr_ae ha).le.trans (eLpNorm_restrict_le g p m L)⟩
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
 /-- The actual surviving terminal measure is finite. -/
 theorem activeRestartMeasure_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
     (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) :
     IsFiniteMeasure (activeRestartMeasure hH hLE hlam hLam A c e he t ht) := by
@@ -52,8 +54,7 @@ theorem activeRestartMeasure_isFiniteMeasure
 
 /-- One fixed one-pole density has the uniform exponential Lq tail at every delay. -/
 theorem active_density_tail
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
     (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
     ∃ C c₀ : ℝ, 0 < C ∧ 0 < c₀ ∧ ∀ (A : SmoothAutonomous lam Lam)
       (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active),
@@ -74,7 +75,7 @@ theorem active_density_tail
   obtain ⟨G, hGm, hG0, hGd, _, hGa⟩ := hp A c e he
   change stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he) =
     volume.withDensity (fun p => ENNReal.ofReal (G p)) at hGd
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   refine ⟨G, ⟨hGm, hG0, ?_⟩, ?_⟩
   · have hr := Measure.restrict_eq_self_of_ae_mem hGa
     have hS : MeasurableSet (densityClockStrip c e) :=
@@ -87,29 +88,28 @@ theorem active_density_tail
       mu.restrict (densityClockStrip c e)) hGd).trans
         (restrict_withDensity hS (fun p => ENNReal.ofReal (G p))))
   · intro t ht
-    let nu := activeRestartMeasure hH hLE hlam hLam A c e he t ht
-    have : IsFiniteMeasure nu :=
+
+    have  :=
       activeRestartMeasure_isFiniteMeasure hH hLE hlam hLam A c e he t ht
-    obtain ⟨g, hgm, hg0, hgd, hgp, hgb⟩ := hm A c nu
-    have heq := active_tail_restart_identity hH hLE hlam hLam A c e he t ht
+    obtain ⟨g, hgm, hg0, hgd, hgp, hgb⟩ := hm A c (activeRestartMeasure hH hLE hlam hLam A c e he t ht)
+
     have hed := (congrArg (fun mu : Measure Point =>
-      mu.restrict {p | e.time + t ≤ p.time}) hGd).symm.trans (heq.trans hgd)
-    have hL : MeasurableSet {p : Point | e.time + t ≤ p.time} :=
-      continuous_time.measurable measurableSet_Ici
+      mu.restrict {p | e.time + t ≤ p.time}) hGd).symm.trans ((active_tail_restart_identity hH hLE hlam hLam A c e he t ht).trans hgd)
+
     obtain ⟨hGp, hGn⟩ := mixture_density_restrict_bound volume G g hGm hgm hG0 hg0
-      _ hL (ENNReal.ofReal q) hgp hed
-    let S := {p : Point | e.time + t ≤ p.time ∧ p.velocity 0 ∈ c.active}
-    have hsub : S ⊆ {p : Point | e.time + t ≤ p.time} := fun _ h => h.1
-    have hpn := hGp.mono_measure (Measure.restrict_mono hsub le_rfl)
-    have hnn := (eLpNorm_mono_measure G (Measure.restrict_mono hsub le_rfl)).trans hGn
-    refine ⟨hpn, ?_⟩
-    have hreal := (ENNReal.toReal_mono hgp.ne_top hnn).trans hgb
-    have hmass : (nu univ).toReal ≤ C2 * Real.exp (-c₀ * t / c.r ^ 2) :=
+      _ (continuous_time.measurable measurableSet_Ici) _ hgp hed
+
+    have hsub : ({p : Point | e.time + t ≤ p.time ∧ p.velocity 0 ∈ c.active}) ⊆ {p : Point | e.time + t ≤ p.time} := fun _ h => h.1
+
+
+    refine ⟨(hGp.mono_measure (Measure.restrict_mono hsub le_rfl)), ?_⟩
+
+    have hmass  :=
       (ENNReal.toReal_mono ENNReal.ofReal_ne_top (hs A c e he t ht)).trans_eq
         (ENNReal.toReal_ofReal (mul_nonneg hC2.le (Real.exp_pos _).le))
     have hb := mul_le_mul_of_nonneg_left hmass
       (mul_nonneg hC1.le (Real.rpow_nonneg c.positive.le (6 / q - 4)))
-    exact hreal.trans (by simpa only [mul_assoc, mul_comm, mul_left_comm] using hb)
+    exact ((ENNReal.toReal_mono hgp.ne_top ((eLpNorm_mono_measure G (Measure.restrict_mono hsub le_rfl)).trans hGn)).trans hgb).trans (by simpa only [mul_assoc, mul_comm, mul_left_comm] using hb)
 
 /-- The literal restarted-tail statement follows from the genuine restart and density proofs. -/
 theorem restartTailStatement_holds :

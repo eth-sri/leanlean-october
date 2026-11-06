@@ -12,7 +12,7 @@ open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
 
 /-- Source Green action, with elapsed time and (v,z) kept in that order. -/
-def IsGreenMeasure {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+def IsGreenMeasure {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (S : ℝ≥0∞)
     (μ : Measure (EvolutionState Ω γ σ₀))
     (Γ : Measure (ElapsedTime S × EvolutionAmbientState d)) : Prop :=
@@ -23,12 +23,14 @@ def IsGreenMeasure {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
 
 /-- The master kernel is finite by its existing uniform mass bound. -/
-instance master_isFiniteKernel {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+instance master_isFiniteKernel {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) : ProbabilityTheory.IsFiniteKernel K.master :=
   ⟨1, ENNReal.one_lt_top, K.mass_le_one⟩
 
+variable {d : ℕ} {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d}
+
 /-- The elapsed-query map is measurable on the fixed source fiber. -/
-theorem measurable_elapsedQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+theorem measurable_elapsedQuery
     (σ₀ : ℝ) (S : ℝ≥0∞) :
     Measurable (fun q : EvolutionState Ω γ σ₀ × ElapsedTime S => elapsedQuery σ₀ q.1 q.2) := by
   apply Measurable.subtype_mk
@@ -36,16 +38,22 @@ theorem measurable_elapsedQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → P
     (σ₀, (σ₀ + q.2.1, q.1.1)))
   fun_prop
 
+variable (K : MovingFiberKernel Ω γ)
+
+variable (σ₀ : ℝ)
+
+variable (S : ℝ≥0∞)
+
 /-- The literal master-kernel pullback at elapsed queries. -/
-def elapsedKernel {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (S : ℝ≥0∞) :
+def elapsedKernel
+       :
     ProbabilityTheory.Kernel (EvolutionState Ω γ σ₀ × ElapsedTime S)
       (EvolutionAmbientState d) :=
   K.master.comap (fun q => elapsedQuery σ₀ q.1 q.2) (measurable_elapsedQuery σ₀ S)
 
 /-- The explicit product-kernel measure satisfies the Green characterization. -/
-theorem compProd_isGreenMeasure {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (S : ℝ≥0∞)
+theorem compProd_isGreenMeasure
+
     (μ : Measure (EvolutionState Ω γ σ₀)) [IsFiniteMeasure μ] :
     IsGreenMeasure K σ₀ S μ
       (((μ.prod (elapsedVolume S)).compProd (elapsedKernel K σ₀ S)).map
@@ -60,17 +68,17 @@ theorem compProd_isGreenMeasure {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → P
   calc
     _ = ∫⁻ a, ∫⁻ w, F (a.2, w) ∂elapsedKernel K σ₀ S a
         ∂μ.prod (elapsedVolume S) :=
-      Measure.lintegral_compProd (μ := μ.prod (elapsedVolume S))
-        (κ := elapsedKernel K σ₀ S) (hF.comp hm)
-    _ = _ := by
-      exact lintegral_prod _
+      Measure.lintegral_compProd
+         (hF.comp hm)
+    _ = _ := lintegral_prod _
         ((hF.comp hm).lintegral_kernel_prod_right'.aemeasurable)
 
+variable (hS : 0 < S) (μ : Measure (EvolutionState Ω γ σ₀))
+
+include hS in
 /-- Unique Green measure for a finite source measure and positive horizon. -/
-theorem existsUnique_greenMeasure {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
-    (σ₀ : ℝ) (S : ℝ≥0∞) (hS : 0 < S)
-    (μ : Measure (EvolutionState Ω γ σ₀)) [IsFiniteMeasure μ] :
+theorem existsUnique_greenMeasure
+       [IsFiniteMeasure μ] :
     ∃! Γ : Measure (ElapsedTime S × EvolutionAmbientState d),
       IsGreenMeasure K σ₀ S μ Γ := by
   refine ⟨_, compProd_isGreenMeasure K σ₀ S μ, ?_⟩
@@ -81,22 +89,19 @@ theorem existsUnique_greenMeasure {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 
 /-- Green measure chosen only from the proved existence and uniqueness theorem. -/
-def greenMeasure {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (S : ℝ≥0∞) (hS : 0 < S)
-    (μ : Measure (EvolutionState Ω γ σ₀)) [IsFiniteMeasure μ] :
+def greenMeasure
+        [IsFiniteMeasure μ] :
     Measure (ElapsedTime S × EvolutionAmbientState d) :=
   (existsUnique_greenMeasure K σ₀ S hS μ).exists.choose
 
 /-- The defining Green action accompanies the unique-choice measure. -/
-theorem greenMeasure_spec {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (S : ℝ≥0∞) (hS : 0 < S)
-    (μ : Measure (EvolutionState Ω γ σ₀)) [IsFiniteMeasure μ] :
+theorem greenMeasure_spec
+        [IsFiniteMeasure μ] :
     IsGreenMeasure K σ₀ S μ (greenMeasure K σ₀ S hS μ) :=
   (existsUnique_greenMeasure K σ₀ S hS μ).exists.choose_spec
 
 /-- Set-wise Green mass controls slabs and infinite-horizon local mass. -/
-theorem greenMeasure_timeMarginal_le {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (S : ℝ≥0∞)
+theorem greenMeasure_timeMarginal_le
     (μ : Measure (EvolutionState Ω γ σ₀)) [IsFiniteMeasure μ]
     (Γ : Measure (ElapsedTime S × EvolutionAmbientState d))
     (hΓ : IsGreenMeasure K σ₀ S μ Γ) (A : Set (ElapsedTime S))
@@ -104,9 +109,9 @@ theorem greenMeasure_timeMarginal_le {d : ℕ} {Ω : Set (PDE.Vec d)}
   have hpre : MeasurableSet ((Prod.fst : ElapsedTime S × EvolutionAmbientState d →
       ElapsedTime S) ⁻¹' A) := measurable_fst hA
   rw [← lintegral_indicator_one hpre]
-  rw [hΓ ((Prod.fst ⁻¹' A).indicator 1) (measurable_one.indicator hpre)]
+  rw [hΓ _ (measurable_one.indicator hpre)]
   calc
-    _ ≤ ∫⁻ p, ∫⁻ τ, A.indicator (fun _ => (1 : ℝ≥0∞)) τ ∂elapsedVolume S ∂μ := by
+    _ ≤ ∫⁻ p, ∫⁻ τ, A.indicator (fun _ => (1 )) τ ∂elapsedVolume S ∂μ := by
       apply lintegral_mono
       intro p
       apply lintegral_mono
@@ -117,15 +122,14 @@ theorem greenMeasure_timeMarginal_le {d : ℕ} {Ω : Set (PDE.Vec d)}
           lintegral_one] using K.mass_le_one (elapsedQuery σ₀ p τ)
       · simp only [Set.indicator, mem_preimage, ht, ↓reduceIte, lintegral_zero, le_refl]
     _ = μ univ * elapsedVolume S A := by
-      have he : (∫⁻ τ, A.indicator (fun _ => (1 : ℝ≥0∞)) τ ∂elapsedVolume S) =
+      have he : (∫⁻ τ, A.indicator (fun _ => (1 )) τ ∂elapsedVolume S) =
           elapsedVolume S A := lintegral_indicator_one hA
       rw [he, lintegral_const]
       exact mul_comm _ _
 
 
 /-- Restricting the horizon commutes with the Green action, without renormalization. -/
-theorem greenMeasure_horizonRestriction {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (σ₀ : ℝ)
+theorem greenMeasure_horizonRestriction
     (T S : ℝ≥0∞) (hTS : T ≤ S)
     (μ : Measure (EvolutionState Ω γ σ₀)) [IsFiniteMeasure μ]
     (ΓT : Measure (ElapsedTime T × EvolutionAmbientState d))
@@ -151,17 +155,14 @@ theorem greenMeasure_horizonRestriction {d : ℕ} {Ω : Set (PDE.Vec d)}
         ∫⁻ w, F (τ, w) ∂K.master (elapsedQuery σ₀ p τ) ∂elapsedVolume S ∂μ := by
       apply lintegral_congr
       intro p
-      have Hm : Measurable (fun τ : ElapsedTime S =>
-          ∫⁻ w, F (τ, w) ∂K.master (elapsedQuery σ₀ p τ)) := by
-        have hm : Measurable (fun q : (EvolutionState Ω γ σ₀ × ElapsedTime S) ×
-            EvolutionAmbientState d => F (q.1.2, q.2)) :=
-          hF.comp (measurable_fst.snd.prodMk measurable_snd)
-        have : ProbabilityTheory.IsFiniteKernel (elapsedKernel K σ₀ S) := by
-          unfold elapsedKernel
-          infer_instance
-        exact (hm.lintegral_kernel_prod_right' (κ := elapsedKernel K σ₀ S)).comp
-          (measurable_const.prodMk measurable_id)
-      rw [← elapsedInclusion_map hTS, lintegral_map Hm (measurable_elapsedInclusion hTS)]
+
+      rw [← elapsedInclusion_map hTS, lintegral_map (by
+
+          have : ProbabilityTheory.IsFiniteKernel (elapsedKernel K σ₀ S) := by
+            unfold elapsedKernel
+            infer_instance
+          exact ((hF.comp (measurable_fst.snd.prodMk measurable_snd)).lintegral_kernel_prod_right' (κ := elapsedKernel K σ₀ S)).comp
+            (measurable_const.prodMk measurable_id)) (measurable_elapsedInclusion hTS)]
       rfl
     _ = _ := by
       apply lintegral_congr
@@ -175,15 +176,14 @@ theorem greenMeasure_horizonRestriction {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 
 /-- Finite-horizon mass bound uses the initial mass and the unnormalized time length. -/
-theorem greenMeasure_mass_le {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
+theorem greenMeasure_mass_le
     (σ₀ S : ℝ) (hS : 0 < S)
     (μ : Measure (EvolutionState Ω γ σ₀)) [IsFiniteMeasure μ]
     (Γ : Measure (ElapsedTime (ENNReal.ofReal S) × EvolutionAmbientState d))
-    (hΓ : IsGreenMeasure K σ₀ (ENNReal.ofReal S) μ Γ) :
+    (hΓ : IsGreenMeasure K σ₀ _ μ Γ) :
     Γ Set.univ ≤ μ Set.univ * ENNReal.ofReal S := by
   simpa only [preimage_univ, elapsedVolume_univ S hS] using
-    greenMeasure_timeMarginal_le K σ₀ (ENNReal.ofReal S) μ Γ hΓ univ MeasurableSet.univ
+    greenMeasure_timeMarginal_le K σ₀ _ μ Γ hΓ univ MeasurableSet.univ
 
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

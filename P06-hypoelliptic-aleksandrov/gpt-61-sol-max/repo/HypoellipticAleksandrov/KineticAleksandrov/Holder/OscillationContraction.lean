@@ -6,13 +6,13 @@ import Mathlib.Tactic
 
 /-! # Uniform one-scale oscillation contraction from the internal growth theorem -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
-open Set MeasureTheory
+open Set
 
 /-- The same source comparison data yield a strict, uniform oscillation contraction. -/
 theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
@@ -22,7 +22,7 @@ theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
       ∀ O : Set (KineticPoint d), IsOpen O →
       ∀ (P0 : KineticPoint d) (R : ℝ), 0 < R →
         closure (backwardCylinder P0 R) ⊆ O →
-      ∀ u : KineticPoint d → ℝ, IsAdmissibleSolution A O p C_A u →
+      ∀ u : HypoellipticAleksandrov.KineticScalarField d, IsAdmissibleSolution A O p C_A u →
         oscillationOn u (backwardCylinder P0 (theta * R)) ≤
           q * oscillationOn u (backwardCylinder P0 R) := by
   obtain ⟨theta, S, r, kappa, ht, ht1, _hr, hk, hk1, _hS, hupper⟩ :=
@@ -32,13 +32,13 @@ theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
   intro A hA O hO P0 R hR hQ u hu
   let Q := backwardCylinder P0 R
   let Qsmall := backwardCylinder P0 (theta * R)
-  let Sigma := kineticAffine P0 R '' backwardCylinder S r
+
   have hQc : IsCompact (closure Q) := isCompact_closure_backwardCylinder P0 R hR
   have huc : ContinuousOn u (closure Q) := hu.1.1.mono hQ
-  have habc : BddAbove (u '' closure Q) := hQc.bddAbove_image huc
-  have hbbc : BddBelow (u '' closure Q) := hQc.bddBelow_image huc
-  have hab : BddAbove (u '' Q) := habc.mono (image_mono subset_closure)
-  have hbb : BddBelow (u '' Q) := hbbc.mono (image_mono subset_closure)
+
+
+  have hab : BddAbove (u '' Q) := (hQc.bddAbove_image huc).mono (image_mono subset_closure)
+  have hbb : BddBelow (u '' Q) := (hQc.bddBelow_image huc).mono (image_mono subset_closure)
   have hsub : Qsmall ⊆ Q := backwardCylinder_radius_mono P0 (mul_pos ht hR)
     ((mul_le_mul_of_nonneg_right ht1.le hR.le).trans_eq (one_mul R))
   have hne := backwardCylinder_nonempty P0 (mul_pos ht hR)
@@ -48,11 +48,11 @@ theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
   · have hm := oscillationOn_mono hne hsub hab hbb
     change oscillationOn u Qsmall ≤ (1 - kappa / 2) * oscillationOn u Q
     simpa only [hz, mul_zero] using hm
-  have hpos : 0 < oscillationOn u Q := lt_of_le_of_ne hosc (Ne.symm hz)
+
   let M := sSup (u '' Q)
   let m := sInf (u '' Q)
   let half := oscillationOn u Q / 2
-  have hhalf : 0 < half := div_pos hpos (by norm_num)
+  have hhalf : 0 < half := div_pos (lt_of_le_of_ne hosc (Ne.symm hz)) (by norm_num)
   have hM (P : KineticPoint d) (hP : P ∈ closure Q) : u P ≤ M :=
     closure_values_le_sup huc hab hP
   have hm (P : KineticPoint d) (hP : P ∈ closure Q) : m ≤ u P :=
@@ -60,7 +60,7 @@ theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
   have hmid : M - half = m + half := by
     dsimp only [half, oscillationOn, M, m]
     ring
-  rcases half_density_alternative u Sigma (M - half) with hlo | hhi
+  rcases half_density_alternative u (kineticAffine P0 R '' backwardCylinder S r) (M - half) with hlo | hhi
   · have himproved := hupper A hA O hO P0 R hR hQ u hu.2 M half hhalf hM hlo
     have hb := oscillationOn_le hne
       (fun P hP => hm P (subset_closure (hsub hP))) himproved
@@ -68,7 +68,7 @@ theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
     dsimp only [half, oscillationOn, M, m]
     ring
   · have hneg : IsAdmissibleSupersolution A O p C_A (fun P => -(-u P)) := by
-      simpa only [neg_neg] using hu.1
+      simpa using hu.1
     have hupperneg (P : KineticPoint d) (hP : P ∈ closure Q) : -u P ≤ -m :=
       neg_le_neg (hm P hP)
     have hlevels : {P | M - half ≤ u P} = {P | -u P ≤ -m - half} := by

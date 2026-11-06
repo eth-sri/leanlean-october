@@ -1,6 +1,9 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.HigherOrderLocalL2Regularity
+import Mathlib.Tactic.Ring
+
+
 
 /-! # Higher weak derivatives of homogeneous replacement jets
 
@@ -8,24 +11,24 @@ The source derivative family is literally zero. Restriction puts every solution'
 family on the same target collar, with one constant chosen before the solution.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
-open MeasureTheory Set
+open Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
+variable {d : ℕ}
+
 /-- The actual zero function has zero coordinate derivative of every multi-index order. -/
-theorem coordinateIteratedFDeriv_zero_function {d : ℕ}
+theorem coordinateIteratedFDeriv_zero_function
     (beta : TimeVelocityMultiIndex d) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv beta
-      (fun _ : TimeVelocity d => (0 : ℝ)) = 0 := by
-  funext z
-  simp only [TimeVelocityMultiIndex.coordinateIteratedFDeriv, iteratedFDeriv_fun_zero,
-    Pi.zero_apply, zero_apply]
+      (fun _  => (0 )) = 0 := by
+  ext <;> simp_all [TimeVelocityMultiIndex.coordinateIteratedFDeriv] <;> ring
 
 /-- Homogeneous jets have uniformly controlled higher families on a common smaller collar. -/
-theorem exists_homogeneous_higher_family_constant {d : ℕ}
-    {Ω O₀ O : Set (PDE.Vec d)}
+theorem exists_homogeneous_higher_family_constant
+    {Ω O₀ O : PDE.VelocityRegion d}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)
@@ -49,12 +52,8 @@ theorem exists_homogeneous_higher_family_constant {d : ℕ}
           (J.toWeakDerivativeFamily (isOpen_Ioo.prod hO₀open)).representative alpha) ∧
         D.squaredL2Norm ≤ C * (J.toWeakDerivativeFamily
           (isOpen_Ioo.prod hO₀open)).squaredL2Norm := by
-  have hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hA.contDiffOn⟩
-  have hbs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : PDE.Vec d))
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+
+
   have hcs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : ℝ))
       (scalarParabolicClosedCylinder r₀ r₁ Ω) :=
     ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
@@ -63,17 +62,15 @@ theorem exists_homogeneous_higher_family_constant {d : ℕ}
       r₀ q₀ s₀ s₁ q₁ r₁ hr₀q₀ hq₀s₀ hs₀s₁ hs₁q₁ hq₁r₁
       hΩopen hO₀open hO₀compact hO₀Ω hOopen hOne hOcompact hOO₀
       lam Lam hlam hlamLam A (fun _ _ => 0) (fun _ _ => 0)
-      hAs hbs hcs hLower hUpper
+      (⟨univ, isOpen_univ, subset_univ _, hA.contDiffOn⟩) (⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩) hcs hLower hUpper
   refine ⟨C, hC, ?_⟩
   intro J heq
-  have hpde : ∀ᵐ z ∂timeVelocityVolumeOn (Ioo q₀ q₁ ×ˢ O₀),
-      J.timeDeriv z + (∑ i, ∑ j, A z.1 z.2 i j * J.velocityHessian z j i) +
-        (∑ j, (0 : PDE.Vec d) j * J.velocityGrad z j) + 0 * J.toFun z = 0 := by
-    filter_upwards [heq] with z hz
-    simpa using hz
+
   obtain ⟨l, r, Oc, B, E, D, hql, hls, hsr, hrq, hOc, hOcne, hOcc,
     hOOc, hOcO₀, hB, hFB, hErep, hEnorm, hDlow, hDnorm⟩ :=
-    hrun (fun _ _ => 0) hcs J hpde
+    hrun (fun _ _ => 0) hcs J (by
+        filter_upwards [heq] with z hz
+        simpa using hz)
   have hEZ : E.squaredL2Norm = 0 := by
     unfold ParabolicWeakDerivativeFamily.squaredL2Norm
     apply Finset.sum_eq_zero

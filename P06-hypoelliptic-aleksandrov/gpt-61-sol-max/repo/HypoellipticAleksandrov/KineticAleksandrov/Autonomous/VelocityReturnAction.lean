@@ -19,11 +19,14 @@ def activeVelocityDatum (c : Clock) : BoundedBorel Z := by
       · simp only [indicator_of_mem hw, abs_one, le_refl]
       · simp only [indicator_of_notMem hw, abs_zero, zero_le_one]⟩⟩
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
+variable (A : SmoothAutonomous lam Lam)
+
 /-- Scalar and native physical terminal kernels agree at every nonnegative elapsed time. -/
 theorem return_Kphysical_eq_kernelXV
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (t : ℝ) (ht : 0 ≤ t) (z : Z) :
+
+     (t : ℝ) (ht : 0 ≤ t) (z : Z) :
     Kphysical hH hLE hlam hLam A t z =
       kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t) z := by
   unfold Kphysical kernelXV wholeQuery
@@ -33,9 +36,8 @@ theorem return_Kphysical_eq_kernelXV
 
 /-- The source active indicator action is the real mass of the same active velocity set. -/
 theorem activeVelocityDatum_action_eq
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (t : ℝ) (ht : 0 ≤ t) (z : Z) :
+
+     (c : Clock) (t : ℝ) (ht : 0 ≤ t) (z : Z) :
     S hH hLE hlam hLam A t (activeVelocityDatum c) z =
       (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t) z
         {w | w.2 ∈ c.active}).toReal := by
@@ -51,8 +53,7 @@ theorem activeVelocityDatum_action_eq
 
 /-- Literal equation `e:velocity-return`, with the scalar source return-time premise. -/
 theorem velocity_return_action_of_return_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
     (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
       0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →
@@ -65,16 +66,16 @@ theorem velocity_return_action_of_return_time
   refine ⟨C, hC, ?_⟩
   intro A c z t hc hz ht
   rw [activeVelocityDatum_action_eq hH hLE hlam hLam A c t ht z]
-  have hsub : {w : Z | w.2 ∈ c.active} ⊆ {w | |w.2| ≤ 3 * c.r} := by
-    intro w hw
-    have hh := (c.active_abs_bounds hw).2
-    rw [hc] at hh
-    change |w.2| ≤ 3 * c.r
-    linarith only [hh]
+
   have hmass := (measure_mono (subset_univ {w : Z | |w.2| ≤ 3 * c.r})).trans
     (kernelXV_mass_le_one (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t) z)
   apply (ENNReal.toReal_mono (hmass.trans_lt ENNReal.one_lt_top).ne
-    (measure_mono hsub)).trans
+    (measure_mono (by
+        intro w hw
+        have hh := (c.active_abs_bounds hw).2
+        rw [hc] at hh
+        change |w.2| ≤ 3 * c.r
+        linarith only [hh]))).trans
   simpa only [Real.coe_toNNReal t ht] using h A c.r z (Real.toNNReal t) c.positive hz
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

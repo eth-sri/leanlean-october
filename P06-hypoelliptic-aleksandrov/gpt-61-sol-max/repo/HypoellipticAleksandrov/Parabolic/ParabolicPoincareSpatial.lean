@@ -5,6 +5,17 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareProduct
 public import PDEFoundation.Sobolev.Inequalities.ConvexPoincare
 public import PDEFoundation.Sobolev.W1p.Smooth
 public import Mathlib.MeasureTheory.Integral.Prod
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import Mathlib.Tactic.Positivity
+import all HypoellipticAleksandrov.Parabolic.ABP
+import all HypoellipticAleksandrov.Parabolic.ParabolicMorreyNorm
+import all HypoellipticAleksandrov.Parabolic.WeakJetMollifier
+
+open private HypoellipticAleksandrov.Parabolic.fderiv_velocityGradient_apply from HypoellipticAleksandrov.Parabolic.WeakJetMollifier
+open private HypoellipticAleksandrov.Parabolic.velocityHessian_continuous from HypoellipticAleksandrov.Parabolic.ParabolicMorreyNorm
+open private HypoellipticAleksandrov.Parabolic.parabolicExponent_eq_ofReal from HypoellipticAleksandrov.Parabolic.ABP
+
 
 /-!
 # Spatial-slice transport for parabolic Poincare
@@ -15,9 +26,9 @@ estimate and canonical-projection comparison, then lifts them globally through
 the two public spatial inequalities.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -46,57 +57,53 @@ end HypoellipticAleksandrov.Parabolic
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem parabolicExponent_eq_ofReal (d : Nat) :
-    parabolicExponent d = ENNReal.ofReal ((d : Real) + 1) := by
-  rw [show ((d : Real) + 1) = ((d + 1 : Nat) : Real) by norm_num]
-  simpa only [parabolicExponent, Nat.cast_add, Nat.cast_one] using
-    (ENNReal.ofReal_natCast (d + 1)).symm
 
+
+
+section
+variable {d : Nat} {u : HypoellipticAleksandrov.Parabolic.ScalarField d} (hu : ContDiff Real 2 u)
+
+include hu
 private theorem contDiff_velocityGradient_slice
-    {d : Nat} {u : TimeVelocity d -> Real}
-    (hu : ContDiff Real 2 u) (t : Real) (i : Fin d) :
-    ContDiff Real 1 (fun v : PDE.Vec d => velocityGradient u (t, v) i) := by
-  exact (contDiff_pi.mp ((contDiff_velocityGradient hu).comp
+     (t : Real) (i : Fin d) :
+    ContDiff Real 1 (fun v  => velocityGradient u (t, v) i) := (contDiff_pi.mp ((contDiff_velocityGradient hu).comp
     (contDiff_const.prodMk contDiff_id))) i
 
-private theorem fderiv_velocityGradient_apply
-    {d : Nat} {u : TimeVelocity d -> Real}
-    (hu : ContDiff Real 2 u) (z qi qj : TimeVelocity d) :
-    fderiv Real (fun x => fderiv Real u x qi) z qj =
-      fderiv Real (fderiv Real u) z qj qi := by
-  have hderiv : DifferentiableAt Real (fderiv Real u) z :=
-    (hu.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num) z
-  rw [fderiv_clm_apply hderiv (differentiableAt_const (c := qi))]
-  simp
+
+
 
 private theorem classicalGradient_velocityGradient_slice_apply
-    {d : Nat} {u : TimeVelocity d -> Real}
-    (hu : ContDiff Real 2 u) (t : Real) (v : PDE.Vec d)
+     (t : Real) (v : PDE.Vec d)
     (i j : Fin d) :
     PDE.classicalGradient
-        (fun w : PDE.Vec d => velocityGradient u (t, w) i) v j =
+        (fun w  => velocityGradient u (t, w) i) v j =
       velocityHessian u (t, v) i j := by
+  let sharedTerm_0b36443110 := ((fun z => velocityGradient u z i))
+  let sharedTerm_b20e72633c := (velocityHessian u (t, v) i j)
   rw [PDE.classicalGradient_apply]
-  have hdiff : DifferentiableAt Real (fun z => velocityGradient u z i) (t, v) :=
+  have hdiff : DifferentiableAt Real sharedTerm_0b36443110 (t, v) :=
     ((contDiff_pi.mp (contDiff_velocityGradient hu) i).differentiable
       (by norm_num)) (t, v)
-  have hslice := hdiff.hasFDerivAt.comp v (hasFDerivAt_prodMk_right t v)
-  change (fderiv Real ((fun z => velocityGradient u z i) ∘ Prod.mk t) v)
-      (PDE.basisVec j) = velocityHessian u (t, v) i j
-  rw [hslice.fderiv]
-  change fderiv Real (fun z => velocityGradient u z i) (t, v)
-      (0, Pi.single j 1) = velocityHessian u (t, v) i j
-  calc
-    fderiv Real (fun z => velocityGradient u z i) (t, v) (0, Pi.single j 1) =
-        velocityHessian u (t, v) j i :=
-      fderiv_velocityGradient_apply hu (t, v)
-        (0, Pi.single i 1) (0, Pi.single j 1)
-    _ = velocityHessian u (t, v) i j := by
-      exact congrFun (congrFun (velocityHessian_isSymm hu (t, v)).eq i) j
 
+  change (fderiv Real (sharedTerm_0b36443110 ∘ Prod.mk t) v)
+      (PDE.basisVec j) = sharedTerm_b20e72633c
+  rw [(hdiff.hasFDerivAt.comp v (hasFDerivAt_prodMk_right t v)).fderiv]
+  change fderiv Real sharedTerm_0b36443110 (t, v)
+      (0, Pi.single j 1) = sharedTerm_b20e72633c
+  calc
+    fderiv Real sharedTerm_0b36443110 (t, v) (0, Pi.single j 1) =
+        velocityHessian u (t, v) j i :=
+      _root_.HypoellipticAleksandrov.Parabolic.fderiv_velocityGradient_apply hu (t, v)
+        _ _
+    _ = sharedTerm_b20e72633c := congrFun (congrFun (velocityHessian_isSymm hu (t, v)).eq i) j
+end
+
+
+variable (d : Nat) (u : HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : ContDiff Real 2 u) (t : Real) (i : Fin d)
+
+include hu
 private theorem velocityGradient_axisCube_subAverage_eLpNorm_le_hessian_sum
-    (d : Nat) (u : TimeVelocity d -> Real)
-    (hu : ContDiff Real 2 u) (t : Real) (i : Fin d) :
+     :
     PDE.eLpNormOn (PDE.axisCube (-1 : PDE.Vec d) 2)
         (parabolicExponent d)
         (fun v => velocityGradient u (t, v) i -
@@ -108,15 +115,15 @@ private theorem velocityGradient_axisCube_subAverage_eLpNorm_le_hessian_sum
             (parabolicExponent d)
             (fun v => velocityHessian u (t, v) i j) := by
   let p : Real := (d : Real) + 1
-  let V : Set (PDE.Vec d) := PDE.axisCube (-1 : PDE.Vec d) 2
-  let g : PDE.Vec d -> Real := fun v => velocityGradient u (t, v) i
+  let V  := PDE.axisCube (-1 : PDE.Vec d) 2
+  let g  := fun v => velocityGradient u (t, v) i
   let w : PDE.W1pFunction V (ENNReal.ofReal p) :=
     PDE.W1pFunction.ofContDiffOnIsOpenBoundedConvexDomain
-      (PDE.isOpenBoundedConvexDomain_axisCube (-1 : PDE.Vec d) 2)
+      (PDE.isOpenBoundedConvexDomain_axisCube _ 2)
       (contDiff_velocityGradient_slice hu t i)
   have hp : 1 <= p := by
     dsimp [p]
-    have hdnonneg : (0 : Real) <= (d : Real) := Nat.cast_nonneg d
+
     linarith
   letI : Fact (1 <= ENNReal.ofReal p) := by
     refine ⟨?_⟩
@@ -124,20 +131,20 @@ private theorem velocityGradient_axisCube_subAverage_eLpNorm_le_hessian_sum
     exact hp
   letI : MeasureTheory.IsFiniteMeasure (PDE.volumeOn V) := by
     dsimp [V]
-    exact PDE.isFiniteMeasure_volumeOn_axisCube (-1 : PDE.Vec d) 2
+    exact PDE.isFiniteMeasure_volumeOn_axisCube _ 2
   have hPoincare := PDE.meanZeroPoincare_on_axisCube_unnormalized
     hp (-1 : PDE.Vec d) (by norm_num) w.subAverage
     (w.meanZeroOn_subAverage
       (PDE.volume_axisCube_pos (-1 : PDE.Vec d) (by norm_num))
       (lt_top_iff_ne_top.mpr
-        (PDE.volume_axisCube_ne_top (-1 : PDE.Vec d) 2)))
+        (PDE.volume_axisCube_ne_top _ 2)))
   have hsubAverageToFun :
       w.subAverage.toFun = fun v => g v - PDE.integralAverage V g := by
     funext v
     rw [PDE.W1pFunction.subAverage_apply]
     rfl
   have hsubAverageGrad :
-      w.subAverage.grad = fun v => PDE.classicalGradient g v := by
+      w.subAverage.grad = (PDE.classicalGradient g) := by
     funext v
     rw [PDE.W1pFunction.subAverage_grad]
     rfl
@@ -146,7 +153,7 @@ private theorem velocityGradient_axisCube_subAverage_eLpNorm_le_hessian_sum
           (fun v => g v - PDE.integralAverage V g) <=
         ENNReal.ofReal (((2 : Real)^d) * (Real.sqrt d * 2)) *
           PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
-            (fun v => PDE.classicalGradient g v) := by
+            ((PDE.classicalGradient g)) := by
     rw [hsubAverageToFun, hsubAverageGrad] at hPoincare
     exact hPoincare
   have hHessianContinuous :
@@ -159,57 +166,47 @@ private theorem velocityGradient_axisCube_subAverage_eLpNorm_le_hessian_sum
         ((contDiff_velocityGradient_slice hu t i).continuous_fderiv
           (by norm_num)).clm_apply continuous_const
     simpa only [classicalGradient_velocityGradient_slice_apply hu t] using hContinuous
-  let F : PDE.Vec d -> PDE.Vec d :=
+  let F  :=
     fun v j => velocityHessian u (t, v) i j
-  have hGradient :
-      PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
-          (fun v => PDE.classicalGradient g v) <=
-        ∑ j : Fin d,
-          PDE.eLpNormOn V (ENNReal.ofReal p)
-            (fun v => velocityHessian u (t, v) i j) := by
-    calc
-      PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
-          (fun v => PDE.classicalGradient g v) =
-          PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p) F := by
-        apply PDE.euclideanFieldELpNormOn_congr_ae
-        filter_upwards with v
-        ext j
-        exact classicalGradient_velocityGradient_slice_apply hu t v i j
-      _ = MeasureTheory.eLpNorm (fun v => PDE.vecEuclideanNorm (F v))
-          (ENNReal.ofReal p) (PDE.volumeOn V) := rfl
-      _ <= MeasureTheory.eLpNorm (fun v => ∑ j : Fin d, |F v j|)
-          (ENNReal.ofReal p) (PDE.volumeOn V) := by
-        apply MeasureTheory.eLpNorm_mono_ae
-          (PDE.continuous_vecEuclideanNorm.comp
-            (continuous_pi fun j => hHessianContinuous j)).aestronglyMeasurable
-        filter_upwards with v
-        have hsumNonneg : 0 <= ∑ j : Fin d, |F v j| :=
-          Finset.sum_nonneg fun j _ => abs_nonneg (F v j)
-        simpa only [Function.comp_def, F, Real.norm_eq_abs,
-          abs_of_nonneg (PDE.vecEuclideanNorm_nonneg (F v)),
-          abs_of_nonneg hsumNonneg] using
-          PDE.vecEuclideanNorm_le_sum_abs (F v)
-      _ <= ∑ j : Fin d,
-          MeasureTheory.eLpNorm (fun v => |F v j|) (ENNReal.ofReal p)
-            (PDE.volumeOn V) := by
-        rw [← Finset.sum_fn]
-        exact MeasureTheory.eLpNorm_sum_le Fact.out
-      _ = ∑ j : Fin d,
-          PDE.eLpNormOn V (ENNReal.ofReal p)
-            (fun v => velocityHessian u (t, v) i j) := by
-        refine Finset.sum_congr rfl fun j _ => ?_
-        simpa only [F, PDE.eLpNormOn, Real.norm_eq_abs] using
-          (MeasureTheory.eLpNorm_norm
-            (μ := PDE.volumeOn V) (p := ENNReal.ofReal p)
-            (fun v => velocityHessian u (t, v) i j)
-            (hHessianContinuous j).aestronglyMeasurable)
-  rw [parabolicExponent_eq_ofReal]
+
+  rw [_root_.HypoellipticAleksandrov.Parabolic.parabolicExponent_eq_ofReal]
   simpa only [p, V, g] using
-    hPoincare'.trans (mul_le_mul_right hGradient _)
+    hPoincare'.trans (mul_le_mul_right (by
+          calc
+            PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
+                ((PDE.classicalGradient g)) =
+                PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p) F := by
+              apply PDE.euclideanFieldELpNormOn_congr_ae
+              filter_upwards with v
+              ext j
+              exact classicalGradient_velocityGradient_slice_apply hu t v i j
+            _ = MeasureTheory.eLpNorm (fun v => PDE.vecEuclideanNorm (F v))
+                (ENNReal.ofReal p) (PDE.volumeOn V) := rfl
+            _ <= MeasureTheory.eLpNorm (fun v => ∑ j : Fin d, |F v j|)
+                (ENNReal.ofReal p) (PDE.volumeOn V) := by
+              apply MeasureTheory.eLpNorm_mono_ae
+                (PDE.continuous_vecEuclideanNorm.comp
+                  (continuous_pi hHessianContinuous)).aestronglyMeasurable
+              filter_upwards with v
+
+              simpa only [Function.comp_def, F, Real.norm_eq_abs,
+                abs_of_nonneg (PDE.vecEuclideanNorm_nonneg (F v)),
+                abs_of_nonneg (Finset.sum_nonneg fun j _ => abs_nonneg (F v j))] using
+                PDE.vecEuclideanNorm_le_sum_abs (F v)
+            _ <= ∑ j : Fin d,
+                MeasureTheory.eLpNorm (fun v => |F v j|) (ENNReal.ofReal p)
+                  (PDE.volumeOn V) := by
+              rw [← Finset.sum_fn]
+              exact MeasureTheory.eLpNorm_sum_le Fact.out
+            _ = ∑ j : Fin d,
+                PDE.eLpNormOn V (ENNReal.ofReal p)
+                  (fun v => velocityHessian u (t, v) i j) := (Finset.sum_congr rfl fun j x =>
+        id
+          (MeasureTheory.eLpNorm_norm (fun v => velocityHessian u (t, v) i j)
+            (Continuous.aestronglyMeasurable (hHessianContinuous j))))) _)
 
 private theorem velocityGradient_slice_subAverage_eLpNorm_le_hessian_sum
-    (d : Nat) (u : TimeVelocity d -> Real)
-    (hu : ContDiff Real 2 u) (t : Real) (i : Fin d) :
+     :
     PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
         (parabolicExponent d)
         (fun v => velocityGradient u (t, v) i -
@@ -229,9 +226,11 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 
+variable (d : Nat) (u : HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : ContDiff Real 2 u) (t : Real)
+
+include hu
 private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le
-    (d : Nat) (u : TimeVelocity d -> Real)
-    (hu : ContDiff Real 2 u) (t : Real) :
+     :
     PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
         (parabolicExponent d)
         (fun v => u (t, v) -
@@ -247,25 +246,26 @@ private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le
             (fun v => velocityGradient u (t, v) i -
               PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
                 (fun w => velocityGradient u (t, w) i)) := by
+  let sharedTerm_d83f50f3f2 := ((fun z : PDE.Vec d => u (t, z)))
   let p : Real := (d : Real) + 1
-  let V : Set (PDE.Vec d) := PDE.axisCube (-1 : PDE.Vec d) 2
-  let V0 : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  let m : Fin d -> Real := fun i => PDE.integralAverage V0
+  let V  := PDE.axisCube (-1 : PDE.Vec d) 2
+  let V0  := velocityCube (0 : PDE.Vec d) 1
+  let m  := fun i => PDE.integralAverage V0
     (fun w => velocityGradient u (t, w) i)
-  let a : PDE.Vec d -> Real := fun v => ∑ i : Fin d, m i * v i
-  let g : PDE.Vec d -> Real := fun v => u (t, v) - a v
-  have huSlice : ContDiff Real 2 (fun v : PDE.Vec d => u (t, v)) :=
+  let a : PDE.ScalarField d := fun v => ∑ i : Fin d, m i * v i
+  let g  := fun v => u (t, v) - a v
+  have huSlice : ContDiff Real 2 sharedTerm_d83f50f3f2 :=
     hu.comp (contDiff_const.prodMk contDiff_id)
   have ha : ContDiff Real 2 a := by
-    exact ContDiff.sum (s := Finset.univ) fun i _ =>
+    exact ContDiff.sum  fun i _ =>
       contDiff_const.mul (contDiff_apply Real Real i)
   let w : PDE.W1pFunction V (ENNReal.ofReal p) :=
     PDE.W1pFunction.ofContDiffOnIsOpenBoundedConvexDomain
-      (PDE.isOpenBoundedConvexDomain_axisCube (-1 : PDE.Vec d) 2)
+      (PDE.isOpenBoundedConvexDomain_axisCube _ 2)
       ((huSlice.sub ha).of_le (by norm_num))
   have hp : 1 <= p := by
     dsimp [p]
-    have hdnonneg : (0 : Real) <= (d : Real) := Nat.cast_nonneg d
+
     linarith
   letI : Fact (1 <= ENNReal.ofReal p) := by
     refine ⟨?_⟩
@@ -273,32 +273,26 @@ private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le
     exact hp
   letI : MeasureTheory.IsFiniteMeasure (PDE.volumeOn V) := by
     dsimp [V]
-    exact PDE.isFiniteMeasure_volumeOn_axisCube (-1 : PDE.Vec d) 2
-  have hVPos : 0 < volume V := by
-    dsimp [V]
-    exact PDE.volume_axisCube_pos (-1 : PDE.Vec d) (by norm_num)
-  have hVTop : volume V < ⊤ := by
-    dsimp [V]
-    exact lt_top_iff_ne_top.mpr
-      (PDE.volume_axisCube_ne_top (-1 : PDE.Vec d) 2)
+    exact PDE.isFiniteMeasure_volumeOn_axisCube _ 2
+
+
   have hcomponent : ∀ i : Fin d, Integrable (fun v : PDE.Vec d => m i * v i)
       (volume.restrict V0) := by
     intro i
     have hcont : Continuous (fun v : PDE.Vec d => m i * v i) :=
       continuous_const.mul (continuous_apply i)
-    let K : Set (PDE.Vec d) := velocityClosedCube (0 : PDE.Vec d) 1
-    have hKcompact : IsCompact K :=
+
+    have hKcompact  :=
       isCompact_velocityClosedCube (0 : PDE.Vec d) 1
-    have hsubset : V0 ⊆ K := by
-      intro v hv
-      change ∀ i : Fin d, |v i - (0 : PDE.Vec d) i| < 1 at hv
-      change ∀ i : Fin d, |v i - (0 : PDE.Vec d) i| <= 1
-      intro j
-      exact (hv j).le
-    exact (hcont.continuousOn.integrableOn_compact hKcompact).mono_set hsubset
+
+    exact (hcont.continuousOn.integrableOn_compact hKcompact).mono_set (show V0 ⊆ (velocityClosedCube (0 : PDE.Vec d) 1) by
+        intro v hv
+        change ∀ i : Fin d, |v i - (0 : PDE.Vec d) i| < 1 at hv
+        change ∀ i : Fin d, |v i - (0 : PDE.Vec d) i| <= 1
+        intro j
+        exact (hv j).le)
   have haIntegrable : Integrable a (volume.restrict V0) := by
-    simpa only [a, Finset.sum_apply] using
-      integrable_finset_sum (Finset.univ : Finset (Fin d)) fun i _ => hcomponent i
+    simpa only [a] using integrable_finset_sum (Finset.univ : Finset (Fin d)) fun i _ => hcomponent i
   have haAverage : PDE.integralAverage V a = 0 := by
     have hVV : V = V0 := by
       dsimp [V, V0]
@@ -320,25 +314,23 @@ private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le
       _ = 0 := by
         rw [← PDE.integralAverage, parabolicMorreyUnitVelocityAverage_eval]
         ring
-  have hwIntegrable : Integrable g (volume.restrict V0) := by
-    have hw : Integrable g (volume.restrict V) := by
-      simpa only [w, g,
-        PDE.W1pFunction.ofContDiffOnIsOpenBoundedConvexDomain_toFun, IntegrableOn] using
-        w.integrableOn
-    have hVV : V = V0 := by
-      dsimp [V, V0]
-      exact (velocityCube_zero_one_eq_axisCube_neg_one_two d).symm
-    simpa only [hVV] using hw
-  have huIntegrable : Integrable (fun v : PDE.Vec d => u (t, v))
+
+  have huIntegrable : Integrable sharedTerm_d83f50f3f2
       (volume.restrict V0) := by
-    have hsum : g + a = fun v => u (t, v) := by
+    have hsum : g + a = sharedTerm_d83f50f3f2 := by
       funext v
       dsimp [g]
       ring
     rw [← hsum]
-    exact hwIntegrable.add haIntegrable
+    exact (show Integrable g (volume.restrict V0) by
+        have hw : Integrable g (volume.restrict V) := by
+          exact w.integrableOn
+        have hVV : V = V0 := by
+          dsimp [V, V0]
+          exact (velocityCube_zero_one_eq_axisCube_neg_one_two d).symm
+        simpa only [hVV] using hw).add haIntegrable
   have hgAverage : PDE.integralAverage V g = PDE.integralAverage V0
-      (fun v => u (t, v)) := by
+      sharedTerm_d83f50f3f2 := by
     have hVV : V = V0 := by
       dsimp [V, V0]
       exact (velocityCube_zero_one_eq_axisCube_neg_one_two d).symm
@@ -348,128 +340,128 @@ private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le
     unfold g
     calc
       PDE.integralAverage V0 (fun v => u (t, v) - a v) =
-          PDE.integralAverage V0 (fun v => u (t, v)) -
+          PDE.integralAverage V0 sharedTerm_d83f50f3f2 -
             PDE.integralAverage V0 a := by
         unfold PDE.integralAverage
         rw [integral_sub huIntegrable haIntegrable]
         ring
-      _ = PDE.integralAverage V0 (fun v => u (t, v)) := by
+      _ = PDE.integralAverage V0 sharedTerm_d83f50f3f2 := by
         rw [haAverage0]
         ring
   have hPoincare := PDE.meanZeroPoincare_on_axisCube_unnormalized
     hp (-1 : PDE.Vec d) (by norm_num) w.subAverage
-    (w.meanZeroOn_subAverage hVPos hVTop)
+    (w.meanZeroOn_subAverage (show 0 < volume V by
+        dsimp [V]
+        exact PDE.volume_axisCube_pos (-1 : PDE.Vec d) (by norm_num)) (show volume V < ⊤ by
+        dsimp [V]
+        exact lt_top_iff_ne_top.mpr
+          (PDE.volume_axisCube_ne_top _ 2)))
   have hsubAverageToFun :
       w.subAverage.toFun = fun v => u (t, v) -
-        (PDE.integralAverage V0 (fun z => u (t, z)) + a v) := by
+        (PDE.integralAverage V0 sharedTerm_d83f50f3f2 + a v) := by
     funext v
     rw [PDE.W1pFunction.subAverage_apply]
     change g v - PDE.integralAverage V g =
-      u (t, v) - (PDE.integralAverage V0 (fun z => u (t, z)) + a v)
+      u (t, v) - (PDE.integralAverage V0 sharedTerm_d83f50f3f2 + a v)
     rw [hgAverage]
     dsimp [g]
     ring
-  have hgradient : ∀ v : PDE.Vec d, ∀ i : Fin d,
-      PDE.classicalGradient g v i = velocityGradient u (t, v) i - m i := by
-    intro v i
-    rw [PDE.classicalGradient_apply]
-    have huDiff : DifferentiableAt Real (fun z : PDE.Vec d => u (t, z)) v :=
-      huSlice.differentiable (by norm_num) v
-    have haDiff : DifferentiableAt Real a v := ha.differentiable (by norm_num) v
-    rw [show g = (fun z : PDE.Vec d => u (t, z)) - a by rfl,
-      fderiv_sub huDiff haDiff]
-    have hslice := (hu.differentiable (by norm_num) (t, v)).hasFDerivAt.comp v
-      (hasFDerivAt_prodMk_right t v)
-    have huDeriv : fderiv Real (fun z : PDE.Vec d => u (t, z)) v
-        (PDE.basisVec i) = velocityGradient u (t, v) i := by
-      change fderiv Real (u ∘ Prod.mk t) v (PDE.basisVec i) =
-        velocityGradient u (t, v) i
-      rw [hslice.fderiv]
-      change fderiv Real u (t, v) (0, Pi.single i 1) =
-        velocityGradient u (t, v) i
-      rfl
-    have haFDeriv : HasFDerivAt a
-        (∑ j : Fin d, m j • (ContinuousLinearMap.proj j : PDE.Vec d →L[Real] Real)) v := by
-      have h := HasFDerivAt.sum (u := Finset.univ) fun j _ =>
-        (hasFDerivAt_apply (𝕜 := Real) j v).const_mul (m j)
-      convert h using 1
-      ext x
-      simp only [a, Finset.sum_apply]
-    have haDeriv : fderiv Real a v (PDE.basisVec i) = m i := by
-      rw [haFDeriv.fderiv]
-      simp only [ContinuousLinearMap.sum_apply, ContinuousLinearMap.smul_apply,
-        ContinuousLinearMap.proj_apply, PDE.basisVec, Pi.single_apply]
-      simp
-    simp only [ContinuousLinearMap.sub_apply]
-    rw [huDeriv, haDeriv]
+
   have hsubAverageGrad :
-      w.subAverage.grad = fun v => PDE.classicalGradient g v := by
+      w.subAverage.grad = (PDE.classicalGradient g) := by
     funext v
     rw [PDE.W1pFunction.subAverage_grad]
     rfl
   have hPoincare' :
       PDE.eLpNormOn V (ENNReal.ofReal p)
           (fun v => u (t, v) -
-            (PDE.integralAverage V0 (fun z => u (t, z)) + a v)) <=
+            (PDE.integralAverage V0 sharedTerm_d83f50f3f2 + a v)) <=
         ENNReal.ofReal (((2 : Real)^d) * (Real.sqrt d * 2)) *
           PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
-            (fun v => PDE.classicalGradient g v) := by
+            ((PDE.classicalGradient g)) := by
     rw [hsubAverageToFun, hsubAverageGrad] at hPoincare
     exact hPoincare
   have hgradientContinuous : ∀ i : Fin d, Continuous
       (fun v => velocityGradient u (t, v) i - m i) := by
     intro i
     exact (contDiff_velocityGradient_slice hu t i).continuous.sub continuous_const
-  let F : PDE.Vec d -> PDE.Vec d :=
+  let F  :=
     fun v i => velocityGradient u (t, v) i - m i
-  have hGradient :
-      PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
-          (fun v => PDE.classicalGradient g v) <=
-        ∑ i : Fin d,
-          PDE.eLpNormOn V (ENNReal.ofReal p)
-            (fun v => velocityGradient u (t, v) i - m i) := by
-    calc
-      PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
-          (fun v => PDE.classicalGradient g v) =
-          PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p) F := by
-        apply PDE.euclideanFieldELpNormOn_congr_ae
-        filter_upwards with v
-        ext i
-        exact hgradient v i
-      _ = MeasureTheory.eLpNorm (fun v => PDE.vecEuclideanNorm (F v))
-          (ENNReal.ofReal p) (PDE.volumeOn V) := rfl
-      _ <= MeasureTheory.eLpNorm (fun v => ∑ i : Fin d, |F v i|)
-          (ENNReal.ofReal p) (PDE.volumeOn V) := by
-        apply MeasureTheory.eLpNorm_mono_ae
-          (PDE.continuous_vecEuclideanNorm.comp
-            (continuous_pi fun i => hgradientContinuous i)).aestronglyMeasurable
-        filter_upwards with v
-        have hsumNonneg : 0 <= ∑ i : Fin d, |F v i| :=
-          Finset.sum_nonneg fun i _ => abs_nonneg (F v i)
-        simpa only [Function.comp_def, F, Real.norm_eq_abs,
-          abs_of_nonneg (PDE.vecEuclideanNorm_nonneg (F v)),
-          abs_of_nonneg hsumNonneg] using PDE.vecEuclideanNorm_le_sum_abs (F v)
-      _ <= ∑ i : Fin d,
-          MeasureTheory.eLpNorm (fun v => |F v i|) (ENNReal.ofReal p)
-            (PDE.volumeOn V) := by
-        rw [← Finset.sum_fn]
-        exact MeasureTheory.eLpNorm_sum_le Fact.out
-      _ = ∑ i : Fin d,
-          PDE.eLpNormOn V (ENNReal.ofReal p)
-            (fun v => velocityGradient u (t, v) i - m i) := by
-        refine Finset.sum_congr rfl fun i _ => ?_
-        simpa only [F, PDE.eLpNormOn, Real.norm_eq_abs] using
-          (MeasureTheory.eLpNorm_norm (μ := PDE.volumeOn V)
-            (p := ENNReal.ofReal p) (fun v => velocityGradient u (t, v) i - m i)
-            (hgradientContinuous i).aestronglyMeasurable)
-  rw [parabolicExponent_eq_ofReal]
+
+  rw [_root_.HypoellipticAleksandrov.Parabolic.parabolicExponent_eq_ofReal]
   simpa only [V, V0, m, a, p,
     velocityCube_zero_one_eq_axisCube_neg_one_two d] using
-    hPoincare'.trans (mul_le_mul_right hGradient _)
+    hPoincare'.trans (mul_le_mul_right (show PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
+          ((PDE.classicalGradient g)) <=
+        ∑ i : Fin d,
+          PDE.eLpNormOn V (ENNReal.ofReal p)
+            (fun v => velocityGradient u (t, v) i - m i) by
+          calc
+            PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p)
+                ((PDE.classicalGradient g)) =
+                PDE.euclideanFieldELpNormOn V (ENNReal.ofReal p) F := by
+              apply PDE.euclideanFieldELpNormOn_congr_ae
+              filter_upwards with v
+              ext i
+              exact (show ∀ v : PDE.Vec d, ∀ i : Fin d,
+            PDE.classicalGradient g v i = velocityGradient u (t, v) i - m i by
+                  intro v i
+                  rw [PDE.classicalGradient_apply]
+                  have huDiff : DifferentiableAt Real sharedTerm_d83f50f3f2 v :=
+                    huSlice.differentiable (by norm_num) v
+                  have haDiff  := ha.differentiable (by norm_num) v
+                  rw [show g = (sharedTerm_d83f50f3f2) - a by rfl,
+                    fderiv_sub huDiff haDiff]
+                  have hslice := (hu.differentiable (by norm_num) (t, v)).hasFDerivAt.comp v
+                    (hasFDerivAt_prodMk_right t v)
+                  have huDeriv : fderiv Real sharedTerm_d83f50f3f2 v
+                      (PDE.basisVec i) = velocityGradient u (t, v) i := by
+                    change fderiv Real (u ∘ Prod.mk t) v (PDE.basisVec i) =
+                      velocityGradient u (t, v) i
+                    rw [hslice.fderiv]
+                    change fderiv Real u (t, v) (0, Pi.single i 1) =
+                      velocityGradient u (t, v) i
+                    rfl
+                  have haFDeriv : HasFDerivAt a
+                      (∑ j : Fin d, m j • (ContinuousLinearMap.proj j : PDE.Vec d →L[Real] Real)) v := by
+                    have h := HasFDerivAt.sum (u := Finset.univ) fun j _ =>
+                      (hasFDerivAt_apply (𝕜 := Real) j v).const_mul (m j)
+                    convert h using 1
+                    ext x
+                    simp only [a, Finset.sum_apply]
+                  have haDeriv : fderiv Real a v (PDE.basisVec i) = m i := by
+                    rw [haFDeriv.fderiv]
+                    simp only [ContinuousLinearMap.sum_apply, ContinuousLinearMap.smul_apply,
+                      ContinuousLinearMap.proj_apply, PDE.basisVec, Pi.single_apply]
+                    simp
+                  simp only [ContinuousLinearMap.sub_apply]
+                  rw [huDeriv, haDeriv]) v i
+            _ = MeasureTheory.eLpNorm (fun v => PDE.vecEuclideanNorm (F v))
+                (ENNReal.ofReal p) (PDE.volumeOn V) := rfl
+            _ <= MeasureTheory.eLpNorm (fun v => ∑ i : Fin d, |F v i|)
+                (ENNReal.ofReal p) (PDE.volumeOn V) := by
+              apply MeasureTheory.eLpNorm_mono_ae
+                (PDE.continuous_vecEuclideanNorm.comp
+                  (continuous_pi hgradientContinuous)).aestronglyMeasurable
+              filter_upwards with v
+
+              simpa only [Function.comp_def, F, Real.norm_eq_abs,
+                abs_of_nonneg (PDE.vecEuclideanNorm_nonneg (F v)),
+                abs_of_nonneg (Finset.sum_nonneg fun i _ => abs_nonneg (F v i))] using PDE.vecEuclideanNorm_le_sum_abs (F v)
+            _ <= ∑ i : Fin d,
+                MeasureTheory.eLpNorm (fun v => |F v i|) (ENNReal.ofReal p)
+                  (PDE.volumeOn V) := by
+              rw [← Finset.sum_fn]
+              exact MeasureTheory.eLpNorm_sum_le Fact.out
+            _ = ∑ i : Fin d,
+                PDE.eLpNormOn V (ENNReal.ofReal p)
+                  (fun v => velocityGradient u (t, v) i - m i) := (Finset.sum_congr rfl fun i x =>
+        id
+          (eLpNorm_norm (fun v => velocityGradient u (t, v) i - m i)
+            (Continuous.aestronglyMeasurable (hgradientContinuous i))))) _)
 
 private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le_hessian_sum
-    (d : Nat) (u : TimeVelocity d -> Real)
-    (hu : ContDiff Real 2 u) (t : Real) :
+     :
     PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
         (parabolicExponent d)
         (fun v => u (t, v) -
@@ -483,45 +475,35 @@ private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le_hessian_sum
           PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
             (parabolicExponent d)
             (fun v => velocityHessian u (t, v) i j) := by
-  let K : ENNReal := ENNReal.ofReal (((2 : Real)^d) * (Real.sqrt d * 2))
-  have hsum :
-      ∑ i : Fin d,
-        PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
-          (parabolicExponent d)
-          (fun v => velocityGradient u (t, v) i -
-            PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
-              (fun w => velocityGradient u (t, w) i)) <=
-        ∑ i : Fin d, K * ∑ j : Fin d,
-          PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
-            (parabolicExponent d)
-            (fun v => velocityHessian u (t, v) i j) := by
-    apply Finset.sum_le_sum
-    intro i _
-    simpa only [K] using
-      velocityGradient_slice_subAverage_eLpNorm_le_hessian_sum d u hu t i
+  let sharedTerm_276d698fec := ((velocityCube (0 : PDE.Vec d) 1))
+  let sharedTerm_7b6b7cba9e := (ENNReal.ofReal (((2 : Real) ^ d) * (Real.sqrt d * 2)))
+  let K  := sharedTerm_7b6b7cba9e
+
   calc
-    PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
+    PDE.eLpNormOn sharedTerm_276d698fec
         (parabolicExponent d)
         (fun v => u (t, v) -
-          (PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
+          (PDE.integralAverage sharedTerm_276d698fec
               (fun w => u (t, w)) +
             ∑ i : Fin d,
-              PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
+              PDE.integralAverage sharedTerm_276d698fec
                 (fun w => velocityGradient u (t, w) i) * v i)) <=
         K * ∑ i : Fin d,
-          PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
+          PDE.eLpNormOn sharedTerm_276d698fec
             (parabolicExponent d)
             (fun v => velocityGradient u (t, v) i -
-              PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
-                (fun w => velocityGradient u (t, w) i)) := by
-      simpa only [K] using velocitySlice_sub_gradientMeanAffine_eLpNorm_le d u hu t
+              PDE.integralAverage sharedTerm_276d698fec
+                (fun w => velocityGradient u (t, w) i)) := velocitySlice_sub_gradientMeanAffine_eLpNorm_le d u hu t
     _ <= K * ∑ i : Fin d, K * ∑ j : Fin d,
-        PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
+        PDE.eLpNormOn sharedTerm_276d698fec
           (parabolicExponent d)
           (fun v => velocityHessian u (t, v) i j) :=
-      mul_le_mul_right hsum K
+      mul_le_mul_right (by
+          apply Finset.sum_le_sum
+          intro i _
+          exact velocityGradient_slice_subAverage_eLpNorm_le_hessian_sum d u hu t i) K
     _ = K^2 * ∑ i : Fin d, ∑ j : Fin d,
-        PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
+        PDE.eLpNormOn sharedTerm_276d698fec
           (parabolicExponent d)
           (fun v => velocityHessian u (t, v) i j) := by
       rw [Finset.mul_sum, Finset.mul_sum]
@@ -529,11 +511,11 @@ private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le_hessian_sum
       intro i _
       rw [pow_two]
       ac_rfl
-    _ = (ENNReal.ofReal (((2 : Real)^d) * (Real.sqrt d * 2)))^2 *
+    _ = (sharedTerm_7b6b7cba9e)^2 *
         ∑ i : Fin d, ∑ j : Fin d,
-          PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
+          PDE.eLpNormOn sharedTerm_276d698fec
             (parabolicExponent d)
-            (fun v => velocityHessian u (t, v) i j) := by rfl
+            (fun v => velocityHessian u (t, v) i j) := rfl
 
 end HypoellipticAleksandrov.Parabolic
 
@@ -541,10 +523,12 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 
+variable (d : Nat) (u : HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : ContDiff Real 2 u) (t : Real)
+
+include hu
 private theorem velocitySlice_sub_canonicalMomentAffine_eq_sub_velocityMomentProjection
-    (d : Nat) (u : TimeVelocity d -> Real)
-    (hu : ContDiff Real 2 u) (t : Real) :
-    (fun v : PDE.Vec d =>
+     :
+    (fun v  =>
       u (t, v) - parabolicMorreyUnitSpatialAffineProjection u (t, v)) =
       fun v =>
         (u (t, v) -
@@ -557,9 +541,9 @@ private theorem velocitySlice_sub_canonicalMomentAffine_eq_sub_velocityMomentPro
             (fun q => u (t, q)) + ∑ i : Fin d,
               PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
                 (fun q => velocityGradient u (t, q) i) * w i)) v := by
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  let f : PDE.Vec d -> Real := fun v => u (t, v)
-  let L : PDE.Vec d -> Real := fun v => PDE.integralAverage V f + ∑ i : Fin d,
+  let V  := velocityCube (0 : PDE.Vec d) 1
+  let f  := fun v => u (t, v)
+  let L : PDE.ScalarField d := fun v => PDE.integralAverage V f + ∑ i : Fin d,
     PDE.integralAverage V (fun w => velocityGradient u (t, w) i) * v i
   have hfContinuous : Continuous f :=
     (hu.comp (contDiff_const.prodMk contDiff_id)).continuous
@@ -567,9 +551,9 @@ private theorem velocitySlice_sub_canonicalMomentAffine_eq_sub_velocityMomentPro
     apply continuous_const.add
     exact continuous_finset_sum Finset.univ fun i _ =>
       continuous_const.mul (continuous_apply i)
-  have hclosedCompact : IsCompact (velocityClosedCube (0 : PDE.Vec d) 1) :=
+  have hclosedCompact  :=
     isCompact_velocityClosedCube (0 : PDE.Vec d) 1
-  have hsubset : V ⊆ velocityClosedCube (0 : PDE.Vec d) 1 := by
+  have hsubset : V ⊆ velocityClosedCube (0 ) 1 := by
     intro v hv
     change ∀ i : Fin d, |v i - (0 : PDE.Vec d) i| < 1 at hv
     change ∀ i : Fin d, |v i - (0 : PDE.Vec d) i| <= 1
@@ -579,41 +563,33 @@ private theorem velocitySlice_sub_canonicalMomentAffine_eq_sub_velocityMomentPro
     (hfContinuous.continuousOn.integrableOn_compact hclosedCompact).mono_set hsubset
   have hL : Integrable L (volume.restrict V) :=
     (hLContinuous.continuousOn.integrableOn_compact hclosedCompact).mono_set hsubset
-  have hfv : ∀ i : Fin d, Integrable (fun v => f v * v i) (volume.restrict V) := by
-    intro i
-    have hcontinuous : Continuous (fun v : PDE.Vec d => f v * v i) :=
-      hfContinuous.mul (continuous_apply i)
-    exact (hcontinuous.continuousOn.integrableOn_compact hclosedCompact).mono_set hsubset
-  have hLv : ∀ i : Fin d, Integrable (fun v => L v * v i) (volume.restrict V) := by
-    intro i
-    have hcontinuous : Continuous (fun v : PDE.Vec d => L v * v i) :=
-      hLContinuous.mul (continuous_apply i)
-    exact (hcontinuous.continuousOn.integrableOn_compact hclosedCompact).mono_set hsubset
+
+
   have hsub : parabolicMorreyUnitVelocityAffineProjection (f - L) =
       parabolicMorreyUnitVelocityAffineProjection f -
         parabolicMorreyUnitVelocityAffineProjection L := by
-    simpa only [V] using
-      parabolicMorreyUnitVelocityAffineProjection_sub f L hf hL hfv hLv
+    exact parabolicMorreyUnitVelocityAffineProjection_sub f L hf hL (show ∀ i : Fin d, Integrable (fun v => f v * v i) (volume.restrict V) by
+        intro i
+
+        exact ((hfContinuous.mul (continuous_apply i)).continuousOn.integrableOn_compact hclosedCompact).mono_set hsubset) (by
+            intro i
+
+            exact ((hLContinuous.mul (continuous_apply i)).continuousOn.integrableOn_compact hclosedCompact).mono_set hsubset)
   have hreproduces : parabolicMorreyUnitVelocityAffineProjection L = L := by
-    simpa only [L] using parabolicMorreyUnitVelocityAffineProjection_reproduces_affine
+    exact parabolicMorreyUnitVelocityAffineProjection_reproduces_affine
       (PDE.integralAverage V f)
       (fun i => PDE.integralAverage V (fun w => velocityGradient u (t, w) i))
-  have hslice : (fun v : PDE.Vec d => parabolicMorreyUnitSpatialAffineProjection u (t, v)) =
-      parabolicMorreyUnitVelocityAffineProjection f := by
-    simpa only [f] using
-      parabolicMorreyUnitSpatialAffineProjection_eq_velocityAffineProjection u t
+
   funext v
-  rw [congrFun hslice v]
+  rw [congrFun (show (fun v  => parabolicMorreyUnitSpatialAffineProjection u (t, v)) =
+      parabolicMorreyUnitVelocityAffineProjection f by
+      exact parabolicMorreyUnitSpatialAffineProjection_eq_velocityAffineProjection u t) v]
   change f v - parabolicMorreyUnitVelocityAffineProjection f v =
     (f v - L v) - parabolicMorreyUnitVelocityAffineProjection (f - L) v
-  rw [hsub, hreproduces]
-  change f v - parabolicMorreyUnitVelocityAffineProjection f v =
-    (f v - L v) - (parabolicMorreyUnitVelocityAffineProjection f v - L v)
-  ring
+  simp_all
 
 private theorem velocitySlice_sub_canonicalMomentAffine_eLpNorm_le_hessian_sum
-    (d : Nat) (u : TimeVelocity d -> Real)
-    (hu : ContDiff Real 2 u) (t : Real) :
+     :
     PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1) (parabolicExponent d)
         (fun v => u (t, v) - parabolicMorreyUnitSpatialAffineProjection u (t, v)) <=
       ENNReal.ofReal (2 + 3 * (d : Real)) *
@@ -621,44 +597,26 @@ private theorem velocitySlice_sub_canonicalMomentAffine_eLpNorm_le_hessian_sum
           ∑ i : Fin d, ∑ j : Fin d,
             PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1) (parabolicExponent d)
               (fun v => velocityHessian u (t, v) i j) := by
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  let R : PDE.Vec d -> Real := fun v => u (t, v) -
-    (PDE.integralAverage V (fun w => u (t, w)) + ∑ i : Fin d,
+  let sharedTerm_b152d7c28b := ((ENNReal.ofReal (((2 : Real) ^ d) * (Real.sqrt d * 2))) ^ 2)
+  let sharedTerm_673f8c847b := ((fun v : PDE.Vec d => u (t, v)))
+  let V  := velocityCube (0 : PDE.Vec d) 1
+  let R  := fun v => u (t, v) -
+    (PDE.integralAverage V sharedTerm_673f8c847b + ∑ i : Fin d,
       PDE.integralAverage V (fun w => velocityGradient u (t, w) i) * v i)
-  have huSlice : Continuous (fun v : PDE.Vec d => u (t, v)) :=
+  have huSlice : Continuous sharedTerm_673f8c847b :=
     (hu.comp (contDiff_const.prodMk contDiff_id)).continuous
   have hLContinuous : Continuous (fun v : PDE.Vec d =>
-      PDE.integralAverage V (fun w => u (t, w)) + ∑ i : Fin d,
+      PDE.integralAverage V sharedTerm_673f8c847b + ∑ i : Fin d,
         PDE.integralAverage V (fun w => velocityGradient u (t, w) i) * v i) := by
     apply continuous_const.add
     exact continuous_finset_sum Finset.univ fun i _ =>
       continuous_const.mul (continuous_apply i)
-  have hRMeasurable : AEStronglyMeasurable R (volume.restrict V) := by
-    simpa only [R, Pi.sub_def] using
-      (huSlice.sub hLContinuous).aestronglyMeasurable
-  have hProjectionContinuous :
-      Continuous (parabolicMorreyUnitVelocityAffineProjection R) := by
-    unfold parabolicMorreyUnitVelocityAffineProjection
-    apply continuous_const.add
-    exact continuous_finset_sum Finset.univ fun i _ =>
-      continuous_const.mul (continuous_apply i)
-  have hProjectionMeasurable : AEStronglyMeasurable
-      (parabolicMorreyUnitVelocityAffineProjection R) (volume.restrict V) :=
-    hProjectionContinuous.aestronglyMeasurable
-  have hp : (1 : ENNReal) <= parabolicExponent d := by
-    simpa only [parabolicExponent] using
-      (le_add_of_nonneg_left (show (0 : ENNReal) <= d from bot_le))
-  have htriangle : PDE.eLpNormOn V (parabolicExponent d)
-      (R - parabolicMorreyUnitVelocityAffineProjection R) <=
-      PDE.eLpNormOn V (parabolicExponent d) R + PDE.eLpNormOn V (parabolicExponent d)
-        (parabolicMorreyUnitVelocityAffineProjection R) := by
-    simpa only [PDE.eLpNormOn] using
-      MeasureTheory.eLpNorm_sub_le hp
-  have hprojection : PDE.eLpNormOn V (parabolicExponent d)
-      (parabolicMorreyUnitVelocityAffineProjection R) <=
-      ENNReal.ofReal (1 + 3 * (d : Real)) * PDE.eLpNormOn V (parabolicExponent d) R := by
-    simpa only [V] using
-      eLpNormOn_parabolicMorreyUnitVelocityAffineProjection_le R hRMeasurable
+
+
+
+
+
+
   have hfactor : 1 + ENNReal.ofReal (1 + 3 * (d : Real)) =
       ENNReal.ofReal (2 + 3 * (d : Real)) := by
     rw [ENNReal.ofReal_add (by norm_num) (by positivity),
@@ -674,19 +632,24 @@ private theorem velocitySlice_sub_canonicalMomentAffine_eLpNorm_le_hessian_sum
     PDE.eLpNormOn V (parabolicExponent d)
         (R - parabolicMorreyUnitVelocityAffineProjection R) <=
         PDE.eLpNormOn V (parabolicExponent d) R + PDE.eLpNormOn V (parabolicExponent d)
-          (parabolicMorreyUnitVelocityAffineProjection R) := htriangle
+          (parabolicMorreyUnitVelocityAffineProjection R) := (by
+              exact MeasureTheory.eLpNorm_sub_le (by
+                  simpa only [parabolicExponent] using
+                    (le_add_of_nonneg_left (show (0 : ENNReal) <= d from bot_le))))
     _ <= PDE.eLpNormOn V (parabolicExponent d) R +
         ENNReal.ofReal (1 + 3 * (d : Real)) * PDE.eLpNormOn V (parabolicExponent d) R :=
-      add_le_add_right hprojection _
+      add_le_add_right (by
+          exact eLpNormOn_parabolicMorreyUnitVelocityAffineProjection_le R (by
+              simpa only [R, Pi.sub_def] using
+                (huSlice.sub hLContinuous).aestronglyMeasurable)) _
     _ = ENNReal.ofReal (2 + 3 * (d : Real)) * PDE.eLpNormOn V (parabolicExponent d) R := by
       rw [← hfactor, add_mul, one_mul]
     _ <= ENNReal.ofReal (2 + 3 * (d : Real)) *
-        ((ENNReal.ofReal (((2 : Real)^d) * (Real.sqrt d * 2)))^2 *
+        (sharedTerm_b152d7c28b *
           ∑ i : Fin d, ∑ j : Fin d, PDE.eLpNormOn V (parabolicExponent d)
-            (fun v => velocityHessian u (t, v) i j)) := by
-      exact mul_le_mul_right (by simpa only [R, V] using hS3) _
+            (fun v => velocityHessian u (t, v) i j)) := mul_le_mul_right (hS3) _
     _ = ENNReal.ofReal (2 + 3 * (d : Real)) *
-        (ENNReal.ofReal (((2 : Real)^d) * (Real.sqrt d * 2)))^2 *
+        sharedTerm_b152d7c28b *
           ∑ i : Fin d, ∑ j : Fin d,
             PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1) (parabolicExponent d)
               (fun v => velocityHessian u (t, v) i j) := by
@@ -699,27 +662,21 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 
-private theorem velocityHessian_continuous_for_spatial_global
-    {d : Nat} {u : TimeVelocity d -> Real} {i j : Fin d}
-    (hu : ContDiff Real 2 u) :
-    Continuous (fun z => velocityHessian u z i j) := by
-  unfold velocityHessian
-  have hfirst : ContDiff Real 1 (fderiv Real u) :=
-    hu.fderiv_right (m := 1) (by norm_num)
-  simpa using
-    (hfirst.continuous_fderiv (by norm_num)).clm_apply continuous_const |>.clm_apply
-      continuous_const
+variable {d : Nat} {u : HypoellipticAleksandrov.Parabolic.ScalarField d}
+
+
+
 
 private theorem aemeasurable_spatialAffine_residual
-    {d : Nat} {u : TimeVelocity d -> Real}
+
     (hu : ContDiff Real 2 u) :
     AEMeasurable
       (fun z => u z - parabolicMorreyUnitSpatialAffineProjection u z)
       (volume.restrict (parabolicMorreyUnitBox d)) := by
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  let ν : Measure (PDE.Vec d) := volume.restrict V
+  let V  := velocityCube (0 : PDE.Vec d) 1
+  let ν  := volume.restrict V
   have huStrong : StronglyMeasurable
-      (Function.uncurry fun t : Real => fun v : PDE.Vec d => u (t, v)) := by
+      (Function.uncurry fun t  => fun v : PDE.Vec d => u (t, v)) := by
     change StronglyMeasurable u
     exact hu.continuous.stronglyMeasurable
   have hAverage : StronglyMeasurable (parabolicMorreyUnitVelocityAverage u) := by
@@ -729,31 +686,30 @@ private theorem aemeasurable_spatialAffine_residual
   have hCoeff : ∀ i : Fin d,
       StronglyMeasurable (fun t => parabolicMorreyUnitVelocityCoeffAt u t i) := by
     intro i
-    have huCoordinate : StronglyMeasurable
-        (Function.uncurry fun t : Real => fun v : PDE.Vec d => u (t, v) * v i) := by
-      change StronglyMeasurable (fun z : TimeVelocity d => u z * z.2 i)
-      exact (hu.continuous.mul ((continuous_apply i).comp continuous_snd)).stronglyMeasurable
+
     unfold parabolicMorreyUnitVelocityCoeffAt
     apply stronglyMeasurable_const.mul
-    simpa only [ν, V] using (huCoordinate.integral_prod_right (ν := ν))
-  have hProjection : StronglyMeasurable (parabolicMorreyUnitSpatialAffineProjection u) := by
-    unfold parabolicMorreyUnitSpatialAffineProjection
-    apply (hAverage.comp_measurable measurable_fst).add
-    rw [← Finset.sum_fn]
-    refine Finset.stronglyMeasurable_sum Finset.univ fun i _ => ?_
-    exact ((hCoeff i).comp_measurable measurable_fst).mul
-      (((continuous_apply i).comp continuous_snd).stronglyMeasurable)
-  exact (hu.continuous.stronglyMeasurable.sub hProjection).aestronglyMeasurable.aemeasurable
+    exact ((show StronglyMeasurable
+        (Function.uncurry fun t  => fun v : PDE.Vec d => u (t, v) * v i) by
+        change StronglyMeasurable (fun z  => u z * z.2 i)
+        exact (hu.continuous.mul ((continuous_apply i).comp continuous_snd)).stronglyMeasurable).integral_prod_right )
 
-private theorem spatialAffinePoincareGlobalConst_pos (d : Nat) (hd : 1 <= d) :
+  exact (hu.continuous.stronglyMeasurable.sub (by
+      unfold parabolicMorreyUnitSpatialAffineProjection
+      apply (hAverage.comp_measurable measurable_fst).add
+      rw [← Finset.sum_fn]
+      refine Finset.stronglyMeasurable_sum Finset.univ fun i _ => ?_
+      exact ((hCoeff i).comp_measurable measurable_fst).mul
+        (((continuous_apply i).comp continuous_snd).stronglyMeasurable))).aestronglyMeasurable.aemeasurable
+
+variable (d : Nat)
+
+private theorem spatialAffinePoincareGlobalConst_pos  (hd : 1 <= d) :
     0 < (2 + 3 * (d : Real)) * (((2 : Real)^d) * (Real.sqrt d * 2))^2 := by
-  have hdpos : 0 < (d : Real) := by
-    exact_mod_cast hd
-  have hsqrt : 0 < Real.sqrt (d : Real) := Real.sqrt_pos.2 hdpos
   positivity
 
 private theorem parabolicMorreyUnitSpatialAffinePoincareELp
-    (d : Nat) (u : TimeVelocity d -> Real) (hu : ContDiff Real 2 u) :
+     (u : HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : ContDiff Real 2 u) :
     parabolicELpNormOn d
         (fun z => u z - parabolicMorreyUnitSpatialAffineProjection u z)
         (parabolicMorreyUnitBox d) <=
@@ -764,109 +720,86 @@ private theorem parabolicMorreyUnitSpatialAffinePoincareELp
           parabolicELpNormOn d
             (fun z => velocityHessian u z i j)
             (parabolicMorreyUnitBox d) := by
-  let I : Set Real := Set.Ioo (0 : Real) 1
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  let μ : Measure Real := volume.restrict I
-  let p : ENNReal := parabolicExponent d
-  let K : ENNReal := ENNReal.ofReal (((2 : Real)^d) * (Real.sqrt d * 2))
-  let B : ENNReal := ENNReal.ofReal (2 + 3 * (d : Real)) * K ^ 2
-  let R : TimeVelocity d -> Real := fun z =>
+  let sharedTerm_b429004453 := ((((2 : Real) ^ d) * (Real.sqrt d * 2)))
+  let sharedTerm_2265d860bf := (∑ i : Fin d, ∑ j : Fin d, parabolicELpNormOn d (fun z => velocityHessian u z i j) (parabolicMorreyUnitBox d))
+  let sharedTerm_ac4c956007 := ((2 + 3 * (d : Real)))
+
+  let V  := velocityCube (0 : PDE.Vec d) 1
+  let μ  := volume.restrict (Set.Ioo (0 : Real) 1)
+  let p  := parabolicExponent d
+  let K  := ENNReal.ofReal sharedTerm_b429004453
+  let B  := ENNReal.ofReal sharedTerm_ac4c956007 * K ^ 2
+  let R  := fun z =>
     u z - parabolicMorreyUnitSpatialAffineProjection u z
-  let q : Fin d -> Fin d -> Real -> ENNReal := fun i j t =>
+  let q  := fun i j t =>
     PDE.eLpNormOn V p (fun v => velocityHessian u (t, v) i j)
   have hp : (1 : ENNReal) <= p := by
     simpa only [p, parabolicExponent] using
       (le_add_of_nonneg_left (show (0 : ENNReal) <= d from bot_le))
   have hRAE : AEMeasurable R (volume.restrict (parabolicMorreyUnitBox d)) := by
-    simpa only [R] using aemeasurable_spatialAffine_residual hu
-  have hHAE : ∀ i j : Fin d,
-      AEMeasurable (fun z => velocityHessian u z i j)
-        (volume.restrict (parabolicMorreyUnitBox d)) := by
-    intro i j
-    exact (velocityHessian_continuous_for_spatial_global hu).aestronglyMeasurable.aemeasurable
-  have hqAE : ∀ i j : Fin d, AEMeasurable (q i j) μ := by
-    intro i j
-    simpa only [q, μ, I, V, p] using
-      aemeasurable_parabolicMorreyUnitVelocitySlice_eLpNorm
-        (fun z => velocityHessian u z i j) (hHAE i j)
-  have hqASM : ∀ i j : Fin d, AEStronglyMeasurable (q i j) μ := by
-    intro i j
-    exact (hqAE i j).aestronglyMeasurable
-  have hsumASM : AEStronglyMeasurable
-      (fun t => ∑ i : Fin d, ∑ j : Fin d, q i j t) μ := by
-    rw [← Finset.sum_fn]
-    refine Finset.aestronglyMeasurable_sum Finset.univ fun i _ => ?_
-    rw [← Finset.sum_fn]
-    exact Finset.aestronglyMeasurable_sum Finset.univ fun j _ => hqASM i j
-  have hslice : ∀ t : Real,
-      PDE.eLpNormOn V p (fun v => R (t, v)) <=
-        B * ∑ i : Fin d, ∑ j : Fin d, q i j t := by
-    intro t
-    simpa only [R, V, p, B, K, q] using
-      velocitySlice_sub_canonicalMomentAffine_eLpNorm_le_hessian_sum d u hu t
-  have houter : eLpNorm (fun t => PDE.eLpNormOn V p (fun v => R (t, v))) p μ <=
-      B * eLpNorm (fun t => ∑ i : Fin d, ∑ j : Fin d, q i j t) p μ := by
-    refine eLpNorm_le_mul_eLpNorm_of_ae_le_mul'' p
-      (by simpa only [V, p, μ, I] using
-        (aemeasurable_parabolicMorreyUnitVelocitySlice_eLpNorm R hRAE).aestronglyMeasurable) ?_
-    filter_upwards with t
-    simpa only [enorm_eq_self] using hslice t
-  have houterSum : eLpNorm (fun t => ∑ i : Fin d, ∑ j : Fin d, q i j t) p μ <=
-      ∑ i : Fin d, ∑ j : Fin d, eLpNorm (q i j) p μ := by
-    calc
-      eLpNorm (fun t => ∑ i : Fin d, ∑ j : Fin d, q i j t) p μ =
-          eLpNorm (∑ i : Fin d, fun t => ∑ j : Fin d, q i j t) p μ := by
-        rw [Finset.sum_fn]
-      _ <= ∑ i : Fin d, eLpNorm (fun t => ∑ j : Fin d, q i j t) p μ := by
-        exact eLpNorm_sum_le hp
-      _ <= ∑ i : Fin d, ∑ j : Fin d, eLpNorm (q i j) p μ := by
-        apply Finset.sum_le_sum
-        intro i _
-        rw [← Finset.sum_fn]
-        exact eLpNorm_sum_le hp
-  have hCnonneg : 0 <= 2 + 3 * (d : Real) := by positivity
-  have hLnonneg : 0 <= ((2 : Real)^d) * (Real.sqrt d * 2) := by positivity
+    exact aemeasurable_spatialAffine_residual hu
+
+
+
+
+
+
+
+
+
   have hCnormalize :
       ENNReal.ofReal
-          ((2 + 3 * (d : Real)) * (((2 : Real)^d) * (Real.sqrt d * 2))^2) = B := by
+          ((sharedTerm_ac4c956007) * (sharedTerm_b429004453)^2) = B := by
     dsimp only [B, K]
-    rw [ENNReal.ofReal_mul hCnonneg, ENNReal.ofReal_pow hLnonneg]
+    rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_pow (by positivity)]
   calc
     parabolicELpNormOn d R (parabolicMorreyUnitBox d) =
-        eLpNorm (fun t => PDE.eLpNormOn V p (fun v => R (t, v))) p μ := by
-      simpa only [R, μ, I, V, p] using
-        parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice R hRAE
-    _ <= B * eLpNorm (fun t => ∑ i : Fin d, ∑ j : Fin d, q i j t) p μ := houter
-    _ <= B * ∑ i : Fin d, ∑ j : Fin d, eLpNorm (q i j) p μ := by
-      exact mul_le_mul_right houterSum B
-    _ = B * ∑ i : Fin d, ∑ j : Fin d,
-        parabolicELpNormOn d
-          (fun z => velocityHessian u z i j)
-          (parabolicMorreyUnitBox d) := by
+        eLpNorm (fun t => PDE.eLpNormOn V p (fun v => R (t, v))) p μ := parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice R hRAE
+    _ <= B * eLpNorm (fun t => ∑ i : Fin d, ∑ j : Fin d, q i j t) p μ := (by
+        refine eLpNorm_le_mul_eLpNorm_of_ae_le_mul'' p
+          ((aemeasurable_parabolicMorreyUnitVelocitySlice_eLpNorm R hRAE).aestronglyMeasurable) ?_
+        filter_upwards with t
+        exact (show ∀ t : Real,
+      PDE.eLpNormOn V p (fun v => R (t, v)) <=
+        B * ∑ i : Fin d, ∑ j : Fin d, q i j t by
+            intro t
+            exact velocitySlice_sub_canonicalMomentAffine_eLpNorm_le_hessian_sum d u hu t) t)
+    _ <= B * ∑ i : Fin d, ∑ j : Fin d, eLpNorm (q i j) p μ := mul_le_mul_right (by
+        calc
+          eLpNorm (fun t => ∑ i : Fin d, ∑ j : Fin d, q i j t) p μ =
+              eLpNorm (∑ i : Fin d, fun t => ∑ j : Fin d, q i j t) p μ := by
+            rw [Finset.sum_fn]
+          _ <= ∑ i : Fin d, eLpNorm (fun t => ∑ j : Fin d, q i j t) p μ := eLpNorm_sum_le hp
+          _ <= ∑ i : Fin d, ∑ j : Fin d, eLpNorm (q i j) p μ := by
+            apply Finset.sum_le_sum
+            intro i _
+            rw [← Finset.sum_fn]
+            exact eLpNorm_sum_le hp) B
+    _ = B * sharedTerm_2265d860bf := by
       congr 1
       apply Finset.sum_congr rfl
       intro i _
       apply Finset.sum_congr rfl
       intro j _
       symm
-      simpa only [q, μ, I, V, p] using
-        parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice
-          (fun z => velocityHessian u z i j) (hHAE i j)
+      exact parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice
+          (fun z => velocityHessian u z i j) ((show ∀ i j : Fin d,
+      AEMeasurable (fun z => velocityHessian u z i j)
+        (volume.restrict (parabolicMorreyUnitBox d)) by
+              intro i j
+              exact (_root_.HypoellipticAleksandrov.Parabolic.velocityHessian_continuous hu).aestronglyMeasurable.aemeasurable) i j)
     _ = ENNReal.ofReal
-          ((2 + 3 * (d : Real)) *
-            (((2 : Real)^d) * (Real.sqrt d * 2))^2) *
-        ∑ i : Fin d, ∑ j : Fin d,
-          parabolicELpNormOn d
-            (fun z => velocityHessian u z i j)
-            (parabolicMorreyUnitBox d) := by
+          ((sharedTerm_ac4c956007) *
+            (sharedTerm_b429004453)^2) *
+        sharedTerm_2265d860bf := by
       rw [hCnormalize]
 
 /-- Smooth spatial second-order Poincare inequality on the fixed unit
 parabolic box, modulo the per-time canonical velocity-affine moment projection. -/
-theorem exists_parabolicMorreyUnitSpatialAffinePoincareELpConst (d : Nat)
+theorem exists_parabolicMorreyUnitSpatialAffinePoincareELpConst
     (hd : 1 <= d) :
     ∃ C : Real, 0 < C ∧
-      ∀ u : TimeVelocity d -> Real,
+      ∀ u : HypoellipticAleksandrov.Parabolic.ScalarField d,
         ContDiff Real 2 u ->
         parabolicELpNormOn d
             (fun z => u z - parabolicMorreyUnitSpatialAffineProjection u z)
@@ -875,20 +808,15 @@ theorem exists_parabolicMorreyUnitSpatialAffinePoincareELpConst (d : Nat)
             ∑ i : Fin d, ∑ j : Fin d,
               parabolicELpNormOn d
                 (fun z => velocityHessian u z i j)
-                (parabolicMorreyUnitBox d) := by
-  let C : Real :=
-    (2 + 3 * (d : Real)) * (((2 : Real)^d) * (Real.sqrt d * 2))^2
-  refine ⟨C, ?_, ?_⟩
-  · simpa only [C] using spatialAffinePoincareGlobalConst_pos d hd
-  · intro u hu
-    simpa only [C] using parabolicMorreyUnitSpatialAffinePoincareELp d u hu
+                (parabolicMorreyUnitBox d) := (Exists.intro ((2 + 3 * ↑d) * (2 ^ d * (√↑d * 2)) ^ 2)
+  ⟨spatialAffinePoincareGlobalConst_pos d hd, fun u hu => parabolicMorreyUnitSpatialAffinePoincareELp d u hu⟩)
 
 /-- Real-valued corollary of the smooth spatial second-order Poincare estimate
 on the fixed unit parabolic box. -/
-theorem exists_parabolicMorreyUnitSpatialAffinePoincareConst (d : Nat)
+theorem exists_parabolicMorreyUnitSpatialAffinePoincareConst
     (hd : 1 <= d) :
     ∃ C : Real, 0 < C ∧
-      ∀ u : TimeVelocity d -> Real,
+      ∀ u : HypoellipticAleksandrov.Parabolic.ScalarField d,
         ContDiff Real 2 u ->
         parabolicLpNormOn d
             (fun z => u z - parabolicMorreyUnitSpatialAffineProjection u z)
@@ -901,52 +829,48 @@ theorem exists_parabolicMorreyUnitSpatialAffinePoincareConst (d : Nat)
   let C : Real :=
     (2 + 3 * (d : Real)) * (((2 : Real)^d) * (Real.sqrt d * 2))^2
   refine ⟨C, ?_, ?_⟩
-  · simpa only [C] using spatialAffinePoincareGlobalConst_pos d hd
+  · exact spatialAffinePoincareGlobalConst_pos d hd
   · intro u hu
-    let R : TimeVelocity d -> Real := fun z =>
+    let R  := fun z =>
       u z - parabolicMorreyUnitSpatialAffineProjection u z
-    let H : Fin d -> Fin d -> TimeVelocity d -> Real := fun i j z =>
+    let H  := fun i j z =>
       velocityHessian u z i j
-    have hENN : parabolicELpNormOn d R (parabolicMorreyUnitBox d) <=
-        ENNReal.ofReal C * ∑ i : Fin d, ∑ j : Fin d,
-          parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d) := by
-      simpa only [C, R, H] using parabolicMorreyUnitSpatialAffinePoincareELp d u hu
+
     have hHmem : ∀ i j : Fin d,
         MemLp (H i j) (parabolicExponent d)
           (volume.restrict (parabolicMorreyUnitBox d)) := by
       intro i j
-      have hContinuous : Continuous (fun z => velocityHessian u z i j) :=
-        velocityHessian_continuous_for_spatial_global (i := i) (j := j) hu
-      simpa only [H] using Continuous.memLp_parabolicMorreyUnitBox hContinuous
+      have hContinuous  :=
+        _root_.HypoellipticAleksandrov.Parabolic.velocityHessian_continuous (i := i) (j := j) hu
+      exact Continuous.memLp_parabolicMorreyUnitBox hContinuous
     have hHneTop : ∀ i j : Fin d,
         parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d) ≠ ⊤ := by
       intro i j
       exact (hHmem i j).eLpNorm_ne_top
-    have hsumNeTop :
-        (∑ i : Fin d, ∑ j : Fin d,
-          parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d)) ≠ ⊤ := by
-      apply ENNReal.sum_ne_top.mpr
-      intro i _
-      apply ENNReal.sum_ne_top.mpr
-      intro j _
-      exact hHneTop i j
-    have hRhsNeTop :
-        ENNReal.ofReal C * ∑ i : Fin d, ∑ j : Fin d,
-          parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d) ≠ ⊤ := by
-      exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top hsumNeTop
-    have hReal := ENNReal.toReal_mono hRhsNeTop hENN
-    have hCnonneg : 0 <= C := by
-      exact (spatialAffinePoincareGlobalConst_pos d hd).le
+
+
+
+
     change (parabolicELpNormOn d R (parabolicMorreyUnitBox d)).toReal <=
       C * ∑ i : Fin d, ∑ j : Fin d,
         (parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d)).toReal
     calc
       (parabolicELpNormOn d R (parabolicMorreyUnitBox d)).toReal <=
           (ENNReal.ofReal C * ∑ i : Fin d, ∑ j : Fin d,
-            parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d)).toReal := hReal
+            parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d)).toReal := (ENNReal.toReal_mono (by
+                exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (by
+                    apply ENNReal.sum_ne_top.mpr
+                    intro i _
+                    apply ENNReal.sum_ne_top.mpr
+                    intro j _
+                    exact hHneTop i j)) (show parabolicELpNormOn d R (parabolicMorreyUnitBox d) <=
+        ENNReal.ofReal C * ∑ i : Fin d, ∑ j : Fin d,
+          parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d) by
+                exact parabolicMorreyUnitSpatialAffinePoincareELp d u hu))
       _ = C * (∑ i : Fin d, ∑ j : Fin d,
           parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d)).toReal := by
-        rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal hCnonneg]
+        rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (show _ by
+            exact (spatialAffinePoincareGlobalConst_pos d hd).le)]
       _ = C * ∑ i : Fin d, (∑ j : Fin d,
           parabolicELpNormOn d (H i j) (parabolicMorreyUnitBox d)).toReal := by
         congr 1

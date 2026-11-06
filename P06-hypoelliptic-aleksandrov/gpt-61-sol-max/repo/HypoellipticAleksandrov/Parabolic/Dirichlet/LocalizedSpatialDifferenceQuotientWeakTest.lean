@@ -17,8 +17,8 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The localized forward quotient of a bundled smooth test, supported by the
 cutoff inside the raw carrier. -/
-noncomputable def localizedSpatialDifferenceQuotientWeakTest
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+def localizedSpatialDifferenceQuotientWeakTest
+    {d : ℕ} {Ω inner outer : PDE.VelocityRegion d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω) :
@@ -29,12 +29,11 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTest
   tsupport_subset :=
     (tsupport_localizedSpatialDifferenceQuotient_subset η k h φ).trans hηΩ
 
+variable {d : ℕ} {Ω inner outer : PDE.VelocityRegion d} {K : ℝ} (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω) (hηΩ : tsupport η.toFun ⊆ Ω)
+
 /-- The bundled localized quotient has the literal pointwise value. -/
 @[simp] theorem localizedSpatialDifferenceQuotientWeakTest_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω) (y : PDE.Vec d) :
+     (y : PDE.Vec d) :
     localizedSpatialDifferenceQuotientWeakTest η k h φ hηΩ y =
       η y * ((φ (y + h • PDE.basisVec k) - φ y) / h) :=
   rfl
@@ -42,10 +41,7 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTest
 /-- The coordinate derivative of the bundled localized quotient obeys the
 literal cutoff product rule. -/
 theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω)
+
     (j : Fin d) (y : PDE.Vec d) :
     (localizedSpatialDifferenceQuotientWeakTest η k h φ hηΩ).partialDeriv j y =
       PDE.classicalGradient η.toFun y j *
@@ -53,35 +49,31 @@ theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
         η y *
           ((φ.partialDeriv j (y + h • PDE.basisVec k) -
               φ.partialDeriv j y) / h) := by
+  let sharedTerm_53a1a6cadb := ((fun x : PDE.Vec d => (φ (x + h • PDE.basisVec k) - φ x) / h))
   unfold PDE.WeakTestFunction.partialDeriv localizedSpatialDifferenceQuotientWeakTest
-  change (fderiv ℝ (fun x : PDE.Vec d =>
+  change (fderiv ℝ (fun x  =>
     η x * ((φ (x + h • PDE.basisVec k) - φ x) / h)) y) (PDE.basisVec j) = _
   have hφshift : DifferentiableAt ℝ
-      (fun x : PDE.Vec d => φ (x + h • PDE.basisVec k)) y :=
+      (fun x  => φ (x + h • PDE.basisVec k)) y :=
     (φ.contDiff.comp (contDiff_id.add contDiff_const)).contDiffAt.differentiableAt (by simp)
-  have hφ : DifferentiableAt ℝ (φ : PDE.Vec d → ℝ) y :=
+  have hφ : DifferentiableAt ℝ (φ : PDE.ScalarField d) y :=
     φ.contDiff.contDiffAt.differentiableAt (by simp)
-  let q : PDE.Vec d → ℝ := fun x =>
+  let q  := fun x =>
     φ (x + h • PDE.basisVec k) - φ x
-  have hq : DifferentiableAt ℝ q y := by
-    exact hφshift.sub hφ
-  have hquotient : DifferentiableAt ℝ
-      (fun x : PDE.Vec d => (φ (x + h • PDE.basisVec k) - φ x) / h) y :=
-    by
-      convert hq.const_smul h⁻¹ using 1
-      funext x
-      simp only [q, Pi.smul_apply, smul_eq_mul, div_eq_mul_inv]
-      ring
+  have hq : DifferentiableAt ℝ q y := hφshift.sub hφ
+
   rw [fderiv_fun_mul
-    (η.smooth.contDiffAt.differentiableAt (by simp)) hquotient]
+    (η.smooth.contDiffAt.differentiableAt (by simp)) (by
+        convert hq.const_smul h⁻¹ using 1
+        funext x
+        simp only [q, Pi.smul_apply, smul_eq_mul, div_eq_mul_inv]
+        ring)]
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
     smul_eq_mul, PDE.classicalGradient_apply]
   have hquotientDeriv :
-      (fderiv ℝ (fun x : PDE.Vec d =>
-        (φ (x + h • PDE.basisVec k) - φ x) / h) y) (PDE.basisVec j) =
+      (fderiv ℝ sharedTerm_53a1a6cadb y) (PDE.basisVec j) =
         (φ.partialDeriv j (y + h • PDE.basisVec k) - φ.partialDeriv j y) / h := by
-    have hrewrite : (fun x : PDE.Vec d =>
-        (φ (x + h • PDE.basisVec k) - φ x) / h) =
+    have hrewrite : (sharedTerm_53a1a6cadb) =
         fun x => h⁻¹ • q x := by
       funext x
       simp only [q, smul_eq_mul, div_eq_mul_inv]

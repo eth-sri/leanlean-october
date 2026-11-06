@@ -11,7 +11,7 @@ continuous, compactly supported cutoff localizations of its small forward
 spatial translates and totalized spatial difference quotients.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -19,11 +19,11 @@ namespace HypoellipticAleksandrov.Parabolic
 continuous, compactly supported cutoff localizations of their small signed
 spatial translates and difference quotients. -/
 theorem IsCompact.exists_cutoff_mul_spatialFields_of_contDiffOn_one
-    {d : ℕ} {S U : Set (TimeVelocity d)}
+    {d : ℕ} {S U : HypoellipticAleksandrov.Parabolic.Region d}
     (hS : IsCompact S) (hU : IsOpen U) (hSU : S ⊆ U)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ 1 q U) :
+    (q : HypoellipticAleksandrov.Parabolic.ScalarField d) (hq : ContDiffOn ℝ 1 q U) :
     ∃ δ C : ℝ, 0 < δ ∧ 0 ≤ C ∧
-      ∀ (β : TimeVelocity d → ℝ),
+      ∀ (β : HypoellipticAleksandrov.Parabolic.ScalarField d),
         Continuous β →
         HasCompactSupport β →
         tsupport β ⊆ S →
@@ -44,12 +44,12 @@ theorem IsCompact.exists_cutoff_mul_spatialFields_of_contDiffOn_one
   have hC : 0 ≤ max Q D := hD.trans (le_max_right _ _)
   refine ⟨δ, max Q D, hδ, hC, ?_⟩
   intro β hβ hβcompact hβS hβunit k h hh
-  let W : Set (TimeVelocity d) := U ∩ (spatialShift k h) ⁻¹' U
+  let W  := U ∩ (spatialShift k h) ⁻¹' U
   have hshiftcont : Continuous (spatialShift k h) := by
     change Continuous (fun z => z + (0, h • PDE.basisVec k))
     simpa only [Homeomorph.coe_addRight] using
       (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).continuous
-  have hW : IsOpen W := hU.inter (hshiftcont.isOpen_preimage U hU)
+  have hW  := hU.inter (hshiftcont.isOpen_preimage U hU)
   have hβW : tsupport β ⊆ W := by
     intro z hz
     exact ⟨hSU (hβS hz), hmaps k h hh (hβS hz)⟩
@@ -63,10 +63,10 @@ theorem IsCompact.exists_cutoff_mul_spatialFields_of_contDiffOn_one
     exact (htranslateW.sub hqW).div_const h
   have htranslatebound : ∀ z ∈ tsupport β, ‖spatialTranslate k h q z‖ ≤ max Q D := by
     intro z hz
-    have hshiftcollar : spatialShift k h z ∈ Metric.cthickening δ S :=
+    have hshiftcollar  :=
       Metric.mem_cthickening_of_dist_le (spatialShift k h z) z δ S (hβS hz)
         (by simpa only [dist_spatialShift] using hh)
-    exact (hQ (spatialShift k h z) hshiftcollar).trans (le_max_left _ _)
+    exact (hQ _ hshiftcollar).trans (le_max_left _ _)
   have hdqbound : ∀ z ∈ tsupport β, ‖spatialDifferenceQuotient k h q z‖ ≤ max Q D := by
     intro z hz
     rw [Real.norm_eq_abs]

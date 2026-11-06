@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApprox
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import Mathlib.Analysis.Calculus.BumpFunction.SmoothApprox
 import Mathlib.Topology.TietzeExtension
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Smooth approximation of continuous parabolic boundary data
 
@@ -11,8 +13,8 @@ Continuous data on a compact closed carrier are first extended by Tietze's theor
 Local convolution and a smooth cutoff give actual ambient smooth compact approximants.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set Metric
 
@@ -21,7 +23,7 @@ theorem exists_smooth_compact_boundary_approx
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     {K U : Set E} (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U)
     (w : E → ℝ) (hw : ContinuousOn w K) {ε : ℝ} (hε : 0 < ε) :
-    ∃ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f ∧ HasCompactSupport f ∧
+    ∃ f : E → ℝ, ContDiff ℝ PDE.smoothOrder f ∧ HasCompactSupport f ∧
       tsupport f ⊆ U ∧ ∀ x ∈ K, |f x - w x| < ε := by
   let W : C(K, ℝ) := ⟨fun x => w x, continuousOn_iff_continuous_domRestrict.mp hw⟩
   obtain ⟨G, hG⟩ := W.exists_restrict_eq hK.isClosed

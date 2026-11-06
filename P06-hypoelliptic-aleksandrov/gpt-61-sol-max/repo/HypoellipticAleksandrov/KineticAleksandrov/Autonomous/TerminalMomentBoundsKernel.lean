@@ -13,9 +13,9 @@ Comparison uses the proved epsilon-Lyapunov bounded-cylinder argument.
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory Filter
+open HypoellipticAleksandrov.Parabolic Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
-open scoped ENNReal Topology
+
 
 /-- Physical scalar phase space, position followed by velocity. -/
 abbrev Z := ℝ × ℝ
@@ -32,8 +32,7 @@ def kernelXV (E : FullSpaceEvolution) (t : NNReal) (z : Z) : Measure Z :=
   (E.2.master (wholeQuery t z)).map nativeToXV
 
 /-- Coordinate projection is measurable. -/
-theorem nativeToXV_measurable : Measurable nativeToXV := by
-  exact (measurable_pi_apply 0 |>.comp measurable_snd).prodMk
+theorem nativeToXV_measurable : Measurable nativeToXV := (measurable_pi_apply 0 |>.comp measurable_snd).prodMk
     (measurable_pi_apply 0 |>.comp measurable_fst)
 
 /-- Scalar kernels have probability mass. -/
@@ -77,10 +76,10 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
   have hs : ∀ p ∈ movingClosedSlab autonomousWholeDomain (fun _ => 0) p0.time tau,
       p ∈ evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) tau :=
     fun _ hp => ⟨hp.2.1, hp.2.2⟩
-  have hus := (isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 hu
+
   have hreg (p : Point) (hp : p ∈ movingActiveSlab autonomousWholeDomain
-      (fun _ => 0) p0.time tau) : IsSliceRegularAt u p :=
-    hus.isSliceRegularAt hΩ continuous_const ⟨hp.2.1, hp.2.2⟩
+      (fun _ => 0) p0.time tau)  :=
+    ((isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 hu).isSliceRegularAt hΩ continuous_const ⟨hp.2.1, hp.2.2⟩
   obtain ⟨C, -, hC⟩ := hu.1
   have h := growth_comparison hΩ continuous_const hlam (evolutionCoefficient_bounds A)
     (identityDrift_bounds 1).1 (le_refl 0) zero_le_one
@@ -97,7 +96,7 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
         viscousTransportedOperator_zero]
       linarith [hop p hp.2.1.le])
     (fun p hp htime => by
-      rw [hu.2.2.2.2.1 p ⟨htime, by simpa only [← htime] using hp.2.2⟩]
+      rw [hu.2.2.2.2.1 p ⟨htime, hp.2.2⟩]
       exact sub_nonpos.mpr (ht p htime))
     (fun p _ hf => by
       change p.position ∈ frontier (movingDomain (wholeSpace 1) (fun _ => 0) p.time) at hf

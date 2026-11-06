@@ -10,14 +10,14 @@ The estimate accounts for every low-order representative, including time and all
 spatial Hessian entries.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory
 open scoped BigOperators
 
 /-- Uniform bounds on the literal selected jet bound its complete weight-two family. -/
-theorem squaredL2Norm_classical_seed_le {d : ℕ} {U : Set (TimeVelocity d)}
+theorem squaredL2Norm_classical_seed_le {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.Region d}
     (hU : IsOpen U) (J : ParabolicW12Function d U 2) (B : ℝ)
     (hq : (eLpNorm J.toFun 2 (timeVelocityVolumeOn U)).toReal ^ 2 ≤ B)
     (ht : (eLpNorm J.timeDeriv 2 (timeVelocityVolumeOn U)).toReal ^ 2 ≤ B)

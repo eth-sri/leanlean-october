@@ -11,24 +11,24 @@ This module identifies the declared variational derivative with its canonical
 Bochner residual and evaluates that identity against a bounded spatial operator.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory Set
-open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise MatrixOrder
+open MeasureTheory Set
+open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The declared reverse-time variational derivative is the canonical Bochner
 source-minus-form residual. -/
 theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -38,11 +38,11 @@ theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
     (hcSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
+    (F : PDE.TimeScalarField d)
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (initial : PDE.ScalarLp Ω (2 ))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
@@ -60,8 +60,10 @@ theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
   have hres := hresidual hτ v
   linarith
 
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
+
 private theorem ae_sub_apply_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+
     (hΩ : IsOpen Ω) (T : ℝ)
     (source action : ReverseTimeL2VStar hΩ T)
     (u : ReverseTimeL2V hΩ T)
@@ -78,12 +80,12 @@ private theorem ae_sub_apply_timewiseCLM
 /-- The declared derivative evaluated on a timewise bounded spatial image is
 the totalized negative-source evaluation minus the totalized form action. -/
 theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -93,11 +95,11 @@ theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
     (hcSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
+    (F : PDE.TimeScalarField d)
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (initial : PDE.ScalarLp Ω (2 ))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
@@ -124,17 +126,16 @@ theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
 /-- Pairing a dual Bochner curve with a bounded timewise spatial image is
 integrable on the reverse-time volume. -/
 theorem integrable_reverseTimeDualPairing_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+
     (hΩ : IsOpen Ω) (T : ℝ)
     (Q : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     MeasureTheory.Integrable (fun τ => (g τ) (Q (u τ)))
       (reverseTimeVolume T) := by
-  let Qu := Q.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hQu : Qu =ᵐ[reverseTimeVolume T] fun τ => Q (u τ) :=
-    ContinuousLinearMap.coeFn_compLpL Q u
-  refine (integrable_reverseTimeDualPairing hΩ T Qu g).congr ?_
-  filter_upwards [hQu] with τ hQ
+
+
+  refine (integrable_reverseTimeDualPairing hΩ T (Q.compLpL (2 ) (reverseTimeVolume T) u) g).congr ?_
+  filter_upwards [(ContinuousLinearMap.coeFn_compLpL Q u)] with τ hQ
   rw [hQ]
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

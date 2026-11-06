@@ -29,7 +29,7 @@ explicit `L²` convergence fields.
 
 @[expose] public section
 
-open scoped ENNReal Topology
+
 
 namespace PDE
 
@@ -39,44 +39,52 @@ variable {d : ℕ}
 
 /-! ## Local measure and pairing lemmas -/
 
+section
+variable {U V : Set (Vec d)} (hV : MeasurableSet V) (hVU : V ⊆ U)
+
+include hV hVU
 /-- Restricting restricted volume to a measurable subset of its domain. -/
-private theorem restrict_restrict_of_subset {U V : Set (Vec d)}
-    (hV : MeasurableSet V) (hVU : V ⊆ U) :
+private theorem restrict_restrict_of_subset  :
     (volume.restrict U).restrict V = volume.restrict V := by
   rw [Measure.restrict_restrict hV, Set.inter_eq_self_of_subset_left hVU]
 
 /-- Zero extension from a measurable subdomain preserves scalar `L²` membership. -/
-theorem memL2On_indicator_of_subset {U V : Set (Vec d)}
-    (hV : MeasurableSet V) (hVU : V ⊆ U)
+theorem memL2On_indicator_of_subset
     {u : Vec d → ℝ} (hu : MemL2On V u) :
     MemL2On U (Set.indicator V u) := by
   refine (memLp_indicator_iff_restrict hV).2 ?_
   rw [restrict_restrict_of_subset hV hVU]
   exact hu
+end
 
-private theorem indicator_coord (V : Set (Vec d)) (f : Vec d → Vec d) (i : Fin d) :
+
+variable (V : Set (Vec d))
+
+private theorem indicator_coord  (f : Vec d → Vec d) (i : Fin d) :
     (fun x => Set.indicator V f x i) = Set.indicator V (fun x => f x i) := by
   funext x
   by_cases hx : x ∈ V
   · simp [Set.indicator_of_mem hx]
   · simp [Set.indicator_of_notMem hx]
 
-private theorem indicator_mul_right (V : Set (Vec d)) (f g : Vec d → ℝ) (x : Vec d) :
+private theorem indicator_mul_right  (f g : Vec d → ℝ) (x : Vec d) :
     Set.indicator V f x * g x = Set.indicator V (fun y => f y * g y) x := by
   by_cases hx : x ∈ V
   · simp [Set.indicator_of_mem hx]
   · simp [Set.indicator_of_notMem hx]
 
+variable {V : Set (Vec d)}
+
 private theorem tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto
-    {V : Set (Vec d)} {g f : Vec d → ℝ} {F : ℕ → Vec d → ℝ}
+     {g f : Vec d → ℝ} {F : ℕ → Vec d → ℝ}
     (hg : MemLp g 2 (volume.restrict V))
     (hf : MemLp f 2 (volume.restrict V))
     (hF : ∀ n, MemLp (F n) 2 (volume.restrict V))
     (hlim : Tendsto
       (fun n => eLpNorm (fun x => F n x - f x) 2 (volume.restrict V))
       atTop (nhds 0)) :
-    Tendsto (fun n => ∫ x in V, F n x * g x ∂volume)
-      atTop (nhds (∫ x in V, f x * g x ∂volume)) := by
+    Tendsto (fun n => ∫ x in V, F n x * g x)
+      atTop (nhds (∫ x in V, f x * g x)) := by
   set μ := volume.restrict V with hμdef
   have hFn_int : ∀ n, Integrable (fun x => F n x * g x) μ := by
     intro n
@@ -90,10 +98,10 @@ private theorem tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto
     have hg_meas : AEStronglyMeasurable g μ := hg.aestronglyMeasurable
     simpa using
       (eLpNorm_le_eLpNorm_mul_eLpNorm_of_nnnorm
-        (μ := μ) (p := (2 : ENNReal)) (q := (2 : ENNReal)) (r := (1 : ENNReal))
+        (μ := μ) (p := (2 )) (q := (2 )) (r := (1 ))
         (fun a b : ℝ => a * b) 1 continuous_mul hd_meas hg_meas
         (Eventually.of_forall fun x => by simp))
-  have hgtop : eLpNorm g 2 μ ≠ ⊤ := hg.eLpNorm_lt_top.ne
+  have hgtop  := hg.eLpNorm_lt_top.ne
   have hL1 :
       Tendsto
         (fun n => eLpNorm (fun x => (F n x - f x) * g x) 1 μ)
@@ -119,24 +127,28 @@ private theorem tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto
       ring
     rw [hfun]
     exact hL1
-  exact tendsto_integral_of_L1' (μ := μ)
+  exact tendsto_integral_of_L1'
     (fun x => f x * g x) (Eventually.of_forall hFn_int) hL1'
 
-private theorem approx_eq_zero_off {V : Set (Vec d)} (u : H10Function V) (n : ℕ)
-    {x : Vec d} (hx : x ∉ V) : u.approx n x = 0 :=
+section
+variable (u : H10Function V) (n : ℕ) {x : Vec d} (hx : x ∉ V)
+
+include hx
+private theorem approx_eq_zero_off   : u.approx n x = 0 :=
   image_eq_zero_of_notMem_tsupport (fun hmem => hx (u.approx_support_subset n hmem))
 
-private theorem approx_fderiv_eq_zero_off {V : Set (Vec d)} (u : H10Function V) (n : ℕ)
-    {x : Vec d} (hx : x ∉ V) (i : Fin d) :
+private theorem approx_fderiv_eq_zero_off   (i : Fin d) :
     (fderiv ℝ (u.approx n) x) (basisVec i) = 0 := by
   have hx' : x ∉ tsupport (fderiv ℝ (u.approx n)) := fun hmem =>
     hx (u.approx_support_subset n (tsupport_fderiv_subset ℝ hmem))
   rw [image_eq_zero_of_notMem_tsupport hx']
   rfl
+end
+
 
 private theorem setIntegral_eq_of_zero_off {U V : Set (Vec d)} (hVU : V ⊆ U)
     {h : Vec d → ℝ} (hzero : ∀ x, x ∉ V → h x = 0) :
-    ∫ x in V, h x ∂volume = ∫ x in U, h x ∂volume := by
+    ∫ x in V, h x = ∫ x in U, h x := by
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero hzero,
     setIntegral_eq_integral_of_forall_compl_eq_zero
       (fun x hx => hzero x (fun hxV => hx (hVU hxV)))]
@@ -184,32 +196,26 @@ noncomputable def zeroExtendToH1 {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpe
           ((u.approx_smooth n).continuous_fderiv (by simp)).clm_apply continuous_const
       have hsupp : HasCompactSupport
           (fun x => (fderiv ℝ (u.approx n) x) (basisVec i)) := by
-        simpa using
-          (u.approx_hasCompactSupport n).fderiv_apply (𝕜 := ℝ) (basisVec i)
+        exact (u.approx_hasCompactSupport n).fderiv_apply (𝕜 := ℝ) (basisVec i)
       exact (hcont.memLp_of_hasCompactSupport hsupp).restrict V
-    have hAtend :
-        Tendsto (fun n => ∫ x in V, u.approx n x * gphi x ∂volume)
-          atTop (nhds (∫ x in V, u.toH1Function.toFun x * gphi x ∂volume)) :=
+    have hAtend  :=
       tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto hgphi_memV
         u.toH1Function.memL2 happrox_memV u.tendsto_approx
-    have hBtend :
-        Tendsto
-          (fun n => ∫ x in V, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x ∂volume)
-          atTop (nhds (∫ x in V, u.toH1Function.grad x i * φ x ∂volume)) :=
+    have hBtend  :=
       tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto hφ_memV
         (u.toH1Function.gradMemL2 i) happroxd_memV (u.tendsto_approx_grad i)
     have hAB : ∀ n,
-        (∫ x in V, u.approx n x * gphi x ∂volume) =
-          -∫ x in V, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x ∂volume := by
+        (∫ x in V, u.approx n x * gphi x) =
+          -∫ x in V, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x := by
       intro n
       have hAU :
-          (∫ x in V, u.approx n x * gphi x ∂volume) =
-            ∫ x in U, u.approx n x * gphi x ∂volume :=
+          (∫ x in V, u.approx n x * gphi x) =
+            ∫ x in U, u.approx n x * gphi x :=
         setIntegral_eq_of_zero_off hVU
           (fun x hx => by rw [approx_eq_zero_off u n hx, zero_mul])
       have hBU :
-          (∫ x in V, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x ∂volume) =
-            ∫ x in U, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x ∂volume :=
+          (∫ x in V, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x) =
+            ∫ x in U, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x :=
         setIntegral_eq_of_zero_off hVU
           (fun x hx => by rw [approx_fderiv_eq_zero_off u n hx i, zero_mul])
       have hIBP :=
@@ -218,33 +224,29 @@ noncomputable def zeroExtendToH1 {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpe
       rw [hAU, hBU]
       exact hIBP
     have hAtend' :
-        Tendsto (fun n => ∫ x in V, u.approx n x * gphi x ∂volume)
-          atTop (nhds (-∫ x in V, u.toH1Function.grad x i * φ x ∂volume)) := by
-      rw [show (fun n => ∫ x in V, u.approx n x * gphi x ∂volume) =
-          fun n => -∫ x in V, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x ∂volume
+        Tendsto (fun n => ∫ x in V, u.approx n x * gphi x)
+          atTop (nhds (-∫ x in V, u.toH1Function.grad x i * φ x)) := by
+      rw [show (fun n => ∫ x in V, u.approx n x * gphi x) =
+          fun n => -∫ x in V, (fderiv ℝ (u.approx n) x) (basisVec i) * φ x
         from funext hAB]
       exact hBtend.neg
-    have hkey :
-        (∫ x in V, u.toH1Function.toFun x * gphi x ∂volume) =
-          -∫ x in V, u.toH1Function.grad x i * φ x ∂volume :=
+    have hkey  :=
       tendsto_nhds_unique hAtend hAtend'
     calc
       ∫ x in U, Set.indicator V u.toH1Function.toFun x *
-          (fderiv ℝ φ x) (basisVec i) ∂volume =
-          ∫ x in U, Set.indicator V (fun y => u.toH1Function.toFun y * gphi y) x
-            ∂volume := by
+          (fderiv ℝ φ x) (basisVec i) =
+          ∫ x in U, Set.indicator V (fun y => u.toH1Function.toFun y * gphi y) x := by
               refine setIntegral_congr_fun hU.measurableSet ?_
               intro x _
               exact indicator_mul_right V u.toH1Function.toFun gphi x
-      _ = ∫ x in V, u.toH1Function.toFun x * gphi x ∂volume := by
+      _ = ∫ x in V, u.toH1Function.toFun x * gphi x := by
             rw [setIntegral_indicator hV.measurableSet,
               Set.inter_eq_self_of_subset_right hVU]
-      _ = -∫ x in V, u.toH1Function.grad x i * φ x ∂volume := hkey
-      _ = -∫ x in U, Set.indicator V (fun y => u.toH1Function.grad y i * φ y) x
-            ∂volume := by
+      _ = -∫ x in V, u.toH1Function.grad x i * φ x := hkey
+      _ = -∫ x in U, Set.indicator V (fun y => u.toH1Function.grad y i * φ y) x := by
               rw [setIntegral_indicator hV.measurableSet,
                 Set.inter_eq_self_of_subset_right hVU]
-      _ = -∫ x in U, Set.indicator V u.toH1Function.grad x i * φ x ∂volume := by
+      _ = -∫ x in U, Set.indicator V u.toH1Function.grad x i * φ x := by
               congr 1
               refine setIntegral_congr_fun hU.measurableSet ?_
               intro x _
@@ -252,16 +254,16 @@ noncomputable def zeroExtendToH1 {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpe
               · simp [Set.indicator_of_mem hx]
               · simp [Set.indicator_of_notMem hx]
 
+variable {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V) (hVU : V ⊆ U) (u : H10Function V)
+
 @[simp]
-theorem zeroExtendToH1_toFun {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) :
+theorem zeroExtendToH1_toFun  :
     (u.zeroExtendToH1 hU hV hVU).toFun =
       Set.indicator V u.toH1Function.toFun :=
   rfl
 
 @[simp]
-theorem zeroExtendToH1_grad {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) :
+theorem zeroExtendToH1_grad  :
     (u.zeroExtendToH1 hU hV hVU).grad =
       Set.indicator V u.toH1Function.grad :=
   rfl
@@ -269,8 +271,7 @@ theorem zeroExtendToH1_grad {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
 /-- Extend an `H¹₀(V)` function by literal zero to the larger open domain `U`.
 The original smooth compactly supported approximants remain valid, because
 their supports are already contained in `V ⊆ U`. -/
-noncomputable def zeroExtend {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) : H10Function U where
+noncomputable def zeroExtend  : H10Function U where
   toH1Function := u.zeroExtendToH1 hU hV hVU
   approx := u.approx
   approx_smooth := u.approx_smooth
@@ -289,8 +290,7 @@ noncomputable def zeroExtend {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
         funext x
         by_cases hx : x ∈ V
         · simp [zeroExtendToH1_toFun, Set.indicator_of_mem hx]
-        · simp [zeroExtendToH1_toFun, Set.indicator_of_notMem hx,
-            approx_eq_zero_off u n hx]
+        · simp_all [zeroExtendToH1_toFun, approx_eq_zero_off]
       rw [heq, eLpNorm_indicator_eq_eLpNorm_restrict hV.measurableSet,
         restrict_restrict_of_subset hV.measurableSet hVU]
     rw [hfun]
@@ -314,23 +314,20 @@ noncomputable def zeroExtend {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
         funext x
         by_cases hx : x ∈ V
         · simp [zeroExtendToH1_grad, Set.indicator_of_mem hx]
-        · simp [zeroExtendToH1_grad, Set.indicator_of_notMem hx,
-            approx_fderiv_eq_zero_off u n hx i]
+        · simp_all [zeroExtendToH1_grad, approx_fderiv_eq_zero_off]
       rw [heq, eLpNorm_indicator_eq_eLpNorm_restrict hV.measurableSet,
         restrict_restrict_of_subset hV.measurableSet hVU]
     rw [hfun]
     exact u.tendsto_approx_grad i
 
 @[simp]
-theorem zeroExtend_toFun {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) :
+theorem zeroExtend_toFun  :
     (u.zeroExtend hU hV hVU).toH1Function.toFun =
       Set.indicator V u.toH1Function.toFun :=
   rfl
 
 @[simp]
-theorem zeroExtend_grad {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) :
+theorem zeroExtend_grad  :
     (u.zeroExtend hU hV hVU).toH1Function.grad =
       Set.indicator V u.toH1Function.grad :=
   rfl

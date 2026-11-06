@@ -5,10 +5,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.PairSetting
 
 /-! # Angular disintegration of actual homogeneous stationary Radon pairs -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open MeasureTheory Set
+open MeasureTheory
 
 /-- Homogeneous compared Radon measures have the exact source angular representation. -/
 theorem angular_disintegration (R β : ℝ) (_hR : 1 ≤ R) (_hβ : 3 ≤ β)

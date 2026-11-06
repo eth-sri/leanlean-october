@@ -14,15 +14,16 @@ the source time-bin count assigned to AU-14a. Box concentration is derived
 from the return-time chain relative to its explicit preliminary P6 input.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- Every canonical observed visit count is finite, with an arbitrary positive horizon. -/
 theorem visitsFromZero_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (P : Point)
     (hbar : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
     (hT : 0 < T) (hvel : P.velocity 0 ∈ closure c.entrance) :
@@ -32,8 +33,7 @@ theorem visitsFromZero_isFiniteMeasure
 
 /-- Source position concentration, including the initial atom and the truncated final bin. -/
 theorem position_cell_count_of_start_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ)
+     (alpha : ℝ)
     (ha : enlargedAdmissibleAlpha lam Lam hlam hLam alpha)
     (hp6 : SmoothAutonomousP6Statement lam Lam)
     (hTime : ∃ Ct : ℝ, 0 < Ct ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
@@ -70,7 +70,7 @@ theorem position_cell_count_of_start_time
   refine ⟨Ct + 2 * Cs * B, by positivity, ?_⟩
   intro A c J T P hbar hJ hT hvel j k
   let nu := visitsFromZero hH hLE hlam hLam A c J T P
-  have : IsFiniteMeasure nu :=
+  have  :=
     visitsFromZero_isFiniteMeasure hH hLE hlam hLam A c J T P hbar hJ hT hvel
   have hs : ∀ᵐ p ∂nu, p.time < P.time + T :=
     (enlargedVisitStarts_ae_support hH hLE hlam hLam A c J P.time (P.time + T)
@@ -88,8 +88,8 @@ theorem position_cell_count_of_start_time
       exact mul_nonneg (by positivity) hdecay
     · let a := (j : ℝ) * c.r ^ 2
       let b := min (((j : ℝ) + 1) * c.r ^ 2) T
-      have hr2 : 0 < c.r ^ 2 := sq_pos_of_pos c.positive
-      have ha0 : 0 ≤ a := mul_nonneg (Nat.cast_nonneg j) hr2.le
+      have hr2  := sq_pos_of_pos c.positive
+      have ha0  := mul_nonneg (Nat.cast_nonneg j) hr2.le
       have hab : a < b := lt_min (by dsimp [a]; nlinarith) (lt_of_not_ge hlate)
       have hlen : b - a ≤ c.r ^ 2 := by
         have h := min_le_left (((j : ℝ) + 1) * c.r ^ 2) T
@@ -108,7 +108,7 @@ theorem position_cell_count_of_start_time
           hbox A (P.position 0, P.velocity 0) Y c.r (Real.toNNReal t) c.positive hz
       have hslab := position_concentration_slab_le f B (gamma alpha) c.r b j hB.le
         (by dsimp only [gamma]; linarith [ha.2]) c.positive hab.le hlen
-        (position_box_probability_integrable E (P.position 0, P.velocity 0) A0 c.r Y a b) hf
+        (position_box_probability_integrable E _ A0 c.r Y a b) hf
       have hsource := hstart A c J T P hbar hJ hT hvel a b k ha0 hab hlen (min_le_right _ _)
       rw [enlargedPositionVisitMass_eq_truncated_slab nu c P.time 0 T j k hj hs]
       have h := hsource.trans (mul_le_mul_of_nonneg_left hslab hCs.le)

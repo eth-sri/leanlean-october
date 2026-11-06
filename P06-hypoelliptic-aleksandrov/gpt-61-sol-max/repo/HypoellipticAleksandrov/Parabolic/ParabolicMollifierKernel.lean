@@ -3,6 +3,12 @@ module
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 public import Mathlib.Analysis.Calculus.BumpFunction.Normed
+import Batteries.Tactic.Alias
+import PDEFoundation.Sobolev.W1p.ConvexApprox.Kernel
+public import HypoellipticAleksandrov.Measure.TimeVelocity
+
+
+
 
 /-!
 # Native-norm parabolic mollifier kernels
@@ -14,8 +20,8 @@ norm; no Euclidean metric instance is introduced here.
 
 @[expose] public section
 
-open Filter MeasureTheory Set
-open scoped ContDiff ENNReal Topology
+open Filter MeasureTheory
+open scoped ContDiff ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -23,9 +29,11 @@ namespace HypoellipticAleksandrov.Parabolic
 noncomputable def parabolicMollifierScale (n : ℕ) : ℝ :=
   1 / ((n : ℝ) + 1)
 
+variable (d n : ℕ)
+
 /-- A smooth bump with inner radius half of, and outer radius equal to, the
 native-norm mollifier scale. -/
-noncomputable def parabolicMollifierBump (d n : ℕ) :
+noncomputable def parabolicMollifierBump  :
     ContDiffBump (0 : TimeVelocity d) :=
   ⟨parabolicMollifierScale n / 2, parabolicMollifierScale n,
     by
@@ -37,8 +45,8 @@ noncomputable def parabolicMollifierBump (d n : ℕ) :
       positivity⟩
 
 /-- The normalized native-norm mollifier against the product volume. -/
-noncomputable def parabolicMollifier (d n : ℕ) : TimeVelocity d → ℝ :=
-  (parabolicMollifierBump d n).normed (volume : Measure (TimeVelocity d))
+noncomputable def parabolicMollifier  : HypoellipticAleksandrov.Parabolic.ScalarField d :=
+  (parabolicMollifierBump d n).normed (volume )
 
 /-- Every native-norm mollifier scale is at most one. -/
 theorem parabolicMollifierScale_le_one (n : ℕ) :
@@ -50,41 +58,35 @@ theorem parabolicMollifierScale_le_one (n : ℕ) :
 
 /-- The native-norm mollifier scales converge to zero. -/
 theorem tendsto_parabolicMollifierScale_zero :
-    Tendsto parabolicMollifierScale atTop (nhds 0) := by
-  change Tendsto (fun n : ℕ ↦ 1 / ((n : ℝ) + 1)) atTop (nhds 0)
-  exact
-    (tendsto_one_div_add_atTop_nhds_zero_nat :
-      Tendsto (fun n : ℕ ↦ 1 / ((n : ℝ) + 1)) atTop (nhds 0))
+    Tendsto parabolicMollifierScale atTop (nhds 0) := PDE.tendsto_unitConvexApproxScale_zero
+
+
+variable (d n : ℕ)
 
 /-- The bump's outer radius is exactly its specified mollifier scale. -/
-@[simp] theorem parabolicMollifierBump_rOut (d n : ℕ) :
+@[simp] theorem parabolicMollifierBump_rOut  :
     (parabolicMollifierBump d n).rOut = parabolicMollifierScale n :=
   rfl
 
 /-- Each normalized native-norm mollifier is smooth. -/
-theorem contDiff_parabolicMollifier (d n : ℕ) :
-    ContDiff ℝ ∞ (parabolicMollifier d n) := by
-  exact (parabolicMollifierBump d n).contDiff_normed
+theorem contDiff_parabolicMollifier  :
+    ContDiff ℝ ∞ (parabolicMollifier d n) := (parabolicMollifierBump d n).contDiff_normed
 
 /-- Each normalized native-norm mollifier has compact topological support. -/
-theorem hasCompactSupport_parabolicMollifier (d n : ℕ) :
-    HasCompactSupport (parabolicMollifier d n) := by
-  exact (parabolicMollifierBump d n).hasCompactSupport_normed
+theorem hasCompactSupport_parabolicMollifier  :
+    HasCompactSupport (parabolicMollifier d n) := (parabolicMollifierBump d n).hasCompactSupport_normed
 
 /-- Normalized native-norm mollifiers are pointwise nonnegative. -/
-theorem parabolicMollifier_nonneg (d n : ℕ) (z : TimeVelocity d) :
-    0 ≤ parabolicMollifier d n z := by
-  exact (parabolicMollifierBump d n).nonneg_normed z
+theorem parabolicMollifier_nonneg  (z : TimeVelocity d) :
+    0 ≤ parabolicMollifier d n z := (parabolicMollifierBump d n).nonneg_normed z
 
 /-- Each normalized native-norm mollifier integrates to one against product volume. -/
-theorem integral_parabolicMollifier (d n : ℕ) :
-    (integral (volume : Measure (TimeVelocity d)) (parabolicMollifier d n)) = 1 := by
-  exact (parabolicMollifierBump d n).integral_normed
+theorem integral_parabolicMollifier  :
+    (integral (HypoellipticAleksandrov.Parabolic.timeVelocityVolume d) (parabolicMollifier d n)) = 1 := (parabolicMollifierBump d n).integral_normed
 
 /-- The function support is exactly the open native-norm ball at its scale. -/
-theorem support_parabolicMollifier (d n : ℕ) :
+theorem support_parabolicMollifier  :
     Function.support (parabolicMollifier d n) =
-      Metric.ball (0 : TimeVelocity d) (parabolicMollifierScale n) := by
-  exact (parabolicMollifierBump d n).support_normed_eq
+      Metric.ball (0 : TimeVelocity d) (parabolicMollifierScale n) := (parabolicMollifierBump d n).support_normed_eq
 
 end HypoellipticAleksandrov.Parabolic

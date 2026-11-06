@@ -6,22 +6,24 @@ import Mathlib.Tactic
 
 /-! # Positive definiteness and Loewner bounds for the kinetic covariance -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Matrix
 open scoped MatrixOrder
 
+variable {a b c : ℝ}
+
 /-- The two-dimensional Sylvester test, stated in literal scalar block coordinates. -/
-theorem posDef_two_of_det {a b c : ℝ} (ha : 0 < a) (hdet : 0 < a * b - c ^ 2) :
-    (!![a, c; c, b] : Matrix (Fin 2) (Fin 2) ℝ).PosDef := by
+theorem posDef_two_of_det  (ha : 0 < a) (hdet : 0 < a * b - c ^ 2) :
+    (!![a, c; c, b] ).PosDef := by
   apply Matrix.posDef_iff_dotProduct_mulVec.mpr
   constructor
   · ext i j
-    fin_cases i <;> fin_cases j <;> simp [Matrix.conjTranspose]
+    fin_cases i <;> fin_cases j <;> rfl
   · intro x hx
     have hn : x 0 ≠ 0 ∨ x 1 ≠ 0 := by
       by_contra h
@@ -30,8 +32,7 @@ theorem posDef_two_of_det {a b c : ℝ} (ha : 0 < a) (hdet : 0 < a * b - c ^ 2) 
       ext i
       fin_cases i <;> simp [h]
     simp [dotProduct, mulVec, Fin.sum_univ_two]
-    have hid : a * (x 0 * (a * x 0 + c * x 1) + x 1 * (c * x 0 + b * x 1)) =
-        (a * x 0 + c * x 1) ^ 2 + (a * b - c ^ 2) * (x 1) ^ 2 := by ring
+
     rcases hn with h0 | h1
     · by_cases h1 : x 1 = 0
       · simp only [h1, mul_zero, add_zero, zero_mul]
@@ -42,12 +43,12 @@ theorem posDef_two_of_det {a b c : ℝ} (ha : 0 < a) (hdet : 0 < a * b - c ^ 2) 
       nlinarith [sq_nonneg (a * x 0 + c * x 1)]
 
 /-- Symmetric diagonal dominance implies positive semidefiniteness in scalar block coordinates. -/
-theorem posSemidef_two_of_diagonal {a b c : ℝ} (ha : |c| ≤ a) (hb : |c| ≤ b) :
-    (!![a, c; c, b] : Matrix (Fin 2) (Fin 2) ℝ).PosSemidef := by
+theorem posSemidef_two_of_diagonal  (ha : |c| ≤ a) (hb : |c| ≤ b) :
+    (!![a, c; c, b] ).PosSemidef := by
   apply Matrix.posSemidef_iff_dotProduct_mulVec.mpr
   constructor
   · ext i j
-    fin_cases i <;> fin_cases j <;> simp [Matrix.conjTranspose]
+    fin_cases i <;> fin_cases j <;> rfl
   · intro x
     simp [dotProduct, mulVec, Fin.sum_univ_two]
     have h0 := mul_nonneg (sub_nonneg.mpr ha) (sq_nonneg (x 0))

@@ -4,12 +4,14 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlock
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlockSource
 import HypoellipticAleksandrov.KineticAleksandrov.Holder.PropagationBlockComparison
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The source one-block comparison with all boundary and source terms discharged -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -23,11 +25,11 @@ theorem propagation_one_block {d : ℕ} (hd : 1 ≤ d)
     (A : FullKineticCoefficient d) (hA : FullElliptic lam Lam A)
     (O : Set (KineticPoint d)) (tminus sblock TP : ℝ)
     (hsblock : 0 ≤ sblock) (hblock : sblock + h ≤ TP)
-    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
-    (hv : ContDiff ℝ (⊤ : ℕ∞) v) (hkin : ∀ s, HasDerivAt x (v s) s)
+    {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ PDE.smoothOrder x)
+    (hv : ContDiff ℝ PDE.smoothOrder v) (hkin : ∀ s, HasDerivAt x (v s) s)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|)
     (htube : corridor tminus (-T0) TP (kx / 2) (kv / 2) x v ⊆ O)
-    {p C_A : ℝ} (u : KineticPoint d → ℝ) (hnonneg : ∀ P ∈ O, 0 ≤ u P)
+    {p C_A : ℝ} (u : HypoellipticAleksandrov.KineticScalarField d) (hnonneg : ∀ P ∈ O, 0 ≤ u P)
     (hu : IsAdmissibleSupersolution A O p C_A u)
     (hinit : ∀ P ∈ closure (backwardCylinder
       ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩
@@ -40,14 +42,13 @@ theorem propagation_one_block {d : ℕ} (hd : 1 ≤ d)
       (barrierW d lam Lam H T1 * Real.sqrt h)),
       gaussianBarrier lam Lam H h (barrierL d lam Lam H T1)
         ell tminus sblock x v P ≤ u P := by
-  let R := barrierW d lam Lam H T1 * Real.sqrt h
-  let P₀ : KineticPoint d :=
-    ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩
-  have hR : 0 < R := mul_pos
+
+
+  have hR : 0 < (barrierW d lam Lam H T1 * Real.sqrt h) := mul_pos
     (lt_of_lt_of_le (by norm_num) (two_le_barrierW hH)) (Real.sqrt_pos.mpr hh)
   have hQO := (propagation_block_containment hH hT0 hT1 hkx hkv hh hhstar
     tminus sblock TP hsblock hblock hv.continuous hkin hLip).trans htube
-  apply admissible_test_le_of_zero_source hu P₀ hR hQO
+  apply admissible_test_le_of_zero_source hu (⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩) hR hQO
     (gaussianBarrier_isSmoothNear hlam hh Lam H (barrierL d lam Lam H T1)
       ell tminus sblock hx hv _)
   · intro P hP

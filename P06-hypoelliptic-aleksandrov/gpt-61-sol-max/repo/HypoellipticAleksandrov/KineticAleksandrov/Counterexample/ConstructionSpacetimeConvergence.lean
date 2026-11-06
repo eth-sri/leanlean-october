@@ -8,8 +8,8 @@ import Mathlib.MeasureTheory.Measure.Prod
 
 /-! # Measurable fixed-time convergence and positive-part norm convergence -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory
 open scoped Topology ENNReal
@@ -19,16 +19,13 @@ in the literal kinetic product-volume carrier. -/
 theorem construction_fixed_time_tendsto_ae_spacetime {d : ℕ}
     (F : ℕ → ℝ × XV d → ℝ) (g : ℝ × XV d → ℝ)
     (hF : ∀ n, Measurable (F n)) (hg : Measurable g)
-    (ht : ∀ t : ℝ, ∀ᵐ q ∂volume,
+    (ht : ∀ t : ℝ, ∀ᵐ q,
       Tendsto (fun n => F n (t, q)) atTop (𝓝 (g (t, q)))) :
-    ∀ᵐ P : KineticPoint d ∂volume,
+    ∀ᵐ P : KineticPoint d,
       Tendsto (fun n => F n (KineticPoint.equivProd d P)) atTop
-        (𝓝 (g (KineticPoint.equivProd d P))) := by
-  have hp := measurableSet_tendsto_fun (l := atTop) hF hg
-  have he : ∀ᵐ z : ℝ × XV d ∂volume,
-      Tendsto (fun n => F n z) atTop (𝓝 (g z)) :=
-    (Measure.ae_prod_iff_ae_ae hp).mpr (Eventually.of_forall ht)
-  exact (KineticPoint.measurePreserving_equivProd d).quasiMeasurePreserving.ae he
+        (𝓝 (g (KineticPoint.equivProd d P))) := (Measure.QuasiMeasurePreserving.ae
+  (MeasurePreserving.quasiMeasurePreserving (KineticPoint.measurePreserving_equivProd d))
+  ((Measure.ae_prod_iff_ae_ae (measurableSet_tendsto_fun hF hg)).mpr (Eventually.of_forall ht)))
 
 /-- Uniformly bounded measurable convergence controls the positive-part source error in
 any finite exponent on a finite-measure cylinder. -/
@@ -56,7 +53,7 @@ theorem construction_positive_part_error_tendsto {X : Type*} [MeasurableSpace X]
       (abs_sub _ _).trans (show |max (F n x) 0| + |max (g x) 0| ≤ 2 * C by
         linarith only [hbF, hbg])
   · filter_upwards [hlim] with x hx
-    have hm := (hx.max (tendsto_const_nhds (x := (0 : ℝ)))).sub_const (max (g x) 0)
-    simpa only [Pi.sub_apply, sub_self] using! hm
+
+    simpa only [Pi.sub_apply, sub_self] using! ((hx.max (tendsto_const_nhds (x := (0 : ℝ)))).sub_const (max (g x) 0))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

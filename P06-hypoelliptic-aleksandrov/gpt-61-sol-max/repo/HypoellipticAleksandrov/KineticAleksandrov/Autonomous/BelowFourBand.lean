@@ -10,11 +10,11 @@ result remains conditional on the four unproved analytic predecessor Props
 and the clock-pushforward proposition, with only the hypotheses hH/hLE.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
-open scoped ENNReal
+
 
 /-- The band proposition follows from its direct predecessors. -/
 theorem below_four_band_of_predecessors (hpush : PushforwardStatement)
@@ -45,19 +45,19 @@ theorem below_four_band_of_predecessors (hpush : PushforwardStatement)
       ((isOpen_lt continuous_time continuous_const).measurableSet.inter
         (isOpen_Ioo.measurableSet.preimage
           ((continuous_apply 0).comp continuous_velocity).measurable))
-  have hpast := stripGreenOfKernel_ae_mem_stripPast H (stripEvolution hH hLE hlam hLam A H).2 T e
-  let ei : StripPole H ⊤ := ⟨e.1, WithTop.coe_lt_top _, e.2.2⟩
-  have hfuture := (stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A H ei).filter_mono
+
+
+  have hfuture := (stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A H (⟨e.1, WithTop.coe_lt_top _, e.2.2⟩)).filter_mono
     (stripGreen_mono hH hLE hlam hLam A H H Subset.rfl T ⊤ le_top e).absolutelyContinuous.ae_le
-  have hmu : ∀ᵐ z ∂mu, z ∈ D := by
-    filter_upwards [ae_restrict_of_ae hpast, ae_restrict_of_ae hfuture] with z hz ht
-    exact ⟨hP.1.trans ht.1, hz.1, hz.2⟩
-  have hm : mu.restrict D = mu := Measure.restrict_eq_self_of_ae_mem hmu
-  have hdensity : mu = (volume.restrict D).withDensity (fun z => ENNReal.ofReal (G z)) := by
-    rw [← hm]
-    dsimp only [mu]
-    rw [hGd, restrict_withDensity hD]
-  refine ⟨G, hG, hG0, hdensity, hGp.restrict D, ?_⟩
-  exact (ENNReal.toReal_mono hGp.ne (eLpNorm_restrict_le G (ENNReal.ofReal q) volume D)).trans hGn
+
+
+
+  refine ⟨G, hG, hG0, (show mu = (volume.restrict D).withDensity (fun z => ENNReal.ofReal (G z)) by
+      rw [← (Measure.restrict_eq_self_of_ae_mem (show ∀ᵐ z ∂mu, z ∈ D by
+          filter_upwards [ae_restrict_of_ae (stripGreenOfKernel_ae_mem_stripPast H (stripEvolution hH hLE hlam hLam A H).2 T e), ae_restrict_of_ae hfuture] with z hz ht
+          exact ⟨hP.1.trans ht.1, hz.1, hz.2⟩))]
+      dsimp only [mu]
+      rw [hGd, restrict_withDensity hD]), hGp.restrict D, ?_⟩
+  exact (ENNReal.toReal_mono hGp.ne (eLpNorm_restrict_le G _ volume D)).trans hGn
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

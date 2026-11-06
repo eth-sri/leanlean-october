@@ -6,9 +6,9 @@ public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 
 /-! # The actual cutoff Hessian matrix and transport scalar -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 

@@ -2,6 +2,8 @@ module
 
 public import PDEFoundation.Measure.AffineVolume
 public import PDEFoundation.Sobolev.WeakDerivative
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Affine transport of weak first derivatives
@@ -10,7 +12,7 @@ Translation is exact: precomposing values and gradients by `x ↦ x - z`
 transports a weak derivative from `U` to `z + U`.
 -/
 
-@[expose] public section
+ public section
 
 open scoped Pointwise
 
@@ -25,70 +27,63 @@ theorem translate {d : ℕ} {U : Set (Vec d)} {i : Fin d}
     HasWeakPartialDerivOn (translateSet z U) i
       (fun x => u (x - z)) (fun x => gi (x - z)) := by
   intro φ hφSmooth hφCompact hφSubset
-  let V : Set (Vec d) := translateSet z U
-  let ψ : Vec d → ℝ := fun x => φ (x + z)
-  have hψSmooth : ContDiff ℝ (⊤ : ℕ∞) ψ := by
-    simpa [ψ] using!
-      hφSmooth.comp (contDiff_id.add contDiff_const)
-  have hψCompact : HasCompactSupport ψ := by
-    show HasCompactSupport (φ ∘ Homeomorph.addRight z)
-    simpa [ψ, Function.comp] using
-      hφCompact.comp_homeomorph (Homeomorph.addRight z)
-  have hψSubset : tsupport ψ ⊆ U := by
-    intro x hx
-    have hx' : x + z ∈ tsupport φ := by
-      rw [show ψ = φ ∘ Homeomorph.addRight z by rfl,
-        tsupport_comp_eq_preimage φ (Homeomorph.addRight z)] at hx
-      exact hx
-    have hxV : x + z ∈ V := hφSubset hx'
-    simpa [V, mem_translateSet_iff_sub_mem, sub_eq_add_neg,
-      add_assoc] using hxV
-  have hWeak := h ψ hψSmooth hψCompact hψSubset
-  have hMain :
-      ∫ x in U, u x * (fderiv ℝ φ (x + z)) (basisVec i)
-          ∂MeasureTheory.volume =
-        -∫ x in U, gi x * φ (x + z) ∂MeasureTheory.volume := by
-    have hfun :
-        (fun x => u x * (fderiv ℝ φ (x + z)) (basisVec i)) =
-          fun x => u x * (fderiv ℝ ψ x) (basisVec i) := by
-      funext x
-      have hderiv :
-          fderiv ℝ (fun y : Vec d => φ (y + z)) x =
-            fderiv ℝ φ (x + z) := by
-        simpa using
-          (fderiv_comp_add_right (𝕜 := ℝ) (f := φ) (x := x) z)
-      simp [ψ, hderiv]
-    calc
-      ∫ x in U, u x * (fderiv ℝ φ (x + z)) (basisVec i)
-          ∂MeasureTheory.volume =
-          ∫ x in U, u x * (fderiv ℝ ψ x) (basisVec i)
-            ∂MeasureTheory.volume := by
-              rw [hfun]
-      _ = -∫ x in U, gi x * ψ x ∂MeasureTheory.volume := hWeak
-      _ = -∫ x in U, gi x * φ (x + z)
-          ∂MeasureTheory.volume := by rfl
-  have hChangeLeft :
-      ∫ x in V, u (x - z) * (fderiv ℝ φ x) (basisVec i)
-          ∂MeasureTheory.volume =
-        ∫ x in U, u x * (fderiv ℝ φ (x + z)) (basisVec i)
-          ∂MeasureTheory.volume := by
-    symm
-    simpa [V, sub_eq_add_neg, add_assoc] using
-      (setIntegral_comp_addRight_translateSet (d := d) z U
-        (fun x => u (x - z) * (fderiv ℝ φ x) (basisVec i)))
+  let V  := translateSet z U
+  let ψ  := fun x => φ (x + z)
+
+
+
+  have hWeak := h ψ (by
+      simpa [ψ] using!
+        hφSmooth.comp (contDiff_id.add contDiff_const)) (by
+      show HasCompactSupport (φ ∘ Homeomorph.addRight z)
+      simpa [ψ, Function.comp] using
+        hφCompact.comp_homeomorph (Homeomorph.addRight z)) (by
+            intro x hx
+
+            have hxV  := hφSubset (by
+                rw [show ψ = φ ∘ Homeomorph.addRight z by rfl,
+                  tsupport_comp_eq_preimage φ (Homeomorph.addRight z)] at hx
+                exact hx)
+            simpa [V, mem_translateSet_iff_sub_mem, sub_eq_add_neg,
+              add_assoc] using hxV)
+
+
   have hChangeRight :
       ∫ x in U, gi x * φ (x + z) ∂MeasureTheory.volume =
         ∫ x in V, gi (x - z) * φ x ∂MeasureTheory.volume := by
     simpa [V, sub_eq_add_neg, add_assoc] using
-      (setIntegral_comp_addRight_translateSet (d := d) z U
+      (setIntegral_comp_addRight_translateSet  z U
         (fun x => gi (x - z) * φ x))
   calc
     ∫ x in V, u (x - z) * (fderiv ℝ φ x) (basisVec i)
         ∂MeasureTheory.volume =
         ∫ x in U, u x * (fderiv ℝ φ (x + z)) (basisVec i)
-          ∂MeasureTheory.volume := hChangeLeft
+          ∂MeasureTheory.volume := (by
+              symm
+              simpa [V, sub_eq_add_neg, add_assoc] using
+                (setIntegral_comp_addRight_translateSet  z U
+                  (fun x => u (x - z) * (fderiv ℝ φ x) (basisVec i))))
     _ = -∫ x in U, gi x * φ (x + z)
-        ∂MeasureTheory.volume := hMain
+        ∂MeasureTheory.volume := (by
+            have hfun :
+                (fun x => u x * (fderiv ℝ φ (x + z)) (basisVec i)) =
+                  fun x => u x * (fderiv ℝ ψ x) (basisVec i) := by
+              funext x
+              have hderiv :
+                  fderiv ℝ (fun y  => φ (y + z)) x =
+                    fderiv ℝ φ (x + z) := by
+                simpa using
+                  (fderiv_comp_add_right (𝕜 := ℝ) (f := φ) (x := x) z)
+              simp [ψ, hderiv]
+            calc
+              ∫ x in U, u x * (fderiv ℝ φ (x + z)) (basisVec i)
+                  ∂MeasureTheory.volume =
+                  ∫ x in U, u x * (fderiv ℝ ψ x) (basisVec i)
+                    ∂MeasureTheory.volume := by
+                      rw [hfun]
+              _ = -∫ x in U, gi x * ψ x ∂MeasureTheory.volume := hWeak
+              _ = -∫ x in U, gi x * φ (x + z)
+                  ∂MeasureTheory.volume := rfl)
     _ = -∫ x in V, gi (x - z) * φ x
         ∂MeasureTheory.volume := by rw [hChangeRight]
 
@@ -106,38 +101,36 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       (fun x => a * u (a⁻¹ • x))
       (fun x => gi (a⁻¹ • x)) := by
   intro φ hφSmooth hφCompact hφSubset
-  let V : Set (Vec d) := a • U
+  let V  := a • U
   let T : Vec d → Vec d := fun x => a⁻¹ • x
-  have haNe : a ≠ 0 := ha.ne'
-  let ψ : Vec d → ℝ := fun y => φ (a • y)
-  have hψSmooth : ContDiff ℝ (⊤ : ℕ∞) ψ := by
-    simpa [ψ] using! hφSmooth.comp (contDiff_const_smul a)
-  have hψCompact : HasCompactSupport ψ := by
-    show HasCompactSupport (φ ∘ Homeomorph.smulOfNeZero a haNe)
-    simpa [ψ, Function.comp] using
-      hφCompact.comp_homeomorph (Homeomorph.smulOfNeZero a haNe)
-  have hψSubset : tsupport ψ ⊆ U := by
-    intro y hy
-    have hy' : a • y ∈ tsupport φ := by
-      rw [show ψ = φ ∘ Homeomorph.smulOfNeZero a haNe by rfl,
-        tsupport_comp_eq_preimage φ
-          (Homeomorph.smulOfNeZero a haNe)] at hy
-      exact hy
-    have hyV : a • y ∈ V := hφSubset hy'
-    simpa [V, Set.mem_smul_set_iff_inv_smul_mem, haNe] using hyV
-  have hWeak := h ψ hψSmooth hψCompact hψSubset
+  have haNe  := ha.ne'
+  let ψ  := fun y => φ (a • y)
+
+
+
+  have hWeak := h ψ (show ContDiff ℝ PDE.smoothOrder ψ by
+      simpa [ψ] using! hφSmooth.comp (contDiff_const_smul a)) (show HasCompactSupport ψ by
+      show HasCompactSupport (φ ∘ Homeomorph.smulOfNeZero a haNe)
+      exact hφCompact.comp_homeomorph (Homeomorph.smulOfNeZero a haNe)) (by
+      intro y hy
+
+      have hyV  := hφSubset (by
+          rw [show ψ = φ ∘ Homeomorph.smulOfNeZero a haNe by rfl,
+            tsupport_comp_eq_preimage φ
+              (Homeomorph.smulOfNeZero a haNe)] at hy
+          exact hy)
+      simpa [V, Set.mem_smul_set_iff_inv_smul_mem, haNe] using hyV)
   have hDerivψ :
       ∀ y : Vec d,
         (fderiv ℝ ψ y) (basisVec i) =
           a * (fderiv ℝ φ (a • y)) (basisVec i) := by
     intro y
-    have hderiv :
-        fderiv ℝ (fun z : Vec d => φ (a • z)) y =
-          a • fderiv ℝ φ (a • y) := by
-      simpa [ψ] using
-        (fderiv_comp_smul (𝕜 := ℝ) (f := φ) (x := y) a)
+
     simpa [smul_eq_mul] using
-      congrArg (fun L : Vec d →L[ℝ] ℝ => L (basisVec i)) hderiv
+      congrArg (fun L : Vec d →L[ℝ] ℝ => L (basisVec i)) (show fderiv ℝ (fun z  => φ (a • z)) y =
+          a • fderiv ℝ φ (a • y) by
+          simpa [ψ] using
+            (fderiv_comp_smul (𝕜 := ℝ) (f := φ) (x := y) a))
   have hWeakScaled :
       a * ∫ y in U,
           u y * (fderiv ℝ φ (a • y)) (basisVec i)
@@ -151,7 +144,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       rw [hDerivψ y]
       ring
     rw [hfun, MeasureTheory.integral_const_mul] at hWeak
-    simpa [ψ] using hWeak
+    exact hWeak
   have hChangeLeft :
       ∫ y in U,
           a * (u y * (fderiv ℝ φ (a • y)) (basisVec i))
@@ -163,7 +156,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       smul_eq_mul, Module.finrank_fin_fun, mul_assoc] using
       (MeasureTheory.Measure.setIntegral_comp_smul_of_pos
         (μ := MeasureTheory.volume)
-        (f := fun x : Vec d =>
+        (f := fun x  =>
           a * u (T x) * (fderiv ℝ φ x) (basisVec i))
         (s := U) ha)
   have hChangeRight :
@@ -174,7 +167,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       smul_eq_mul, Module.finrank_fin_fun] using
       (MeasureTheory.Measure.setIntegral_comp_smul_of_pos
         (μ := MeasureTheory.volume)
-        (f := fun x : Vec d => gi (T x) * φ x)
+        (f := fun x  => gi (T x) * φ x)
         (s := U) ha)
   have hScaleLeft :
       ∫ y in U,
@@ -190,7 +183,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
         (a ^ d) * ∫ y in U,
           a * (u y * (fderiv ℝ φ (a • y)) (basisVec i))
             ∂MeasureTheory.volume := by
-          have hpow : a ^ d ≠ 0 := (pow_pos ha d).ne'
+          have hpow  := (pow_pos ha d).ne'
           rw [hChangeLeft]
           field_simp [hpow]
     _ = (a ^ d) *
@@ -207,14 +200,12 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
           ring
     _ = -∫ x in V, gi (T x) * φ x
         ∂MeasureTheory.volume := by
-          have hpow : a ^ d ≠ 0 := (pow_pos ha d).ne'
+          have hpow  := (pow_pos ha d).ne'
           rw [hChangeRight]
           field_simp [hpow]
 
 end HasWeakPartialDerivOn
 
-namespace HasWeakGradientOn
 
-end HasWeakGradientOn
 
 end PDE

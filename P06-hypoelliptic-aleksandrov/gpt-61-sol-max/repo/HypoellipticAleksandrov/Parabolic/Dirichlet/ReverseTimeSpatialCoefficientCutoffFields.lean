@@ -13,20 +13,22 @@ compact time--space cutoff before taking forward spatial translates and
 difference quotients.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open scoped BigOperators Matrix.Norms.Elementwise
 
+variable {d : ℕ}
+
 private theorem exists_common_cutoff_mul_spatialFields_of_smoothOnNeighborhood
-    {d : ℕ} {S : Set (TimeVelocity d)} {ι : Type*} [Fintype ι]
-    (hS : IsCompact S) (β : TimeVelocity d → ℝ)
+     {S : HypoellipticAleksandrov.Parabolic.Region d} {ι : Type*} [Fintype ι]
+    (hS : IsCompact S) (β : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hβcont : Continuous β) (hβcompact : HasCompactSupport β)
     (hβS : tsupport β ⊆ S) (hβunit : ∀ z, ‖β z‖ ≤ 1)
-    (f : ι → TimeVelocity d → ℝ)
+    (f : ι → HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hf : ∀ i, IsSmoothOnNeighborhood (f i) S) :
     ∃ δ C : ℝ, 0 < δ ∧ 0 ≤ C ∧
       ∀ (i : ι) (k : Fin d) (h : ℝ), |h| ≤ δ →
@@ -80,15 +82,15 @@ private theorem exists_common_cutoff_mul_spatialFields_of_smoothOnNeighborhood
 translates and totalized forward spatial difference quotients of the
 reverse-time divergence-form coefficient fields. -/
 theorem exists_reverseTimeCoefficient_cutoff_mul_spatialFields_of_smoothOnNeighborhood
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+     {Ω inner outer : PDE.VelocityRegion d} {K : ℝ}
     (r₀ r₁ : ℝ)
     (χ : PDE.QuantitativeSmoothCutoff inner outer K)
     (hχΩ : tsupport χ.toFun ⊆ Ω)
     (ζ : ReverseTimeScalarTest (r₁ - r₀))
     (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d)
+    (c : PDE.TimeScalarField d)
     (ha : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -98,15 +100,15 @@ theorem exists_reverseTimeCoefficient_cutoff_mul_spatialFields_of_smoothOnNeighb
     (hc : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
-    let β : TimeVelocity d → ℝ := fun z => ζ z.1 * χ z.2
-    let α : Fin d → Fin d → TimeVelocity d → ℝ :=
+    let β : HypoellipticAleksandrov.Parabolic.ScalarField d := fun z => ζ z.1 * χ z.2
+    let α : Fin d → Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d :=
       fun i j z => reverseTimeCoefficient r₁ a z.1 z.2 i j
-    let drift : Fin d → TimeVelocity d → ℝ :=
+    let drift : Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d :=
       fun j z => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j
-    let γ : TimeVelocity d → ℝ :=
+    let γ : HypoellipticAleksandrov.Parabolic.ScalarField d :=
       fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2
     ∃ δ C : ℝ, 0 < δ ∧ 0 ≤ C ∧
-      let fieldBound : (TimeVelocity d → ℝ) → Prop :=
+      let fieldBound : (HypoellipticAleksandrov.Parabolic.ScalarField d) → Prop :=
         fun q =>
           ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
             (Continuous (fun z => β z * spatialTranslate k h q z) ∧
@@ -121,13 +123,11 @@ theorem exists_reverseTimeCoefficient_cutoff_mul_spatialFields_of_smoothOnNeighb
         (∀ j : Fin d, fieldBound (drift j)) ∧
         fieldBound γ := by
   dsimp only
-  let S : Set (TimeVelocity d) := tsupport (ζ : ℝ → ℝ) ×ˢ tsupport χ.toFun
-  let β : TimeVelocity d → ℝ := fun z => ζ z.1 * χ z.2
+  let S : HypoellipticAleksandrov.Parabolic.Region d := tsupport (ζ : ℝ → ℝ) ×ˢ tsupport χ.toFun
+  let β : HypoellipticAleksandrov.Parabolic.ScalarField d := fun z => ζ z.1 * χ z.2
   have hS : IsCompact S :=
     ζ.hasCompactSupport.prod χ.hasCompactSupport
-  have hβcont : Continuous β := by
-    exact (ζ.contDiff.continuous.comp continuous_fst).mul
-      (χ.smooth.continuous.comp continuous_snd)
+
   have hβS : tsupport β ⊆ S := by
     apply closure_minimal
     · intro z hz
@@ -140,18 +140,8 @@ theorem exists_reverseTimeCoefficient_cutoff_mul_spatialFields_of_smoothOnNeighb
         intro hzero
         exact hmul (by simp [hzero])
     · exact hS.isClosed
-  have hβcompact : HasCompactSupport β :=
-    hS.of_isClosed_subset (isClosed_tsupport _) hβS
-  have hβunit : ∀ z, ‖β z‖ ≤ 1 := by
-    intro z
-    rw [show β z = ζ z.1 * χ z.2 from rfl, norm_mul]
-    have hχunit : ‖χ z.2‖ ≤ 1 := by
-      rw [Real.norm_eq_abs, abs_of_nonneg (χ.nonneg _)]
-      exact χ.le_one _
-    calc
-      ‖ζ z.1‖ * ‖χ z.2‖ ≤ 1 * 1 :=
-        mul_le_mul (hζunit z.1) hχunit (norm_nonneg _) (by norm_num)
-      _ = 1 := one_mul 1
+
+
   have hreverseS : reverseTimeMap r₁ '' S ⊆
       scalarParabolicClosedCylinder r₀ r₁ Ω := by
     rintro w ⟨z, hz, rfl⟩
@@ -164,32 +154,34 @@ theorem exists_reverseTimeCoefficient_cutoff_mul_spatialFields_of_smoothOnNeighb
       linarith [hτinterval.2]
     · simp only [reverseTimeMap_apply]
       linarith [hτinterval.1]
-  let q : (Fin d × Fin d) ⊕ (Fin d ⊕ Unit) → TimeVelocity d → ℝ := fun x z =>
+  let q : (Fin d × Fin d) ⊕ (Fin d ⊕ Unit) → HypoellipticAleksandrov.Parabolic.ScalarField d := fun x z =>
     match x with
     | Sum.inl ⟨i, j⟩ => reverseTimeCoefficient r₁ a z.1 z.2 i j
     | Sum.inr (Sum.inl j) => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j
     | Sum.inr (Sum.inr ()) => reverseTimeScalarCoefficient r₁ c z.1 z.2
-  have hq : ∀ x, IsSmoothOnNeighborhood (q x) S := by
-    intro x
-    rcases x with x | x
-    · rcases x with ⟨i, j⟩
-      change IsSmoothOnNeighborhood
-        ((fun z : TimeVelocity d => a z.1 z.2 i j) ∘ reverseTimeMap r₁) S
-      exact IsSmoothOnNeighborhood.reverseTime r₁ hreverseS
-        (IsSmoothOnNeighborhood.coefficientEntry a ha i j)
-    · rcases x with x | x
-      · change IsSmoothOnNeighborhood
-          ((fun z : TimeVelocity d =>
-            scalarSpatialCoefficientDivergence a z x - b z.1 z.2 x) ∘ reverseTimeMap r₁) S
-        exact IsSmoothOnNeighborhood.reverseTime r₁ hreverseS
-          (IsSmoothOnNeighborhood.divergenceDriftEntry a b ha hb x)
-      · rcases x with ⟨⟩
-        change IsSmoothOnNeighborhood
-          ((fun z : TimeVelocity d => c z.1 z.2) ∘ reverseTimeMap r₁) S
-        exact IsSmoothOnNeighborhood.reverseTime r₁ hreverseS hc
+
   obtain ⟨δ, C, hδ, hC, hqfields⟩ :=
-    exists_common_cutoff_mul_spatialFields_of_smoothOnNeighborhood hS β hβcont hβcompact
-      hβS hβunit q hq
+    exists_common_cutoff_mul_spatialFields_of_smoothOnNeighborhood hS β ((ζ.contDiff.continuous.comp continuous_fst).mul
+          (χ.smooth.continuous.comp continuous_snd)) (hS.of_isClosed_subset (isClosed_tsupport _) hβS)
+      hβS (by
+          intro z
+          rw [show β z = ζ z.1 * χ z.2 from rfl, norm_mul]
+
+          calc
+            ‖ζ z.1‖ * ‖χ z.2‖ ≤ 1 * 1 :=
+              mul_le_mul (hζunit z.1) (by
+                  rw [Real.norm_eq_abs, abs_of_nonneg (χ.nonneg _)]
+                  exact χ.le_one _) (norm_nonneg _) (by norm_num)
+            _ = 1 := one_mul 1) q ((fun x =>
+  Sum.casesOn x
+    (fun x =>
+      Prod.casesOn x fun i j =>
+        id (IsSmoothOnNeighborhood.reverseTime r₁ hreverseS (IsSmoothOnNeighborhood.coefficientEntry a ha i j)))
+    fun x =>
+    Sum.casesOn x
+      (fun x =>
+        id (IsSmoothOnNeighborhood.reverseTime r₁ hreverseS (IsSmoothOnNeighborhood.divergenceDriftEntry a b ha hb x)))
+      fun x => PUnit.casesOn x (id (IsSmoothOnNeighborhood.reverseTime r₁ hreverseS hc))))
   refine ⟨δ, C, hδ, hC, ?_, ?_, ?_⟩
   · intro i j k h hh
     exact hqfields (Sum.inl (i, j)) k h hh

@@ -10,22 +10,22 @@ This module combines the same residual Galerkin-limit witness with its
 canonical initial trace and inherited uniform Bochner radius.
 -/
 
-@[expose] public section
+ public section
 
 open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- There is a common residual Galerkin limit with the prescribed initial
 trace and explicit uniform Bochner radius. -/
 theorem exists_reverseTimeGalerkinPrimal_initialTrace_norm_le_radius
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : PDE.VelocityRegion d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d) (c F : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -43,7 +43,7 @@ theorem exists_reverseTimeGalerkinPrimal_initialTrace_norm_le_radius
         lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    (initial : PDE.ScalarLp Ω (2 )) :
     ∃ (U : ReverseTimeL2V hΩ (r₁ - r₀)),
       ∃ hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) U
         (reverseTimeFormResidual r₀ r₁ h₀₁ hΩ hΩbounded a b c

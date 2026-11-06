@@ -8,23 +8,29 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExt
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
-open SectionTwo TheoremA Evolution
+open Set MeasureTheory Filter Parabolic
+
 open scoped Classical
 
+variable (b : ℝ) (u : Point → ℝ)
+
 /-- Keep a homogeneous potential up to the observation time and set it to zero afterwards. -/
-def enlargedStoppedPotential (b : ℝ) (u : Point → ℝ) (p : Point) : ℝ :=
+def enlargedStoppedPotential  (p : Point) : ℝ :=
   if p.time ≤ b then u p else 0
 
+section
+variable (hc : ContinuousOn u {p | p.time ≤ b})
+
+include hc
 /-- A continuous past potential has a measurable stopped extension. -/
-theorem enlargedStoppedPotential_measurable (b : ℝ) (u : Point → ℝ)
-    (hc : ContinuousOn u {p | p.time ≤ b}) : Measurable (enlargedStoppedPotential b u) :=
+theorem enlargedStoppedPotential_measurable
+     : Measurable (enlargedStoppedPotential b u) :=
   hc.measurable_piecewise continuousOn_const
     (isClosed_le continuous_time continuous_const).measurableSet
 
 /-- A bounded past potential has integrable stopped action against every finite measure. -/
-theorem enlargedStoppedPotential_integrable (b : ℝ) (u : Point → ℝ)
-    (hc : ContinuousOn u {p | p.time ≤ b}) (M : ℝ) (hM : 0 ≤ M)
+theorem enlargedStoppedPotential_integrable
+     (M : ℝ) (hM : 0 ≤ M)
     (hb : ∀ p, p.time ≤ b → |u p| ≤ M) (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (enlargedStoppedPotential b u) mu := by
   apply Integrable.mono' (integrable_const M)
@@ -36,6 +42,8 @@ theorem enlargedStoppedPotential_integrable (b : ℝ) (u : Point → ℝ)
   split
   · exact hb p ‹p.time ≤ b›
   · simpa only [abs_zero] using hM
+end
+
 
 /-- The stopped exit action is bounded by the original homogeneous potential value.
 Its C112 premises are discharged by the supplied full-space classical potential. -/
@@ -55,20 +63,20 @@ theorem enlarged_stripExit_stopped_potential_le
   let S : Set Point := {p | p.time ≤ b}
   have hS : MeasurableSet S := (isClosed_le continuous_time continuous_const).measurableSet
   let E := stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb)
-  have hs : ∀ᵐ p ∂E, p ∈ S :=
+  have hs  :=
     (stripExitOfRealization_ae_closed_future hH hlam hLam A H
-      (stripEvolution hH hLE hlam hLam A H)
+      _
       (stripEvolution_spec hH hLE hlam hLam A H) b (stripPoleFinite H e b hb)).mono
         fun _ hp => hp.2.1
   have hint := enlargedStoppedPotential_integrable b u hc M hM hbound E
   have heq : enlargedStoppedPotential b u =ᵐ[E] u := hs.mono fun p hp => ite_eq_left hp
-  have hu : Integrable u E := hint.congr heq
+  have hu  := hint.congr heq
   have hdom : (stripExit hH hLE hlam hLam A H T
       (stripPoleFinite H e T (hb.trans_le hBT))).restrict S ≤ E := by
     rcases eq_or_lt_of_le hBT with rfl | hlt
     · exact Measure.restrict_le_self
     · exact enlarged_stripExit_early_closed_le hH hLE hlam hLam A H e b T hb hlt
-  have hnn : 0 ≤ᵐ[E] u := hs.mono fun p hp => hn p hp
+  have hnn  := hs.mono hn
   have hm := integral_mono_measure hdom hnn hu
   have hsub : reconstructionStrip H (e.1.time - 1) b ⊆ {p | p.time < b} :=
     fun _ hp => hp.2.1

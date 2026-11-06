@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionGeometry
 public import HypoellipticAleksandrov.Geometry.KineticPointMeasure
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Sequence-constructor interface for the Appendix C construction
 
@@ -16,15 +18,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory
 open scoped MatrixOrder
 
-/-- The subcritical exponent is fixed before all profile and sequence choices. -/
-noncomputable def counterAlpha (d : ℕ) (p : ℝ) : ℝ := by
-  classical
-  exact if h : 1 ≤ d ∧ 1 ≤ p ∧ p < 4 * (d : ℝ) then
-    (exists_subcritical_alpha d h.1 p h.2.1 h.2.2).choose else 1 / 2
+variable (d : ℕ)
 
+/-- The subcritical exponent is fixed before all profile and sequence choices. -/
+noncomputable def counterAlpha  (p : ℝ) : ℝ := (if h : 1 ≤ d ∧ 1 ≤ p ∧ p < 4 * ↑d then (exists_subcritical_alpha d h.left p h.right.left h.right.right).choose
+else 1 / 2)
+
+section
+variable (hd : 1 ≤ d) (p : ℝ) (hp : 1 ≤ p) (hpd : p < 4 * (d : ℝ))
+
+include hd hp hpd
 /-- The selected exponent satisfies the full source range and positive norm exponent. -/
-theorem counterAlpha_spec (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
-    (hp : 1 ≤ p) (hpd : p < 4 * (d : ℝ)) :
+theorem counterAlpha_spec   :
     0 < counterAlpha d p ∧ counterAlpha d p < 1 ∧
       0 < counterAlpha d p - 2 + 4 * (d : ℝ) / p := by
   classical
@@ -32,14 +37,15 @@ theorem counterAlpha_spec (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
   exact (exists_subcritical_alpha d hd p hp hpd).choose_spec
 
 /-- The internally proved profile at the one fixed selected exponent. -/
-theorem counterProfileFor (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
-    (hp : 1 ≤ p) (hpd : p < 4 * (d : ℝ)) :
+theorem counterProfileFor   :
     CounterProfileStatement d (counterAlpha d p) :=
-  counterProfile_holds d hd (counterAlpha d p)
+  counterProfile_holds d hd _
     (counterAlpha_spec d hd p hp hpd).1 (counterAlpha_spec d hd p hp hpd).2.1
+end
+
 
 /-- Joint ellipticity bounds and cylinder parameters, independent of the sequence index. -/
-noncomputable def counterParameters (d : ℕ) (p : ℝ) : ℝ × ℝ × KineticPoint d × ℝ := by
+noncomputable def counterParameters  (p : ℝ) : ℝ × ℝ × KineticPoint d × ℝ := by
   classical
   exact if hvalid : 1 ≤ d ∧ 1 ≤ p ∧ p < 4 * (d : ℝ) then
     let h := counterProfileFor d hvalid.1 p hvalid.2.1 hvalid.2.2
@@ -51,29 +57,30 @@ noncomputable def counterParameters (d : ℕ) (p : ℝ) : ℝ × ℝ × KineticP
   else (1, 1, ⟨0, 0, 0⟩, 1)
 
 /-- The selected joint parameters have the required positive bounds and cylinder radius. -/
-theorem counterParameters_pos (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
+theorem counterParameters_pos  (hd : 1 ≤ d) (p : ℝ)
     (hp : 1 ≤ p) (hpd : p < 4 * (d : ℝ)) :
     0 < (counterParameters d p).1 ∧
       (counterParameters d p).1 ≤ (counterParameters d p).2.1 ∧
       0 < (counterParameters d p).2.2.2 := by
   classical
   let h := counterProfileFor d hd p hp hpd
-  let geom := construction_fixed_geometry_of_profile hd (counterAlpha_spec d hd p hp hpd).1 h
-  have hs := geom.choose_spec.choose_spec.choose_spec
-  have hp0 := (selectedProfile_spec h).1
-  have hp1 := (selectedProfile_spec h).2.1
+
+
+
+
   simpa only [counterParameters, dite_eq_left (And.intro hd (And.intro hp hpd))] using
-    And.intro hp0 (And.intro hp1 hs.2.2.1)
+    And.intro ((selectedProfile_spec h).1) (And.intro ((selectedProfile_spec h).2.1) (construction_fixed_geometry_of_profile hd (counterAlpha_spec d hd p hp hpd).1 h).choose_spec.choose_spec.choose_spec.2.2.1)
+
+variable (p lam Lam : ℝ) (P₀ : KineticPoint d) (R : ℝ)
 
 /-- The measurable-coefficient family statement. -/
-def MeasurableFamilyStatement (d : ℕ) (p lam Lam : ℝ) (P₀ : KineticPoint d)
-    (R : ℝ) : Prop :=
+def MeasurableFamilyStatement   : Prop :=
   ∃ A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d,
-        ∃ U : ℕ → KineticPoint d → ℝ,
+        ∃ U : ℕ → HypoellipticAleksandrov.KineticScalarField d,
           (∀ i k, Measurable (fun z => A z i k)) ∧
           (∀ z, lam • (1 : PDE.Mat d) ≤ A z ∧ A z ≤ Lam • (1 : PDE.Mat d)) ∧
-          (∀ j, ContDiff ℝ (⊤ : ℕ∞)
-            (fun q : ℝ × (PDE.Vec d × PDE.Vec d) =>
+          (∀ j, ContDiff ℝ PDE.smoothOrder
+            (fun q  =>
               U j ((KineticPoint.equivProd d).symm q))) ∧
           (∀ j P, 0 ≤ U j P) ∧
           (∀ j P, P ∈ initialFullLateralBoundary P₀ R → U j P = 0) ∧
@@ -84,15 +91,14 @@ def MeasurableFamilyStatement (d : ℕ) (p lam Lam : ℝ) (P₀ : KineticPoint d
             atTop (nhds 0)
 
 /-- The smooth-coefficient family statement. -/
-def SmoothFamilyStatement (d : ℕ) (p lam Lam : ℝ) (P₀ : KineticPoint d)
-    (R : ℝ) : Prop :=
+def SmoothFamilyStatement   : Prop :=
   ∃ A : ℕ → (PDE.Vec d × PDE.Vec d) → PDE.Mat d,
-        ∃ U : ℕ → KineticPoint d → ℝ,
-          (∀ j i k, ContDiff ℝ (⊤ : ℕ∞) (fun z => A j z i k)) ∧
+        ∃ U : ℕ → HypoellipticAleksandrov.KineticScalarField d,
+          (∀ j i k, ContDiff ℝ PDE.smoothOrder (fun z => A j z i k)) ∧
           (∀ j z, lam • (1 : PDE.Mat d) ≤ A j z ∧
             A j z ≤ Lam • (1 : PDE.Mat d)) ∧
-          (∀ j, ContDiff ℝ (⊤ : ℕ∞)
-            (fun q : ℝ × (PDE.Vec d × PDE.Vec d) =>
+          (∀ j, ContDiff ℝ PDE.smoothOrder
+            (fun q  =>
               U j ((KineticPoint.equivProd d).symm q))) ∧
           (∀ j P, 0 ≤ U j P) ∧
           (∀ j P, P ∈ initialFullLateralBoundary P₀ R → U j P = 0) ∧
@@ -119,11 +125,11 @@ theorem construction_of_families
     ∃ lam Lam : ℝ, ∃ P₀ : KineticPoint d, ∃ R : ℝ,
       0 < lam ∧ lam ≤ Lam ∧ 0 < R ∧
       ((∃ A : (PDE.Vec d × PDE.Vec d) → PDE.Mat d,
-        ∃ U : ℕ → KineticPoint d → ℝ,
+        ∃ U : ℕ → HypoellipticAleksandrov.KineticScalarField d,
           (∀ i k, Measurable (fun z => A z i k)) ∧
           (∀ z, lam • (1 : PDE.Mat d) ≤ A z ∧ A z ≤ Lam • (1 : PDE.Mat d)) ∧
-          (∀ j, ContDiff ℝ (⊤ : ℕ∞)
-            (fun q : ℝ × (PDE.Vec d × PDE.Vec d) =>
+          (∀ j, ContDiff ℝ PDE.smoothOrder
+            (fun q  =>
               U j ((KineticPoint.equivProd d).symm q))) ∧
           (∀ j P, 0 ≤ U j P) ∧
           (∀ j P, P ∈ initialFullLateralBoundary P₀ R → U j P = 0) ∧
@@ -133,12 +139,12 @@ theorem construction_of_families
             (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)))
             atTop (nhds 0)) ∧
        (∃ A : ℕ → (PDE.Vec d × PDE.Vec d) → PDE.Mat d,
-        ∃ U : ℕ → KineticPoint d → ℝ,
-          (∀ j i k, ContDiff ℝ (⊤ : ℕ∞) (fun z => A j z i k)) ∧
+        ∃ U : ℕ → HypoellipticAleksandrov.KineticScalarField d,
+          (∀ j i k, ContDiff ℝ PDE.smoothOrder (fun z => A j z i k)) ∧
           (∀ j z, lam • (1 : PDE.Mat d) ≤ A j z ∧
             A j z ≤ Lam • (1 : PDE.Mat d)) ∧
-          (∀ j, ContDiff ℝ (⊤ : ℕ∞)
-            (fun q : ℝ × (PDE.Vec d × PDE.Vec d) =>
+          (∀ j, ContDiff ℝ PDE.smoothOrder
+            (fun q  =>
               U j ((KineticPoint.equivProd d).symm q))) ∧
           (∀ j P, 0 ≤ U j P) ∧
           (∀ j P, P ∈ initialFullLateralBoundary P₀ R → U j P = 0) ∧
@@ -149,8 +155,8 @@ theorem construction_of_families
             atTop (nhds 0))) := by
   have hpos := counterParameters_pos d hd p hp hpd
   have hf := hfamilies d hd p hp hpd
-  exact ⟨(counterParameters d p).1, (counterParameters d p).2.1,
-    (counterParameters d p).2.2.1, (counterParameters d p).2.2.2,
+  exact ⟨_, _,
+    _, _,
     hpos.1, hpos.2.1, hpos.2.2, hf.1, hf.2⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

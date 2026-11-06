@@ -7,6 +7,9 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
+import Mathlib.Tactic.Ring
+
+
 
 /-!
 # Algebraic expansion coefficients for Kummer M on the negative real axis
@@ -29,18 +32,20 @@ def mExpansion (a b : ℝ) (N : ℕ) (X : ℝ) : ℝ :=
 /-- Iterated ordinary derivatives, including the zeroth derivative. -/
 def jet (j : ℕ) (f : ℝ → ℝ) : ℝ → ℝ := (deriv^[j]) f
 
+variable (q : ℝ)
+
 /-- The polynomial arising from the Taylor expansion of the Euler weight. -/
-def betaPolynomial (q : ℝ) (N : ℕ) (t : ℝ) : ℝ :=
+def betaPolynomial  (N : ℕ) (t : ℝ) : ℝ :=
   ∑ n ∈ Finset.range N, poch q n / (n.factorial : ℝ) * t ^ n
 
-private theorem multichoose_eq_poch (q : ℝ) (n : ℕ) :
+private theorem multichoose_eq_poch  (n : ℕ) :
     Ring.multichoose q n = poch q n / (n.factorial : ℝ) := by
   apply (eq_div_iff (by exact_mod_cast Nat.factorial_ne_zero n)).mpr
   rw [mul_comm, ← nsmul_eq_mul, Ring.factorial_nsmul_multichoose_eq_ascPochhammer,
     Polynomial.ascPochhammer_smeval_eq_eval]
   rfl
 
-private theorem betaPolynomial_eq_partialSum (q : ℝ) (N : ℕ) (t : ℝ) :
+private theorem betaPolynomial_eq_partialSum  (N : ℕ) (t : ℝ) :
     betaPolynomial q N t =
       (FormalMultilinearSeries.ofScalars ℝ
         (fun n => poch q n / (n.factorial : ℝ))).partialSum N t := by
@@ -48,7 +53,7 @@ private theorem betaPolynomial_eq_partialSum (q : ℝ) (N : ℕ) (t : ℝ) :
     FormalMultilinearSeries.ofScalars_apply_eq, smul_eq_mul]
 
 /-- The singular Beta factor has its exact rising-factorial Taylor series near zero. -/
-theorem betaFactor_hasFPowerSeries (q : ℝ) :
+theorem betaFactor_hasFPowerSeries  :
     HasFPowerSeriesOnBall (fun t : ℝ => 1 / (1 - t) ^ q)
       (FormalMultilinearSeries.ofScalars ℝ (fun n => poch q n / (n.factorial : ℝ)))
       0 1 := by
@@ -58,7 +63,7 @@ theorem betaFactor_hasFPowerSeries (q : ℝ) :
     ← Ring.multichoose_eq, multichoose_eq_poch]
 
 /-- A uniform Taylor remainder on the first half of the Euler interval. -/
-theorem betaFactor_remainder_bound (q : ℝ) (N : ℕ) :
+theorem betaFactor_remainder_bound  (N : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, 0 ≤ t → t ≤ 1 / 2 →
       |(1 - t) ^ (-q) - betaPolynomial q N t| ≤ C * t ^ N := by
   have hl : ((3 / 4 : ℝ≥0) : ℝ≥0∞) < 1 := by
@@ -79,13 +84,15 @@ theorem betaFactor_remainder_bound (q : ℝ) (N : ℕ) :
     mul_pow, div_pow, mul_assoc,
     mul_div_assoc, div_mul_eq_mul_div] using hh
 
+variable (a b : ℝ)
+
 /-- The Gamma-normalized coefficient of each negative-axis power. -/
-def expansionCoeff (a b : ℝ) (n : ℕ) : ℝ :=
+def expansionCoeff  (n : ℕ) : ℝ :=
   Real.Gamma b / Real.Gamma (b - a) * poch a n * poch (a - b + 1) n /
     (n.factorial : ℝ)
 
 /-- Writing the finite expansion as individual real powers. -/
-theorem mExpansion_eq_sum (a b : ℝ) (N : ℕ) (X : ℝ) (hX : 0 < X) :
+theorem mExpansion_eq_sum  (N : ℕ) (X : ℝ) (hX : 0 < X) :
     mExpansion a b N X =
       ∑ n ∈ Finset.range N, expansionCoeff a b n * Real.rpow X (-(a + n)) := by
   simp only [mExpansion, Finset.mul_sum]
@@ -97,14 +104,12 @@ theorem mExpansion_eq_sum (a b : ℝ) (N : ℕ) (X : ℝ) (hX : 0 < X) :
       Real.rpow_add hX, Real.rpow_neg hX.le (n : ℝ), Real.rpow_natCast, inv_pow]
   rw [hx]
   unfold expansionCoeff
-  change Real.Gamma b / Real.Gamma (b - a) * Real.rpow X (-a) *
-    (poch a n * poch (a - b + 1) n / (n.factorial : ℝ) * X⁻¹ ^ n) =
-      (Real.Gamma b / Real.Gamma (b - a) * poch a n * poch (a - b + 1) n /
-        (n.factorial : ℝ)) * (Real.rpow X (-a) * X⁻¹ ^ n)
   ring
 
+variable (a : ℝ) (b : Pos)
+
 /-- Raising both parameters matches differentiation of an expansion coefficient. -/
-theorem expansionCoeff_deriv (a : ℝ) (b : Pos) (n : ℕ) :
+theorem expansionCoeff_deriv  (n : ℕ) :
     -(a + n) * expansionCoeff a b.1 n =
       -(a / b.1) * expansionCoeff (a + 1) (b.1 + 1) n := by
   have hb := ne_of_gt b.2
@@ -112,26 +117,25 @@ theorem expansionCoeff_deriv (a : ℝ) (b : Pos) (n : ℕ) :
     show b.1 + 1 - (a + 1) = b.1 - a by ring,
     show a + 1 - (b.1 + 1) + 1 = a - b.1 + 1 by ring]
   have hs := poch_shift a n
-  have hsm := congrArg (fun x : ℝ =>
+  have hsm := congrArg (fun x  =>
     -Real.Gamma b.1 * poch (a - b.1 + 1) n * x /
       (Real.Gamma (b.1 - a) * (n.factorial : ℝ))) hs
   field_simp at hsm ⊢
   nlinarith only [hsm]
 
 /-- Derivative of the finite expansion, preserving its truncation order. -/
-theorem hasDerivAt_mExpansion (a : ℝ) (b : Pos) (N : ℕ) (X : ℝ) (hX : 0 < X) :
+theorem hasDerivAt_mExpansion  (N : ℕ) (X : ℝ) (hX : 0 < X) :
     HasDerivAt (mExpansion a b.1 N)
       (-(a / b.1) * mExpansion (a + 1) (b.1 + 1) N X) X := by
+  let sharedTerm_779a8b6485 := ((fun Y : ℝ => ∑ n ∈ Finset.range N, expansionCoeff a b.1 n * Real.rpow Y (-(a + n))))
   have hd : HasDerivAt
-      (fun Y : ℝ => ∑ n ∈ Finset.range N,
-        expansionCoeff a b.1 n * Real.rpow Y (-(a + n)))
+      sharedTerm_779a8b6485
       (∑ n ∈ Finset.range N, expansionCoeff a b.1 n *
         (-(a + n) * Real.rpow X (-(a + n) - 1))) X := by
     apply HasDerivAt.fun_sum
     intro n _
     exact (Real.hasDerivAt_rpow_const (Or.inl hX.ne')).const_mul _
-  have he : (fun Y : ℝ => ∑ n ∈ Finset.range N,
-      expansionCoeff a b.1 n * Real.rpow Y (-(a + n))) =ᶠ[nhds X] mExpansion a b.1 N := by
+  have he : sharedTerm_779a8b6485 =ᶠ[nhds X] mExpansion a b.1 N := by
     filter_upwards [eventually_gt_nhds hX] with Y hY
     exact (mExpansion_eq_sum a b.1 N Y hY).symm
   apply (hd.congr_of_eventuallyEq he.symm).congr_deriv

@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # Null boundaries of positive-radius kinetic cylinders -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 

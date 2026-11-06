@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Realization
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Kinetic affine changes of variables
@@ -92,13 +94,15 @@ theorem positionInv_position (Y : PDE.Vec d) : Φ.positionInv (Φ.position Y) = 
   unfold position positionInv
   rw [add_sub_cancel_left, smul_smul, inv_mul_cancel₀ Φ.c_pos.ne', one_smul]
 
-theorem transport_transportInv (τ : ℝ) (z : PDE.Vec d) :
+variable (τ : ℝ)
+
+theorem transport_transportInv  (z : PDE.Vec d) :
     Φ.transport τ (Φ.transportInv τ z) = z := by
   unfold transport transportInv
   rw [smul_smul, mul_inv_cancel₀ Φ.e_pos.ne', one_smul]
   abel
 
-theorem transportInv_transport (τ : ℝ) (Z : PDE.Vec d) :
+theorem transportInv_transport  (Z : PDE.Vec d) :
     Φ.transportInv τ (Φ.transport τ Z) = Z := by
   unfold transport transportInv
   have : Φ.z₀ + (Φ.a * τ) • Φ.w + Φ.e • Z - Φ.z₀ - (Φ.a * τ) • Φ.w = Φ.e • Z := by abel
@@ -112,11 +116,13 @@ theorem continuous_positionInv : Continuous Φ.positionInv := by
   unfold positionInv
   fun_prop
 
-theorem continuous_transport (τ : ℝ) : Continuous (Φ.transport τ) := by
+variable (τ : ℝ)
+
+theorem continuous_transport  : Continuous (Φ.transport τ) := by
   unfold transport
   fun_prop
 
-theorem continuous_transportInv (τ : ℝ) : Continuous (Φ.transportInv τ) := by
+theorem continuous_transportInv  : Continuous (Φ.transportInv τ) := by
   unfold transportInv
   fun_prop
 
@@ -129,10 +135,12 @@ def positionHomeo : PDE.Vec d ≃ₜ PDE.Vec d where
   continuous_toFun := Φ.continuous_position
   continuous_invFun := Φ.continuous_positionInv
 
-@[simp] theorem positionHomeo_apply (Y : PDE.Vec d) : Φ.positionHomeo Y = Φ.position Y := rfl
+
+
+variable (τ : ℝ)
 
 /-- The change of the ambient fixed-time state `(y, z)`, hat to original, at hat time `τ`. -/
-def ambientHomeo (τ : ℝ) : EvolutionAmbientState d ≃ₜ EvolutionAmbientState d where
+def ambientHomeo  : EvolutionAmbientState d ≃ₜ EvolutionAmbientState d where
   toFun x := (Φ.position x.1, Φ.transport τ x.2)
   invFun x := (Φ.positionInv x.1, Φ.transportInv τ x.2)
   left_inv x := by
@@ -144,65 +152,72 @@ def ambientHomeo (τ : ℝ) : EvolutionAmbientState d ≃ₜ EvolutionAmbientSta
   continuous_invFun := (Φ.continuous_positionInv.comp continuous_fst).prodMk
     ((Φ.continuous_transportInv τ).comp continuous_snd)
 
-@[simp] theorem ambientHomeo_apply (τ : ℝ) (x : EvolutionAmbientState d) :
-    Φ.ambientHomeo τ x = (Φ.position x.1, Φ.transport τ x.2) := rfl
+variable (x : EvolutionAmbientState d)
 
-@[simp] theorem ambientHomeo_symm_apply (τ : ℝ) (x : EvolutionAmbientState d) :
+
+
+@[simp] theorem ambientHomeo_symm_apply   :
     (Φ.ambientHomeo τ).symm x = (Φ.positionInv x.1, Φ.transportInv τ x.2) := rfl
 
 /-- The ambient change of variables as a measurable equivalence. -/
-def ambientEquiv (τ : ℝ) : EvolutionAmbientState d ≃ᵐ EvolutionAmbientState d :=
+def ambientEquiv  : EvolutionAmbientState d ≃ᵐ EvolutionAmbientState d :=
   (Φ.ambientHomeo τ).toMeasurableEquiv
 
-@[simp] theorem ambientEquiv_apply (τ : ℝ) (x : EvolutionAmbientState d) :
+variable (x : EvolutionAmbientState d)
+
+@[simp] theorem ambientEquiv_apply   :
     Φ.ambientEquiv τ x = (Φ.position x.1, Φ.transport τ x.2) := rfl
 
-@[simp] theorem ambientEquiv_symm_apply (τ : ℝ) (x : EvolutionAmbientState d) :
+@[simp] theorem ambientEquiv_symm_apply   :
     (Φ.ambientEquiv τ).symm x = (Φ.positionInv x.1, Φ.transportInv τ x.2) := rfl
 
 /-! ### The change of variables on kinetic points -/
 
+variable (p : KineticPoint d)
+
 /-- The change of variables on kinetic points `(τ, Y, Z) ↦ (σ, y, z)`. -/
-def point (p : KineticPoint d) : KineticPoint d :=
+def point  : KineticPoint d :=
   ⟨Φ.time p.time, Φ.position p.position, Φ.transport p.time p.velocity⟩
 
 /-- The inverse change of variables on kinetic points. -/
-def pointInv (p : KineticPoint d) : KineticPoint d :=
+def pointInv  : KineticPoint d :=
   ⟨Φ.timeInv p.time, Φ.positionInv p.position,
     Φ.transportInv (Φ.timeInv p.time) p.velocity⟩
 
-@[simp] theorem point_time (p : KineticPoint d) : (Φ.point p).time = Φ.time p.time := rfl
+@[simp] theorem point_time  : (Φ.point p).time = Φ.time p.time := rfl
 
-@[simp] theorem point_position (p : KineticPoint d) :
+@[simp] theorem point_position  :
     (Φ.point p).position = Φ.position p.position := rfl
 
-@[simp] theorem point_velocity (p : KineticPoint d) :
+@[simp] theorem point_velocity  :
     (Φ.point p).velocity = Φ.transport p.time p.velocity := rfl
 
-theorem point_pointInv (p : KineticPoint d) : Φ.point (Φ.pointInv p) = p := by
+theorem point_pointInv  : Φ.point (Φ.pointInv p) = p := by
   simp only [point, pointInv, Φ.time_timeInv, Φ.position_positionInv,
     Φ.transport_transportInv]
 
-theorem pointInv_point (p : KineticPoint d) : Φ.pointInv (Φ.point p) = p := by
+theorem pointInv_point  : Φ.pointInv (Φ.point p) = p := by
   simp only [point, pointInv, Φ.timeInv_time, Φ.positionInv_position,
     Φ.transportInv_transport]
 
+variable (q : ℝ × (PDE.Vec d × PDE.Vec d))
+
 /-- The change of variables on raw coordinates `(σ, (y, z))`. -/
-def raw (q : ℝ × (PDE.Vec d × PDE.Vec d)) : ℝ × (PDE.Vec d × PDE.Vec d) :=
+def raw  : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (Φ.time q.1, (Φ.position q.2.1, Φ.transport q.1 q.2.2))
 
 /-- The inverse change of variables on raw coordinates. -/
-def rawInv (q : ℝ × (PDE.Vec d × PDE.Vec d)) : ℝ × (PDE.Vec d × PDE.Vec d) :=
+def rawInv  : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (Φ.timeInv q.1, (Φ.positionInv q.2.1, Φ.transportInv (Φ.timeInv q.1) q.2.2))
 
-theorem raw_rawInv (q : ℝ × (PDE.Vec d × PDE.Vec d)) : Φ.raw (Φ.rawInv q) = q := by
+theorem raw_rawInv  : Φ.raw (Φ.rawInv q) = q := by
   simp only [raw, rawInv, Φ.time_timeInv, Φ.position_positionInv, Φ.transport_transportInv]
 
-theorem contDiff_raw : ContDiff ℝ (⊤ : ℕ∞) Φ.raw := by
+theorem contDiff_raw : ContDiff ℝ PDE.smoothOrder Φ.raw := by
   unfold raw time position transport
   fun_prop
 
-theorem contDiff_rawInv : ContDiff ℝ (⊤ : ℕ∞) Φ.rawInv := by
+theorem contDiff_rawInv : ContDiff ℝ PDE.smoothOrder Φ.rawInv := by
   unfold rawInv timeInv positionInv transportInv
   fun_prop
 
@@ -230,42 +245,42 @@ def coefficient (B : FullKineticCoefficient d) : FullKineticCoefficient d :=
 def drift (b : PDE.Vec d → PDE.Vec d) : PDE.Vec d → PDE.Vec d :=
   fun Y => (Φ.a / Φ.e) • (b (Φ.position Y) - Φ.w)
 
-@[simp] theorem coefficient_apply (B : FullKineticCoefficient d) (τ : ℝ) (Y Z : PDE.Vec d) :
-    Φ.coefficient B τ Y Z =
-      (Φ.a / Φ.c ^ 2) • B (Φ.time τ) (Φ.position Y) (Φ.transport τ Z) := rfl
 
-@[simp] theorem drift_apply (b : PDE.Vec d → PDE.Vec d) (Y : PDE.Vec d) :
-    Φ.drift b Y = (Φ.a / Φ.e) • (b (Φ.position Y) - Φ.w) := rfl
+
+
 
 /-! ### Compatibility of the moving domains -/
 
 /-- The hat moving domains are the preimages of the original ones:
 `movingDomain Ω̂ γ̂ τ = {Y | y₀ + c Y ∈ movingDomain Ω γ (σ₀ + a τ)}`. -/
-def MapsDomain (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
-    (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d) : Prop :=
+def MapsDomain (Ω : PDE.VelocityRegion d) (γ : ℝ → PDE.Vec d)
+    (Ω' : PDE.VelocityRegion d) (γ' : ℝ → PDE.Vec d) : Prop :=
   ∀ τ, movingDomain Ω' γ' τ = Φ.position ⁻¹' movingDomain Ω γ (Φ.time τ)
 
-variable {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+variable {Ω Ω' : PDE.VelocityRegion d} {γ γ' : ℝ → PDE.Vec d}
 
 variable {Φ}
 
-theorem MapsDomain.mem_iff (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) (Y : PDE.Vec d) :
+variable (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
+
+include h
+theorem MapsDomain.mem_iff  (Y : PDE.Vec d) :
     Y ∈ movingDomain Ω' γ' τ ↔ Φ.position Y ∈ movingDomain Ω γ (Φ.time τ) := by
   rw [h τ]
   rfl
 
-theorem MapsDomain.stateSet_mem_iff (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
+theorem MapsDomain.stateSet_mem_iff
     (x : EvolutionAmbientState d) :
     x ∈ evolutionStateSet Ω' γ' τ ↔
       Φ.ambientEquiv τ x ∈ evolutionStateSet Ω γ (Φ.time τ) := by
   simp only [evolutionStateSet, mem_prod, mem_univ, and_true, h.mem_iff, ambientEquiv_apply]
 
-theorem MapsDomain.closure_eq (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) :
+theorem MapsDomain.closure_eq  :
     closure (movingDomain Ω' γ' τ) = Φ.position ⁻¹' closure (movingDomain Ω γ (Φ.time τ)) := by
   rw [h τ]
   exact (Φ.positionHomeo.preimage_closure _).symm
 
-theorem MapsDomain.frontier_eq (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) :
+theorem MapsDomain.frontier_eq  :
     frontier (movingDomain Ω' γ' τ) =
       Φ.position ⁻¹' frontier (movingDomain Ω γ (Φ.time τ)) := by
   rw [h τ]

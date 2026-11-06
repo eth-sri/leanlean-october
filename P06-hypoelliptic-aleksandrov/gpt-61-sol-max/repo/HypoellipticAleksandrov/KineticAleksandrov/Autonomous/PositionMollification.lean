@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionMollificationVelocity
 import Mathlib.Analysis.Calculus.Deriv.Shift
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The source position regularization theorem
 
@@ -21,12 +23,13 @@ theorem barrier_position_convolution_position_jet {alpha : ℝ} {Phi : (ℝ × �
     (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta) (X v : ℝ) :
     HasDerivAt (fun w => positionConvolution eta (bellmanOriginExtension Phi) (w, v))
       (positionConvolution eta (bellmanDx Phi) (X, v)) X := by
-  have hf : LocallyIntegrable (fun Y => bellmanOriginExtension Phi (Y, v)) volume :=
+  let sharedTerm_27b26daa21 := ((fun Y => bellmanOriginExtension Phi (Y, v)))
+  have hf : LocallyIntegrable sharedTerm_27b26daa21 volume :=
     ((h.origin_extension_continuous ha).comp
       (continuous_id.prodMk continuous_const)).locallyIntegrable
   have hd := HasCompactSupport.hasDerivAt_convolution_right (ContinuousLinearMap.mul ℝ ℝ)
     hf heta.2.1 (heta.1.of_le (by norm_cast)) X
-  have hs : HasCompactSupport (fun Y => eta (X - Y)) :=
+  have hs  :=
     heta.2.1.comp_homeomorph (Homeomorph.subLeft X)
   have ht : ContDiff ℝ 1 (fun Y => eta (X - Y)) :=
     (heta.1.of_le (by norm_cast)).comp (contDiff_const.sub contDiff_id)
@@ -36,7 +39,7 @@ theorem barrier_position_convolution_position_jet {alpha : ℝ} {Phi : (ℝ × �
       positionConvolution eta (bellmanDx Phi) (X, v) := by
     dsimp only [positionConvolution]
     simpa only [neg_inj, mul_comm] using hw
-  have hefun : ((fun Y => bellmanOriginExtension Phi (Y, v))
+  have hefun : (sharedTerm_27b26daa21
       ⋆[ContinuousLinearMap.mul ℝ ℝ, volume] eta) =
       (fun w => positionConvolution eta (bellmanOriginExtension Phi) (w, v)) :=
     funext fun w => (positionConvolution_eq eta _ (w, v)).symm
@@ -45,7 +48,7 @@ theorem barrier_position_convolution_position_jet {alpha : ℝ} {Phi : (ℝ × �
 
 /-- The precise separate regularity asserted for the position-regularized barrier. -/
 def IsCInfinityPositionC2Velocity (f : (ℝ × ℝ) → ℝ) : Prop :=
-  (∀ v : ℝ, ContDiff ℝ (⊤ : ℕ∞) (fun X => f (X, v))) ∧
+  (∀ v : ℝ, ContDiff ℝ PDE.smoothOrder (fun X => f (X, v))) ∧
     ∀ X : ℝ, ContDiff ℝ 2 (fun v => f (X, v))
 
 /-- Regularity and the scalar forward-operator inequality for any actual source barrier.
@@ -67,8 +70,8 @@ theorem barrier_position_regularization_of_positive_degree
   refine ⟨⟨barrier_position_convolution_smooth h ha eta heta,
     barrier_position_convolution_velocity_c2 h ha ha1 eta heta⟩, ?_⟩
   intro A Y q
-  have hx := barrier_position_convolution_position_jet h ha ha1 eta heta (q.1 - Y) q.2
-  have hxshift := hx.comp q.1 ((hasDerivAt_id q.1).sub_const Y)
+
+
   have he : deriv (fun v =>
       positionConvolution eta (bellmanOriginExtension Phi) (q.1 - Y, v)) =
       (fun v => positionConvolution eta (bellmanDv Phi) (q.1 - Y, v)) := by
@@ -80,7 +83,7 @@ theorem barrier_position_regularization_of_positive_degree
   have hxe : deriv (fun X =>
       positionConvolution eta (bellmanOriginExtension Phi) (X - Y, q.2)) q.1 =
       positionConvolution eta (bellmanDx Phi) (q.1 - Y, q.2) := by
-    simpa only [Function.comp_def, id_eq, mul_one] using hxshift.deriv
+    simpa only [Function.comp_def, id_eq, mul_one] using ((barrier_position_convolution_position_jet h ha ha1 eta heta (q.1 - Y) q.2).comp q.1 ((hasDerivAt_id q.1).sub_const Y)).deriv
   rw [hxe]
   exact barrier_convolved_jet_inequality h ha ha1 hbound eta heta A Y q
 

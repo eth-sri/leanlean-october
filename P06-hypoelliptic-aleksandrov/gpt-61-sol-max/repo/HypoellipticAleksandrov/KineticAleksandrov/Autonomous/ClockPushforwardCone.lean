@@ -8,26 +8,28 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHori
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open SectionTwo TheoremA Evolution
+
+
+
+variable (c : Clock)
 
 /-- The physical active interval on the existing interval carrier. -/
-def Clock.activeInterval (c : Clock) : Interval :=
+def Clock.activeInterval  : Interval :=
   ⟨c.vbar - 3 * c.r / 4, c.vbar + 3 * c.r / 4, by linarith [c.positive]⟩
 
 /-- Every active velocity advances the normalized position clock at a rate at least one half. -/
-theorem Clock.active_ratio_lower (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
+theorem Clock.active_ratio_lower  {v : ℝ} (hv : v ∈ c.active) :
     (1 : ℝ) / 2 ≤ v / c.vbar := by
   rcases lt_or_gt_of_ne c.nonzero with hneg | hpos
   · apply (le_div_iff_of_neg hneg).mpr
     have hr := c.radius
     rw [abs_of_neg hneg] at hr
-    have hv' : v < c.vbar + 3 * c.r / 4 := hv.2
+    have hv'  := hv.2
     nlinarith
   · apply (le_div_iff₀ hpos).mpr
     have hr := c.radius
     rw [abs_of_pos hpos] at hr
-    have hv' : c.vbar - 3 * c.r / 4 < v := hv.1
+    have hv'  := hv.1
     nlinarith
 
 /-- The source's physical forward cone implies a lower bound on elapsed position-clock time. -/

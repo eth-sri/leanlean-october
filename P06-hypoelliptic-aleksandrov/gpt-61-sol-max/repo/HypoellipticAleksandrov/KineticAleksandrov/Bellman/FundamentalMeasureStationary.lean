@@ -8,8 +8,8 @@ import Mathlib.Tactic
 
 /-! # The degree-two stationary adjoint witness from the explicit Kolmogorov Gaussian -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -17,8 +17,8 @@ open MeasureTheory Set
 theorem bellmanFundamentalMeasure_stationary :
     IsBellmanStationaryAdjointPair bellmanFundamentalMeasure bellmanFundamentalMeasure := by
   intro φ hφ hc hs
-  let fx : ℝ × ℝ → ℝ := fun q => q.2 * fderiv ℝ φ q (1, 0)
-  let fv : ℝ × ℝ → ℝ := fun q =>
+  let fx  := fun q => q.2 * fderiv ℝ φ q (1, 0)
+  let fv  := fun q =>
     fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) q (0, 1)
   have hcx : HasCompactSupport fx := (hc.fderiv_apply ℝ (1, 0)).mul_left
   have hcv : HasCompactSupport fv :=
@@ -32,11 +32,11 @@ theorem bellmanFundamentalMeasure_stationary :
   have hsv : tsupport fv ⊆ {q | q ≠ (0, 0)} :=
     (tsupport_fderiv_apply_subset ℝ (0, 1)).trans
       ((tsupport_fderiv_apply_subset ℝ (0, 1)).trans hs)
-  have hiX := bellman_integrable_fundamental_test hx hcx hsx
-  have hiV := bellman_integrable_fundamental_test hv hcv hsv
+
+
   change (∫ q, fx q.val ∂bellmanFundamentalMeasure) +
     (∫ q, fv q.val ∂bellmanFundamentalMeasure) = 0
-  rw [← integral_add hiX hiV]
+  rw [← integral_add (bellman_integrable_fundamental_test hx hcx hsx) (bellman_integrable_fundamental_test hv hcv hsv)]
   rw [bellmanFundamentalMeasure_integral_test (f := fun q => fx q + fv q) (hx.add hv) (hcx.add hcv)
     ((tsupport_add fx fv).trans (union_subset hsx hsv))]
   have heq (t : BellmanPositiveTime) (q : ℝ × ℝ) :

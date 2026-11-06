@@ -7,11 +7,11 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeas
 
 /-! # Uniform density of ambient smooth traces on the actual closed boundary -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory Evolution Topology
-open scoped CompactlySupported Topology
+open Set Topology
+open scoped CompactlySupported
 
 /-- Every compact continuous datum on the closed trace is uniformly approximated by probes. -/
 theorem boundaryProbeCc_dense {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
@@ -24,10 +24,9 @@ theorem boundaryProbeCc_dense {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
     (isClosed_localTrace a T v₀ R).isClosedEmbedding_subtypeVal
   obtain ⟨G, -, hG⟩ := BoundedContinuousFunction.exists_extension_norm_eq_of_isClosedEmbedding
     g.toBoundedContinuousFunction hj
-  have hK : IsCompact (j '' tsupport (g : localTrace a T v₀ R → ℝ)) :=
-    g.hasCompactSupport.isCompact.image hj.continuous
+
   obtain ⟨χ, hχ, hc, -, -, hone⟩ :=
-    exists_smooth_bump_of_isCompact_subset_isOpen hK isOpen_univ (subset_univ _)
+    exists_smooth_bump_of_isCompact_subset_isOpen (g.hasCompactSupport.isCompact.image hj.continuous) isOpen_univ (subset_univ _)
   let F : C_c(ℝ × PDE.Vec d × PDE.Vec d, ℝ) :=
     ⟨⟨fun q => χ q * G q, hχ.continuous.mul G.continuous⟩, hc.mul_right⟩
   have hFg (P : localTrace a T v₀ R) : F (j P) = g P := by

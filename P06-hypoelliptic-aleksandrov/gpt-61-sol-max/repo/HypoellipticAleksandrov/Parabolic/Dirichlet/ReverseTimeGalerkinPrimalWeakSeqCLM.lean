@@ -14,21 +14,21 @@ Galerkin primal curves that converges under every continuous real linear functio
 It makes no strong convergence, equation-passage, trace, or weak-solution assertion.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-open Filter MeasureTheory Set
-open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace Topology
+open Filter Set
+open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder Topology
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : PDE.VelocityRegion d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
   (a : CoefficientField d)
-  (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
+  (b : PDE.TimeVectorField d) (c F : PDE.TimeScalarField d)
   (haSmooth : IsSmoothOnNeighborhood
     (fun z : TimeVelocity d => a z.1 z.2)
     (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -50,7 +50,7 @@ variable
 /-- The canonical reverse-time Galerkin primal curves possess a strictly monotone
 subsequence converging under every continuous real linear functional. -/
 theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    (initial : PDE.ScalarLp Ω (2 )) :
     ∃ (U : ReverseTimeL2V hΩ (r₁ - r₀)) (φ : ℕ → ℕ), StrictMono φ ∧
       ∀ ell : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ,
         Tendsto
@@ -64,8 +64,8 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal
   letI : MeasureTheory.SFinite (reverseTimeVolume (r₁ - r₀)) := by
     dsimp only [reverseTimeVolume]
     infer_instance
-  letI : MeasurableSpace.CountablyGenerated ℝ := by infer_instance
-  letI : MeasureTheory.IsSeparable (reverseTimeVolume (r₁ - r₀)) := by infer_instance
+  letI : MeasurableSpace.CountablyGenerated ℝ := inferInstance
+  letI : MeasureTheory.IsSeparable (reverseTimeVolume (r₁ - r₀)) := inferInstance
   letI : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
   letI : SecondCountableTopology (ReverseTimeL2V hΩ (r₁ - r₀)) :=

@@ -8,11 +8,11 @@ public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 This module derives convergence of scalar pairings from convergence of squared L2 errors.
 -/
 
-@[expose] public section
+ public section
 
 open Filter MeasureTheory Topology
 
-noncomputable section
+
 
 /-- Pairing with a fixed L2 function preserves convergence to zero of squared L2 errors. -/
 theorem tendsto_integral_mul_of_memLp_two_of_tendsto_integral_sq

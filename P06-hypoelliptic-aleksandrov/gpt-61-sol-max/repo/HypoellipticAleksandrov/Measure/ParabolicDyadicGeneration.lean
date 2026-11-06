@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicFiltration
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 public import Mathlib.Tactic.Linarith
+import Lean.Elab.Tactic.Grind
+
+
 
 /-!
 # Generation by the finite parabolic dyadic filtration
@@ -25,21 +28,23 @@ private theorem measurableSet_parabolicDyadicRestrictedCell_iSup
     (d n : ℕ) (index : ParabolicDyadicIndex d n) :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       (parabolicDyadicRestrictedCell index) := by
+  let sharedTerm_d04d6babf7 := (((d + 2) * n))
   obtain ⟨z, hz⟩ := parabolicDyadicHalfOpenCell_nonempty index
   let z' : ParabolicDyadicReferenceSpace d :=
     ⟨z, parabolicDyadicHalfOpenCell_subset_reference index hz⟩
-  have hz' : z' ∈ parabolicDyadicRestrictedCell index := by
-    change z ∈ parabolicDyadicHalfOpenCell index
-    exact hz
-  have hatom : MeasurableSet[parabolicDyadicFiltration d ((d + 2) * n)]
-      (memPartitionSet (parabolicDyadicGenerator d) ((d + 2) * n) z') :=
-    ProbabilityTheory.measurableSet_partitionFiltration_memPartitionSet
-      (measurableSet_parabolicDyadicGenerator d) ((d + 2) * n) z'
-  rw [memPartitionSet_parabolicDyadicFiltration_checkpoint_eq_cell index z' hz'] at hatom
-  exact (le_iSup (fun k : ℕ => parabolicDyadicFiltration d k)
-    ((d + 2) * n)) _ hatom
 
-private noncomputable def parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) :
+  have hatom  :=
+    ProbabilityTheory.measurableSet_partitionFiltration_memPartitionSet
+      (measurableSet_parabolicDyadicGenerator d) sharedTerm_d04d6babf7 z'
+  rw [memPartitionSet_parabolicDyadicFiltration_checkpoint_eq_cell index z' ((id hz))] at hatom
+  exact (le_iSup (fun k  => parabolicDyadicFiltration d k)
+    sharedTerm_d04d6babf7) _ hatom
+
+variable (d : ℕ)
+
+variable (q : ℝ)
+
+private def parabolicDyadicTimeLowerUnion   :
     Set (ParabolicDyadicReferenceSpace d) := by
   classical
   exact ⋃ n : ℕ, ⋃ index : ParabolicDyadicIndex d n,
@@ -47,7 +52,7 @@ private noncomputable def parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) :
       parabolicDyadicRestrictedCell index
     else ∅
 
-private theorem measurableSet_parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) :
+private theorem measurableSet_parabolicDyadicTimeLowerUnion   :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       (parabolicDyadicTimeLowerUnion d q) := by
   classical
@@ -56,7 +61,7 @@ private theorem measurableSet_parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) 
   intro n
   apply MeasurableSet.iUnion
   intro index
-  let M : MeasurableSpace (ParabolicDyadicReferenceSpace d) :=
+  let M  :=
     ⨆ k : ℕ, parabolicDyadicFiltration d k
   change @MeasurableSet _ M (if ∀ z ∈ parabolicDyadicRestrictedCell index,
     z.val.1 < q then parabolicDyadicRestrictedCell index else ∅)
@@ -64,7 +69,7 @@ private theorem measurableSet_parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) 
     (fun _ => measurableSet_parabolicDyadicRestrictedCell_iSup d n index)
     (fun _ => @MeasurableSet.empty _ M)
 
-private theorem parabolicDyadicTimeLowerUnion_eq_preimage_Iio (d : ℕ) (q : ℝ) :
+private theorem parabolicDyadicTimeLowerUnion_eq_preimage_Iio   :
     parabolicDyadicTimeLowerUnion d q =
       {z : ParabolicDyadicReferenceSpace d | z.val.1 < q} := by
   classical
@@ -77,49 +82,49 @@ private theorem parabolicDyadicTimeLowerUnion_eq_preimage_Iio (d : ℕ) (q : ℝ
     by_cases hcell : ∀ y ∈ parabolicDyadicRestrictedCell index, y.val.1 < q
     · rw [if_pos hcell] at hz
       exact hcell z hz
-    · rw [if_neg hcell] at hz
-      exact False.elim (Set.notMem_empty z hz)
+    · grind
   · intro hz
-    have hgap : 0 < q - z.val.1 := sub_pos.mpr hz
-    have hwidth_eventually : ∀ᶠ n in atTop, parabolicDyadicTimeWidth n < q - z.val.1 :=
-      tendsto_parabolicDyadicTimeWidth_atTop.eventually_lt_const hgap
-    obtain ⟨n, hn⟩ := eventually_atTop.mp hwidth_eventually
-    have hwidth : parabolicDyadicTimeWidth n < q - z.val.1 := hn n le_rfl
-    have hzcover : (z : TimeVelocity d) ∈
-        ⋃ index : ParabolicDyadicIndex d n, parabolicDyadicHalfOpenCell index := by
-      rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
-      exact z.property
-    obtain ⟨index, hzindex⟩ := Set.mem_iUnion.mp hzcover
-    have hzindex' : z ∈ parabolicDyadicRestrictedCell index := by
-      change (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index
-      exact hzindex
-    have hcell : ∀ y ∈ parabolicDyadicRestrictedCell index, y.val.1 < q := by
-      intro y hy
-      change (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index at hy
-      rw [mem_parabolicDyadicHalfOpenCell_iff] at hzindex hy
-      have hcell_width := parabolicDyadicTimeCell_width index
-      linarith [hzindex.1.1, hy.1.2, hcell_width, hwidth]
+    have hgap  := sub_pos.mpr hz
+
+    obtain ⟨n, hn⟩ := eventually_atTop.mp (tendsto_parabolicDyadicTimeWidth_atTop.eventually_lt_const hgap)
+
+
+    obtain ⟨index, hzindex⟩ := Set.mem_iUnion.mp (show (z : TimeVelocity d) ∈
+        ⋃ index : ParabolicDyadicIndex d n, parabolicDyadicHalfOpenCell index by
+        rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
+        exact z.property)
+
+
     refine Set.mem_iUnion.mpr ⟨n, ?_⟩
     refine Set.mem_iUnion.mpr ⟨index, ?_⟩
-    rw [if_pos hcell]
-    exact hzindex'
+    rw [if_pos (by
+        intro y hy
+        change (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index at hy
+        rw [mem_parabolicDyadicHalfOpenCell_iff] at hzindex hy
 
-private theorem measurableSet_time_preimage_Iio_iSup (d : ℕ) (q : ℝ) :
+        linarith [hzindex.1.1, hy.1.2, (parabolicDyadicTimeCell_width index), (hn n le_rfl)])]
+    exact (show z ∈ parabolicDyadicRestrictedCell index by
+        change (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index
+        exact hzindex)
+
+private theorem measurableSet_time_preimage_Iio_iSup   :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       {z : ParabolicDyadicReferenceSpace d | z.val.1 < q} := by
   rw [← parabolicDyadicTimeLowerUnion_eq_preimage_Iio]
   exact measurableSet_parabolicDyadicTimeLowerUnion d q
 
-private noncomputable def parabolicDyadicVelocityLowerUnion (d : ℕ)
-    (coordinate : Fin d) (q : ℝ) : Set (ParabolicDyadicReferenceSpace d) := by
+variable (coordinate : Fin d) (q : ℝ)
+
+private def parabolicDyadicVelocityLowerUnion
+     : Set (ParabolicDyadicReferenceSpace d) := by
   classical
   exact ⋃ n : ℕ, ⋃ index : ParabolicDyadicIndex d n,
     if ∀ z ∈ parabolicDyadicRestrictedCell index, z.val.2 coordinate < q then
       parabolicDyadicRestrictedCell index
     else ∅
 
-private theorem measurableSet_parabolicDyadicVelocityLowerUnion (d : ℕ)
-    (coordinate : Fin d) (q : ℝ) :
+private theorem measurableSet_parabolicDyadicVelocityLowerUnion
+     :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       (parabolicDyadicVelocityLowerUnion d coordinate q) := by
   classical
@@ -128,7 +133,7 @@ private theorem measurableSet_parabolicDyadicVelocityLowerUnion (d : ℕ)
   intro n
   apply MeasurableSet.iUnion
   intro index
-  let M : MeasurableSpace (ParabolicDyadicReferenceSpace d) :=
+  let M  :=
     ⨆ k : ℕ, parabolicDyadicFiltration d k
   change @MeasurableSet _ M (if ∀ z ∈ parabolicDyadicRestrictedCell index,
     z.val.2 coordinate < q then parabolicDyadicRestrictedCell index else ∅)
@@ -136,8 +141,8 @@ private theorem measurableSet_parabolicDyadicVelocityLowerUnion (d : ℕ)
     (fun _ => measurableSet_parabolicDyadicRestrictedCell_iSup d n index)
     (fun _ => @MeasurableSet.empty _ M)
 
-private theorem parabolicDyadicVelocityLowerUnion_eq_preimage_Iio (d : ℕ)
-    (coordinate : Fin d) (q : ℝ) :
+private theorem parabolicDyadicVelocityLowerUnion_eq_preimage_Iio
+     :
     parabolicDyadicVelocityLowerUnion d coordinate q =
       {z : ParabolicDyadicReferenceSpace d | z.val.2 coordinate < q} := by
   classical
@@ -150,38 +155,34 @@ private theorem parabolicDyadicVelocityLowerUnion_eq_preimage_Iio (d : ℕ)
     by_cases hcell : ∀ y ∈ parabolicDyadicRestrictedCell index, y.val.2 coordinate < q
     · rw [if_pos hcell] at hz
       exact hcell z hz
-    · rw [if_neg hcell] at hz
-      exact False.elim (Set.notMem_empty z hz)
+    · grind
   · intro hz
-    have hgap : 0 < q - z.val.2 coordinate := sub_pos.mpr hz
-    have hwidth_eventually : ∀ᶠ n in atTop,
-        parabolicDyadicVelocityWidth n < q - z.val.2 coordinate :=
-      tendsto_parabolicDyadicVelocityWidth_atTop.eventually_lt_const hgap
-    obtain ⟨n, hn⟩ := eventually_atTop.mp hwidth_eventually
-    have hwidth : parabolicDyadicVelocityWidth n < q - z.val.2 coordinate := hn n le_rfl
-    have hzcover : (z : TimeVelocity d) ∈
-        ⋃ index : ParabolicDyadicIndex d n, parabolicDyadicHalfOpenCell index := by
-      rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
-      exact z.property
-    obtain ⟨index, hzindex⟩ := Set.mem_iUnion.mp hzcover
-    have hzindex' : z ∈ parabolicDyadicRestrictedCell index := by
-      change (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index
-      exact hzindex
-    have hcell : ∀ y ∈ parabolicDyadicRestrictedCell index,
-        y.val.2 coordinate < q := by
-      intro y hy
-      change (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index at hy
-      rw [mem_parabolicDyadicHalfOpenCell_iff,
-        mem_parabolicDyadicVelocityCell_iff] at hzindex hy
-      have hcell_width := parabolicDyadicVelocityCell_width index coordinate
-      linarith [hzindex.2 coordinate |>.1, hy.2 coordinate |>.2, hcell_width, hwidth]
+    have hgap  := sub_pos.mpr hz
+
+    obtain ⟨n, hn⟩ := eventually_atTop.mp (tendsto_parabolicDyadicVelocityWidth_atTop.eventually_lt_const hgap)
+
+
+    obtain ⟨index, hzindex⟩ := Set.mem_iUnion.mp (show (z : TimeVelocity d) ∈
+        ⋃ index : ParabolicDyadicIndex d n, parabolicDyadicHalfOpenCell index by
+        rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
+        exact z.property)
+
+
     refine Set.mem_iUnion.mpr ⟨n, ?_⟩
     refine Set.mem_iUnion.mpr ⟨index, ?_⟩
-    rw [if_pos hcell]
-    exact hzindex'
+    rw [if_pos (by
+        intro y hy
+        change (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index at hy
+        rw [mem_parabolicDyadicHalfOpenCell_iff,
+          mem_parabolicDyadicVelocityCell_iff] at hzindex hy
 
-private theorem measurableSet_velocity_preimage_Iio_iSup (d : ℕ)
-    (coordinate : Fin d) (q : ℝ) :
+        linarith [hzindex.2 coordinate |>.1, hy.2 coordinate |>.2, (parabolicDyadicVelocityCell_width index coordinate), (hn n le_rfl)])]
+    exact (show z ∈ parabolicDyadicRestrictedCell index by
+        change (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index
+        exact hzindex)
+
+private theorem measurableSet_velocity_preimage_Iio_iSup
+     :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       {z : ParabolicDyadicReferenceSpace d | z.val.2 coordinate < q} := by
   rw [← parabolicDyadicVelocityLowerUnion_eq_preimage_Iio]
@@ -189,31 +190,24 @@ private theorem measurableSet_velocity_preimage_Iio_iSup (d : ℕ)
 
 /-- The scheduled finite parabolic dyadic filtration generates exactly the
 ambient subtype measurable space of the half-open reference cell. -/
-theorem iSup_parabolicDyadicFiltration_eq_referenceMeasurableSpace (d : ℕ) :
+theorem iSup_parabolicDyadicFiltration_eq_referenceMeasurableSpace  :
     (⨆ k : ℕ, parabolicDyadicFiltration d k) =
       (inferInstance : MeasurableSpace (ParabolicDyadicReferenceSpace d)) := by
+  let sharedTerm_4b8d7df0a8 := (⨆ k : ℕ, parabolicDyadicFiltration d k)
   apply le_antisymm
   · apply iSup_le
     intro k
     exact (parabolicDyadicFiltration d).le k
-  · let M : MeasurableSpace (ParabolicDyadicReferenceSpace d) :=
-      ⨆ k : ℕ, parabolicDyadicFiltration d k
-    have htime : Measurable[M] (fun z : ParabolicDyadicReferenceSpace d => z.val.1) :=
-      measurable_of_Iio fun q => by
-        change MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
-          {z : ParabolicDyadicReferenceSpace d | z.val.1 < q}
-        exact measurableSet_time_preimage_Iio_iSup d q
-    have hvelocity : Measurable[M] (fun z : ParabolicDyadicReferenceSpace d => z.val.2) :=
+  ·
+    have htime  :=
+      measurable_of_Iio fun q => (id (measurableSet_time_preimage_Iio_iSup d q))
+    have hvelocity  :=
       measurable_pi_iff.mpr fun coordinate =>
-        measurable_of_Iio fun q => by
-          change MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
-            {z : ParabolicDyadicReferenceSpace d | z.val.2 coordinate < q}
-          exact measurableSet_velocity_preimage_Iio_iSup d coordinate q
-    have hcoe : Measurable[M] (fun z : ParabolicDyadicReferenceSpace d =>
-        ((z.val.1, z.val.2) : TimeVelocity d)) := htime.prodMk hvelocity
+        measurable_of_Iio fun q => (id (measurableSet_velocity_preimage_Iio_iSup d coordinate q))
+
     change MeasurableSpace.comap Subtype.val
-      (inferInstance : MeasurableSpace (TimeVelocity d)) ≤ M
-    exact hcoe.comap_le
+      (inferInstance : MeasurableSpace (TimeVelocity d)) ≤ sharedTerm_4b8d7df0a8
+    exact (htime.prodMk hvelocity).comap_le
 
 end
 

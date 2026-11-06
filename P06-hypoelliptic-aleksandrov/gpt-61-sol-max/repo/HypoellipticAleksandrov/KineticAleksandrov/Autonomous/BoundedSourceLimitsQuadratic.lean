@@ -4,11 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassInf
 
 /-! # Quadratic bounds and velocity-face limits for bounded Borel source potentials -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter
-open scoped Topology ENNReal
+open Set MeasureTheory Filter
+
 
 /-- The actual finite-horizon source potential obeys the exact quadratic interval estimate. -/
 theorem stripPotentialOfRealization_abs_le_quadratic
@@ -23,17 +23,17 @@ theorem stripPotentialOfRealization_abs_le_quadratic
   have hq : 0 ≤ q :=
     div_nonneg (mul_nonneg (sub_nonneg.mpr e.2.2.1.le) (sub_nonneg.mpr e.2.2.2.le))
       (by positivity)
-  have hm : (stripGreenOfKernel H E.2 T e).real univ ≤ q := by
-    have hmass := stripGreenOfRealization_quadratic_mass hH hlam hLam A H E hE T e
-    change stripGreenOfKernel H E.2 T e univ ≤ ENNReal.ofReal q at hmass
-    exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hmass).trans_eq
-      (ENNReal.toReal_ofReal hq)
+
   have hb : |stripPotentialOfKernel H E.2 T g e| ≤
       C * (stripGreenOfKernel H E.2 T e).real univ := by
     simpa only [stripPotentialOfKernel, Real.norm_eq_abs] using
       norm_integral_le_of_norm_le_const (f := (g : Point → ℝ)) (C := C)
         (μ := stripGreenOfKernel H E.2 T e)
-        (Eventually.of_forall fun p => by simpa only [Real.norm_eq_abs] using hg p)
-  exact hb.trans (mul_le_mul_of_nonneg_left hm hC)
+        (Eventually.of_forall fun p => hg p)
+  exact hb.trans (mul_le_mul_of_nonneg_left (by
+      have hmass := stripGreenOfRealization_quadratic_mass hH hlam hLam A H E hE T e
+      change stripGreenOfKernel H E.2 T e univ ≤ ENNReal.ofReal q at hmass
+      exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hmass).trans_eq
+        (ENNReal.toReal_ofReal hq)) hC)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

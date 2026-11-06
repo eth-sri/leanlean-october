@@ -11,11 +11,12 @@ import Mathlib.Tactic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
+
+variable (Z₀ : Point) (R : ℝ) (hR : 0 < R) (hfar : 8 * R < |Z₀.velocity 0|)
 
 /-- The source's single clock, with centre v₀ and radius 4R. -/
-def farVelocityClock (Z₀ : Point) (R : ℝ) (hR : 0 < R)
-    (hfar : 8 * R < |Z₀.velocity 0|) : Clock where
+def farVelocityClock  : Clock where
   vbar := Z₀.velocity 0
   r := 4 * R
   nonzero := by intro h; rw [h, abs_zero] at hfar; linarith
@@ -23,8 +24,7 @@ def farVelocityClock (Z₀ : Point) (R : ℝ) (hR : 0 < R)
   radius := by linarith
 
 /-- The cylinder velocity interval is contained in the single clock's active interval. -/
-theorem farVelocityClock_contains (Z₀ : Point) (R : ℝ) (hR : 0 < R)
-    (hfar : 8 * R < |Z₀.velocity 0|) :
+theorem farVelocityClock_contains  :
     (capacityCylinderInterval Z₀ R hR).carrier ⊆
       (farVelocityClock Z₀ R hR hfar).active := by
   intro v hv
@@ -51,13 +51,14 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
         MemLp G (ENNReal.ofReal q) (volume.restrict (forwardCylinder Z₀ R hR)) ∧
         (eLpNorm G (ENNReal.ofReal q)
           (volume.restrict (forwardCylinder Z₀ R hR))).toReal ≤ C * R ^ (6 / q - 4) := by
+  let sharedTerm_207014cf0f := ((4 : ℝ) ^ (6 / q - 4))
   obtain ⟨C, hC, hc⟩ := (hpush hH hLE lam Lam hlam hLam).2 q hq
-  refine ⟨C * (4 : ℝ) ^ (6 / q - 4), by positivity, ?_⟩
+  refine ⟨C * sharedTerm_207014cf0f, by positivity, ?_⟩
   intro A Z₀ R hR P hP hfar
   let c := farVelocityClock Z₀ R hR hfar
   have hsub := farVelocityClock_contains Z₀ R hR hfar
   let e := capacityCylinderPole Z₀ P R hR hP
-  have he : P.velocity 0 ∈ c.active := hsub e.2.2
+  have he  := hsub e.2.2
   obtain ⟨f, hfm, hf0, hfd, hfp, hfn⟩ := hc A c P he
   have hm := stripGreen_mono hH hLE hlam hLam A
     (capacityCylinderInterval Z₀ R hR) c.activeInterval hsub
@@ -76,7 +77,7 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
     (ENNReal.ofReal q) hfp hm
   refine ⟨g, hgm, hg0, hgd, hgp, ?_⟩
   have hn := (ENNReal.toReal_mono hfp.ne hgn).trans hfn
-  have hr : c.r ^ (6 / q - 4) = (4 : ℝ) ^ (6 / q - 4) * R ^ (6 / q - 4) :=
+  have hr : c.r ^ (6 / q - 4) = sharedTerm_207014cf0f * R ^ (6 / q - 4) :=
     Real.mul_rpow (by norm_num) hR.le
   rw [hr] at hn
   simpa only [mul_assoc] using hn

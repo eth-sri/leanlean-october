@@ -5,6 +5,11 @@ public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 public import Mathlib.Analysis.Calculus.ContDiff.Deriv
 import Mathlib.Tactic
+import Mathlib.Tactic.Bound
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Derivatives of the positive Kummer integral
@@ -33,62 +38,56 @@ theorem laplaceKernelReal_antitone (a b t : ℝ) (ht : 0 < t)
     (z w : ℝ) (hzw : z ≤ w) :
     laplaceKernelReal a b w t ≤ laplaceKernelReal a b z t := by
   apply mul_le_mul_of_nonneg_right
-  · apply mul_le_mul_of_nonneg_right
-    · apply Real.exp_le_exp.mpr
-      exact neg_le_neg (mul_le_mul_of_nonneg_right hzw ht.le)
-    · exact Real.rpow_nonneg ht.le _
+  · bound
   · exact Real.rpow_nonneg (by linarith only [ht]) _
 
 /-- The first argument derivative is the negative shifted kernel. -/
 theorem hasDerivAt_laplaceKernelReal (a b z t : ℝ) (ht : 0 < t) :
     HasDerivAt (fun w => laplaceKernelReal a b w t)
       (-laplaceKernelReal (a + 1) (b + 1) z t) z := by
+  let sharedTerm_e98051efc5 := (((1 + t) ^ (b - a - 1)))
   have he := (((hasDerivAt_id z).mul_const t).neg.exp.mul_const
-    (t ^ (a - 1))).mul_const ((1 + t) ^ (b - a - 1))
+    (t ^ (a - 1))).mul_const sharedTerm_e98051efc5
   have heq : -laplaceKernelReal (a + 1) (b + 1) z t =
-      Real.exp (-(z * t)) * -(1 * t) * t ^ (a - 1) * (1 + t) ^ (b - a - 1) := by
+      Real.exp (-(z * t)) * -(1 * t) * t ^ (a - 1) * sharedTerm_e98051efc5 := by
     rw [laplaceKernelReal_shift a b z t ht]
     simp only [laplaceKernelReal]
     ring
   rw [heq]
   exact he
 
+variable (a b z : ℝ)
+
 /-- The unnormalized Laplace integral. -/
-def laplaceIntegral (a b z : ℝ) : ℝ :=
+def laplaceIntegral  : ℝ :=
   ∫ t in Ioi (0 : ℝ), laplaceKernelReal a b z t
 
 /-- Differentiation of the integral by an exact simultaneous parameter shift. -/
-theorem hasDerivAt_laplaceIntegral (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
+theorem hasDerivAt_laplaceIntegral  (ha : 0 < a) (hz : 0 < z) :
     HasDerivAt (laplaceIntegral a b) (-laplaceIntegral (a + 1) (b + 1) z) z := by
-  have hz2 : 0 < z / 2 := half_pos hz
-  have hshape : 0 < a + 1 := add_pos ha zero_lt_one
-  have hmeas : ∀ w : ℝ,
-      AEStronglyMeasurable (laplaceKernelReal a b w) (volume.restrict (Ioi 0)) :=
-    fun w => (continuousOn_laplaceKernelReal a b w).aestronglyMeasurable measurableSet_Ioi
+
+
+
   have hdmeas : AEStronglyMeasurable
       (fun t => -laplaceKernelReal (a + 1) (b + 1) z t)
       (volume.restrict (Ioi 0)) :=
     ((continuousOn_laplaceKernelReal (a + 1) (b + 1) z).aestronglyMeasurable
       measurableSet_Ioi).neg
-  have hbound : ∀ᵐ t ∂volume.restrict (Ioi (0 : ℝ)), ∀ w ∈ Ioi (z / 2),
-      ‖-laplaceKernelReal (a + 1) (b + 1) w t‖ ≤
-        laplaceKernelReal (a + 1) (b + 1) (z / 2) t := by
-    filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    intro w hw
-    rw [norm_neg, Real.norm_eq_abs,
-      abs_of_pos (laplaceKernelReal_pos (a + 1) (b + 1) w t ht)]
-    exact laplaceKernelReal_antitone (a + 1) (b + 1) t ht (z / 2) w hw.le
-  have hdiff : ∀ᵐ t ∂volume.restrict (Ioi (0 : ℝ)), ∀ w ∈ Ioi (z / 2),
-      HasDerivAt (fun u => laplaceKernelReal a b u t)
-        (-laplaceKernelReal (a + 1) (b + 1) w t) w := by
-    filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    intro w _
-    exact hasDerivAt_laplaceKernelReal a b w t ht
+
+
   have h := hasDerivAt_integral_of_dominated_loc_of_deriv_le
     (Ioi_mem_nhds (by linarith only [hz] : z / 2 < z))
-    (Eventually.of_forall hmeas) (integrableOn_laplaceKernelReal a b z ha hz)
-    hdmeas hbound (integrableOn_laplaceKernelReal (a + 1) (b + 1) (z / 2) hshape hz2)
-    hdiff
+    (Eventually.of_forall (fun w => (continuousOn_laplaceKernelReal a b w).aestronglyMeasurable measurableSet_Ioi)) (integrableOn_laplaceKernelReal a b z ha hz)
+    hdmeas (by
+        filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
+        intro w hw
+        rw [norm_neg, Real.norm_eq_abs,
+          abs_of_pos (laplaceKernelReal_pos (a + 1) (b + 1) w t ht)]
+        exact laplaceKernelReal_antitone (a + 1) (b + 1) t ht (z / 2) w hw.le) (integrableOn_laplaceKernelReal (a + 1) (b + 1) (z / 2) (add_pos ha zero_lt_one) (half_pos hz))
+    (by
+        filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
+        intro w _
+        exact hasDerivAt_laplaceKernelReal a b w t ht)
   change HasDerivAt (fun w => ∫ t in Ioi (0 : ℝ), laplaceKernelReal a b w t)
     (-∫ t in Ioi (0 : ℝ), laplaceKernelReal (a + 1) (b + 1) z t) z
   rw [← integral_neg]
@@ -98,11 +97,11 @@ theorem hasDerivAt_laplaceIntegral (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
 theorem hasDerivAt_UIr (a : Pos) (b z : ℝ) (hz : 0 < z) :
     HasDerivAt (UIr a b)
       (-(Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 1) (b + 1) z) z := by
-  have h := (hasDerivAt_laplaceIntegral a.1 b z a.2 hz).const_mul (Real.Gamma a.1)⁻¹
+
   change HasDerivAt (fun w => (Real.Gamma a.1)⁻¹ * laplaceIntegral a.1 b w)
     (-(Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 1) (b + 1) z) z
   rw [neg_mul, ← mul_neg]
-  exact h
+  exact ((hasDerivAt_laplaceIntegral a.1 b z a.2 hz).const_mul (Real.Gamma a.1)⁻¹)
 
 /-- The unnormalized integral is differentiable throughout the positive half-line. -/
 theorem differentiableOn_laplaceIntegral (a b : ℝ) (ha : 0 < a) :
@@ -130,18 +129,17 @@ theorem contDiffOn_laplaceIntegral_nat (n : ℕ) (a b : ℝ) (ha : 0 < a) :
           (fun z hz => deriv_laplaceIntegral a b z ha hz)
 
 /-- The positive Laplace integral is smooth, with the C-infinity order. -/
-theorem contDiffOn_laplaceIntegral (a b : ℝ) (ha : 0 < a) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (laplaceIntegral a b) (Ioi 0) :=
+theorem contDiffOn_laplaceIntegral (a b : ℝ) (ha : 0 < a) : type_of% (contDiffOn_infty.mpr (fun n => contDiffOn_laplaceIntegral_nat n a b ha)) :=
   contDiffOn_infty.mpr (fun n => contDiffOn_laplaceIntegral_nat n a b ha)
 
 /-- Smoothness of the normalized integral on its genuine positive domain. -/
 theorem contDiffOn_UIr (a : Pos) (b : ℝ) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (UIr a b) (Ioi 0) :=
+    ContDiffOn ℝ PDE.smoothOrder (UIr a b) (Ioi 0) :=
   contDiffOn_const.mul (contDiffOn_laplaceIntegral a.1 b a.2)
 
 /-- Smoothness of the transformed negative-shape formula on the positive half-line. -/
 theorem contDiffOn_UNr (a : NegThird) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (UNr a) (Ioi 0) :=
+    ContDiffOn ℝ PDE.smoothOrder (UNr a) (Ioi 0) :=
   (contDiffOn_id.rpow_const_of_ne (fun _ hz => ne_of_gt hz)).mul (contDiffOn_UIr _ _)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

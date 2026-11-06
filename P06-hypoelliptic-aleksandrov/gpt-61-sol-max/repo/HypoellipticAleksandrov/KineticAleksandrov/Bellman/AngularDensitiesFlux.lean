@@ -7,10 +7,10 @@ import Mathlib.Tactic
 
 /-! # Constructing the actual angular flux from the angular weak equation -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open MeasureTheory Set
+open MeasureTheory
 
 /-- The angular equation gives a literal locally integrable flux with a weighted-measure
 derivative. -/
@@ -20,10 +20,10 @@ theorem bellmanAngularFlux_weak (R β : ℝ) (F H : Measure ℝ)
       (∫ x, deriv φ x ∂H) =
         (1 / 3 : ℝ) * (∫ x, x ^ 2 * φ x ∂F) -
           (∫ x, φ x * (j - ((β - 2) / 3) * bellmanMeasurePrimitive F id 0 x)) := by
-  let : IsFiniteMeasureOnCompacts F := hang.1
-  let : IsFiniteMeasureOnCompacts H := hang.2.2.1
+  let  := hang.1
+  let  := hang.2.2.1
   let A := bellmanMeasurePrimitive F id 0
-  have hA : LocallyIntegrable A volume :=
+  have hA  :=
     bellmanMeasurePrimitive_locallyIntegrable F id continuous_id
   have h1H : LocallyIntegrable (fun _ : ℝ => (1 : ℝ)) H :=
     continuous_const.locallyIntegrable
@@ -67,10 +67,10 @@ theorem bellmanAngularFlux_weak (R β : ℝ) (F H : Measure ℝ)
   intro φ
   have he := hk φ
   rw [hL] at he
-  have hiA : Integrable (fun x => φ x * A x) volume := by
+  have hiA : Integrable (fun x => φ x * A x)  := by
     simpa only [smul_eq_mul] using
       hA.integrable_smul_left_of_hasCompactSupport φ.contDiff.continuous φ.hasCompactSupport
-  have hiφ : Integrable (fun x => φ x) volume :=
+  have hiφ : Integrable (fun x => φ x)  :=
     φ.contDiff.continuous.integrable_of_hasCompactSupport φ.hasCompactSupport
   have hJI : (∫ x, φ x * (-k - ((β - 2) / 3) * A x)) =
       -k * (∫ x, φ x) - ((β - 2) / 3) * (∫ x, φ x * A x) := by

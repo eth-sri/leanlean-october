@@ -8,11 +8,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.MixtureDensi
 Source: companion paper, Corollary 8.4. Constants precede the coefficient, clock and pole measure.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory
-open scoped ENNReal
+
 
 /-- Integrating the actual one-pole Green family preserves its uniform Lq estimate. -/
 theorem enlargedActiveGreen_density
@@ -27,15 +27,14 @@ theorem enlargedActiveGreen_density
         MemLp g (ENNReal.ofReal q) volume ∧
         (eLpNorm g (ENNReal.ofReal q) volume).toReal ≤
           C * c.r ^ (6 / q - 4) * (nu Set.univ).toReal := by
-  have hpq : q.HolderConjugate (q / (q - 1)) :=
-    (Real.holderConjugate_iff_eq_conjExponent hq).2 rfl
+
   obtain ⟨C, hC, ht⟩ :=
-    mixture_density_conjugate_tests hH hLE hlam hLam q _ hpq hq2
+    mixture_density_conjugate_tests hH hLE hlam hLam q _ ((Real.holderConjugate_iff_eq_conjExponent hq).2 rfl) hq2
   refine ⟨C, hC, ?_⟩
   intro A c nu _
-  let mu := enlargedActiveGreen hH hLE hlam hLam A c nu
-  have : IsFiniteMeasure mu := enlargedActiveGreen_isFiniteMeasure hH hLE hlam hLam A c nu
-  apply mixture_point_density_of_tests mu q
+
+  have  := enlargedActiveGreen_isFiniteMeasure hH hLE hlam hLam A c nu
+  apply mixture_point_density_of_tests (enlargedActiveGreen hH hLE hlam hLam A c nu) q
     (C * c.r ^ (6 / q - 4) * (nu Set.univ).toReal) hq
     (mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg c.positive.le _))
       ENNReal.toReal_nonneg)

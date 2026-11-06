@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDecompositio
 
 /-! # Finite propagation of the actual killed terminal transition -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set MeasureTheory SectionTwo Parabolic
+open Set MeasureTheory SectionTwo
 
 /-- The killed kernel has the same centered Euclidean propagation cone as the exit measure. -/
 theorem ballTransition_cone
@@ -20,15 +20,14 @@ theorem ballTransition_cone
     ∀ᵐ w ∂ballTransition hH hLE hd hlam hLam B hB v₀ hR P T,
       PDE.vecEuclideanNorm (w.2 - P.1.position - (T.1 - P.1.time) • v₀) ≤
         R * (T.1 - P.1.time) := by
-  let S : Set (KineticPoint d) := {Q | Q.velocity ∈ PDE.euclideanBall v₀ R}
-  have hS : MeasurableSet S :=
-    (PDE.isOpen_euclideanBall v₀ R).measurableSet.preimage continuous_velocity.measurable
+
+
   rw [← ballExit_terminal_interior_map hH hLE hd hlam hLam B hB v₀ hR P T]
   apply (ae_map_iff continuous_exitStateCoordinates.measurable.aemeasurable
     (isClosed_le (PDE.continuous_vecEuclideanNorm.comp
       ((continuous_snd.sub continuous_const).sub continuous_const))
       continuous_const).measurableSet).mpr
-  filter_upwards [ae_restrict_mem hS,
+  filter_upwards [ae_restrict_mem ((PDE.isOpen_euclideanBall v₀ R).measurableSet.preimage continuous_velocity.measurable),
     ae_restrict_of_ae (ballExitRaw_cone hH hLE hd hlam hLam B hB v₀ hR P T),
     ae_restrict_of_ae (ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T)]
     with Q hv hcone hQ

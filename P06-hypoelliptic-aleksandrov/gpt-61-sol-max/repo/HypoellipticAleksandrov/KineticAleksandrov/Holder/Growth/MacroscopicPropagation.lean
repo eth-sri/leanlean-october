@@ -8,9 +8,9 @@ import Mathlib.Tactic
 
 /-! # Uniform macroscopic propagation through the constructed buffered reference region -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -26,7 +26,7 @@ theorem exists_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
       ∀ (P0 : KineticPoint d) (scale : ℝ), 0 < scale →
       ∀ O : Set (KineticPoint d), IsOpen O →
         closure (kineticAffine P0 scale '' referenceRegion d m (referenceBound m)) ⊆ O →
-      ∀ u : KineticPoint d → ℝ, (∀ Z ∈ O, 0 ≤ u Z) →
+      ∀ u : HypoellipticAleksandrov.KineticScalarField d, (∀ Z ∈ O, 0 ≤ u Z) →
         IsAdmissibleSupersolution A O p C_A u →
       ∀ (Q : KineticPoint d) (r ell : ℝ), r0 ≤ r →
         backwardCylinder Q r ⊆ samplingCylinder d m → 0 ≤ ell →
@@ -53,7 +53,7 @@ theorem exists_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
     P hP
   have hrp : 0 < r := hr0.trans_le hr
   let S : KineticPoint d := ⟨stackStartTime Q r, stackStartPosition Q r, Q.velocity⟩
-  have hS : S ∈ closure (samplingCylinder d m) := sampling_cap_center_mem m Q hrp hQ
+  have hS  := sampling_cap_center_mem m Q hrp hQ
   obtain ⟨x, v, _, _, _, hxP, hvP, hleft, hvc, hxd, hLip, hcorr⟩ :=
     exists_reference_corridor m S P hS hP
   obtain ⟨hTlo, hThi, _, _⟩ := reference_endpoint_bounds m S P hS hP
@@ -69,8 +69,7 @@ theorem exists_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
     have hn : r0 ^ 2 / 32 ≤ (m : ℝ) + 1 := by linarith only [hr02, hm]
     exact (mul_le_mul_of_nonneg_right hn (sq_nonneg scale)).trans (by
       simpa only [mul_comm] using he)
-  have hTPhi : TP ≤ M * scale ^ 2 := by
-    exact (mul_le_mul_of_nonneg_left hThi (sq_nonneg scale)).trans_eq (mul_comm _ _)
+  have hTPhi  := (mul_le_mul_of_nonneg_left hThi (sq_nonneg scale)).trans_eq (mul_comm _ _)
   obtain ⟨hscT, hscH, hscX, hscV⟩ := macroscopic_propagation_scaling m r0 hscale
   let xp := physicalPathPosition P0 scale S.time x
   let vp := physicalPathVelocity P0 scale v
@@ -81,7 +80,7 @@ theorem exists_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
       ((r0 ^ 3 / 1024) * scale ^ 3) ((r0 / 16) * scale) xp vp ⊆ O := by
     apply Subset.trans _ (fun Z hZ => hregion (subset_closure hZ))
     apply Subset.trans _ (physical_corridor_subset_image P0 hscale S.time
-      (P.time - S.time) x v _ hcorr)
+      _ x v _ hcorr)
     rw [htminus]
     apply corridor_mono
     · nlinarith only [mul_le_mul_of_nonneg_right hr02 (sq_nonneg scale), sq_nonneg scale]
@@ -89,14 +88,14 @@ theorem exists_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
     · nlinarith only [mul_le_mul_of_nonneg_right hr03 (pow_nonneg hscale.le 3),
         pow_nonneg hscale.le 3]
     · nlinarith only [mul_le_mul_of_nonneg_right hr01.le hscale.le, hscale]
-  have hPO : kineticAffine P0 scale P ∈ O :=
+  have hPO  :=
     hregion (subset_closure ⟨P, unitCylinder_subset_reference d m hP, rfl⟩)
   have hcapInitial := macroscopic_initial_subset_cap P0 Q hscale hr0 hr x v hleft
   have hfinal := hprop (M * scale ^ 2) (mul_pos hM (sq_pos_of_pos hscale))
-    p C_A hp A hA O hO tminus (kineticAffine P0 scale P) hPO
+    p C_A hp A hA O hO tminus _ hPO
   rw [ht, neg_mul, hscT, hscH, hscX, hscV] at hfinal
   apply hfinal hTPlo hTPhi xp vp
-    (by simpa only [macroscopicAcceleration] using hsk) hxend hvend hcphys
+    (hsk) hxend hvend hcphys
     ell hell u hnonneg hu
   intro Z hZ htZ
   apply hcap Z

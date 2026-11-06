@@ -12,11 +12,11 @@ This measure-theoretic step takes a positive contraction functional, rather than
 uncharacterized measure. The functional's PDE construction is separate from this module.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory Set TopologicalSpace
-open scoped CompactlySupported ENNReal
+open scoped CompactlySupported
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [LocallyCompactSpace X]
   [SecondCountableTopology X] [PseudoMetrizableSpace X] [MeasurableSpace X] [BorelSpace X]

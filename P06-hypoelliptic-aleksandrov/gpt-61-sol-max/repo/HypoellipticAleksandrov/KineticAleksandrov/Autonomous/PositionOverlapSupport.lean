@@ -5,22 +5,23 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionOver
 
 /-! # Canonical positive densities retain the actual physical finite-speed support -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory Filter
-open scoped ENNReal
+open MeasureTheory Filter
+
 
 /-- The source centred active interval has speed bounded by `3r`. -/
 theorem positionActive_speed (c : Clock) (hc : |c.vbar| = 2 * c.r) :
     max |c.activeInterval.lo| |c.activeInterval.hi| ≤ 3 * c.r := by
+  let sharedTerm_096bf49cea := ((by linarith [c.positive] : 0 ≤ 3 * c.r / 4))
   apply max_le
   · have h := abs_sub c.vbar (3 * c.r / 4)
-    rw [hc, abs_of_nonneg (by linarith [c.positive] : 0 ≤ 3 * c.r / 4)] at h
+    rw [hc, abs_of_nonneg sharedTerm_096bf49cea] at h
     change |c.vbar - 3 * c.r / 4| ≤ 3 * c.r
     linarith only [h, c.positive]
   · have h := abs_add_le c.vbar (3 * c.r / 4)
-    rw [hc, abs_of_nonneg (by linarith [c.positive] : 0 ≤ 3 * c.r / 4)] at h
+    rw [hc, abs_of_nonneg sharedTerm_096bf49cea] at h
     change |c.vbar + 3 * c.r / 4| ≤ 3 * c.r
     linarith only [h, c.positive]
 

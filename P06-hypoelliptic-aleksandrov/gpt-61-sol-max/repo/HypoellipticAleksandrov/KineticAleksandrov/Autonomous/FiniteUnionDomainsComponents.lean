@@ -5,8 +5,8 @@ import Mathlib.Topology.Connected.Basic
 
 /-! # Connected smaller intervals belong to one larger disjoint component -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set
 
@@ -19,20 +19,20 @@ theorem Interval.exists_component_containing (I : Interval) (H : FiniteIntervalU
     dsimp only [v]
     constructor <;> linarith [I.ordered]
   obtain ⟨j, hj⟩ := mem_iUnion.mp (hsub hv)
-  let V : Set ℝ := ⋃ k, ⋃ (_ : k ≠ j), (H.component k).carrier
-  have hV : IsOpen V := isOpen_iUnion (fun _ => isOpen_iUnion (fun _ => isOpen_Ioo))
-  have hd : Disjoint (H.component j).carrier V := by
-    apply Set.disjoint_left.mpr
-    intro x hx hxV
-    obtain ⟨k, hk, hxk⟩ := mem_iUnion.mp hxV |>.imp fun _ h => mem_iUnion.mp h
-    exact Set.disjoint_left.mp (H.disjoint hk.symm) hx hxk
-  have hc : I.carrier ⊆ (H.component j).carrier ∪ V := by
-    intro x hx
-    obtain ⟨k, hk⟩ := mem_iUnion.mp (hsub hx)
-    by_cases hkj : k = j
-    · exact Or.inl (hkj ▸ hk)
-    · exact Or.inr (mem_iUnion.mpr ⟨k, mem_iUnion.mpr ⟨hkj, hk⟩⟩)
-  exact ⟨j, IsPreconnected.subset_left_of_subset_union isOpen_Ioo hV hd hc
+
+
+
+
+  exact ⟨j, IsPreconnected.subset_left_of_subset_union isOpen_Ioo (isOpen_iUnion (fun _ => isOpen_iUnion (fun _ => isOpen_Ioo))) (show Disjoint (H.component j).carrier (⋃ k, ⋃ (_ : k ≠ j), (H.component k).carrier) by
+      apply Set.disjoint_left.mpr
+      intro x hx hxV
+      obtain ⟨k, hk, hxk⟩ := mem_iUnion.mp hxV |>.imp fun _ h => mem_iUnion.mp h
+      exact Set.disjoint_left.mp (H.disjoint hk.symm) hx hxk) (by
+      intro x hx
+      obtain ⟨k, hk⟩ := mem_iUnion.mp (hsub hx)
+      by_cases hkj : k = j
+      · exact Or.inl (hkj ▸ hk)
+      · exact Or.inr (mem_iUnion.mpr ⟨k, mem_iUnion.mpr ⟨hkj, hk⟩⟩))
     ⟨v, hv, hj⟩ isPreconnected_Ioo⟩
 
 /-- Every component of a nested finite union lies in a component of the larger union. -/

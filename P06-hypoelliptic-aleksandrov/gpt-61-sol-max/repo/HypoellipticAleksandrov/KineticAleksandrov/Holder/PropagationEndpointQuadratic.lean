@@ -5,9 +5,9 @@ import Mathlib.Tactic
 
 /-! # Endpoint allowance and the source half-height quadratic estimate -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -16,9 +16,9 @@ theorem endpoint_scaled_norm_le {d : ℕ} {a C : ℝ} (ha : 0 < a)
     (y : PDE.Vec d) (hy : PDE.vecEuclideanNorm y ≤ C * a) :
     PDE.vecEuclideanNorm (a⁻¹ • y) ≤ C := by
   rw [PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.mpr ha)]
-  have he := mul_le_mul_of_nonneg_left hy (inv_nonneg.mpr ha.le)
-  have heq : a⁻¹ * (C * a) = C := by field_simp
-  exact he.trans_eq heq
+
+
+  exact (mul_le_mul_of_nonneg_left hy (inv_nonneg.mpr ha.le)).trans_eq (by field_simp)
 
 /-- The source one-eighth endpoint allowance gives q_h at most L squared over two. -/
 theorem qform_endpoint_half {d : ℕ} {lam h L : ℝ}
@@ -35,13 +35,13 @@ theorem qform_endpoint_half {d : ℕ} {lam h L : ℝ}
   have hVsq := (sq_le_sq₀ (PDE.vecEuclideanNorm_nonneg _) hC).mpr hV'
   rw [PDE.vecEuclideanNorm_sq] at hysq hVsq
   have he := qform_endpoint_upper hlam hh y V
-  have hn : PDE.vecNormSq ((h ^ (3 / 2 : ℝ))⁻¹ • y) +
-      PDE.vecNormSq ((h ^ (1 / 2 : ℝ))⁻¹ • V) ≤ 2 * C ^ 2 := by
-    linarith only [hysq, hVsq]
-  apply he.trans ((mul_le_mul_of_nonneg_left hn (by positivity)).trans ?_)
+
+  apply he.trans ((mul_le_mul_of_nonneg_left (show PDE.vecNormSq ((h ^ (3 / 2 : ℝ))⁻¹ • y) +
+      PDE.vecNormSq ((h ^ (1 / 2 : ℝ))⁻¹ • V) ≤ 2 * C ^ 2 by
+      linarith only [hysq, hVsq]) (by positivity)).trans ?_)
   dsimp only [C]
   rw [div_pow, mul_pow, Real.sq_sqrt hlam.le]
-  have hl : lam ≠ 0 := hlam.ne'
+  have hl  := hlam.ne'
   field_simp
   nlinarith only [sq_nonneg L]
 

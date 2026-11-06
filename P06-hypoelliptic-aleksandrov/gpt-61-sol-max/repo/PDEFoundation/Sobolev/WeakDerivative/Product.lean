@@ -2,6 +2,8 @@ module
 
 public import PDEFoundation.Sobolev.WeakDerivative
 public import Mathlib.Analysis.Calculus.FDeriv.Mul
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Products of weakly differentiable functions with smooth multipliers
@@ -21,7 +23,7 @@ Bochner integral is not available for arbitrary non-integrable functions.
 - `HasWeakGradientOn.mul_contDiff`: vector-valued weak-gradient product rule.
 -/
 
-@[expose] public section
+ public section
 
 namespace PDE
 
@@ -35,7 +37,7 @@ needed. The smooth multiplier may be noncompactly supported and unbounded.
 theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
     {u gi φ : Vec d → ℝ}
     (h : HasWeakPartialDerivOn U i u gi)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (huLoc : MeasureTheory.LocallyIntegrable u (volumeOn U))
     (hgiLoc : MeasureTheory.LocallyIntegrable gi (volumeOn U)) :
     HasWeakPartialDerivOn U i
@@ -45,9 +47,9 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
   intro ψ hψSmooth hψCompact hψSubset
   let μU : MeasureTheory.Measure (Vec d) := volumeOn U
   let ei : Vec d := basisVec i
-  let dφ : Vec d → ℝ := fun x => (fderiv ℝ φ x) ei
-  let dψ : Vec d → ℝ := fun x => (fderiv ℝ ψ x) ei
-  let ψφ : Vec d → ℝ := fun x => φ x * ψ x
+  let dφ  := fun x => (fderiv ℝ φ x) ei
+  let dψ  := fun x => (fderiv ℝ ψ x) ei
+  let ψφ  := fun x => φ x * ψ x
   change
     (∫ x, (φ x * u x) * dψ x ∂μU) =
       -∫ x, (φ x * gi x + u x * dφ x) * ψ x ∂μU
@@ -62,7 +64,7 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
   have hdψCompact : HasCompactSupport dψ := by
     simpa only [dψ, ei] using
       hψCompact.fderiv_apply (𝕜 := ℝ) ei
-  have hψφSmooth : ContDiff ℝ (⊤ : ℕ∞) ψφ :=
+  have hψφSmooth : ContDiff ℝ PDE.smoothOrder ψφ :=
     hφ.mul hψSmooth
   have hψφCompact : HasCompactSupport ψφ := by
     simpa only [ψφ] using! hψCompact.mul_left (f := φ)
@@ -72,26 +74,16 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       (hψφSmooth.continuous_fderiv (by simp)).clm_apply continuous_const
   have hdψφCompact :
       HasCompactSupport (fun x => (fderiv ℝ ψφ x) ei) := by
-    simpa only [ei] using
-      hψφCompact.fderiv_apply (𝕜 := ℝ) ei
+    exact hψφCompact.fderiv_apply (𝕜 := ℝ) ei
   have hψφSubset : tsupport ψφ ⊆ U :=
     (tsupport_mul_subset_right (f := φ) (g := ψ)).trans hψSubset
   have huWeak :
       (∫ x, u x * (fderiv ℝ ψφ x) ei ∂μU) =
         -∫ x, gi x * ψφ x ∂μU := by
-    simpa only [μU] using
-      h ψφ hψφSmooth hψφCompact hψφSubset
-  have hφdψCont : Continuous (fun x => φ x * dψ x) :=
-    hφCont.mul hdψCont
-  have hφdψCompact :
-      HasCompactSupport (fun x => φ x * dψ x) := by
-    simpa only using! hdψCompact.mul_left (f := φ)
-  have huφdψIntegrable :
-      MeasureTheory.Integrable
-        (fun x => u x * (φ x * dψ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using
-      huLoc.integrable_smul_right_of_hasCompactSupport
-        hφdψCont hφdψCompact
+    exact h ψφ hψφSmooth hψφCompact hψφSubset
+
+
+
   have hψdφCont : Continuous (fun x => ψ x * dφ x) :=
     hψCont.mul hdφCont
   have hψdφCompact :
@@ -100,9 +92,8 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
   have huψdφIntegrable :
       MeasureTheory.Integrable
         (fun x => u x * (ψ x * dφ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using
-      huLoc.integrable_smul_right_of_hasCompactSupport
-        hψdφCont hψdφCompact
+    simpa only [smul_eq_mul] using
+      huLoc.integrable_smul_right_of_hasCompactSupport hψdφCont hψdφCompact
   have huDψφIntegrable :
       MeasureTheory.Integrable
         (fun x => u x * (fderiv ℝ ψφ x) ei) μU := by
@@ -118,9 +109,8 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
   have hudφψIntegrable :
       MeasureTheory.Integrable
         (fun x => (u x * dφ x) * ψ x) μU := by
-    simpa only [smul_eq_mul, mul_assoc, mul_left_comm, mul_comm] using
-      huLoc.integrable_smul_right_of_hasCompactSupport
-        hψdφCont hψdφCompact
+    simpa only [mul_comm, mul_left_comm, smul_eq_mul] using
+      huLoc.integrable_smul_right_of_hasCompactSupport hψdφCont hψdφCompact
   have hproductDeriv :
       ∀ x, (fderiv ℝ ψφ x) ei =
         φ x * dψ x + ψ x * dφ x := by
@@ -166,7 +156,7 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
           ∫ x, gi x * (φ x * ψ x) ∂μU := by
       apply MeasureTheory.integral_congr_ae
       exact Filter.Eventually.of_forall fun x => by
-        simp only [ψφ]
+        rfl
     have huTerm :
         (∫ x, u x * (ψ x * dφ x) ∂μU) =
           ∫ x, (u x * dφ x) * ψ x ∂μU := by
@@ -212,7 +202,7 @@ locally integrable with respect to restricted volume.
 theorem mul_contDiff {d : ℕ} {U : Set (Vec d)}
     {u φ : Vec d → ℝ} {Du : Vec d → Vec d}
     (h : HasWeakGradientOn U u Du)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+    (hφ : ContDiff ℝ PDE.smoothOrder φ)
     (huLoc : MeasureTheory.LocallyIntegrable u (volumeOn U))
     (hDuLoc : ∀ i : Fin d,
       MeasureTheory.LocallyIntegrable

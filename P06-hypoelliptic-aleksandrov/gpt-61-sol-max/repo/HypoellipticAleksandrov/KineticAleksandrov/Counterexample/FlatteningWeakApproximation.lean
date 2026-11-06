@@ -10,16 +10,18 @@ The mollification API is the independently written generic M-lane API. All uses 
 are of proved normalized-convolution lemmas, with their ordinary analytic hypotheses.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Filter Set Metric
 open scoped Convolution
 
+variable {d : ℕ}
+
 /-- A local bound on the kernel sampling ball suffices for the normalized convolution bound. -/
-theorem spatialMollify_norm_le_on_ball {d : ℕ} (phi : ContDiffBump (0 : XV d))
-    (g : XV d → ℝ) (hg : AEStronglyMeasurable g volume) (C : ℝ) (hC : 0 ≤ C)
+theorem spatialMollify_norm_le_on_ball  (phi : ContDiffBump (0 : XV d))
+    (g : XV d → ℝ) (hg : AEStronglyMeasurable g ) (C : ℝ) (hC : 0 ≤ C)
     (q : XV d) (hb : ∀ y ∈ ball q phi.rOut, ‖g y‖ ≤ C) :
     ‖spatialMollify phi g q‖ ≤ C := by
   have h := dist_convolution_le (μ := volume) (x₀ := q) (z₀ := (0 : ℝ)) hC
@@ -29,12 +31,9 @@ theorem spatialMollify_norm_le_on_ball {d : ℕ} (phi : ContDiffBump (0 : XV d))
 
 /-- The standard normalized convolution converges almost everywhere for every locally
 integrable scalar function, without a global boundedness assumption. -/
-theorem spatialMollify_ae_tendsto {d : ℕ} (g : XV d → ℝ) (hg : LocallyIntegrable g volume) :
-    ∀ᵐ q ∂volume,
-      Tendsto (fun n => spatialMollify (standardMollifierSequence n) g q) atTop (nhds (g q)) := by
-  have h := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable
-    (standardMollifierSequence_rOut_tendsto (G := XV d))
-    (Eventually.of_forall (standardMollifierSequence_radius_ratio (G := XV d))) hg
-  exact h
+theorem spatialMollify_ae_tendsto  (g : XV d → ℝ) (hg : LocallyIntegrable g ) :
+    ∀ᵐ q,
+      Tendsto (fun n => spatialMollify (standardMollifierSequence n) g q) atTop (nhds (g q)) := (ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable standardMollifierSequence_rOut_tendsto
+  (Eventually.of_forall standardMollifierSequence_radius_ratio) hg)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

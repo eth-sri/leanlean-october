@@ -5,9 +5,9 @@ import Mathlib.Tactic
 
 /-! # Radius containment and joint source propagation parameter bounds -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 

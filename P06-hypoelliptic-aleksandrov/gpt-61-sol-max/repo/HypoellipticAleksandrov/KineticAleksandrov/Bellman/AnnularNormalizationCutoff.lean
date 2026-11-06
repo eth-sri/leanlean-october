@@ -3,17 +3,19 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AnnularNormalizationGeometry
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # One smooth radial cutoff for all homogeneous pairs -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- One smooth radial cutoff equals one on the unit annulus and avoids the origin. -/
 theorem exists_bellman_annular_cutoff :
-    ∃ chi : (ℝ × ℝ) → ℝ, ContDiff ℝ (⊤ : ℕ∞) chi ∧ HasCompactSupport chi ∧
+    ∃ chi : (ℝ × ℝ) → ℝ, ContDiff ℝ PDE.smoothOrder chi ∧ HasCompactSupport chi ∧
       tsupport chi ⊆ {q | 1 / 2 < bellmanGauge q ∧ bellmanGauge q < 4} ∧
       (∀ q, 0 ≤ chi q ∧ chi q ≤ 1) ∧
       (∀ q, 1 ≤ bellmanGauge q → bellmanGauge q ≤ 2 → chi q = 1) ∧
@@ -21,15 +23,15 @@ theorem exists_bellman_annular_cutoff :
   obtain ⟨psi, hp, _hpc, hps, hpr, hp1⟩ := SectionTwo.exists_smooth_cutoff
     (C := Icc (1 : ℝ) 64) (V := Ioo (1 / 64 : ℝ) 4096) isCompact_Icc isOpen_Ioo
     (by intro x hx; constructor <;> linarith only [hx.1, hx.2])
-  let chi : (ℝ × ℝ) → ℝ := psi ∘ bellmanGaugePower
+  let chi  := psi ∘ bellmanGaugePower
   have hs : tsupport chi ⊆ bellmanGaugePower ⁻¹' tsupport psi :=
     fun _ hq => tsupport_comp_subset_preimage psi bellmanGaugePower_continuous hq
-  have hb : tsupport chi ⊆ {q | bellmanGaugePower q ≤ 4096} := by
-    intro q hq
-    exact (hps (hs hq)).2.le
-  have hcompact : HasCompactSupport chi :=
+
+  have hcompact  :=
     (bellmanGaugePower_sublevel_isCompact 4096 (by norm_num)).of_isClosed_subset
-      (isClosed_tsupport chi) hb
+      (isClosed_tsupport chi) (by
+          intro q hq
+          exact (hps (hs hq)).2.le)
   refine ⟨chi, hp.comp bellmanGaugePower_contDiff, hcompact, ?_,
     fun q => hpr _, ?_, ?_⟩
   · intro q hq
@@ -37,8 +39,8 @@ theorem exists_bellman_annular_cutoff :
     have he := bellmanGauge_pow_six q
     constructor
     · by_contra h
-      have hh : bellmanGauge q ≤ 1 / 2 := le_of_not_gt h
-      have hx := pow_le_pow_left₀ (bellmanGauge_nonneg q) hh 6
+
+      have hx := pow_le_pow_left₀ (bellmanGauge_nonneg q) (le_of_not_gt h) 6
       rw [he] at hx
       norm_num at hx
       linarith only [hn.1, hx]

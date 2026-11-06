@@ -9,29 +9,29 @@ The shared occupation and evolved-measure proof is applied to its constructed
 half-time variation bound, retaining the additional exponential killing factor.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Green
-open scoped ENNReal NNReal ProbabilityTheory
-variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+open scoped ProbabilityTheory
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 )))
 
 /-- Occupation domination bounds the Fourier density while retaining the half-time
 killing and frequency factor. The half-time premise is discharged by the proved decay. -/
 theorem killed_slab_fourier_density_bound (hd : 0 < d)
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
+    (hcov : IsTranslationCovariantEvolution (wholeSpace d) _ MeasurableSet.univ K)
     (hcomp : K.HasComposition MeasurableSet.univ)
     (Cocc : ℝ → ℝ) (hocc : OccupationBoundedBy K Cocc)
     (Cdec cdec : ℝ) (hCdec : 0 < Cdec)  (σ₀ : ℝ)
-    (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
+    (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 )) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (ξ : PDE.Vec d) (k : SlabBase d → ℂ) (hk : Integrable k (slabBase d T))
     (hkE : ∀ E : Set (SlabBase d), MeasurableSet E →
       ∫ y in E, k y ∂slabBase d T =
         ∫ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
-          Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ)
+          Complex.exp (-((PDE.vecDot ξ p.2.2 ) * Complex.I)) ∂Γ)
     (hhalf : (halfMeasure K σ₀ T hT.le μ ξ).variation univ ≤
       μ univ * ENNReal.ofReal (Cdec * Real.exp
         (-(cdec * (T / 2) * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))))) :
@@ -41,19 +41,22 @@ theorem killed_slab_fourier_density_bound (hd : 0 < d)
           ENNReal.ofReal (T ^ slabBeta d γ) *
           ENNReal.ofReal (Real.exp
             (-((cdec / 2) * T * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))))) := by
+  let sharedTerm_13e5c994d1 := ((volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : PDE.VelocityRegion d))))
+  let sharedTerm_75592f8f90 := ((halfMeasure K σ₀ T hT.le μ ξ))
+  let sharedTerm_8a55484686 := (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))
   intro γ hγ1 hγ2
-  have hρfin : IsFiniteMeasure (halfMeasure K σ₀ T hT.le μ ξ).variation :=
+  have hρfin : IsFiniteMeasure sharedTerm_75592f8f90.variation :=
     interval_evolved_variation_finite μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)
-  obtain ⟨gξ, hgξ, hnorm⟩ := hocc.2 (halfMeasure K σ₀ T hT.le μ ξ).variation (σ₀ + T / 2)
+  obtain ⟨gξ, hgξ, hnorm⟩ := hocc.2 sharedTerm_75592f8f90.variation (σ₀ + T / 2)
     (3 * T / 2) (by positivity)
   have hint : Integrable gξ
-      (volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : Set (PDE.Vec d)))) := by
+      sharedTerm_13e5c994d1 := by
     have := (hnorm 1 le_rfl (one_le_slabGamma0 hd)).1
     rw [ENNReal.ofReal_one] at this
     exact memLp_one_iff_integrable.1 this
   have hkae := slab_fourier_ae_bound K hcov hcomp σ₀ μ Γ hΓ hT ξ gξ hgξ hint k hk hkE
   obtain ⟨hmem, hbd⟩ := hnorm γ hγ1 hγ2
-  have hC0 : 0 ≤ Cocc γ := hocc.1 γ hγ1 hγ2
+  have hC0  := hocc.1 γ hγ1 hγ2
   have hβ := slabBeta_nonneg hd hγ1 hγ2
   -- step 1: domination
   have h1 : eLpNorm k (ENNReal.ofReal γ) (slabBase d T) ≤
@@ -64,22 +67,22 @@ theorem killed_slab_fourier_density_bound (hd : 0 < d)
     filter_upwards [hkae] with y hy
     rwa [enorm_eq_self]
   -- step 2: the occupation bound
-  set Cn : ℝ := Cocc γ * ((halfMeasure K σ₀ T hT.le μ ξ).variation univ).toReal *
+  set Cn : ℝ := Cocc γ * (sharedTerm_75592f8f90.variation univ).toReal *
     (3 * T / 2) ^ slabBeta d γ with hCn
   have hbd' : eLpNorm gξ (ENNReal.ofReal γ)
-      (volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : Set (PDE.Vec d)))) ≤
+      sharedTerm_13e5c994d1 ≤
         ENNReal.ofReal Cn := by
     rw [← ENNReal.ofReal_toReal hmem.eLpNorm_ne_top]
     exact ENNReal.ofReal_le_ofReal hbd
   have h2 := eLpNorm_slabShift_le gξ hgξ.1 hgξ.2.1 (T / 2) T (3 * T / 2) γ Cn hT.le
     (by linarith) (by linarith) hbd'
   -- step 3: arithmetic
-  set E : ℝ := Real.exp (-((cdec / 2) * T * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) with hE
+  set E : ℝ := Real.exp (-((cdec / 2) * T * (sharedTerm_8a55484686))) with hE
   have hE0 : 0 ≤ E := (Real.exp_pos _).le
   have hmass := hhalf
-  have hrho : ((halfMeasure K σ₀ T hT.le μ ξ).variation univ).toReal ≤
+  have hrho : (sharedTerm_75592f8f90.variation univ).toReal ≤
       (μ univ).toReal * (Cdec * E) := by
-    have hexp : Real.exp (-(cdec * (T / 2) * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) = E :=
+    have hexp : Real.exp (-(cdec * (T / 2) * (sharedTerm_8a55484686))) = E :=
       by
       rw [hE]; congr 1; ring
     rw [hexp] at hmass
@@ -87,8 +90,7 @@ theorem killed_slab_fourier_density_bound (hd : 0 < d)
       ENNReal.mul_ne_top (measure_ne_top _ _) ENNReal.ofReal_ne_top
     have := ENNReal.toReal_mono hfin hmass
     rwa [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by positivity)] at this
-  have hCnle : Cn ≤ (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * (μ univ).toReal *
-      T ^ slabBeta d γ * E :=
+  have hCnle  :=
     fourier_bound_arith _ _ _ _ _ _ _ hC0 hCdec.le ENNReal.toReal_nonneg hE0 hT hβ hrho
   have hfinal : ENNReal.ofReal Cn ≤
       ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *

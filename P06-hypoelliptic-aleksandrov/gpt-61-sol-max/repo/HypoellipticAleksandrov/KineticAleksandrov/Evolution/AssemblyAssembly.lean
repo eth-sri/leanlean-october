@@ -14,17 +14,17 @@ master measures. Composition and joint measurability remain explicit premises.
 This module performs no analytic limit.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory SectionTwo
+open HypoellipticAleksandrov Set MeasureTheory SectionTwo
 open scoped ProbabilityTheory
 
 section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+variable (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)
 variable (hB_symm : IsSymmetricFullKineticCoefficient B)
@@ -51,18 +51,18 @@ theorem construction_terminalEvolution_assembly
       P₀ σ τ (hσr.trans hrτ) = (P₀ σ r hσr).comp (P₀ r τ hrτ))
     (hKComp : ∀ σ r τ hσr hrτ,
       κ σ τ (hσr.trans hrτ) = κ r τ hrτ ∘ₖ κ σ r hσr)
-    (hJoint : Measurable (fun q : EvolutionQuery Ω γ => μ q)) :
+    (hJoint : Measurable (fun q  => μ q)) :
     ∃ P : TerminalOperatorFamily Ω γ,
       ∃ K : MovingFiberKernel Ω γ,
         (∀ (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)),
           IsSmoothCompactTerminalDatum Ω γ τ F →
-            ∃ u : KineticPoint n → ℝ,
+            ∃ u : HypoellipticAleksandrov.KineticScalarField n,
               IsClassicalTerminalSolution Ω γ B b τ F u ∧
               (∀ (σ : ℝ) (hστ : σ ≤ τ)
                   (p : EvolutionState Ω γ σ),
                 u ⟨σ, p.1.1, p.1.2⟩ =
                   P σ τ hστ (terminalStateDatum F) p) ∧
-              (∀ v : KineticPoint n → ℝ,
+              (∀ v : HypoellipticAleksandrov.KineticScalarField n,
                 IsClassicalTerminalSolution Ω γ B b τ F v →
                   EqOn v u (evolutionPastClosedCylinder Ω γ τ))) ∧
         (∀ (σ : ℝ),
@@ -74,7 +74,7 @@ theorem construction_terminalEvolution_assembly
             (f : BoundedBorel (EvolutionState Ω γ τ)),
           0 ≤ f → 0 ≤ P σ τ hστ f) ∧
         (∀ (σ τ : ℝ) (hστ : σ ≤ τ),
-          P σ τ hστ (1 : BoundedBorel (EvolutionState Ω γ τ)) ≤
+          P σ τ hστ (1 ) ≤
             (1 : BoundedBorel (EvolutionState Ω γ σ))) ∧
         (∀ (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ),
           P σ τ (hσr.trans hrτ) =
@@ -93,7 +93,7 @@ theorem construction_terminalEvolution_assembly
         (∀ (E : Set (EvolutionAmbientState n))
             (hE : MeasurableSet E),
           let _ := hE
-          Measurable (fun q : EvolutionQuery Ω γ => K.master q E)) ∧
+          Measurable (fun q  => K.master q E)) ∧
         (∀ (σ τ : ℝ) (hστ : σ ≤ τ)
             (p : EvolutionState Ω γ σ),
           K.fiberKernel
@@ -114,9 +114,7 @@ theorem construction_terminalEvolution_assembly
   let K := constructionTerminalKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hJoint
   have hK (q : EvolutionQuery Ω γ) : K.master q = μ q := rfl
-  have hFiber (σ τ : ℝ) (hστ : σ ≤ τ) :
-      K.fiberKernel (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ τ hστ =
-        κ σ τ hστ :=
+  have hFiber (σ τ : ℝ) (hστ : σ ≤ τ)  :=
     constructionTerminalKernel_fiber_eq n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hJoint σ τ hστ
   have hComposition : K.HasComposition

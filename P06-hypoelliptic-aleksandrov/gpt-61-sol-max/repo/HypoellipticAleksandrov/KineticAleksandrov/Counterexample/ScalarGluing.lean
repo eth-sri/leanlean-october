@@ -17,24 +17,25 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set Filter
 open scoped Topology ContDiff
 
+variable (f g : ℝ → ℝ)
+
 /-- Join the positive-side function to the negative-side function at zero. -/
-def scalarJoin (f g : ℝ → ℝ) (s : ℝ) : ℝ := if 0 < s then f s else g s
+def scalarJoin  (s : ℝ) : ℝ := if 0 < s then f s else g s
 
 /-- The glued derivative at zero follows from the two one-sided derivatives. -/
-theorem scalarJoin_hasDerivAt_zero (f g : ℝ → ℝ) (D : ℝ)
+theorem scalarJoin_hasDerivAt_zero  (D : ℝ)
     (hf : HasDerivAt f D 0) (hg : HasDerivAt g D 0) (hfg : f 0 = g 0) :
     HasDerivAt (scalarJoin f g) D 0 := by
   have hr : HasDerivWithinAt (scalarJoin f g) D (Ici 0) 0 :=
     hf.hasDerivWithinAt.congr (by
       intro s hs
       rcases eq_or_lt_of_le hs with hs | hs
-      · simp only [← hs, scalarJoin, lt_self_iff_false, ↓reduceIte, hfg]
+      · simp_all [scalarJoin]
       · simp only [scalarJoin, hs, ↓reduceIte])
       (by simp only [scalarJoin, lt_self_iff_false, ↓reduceIte, hfg])
   have hl : HasDerivWithinAt (scalarJoin f g) D (Iic 0) 0 :=
     hg.hasDerivWithinAt.congr (by
-      intro s hs
-      simp only [scalarJoin, not_lt.mpr hs, ↓reduceIte])
+      simp_all [scalarJoin])
       (by simp only [scalarJoin, lt_self_iff_false, ↓reduceIte])
   have hu : Ici (0 : ℝ) ∪ Iic 0 = univ := by
     ext s
@@ -43,7 +44,7 @@ theorem scalarJoin_hasDerivAt_zero (f g : ℝ → ℝ) (D : ℝ)
   exact (hr.union hl).hasDerivAt (by rw [hu]; exact univ_mem)
 
 /-- Away from zero, differentiation commutes with the branch selection. -/
-theorem scalarJoin_deriv_of_ne_zero (f g : ℝ → ℝ) (s : ℝ) (hs : s ≠ 0) :
+theorem scalarJoin_deriv_of_ne_zero  (s : ℝ) (hs : s ≠ 0) :
     deriv (scalarJoin f g) s = scalarJoin (deriv f) (deriv g) s := by
   rcases lt_or_gt_of_ne hs with hs | hs
   · have he : scalarJoin f g =ᶠ[𝓝 s] g := by
@@ -57,10 +58,13 @@ theorem scalarJoin_deriv_of_ne_zero (f g : ℝ → ℝ) (s : ℝ) (hs : s ≠ 0)
     rw [he.deriv_eq]
     simp only [scalarJoin, hs, ↓reduceIte]
 
+section
+variable (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) (hfg : f 0 = g 0) (hdfg : deriv f 0 = deriv g 0)
+
+include hf hg hfg hdfg
 /-- Matching first jets gives the global piecewise derivative identity. -/
-theorem scalarJoin_deriv (f g : ℝ → ℝ)
-    (hf : Differentiable ℝ f) (hg : Differentiable ℝ g)
-    (hfg : f 0 = g 0) (hdfg : deriv f 0 = deriv g 0) :
+theorem scalarJoin_deriv
+     :
     deriv (scalarJoin f g) = scalarJoin (deriv f) (deriv g) := by
   funext s
   by_cases hs : s = 0
@@ -71,9 +75,8 @@ theorem scalarJoin_deriv (f g : ℝ → ℝ)
   · exact scalarJoin_deriv_of_ne_zero f g s hs
 
 /-- Matching first jets gives ordinary differentiability of the join. -/
-theorem differentiable_scalarJoin (f g : ℝ → ℝ)
-    (hf : Differentiable ℝ f) (hg : Differentiable ℝ g)
-    (hfg : f 0 = g 0) (hdfg : deriv f 0 = deriv g 0) :
+theorem differentiable_scalarJoin
+     :
     Differentiable ℝ (scalarJoin f g) := by
   intro s
   rcases lt_trichotomy s 0 with hs | hs | hs
@@ -86,41 +89,41 @@ theorem differentiable_scalarJoin (f g : ℝ → ℝ)
   · apply (hf s).congr_of_eventuallyEq
     filter_upwards [Ioi_mem_nhds hs] with t ht
     simp only [scalarJoin, show 0 < t from ht, ↓reduceIte]
+end
+
 
 /-- Matching values makes the join continuous. -/
-theorem continuous_scalarJoin (f g : ℝ → ℝ) (hf : Continuous f) (hg : Continuous g)
+theorem continuous_scalarJoin  (hf : Continuous f) (hg : Continuous g)
     (hfg : f 0 = g 0) : Continuous (scalarJoin f g) := by
   classical
-  have hb : ∀ s ∈ frontier (Ioi (0 : ℝ)), f s = g s := by
-    intro s hs
-    rw [frontier_Ioi] at hs
-    simpa only [mem_singleton_iff.mp hs] using hfg
+
   have he : (Ioi (0 : ℝ)).piecewise f g = scalarJoin f g := by
     funext s
-    simp only [Set.piecewise, mem_Ioi, scalarJoin]
+    rfl
   rw [← he]
-  exact Continuous.piecewise hb hf hg
+  exact Continuous.piecewise (by
+      intro s hs
+      rw [frontier_Ioi] at hs
+      simpa only [mem_singleton_iff.mp hs] using hfg) hf hg
 
 /-- Matching values and two derivatives suffices for global C² regularity. -/
-theorem contDiff_two_scalarJoin (f g : ℝ → ℝ) (hf : ContDiff ℝ 2 f)
+theorem contDiff_two_scalarJoin  (hf : ContDiff ℝ 2 f)
     (hg : ContDiff ℝ 2 g) (hfg : f 0 = g 0) (hdfg : deriv f 0 = deriv g 0)
     (hddfg : deriv (deriv f) 0 = deriv (deriv g) 0) :
     ContDiff ℝ 2 (scalarJoin f g) := by
   have hfd := hf.differentiable (by norm_num)
   have hgd := hg.differentiable (by norm_num)
-  have he := scalarJoin_deriv f g hfd hgd hfg hdfg
+
   rw [show (2 : ℕ∞ω) = 1 + 1 by norm_num, contDiff_succ_iff_deriv]
   refine ⟨differentiable_scalarJoin f g hfd hgd hfg hdfg, by norm_num, ?_⟩
-  rw [he, contDiff_one_iff_deriv]
+  rw [(scalarJoin_deriv f g hfd hgd hfg hdfg), contDiff_one_iff_deriv]
   have hfdd := hf.differentiable_deriv_two
   have hgdd := hg.differentiable_deriv_two
   refine ⟨differentiable_scalarJoin (deriv f) (deriv g) hfdd hgdd hdfg hddfg, ?_⟩
   rw [scalarJoin_deriv (deriv f) (deriv g) hfdd hgdd hdfg hddfg]
-  have hfder : ContDiff ℝ 1 (deriv f) :=
-    (show ContDiff ℝ (1 + 1) f from hf).deriv'
-  have hgder : ContDiff ℝ 1 (deriv g) :=
-    (show ContDiff ℝ (1 + 1) g from hg).deriv'
-  exact continuous_scalarJoin _ _ (hfder.continuous_deriv (by norm_num))
-    (hgder.continuous_deriv (by norm_num)) hddfg
+
+
+  exact continuous_scalarJoin _ _ (((show ContDiff ℝ (1 + 1) f from hf).deriv').continuous_deriv (by norm_num))
+    (((show ContDiff ℝ (1 + 1) g from hg).deriv').continuous_deriv (by norm_num)) hddfg
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

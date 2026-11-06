@@ -16,7 +16,7 @@ linear `piUnique` equivalence, while measure transport remains in
 
 namespace PDE
 
-open MeasureTheory Set
+
 
 noncomputable section
 
@@ -26,26 +26,21 @@ def scalarToVecOneContinuousLinearEquiv : ℝ ≃L[ℝ] Vec 1 :=
 
 @[simp] theorem scalarToVecOneContinuousLinearEquiv_apply (t : ℝ) :
     scalarToVecOneContinuousLinearEquiv t = scalarToVecOne t := by
-  funext i
-  rw [scalarToVecOneContinuousLinearEquiv,
-    ContinuousLinearEquiv.piUnique_symm_apply]
   rfl
 
 @[simp] theorem scalarToVecOneContinuousLinearEquiv_one :
-    scalarToVecOneContinuousLinearEquiv (1 : ℝ) = basisVec (0 : Fin 1) := by
+    scalarToVecOneContinuousLinearEquiv (1 ) = basisVec (0 : Fin 1) := by
   rw [scalarToVecOneContinuousLinearEquiv_apply]
   funext i
   have hi : i = 0 := Subsingleton.elim _ _
   subst i
-  simp [scalarToVecOne, basisVec]
-
-/-- Pull a native smooth scalar function back to the scalar coordinate. -/
-def scalarPullbackOne (φ : Vec 1 → ℝ) : ℝ → ℝ :=
-  fun t => φ (scalarToVecOne t)
-
-@[simp] theorem scalarPullbackOne_apply (φ : Vec 1 → ℝ) (t : ℝ) :
-    scalarPullbackOne φ t = φ (scalarToVecOne t) :=
   rfl
+
+variable (φ : Vec 1 → ℝ)
+
+
+
+
 
 end
 

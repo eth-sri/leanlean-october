@@ -12,33 +12,37 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter Asymptotics Set
 open scoped Topology
 
+variable (f : ℝ → ℝ) (beta : ℝ)
+
 /-- The reflected scalar rescaling, with zero values on the position axis. -/
-def scalarRescaled (f : ℝ → ℝ) (beta : ℝ) (q : XV 1) : ℝ :=
+def scalarRescaled  (q : XV 1) : ℝ :=
   if 0 < q.1 0 then Real.rpow (q.1 0) (beta / 3) * f (scalarSimilarity (q.1 0) (q.2 0))
   else if q.1 0 < 0 then Real.rpow (-q.1 0) (beta / 3) *
     f (scalarSimilarity (-q.1 0) (-q.2 0)) else 0
 
 /-- Off-axis continuity follows from continuity of the similarity function. -/
-theorem scalarRescaled_continuousAt_off_axis (f : ℝ → ℝ) (beta : ℝ) (hf : Continuous f)
+theorem scalarRescaled_continuousAt_off_axis  (hf : Continuous f)
     (q : XV 1) (hx : q.1 0 ≠ 0) : ContinuousAt (scalarRescaled f beta) q := by
-  have hX : Continuous (fun z : XV 1 => z.1 0) := by fun_prop
+  let sharedTerm_989a45617d := ((fun z : XV 1 => -z.1 0))
+  let sharedTerm_b51747c5d5 := ((fun z : XV 1 => z.1 0))
+  have hX : Continuous sharedTerm_b51747c5d5 := by fun_prop
   have hV : Continuous (fun z : XV 1 => z.2 0) := by fun_prop
   rcases lt_or_gt_of_ne hx with hx | hx
-  · have hxp : 0 < -q.1 0 := neg_pos.mpr hx
-    have hXn : ContinuousAt (fun z : XV 1 => -z.1 0) q := by fun_prop
+  · have hxp  := neg_pos.mpr hx
+    have hXn : ContinuousAt sharedTerm_989a45617d q := by fun_prop
     have hP : ContinuousAt (fun z : XV 1 => Real.rpow (-z.1 0) (beta / 3)) q := by
       simpa only [Real.rpow_eq_pow] using
         (Real.continuousAt_rpow_const (-q.1 0) (beta / 3) (Or.inl hxp.ne')).comp'
-          (f := fun z : XV 1 => -z.1 0) hXn
-    have hK : ContinuousAt (fun z : XV 1 => Real.rpow (-z.1 0) (1 / 3)) q := by
-      simpa only [Real.rpow_eq_pow] using
-        (Real.continuousAt_rpow_const (-q.1 0) (1 / 3) (Or.inl hxp.ne')).comp'
-          (f := fun z : XV 1 => -z.1 0) hXn
-    have hk : Real.rpow (-q.1 0) (1 / 3) ≠ 0 := by
-      simpa only [Real.rpow_eq_pow] using (Real.rpow_pos_of_pos hxp (1 / 3 : ℝ)).ne'
-    have hS : ContinuousAt (fun z : XV 1 => scalarSimilarity (-z.1 0) (-z.2 0)) q := by
-      simpa only [scalarSimilarity, neg_neg, Pi.div_def] using (hV.continuousAt (x := q)).div hK hk
-    have hh := hP.mul (hf.continuousAt.comp' hS)
+          (f := sharedTerm_989a45617d) hXn
+
+
+
+    have hh := hP.mul (hf.continuousAt.comp' (by
+        simpa only [scalarSimilarity, neg_neg, Pi.div_def] using (hV.continuousAt (x := q)).div (show ContinuousAt (fun z : XV 1 => Real.rpow (-z.1 0) (1 / 3)) q by
+            simpa only [Real.rpow_eq_pow] using
+              (Real.continuousAt_rpow_const (-q.1 0) (1 / 3) (Or.inl hxp.ne')).comp'
+                (f := sharedTerm_989a45617d) hXn) (show Real.rpow (-q.1 0) (1 / 3) ≠ 0 by
+            exact (Real.rpow_pos_of_pos hxp (1 / 3 : ℝ)).ne')))
     apply hh.congr_of_eventuallyEq
     filter_upwards [hX.continuousAt.preimage_mem_nhds (Iio_mem_nhds hx)] with z hz
     simp only [scalarRescaled, scalarSimilarity, not_lt.mpr (show z.1 0 < 0 from hz).le,
@@ -46,25 +50,24 @@ theorem scalarRescaled_continuousAt_off_axis (f : ℝ → ℝ) (beta : ℝ) (hf 
   · have hP : ContinuousAt (fun z : XV 1 => Real.rpow (z.1 0) (beta / 3)) q := by
       simpa only [Real.rpow_eq_pow] using
         (Real.continuousAt_rpow_const (q.1 0) (beta / 3) (Or.inl hx.ne')).comp'
-          (f := fun z : XV 1 => z.1 0)
-          (hX.continuousAt (x := q))
-    have hK : ContinuousAt (fun z : XV 1 => Real.rpow (z.1 0) (1 / 3)) q := by
-      simpa only [Real.rpow_eq_pow] using
-        (Real.continuousAt_rpow_const (q.1 0) (1 / 3) (Or.inl hx.ne')).comp'
-          (f := fun z : XV 1 => z.1 0)
-          (hX.continuousAt (x := q))
-    have hk : Real.rpow (q.1 0) (1 / 3) ≠ 0 := by
-      simpa only [Real.rpow_eq_pow] using (Real.rpow_pos_of_pos hx (1 / 3 : ℝ)).ne'
-    have hS : ContinuousAt (fun z : XV 1 => scalarSimilarity (z.1 0) (z.2 0)) q := by
-      simpa only [scalarSimilarity, Pi.neg_def, Pi.div_def] using
-        (hV.continuousAt (x := q)).neg.div hK hk
-    have hh := hP.mul (hf.continuousAt.comp' hS)
+          (f := sharedTerm_b51747c5d5)
+          (hX.continuousAt )
+
+
+
+    have hh := hP.mul (hf.continuousAt.comp' (show ContinuousAt (fun z : XV 1 => scalarSimilarity (z.1 0) (z.2 0)) q by
+        simpa only [scalarSimilarity, Pi.neg_def, Pi.div_def] using
+          (hV.continuousAt (x := q)).neg.div (by
+              simpa only [Real.rpow_eq_pow] using
+                (Real.continuousAt_rpow_const (q.1 0) (1 / 3) (Or.inl hx.ne')).comp'
+                  (f := sharedTerm_b51747c5d5)
+                  (hX.continuousAt )) ((Real.rpow_pos_of_pos hx (1 / 3 : ℝ)).ne')))
     apply hh.congr_of_eventuallyEq
     filter_upwards [hX.continuousAt.preimage_mem_nhds (Ioi_mem_nhds hx)] with z hz
     simp only [scalarRescaled, scalarSimilarity, show 0 < z.1 0 from hz, ↓reduceIte, Pi.mul_def]
 
 /-- The reflected rescaling is bounded near nonzero position-axis points. -/
-theorem scalarRescaled_isBigO_axis (f : ℝ → ℝ) (beta : ℝ)
+theorem scalarRescaled_isBigO_axis
     (ht : IsBigO atTop f (fun s => Real.rpow |s| beta))
     (hb : IsBigO atBot f (fun s => Real.rpow |s| beta))
     (q : XV 1) (hx : q.1 0 = 0) (hv : q.2 0 ≠ 0) :
@@ -107,22 +110,23 @@ theorem scalarRescaled_isBigO_axis (f : ℝ → ℝ) (beta : ℝ)
     filter_upwards [self_mem_nhdsWithin] with z hz
     simp only [scalarRescaled, show z.1 0 = 0 from hz, lt_self_iff_false, ↓reduceIte]
 
+variable (hf : Continuous f) (ht : IsBigO atTop f (fun s => Real.rpow |s| beta)) (hb : IsBigO atBot f (fun s => Real.rpow |s| beta))
+
+include hf ht hb
 /-- The rescaled function is locally bounded away from the origin. -/
-theorem scalarRescaled_locally_bounded (f : ℝ → ℝ) (beta : ℝ) (hf : Continuous f)
-    (ht : IsBigO atTop f (fun s => Real.rpow |s| beta))
-    (hb : IsBigO atBot f (fun s => Real.rpow |s| beta)) (q : XV 1) (hq : q ≠ 0) :
+theorem scalarRescaled_locally_bounded   (q : XV 1) (hq : q ≠ 0) :
     ∃ M : ℝ, ∀ᶠ z in 𝓝 q, |scalarRescaled f beta z| ≤ M := by
   have hh : IsBigO (𝓝 q) (scalarRescaled f beta) (fun _ => (1 : ℝ)) := by
     by_cases hx : q.1 0 = 0
-    · have hv : q.2 0 ≠ 0 := by
-        intro hv
-        apply hq
-        apply Prod.ext <;> funext i
-        all_goals have hi : i = 0 := Subsingleton.elim _ _
-        all_goals subst i
-        · exact hx
-        · exact hv
-      exact scalarRescaled_isBigO_axis f beta ht hb q hx hv
+    ·
+      exact scalarRescaled_isBigO_axis f beta ht hb q hx (by
+          intro hv
+          apply hq
+          apply Prod.ext <;> funext i
+          all_goals have hi : i = 0 := Subsingleton.elim _ _
+          all_goals subst i
+          · exact hx
+          · exact hv)
     · exact isBigO_const_of_tendsto
         (scalarRescaled_continuousAt_off_axis f beta hf q hx).tendsto one_ne_zero
   obtain ⟨M, hM⟩ := hh.bound
@@ -130,9 +134,7 @@ theorem scalarRescaled_locally_bounded (f : ℝ → ℝ) (beta : ℝ) (hf : Cont
   simpa only [Real.norm_eq_abs, norm_one, mul_one] using hM
 
 /-- Every compact set away from the origin has a uniform rescaled-tail bound. -/
-theorem scalarRescaled_compact_bound (f : ℝ → ℝ) (beta : ℝ) (hf : Continuous f)
-    (ht : IsBigO atTop f (fun s => Real.rpow |s| beta))
-    (hb : IsBigO atBot f (fun s => Real.rpow |s| beta))
+theorem scalarRescaled_compact_bound
     (K : Set (XV 1)) (hK : IsCompact K) (hz : 0 ∉ K) :
     ∃ M : ℝ, ∀ q ∈ K, |scalarRescaled f beta q| ≤ M := by
   classical
@@ -140,13 +142,13 @@ theorem scalarRescaled_compact_bound (f : ℝ → ℝ) (beta : ℝ) (hf : Contin
     intro hq
     exact hz (hq ▸ q.2)
   choose M hM using fun q : K => scalarRescaled_locally_bounded f beta hf ht hb q (hKnz q)
-  let U : ∀ q ∈ K, Set (XV 1) := fun q hq => {z | |scalarRescaled f beta z| ≤ M ⟨q, hq⟩}
-  obtain ⟨J, hJ⟩ := hK.elim_nhds_subcover' U (fun q hq => hM ⟨q, hq⟩)
+
+  obtain ⟨J, hJ⟩ := hK.elim_nhds_subcover' (fun q hq => {z | |scalarRescaled f beta z| ≤ M ⟨q, hq⟩}) (fun q hq => hM ⟨q, hq⟩)
   refine ⟨∑ j ∈ J, |M j|, ?_⟩
   intro q hq
   obtain ⟨p, hp, hqp⟩ := mem_iUnion₂.mp (hJ hq)
-  have hh : |scalarRescaled f beta q| ≤ M p := hqp
-  exact hh.trans ((le_abs_self (M p)).trans (Finset.single_le_sum
+
+  exact hqp.trans ((le_abs_self (M p)).trans (Finset.single_le_sum
     (fun j _ => abs_nonneg (M j)) hp))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

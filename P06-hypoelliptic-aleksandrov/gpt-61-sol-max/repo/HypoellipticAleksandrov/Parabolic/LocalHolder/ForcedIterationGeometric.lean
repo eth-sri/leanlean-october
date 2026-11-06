@@ -9,7 +9,7 @@ A slower geometric envelope absorbs the summable quadratic forcing. This lemma i
 pure real arithmetic, independent of any PDE or assumed regularity conclusion.
 -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 
 /-- A geometric envelope absorbs a recurrence with quadratic dyadic forcing. -/
@@ -21,11 +21,11 @@ theorem forced_recurrence_le_geometric
     ∀ n, f n ≤ K * q ^ n := by
   intro n
   induction n with
-  | zero => simpa only [pow_zero, mul_one] using hf0
+  | zero => simpa
   | succ n ih =>
-    have hpow : (1 / 4 : ℝ) ^ n ≤ q ^ n := pow_le_pow_left₀ (by norm_num) hq n
+
     have hforce : E * (1 / 4 : ℝ) ^ n ≤ ((q - θ) * K) * q ^ n :=
-      (mul_le_mul_of_nonneg_left hpow hE).trans
+      (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by norm_num) hq n) hE).trans
         (mul_le_mul_of_nonneg_right hgap (pow_nonneg (by linarith only [hq]) n))
     calc f (n + 1) ≤ θ * f n + E * (1 / 4 : ℝ) ^ n := hf n
       _ ≤ θ * (K * q ^ n) + ((q - θ) * K) * q ^ n :=

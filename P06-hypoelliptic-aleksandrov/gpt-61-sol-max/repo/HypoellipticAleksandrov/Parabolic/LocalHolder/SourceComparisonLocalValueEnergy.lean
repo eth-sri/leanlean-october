@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalSpatialSpacetime
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalTimeEnergy
 import Mathlib.Tactic.Linarith
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Local value energy for homogeneous backward equations
 
@@ -10,17 +12,17 @@ The spatial flux and coefficient derivative terms combine with the supplied equa
 give the literal time-energy pairing. The next estimate can absorb the lower-order terms.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
-open Filter MeasureTheory Set
+open MeasureTheory Set
 open scoped BigOperators Matrix.Norms.Elementwise
 
 /-- The actual homogeneous equation identifies the localized flux integral with time energy. -/
 theorem integral_scalar_local_value_energy_eq {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
-    (u ρ : TimeVelocity d → ℝ) (hu : IsScalarC12On u (Ioo a T ×ˢ O))
-    (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)
+    (a T : ℝ) (O : PDE.VelocityRegion d) (hO : IsOpen O)
+    (u ρ : HypoellipticAleksandrov.Parabolic.ScalarField d) (hu : IsScalarC12On u (Ioo a T ×ˢ O))
+    (hρ : ContDiff ℝ PDE.smoothOrder ρ) (hc : HasCompactSupport ρ)
     (hsub : tsupport ρ ⊆ Ioo a T ×ˢ O)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (heq : ∀ z ∈ Ioo a T ×ˢ O, scalarTimeDerivative u z +
@@ -51,13 +53,11 @@ theorem integral_scalar_local_value_energy_eq {d : ℕ}
   have hR (i j : Fin d) : IntegrableOn (R i j) U :=
     (integrable_scalar_local_spatial_value_energy_terms hU u ρ hu hρ hc hsub A hA i j).2.restrict
   have hE (i j : Fin d) : IntegrableOn (E i j) U := by
-    have hcoeff : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
-    have hcoeff12 := isScalarC12On_of_contDiff_two (hcoeff.of_le (by simp)) univ
-    have hdA : Continuous (fun z : TimeVelocity d =>
-        spatialPartial i (fun y => A z.1 y i j) z.2) :=
+
+
+    have hdA  :=
       (continuous_apply i).comp
-        (continuousOn_univ.mp hcoeff12.continuousOn_scalarSpatialGradient)
+        (continuousOn_univ.mp (isScalarC12On_of_contDiff_two (((contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)).of_le (by simp)) univ).continuousOn_scalarSpatialGradient)
     exact (integrable_local_cutoff_square_mul hU
       (fun z => spatialPartial i (fun y => A z.1 y i j) z.2 *
         scalarSpatialGradient u z j * u z) ρ
@@ -68,13 +68,11 @@ theorem integral_scalar_local_value_energy_eq {d : ℕ}
     (integrable_local_cutoff_square_mul hU
       (fun z => scalarTimeDerivative u z * u z) ρ
       (hu.continuousOn_scalarTimeDerivative.mul hu.continuousOn) hρ.continuous hc hsub).restrict
-  have hLs : IntegrableOn (fun z => ∑ i, ∑ j, L i j z) U :=
+  have hLs  :=
     integrable_finsetSum Finset.univ (fun i _ =>
       integrable_finsetSum Finset.univ (fun j _ => hL i j))
-  have hRs : IntegrableOn (fun z => ∑ i, ∑ j, R i j z) U :=
-    integrable_finsetSum Finset.univ (fun i _ =>
-      integrable_finsetSum Finset.univ (fun j _ => hR i j))
-  have hEs : IntegrableOn (fun z => ∑ i, ∑ j, E i j z) U :=
+
+  have hEs  :=
     integrable_finsetSum Finset.univ (fun i _ =>
       integrable_finsetSum Finset.univ (fun j _ => hE i j))
   have hflux : (∫ z in U, ∑ i, ∑ j, L i j z) = -(∫ z in U, ∑ i, ∑ j, R i j z) := by

@@ -34,63 +34,61 @@ instance {d : ℕ} {U : Set (Vec d)} : Sub (H1Function U) :=
 instance {d : ℕ} {U : Set (Vec d)} : SMul ℝ (H1Function U) :=
   h1FunctionEquivW1pFunction.smul ℝ
 
+variable {d : ℕ} {U : Set (Vec d)}
+
 @[simp]
-theorem zero_toFun {d : ℕ} {U : Set (Vec d)} :
+theorem zero_toFun  :
     (0 : H1Function U).toFun = 0 :=
   rfl
 
 @[simp]
-theorem zero_grad {d : ℕ} {U : Set (Vec d)} :
+theorem zero_grad  :
     (0 : H1Function U).grad = 0 :=
   rfl
 
+variable (u v : H1Function U)
+
 @[simp]
-theorem add_toFun {d : ℕ} {U : Set (Vec d)}
-    (u v : H1Function U) :
+theorem add_toFun
+     :
     (u + v).toFun = fun x => u x + v x :=
   rfl
 
 @[simp]
-theorem add_grad {d : ℕ} {U : Set (Vec d)}
-    (u v : H1Function U) :
+theorem add_grad
+     :
     (u + v).grad = fun x => u.grad x + v.grad x :=
   rfl
 
+variable (u : H1Function U)
+
 @[simp]
-theorem neg_toFun {d : ℕ} {U : Set (Vec d)}
-    (u : H1Function U) :
+theorem neg_toFun
+     :
     (-u).toFun = fun x => -u x :=
   rfl
 
-@[simp]
-theorem neg_grad {d : ℕ} {U : Set (Vec d)}
-    (u : H1Function U) :
-    (-u).grad = fun x => -u.grad x :=
-  rfl
+
+
+variable (u v : H1Function U)
 
 @[simp]
-theorem sub_toFun {d : ℕ} {U : Set (Vec d)}
-    (u v : H1Function U) :
+theorem sub_toFun
+     :
     (u - v).toFun = fun x => u x - v x :=
   rfl
 
 @[simp]
-theorem sub_grad {d : ℕ} {U : Set (Vec d)}
-    (u v : H1Function U) :
+theorem sub_grad
+     :
     (u - v).grad = fun x => u.grad x - v.grad x :=
   rfl
 
-@[simp]
-theorem smul_toFun {d : ℕ} {U : Set (Vec d)}
-    (c : ℝ) (u : H1Function U) :
-    (c • u).toFun = fun x => c * u x :=
-  rfl
+variable (c : ℝ) (u : H1Function U)
 
-@[simp]
-theorem smul_grad {d : ℕ} {U : Set (Vec d)}
-    (c : ℝ) (u : H1Function U) :
-    (c • u).grad = fun x => c • u.grad x :=
-  rfl
+
+
+
 
 instance {d : ℕ} {U : Set (Vec d)} : AddCommGroup (H1Function U) :=
   h1FunctionEquivW1pFunction.addCommGroup

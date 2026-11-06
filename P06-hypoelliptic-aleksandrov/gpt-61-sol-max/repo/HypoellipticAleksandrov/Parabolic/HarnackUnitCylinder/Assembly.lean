@@ -6,7 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ChainGeometr
 
 /-! # The classical parabolic Harnack inequality on the unit cylinder -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -17,7 +17,7 @@ theorem parabolic_harnack_unit_cylinder_aux
     (N : ℕ) (hN : 1 ≤ N) (lam : ℝ) (hlam : 0 < lam)
     (Lam : ℝ) (hlamLam : lam ≤ Lam) :
     ∃ h : ℝ, 0 < h ∧
-      ∀ (B : CoefficientField N) (u : TimeVelocity N → ℝ),
+      ∀ (B : CoefficientField N) (u : HypoellipticAleksandrov.Parabolic.ScalarField N),
         IsContinuousCoefficientOn B
           (Set.Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall (0 : PDE.Vec N) 1) →
         (∀ z ∈ Set.Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall (0 : PDE.Vec N) 1,
@@ -44,7 +44,7 @@ theorem parabolic_harnack_unit_cylinder_aux
   intro B u hB hSymm hLower hUpper hu huNonneg heq P hP P' hP'
   let U := Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall (0 : PDE.Vec N) 1
   have hU : IsOpen U := isOpen_Ioo.prod (PDE.isOpen_euclideanBall _ _)
-  have hWeak := IsScalarC12On.isWeakParabolicEquationLoc hU hu heq (parabolicExponent N)
+
   let m : ℕ := 256 * N
   let dt : ℝ := (P'.1 - P.1) / (m : ℝ)
   let r : ℝ := Real.sqrt dt
@@ -67,7 +67,7 @@ theorem parabolic_harnack_unit_cylinder_aux
       intro hk
       have hkm : k < m := Nat.lt_of_succ_le hk
       have hlink := hlocal U B u (t k) (v k) r hU hr (hboxes k hkm)
-        hB hSymm hLower hUpper hWeak hu.continuousOn huNonneg (v (k + 1)) (hvstep k hkm)
+        hB hSymm hLower hUpper (IsScalarC12On.isWeakParabolicEquationLoc hU hu heq (parabolicExponent N)) hu.continuousOn huNonneg (v (k + 1)) (hvstep k hkm)
       rw [← htstep k hkm] at hlink
       calc
         hBox ^ (k + 1) * u P = hBox * (hBox ^ k * u P) := by rw [pow_succ]; ring

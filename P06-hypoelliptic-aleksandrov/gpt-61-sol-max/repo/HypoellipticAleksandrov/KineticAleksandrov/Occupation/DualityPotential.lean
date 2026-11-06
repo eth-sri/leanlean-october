@@ -4,6 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.DualityMeasu
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelGreen
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
+import Mathlib.Tactic.Bound
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Occupation integration and the parabolic potential
@@ -12,35 +17,36 @@ The projected measure's smooth-source pairing is the initial-measure integral of
 Duhamel potential at time zero. The endpoint conjugate norm is exactly the source ABP norm.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
 open MeasureTheory Set SectionTwo
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+open HypoellipticAleksandrov.Parabolic
 open scoped ENNReal
 
 variable {d : ℕ}
 
 /-- Smooth-source occupation integration is integration of the zero-time potential. -/
 theorem integral_unitOccupationMeasure_eq_potential (K : WholeKernel d)
-    (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] (F : TimeVelocity d → ℝ)
-    (hFs : ContDiff ℝ (⊤ : ℕ∞) F) (hFc : HasCompactSupport F) :
+    (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] (F : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hFs : ContDiff ℝ PDE.smoothOrder F) (hFc : HasCompactSupport F) :
     (∫ q, F q ∂unitOccupationMeasure K ρ) =
       ∫ v, parabolicDuhamelPotential K MeasurableSet.univ 1 F (0, v) ∂ρ := by
+  let sharedTerm_f2324e282c := ((ENNReal.ofReal (1 )))
   have hΩm : MeasurableSet (wholeSpace d) := MeasurableSet.univ
   have hFm := hFs.continuous.measurable
   obtain ⟨M, hM⟩ := hFs.continuous.bounded_above_of_compact_support hFc
-  rw [integral_unitOccupationMeasure K ρ F hFm ⟨M, fun q => by simpa using hM q⟩]
+  rw [integral_unitOccupationMeasure K ρ F hFm ⟨M, fun q => hM q⟩]
   apply integral_congr_ae
   refine Filter.Eventually.of_forall fun v => ?_
-  change (∫ τ : ElapsedTime (ENNReal.ofReal (1 : ℝ)),
+  change (∫ τ : ElapsedTime sharedTerm_f2324e282c,
     ∫ w, F (τ.1, w) ∂K.firstMarginal
       (wholeSpaceQuery 0 (0 + τ.1) (le_add_of_nonneg_right τ.2.1.le) v 0)
-    ∂elapsedVolume (ENNReal.ofReal (1 : ℝ))) =
+    ∂elapsedVolume sharedTerm_f2324e282c) =
     parabolicDuhamelPotential K hΩm 1 F (0, v)
-  have hint (τ : ElapsedTime (ENNReal.ofReal (1 : ℝ))) :
+  have hint (τ : ElapsedTime sharedTerm_f2324e282c) :
       (∫ w, F (τ.1, w) ∂K.firstMarginal
         (wholeSpaceQuery 0 (0 + τ.1) (le_add_of_nonneg_right τ.2.1.le) v 0)) =
       parabolicDuhamelIntegrand K MeasurableSet.univ F (0, v) τ.1 := by
@@ -55,29 +61,30 @@ theorem integral_unitOccupationMeasure_eq_potential (K : WholeKernel d)
       (hFm.comp (measurable_const.prodMk measurable_id)).aestronglyMeasurable]
     simp only [parabolicMasterIntegral, wholeSpaceQuery, zero_add]
   rw [integral_congr_ae (Filter.Eventually.of_forall hint)]
-  have htime : Measurable (fun r => parabolicDuhamelIntegrand K
-      MeasurableSet.univ F (0, v) r) := by
-    exact (measurable_parabolicDuhamelIntegrand K MeasurableSet.univ
-      continuous_const F hFm).comp (measurable_const.prodMk measurable_id)
-  rw [integral_elapsed_eq 1 zero_lt_one _ htime]
+
+  rw [integral_elapsed_eq 1 zero_lt_one _ (by
+      exact (measurable_parabolicDuhamelIntegrand K MeasurableSet.univ
+        continuous_const F hFm).comp (measurable_const.prodMk measurable_id))]
   change (∫ r in Ioo 0 1, parabolicDuhamelIntegrand K hΩm F (0, v) r) =
     ∫ r in Ioc 0 1, parabolicDuhamelIntegrand K hΩm F (0, v) r
   exact (integral_Ioc_eq_integral_Ioo).symm
 
+variable (hd : 0 < d)
+
+include hd
 /-- The endpoint density exponent is strictly greater than one in positive dimension. -/
-theorem occupation_endpoint_gt_one (hd : 0 < d) : 1 < ((d : ℝ) + 1) / d := by
-  have hdR : 0 < (d : ℝ) := by exact_mod_cast hd
-  exact (lt_div_iff₀ hdR).2 (by linarith)
+theorem occupation_endpoint_gt_one  : 1 < ((d : ℝ) + 1) / d := by
+  bound
 
 /-- The endpoint conjugate exponent is exactly `d+1`. -/
-theorem occupation_endpoint_conjugate (hd : 0 < d) :
+theorem occupation_endpoint_conjugate  :
     (((d : ℝ) + 1) / d) / ((((d : ℝ) + 1) / d) - 1) = (d : ℝ) + 1 := by
   have hdR : (d : ℝ) ≠ 0 := by exact_mod_cast hd.ne'
   field_simp
   ring
 
 /-- An interior-supported source has the same full-space and slab conjugate norms. -/
-theorem parabolicLpNorm_eq_slab (hd : 0 < d) (F : TimeVelocity d → ℝ)
+theorem parabolicLpNorm_eq_slab  (F : HypoellipticAleksandrov.Parabolic.ScalarField d)
     (hF : tsupport F ⊆ Ioo (0 : ℝ) 1 ×ˢ univ) :
     parabolicLpNorm d F =
       (eLpNorm F (ENNReal.ofReal
@@ -87,7 +94,7 @@ theorem parabolicLpNorm_eq_slab (hd : 0 < d) (F : TimeVelocity d → ℝ)
   have he : ENNReal.ofReal ((d : ℝ) + 1) = parabolicExponent d := by
     simp [parabolicExponent, ENNReal.ofReal_add, Nat.cast_nonneg]
   rw [he]
-  have hind : (Ioo (0 : ℝ) 1 ×ˢ univ).indicator F = F :=
+  have hind  :=
     indicator_eq_self.2 ((Function.support_subset_iff').2 fun q hq =>
       image_eq_zero_of_notMem_tsupport (fun h => hq (hF h)))
   unfold parabolicLpNorm parabolicELpNorm

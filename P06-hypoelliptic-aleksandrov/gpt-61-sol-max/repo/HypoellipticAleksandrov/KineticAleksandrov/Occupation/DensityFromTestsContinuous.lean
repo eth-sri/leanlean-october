@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.MajorantAbstract
 import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 public import Mathlib.MeasureTheory.Integral.CompactlySupported
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Passing sharp positive smooth-test bounds to continuous tests
@@ -11,7 +13,7 @@ The reference measure is Haar measure restricted to the open test region. The te
 measure is finite. Compact supports stay strictly inside that region.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -21,11 +23,13 @@ open scoped ENNReal
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
 
+variable (ν μ : Measure E)
+
 /-- Positive smooth-test bounds extend sharply to continuous compactly supported tests. -/
-theorem integral_le_of_smooth_tests (ν μ : Measure E) [ν.IsAddHaarMeasure]
+theorem integral_le_of_smooth_tests  [ν.IsAddHaarMeasure]
     [IsFiniteMeasure μ] {U : Set E} (hU : IsOpen U) {p : ℝ≥0∞}
     (hp : 1 ≤ p) (hpt : p ≠ ∞) {C : ℝ} (hC : 0 ≤ C)
-    (htest : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
+    (htest : ∀ f : E → ℝ, ContDiff ℝ PDE.smoothOrder f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C * (eLpNorm f p (ν.restrict U)).toReal)
     {f : E → ℝ} (hf : Continuous f) (hfc : HasCompactSupport f)
@@ -58,28 +62,23 @@ theorem integral_le_of_smooth_tests (ν μ : Measure E) [ν.IsAddHaarMeasure]
       nlinarith
 
 /-- Positive smooth-test bounds control the absolute integral of signed continuous tests. -/
-theorem abs_integral_le_of_smooth_tests (ν μ : Measure E) [ν.IsAddHaarMeasure]
+theorem abs_integral_le_of_smooth_tests  [ν.IsAddHaarMeasure]
     [IsFiniteMeasure μ] {U : Set E} (hU : IsOpen U) {p : ℝ≥0∞}
     (hp : 1 ≤ p) (hpt : p ≠ ∞) {C : ℝ} (hC : 0 ≤ C)
-    (htest : ∀ f : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) f → HasCompactSupport f →
+    (htest : ∀ f : E → ℝ, ContDiff ℝ PDE.smoothOrder f → HasCompactSupport f →
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C * (eLpNorm f p (ν.restrict U)).toReal)
     {f : E → ℝ} (hf : Continuous f) (hfc : HasCompactSupport f)
     (hfs : tsupport f ⊆ U) :
-    |∫ x, f x ∂μ| ≤ C * (eLpNorm f p (ν.restrict U)).toReal := by
-  have ha : Continuous (fun x => |f x|) := hf.abs
-  have hac : HasCompactSupport (fun x => |f x|) := hfc.norm
-  have has : tsupport (fun x => |f x|) ⊆ U := by
-    exact (closure_mono (fun x hx => by
-      exact fun hz => hx (by simp [hz]))).trans hfs
-  have hb := integral_le_of_smooth_tests ν μ hU hp hpt hC htest
-    ha hac has (fun x => abs_nonneg (f x))
-  have hn : eLpNorm (fun x => |f x|) p (ν.restrict U) =
-      eLpNorm f p (ν.restrict U) := by
-    simpa only [← Real.norm_eq_abs] using eLpNorm_norm f hf.aestronglyMeasurable
-  rw [hn] at hb
-  have hi : |∫ x, f x ∂μ| ≤ ∫ x, |f x| ∂μ := by
-    simpa only [Real.norm_eq_abs] using norm_integral_le_integral_norm f
-  exact hi.trans hb
+    |∫ x, f x ∂μ| ≤ C * (eLpNorm f p (ν.restrict U)).toReal := (LE.le.trans (norm_integral_le_integral_norm f)
+  (Eq.mp
+    (congrArg (fun _a => ∫ (x : E), |f x| ∂μ ≤ C * _a.toReal)
+      (id (eLpNorm_norm f (Continuous.aestronglyMeasurable hf))))
+    (integral_le_of_smooth_tests ν μ hU hp hpt hC htest (Continuous.abs hf) (HasCompactSupport.norm hfc)
+      (LE.le.trans
+        (closure_mono fun x hx hz =>
+          hx (of_eq_true (Eq.trans (congrFun' (congrArg Eq (Eq.trans (congrArg abs hz) abs_zero)) 0) (eq_self 0))))
+        hfs)
+      fun x => abs_nonneg (f x))))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

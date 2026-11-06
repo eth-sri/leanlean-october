@@ -10,8 +10,8 @@ inputs until their assigned results are present. No mass or domination
 premise is used: canonical finiteness is proved by the enlarged recursion.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -47,9 +47,9 @@ theorem positionVisitsStatement_holds_of_start_time
     PositionVisitsStatement := by
   intro hH hLE lam Lam hlam hLam alpha ha
   have ht := hTime hH hLE lam Lam hlam hLam
-  have hstart := hStart hH hLE lam Lam hlam hLam
+
   obtain ⟨Cp, hCp, hcell⟩ := position_cell_count_of_start_time
-    hH hLE hlam hLam alpha ha (hp6 lam Lam hlam hLam) ht hstart
+    hH hLE hlam hLam alpha ha (hp6 lam Lam hlam hLam) ht (hStart hH hLE lam Lam hlam hLam)
   obtain ⟨Ct, hCt, htime⟩ := ht
   have hg := enlargedAdmissibleAlpha_gamma_range hlam hLam alpha ha
   constructor
@@ -72,10 +72,10 @@ theorem positionVisitsStatement_holds_of_start_time
       change (2 - alpha) * (q - 1) < 1
       linarith [hq.2]
     have hb : 0 < 1 - (1 + g * (q - 1)) / 2 := by linarith
-    have hF : 0 < F := by dsimp only [F]; positivity
+
     refine ⟨Cp ^ (q - 1) * Ct * F, by positivity, ?_⟩
     intro A c J R T P hR hT hTR hbar hJ hvel
-    have : IsFiniteMeasure (visitsFromZero hH hLE hlam hLam A c J T P) :=
+    have  :=
       visitsFromZero_isFiniteMeasure hH hLE hlam hLam A c J T P hbar hJ hT hvel
     apply enlargedPositionVisitMass_power_sum_horizon_le
       (visitsFromZero hH hLE hlam hLam A c J T P) c P.time 0 R T hR hT hTR

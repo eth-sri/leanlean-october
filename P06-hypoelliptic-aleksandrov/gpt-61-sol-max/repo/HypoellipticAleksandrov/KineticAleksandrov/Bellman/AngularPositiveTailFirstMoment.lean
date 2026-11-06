@@ -6,21 +6,21 @@ import Mathlib.Tactic
 
 /-! # Finite positive first moments forced by the angular integrated identity -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set Filter
 open scoped Topology
 
 /-- A nonnegative angular solution of degree at least three has finite positive first moment. -/
 theorem bellmanAngularFirstMoment_integrable (β : ℝ) (f h J : ℝ → ℝ)
-    (hβ : 3 ≤ β) (hi : LocallyIntegrable f volume)
-    (hf : ∀ᵐ z ∂volume, 0 ≤ f z) (hh : ∀ y : ℝ, 0 ≤ h y)
+    (hβ : 3 ≤ β) (hi : LocallyIntegrable f )
+    (hf : ∀ᵐ z, 0 ≤ f z) (hh : ∀ y : ℝ, 0 ≤ h y)
     (he : ∀ y : ℝ, h y = h 0 + J 0 * y - ((β - 2) / 3) * y *
       bellmanAngularFirstMoment f y + ((β - 3) / 3) * bellmanAngularSecondMoment f y) :
-    IntegrableOn (fun z => z * f z) (Ioi 0) volume := by
+    IntegrableOn (fun z => z * f z) (Ioi 0)  := by
   apply integrableOn_Ioi_of_intervalIntegral_norm_bounded (3 * (h 0 + J 0)) 0
-    (b := fun y : ℝ => y) (l := atTop)
+    (b := fun y  => y) (l := atTop)
   · intro y
     simpa only [pow_one] using (bellmanAngularMoment_intervalIntegrable hi 0 y 1).1
   · exact tendsto_id
@@ -39,15 +39,17 @@ theorem bellmanAngularFirstMoment_integrable (β : ℝ) (f h J : ℝ → ℝ)
     rw [hn]
     linarith
 
+variable (f : ℝ → ℝ)
+
 /-- The first angular moment converges to the full positive first-moment integral. -/
-theorem bellmanAngularFirstMoment_tendsto (f : ℝ → ℝ)
-    (hi : IntegrableOn (fun z => z * f z) (Ioi 0) volume) :
+theorem bellmanAngularFirstMoment_tendsto
+    (hi : IntegrableOn (fun z => z * f z) (Ioi 0) ) :
     Tendsto (bellmanAngularFirstMoment f) atTop (𝓝 (∫ z in Ioi 0, z * f z)) :=
   intervalIntegral_tendsto_integral_Ioi 0 hi tendsto_id
 
 /-- The full positive first moment is nonnegative for a nonnegative density. -/
-theorem bellmanAngularFirstMoment_total_nonneg (f : ℝ → ℝ)
-    (hf : ∀ᵐ z ∂volume, 0 ≤ f z) : 0 ≤ ∫ z in Ioi 0, z * f z := by
+theorem bellmanAngularFirstMoment_total_nonneg
+    (hf : ∀ᵐ z, 0 ≤ f z) : 0 ≤ ∫ z in Ioi 0, z * f z := by
   apply integral_nonneg_of_ae
   filter_upwards [ae_restrict_mem measurableSet_Ioi, ae_restrict_of_ae hf] with z hz hfz
   exact mul_nonneg hz.le hfz

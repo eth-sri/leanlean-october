@@ -15,7 +15,7 @@ The Radon--Nikodym derivative transfers all L1 tests back to the original measur
 In particular the open set need not have finite volume.
 -/
 
-@[expose] public section
+ public section
 
 open Filter MeasureTheory Topology
 
@@ -35,7 +35,7 @@ theorem exists_sigmaFinite_bounded_weak_subsequence
         Tendsto (fun j => ∫ x, v (ν j) x * ψ x ∂μ)
           atTop (nhds (∫ x, u x * ψ x ∂μ)) := by
   obtain ⟨ρ, hρ, hμρ, hρμ⟩ := exists_isFiniteMeasure_absolutelyContinuous μ
-  let : IsFiniteMeasure ρ := hρ
+  let  := hρ
   obtain ⟨u, ν, hν, hu, hub, ht⟩ := exists_finite_bounded_weak_subsequence ρ v C hC
     (fun j => (hv j).mono_ac hρμ) (fun j => hρμ.ae_le (hb j))
   refine ⟨u, ν, hν, hu.mono_ac hμρ, hμρ.ae_le hub, ?_⟩
@@ -44,11 +44,7 @@ theorem exists_sigmaFinite_bounded_weak_subsequence
     have h := Measure.rnDeriv_add_singularPart μ ρ
     simpa only [Measure.singularPart_eq_zero_of_ac hμρ, add_zero] using h
   let Ψ (x : α) := (μ.rnDeriv ρ x).toReal * ψ x
-  have hΨ : Integrable Ψ ρ := by
-    have h := (integrable_withDensity_iff_integrable_smul'
-      (Measure.measurable_rnDeriv μ ρ) (Measure.rnDeriv_lt_top μ ρ)).mp
-      (hmeasure.symm ▸ hψ)
-    simpa only [smul_eq_mul] using h
+
   have he (f : α → ℝ) : (∫ x, f x * ψ x ∂μ) = ∫ x, f x * Ψ x ∂ρ := by
     rw [← hmeasure, integral_withDensity_eq_integral_toReal_smul
       (Measure.measurable_rnDeriv μ ρ) (Measure.rnDeriv_lt_top μ ρ)]
@@ -57,6 +53,10 @@ theorem exists_sigmaFinite_bounded_weak_subsequence
     dsimp only [Ψ]
     simp only [smul_eq_mul]
     ring
-  simpa only [← he] using ht Ψ hΨ
+  simpa only [← he] using ht Ψ (by
+      have h := (integrable_withDensity_iff_integrable_smul'
+        (Measure.measurable_rnDeriv μ ρ) (Measure.rnDeriv_lt_top μ ρ)).mp
+        (hmeasure.symm ▸ hψ)
+      exact h)
 
 end HypoellipticAleksandrov.KineticAleksandrov

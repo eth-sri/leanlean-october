@@ -4,10 +4,10 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassCou
 
 /-! # The source's cylinder entrance count and its uniform radius dependence -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set MeasureTheory
 
 /-- A forward-cylinder start has the literal strict physical pole support used by visits. -/
 theorem visitCylinderStart_mem (Z0 : Point) (R : ℝ) (hR : 0 < R) (P : Point)

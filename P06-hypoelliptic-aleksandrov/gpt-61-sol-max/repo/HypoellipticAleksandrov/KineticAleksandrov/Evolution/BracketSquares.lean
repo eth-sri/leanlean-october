@@ -37,7 +37,7 @@ def basisZ (l : Fin n) : EvolutionVec n := packPoint 0 0 (Pi.single l 1)
 
 section Algebra
 
-variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+variable {B : FullKineticCoefficient n} {b : PDE.VectorField n}
 
 /-- `∑_i β_ij β_ik = B_jk`: the square-root factorisation (uses symmetry of `β`). -/
 theorem sum_sqrtCoeffAt_mul {lam Lam : ℝ} (hlam : 0 < lam)
@@ -48,9 +48,7 @@ theorem sum_sqrtCoeffAt_mul {lam Lam : ℝ} (hlam : 0 < lam)
   have hApd : A.PosDef := posDef_of_smul_one_le hlam (hell _ _ _).1
   have hsq : CFC.sqrt A * CFC.sqrt A = A := CFC.sqrt_mul_sqrt_self A hApd.posSemidef.nonneg
   have hsymm : (CFC.sqrt A)ᴴ = CFC.sqrt A := (CFC.sqrt_nonneg A).isSelfAdjoint.star_eq
-  have hsymm' : ∀ i j, CFC.sqrt A i j = CFC.sqrt A j i := fun i j => by
-    have := congrFun (congrFun hsymm j) i
-    simpa [Matrix.conjTranspose_apply] using this
+  have hsymm' : ∀ i j, CFC.sqrt A i j = CFC.sqrt A j i := fun i j => (congrFun (congrFun hsymm j) i)
   have := congrFun (congrFun hsq j) k
   rw [Matrix.mul_apply] at this
   rw [← this]
@@ -58,10 +56,12 @@ theorem sum_sqrtCoeffAt_mul {lam Lam : ℝ} (hlam : 0 < lam)
   simp only [sqrtCoeffAt, ← hA]
   rw [hsymm' i j]
 
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
+
 /-- The transported operator `Lop = ∂_σ + B(σ,v,z) : D_v² + b(v) · ∇_z` in packed
 coordinates (`B_ij ∂_{v_i} ∂_{v_j} u`, with the same index convention as
 `transportedForwardOperator`). -/
-def transportedOperator (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+def transportedOperator
     (u : EvolutionVec n → ℝ) (x : EvolutionVec n) : ℝ :=
   fderiv ℝ u x basisT +
     ∑ i, ∑ j, B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) i j *
@@ -69,7 +69,7 @@ def transportedOperator (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Ve
     ∑ l, b (diffusedCoord n x) l * fderiv ℝ u x (basisZ l)
 
 /-- The regularised operator `L_ε = Lop + ε Δ_z` in packed coordinates. -/
-def regularizedOperator (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) (ε : ℝ)
+def regularizedOperator  (ε : ℝ)
     (u : EvolutionVec n → ℝ) (x : EvolutionVec n) : ℝ :=
   transportedOperator B b u x +
     ε * ∑ l, fderiv ℝ (fun y => fderiv ℝ u y (basisZ l)) x (basisZ l)

@@ -21,13 +21,13 @@ def WeakTestFunction.mono {d : ℕ} {O Ω : Set (Vec d)}
   hasCompactSupport := ψ.hasCompactSupport
   tsupport_subset := ψ.tsupport_subset.trans hOΩ
 
-@[simp] theorem WeakTestFunction.mono_apply {d : ℕ} {O Ω : Set (Vec d)}
-    (ψ : WeakTestFunction O) (hOΩ : O ⊆ Ω) (y : Vec d) :
+variable {d : ℕ} {O Ω : Set (Vec d)} (ψ : WeakTestFunction O) (hOΩ : O ⊆ Ω)
+
+@[simp] theorem WeakTestFunction.mono_apply  (y : Vec d) :
     ψ.mono hOΩ y = ψ y :=
   rfl
 
-@[simp] theorem WeakTestFunction.mono_partialDeriv {d : ℕ} {O Ω : Set (Vec d)}
-    (ψ : WeakTestFunction O) (hOΩ : O ⊆ Ω) (i : Fin d) (y : Vec d) :
+@[simp] theorem WeakTestFunction.mono_partialDeriv  (i : Fin d) (y : Vec d) :
     (ψ.mono hOΩ).partialDeriv i y = ψ.partialDeriv i y :=
   rfl
 

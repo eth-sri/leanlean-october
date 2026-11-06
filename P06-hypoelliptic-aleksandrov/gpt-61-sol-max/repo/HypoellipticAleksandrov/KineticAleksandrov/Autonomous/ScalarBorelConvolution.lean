@@ -5,6 +5,8 @@ public import Mathlib.Analysis.Calculus.BumpFunction.Convolution
 import Mathlib.Analysis.Calculus.ContDiff.Convolution
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
 import PDEFoundation.Measure.OneDimensionalCoordinate
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Autonomous scalar mollification in position and velocity
 
@@ -27,11 +29,13 @@ def scalarBorelConvolution (φ : ContDiffBump (0 : ℝ × ℝ))
     (a : ℝ → ℝ → ℝ) : ℝ → ℝ → ℝ :=
   fun x v => (φ.normed volume ⋆[lsmul ℝ ℝ, volume] Function.uncurry a) (x, v)
 
+section
+variable {lam Lam : ℝ} (hlam : 0 < lam) (a : ℝ → ℝ → ℝ) (ha : Measurable (Function.uncurry a)) (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam)
+
+include hlam ha hb
 /-- Bounded Borel scalar coefficients are locally integrable. -/
-theorem scalar_borel_locallyIntegrable {lam Lam : ℝ} (hlam : 0 < lam)
-    (a : ℝ → ℝ → ℝ) (ha : Measurable (Function.uncurry a))
-    (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) :
-    LocallyIntegrable (Function.uncurry a) volume := by
+theorem scalar_borel_locallyIntegrable  :
+    LocallyIntegrable (Function.uncurry a)  := by
   apply (locallyIntegrable_const Lam).mono ha.aestronglyMeasurable
   filter_upwards with z
   dsimp only [Function.uncurry]
@@ -40,11 +44,9 @@ theorem scalar_borel_locallyIntegrable {lam Lam : ℝ} (hlam : 0 < lam)
   exact (hb z.1 z.2).2
 
 /-- Scalar convolution is smooth and retains the original pointwise interval. -/
-theorem scalarBorelConvolution_spec {lam Lam : ℝ} (hlam : 0 < lam)
-    (a : ℝ → ℝ → ℝ) (ha : Measurable (Function.uncurry a))
-    (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam)
+theorem scalarBorelConvolution_spec
     (φ : ContDiffBump (0 : ℝ × ℝ)) :
-    ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry (scalarBorelConvolution φ a)) ∧
+    ContDiff ℝ PDE.smoothOrder (Function.uncurry (scalarBorelConvolution φ a)) ∧
       ∀ x v, lam ≤ scalarBorelConvolution φ a x v ∧
         scalarBorelConvolution φ a x v ≤ Lam := by
   have : (volume : Measure (ℝ × ℝ)).IsAddHaarMeasure :=
@@ -65,39 +67,36 @@ theorem scalarBorelConvolution_spec {lam Lam : ℝ} (hlam : 0 < lam)
     integral_mul_const, φ.integral_normed, one_mul] using And.intro hl hu
 
 /-- Smooth autonomous approximations preserve ellipticity and converge almost everywhere. -/
-theorem scalar_borel_coefficient_approximation {lam Lam : ℝ} (hlam : 0 < lam)
-    (a : ℝ → ℝ → ℝ) (ha : Measurable (Function.uncurry a))
-    (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) :
+theorem scalar_borel_coefficient_approximation  :
     ∃ C : ℕ → ℝ → ℝ → ℝ,
-      (∀ j, ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry (C j)) ∧
+      (∀ j, ContDiff ℝ PDE.smoothOrder (Function.uncurry (C j)) ∧
         ∀ x v, lam ≤ C j x v ∧ C j x v ≤ Lam) ∧
       ∀ᵐ z ∂(volume : Measure (ℝ × ℝ)),
         Tendsto (fun j => C j z.1 z.2) atTop (𝓝 (a z.1 z.2)) := by
   have : (volume : Measure (ℝ × ℝ)).IsAddHaarMeasure :=
     Measure.prod.instIsAddHaarMeasure volume volume
-  let C := fun j => scalarBorelConvolution (scalarBorelBump j) a
-  refine ⟨C, fun j => scalarBorelConvolution_spec hlam a ha hb _, ?_⟩
-  have hr : Tendsto (fun j => (scalarBorelBump j).rOut) atTop (𝓝 0) :=
-    tendsto_one_div_add_atTop_nhds_zero_nat
-  have hratio : ∀ᶠ j in atTop, (scalarBorelBump j).rOut ≤ 2 * (scalarBorelBump j).rIn := by
-    filter_upwards with j
-    dsimp only [scalarBorelBump]
-    linarith
-  exact ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable hr hratio
+
+  refine ⟨(fun j => scalarBorelConvolution (scalarBorelBump j) a), fun j => scalarBorelConvolution_spec hlam a ha hb _, ?_⟩
+
+
+  exact ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable tendsto_one_div_add_atTop_nhds_zero_nat (show ∀ᶠ j in atTop, (scalarBorelBump j).rOut ≤ 2 * (scalarBorelBump j).rIn by
+      filter_upwards with j
+      dsimp only [scalarBorelBump]
+      linarith)
     (scalar_borel_locallyIntegrable hlam a ha hb)
+end
+
 
 /-- Tonelli lifts position-velocity null sets to physical spacetime. -/
 theorem scalar_borel_phase_ae_lift {p : (ℝ × ℝ) → Prop}
     (hp : ∀ᵐ z ∂(volume : Measure (ℝ × ℝ)), p z) :
-    ∀ᵐ P ∂(volume : Measure Point), p (P.position 0, P.velocity 0) := by
-  have hv := PDE.volumePreserving_vecOneEquivReal.prod PDE.volumePreserving_vecOneEquivReal
-  have hpv := hv.quasiMeasurePreserving.ae hp
-  have hproj : Measure.QuasiMeasurePreserving
-      (Prod.snd : ℝ × (PDE.Vec 1 × PDE.Vec 1) → PDE.Vec 1 × PDE.Vec 1) volume volume :=
-    Measure.quasiMeasurePreserving_snd
-  have hp' := hproj.ae hpv
-  have h := (KineticPoint.measurePreserving_equivProd 1).quasiMeasurePreserving.ae hp'
-  change ∀ᵐ P : Point ∂volume, p (P.position 0, P.velocity 0) at h
-  exact h
+    ∀ᵐ P ∂(volume : Measure Point), p (P.position 0, P.velocity 0) := (id (fun h => h)
+  (Measure.QuasiMeasurePreserving.ae
+    (MeasurePreserving.quasiMeasurePreserving (KineticPoint.measurePreserving_equivProd 1))
+    (Measure.QuasiMeasurePreserving.ae Measure.quasiMeasurePreserving_snd
+      (Measure.QuasiMeasurePreserving.ae
+        (MeasurePreserving.quasiMeasurePreserving
+          (MeasurePreserving.prod PDE.volumePreserving_vecOneEquivReal PDE.volumePreserving_vecOneEquivReal))
+        hp))))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

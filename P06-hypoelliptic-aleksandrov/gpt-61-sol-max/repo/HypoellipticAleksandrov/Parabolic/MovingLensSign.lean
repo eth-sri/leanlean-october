@@ -5,6 +5,13 @@ public import Mathlib.Algebra.Order.Floor.Semiring
 public import Mathlib.Analysis.Matrix.Order
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import HypoellipticAleksandrov.Coefficients.Ellipticity
+import all HypoellipticAleksandrov.KineticAleksandrov.Decay.RetentionMatrix
+
+open private HypoellipticAleksandrov.KineticAleksandrov.Decay.trace_upper from HypoellipticAleksandrov.KineticAleksandrov.Decay.RetentionMatrix
+
 
 /-!
 # Uniform sign of the moving-lens barrier
@@ -31,21 +38,23 @@ open scoped BigOperators MatrixOrder
 def movingLensSignXi (kappa : ℝ) : ℝ :=
   kappa ^ 3 / 2
 
+variable (d : ℕ) (lam Lam kappa : ℝ)
+
 /-- A uniform upper bound for the signed lower-order bracket in the barrier
 identity. -/
-def movingLensSignB (d : ℕ) (lam Lam kappa : ℝ) : ℝ :=
+def movingLensSignB  : ℝ :=
   let _ := lam
   movingLensSignXi kappa + 1 + (d : ℝ) * kappa ^ (-4 : ℤ) +
     2 * (d : ℝ) * |Lam|
 
 /-- The two-region radius threshold for the moving-lens sign argument. -/
-def movingLensSignR0 (d : ℕ) (lam Lam kappa : ℝ) : ℝ :=
+def movingLensSignR0  : ℝ :=
   (movingLensSignB d lam Lam kappa + 2 * lam) /
     (movingLensSignB d lam Lam kappa + 4 * lam)
 
 /-- The natural exponent selected uniformly before every coefficient and lens
 datum. -/
-def movingLensSignExponent (d : ℕ) (lam Lam kappa : ℝ) : ℕ :=
+def movingLensSignExponent  : ℕ :=
   1 + ⌈2 * movingLensSignB d lam Lam kappa /
     (movingLensSignXi kappa * (1 - movingLensSignR0 d lam Lam kappa) ^ 2)⌉₊
 
@@ -54,15 +63,17 @@ private theorem movingLensSignXi_pos {kappa : ℝ} (hkappa : 0 < kappa) :
   unfold movingLensSignXi
   positivity
 
-private theorem movingLensSignB_pos (d : ℕ) {lam Lam kappa : ℝ}
+variable (d : ℕ) {lam Lam kappa : ℝ}
+
+private theorem movingLensSignB_pos
     (hkappa : 0 < kappa) :
     0 < movingLensSignB d lam Lam kappa := by
   unfold movingLensSignB
   have hxi := movingLensSignXi_pos hkappa
-  have hpow : 0 ≤ kappa ^ (-4 : ℤ) := by positivity
+
   positivity
 
-private theorem movingLensSignR0_mem_Ioo (d : ℕ) {lam Lam kappa : ℝ}
+private theorem movingLensSignR0_mem_Ioo
     (hlam : 0 < lam) (hkappa : 0 < kappa) :
     movingLensSignR0 d lam Lam kappa ∈ Set.Ioo (0 : ℝ) 1 := by
   unfold movingLensSignR0
@@ -73,50 +84,36 @@ private theorem movingLensSignR0_mem_Ioo (d : ℕ) {lam Lam kappa : ℝ}
   · rw [div_lt_iff₀ hden]
     linarith
 
-private theorem vecDot_mulVec_lower_of_loewner {d : ℕ} {lam : ℝ}
-    {M : PDE.Mat d} (hlower : lam • (1 : PDE.Mat d) ≤ M)
-    (v : PDE.Vec d) :
-    lam * PDE.vecNormSq v ≤ PDE.vecDot v (M *ᵥ v) := by
-  have hgap : (M - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hlower
-  have hquad := hgap.dotProduct_mulVec_nonneg v
-  simp only [star_trivial, Matrix.sub_mulVec, Matrix.smul_mulVec,
-    Matrix.one_mulVec, dotProduct_sub, dotProduct_smul, smul_eq_mul] at hquad
-  simpa only [PDE.vecNormSq, PDE.vecDot, dotProduct, mul_comm] using sub_nonneg.mp hquad
+variable {d : ℕ}
 
-private theorem trace_le_natCast_mul_of_loewner_upper {d : ℕ} {Lam : ℝ}
-    {M : PDE.Mat d} (hupper : M ≤ Lam • (1 : PDE.Mat d)) :
-    M.trace ≤ (d : ℝ) * Lam := by
-  have hgap : (Lam • (1 : PDE.Mat d) - M).PosSemidef := Matrix.le_iff.mp hupper
-  have htrace := hgap.trace_nonneg
-  simp only [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one,
-    Fintype.card_fin, smul_eq_mul] at htrace
-  linarith
 
-private theorem two_vecDot_le_vecNormSq_add {d : ℕ} (v w : PDE.Vec d) :
+
+
+
+
+
+private theorem two_vecDot_le_vecNormSq_add  (v w : PDE.Vec d) :
     2 * PDE.vecDot v w ≤ PDE.vecNormSq v + PDE.vecNormSq w := by
-  have hcs : PDE.vecDot v w ^ 2 ≤ PDE.vecNormSq v * PDE.vecNormSq w :=
+  have hcs  :=
     PDE.sq_vecDot_le_vecNormSq_mul_vecNormSq v w
-  have hv : 0 ≤ PDE.vecNormSq v := PDE.vecNormSq_nonneg v
-  have hw : 0 ≤ PDE.vecNormSq w := PDE.vecNormSq_nonneg w
+  have hv  := PDE.vecNormSq_nonneg v
+  have hw  := PDE.vecNormSq_nonneg w
   nlinarith [sq_nonneg (PDE.vecNormSq v - PDE.vecNormSq w)]
 
-private theorem movingLensRadiusSq_nonneg_of_den_pos {d : ℕ} {xi eps : ℝ}
+private theorem movingLensRadiusSq_nonneg_of_den_pos  {xi eps : ℝ}
     {y : PDE.Vec d} {z : TimeVelocity d}
     (hden : 0 < movingLensDenominator xi eps z.1) :
     0 ≤ movingLensRadiusSq xi eps y z := by
   unfold movingLensRadiusSq
   exact div_nonneg (PDE.vecNormSq_nonneg _) hden.le
 
-private theorem vecNormSq_displacement_lt_one_of_normalized_data {d : ℕ}
+private theorem vecNormSq_displacement_lt_one_of_normalized_data
     {xi eps kappa : ℝ} {y : PDE.Vec d} {z : TimeVelocity d}
     (hden : 0 < movingLensDenominator xi eps z.1)
     (hden_lt : movingLensDenominator xi eps z.1 < kappa ^ 2)
     (hkappa : 0 < kappa) (hkappa_one : kappa ≤ 1)
     (hr : movingLensRadiusSq xi eps y z < 1) :
-    PDE.vecNormSq (movingLensDisplacement y z) < 1 := by
-  have hradius := (movingLensRadiusSq_lt_one_iff hden).mp hr
-  have hkappa_sq : kappa ^ 2 ≤ 1 := by nlinarith
-  exact hradius.trans (hden_lt.trans_le hkappa_sq)
+    PDE.vecNormSq (movingLensDisplacement y z) < 1 := ((movingLensRadiusSq_lt_one_iff hden).mp hr).trans (hden_lt.trans_le (by nlinarith))
 
 private theorem movingLensSign_bracket_le (d : ℕ) {lam Lam kappa eps : ℝ}
     {y : PDE.Vec d} {z : TimeVelocity d}
@@ -132,9 +129,9 @@ private theorem movingLensSign_bracket_le (d : ℕ) {lam Lam kappa eps : ℝ}
   have hdisp := vecNormSq_displacement_lt_one_of_normalized_data hden hden_lt
     hkappa hkappa_one hr_lt
   have hdot := two_vecDot_le_vecNormSq_add (movingLensDisplacement y z) y
-  have htrace := trace_le_natCast_mul_of_loewner_upper hupper
-  have habs : Lam ≤ |Lam| := le_abs_self Lam
-  have hxi : 0 ≤ movingLensSignXi kappa := (movingLensSignXi_pos hkappa).le
+  have htrace := _root_.HypoellipticAleksandrov.KineticAleksandrov.Decay.trace_upper hupper
+  have habs  := le_abs_self Lam
+  have hxi  := (movingLensSignXi_pos hkappa).le
   unfold movingLensSignB
   nlinarith
 
@@ -146,20 +143,22 @@ private theorem movingLensSign_lower_bound {d : ℕ} {lam kappa eps : ℝ}
       (M *ᵥ movingLensDisplacement y z) /
       movingLensDenominator (movingLensSignXi kappa) eps z.1) ≥
       8 * lam * movingLensRadiusSq (movingLensSignXi kappa) eps y z := by
-  have hquad := vecDot_mulVec_lower_of_loewner hlower (movingLensDisplacement y z)
+  let sharedTerm_30c7cdc92a := (movingLensDenominator (movingLensSignXi kappa) eps z.1)
+
   unfold movingLensRadiusSq
-  have hdiv := (div_le_div_iff_of_pos_right hden).mpr hquad
+
   calc
     8 * (PDE.vecDot (movingLensDisplacement y z)
         (M *ᵥ movingLensDisplacement y z) /
-        movingLensDenominator (movingLensSignXi kappa) eps z.1) ≥
+        sharedTerm_30c7cdc92a) ≥
         8 * (lam * PDE.vecNormSq (movingLensDisplacement y z) /
-          movingLensDenominator (movingLensSignXi kappa) eps z.1) := by
-      exact mul_le_mul_of_nonneg_left hdiv (by norm_num)
+          sharedTerm_30c7cdc92a) := mul_le_mul_of_nonneg_left ((div_le_div_iff_of_pos_right hden).mpr (_root_.HypoellipticAleksandrov.vecDot_mulVec_lower_of_loewner hlower (movingLensDisplacement y z))) (by norm_num)
     _ = 8 * lam * (PDE.vecNormSq (movingLensDisplacement y z) /
-          movingLensDenominator (movingLensSignXi kappa) eps z.1) := by ring
+          sharedTerm_30c7cdc92a) := by ring
 
-private theorem movingLensSign_two_region_positive (d : ℕ) {lam Lam kappa : ℝ}
+variable (d : ℕ)
+
+private theorem movingLensSign_two_region_positive  {lam Lam kappa : ℝ}
     (hlam : 0 < lam) (hkappa : 0 < kappa)
     {r : ℝ} (hr_nonneg : 0 ≤ r) (hr_lt : r < 1) :
     0 < (movingLensSignExponent d lam Lam kappa : ℝ) * movingLensSignXi kappa *
@@ -186,7 +185,7 @@ private theorem movingLensSign_two_region_positive (d : ℕ) {lam Lam kappa : �
       nlinarith [hlinearR0]
     have hpow : 0 ≤ (n : ℝ) * xi * (1 - r) ^ 2 := by positivity
     linarith
-  · have hlow : r ≤ r0 := le_of_not_gt hhigh
+  ·
     have hgap : 0 < 1 - r0 := by linarith [hr0.2]
     have hx : 0 < xi * (1 - r0) ^ 2 := by positivity
     have hceil : 2 * B / (xi * (1 - r0) ^ 2) ≤ (⌈2 * B /
@@ -197,12 +196,11 @@ private theorem movingLensSign_two_region_positive (d : ℕ) {lam Lam kappa : �
       have hmul := mul_le_mul_of_nonneg_right hceil hx.le
       rw [div_mul_cancel₀ _ hx.ne'] at hmul
       exact hmul
-    have hn : 2 * B < (n : ℝ) * xi * (1 - r0) ^ 2 := by
-      simp only [n, movingLensSignExponent, Nat.cast_add, Nat.cast_one]
-      nlinarith
-    have hmono : (1 - r0) ^ 2 ≤ (1 - r) ^ 2 := by nlinarith
-    have hfirst : 2 * B < (n : ℝ) * xi * (1 - r) ^ 2 := by
-      exact lt_of_lt_of_le hn (mul_le_mul_of_nonneg_left hmono
+
+
+    have hfirst  := lt_of_lt_of_le (show 2 * B < (n : ℝ) * xi * (1 - r0) ^ 2 by
+        simp only [n, movingLensSignExponent, Nat.cast_add, Nat.cast_one]
+        nlinarith) (mul_le_mul_of_nonneg_left (show (1 - r0) ^ 2 ≤ (1 - r) ^ 2 by nlinarith)
         (mul_nonneg (Nat.cast_nonneg n) hxi.le))
     have hlast : 2 * B * (1 - r) ≤ 2 * B := by
       nlinarith
@@ -212,7 +210,7 @@ private theorem movingLensSign_two_region_positive (d : ℕ) {lam Lam kappa : �
 moving-lens barrier is a strict project-sign subsolution on the normalized
 small-denominator lens core. -/
 theorem parabolicOperator_movingLensBarrier_lt_zero_of_pointwise_loewner
-    (d : ℕ) (lam Lam kappa : ℝ)
+     (lam Lam kappa : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hkappa : 0 < kappa) (hkappa_one : kappa ≤ 1)
     (A : CoefficientField d) (y : PDE.Vec d) (z : TimeVelocity d) (eps : ℝ)
@@ -241,8 +239,8 @@ theorem parabolicOperator_movingLensBarrier_lt_zero_of_pointwise_loewner
   have hquad := movingLensSign_lower_bound (y := y) hden_pos hlower
   have hscalar := movingLensSign_two_region_positive d (Lam := Lam) hlam hkappa
     hr_nonneg hr_lt
-  have hqpow : 0 < q ^ (n + 1) := pow_pos hden_pos _
-  have _ := hlamLam
+
+
   have hidentity := movingLensBarrier_neg_parabolicOperator_identity
     (A := A) (xi := xi) (eps := eps) (n := n) (y := y) (z := z) hden_pos.ne'
   have hfactor : 0 ≤ 2 * (1 - r) := by linarith
@@ -250,14 +248,13 @@ theorem parabolicOperator_movingLensBarrier_lt_zero_of_pointwise_loewner
       -2 * movingLensSignB d lam Lam kappa * (1 - r) := by
     have hmul := mul_le_mul_of_nonneg_left hbracket hfactor
     nlinarith
-  have hscaled : 0 < q ^ (n + 1) *
-      (-parabolicOperator A (movingLensBarrier xi eps n y) z) := by
-    rw [hidentity]
-    dsimp [xi, n, r, q, h, M] at hquad hscalar hbracket hbracketTerm ⊢
-    nlinarith
-  have hnegative : 0 < -parabolicOperator A (movingLensBarrier xi eps n y) z :=
-    pos_of_mul_pos_right hscaled hqpow.le
-  exact neg_pos.mp (by simpa only [xi, n] using hnegative)
+
+  have hnegative  :=
+    pos_of_mul_pos_right (by
+        rw [hidentity]
+        dsimp [xi, n, r, q, h, M] at hquad hscalar hbracket hbracketTerm ⊢
+        nlinarith) (pow_pos hden_pos _).le
+  exact neg_pos.mp (hnegative)
 
 end
 

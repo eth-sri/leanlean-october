@@ -15,16 +15,18 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open MeasureTheory Set
-open scoped ENNReal
+
+
+variable (d : ℕ) (R : ℝ)
 
 /-- Coordinate dilation with the kinetic exponents two, three, and one. -/
-def kineticCoordinateDilation (d : ℕ) (R : ℝ) :
+def kineticCoordinateDilation  :
     (ℝ × (PDE.Vec d × PDE.Vec d)) →ₗ[ℝ] (ℝ × (PDE.Vec d × PDE.Vec d)) :=
   LinearMap.prodMap ((R ^ 2) • LinearMap.id)
     (LinearMap.prodMap ((R ^ 3) • LinearMap.id) (R • LinearMap.id))
 
 /-- The exact homogeneous dimension is four times the spatial dimension plus two. -/
-theorem kineticCoordinateDilation_det (d : ℕ) (R : ℝ) :
+theorem kineticCoordinateDilation_det  :
     LinearMap.det (kineticCoordinateDilation d R) = R ^ (4 * d + 2) := by
   simp only [kineticCoordinateDilation, LinearMap.det_prodMap, LinearMap.det_smul,
     LinearMap.det_id, mul_one, CommSemiring.finrank_self, Module.finrank_pi,
@@ -33,11 +35,13 @@ theorem kineticCoordinateDilation_det (d : ℕ) (R : ℝ) :
   congr 1
   omega
 
+variable {d : ℕ}
+
 /-- Galilean transport in coordinate space preserves unnormalised product volume. -/
-theorem measurePreserving_kineticShear {d : ℕ} (v₀ : PDE.Vec d) :
+theorem measurePreserving_kineticShear  (v₀ : PDE.Vec d) :
     MeasurePreserving
       (fun z : ℝ × (PDE.Vec d × PDE.Vec d) =>
-        (z.1, (z.2.1 + z.1 • v₀, z.2.2))) volume volume := by
+        (z.1, (z.2.1 + z.1 • v₀, z.2.2))) volume  := by
   have : (volume : Measure (PDE.Vec d × PDE.Vec d)).IsAddHaarMeasure :=
     Measure.prod.instIsAddHaarMeasure volume volume
   have h := (MeasurePreserving.id (volume : Measure ℝ)).skew_product
@@ -46,16 +50,21 @@ theorem measurePreserving_kineticShear {d : ℕ} (v₀ : PDE.Vec d) :
       map_add_right_eq_self (volume : Measure (PDE.Vec d × PDE.Vec d)) (t • v₀, 0))
   simpa only [Prod.add_def, add_zero, id_eq, Measure.volume_eq_prod] using h
 
+variable (P₀ : KineticPoint d)
+
 /-- Coordinate formula for the source affine map. -/
-def kineticCoordinateAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ)
+def kineticCoordinateAffine   (R : ℝ)
     (z : ℝ × (PDE.Vec d × PDE.Vec d)) : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (P₀.time + R ^ 2 * z.1,
     (P₀.position + R ^ 3 • z.2.1 + (R ^ 2 * z.1) • P₀.velocity,
       P₀.velocity + R • z.2.2))
 
+variable {R : ℝ} (hR : 0 < R)
+
+include hR
 /-- Pushforward volume under kinetic affine scaling has inverse homogeneous factor. -/
-theorem map_volume_kineticCoordinateAffine {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) :
+theorem map_volume_kineticCoordinateAffine
+     :
     Measure.map (kineticCoordinateAffine P₀ R) volume =
       ENNReal.ofReal ((R ^ (4 * d + 2))⁻¹) • volume := by
   have : (volume : Measure (PDE.Vec d × PDE.Vec d)).IsAddHaarMeasure :=
@@ -65,7 +74,7 @@ theorem map_volume_kineticCoordinateAffine {d : ℕ} (P₀ : KineticPoint d)
   let L := kineticCoordinateDilation d R
   let S := fun z : ℝ × (PDE.Vec d × PDE.Vec d) =>
     (z.1, (z.2.1 + z.1 • P₀.velocity, z.2.2))
-  let q : ℝ × (PDE.Vec d × PDE.Vec d) :=
+  let q  :=
     (P₀.time, (P₀.position, P₀.velocity))
   have hL : Measurable L := L.continuous_of_finiteDimensional.measurable
   have hS : Measurable S := (measurePreserving_kineticShear P₀.velocity).measurable
@@ -85,12 +94,12 @@ theorem map_volume_kineticCoordinateAffine {d : ℕ} (P₀ : KineticPoint d)
     Measure.map_smul _ hT.aemeasurable, map_add_left_eq_self]
 
 /-- Pushforward kinetic volume uses exactly the coordinate homogeneous factor. -/
-theorem map_volume_kineticAffine {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) :
+theorem map_volume_kineticAffine
+     :
     Measure.map (kineticAffine P₀ R) volume =
       ENNReal.ofReal ((R ^ (4 * d + 2))⁻¹) • volume := by
   let e := (KineticPoint.homeomorphProd d).toMeasurableEquiv
-  have he : MeasurePreserving e volume volume := KineticPoint.measurePreserving_equivProd d
+  have he : MeasurePreserving e volume  := KineticPoint.measurePreserving_equivProd d
   have hf : Measurable (kineticCoordinateAffine P₀ R) := by
     unfold kineticCoordinateAffine
     fun_prop
@@ -100,10 +109,11 @@ theorem map_volume_kineticAffine {d : ℕ} (P₀ : KineticPoint d)
     Measure.map_smul _ e.symm.measurable.aemeasurable, (he.symm e).map_eq]
 
 /-- Images under kinetic scaling have the direct homogeneous volume factor. -/
-theorem volume_kineticAffine_image {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) (E : Set (KineticPoint d)) :
+theorem volume_kineticAffine_image
+     (E : Set (KineticPoint d)) :
     volume (kineticAffine P₀ R '' E) =
       ENNReal.ofReal (R ^ (4 * d + 2)) * volume E := by
+  let sharedTerm_7095e8554f := ((ENNReal.ofReal (R ^ (4 * d + 2))))
   let e := (kineticAffineHomeomorph P₀ R hR.ne').toMeasurableEquiv
   have h := e.measurableEmbedding.map_apply (μ := volume) (e '' E)
   rw [e.injective.preimage_image] at h
@@ -111,14 +121,13 @@ theorem volume_kineticAffine_image {d : ℕ} (P₀ : KineticPoint d)
     volume E at h
   rw [map_volume_kineticAffine P₀ hR, Measure.smul_apply, smul_eq_mul,
     ENNReal.ofReal_inv_of_pos (pow_pos hR _)] at h
-  have hc : ENNReal.ofReal (R ^ (4 * d + 2)) ≠ 0 :=
-    (ENNReal.ofReal_pos.mpr (pow_pos hR _)).ne'
+
   calc
     volume (kineticAffine P₀ R '' E) =
-        ENNReal.ofReal (R ^ (4 * d + 2)) *
-          ((ENNReal.ofReal (R ^ (4 * d + 2)))⁻¹ *
+        sharedTerm_7095e8554f *
+          (sharedTerm_7095e8554f⁻¹ *
             volume (kineticAffine P₀ R '' E)) := by
-      rw [← mul_assoc, ENNReal.mul_inv_cancel hc ENNReal.ofReal_ne_top, one_mul]
+      rw [← mul_assoc, ENNReal.mul_inv_cancel ((ENNReal.ofReal_pos.mpr (pow_pos hR _)).ne') ENNReal.ofReal_ne_top, one_mul]
     _ = _ := by rw [h]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

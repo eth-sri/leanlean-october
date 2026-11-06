@@ -5,8 +5,8 @@ import Mathlib.Tactic
 
 /-! # Nonvanishing of radial measures constructed from a probability -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -21,23 +21,20 @@ theorem bellmanPositiveTimeVolume_ne_zero : bellmanPositiveTimeVolume ≠ 0 := b
   norm_num [Measure.restrict_apply measurableSet_Icc, hi] at he
 
 /-- The strictly positive radial density cannot annihilate positive radial volume. -/
-theorem bellmanRadiusMeasure_ne_zero (alpha : ℝ) : bellmanRadiusMeasure alpha ≠ 0 := by
-  intro hz
-  have hae := (withDensity_eq_zero_iff
-    (measurable_bellmanRadiusWeight alpha).aemeasurable).mp hz
-  have hf : ∀ r : BellmanPositiveTime, bellmanRadiusWeight alpha r ≠ 0 := by
-    intro r
-    exact ne_of_gt (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos r.property _))
-  have hempty : (∅ : Set BellmanPositiveTime) ∈ ae bellmanPositiveTimeVolume := by
-    filter_upwards [hae] with r hr
-    exact (hf r hr).elim
-  exact bellmanPositiveTimeVolume_ne_zero (by
-    apply MeasureTheory.ae_eq_bot.mp
-    exact Filter.empty_mem_iff_bot.mp hempty)
+theorem bellmanRadiusMeasure_ne_zero (alpha : ℝ) : bellmanRadiusMeasure alpha ≠ 0 := (fun hz =>
+  bellmanPositiveTimeVolume_ne_zero
+    (ae_eq_bot.mp
+      (Filter.empty_mem_iff_bot.mp
+        (Filter.mp_mem
+          ((withDensity_eq_zero_iff (Measurable.aemeasurable (measurable_bellmanRadiusWeight alpha))).mp hz)
+          (Filter.univ_mem'
+            (id fun r hr =>
+              False.elim (ne_of_gt (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos r.property (1 - alpha))) hr)))))))
+
+variable {lam Lam : ℝ} (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
 
 /-- The radius marginal of the first projected measure is the original weighted radial volume. -/
-theorem radialMu_radius_marginal {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsProbabilityMeasure pi] :
+theorem radialMu_radius_marginal  [IsProbabilityMeasure pi] :
     Measure.map bellmanGaugeRadius (radialMu alpha pi) = bellmanRadiusMeasure alpha := by
   unfold radialMu
   rw [Measure.map_map continuous_bellmanGaugeRadius.measurable
@@ -49,8 +46,7 @@ theorem radialMu_radius_marginal {lam Lam : ℝ} (alpha : ℝ)
   rw [he, Measure.map_fst_prod, measure_univ, one_smul]
 
 /-- A probability on the sphere produces a genuinely nonzero first adjoint measure. -/
-theorem radialMu_ne_zero {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsProbabilityMeasure pi] :
+theorem radialMu_ne_zero  [IsProbabilityMeasure pi] :
     radialMu alpha pi ≠ 0 := by
   intro hz
   have hm := radialMu_radius_marginal alpha pi

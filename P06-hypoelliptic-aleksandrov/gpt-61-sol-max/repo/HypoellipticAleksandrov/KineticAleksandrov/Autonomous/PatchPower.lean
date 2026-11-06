@@ -55,7 +55,7 @@ theorem return_patch_power (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     · linarith
   obtain ⟨N, hRlo, hRhi⟩ := return_doubling_cutoff (1 / 128) e (by norm_num) he hecut
   have hsmall : returnExpandedRadius e N ≤ 1 / 64 := by linarith
-  have hinit : ∀ p ∈ backwardCylinder z e, k ≤ u p :=
+  have hinit  :=
     fun p hp => hpatch p (backwardCylinder_radius_mono z he heell hp)
   have hexpand := hd A u hu z e k N he (by linarith [hz.1.1]) hsmall hk hinit
   let zN := returnExpandedCenter z e N
@@ -67,7 +67,7 @@ theorem return_patch_power (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     dsimp [dt]
     linarith
   have hdt1 : dt ≤ 1 / 128 := by
-    have hRp : 0 ≤ returnExpandedRadius e N := by dsimp [returnExpandedRadius]; positivity
+
     dsimp [dt]
     nlinarith [sq_nonneg e]
   have htN : zN.time = z.time + dt := rfl

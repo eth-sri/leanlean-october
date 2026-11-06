@@ -10,7 +10,7 @@ These are definitional identifications only. They supply no density existence,
 no norm bound, and no marginal-bundle derivation.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 

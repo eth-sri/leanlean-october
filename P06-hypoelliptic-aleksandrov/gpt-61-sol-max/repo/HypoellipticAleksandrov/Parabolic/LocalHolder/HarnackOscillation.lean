@@ -9,8 +9,8 @@ Apply the Harnack theorem to both nonnegative affine transforms at the same
  earlier point. The resulting interval bounds conditions the range on the later slab.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
@@ -18,7 +18,7 @@ open Set
 theorem exists_unit_homogeneous_range_contraction
     (N : ℕ) (hN : 1 ≤ N) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ h : ℝ, 0 < h ∧ h ≤ 1 ∧
-      ∀ (A : CoefficientField N) (v : TimeVelocity N → ℝ),
+      ∀ (A : CoefficientField N) (v : HypoellipticAleksandrov.Parabolic.ScalarField N),
         IsContinuousCoefficientOn A (Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall 0 1) →
         (∀ z ∈ Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall 0 1, (coefficientAt A z).IsSymm) →
         HasLowerEllipticityOn lam A (Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall 0 1) →
@@ -33,8 +33,8 @@ theorem exists_unit_homogeneous_range_contraction
             l' ≤ v z ∧ v z ≤ b' := by
   obtain ⟨h₀, hh₀, harnack⟩ := parabolic_harnack_unit_cylinder N hN lam hlam Lam hLam
   let h := min h₀ 1
-  have hh : 0 < h := lt_min hh₀ zero_lt_one
-  refine ⟨h, hh, min_le_right _ _, ?_⟩
+
+  refine ⟨h, (lt_min hh₀ zero_lt_one), min_le_right _ _, ?_⟩
   intro A v hA hs hlo hhi hv he l b hbound
   let p : TimeVelocity N := (3 / 8, 0)
   have hp : p ∈ Ioo (1 / 4 : ℝ) (1 / 2 : ℝ) ×ˢ

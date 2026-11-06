@@ -5,22 +5,24 @@ import Mathlib.Tactic
 
 /-! # Positive angular moment inequalities without pointwise density assumptions -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov
-open MeasureTheory Set
+open MeasureTheory
+
+variable {f : ℝ → ℝ}
 
 /-- The second angular moment is nonnegative on positive oriented intervals. -/
-theorem bellmanAngularSecondMoment_nonneg {f : ℝ → ℝ}
-    (hf : ∀ᵐ z ∂volume, 0 ≤ f z) {y : ℝ} (hy : 0 ≤ y) :
+theorem bellmanAngularSecondMoment_nonneg
+    (hf : ∀ᵐ z, 0 ≤ f z) {y : ℝ} (hy : 0 ≤ y) :
     0 ≤ bellmanAngularSecondMoment f y := by
   apply intervalIntegral.integral_nonneg_of_ae hy
   filter_upwards [hf] with z hz
   exact mul_nonneg (sq_nonneg z) hz
 
 /-- On the positive half-line the second moment is bounded by y times the first moment. -/
-theorem bellmanAngularSecondMoment_le {f : ℝ → ℝ}
-    (hi : LocallyIntegrable f volume) (hf : ∀ᵐ z ∂volume, 0 ≤ f z)
+theorem bellmanAngularSecondMoment_le
+    (hi : LocallyIntegrable f ) (hf : ∀ᵐ z, 0 ≤ f z)
     {y : ℝ} (hy : 0 ≤ y) :
     bellmanAngularSecondMoment f y ≤ y * bellmanAngularFirstMoment f y := by
   rw [bellmanAngularSecondMoment, bellmanAngularFirstMoment,
@@ -36,8 +38,8 @@ theorem bellmanAngularSecondMoment_le {f : ℝ → ℝ}
 
 /-- The integrated angular identity bounds the positive first moment using nonnegative h. -/
 theorem bellmanAngularFirstMoment_bound (β : ℝ) (f h J : ℝ → ℝ)
-    (hβ : 3 ≤ β) (hi : LocallyIntegrable f volume)
-    (hf : ∀ᵐ z ∂volume, 0 ≤ f z) (hh : ∀ y : ℝ, 0 ≤ h y)
+    (hβ : 3 ≤ β) (hi : LocallyIntegrable f )
+    (hf : ∀ᵐ z, 0 ≤ f z) (hh : ∀ y : ℝ, 0 ≤ h y)
     (he : ∀ y : ℝ, h y = h 0 + J 0 * y - ((β - 2) / 3) * y *
       bellmanAngularFirstMoment f y + ((β - 3) / 3) * bellmanAngularSecondMoment f y)
     {y : ℝ} (hy : 0 < y) :

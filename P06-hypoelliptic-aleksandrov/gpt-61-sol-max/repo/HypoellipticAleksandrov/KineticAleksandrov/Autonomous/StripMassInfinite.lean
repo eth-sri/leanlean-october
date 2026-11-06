@@ -5,11 +5,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripGreenHo
 
 /-! # Infinite-horizon quadratic Green mass and its finite-horizon specialization -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open scoped ENNReal
+open Set MeasureTheory
+
 
 /-- The quadratic barrier controls total Green mass even at the infinite horizon. -/
 theorem stripGreenOfRealization_infinite_quadratic_mass

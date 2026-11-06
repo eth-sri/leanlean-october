@@ -2,18 +2,20 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStartBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitMassTerminal
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The genuine position-localized Green test on each active visit -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
+open Set
 
 /-- The position-localized quadratic is smooth in the physical product coordinates. -/
 theorem positionStartQuadratic_smooth (c : Clock) (eta : ℝ → ℝ)
-    (heta : ContDiff ℝ (⊤ : ℕ∞) eta) :
-    ContDiff ℝ (⊤ : ℕ∞)
+    (heta : ContDiff ℝ PDE.smoothOrder eta) :
+    ContDiff ℝ PDE.smoothOrder
       ((fun q : Point => eta (q.position 0) * visitQuadratic c (q.velocity 0)) ∘
         (KineticPoint.equivProd 1).symm) :=
   (heta.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.fst)).mul
@@ -29,11 +31,11 @@ theorem positionStartQuadratic_active_identity
     (e : FiniteUnionPole (visitActiveUnion c J) (T : WithTop ℝ)) :
     let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
       visitQuadratic c (q.velocity 0)
-    f e.1 = (∫ p, f p ∂finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T e) -
+    f e.1 = (∫ p, f p ∂finiteUnionExit hH hLE hlam hLam A _ T e) -
       ∫ p, forwardScalarOperator A.a f p
-        ∂finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T e := by
+        ∂finiteUnionGreen hH hLE hlam hLam A _ T e := by
   dsimp only
-  apply visitUnion_identity_bounded_smooth hH hLE hlam hLam A (visitActiveUnion c J) T e
+  apply visitUnion_identity_bounded_smooth hH hLE hlam hLam A _ T e
     (fun q => positionStartCutoff Y c.r c.positive (q.position 0) *
       visitQuadratic c (q.velocity 0))
   · exact positionStartQuadratic_smooth c _

@@ -5,13 +5,13 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBor
 
 /-! # Joint Borel measurability of the characterized terminal measures -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set
+open HypoellipticAleksandrov MeasureTheory Set
 open scoped CompactlySupported
 
 section EvolutionData
@@ -19,8 +19,8 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+variable (Ω : PDE.VelocityRegion n) (γ : ℝ → PDE.Vec n)
+variable (B : FullKineticCoefficient n) (b : PDE.VectorField n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -43,8 +43,8 @@ local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hm
 
 /-- The terminal measure family is jointly Borel on the actual valid
 query subtype, including the equal-time endpoint. -/
-theorem measurable_terminalMeasure : Measurable (fun q : EvolutionQuery Ω γ => μT q) := by
-  have hmass (q : EvolutionQuery Ω γ) : μT q univ ≤ 1 :=
+theorem measurable_terminalMeasure : Measurable (fun q  => μT q) := by
+  have hmass (q : EvolutionQuery Ω γ)  :=
     (terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q).1
   have (q : EvolutionQuery Ω γ) : IsFiniteMeasure (μT q) :=

@@ -4,6 +4,8 @@ public import Mathlib.Analysis.Calculus.ContDiff.Basic
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 public import Mathlib.MeasureTheory.Measure.Regular
 public import Mathlib.Order.Bounds.Basic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Admissible degrees of the homogeneous adjoint exponent
 
@@ -27,8 +29,8 @@ def bellmanDilation (r : ℝ) (hr : 0 < r) :
     BellmanPuncturedPlane → BellmanPuncturedPlane := fun q =>
   ⟨(r ^ 3 * q.1.1, r * q.1.2), by
     intro h
-    have hx : r ^ 3 * q.1.1 = 0 := congrArg Prod.fst h
-    have hv : r * q.1.2 = 0 := congrArg Prod.snd h
+    have hx  := congrArg Prod.fst h
+    have hv  := congrArg Prod.snd h
     apply q.2
     apply Prod.ext
     · exact (mul_eq_zero.mp hx).resolve_left (pow_ne_zero 3 hr.ne')
@@ -44,7 +46,7 @@ compactly supported functions whose support avoids the origin. Both signs are po
 in the weak identity, corresponding to -∂X(vμ) + ∂vvη = 0. -/
 def IsBellmanStationaryAdjointPair
     (μ η : Measure BellmanPuncturedPlane) : Prop :=
-  ∀ (φ : ℝ × ℝ → ℝ), ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ →
+  ∀ (φ : ℝ × ℝ → ℝ), ContDiff ℝ PDE.smoothOrder φ → HasCompactSupport φ →
     tsupport φ ⊆ {q : ℝ × ℝ | q ≠ (0, 0)} →
       (∫ q, q.1.2 * fderiv ℝ φ q.1 (1, 0) ∂μ) +
         (∫ q, fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) q.1 (0, 1) ∂η) = 0

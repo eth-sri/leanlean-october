@@ -21,4 +21,15 @@ abbrev Vec (d : ℕ) := Fin d → ℝ
 /-- Real `d × d` matrices acting on project vectors. -/
 abbrev Mat (d : ℕ) := Matrix (Fin d) (Fin d) ℝ
 
+/-- Scalar functions of the velocity variable. -/
+abbrev ScalarField (d : ℕ) := Vec d → ℝ
+/-- Velocity-dependent vector fields. -/
+abbrev VectorField (d : ℕ) := Vec d → Vec d
+/-- Time-dependent scalar fields. -/
+abbrev TimeScalarField (d : ℕ) := ℝ → Vec d → ℝ
+/-- Time-dependent vector fields. -/
+abbrev TimeVectorField (d : ℕ) := ℝ → Vec d → Vec d
+/-- Regions in velocity space. -/
+abbrev VelocityRegion (d : ℕ) := Set (Vec d)
+
 end PDE

@@ -2,6 +2,10 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Derivatives
 public import HypoellipticAleksandrov.Measure.TimeVelocity
+public import HypoellipticAleksandrov.Measure.TimeVelocity
+public import PDEFoundation.Calculus.RegularityOrder
+
+
 
 /-!
 # Weak derivatives on time--velocity space
@@ -20,42 +24,44 @@ open MeasureTheory
 open scoped ENNReal Topology
 
 /-- Product Lebesgue volume restricted to a time--velocity set. -/
-noncomputable abbrev timeVelocityVolumeOn {d : Nat} (U : Set (TimeVelocity d)) :
+abbrev timeVelocityVolumeOn {d : Nat} (U : HypoellipticAleksandrov.Parabolic.Region d) :
     Measure (TimeVelocity d) :=
-  (volume : Measure (TimeVelocity d)).restrict U
+  volume.restrict U
 
 /-- Restricted-product-volume `L^p` membership on time--velocity space. -/
-abbrev ParabolicMemLpOn {d : Nat} (U : Set (TimeVelocity d)) (p : ℝ≥0∞)
-    (f : TimeVelocity d → ℝ) : Prop :=
+abbrev ParabolicMemLpOn {d : Nat} (U : HypoellipticAleksandrov.Parabolic.Region d) (p : ℝ≥0∞)
+    (f : HypoellipticAleksandrov.Parabolic.ScalarField d) : Prop :=
   MeasureTheory.MemLp f p (timeVelocityVolumeOn U)
 
+variable {d : Nat} (U : HypoellipticAleksandrov.Parabolic.Region d)
+
 /-- The distributional time derivative relation on a raw time--velocity set. -/
-def HasWeakTimeDerivOn {d : Nat} (U : Set (TimeVelocity d))
-    (u du : TimeVelocity d → ℝ) : Prop :=
-  ∀ φ : TimeVelocity d → ℝ,
-    ContDiff ℝ (⊤ : ℕ∞) φ →
+def HasWeakTimeDerivOn
+    (u du : HypoellipticAleksandrov.Parabolic.ScalarField d) : Prop :=
+  ∀ φ : HypoellipticAleksandrov.Parabolic.ScalarField d,
+    ContDiff ℝ PDE.smoothOrder φ →
     HasCompactSupport φ →
     tsupport φ ⊆ U →
-    (∫ z in U, u z * timeDerivative φ z ∂(volume : Measure (TimeVelocity d))) =
-      -∫ z in U, du z * φ z ∂(volume : Measure (TimeVelocity d))
+    (∫ z in U, u z * timeDerivative φ z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) =
+      -∫ z in U, du z * φ z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
 
 /-- The distributional derivative relation in one velocity coordinate on a raw
 time--velocity set. -/
-def HasWeakVelocityPartialDerivOn {d : Nat} (U : Set (TimeVelocity d))
-    (i : Fin d) (u dui : TimeVelocity d → ℝ) : Prop :=
-  ∀ φ : TimeVelocity d → ℝ,
-    ContDiff ℝ (⊤ : ℕ∞) φ →
+def HasWeakVelocityPartialDerivOn
+    (i : Fin d) (u dui : HypoellipticAleksandrov.Parabolic.ScalarField d) : Prop :=
+  ∀ φ : HypoellipticAleksandrov.Parabolic.ScalarField d,
+    ContDiff ℝ PDE.smoothOrder φ →
     HasCompactSupport φ →
     tsupport φ ⊆ U →
     (∫ z in U, u z * velocityGradient φ z i
-      ∂(volume : Measure (TimeVelocity d))) =
-      -∫ z in U, dui z * φ z ∂(volume : Measure (TimeVelocity d))
+      ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) =
+      -∫ z in U, dui z * φ z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
 
 /-- A representative-level anisotropic weak `W^{1,2,p}` jet on a raw
 time--velocity set. -/
-structure ParabolicW12Function (d : Nat) (U : Set (TimeVelocity d)) (p : ℝ≥0∞) where
-  toFun : TimeVelocity d → ℝ
-  timeDeriv : TimeVelocity d → ℝ
+structure ParabolicW12Function (d : Nat) (U : HypoellipticAleksandrov.Parabolic.Region d) (p : ℝ≥0∞) where
+  toFun : HypoellipticAleksandrov.Parabolic.ScalarField d
+  timeDeriv : HypoellipticAleksandrov.Parabolic.ScalarField d
   velocityGrad : TimeVelocity d → PDE.Vec d
   velocityHessian : TimeVelocity d → PDE.Mat d
   memLp : ParabolicMemLpOn U p toFun

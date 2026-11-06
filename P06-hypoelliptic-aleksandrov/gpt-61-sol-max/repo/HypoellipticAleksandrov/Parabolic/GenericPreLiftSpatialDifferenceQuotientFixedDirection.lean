@@ -10,6 +10,25 @@ public import HypoellipticAleksandrov.Parabolic.SpatialCoordinateDerivatives
 public import HypoellipticAleksandrov.Parabolic.SpatialSliceDifferenceQuotientBound
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpatialDifferenceQuotientL2Bound
 public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import Mathlib.Tactic.FunProp
+import Mathlib.Tactic.NormNum
+import all HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientPointwiseCoercivity
+import all HypoellipticAleksandrov.Parabolic.WeakDerivativesAlgebra
+import all HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+open private HypoellipticAleksandrov.Parabolic.mul_le_lambda_eighth_sq_add from HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientPointwiseCoercivity
+open private HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_tsupport_subset from HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+open private HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_contDiff_infty from HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+open private HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_hasCompactSupport from HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+section
+open private HypoellipticAleksandrov.Parabolic.timeDerivative_tsupport from HypoellipticAleksandrov.Parabolic.WeakDerivativesAlgebra
+private alias _sharedProof_83_3 := HypoellipticAleksandrov.Parabolic.timeDerivative_tsupport
+end
+
 
 /-!
 # Fixed-direction generic spatial difference-quotient estimate
@@ -20,104 +39,77 @@ infrastructure below records the signed collar geometry, product-cutoff
 calculus, locally square-integrable fluxes, and coefficient quotient bounds.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 open scoped Convex ENNReal MatrixOrder
 
-private theorem fixedCore_velocityGradient_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z ↦ velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
+variable {d : ℕ}
 
-private theorem fixedCore_velocityGradient_compact
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : HasCompactSupport f) :
-    HasCompactSupport (fun z ↦ velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
+variable {f : TimeVelocity d → ℝ}
 
-private theorem fixedCore_velocityGradient_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d} :
-    tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support (fun z ↦
-    fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+
+
+
+
+
+
+
 
 private theorem fixedCore_timeDerivative_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  unfold timeDerivative
-  change closure (Function.support (fun z ↦ fderiv ℝ f z (1, 0))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+      :
+    tsupport (timeDerivative f) ⊆ tsupport f := (_sharedProof_83_3 f)
+
 
 /-- A selected weak spatial derivative on an outer open carrier uniformly
 controls the corresponding quotient on any carrier whose full directed
 segments remain in the outer carrier.  Applying this helper to `q` and then
 to a gradient component supplies the two bounds used in assembly. -/
 private theorem exists_spatialDifferenceQuotient_memLp_norm_le_on_inner
-    {d : ℕ} {U V : Set (TimeVelocity d)}
+     {U V : HypoellipticAleksandrov.Parabolic.Region d}
     (k : Fin d)
     (hU : IsOpen U) (q Gk : TimeVelocity d → ℝ)
     (hq : ParabolicMemLpOn U 2 q) (hGk : ParabolicMemLpOn U 2 Gk)
     (hweak : HasWeakVelocityPartialDerivOn U k q Gk)
     (h : ℝ) (hh : h ≠ 0)
-    (hseg : ∀ z ∈ V, [z -[ℝ] spatialShift k h z] ⊆ U) :
-    ∃ hqh : ParabolicMemLpOn V 2 (spatialDifferenceQuotient k h q),
-      ‖hqh.toLp (spatialDifferenceQuotient k h q)‖ ≤ ‖hGk.toLp Gk‖ := by
-  exact hweak.exists_spatialDifferenceQuotient_memLp_norm_le
+    (hseg : ∀ z ∈ V, [z -[ℝ] spatialShift k h z] ⊆ U) : type_of% (hweak.exists_spatialDifferenceQuotient_memLp_norm_le
+    U hU V k h hh q Gk hq hGk hseg) := hweak.exists_spatialDifferenceQuotient_memLp_norm_le
     U hU V k h hh q Gk hq hGk hseg
 
 /-- Localizing a quotient weak jet by a smooth compactly supported cutoff
 produces global `L²` representatives with the exact ambient weak derivative
 and with support retained in the local carrier. -/
 private theorem localized_spatialDifferenceQuotient_weakJet_global
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+     {V : HypoellipticAleksandrov.Parabolic.Region d} (hV : IsOpen V)
     (qh : TimeVelocity d → ℝ) (H : Fin d → TimeVelocity d → ℝ)
     (hqh : ParabolicMemLpOn V 2 qh) (hH : ∀ i, ParabolicMemLpOn V 2 (H i))
     (hweak : ∀ i, HasWeakVelocityPartialDerivOn V i qh (H i))
-    (w : TimeVelocity d → ℝ) (hw : ContDiff ℝ (⊤ : ℕ∞) w)
+    (w : TimeVelocity d → ℝ) (hw : ContDiff ℝ PDE.smoothOrder w)
     (hwCompact : HasCompactSupport w) (hwSupport : tsupport w ⊆ V) :
     let psi : TimeVelocity d → ℝ := fun z ↦ w z * qh z
     let Dpsi : Fin d → TimeVelocity d → ℝ := fun i z ↦
       velocityGradient w z i * qh z + w z * H i z
-    MemLp psi 2 volume ∧ (∀ i, MemLp (Dpsi i) 2 volume) ∧
+    MemLp psi 2  ∧ (∀ i, MemLp (Dpsi i) 2 ) ∧
       (∀ i, HasWeakVelocityPartialDerivOn Set.univ i psi (Dpsi i)) ∧
       tsupport psi ⊆ V ∧ ∀ i, tsupport (Dpsi i) ⊆ V := by
-  let psi : TimeVelocity d → ℝ := fun z ↦ w z * qh z
-  let Dpsi : Fin d → TimeVelocity d → ℝ := fun i z ↦
+  let psi  := fun z ↦ w z * qh z
+  let Dpsi  := fun i z ↦
     velocityGradient w z i * qh z + w z * H i z
   have hwTop : ParabolicMemLpOn V ∞ w :=
     (hw.continuous.memLp_of_hasCompactSupport hwCompact).restrict V
   have hdwTop (i : Fin d) : ParabolicMemLpOn V ∞
       (fun z ↦ velocityGradient w z i) :=
-    ((fixedCore_velocityGradient_contDiff_infty (i := i) hw).continuous.memLp_of_hasCompactSupport
-      (fixedCore_velocityGradient_compact (i := i) hwCompact)).restrict V
-  have hpsiV : ParabolicMemLpOn V 2 psi := by
-    simpa only [psi, mul_comm] using (hwTop.mul' hqh)
+    ((_root_.HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_contDiff_infty (i := i) hw).continuous.memLp_of_hasCompactSupport
+      (_root_.HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_hasCompactSupport  hwCompact)).restrict V
+
   have hDpsiV (i : Fin d) : ParabolicMemLpOn V 2 (Dpsi i) := by
-    have hfirst : ParabolicMemLpOn V 2
-        (fun z ↦ velocityGradient w z i * qh z) := (hdwTop i).mul' hqh
-    have hsecond : ParabolicMemLpOn V 2 (fun z ↦ w z * H i z) := by
-      exact hwTop.mul' (hH i)
-    simpa only [Dpsi, Pi.add_def] using hfirst.add hsecond
+
+
+    simpa only [Dpsi, Pi.add_def] using ((hdwTop i).mul' hqh).add (hwTop.mul' (hH i))
   have hpsiWeakV (i : Fin d) : HasWeakVelocityPartialDerivOn V i psi (Dpsi i) := by
     have hp := (hweak i).mul_contDiff hw
       (hqh.locallyIntegrableOn (by norm_num))
@@ -132,64 +124,62 @@ private theorem localized_spatialDifferenceQuotient_weakJet_global
     refine (tsupport_add _ _).trans (union_subset ?_ ?_)
     · exact (tsupport_mul_subset_left
         (f := fun z ↦ velocityGradient w z i) (g := qh)).trans
-          (fixedCore_velocityGradient_tsupport_subset.trans hwSupport)
+          (_root_.HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_tsupport_subset.trans hwSupport)
     · exact (tsupport_mul_subset_left (f := w) (g := H i)).trans hwSupport
-  have hpsiGlobal : MemLp psi 2 volume :=
-    hpsiV.memLp_of_support_subset hV.measurableSet
+  have hpsiGlobal  :=
+    (show ParabolicMemLpOn V 2 psi by
+        simpa only [psi, mul_comm] using (hwTop.mul' hqh)).memLp_of_support_subset hV.measurableSet
       ((subset_tsupport psi).trans hpsiSupport)
-  have hDpsiGlobal (i : Fin d) : MemLp (Dpsi i) 2 volume :=
+  have hDpsiGlobal (i : Fin d)  :=
     (hDpsiV i).memLp_of_support_subset hV.measurableSet
       ((subset_tsupport (Dpsi i)).trans (hDpsiSupport i))
-  have hpsiWeakGlobal (i : Fin d) :
-      HasWeakVelocityPartialDerivOn Set.univ i psi (Dpsi i) :=
+  have hpsiWeakGlobal (i : Fin d)  :=
     (hpsiWeakV i).univ_of_tsupport_subset hV hpsiSupport (hDpsiSupport i)
   exact ⟨hpsiGlobal, hDpsiGlobal, hpsiWeakGlobal, hpsiSupport, hDpsiSupport⟩
 
+section
+variable (k : Fin d) (h : ℝ) (hh : h ≠ 0)
+
+include hh
 /-- The global weak derivative of a localized quotient controls its signed
 backward spatial difference quotient with no inverse-step loss. -/
 private theorem exists_backward_spatialDifferenceQuotient_memLp_norm_le
-    {d : ℕ} (k : Fin d) (h : ℝ) (hh : h ≠ 0)
+
     (psi Dpsi : TimeVelocity d → ℝ)
     (hpsi : ParabolicMemLpOn Set.univ 2 psi)
     (hDpsi : ParabolicMemLpOn Set.univ 2 Dpsi)
     (hweak : HasWeakVelocityPartialDerivOn Set.univ k psi Dpsi) :
     ∃ hback : ParabolicMemLpOn Set.univ 2
         (spatialDifferenceQuotient k (-h) psi),
-      ‖hback.toLp (spatialDifferenceQuotient k (-h) psi)‖ ≤ ‖hDpsi.toLp Dpsi‖ := by
-  have hseg : ∀ z ∈ (Set.univ : Set (TimeVelocity d)),
-      [z -[ℝ] spatialShift k (-h) z] ⊆ Set.univ := by
-    intro z hz
-    exact subset_univ _
-  exact hweak.exists_spatialDifferenceQuotient_memLp_norm_le
-    Set.univ isOpen_univ Set.univ k (-h) (neg_ne_zero.mpr hh)
-    psi Dpsi hpsi hDpsi hseg
+      ‖hback.toLp (spatialDifferenceQuotient k (-h) psi)‖ ≤ ‖hDpsi.toLp Dpsi‖ := (HasWeakVelocityPartialDerivOn.exists_spatialDifferenceQuotient_memLp_norm_le univ isOpen_univ univ k (-h)
+  (neg_ne_zero.mpr hh) psi Dpsi hpsi hDpsi hweak fun z hz => subset_univ [z -[ℝ] spatialShift k (-h) z])
 
 /-- `L²` Cauchy--Schwarz bounds the undifferenced source paired with the
 backward quotient of a localized test by the localized derivative norm. -/
 private theorem abs_integral_source_mul_backwardQuotient_le
-    {d : ℕ} (k : Fin d) (h : ℝ) (hh : h ≠ 0)
+
     (R psi Dpsi : TimeVelocity d → ℝ)
-    (hR : MemLp R 2 volume) (hpsi : MemLp psi 2 volume)
-    (hDpsi : MemLp Dpsi 2 volume)
+    (hR : MemLp R 2 ) (hpsi : MemLp psi 2 )
+    (hDpsi : MemLp Dpsi 2 )
     (hweak : HasWeakVelocityPartialDerivOn Set.univ k psi Dpsi) :
     |∫ z, R z * spatialDifferenceQuotient k (-h) psi z| ≤
       ‖hR.toLp R‖ * ‖hDpsi.toLp Dpsi‖ := by
-  have hpsiUniv : ParabolicMemLpOn Set.univ 2 psi := by
-    exact hpsi.mono_measure Measure.restrict_le_self
-  have hDpsiUniv : ParabolicMemLpOn Set.univ 2 Dpsi := by
-    exact hDpsi.mono_measure Measure.restrict_le_self
+  let sharedTerm_a3e4cfe86e := (∫ z, R z * spatialDifferenceQuotient k (-h) psi z)
+
+
   obtain ⟨hback, hbackNorm⟩ :=
     exists_backward_spatialDifferenceQuotient_memLp_norm_le k h hh psi Dpsi
-      hpsiUniv hDpsiUniv hweak
-  have hbackGlobal : MemLp (spatialDifferenceQuotient k (-h) psi) 2 volume := by
-    exact hback.memLp_of_support_subset MeasurableSet.univ (subset_univ _)
-  have hholder : (2 : ℝ).HolderConjugate 2 := by
-    constructor <;> norm_num
-  have hR' : MemLp R (ENNReal.ofReal (2 : ℝ)) volume := by simpa using hR
+      (by
+          exact hpsi.mono_measure Measure.restrict_le_self) (by
+          exact hDpsi.mono_measure Measure.restrict_le_self) hweak
+  have hbackGlobal  := hback.memLp_of_support_subset MeasurableSet.univ (subset_univ _)
+
+  have hR' : MemLp R (ENNReal.ofReal (2 ))  := by simpa using hR
   have hbackGlobal' : MemLp (spatialDifferenceQuotient k (-h) psi)
-      (ENNReal.ofReal (2 : ℝ)) volume := by simpa using hbackGlobal
-  have hcs := integral_mul_norm_le_Lp_mul_Lq hholder hR' hbackGlobal'
-  have hRNorm : (eLpNorm R 2 volume).toReal =
+      (ENNReal.ofReal (2 ))  := by simpa using hbackGlobal
+  have hcs := integral_mul_norm_le_Lp_mul_Lq (by
+      constructor <;> norm_num) hR' hbackGlobal'
+  have hRNorm : (eLpNorm R 2 ).toReal =
       (∫ z, ‖R z‖ ^ (2 : ℝ)) ^ (1 / (2 : ℝ)) := by
     have heq := congrArg ENNReal.toReal
       (hR.eLpNorm_eq_integral_rpow_norm (by norm_num) ENNReal.ofNat_ne_top)
@@ -198,7 +188,7 @@ private theorem abs_integral_source_mul_backwardQuotient_le
     convert heq using 1
     norm_num
   have hbackNormEq :
-      (eLpNorm (spatialDifferenceQuotient k (-h) psi) 2 volume).toReal =
+      (eLpNorm (spatialDifferenceQuotient k (-h) psi) 2 ).toReal =
         (∫ z, ‖spatialDifferenceQuotient k (-h) psi z‖ ^ (2 : ℝ)) ^
           (1 / (2 : ℝ)) := by
     have heq := congrArg ENNReal.toReal
@@ -209,25 +199,25 @@ private theorem abs_integral_source_mul_backwardQuotient_le
     convert heq using 1
     norm_num
   calc
-    |∫ z, R z * spatialDifferenceQuotient k (-h) psi z| =
-        ‖∫ z, R z * spatialDifferenceQuotient k (-h) psi z‖ := by
+    |sharedTerm_a3e4cfe86e| =
+        ‖sharedTerm_a3e4cfe86e‖ := by
           rw [Real.norm_eq_abs]
-    _ ≤ ∫ z, ‖R z‖ * ‖spatialDifferenceQuotient k (-h) psi z‖ := by
-      exact (norm_integral_le_integral_norm _).trans_eq <| by
-        apply integral_congr_ae
-        exact ae_of_all _ fun z ↦ norm_mul _ _
+    _ ≤ ∫ z, ‖R z‖ * ‖spatialDifferenceQuotient k (-h) psi z‖ := (norm_integral_le_integral_norm _).trans_eq <| by
+        norm_num
     _ ≤ ‖hR.toLp R‖ * ‖hbackGlobal.toLp (spatialDifferenceQuotient k (-h) psi)‖ := by
       rw [Lp.norm_toLp, Lp.norm_toLp, hRNorm, hbackNormEq]
       exact hcs
     _ ≤ ‖hR.toLp R‖ * ‖hDpsi.toLp Dpsi‖ := by
       apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
       simpa only [Lp.norm_toLp, timeVelocityVolumeOn, Measure.restrict_univ] using hbackNorm
+end
+
 
 /-- The square integral of a real-valued `L²` function is the square of the
 norm of its canonical `Lp` representative. -/
 private theorem fixedCore_integral_sq_eq_norm_sq_toLp
     {alpha : Type*} [MeasurableSpace alpha] {mu : Measure alpha}
-    (f : alpha → ℝ) (hf : MemLp f (2 : ℝ≥0∞) mu) :
+    (f : alpha → ℝ) (hf : MemLp f (2 ) mu) :
     (∫ x, f x ^ 2 ∂mu) = ‖hf.toLp f‖ ^ 2 := by
   rw [Lp.norm_toLp, hf.eLpNorm_eq_integral_rpow_norm
     (by norm_num) ENNReal.ofNat_ne_top]
@@ -237,10 +227,12 @@ private theorem fixedCore_integral_sq_eq_norm_sq_toLp
   exact (Real.rpow_inv_natCast_pow
     (integral_nonneg fun _ ↦ sq_nonneg _) (by norm_num)).symm
 
+variable {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.Region d}
+
 /-- Multiplication by a cutoff in `[0,1]` has squared `L²` norm bounded by
 the corresponding singly weighted energy. -/
 private theorem exists_weightedMultiplier_memLp_norm_sq_le_integral
-    {d : ℕ} {V : Set (TimeVelocity d)}
+
     (w H : TimeVelocity d → ℝ)
     (hH : ParabolicMemLpOn V 2 H)
     (hwMeas : AEStronglyMeasurable w (timeVelocityVolumeOn V))
@@ -249,32 +241,35 @@ private theorem exists_weightedMultiplier_memLp_norm_sq_le_integral
     ∃ hwH : ParabolicMemLpOn V 2 (fun z ↦ w z * H z),
       ‖hwH.toLp (fun z ↦ w z * H z)‖ ^ 2 ≤
         ∫ z in V, w z * H z ^ 2 := by
-  have hwAbs : ∀ᵐ z ∂timeVelocityVolumeOn V, |w z| ≤ (1 : ℝ) := by
-    filter_upwards [hwNonneg, hwLe] with z hz0 hz1
-    simpa only [abs_of_nonneg hz0] using hz1
+
   obtain ⟨hwH, _⟩ :=
     HypoellipticAleksandrov.Analysis.memLp_mul_eLpNorm_toReal_le_of_ae_abs_le
-      (by norm_num : (0 : ℝ) ≤ 1) hwMeas hH hwAbs
-  have hweightedInt : Integrable (fun z ↦ w z * H z ^ 2)
-      (timeVelocityVolumeOn V) := by
-    refine Integrable.mono' hH.integrable_sq (hwMeas.mul hH.integrable_sq.1) ?_
-    filter_upwards [hwNonneg, hwLe] with z hz0 hz1
-    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg hz0,
-      abs_of_nonneg (sq_nonneg (H z))]
-    exact mul_le_of_le_one_left (sq_nonneg (H z)) hz1
+      (by norm_num : (0 : ℝ) ≤ 1) hwMeas hH (by
+          filter_upwards [hwNonneg, hwLe] with z hz0 hz1
+          simpa only [abs_of_nonneg hz0] using hz1)
+
   refine ⟨hwH, ?_⟩
   rw [← fixedCore_integral_sq_eq_norm_sq_toLp _ hwH]
-  apply integral_mono_ae hwH.integrable_sq hweightedInt
+  apply integral_mono_ae hwH.integrable_sq (by
+      refine Integrable.mono' hH.integrable_sq (hwMeas.mul hH.integrable_sq.1) ?_
+      filter_upwards [hwNonneg, hwLe] with z hz0 hz1
+      rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg hz0,
+        abs_of_nonneg (sq_nonneg (H z))]
+      exact mul_le_of_le_one_left (sq_nonneg (H z)) hz1)
   filter_upwards [hwNonneg, hwLe] with z hz0 hz1
-  have hwSq : w z ^ 2 ≤ w z := by nlinarith
-  rw [mul_pow]
-  exact mul_le_mul_of_nonneg_right hwSq (sq_nonneg (H z))
 
+  rw [mul_pow]
+  exact mul_le_mul_of_nonneg_right (by nlinarith) (sq_nonneg (H z))
+
+section
+variable (hV : MeasurableSet V) (k : Fin d)
+
+include hV
 /-- The cutoff-gradient multiplier has the sharp scale `2 * Keta`, with no
 difference-quotient step in the bound. -/
 private theorem exists_cutoffGradientMultiplier_memLp_norm_le
-    {d : ℕ} {V : Set (TimeVelocity d)}
-    (hV : MeasurableSet V) (k : Fin d)
+
+
     (w qh : TimeVelocity d → ℝ) (Keta : ℝ)
     (hKeta : 0 ≤ Keta) (hqh : ParabolicMemLpOn V 2 qh)
     (hDwMeas : AEStronglyMeasurable (fun z ↦ velocityGradient w z k)
@@ -284,21 +279,20 @@ private theorem exists_cutoffGradientMultiplier_memLp_norm_le
         (fun z ↦ velocityGradient w z k * qh z),
       ‖hterm.toLp (fun z ↦ velocityGradient w z k * qh z)‖ ≤
         2 * Keta * ‖hqh.toLp qh‖ := by
-  have hDwAE : ∀ᵐ z ∂timeVelocityVolumeOn V,
-      |velocityGradient w z k| ≤ 2 * Keta := by
-    filter_upwards [ae_restrict_mem hV] with z hz
-    exact hDwBound z hz
+
   obtain ⟨hterm, htermNorm⟩ :=
     HypoellipticAleksandrov.Analysis.memLp_mul_eLpNorm_toReal_le_of_ae_abs_le
-      (mul_nonneg (by norm_num) hKeta) hDwMeas hqh hDwAE
+      (mul_nonneg (by norm_num) hKeta) hDwMeas hqh (show ∀ᵐ z ∂timeVelocityVolumeOn V,
+      |velocityGradient w z k| ≤ 2 * Keta by
+          filter_upwards [ae_restrict_mem hV] with z hz
+          exact hDwBound z hz)
   refine ⟨hterm, ?_⟩
   simpa only [Lp.norm_toLp] using htermNorm
 
 /-- The localized product-rule derivative retains the singly weighted
 gradient energy in its `L²` bound. -/
 private theorem exists_localizedDerivative_memLp_norm_le_weighted
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : MeasurableSet V)
-    (k : Fin d) (qh Hk w : TimeVelocity d → ℝ) (Keta : ℝ)
+      (qh Hk w : TimeVelocity d → ℝ) (Keta : ℝ)
     (hKeta : 0 ≤ Keta)
     (hqh : ParabolicMemLpOn V 2 qh) (hHk : ParabolicMemLpOn V 2 Hk)
     (hwMeas : AEStronglyMeasurable w (timeVelocityVolumeOn V))
@@ -309,51 +303,51 @@ private theorem exists_localizedDerivative_memLp_norm_le_weighted
     (hSupport : tsupport (fun z ↦
       velocityGradient w z k * qh z + w z * Hk z) ⊆ V) :
     ∃ hD : MemLp (fun z ↦
-        velocityGradient w z k * qh z + w z * Hk z) 2 volume,
+        velocityGradient w z k * qh z + w z * Hk z) 2 ,
       ‖hD.toLp (fun z ↦
           velocityGradient w z k * qh z + w z * Hk z)‖ ≤
         2 * Keta * ‖hqh.toLp qh‖ +
           Real.sqrt (∫ z in V, w z * Hk z ^ 2) := by
+  let sharedTerm_d772a924db := ((∫ z in V, w z * Hk z ^ 2))
   have hwNonnegAE : ∀ᵐ z ∂timeVelocityVolumeOn V, 0 ≤ w z := by
     filter_upwards [ae_restrict_mem hV] with z hz
     exact hwNonneg z hz
-  have hwLeAE : ∀ᵐ z ∂timeVelocityVolumeOn V, w z ≤ 1 := by
-    filter_upwards [ae_restrict_mem hV] with z hz
-    exact hwLe z hz
+
   obtain ⟨hfirst, hfirstNorm⟩ := exists_cutoffGradientMultiplier_memLp_norm_le
     hV k w qh Keta hKeta hqh hDwMeas hDwBound
   obtain ⟨hsecond, hsecondSq⟩ :=
     exists_weightedMultiplier_memLp_norm_sq_le_integral
-      w Hk hHk hwMeas hwNonnegAE hwLeAE
-  let D : TimeVelocity d → ℝ := fun z ↦
+      w Hk hHk hwMeas hwNonnegAE (show ∀ᵐ z ∂timeVelocityVolumeOn V, w z ≤ 1 by
+          filter_upwards [ae_restrict_mem hV] with z hz
+          exact hwLe z hz)
+  let D  := fun z ↦
     velocityGradient w z k * qh z + w z * Hk z
   have hDV : ParabolicMemLpOn V 2 D := hfirst.add hsecond
-  have hDglobal : MemLp D 2 volume :=
+  have hDglobal  :=
     hDV.memLp_of_support_subset hV
-      ((subset_tsupport D).trans (by simpa only [D] using hSupport))
-  have henergyNonneg : 0 ≤ ∫ z in V, w z * Hk z ^ 2 := by
-    apply integral_nonneg_of_ae
-    filter_upwards [hwNonnegAE] with z hz
-    exact mul_nonneg hz (sq_nonneg _)
+      ((subset_tsupport D).trans (hSupport))
+
   have hsecondNorm :
       ‖hsecond.toLp (fun z ↦ w z * Hk z)‖ ≤
-        Real.sqrt (∫ z in V, w z * Hk z ^ 2) := by
+        Real.sqrt sharedTerm_d772a924db := by
     apply (sq_le_sq₀ (norm_nonneg _) (Real.sqrt_nonneg _)).mp
-    simpa only [Real.sq_sqrt henergyNonneg] using hsecondSq
+    simpa only [Real.sq_sqrt (show 0 ≤ sharedTerm_d772a924db by
+        apply integral_nonneg_of_ae
+        filter_upwards [hwNonnegAE] with z hz
+        exact mul_nonneg hz (sq_nonneg _))] using hsecondSq
   refine ⟨hDglobal, ?_⟩
   rw [Lp.norm_toLp]
   rw [← eLpNorm_restrict_eq_of_support_subset hDglobal.aestronglyMeasurable
-    ((subset_tsupport D).trans (by simpa only [D] using hSupport))]
-  have htri : eLpNorm D 2 (timeVelocityVolumeOn V) ≤
+    ((subset_tsupport D).trans ((id hSupport)))]
+
+  have hreal := ENNReal.toReal_mono
+    (ENNReal.add_ne_top.mpr ⟨hfirst.eLpNorm_ne_top, hsecond.eLpNorm_ne_top⟩) (show eLpNorm D 2 (timeVelocityVolumeOn V) ≤
       eLpNorm (fun z ↦ velocityGradient w z k * qh z) 2
           (timeVelocityVolumeOn V) +
-        eLpNorm (fun z ↦ w z * Hk z) 2 (timeVelocityVolumeOn V) :=
-    by
-      simpa only [D, Pi.add_def] using
-        (eLpNorm_add_le (f := fun z ↦ velocityGradient w z k * qh z)
-          (g := fun z ↦ w z * Hk z) (μ := timeVelocityVolumeOn V) (by norm_num : 1 ≤ (2 : ℝ≥0∞)))
-  have hreal := ENNReal.toReal_mono
-    (ENNReal.add_ne_top.mpr ⟨hfirst.eLpNorm_ne_top, hsecond.eLpNorm_ne_top⟩) htri
+        eLpNorm (fun z ↦ w z * Hk z) 2 (timeVelocityVolumeOn V) by
+        simpa only [D, Pi.add_def] using
+          (eLpNorm_add_le (f := fun z ↦ velocityGradient w z k * qh z)
+            (g := fun z ↦ w z * Hk z) (μ := timeVelocityVolumeOn V) (by norm_num : 1 ≤ (2 : ℝ≥0∞))))
   rw [ENNReal.toReal_add hfirst.eLpNorm_ne_top hsecond.eLpNorm_ne_top] at hreal
   rw [Lp.norm_toLp] at hfirstNorm hsecondNorm
   exact hreal.trans (add_le_add hfirstNorm hsecondNorm)
@@ -361,10 +355,9 @@ private theorem exists_localizedDerivative_memLp_norm_le_weighted
 /-- The source pairing bound used for absorption, with the gradient factor
 measured by its cutoff-weighted energy rather than its unweighted norm. -/
 private theorem abs_integral_source_mul_backwardQuotient_le_localized_weighted
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : MeasurableSet V)
-    (k : Fin d) (h : ℝ) (hh : h ≠ 0)
+      (h : ℝ) (hh : h ≠ 0)
     (R psi qh Hk w : TimeVelocity d → ℝ) (Keta : ℝ)
-    (hKeta : 0 ≤ Keta) (hR : MemLp R 2 volume) (hpsi : MemLp psi 2 volume)
+    (hKeta : 0 ≤ Keta) (hR : MemLp R 2 ) (hpsi : MemLp psi 2 )
     (hqh : ParabolicMemLpOn V 2 qh) (hHk : ParabolicMemLpOn V 2 Hk)
     (hwMeas : AEStronglyMeasurable w (timeVelocityVolumeOn V))
     (hDwMeas : AEStronglyMeasurable (fun z ↦ velocityGradient w z k)
@@ -384,25 +377,23 @@ private theorem abs_integral_source_mul_backwardQuotient_le_localized_weighted
   exact (abs_integral_source_mul_backwardQuotient_le k h hh R psi _
     hR hpsi hD hweak).trans
       (mul_le_mul_of_nonneg_left hDnorm (norm_nonneg _))
+end
 
-/-- A coarse scalar Young inequality with the coefficient used for absorbing
-one error term into elliptic coercivity. -/
-private theorem mul_le_lambda_eighth_sq_add (lam a b : ℝ) (hlam : 0 < lam) :
-    a * b ≤ (lam / 8) * b ^ 2 + (2 / lam) * a ^ 2 := by
-  rw [show (lam / 8) * b ^ 2 + (2 / lam) * a ^ 2 =
-      ((lam ^ 2 / 8) * b ^ 2 + 2 * a ^ 2) / lam by field_simp]
-  rw [le_div_iff₀ hlam]
-  nlinarith [sq_nonneg (lam * b - 4 * a)]
+
+
+
+
+variable {d : ℕ}
 
 /-- The weighted source pairing is split and absorbed into the weighted
 gradient energy and quotient norm, leaving only the undifferenced source
 norm with a coarse coefficient depending on `lam` and `Keta`. -/
 private theorem abs_integral_source_mul_backwardQuotient_le_absorbed_weighted
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : MeasurableSet V)
+     {V : HypoellipticAleksandrov.Parabolic.Region d} (hV : MeasurableSet V)
     (k : Fin d) (h : ℝ) (hh : h ≠ 0)
     (R psi qh Hk w : TimeVelocity d → ℝ) (lam Keta : ℝ)
     (hlam : 0 < lam) (hKeta : 0 ≤ Keta)
-    (hR : MemLp R 2 volume) (hpsi : MemLp psi 2 volume)
+    (hR : MemLp R 2 ) (hpsi : MemLp psi 2 )
     (hqh : ParabolicMemLpOn V 2 qh) (hHk : ParabolicMemLpOn V 2 Hk)
     (hwMeas : AEStronglyMeasurable w (timeVelocityVolumeOn V))
     (hDwMeas : AEStronglyMeasurable (fun z ↦ velocityGradient w z k)
@@ -418,35 +409,37 @@ private theorem abs_integral_source_mul_backwardQuotient_le_absorbed_weighted
       (lam / 8) * (∫ z in V, w z * Hk z ^ 2) +
         (1 / 8) * ‖hqh.toLp qh‖ ^ 2 +
         (2 / lam + 8 * Keta ^ 2) * ‖hR.toLp R‖ ^ 2 := by
+  let sharedTerm_7ffea24077 := ((∫ z in V, w z * Hk z ^ 2))
   have hsource := abs_integral_source_mul_backwardQuotient_le_localized_weighted
     hV k h hh R psi qh Hk w Keta hKeta hR hpsi hqh hHk hwMeas hDwMeas
       hwNonneg hwLe hDwBound hSupport hweak
-  have hquotient := mul_le_lambda_eighth_sq_add (1 : ℝ)
+  have hquotient := _root_.HypoellipticAleksandrov.Parabolic.mul_le_lambda_eighth_sq_add (1 )
     (2 * Keta * ‖hR.toLp R‖) ‖hqh.toLp qh‖ (by norm_num)
-  have henergy := mul_le_lambda_eighth_sq_add lam ‖hR.toLp R‖
-    (Real.sqrt (∫ z in V, w z * Hk z ^ 2)) hlam
+  have henergy := _root_.HypoellipticAleksandrov.Parabolic.mul_le_lambda_eighth_sq_add lam ‖hR.toLp R‖
+    (Real.sqrt sharedTerm_7ffea24077) hlam
   rw [Real.sq_sqrt henergyNonneg] at henergy
   calc
     |∫ z, R z * spatialDifferenceQuotient k (-h) psi z| ≤
         ‖hR.toLp R‖ * (2 * Keta * ‖hqh.toLp qh‖ +
-          Real.sqrt (∫ z in V, w z * Hk z ^ 2)) := hsource
+          Real.sqrt sharedTerm_7ffea24077) := hsource
     _ = (2 * Keta * ‖hR.toLp R‖) * ‖hqh.toLp qh‖ +
-        ‖hR.toLp R‖ * Real.sqrt (∫ z in V, w z * Hk z ^ 2) := by ring
+        ‖hR.toLp R‖ * Real.sqrt sharedTerm_7ffea24077 := by ring
     _ ≤ ((1 : ℝ) / 8) * ‖hqh.toLp qh‖ ^ 2 +
           (2 / (1 : ℝ)) * (2 * Keta * ‖hR.toLp R‖) ^ 2 +
-        ((lam / 8) * (∫ z in V, w z * Hk z ^ 2) +
+        ((lam / 8) * (sharedTerm_7ffea24077) +
           (2 / lam) * ‖hR.toLp R‖ ^ 2) := by linarith
-    _ = (lam / 8) * (∫ z in V, w z * Hk z ^ 2) +
+    _ = (lam / 8) * (sharedTerm_7ffea24077) +
         (1 / 8) * ‖hqh.toLp qh‖ ^ 2 +
         (2 / lam + 8 * Keta ^ 2) * ‖hR.toLp R‖ ^ 2 := by ring
 
+section
+variable {I : Set ℝ} {O₀ O₂ : PDE.VelocityRegion d} {δ h : ℝ} (hcarrier : Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀) (hh : |h| ≤ δ) (k : Fin d)
+
+include hcarrier hh
 /-- A spatial coordinate-shift collar contains every full signed spacetime
 segment starting in its intermediate cylinder. -/
 private theorem segment_spatialShift_subset_prod_of_carrier
-    {d : ℕ} {I : Set ℝ} {O₀ O₂ : Set (PDE.Vec d)} {δ h : ℝ}
-    (hcarrier :
-      Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
-    (hh : |h| ≤ δ) (k : Fin d) :
+      :
     ∀ z ∈ I ×ˢ O₂, [z -[ℝ] spatialShift k h z] ⊆ I ×ˢ O₀ := by
   rintro ⟨r, y⟩ ⟨hr, hy⟩ w hw
   rw [segment_eq_image] at hw
@@ -462,28 +455,27 @@ private theorem segment_spatialShift_subset_prod_of_carrier
         y + (s * h) • PDE.basisVec k by module]
     apply Dirichlet.mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le
       (subset_closure hy)
-    have hs01 : 0 ≤ s ∧ s ≤ 1 := by simpa using hs
+    have hs01 : 0 ≤ s ∧ s ≤ 1 := by exact hs
     simpa only [abs_mul, abs_of_nonneg hs01.1] using
       (mul_le_of_le_one_left (abs_nonneg h) hs01.2).trans hh
 
 /-- The signed collar also supplies the endpoint translation required by the
 quotient-test energy identity. -/
 private theorem mapsTo_spatialShift_prod_of_carrier
-    {d : ℕ} {I : Set ℝ} {O₀ O₂ : Set (PDE.Vec d)} {δ h : ℝ}
-    (hcarrier :
-      Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
-    (hh : |h| ≤ δ) (k : Fin d) :
+      :
     MapsTo (spatialShift k h) (I ×ˢ O₂) (I ×ˢ O₀) := by
   rintro ⟨r, y⟩ ⟨hr, hy⟩
   refine ⟨?_, hcarrier ?_⟩
-  · simpa only [spatialShift_apply] using hr
+  · simpa using hr
   exact Dirichlet.mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le
     (subset_closure hy) hh
+end
+
 
 /-- The spatial projection of the signed collar contains the coordinate
 segment needed by the fixed-time mean-value estimate. -/
 private theorem segment_add_smul_basisVec_subset_of_carrier
-    {d : ℕ} {O₀ O₂ : Set (PDE.Vec d)} {δ h : ℝ}
+     {O₀ O₂ : PDE.VelocityRegion d} {δ h : ℝ}
     (hcarrier :
       Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
     (hh : |h| ≤ δ) (k : Fin d) :
@@ -498,69 +490,73 @@ private theorem segment_add_smul_basisVec_subset_of_carrier
       y + (s * h) • PDE.basisVec k by module]
   apply Dirichlet.mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le
     (subset_closure hy)
-  have hs01 : 0 ≤ s ∧ s ≤ 1 := by simpa using hs
+  have hs01 : 0 ≤ s ∧ s ≤ 1 := by exact hs
   simpa only [abs_mul, abs_of_nonneg hs01.1] using
     (mul_le_of_le_one_left (abs_nonneg h) hs01.2).trans hh
 
+variable (zeta : ℝ → ℝ) (eta : PDE.Vec d → ℝ)
+
 /-- The separated product cutoff is globally smooth. -/
 private theorem productCutoff_contDiff
-    {d : ℕ} (zeta : ℝ → ℝ) (eta : PDE.Vec d → ℝ)
-    (hzeta : ContDiff ℝ (⊤ : ℕ∞) zeta)
-    (heta : ContDiff ℝ (⊤ : ℕ∞) eta) :
-    ContDiff ℝ (⊤ : ℕ∞)
+
+    (hzeta : ContDiff ℝ PDE.smoothOrder zeta)
+    (heta : ContDiff ℝ PDE.smoothOrder eta) :
+    ContDiff ℝ PDE.smoothOrder
       (fun z : TimeVelocity d ↦ zeta z.1 * eta z.2 ^ 2) := by
-  exact (hzeta.comp (contDiff_fst (𝕜 := ℝ))).mul
-    ((heta.comp (contDiff_snd (𝕜 := ℝ))).pow 2)
+  fun_prop
 
 /-- Compact support of both separated factors gives compact support of their
 spacetime product. -/
 private theorem productCutoff_hasCompactSupport
-    {d : ℕ} (zeta : ℝ → ℝ) (eta : PDE.Vec d → ℝ)
+
     (hzeta : HasCompactSupport zeta) (heta : HasCompactSupport eta) :
     HasCompactSupport
       (fun z : TimeVelocity d ↦ zeta z.1 * eta z.2 ^ 2) := by
-  have hprod : IsCompact (tsupport zeta ×ˢ tsupport eta) :=
-    hzeta.isCompact.prod heta.isCompact
-  apply HasCompactSupport.of_support_subset_isCompact hprod
+
+  apply HasCompactSupport.of_support_subset_isCompact (hzeta.isCompact.prod heta.isCompact)
   intro z hz
-  have hzeta0 : zeta z.1 ≠ 0 := by
-    intro hzero
-    exact hz (by simp [hzero])
-  have heta0 : eta z.2 ≠ 0 := by
-    intro hzero
-    exact hz (by simp [hzero])
-  exact ⟨subset_tsupport zeta (Function.mem_support.mpr hzeta0),
-    subset_tsupport eta (Function.mem_support.mpr heta0)⟩
+
+
+  exact ⟨subset_tsupport zeta (Function.mem_support.mpr (by
+      intro hzero
+      exact hz (by simp [hzero]))),
+    subset_tsupport eta (Function.mem_support.mpr (by
+        intro hzero
+        exact hz (by simp [hzero])))⟩
 
 /-- The topological support of a separated product cutoff lies in the product
 of the topological supports of its factors. -/
 private theorem productCutoff_tsupport_subset
-    {d : ℕ} (zeta : ℝ → ℝ) (eta : PDE.Vec d → ℝ) :
+      :
     tsupport (fun z : TimeVelocity d ↦ zeta z.1 * eta z.2 ^ 2) ⊆
       tsupport zeta ×ˢ tsupport eta := by
   rw [tsupport]
   apply closure_minimal
   · intro z hz
-    have hzeta0 : zeta z.1 ≠ 0 := by
-      intro hzero
-      exact hz (by simp [hzero])
-    have heta0 : eta z.2 ≠ 0 := by
-      intro hzero
-      exact hz (by simp [hzero])
-    exact ⟨subset_tsupport zeta (Function.mem_support.mpr hzeta0),
-      subset_tsupport eta (Function.mem_support.mpr heta0)⟩
+
+
+    exact ⟨subset_tsupport zeta (Function.mem_support.mpr (by
+        intro hzero
+        exact hz (by simp [hzero]))),
+      subset_tsupport eta (Function.mem_support.mpr (by
+          intro hzero
+          exact hz (by simp [hzero])))⟩
   · exact (isClosed_tsupport zeta).prod (isClosed_tsupport eta)
 
+section
+variable (hzeta : ContDiff ℝ PDE.smoothOrder zeta) (heta : ContDiff ℝ PDE.smoothOrder eta)
+
+include hzeta heta
 /-- Exact time derivative of the separated squared spatial cutoff. -/
 private theorem timeDerivative_productCutoff
-    {d : ℕ} (zeta : ℝ → ℝ) (eta : PDE.Vec d → ℝ)
-    (hzeta : ContDiff ℝ (⊤ : ℕ∞) zeta)
-    (heta : ContDiff ℝ (⊤ : ℕ∞) eta)
+
+
     (z : TimeVelocity d) :
     timeDerivative (fun x : TimeVelocity d ↦ zeta x.1 * eta x.2 ^ 2) z =
       _root_.deriv zeta z.1 * eta z.2 ^ 2 := by
+  let sharedTerm_838a6a745d := ((fun x : TimeVelocity d ↦ zeta x.1))
   unfold timeDerivative
-  have hzetaDiff : DifferentiableAt ℝ (fun x : TimeVelocity d ↦ zeta x.1) z :=
+  have hzetaDiff : DifferentiableAt ℝ sharedTerm_838a6a745d z :=
     (hzeta.comp (contDiff_fst (𝕜 := ℝ))).differentiable (by simp) z
   have hetaDiff : DifferentiableAt ℝ (fun x : TimeVelocity d ↦ eta x.2) z :=
     (heta.comp (contDiff_snd (𝕜 := ℝ))).differentiable (by simp) z
@@ -570,18 +566,18 @@ private theorem timeDerivative_productCutoff
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
     smul_eq_mul]
   change zeta z.1 * fderiv ℝ (fun x : TimeVelocity d ↦ eta x.2 ^ 2) z (1, 0) +
-      eta z.2 ^ 2 * fderiv ℝ (fun x : TimeVelocity d ↦ zeta x.1) z (1, 0) = _
+      eta z.2 ^ 2 * fderiv ℝ sharedTerm_838a6a745d z (1, 0) = _
   rw [fderiv_fun_pow 2 hetaDiff]
   have hetaZero : fderiv ℝ (fun x : TimeVelocity d ↦ eta x.2) z (1, 0) = 0 := by
     change fderiv ℝ (eta ∘ Prod.snd) z (1, 0) = 0
     rw [fderiv_comp z (heta.differentiable (by simp) z.2)
-      (differentiableAt_snd (𝕜 := ℝ)), fderiv_snd]
+      (differentiableAt_snd ), fderiv_snd]
     simp
-  have hzetaEval : fderiv ℝ (fun x : TimeVelocity d ↦ zeta x.1) z (1, 0) =
+  have hzetaEval : fderiv ℝ sharedTerm_838a6a745d z (1, 0) =
       _root_.deriv zeta z.1 := by
     change fderiv ℝ (zeta ∘ Prod.fst) z (1, 0) = _
     rw [fderiv_comp z (hzeta.differentiable (by simp) z.1)
-      (differentiableAt_fst (𝕜 := ℝ)), fderiv_fst]
+      (differentiableAt_fst ), fderiv_fst]
     rfl
   rw [hzetaEval]
   simp only [ContinuousLinearMap.smul_apply, Nat.reduceSub, pow_one,
@@ -590,14 +586,14 @@ private theorem timeDerivative_productCutoff
 
 /-- Exact velocity gradient of the separated squared spatial cutoff. -/
 private theorem velocityGradient_productCutoff
-    {d : ℕ} (zeta : ℝ → ℝ) (eta : PDE.Vec d → ℝ)
-    (hzeta : ContDiff ℝ (⊤ : ℕ∞) zeta)
-    (heta : ContDiff ℝ (⊤ : ℕ∞) eta)
+
+
     (i : Fin d) (z : TimeVelocity d) :
     velocityGradient (fun x : TimeVelocity d ↦ zeta x.1 * eta x.2 ^ 2) z i =
       zeta z.1 * (2 * eta z.2 * spatialPartial i eta z.2) := by
+  let sharedTerm_55ee46674d := ((fun x : TimeVelocity d ↦ zeta x.1))
   unfold velocityGradient
-  have hzetaDiff : DifferentiableAt ℝ (fun x : TimeVelocity d ↦ zeta x.1) z :=
+  have hzetaDiff : DifferentiableAt ℝ sharedTerm_55ee46674d z :=
     (hzeta.comp (contDiff_fst (𝕜 := ℝ))).differentiable (by simp) z
   have hetaDiff : DifferentiableAt ℝ (fun x : TimeVelocity d ↦ eta x.2) z :=
     (heta.comp (contDiff_snd (𝕜 := ℝ))).differentiable (by simp) z
@@ -608,32 +604,29 @@ private theorem velocityGradient_productCutoff
     smul_eq_mul]
   change zeta z.1 * fderiv ℝ (fun x : TimeVelocity d ↦ eta x.2 ^ 2) z
       (0, Pi.single i 1) + eta z.2 ^ 2 *
-      fderiv ℝ (fun x : TimeVelocity d ↦ zeta x.1) z
+      fderiv ℝ sharedTerm_55ee46674d z
         (0, Pi.single i 1) = _
   rw [fderiv_fun_pow 2 hetaDiff]
-  have hzetaZero : fderiv ℝ (fun x : TimeVelocity d ↦ zeta x.1) z
+  have hzetaZero : fderiv ℝ sharedTerm_55ee46674d z
       (0, Pi.single i 1) = 0 := by
     change fderiv ℝ (zeta ∘ Prod.fst) z (0, Pi.single i 1) = 0
     rw [fderiv_comp z (hzeta.differentiable (by simp) z.1)
-      (differentiableAt_fst (𝕜 := ℝ)), fderiv_fst]
+      (differentiableAt_fst ), fderiv_fst]
     simp
   have hetaEval : fderiv ℝ (fun x : TimeVelocity d ↦ eta x.2) z
       (0, Pi.single i 1) = spatialPartial i eta z.2 := by
     change fderiv ℝ (eta ∘ Prod.snd) z (0, Pi.single i 1) = _
     rw [fderiv_comp z (heta.differentiable (by simp) z.2)
-      (differentiableAt_snd (𝕜 := ℝ)), fderiv_snd]
+      (differentiableAt_snd ), fderiv_snd]
     rfl
-  rw [hzetaZero]
-  simp only [ContinuousLinearMap.smul_apply, Nat.reduceSub, pow_one,
-    nsmul_eq_mul, Nat.cast_ofNat]
-  rw [hetaEval]
-  simp only [smul_eq_mul]
-  ring
+  simp_all
+end
+
 
 /-- On the inner product cylinder the two plateau factors make the product
 cutoff exactly one. -/
 private theorem productCutoff_eq_one_on_inner
-    {d : ℕ} {t₁ t₂ : ℝ} {O₁ : Set (PDE.Vec d)}
+     {t₁ t₂ : ℝ} {O₁ : PDE.VelocityRegion d}
     (zeta : ℝ → ℝ) (eta : PDE.Vec d → ℝ)
     (hzeta : ∀ t ∈ Icc t₁ t₂, zeta t = 1)
     (heta : ∀ y ∈ closure O₁, eta y = 1) :
@@ -646,14 +639,14 @@ private theorem productCutoff_eq_one_on_inner
 /-- The constructed product cutoff has the exact support, shift, derivative,
 and plateau properties consumed by the fixed-step energy argument. -/
 private theorem productCutoff_data
-    {d : ℕ} {s₀ t₁ t₂ s₁ δ Keta Kzeta : ℝ}
-    {O₀ O₁ O₂ : Set (PDE.Vec d)}
+     {s₀ t₁ t₂ s₁ δ Keta Kzeta : ℝ}
+    {O₀ O₁ O₂ : PDE.VelocityRegion d}
     (hO₂O₀ : closure O₂ ⊆ O₀)
     (hcarrier :
       Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
     (eta : PDE.QuantitativeSmoothCutoff (closure O₁) O₂ Keta)
     (zeta : ℝ → ℝ)
-    (hzetaSmooth : ContDiff ℝ (⊤ : ℕ∞) zeta)
+    (hzetaSmooth : ContDiff ℝ PDE.smoothOrder zeta)
     (hzetaCompact : HasCompactSupport zeta)
     (hzetaNonneg : ∀ t, 0 ≤ zeta t)
     (hzetaLe : ∀ t, zeta t ≤ 1)
@@ -661,7 +654,7 @@ private theorem productCutoff_data
     (hzetaSupport : tsupport zeta ⊆ Ioo s₀ s₁)
     (hzetaDeriv : ∀ t, |_root_.deriv zeta t| ≤ Kzeta) :
     let w : TimeVelocity d → ℝ := fun z ↦ zeta z.1 * eta z.2 ^ 2
-    ContDiff ℝ (⊤ : ℕ∞) w ∧
+    ContDiff ℝ PDE.smoothOrder w ∧
       HasCompactSupport w ∧
       tsupport w ⊆ Ioo s₀ s₁ ×ˢ O₀ ∧
       (∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
@@ -678,23 +671,22 @@ private theorem productCutoff_data
       (∀ z, w z ^ 2 ≤ w z) ∧
       (∀ z ∈ Ioo t₁ t₂ ×ˢ O₁, w z = 1) := by
   classical
-  let w : TimeVelocity d → ℝ := fun z ↦ zeta z.1 * eta z.2 ^ 2
-  have hsupp : tsupport w ⊆ tsupport zeta ×ˢ tsupport eta :=
+
+  have hsupp : tsupport (show TimeVelocity d → ℝ from fun z ↦ zeta z.1 * eta z.2 ^ 2) ⊆ tsupport zeta ×ˢ tsupport eta :=
     productCutoff_tsupport_subset zeta eta
-  have hsuppOuter : tsupport w ⊆ Ioo s₀ s₁ ×ˢ O₀ := by
-    intro z hz
-    exact ⟨hzetaSupport (hsupp hz).1,
-      hO₂O₀ (subset_closure (eta.tsupport_subset (hsupp hz).2))⟩
-  have hshift : ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
-      MapsTo (spatialShift k h) (tsupport w) (Ioo s₀ s₁ ×ˢ O₀) := by
-    intro k h hh z hz
-    exact mapsTo_spatialShift_prod_of_carrier hcarrier hh k
-      ⟨hzetaSupport (hsupp hz).1, eta.tsupport_subset (hsupp hz).2⟩
+
+
   refine ⟨productCutoff_contDiff zeta eta hzetaSmooth eta.smooth,
     productCutoff_hasCompactSupport zeta eta hzetaCompact eta.hasCompactSupport,
-    hsuppOuter, hshift, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · exact fun z ↦ timeDerivative_productCutoff zeta eta hzetaSmooth eta.smooth z
-  · exact fun i z ↦ velocityGradient_productCutoff zeta eta hzetaSmooth eta.smooth i z
+    (by
+        intro z hz
+        exact ⟨hzetaSupport (hsupp hz).1,
+          hO₂O₀ (subset_closure (eta.tsupport_subset (hsupp hz).2))⟩), (by
+        intro k h hh z hz
+        exact mapsTo_spatialShift_prod_of_carrier hcarrier hh k
+          ⟨hzetaSupport (hsupp hz).1, eta.tsupport_subset (hsupp hz).2⟩), ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · exact (timeDerivative_productCutoff zeta eta hzetaSmooth eta.smooth)
+  · exact (velocityGradient_productCutoff zeta eta hzetaSmooth eta.smooth)
   · intro z
     rw [timeDerivative_productCutoff zeta eta hzetaSmooth eta.smooth z, abs_mul]
     have hetaAbs : |eta z.2| ≤ 1 := by
@@ -713,8 +705,7 @@ private theorem productCutoff_data
       rw [abs_of_nonneg (eta.nonneg z.2)]
       exact eta.le_one z.2
     have hpartial : |spatialPartial i eta z.2| ≤ Keta := by
-      simpa only [spatialPartial, PDE.classicalGradient_apply] using
-        eta.abs_classicalGradient_apply_le z.2 i
+      exact eta.abs_classicalGradient_apply_le z.2 i
     rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
     calc
       |zeta z.1| * (2 * |eta z.2| * |spatialPartial i eta z.2|) ≤
@@ -731,28 +722,25 @@ private theorem productCutoff_data
   · intro i z
     rw [velocityGradient_productCutoff zeta eta hzetaSmooth eta.smooth i z]
     have hpartial : |spatialPartial i eta z.2| ≤ Keta := by
-      simpa only [spatialPartial, PDE.classicalGradient_apply] using
-        eta.abs_classicalGradient_apply_le z.2 i
-    have hpartialSq : (spatialPartial i eta z.2) ^ 2 ≤ Keta ^ 2 := by
-      simpa only [sq_abs] using
-        (sq_le_sq₀ (abs_nonneg _) ((abs_nonneg _).trans hpartial)).2 hpartial
-    have hzetaSq : zeta z.1 ^ 2 ≤ zeta z.1 := by
-      nlinarith [hzetaNonneg z.1, hzetaLe z.1]
+      exact eta.abs_classicalGradient_apply_le z.2 i
+
+
     have hetaSq : 0 ≤ eta z.2 ^ 2 := sq_nonneg _
-    have hzetaFactor :
-        4 * zeta z.1 ^ 2 * eta z.2 ^ 2 ≤ 4 * zeta z.1 * eta z.2 ^ 2 := by
-      have h := mul_le_mul_of_nonneg_left hzetaSq
-        (mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) hetaSq)
-      nlinarith
+
     calc
       (zeta z.1 * (2 * eta z.2 * spatialPartial i eta z.2)) ^ 2 =
           4 * zeta z.1 ^ 2 * eta z.2 ^ 2 *
             (spatialPartial i eta z.2) ^ 2 := by ring
       _ ≤ 4 * zeta z.1 * eta z.2 ^ 2 * Keta ^ 2 := by
-        have hfourZetaEta : 0 ≤ 4 * zeta z.1 * eta z.2 ^ 2 :=
-          mul_nonneg (mul_nonneg (by norm_num) (hzetaNonneg z.1)) hetaSq
-        exact (mul_le_mul_of_nonneg_right hzetaFactor (sq_nonneg _)).trans
-          (mul_le_mul_of_nonneg_left hpartialSq hfourZetaEta)
+
+        exact (mul_le_mul_of_nonneg_right (by
+            have h := mul_le_mul_of_nonneg_left (show zeta z.1 ^ 2 ≤ zeta z.1 by
+                nlinarith [hzetaNonneg z.1, hzetaLe z.1])
+              (mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) hetaSq)
+            nlinarith) (sq_nonneg _)).trans
+          (mul_le_mul_of_nonneg_left (by
+              simpa only [sq_abs] using
+                (sq_le_sq₀ (abs_nonneg _) ((abs_nonneg _).trans hpartial)).2 hpartial) (mul_nonneg (mul_nonneg (by norm_num) (hzetaNonneg z.1)) hetaSq))
       _ = 4 * Keta ^ 2 * (zeta z.1 * eta z.2 ^ 2) := by ring
   · intro z
     have hw0 : 0 ≤ zeta z.1 * eta z.2 ^ 2 :=
@@ -768,42 +756,37 @@ private theorem productCutoff_data
 /-- Two-sided Loewner control makes each local coefficient flux entry square
 integrable on compact subsets of the outer cylinder. -/
 private theorem fluxEntry_parabolicMemLpOn_compact
-    {d : ℕ} {U K : Set (TimeVelocity d)} {lam Lam : ℝ}
+     {U K : HypoellipticAleksandrov.Parabolic.Region d} {lam Lam : ℝ}
     (hK : IsCompact K) (hKU : K ⊆ U)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (A : TimeVelocity d → PDE.Mat d)
     (hEll : ∀ z ∈ U,
       lam • (1 : PDE.Mat d) ≤ A z ∧ A z ≤ Lam • (1 : PDE.Mat d))
-    (hA : ∀ i j, ContDiffOn ℝ 1 (fun z : TimeVelocity d ↦ A z i j) U)
+    (hA : ∀ i j, ContDiffOn ℝ 1 (fun z  ↦ A z i j) U)
     (G : Fin d → TimeVelocity d → ℝ)
     (hG : ∀ j, ParabolicMemLpOn U 2 (G j))
     (i j : Fin d) :
-    ParabolicMemLpOn K 2 (fun z ↦ A z i j * G j z) := by
-  have hKmeas : MeasurableSet K := hK.measurableSet
-  have haMeas : AEStronglyMeasurable (fun z : TimeVelocity d ↦ A z i j)
-      (timeVelocityVolumeOn K) :=
-    (hA i j).continuousOn.mono hKU |>.aestronglyMeasurable hKmeas
-  have hGK : ParabolicMemLpOn K 2 (G j) := (hG j).mono hKU
-  have haBound : ∀ᵐ z ∂timeVelocityVolumeOn K, |A z i j| ≤ Lam := by
-    filter_upwards [ae_restrict_mem hKmeas] with z hz
-    exact abs_apply_le_of_loewner hlam (hEll z (hKU hz)).1
-      (hEll z (hKU hz)).2 i j
-  exact (HypoellipticAleksandrov.Analysis.memLp_mul_eLpNorm_toReal_le_of_ae_abs_le
-    (hlam.le.trans hlamLam) haMeas hGK haBound).1
+    ParabolicMemLpOn K 2 (fun z ↦ A z i j * G j z) := ((Analysis.memLp_mul_eLpNorm_toReal_le_of_ae_abs_le (LE.le.trans (LT.lt.le hlam) hlamLam)
+    (ContinuousOn.aestronglyMeasurable (ContinuousOn.mono (ContDiffOn.continuousOn (hA i j)) hKU)
+      (IsCompact.measurableSet hK))
+    (ParabolicMemLpOn.mono (hG j) hKU)
+    (Filter.mp_mem (ae_restrict_mem (IsCompact.measurableSet hK))
+      (Filter.univ_mem'
+        (id fun z hz => abs_apply_le_of_loewner hlam (hEll z (hKU hz)).left (hEll z (hKU hz)).right i j)))).left)
 
 /-- Joint `C¹` coefficient regularity and the signed collar convert the
 displayed spatial derivative bound into a uniform coefficient quotient bound. -/
 private theorem coefficient_spatialDifferenceQuotient_bound
-    {d : ℕ} {s₀ s₁ : ℝ} {O₀ O₂ : Set (PDE.Vec d)} {δ h Ma : ℝ}
+     {s₀ s₁ : ℝ} {O₀ O₂ : PDE.VelocityRegion d} {δ h Ma : ℝ}
     (hO₀ : IsOpen O₀)
     (hcarrier :
       Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
     (hh : |h| ≤ δ)
     (A : TimeVelocity d → PDE.Mat d)
-    (hA : ∀ i j, ContDiffOn ℝ 1 (fun z : TimeVelocity d ↦ A z i j)
+    (hA : ∀ i j, ContDiffOn ℝ 1 (fun z  ↦ A z i j)
       (Ioo s₀ s₁ ×ˢ O₀))
     (hbound : ∀ i j k z, z ∈ Ioo s₀ s₁ ×ˢ O₀ →
-      |spatialPartial k (fun y : PDE.Vec d ↦ A (z.1, y) i j) z.2| ≤ Ma) :
+      |spatialPartial k (fun y  ↦ A (z.1, y) i j) z.2| ≤ Ma) :
     ∀ i j k z, z ∈ Ioo s₀ s₁ ×ˢ O₂ →
       |spatialDifferenceQuotient k h (fun x ↦ A x i j) z| ≤ Ma := by
   intro i j k z hz
@@ -822,7 +805,7 @@ private theorem coefficient_spatialDifferenceQuotient_bound
 
 /-- Exact forward product expansion of one row of the principal flux. -/
 private theorem spatialDifferenceQuotient_principalFluxRow
-    {d : ℕ} (A : TimeVelocity d → PDE.Mat d)
+     (A : TimeVelocity d → PDE.Mat d)
     (G : Fin d → TimeVelocity d → ℝ) (i k : Fin d) (h : ℝ) :
     spatialDifferenceQuotient k h (fun x ↦ ∑ j : Fin d, A x i j * G j x) =
       fun z ↦ ∑ j : Fin d, (
@@ -839,12 +822,12 @@ private theorem spatialDifferenceQuotient_principalFluxRow
 /-- The absorbed source estimate only needs square integrability of the source
 on the carrier on which the energy identity is integrated. -/
 private theorem abs_setIntegral_source_mul_backwardQuotient_le_absorbed_weighted
-    {d : ℕ} {S V : Set (TimeVelocity d)}
+     {S V : HypoellipticAleksandrov.Parabolic.Region d}
     (hS : MeasurableSet S) (hV : MeasurableSet V)
     (k : Fin d) (h : ℝ) (hh : h ≠ 0)
     (R psi qh Hk w : TimeVelocity d → ℝ) (lam Keta : ℝ)
     (hlam : 0 < lam) (hKeta : 0 ≤ Keta)
-    (hR : ParabolicMemLpOn S 2 R) (hpsi : MemLp psi 2 volume)
+    (hR : ParabolicMemLpOn S 2 R) (hpsi : MemLp psi 2 )
     (hqh : ParabolicMemLpOn V 2 qh) (hHk : ParabolicMemLpOn V 2 Hk)
     (hwMeas : AEStronglyMeasurable w (timeVelocityVolumeOn V))
     (hDwMeas : AEStronglyMeasurable (fun z ↦ velocityGradient w z k)
@@ -860,9 +843,8 @@ private theorem abs_setIntegral_source_mul_backwardQuotient_le_absorbed_weighted
       (lam / 8) * (∫ z in V, w z * Hk z ^ 2) +
         (1 / 8) * ‖hqh.toLp qh‖ ^ 2 +
         (2 / lam + 8 * Keta ^ 2) * ‖hR.toLp R‖ ^ 2 := by
-  let R0 : TimeVelocity d → ℝ := S.indicator R
-  have hR0 : MemLp R0 2 volume := by
-    exact (memLp_indicator_iff_restrict hS).2 hR
+  let R0  := S.indicator R
+  have hR0 : MemLp R0 2  := (memLp_indicator_iff_restrict hS).2 hR
   have hmain := abs_integral_source_mul_backwardQuotient_le_absorbed_weighted
     hV k h hh R0 psi qh Hk w lam Keta hlam hKeta hR0 hpsi hqh hHk
       hwMeas hDwMeas hwNonneg hwLe hDwBound hSupport hweak henergyNonneg
@@ -880,7 +862,7 @@ private theorem abs_setIntegral_source_mul_backwardQuotient_le_absorbed_weighted
 /-- A bounded time-cutoff derivative controls the absolute time contribution;
 no sign of the derivative is required. -/
 private theorem abs_setIntegral_timeDerivative_mul_sq_le
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : MeasurableSet V)
+     {V : HypoellipticAleksandrov.Parabolic.Region d} (hV : MeasurableSet V)
     (Q w : TimeVelocity d → ℝ) (Kzeta : ℝ)
     (hQ : ParabolicMemLpOn V 2 Q)
     (hint : Integrable (fun z ↦ timeDerivative w z * Q z ^ 2)
@@ -889,7 +871,8 @@ private theorem abs_setIntegral_timeDerivative_mul_sq_le
     (hKzeta : 0 ≤ Kzeta) :
     |∫ z in V, timeDerivative w z * Q z ^ 2| ≤
       Kzeta * ‖hQ.toLp Q‖ ^ 2 := by
-  have _hKzeta := hKzeta
+  let sharedTerm_5f775f620c := (∫ z in V, timeDerivative w z * Q z ^ 2)
+
   rw [abs_le]
   constructor
   · calc
@@ -897,7 +880,7 @@ private theorem abs_setIntegral_timeDerivative_mul_sq_le
           ∫ z in V, -(Kzeta * Q z ^ 2) := by
             rw [integral_neg, integral_const_mul,
               fixedCore_integral_sq_eq_norm_sq_toLp Q hQ]
-      _ ≤ ∫ z in V, timeDerivative w z * Q z ^ 2 := by
+      _ ≤ sharedTerm_5f775f620c := by
         apply integral_mono_ae
         · exact hQ.integrable_sq.const_mul Kzeta |>.neg
         · exact hint
@@ -907,7 +890,7 @@ private theorem abs_setIntegral_timeDerivative_mul_sq_le
         simpa only [neg_mul] using
           mul_le_mul_of_nonneg_right hzbound.1 (sq_nonneg (Q z))
   · calc
-      ∫ z in V, timeDerivative w z * Q z ^ 2 ≤
+      sharedTerm_5f775f620c ≤
           ∫ z in V, Kzeta * Q z ^ 2 := by
         apply integral_mono_ae hint (hQ.integrable_sq.const_mul Kzeta)
         filter_upwards [ae_restrict_mem hV] with z hz
@@ -920,7 +903,7 @@ private theorem abs_setIntegral_timeDerivative_mul_sq_le
 membership and bounds the sum of its squared norms by the weighted outer
 energy. -/
 private theorem memLpOn_inner_and_sum_norm_sq_le_weighted
-    {d n : ℕ} {outer inner : Set (TimeVelocity d)}
+    {d n : ℕ} {outer inner : HypoellipticAleksandrov.Parabolic.Region d}
     (hOuter : MeasurableSet outer) (hInner : MeasurableSet inner)
     (hInnerOuter : inner ⊆ outer)
     (H : Fin n → TimeVelocity d → ℝ) (w : TimeVelocity d → ℝ)
@@ -931,20 +914,13 @@ private theorem memLpOn_inner_and_sum_norm_sq_le_weighted
     (∀ i, ParabolicMemLpOn inner 2 (H i)) ∧
       ∑ i, ‖((hH i).mono hInnerOuter).toLp (H i)‖ ^ 2 ≤
         ∫ z in outer, w z * ∑ i, H i z ^ 2 := by
-  let hHi (i : Fin n) : ParabolicMemLpOn inner 2 (H i) :=
+  let hHi (i : Fin n)  :=
     (hH i).mono hInnerOuter
   have hsumInt : Integrable (fun z ↦ ∑ i, H i z ^ 2)
       (timeVelocityVolumeOn outer) :=
     integrable_finset_sum _ fun i _ ↦ (hH i).integrable_sq
-  have hweightedInt : Integrable (fun z ↦ w z * ∑ i, H i z ^ 2)
-      (timeVelocityVolumeOn outer) := by
-    refine Integrable.mono' hsumInt (hwMeas.mul hsumInt.1) ?_
-    filter_upwards [ae_restrict_mem hOuter] with z hz
-    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hwNonneg z hz),
-      abs_of_nonneg (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z))]
-    exact mul_le_of_le_one_left
-      (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z)) (hwLe z hz)
-  refine ⟨fun i ↦ hHi i, ?_⟩
+
+  refine ⟨hHi, ?_⟩
   calc
     ∑ i, ‖(hHi i).toLp (H i)‖ ^ 2 =
         ∫ z in inner, ∑ i, H i z ^ 2 := by
@@ -961,7 +937,13 @@ private theorem memLpOn_inner_and_sum_norm_sq_le_weighted
       · filter_upwards [ae_restrict_mem hOuter] with z hz
         exact mul_nonneg (hwNonneg z hz)
           (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z))
-      · exact hweightedInt
+      · exact (by
+          refine Integrable.mono' hsumInt (hwMeas.mul hsumInt.1) ?_
+          filter_upwards [ae_restrict_mem hOuter] with z hz
+          rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hwNonneg z hz),
+            abs_of_nonneg (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z))]
+          exact mul_le_of_le_one_left
+            (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z)) (hwLe z hz))
 
 /-- Scalar assembly for the Caccioppoli estimate.  Its equality and inequality
 premises are outputs of the energy, coercivity, time, and source lemmas; this
@@ -996,7 +978,7 @@ private theorem caccioppoli_final_constant_bound
     (hq : 0 ≤ qSq) (hg : 0 ≤ gSq) (hr : 0 ≤ rSq) :
     scale * (A * gSq + beta * rSq) ≤
       (scale * (A + beta + 1)) * (qSq + gSq + rSq) := by
-  have htotal : 0 ≤ qSq + gSq + rSq := by positivity
+
   rw [mul_assoc]
   apply mul_le_mul_of_nonneg_left _ hscale
   calc
@@ -1004,15 +986,14 @@ private theorem caccioppoli_final_constant_bound
         beta * (qSq + gSq + rSq) := by
       gcongr <;> linarith
     _ = (A + beta) * (qSq + gSq + rSq) := by ring
-    _ ≤ (A + beta + 1) * (qSq + gSq + rSq) := by
-      exact mul_le_mul_of_nonneg_right (by linarith) htotal
+    _ ≤ (A + beta + 1) * (qSq + gSq + rSq) := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
 /-- Uniform one-direction spatial difference-quotient control for the gradient
 in a tested divergence-form equation. -/
 theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
     (d : ℕ) (s₀ t₁ t₂ s₁ : ℝ)
     (hs₀t₁ : s₀ < t₁) (ht₁t₂ : t₁ < t₂) (ht₂s₁ : t₂ < s₁)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : PDE.VelocityRegion d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
@@ -1024,18 +1005,18 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
         (∀ z ∈ Set.Ioo s₀ s₁ ×ˢ O₀, (A z).IsSymm) →
         (∀ z ∈ Set.Ioo s₀ s₁ ×ˢ O₀,
           lam • (1 : PDE.Mat d) ≤ A z ∧ A z ≤ Lam • (1 : PDE.Mat d)) →
-        (∀ i j, ContDiffOn ℝ 1 (fun z : TimeVelocity d => A z i j)
+        (∀ i j, ContDiffOn ℝ 1 (fun z  => A z i j)
           (Set.Ioo s₀ s₁ ×ˢ O₀)) →
         (∀ i j k z, z ∈ Set.Ioo s₀ s₁ ×ˢ O₀ →
           |spatialPartial k
-              (fun y : PDE.Vec d => A (z.1, y) i j) z.2| ≤ Ma) →
+              (fun y  => A (z.1, y) i j) z.2| ≤ Ma) →
         ParabolicMemLpOn (Set.Ioo s₀ s₁ ×ˢ O₀) 2 q →
         (∀ j, ParabolicMemLpOn (Set.Ioo s₀ s₁ ×ˢ O₀) 2 (G j)) →
         ParabolicMemLpOn (Set.Ioo s₀ s₁ ×ˢ O₀) 2 R →
         (∀ j, HasWeakVelocityPartialDerivOn
           (Set.Ioo s₀ s₁ ×ˢ O₀) j q (G j)) →
         (∀ φ : TimeVelocity d → ℝ,
-          ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ →
+          ContDiff ℝ PDE.smoothOrder φ → HasCompactSupport φ →
           tsupport φ ⊆ Set.Ioo s₀ s₁ ×ˢ O₀ →
           -(∫ z in Set.Ioo s₀ s₁ ×ˢ O₀,
               q z * timeDerivative φ z) -
@@ -1068,45 +1049,35 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
       ((d : ℝ) ^ 2 + (d : ℝ)) * Ma * Keta
   let beta : ℝ := 2 / lam + 8 * Keta ^ 2
   let C : ℝ := (4 / lam) * (2 * Gamma + Kzeta / 2 + 1 / 8 + beta + 1)
-  have hGamma : 0 ≤ Gamma := by
-    dsimp [Gamma]
-    positivity
-  have hbeta : 0 ≤ beta := by
-    dsimp [beta]
-    positivity
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    positivity
-  refine ⟨C, δ, hC, hδ, ?_⟩
+
+
+
+  refine ⟨C, δ, (by
+      dsimp [C]
+      positivity), hδ, ?_⟩
   intro A q G R hSymm hEll hA hAbound hq hG hR hWeak hEq k h hh hhd
-  let S : Set (TimeVelocity d) := Ioo s₀ s₁ ×ˢ O₀
-  let V : Set (TimeVelocity d) := Ioo s₀ s₁ ×ˢ O₂
-  let inner : Set (TimeVelocity d) := Ioo t₁ t₂ ×ˢ O₁
+  let S : HypoellipticAleksandrov.Parabolic.Region d := Ioo s₀ s₁ ×ˢ O₀
+  let V : HypoellipticAleksandrov.Parabolic.Region d := Ioo s₀ s₁ ×ˢ O₂
+  let inner : HypoellipticAleksandrov.Parabolic.Region d := Ioo t₁ t₂ ×ˢ O₁
   let w : TimeVelocity d → ℝ := fun z ↦ zeta z.1 * eta z.2 ^ 2
-  let Q : TimeVelocity d → ℝ := spatialDifferenceQuotient k h q
-  let H : Fin d → TimeVelocity d → ℝ := fun i ↦ spatialDifferenceQuotient k h (G i)
+  let Q  := spatialDifferenceQuotient k h q
+  let H  := fun i ↦ spatialDifferenceQuotient k h (G i)
   have hSopen : IsOpen S := isOpen_Ioo.prod hO₀
   have hVopen : IsOpen V := isOpen_Ioo.prod hO₂
-  have hSmeas : MeasurableSet S := hSopen.measurableSet
-  have hVmeas : MeasurableSet V := hVopen.measurableSet
-  have hinnerMeas : MeasurableSet inner := (isOpen_Ioo.prod hO₁).measurableSet
+  have hSmeas  := hSopen.measurableSet
+  have hVmeas  := hVopen.measurableSet
+
   have hVS : V ⊆ S := prod_mono_right (subset_closure.trans hO₂O₀)
-  have hinnerV : inner ⊆ V := by
-    rintro z ⟨hztime, hzspace⟩
-    exact ⟨⟨hs₀t₁.trans hztime.1, hztime.2.trans ht₂s₁⟩,
-      hO₁O₂ (subset_closure hzspace)⟩
+
   have habsh : |h| ≤ δ := by rw [abs_of_pos hh]; exact hhd.le
-  have hseg : ∀ z ∈ V, [z -[ℝ] spatialShift k h z] ⊆ S := by
-    exact segment_spatialShift_subset_prod_of_carrier hcarrier habsh k
+
   have hshiftV : MapsTo (spatialShift k h) V S :=
     mapsTo_spatialShift_prod_of_carrier hcarrier habsh k
   obtain ⟨hQ, hQnorm⟩ :=
     exists_spatialDifferenceQuotient_memLp_norm_le_on_inner k hSopen q (G k)
-      hq (hG k) (hWeak k) h hh.ne' hseg
-  have hH (i : Fin d) : ParabolicMemLpOn V 2 (H i) := by
-    exact (hG i).spatialDifferenceQuotient_of_subset_mapsTo k h hVS hshiftV
-  have hQweak (i : Fin d) : HasWeakVelocityPartialDerivOn V i Q (H i) := by
-    exact (hWeak i).spatialDifferenceQuotient_of_subset_mapsTo
+      hq (hG k) (hWeak k) h hh.ne' (segment_spatialShift_subset_prod_of_carrier hcarrier habsh k)
+  have hH (i : Fin d) : ParabolicMemLpOn V 2 (H i) := (hG i).spatialDifferenceQuotient_of_subset_mapsTo k h hVS hshiftV
+  have hQweak (i : Fin d) : HasWeakVelocityPartialDerivOn V i Q (H i) := (hWeak i).spatialDifferenceQuotient_of_subset_mapsTo
       (hq.locallyIntegrableOn (by norm_num))
       ((hG i).locallyIntegrableOn (by norm_num)) k h hVS hshiftV
   obtain ⟨hwSmooth, hwCompact, hwSupportS, hwShiftS, hwTime, hwGrad,
@@ -1120,9 +1091,8 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
   obtain ⟨hpsi, hDpsi, hpsiWeak, hpsiSupport, hDpsiSupport⟩ :=
     localized_spatialDifferenceQuotient_weakJet_global hVopen Q H hQ hH hQweak
       w hwSmooth hwCompact hwSupportV
-  have hFlux (i j : Fin d) (K : Set (TimeVelocity d))
-      (hK : IsCompact K) (hKS : K ⊆ S) :
-      ParabolicMemLpOn K 2 (fun z ↦ A z i j * G j z) :=
+  have hFlux (i j : Fin d) (K : HypoellipticAleksandrov.Parabolic.Region d)
+      (hK : IsCompact K) (hKS : K ⊆ S)  :=
     fluxEntry_parabolicMemLpOn_compact hK hKS hlam hlamLam A hEll hA G hG i j
   obtain ⟨htimeInt, hfluxInt, hsourceInt, henergy⟩ :=
     integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation d S hSopen
@@ -1144,18 +1114,10 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
       exact hzV (hwSupportV (subset_tsupport w hn))
     · intro i
       by_contra hn
-      exact hzV ((fixedCore_velocityGradient_tsupport_subset.trans hwSupportV)
+      exact hzV ((_root_.HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_tsupport_subset.trans hwSupportV)
         (subset_tsupport _ hn))
-  have hEllShift : ∀ z ∈ V,
-      lam • (1 : PDE.Mat d) ≤ A (spatialShift k h z) ∧
-        A (spatialShift k h z) ≤ Lam • (1 : PDE.Mat d) := by
-    intro z hz
-    exact hEll _ (hshiftV hz)
-  have hAquot : ∀ z ∈ V, ∀ i j,
-      |spatialDifferenceQuotient k h (fun x ↦ A x i j) z| ≤ Ma := by
-    intro z hz i j
-    exact coefficient_spatialDifferenceQuotient_bound hO₀ hcarrier habsh A hA
-      hAbound i j k z hz
+
+
   have hdpos : 0 < d := Nat.pos_of_ne_zero (by
     intro hd0
     subst d
@@ -1164,23 +1126,26 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
     setIntegral_fixedDirection_fluxPairing_coercive_absorbed_on_safeCarrier
       hSmeas hVmeas hVS A G H w Q k h lam Lam Ma Keta hdpos hlam hMa hKeta
       hwSmooth.continuous.aestronglyMeasurable (fun z hz ↦ (hwBounds z).1)
-      (fun z hz ↦ (hwBounds z).2) hOff hEllShift hAquot
+      (fun z hz ↦ (hwBounds z).2) hOff (by
+          intro z hz
+          exact hEll _ (hshiftV hz)) (by
+          intro z hz i j
+          exact coefficient_spatialDifferenceQuotient_bound hO₀ hcarrier habsh A hA
+            hAbound i j k z hz)
       (fun z hz i ↦ hwGradSq i z) hQ (fun j ↦ (hG j).mono hVS) hH
       hDpsiSupport hfluxInt'
   have hsource := abs_setIntegral_source_mul_backwardQuotient_le_absorbed_weighted
     hSmeas hVmeas k h hh.ne' R (fun z ↦ w z * Q z) Q (H k) w lam Keta
     hlam hKeta hR hpsi hQ (hH k)
     hwSmooth.continuous.aestronglyMeasurable
-    (fixedCore_velocityGradient_contDiff_infty hwSmooth).continuous.aestronglyMeasurable
+    (_root_.HypoellipticAleksandrov.Parabolic.ParabolicW12Function.velocityGradient_contDiff_infty hwSmooth).continuous.aestronglyMeasurable
     (fun z hz ↦ (hwBounds z).1) (fun z hz ↦ (hwBounds z).2)
     (fun z hz ↦ hwGradBound k z) (hDpsiSupport k) (hpsiWeak k)
     (integral_nonneg_of_ae (ae_of_all _ fun z ↦
       mul_nonneg (hwBounds z).1 (sq_nonneg (H k z))))
-  have htimeIntV : Integrable (fun z ↦ timeDerivative w z * Q z ^ 2)
-      (timeVelocityVolumeOn V) := by
-    simpa only [Q, IntegrableOn, timeVelocityVolumeOn] using htimeInt.mono_set hVS
+
   have htime := abs_setIntegral_timeDerivative_mul_sq_le hVmeas Q w Kzeta hQ
-    htimeIntV
+    (htimeInt.mono_set hVS)
     (fun z hz ↦ hwTimeBound z) hKzeta
   have htimeSV : (∫ z in S, timeDerivative w z * Q z ^ 2) =
       ∫ z in V, timeDerivative w z * Q z ^ 2 := by
@@ -1205,8 +1170,8 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
         -(1 / 2) * (∫ z in S, timeDerivative w z * Q z ^ 2) +
           (∫ z in S, R z * spatialDifferenceQuotient k (-h)
             (fun x ↦ w x * Q x) z) := by
-    have he := henergy
-    simp only [Q, H, hrow] at he ⊢
+
+    simp only [Q, H, hrow] at henergy ⊢
     linarith
   have hEV : (∫ z in S, w z * ∑ i, H i z ^ 2) =
       ∫ z in V, w z * ∑ i, H i z ^ 2 := by
@@ -1221,45 +1186,15 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
   rw [hEV] at hcoercive
   have hqSq : (∫ z in V, Q z ^ 2) = ‖hQ.toLp Q‖ ^ 2 :=
     fixedCore_integral_sq_eq_norm_sq_toLp Q hQ
-  have hgSq : (∑ j, ∫ z in V, G j z ^ 2) =
-      ∑ j, ‖((hG j).mono hVS).toLp (G j)‖ ^ 2 := by
-    apply Finset.sum_congr rfl
-    intro j _
-    exact fixedCore_integral_sq_eq_norm_sq_toLp (G j) ((hG j).mono hVS)
+
   have hrSq : (∫ z in S, R z ^ 2) = ‖hR.toLp R‖ ^ 2 :=
     fixedCore_integral_sq_eq_norm_sq_toLp R hR
-  have htime' : |∫ z in S, timeDerivative w z * Q z ^ 2| ≤
-      Kzeta * (∫ z in V, Q z ^ 2) := by
-    rw [htimeSV, hqSq]
-    exact htime
-  have hsource' : |∫ z in S, R z * spatialDifferenceQuotient k (-h)
-      (fun x ↦ w x * Q x) z| ≤
-      (lam / 8) * (∫ z in V, w z * H k z ^ 2) +
-        (1 / 8) * (∫ z in V, Q z ^ 2) +
-        (2 / lam + 8 * Keta ^ 2) * (∫ z in S, R z ^ 2) := by
-    rw [hqSq, hrSq]
-    exact hsource
+
+
   have hwMeasV : AEStronglyMeasurable w (timeVelocityVolumeOn V) :=
     hwSmooth.continuous.aestronglyMeasurable
-  have hEkInt : Integrable (fun z ↦ w z * H k z ^ 2)
-      (timeVelocityVolumeOn V) := by
-    refine Integrable.mono' (hH k).integrable_sq
-      (hwMeasV.mul (hH k).integrable_sq.1) ?_
-    filter_upwards [ae_restrict_mem hVmeas] with z hz
-    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hwBounds z).1,
-      abs_of_nonneg (sq_nonneg (H k z))]
-    exact mul_le_of_le_one_left (sq_nonneg _) (hwBounds z).2
-  have hEInt : Integrable (fun z ↦ w z * ∑ i, H i z ^ 2)
-      (timeVelocityVolumeOn V) := by
-    have hsumInt : Integrable (fun z ↦ ∑ i, H i z ^ 2)
-        (timeVelocityVolumeOn V) :=
-      integrable_finset_sum _ fun i _ ↦ (hH i).integrable_sq
-    refine Integrable.mono' hsumInt (hwMeasV.mul hsumInt.1) ?_
-    filter_upwards [ae_restrict_mem hVmeas] with z hz
-    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hwBounds z).1,
-      abs_of_nonneg (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z))]
-    exact mul_le_of_le_one_left
-      (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z)) (hwBounds z).2
+
+
   have hcomb := caccioppoli_combination_of_energy_bounds lam Gamma Kzeta Keta
     (∫ z in V, w z * ∑ i, H i z ^ 2)
     (∫ z in V, w z * H k z ^ 2)
@@ -1276,13 +1211,38 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
     (‖hR.toLp R‖ ^ 2) hlam
     (integral_nonneg_of_ae (ae_of_all _ fun z ↦ mul_nonneg (hwBounds z).1
       (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z))))
-    (integral_mono_ae hEkInt hEInt (by
+    (integral_mono_ae (by
+        refine Integrable.mono' (hH k).integrable_sq
+          (hwMeasV.mul (hH k).integrable_sq.1) ?_
+        filter_upwards [ae_restrict_mem hVmeas] with z hz
+        rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hwBounds z).1,
+          abs_of_nonneg (sq_nonneg (H k z))]
+        exact mul_le_of_le_one_left (sq_nonneg _) (hwBounds z).2) (by
+        have hsumInt : Integrable (fun z ↦ ∑ i, H i z ^ 2)
+            (timeVelocityVolumeOn V) :=
+          integrable_finset_sum _ fun i _ ↦ (hH i).integrable_sq
+        refine Integrable.mono' hsumInt (hwMeasV.mul hsumInt.1) ?_
+        filter_upwards [ae_restrict_mem hVmeas] with z hz
+        rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hwBounds z).1,
+          abs_of_nonneg (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z))]
+        exact mul_le_of_le_one_left
+          (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z)) (hwBounds z).2) (by
       filter_upwards [ae_restrict_mem hVmeas] with z hz
       exact mul_le_mul_of_nonneg_left
         (Finset.single_le_sum (fun i _ ↦ sq_nonneg (H i z)) (Finset.mem_univ k))
-        (hwBounds z).1)) henergy' hcoercive htime' hsource' hqSq hgSq hrSq
+        (hwBounds z).1)) henergy' hcoercive (by
+            rw [htimeSV, hqSq]
+            exact htime) (by
+            rw [hqSq, hrSq]
+            exact hsource) hqSq (by
+            apply Finset.sum_congr rfl
+            intro j _
+            exact fixedCore_integral_sq_eq_norm_sq_toLp (G j) _) hrSq
   obtain ⟨hinnerH, hplateau⟩ := memLpOn_inner_and_sum_norm_sq_le_weighted
-    hVmeas hinnerMeas hinnerV H w hH
+    hVmeas ((isOpen_Ioo.prod hO₁).measurableSet) (by
+        rintro z ⟨hztime, hzspace⟩
+        exact ⟨⟨hs₀t₁.trans hztime.1, hztime.2.trans ht₂s₁⟩,
+          hO₁O₂ (subset_closure hzspace)⟩) H w hH
     hwSmooth.continuous.aestronglyMeasurable (fun z hz ↦ (hwBounds z).1)
     (fun z hz ↦ (hwBounds z).2) hwOne
   refine ⟨hinnerH, ?_⟩
@@ -1292,10 +1252,7 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
       ← fixedCore_integral_sq_eq_norm_sq_toLp (G j) (hG j)]
     exact integral_mono_measure (Measure.restrict_mono_set volume hVS)
       (ae_of_all _ fun z ↦ sq_nonneg (G j z)) (hG j).integrable_sq
-  have hGsumMono :
-      ∑ j, ‖((hG j).mono hVS).toLp (G j)‖ ^ 2 ≤
-        ∑ j, ‖(hG j).toLp (G j)‖ ^ 2 :=
-    Finset.sum_le_sum fun j _ ↦ hGmonoSq j
+
   have hGkSum : ‖(hG k).toLp (G k)‖ ^ 2 ≤
       ∑ j, ‖(hG j).toLp (G j)‖ ^ 2 :=
     Finset.single_le_sum (fun j _ ↦ sq_nonneg ‖(hG j).toLp (G j)‖)
@@ -1312,37 +1269,41 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
           _ = (4 / lam) * ((lam / 4) *
               ∫ z in V, w z * ∑ i, H i z ^ 2) := by
                 field_simp [ne_of_gt hlam]
-          _ ≤ _ := mul_le_mul_of_nonneg_left (by simpa only [beta] using hcomb)
+          _ ≤ _ := mul_le_mul_of_nonneg_left (hcomb)
             (by positivity)
       _ ≤ _ := by
-        have hQsq := (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).2 hQnorm
-        have hA : 0 ≤ Gamma + Kzeta / 2 + 1 / 8 := by positivity
-        have hscale : 0 ≤ 4 / lam := by positivity
-        apply mul_le_mul_of_nonneg_left _ hscale
+        let sharedTerm_d025fb7cf9 := (∑ j, ‖(hG j).toLp (G j)‖ ^ 2)
+        let sharedTerm_2f633e22f6 := (Gamma + Kzeta / 2 + 1 / 8)
+
+        have hA : 0 ≤ sharedTerm_2f633e22f6 := by positivity
+
+        apply mul_le_mul_of_nonneg_left _ (by positivity)
         calc
-          (Gamma + Kzeta / 2 + 1 / 8) * ‖hQ.toLp Q‖ ^ 2 +
+          (sharedTerm_2f633e22f6) * ‖hQ.toLp Q‖ ^ 2 +
                 Gamma * (∑ j, ‖((hG j).mono hVS).toLp (G j)‖ ^ 2) +
                 beta * ‖hR.toLp R‖ ^ 2
-              ≤ (Gamma + Kzeta / 2 + 1 / 8) * ‖(hG k).toLp (G k)‖ ^ 2 +
-                Gamma * (∑ j, ‖(hG j).toLp (G j)‖ ^ 2) +
-                beta * ‖hR.toLp R‖ ^ 2 := by
-            exact add_le_add (add_le_add (mul_le_mul_of_nonneg_left hQsq hA)
-              (mul_le_mul_of_nonneg_left hGsumMono hGamma)) le_rfl
-          _ ≤ (Gamma + Kzeta / 2 + 1 / 8) *
-                (∑ j, ‖(hG j).toLp (G j)‖ ^ 2) +
-                Gamma * (∑ j, ‖(hG j).toLp (G j)‖ ^ 2) +
-                beta * ‖hR.toLp R‖ ^ 2 := by
-            exact add_le_add (add_le_add (mul_le_mul_of_nonneg_left hGkSum hA)
+              ≤ (sharedTerm_2f633e22f6) * ‖(hG k).toLp (G k)‖ ^ 2 +
+                Gamma * (sharedTerm_d025fb7cf9) +
+                beta * ‖hR.toLp R‖ ^ 2 := add_le_add (add_le_add (mul_le_mul_of_nonneg_left ((sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).2 hQnorm) hA)
+              (mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun j _ ↦ hGmonoSq j) (by
+                  dsimp [Gamma]
+                  positivity))) le_rfl
+          _ ≤ (sharedTerm_2f633e22f6) *
+                (sharedTerm_d025fb7cf9) +
+                Gamma * (sharedTerm_d025fb7cf9) +
+                beta * ‖hR.toLp R‖ ^ 2 := add_le_add (add_le_add (mul_le_mul_of_nonneg_left hGkSum hA)
               le_rfl) le_rfl
           _ = (2 * Gamma + Kzeta / 2 + 1 / 8) *
-                (∑ j, ‖(hG j).toLp (G j)‖ ^ 2) +
+                (sharedTerm_d025fb7cf9) +
                 beta * ‖hR.toLp R‖ ^ 2 := by ring
   have hfinal := caccioppoli_final_constant_bound (4 / lam)
     (2 * Gamma + Kzeta / 2 + 1 / 8) beta
     ((ENNReal.toReal (eLpNorm q 2 (timeVelocityVolumeOn S))) ^ 2)
     (∑ j, (ENNReal.toReal (eLpNorm (G j) 2 (timeVelocityVolumeOn S))) ^ 2)
     ((ENNReal.toReal (eLpNorm R 2 (timeVelocityVolumeOn S))) ^ 2)
-    (by positivity) (by positivity) hbeta (sq_nonneg _)
+    (by positivity) (by positivity) (by
+        dsimp [beta]
+        positivity) (sq_nonneg _)
     (Finset.sum_nonneg fun j _ ↦ sq_nonneg _) (sq_nonneg _)
   have hscaled' : ∑ j, (ENNReal.toReal (eLpNorm
       (spatialDifferenceQuotient k h (G j)) 2

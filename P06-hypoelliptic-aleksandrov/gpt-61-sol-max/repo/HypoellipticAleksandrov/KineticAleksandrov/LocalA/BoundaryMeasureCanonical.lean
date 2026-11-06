@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryMeasure
 public import Mathlib.MeasureTheory.VectorMeasure.WithDensity
 import Mathlib.Analysis.Complex.Trigonometric
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Canonical ball exit measure, selected from its proved unique characterization -/
 
@@ -19,17 +21,19 @@ variable (hH : HormanderHypoellipticityStatement)
   (B : CoefficientField d) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+
 /-- The actual finite exit measure, chosen only after full existence and uniqueness. -/
-def ballExitRaw (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
+def ballExitRaw  :
     Measure (KineticPoint d) :=
   (existsUnique_ballExitMeasure hH hLE hd hlam hLam B hB v₀ hR P T).exists.choose
 
 /-- Full finite-measure, trace-support and smooth-test characterization of the choice. -/
-theorem ballExitRaw_spec (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
+theorem ballExitRaw_spec  :
     IsFiniteMeasure (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) ∧
     ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T (localTrace P.1.time T.1 v₀ R)ᶜ = 0 ∧
     ∀ φ : KineticPoint d → ℝ,
-      ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
+      ContDiff ℝ PDE.smoothOrder (φ ∘ (KineticPoint.equivProd d).symm) →
       HasCompactSupport φ →
       (∫ Q, φ Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) =
         ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 φ P.1 :=
@@ -41,11 +45,13 @@ instance ballExitRaw_isFiniteMeasure (P : LocalBallStart v₀ R)
     IsFiniteMeasure (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) :=
   (ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR P T).1
 
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+
 /-- The stated smooth-test identity alone determines the selected finite ambient measure. -/
-theorem ballExitRaw_unique (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+theorem ballExitRaw_unique
     (μ : Measure (KineticPoint d)) [IsFiniteMeasure μ]
     (hμ : ∀ φ : KineticPoint d → ℝ,
-      ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
+      ContDiff ℝ PDE.smoothOrder (φ ∘ (KineticPoint.equivProd d).symm) →
       HasCompactSupport φ → (∫ Q, φ Q ∂μ) =
         ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 φ P.1) :
     μ = ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T := by
@@ -55,7 +61,7 @@ theorem ballExitRaw_unique (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time
     φ hφ hc).symm
 
 /-- Exit coordinates retain absolute exit time and exit velocity, and subtract free transport. -/
-def ballExit (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
+def ballExit  :
     Measure (PDE.Vec d × Parabolic.TimeVelocity d) :=
   Measure.map (exitCoordinates P.1 v₀) (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T)
 

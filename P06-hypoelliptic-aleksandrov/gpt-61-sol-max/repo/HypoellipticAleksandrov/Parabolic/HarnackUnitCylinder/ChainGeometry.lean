@@ -4,24 +4,28 @@ public import HypoellipticAleksandrov.Parabolic.HarnackChainGeometry
 
 /-! # Equal-time Harnack links inside the open unit cylinder -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Set
 
-private theorem normSq_lt_quarter_of_mem_halfBall {d : ℕ} {w : PDE.Vec d}
-    (hw : w ∈ PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ)) :
+section
+variable {d : ℕ} {w : PDE.Vec d} (hw : w ∈ PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ))
+
+include hw
+private theorem normSq_lt_quarter_of_mem_halfBall  :
     PDE.vecNormSq w < 1 / 4 := by
   norm_num [PDE.euclideanBall, PDE.euclideanSqDist] at hw ⊢
   exact hw
 
-private theorem coordinate_lt_half_of_mem_halfBall {d : ℕ} {w : PDE.Vec d}
-    (hw : w ∈ PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ)) (i : Fin d) :
+private theorem coordinate_lt_half_of_mem_halfBall  (i : Fin d) :
     |w i| < 1 / 2 := by
   have hs := (PDE.sq_apply_le_vecNormSq w i).trans_lt
     (normSq_lt_quarter_of_mem_halfBall hw)
   apply abs_lt_of_sq_lt_sq (by nlinarith [hs]) (by norm_num)
+end
+
 
 /-- A fixed number of links reaches every upper point without crossing the terminal time. -/
 theorem unitCylinder_harnack_link_geometry
@@ -48,7 +52,7 @@ theorem unitCylinder_harnack_link_geometry
   let v : ℕ → PDE.Vec d := fun k =>
     P.2 + ((k : ℝ) / (m : ℝ)) • (P'.2 - P.2)
   change 0 < m ∧ 0 < r ∧ (t 0, v 0) = P ∧ (t m, v m) = P' ∧ _
-  have hdreal : 1 ≤ (d : ℝ) := by exact_mod_cast hd
+
   have hm : 256 ≤ m := by dsimp [m]; omega
   have hmpos : 0 < (m : ℝ) := by exact_mod_cast lt_of_lt_of_le (by decide : 0 < 256) hm
   have hmreal : (256 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm
@@ -87,13 +91,10 @@ theorem unitCylinder_harnack_link_geometry
     simp only [v, Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
     ring
   have hrecip : 1 / (m : ℝ) < r / 2 := by
-    have hsquare : ((m : ℝ) * r) ^ 2 = (m : ℝ) * (P'.1 - P.1) := by
-      calc
-        ((m : ℝ) * r) ^ 2 = (m : ℝ) * ((m : ℝ) * dt) := by rw [mul_pow, hrsq]; ring
-        _ = _ := by rw [hmul]
+
     have hlarge : 2 < (m : ℝ) * r := by
-      have hpos := mul_pos hmpos hr
-      have hprod := mul_lt_mul_of_pos_left hgap0 hmpos
+
+
       nlinarith
     apply (div_lt_iff₀ hmpos).mpr
     nlinarith

@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.BasisEndpoint
 import Mathlib.Tactic
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Matching a classical solution to the M basis
@@ -18,8 +20,8 @@ open scoped Topology
 
 /-- The regular M solution has zero scaled derivative at the singular endpoint. -/
 theorem tendsto_M_scaled_deriv_zero (a : ℝ) (b : Pos) :
-    Tendsto (fun z : ℝ => z * deriv (M a b) z) (𝓝[>] 0) (𝓝 0) := by
-  have hc : ContinuousAt (fun z : ℝ => z * deriv (M a b) z) 0 := by
+    Tendsto (fun z  => z * deriv (M a b) z) (𝓝[>] 0) (𝓝 0) := by
+  have hc : ContinuousAt (fun z  => z * deriv (M a b) z) 0 := by
     simp_rw [deriv_M]
     exact continuousAt_id.mul
       (continuousAt_const.mul (hasDerivAt_M _ _ 0).continuousAt)
@@ -27,12 +29,12 @@ theorem tendsto_M_scaled_deriv_zero (a : ℝ) (b : Pos) :
 
 /-- Every classical solution with the two endpoint limits is a linear combination of the M basis. -/
 theorem exists_secondM_coefficient (a : NegThird) (f : ℝ → ℝ) (F : ℝ)
-    (hf : ContDiffOn ℝ (⊤ : ℕ∞) f (Ioi 0))
+    (hf : ContDiffOn ℝ PDE.smoothOrder f (Ioi 0))
     (ho : ∀ z > 0, z * deriv (deriv f) z + (2 / 3 - z) * deriv f z - a.1 * f z = 0)
     (hlim : Tendsto f (𝓝[>] 0) (𝓝 F))
-    (hdlim : Tendsto (fun z : ℝ => z * deriv f z) (𝓝[>] 0) (𝓝 0)) :
+    (hdlim : Tendsto (fun z  => z * deriv f z) (𝓝[>] 0) (𝓝 0)) :
     ∃ B : ℝ, ∀ z > 0, f z = F * M a.1 b23 z + B * secondM a.1 z := by
-  have hm : ContDiffOn ℝ (⊤ : ℕ∞) (M a.1 b23) (Ioi 0) :=
+  have hm : ContDiffOn ℝ PDE.smoothOrder (M a.1 b23) (Ioi 0) :=
     ((analyticOnNhd_M a.1 b23).contDiffOn uniqueDiffOn_univ).mono (subset_univ _)
   have hm0 : Tendsto (M a.1 b23) (𝓝[>] 0) (𝓝 1) := by
     simpa using (hasDerivAt_M a.1 b23 0).continuousAt.tendsto.mono_left
@@ -40,9 +42,9 @@ theorem exists_secondM_coefficient (a : NegThird) (f : ℝ → ℝ) (F : ℝ)
   have hwf (z : ℝ) (hz : 0 < z) :=
     weightedWronskian_secondM_eq a.1 f F hf ho hlim hdlim z hz
   have hwm (z : ℝ) (hz : 0 < z) := weightedWronskian_secondM_eq a.1 (M a.1 b23) 1 hm
-    (by intro z _; simpa only [b23] using M_ode a.1 b23 z) hm0
+    (by intro z _; exact M_ode a.1 b23 z) hm0
       (tendsto_M_scaled_deriv_zero _ _) z hz
-  let q : ℝ → ℝ := fun z => (f z - F * M a.1 b23 z) / secondM a.1 z
+  let q  := fun z => (f z - F * M a.1 b23 z) / secondM a.1 z
   have hd (z : ℝ) (hz : z ∈ Ioi (0 : ℝ)) : HasDerivAt q 0 z := by
     have hdf := (hf.differentiableOn (by simp)).differentiableAt
       (isOpen_Ioi.mem_nhds hz)

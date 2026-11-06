@@ -3,6 +3,8 @@ module
 import Mathlib.Analysis.SpecificLimits.Basic
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CurveMollification
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CurveRegularityExhaustion
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Nested smooth inner balls
@@ -24,7 +26,7 @@ open scoped Topology
 /-- A Euclidean ball is the moving ball of the constant curve with that centre. -/
 theorem euclideanBall_eq_movingDomain_const {n : ℕ} (x : PDE.Vec n) {R : ℝ} (hR : 0 < R) :
     PDE.euclideanBall x R =
-      movingDomain (PDE.euclideanBall (0 : PDE.Vec n) R) (fun _ : ℝ => x) 0 := by
+      movingDomain (PDE.euclideanBall (0 : PDE.Vec n) R) (fun _  => x) 0 := by
   ext y
   rw [mem_movingDomain_euclideanBall_iff_norm_lt hR,
     PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hR, add_zero]
@@ -32,19 +34,27 @@ theorem euclideanBall_eq_movingDomain_const {n : ℕ} (x : PDE.Vec n) {R : ℝ} 
 /-- The geometric radii `α k = r / 2 · (1/4)ᵏ`. -/
 noncomputable def innerBallRadius (r : ℝ) (k : ℕ) : ℝ := r / 2 * (1 / 4) ^ k
 
-theorem innerBallRadius_pos {r : ℝ} (hr : 0 < r) (k : ℕ) : 0 < innerBallRadius r k := by
+section
+variable {r : ℝ} (hr : 0 < r) (k : ℕ)
+
+include hr
+theorem innerBallRadius_pos  : 0 < innerBallRadius r k := by
   unfold innerBallRadius; positivity
 
-theorem innerBallRadius_lt {r : ℝ} (hr : 0 < r) (k : ℕ) : innerBallRadius r k < r := by
+theorem innerBallRadius_lt  : innerBallRadius r k < r := by
   unfold innerBallRadius
   have : (1 / 4 : ℝ) ^ k ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
   nlinarith
+end
 
-theorem innerBallRadius_succ (r : ℝ) (k : ℕ) :
+
+variable (r : ℝ)
+
+theorem innerBallRadius_succ  (k : ℕ) :
     innerBallRadius r (k + 1) = innerBallRadius r k / 4 := by
   unfold innerBallRadius; rw [pow_succ]; ring
 
-theorem tendsto_innerBallRadius (r : ℝ) : Tendsto (innerBallRadius r) atTop (𝓝 0) := by
+theorem tendsto_innerBallRadius  : Tendsto (innerBallRadius r) atTop (𝓝 0) := by
   have := (tendsto_pow_atTop_nhds_zero_of_lt_one (r := (1 / 4 : ℝ)) (by norm_num)
     (by norm_num)).const_mul (r / 2)
   rw [mul_zero] at this
@@ -57,7 +67,7 @@ theorem exists_nested_smooth_inner_balls
     ∃ (α : ℕ → ℝ) (g : ℕ → ℝ → PDE.Vec n) (L : ℝ),
       0 ≤ L ∧ (∀ k, 0 < α k ∧ α k < r) ∧
       (∀ k, α (k + 1) ≤ α k / 4) ∧ Tendsto α atTop (nhds 0) ∧
-      (∀ k, ContDiff ℝ (⊤ : ℕ∞) (g k)) ∧
+      (∀ k, ContDiff ℝ PDE.smoothOrder (g k)) ∧
       (∀ k s, s ∈ Icc a τ →
         PDE.vecEuclideanNorm (g k s - γ s) ≤ α k / 2) ∧
       (∀ k s t, PDE.vecEuclideanNorm (g k s - g k t) ≤ L * |s - t|) ∧
@@ -71,7 +81,7 @@ theorem exists_nested_smooth_inner_balls
   have hext := slabExtension_lipschitz haτ.le hL0 hL
   have hcont := continuous_slabExtension hγ.1 a τ
   have hα := innerBallRadius_pos hr
-  have hex : ∀ k, ∃ g : ℝ → PDE.Vec n, ContDiff ℝ (⊤ : ℕ∞) g ∧
+  have hex : ∀ k, ∃ g : ℝ → PDE.Vec n, ContDiff ℝ PDE.smoothOrder g ∧
       (∀ s t, PDE.vecEuclideanNorm (g s - g t) ≤ L * |s - t|) ∧
       ∀ s, PDE.vecEuclideanNorm (g s - slabExtension γ a τ s) ≤ innerBallRadius r k / 2 :=
     fun k => exists_smooth_lipschitz_approx hcont hL0 hext (half_pos (hα k))
@@ -88,8 +98,8 @@ theorem exists_nested_smooth_inner_balls
       linarith [innerBallRadius_lt hr (k + 1)]
     rw [euclideanBall_eq_movingDomain_const _ hk, euclideanBall_eq_movingDomain_const _ hk']
     exact movingDomain_approx_mono (innerBallRadius_lt hr k) (hα (k + 1)).le
-      (innerBallRadius_succ r k).le (γ := fun _ => γ s) (γ₁ := fun _ => g k s)
-      (γ₂ := fun _ => g (k + 1) s) (fun _ => hclose k s hs) (fun _ => hclose (k + 1) s hs) 0
+      (innerBallRadius_succ r k).le
+       (fun _ => hclose k s hs) (fun _ => hclose (k + 1) s hs) 0
   · have hk : ∀ k, 0 < r - innerBallRadius r k := fun k => by
       linarith [innerBallRadius_lt hr k]
     have := iUnion_movingDomain_approx (c := (0 : PDE.Vec n)) (r₀ := r) (hα) (innerBallRadius_lt hr)

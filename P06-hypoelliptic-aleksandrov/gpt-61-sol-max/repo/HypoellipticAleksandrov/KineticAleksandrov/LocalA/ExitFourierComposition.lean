@@ -5,8 +5,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierInteg
 
 /-! # Fourier composition through the genuine later exit operator -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
@@ -22,7 +22,7 @@ actual later exits, with the exact unit centering phase. -/
 theorem ballExitRestart_fourier_apply
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (H : {t : ℝ // P.1.time < t ∧ t < T.1}) (ξ : PDE.Vec d)
-    (E : Set (TimeVelocity d)) (hE : MeasurableSet E) :
+    (E : HypoellipticAleksandrov.Parabolic.Region d) (hE : MeasurableSet E) :
     exitFourier ((ballExitRestart hH hLE hd hlam hLam B hB v₀ hR P T H).map
       (exitCoordinates P.1 v₀)) ξ E =
       exitFourierStepPhase P.1 H.1 v₀ ξ *
@@ -46,7 +46,7 @@ theorem ballExitRestart_fourier_apply
     fourierProjection_integral_complex K q ξ _ (fourierProjection_spec K q ξ) f hfm hfb]
   change _ = exitFourierStepPhase P.1 H.1 v₀ ξ *
     ∫ w, f w.1 * fourierPhase ξ P.1.position w
-      ∂K.master (evolutionQueryOfState (PDE.euclideanBall v₀ R) (fun _ => 0)
+      ∂K.master (evolutionQueryOfState _ _
         P.1.time H.1 H.2.1.le (ballStartState P))
   rw [master_integral_eq_fiber K (PDE.isOpen_euclideanBall v₀ R).measurableSet
     P.1.time H.1 H.2.1.le (ballStartState P)
@@ -57,11 +57,8 @@ theorem ballExitRestart_fourier_apply
   apply Filter.Eventually.of_forall
   intro w
   let W := (ballStateStart H.1 w).1
-  have heq : (fun Q => exitFourierTest P.1 v₀ ξ E Q) =
-      fun Q => exitFourierStepPhase P.1 H.1 v₀ ξ *
-        fourierPhase ξ P.1.position w.1 * exitFourierTest W v₀ ξ E Q :=
-    funext (fun Q => exitFourierTest_factor P.1 W Q v₀ ξ E)
-  rw [heq]
+
+  rw [(funext (fun Q => exitFourierTest_factor P.1 W Q v₀ ξ E))]
   dsimp only
   rw [integral_const_mul]
   change exitFourierStepPhase P.1 H.1 v₀ ξ * fourierPhase ξ P.1.position w.1 *

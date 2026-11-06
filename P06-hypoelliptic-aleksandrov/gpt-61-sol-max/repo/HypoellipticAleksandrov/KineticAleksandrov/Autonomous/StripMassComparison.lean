@@ -2,18 +2,22 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassQuadraticCalculus
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelTheorem
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Quadratic comparison for compact interior source potentials -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov
-open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo Evolution Occupation
-open scoped Topology
+open Set HypoellipticAleksandrov
+open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo Evolution
+
+
+variable (H : Interval)
 
 /-- Closing the native interval gives precisely the scalar endpoint inequalities. -/
-theorem intervalDomain_closure_bounds (H : Interval) {v : PDE.Vec 1}
+theorem intervalDomain_closure_bounds  {v : PDE.Vec 1}
     (hv : v ∈ closure (intervalDomain H)) : H.lo ≤ v 0 ∧ v 0 ≤ H.hi := by
   constructor
   · exact closure_minimal (fun y hy =>
@@ -24,26 +28,24 @@ theorem intervalDomain_closure_bounds (H : Interval) {v : PDE.Vec 1}
       (isClosed_le (continuous_apply 0) continuous_const) hv
 
 /-- The literal interval barrier is continuous on spacetime. -/
-theorem stripQuadraticBarrier_continuous (H : Interval) (lam : ℝ) :
+theorem stripQuadraticBarrier_continuous  (lam : ℝ) :
     Continuous (stripQuadraticBarrier H lam) := by
-  have heq : stripQuadraticBarrier H lam = fun p =>
-      (p.position 0 - H.lo) * (H.hi - p.position 0) / (2 * lam) :=
-    funext (stripQuadraticBarrier_eq H lam)
-  rw [heq]
+
+  rw [(funext (stripQuadraticBarrier_eq H lam))]
   have hv : Continuous (fun p : Point => p.position 0) :=
     (continuous_apply 0).comp continuous_position
   exact ((hv.sub continuous_const).mul (continuous_const.sub hv)).div_const _
 
 private theorem sliceRegular_of_smooth {u : Point → ℝ} {D : Set Point}
     (hD : IsOpen D)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D)) (p : Point) (hp : p ∈ D) :
     IsSliceRegularAt u p := by
-  have hx : (evolutionHomeomorph 1).symm p ∈ evolutionHomeomorph 1 ⁻¹' D := by
-    simpa using hp
+
   have hj := hu.contDiffAt
-    ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds hx)
-  have h := (hj.of_le (by simp : (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).comp
+    ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds (show (evolutionHomeomorph 1).symm p ∈ evolutionHomeomorph 1 ⁻¹' D by
+        simpa using hp))
+  have h := (hj.of_le (by simp : (2 : WithTop ℕ∞) ≤ PDE.smoothOrder)).comp
       (p.time, p.position, p.velocity) (evolutionProdCLE 1).symm.contDiff.contDiffAt
   apply IsSliceRegularAt.of_contDiffAt
   have heq : (fun q => (u ∘ evolutionHomeomorph 1) ((evolutionProdCLE 1).symm q)) =
@@ -64,7 +66,7 @@ theorem strip_duhamel_le_quadratic
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (g : Point → ℝ)
     (hgn : ∀ p, 0 ≤ g p) (hg1 : ∀ p, g p ≤ 1)
-    (hgs : ContDiff ℝ (⊤ : ℕ∞) (rawLift g)) (hgc : HasCompactSupport g)
+    (hgs : ContDiff ℝ PDE.smoothOrder (rawLift g)) (hgc : HasCompactSupport g)
     (hgU : tsupport g ⊆ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T)
     (p₀ : Point) (hp₀ : p₀ ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T) :
     duhamelPotential E.2 T g p₀ ≤ stripQuadraticBarrier H lam p₀ := by

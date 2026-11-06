@@ -8,18 +8,22 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonGro
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+open HypoellipticAleksandrov.Parabolic
+
+variable (H : Interval)
 
 /-- Midpoint vector of the velocity interval. -/
-def intervalMidpoint (H : Interval) : PDE.Vec 1 := fun _ => (H.lo + H.hi) / 2
+def intervalMidpoint  : PDE.Vec 1 := fun _ => (H.lo + H.hi) / 2
+
+variable (lam : ℝ) (p : Point)
 
 /-- The quadratic barrier, written as an affine function of squared midpoint distance. -/
-def stripQuadraticBarrier (H : Interval) (lam : ℝ) (p : Point) : ℝ :=
+def stripQuadraticBarrier   : ℝ :=
   (-1 / (2 * lam)) *
     (-(H.hi - H.lo) ^ 2 / 4 + PDE.vecNormSq (p.position - intervalMidpoint H))
 
 /-- The midpoint expression is exactly `(v-lo)(hi-v)/(2 lambda)`. -/
-theorem stripQuadraticBarrier_eq (H : Interval) (lam : ℝ) (p : Point) :
+theorem stripQuadraticBarrier_eq   :
     stripQuadraticBarrier H lam p =
       (p.position 0 - H.lo) * (H.hi - p.position 0) / (2 * lam) := by
   simp only [stripQuadraticBarrier, PDE.vecNormSq_eq_sum_sq, Fin.sum_univ_one,
@@ -27,7 +31,7 @@ theorem stripQuadraticBarrier_eq (H : Interval) (lam : ℝ) (p : Point) :
   ring
 
 /-- The interval barrier is nonnegative on the closed velocity interval. -/
-theorem stripQuadraticBarrier_nonneg (H : Interval) {lam : ℝ} (hlam : 0 < lam)
+theorem stripQuadraticBarrier_nonneg  {lam : ℝ} (hlam : 0 < lam)
     (p : Point) (hp : H.lo ≤ p.position 0 ∧ p.position 0 ≤ H.hi) :
     0 ≤ stripQuadraticBarrier H lam p := by
   rw [stripQuadraticBarrier_eq]
@@ -35,14 +39,11 @@ theorem stripQuadraticBarrier_nonneg (H : Interval) {lam : ℝ} (hlam : 0 < lam)
     (by positivity)
 
 /-- The barrier has the regularity needed by the growth comparison theorem. -/
-theorem stripQuadraticBarrier_regular (H : Interval) (lam : ℝ) (p : Point) :
+theorem stripQuadraticBarrier_regular  (lam : ℝ) (p : Point) :
     IsSliceRegularAt (stripQuadraticBarrier H lam) p := by
   unfold stripQuadraticBarrier
   refine ⟨?_, ?_, ?_⟩
-  · change DifferentiableAt ℝ (fun _ : ℝ =>
-      (-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 +
-        PDE.vecNormSq (p.position - intervalMidpoint H))) p.time
-    exact differentiableAt_const _
+  · simp_all
   · exact (contDiff_const.mul
       (contDiff_const.add (contDiff_vecNormSq_sub (intervalMidpoint H)))).contDiffAt
   · change ContDiffAt ℝ 2 (fun _ : PDE.Vec 1 =>
@@ -55,13 +56,14 @@ theorem stripQuadraticBarrier_operator (a : ℝ → ℝ → ℝ) (H : Interval)
     (lam : ℝ) (p : Point) :
     transportedForwardOperator (evolutionCoefficient a) (SectionTwo.identityDrift 1)
       (stripQuadraticBarrier H lam) p = -a (p.velocity 0) (p.position 0) / lam := by
-  have hslice : (fun y : PDE.Vec 1 => stripQuadraticBarrier H lam
+  let sharedTerm_37688431f7 := ((-(H.hi - H.lo) ^ 2 / 4))
+  have hslice : (fun y  => stripQuadraticBarrier H lam
       ⟨p.time, y, p.velocity⟩) = fun y =>
-      (fun s : ℝ => (-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 + s))
+      (fun s : ℝ => (-1 / (2 * lam)) * (sharedTerm_37688431f7 + s))
         (PDE.vecNormSq (y - intervalMidpoint H)) := rfl
   have hd := matrixContraction_sliceHessian_comp_vecNormSq_sub
     (m := intervalMidpoint H) (x := p.position)
-    (contDiffAt_affine_weight (-1 / (2 * lam)) (-(H.hi - H.lo) ^ 2 / 4) _)
+    (contDiffAt_affine_weight (-1 / (2 * lam)) sharedTerm_37688431f7 _)
     (evolutionCoefficient a p.time p.position p.velocity)
   rw [transportedForwardOperator_apply]
   unfold fullKineticCoefficientAt
@@ -69,10 +71,10 @@ theorem stripQuadraticBarrier_operator (a : ℝ → ℝ → ℝ) (H : Interval)
   have hgrad : kineticVelocityGradient (stripQuadraticBarrier H lam) p = 0 := by
     ext i
     change fderiv ℝ (fun _ : PDE.Vec 1 =>
-      (-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 +
+      (-1 / (2 * lam)) * (sharedTerm_37688431f7 +
         PDE.vecNormSq (p.position - intervalMidpoint H))) p.velocity (PDE.basisVec i) = 0
     rw [(hasFDerivAt_const
-      ((-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 +
+      ((-1 / (2 * lam)) * (sharedTerm_37688431f7 +
         PDE.vecNormSq (p.position - intervalMidpoint H))) p.velocity).fderiv]
     rfl
   rw [hgrad]

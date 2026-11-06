@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedRa
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeLocalTestLift
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionMonotone
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import HypoellipticAleksandrov.Measure.TimeVelocity
+
 
 /-!
 # Local reverse-time separated product distribution
@@ -12,26 +14,26 @@ This module localizes the global reverse-time raw identity using the unchanged-f
 and spatial test lifts and the supports of the tests and their derivatives.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory Set Topology
+open MeasureTheory Set
 open scoped BigOperators ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- A supplied reverse-time variational energy solution and explicit global product
 representatives satisfy every local separated product distribution identity. -/
 theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEnergy
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d : ℕ} {Ω O : PDE.VelocityRegion d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hO : IsOpen O) (hOΩ : O ⊆ Ω)
     (τ₁ τ₂ : ℝ)
     (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval (r₁ - r₀))
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
+    (a : CoefficientField d) (b : PDE.TimeVectorField d)
+    (c F : PDE.TimeScalarField d)
     (haSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -44,28 +46,28 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (initial : PDE.ScalarLp Ω (2 ))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
       (sub_pos.mpr h₀₁) u g)
     (hu : IsReverseTimeVariationalEnergySolution
       r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu)
-    (U : TimeVelocity d → ℝ)
-    (hU : MemLp U (2 : ℝ≥0∞)
+    (U : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hU : MemLp U (2 )
       (timeVelocityVolumeOn (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)))
     (hUslice : ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀),
       (fun y => U (τ, y)) =ᵐ[PDE.volumeOn Ω]
         fun y => valueCLM hΩ (u τ) y)
-    (G : Fin d → TimeVelocity d → ℝ)
-    (hG : ∀ j, MemLp (G j) (2 : ℝ≥0∞)
+    (G : Fin d → HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (hG : ∀ j, MemLp (G j) (2 )
       (timeVelocityVolumeOn (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)))
     (hGslice : ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀), ∀ j,
       (fun y => G j (τ, y)) =ᵐ[PDE.volumeOn Ω]
         fun y => gradientCLM hΩ (u τ) y j)
     (eta : OriginalTimeScalarTest τ₁ τ₂)
     (psi : PDE.WeakTestFunction O) :
-    let raw : TimeVelocity d → ℝ := fun z =>
+    let raw : HypoellipticAleksandrov.Parabolic.ScalarField d := fun z =>
       U z * eta.deriv z.1 * psi z.2 -
         (∑ i : Fin d, ∑ j : Fin d,
           reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
@@ -81,7 +83,7 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
       (∫ z, raw z
         ∂timeVelocityVolumeOn (Set.Ioo τ₁ τ₂ ×ˢ O)) = 0 := by
   dsimp only
-  let raw : TimeVelocity d → ℝ := fun z =>
+  let raw : HypoellipticAleksandrov.Parabolic.ScalarField d := fun z =>
     U z * eta.deriv z.1 * psi z.2 -
       (∑ i : Fin d, ∑ j : Fin d,
         reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
@@ -104,54 +106,50 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
     simpa only [raw, etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_apply,
       reverseTimeScalarTestOfLocal_deriv, PDE.WeakTestFunction.mono_apply,
       PDE.WeakTestFunction.mono_partialDeriv] using hglobal
-  let localSet : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
-  let globalSet : Set (TimeVelocity d) := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
+  let localSet  := Set.Ioo τ₁ τ₂ ×ˢ O
+  let globalSet  := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
   have hlocalGlobal : localSet ⊆ globalSet := by
     rintro ⟨τ, y⟩ ⟨hτ, hy⟩
     exact ⟨htime hτ, hOΩ hy⟩
-  have hglobalOpen : IsOpen globalSet := by
-    exact (isOpen_Ioo.prod hΩ)
-  have hglobalMeas : MeasurableSet globalSet := hglobalOpen.measurableSet
-  have hlocalMeas : MeasurableSet localSet := (isOpen_Ioo.prod hO).measurableSet
+
+  have hglobalMeas  := (show IsOpen globalSet by
+      exact (isOpen_Ioo.prod hΩ)).measurableSet
+
   have hetaDerivSupport : tsupport eta.deriv ⊆ tsupport (eta : ℝ → ℝ) := by
     rw [OriginalTimeScalarTest.deriv, tsupport]
     exact closure_minimal support_deriv_subset (isClosed_tsupport _)
-  have hzero : ∀ z ∈ globalSet \ localSet, raw z = 0 := by
-    rintro ⟨τ, y⟩ ⟨hglobalMem, hnotLocal⟩
-    by_cases hτ : τ ∈ Set.Ioo τ₁ τ₂
-    · have hy : y ∉ O := by
-        intro hy
-        exact hnotLocal ⟨hτ, hy⟩
-      have hpsiT : y ∉ tsupport (psi : PDE.Vec d → ℝ) := fun h => hy (psi.tsupport_subset h)
-      have hpsi : psi y = 0 := image_eq_zero_of_notMem_tsupport hpsiT
-      have hdpsi (i : Fin d) : psi.partialDeriv i y = 0 := by
-        unfold PDE.WeakTestFunction.partialDeriv
-        rw [fderiv_of_notMem_tsupport ℝ hpsiT]
-        rfl
-      simp only [raw, hpsi, hdpsi, mul_zero, zero_mul, Finset.sum_const_zero,
-        sub_zero, add_zero]
-    · have hetaT : τ ∉ tsupport (eta : ℝ → ℝ) := fun h => hτ (eta.tsupport_subset h)
-      have heta : eta τ = 0 := image_eq_zero_of_notMem_tsupport hetaT
-      have hdetaT : τ ∉ tsupport eta.deriv := fun h => hetaT (hetaDerivSupport h)
-      have hdeta : eta.deriv τ = 0 := image_eq_zero_of_notMem_tsupport hdetaT
-      simp only [raw, heta, hdeta, mul_zero, zero_mul, sub_zero, add_zero]
-  have hmeasure : timeVelocityVolumeOn localSet ≤ timeVelocityVolumeOn globalSet := by
-    dsimp only [timeVelocityVolumeOn]
-    exact Measure.restrict_mono hlocalGlobal le_rfl
-  have hlocalInt : Integrable raw (timeVelocityVolumeOn localSet) :=
-    hglobal'.1.mono_measure hmeasure
+
+
+  have hlocalInt  :=
+    hglobal'.1.mono_measure (by
+        dsimp only [timeVelocityVolumeOn]
+        exact Measure.restrict_mono hlocalGlobal le_rfl)
   refine ⟨?_, ?_⟩
-  · simpa only [raw, localSet] using hlocalInt
-  · have hintEq :
-        (∫ z in globalSet, raw z ∂(volume : Measure (TimeVelocity d))) =
-          ∫ z in localSet, raw z ∂(volume : Measure (TimeVelocity d)) :=
-      setIntegral_eq_of_subset_of_forall_diff_eq_zero hglobalMeas hlocalGlobal hzero
+  · exact hlocalInt
+  ·
     have hglobalZero :
-        (∫ z in globalSet, raw z ∂(volume : Measure (TimeVelocity d))) = 0 := by
-      simpa only [timeVelocityVolumeOn] using hglobal'.2
-    have hlocalZero :
-        (∫ z in localSet, raw z ∂(volume : Measure (TimeVelocity d))) = 0 := by
-      rw [← hintEq, hglobalZero]
-    simpa only [raw, localSet, timeVelocityVolumeOn] using hlocalZero
+        (∫ z in globalSet, raw z ∂(HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)) = 0 := by
+      exact hglobal'.2
+
+    exact (by
+        rw [← (setIntegral_eq_of_subset_of_forall_diff_eq_zero hglobalMeas hlocalGlobal (by
+            rintro ⟨τ, y⟩ ⟨hglobalMem, hnotLocal⟩
+            by_cases hτ : τ ∈ Set.Ioo τ₁ τ₂
+            · have hy : y ∉ O := by
+                intro hy
+                exact hnotLocal ⟨hτ, hy⟩
+              have hpsiT  := fun h => hy (psi.tsupport_subset h)
+
+              have hdpsi (i : Fin d) : psi.partialDeriv i y = 0 := by
+                unfold PDE.WeakTestFunction.partialDeriv
+                rw [fderiv_of_notMem_tsupport ℝ hpsiT]
+                rfl
+              simp only [raw, (image_eq_zero_of_notMem_tsupport hpsiT), hdpsi, mul_zero, zero_mul, Finset.sum_const_zero,
+                sub_zero, add_zero]
+            · have hetaT  := fun h => hτ (eta.tsupport_subset h)
+
+
+
+              simp only [raw, (image_eq_zero_of_notMem_tsupport hetaT), (image_eq_zero_of_notMem_tsupport (fun h => hetaT (hetaDerivSupport h))), mul_zero, zero_mul, sub_zero, add_zero])), hglobalZero])
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

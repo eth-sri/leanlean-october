@@ -7,9 +7,9 @@ import Mathlib.Tactic
 
 /-! # Ink-spots iteration in physical sampling cylinders with the exact volume factor -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 

@@ -9,16 +9,16 @@ import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
 This identifies each quotient-valued pairing with the classical representative integral.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Dirichlet
-open scoped ENNReal
+
 
 /-- A smooth H10 barrier evaluates against smooth tests by its classical spatial jets. -/
-theorem reverseTimeSpatialForm_smooth_barrier_test {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem reverseTimeSpatialForm_smooth_barrier_test {d : ℕ} {Ω : PDE.VelocityRegion d}
     (hΩ : IsOpen Ω) (T τ : ℝ) (A : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+    (b : PDE.TimeVectorField d) (c : PDE.TimeScalarField d)
     (q : PDE.H10Function Ω) (hq : ContDiff ℝ 1 q.toH1Function.toFun)
     (ψ : PDE.WeakTestFunction Ω) :
     reverseTimeSpatialForm hΩ T τ A b c (h10HilbertGraphOfH10Function hΩ q)

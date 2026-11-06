@@ -3,6 +3,9 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndex
 public import Mathlib.Data.Finsupp.Multiset
 public import Mathlib.Tactic
+import Lean.Elab.Tactic.Omega
+
+
 
 /-!
 # Parabolic multi-indices of weight at most two
@@ -23,19 +26,23 @@ inductive LowOrderClass (d : ℕ) where
   | velocity₂ (i j : Fin d) (hij : i ≤ j)
   deriving DecidableEq, Fintype
 
+variable (d : ℕ)
+
 /-- The zero index at parabolic bound two. -/
-def zeroTwo (d : ℕ) : ParabolicDerivativeIndex d 2 :=
+def zeroTwo  : ParabolicDerivativeIndex d 2 :=
   ParabolicDerivativeIndex.zero d 2
 
 /-- The single time derivative at parabolic bound two. -/
-def timeOne (d : ℕ) : ParabolicDerivativeIndex d 2 :=
+def timeOne  : ParabolicDerivativeIndex d 2 :=
   ParabolicDerivativeIndex.timeSucc (zeroTwo d) (by
     simp [zeroTwo, TimeVelocityMultiIndex.parabolicWeight,
       VelocityMultiIndex.parabolicWeight, VelocityMultiIndex.order,
       TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity])
 
+variable {d : ℕ}
+
 /-- A single velocity derivative at parabolic bound two. -/
-def velocityOne {d : ℕ} (i : Fin d) :
+def velocityOne  (i : Fin d) :
     ParabolicDerivativeIndex d 2 :=
   ParabolicDerivativeIndex.velocitySucc (zeroTwo d) i (by
     simp [zeroTwo, TimeVelocityMultiIndex.parabolicWeight,
@@ -44,7 +51,7 @@ def velocityOne {d : ℕ} (i : Fin d) :
 
 /-- Two successive velocity derivatives at parabolic bound two, first in
 coordinate `i` and then in coordinate `j`. -/
-def velocityTwo {d : ℕ} (i j : Fin d) :
+def velocityTwo  (i j : Fin d) :
     ParabolicDerivativeIndex d 2 :=
   ParabolicDerivativeIndex.velocitySucc (velocityOne i) j (by
     unfold velocityOne
@@ -54,78 +61,86 @@ def velocityTwo {d : ℕ} (i j : Fin d) :
       TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity])
 
 /-- Interpret a canonical low-order shape as its bounded multi-index. -/
-def LowOrderClass.toIndex {d : ℕ} :
+def LowOrderClass.toIndex  :
     LowOrderClass d → ParabolicDerivativeIndex d 2
   | .zero => zeroTwo d
   | .time => timeOne d
   | .velocity i => velocityOne i
   | .velocity₂ i j _ => velocityTwo i j
 
-@[simp] theorem coe_zeroTwo (d : ℕ) :
+variable (d : ℕ)
+
+@[simp] theorem coe_zeroTwo  :
     (zeroTwo d).1 = (0 : TimeVelocityMultiIndex d) :=
   rfl
 
-@[simp] theorem coe_timeOne (d : ℕ) :
+@[simp] theorem coe_timeOne  :
     (timeOne d).1 = TimeVelocityMultiIndex.ofTimeVelocity 1 0 :=
   rfl
 
-@[simp] theorem coe_velocityOne {d : ℕ} (i : Fin d) :
+variable {d : ℕ}
+
+@[simp] theorem coe_velocityOne  (i : Fin d) :
     (velocityOne i).1 =
       TimeVelocityMultiIndex.ofTimeVelocity 0 (Pi.single i 1) :=
   rfl
 
-@[simp] theorem coe_velocityTwo {d : ℕ} (i j : Fin d) :
+@[simp] theorem coe_velocityTwo  (i j : Fin d) :
     (velocityTwo i j).1 =
       TimeVelocityMultiIndex.ofTimeVelocity 0
         (Function.update (Pi.single i 1) j
           ((Pi.single i 1 : Fin d → ℕ) j + 1)) :=
   rfl
 
-@[simp] theorem LowOrderClass.toIndex_zero (d : ℕ) :
+variable (d : ℕ)
+
+@[simp] theorem LowOrderClass.toIndex_zero  :
     (LowOrderClass.zero : LowOrderClass d).toIndex = zeroTwo d :=
   rfl
 
-@[simp] theorem LowOrderClass.toIndex_time (d : ℕ) :
-    (LowOrderClass.time : LowOrderClass d).toIndex = timeOne d :=
-  rfl
+
+
+variable {d : ℕ}
 
 @[simp] theorem LowOrderClass.toIndex_velocity
-    {d : ℕ} (i : Fin d) :
+     (i : Fin d) :
     (LowOrderClass.velocity i).toIndex = velocityOne i :=
   rfl
 
 @[simp] theorem LowOrderClass.toIndex_velocity₂
-    {d : ℕ} (i j : Fin d) (hij : i ≤ j) :
+     (i j : Fin d) (hij : i ≤ j) :
     (LowOrderClass.velocity₂ i j hij).toIndex = velocityTwo i j :=
   rfl
 
-private noncomputable def velocityMultiset {d : ℕ}
-    (alpha : Fin d → ℕ) : Multiset (Fin d) :=
+variable (alpha : Fin d → ℕ)
+
+private noncomputable def velocityMultiset
+     : Multiset (Fin d) :=
   Finsupp.toMultiset (Finsupp.equivFunOnFinite.symm alpha)
 
-private theorem count_velocityMultiset {d : ℕ}
-    (alpha : Fin d → ℕ) (i : Fin d) :
+private theorem count_velocityMultiset
+     (i : Fin d) :
     (velocityMultiset alpha).count i = alpha i := by
   simp [velocityMultiset]
 
-private theorem card_velocityMultiset {d : ℕ} (alpha : Fin d → ℕ) :
+private theorem card_velocityMultiset   :
     (velocityMultiset alpha).card = VelocityMultiIndex.order alpha := by
   classical
   simp [velocityMultiset, VelocityMultiIndex.order, Finsupp.card_toMultiset,
     Finsupp.sum_fintype]
 
-private theorem count_singleton_eq_piSingle {d : ℕ} (i a : Fin d) :
+private theorem count_singleton_eq_piSingle  (i a : Fin d) :
     ({i} : Multiset (Fin d)).count a =
       (Pi.single i 1 : Fin d → ℕ) a := by
-  by_cases h : a = i <;> simp [Pi.single_apply, h]
+  by_cases h : a = i <;> simp [h]
 
-private theorem count_pair_eq_update {d : ℕ} (i j a : Fin d) :
+private theorem count_pair_eq_update  (i j a : Fin d) :
     ({i, j} : Multiset (Fin d)).count a =
       Function.update (Pi.single i 1 : Fin d → ℕ) j
         ((Pi.single i 1 : Fin d → ℕ) j + 1) a := by
   by_cases haj : a = j
   · subst a
-    by_cases hji : j = i <;> simp [Pi.single_apply, hji]
+    by_cases hji : j = i <;> simp [hji]
   · by_cases hai : a = i
     · subst a
       simp [haj]
@@ -137,26 +152,25 @@ private theorem ofTimeVelocity_zero (d : ℕ) :
   funext c
   cases c <;> rfl
 
-private theorem velocityMultiset_two {d : ℕ} (i j : Fin d) :
+variable {d : ℕ}
+
+private theorem velocityMultiset_two  (i j : Fin d) :
     velocityMultiset (velocityTwo i j).1.velocity = {i, j} := by
   ext a
   rw [count_velocityMultiset, count_pair_eq_update]
   rfl
 
-private theorem velocityTwo_class_eq_of_pair_eq {d : ℕ} {i j k l : Fin d}
+private theorem velocityTwo_class_eq_of_pair_eq  {i j k l : Fin d}
     (hij : i ≤ j) (hkl : k ≤ l)
     (hpair : ({i, j} : Multiset (Fin d)) = {k, l}) :
     LowOrderClass.velocity₂ i j hij = LowOrderClass.velocity₂ k l hkl := by
   rcases Multiset.cons_eq_cons.mp hpair with hsame | hswap
-  · obtain ⟨rfl, hjl⟩ := hsame
-    have : j = l := by simpa using hjl
-    subst l
-    rfl
+  · simp_all
   · obtain ⟨_, cs, hj, hl⟩ := hswap
-    have hcard : cs.card = 0 := by
-      have hc := congrArg Multiset.card hj
-      simpa using hc
-    have hcs : cs = 0 := Multiset.card_eq_zero.mp hcard
+
+    have hcs : cs = 0 := Multiset.card_eq_zero.mp (by
+
+        simpa using (congrArg Multiset.card hj))
     subst cs
     have hjk : j = k := by simpa using hj
     have hli : l = i := by simpa using hl
@@ -166,9 +180,11 @@ private theorem velocityTwo_class_eq_of_pair_eq {d : ℕ} {i j k l : Fin d}
     subst j
     rfl
 
+variable (d : ℕ)
+
 /-- Canonical low-order shapes classify bounded indices of weight at most
 two bijectively. -/
-theorem LowOrderClass.toIndex_bijective (d : ℕ) :
+theorem LowOrderClass.toIndex_bijective  :
     Function.Bijective (@LowOrderClass.toIndex d) := by
   classical
   constructor
@@ -192,10 +208,6 @@ theorem LowOrderClass.toIndex_bijective (d : ℕ) :
           rw [parabolicWeight_velocitySucc] at hw
           simp only [velocityOne] at hw
           simp only [parabolicWeight_velocitySucc] at hw
-          have hz : (zeroTwo d).1.parabolicWeight = 0 := by
-            simp [zeroTwo, TimeVelocityMultiIndex.parabolicWeight,
-              VelocityMultiIndex.parabolicWeight, VelocityMultiIndex.order,
-              TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity]
           omega
     | time =>
         cases t with
@@ -236,11 +248,7 @@ theorem LowOrderClass.toIndex_bijective (d : ℕ) :
           rw [parabolicWeight_velocitySucc] at hw
           simp only [velocityOne] at hw
           simp only [parabolicWeight_velocitySucc] at hw
-          have hz : (zeroTwo d).1.parabolicWeight = 0 := by
-            simp [zeroTwo, TimeVelocityMultiIndex.parabolicWeight,
-              VelocityMultiIndex.parabolicWeight, VelocityMultiIndex.order,
-              TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity]
-          omega
+          simp_all
     | velocity₂ i j hij =>
         cases t with
         | zero =>
@@ -252,10 +260,6 @@ theorem LowOrderClass.toIndex_bijective (d : ℕ) :
           rw [parabolicWeight_velocitySucc] at hw
           simp only [velocityOne] at hw
           simp only [parabolicWeight_velocitySucc] at hw
-          have hz : (zeroTwo d).1.parabolicWeight = 0 := by
-            simp [zeroTwo, TimeVelocityMultiIndex.parabolicWeight,
-              VelocityMultiIndex.parabolicWeight, VelocityMultiIndex.order,
-              TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity]
           omega
         | time =>
           have hq := congrArg (fun b => b.1.timeOrder) h
@@ -270,11 +274,7 @@ theorem LowOrderClass.toIndex_bijective (d : ℕ) :
           rw [parabolicWeight_velocitySucc] at hw
           simp only [velocityOne] at hw
           simp only [parabolicWeight_velocitySucc] at hw
-          have hz : (zeroTwo d).1.parabolicWeight = 0 := by
-            simp [zeroTwo, TimeVelocityMultiIndex.parabolicWeight,
-              VelocityMultiIndex.parabolicWeight, VelocityMultiIndex.order,
-              TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity]
-          omega
+          simp_all
         | velocity₂ k l hkl =>
           apply velocityTwo_class_eq_of_pair_eq hij hkl
           have hm := congrArg (fun b => velocityMultiset b.1.velocity) h
@@ -305,7 +305,7 @@ theorem LowOrderClass.toIndex_bijective (d : ℕ) :
         have ha := congrArg (fun z : Multiset (Fin d) => z.count a) hm
         have ha' : beta.1.velocity a = 0 := by
           simpa [m, count_velocityMultiset, alpha] using ha
-        simpa using ha'
+        exact ha'
       · obtain ⟨i, hm⟩ := Multiset.card_eq_one.mp hc
         refine ⟨LowOrderClass.velocity i, Subtype.ext ?_⟩
         rw [← TimeVelocityMultiIndex.ofTimeVelocity_timeOrder_velocity beta.1, hqeq]
@@ -348,8 +348,8 @@ theorem LowOrderClass.toIndex_bijective (d : ℕ) :
             _ = Function.update (Pi.single j 1 : Fin d → ℕ) i
                 ((Pi.single j 1 : Fin d → ℕ) i + 1) a :=
               count_pair_eq_update j i a
-    · have hm : m.card = 0 := by omega
-      have hm0 : m = 0 := Multiset.card_eq_zero.mp hm
+    ·
+
       refine ⟨LowOrderClass.time, Subtype.ext ?_⟩
       rw [← TimeVelocityMultiIndex.ofTimeVelocity_timeOrder_velocity beta.1, hqeq]
       change (timeOne d).1 = _
@@ -357,23 +357,22 @@ theorem LowOrderClass.toIndex_bijective (d : ℕ) :
       symm
       apply congrArg (TimeVelocityMultiIndex.ofTimeVelocity 1)
       funext a
-      have ha := congrArg (fun z : Multiset (Fin d) => z.count a) hm0
+      have ha := congrArg (fun z : Multiset (Fin d) => z.count a) (show m = 0 from Multiset.card_eq_zero.mp (show m.card = 0 by omega))
       simpa [m, count_velocityMultiset, alpha] using ha
 
 /-- The canonical equivalence between bounded weight-two indices and their
 four low-order shapes. -/
-noncomputable def equivLowOrderClass (d : ℕ) :
+noncomputable def equivLowOrderClass  :
     ParabolicDerivativeIndex d 2 ≃ LowOrderClass d :=
-  (Equiv.ofBijective (@LowOrderClass.toIndex d)
+  (Equiv.ofBijective _
     (LowOrderClass.toIndex_bijective d)).symm
 
-@[simp] theorem equivLowOrderClass_symm_apply
-    {d : ℕ} (s : LowOrderClass d) :
-    (equivLowOrderClass d).symm s = s.toIndex :=
-  rfl
+variable {d : ℕ}
+
+
 
 @[simp] theorem LowOrderClass.toIndex_equivLowOrderClass_apply
-    {d : ℕ} (beta : ParabolicDerivativeIndex d 2) :
+     (beta : ParabolicDerivativeIndex d 2) :
     (equivLowOrderClass d beta).toIndex = beta :=
   (equivLowOrderClass d).symm_apply_apply beta
 

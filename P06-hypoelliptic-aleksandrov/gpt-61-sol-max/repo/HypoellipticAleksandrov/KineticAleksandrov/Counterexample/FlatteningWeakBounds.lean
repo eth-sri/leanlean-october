@@ -5,7 +5,7 @@ import Mathlib.Tactic.GCongr
 
 /-! # Uniform bounds for flattened smooth approximations on punctured compact sets -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
@@ -15,11 +15,11 @@ open MeasureTheory Filter Set Metric
 theorem abs_flatSlope_mul_le (s g M : ℝ) (hg : |g| ≤ M) :
     |(-deriv flatteningPsi s) * g| ≤ M := by
   rw [abs_mul, abs_neg]
-  have hs : |deriv flatteningPsi s| ≤ 1 := by
-    rw [abs_of_nonneg (flatteningPsi_deriv_bounds s).1]
-    exact (flatteningPsi_deriv_bounds s).2
+
   calc
-    _ ≤ 1 * M := mul_le_mul hs hg (abs_nonneg _) (by norm_num)
+    _ ≤ 1 * M := mul_le_mul (by
+        rw [abs_of_nonneg (flatteningPsi_deriv_bounds s).1]
+        exact (flatteningPsi_deriv_bounds s).2) hg (abs_nonneg _) (by norm_num)
     _ = M := one_mul _
 
 /-- The nonlinear Hessian correction is uniformly bounded on bounded first and second jets. -/
@@ -29,7 +29,7 @@ theorem abs_flatSecond_le (s gi gk hij alpha r M P : ℝ) (hr : 0 < r) (hM : 0 �
     |-deriv flatteningPsi s * hij - Real.rpow r (-alpha) *
         deriv (deriv flatteningPsi) s * gi * gk| ≤ M + Real.rpow r (-alpha) * P * M ^ 2 := by
   simp only [Real.rpow_eq_pow]
-  have hpow : 0 ≤ r ^ (-alpha) := (Real.rpow_pos_of_pos hr (-alpha)).le
+
   have hpabs : |deriv (deriv flatteningPsi) s| ≤ P := by
     rw [abs_of_nonneg (flatteningPsi_deriv2_nonneg s)]
     exact hp
@@ -38,37 +38,38 @@ theorem abs_flatSecond_le (s gi gk hij alpha r M P : ℝ) (hr : 0 < r) (hM : 0 �
         |r ^ (-alpha) * deriv (deriv flatteningPsi) s * gi * gk| := abs_sub _ _
     _ ≤ M + r ^ (-alpha) * P * M ^ 2 := by
       apply add_le_add (abs_flatSlope_mul_le s hij M hh)
-      rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg hpow, pow_two]
+      rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg ((Real.rpow_pos_of_pos hr (-alpha)).le), pow_two]
       calc
         _ ≤ r ^ (-alpha) * P * M * M := by gcongr
         _ = _ := by ring
 
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha)
+
 /-- The unflattened approximations and all their classical jets have one eventual compact bound. -/
-theorem mollifiedProfile_eventually_bounded {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (K : Set (XV d)) (hK : IsCompact K) (hz : 0 ∉ K) :
+theorem mollifiedProfile_eventually_bounded  (K : Set (XV d)) (hK : IsCompact K) (hz : 0 ∉ K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ᶠ n in atTop, ∀ q ∈ K,
       ‖mollifiedProfile h n q‖ ≤ M ∧
       (∀ i, |dx (mollifiedProfile h n) q i| ≤ M) ∧
       (∀ i, |dv (mollifiedProfile h n) q i| ≤ M) ∧
       (∀ i k, |dvv (mollifiedProfile h n) q i k| ≤ M) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hmx := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.1
-  have hmv := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.1
-  have hmh := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.1
-  have hb := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
-  have hsub : K ⊆ ({0}ᶜ : Set (XV d)) := by
-    intro q hq
-    change q ≠ 0
-    intro he
-    exact hz (he ▸ hq)
-  obtain ⟨delta, hd, hdelta⟩ := hK.exists_cthickening_subset_open isOpen_compl_singleton hsub
+
+
+
+
+
+  obtain ⟨delta, hd, hdelta⟩ := hK.exists_cthickening_subset_open isOpen_compl_singleton (by
+      intro q hq
+      change q ≠ 0
+      intro he
+      exact hz (he ▸ hq))
   let L := cthickening delta K
   have hL : IsCompact L := hK.cthickening
   obtain ⟨MH, hMH⟩ := hL.exists_bound_of_continuousOn hH.continuousOn
-  obtain ⟨MG, hMG⟩ := hb L hL (fun hmem => by simpa using hdelta hmem)
+  obtain ⟨MG, hMG⟩ := ((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1) L hL (fun hmem => by simpa using hdelta hmem)
   let M := max 0 (max MH MG)
   have hM : 0 ≤ M := le_max_left _ _
-  have hHM : MH ≤ M := (le_max_left _ _).trans (le_max_right _ _)
+
   have hGM : MG ≤ M := (le_max_right _ _).trans (le_max_right _ _)
   refine ⟨M, hM, ?_⟩
   have he : ∀ᶠ n in atTop, (standardMollifierSequence (G := XV d) n).rOut < delta :=
@@ -79,28 +80,27 @@ theorem mollifiedProfile_eventually_bounded {d : ℕ} {alpha : ℝ}
     mem_cthickening_of_dist_le y q delta K hq ((mem_ball.mp hy).le.trans hn.le)
   refine ⟨?_, ?_, ?_, ?_⟩
   · exact spatialMollify_norm_le_on_ball _ _ hH.aestronglyMeasurable M hM q
-      (fun y hy => (hMH y (hyL y hy)).trans hHM)
+      (fun y hy => (hMH y (hyL y hy)).trans ((le_max_left _ _).trans (le_max_right _ _)))
   · intro i
     rw [dx_mollifiedProfile, ← Real.norm_eq_abs]
     apply spatialMollify_norm_le_on_ball _ _
-      (((measurable_pi_apply i).comp hmx).aestronglyMeasurable) M hM q
+      (((measurable_pi_apply i).comp ((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.1)).aestronglyMeasurable) M hM q
     intro y hy
     exact (norm_le_pi_norm (profilePositionJet h y) i).trans ((hMG y (hyL y hy)).1.trans hGM)
   · intro i
     rw [dv_mollifiedProfile, ← Real.norm_eq_abs]
     apply spatialMollify_norm_le_on_ball _ _
-      (((measurable_pi_apply i).comp hmv).aestronglyMeasurable) M hM q
+      (((measurable_pi_apply i).comp ((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.1)).aestronglyMeasurable) M hM q
     intro y hy
     exact (norm_le_pi_norm (profileVelocityJet h y) i).trans ((hMG y (hyL y hy)).2.1.trans hGM)
   · intro i k
     rw [dvv_mollifiedProfile, ← Real.norm_eq_abs]
-    apply spatialMollify_norm_le_on_ball _ _ (hmh i k).aestronglyMeasurable M hM q
+    apply spatialMollify_norm_le_on_ball _ _ (((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.1) i k).aestronglyMeasurable M hM q
     intro y hy
-    simpa only [Real.norm_eq_abs] using ((hMG y (hyL y hy)).2.2 i k).trans hGM
+    exact ((hMG y (hyL y hy)).2.2 i k).trans hGM
 
 /-- The flattened values and all jets have one eventual bound on each punctured compact set. -/
-theorem mollifiedFlatProfile_eventually_bounded {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem mollifiedFlatProfile_eventually_bounded  (r : ℝ) (hr : 0 < r)
     (K : Set (XV d)) (hK : IsCompact K) (hz : 0 ∉ K) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ q ∈ K,
       ‖mollifiedFlatProfile h r n q‖ ≤ C ∧
@@ -112,23 +112,22 @@ theorem mollifiedFlatProfile_eventually_bounded {d : ℕ} {alpha : ℝ}
   let B := 1 + |flatteningOffset| * Real.rpow r alpha + M
   let D := M + Real.rpow r (-alpha) * P * M ^ 2
   let C := max B D
-  have hR : 0 ≤ Real.rpow r (-alpha) := (Real.rpow_pos_of_pos hr (-alpha)).le
+
   have hD : M ≤ D := le_add_of_nonneg_right
-    (mul_nonneg (mul_nonneg hR hP.le) (sq_nonneg M))
+    (mul_nonneg (mul_nonneg ((Real.rpow_pos_of_pos hr (-alpha)).le) hP.le) (sq_nonneg M))
   have hDC : D ≤ C := le_max_right _ _
-  have hBC : B ≤ C := le_max_left _ _
+
   refine ⟨C, hM.trans (hD.trans hDC), ?_⟩
   filter_upwards [he] with n hn
   intro q hq
   obtain ⟨hH, hx, hv, hh⟩ := hn q hq
   have hdiff := (contDiff_mollifiedProfile h n).differentiable (by simp) q
   refine ⟨?_, ?_, ?_, ?_⟩
-  · have hHabs : |mollifiedProfile h n q| ≤ M := by
-      simpa only [Real.norm_eq_abs] using hH
+  ·
     have hv : |mollifiedFlatProfile h r n q| ≤ B :=
       (abs_flatProfile_le (mollifiedProfile h n) alpha r hr q).trans
-        (add_le_add_right hHabs _)
-    simpa only [Real.norm_eq_abs] using hv.trans hBC
+        (add_le_add_right (hH) _)
+    exact hv.trans (le_max_left _ _)
   · intro i
     unfold dx mollifiedFlatProfile
     rw [fderiv_flatProfile _ _ _ hr q hdiff]

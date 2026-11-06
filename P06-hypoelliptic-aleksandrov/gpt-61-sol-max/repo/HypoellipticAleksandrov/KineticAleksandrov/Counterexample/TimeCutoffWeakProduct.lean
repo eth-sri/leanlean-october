@@ -5,6 +5,8 @@ public import PDEFoundation.Sobolev.WeakDerivative.Product
 public import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Tactic.Ring
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-!
 # Weak product calculus for cutoff jets
@@ -12,8 +14,8 @@ import Mathlib.Tactic.Ring
 The preliminary pairing lemma passes smooth-approximation identities to Sobolev limits.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter
 open scoped ENNReal Topology
@@ -24,8 +26,7 @@ theorem integral_pairing_tendsto_of_eLpNorm_two {X : Type*} [MeasurableSpace X]
     (hF : ∀ n, MemLp (F n) 2 mu) (hf : MemLp f 2 mu) (hg : MemLp g 2 mu)
     (hlim : Tendsto (fun n => eLpNorm (F n - f) 2 mu) atTop (𝓝 0)) :
     Tendsto (fun n => ∫ x, F n x * g x ∂mu) atTop (𝓝 (∫ x, f x * g x ∂mu)) := by
-  have hLp : Tendsto (fun n => (hF n).toLp (F n)) atTop (𝓝 (hf.toLp f)) :=
-    (Lp.tendsto_Lp_iff_tendsto_eLpNorm'' F hF f hf).2 hlim
+
   have he (a b : X → ℝ) (ha : MemLp a 2 mu) (hb : MemLp b 2 mu) :
       inner ℝ (ha.toLp a) (hb.toLp b) = ∫ x, a x * b x ∂mu := by
     rw [L2.inner_def]
@@ -33,16 +34,16 @@ theorem integral_pairing_tendsto_of_eLpNorm_two {X : Type*} [MeasurableSpace X]
     filter_upwards [ha.coeFn_toLp, hb.coeFn_toLp] with x hx hy
     rw [hx, hy]
     simp only [Real.inner_apply]
-  have hi := hLp.inner (𝕜 := ℝ) (tendsto_const_nhds :
+  have hi := ((Lp.tendsto_Lp_iff_tendsto_eLpNorm'' F hF f hf).2 hlim).inner (𝕜 := ℝ) (tendsto_const_nhds :
     Tendsto (fun _ : ℕ => hg.toLp g) atTop (𝓝 (hg.toLp g)))
   simpa only [he] using hi
 
 /-- A Sobolev multiplier obeys the weak product rule with a function having only the
 specified weak partial derivative. All three products are locally integrable by `L²`.
 No smoothness of the multiplier or of the weak derivative representative is assumed. -/
-theorem weakPartial_product_sobolev {d : ℕ} {D : Set (PDE.Vec d)}
+theorem weakPartial_product_sobolev {d : ℕ} {D : PDE.VelocityRegion d}
     (hD : PDE.IsOpenBoundedConvexDomain D) (a : PDE.W1pFunction D 2)
-    (i : Fin d) (b Db : PDE.Vec d → ℝ)
+    (i : Fin d) (b Db : PDE.ScalarField d)
     (hb : PDE.MemLpOn D 2 b) (hDb : PDE.MemLpOn D 2 Db)
     (hweak : PDE.HasWeakPartialDerivOn D i b Db) :
     PDE.HasWeakPartialDerivOn D i (fun x => a.toFun x * b x)
@@ -56,29 +57,29 @@ theorem weakPartial_product_sobolev {d : ℕ} {D : Set (PDE.Vec d)}
   let mu := PDE.volumeOn D
   have : IsFiniteMeasure mu := hD.isSobolevRegularDomain.isFiniteMeasure_volumeOn
   let A (n : ℕ) := a.convexApproxSmoothW1p hD (by norm_num) x0 hr n
-  have hsmooth (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (A n).toFun :=
+  have hsmooth (n : ℕ) : ContDiff ℝ PDE.smoothOrder (A n).toFun :=
     a.contDiff_convexApproxSmoothW1p_toFun hD (by norm_num) x0 hr n
   have hv := a.tendsto_convexApproxSmoothW1p_toFun_eLpNorm_sub
     hD (by norm_num) (by norm_num) hball hr
   have hg := a.tendsto_convexApproxSmoothW1p_grad_coord_eLpNorm_sub
     hD (by norm_num) (by norm_num) hball hr i
   intro test ht hc hsub
-  let dt := fun x : PDE.Vec d => fderiv ℝ test x (PDE.basisVec i)
+  let dt := fun x  => fderiv ℝ test x (PDE.basisVec i)
   have hdt : Continuous dt :=
     (ht.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hdcompact : HasCompactSupport dt := hc.fderiv_apply (𝕜 := ℝ) (PDE.basisVec i)
-  have top_mem (f : PDE.Vec d → ℝ) (hf : Continuous f) (hfc : HasCompactSupport f) :
+  have hdcompact : HasCompactSupport dt := hc.fderiv_apply (𝕜 := ℝ) _
+  have top_mem (f : PDE.ScalarField d) (hf : Continuous f) (hfc : HasCompactSupport f) :
       MemLp f ∞ mu := by
     obtain ⟨C, hC⟩ := hfc.exists_bound_of_continuous hf
     exact MemLp.of_bound hf.aestronglyMeasurable C (Filter.Eventually.of_forall hC)
   have htTop := top_mem test ht.continuous hc
-  have hdtTop := top_mem dt hdt hdcompact
+
   have hbt : MemLp (fun x => b x * test x) 2 mu := hb.fun_mul htTop
   have hDbt : MemLp (fun x => Db x * test x) 2 mu := hDb.fun_mul htTop
-  have hbdt : MemLp (fun x => b x * dt x) 2 mu := hb.fun_mul hdtTop
+
   have hL := integral_pairing_tendsto_of_eLpNorm_two mu
     (fun n => (A n).toFun) a.toFun (fun x => b x * dt x)
-    (fun n => (A n).memLp) a.memLp hbdt hv
+    (fun n => (A n).memLp) a.memLp (hb.fun_mul (top_mem dt hdt hdcompact)) hv
   have hR1 := integral_pairing_tendsto_of_eLpNorm_two mu
     (fun n => (A n).toFun) a.toFun (fun x => Db x * test x)
     (fun n => (A n).memLp) a.memLp hDbt hv

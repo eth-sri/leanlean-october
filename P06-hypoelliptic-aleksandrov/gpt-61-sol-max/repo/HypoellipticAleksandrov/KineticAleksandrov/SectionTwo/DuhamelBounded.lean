@@ -5,35 +5,29 @@ import Mathlib.Topology.Order.Compact
 
 /-! # Uniform Duhamel bounds for sources with a finite time support window -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 
+variable {d : ℕ}
+
+variable {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
+
 /-- Source-time integration vanishes outside the source's time support window. -/
-theorem duhamelIntegrand_eq_zero_of_time_not_mem {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
+theorem duhamelIntegrand_eq_zero_of_time_not_mem   (g : HypoellipticAleksandrov.KineticScalarField d)
     (a b : ℝ) (hgt : ∀ p, p.time ∉ Icc a b → g p = 0)
     (p : KineticPoint d) (r : ℝ) (hr : r ∉ Icc a b) :
     duhamelIntegrand K g p r = 0 := by
-  unfold duhamelIntegrand
-  split
-  · unfold duhamelSourceIntegral
-    have hf : (fun w : EvolutionAmbientState d => g ⟨r, w.1, w.2⟩) = 0 := by
-      funext w
-      exact hgt ⟨r, w.1, w.2⟩ hr
-    rw [hf]
-    exact integral_zero' _ _
-  · rfl
+  simp_all [duhamelIntegrand, duhamelSourceIntegral, EvolutionAmbientState]
 
 /-- A finite source time window gives a uniform bound on the entire Duhamel potential. -/
-theorem duhamelPotential_le_time_window {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (τplus : ℝ)
-    (g : KineticPoint d → ℝ) (hgn : ∀ p, 0 ≤ g p)
+theorem duhamelPotential_le_time_window   (τplus : ℝ)
+    (g : HypoellipticAleksandrov.KineticScalarField d) (hgn : ∀ p, 0 ≤ g p)
     (C : ℝ) (hC : 0 ≤ C) (hgb : ∀ p, g p ≤ C)
     (a b : ℝ) (hab : a ≤ b) (hgt : ∀ p, p.time ∉ Icc a b → g p = 0)
     (p : KineticPoint d) : duhamelPotential K τplus g p ≤ (b - a) * C := by
-  let f : ℝ → ℝ := (Icc a b).indicator (fun _ => C)
+  let f  := (Icc a b).indicator (fun _ => C)
   have hf : Integrable f :=
     (integrableOn_const (C := C) (s := Icc a b)
       (by rw [Real.volume_Icc]; exact ENNReal.ofReal_ne_top)).integrable_indicator measurableSet_Icc
@@ -52,7 +46,7 @@ theorem duhamelPotential_le_time_window {d : ℕ} {Ω : Set (PDE.Vec d)}
     (μ := volume.restrict (Ioc p.time τplus)) (f := duhamelIntegrand K g p)
     (hf.mono_measure Measure.restrict_le_self) (Filter.Eventually.of_forall hn)
   have hnon : 0 ≤ duhamelPotential K τplus g p :=
-    integral_nonneg (fun r => duhamelIntegrand_nonneg K g hgn p r)
+    integral_nonneg ((duhamelIntegrand_nonneg K g hgn p))
   calc
     duhamelPotential K τplus g p ≤ ∫ r in Ioc p.time τplus, f r := by
       change |duhamelPotential K τplus g p| ≤ _ at hnorm
@@ -65,8 +59,8 @@ theorem duhamelPotential_le_time_window {d : ℕ} {Ω : Set (PDE.Vec d)}
         smul_eq_mul]
 
 /-- Compact spacetime support is contained in a finite absolute-time window. -/
-theorem exists_time_window_of_hasCompactSupport {d : ℕ}
-    (g : KineticPoint d → ℝ) (hg : HasCompactSupport g) :
+theorem exists_time_window_of_hasCompactSupport
+    (g : HypoellipticAleksandrov.KineticScalarField d) (hg : HasCompactSupport g) :
     ∃ a b : ℝ, a ≤ b ∧ ∀ p, p.time ∉ Icc a b → g p = 0 := by
   have ht := hg.image continuous_time
   obtain ⟨a, ha⟩ := ht.bddBelow
@@ -79,10 +73,11 @@ theorem exists_time_window_of_hasCompactSupport {d : ℕ}
   have hpt : p.time ∈ KineticPoint.time '' tsupport g := ⟨p, hpg, rfl⟩
   exact ⟨(min_le_left a b).trans (ha hpt), (hb hpt).trans (le_max_right a b)⟩
 
+variable {Ω : PDE.VelocityRegion d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
+
 /-- Continuous compact nonnegative sources give a globally bounded Duhamel potential. -/
-theorem duhamelPotential_exists_bound {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (τplus : ℝ)
-    (g : KineticPoint d → ℝ) (hg : Continuous g) (hgc : HasCompactSupport g)
+theorem duhamelPotential_exists_bound   (τplus : ℝ)
+    (g : HypoellipticAleksandrov.KineticScalarField d) (hg : Continuous g) (hgc : HasCompactSupport g)
     (hgn : ∀ p, 0 ≤ g p) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ p, |duhamelPotential K τplus g p| ≤ C := by
   obtain ⟨C, hC⟩ := hg.bddAbove_range_of_hasCompactSupport hgc
@@ -90,15 +85,14 @@ theorem duhamelPotential_exists_bound {d : ℕ} {Ω : Set (PDE.Vec d)}
   refine ⟨(b - a) * max C 0, mul_nonneg (sub_nonneg.mpr hab) (le_max_right C 0), ?_⟩
   intro p
   have hnon : 0 ≤ duhamelPotential K τplus g p :=
-    integral_nonneg (fun r => duhamelIntegrand_nonneg K g hgn p r)
+    integral_nonneg ((duhamelIntegrand_nonneg K g hgn p))
   rw [abs_of_nonneg hnon]
   exact duhamelPotential_le_time_window K τplus g hgn (max C 0) (le_max_right C 0)
     (fun q => (hC (mem_range_self q)).trans (le_max_left C 0)) a b hab hgt p
 
 /-- The source potential is bounded Borel for continuous compact nonnegative sources. -/
-theorem duhamelPotential_boundedBorel {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (hγ : Continuous γ) (τplus : ℝ) (g : KineticPoint d → ℝ)
+theorem duhamelPotential_boundedBorel   (hΩ : MeasurableSet Ω)
+    (hγ : Continuous γ) (τplus : ℝ) (g : HypoellipticAleksandrov.KineticScalarField d)
     (hg : Continuous g) (hgc : HasCompactSupport g) (hgn : ∀ p, 0 ≤ g p) :
     Measurable (duhamelPotential K τplus g) ∧
       ∃ C : ℝ, 0 ≤ C ∧ ∀ p, |duhamelPotential K τplus g p| ≤ C :=

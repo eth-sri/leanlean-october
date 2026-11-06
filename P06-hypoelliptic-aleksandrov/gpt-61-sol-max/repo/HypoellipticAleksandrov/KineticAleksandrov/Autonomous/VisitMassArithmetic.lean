@@ -5,7 +5,7 @@ import Mathlib.Tactic
 
 /-! # The numerical consequence of the source's quadratic visit estimate -/
 
-@[expose] public section
+ public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 
 /-- Cancel the positive quadratic scale in the exact source estimate. -/
@@ -33,7 +33,7 @@ theorem exists_visit_mass_arithmetic_constant {lam Lam : ℝ}
   intro R r M hR hr h
   have hb := visit_mass_quadratic_bound hlam hr h
   change M ≤ 9 / 5 + K * (R / r) at hb
-  have hp : 0 < R / r := div_pos hR hr
+  have hp  := div_pos hR hr
   nlinarith only [hb, hp, hK]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -32,16 +32,18 @@ def positiveSpectralIndicator (t : ℝ) : ℝ := if 0 < t then 1 else 0
 /-- Continuous approximants to the positive spectral indicator. -/
 def positiveSpectralRamp (n : ℕ) (t : ℝ) : ℝ := max 0 (min 1 ((n : ℝ) * t))
 
+variable {d : ℕ} (M : PDE.Mat d)
+
 /-- The canonical strictly positive spectral projection. -/
-def positiveSpectralProjection {d : ℕ} (M : PDE.Mat d) : PDE.Mat d :=
+def positiveSpectralProjection  : PDE.Mat d :=
   cfc positiveSpectralIndicator M
 
 /-- The canonical strictly negative spectral projection. -/
-def negativeSpectralProjection {d : ℕ} (M : PDE.Mat d) : PDE.Mat d :=
+def negativeSpectralProjection  : PDE.Mat d :=
   positiveSpectralProjection (-M)
 
 /-- The canonical zero spectral projection. -/
-def zeroSpectralProjection {d : ℕ} (M : PDE.Mat d) : PDE.Mat d :=
+def zeroSpectralProjection  : PDE.Mat d :=
   1 - positiveSpectralProjection M - negativeSpectralProjection M
 
 /-- Each spectral ramp is continuous on the whole real line. -/
@@ -55,25 +57,22 @@ theorem positiveSpectralRamp_eventually (t : ℝ) :
   by_cases ht : 0 < t
   · obtain ⟨N, hN⟩ := exists_nat_ge (1 / t)
     filter_upwards [eventually_ge_atTop N] with n hn
-    have hNt : 1 ≤ (N : ℝ) * t := (div_le_iff₀ ht).mp hN
-    have hnN : (N : ℝ) ≤ n := Nat.cast_le.mpr hn
-    have hnt : 1 ≤ (n : ℝ) * t := hNt.trans (mul_le_mul_of_nonneg_right hnN ht.le)
+
+
+    have hnt  := ((div_le_iff₀ ht).mp hN).trans (mul_le_mul_of_nonneg_right (Nat.cast_le.mpr hn) ht.le)
     simp [positiveSpectralRamp, positiveSpectralIndicator, ht, min_eq_left hnt]
   · apply Eventually.of_forall
     intro n
-    have hnt : (n : ℝ) * t ≤ 0 := mul_nonpos_of_nonneg_of_nonpos
+    have hnt  := mul_nonpos_of_nonneg_of_nonpos
       (Nat.cast_nonneg n) (le_of_not_gt ht)
-    have hm : min 1 ((n : ℝ) * t) ≤ 0 := (min_le_right _ _).trans hnt
-    simp [positiveSpectralRamp, positiveSpectralIndicator, ht, max_eq_left hm]
+
+    simp [positiveSpectralRamp, positiveSpectralIndicator, ht, max_eq_left ((min_le_right _ _).trans hnt)]
 
 /-- At a Hermitian matrix the ramp calculus eventually equals the positive projection. -/
 theorem spectralRamp_eventually {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian) :
     ∀ᶠ n : ℕ in atTop, cfc (positiveSpectralRamp n) M = positiveSpectralProjection M := by
-  have hh : ∀ᶠ n : ℕ in atTop, ∀ i : Fin d,
-      positiveSpectralRamp n (hM.eigenvalues i) =
-        positiveSpectralIndicator (hM.eigenvalues i) :=
-    eventually_all.mpr fun i => positiveSpectralRamp_eventually (hM.eigenvalues i)
-  filter_upwards [hh] with n hn
+
+  filter_upwards [(eventually_all.mpr fun i => positiveSpectralRamp_eventually (hM.eigenvalues i))] with n hn
   apply cfc_congr
   intro t ht
   rw [hM.spectrum_real_eq_range_eigenvalues] at ht

@@ -9,14 +9,16 @@ import Mathlib.Tactic.Linarith
 
 /-! # Fixed cylinder and genuine interior height points for the Appendix C construction -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
-open Set
+
+
+variable {d : ℕ}
 
 /-- With a stationary spatial base point, the cylinder is the literal product cylinder. -/
-theorem construction_mem_cylinder_iff {d : ℕ} (T S : ℝ) (hS : 0 < S) (P : KineticPoint d) :
+theorem construction_mem_cylinder_iff  (T S : ℝ) (hS : 0 < S) (P : KineticPoint d) :
     P ∈ backwardCylinder (⟨T, 0, 0⟩ : KineticPoint d) S ↔
       T - S ^ 2 < P.time ∧ P.time < T ∧
       PDE.vecEuclideanNorm P.velocity < S ∧ PDE.vecEuclideanNorm P.position < S ^ 3 := by
@@ -25,16 +27,16 @@ theorem construction_mem_cylinder_iff {d : ℕ} (T S : ℝ) (hS : 0 < S) (P : Ki
     PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hS 3)]
 
 /-- A positive earlier time at the spatial origin belongs to the chosen fixed cylinder. -/
-theorem construction_origin_mem_cylinder {d : ℕ} (T S t : ℝ)
+theorem construction_origin_mem_cylinder  (T S t : ℝ)
     (hS : 0 < S) (hTS : T < S ^ 2) (ht : 0 < t) (htT : t < T) :
     (⟨t, 0, 0⟩ : KineticPoint d) ∈ backwardCylinder ⟨T, 0, 0⟩ S := by
   rw [construction_mem_cylinder_iff T S hS]
   refine ⟨by linarith, htT, ?_, ?_⟩
   · simpa [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot] using hS
-  · simpa [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot] using pow_pos hS 3
+  · simp_all [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot]
 
 /-- Barrier and cylinder radii are chosen once, independently of all flattening scales. -/
-theorem construction_fixed_geometry_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
+theorem construction_fixed_geometry_of_profile  (hd : 1 ≤ d) {alpha : ℝ}
     (ha : 0 < alpha) (h : CounterProfileStatement d alpha) :
     ∃ R mu S : ℝ, 0 < R ∧ 0 < mu ∧ 0 < S ∧
       mu = (d : ℝ) * profileLowerEllipticity h / R ^ 2 ∧
@@ -46,13 +48,13 @@ theorem construction_fixed_geometry_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha :
         (barrier mu R) P) := by
   obtain ⟨R, hR, hv⟩ := exists_profile_barrier_radius ha h
   let mu := (d : ℝ) * profileLowerEllipticity h / R ^ 2
-  have hd0 : 0 < (d : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hd)
+
   have hlam := (selectedProfile_spec h).1
-  have hmu : 0 < mu := div_pos (mul_pos hd0 hlam) (sq_pos_of_pos hR)
+
   obtain ⟨S, hS, hTS, hgeom⟩ := exists_profile_cylinder_radius ha h (barrierTime mu)
-  refine ⟨R, mu, S, hR, hmu, hS, rfl, hTS, hv, hgeom, ?_⟩
+  refine ⟨R, mu, S, hR, (div_pos (mul_pos (by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hd)) hlam) (sq_pos_of_pos hR)), hS, rfl, hTS, hv, hgeom, ?_⟩
   intro P
-  exact barrier_operator_nonneg hd (profileMatrix h) (profileLowerEllipticity h)
+  exact barrier_operator_nonneg hd _ _
     R hlam hR (fun q => ((selectedProfile_spec h).2.2.2.2.2.1 q).1) P
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

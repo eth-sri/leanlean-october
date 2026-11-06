@@ -2,6 +2,9 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientEstimate
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientL2WeakDerivative
+import Mathlib.Tactic.Bound
+
+
 
 /-!
 # Generic pre-lift Hessian recovery
@@ -10,14 +13,14 @@ This module recovers weak velocity partial derivatives of every selected
 generic pre-lift gradient from the uniform spatial difference-quotient bound.
 -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
-open scoped BigOperators ENNReal MatrixOrder
+open scoped BigOperators MatrixOrder
 
 /-- Every selected generic pre-lift gradient has all weak velocity partial
 derivatives on the interior cylinder, with a joint `L²` estimate. -/
@@ -25,7 +28,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     (d M : ℕ) (hM : 1 ≤ M)
     (t₀ t₁ t₂ t₃ : ℝ)
     (ht₀₁ : t₀ < t₁) (ht₁₂ : t₁ < t₂) (ht₂₃ : t₂ < t₃)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : PDE.VelocityRegion d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
@@ -38,14 +41,14 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     (hBc : ∀ alpha, 0 ≤ Bc alpha) :
     ∃ C_H : ℝ, 0 ≤ C_H ∧
       ∀ (a : CoefficientField d)
-        (b : ℝ → PDE.Vec d → PDE.Vec d)
-        (c F : ℝ → PDE.Vec d → ℝ)
-        (u : TimeVelocity d → ℝ)
+        (b : PDE.TimeVectorField d)
+        (c F : PDE.TimeScalarField d)
+        (u : HypoellipticAleksandrov.Parabolic.ScalarField d)
         (D : ParabolicWeakDerivativeFamily d (M + 1)
           (Set.Ioo t₀ t₃ ×ˢ O₀) u)
         (E : ParabolicWeakDerivativeFamily d M
           (Set.Ioo t₀ t₃ ×ˢ O₀)
-          (fun z : TimeVelocity d => F z.1 z.2)),
+          (fun z  => F z.1 z.2)),
         (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀, (a z.1 z.2).IsSymm) →
         (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀,
           lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
@@ -101,8 +104,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
                   (ParabolicDerivativeIndex.castLE
                     (Nat.le_succ M) beta) j
                   (by
-                    change beta.1.parabolicWeight + 1 ≤ M + 1
-                    omega)) z)
+                    bound)) z)
             (fun z => H z beta j i)) ∧
           (∑ beta : ParabolicDerivativeIndex d M,
             ∑ j : Fin d, ∑ i : Fin d,
@@ -121,7 +123,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     (Fintype.card (ParabolicDerivativeIndex d M) : ℝ) * (d : ℝ) ^ 2 * C_DQ
   refine ⟨C_H, mul_nonneg (mul_nonneg (by positivity) (by positivity)) hC_DQ, ?_⟩
   intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
-  let V : Set (TimeVelocity d) := Set.Ioo t₁ t₂ ×ˢ O₁
+  let V : HypoellipticAleksandrov.Parabolic.Region d := Set.Ioo t₁ t₂ ×ˢ O₁
   let Etotal : ℝ := ParabolicWeakDerivativeFamily.squaredL2Norm D +
     ParabolicWeakDerivativeFamily.squaredL2Norm E
   have hEtotal : 0 ≤ Etotal := add_nonneg
@@ -140,7 +142,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
       (Measure.restrict_mono_set volume (Set.prod_mono
         (Set.Ioo_subset_Ioo ht₀₁.le ht₂₃.le) (subset_closure.trans hO₁O₀)))
   have hclose : ∀ beta : ParabolicDerivativeIndex d M, ∀ j i : Fin d,
-      ∃ g : TimeVelocity d → ℝ, ∃ hg : ParabolicMemLpOn V 2 g,
+      ∃ g : HypoellipticAleksandrov.Parabolic.ScalarField d, ∃ hg : ParabolicMemLpOn V 2 g,
         HasWeakVelocityPartialDerivOn V i
           (fun z => D.representative
             (ParabolicDerivativeIndex.velocitySucc
@@ -150,7 +152,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
                 omega)) z) g ∧
           ‖hg.toLp g‖ ≤ Real.sqrt (C_DQ * Etotal) := by
     intro beta j i
-    let G : TimeVelocity d → ℝ := fun z => D.representative
+    let G  := fun z => D.representative
       (ParabolicDerivativeIndex.velocitySucc
         (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
         (by
@@ -159,7 +161,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     have hmem : ∀ h : ℝ, 0 < h → h < δ → ParabolicMemLpOn V 2
         (spatialDifferenceQuotient i h G) := by
       intro h hh hhd
-      simpa only [G] using (hDQ h hh hhd).1 beta j i
+      exact (hDQ h hh hhd).1 beta j i
     have hsq : ∀ (h : ℝ) (hh : 0 < h) (hhd : h < δ),
         ‖(hmem h hh hhd).toLp (spatialDifferenceQuotient i h G)‖ ^ 2 ≤
           C_DQ * Etotal := by
@@ -189,8 +191,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
             Finset.sum_nonneg fun i _ => by dsimp [q]; positivity)
           (Finset.mem_univ beta)
       rw [Lp.norm_toLp]
-      exact (hi.trans (hj.trans hbeta)).trans (by
-        simpa only [q, V, Etotal] using hjoint)
+      exact (hi.trans (hj.trans hbeta)).trans (hjoint)
     have hnorm : ∀ (h : ℝ) (hh : 0 < h) (hhd : h < δ),
         ‖(hmem h hh hhd).toLp (spatialDifferenceQuotient i h G)‖ ≤
           Real.sqrt (C_DQ * Etotal) := by
@@ -203,11 +204,11 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     simpa only [G] using
       exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenceQuotient
         V (isOpen_Ioo.prod hO₁) i G (hlocal beta j) δ
-          (Real.sqrt (C_DQ * Etotal)) hδ hmem hnorm
+          _ hδ hmem hnorm
   choose g hg hweak hnorm using hclose
-  let H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ :=
+  let H  :=
     fun z beta j i => g beta j i z
-  refine ⟨H, (fun beta j i => hg beta j i), (fun beta j i => hweak beta j i), ?_⟩
+  refine ⟨H, (hg), (hweak), ?_⟩
   have hentry : ∀ beta j i,
       (ENNReal.toReal (eLpNorm (fun z => H z beta j i) 2
         (timeVelocityVolumeOn V))) ^ 2 ≤ C_DQ * Etotal := by

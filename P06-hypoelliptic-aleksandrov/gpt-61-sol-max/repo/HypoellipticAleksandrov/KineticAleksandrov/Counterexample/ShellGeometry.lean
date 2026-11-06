@@ -6,7 +6,7 @@ import Mathlib.Tactic.Ring
 
 /-! # The exact spatial--velocity Jacobian of kinetic dilation -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
@@ -32,9 +32,13 @@ theorem map_dilate_volume (d : ℕ) (r : ℝ) (hr : 0 < r) :
   congr 1
   ring
 
+variable {d : ℕ}
+
+variable (q : XV d)
+
 /-- The gauge's defining Euclidean polynomial is its sixth power. -/
-theorem rho_pow_six {d : ℕ} (q : XV d) :
-    rho q ^ (6 : ℕ) = PDE.vecNormSq q.1 + PDE.vecNormSq q.2 ^ (3 : ℕ) := by
+theorem rho_pow_six   :
+    rho q ^ (6 ) = PDE.vecNormSq q.1 + PDE.vecNormSq q.2 ^ (3 ) := by
   unfold rho
   simp only [Real.rpow_eq_pow]
   rw [← Real.rpow_mul_natCast
@@ -42,25 +46,25 @@ theorem rho_pow_six {d : ℕ} (q : XV d) :
   norm_num
 
 /-- Euclidean coordinates obey the exact anisotropic gauge weights. -/
-theorem rho_coordinate_bounds {d : ℕ} (q : XV d) :
+theorem rho_coordinate_bounds   :
     PDE.vecEuclideanNorm q.1 ≤ rho q ^ 3 ∧ PDE.vecEuclideanNorm q.2 ≤ rho q := by
   have hr := rho_nonneg q
   have he := rho_pow_six q
-  have hx := PDE.vecNormSq_nonneg q.1
-  have hv := PDE.vecNormSq_nonneg q.2
+
+
   constructor
   · apply (sq_le_sq₀ (PDE.vecEuclideanNorm_nonneg _) (pow_nonneg hr _)).mp
     rw [PDE.vecEuclideanNorm_sq, ← pow_mul]
     norm_num only at *
-    linarith only [he, pow_nonneg hv 3]
+    linarith only [he, pow_nonneg (PDE.vecNormSq_nonneg q.2) 3]
   · apply (pow_le_pow_iff_left₀ (PDE.vecEuclideanNorm_nonneg _) hr
-      (by decide : (6 : ℕ) ≠ 0)).mp
-    rw [show (6 : ℕ) = 2 * 3 by decide, pow_mul, PDE.vecEuclideanNorm_sq]
+      (by decide : (6 ) ≠ 0)).mp
+    rw [show (6 ) = 2 * 3 by decide, pow_mul, PDE.vecEuclideanNorm_sq]
     rw [show (2 * 3 : ℕ) = 6 by decide, he]
-    exact le_add_of_nonneg_left hx
+    exact le_add_of_nonneg_left (PDE.vecNormSq_nonneg q.1)
 
 /-- Bounded gauge sublevels have bounded native product norm. -/
-theorem norm_le_of_rho_le {d : ℕ} (R : ℝ) (q : XV d)
+theorem norm_le_of_rho_le  (R : ℝ) (q : XV d)
     (hq : rho q ≤ R) : ‖q‖ ≤ max (R ^ 3) R := by
   have hb := rho_coordinate_bounds q
   rw [Prod.norm_def]

@@ -4,6 +4,17 @@ public import HypoellipticAleksandrov.Parabolic.SourceLevelGrowth
 public import HypoellipticAleksandrov.Parabolic.SourceForwardPropagation
 public import HypoellipticAleksandrov.Parabolic.LocalHarnackGeometry
 public import HypoellipticAleksandrov.Parabolic.PeakSelection
+import Batteries.Tactic.Alias
+import Batteries.Tactic.OpenPrivate
+import Mathlib.Tactic.Ring
+import all HypoellipticAleksandrov.Measure.InkSpotsSelection
+import all HypoellipticAleksandrov.Parabolic.SourceDensityPositivePropagation
+public import HypoellipticAleksandrov.Measure.TimeVelocity
+
+
+open private HypoellipticAleksandrov.Parabolic.parabolicLpNormOn_mono_of_continuousOn from HypoellipticAleksandrov.Parabolic.SourceDensityPositivePropagation
+open private HypoellipticAleksandrov.Parabolic.parabolicBox_subset_closed from HypoellipticAleksandrov.Measure.InkSpotsSelection
+
 
 /-!
 # Carrier-local source-aware parabolic Harnack estimate
@@ -12,119 +23,84 @@ This module combines the source density, level-growth, peak-selection,
 and forward-propagation interfaces on one compact carrier.
 -/
 
-@[expose] public section
+ public section
 
-open Filter MeasureTheory Set
+open MeasureTheory Set
 
 namespace HypoellipticAleksandrov.Parabolic
 
-noncomputable section
+section
 
-private theorem parabolicBox_subset_closedBox {d : ℕ} {vartheta r t0 : ℝ}
-    {v0 : PDE.Vec d} :
-    parabolicBox vartheta r t0 v0 ⊆ parabolicClosedBox vartheta r t0 v0 := by
-  intro z hz
-  rcases hz with ⟨⟨hzleft, hzright⟩, hzv⟩
-  exact ⟨⟨hzleft.le, hzright.le⟩, fun i ↦ (hzv i).le⟩
+variable {d : ℕ}
 
-private theorem low_density_of_not_high_density {d : ℕ} {R eps t0 beta : ℝ}
-    {v0 : PDE.Vec d} (_hR : 0 < R) (U : Set (TimeVelocity d))
-    (q : TimeVelocity d → ℝ) (_hU : IsOpen U)
+
+
+
+private theorem low_density_of_not_high_density  {R eps t0 beta : ℝ}
+    {v0 : PDE.Vec d} (_hR : 0 < R) (U : HypoellipticAleksandrov.Parabolic.Region d)
+    (q : HypoellipticAleksandrov.Parabolic.ScalarField d) (_hU : IsOpen U)
     (hQU : parabolicBox 1 R t0 v0 ⊆ U) (hq : ContDiffOn ℝ 2 q U)
-    (hnot : ¬ beta * ((volume : Measure (TimeVelocity d))
+    (hnot : ¬ beta * ((HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
       (parabolicBox 1 R t0 v0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
         (parabolicBox 1 R t0 v0 ∩ {z | eps ≤ q z})).toReal) :
-    (1 - beta) * ((volume : Measure (TimeVelocity d))
+    (1 - beta) * ((HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
       (parabolicBox 1 R t0 v0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
         (parabolicBox 1 R t0 v0 ∩ {z | q z ≤ eps})).toReal := by
   let Q := parabolicBox 1 R t0 v0
-  let L : Set (TimeVelocity d) := Q ∩ {z | q z < eps}
-  let H : Set (TimeVelocity d) := Q ∩ {z | eps ≤ q z}
+  let L  := Q ∩ {z | q z < eps}
+  let H  := Q ∩ {z | eps ≤ q z}
   have hL : MeasurableSet L := by
-    have hcont : ContinuousOn q Q := hq.continuousOn.mono hQU
+    have hcont  := hq.continuousOn.mono hQU
     change MeasurableSet (Q ∩ q ⁻¹' Iio eps)
     exact (hcont.isOpen_inter_preimage (isOpen_parabolicBox 1 R t0 v0)
       isOpen_Iio).measurableSet
-  have hQfinite : (volume : Measure (TimeVelocity d)) Q ≠ ⊤ :=
+  have hQfinite : (HypoellipticAleksandrov.Parabolic.timeVelocityVolume d) Q ≠ ⊤ :=
     ne_top_of_le_ne_top (isCompact_parabolicClosedBox 1 R t0 v0).measure_ne_top
-      (measure_mono parabolicBox_subset_closedBox)
+      (measure_mono _root_.HypoellipticAleksandrov.Parabolic.parabolicBox_subset_closed)
   have hLsubset : L ⊆ Q := fun _ hz ↦ hz.1
-  have hinter : Q ∩ L = L := inter_eq_right.mpr hLsubset
+  have hinter  := inter_eq_right.mpr hLsubset
   have hdiff : Q \ L = H := by
     ext z
     simp only [L, H, Set.mem_diff, Set.mem_inter_iff, Set.mem_setOf_eq]
     constructor
-    · rintro ⟨hzQ, hzL⟩
-      exact ⟨hzQ, le_of_not_gt fun hlt ↦ hzL ⟨hzQ, hlt⟩⟩
-    · rintro ⟨hzQ, hqz⟩
-      refine ⟨hzQ, ?_⟩
-      rintro ⟨_, hlt⟩
-      exact (not_lt_of_ge hqz) hlt
+    · simp_all
+    · simp_all
   have hdecomp : (volume L).toReal + (volume H).toReal = (volume Q).toReal := by
     simpa only [Measure.real, hinter, hdiff] using
-      (measureReal_inter_add_diff (μ := volume) (s := Q) hL hQfinite)
-  have hhigh : (volume H).toReal < beta * (volume Q).toReal := lt_of_not_ge hnot
+      (measureReal_inter_add_diff   hL hQfinite)
+
   have hlow : (1 - beta) * (volume Q).toReal < (volume L).toReal := by
     nlinarith
   have hsubset : L ⊆ Q ∩ {z | q z ≤ eps} := by
     intro z hz
     exact ⟨hz.1, (show q z < eps from hz.2).le⟩
-  have htargetFinite : (volume : Measure (TimeVelocity d))
+  have htargetFinite : (HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
       (Q ∩ {z | q z ≤ eps}) ≠ ⊤ :=
     ne_top_of_le_ne_top hQfinite (measure_mono fun _ hz ↦ hz.1)
   exact hlow.le.trans (ENNReal.toReal_mono htargetFinite (measure_mono hsubset))
 
-private theorem parabolicLpNormOn_abs {d : ℕ} (F : TimeVelocity d → ℝ)
-    (S : Set (TimeVelocity d)) (hF : AEStronglyMeasurable F (volume.restrict S)) :
-    parabolicLpNormOn d (fun z ↦ |F z|) S = parabolicLpNormOn d F S := by
-  unfold parabolicLpNormOn parabolicELpNormOn
-  apply congrArg ENNReal.toReal
-  have habs : AEStronglyMeasurable (fun z ↦ |F z|) (volume.restrict S) := by
-    simpa only [Real.norm_eq_abs] using hF.norm
-  apply eLpNorm_congr_enorm_ae habs hF
-  filter_upwards [] with z
-  exact Real.enorm_abs (F z)
+private theorem parabolicLpNormOn_abs  (F : HypoellipticAleksandrov.Parabolic.ScalarField d)
+    (S : HypoellipticAleksandrov.Parabolic.Region d) (hF : AEStronglyMeasurable F (volume.restrict S)) :
+    parabolicLpNormOn d (fun z ↦ |F z|) S = parabolicLpNormOn d F S := (id
+  (id
+    (congrArg ENNReal.toReal
+      (eLpNorm_congr_enorm_ae (AEStronglyMeasurable.norm hF) hF (Filter.univ_mem' (id fun z => Real.enorm_abs (F z)))))))
 
-private theorem parabolicLpNormOn_mono_of_continuousOn {d : ℕ}
-    {F : TimeVelocity d → ℝ} {U S T K : Set (TimeVelocity d)}
-    (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
-    (hTK : T ⊆ K) (hST : S ⊆ T) :
-    parabolicLpNormOn d F S ≤ parabolicLpNormOn d F T := by
-  have hFK : ContinuousOn F K := hF.mono hKU
-  have hKmeas : MeasurableSet K := hKcompact.measurableSet
-  letI : IsFiniteMeasure (volume.restrict K) :=
-    ⟨by
-      rw [Measure.restrict_apply_univ]
-      exact hKcompact.measure_lt_top⟩
-  obtain ⟨M, hM⟩ := hKcompact.exists_bound_of_continuousOn hFK
-  have hKmem : MemLp F (parabolicExponent d) (volume.restrict K) := by
-    refine MemLp.of_bound (hFK.aestronglyMeasurable hKmeas) M ?_
-    filter_upwards [ae_restrict_mem hKmeas] with z hz
-    exact hM z hz
-  have hTmem : MemLp F (parabolicExponent d) (volume.restrict T) :=
-    hKmem.mono_measure (Measure.restrict_mono_set volume hTK)
-  have hSmem : MemLp F (parabolicExponent d) (volume.restrict S) :=
-    hTmem.mono_measure (Measure.restrict_mono_set volume hST)
-  have hTtop : parabolicELpNormOn d F T ≠ ⊤ := by
-    simpa only [parabolicELpNormOn] using hTmem.eLpNorm_ne_top
-  have hStop : parabolicELpNormOn d F S ≠ ⊤ := by
-    simpa only [parabolicELpNormOn] using hSmem.eLpNorm_ne_top
-  unfold parabolicLpNormOn
-  exact (ENNReal.toReal_le_toReal hStop hTtop).mpr
-    (eLpNorm_mono_measure F (Measure.restrict_mono_set volume hST))
 
-private theorem supersolution_of_equation_abs {d : ℕ} {B : CoefficientField d}
-    {F q : TimeVelocity d → ℝ} {V : Set (TimeVelocity d)}
+
+
+variable {B : CoefficientField d} {F q : HypoellipticAleksandrov.Parabolic.ScalarField d} {V : HypoellipticAleksandrov.Parabolic.Region d}
+
+private theorem supersolution_of_equation_abs
     (heq : ∀ z ∈ V, parabolicOperator B q z = F z) :
     IsParabolicSupersolutionOn B (fun z ↦ -|F z|) q V := by
   intro z hz
   rw [heq z hz]
   exact neg_abs_le (F z)
 
-private theorem equation_add_const {d : ℕ} {B : CoefficientField d}
-    {F q : TimeVelocity d → ℝ} {V : Set (TimeVelocity d)} {e : ℝ}
+private theorem equation_add_const   {e : ℝ}
     (heq : ∀ z ∈ V, parabolicOperator B q z = F z) :
     ∀ z ∈ V, parabolicOperator B (fun y ↦ q y + e) z = F z := by
   intro z hz
@@ -135,20 +111,22 @@ theorem exists_source_local_parabolic_harnack_positive
     (d : Nat) (hd : 1 ≤ d) (lam : Real) (hlam : 0 < lam)
     (Lam : Real) (hlamLam : lam ≤ Lam) :
     ∃ hBox C : Real, 0 < hBox ∧ hBox ≤ 1 ∧ 0 < C ∧
-      ∀ (K U : Set (TimeVelocity d)) (B : CoefficientField d)
-        (q F : TimeVelocity d → Real),
+      ∀ (K U : HypoellipticAleksandrov.Parabolic.Region d) (B : CoefficientField d)
+        (q F : HypoellipticAleksandrov.Parabolic.ScalarField d),
         IsCompact K → K ⊆ U → IsOpen U →
         parabolicClosedBox 2 2 0 0 ⊆ K →
         IsContinuousCoefficientOn B U → ContDiffOn Real 2 q U →
         ContinuousOn F U → IsNonnegativeOn q K →
         HasLowerEllipticityOn lam B K → HasUpperEllipticityOn Lam B K →
         (∀ x ∈ K, parabolicOperator B q x = F x) →
-        0 < q (4, (0 : PDE.Vec d)) →
+        0 < q (4, (0 )) →
         ∀ (j : Nat) (v : PDE.Vec d),
           v ∈ velocityCube (0 : PDE.Vec d) 1 →
-          hBox * q (4, (0 : PDE.Vec d)) ≤
+          hBox * q (4, (0 )) ≤
             q (localHarnackTerminalApprox j, v) +
               C * parabolicLpNormOn d F K := by
+  let sharedTerm_fa4e417182 := ((parabolicBox 2 2 (0 ) (0 : PDE.Vec d)))
+  let sharedTerm_bcece2f0cb := (((d : ℝ) / ((d : ℝ) + 1)))
   have hd' : 0 < d := by omega
   obtain ⟨delta, hdelta, m, hm, CP, hCP, hprop⟩ :=
     exists_forward_propagation_source_constants d hd' lam Lam (1 / 2)
@@ -158,7 +136,7 @@ theorem exists_source_local_parabolic_harnack_positive
   have hpow1 : 1 ≤ (2 : ℝ) ^ m := one_le_pow₀ (by norm_num)
   have hden0 : 0 < 4 * (2 : ℝ) ^ m := mul_pos (by norm_num) hpow0
   have hden1 : 1 < 4 * (2 : ℝ) ^ m := by nlinarith
-  have hfrac_lt_one : 1 / (4 * (2 : ℝ) ^ m) < 1 :=
+  have hfrac_lt_one  :=
     (div_lt_one₀ hden0).mpr hden1
   have hgStar0 : 0 < gStar := by
     dsimp [gStar]
@@ -175,20 +153,20 @@ theorem exists_source_local_parabolic_harnack_positive
     exists_sourceDensityToPoint_near_one d hd' lam hlam Lam hlamLam
       gStar hgStar0 hgStar1
   let beta : ℝ := 1 - rho
-  have hbeta0 : 0 < beta := sub_pos.mpr hrho1
-  have hbeta1 : beta < 1 := sub_lt_self 1 hrho0
+  have hbeta0  := sub_pos.mpr hrho1
+  have hbeta1  := sub_lt_self 1 hrho0
   have honeSubBeta : 1 - beta = rho := by
     dsimp [beta]
     ring
   let kappaLG : ℝ := CStar / (1 - gStar)
-  have hkappaLG0 : 0 < kappaLG := div_pos hCStar (sub_pos.mpr hgStar1)
+  have hkappaLG0  := div_pos hCStar (sub_pos.mpr hgStar1)
   let aPeak : ℝ := (2 : ℝ) ^ m + 1 / 2
   have haPeak : 0 < aPeak := by positivity
   let H : ℝ := 1 + 2 * kappaLG / aPeak
   have hH : 0 < H := by positivity
   obtain ⟨gBeta, Cbeta, hgBeta0, _hgBeta1, hCbeta, hdtpBeta⟩ :=
     exists_sourceDensityToPoint_positive d hd' lam hlam Lam hlamLam beta hbeta0 hbeta1
-  let p : ℝ := (d : ℝ) / ((d : ℝ) + 1)
+  let p : ℝ := sharedTerm_bcece2f0cb
   have hp : 0 ≤ p := by
     dsimp [p]
     positivity
@@ -207,17 +185,15 @@ theorem exists_source_local_parabolic_harnack_positive
   intro K U B q F hKcompact hKU hU hworkClosed hB hq hF hqnonneg hlowerK hupperK
     heqK hsourcePos j v hv
   let A : ℝ := parabolicLpNormOn d F K
-  let G : TimeVelocity d → ℝ := fun z ↦ |F z|
+  let G  := fun z ↦ |F z|
   have hA : 0 ≤ A := ENNReal.toReal_nonneg
-  have hG : ContinuousOn G U := hF.abs
-  have hworkOpen : IsOpen (parabolicBox 2 2 (0 : ℝ) (0 : PDE.Vec d)) :=
+  have hG  := hF.abs
+  have hworkOpen : IsOpen sharedTerm_fa4e417182 :=
     isOpen_parabolicBox 2 2 0 0
-  have hworkOpenK : parabolicBox 2 2 (0 : ℝ) (0 : PDE.Vec d) ⊆ K :=
-    parabolicBox_subset_closedBox.trans hworkClosed
-  have hsourceMem : (4, (0 : PDE.Vec d)) ∈ parabolicBox 2 2 (0 : ℝ) (0 : PDE.Vec d) := by
-    rw [mem_parabolicBox_iff]
-    norm_num
-  have hcontPeak : ContinuousOn q (backwardParabolicClosedBox 1 4 (0 : PDE.Vec d)) :=
+  have hworkOpenK : sharedTerm_fa4e417182 ⊆ K :=
+    _root_.HypoellipticAleksandrov.Parabolic.parabolicBox_subset_closed.trans hworkClosed
+
+  have hcontPeak  :=
     hq.continuousOn.mono
       (backwardParabolicClosedBox_one_four_subset_normalizedOpenBox.trans hworkOpenK |>.trans hKU)
   obtain ⟨t1, v1, r0, hpeakPoint, hr0eq, _hpeakMax, hr0lt, hweight, hu1,
@@ -238,15 +214,15 @@ theorem exists_source_local_parabolic_harnack_positive
   have hsOne : s ≤ 1 := by
     dsimp [s]
     linarith
-  have hspow : s ^ p ≤ 1 := Real.rpow_le_one hs.le hsOne hp
-  have hu1' : 0 < u1 := by simpa only [u1] using hu1
+  have hspow  := Real.rpow_le_one hs.le hsOne hp
+  have hu1' : 0 < u1 := by exact hu1
   have hbasePow : (1 - r0) ^ m ≤ 1 := by
     apply pow_le_one₀
     · linarith
     · linarith
-  have hweightToU1 : q (4, (0 : PDE.Vec d)) ≤ u1 := by
+  have hweightToU1 : q (4, (0 )) ≤ u1 := by
     calc
-      q (4, (0 : PDE.Vec d)) ≤ (1 - r0) ^ m * u1 := hweight
+      q (4, (0 )) ≤ (1 - r0) ^ m * u1 := hweight
       _ ≤ 1 * u1 := mul_le_mul_of_nonneg_right hbasePow hu1'.le
       _ = u1 := one_mul _
   have hclosedSmall : parabolicClosedBox 1 s tBase v1 ⊆ K := by
@@ -254,10 +230,10 @@ theorem exists_source_local_parabolic_harnack_positive
     apply hworkOpenK
     rw [← backwardParabolicClosedBox_eq_parabolicClosedBox s t1 v1] at hz
     exact selected_backwardParabolicClosedBox_subset_normalizedOpenBox hpeakPoint hr0eq hr0lt hz
-  have hopenSmall : parabolicBox 1 s tBase v1 ⊆ K :=
-    parabolicBox_subset_closedBox.trans hclosedSmall
-  have hclosedSmallU : parabolicClosedBox 1 s tBase v1 ⊆ U := hclosedSmall.trans hKU
-  have hopenSmallU : parabolicBox 1 s tBase v1 ⊆ U := hopenSmall.trans hKU
+  have hopenSmall  :=
+    _root_.HypoellipticAleksandrov.Parabolic.parabolicBox_subset_closed.trans hclosedSmall
+  have hclosedSmallU  := hclosedSmall.trans hKU
+  have hopenSmallU  := hopenSmall.trans hKU
   have hM : ∀ z ∈ parabolicClosedBox 1 s tBase v1, q z ≤ M := by
     intro z hz
     change q z ≤ (2 : ℝ) ^ m * q (t1, v1)
@@ -271,35 +247,36 @@ theorem exists_source_local_parabolic_harnack_positive
   have hnormSmall : parabolicLpNormOn d G (parabolicBox 1 s tBase v1) ≤ A := by
     calc
       parabolicLpNormOn d G (parabolicBox 1 s tBase v1) ≤ parabolicLpNormOn d G K :=
-        parabolicLpNormOn_mono_of_continuousOn hG hKU hKcompact Subset.rfl hopenSmall
+        _root_.HypoellipticAleksandrov.Parabolic.parabolicLpNormOn_mono_of_continuousOn hG hKU hKcompact Subset.rfl hopenSmall
       _ = A := parabolicLpNormOn_abs F K
           ((hF.mono hKU).aestronglyMeasurable hKcompact.measurableSet)
-  suffices hhighCase : H * A < q (4, (0 : PDE.Vec d)) →
-      hBox * q (4, (0 : PDE.Vec d)) ≤
+  suffices hhighCase : H * A < q (4, (0 )) →
+      hBox * q (4, (0 )) ≤
         q (localHarnackTerminalApprox j, v) + C * parabolicLpNormOn d F K by
-    by_cases hhigh : H * A < q (4, (0 : PDE.Vec d))
+    let sharedTerm_718c6a67da := (q (4, (0 )))
+    by_cases hhigh : H * A < sharedTerm_718c6a67da
     · exact hhighCase hhigh
-    · have htargetK : (localHarnackTerminalApprox j, v) ∈ K :=
+    · have htargetK  :=
         hworkOpenK (localHarnackTerminalApprox_mem_normalizedOpenBox j hv)
-      have htargetNonneg : 0 ≤ q (localHarnackTerminalApprox j, v) := hqnonneg _ htargetK
-      have hsourceBound : q (4, (0 : PDE.Vec d)) ≤ H * A := le_of_not_gt hhigh
+      have htargetNonneg  := hqnonneg _ htargetK
+      have hsourceBound  := le_of_not_gt hhigh
       have hHC : H ≤ C := by
         have hCPpow : 0 ≤ CP * (2 : ℝ) ^ p :=
           mul_nonneg hCP.le (Real.rpow_nonneg (by norm_num) _)
         dsimp [C]
         exact (le_add_of_nonneg_right hCbeta).trans (le_add_of_nonneg_right hCPpow)
-      have hCA : H * A ≤ C * A := mul_le_mul_of_nonneg_right hHC hA
+      have hCA  := mul_le_mul_of_nonneg_right hHC hA
       calc
-        hBox * q (4, (0 : PDE.Vec d)) ≤ hBox * (H * A) :=
+        hBox * sharedTerm_718c6a67da ≤ hBox * (H * A) :=
           mul_le_mul_of_nonneg_left hsourceBound hhBox0.le
         _ ≤ H * A := by nlinarith [hH, hA]
         _ ≤ C * A := hCA
         _ ≤ q (localHarnackTerminalApprox j, v) + C * A :=
           le_add_of_nonneg_left htargetNonneg
   intro hhigh
-  have hhighDensity : beta * ((volume : Measure (TimeVelocity d))
+  have hhighDensity : beta * ((HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
       (parabolicBox 1 s tBase v1)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.timeVelocityVolume d)
         (parabolicBox 1 s tBase v1 ∩ {z | u1 / 2 ≤ q z})).toReal := by
     by_contra hnot
     have hLow := low_density_of_not_high_density hs U q hU hopenSmallU hq hnot
@@ -317,12 +294,11 @@ theorem exists_source_local_parabolic_harnack_positive
         simpa only [M, kappaLG, p, mul_comm] using hgrowth
       calc
         aPeak * u1 = (2 * (2 : ℝ) ^ m + 1 / 2) * u1 - (2 : ℝ) ^ m * u1 := by
-          dsimp [aPeak]
           ring
         _ ≤ kappaLG * s ^ p * parabolicLpNormOn d F (parabolicBox 1 s tBase v1) := by
           linarith only [hgrowth'']
     have hnormSmallF : parabolicLpNormOn d F (parabolicBox 1 s tBase v1) ≤ A := by
-      rw [← parabolicLpNormOn_abs F (parabolicBox 1 s tBase v1)
+      rw [← parabolicLpNormOn_abs F _
         ((hF.mono hopenSmallU).aestronglyMeasurable
           (isOpen_parabolicBox 1 s tBase v1).measurableSet)]
       exact hnormSmall
@@ -331,12 +307,12 @@ theorem exists_source_local_parabolic_harnack_positive
         aPeak * u1 ≤ kappaLG * s ^ p *
             parabolicLpNormOn d F (parabolicBox 1 s tBase v1) := hgrowth'
         _ ≤ kappaLG * A := by
-          have hterm : s ^ p * parabolicLpNormOn d F (parabolicBox 1 s tBase v1) ≤ A := by
+          let sharedTerm_2d51dedd39 := (parabolicLpNormOn d F (parabolicBox 1 s tBase v1))
+          have hterm : s ^ p * sharedTerm_2d51dedd39 ≤ A := by
             calc
-              s ^ p * parabolicLpNormOn d F (parabolicBox 1 s tBase v1) ≤
-                  1 * parabolicLpNormOn d F (parabolicBox 1 s tBase v1) := by
-                exact mul_le_mul_of_nonneg_right hspow ENNReal.toReal_nonneg
-              _ ≤ A := by simpa using hnormSmallF
+              s ^ p * sharedTerm_2d51dedd39 ≤
+                  1 * sharedTerm_2d51dedd39 := mul_le_mul_of_nonneg_right hspow ENNReal.toReal_nonneg
+              _ ≤ A := by simpa
           simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hterm hkappaLG0.le
     by_cases hAzero : A = 0
     · have hzero : aPeak * u1 ≤ 0 := by
@@ -352,9 +328,9 @@ theorem exists_source_local_parabolic_harnack_positive
         have hAHlt : kappaLG < aPeak * H := by
           rw [hAH]
           linarith only [haPeak, hkappaLG0]
-        simpa only [mul_assoc] using mul_lt_mul_of_pos_right hAHlt hApos
+        exact mul_lt_mul_of_pos_right hAHlt hApos
       have hcontra : aPeak * H * A < aPeak * u1 := by
-        have hsource : H * A < u1 := hhigh.trans_le hweightToU1
+        have hsource  := hhigh.trans_le hweightToU1
         simpa only [mul_assoc] using mul_lt_mul_of_pos_left hsource haPeak
       exact (not_lt_of_ge hmain) (hstrict.trans hcontra)
   have hseed := hdtpBeta.scaled hs (by linarith : 0 < u1 / 2)
@@ -388,19 +364,19 @@ theorem exists_source_local_parabolic_harnack_positive
           _ ≤ A := by simpa using hnormSmall
       simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hinner hCbeta
     dsimp [ell]
-    have hterm' : Cbeta * s ^ ((d : ℝ) / ((d : ℝ) + 1)) *
+    have hterm' : Cbeta * s ^ sharedTerm_bcece2f0cb *
         parabolicLpNormOn d G (parabolicBox 1 s tBase v1) ≤ eD := by
-      simpa only [p] using hterm
+      exact hterm
     exact hpoint.trans (by simpa only [add_comm] using add_le_add_left hterm' (q (t1, w)))
   obtain ⟨htauLower, htauUpper, hwidth, hbase, htarget, hcorridor⟩ :=
     selected_localHarnack_corridor hpeakPoint hr0eq hr0lt hv
   let tau : ℝ := selectedLocalHarnackForwardTime t1 j
-  let lower : PDE.Vec d := localHarnackCorridorLower v1 v
-  let upper : PDE.Vec d := localHarnackCorridorUpper v1 v
-  let UHat : Set (TimeVelocity d) := localHarnackCorridorNeighborhood t1
-  let BHat : CoefficientField d := pullbackCoefficient B t1 (0 : PDE.Vec d) 1
-  let qHat : TimeVelocity d → ℝ := pullbackScalar (fun z ↦ q z + eD) t1 (0 : PDE.Vec d) 1
-  let GHat : TimeVelocity d → ℝ := pullbackScalar G t1 (0 : PDE.Vec d) 1
+  let lower  := localHarnackCorridorLower v1 v
+  let upper  := localHarnackCorridorUpper v1 v
+  let UHat : HypoellipticAleksandrov.Parabolic.Region d := localHarnackCorridorNeighborhood t1
+  let BHat  := pullbackCoefficient B t1 (0 ) 1
+  let qHat  := pullbackScalar (fun z ↦ q z + eD) t1 (0 ) 1
+  let GHat  := pullbackScalar G t1 (0 ) 1
   have hUHat : IsOpen UHat := by
     dsimp [UHat, localHarnackCorridorNeighborhood]
     exact hworkOpen.preimage (contDiff_parabolicAffine t1 0 1).continuous
@@ -409,7 +385,7 @@ theorem exists_source_local_parabolic_harnack_positive
   have hmapHatU : MapsTo (parabolicAffine t1 (0 : PDE.Vec d) 1) UHat U :=
     fun z hz ↦ hKU (hworkOpenK (hmapHat hz))
   have hcorridor' : parabolicClosedRectangle tau lower upper ⊆ UHat := by
-    simpa only [tau, lower, upper] using hcorridor
+    exact hcorridor
   have hrect : parabolicRectangle tau lower upper ⊆ UHat := by
     intro z hz
     apply hcorridor'
@@ -420,7 +396,7 @@ theorem exists_source_local_parabolic_harnack_positive
     fun _ hz ↦ hmapHat (hrect hz)
   have hrectK : MapsTo (parabolicAffine t1 (0 : PDE.Vec d) 1)
       (parabolicRectangle tau lower upper) K := fun _ hz ↦ hworkOpenK (hrectWork hz)
-  have hBHat : IsContinuousCoefficientOn BHat UHat := hB.pullback hmapHatU
+  have hBHat  := hB.pullback hmapHatU
   have hqHat : ContDiffOn ℝ 2 qHat UHat := by
     dsimp [qHat]
     exact ContDiffOn.pullbackScalar (hq.add contDiffOn_const) hmapHatU
@@ -431,9 +407,9 @@ theorem exists_source_local_parabolic_harnack_positive
     intro z hz
     dsimp [qHat, pullbackScalar_apply]
     exact add_nonneg (hqnonneg _ (hrectK hz)) heD
-  have hlowerHat : HasLowerEllipticityOn lam BHat (parabolicRectangle tau lower upper) :=
+  have hlowerHat  :=
     hlowerK.pullback hrectK
-  have hupperHat : HasUpperEllipticityOn Lam BHat (parabolicRectangle tau lower upper) :=
+  have hupperHat  :=
     hupperK.pullback hrectK
   have hGHatNonneg : IsNonnegativeOn GHat (parabolicRectangle tau lower upper) := by
     intro z _
@@ -499,19 +475,19 @@ theorem exists_source_local_parabolic_harnack_positive
     calc
       parabolicLpNormOn d GHat (parabolicRectangle tau lower upper) =
           (1 : ℝ) ^ p * parabolicLpNormOn d G
-            (parabolicAffine t1 (0 : PDE.Vec d) 1 '' parabolicRectangle tau lower upper) := by
+            (parabolicAffine t1 (0 ) 1 '' parabolicRectangle tau lower upper) := by
         simpa [GHat, pullbackScalar, Function.comp_def] using
           (parabolicLpNormOn_pullback t1 (0 : PDE.Vec d) (by norm_num : (0 : ℝ) < 1)
             G (parabolicRectangle tau lower upper))
       _ = parabolicLpNormOn d G
-            (parabolicAffine t1 (0 : PDE.Vec d) 1 '' parabolicRectangle tau lower upper) := by simp
+            (parabolicAffine t1 (0 ) 1 '' parabolicRectangle tau lower upper) := by simp
       _ ≤ parabolicLpNormOn d G K :=
-        parabolicLpNormOn_mono_of_continuousOn hG hKU hKcompact Subset.rfl himageK
+        _root_.HypoellipticAleksandrov.Parabolic.parabolicLpNormOn_mono_of_continuousOn hG hKU hKcompact Subset.rfl himageK
       _ = A := parabolicLpNormOn_abs F K
           ((hF.mono hKU).aestronglyMeasurable hKcompact.measurableSet)
-  have hweight' : q (4, (0 : PDE.Vec d)) ≤ (1 - r0) ^ m * u1 := by
-    simpa only [u1] using hweight
-  have hfactor : hBox * q (4, (0 : PDE.Vec d)) ≤
+  have hweight' : q (4, (0 )) ≤ (1 - r0) ^ m * u1 := by
+    exact hweight
+  have hfactor : hBox * q (4, (0 )) ≤
       delta * ((1 - r0) / 8) ^ m * ell := by
     have hh : hBox ≤ c := min_le_right _ _
     have hscale : ((1 - r0) / 8) * 8 = 1 - r0 := by ring
@@ -522,19 +498,20 @@ theorem exists_source_local_parabolic_harnack_positive
       rw [← mul_pow]
       norm_num
     calc
-      hBox * q (4, (0 : PDE.Vec d)) ≤ hBox * ((1 - r0) ^ m * u1) :=
+      hBox * q (4, (0 )) ≤ hBox * ((1 - r0) ^ m * u1) :=
         mul_le_mul_of_nonneg_left hweight' hhBox0.le
       _ ≤ c * ((1 - r0) ^ m * u1) :=
         mul_le_mul_of_nonneg_right hh (mul_nonneg (pow_nonneg (by linarith) _) hu1'.le)
       _ = delta * ((1 - r0) / 8) ^ m * ell := by
+        let sharedTerm_c8b5c2b732 := (((1 - r0) / 8) ^ m)
         dsimp [c, ell]
         rw [hpowEq]
         calc
           delta * (1 / 8 : ℝ) ^ m * (gBeta / 2) *
-              (8 ^ m * ((1 - r0) / 8) ^ m * u1) =
+              (8 ^ m * sharedTerm_c8b5c2b732 * u1) =
               delta * (gBeta / 2) * ((1 / 8 : ℝ) ^ m * 8 ^ m) *
-                ((1 - r0) / 8) ^ m * u1 := by ring
-          _ = delta * ((1 - r0) / 8) ^ m * ((u1 / 2) * gBeta) := by
+                sharedTerm_c8b5c2b732 * u1 := by ring
+          _ = delta * sharedTerm_c8b5c2b732 * ((u1 / 2) * gBeta) := by
             rw [hpowCancel]
             ring
   have hpropBound : delta * ((1 - r0) / 8) ^ m * ell ≤
@@ -550,18 +527,18 @@ theorem exists_source_local_parabolic_harnack_positive
           by simpa only [add_assoc, add_comm, add_left_comm] using
             add_le_add_left herror (q (localHarnackTerminalApprox j, v) + eD)
         _ = q (localHarnackTerminalApprox j, v) + (Cbeta + CP * (2 : ℝ) ^ p) * A := by
-          dsimp [eD]
           ring
   calc
-    hBox * q (4, (0 : PDE.Vec d)) ≤ delta * ((1 - r0) / 8) ^ m * ell := hfactor
+    hBox * q (4, (0 )) ≤ delta * ((1 - r0) / 8) ^ m * ell := hfactor
     _ ≤ q (localHarnackTerminalApprox j, v) + (Cbeta + CP * (2 : ℝ) ^ p) * A := hpropBound
     _ ≤ q (localHarnackTerminalApprox j, v) + C * A := by
-      have hsmallC : Cbeta + CP * (2 : ℝ) ^ p ≤ C := by
+      let sharedTerm_36087e4849 := ((Cbeta + CP * (2 : ℝ) ^ p))
+      have hsmallC : sharedTerm_36087e4849 ≤ C := by
         dsimp [C]
         calc
-          Cbeta + CP * (2 : ℝ) ^ p = 0 + (Cbeta + CP * (2 : ℝ) ^ p) := by ring
-          _ ≤ H + (Cbeta + CP * (2 : ℝ) ^ p) := by
-            simpa only [add_comm] using add_le_add_right hH.le (Cbeta + CP * (2 : ℝ) ^ p)
+          sharedTerm_36087e4849 = 0 + (sharedTerm_36087e4849) := by ring
+          _ ≤ H + (sharedTerm_36087e4849) := by
+            simpa only [add_comm] using add_le_add_right hH.le sharedTerm_36087e4849
           _ = H + Cbeta + CP * (2 : ℝ) ^ p := by ring
       simpa only [add_comm] using
         add_le_add_left (mul_le_mul_of_nonneg_right hsmallC hA)

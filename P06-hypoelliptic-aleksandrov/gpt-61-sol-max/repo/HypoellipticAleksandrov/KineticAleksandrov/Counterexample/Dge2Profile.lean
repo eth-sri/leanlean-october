@@ -1,12 +1,14 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2ProfileSolver
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # The internally proved Appendix C profile in dimensions at least two -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 open scoped MatrixOrder
 
@@ -23,7 +25,7 @@ theorem profile_ge_two (d : ℕ) (hd : 2 ≤ d)
         (∀ q, lam • (1 : PDE.Mat d) ≤ A q ∧
           A q ≤ Lam • (1 : PDE.Mat d)) ∧
         H 0 = 0 ∧
-        ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ) ∧
+        ContDiffOn ℝ PDE.smoothOrder H ({0}ᶜ) ∧
         (∀ r : ℝ, 0 < r → ∀ q,
           H (r ^ 3 • q.1, r • q.2) = Real.rpow r alpha * H q) ∧
         (∀ q, c * Real.rpow
@@ -49,8 +51,8 @@ theorem profile_ge_two (d : ℕ) (hd : 2 ≤ d)
   obtain ⟨C₂, hC₂, hgrad⟩ := geometricProfile_velocity_gradient_bound (d := d)
     alpha C₀ sigma R hsigma hR
   let C := max C₁ C₂
-  have hC : 0 < C := lt_of_lt_of_le hC₂ (le_max_right _ _)
-  refine ⟨lam, Lam, c, C, A, H, hlam, hlamLam, hc, hC, hmeas, helliptic,
+
+  refine ⟨lam, Lam, c, C, A, H, hlam, hlamLam, hc, (lt_of_lt_of_le hC₂ (le_max_right _ _)), hmeas, helliptic,
     geometricProfile_zero d alpha C₀ sigma R ha,
     geometricProfile_smooth_off_origin alpha C₀ sigma R hsigma hR, ?_, ?_, ?_, ?_⟩
   · exact fun r hr q => geometricProfile_homogeneous alpha C₀ sigma R r hr q

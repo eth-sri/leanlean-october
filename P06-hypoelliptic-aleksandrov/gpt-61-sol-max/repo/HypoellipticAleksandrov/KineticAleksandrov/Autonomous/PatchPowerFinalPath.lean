@@ -6,10 +6,10 @@ import Mathlib.Tactic
 
 /-! # The last fixed-width path in return-time propagation -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Set Holder Holder.Growth
+open Set Holder Holder.Growth
 
 /-- A fixed positive patch reaches every endpoint with the indicated bounded displacement.
 The displacement is measured relative to the initial transport velocity. -/
@@ -38,7 +38,7 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
   have hr2 : r ^ 2 ≤ 1 / 64 := by nlinarith
   have ha : 0 < a := by dsimp [a]; positivity
   have hT : 0 < T := by dsimp [T, tminus]; linarith
-  have hTlo : 1 / 2 ≤ T := by dsimp [T, tminus]; linarith
+
   have hThi : T ≤ 4 := by dsimp [T, tminus, a]; linarith
   have hres : P.position - x0 - T • z.velocity =
       P.position - z.position - (P.time - z.time) • z.velocity := by
@@ -90,13 +90,13 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
   apply hprop 6 C_A (by norm_num) _ (autonomous_fullElliptic A)
     _ (isOpen_lt continuous_const continuous_time) tminus P
     (by change 0 < P.time; linarith) (by dsimp [T, tminus]; linarith) hThi
-    x v hsk hxend hvend htube k hk u (fun q hq => hu.2.1 q hq) (hadm A u hu).1
+    x v hsk hxend hvend htube k hk u ((hu.2.1)) (hadm A u hu).1
   intro q hq hqt
   change q.time - tminus ∈ Icc (-a) T ∧
     PDE.vecEuclideanNorm (q.position - x (q.time - tminus)) ≤ r ^ 3 / 2 ∧
     PDE.vecEuclideanNorm (q.velocity - v (q.time - tminus)) ≤ r / 2 at hq
-  have hs0 : q.time - tminus ≤ 0 := sub_nonpos.mpr hqt
-  obtain ⟨hxq, hvq⟩ := hleft (q.time - tminus) hs0
+  have hs0  := sub_nonpos.mpr hqt
+  obtain ⟨hxq, hvq⟩ := hleft _ hs0
   apply hpatch q
   refine ⟨?_, ?_, ?_, ?_⟩
   · have ht := hq.1.1

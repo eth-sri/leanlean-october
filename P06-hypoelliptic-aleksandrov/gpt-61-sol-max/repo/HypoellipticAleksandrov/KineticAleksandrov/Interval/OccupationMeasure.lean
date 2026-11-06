@@ -21,8 +21,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 
 open MeasureTheory Set SectionTwo
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
-open scoped ENNReal ProbabilityTheory
+open HypoellipticAleksandrov.Parabolic
+open scoped ProbabilityTheory
 
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
@@ -102,23 +102,21 @@ theorem integral_intervalOccupationMeasure (K : MovingFiberKernel (PDE.oneDimens
   obtain ⟨M, hM⟩ := hφb
   let ψ : ((PDE.oneDimensionalAxisBox a c) × ElapsedTime (ENNReal.ofReal T)) × PDE.Vec 1 → ℝ :=
     fun q => φ (q.1.2.1, q.2)
-  have hψ : Measurable ψ := hφ.comp (by fun_prop)
+
   have hi : Integrable ψ ((ρ.prod (elapsedVolume (ENNReal.ofReal T))).compProd
       (intervalOccupationKernel σ T K)) :=
-    (integrable_const M).mono' hψ.aestronglyMeasurable
-      (Filter.Eventually.of_forall fun q => by simpa only [Real.norm_eq_abs] using hM _)
+    (integrable_const M).mono' (hφ.comp (by fun_prop)).aestronglyMeasurable
+      (Filter.Eventually.of_forall fun q => hM _)
   rw [intervalOccupationMeasure, integral_map (by fun_prop) hφ.aestronglyMeasurable]
   change (∫ q, ψ q ∂_) = _
   rw [Measure.integral_compProd hi]
-  exact (integral_prod _ hi.integral_compProd).trans (by
-    simp only [ProbabilityTheory.Kernel.prodMkLeft_apply, intervalOccupationKernel,
-      ProbabilityTheory.Kernel.comap_apply, ψ])
+  exact (integral_prod _ hi.integral_compProd).trans (rfl)
 
 /-- Set evaluation of the projected occupation measure is the iterated kernel action. -/
 theorem intervalOccupationMeasure_apply
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
     (ρ : Measure (PDE.oneDimensionalAxisBox a c)) [IsFiniteMeasure ρ]
-    (A : Set (TimeVelocity 1)) (hA : MeasurableSet A) :
+    (A : HypoellipticAleksandrov.Parabolic.Region 1) (hA : MeasurableSet A) :
     intervalOccupationMeasure σ T K ρ A =
       ∫⁻ v, ∫⁻ t : ElapsedTime (ENNReal.ofReal T),
         intervalOccupationKernel σ T K (v, t) {w | (t.1, w) ∈ A}
@@ -142,7 +140,7 @@ theorem intervalOccupationMeasure_compl_region
   refine Filter.Eventually.of_forall fun v => ?_
   apply lintegral_eq_zero_of_ae_eq_zero
   refine Filter.Eventually.of_forall fun t => ?_
-  have ht : t.1 < T := (ENNReal.ofReal_lt_ofReal_iff hT).mp t.2.2
+  have ht  := (ENNReal.ofReal_lt_ofReal_iff hT).mp t.2.2
   have he : {w : PDE.Vec 1 | (t.1, w) ∈
       (Ioo (0 : ℝ) T ×ˢ PDE.oneDimensionalAxisBox a c)ᶜ} =
         (PDE.oneDimensionalAxisBox a c)ᶜ := by

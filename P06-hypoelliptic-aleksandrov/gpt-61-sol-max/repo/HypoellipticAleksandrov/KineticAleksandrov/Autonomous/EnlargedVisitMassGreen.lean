@@ -3,19 +3,22 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitMassSupport
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassIntegratedGreen
 import Mathlib.Tactic
+import Aesop
+
+
 
 /-! # Finite quadratic Green integrals for enlarged-strip entrances -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- On poles after `s`, the enlarged Green kernel agrees with a finite clipped kernel. -/
 theorem enlargedVisitGreen_comp_eq_clipped
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ)
+     (H : FiniteIntervalUnion) (s T : ℝ)
     (mu : Measure Point) (hs : ∀ᵐ p ∂mu, s ≤ p.time) :
     enlargedVisitGreenKernel hH hLE hlam hLam A H T ∘ₘ mu =
       visitUnionGreenKernel hH hLE hlam hLam A H (s - 1) T ∘ₘ mu := by
@@ -34,16 +37,13 @@ theorem enlargedVisitGreen_comp_eq_clipped
     · intro h
       exact ⟨by linarith, h⟩
     · exact fun h => h.2
-  by_cases h : p ∈ enlargedVisitPoleSet H T
-  · rw [dite_eq_left h, dite_eq_left (he.mp h)]
-    rfl
-  · rw [dite_eq_right h, dite_eq_right (fun hh => h (he.mpr hh))]
+  aesop
+
+variable (c : Clock) (J : Interval)
 
 /-- Each actual active occupation is finite, although its unrestricted kernel is not uniform. -/
 theorem enlargedActivePiece_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+      (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     IsFiniteMeasure (enlargedActivePiece hH hLE hlam hLam A c J s T P n) := by
   unfold enlargedActivePiece
@@ -52,12 +52,11 @@ theorem enlargedActivePiece_isFiniteMeasure
       fun _ hp => hp.1)]
   infer_instance
 
+variable (T : ℝ) (mu : Measure Point)
+
 /-- Actual enlarged exit mixtures remain in the closed active interval. -/
 theorem enlargedActiveExitMixture_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
-    (mu : Measure Point) :
+       :
     ∀ᵐ q ∂(enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu),
       q.velocity 0 ∈ closure c.active := by
   classical
@@ -67,24 +66,21 @@ theorem enlargedActiveExitMixture_ae_velocity
   apply Filter.Eventually.of_forall
   intro p
   change ∀ᵐ q ∂(if hp : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T then
-    finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
+    finiteUnionExit hH hLE hlam hLam A _ T
       (enlargedVisitPole _ T ⟨p, hp⟩) else 0), q.velocity 0 ∈ closure c.active
   split
   · rename_i hp
-    apply (visitUnionExit_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
+    apply (visitUnionExit_ae_velocity hH hLE hlam hLam A _ T
       (enlargedVisitPole _ T ⟨p, hp⟩)).mono
     intro q hq
     apply closure_mono _ hq
     rw [visitActiveUnion_carrier]
     exact inter_subset_left
-  · simp only [ae_zero, Filter.eventually_bot]
+  · rfl
 
 /-- The quadratic is integrable against each finite enlarged active exit mixture. -/
 theorem enlargedQuadratic_integrable_exit
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
-    (mu : Measure Point) [IsFiniteMeasure mu] :
+       [IsFiniteMeasure mu] :
     Integrable (fun q => visitQuadratic c (q.velocity 0))
       (enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu) := by
   apply Integrable.mono' (integrable_const (9 * c.r ^ 2 / 16))
@@ -98,9 +94,7 @@ theorem enlargedQuadratic_integrable_exit
 
 /-- Every actual entrance satisfies the integrated quadratic identity on its active domain. -/
 theorem enlargedQuadratic_entrance_green_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+      (s T : ℝ) (P : Point)
     (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (n : ℕ) :
     (∫ p, visitQuadratic c (p.velocity 0)
@@ -127,19 +121,19 @@ theorem enlargedQuadratic_entrance_green_identity
     simpa only [Kernel.const_apply] using hE.integral_comp
   have hiG : Integrable (fun p => ∫ q, g q ∂G p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hG
-    simpa only [Kernel.const_apply] using hG.integral_comp
+    exact hG.integral_comp
   have hp : f =ᵐ[mu] fun p => (∫ q, f q ∂E p) + ∫ q, g q ∂G p := by
     filter_upwards [enlargedVisitEntrance_ae_activePole hH hLE hlam hLam A c J s T P hs hT hJ n]
       with p hp
-    let ep := enlargedVisitPole (visitActiveUnion c J) T ⟨p, hp⟩
-    have he : E p = finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
+    let ep := enlargedVisitPole _ T ⟨p, hp⟩
+    have he : E p = finiteUnionExit hH hLE hlam hLam A _ T ep := by
       change (if ht : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T then
-        finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
+        finiteUnionExit hH hLE hlam hLam A _ T
           (enlargedVisitPole _ T ⟨p, ht⟩) else 0) = _
       rw [dite_eq_left hp]
-    have hg : G p = finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
+    have hg : G p = finiteUnionGreen hH hLE hlam hLam A _ T ep := by
       change (if ht : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T then
-        finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
+        finiteUnionGreen hH hLE hlam hLam A _ T
           (enlargedVisitPole _ T ⟨p, ht⟩) else 0) = _
       rw [dite_eq_left hp]
     have hh := visitQuadratic_active_identity hH hLE hlam hLam A c J T ep

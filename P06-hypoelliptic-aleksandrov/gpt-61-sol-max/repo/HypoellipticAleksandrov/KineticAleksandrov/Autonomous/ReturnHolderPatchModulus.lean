@@ -7,10 +7,10 @@ import Mathlib.Tactic
 
 /-! # The local Holder modulus relative to the larger return-box supremum -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Set MeasureTheory Holder
+open Parabolic Set MeasureTheory Holder
 
 /-- The concrete return boxes increase with their radius parameter. -/
 theorem returnBox_mono (v : ℝ) {a b : ℝ} (hab : a ≤ b) :
@@ -53,8 +53,8 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
     have he : 2 * h = 2 * ((mid - a) / 4096) := by dsimp [h, mid]; ring
     rw [he]
     exact returnBox_cylinder_subset v a mid hv ha hamid (by dsimp [mid]; linarith) z hz
-  have hzmid : z ∈ returnBox v mid := returnBox_mono v hamid.le hz
-  have hpmid : p ∈ returnBox v mid := hinner hpcl
+  have hzmid  := returnBox_mono v hamid.le hz
+  have hpmid  := hinner hpcl
   have hKmid : K ⊆ returnBox v mid := by
     intro q hq
     rcases hq with hq | hq <;> subst q
@@ -66,7 +66,7 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
     rw [he]
     exact returnBox_cylinder_subset v mid b hv (by dsimp [mid]; linarith)
       hmidb hb q (hKmid hq)
-  have hKO : K ⊆ O := hKmid.trans (returnBox_mono v hmidb.le)
+  have hKO  := hKmid.trans (returnBox_mono v hmidb.le)
   have hOpos : O ⊆ {q | 0 < q.time} := by
     intro q hq
     have hr := returnBox_subset_reference v b hv hb hq
@@ -78,11 +78,11 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
     exact ⟨hc.mono hOpos, fun q hq => ht q (hOpos hq), fun q hq => hx q (hOpos hq),
       fun q hq => hv q (hOpos hq), hct.mono hOpos, hcx.mono hOpos,
       hcv.mono hOpos, hcvv.mono hOpos⟩
-  have hadmiss : IsAdmissibleSolution (autonomousCoefficient A.a) O 6 C_A u :=
+  have hadmiss  :=
     hadm A O hO u hreg
       (ae_restrict_of_forall_mem hO.measurableSet (fun q hq => hu.2.2.2 q (hOpos hq)))
   obtain ⟨M, hM⟩ := hu.1
-  have hbounded : ∀ q ∈ O, |u q| ≤ M := fun q hq => hM q (hOpos hq)
+  have hbounded  := fun q hq => hM q (hOpos hq)
   have hEll := autonomous_fullElliptic A
   have hmod := hholder _ hEll.1 hEll.2.1 hEll.2.2.1 hEll.2.2.2 O hO u
     ⟨M, hbounded⟩ hadmiss K hKO (isCompact_singleton.insert z) h hh hQ
@@ -98,15 +98,15 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
   have habO : BddAbove (u '' O) := ⟨M, by
     rintro _ ⟨q, hq, rfl⟩
     exact (le_abs_self _).trans (hbounded q hq)⟩
-  have habE : BddAbove (u '' E) := habO.mono (image_mono hEO)
+  have habE  := habO.mono (image_mono hEO)
   have hbbE : BddBelow (u '' E) := ⟨0, by
     rintro _ ⟨q, hq, rfl⟩
     exact hu.2.1 q (hOpos (hEO hq))⟩
-  have hosc0 : 0 ≤ oscillationOn u E := oscillationOn_nonneg hEne habE hbbE
+  have hosc0  := oscillationOn_nonneg hEne habE hbbE
   have hosc : oscillationOn u E ≤ sSup (u '' O) := by
-    have hs : sSup (u '' E) ≤ sSup (u '' O) :=
+    have hs  :=
       csSup_le (hEne.image u) (fun _ hx => le_csSup habO (image_mono hEO hx))
-    have hi : 0 ≤ sInf (u '' E) := le_csInf (hEne.image u) (by
+    have hi  := le_csInf (hEne.image u) (by
       rintro _ ⟨q, hq, rfl⟩
       exact hu.2.1 q (hOpos (hEO hq)))
     unfold oscillationOn
@@ -123,7 +123,7 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
   have h₂ := mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_left hosc hCpos.le)
     (Real.rpow_nonneg (div_nonneg hd0 hh.le) alpha)
-  have hMb0 : 0 ≤ sSup (u '' O) := hosc0.trans hosc
+  have hMb0  := hosc0.trans hosc
   have h₃ := mul_le_mul_of_nonneg_left hrpow (mul_nonneg hCpos.le hMb0)
   exact (hmod.trans (h₁.trans (h₂.trans h₃))).trans_eq (by dsimp [D, h, O]; ring)
 

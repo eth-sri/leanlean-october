@@ -11,36 +11,42 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+variable (β : ℝ) (μ : Measure BellmanPuncturedPlane)
+
 /-- The normalized unit-log-radius section of the actual reweighted homogeneous measure. -/
-def bellmanAngularMeasure (β : ℝ) (μ : Measure BellmanPuncturedPlane) : Measure ℝ :=
+def bellmanAngularMeasure  : Measure ℝ :=
   bellmanRadialHaarFactor⁻¹ • bellmanUnitSection (bellmanLogAngularMeasure β μ)
 
+variable (hμ : IsFiniteMeasureOnCompacts μ)
+
+include hμ in
 /-- The actual angular measure is finite on compact angular sets. -/
-theorem bellmanAngularMeasure_finiteOnCompacts (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ) :
+theorem bellmanAngularMeasure_finiteOnCompacts   :
     IsFiniteMeasureOnCompacts (bellmanAngularMeasure β μ) := by
-  let : IsFiniteMeasureOnCompacts (bellmanLogAngularMeasure β μ) :=
+  let  :=
     bellmanLogAngularMeasure_finiteOnCompacts β μ hμ
   let : IsFiniteMeasureOnCompacts (bellmanUnitSection (bellmanLogAngularMeasure β μ)) :=
     bellmanUnitSection_finiteOnCompacts _
   unfold bellmanAngularMeasure
   exact IsFiniteMeasureOnCompacts.smul _ ENNReal.coe_ne_top
 
+include hμ in
 /-- The actual angular measure is inner regular. -/
-theorem bellmanAngularMeasure_innerRegular (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ) :
+theorem bellmanAngularMeasure_innerRegular   :
     Measure.InnerRegular (bellmanAngularMeasure β μ) := by
-  let : IsFiniteMeasureOnCompacts (bellmanAngularMeasure β μ) :=
+  let  :=
     bellmanAngularMeasure_finiteOnCompacts β μ hμ
   infer_instance
 
+variable (hd : HasBellmanDensityDegree β μ)
+
+include hμ hd
 /-- The weighted log-coordinate factorization uses the actual radial reference measure. -/
-theorem bellmanLogAngularMeasure_factorization_radial (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ)
-    (hd : HasBellmanDensityDegree β μ) :
+theorem bellmanLogAngularMeasure_factorization_radial
+     :
     bellmanLogAngularMeasure β μ =
       bellmanLogRadialHaar.prod (bellmanAngularMeasure β μ) := by
-  let : IsFiniteMeasureOnCompacts (bellmanLogAngularMeasure β μ) :=
+  let  :=
     bellmanLogAngularMeasure_finiteOnCompacts β μ hμ
   let : IsFiniteMeasureOnCompacts (bellmanUnitSection (bellmanLogAngularMeasure β μ)) :=
     bellmanUnitSection_finiteOnCompacts _
@@ -51,12 +57,11 @@ theorem bellmanLogAngularMeasure_factorization_radial (β : ℝ)
 
 /-- The actual coordinate measure after degree removal factors as ds/s times its angular
 measure. -/
-theorem bellmanAngularPullback_reweighted_factorization (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ)
-    (hd : HasBellmanDensityDegree β μ) :
+theorem bellmanAngularPullback_reweighted_factorization
+     :
     (bellmanAngularPullback μ).withDensity (bellmanRadialDegreeWeight β) =
       bellmanRadialHaar.prod (bellmanAngularMeasure β μ) := by
-  let : IsFiniteMeasureOnCompacts (bellmanAngularMeasure β μ) :=
+  let  :=
     bellmanAngularMeasure_finiteOnCompacts β μ hμ
   apply bellmanLogAngularHomeomorph.measurableEmbedding.map_injective
   change bellmanLogAngularMeasure β μ = _

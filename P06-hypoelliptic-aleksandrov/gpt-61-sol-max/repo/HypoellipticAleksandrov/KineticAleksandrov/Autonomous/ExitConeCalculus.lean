@@ -1,24 +1,28 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeTransition
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Exact kinetic calculus for smooth functions of affine transport coordinates -/
 
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic
-open SectionTwo TheoremA Evolution
+open Parabolic
+open Evolution
+
+variable (alpha beta gamma : ℝ)
 
 /-- The affine transport coordinate used to detect finite-speed violations. -/
-def reconstructionConeCoordinate (alpha beta gamma : ℝ) (p : Point) : ℝ :=
+def reconstructionConeCoordinate  (p : Point) : ℝ :=
   alpha * p.time + beta * p.position 0 + gamma
 
 /-- Composition with the cone transition is a genuine globally smooth physical test. -/
-theorem reconstructionConeProbe_smooth (alpha beta gamma : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) ((expNegInvGlue ∘ reconstructionConeCoordinate alpha beta gamma) ∘
+theorem reconstructionConeProbe_smooth  :
+    ContDiff ℝ PDE.smoothOrder ((expNegInvGlue ∘ reconstructionConeCoordinate alpha beta gamma) ∘
       reconstructionPhysicalHomeomorph) := by
-  change ContDiff ℝ (⊤ : ℕ∞) (fun x => expNegInvGlue
+  change ContDiff ℝ PDE.smoothOrder (fun x => expNegInvGlue
     (alpha * Evolution.timeCoord 1 x + beta * transportedCoord 1 x 0 + gamma))
   apply expNegInvGlue.contDiff.comp
   exact ((contDiff_const.mul (Evolution.timeCoord 1).contDiff).add
@@ -31,8 +35,9 @@ theorem reconstructionConeProbe_operator (a : ℝ → ℝ → ℝ) (alpha beta g
     forwardScalarOperator a (expNegInvGlue ∘ reconstructionConeCoordinate alpha beta gamma) p =
       (alpha + p.velocity 0 * beta) *
         deriv expNegInvGlue (reconstructionConeCoordinate alpha beta gamma p) := by
+  let sharedTerm_74ed2f0d38 := (deriv (fun _ : ℝ => expNegInvGlue (alpha * p.time + beta * p.position 0 + gamma)))
   have hd (x : ℝ) :=
-    ((expNegInvGlue.contDiff : ContDiff ℝ (⊤ : ℕ∞) expNegInvGlue).differentiable (by simp) x)
+    ((expNegInvGlue.contDiff : ContDiff ℝ PDE.smoothOrder expNegInvGlue).differentiable (by simp) x)
   have ht : kineticTimeDerivative
       (expNegInvGlue ∘ reconstructionConeCoordinate alpha beta gamma) p =
       deriv expNegInvGlue (reconstructionConeCoordinate alpha beta gamma p) * alpha := by
@@ -50,10 +55,8 @@ theorem reconstructionConeProbe_operator (a : ℝ → ℝ → ℝ) (alpha beta g
   have hv : kineticVelocityHessian
       (expNegInvGlue ∘ reconstructionConeCoordinate alpha beta gamma) p 0 0 = 0 := by
     rw [kineticVelocityHessian_scalar]
-    change deriv (deriv (fun _ : ℝ => expNegInvGlue
-      (alpha * p.time + beta * p.position 0 + gamma))) (p.velocity 0) = 0
-    have hh : deriv (fun _ : ℝ => expNegInvGlue
-        (alpha * p.time + beta * p.position 0 + gamma)) = fun _ => 0 :=
+    change deriv sharedTerm_74ed2f0d38 (p.velocity 0) = 0
+    have hh : sharedTerm_74ed2f0d38 = fun _ => 0 :=
       funext (fun x => deriv_const x _)
     rw [hh]
     exact deriv_const _ _

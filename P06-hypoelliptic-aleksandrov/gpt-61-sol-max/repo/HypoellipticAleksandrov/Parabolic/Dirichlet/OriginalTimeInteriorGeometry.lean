@@ -2,6 +2,9 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.NestedQuantitativeSmoothCutoffExistence
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12TimeReflection
+import Aesop
+
+
 
 /-!
 # Original-time interior geometry
@@ -10,7 +13,7 @@ This file constructs the nested spatial cutoffs and strict reverse-time slabs
 used to invoke the interior Caccioppoli theorem on an original-time cylinder.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -18,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 spatial cutoffs and strict reverse-time slabs required by the interior
 Caccioppoli theorem. -/
 theorem exists_originalTimeInteriorCaccioppoliGeometry
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d : ℕ} {Ω O : PDE.VelocityRegion d}
     (r₀ s₀ s₁ r₁ : ℝ)
     (hr₀s₀ : r₀ < s₀) (hs₀s₁ : s₀ < s₁) (hs₁r₁ : s₁ < r₁)
     (hΩ : IsOpen Ω)
@@ -51,17 +54,11 @@ theorem exists_originalTimeInteriorCaccioppoliGeometry
 /-- Reflection at `r₁` carries the selected reverse-time interior cylinder
 back to the literal original-time cylinder. -/
 theorem reverseTimeMap_preimage_originalTimeInteriorCylinder
-    {d : ℕ} (r₁ s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) :
+    {d : ℕ} (r₁ s₀ s₁ : ℝ) (O : PDE.VelocityRegion d) :
     reverseTimeMap r₁ ⁻¹'
         (Set.Ioo (r₁ - s₁) (r₁ - s₀) ×ˢ O) =
       Set.Ioo s₀ s₁ ×ˢ O := by
   ext z
-  rcases z with ⟨r, y⟩
-  simp only [Set.mem_preimage, reverseTimeMap_apply, Set.mem_prod, Set.mem_Ioo]
-  constructor
-  · rintro ⟨⟨hl, hu⟩, hy⟩
-    exact ⟨⟨by linarith, by linarith⟩, hy⟩
-  · rintro ⟨⟨hl, hu⟩, hy⟩
-    exact ⟨⟨by linarith, by linarith⟩, hy⟩
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

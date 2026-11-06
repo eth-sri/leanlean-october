@@ -10,15 +10,17 @@ import Mathlib.Tactic
 @[expose] public section
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open HypoellipticAleksandrov Parabolic Set Holder
+open Set
+
+variable (v R : ℝ)
 
 /-- Small nested open boxes around `(1,0,v)`, with physical Euclidean coordinate radii. -/
-def returnBox (v R : ℝ) : Set Point :=
+def returnBox  : Set Point :=
   {p | |p.time - 1| < R / 64 ∧ PDE.vecEuclideanNorm p.position < R / 64 ∧
     PDE.vecEuclideanNorm (p.velocity - fun _ => v) < R / 64}
 
 /-- The reference boxes are open in the kinetic topology. -/
-theorem returnBox_isOpen (v R : ℝ) : IsOpen (returnBox v R) :=
+theorem returnBox_isOpen  : IsOpen (returnBox v R) :=
   (isOpen_lt ((continuous_time.sub continuous_const).abs) continuous_const).inter
     ((isOpen_lt (PDE.continuous_vecEuclideanNorm.comp continuous_position)
       continuous_const).inter (isOpen_lt
@@ -32,9 +34,7 @@ theorem return_norm_one (w : PDE.Vec 1) : PDE.vecEuclideanNorm w = |w 0| := by
 
 /-- The centre lies in every positive-radius return box. -/
 theorem returnBox_center (v R : ℝ) (hR : 0 < R) : point 1 0 v ∈ returnBox v R := by
-  simp only [returnBox, point, mem_ofPred_eq, sub_self, abs_zero, return_norm_one,
-    Pi.sub_apply]
-  exact ⟨by positivity, by positivity, by positivity⟩
+  simp_all [returnBox, point, return_norm_one]
 
 /-- Coordinate bounds for every point in the closure of a source backward cylinder. -/
 theorem returnCylinder_bounds (z p : Point) (r : ℝ) (hr : 0 < r)
@@ -42,19 +42,17 @@ theorem returnCylinder_bounds (z p : Point) (r : ℝ) (hr : 0 < r)
     |p.time - z.time| ≤ r ^ 2 ∧
       PDE.vecEuclideanNorm (p.velocity - z.velocity) ≤ r ∧
       PDE.vecEuclideanNorm (relativePosition z p) ≤ r ^ 3 := by
-  have hclosed : IsClosed {q : Point | |q.time - z.time| ≤ r ^ 2 ∧
-      PDE.vecEuclideanNorm (q.velocity - z.velocity) ≤ r ∧
-      PDE.vecEuclideanNorm (relativePosition z q) ≤ r ^ 3} := by
-    apply (isClosed_le ((continuous_time.sub continuous_const).abs) continuous_const).inter
-    apply (isClosed_le
-      (PDE.continuous_vecEuclideanNorm.comp (continuous_velocity.sub continuous_const))
-      continuous_const).inter
-    exact isClosed_le
-      (PDE.continuous_vecEuclideanNorm.comp
-        ((continuous_position.sub continuous_const).sub
-          ((continuous_time.sub continuous_const).smul continuous_const)))
-      (continuous_const : Continuous (fun _ : Point => r ^ 3))
-  apply closure_minimal (s := backwardCylinder z r) ?_ hclosed hp
+
+  apply closure_minimal (s := backwardCylinder z r) ?_ (by
+      apply (isClosed_le ((continuous_time.sub continuous_const).abs) continuous_const).inter
+      apply (isClosed_le
+        (PDE.continuous_vecEuclideanNorm.comp (continuous_velocity.sub continuous_const))
+        continuous_const).inter
+      exact isClosed_le
+        (PDE.continuous_vecEuclideanNorm.comp
+          ((continuous_position.sub continuous_const).sub
+            ((continuous_time.sub continuous_const).smul continuous_const)))
+        (continuous_const )) hp
   intro q hq
   refine ⟨abs_le.mpr ⟨by linarith [hq.1], by nlinarith [hq.2.1, sq_nonneg r]⟩,
     ((PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mp hq.2.2.1).le, ?_⟩

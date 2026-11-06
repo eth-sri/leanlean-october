@@ -1,22 +1,24 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentationGrowth
+public import PDEFoundation.Calculus.RegularityOrder
+
 
 /-! # Symmetric weighted trace comparison for actual homogeneous solutions -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set Parabolic
+
 
 /-- Absolute weighted trace error bounds the difference of two actual homogeneous solutions. -/
 theorem mass_homogeneous_abs_weighted {d : ℕ} {lam Lam : ℝ}
     (B : CoefficientField d) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
     (a T : ℝ) (haT : a < T) (v₀ : PDE.Vec d) (R : ℝ)
-    (u v : KineticPoint d → ℝ)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
+    (u v : HypoellipticAleksandrov.KineticScalarField d)
+    (hu : ContDiffOn ℝ PDE.smoothOrder (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' localStrip a T v₀ R))
-    (hv : ContDiffOn ℝ (⊤ : ℕ∞) (v ∘ (KineticPoint.equivProd d).symm)
+    (hv : ContDiffOn ℝ PDE.smoothOrder (v ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' localStrip a T v₀ R))
     (heu : ∀ P ∈ localStrip a T v₀ R,
       forwardKineticOperator (ofTimeVelocityCoefficient B) u P = 0)
@@ -31,22 +33,20 @@ theorem mass_homogeneous_abs_weighted {d : ℕ} {lam Lam : ℝ}
     ∀ P ∈ localClosedStrip a T v₀ R, |u P - v P| ≤ ε * massGrowthBarrier Lam T P := by
   obtain ⟨M, hM⟩ := hbu
   obtain ⟨N, hN⟩ := hbv
-  have hf : ∀ P ∈ localStrip a T v₀ R,
-      forwardKineticOperator (ofTimeVelocityCoefficient B) (fun Q => u Q - v Q) P = 0 := by
-    intro P hP
-    rw [cone_forward_sub B (isOpen_localStrip a T v₀ R) u v hu hv P hP,
-      heu P hP, hev P hP, sub_self]
-  have hg : ∀ P ∈ localStrip a T v₀ R,
-      forwardKineticOperator (ofTimeVelocityCoefficient B) (fun Q => v Q - u Q) P = 0 := by
-    intro P hP
-    rw [cone_forward_sub B (isOpen_localStrip a T v₀ R) v u hv hu P hP,
-      hev P hP, heu P hP, sub_self]
+
+
   have h₁ := mass_weighted_trace_bound B hB a T haT v₀ R (fun P => u P - v P)
-    (hu.sub hv) hf (hcu.sub hcv)
+    (hu.sub hv) (by
+        intro P hP
+        rw [cone_forward_sub B (isOpen_localStrip a T v₀ R) u v hu hv P hP,
+          heu P hP, hev P hP, sub_self]) (hcu.sub hcv)
     ⟨M + N, fun P hP => (abs_sub _ _).trans (add_le_add (hM P hP) (hN P hP))⟩
     ε hε (fun P hP => (le_abs_self _).trans (htr P hP))
   have h₂ := mass_weighted_trace_bound B hB a T haT v₀ R (fun P => v P - u P)
-    (hv.sub hu) hg (hcv.sub hcu)
+    (hv.sub hu) (by
+        intro P hP
+        rw [cone_forward_sub B (isOpen_localStrip a T v₀ R) v u hv hu P hP,
+          hev P hP, heu P hP, sub_self]) (hcv.sub hcu)
     ⟨N + M, fun P hP => (abs_sub _ _).trans (add_le_add (hN P hP) (hM P hP))⟩
     ε hε (fun P hP => by
       have hh := htr P hP
@@ -55,8 +55,8 @@ theorem mass_homogeneous_abs_weighted {d : ℕ} {lam Lam : ℝ}
   intro P hP
   apply abs_le.mpr
   constructor
-  · have hh := h₂ P hP
-    linarith only [hh]
+  ·
+    linarith only [(h₂ P hP)]
   · exact h₁ P hP
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

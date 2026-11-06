@@ -3,24 +3,31 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ConeSupport
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
+import Mathlib.Tactic.Ring
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-! # The strict time and position margins of the local exit cone -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
-open Set Parabolic
+
+
+variable {d : ℕ}
+
+variable (Z₀ P Q : KineticPoint d)
 
 /-- Centered positions add along a cone displacement without changing the center velocity. -/
-theorem relativePosition_cone_add {d : ℕ} (Z₀ P Q : KineticPoint d) :
+theorem relativePosition_cone_add   :
     relativePosition Z₀ Q = relativePosition Z₀ P +
       (Q.position - P.position - (Q.time - P.time) • Z₀.velocity) := by
-  ext i
-  simp only [relativePosition, Pi.sub_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
-  ring
+  ext <;> simp_all [relativePosition] <;> ring
 
 /-- The reached cone has the source's exact strict time and position margins. -/
-theorem local_cone_margins {d : ℕ} (Z₀ P Q : KineticPoint d)
+theorem local_cone_margins
     {R : ℝ} (hR : 0 < R)
     (hP : P ∈ forwardCylinder Z₀ (3 * R / 4) (by positivity))
     (htlo : P.time ≤ Q.time) (hthi : Q.time ≤ P.time + R ^ 2 / 8)
@@ -44,8 +51,8 @@ theorem local_cone_margins {d : ℕ} (Z₀ P Q : KineticPoint d)
     nlinarith only [hx, hc, hn]
 
 /-- A smooth compact position cutoff can be chosen between literal Euclidean radii. -/
-theorem exists_local_position_cutoff {d : ℕ} {R : ℝ} (hR : 0 < R) :
-    ∃ χ : PDE.Vec d → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ HasCompactSupport χ ∧
+theorem exists_local_position_cutoff  {R : ℝ} (hR : 0 < R) :
+    ∃ χ : PDE.ScalarField d, ContDiff ℝ PDE.smoothOrder χ ∧ HasCompactSupport χ ∧
       tsupport χ ⊆ PDE.euclideanBall 0 (R ^ 3) ∧
       (∀ x, 0 ≤ χ x ∧ χ x ≤ 1) ∧
       ∀ x ∈ PDE.euclideanClosedBall 0 ((3 / 4 : ℝ) * R ^ 3), χ x = 1 := by

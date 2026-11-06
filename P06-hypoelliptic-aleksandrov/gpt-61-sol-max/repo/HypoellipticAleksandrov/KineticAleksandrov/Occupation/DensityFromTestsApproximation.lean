@@ -6,6 +6,12 @@ import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Mathlib.Topology.Instances.ENNReal.Lemmas
 import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
+import Batteries.Tactic.Alias
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
+public import PDEFoundation.Calculus.RegularityOrder
+
+
+
 
 /-!
 # Compact approximation inside the smooth-test region
@@ -14,7 +20,7 @@ Multiplication by a fixed cutoff preserves compact interior support and contract
 approximation error. The approximation measure may be the sum of reference and tested measures.
 -/
 
-@[expose] public section
+ public section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -28,17 +34,9 @@ omit [MeasurableSpace E] [BorelSpace E] in
 /-- A smooth compact cutoff equals one on a prescribed compact subset of an open set. -/
 theorem exists_test_cutoff {K U : Set E} (hK : IsCompact K)
     (hU : IsOpen U) (hKU : K ⊆ U) :
-    ∃ χ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ HasCompactSupport χ ∧
-      tsupport χ ⊆ U ∧ (∀ x, 0 ≤ χ x ∧ χ x ≤ 1) ∧ ∀ x ∈ K, χ x = 1 := by
-  obtain ⟨δ, hδ, hdouble, χ, hs, h01, h1, h0⟩ := exists_smooth_cutoff hU hK hKU
-  have hcompact : IsCompact (cthickening δ K) := hK.cthickening
-  have hc : HasCompactSupport χ := HasCompactSupport.intro hcompact h0
-  have hsupport : tsupport χ ⊆ cthickening δ K := by
-    exact closure_minimal (fun x hx => by
-      by_contra hn
-      exact hx (h0 x hn)) isClosed_cthickening
-  refine ⟨χ, hs, hc, hsupport.trans ?_, h01, h1⟩
-  exact (cthickening_mono (by linarith) K).trans hdouble
+    ∃ χ : E → ℝ, ContDiff ℝ PDE.smoothOrder χ ∧ HasCompactSupport χ ∧
+      tsupport χ ⊆ U ∧ (∀ x, 0 ≤ χ x ∧ χ x ≤ 1) ∧ ∀ x ∈ K, χ x = 1 := (exists_smooth_bump_of_isCompact_subset_isOpen hK hU hKU)
+
 
 /-- A compactly supported `Lp` function admits continuous approximants supported inside `U`. -/
 theorem exists_continuous_test_approximation (η : Measure E)
@@ -57,8 +55,8 @@ theorem exists_continuous_test_approximation (η : Measure E)
     funext x
     by_cases hx : f x = 0
     · simp [hx]
-    · have hxK : x ∈ K := hfK hx
-      simp [h1 x hxK]
+    ·
+      simp [h1 x (hfK hx)]
   rw [heq]
   refine (eLpNorm_mono_ae (g := a - f)
     (hs.continuous.aestronglyMeasurable.mul (ha.aestronglyMeasurable.sub
@@ -77,18 +75,17 @@ theorem tendsto_eLpNorm_one_of_finite (μ : Measure E) [IsFiniteMeasure μ]
       Filter.atTop (nhds 0)) :
     Filter.Tendsto (fun n => eLpNorm (F n - f) 1 μ) Filter.atTop (nhds 0) := by
   let a := μ univ ^ (1 - 1 / p.toReal)
-  have ha : a ≠ ∞ := by
-    apply ENNReal.rpow_ne_top_of_nonneg
-    · have hpReal : 0 ≤ p.toReal := ENNReal.toReal_nonneg
-      by_cases hpt : p = ∞
-      · simp [hpt]
-      · have hpr : 1 ≤ p.toReal := by
-          simpa using ENNReal.toReal_mono hpt hp
-        have hi : 1 / p.toReal ≤ 1 := by
-          exact (div_le_one (by linarith)).2 hpr
-        linarith
-    · exact measure_ne_top μ univ
-  have ht := ENNReal.Tendsto.mul_const h (Or.inr ha)
+
+  have ht := ENNReal.Tendsto.mul_const h (Or.inr (show a ≠ ∞ by
+      apply ENNReal.rpow_ne_top_of_nonneg
+      ·
+        by_cases hpt : p = ∞
+        · simp [hpt]
+        · have hpr : 1 ≤ p.toReal := by
+            exact ENNReal.toReal_mono hpt hp
+          have hi  := (div_le_one (by linarith)).2 hpr
+          linarith
+      · exact measure_ne_top μ univ))
   rw [zero_mul] at ht
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds ht
     (Filter.Eventually.of_forall fun _ => bot_le) ?_

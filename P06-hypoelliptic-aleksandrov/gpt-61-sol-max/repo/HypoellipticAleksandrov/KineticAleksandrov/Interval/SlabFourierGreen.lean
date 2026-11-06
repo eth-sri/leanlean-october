@@ -9,10 +9,10 @@ The measure itself is unchanged. Only the initial-state measure is pushed forwar
 under the literal inclusion of the interval fiber.
 -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
-open Set MeasureTheory HypoellipticAleksandrov
+open MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov.KineticAleksandrov.Green
@@ -24,20 +24,21 @@ theorem intervalExtension_isGreenMeasure {a c : ℝ}
     (σ : ℝ) (μ : Measure (EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier 1)) (hΓ : IsGreenMeasure K σ ⊤ μ Γ) :
     IsGreenMeasure (intervalExtension hJ K) σ ⊤ (μ.map (intervalStateInclusion σ)) Γ := by
+  let sharedTerm_d7f8308bab := (EvolutionState (wholeSpace 1) (fun _ => (0 )) σ)
   intro F hF
   let Kw := intervalExtension hJ K
   have : ProbabilityTheory.IsFiniteKernel (elapsedKernel Kw σ ⊤) := by
     unfold elapsedKernel
     infer_instance
   have hf : Measurable (fun q :
-      (EvolutionState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ × ElapsedTime ⊤) ×
+      (sharedTerm_d7f8308bab × ElapsedTime ⊤) ×
         EvolutionAmbientState 1 => F (q.1.2, q.2)) := hF.comp (by fun_prop)
   have hi : Measurable (fun q :
-      EvolutionState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ × ElapsedTime ⊤ =>
+      sharedTerm_d7f8308bab × ElapsedTime ⊤ =>
       ∫⁻ w, F (q.2, w) ∂elapsedKernel Kw σ ⊤ q) :=
     hf.lintegral_kernel_prod_right'
   have hm : Measurable (fun p :
-      EvolutionState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ =>
+      sharedTerm_d7f8308bab =>
       ∫⁻ t : ElapsedTime ⊤, ∫⁻ w, F (t, w) ∂Kw.master (elapsedQuery σ p t)
         ∂elapsedVolume ⊤) := hi.lintegral_prod_right'
   rw [lintegral_map hm (measurable_intervalStateInclusion σ), hΓ F hF]

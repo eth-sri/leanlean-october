@@ -21,22 +21,24 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 variable {X : Type*} [TopologicalSpace X] [CompactSpace X]
   [MeasurableSpace X] [BorelSpace X]
 
+variable (mu : Measure X)
+
 /-- Integration on a compact carrier is a continuous linear functional. -/
-def bellmanCompactIntegral (mu : Measure X) [IsFiniteMeasure mu] : C(X, ℝ) →L[ℝ] ℝ :=
+def bellmanCompactIntegral  [IsFiniteMeasure mu] : C(X, ℝ) →L[ℝ] ℝ :=
   LinearMap.mkContinuous
     ({
       toFun := fun f => ∫ x, f x ∂mu
       map_add' := fun f g => integral_add
         ((BoundedContinuousFunction.mkOfCompact f).integrable mu)
         ((BoundedContinuousFunction.mkOfCompact g).integrable mu)
-      map_smul' := fun c f => integral_smul c f } : C(X, ℝ) →ₗ[ℝ] ℝ)
+      map_smul' := fun c f => integral_smul c f } )
     (mu.real univ) (fun f => by
       have hb := (BoundedContinuousFunction.mkOfCompact f).norm_integral_le_mul_norm mu
       rw [BoundedContinuousFunction.norm_mkOfCompact] at hb
       convert! hb using 1)
 
 /-- Local mass bounds give the corresponding dual norm bounds. -/
-theorem bellmanCompactIntegral_norm_le (mu : Measure X) [IsFiniteMeasure mu]
+theorem bellmanCompactIntegral_norm_le  [IsFiniteMeasure mu]
     (C : ℝ) (hC : 0 ≤ C) (hm : mu.real univ ≤ C) :
     ‖bellmanCompactIntegral mu‖ ≤ C := by
   apply ContinuousLinearMap.opNorm_le_bound _ hC
@@ -61,15 +63,16 @@ theorem bellman_compact_functionals_subsequence {iota : Type*} [Countable iota]
   let B (i : iota) : Set (WeakDual ℝ C(Y i, ℝ)) :=
     WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 (C i)
   have hb (i : iota) : IsCompact (B i) := WeakDual.isCompact_closedBall 0 (C i)
-  let (i : iota) : CompactSpace (B i) := isCompact_iff_compactSpace.mp (hb i)
+  let (i : iota)  := isCompact_iff_compactSpace.mp (hb i)
   let (i : iota) : TopologicalSpace.MetrizableSpace (B i) :=
     WeakDual.metrizable_of_isCompact ℝ C(Y i, ℝ) (B i) (hb i)
   let u (n : ℕ) : ∀ i, B i := fun i =>
     ⟨StrongDual.toWeakDual (bellmanCompactIntegral (mu n i)), by
-      change dist (bellmanCompactIntegral (mu n i)) 0 ≤ C i
-      have he : dist (bellmanCompactIntegral (mu n i)) 0 =
+      let sharedTerm_12381b0188 := ((bellmanCompactIntegral (mu n i)))
+      change dist sharedTerm_12381b0188 0 ≤ C i
+      have he : dist sharedTerm_12381b0188 0 =
           ‖bellmanCompactIntegral (mu n i)‖ := by
-        convert! dist_zero_right (bellmanCompactIntegral (mu n i)) using 1
+        convert! dist_zero_right sharedTerm_12381b0188 using 1
       rw [he]
       exact bellmanCompactIntegral_norm_le _ _ (hC i) (hm n i)⟩
   obtain ⟨ell, k, hk, ht⟩ := CompactSpace.tendsto_subseq u
@@ -77,8 +80,8 @@ theorem bellman_compact_functionals_subsequence {iota : Type*} [Countable iota]
   intro i
   refine ⟨WeakDual.toStrongDual (ell i).val, ?_⟩
   intro f
-  have hi := (continuous_apply i).tendsto ell |>.comp ht
-  have hv := continuous_subtype_val.tendsto (ell i) |>.comp hi
-  convert! (WeakDual.eval_continuous f).tendsto (ell i).val |>.comp hv using 1
+
+
+  convert! (WeakDual.eval_continuous f).tendsto (ell i).val |>.comp (continuous_subtype_val.tendsto (ell i) |>.comp ((continuous_apply i).tendsto ell |>.comp ht)) using 1
 
 end HypoellipticAleksandrov.KineticAleksandrov

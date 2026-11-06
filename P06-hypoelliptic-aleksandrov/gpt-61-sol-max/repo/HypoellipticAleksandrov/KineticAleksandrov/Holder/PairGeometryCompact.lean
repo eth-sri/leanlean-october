@@ -6,9 +6,9 @@ import Mathlib.Tactic
 
 /-! # Compactness and the exact closed union of kinetic Holder neighbourhoods -/
 
-@[expose] public section
+ public section
 
-noncomputable section
+
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -17,33 +17,26 @@ open Set
 /-- A positive affine map takes the closed unit cylinder onto the physical cylinder closure. -/
 theorem kineticAffine_image_closedUnitCylinder {d : ℕ} (P : KineticPoint d) {r : ℝ}
     (hr : 0 < r) :
-    kineticAffine P r '' closure (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1) =
+    kineticAffine P r '' closure (backwardCylinder (⟨0, 0, 0⟩ ) 1) =
       closure (backwardCylinder P r) := by
   have hc := (kineticAffineHomeomorph P r hr.ne').image_closure
-    (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1)
+    (backwardCylinder (⟨0, 0, 0⟩ ) 1)
   change kineticAffine P r '' closure _ = closure (kineticAffine P r '' _) at hc
   rw [kineticAffine_image_unitCylinder P hr] at hc
   exact hc
 
 /-- The affine cylinder map is jointly continuous in its center and reference point. -/
 theorem continuous_kineticAffine_pair (d : ℕ) (r : ℝ) :
-    Continuous (fun z : KineticPoint d × KineticPoint d => kineticAffine z.1 r z.2) := by
-  have ht1 := (continuous_time (d := d)).comp
-    (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
-  have ht2 := (continuous_time (d := d)).comp
-    (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
-  have hx1 := (continuous_position (d := d)).comp
-    (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
-  have hx2 := (continuous_position (d := d)).comp
-    (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
-  have hv1 := (continuous_velocity (d := d)).comp
-    (continuous_fst (X := KineticPoint d) (Y := KineticPoint d))
-  have hv2 := (continuous_velocity (d := d)).comp
-    (continuous_snd (X := KineticPoint d) (Y := KineticPoint d))
-  exact KineticPoint.continuous_mk
-    (ht1.add (ht2.const_mul (r ^ 2)))
-    ((hx1.add (hx2.const_smul (r ^ 3))).add ((ht2.const_mul (r ^ 2)).smul hv1))
-    (hv1.add (hv2.const_smul r))
+    Continuous (fun z : KineticPoint d × KineticPoint d => kineticAffine z.1 r z.2) := (KineticPoint.continuous_mk
+  (Continuous.add (Continuous.comp continuous_time continuous_fst)
+    (Continuous.const_mul (Continuous.comp continuous_time continuous_snd) (r ^ 2)))
+  (Continuous.add
+    (Continuous.add (Continuous.comp continuous_position continuous_fst)
+      (Continuous.const_smul (Continuous.comp continuous_position continuous_snd) (r ^ 3)))
+    (Continuous.smul (Continuous.const_mul (Continuous.comp continuous_time continuous_snd) (r ^ 2))
+      (Continuous.comp continuous_velocity continuous_fst)))
+  (Continuous.add (Continuous.comp continuous_velocity continuous_fst)
+    (Continuous.const_smul (Continuous.comp continuous_velocity continuous_snd) r)))
 
 /-- Compact centers and one compact model cylinder give the exact compact neighbourhood closure. -/
 theorem holder_neighbourhood_compact {d : ℕ}
@@ -53,10 +46,10 @@ theorem holder_neighbourhood_compact {d : ℕ}
       IsCompact (closure (holderNeighbourhood R0 K)) := by
   let r := 2 * R0
   have hr : 0 < r := by dsimp only [r]; positivity
-  let B := closure (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1)
+
   let U := ⋃ P ∈ K, closure (backwardCylinder P r)
   have himage : (fun z : KineticPoint d × KineticPoint d => kineticAffine z.1 r z.2) ''
-      (K ×ˢ B) = U := by
+      (K ×ˢ (closure (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1))) = U := by
     ext Z
     simp only [mem_image, mem_prod, mem_iUnion, U]
     constructor
@@ -70,20 +63,20 @@ theorem holder_neighbourhood_compact {d : ℕ}
     rw [← himage]
     exact (hK.prod (isCompact_closure_backwardCylinder _ 1 zero_lt_one)).image
       (continuous_kineticAffine_pair d r)
-  have hNsub : holderNeighbourhood R0 K ⊆ U := by
-    intro Z hZ
-    simp only [holderNeighbourhood, mem_iUnion] at hZ
-    obtain ⟨P, hP, hZ⟩ := hZ
-    exact mem_iUnion.mpr ⟨P, mem_iUnion.mpr ⟨hP, subset_closure hZ⟩⟩
+
   have hclosed : closure (holderNeighbourhood R0 K) = U := by
-    apply Subset.antisymm (closure_minimal hNsub hUc.isClosed)
+    apply Subset.antisymm (closure_minimal (by
+        intro Z hZ
+        simp only [holderNeighbourhood, mem_iUnion] at hZ
+        obtain ⟨P, hP, hZ⟩ := hZ
+        exact mem_iUnion.mpr ⟨P, mem_iUnion.mpr ⟨hP, subset_closure hZ⟩⟩) hUc.isClosed)
     intro Z hZ
     simp only [U, mem_iUnion] at hZ
     obtain ⟨P, hP, hZ⟩ := hZ
-    have hs : backwardCylinder P r ⊆ holderNeighbourhood R0 K := by
-      intro Y hY
-      exact mem_iUnion.mpr ⟨P, mem_iUnion.mpr ⟨hP, hY⟩⟩
-    exact closure_mono hs hZ
+
+    exact closure_mono (by
+        intro Y hY
+        exact mem_iUnion.mpr ⟨P, mem_iUnion.mpr ⟨hP, hY⟩⟩) hZ
   exact ⟨hclosed, hclosed ▸ hUc⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

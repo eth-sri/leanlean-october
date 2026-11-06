@@ -6,11 +6,11 @@ import Mathlib.Topology.Algebra.InfiniteSum.Order
 
 /-! # The source global position-density q-power estimate -/
 
-@[expose] public section
-noncomputable section
+ public section
+
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory
-open scoped ENNReal
+open MeasureTheory
+
 
 /-- The overlap convolution gives the source global density power bound. -/
 theorem position_density_power_sum (hpush : PushforwardStatement)
@@ -22,7 +22,7 @@ theorem position_density_power_sum (hpush : PushforwardStatement)
       (c : Clock) (_hc : |c.vbar| = 2 * c.r) (s x : ℝ)
       (nu : Measure Point) [IsFiniteMeasure nu],
       (∀ᵐ e ∂nu, s ≤ e.time ∧ e.velocity 0 ∈ c.active) →
-      (∫⁻ z, positionMixtureDensity hH hLE hlam hLam A c nu z ^ q ∂volume) ≤
+      (∫⁻ z, positionMixtureDensity hH hLE hlam hLam A c nu z ^ q) ≤
         ENNReal.ofReal (C * c.r ^ (6 - 4 * q)) *
           ∑' a : ℕ × ℤ, nu (enlargedStartCell c s x a.1 a.2) ^ q := by
   obtain ⟨C, c₀, hC, hc₀, hd⟩ :=
@@ -31,10 +31,8 @@ theorem position_density_power_sum (hpush : PushforwardStatement)
   have hs := positionYoungKernel_summable (c₀ / 12) (by linarith)
   have hw (h : ℤ × ℤ) : 0 ≤ positionYoungKernel (c₀ / 12) h :=
     mul_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
-  have hW : 0 < W := hs.tsum_pos (fun _ => hw _) (0, 0) (by
-    exact mul_pos (Real.exp_pos _) (Real.exp_pos _))
-  have hWe : (∑' h, ENNReal.ofReal (positionYoungKernel (c₀ / 12) h)) =
-      ENNReal.ofReal W := (ENNReal.ofReal_tsum_of_nonneg hw hs).symm
+  have hW : 0 < W := hs.tsum_pos (fun _ => hw _) (0, 0) (mul_pos (Real.exp_pos _) (Real.exp_pos _))
+
   let D := C * Real.exp (2 * c₀) * W
   have hD : 0 < D := mul_pos (mul_pos hC (Real.exp_pos _)) hW
   refine ⟨D ^ q, Real.rpow_pos_of_pos hD q, ?_⟩
@@ -55,7 +53,7 @@ theorem position_density_power_sum (hpush : PushforwardStatement)
     _ ≤ ENNReal.ofReal (C * c.r ^ (6 / q - 4)) ^ q *
         ((ENNReal.ofReal (Real.exp (2 * c₀)) * ENNReal.ofReal W) ^ q *
           ∑' a : ℕ × ℤ, nu (enlargedStartCell c s x a.1 a.2) ^ q) := by
-      rw [← hWe]
+      rw [← ((ENNReal.ofReal_tsum_of_nonneg hw hs).symm)]
       exact mul_le_mul_right (position_overlap_power_sum c₀ hc₀ nu c s x q hq.1) _
     _ = _ := by
       rw [← mul_assoc, ← ENNReal.mul_rpow_of_nonneg _ _ hq0.le,
