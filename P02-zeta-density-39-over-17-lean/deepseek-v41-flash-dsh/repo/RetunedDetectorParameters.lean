@@ -6,7 +6,6 @@ public import MathCollab.Density.Stronger.InitialDetector
 
 open Filter
 open scoped Topology
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger

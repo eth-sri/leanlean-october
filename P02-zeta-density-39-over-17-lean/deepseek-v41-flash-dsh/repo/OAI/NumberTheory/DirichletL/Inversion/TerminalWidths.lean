@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseTerminalWidths
-open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid
-open InverseMoment CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid InverseMoment CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 lemma norm_one_le (I : Ideal O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by

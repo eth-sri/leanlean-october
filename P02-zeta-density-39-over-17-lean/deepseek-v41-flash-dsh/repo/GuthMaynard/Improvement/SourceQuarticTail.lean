@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.SourceQuarticKernel
 public import GuthMaynard.Improvement.ReflectionNearRow
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

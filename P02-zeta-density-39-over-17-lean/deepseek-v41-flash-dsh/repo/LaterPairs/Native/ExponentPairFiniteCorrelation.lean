@@ -18,8 +18,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 
-open Complex Finset
-open RiemannZeta.GuthMaynard
+open Complex Finset RiemannZeta.GuthMaynard
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025

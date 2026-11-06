@@ -2,11 +2,9 @@ module
 public import LaterPairs.Native.HuxleyCore
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open Filter Polynomial Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open Filter Polynomial Set MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 open scoped BigOperators FourierTransform ContDiff Classical NNReal Topology
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase

@@ -15,9 +15,7 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
-set_option autoImplicit false
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

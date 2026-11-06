@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeExceptionalEnergy
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentForcing CenteredMomentChildRows UniqueFactorizationMonoid
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentForcing CenteredMomentChildRows UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ]
 

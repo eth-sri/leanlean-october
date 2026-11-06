@@ -4,7 +4,6 @@ public import Mathlib
 @[expose] public section
 
 /-! Literal middle-range target. The proof is in `MiddleLargeValues`. -/
-set_option autoImplicit false
 
 namespace GuthMaynard.Improvement
 

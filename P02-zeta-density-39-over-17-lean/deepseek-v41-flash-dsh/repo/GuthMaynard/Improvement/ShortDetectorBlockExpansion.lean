@@ -7,7 +7,6 @@ public import GuthMaynard.Improvement.ShortDetectorTaylorFamily
 
 open Complex Set Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

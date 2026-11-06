@@ -22,8 +22,7 @@ set_option backward.isDefEq.respectTransparency.types false
 
 noncomputable section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 
 namespace MathCollab.Density.Stronger.Atkinson
 

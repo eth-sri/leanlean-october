@@ -7,7 +7,6 @@ public import Mathlib.NumberTheory.Divisors
 open Real Complex Set
 open scoped BigOperators ContDiff
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

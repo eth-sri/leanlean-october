@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.CenteredTruncation
 public import MathCollab.Density.DyadicBlocks
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Set
 namespace GuthMaynard.Improvement

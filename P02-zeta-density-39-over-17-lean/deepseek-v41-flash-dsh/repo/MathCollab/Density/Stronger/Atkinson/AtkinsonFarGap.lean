@@ -18,7 +18,6 @@ branch handles the large-curvature range rather than losing a linear gap
 term. No full-block replacement of a shorter prefix is used.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 namespace MathCollab.Density.Stronger.Atkinson

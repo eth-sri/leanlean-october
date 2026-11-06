@@ -7,7 +7,6 @@ public import Mathlib
 The two analytic estimates are explicit premises. This file does NOT prove
 the Poisson truncation, divisor bound, or published affine theorem.
 -/
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

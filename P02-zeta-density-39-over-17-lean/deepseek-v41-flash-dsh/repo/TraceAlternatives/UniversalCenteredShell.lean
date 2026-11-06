@@ -4,7 +4,6 @@ public import DensityEnergyGM.DifferenceEnergyGeometry
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment

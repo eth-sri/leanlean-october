@@ -13,7 +13,6 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 open Complex Set Finset MeasureTheory Filter
 open scoped BigOperators Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 

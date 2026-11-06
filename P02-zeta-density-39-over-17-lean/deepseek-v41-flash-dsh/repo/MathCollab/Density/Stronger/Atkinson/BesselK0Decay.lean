@@ -11,7 +11,6 @@ public import MathCollab.Density.Stronger.Atkinson.BesselK0
 
 open Complex Filter MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

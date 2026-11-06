@@ -11,10 +11,7 @@ open scoped Classical BigOperators ComplexConjugate Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentNaturalRowSource CenteredMomentDetectorDictionary
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open ProbeHighRowFamily HeckeDetectorDyadicProfiles CenteredMomentPrimeSlot HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentNaturalRowSource CenteredMomentDetectorDictionary HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows ProbeHighRowFamily HeckeDetectorDyadicProfiles CenteredMomentPrimeSlot HeckeDetectorRowwisePolynomial
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

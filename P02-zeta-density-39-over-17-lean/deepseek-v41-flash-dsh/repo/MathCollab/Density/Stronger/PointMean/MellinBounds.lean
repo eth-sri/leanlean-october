@@ -14,10 +14,8 @@ public import Mathlib.Analysis.SpecialFunctions.Exp
 
 @[expose] public section
 
-open Complex Filter ArithmeticFunction
-open MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Filter ArithmeticFunction MathCollab.Density.Stronger.Fourth.Digamma
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

@@ -21,7 +21,6 @@ branches on the strip and exposes the integrable square-root
 singularity as the right edge approaches one.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set Topology

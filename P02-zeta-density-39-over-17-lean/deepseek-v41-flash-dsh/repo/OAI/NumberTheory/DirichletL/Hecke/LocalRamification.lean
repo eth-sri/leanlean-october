@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeLocalRamification
-open CenteredMomentCorrelation CenteredMomentCanonical
-open ActualEisensteinCubic
+open CenteredMomentCorrelation CenteredMomentCanonical ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 
 theorem primePowerCharacter_eq_one_iff (P : Ideal O) [P.IsMaximal]

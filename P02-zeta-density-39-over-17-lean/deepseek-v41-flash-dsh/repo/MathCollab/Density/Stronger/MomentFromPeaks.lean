@@ -8,7 +8,6 @@ public import MathCollab.Density.Stronger.ConditionalDensity
 
 open MeasureTheory Filter Set
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

@@ -3,7 +3,6 @@ public import CompactSmoothingEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory Set
 open scoped FourierTransform Convolution

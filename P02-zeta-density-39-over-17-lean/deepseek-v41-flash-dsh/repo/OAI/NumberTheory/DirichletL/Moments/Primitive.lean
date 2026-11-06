@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentPrimitive
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 
 def primitiveCharacter {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]

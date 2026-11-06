@@ -8,7 +8,6 @@ public import MathCollab.Density.Stronger.SmoothDetector
 
 open Real Complex MeasureTheory Set Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger

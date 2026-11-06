@@ -3,7 +3,6 @@ public import PairLongZeroCount
 public import RetunedActualDensity
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Real Filter MeasureTheory Set
 namespace Montgomery.RationalMoment.RightDetector

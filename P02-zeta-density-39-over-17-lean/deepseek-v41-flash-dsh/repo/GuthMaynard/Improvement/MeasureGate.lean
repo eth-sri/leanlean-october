@@ -5,7 +5,6 @@ public import Mathlib
 
 /-! Measure-theoretic parts of the candidate gate. No affine or trace estimate
 is assumed in these inequalities. -/
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter
 open scoped ENNReal

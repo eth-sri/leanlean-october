@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.SourceRatioAssembly
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement

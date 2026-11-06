@@ -7,23 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 
 namespace ActualEisensteinCubic
 
@@ -76,9 +61,8 @@ theorem actual_fixed_kernel_eq_dualFixedTerm
   rw [hreal, hphase]
   rfl
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT Complex Filter
 open scoped Topology
-open Filter
 
 noncomputable def actualVariableDualKernel (a b : ℤ) (η : ℝ) (y : O) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) *
@@ -397,9 +381,8 @@ theorem theta_counter_lambda_eq : ActualEisensteinCubic.lambda =
   rw [ActualEisensteinCubic.lambda, ActualEisensteinCoordinates.eval, homega]
   ring
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
+open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic MulChar AddChar
 
-open MulChar AddChar
 
 namespace ShortDraftLocal
 

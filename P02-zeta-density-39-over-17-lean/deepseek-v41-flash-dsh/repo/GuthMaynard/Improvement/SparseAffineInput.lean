@@ -3,7 +3,6 @@ public import GuthMaynard.AffineSource.LargeValuesAffineHeight
 public import GuthMaynard.Improvement.CompactNormalization
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform Convolution ContDiff

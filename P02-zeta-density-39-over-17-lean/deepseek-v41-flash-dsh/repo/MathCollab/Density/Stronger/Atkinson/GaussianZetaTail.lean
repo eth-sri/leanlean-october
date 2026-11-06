@@ -11,11 +11,8 @@ public import MathCollab.Density.AbelZetaGrowth
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.ZetaGrowth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

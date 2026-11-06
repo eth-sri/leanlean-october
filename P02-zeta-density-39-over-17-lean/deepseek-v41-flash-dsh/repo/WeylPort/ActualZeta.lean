@@ -4,8 +4,7 @@ public import WeylPort.ShortSum
 
 @[expose] public section
 
-open Complex Finset Filter
-open DhimanKadiriQuesadaHerrera2026
+open Complex Finset Filter DhimanKadiriQuesadaHerrera2026
 open scoped Topology
 
 namespace WeylPort

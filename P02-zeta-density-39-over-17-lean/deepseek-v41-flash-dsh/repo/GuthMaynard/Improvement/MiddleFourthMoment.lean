@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.RemovedMassBound
 public import GuthMaynard.Improvement.MomentScalarClosure
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

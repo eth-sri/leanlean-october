@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion
 
 lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
     (hA : 0≤A) (hE : 0≤E) (hV : ‖V‖≤1) (hW : ‖W‖≤A)

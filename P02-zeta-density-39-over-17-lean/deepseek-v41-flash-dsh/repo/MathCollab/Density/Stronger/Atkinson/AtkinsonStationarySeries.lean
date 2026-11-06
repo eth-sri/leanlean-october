@@ -12,9 +12,7 @@ public import MathCollab.Density.Stronger.Fourth.Coefficients
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

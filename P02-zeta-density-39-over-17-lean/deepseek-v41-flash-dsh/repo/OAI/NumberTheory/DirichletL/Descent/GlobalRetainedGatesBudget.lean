@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseInitialArithmetic InverseSecondSourceBlocks
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseInitialArithmetic InverseSecondSourceBlocks ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 
  theorem source_cell_exponent_cap {ι : Type*} [DecidableEq ι]

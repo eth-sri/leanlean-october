@@ -7,7 +7,6 @@ public import Mathlib.Analysis.Complex.CauchyIntegral
 
 open Real Set MeasureTheory Filter Asymptotics
 open scoped ContDiff Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

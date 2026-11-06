@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentLiveDomain
-open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
-open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
-open CenteredMomentGaussEnergy
+open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 
  theorem finite_column_mem {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))

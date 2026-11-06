@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.SourceDirichletPairing
 public import GuthMaynard.Improvement.AmplifierArithmetic
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 namespace GuthMaynard.Improvement

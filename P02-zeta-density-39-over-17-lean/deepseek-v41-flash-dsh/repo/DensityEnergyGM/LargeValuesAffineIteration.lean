@@ -245,7 +245,6 @@ theorem gmAffineTildeSchwartz_weighted_norms_le_sixteen
           (mul_nonneg (by norm_num) hmassNonneg)).2 hmass
       _ = _ := by ring
   have hL2 := integral_gmAffineTildeSchwartz_sq_le S hS f
-  have hM₂real : (M₂ : ℝ) ≤ M := by exact_mod_cast hM₂M
   have hM6 : (M₂ : ℝ) ^ 6 ≤ (M : ℝ) ^ 6 := by gcongr
   have hM4 : (M₂ : ℝ) ^ 4 ≤ (M : ℝ) ^ 4 := by gcongr
   have htildeL2 :
@@ -306,7 +305,6 @@ theorem gmAffine_mixed_weight_le
   let A : ℝ := (M : ℝ) ^ 6 * (∫ x : ℝ, f x) ^ 2
   let B : ℝ := (M : ℝ) ^ 4 * ∫ x : ℝ, f x ^ 2
   have hA : 0 ≤ A := by dsimp only [A]; positivity
-  have hL2 : 0 ≤ ∫ x : ℝ, f x ^ 2 := integral_nonneg fun x => sq_nonneg _
   have hB : 0 ≤ B := by dsimp only [B]; positivity
   have hsqrtB : Real.sqrt B = (M : ℝ) ^ 2 *
       Real.sqrt (∫ x : ℝ, f x ^ 2) := by
@@ -777,15 +775,11 @@ noncomputable def gmAffineTildeIterate
 
 @[simp] theorem gmAffineTildeIterate_zero
     (S : ℝ) (hS : 0 < S) (f : SchwartzMap ℝ ℝ) :
-    gmAffineTildeIterate S hS f 0 = f := rfl
-
+    gmAffineTildeIterate S hS f 0 = f := by first | rfl | trivial | (simp; done) | (simp_all; done) | (omega; done) | (positivity; done) | (norm_num; done) | (ring; done) | (assumption; done) | (linarith; done) | (nlinarith; done) | (aesop; done) | (grind; done)
 @[simp] theorem gmAffineTildeIterate_succ
     (S : ℝ) (hS : 0 < S) (f : SchwartzMap ℝ ℝ) (j : ℕ) :
     gmAffineTildeIterate S hS f (j + 1) =
-      gmAffineTildeSchwartz S hS (gmAffineTildeIterate S hS f j) := rfl
-
-/-- The positive-sign affine subfamily appearing after Cauchy--Schwarz in
-(9.8).  Its shift range is the same finite shell as the project `J`. -/
+      gmAffineTildeSchwartz S hS (gmAffineTildeIterate S hS f j) := by first | rfl | trivial | (simp; done) | (simp_all; done) | (omega; done) | (positivity; done) | (norm_num; done) | (ring; done) | (assumption; done) | (linarith; done) | (nlinarith; done) | (aesop; done) | (grind; done)
 noncomputable def gmAffinePositiveTransformSum
     (f : ℝ → ℝ) (M : ℕ) (u : ℝ) : ℝ :=
   ∑ m ∈ gmAffinePositiveShell M,
@@ -902,11 +896,6 @@ theorem integral_mul_gmAffinePositiveTransformSum_le
       (show MemLp f (ENNReal.ofReal 2) volume by simpa using hfLp)
       (show MemLp A (ENNReal.ofReal 2) volume by simpa using hALp)
   have hAJ := integral_gmAffinePositiveTransformSum_sq_le_J ft hft hM
-  have hJnonneg : 0 ≤ gmAffineJ ft M := by
-    have hIntegralNonneg :
-        0 ≤ ∫ u : ℝ, gmAffinePositiveTransformSum ft M u ^ 2 :=
-      integral_nonneg fun _ => sq_nonneg _
-    exact hIntegralNonneg.trans hAJ
   calc
     (∫ u : ℝ, f u * gmAffinePositiveTransformSum ft M u) ≤
         (∫ u : ℝ, f u ^ (2 : ℝ)) ^ (1 / (2 : ℝ)) *
@@ -1634,9 +1623,6 @@ theorem norm_gmAffineFirstPoissonPairTerm_sq_eq
           (gmAffineFirstPoissonTau M₃ p.1 p.2 xi)‖ ^ 2 := by
   rw [gmAffineFirstPoissonPairTerm_eq_middleBlock f hM₁ hM₂ hM₃ hp]
   simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-  have hp₁ne : (p.1 : ℝ) ≠ 0 := by
-    exact_mod_cast gmAffineSignedShell_ne_zero hM₁
-      (mem_gmAffineFirstPoissonPairs.mp hp).1
   have hinv : |(1 / |(p.1 : ℝ)| : ℝ)| = 1 / |(p.1 : ℝ)| :=
     abs_of_nonneg (by positivity)
   have h8 : |(8 : ℝ)| = 8 := abs_of_nonneg (by norm_num)
@@ -2470,9 +2456,6 @@ theorem mem_gmAffineUnitInterval_div_of_mem_scaledNear
   have hM₂Int : (0 : ℤ) < (M₂ : ℤ) := by exact_mod_cast hM₂
   have hm₂'PosInt : (0 : ℤ) < m₂' :=
     lt_of_lt_of_le hM₂Int hm₂'Bounds.1
-  have hm₂'Pos : (0 : ℝ) < m₂' := by
-    exact_mod_cast hm₂'PosInt
-  have hS : 0 < T / (M₂ : ℝ) := by positivity
   have hM₂real : (0 : ℝ) < M₂ := by positivity
   have hraw :
       |u' - gmAffineMiddleCenter m₂ m₂' j u| < Q / T := by
@@ -2497,7 +2480,6 @@ theorem mem_gmAffineUnitInterval_div_of_mem_scaledNear
         (mul_le_mul_of_nonneg_right hscale (abs_nonneg _)) hnear
     exact (lt_div_iff₀ hT).mpr (by simpa [mul_comm] using hTmul)
   rw [gmAffineUnitInterval, Set.mem_Icc]
-  have hHQ : 0 < T / Q := by positivity
   have hradius : 1 / (T / Q) = Q / T := by field_simp
   rw [hradius]
   rw [abs_lt] at hraw
@@ -3131,10 +3113,7 @@ noncomputable def gmAffineSigmaIIEquation97Integrand
 theorem gmAffineSigmaIIEquation97_eq_integral_integrand
     (f : SchwartzMap ℝ ℝ) (T M₁ : ℝ) (M₂ : ℕ) :
     gmAffineSigmaIIEquation97 f T M₁ M₂ =
-      ∫ q : ℝ × ℝ, gmAffineSigmaIIEquation97Integrand f T M₁ M₂ q := by
-  rfl
-
-/-- Uniform omitted-frequency constant after the second Poisson split. -/
+      ∫ q : ℝ × ℝ, gmAffineSigmaIIEquation97Integrand f T M₁ M₂ q := by first | rfl | trivial | (simp; done) | (simp_all; done) | (omega; done) | (positivity; done) | (norm_num; done) | (ring; done) | (assumption; done) | (linarith; done) | (nlinarith; done) | (aesop; done) | (grind; done)
 noncomputable def gmAffineMiddleFarBound
     (n : ℕ) (T Q : ℝ) (M₂ : ℕ) : ℝ :=
   (4 * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
@@ -3684,7 +3663,6 @@ theorem integral_gmAffineRetainedFirstPoissonPairSquare_eq
   let a : ℝ := (8 * M₃ : ℝ) / (m₁ : ℝ)
   let b : ℝ := (8 * M₃ : ℝ) * (ell : ℝ)
   let H : ℝ → ℝ := fun tau => gmAffineRetainedMiddleProfile f Q M₂ M₃ ell tau
-  have ha : a ≠ 0 := div_ne_zero (by positivity) hm₁neR
   have htau (xi : ℝ) : gmAffineFirstPoissonTau M₃ m₁ ell xi = a * xi + b := by
     dsimp only [a, b]
     unfold gmAffineFirstPoissonTau
@@ -4001,9 +3979,7 @@ theorem norm_gmAffineMiddleFourierBlockReal_le_source_decay_of_constant
 theorem gmAffineMiddleFourierBlockReal_natCast
     (f : SchwartzMap ℝ ℝ) (A M₂ : ℕ) (ell : ℤ) (tau : ℝ) :
     gmAffineMiddleFourierBlockReal f A M₂ ell tau =
-      gmAffineMiddleFourierBlock f A M₂ ell tau := by
-  rfl
-
+      gmAffineMiddleFourierBlock f A M₂ ell tau := by first | rfl | trivial | (simp; done) | (simp_all; done) | (omega; done) | (positivity; done) | (norm_num; done) | (ring; done) | (assumption; done) | (linarith; done) | (nlinarith; done) | (aesop; done) | (grind; done)
 theorem gmAffineMiddleFourierBlockReal_scale_tau
     (f : SchwartzMap ℝ ℝ) {A Q : ℝ} (hA : A ≠ 0)
     (M₂ : ℕ) (ell : ℤ) (tau : ℝ) :
@@ -4065,12 +4041,7 @@ theorem integral_gmAffineMiddleTauWeightedBlockSq_eq_mass
     (f : SchwartzMap ℝ ℝ) (Q : ℝ) (A M₂ : ℕ) (ell : ℤ) :
     (∫ tau : ℝ, gmAffineMiddleTauWeight Q tau *
       ‖gmAffineMiddleFourierBlock f A M₂ ell tau‖ ^ 2) =
-        gmAffineMiddleBlockMass f Q A M₂ ell := by
-  unfold gmAffineMiddleBlockMass
-  apply integral_congr_ae
-  filter_upwards with tau
-  rw [gmAffineMiddleFourierBlockReal_natCast]
-
+        gmAffineMiddleBlockMass f Q A M₂ ell := by first | rfl | trivial | (simp; done) | (simp_all; done) | (omega; done) | (positivity; done) | (norm_num; done) | (ring; done) | (assumption; done) | (linarith; done) | (nlinarith; done) | (aesop; done) | (grind; done)
 theorem integral_gmAffineMiddleTauWeightedBlockRealSq_eq_ofReal_mass
     (Q : ℝ) (f : SchwartzMap ℝ ℝ)
     (A : ℝ) (M₂ : ℕ) (ell : ℤ) :
@@ -5050,10 +5021,7 @@ theorem gmAffineFirstPoissonRadius_le_of_scale
     {M M₁ M₃ : ℕ} (hM₁M : M₁ ≤ M) (hM₃ : 0 < M₃)
     {Q Y : ℝ} (hQ : 0 ≤ Q) (hQMY : Q * (M : ℝ) ≤ 4 * Y) :
     gmAffineFirstPoissonRadius M₁ M₃ Q ≤ Y := by
-  have hM₁Real : (M₁ : ℝ) ≤ M := by exact_mod_cast hM₁M
   have hM₃Real : (1 : ℝ) ≤ M₃ := by exact_mod_cast hM₃
-  have hnum : Q * (2 * M₁ : ℝ) ≤ Q * (2 * M : ℝ) := by
-    gcongr
   have hden : (8 : ℝ) ≤ (8 * M₃ : ℝ) := by
     norm_num at hM₃Real ⊢
     nlinarith

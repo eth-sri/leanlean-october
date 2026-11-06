@@ -8,9 +8,8 @@ public import GuthMaynard.NativeSource.GuthMaynard.ZeroDetector
 
 @[expose] public section
 
-open Complex Finset
+open Complex Finset Classical
 open scoped BigOperators
-open Classical
 
 namespace GuthMaynard.NativeMoment
 

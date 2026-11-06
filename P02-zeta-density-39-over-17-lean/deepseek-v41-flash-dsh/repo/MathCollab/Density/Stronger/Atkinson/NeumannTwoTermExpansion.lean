@@ -19,7 +19,6 @@ oscillatory carriers directly. The error has the globally valid
 positive-argument bound C x^(-5/2).
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex

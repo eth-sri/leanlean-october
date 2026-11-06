@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentExceptionalReflection
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows
-open CenteredMomentFixedRay CenteredMomentExceptionalPair RayFourExpansion
-open CanonicalRowCompletion CanonicalQuadraticSieve CanonicalUnitEuler
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay CenteredMomentExceptionalPair RayFourExpansion CanonicalRowCompletion CanonicalQuadraticSieve CanonicalUnitEuler
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 

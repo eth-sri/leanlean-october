@@ -13,9 +13,7 @@ open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseUniform HeckeInverseAmplification
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
-open ActualEisensteinCubic CompletedGauss
+open DetectorDictionaryInverseUniform HeckeInverseAmplification InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier ActualEisensteinCubic CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :

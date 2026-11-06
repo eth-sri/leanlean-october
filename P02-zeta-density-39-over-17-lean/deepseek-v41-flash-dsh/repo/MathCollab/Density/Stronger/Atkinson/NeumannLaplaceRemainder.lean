@@ -19,7 +19,6 @@ and linear amplitude terms. The quadratic error is integrable and
 has its exact x^(-5/2) scale.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set

@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical SchwartzMap
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSecondDiagonal EisensteinSchwartzPoisson
+open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSecondDiagonal EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

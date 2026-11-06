@@ -4,7 +4,6 @@ public import WeylPort.ActualZeta
 @[expose] public section
 
 open Complex
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 

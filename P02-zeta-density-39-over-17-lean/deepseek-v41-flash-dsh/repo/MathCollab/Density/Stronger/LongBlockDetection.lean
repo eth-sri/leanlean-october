@@ -6,7 +6,6 @@ public import MathCollab.Density.Stronger.SmallResidue
 
 open Complex MeasureTheory Set Filter
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentMobiusRegroup
+open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMobiusRegroup
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

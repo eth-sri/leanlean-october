@@ -3,7 +3,6 @@ public import WrittenDensity.Common
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.WrittenDensity
 open MathCollab.Density

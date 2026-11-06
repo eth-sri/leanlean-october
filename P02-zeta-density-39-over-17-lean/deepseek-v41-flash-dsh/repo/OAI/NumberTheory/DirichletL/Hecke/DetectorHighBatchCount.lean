@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorHighBatchCount
-open HeckeDetectorBatch
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorRowCount
+open HeckeDetectorBatch HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorRowCount
 
 theorem high_batch_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)

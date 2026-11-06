@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainProfileControl
-open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary
-open CenteredMomentFiniteProfileExceptional
+open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary CenteredMomentFiniteProfileExceptional
 
 theorem paired_control (S:Finset (ℕ×ℕ)):
     ∃J:ℕ,∃C:ℝ,0<C ∧ ∀reverse:Bool,∀j k:ℕ,j+k≤2 →

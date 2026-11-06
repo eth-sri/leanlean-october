@@ -12,8 +12,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentDetectorDictionary HeckeDetectorRawFiber ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily CenteredMomentDetectorDictionary HeckeDetectorRawFiber ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource

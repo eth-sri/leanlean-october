@@ -20,11 +20,9 @@ bounds for every shorter prefix, including zero, without a common
 maximizer or a terminal-block substitution.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
-open Complex
-open RiemannZeta.GuthMaynard
+open Complex RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 

@@ -5,7 +5,6 @@ public import Mathlib
 
 /-! A finite, height-independent choice of moment orders in the short-range
 argument. This is an exponent-covering theorem, not a moment estimate. -/
-set_option autoImplicit false
 noncomputable section
 
 namespace Montgomery.RationalMoment

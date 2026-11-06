@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.OperatorCubic
 public import GuthMaynard.Improvement.CenteredKernelBridge
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
 open scoped InnerProductSpace

@@ -5,7 +5,6 @@ public import MathCollab.Density.Stronger.Peaks.Inputs
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

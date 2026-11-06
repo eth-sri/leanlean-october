@@ -11,10 +11,8 @@ public import Mathlib.Analysis.MellinInversion
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory
+open Complex Finset Set Filter Topology MeasureTheory Classical
 open scoped BigOperators ContDiff Topology
-open Classical
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

@@ -6,7 +6,6 @@ public import RationalGcdDecomposition
 /-! Unconditional logarithmic separation of distinct rational frequencies.
 This supplies the spacing input for a finite-height mean-square argument;
 the mean-square transfer itself is not asserted here. -/
-set_option autoImplicit false
 noncomputable section
 
 namespace Montgomery.RationalMoment

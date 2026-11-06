@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredExceptionalCount
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid CenteredExceptionalCount
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

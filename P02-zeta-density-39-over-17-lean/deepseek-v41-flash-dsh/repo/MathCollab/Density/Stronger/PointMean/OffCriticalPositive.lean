@@ -14,7 +14,6 @@ public import MathCollab.Density.Stronger.PointMean.ExponentialMoments
 @[expose] public section
 
 open Complex Set MeasureTheory
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

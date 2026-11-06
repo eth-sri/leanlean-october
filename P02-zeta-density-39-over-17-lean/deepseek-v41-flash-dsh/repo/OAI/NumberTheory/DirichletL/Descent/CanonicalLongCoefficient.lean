@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
 def actualLongCoefficient {ι:Type*}(p:ι→O)(Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)

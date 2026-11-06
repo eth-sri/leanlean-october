@@ -28,7 +28,6 @@ open Set
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- Positive magnitude of the (negative) real-index curvature. -/

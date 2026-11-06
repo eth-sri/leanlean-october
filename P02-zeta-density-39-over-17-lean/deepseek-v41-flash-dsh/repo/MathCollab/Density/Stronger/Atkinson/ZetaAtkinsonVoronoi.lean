@@ -13,9 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSource
 
 @[expose] public section
 
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

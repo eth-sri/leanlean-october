@@ -6,7 +6,6 @@ public import MathCollab.Density.DetectorParameters
 open Filter
 open scoped Topology
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

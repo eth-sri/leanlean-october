@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open InverseMomentGlobalPrincipalMass
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic InverseMomentGlobalPrincipalMass ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 

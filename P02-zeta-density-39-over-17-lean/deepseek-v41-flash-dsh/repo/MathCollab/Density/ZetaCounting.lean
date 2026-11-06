@@ -7,7 +7,6 @@ public import Mathlib.Tactic
 open Filter Set
 open scoped BigOperators Topology
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

@@ -11,7 +11,6 @@ Mathlib dependencies retain Apache-2.0 attribution.
 This module imports only the displayed local/mathlib dependencies, not the upstream project.
 -/
 
-set_option autoImplicit false
 
 /-!
 # Exact occupancy recovery from finite superlevels

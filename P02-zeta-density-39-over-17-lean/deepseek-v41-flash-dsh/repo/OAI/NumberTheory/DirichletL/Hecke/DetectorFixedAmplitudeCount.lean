@@ -12,8 +12,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorFixedAmplitudeCount
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount
 
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}

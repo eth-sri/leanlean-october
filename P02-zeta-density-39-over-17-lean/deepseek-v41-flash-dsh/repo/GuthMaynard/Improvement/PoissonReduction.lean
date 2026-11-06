@@ -6,7 +6,6 @@ public import Mathlib
 /-! Exact Fourier/Poisson identities for the unequal-scale reduction.
 Quantitative tails and divisor-counting estimates are separate obligations.
 -/
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter Asymptotics
 open scoped FourierTransform

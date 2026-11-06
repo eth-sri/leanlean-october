@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory InverseInitialClippedColumns
-open InverseSecondProfileUniform InverseAmbientProfileTower
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory InverseInitialClippedColumns InverseSecondProfileUniform InverseAmbientProfileTower
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
 

@@ -14,8 +14,7 @@ public import GuthMaynard.NativeSource.GuthMaynardExternal.PNT.Rectangle
 
 @[expose] public section
 
-open Complex BigOperators Nat Classical Real Topology Filter
-open Set MeasureTheory intervalIntegral Asymptotics
+open Complex BigOperators Nat Classical Real Topology Filter Set MeasureTheory intervalIntegral Asymptotics
 
 open scoped Interval
 

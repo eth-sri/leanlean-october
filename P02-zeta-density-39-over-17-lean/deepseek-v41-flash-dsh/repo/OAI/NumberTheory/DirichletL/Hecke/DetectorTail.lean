@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorTail
-open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
+open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 lemma exponential_cubic_bound (x Y : ℝ) (hx : 0 < x) (hY : 0 < Y) :

@@ -15,7 +15,6 @@ public import Mathlib.MeasureTheory.Integral.IntervalIntegral.DistLEIntegral
 @[expose] public section
 
 open Complex MeasureTheory Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

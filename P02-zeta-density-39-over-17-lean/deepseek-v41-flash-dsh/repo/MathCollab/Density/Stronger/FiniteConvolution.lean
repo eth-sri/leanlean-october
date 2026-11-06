@@ -6,7 +6,6 @@ public import MathCollab.Density.Stronger.BoundedConvolution
 
 open Complex Set Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

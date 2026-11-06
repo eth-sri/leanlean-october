@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialPhysicalSlots
-open DetectorDictionaryInverseMarkedPadding HeckeDetectorCoefficientTransfer
-open InverseInitialConjugateEnergy
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialPhysicalSlots DetectorDictionaryInverseMarkedPadding HeckeDetectorCoefficientTransfer InverseInitialConjugateEnergy
 local notation "O"=>HeckeFamily.O
 variable {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
   {U a ε tstar T allowance:ℝ}{i:ℕ}

@@ -12,9 +12,8 @@ public import Mathlib.NumberTheory.Divisors
 
 @[expose] public section
 
-open Complex
+open Complex Classical
 open scoped BigOperators
-open Classical
 
 namespace GuthMaynard.NativeMoment
 

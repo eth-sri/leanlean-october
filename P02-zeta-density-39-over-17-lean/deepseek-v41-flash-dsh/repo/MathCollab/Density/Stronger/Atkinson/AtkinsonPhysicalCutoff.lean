@@ -13,7 +13,6 @@ public import Mathlib.Data.Nat.Log
 @[expose] public section
 
 open Filter
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

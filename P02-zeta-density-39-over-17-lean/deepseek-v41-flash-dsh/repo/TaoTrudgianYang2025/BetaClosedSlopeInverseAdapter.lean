@@ -5,7 +5,6 @@ public import TaoTrudgianYang2025.BetaClosedSlope
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Set Filter Expdb
 open scoped Topology ContDiff

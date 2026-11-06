@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.HeckeMaskDescent
-open HeckeFamily CenteredExceptionalProfile CanonicalQuadraticSieve ConcretePrimeRowBridge
-open UniqueFactorizationMonoid
+open HeckeFamily CenteredExceptionalProfile CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 theorem exists_coprime_shift (a c r : O) (hac : IsCoprime a c) (hr : r ≠ 0) :

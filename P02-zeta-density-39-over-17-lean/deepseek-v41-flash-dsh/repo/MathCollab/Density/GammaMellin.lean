@@ -14,7 +14,6 @@ public import Mathlib.Tactic
 open Set MeasureTheory Real Complex
 open scoped Interval
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.GammaMellin
 

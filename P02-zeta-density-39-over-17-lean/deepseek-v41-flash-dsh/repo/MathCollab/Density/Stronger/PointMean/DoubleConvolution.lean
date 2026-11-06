@@ -11,7 +11,6 @@ public import MathCollab.Density.Stronger.PointMean.GammaConvolution
 @[expose] public section
 
 open MeasureTheory
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

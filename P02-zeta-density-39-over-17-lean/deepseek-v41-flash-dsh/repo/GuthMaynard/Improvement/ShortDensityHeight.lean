@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.ShortDensityScale
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

@@ -16,13 +16,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstAmplificationChoice
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentSectorLocalization CenteredMomentPrimePool
-open CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationSlotGap
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentSectorLocalization CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentGaussNormalization CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal CenteredMomentAmplificationSlotGap
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev ballProfile : 𝓢(ℝ,ℂ) := QuadraticInitialBound.sieveCutoff
@@ -377,13 +371,7 @@ theorem eventually_dyadic_amplification (M : Ideal O) [NeZero M]
     hZ hsigma hM (fun Q hQ => (hdata Q hQ).2.2.1)
     (fun Q hQ => (hdata Q hQ).2.2.2) hR hs hsize n hK
 
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentOriginalChildEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion
-open ConcretePrimeRowBridge CanonicalRowCompletion RayFourExpansion
-open HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeColumnWindow
-open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentOriginalChildEnergy CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion ConcretePrimeRowBridge CanonicalRowCompletion RayFourExpansion HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeColumnWindow CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
 
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -553,10 +541,7 @@ theorem active_gaussEnergy (D : OriginalData ι) (η : Character) (m : O)
 
 end OriginalData
 
-open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstExtractedLedger
-open CenteredMomentDescentLedger CenteredMomentCommonSupport
-open CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubic
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger CenteredMomentCommonSupport CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubic
 
 def nominalLog (I J E : Ideal O) (K X Z : ℝ) : ℝ :=
   Real.logb Z (firstNominalScale I J E K X)

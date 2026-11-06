@@ -22,9 +22,8 @@ It also provides finiteness lemmas for subsets of the divisor index type cut out
 
 @[expose] public section
 
-open Filter Function Complex Finset Topology
+open Filter Function Complex Finset Topology Set
 open scoped Topology BigOperators
-open Set
 
 namespace Complex.Hadamard
 

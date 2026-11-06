@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.CriticalMoment
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.ZetaGrowth
-set_option autoImplicit false
+open Complex Set MeasureTheory MathCollab.Density.ZetaGrowth
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

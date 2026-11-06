@@ -12,10 +12,8 @@ public import MathCollab.Density.Stronger.PointMean.OffCriticalPositive
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

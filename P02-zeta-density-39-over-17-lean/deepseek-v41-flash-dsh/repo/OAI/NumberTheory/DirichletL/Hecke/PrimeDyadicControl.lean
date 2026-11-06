@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical Topology
 open Set Metric Complex
 namespace SevenEighths.HeckePrimeDyadicControl
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds HeckeReciprocalGrowth
 
 theorem logDeriv_eq_of_mask (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =

@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))

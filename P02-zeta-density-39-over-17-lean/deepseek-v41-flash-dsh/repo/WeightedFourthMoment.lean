@@ -6,7 +6,6 @@ public import Mathlib
 /-! Elementary mean-zero fourth-moment contraction. This is a proved ingredient
 for a possible divisor-weight proof of the rational coefficient estimate.
 The multidimensional and arithmetic assembly is not asserted here. -/
-set_option autoImplicit false
 noncomputable section
 open Finset
 open scoped ComplexConjugate

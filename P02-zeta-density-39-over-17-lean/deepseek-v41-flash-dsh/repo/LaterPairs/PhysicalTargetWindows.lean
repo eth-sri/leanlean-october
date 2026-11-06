@@ -2,7 +2,6 @@ module
 public import LaterPairs.PhysicalDetectorParameters
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 

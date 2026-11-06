@@ -3,7 +3,6 @@ public import TraceAlternatives.UniversalCenteredShell
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment

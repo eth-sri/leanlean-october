@@ -6,7 +6,6 @@ public import MathCollab.Density.Stronger.LongScalarBudget
 
 open Real Complex Filter MeasureTheory Set
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger MathCollab.Density

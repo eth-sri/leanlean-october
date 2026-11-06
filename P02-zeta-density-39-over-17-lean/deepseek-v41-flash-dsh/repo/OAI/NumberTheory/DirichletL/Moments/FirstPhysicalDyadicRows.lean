@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicRows
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
-open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
 local notation "O" => HeckeFamily.O
 
 def activeRows (rows : Finset O) (n : Fin 4→ℤ) : Finset O :=

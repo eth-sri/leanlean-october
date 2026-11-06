@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-open InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic
-open InverseInitialCommonRatios
+open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic InverseInitialCommonRatios
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 

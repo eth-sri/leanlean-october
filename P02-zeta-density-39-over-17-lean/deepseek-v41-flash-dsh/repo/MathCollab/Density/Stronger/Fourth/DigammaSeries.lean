@@ -29,7 +29,6 @@ public import Mathlib.Tactic
 @[expose] public section
 
 open Filter Topology Finset Nat Complex
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth.Digamma
 

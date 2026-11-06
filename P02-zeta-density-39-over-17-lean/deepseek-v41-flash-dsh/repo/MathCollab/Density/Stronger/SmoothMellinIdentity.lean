@@ -6,7 +6,6 @@ public import MathCollab.Density.DetectorMellin
 
 open Complex MeasureTheory Set Filter
 open scoped BigOperators ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

@@ -14,9 +14,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthConclusion
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentEnergyZeroGrowthConclusion

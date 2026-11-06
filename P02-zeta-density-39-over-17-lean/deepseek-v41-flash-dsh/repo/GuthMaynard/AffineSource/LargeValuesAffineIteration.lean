@@ -245,7 +245,6 @@ theorem gmAffineTildeSchwartz_weighted_norms_le_sixteen
           (mul_nonneg (by norm_num) hmassNonneg)).2 hmass
       _ = _ := by ring
   have hL2 := integral_gmAffineTildeSchwartz_sq_le S hS f
-  have hM₂real : (M₂ : ℝ) ≤ M := by exact_mod_cast hM₂M
   have hM6 : (M₂ : ℝ) ^ 6 ≤ (M : ℝ) ^ 6 := by gcongr
   have hM4 : (M₂ : ℝ) ^ 4 ≤ (M : ℝ) ^ 4 := by gcongr
   have htildeL2 :
@@ -306,7 +305,6 @@ theorem gmAffine_mixed_weight_le
   let A : ℝ := (M : ℝ) ^ 6 * (∫ x : ℝ, f x) ^ 2
   let B : ℝ := (M : ℝ) ^ 4 * ∫ x : ℝ, f x ^ 2
   have hA : 0 ≤ A := by dsimp only [A]; positivity
-  have hL2 : 0 ≤ ∫ x : ℝ, f x ^ 2 := integral_nonneg fun x => sq_nonneg _
   have hB : 0 ≤ B := by dsimp only [B]; positivity
   have hsqrtB : Real.sqrt B = (M : ℝ) ^ 2 *
       Real.sqrt (∫ x : ℝ, f x ^ 2) := by
@@ -913,11 +911,6 @@ theorem integral_mul_gmAffinePositiveTransformSum_le
       (show MemLp f (ENNReal.ofReal 2) volume by simpa using hfLp)
       (show MemLp A (ENNReal.ofReal 2) volume by simpa using hALp)
   have hAJ := integral_gmAffinePositiveTransformSum_sq_le_J ft hft hM
-  have hJnonneg : 0 ≤ gmAffineJ ft M := by
-    have hIntegralNonneg :
-        0 ≤ ∫ u : ℝ, gmAffinePositiveTransformSum ft M u ^ 2 :=
-      integral_nonneg fun _ => sq_nonneg _
-    exact hIntegralNonneg.trans hAJ
   calc
     (∫ u : ℝ, f u * gmAffinePositiveTransformSum ft M u) ≤
         (∫ u : ℝ, f u ^ (2 : ℝ)) ^ (1 / (2 : ℝ)) *
@@ -1645,9 +1638,6 @@ theorem norm_gmAffineFirstPoissonPairTerm_sq_eq
           (gmAffineFirstPoissonTau M₃ p.1 p.2 xi)‖ ^ 2 := by
   rw [gmAffineFirstPoissonPairTerm_eq_middleBlock f hM₁ hM₂ hM₃ hp]
   simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-  have hp₁ne : (p.1 : ℝ) ≠ 0 := by
-    exact_mod_cast gmAffineSignedShell_ne_zero hM₁
-      (mem_gmAffineFirstPoissonPairs.mp hp).1
   have hinv : |(1 / |(p.1 : ℝ)| : ℝ)| = 1 / |(p.1 : ℝ)| :=
     abs_of_nonneg (by positivity)
   have h8 : |(8 : ℝ)| = 8 := abs_of_nonneg (by norm_num)
@@ -2480,9 +2470,6 @@ theorem mem_gmAffineUnitInterval_div_of_mem_scaledNear
   have hM₂Int : (0 : ℤ) < (M₂ : ℤ) := by exact_mod_cast hM₂
   have hm₂'PosInt : (0 : ℤ) < m₂' :=
     lt_of_lt_of_le hM₂Int hm₂'Bounds.1
-  have hm₂'Pos : (0 : ℝ) < m₂' := by
-    exact_mod_cast hm₂'PosInt
-  have hS : 0 < T / (M₂ : ℝ) := by positivity
   have hM₂real : (0 : ℝ) < M₂ := by positivity
   have hraw :
       |u' - gmAffineMiddleCenter m₂ m₂' j u| < Q / T := by
@@ -2507,7 +2494,6 @@ theorem mem_gmAffineUnitInterval_div_of_mem_scaledNear
         (mul_le_mul_of_nonneg_right hscale (abs_nonneg _)) hnear
     exact (lt_div_iff₀ hT).mpr (by simpa [mul_comm] using hTmul)
   rw [gmAffineUnitInterval, Set.mem_Icc]
-  have hHQ : 0 < T / Q := by positivity
   have hradius : 1 / (T / Q) = Q / T := by field_simp
   rw [hradius]
   rw [abs_lt] at hraw
@@ -3694,7 +3680,6 @@ theorem integral_gmAffineRetainedFirstPoissonPairSquare_eq
   let a : ℝ := (8 * M₃ : ℝ) / (m₁ : ℝ)
   let b : ℝ := (8 * M₃ : ℝ) * (ell : ℝ)
   let H : ℝ → ℝ := fun tau => gmAffineRetainedMiddleProfile f Q M₂ M₃ ell tau
-  have ha : a ≠ 0 := div_ne_zero (by positivity) hm₁neR
   have htau (xi : ℝ) : gmAffineFirstPoissonTau M₃ m₁ ell xi = a * xi + b := by
     dsimp only [a, b]
     unfold gmAffineFirstPoissonTau
@@ -5060,10 +5045,7 @@ theorem gmAffineFirstPoissonRadius_le_of_scale
     {M M₁ M₃ : ℕ} (hM₁M : M₁ ≤ M) (hM₃ : 0 < M₃)
     {Q Y : ℝ} (hQ : 0 ≤ Q) (hQMY : Q * (M : ℝ) ≤ 4 * Y) :
     gmAffineFirstPoissonRadius M₁ M₃ Q ≤ Y := by
-  have hM₁Real : (M₁ : ℝ) ≤ M := by exact_mod_cast hM₁M
   have hM₃Real : (1 : ℝ) ≤ M₃ := by exact_mod_cast hM₃
-  have hnum : Q * (2 * M₁ : ℝ) ≤ Q * (2 * M : ℝ) := by
-    gcongr
   have hden : (8 : ℝ) ≤ (8 * M₃ : ℝ) := by
     norm_num at hM₃Real ⊢
     nlinarith

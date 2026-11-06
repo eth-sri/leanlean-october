@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstMixed
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 local notation "O" => ActualEisensteinCubic.O
 
 theorem frequencyReduction_comp (d n M : O) (hd : d∣n) (hn : n∣M) (x : Residue M) :

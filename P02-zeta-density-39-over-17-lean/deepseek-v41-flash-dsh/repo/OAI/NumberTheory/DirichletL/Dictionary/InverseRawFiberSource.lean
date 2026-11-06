@@ -11,10 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.DetectorDictionaryInverseRawFiberSource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseInitialPhysicalSlots
-open InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy
-open HeckeDetectorPhysicalSelection
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer InverseInitialPhysicalSlots InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy HeckeDetectorPhysicalSelection
 local notation "O"=>HeckeFamily.O
 
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}

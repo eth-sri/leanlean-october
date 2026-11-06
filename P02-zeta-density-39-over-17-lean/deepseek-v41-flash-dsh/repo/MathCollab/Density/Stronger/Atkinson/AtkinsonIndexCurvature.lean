@@ -25,7 +25,6 @@ estimate in Heath--Brown's argument.
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- The exact real-index slope of the Atkinson phase. -/

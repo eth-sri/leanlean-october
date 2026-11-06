@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers IdealMobiusDivisorSum
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers IdealMobiusDivisorSum
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_ne_zero)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

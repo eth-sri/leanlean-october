@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorRowEnergy
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRows CenteredMomentDivisorFullMask
-open CenteredMomentDivisorEnergy CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRows CenteredMomentDivisorFullMask CenteredMomentDivisorEnergy CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 

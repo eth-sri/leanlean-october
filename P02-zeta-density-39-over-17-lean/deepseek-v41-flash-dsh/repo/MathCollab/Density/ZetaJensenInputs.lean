@@ -15,7 +15,6 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 open Complex Filter MeromorphicOn
 open scoped Topology ArithmeticFunction.Moebius ComplexOrder
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density.ZetaGrowth

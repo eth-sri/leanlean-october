@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerState
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry
 local notation "Eis"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)

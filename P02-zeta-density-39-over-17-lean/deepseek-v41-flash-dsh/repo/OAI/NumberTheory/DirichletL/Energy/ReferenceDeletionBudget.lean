@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
-open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass
-open CenteredMomentReflectionDeletion UniqueFactorizationMonoid
+open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass CenteredMomentReflectionDeletion UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 lemma product_norm_ge_one (D:Finset (Ideal O))(hD:∀I∈D,Prime I):

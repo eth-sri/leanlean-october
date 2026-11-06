@@ -12,9 +12,7 @@ public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
-set_option autoImplicit false
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

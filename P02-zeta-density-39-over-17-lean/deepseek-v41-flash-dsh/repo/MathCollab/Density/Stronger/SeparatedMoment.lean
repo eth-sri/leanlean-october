@@ -7,7 +7,6 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 open MeasureTheory Set Filter
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

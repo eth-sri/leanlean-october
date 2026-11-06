@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile
-open InverseInitialRetainedSupport InverseInitialHighFrequencyTail
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile InverseInitialRetainedSupport InverseInitialHighFrequencyTail
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :

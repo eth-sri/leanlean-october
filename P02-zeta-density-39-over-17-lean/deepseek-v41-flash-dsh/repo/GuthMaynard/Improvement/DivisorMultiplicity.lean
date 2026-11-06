@@ -2,7 +2,6 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 namespace GuthMaynard.Improvement
 
 /-- Exact multiplicity bound for a nonzero product. A subpower upper bound

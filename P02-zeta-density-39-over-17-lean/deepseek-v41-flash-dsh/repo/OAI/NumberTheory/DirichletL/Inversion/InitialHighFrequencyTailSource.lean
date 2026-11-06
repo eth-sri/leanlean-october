@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialPhysicalMeasure
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialPhysicalMeasure
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 

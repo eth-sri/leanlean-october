@@ -6,7 +6,6 @@ public import GuthMaynard.NativeSource.GuthMaynard.Asymptotics
 @[expose] public section
 
 open Complex Filter MathCollab.Density
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

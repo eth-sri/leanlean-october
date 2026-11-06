@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationAllocation
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem primaryGenerator_power (I : Ideal O) (n : ℕ) :

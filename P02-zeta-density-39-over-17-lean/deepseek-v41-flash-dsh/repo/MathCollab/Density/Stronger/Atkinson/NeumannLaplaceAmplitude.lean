@@ -20,7 +20,6 @@ approximation and a uniform quadratic error are derived algebraically
 from the actual square root, not supplied as an asymptotic premise.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex

@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.AmplifierWitness
 public import GuthMaynard.Improvement.OperatorDensityVector
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Finset
 open scoped InnerProductSpace

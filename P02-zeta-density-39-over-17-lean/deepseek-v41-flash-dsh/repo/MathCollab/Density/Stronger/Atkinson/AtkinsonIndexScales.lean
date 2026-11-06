@@ -25,7 +25,6 @@ hidden.
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- Literal lower slope used in the dyadic curvature estimate. -/

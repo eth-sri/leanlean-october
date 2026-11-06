@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformRadialComparison
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
 local notation "O" => HeckeFamily.O
 
 theorem actual_original_radial_comparison (epsilon Cscale xi saving L : ℝ)

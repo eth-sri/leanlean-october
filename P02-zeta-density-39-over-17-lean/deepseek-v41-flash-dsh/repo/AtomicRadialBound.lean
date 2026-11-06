@@ -4,7 +4,6 @@ public import BoxTimeDensity
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped ContDiff FourierTransform

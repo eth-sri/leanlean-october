@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationLiveMask
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
-open CenteredMomentOriginalChildEnergy CenteredMomentRemainingBox CenteredMomentCommonProfile
+open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentOriginalChildEnergy CenteredMomentRemainingBox CenteredMomentCommonProfile
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _

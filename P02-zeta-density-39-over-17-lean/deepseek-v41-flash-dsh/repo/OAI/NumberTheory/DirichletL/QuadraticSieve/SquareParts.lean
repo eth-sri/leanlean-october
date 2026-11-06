@@ -8,73 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -154,8 +90,7 @@ theorem canonical_quadraticRow_primary_squarefree (D : Ideal O) (hD : Admissible
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
-open EisensteinSchwartzPoisson PrimaryIdealUnitReindex QuadraticSquarefreeKernel
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss EisensteinSchwartzPoisson PrimaryIdealUnitReindex QuadraticSquarefreeKernel
 
 theorem supported_generator_injective :
     Function.Injective (fun lengthScale : {lengthScale : Ideal O // Supported lengthScale} => primaryGenerator lengthScale.val) := by
@@ -231,8 +166,7 @@ theorem originalPairHigh_eq_source_sub_low (I J : Ideal O) (W : 𝓢(ℝ, ℂ))
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss EisensteinSchwartzPoisson GaussGeneratorTransport
 
 theorem canonical_gcd_masked_pair_poisson
     (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
@@ -389,8 +323,7 @@ theorem annularRayGcdBlock_eq_pair_high
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss EisensteinSchwartzPoisson GaussGeneratorTransport
 
 def originalPairDualKernel (D I J : Ideal O) (W : ℝ → ℂ) (M : ℝ) : ℂ :=
   let I' := idealQuotient D I
@@ -423,8 +356,7 @@ end SecondPassIntegration
 open MeasureTheory
 open scoped BigOperators Classical SchwartzMap FourierTransform
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open JointLogSeparation
+open ActualEisensteinCubic JointLogSeparation
 open FirstPassCubeLabels (b0Label)
 
 variable {ι : Type*} [DecidableEq ι]

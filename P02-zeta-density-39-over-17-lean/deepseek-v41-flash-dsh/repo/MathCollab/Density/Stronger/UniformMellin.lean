@@ -15,7 +15,6 @@ and the real part in a fixed vertical strip.
 
 open Real Set MeasureTheory
 open scoped BigOperators ContDiff FourierTransform
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

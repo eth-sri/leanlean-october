@@ -12,8 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff FourierTransform
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open CenteredMomentRetainedProfile CenteredMomentAllocatedNaturalSource
-open EisensteinSchwartzPoisson CenteredMomentLattice
+open CenteredMomentRetainedProfile CenteredMomentAllocatedNaturalSource EisensteinSchwartzPoisson CenteredMomentLattice
 
 def sourcePlain (a b:ℝ) (ha:0<a) (W:𝓢(ℝ,ℂ))
     (hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b) : Plain :=

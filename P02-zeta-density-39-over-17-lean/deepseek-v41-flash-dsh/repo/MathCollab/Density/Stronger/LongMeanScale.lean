@@ -4,7 +4,6 @@ public import MathCollab.Density.Stronger.WeightedCriticalMean
 @[expose] public section
 
 open Real
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

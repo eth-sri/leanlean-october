@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstChildWindows
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell InverseMomentFirstChildWindows
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_live_bin_rank_children

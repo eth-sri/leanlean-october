@@ -5,7 +5,6 @@ public import CenteredShortTrace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory InnerProductSpace
 open scoped InnerProductSpace

@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.OperatorSpectralComparison
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Filter Set
 open scoped InnerProductSpace Topology

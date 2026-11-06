@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionWeightedEnergy
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentReflectedAnnuli
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentReflectedAnnuli
 local notation "O" => HeckeFamily.O
 
 abbrev Index (S : Finset (Ideal O)) := (S.powerset × SmoothIdeal S) × ℤ

@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonProfile
-open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonPrimeSlots CenteredMomentCommonAllocationBox
+open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonPrimeSlots CenteredMomentCommonAllocationBox
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 

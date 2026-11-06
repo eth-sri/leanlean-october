@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondLedger
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal
-open CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]

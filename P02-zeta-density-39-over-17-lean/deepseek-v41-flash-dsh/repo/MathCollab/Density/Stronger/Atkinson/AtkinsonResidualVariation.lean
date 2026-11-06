@@ -14,7 +14,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonSampleGeometry
 
 open Complex MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

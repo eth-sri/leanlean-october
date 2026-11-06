@@ -12,8 +12,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 open MeasureTheory
 namespace SevenEighths.HeckeDetectorFrequency
-open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier
-open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
+open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
 local notation "O" => HeckeFamily.O
 
 theorem dyadic_frequency_bound (Ω : ℝ → ℂ)

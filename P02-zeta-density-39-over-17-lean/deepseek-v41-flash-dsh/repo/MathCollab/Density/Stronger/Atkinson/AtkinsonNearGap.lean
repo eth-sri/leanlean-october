@@ -19,7 +19,6 @@ The resulting bound is 60*sqrt(H*M)/|t-u|, for the literal
 orientation-free numerical majorant already consumed by the source.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 namespace MathCollab.Density.Stronger.Atkinson

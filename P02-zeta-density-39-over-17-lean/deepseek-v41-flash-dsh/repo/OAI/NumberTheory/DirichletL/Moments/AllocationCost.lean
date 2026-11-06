@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAllocationCost
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentAddedZeroUniform
+open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
 local notation "O" => ActualEisensteinCubic.O
 
  theorem actualAllocations_uniform_small_power (N : ℕ) (ε : ℝ) (hε : 0<ε) :

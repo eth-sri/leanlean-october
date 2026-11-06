@@ -3,8 +3,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.MediumTypeIEndpoint.Part01
 
 @[expose] public section
 
-open Asymptotics Filter Topology
-open Complex Finset MeasureTheory Real Set
+open Asymptotics Filter Topology Complex Finset MeasureTheory Real Set
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 namespace GuthMaynard.NativeMoment
 set_option maxHeartbeats 1200000
@@ -1269,10 +1268,6 @@ theorem medium_complementary_source_scale_bounds
   have haOne : 1 < a := by
     dsimp only [a]
     have hSigmaGap : 0 < sigma - 1 / 2 := sub_pos.mpr hsigma
-    have hScaled : 200 * d ≤ (sigma - 1 / 2) / 5 := by
-      calc
-        200 * d ≤ 200 * ((sigma - 1 / 2) / 1000) := by gcongr
-        _ = (sigma - 1 / 2) / 5 := by ring
     linarith [hSigmaGap]
   have haPos : 0 < a := zero_lt_one.trans haOne
   have haTau : a ≤ tau := by

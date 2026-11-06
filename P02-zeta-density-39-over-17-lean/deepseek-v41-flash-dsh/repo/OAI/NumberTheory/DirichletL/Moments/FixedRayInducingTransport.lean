@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedRayInducingTransport
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile
-open CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentExceptionalPair CenteredMomentFixedRowMask
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentExceptionalPair CenteredMomentFixedRowMask
 local notation "O" => HeckeFamily.O
 
 theorem modulus_generator_ne_zero (ν : Character) :

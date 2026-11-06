@@ -10,10 +10,8 @@ public import MathCollab.Density.Stronger.Fourth.SquareTerm
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 theorem integral_zetaFourthTerm_vertical_eq_of_le

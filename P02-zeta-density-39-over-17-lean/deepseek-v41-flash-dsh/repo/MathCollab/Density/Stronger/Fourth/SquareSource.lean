@@ -15,12 +15,9 @@ public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology ArithmeticFunction
-open MathCollab.Density.Contour MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set Topology ArithmeticFunction MathCollab.Density.Contour MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open scoped ArithmeticFunction.zeta ArithmeticFunction.sigma BigOperators Interval
   LSeries.notation ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 

@@ -12,7 +12,6 @@ public import Mathlib.NumberTheory.LSeries.MellinEqDirichlet
 
 open Complex MeasureTheory Set Filter
 open scoped ArithmeticFunction.Moebius BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 

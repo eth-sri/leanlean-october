@@ -7,7 +7,6 @@ public import RefinedDensity
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 namespace Montgomery.RationalMoment

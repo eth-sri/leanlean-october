@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialMarkedDictionary
-open HeckeFamily HeckeDyadic InverseInitialRawDictionary InverseInitialConjugateEnergy
-open InverseInitialPoissonBridge UniqueFactorizationMonoid
+open HeckeFamily HeckeDyadic InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialPoissonBridge UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 theorem indexed_mark_initial {ι : Type*} (T : Finset ι) (P : ι→Ideal O) (A : ι→ℂ)

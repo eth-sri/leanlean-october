@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondReferenceNormalization
-open HeckeFamily CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentSectorLocalization CenteredMomentSecondSourcePowerDescent
-open CenteredMomentSecondSourceSeededPowerDescent
+open HeckeFamily CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondRadicalBudget CenteredMomentSectorLocalization CenteredMomentSecondSourcePowerDescent CenteredMomentSecondSourceSeededPowerDescent
 local notation "O"=>HeckeFamily.O
 
 def referenceEnvelope (qref:ℝ)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=

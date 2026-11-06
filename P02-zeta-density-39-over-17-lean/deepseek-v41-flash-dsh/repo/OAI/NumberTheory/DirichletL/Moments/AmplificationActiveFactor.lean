@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationActiveFactor
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation
-open CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool
-open CenteredMomentSourceRow
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
 def errorMovingExponent (n : ℕ) : ℕ := if n=5 then 0 else 1

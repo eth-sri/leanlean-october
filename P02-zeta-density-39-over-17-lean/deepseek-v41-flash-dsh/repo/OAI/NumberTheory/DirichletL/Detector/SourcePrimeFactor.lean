@@ -7,8 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
 
 theorem bareSourceCoefficient_prime_formula (η : HeckeFamily.Character) (p : O) (hp : Prime p)

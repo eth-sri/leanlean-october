@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT CenteredMomentCorrelation CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 lemma actual_common_frequency_zero (C n₁ n₂ j : O)

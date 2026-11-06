@@ -13,7 +13,6 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorBandCutoff
 
 open Complex Set Filter Topology
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

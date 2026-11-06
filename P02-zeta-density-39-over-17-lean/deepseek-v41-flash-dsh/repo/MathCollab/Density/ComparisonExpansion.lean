@@ -6,7 +6,6 @@ public import MathCollab.Density.ComparisonAlgebra
 open Real Complex Set
 open scoped BigOperators ComplexConjugate
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentBridge
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson
 
 def productCharacter (a b : O) (hcop : IsCoprime a b)
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) :

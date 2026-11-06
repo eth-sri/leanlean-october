@@ -10,7 +10,6 @@ public import LaterPairs.Native.SargosDualTentWindow
 public import LaterPairs.Native.SargosWithinDerivativeCalculus
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
@@ -1871,8 +1870,7 @@ end TaoTrudgianYang2025.SquareProductCount
 
 namespace TaoTrudgianYang2025.CubicJointCount
 
-open Set MeasureTheory Expdb Filter GafniTao
-open SquareProductCount.CubicSource
+open Set MeasureTheory Expdb Filter GafniTao SquareProductCount.CubicSource
 open scoped Topology ContDiff BigOperators NNReal
 
                                                                        

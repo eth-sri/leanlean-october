@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.MiddleFourthMoment
 public import GuthMaynard.Improvement.MiddleLargeValueBranches
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

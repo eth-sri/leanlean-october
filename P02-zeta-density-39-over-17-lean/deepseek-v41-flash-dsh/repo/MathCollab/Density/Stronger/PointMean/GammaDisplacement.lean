@@ -12,9 +12,7 @@ public import Mathlib.Analysis.ODE.Gronwall
 
 @[expose] public section
 
-open Complex Set
-open MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
+open Complex Set MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

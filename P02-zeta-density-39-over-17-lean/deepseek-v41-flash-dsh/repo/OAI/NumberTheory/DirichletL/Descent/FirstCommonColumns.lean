@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

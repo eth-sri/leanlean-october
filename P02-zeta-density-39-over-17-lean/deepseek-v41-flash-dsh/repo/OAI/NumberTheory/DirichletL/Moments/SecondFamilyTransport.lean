@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondFamilyTransport
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondHeightFamily CenteredMomentSecondChildProfile CenteredMomentChildRows
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion
-open CenteredExceptionalProfile CenteredMomentRestrictedEnergy RayFourExpansion
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondHeightFamily CenteredMomentSecondChildProfile CenteredMomentChildRows CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion CenteredExceptionalProfile CenteredMomentRestrictedEnergy RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem row_presentation_twist (η τ : Character) (χ : RayCharacter) (A : O)

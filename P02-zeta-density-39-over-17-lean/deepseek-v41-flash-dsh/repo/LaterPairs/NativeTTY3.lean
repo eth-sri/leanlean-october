@@ -4,7 +4,6 @@ public import LaterPairs.NativeTTY4
 public import LaterPairs.NativeSargosAD
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace TaoTrudgianYang2025
 open Expdb

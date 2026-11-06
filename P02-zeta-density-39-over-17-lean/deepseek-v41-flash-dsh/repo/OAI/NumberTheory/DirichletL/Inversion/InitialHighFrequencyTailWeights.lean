@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialEnergyCallerWeights
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialEnergyCallerWeights
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι]
 

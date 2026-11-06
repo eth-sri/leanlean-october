@@ -6,7 +6,6 @@ public import Mathlib.Analysis.Asymptotics.Basic
 
 open Complex Filter MathCollab.Density
 open scoped Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

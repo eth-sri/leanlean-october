@@ -18,7 +18,6 @@ the triangle bound M is stronger. This keeps the square-root growth
 without imposing an artificial upper bound on the height gap.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 namespace MathCollab.Density.Stronger.Atkinson

@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FiniteSieveRestriction
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve FiniteSieveRestriction
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 

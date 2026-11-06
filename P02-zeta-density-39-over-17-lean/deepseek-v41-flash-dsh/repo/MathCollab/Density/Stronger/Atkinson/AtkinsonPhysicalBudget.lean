@@ -17,7 +17,6 @@ public import WeylPort.GrowthAlgebra
 @[expose] public section
 open Complex Filter MeasureTheory Set Topology Finset
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow)
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}

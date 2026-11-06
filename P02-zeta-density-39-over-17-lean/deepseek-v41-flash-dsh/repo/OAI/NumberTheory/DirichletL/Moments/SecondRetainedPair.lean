@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedPair
-open CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSupport CenteredMomentSupportedCorrelation
-open CenteredMomentSecondWholeKernel CenteredMomentFirstLocalization CenteredMomentSectorLocalization
-open CenteredMomentSecondLocalization CenteredMomentSourceRow
+open CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentSecondSectorRetained CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentSecondWholeKernel CenteredMomentFirstLocalization CenteredMomentSectorLocalization CenteredMomentSecondLocalization CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
 theorem physical_pair_summable (C D I J : Ideal O) (hI : Supported (C*I)) (hJ : Supported (D*J))

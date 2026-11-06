@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.TruncatedSourceMeanValue
 public import GuthMaynard.Improvement.CenteredRestrictedCubic
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

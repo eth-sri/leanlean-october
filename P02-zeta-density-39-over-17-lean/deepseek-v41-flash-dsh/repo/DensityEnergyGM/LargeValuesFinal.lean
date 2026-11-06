@@ -327,7 +327,6 @@ theorem rpow_three_halves_sub_log_ratio
   let ρ := Real.log y / Real.log x
   have hxy : x ^ ρ = y := rpow_log_div_log hx hy
   have hxpos : 0 < x := zero_lt_one.trans hx
-  have hx0 : 0 ≤ x := hxpos.le
   calc
     x ^ (3 / 2 - ρ) = x ^ (3 / 2 : ℝ) / x ^ ρ := by
       rw [Real.rpow_sub hxpos]
@@ -403,11 +402,6 @@ theorem gm_largeValues_raw_dispersion
   have hOp0 : 0 ≤ gmMatrixOperatorNorm cutoff N W := by
     change 0 ≤ ‖gmMatrix cutoff N W‖
     exact norm_nonneg (gmMatrix cutoff N W)
-  have hSing0 : 0 ≤ gmMatrixSingularValue cutoff N W j :=
-    gmMatrixSingularValue_nonneg cutoff N W j
-  have hCardCube : (W.card : ℝ) ^ 3 ≤
-      ((N : ℝ) * gmMatrixOperatorNorm cutoff N W ^ 2 / V ^ 2) ^ 3 :=
-    pow_le_pow_left₀ (Nat.cast_nonneg W.card) hCard 3
   have hToOp : (W.card : ℝ) ^ 3 * V ^ 6 / (N : ℝ) ^ 3 ≤
       gmMatrixOperatorNorm cutoff N W ^ 6 := by
     calc
@@ -934,7 +928,6 @@ theorem gmSection12RootShape_le_physical
       8 * A * gmEquation12PhysicalRootShape N T V := by
   have hn : (0 : ℝ) < N := by exact_mod_cast hN
   let D : ℝ := V ^ 6 / (N : ℝ) ^ 3
-  have hD : 0 < D := div_pos (pow_pos hV 6) (pow_pos hn 3)
   have hB : 1 ≤ 8 * A := by nlinarith
   let q₁ := (N : ℝ) ^ 3 / D
   let q₂ := (N : ℝ) ^ 2 / D
@@ -946,12 +939,10 @@ theorem gmSection12RootShape_le_physical
   let q₈ := (T ^ (9 / 8 : ℝ) * (N : ℝ) ^ (3 / 2 : ℝ) *
     V ^ (-1 : ℝ)) / D
   have hq₁ : 0 ≤ q₁ := by dsimp only [q₁]; positivity
-  have hq₂ : 0 ≤ q₂ := by dsimp only [q₂]; positivity
   have hq₃ : 0 ≤ q₃ := by dsimp only [q₃]; positivity
   have hq₄ : 0 ≤ q₄ := by dsimp only [q₄]; positivity
   have hq₅ : 0 ≤ q₅ := by dsimp only [q₅]; positivity
   have hq₆ : 0 ≤ q₆ := by dsimp only [q₆]; positivity
-  have hq₇ : 0 ≤ q₇ := by dsimp only [q₇]; positivity
   have hq₈ : 0 ≤ q₈ := by dsimp only [q₈]; positivity
   have e₁ : ((8 * A) * (N : ℝ) ^ 3 / D) ^ (1 / 3 : ℝ) ≤
       8 * A * q₁ ^ (1 / 3 : ℝ) := by
@@ -1047,7 +1038,6 @@ theorem gmSection12_equation12_1_smooth
       _ ≤ A * gmSection12RawShape N T V W := by
         apply mul_le_mul_of_nonneg_right _ hshape₀
         dsimp only [A]
-        have hTε0 : 0 ≤ T ^ ε := Real.rpow_nonneg hTpos.le ε
         nlinarith
   have hroot := gmSection12_eq12_1_roots (zero_lt_one.trans_le hAone) hNnat hTpos hV hW hrawA
   have hphysical := gmSection12RootShape_le_physical hAone hNnat hTpos hV

@@ -5,7 +5,6 @@ public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointDensity
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

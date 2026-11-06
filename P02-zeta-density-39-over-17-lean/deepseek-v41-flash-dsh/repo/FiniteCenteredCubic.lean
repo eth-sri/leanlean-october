@@ -4,7 +4,6 @@ public import FiniteCubicPerturbation
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 set_option maxHeartbeats 1200000
 open MeasureTheory Set Finset

@@ -12,10 +12,7 @@ open scoped Classical BigOperators ComplexConjugate ContDiff Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckePrimeRay
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentWholeSlotDeletion
-open CenteredMomentPrimeSlot HeckeZeroSupremum
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckePrimeRay CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckeZeroSupremum
 local notation "O" => HeckeFamily.O
 variable {Δ : ℝ} {D : Parameters.HighData Δ}
 

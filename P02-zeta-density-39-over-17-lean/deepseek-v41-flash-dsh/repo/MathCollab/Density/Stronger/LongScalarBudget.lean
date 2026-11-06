@@ -6,7 +6,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 open Filter
 open scoped Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

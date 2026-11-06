@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion ProbeRow CubicEisenstein
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion ProbeRow CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 theorem actualSextic_unit_six (p b : O) [(Ideal.span {p}:Ideal O).IsMaximal]

@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentProductCRT
-open CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentHeterogeneousCRT
+open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentHeterogeneousCRT
 variable {A ι : Type*} [CommRing A] [Fintype ι] [DecidableEq ι]
 
 def productCRT (a : ι → A)
@@ -149,8 +148,7 @@ theorem fullModulusCorrelation_product_norm (a b : ι → A)
   exact local_cofactor_norm a b hab χ ψ h i
 
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 omit [DecidableEq ι] in

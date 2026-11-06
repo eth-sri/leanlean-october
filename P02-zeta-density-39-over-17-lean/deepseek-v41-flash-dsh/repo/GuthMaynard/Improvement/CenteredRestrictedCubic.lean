@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.CenteredCubicBoundedHeight
 public import GuthMaynard.Improvement.CubicOrdinaryClosure
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform ContDiff

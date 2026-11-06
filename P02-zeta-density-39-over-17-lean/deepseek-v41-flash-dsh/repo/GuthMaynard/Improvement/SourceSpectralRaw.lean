@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.OperatorSourceMixed
 public import GuthMaynard.Improvement.FixedCutoffs
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.SeparatedSecondMoment
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

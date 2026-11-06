@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentUncenteredTerminal
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentRectangle
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]

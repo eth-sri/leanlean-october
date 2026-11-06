@@ -8,9 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedArithmeticHeight
 open scoped Classical BigOperators ContDiff SchwartzMap
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-open InverseReflectedPhase
+open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment InverseReflectedPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v w

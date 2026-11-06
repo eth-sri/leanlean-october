@@ -12,10 +12,7 @@ open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseRawFourier InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform DetectorDictionaryInverseRawFourier InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
 
 private theorem clipped_one_zero (W : ℝ→ℂ) : clippedTest W 1 0=W := by
   funext x

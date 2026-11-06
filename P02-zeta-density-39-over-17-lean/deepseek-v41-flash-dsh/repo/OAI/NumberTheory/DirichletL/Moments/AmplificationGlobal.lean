@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationGlobal
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy
-open CenteredMomentAmplification ProbePhysical
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy CenteredMomentAmplification ProbePhysical
 local notation "O" => ActualEisensteinCubic.O
 
 theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]

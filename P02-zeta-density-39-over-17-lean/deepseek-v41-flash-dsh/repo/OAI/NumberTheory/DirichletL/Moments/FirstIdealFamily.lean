@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstIdealFamily
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentSourceRow
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstColumns
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation RayFourExpansion
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_one_primary (η : Character) (m : O) (t : ℝ)

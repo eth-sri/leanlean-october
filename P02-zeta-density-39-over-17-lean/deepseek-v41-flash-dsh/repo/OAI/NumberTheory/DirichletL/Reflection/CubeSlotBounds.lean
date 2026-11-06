@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
-open IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment IdealMobiusDivisorSum
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]

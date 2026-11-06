@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.FiniteSpectralWitness
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open InnerProductSpace
 open scoped InnerProductSpace

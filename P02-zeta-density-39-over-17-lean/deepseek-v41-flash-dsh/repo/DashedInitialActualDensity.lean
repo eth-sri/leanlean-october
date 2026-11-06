@@ -4,7 +4,6 @@ public import PairActualDensity
 public import DashedInitialParameters
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger MathCollab.Density TaoTrudgianYang2025

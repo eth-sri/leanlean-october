@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.PNT.IdealPrimeMass
 
-open ActualEisensteinCubic ArithmeticFunction Filter
-open SevenEighths.IdealMangoldt
+open ActualEisensteinCubic ArithmeticFunction Filter SevenEighths.IdealMangoldt
 open scoped BigOperators Classical Topology
 
 noncomputable section

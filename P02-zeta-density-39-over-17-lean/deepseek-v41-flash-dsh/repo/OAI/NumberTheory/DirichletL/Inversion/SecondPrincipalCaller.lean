@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseSecondPrincipalCaller
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge
-open SecondPassIntegration CompletedHeight
-open InverseMoment InversePrincipalEnergy RayFourExpansion
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge SecondPassIntegration CompletedHeight InverseMoment InversePrincipalEnergy RayFourExpansion
 local notation "Eis" => ActualEisensteinCubic.O
 
 def principalWindow (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)

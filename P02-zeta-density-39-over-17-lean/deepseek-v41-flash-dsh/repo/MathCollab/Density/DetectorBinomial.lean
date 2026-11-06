@@ -6,7 +6,6 @@ public import Mathlib.Analysis.Analytic.Binomial
 
 open Complex Set Filter
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 

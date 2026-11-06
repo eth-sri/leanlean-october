@@ -3,7 +3,6 @@ public import LaterPairs.Native.HuxleyCore
 public import LaterPairs.NativeSharpRow6
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace TaoTrudgianYang2025
 open Expdb

@@ -11,8 +11,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open MixedCrossSeparation (columnCoefficient)
-open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers
-open CompletedGauss
+open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

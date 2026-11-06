@@ -13,10 +13,8 @@ public import MathCollab.Density.Stronger.Fourth.SquareSource
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter ArithmeticFunction
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter ArithmeticFunction MathCollab.Density.Stronger.Fourth
 open scoped BigOperators Topology LSeries.notation
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

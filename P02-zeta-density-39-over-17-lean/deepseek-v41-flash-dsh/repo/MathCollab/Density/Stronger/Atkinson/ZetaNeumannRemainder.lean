@@ -20,7 +20,6 @@ integrability is proved before subtracting their integrals. The
 complete source remainder retains the n^(-5/4) divisor weight.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set

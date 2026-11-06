@@ -5,7 +5,6 @@ public import DensityEnergyGM.EnergyCenteredReflection
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
 namespace Montgomery.RationalMoment

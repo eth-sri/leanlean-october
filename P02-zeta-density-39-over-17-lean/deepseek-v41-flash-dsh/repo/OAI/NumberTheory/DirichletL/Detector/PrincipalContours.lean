@@ -12,9 +12,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalContours
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary
 local notation "Id" => Ideal ActualEisensteinCubic.O
 local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable Id := ConcretePrimeRowBridge.idealGenerator_injective.countable
@@ -28,8 +26,6 @@ lemma ideal_correction_measurable {α : Type*} [MeasurableSpace α]
     (η : Character) (P : PrimeIdeal) (x w z : α → ℂ)
     (hx : Measurable x) (hw : Measurable w) (hz : Measurable z) :
     Measurable (fun t => idealClosedCorrection η P (x t) (w t) (z t)) := by
-  have hQ : 0<(Ideal.absNorm P.val : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero)
   unfold idealClosedCorrection unramifiedClosed continuedCorrection markedFactor
     coordR coordV coordW coordD coordK
   dsimp only

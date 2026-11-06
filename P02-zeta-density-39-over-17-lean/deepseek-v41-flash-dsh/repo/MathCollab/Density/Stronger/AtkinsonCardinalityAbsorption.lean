@@ -13,7 +13,6 @@ The localized packet bound remains an explicit theorem hypothesis.
 No physical Atkinson estimate or point-mean theorem is imported or asserted.
 -/
 
-set_option autoImplicit false
 
 /-!
 # Cardinality absorption at an explicit physical length

@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedRows
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst
 local notation "O" => ActualEisensteinCubic.O
 
 def retainedRows (R : ℝ) (A : O) : Finset O := rowNormDisk (Nat.ceil (4*R/normValue A))

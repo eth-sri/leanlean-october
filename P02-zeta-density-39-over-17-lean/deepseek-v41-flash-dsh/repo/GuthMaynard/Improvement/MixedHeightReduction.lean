@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.MixedPoissonBridge
 public import GuthMaynard.Improvement.UnequalHeightReduction
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform

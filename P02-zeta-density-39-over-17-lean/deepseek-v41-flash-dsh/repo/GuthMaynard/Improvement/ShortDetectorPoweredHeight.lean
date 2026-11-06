@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.ShortDetectorNormalization
 
 open Real Complex Set Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

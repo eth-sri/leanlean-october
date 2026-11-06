@@ -11,10 +11,8 @@ public import Mathlib.Analysis.Complex.PhragmenLindelof
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory Asymptotics
+open Complex Finset Set Filter Topology MeasureTheory Asymptotics Classical
 open scoped BigOperators Topology
-open Classical
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

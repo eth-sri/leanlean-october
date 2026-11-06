@@ -11,12 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMixedRoot
-open CanonicalQuadraticSieve CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily
-open CenteredMomentFirstScale CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CenteredMomentFirstMixedAllowance CenteredMomentFirstCanonicalAllowance CenteredMomentFirstNonexceptionalPrefactor CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CenteredMomentFirstScale CenteredMomentSupportedCorrelation
 local notation "O"=>HeckeFamily.O
 
 lemma active_span_swap (C D:Ideal O):
@@ -124,9 +119,7 @@ theorem actual_fixed_reference_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D
         (Real.sqrt_nonneg _)
     _=_:=by ring
 
-open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
-open HeckeFamily CenteredMomentSupportedCorrelation
+open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair HeckeFamily CenteredMomentSupportedCorrelation
 
 theorem original_fixed_reference_pair {ι:Type*}[Fintype ι][DecidableEq ι]
     (s:Input ι)(R seed:Ideal O)(a₁ a₂:ℝ)(ha₁:0<a₁)(ha₂:0<a₂)

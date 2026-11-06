@@ -10,11 +10,8 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightFreezing
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 /-- The actual zeta square is approximated by the complete frozen

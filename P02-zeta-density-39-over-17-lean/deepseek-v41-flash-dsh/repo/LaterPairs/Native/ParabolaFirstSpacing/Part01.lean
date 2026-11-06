@@ -21,7 +21,6 @@ public import LaterPairs.Native.SargosPrefixFourthMajorant
 public import LaterPairs.Native.SargosQuarticKernelJets
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth

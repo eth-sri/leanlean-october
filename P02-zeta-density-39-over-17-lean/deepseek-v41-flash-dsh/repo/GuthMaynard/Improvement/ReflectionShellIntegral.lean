@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import GuthMaynard.Improvement.CubicTimeMeasure
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

@@ -6,7 +6,6 @@ public import GuthMaynard.Improvement.WeakShortDensity
 
 open Complex Filter Set MathCollab.Density
 open scoped Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

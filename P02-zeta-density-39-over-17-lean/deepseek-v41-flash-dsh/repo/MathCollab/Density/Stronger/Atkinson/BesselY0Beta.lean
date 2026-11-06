@@ -15,7 +15,6 @@ public import Mathlib.Analysis.SpecialFunctions.Arsinh
 open Complex Set MeasureTheory
 open scoped Topology Interval
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

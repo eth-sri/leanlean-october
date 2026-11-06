@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergySlotHeight
-open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-open CenteredMomentHeckeSlots CenteredMomentCommonMaskEnergy
-open HeckePrimeAnnular CenteredMomentPrimeSlotShift
+open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentHeckeSlots CenteredMomentCommonMaskEnergy HeckePrimeAnnular CenteredMomentPrimeSlotShift
 local notation "O"=>HeckeFamily.O
 
 variable {α:Type*}[Fintype α]

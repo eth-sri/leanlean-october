@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialPoissonBridge
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
-open UniqueFactorizationMonoid InverseInitialOverlap
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson UniqueFactorizationMonoid InverseInitialOverlap
 local notation "Eis" => ActualEisensteinCubic.O
 
 def rowPolynomial (F : Finset (Ideal Eis)) (A : Ideal Eis → ℂ) (u : Eis) : ℂ :=

@@ -21,7 +21,6 @@ unit interval in the right half-plane. This is the leading term of DLMF
 5.11.2, with an explicit vertical error; no Stirling estimate is assumed.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter Finset MeasureTheory Set Topology

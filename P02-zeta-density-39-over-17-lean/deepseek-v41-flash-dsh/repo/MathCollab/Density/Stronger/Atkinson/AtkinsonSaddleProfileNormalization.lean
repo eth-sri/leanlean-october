@@ -14,7 +14,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonResidualVariation
 @[expose] public section
 
 open Complex Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

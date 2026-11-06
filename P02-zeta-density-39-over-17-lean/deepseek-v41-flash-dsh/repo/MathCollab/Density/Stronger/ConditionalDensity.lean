@@ -8,7 +8,6 @@ public import MathCollab.Density.DensityDyadicSummation
 
 open Filter MeasureTheory Set
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

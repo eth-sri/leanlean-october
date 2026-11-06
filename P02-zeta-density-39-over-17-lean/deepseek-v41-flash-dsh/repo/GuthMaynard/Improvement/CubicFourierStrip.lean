@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.CubicStripIntegral
 public import GuthMaynard.Improvement.RatioFourierInput
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform

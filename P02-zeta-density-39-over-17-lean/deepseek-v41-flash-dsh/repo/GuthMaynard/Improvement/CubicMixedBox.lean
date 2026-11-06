@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.InverseRatioIntegral
 public import GuthMaynard.Improvement.MaskedBox
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap

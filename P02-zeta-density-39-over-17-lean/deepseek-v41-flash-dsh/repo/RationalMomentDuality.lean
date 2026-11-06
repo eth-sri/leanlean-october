@@ -12,7 +12,6 @@ The moment inequality is an explicit hypothesis, not an axiom or a proved
 hypercontractive estimate. The test coefficients and all finite-sum identities
 are constructed in the proof. Empty sets and zero energy are included.
 -/
-set_option autoImplicit false
 noncomputable section
 open Finset
 

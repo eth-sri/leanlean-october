@@ -11,10 +11,8 @@ public import MathCollab.Density.Stronger.Fourth.GaussianProducer
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 

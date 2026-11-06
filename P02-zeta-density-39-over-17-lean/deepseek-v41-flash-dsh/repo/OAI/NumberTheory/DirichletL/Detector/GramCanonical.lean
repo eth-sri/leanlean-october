@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT IdealMobiusDivisorSum UniqueFactorizationMonoid
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

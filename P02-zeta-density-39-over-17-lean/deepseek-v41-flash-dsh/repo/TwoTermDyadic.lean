@@ -2,7 +2,6 @@ module
 public import MathCollab.Density.Stronger.DyadicMoment
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter Set
 open scoped Interval

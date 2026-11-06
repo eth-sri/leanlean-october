@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.CubicModeSymmetry
 public import GuthMaynard.Improvement.CubicScaleClosure
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

@@ -13,9 +13,8 @@ units and their inverses through the Chinese remainder equivalence, and then
 factors the complete Kloosterman sum at coprime moduli.
 -/
 
-open Complex
+open Complex Classical
 open scoped BigOperators
-open Classical
 
 namespace GuthMaynard.NativeMoment
 

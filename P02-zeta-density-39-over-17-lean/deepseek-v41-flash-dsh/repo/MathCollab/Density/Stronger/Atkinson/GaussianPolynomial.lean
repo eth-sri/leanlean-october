@@ -12,7 +12,6 @@ public import Mathlib.Tactic
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

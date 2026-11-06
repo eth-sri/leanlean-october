@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource
-open InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource InversePrioritySecondSource
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
 variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]

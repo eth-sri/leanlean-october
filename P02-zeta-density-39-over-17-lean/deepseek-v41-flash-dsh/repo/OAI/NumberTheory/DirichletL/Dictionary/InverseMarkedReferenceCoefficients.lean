@@ -11,9 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialPhysicalSlots
-open DetectorDictionaryInverseMarkedPadding
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialPhysicalSlots DetectorDictionaryInverseMarkedPadding
 local notation "O"=>HeckeFamily.O
 
 variable {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}

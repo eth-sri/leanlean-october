@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.MixedHeightTheorem
 public import GuthMaynard.Improvement.FourierInputClass
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped SchwartzMap

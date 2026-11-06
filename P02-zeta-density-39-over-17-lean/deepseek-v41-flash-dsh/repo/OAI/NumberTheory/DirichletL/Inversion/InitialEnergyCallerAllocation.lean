@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerAllocation
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerSector
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile InverseInitialEnergyCallerSector
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]

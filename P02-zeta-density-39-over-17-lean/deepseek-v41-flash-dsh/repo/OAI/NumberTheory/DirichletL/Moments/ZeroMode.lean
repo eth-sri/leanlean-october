@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentZeroMode
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcreteTraceCRT CubicEisenstein
-open CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentFourier
-open UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcreteTraceCRT CubicEisenstein CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentFourier UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
 local notation "O" => ActualEisensteinCubic.O
 
 @[simp] theorem pairResidue_mul (a b : O) (ha : Supported (Ideal.span {a}))

@@ -12,7 +12,6 @@ public import Mathlib.NumberTheory.LSeries.RiemannZeta
 
 open MeasureTheory Filter Set
 open scoped Interval ENNReal Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

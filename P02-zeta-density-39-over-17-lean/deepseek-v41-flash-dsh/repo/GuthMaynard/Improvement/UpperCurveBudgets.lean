@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.UpperWindowBudgets
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

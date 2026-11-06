@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformOriginalComparison
-open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum
-open CenteredMomentUniformNaturalRetained CenteredMomentUniformOriginalEnergy
-open CenteredMomentSectorLocalization
+open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum CenteredMomentUniformNaturalRetained CenteredMomentUniformOriginalEnergy CenteredMomentSectorLocalization
 
 theorem actual_original_comparison (epsilon Cscale xi saving L : ℝ)
      (hepsilon : 0<epsilon) (hscale : 0<Cscale) (hxi : 0<xi)

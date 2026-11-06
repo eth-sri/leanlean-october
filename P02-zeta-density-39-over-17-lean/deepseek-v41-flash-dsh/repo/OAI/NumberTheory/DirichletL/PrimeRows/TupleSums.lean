@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<eps)

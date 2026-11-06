@@ -5,7 +5,6 @@ no donor zero-family, tail assumption, or7/10 restriction is imported. -/
 public import GuthMaynard.Improvement.ShortGammaPacking
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology

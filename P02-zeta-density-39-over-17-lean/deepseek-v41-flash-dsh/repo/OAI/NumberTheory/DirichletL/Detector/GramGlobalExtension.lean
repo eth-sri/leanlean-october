@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentCorrelation CenteredMomentCanonical CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentCorrelation CenteredMomentCanonical CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 

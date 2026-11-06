@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.AmplifierSynthesis
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Finset
 open scoped InnerProductSpace

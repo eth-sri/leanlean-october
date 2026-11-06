@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputReindex
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 local notation "O" => HeckeFamily.O
 variable {α β : Type*} [Fintype α] [Fintype β]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _

@@ -11,7 +11,6 @@ public import MathCollab.Density.AllFrequency
 @[expose] public section
 
 open Complex MeasureTheory Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

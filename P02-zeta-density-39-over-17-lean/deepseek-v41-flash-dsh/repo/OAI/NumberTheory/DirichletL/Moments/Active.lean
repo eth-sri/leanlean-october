@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentActive
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-open CanonicalRowCompletion CenteredMomentCanonical
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CenteredMomentCanonical
 
 def netExponent (c d : ℕ) : ℕ := (c + 5 * d) % 6
 

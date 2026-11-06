@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
-open ProbeCompleted ProbeRow CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion ProbeCompleted ProbeRow CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 def physicalMellinCoefficientTerm (η : HeckeFamily.Character) (C : CalibrationData)

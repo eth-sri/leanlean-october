@@ -7,78 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem middleTruncation_coprime_common_mask
     (G C : Ideal O) (hG : Squarefree G) (hC : Squarefree C) (hGC : IsCoprime G C)
@@ -443,8 +378,7 @@ theorem HasSieveExponent.small_principal_correction {α : ℝ} (hexp : HasSieveE
       (dual_middle_scale_shape M F B N (D₁*D₂) U α hM hF (by linarith) (by linarith) hcut)
       (by positivity)
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem truncationError_symmetric_bound (m : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -486,8 +420,7 @@ theorem primePool_symmetric_error_bound (m : ℕ) :
   exact div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_right (support_card_bound ε hε G hG) (by positivity)) (by positivity)
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem originalTerm_one_norm_le {m n p : Type*}
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)

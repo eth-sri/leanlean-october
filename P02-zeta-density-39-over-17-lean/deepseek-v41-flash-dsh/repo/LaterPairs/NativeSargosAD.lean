@@ -2,7 +2,6 @@ module
 public import LaterPairs.Native.SquareProductCount
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace TaoTrudgianYang2025.CubicJointCount
 open Expdb

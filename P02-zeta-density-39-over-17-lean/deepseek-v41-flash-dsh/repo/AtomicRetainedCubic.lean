@@ -5,13 +5,11 @@ public import GuthMaynard.Improvement.RadialScaleBudget
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace Montgomery.RationalMoment
-open GuthMaynard.Improvement
-open GuthMaynard.Improvement.AtomicCubic
+open GuthMaynard.Improvement GuthMaynard.Improvement.AtomicCubic
 
 /-- The retained Poisson cubic for the literal atomic time measure. Every
 Fourier moment is supplied by fixed-width box smoothing; the remainder

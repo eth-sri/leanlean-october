@@ -9,8 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_selected_column_sum (F : Finset (Ideal O))

@@ -3,7 +3,6 @@ public import LaterPairs.Native.HuxleyProfileGeometry.Part01
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
@@ -12,19 +11,8 @@ open Set
 namespace TaoTrudgianYang2025.HuxleyLinearForm
 end TaoTrudgianYang2025.HuxleyLinearForm
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
-open Filter
-open scoped Topology
-open Set
-open Polynomial
-open Set
-open scoped Classical
-open scoped Classical
-open scoped Classical
-open scoped Classical
-open Filter
-open scoped Topology
-open scoped ContDiff
-open scoped FourierTransform BigOperators
+open Filter Set Polynomial
+open scoped Topology Classical ContDiff FourierTransform BigOperators
 
 
                                                                   

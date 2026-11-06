@@ -18,9 +18,8 @@ product (replacing fiber factors by `1`) and proves its convergence/holomorphy p
 
 @[expose] public section
 
-open Filter Function Complex Finset Topology
+open Filter Function Complex Finset Topology Set
 open scoped Topology BigOperators
-open Set
 
 namespace Complex.Hadamard
 

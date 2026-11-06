@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.CubicMaskedStrip
 public import GuthMaynard.Improvement.RadialScaleBudget
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff

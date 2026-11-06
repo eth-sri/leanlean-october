@@ -11,8 +11,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentMobiusHarmonicMass
-open CenteredMomentWholeDivisorShell CenteredMomentSectorLocalization
-open CenteredMomentDivisorBoundary CenteredMomentMobiusRegroup UniqueFactorizationMonoid
+open CenteredMomentWholeDivisorShell CenteredMomentSectorLocalization CenteredMomentDivisorBoundary CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 
 lemma shell_mass (Ds:Finset (Ideal O)) (n:ℤ) (hn:n∈selectedShells Ds) :

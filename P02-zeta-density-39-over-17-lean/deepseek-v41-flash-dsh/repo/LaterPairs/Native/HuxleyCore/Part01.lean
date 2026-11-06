@@ -39,10 +39,9 @@ public import TaoTrudgianYang2025.HeathBrownPhysicalPhase
 public import TaoTrudgianYang2025.ModelEndpointEntry
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
 
  
                                                                     
@@ -188,23 +187,8 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 
 
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
 universe huxleyNarrowV
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase

@@ -6,7 +6,6 @@ public import LaterPairs.PhysicalTargetWindows
 public import LaterPairs.SharpTargetTailBudgets
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace TaoTrudgianYang2025
 

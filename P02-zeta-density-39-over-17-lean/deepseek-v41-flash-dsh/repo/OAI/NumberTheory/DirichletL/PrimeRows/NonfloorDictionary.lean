@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorPhysicalSelection
-open HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O)
 variable (H : Subgroup (O ⧸ M)ˣ)

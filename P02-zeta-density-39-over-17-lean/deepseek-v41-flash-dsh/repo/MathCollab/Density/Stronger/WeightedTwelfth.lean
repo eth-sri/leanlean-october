@@ -7,7 +7,6 @@ public import MathCollab.Density.Stronger.CriticalMoment
 
 open MeasureTheory Set Filter
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

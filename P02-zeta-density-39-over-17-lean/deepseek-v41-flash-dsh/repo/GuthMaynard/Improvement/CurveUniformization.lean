@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.ShortDensityUniform
 
 open Finset MathCollab.Density
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

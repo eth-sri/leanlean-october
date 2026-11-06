@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.ReflectionNearRow
 public import MathCollab.Density.LargeValues
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 namespace GuthMaynard.Improvement

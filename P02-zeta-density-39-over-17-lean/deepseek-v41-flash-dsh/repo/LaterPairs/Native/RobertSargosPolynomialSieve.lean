@@ -7,7 +7,6 @@ public import LaterPairs.Native.RobertSargosTaylorCount
 public import LaterPairs.Native.SargosDoubleLargeSieve
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 

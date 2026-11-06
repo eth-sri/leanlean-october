@@ -14,8 +14,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem neumannTwoTerm_complex_exp (z : ℝ) :

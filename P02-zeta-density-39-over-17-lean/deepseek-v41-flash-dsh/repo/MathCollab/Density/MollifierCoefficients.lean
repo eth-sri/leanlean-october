@@ -8,7 +8,6 @@ public import Mathlib.Tactic
 
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

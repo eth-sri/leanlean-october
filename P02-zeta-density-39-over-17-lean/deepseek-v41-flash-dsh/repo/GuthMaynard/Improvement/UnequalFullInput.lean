@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.AffineBox
 public import GuthMaynard.Improvement.AffineSupportTransfer
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap ContDiff

@@ -9,74 +9,8 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 open Filter MeasureTheory
@@ -312,10 +246,9 @@ theorem affineCusp_branch_fourier (h h1 q r:Eis) (j n:ℕ)
 end
 
 section
-open MeasureTheory Filter
+open MeasureTheory Filter ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 open scoped BigOperators Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma hasSum_diagonal_unit_integrals (u t:Eisˣ) (v:ℝ) (hv:0<v) (s freq:ℂ) (hs:2<s.re) :
@@ -372,10 +305,9 @@ lemma onceCusp_q_absNorm (t:Eisˣ) (j:Fin 3) :
 end
 
 section
-open MeasureTheory Filter
+open MeasureTheory Filter ActualEisensteinCubic ConcreteTraceCRT
 open scoped BigOperators Classical ENNReal
 
-open ActualEisensteinCubic ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem quotient_weighted_period_unfold (q:Eis) (hq:q≠0)
@@ -437,10 +369,9 @@ theorem character_weighted_period_unfold (q:Eis) (hq:q≠0)
 end
 
 section
-open Filter MeasureTheory
+open Filter MeasureTheory ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 open scoped BigOperators Classical
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 def affinePeriodChar (q:Eis) (hq:q≠0) (ell:Eis) : AddChar (Eis⧸Ideal.span {q}) ℂ :=
@@ -540,10 +471,9 @@ lemma affineCusp_masked_inner (h q r a ell x:Eis) (j n:ℕ)
 
 end
 
-open Filter MeasureTheory
+open Filter MeasureTheory ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 open scoped BigOperators Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma affineDenominator_zero (h h1 q r:Eis) (j n:ℕ) (a:PrimaryLower)

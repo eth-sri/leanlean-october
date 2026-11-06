@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckePrimeAnnular ConcretePrimeRowBridge
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentRetainedEnergy CenteredMomentHeckeSlots CenteredMomentPrimeSlot
-open CenteredMomentDetectorDictionary
+open HeckeFamily HeckePrimeAnnular ConcretePrimeRowBridge CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredMomentRetainedEnergy CenteredMomentHeckeSlots CenteredMomentPrimeSlot CenteredMomentDetectorDictionary
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open HeckeDetectorCoefficientTransfer CenteredMomentRetainedEnergy
-open CenteredMomentPrimeSlot CenteredMomentWholeSlotDeletion
+open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification HeckeDetectorCoefficientTransfer CenteredMomentRetainedEnergy CenteredMomentPrimeSlot CenteredMomentWholeSlotDeletion
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 

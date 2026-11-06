@@ -11,11 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixMax
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

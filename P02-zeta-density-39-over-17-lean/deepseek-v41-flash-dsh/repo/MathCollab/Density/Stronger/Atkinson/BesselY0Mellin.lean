@@ -13,7 +13,6 @@ public import MathCollab.Density.Stronger.Atkinson.BesselY0Near
 open Complex Set MeasureTheory Filter
 open scoped Topology Interval
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

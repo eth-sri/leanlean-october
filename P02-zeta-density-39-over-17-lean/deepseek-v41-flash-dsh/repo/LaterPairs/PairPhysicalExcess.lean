@@ -4,12 +4,10 @@ public import TwoTermDyadic
 public import ExcessCompactPrefix
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter Set
 namespace TaoTrudgianYang2025
-open MathCollab.Density MathCollab.Density.Stronger
-open Montgomery.CriticalPeak Montgomery.RationalMoment.RightDetector
+open MathCollab.Density MathCollab.Density.Stronger Montgomery.CriticalPeak Montgomery.RationalMoment.RightDetector
 
 /-- Both physical excess terms, with constants uniform before height and amplitude. -/
 theorem ExponentPair.critical_physical_excess_general {k l η ε : ℝ}

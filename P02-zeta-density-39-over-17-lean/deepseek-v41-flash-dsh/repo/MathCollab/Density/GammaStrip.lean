@@ -13,7 +13,6 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 open Set MeasureTheory
 open scoped Real
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density.GammaBounds

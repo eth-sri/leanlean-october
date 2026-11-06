@@ -11,7 +11,6 @@ The localized packet bound remains an explicit theorem hypothesis.
 No physical Atkinson estimate or point-mean theorem is imported or asserted.
 -/
 
-set_option autoImplicit false
 
 /-!
 # Constructed localization of a physical height set

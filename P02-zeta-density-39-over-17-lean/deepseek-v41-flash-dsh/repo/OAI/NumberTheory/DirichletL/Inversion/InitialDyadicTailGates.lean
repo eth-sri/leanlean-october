@@ -11,10 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialDyadicAssembly InverseInitialProfile
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 

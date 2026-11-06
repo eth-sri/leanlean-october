@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.Target
 public import MathCollab.Density.Reflection
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Finset
 open scoped ComplexConjugate

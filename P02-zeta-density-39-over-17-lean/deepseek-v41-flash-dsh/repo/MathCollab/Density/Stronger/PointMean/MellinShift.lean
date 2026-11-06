@@ -15,10 +15,8 @@ public import MathCollab.Density.Stronger.PointMean.MellinVertical
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

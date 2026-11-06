@@ -7,76 +7,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 open ActualEisensteinCubic LocalReflectionBrackets
@@ -272,8 +205,7 @@ section
 open scoped BigOperators Classical MatrixGroups Matrix
 
 namespace ShortDraftCusp
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-open CompletedGauss CubicKubota CubicJacobiGlobal LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase CompletedGauss CubicKubota CubicJacobiGlobal LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance principalStratumField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
@@ -292,8 +224,7 @@ end
 namespace CubicEisenstein
 open scoped BigOperators Classical ContDiff MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic
-open CubicKubota CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets FiniteGaussPhase
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic CubicKubota CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets FiniteGaussPhase
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance smoothingField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P

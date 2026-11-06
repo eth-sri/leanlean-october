@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.SparseAffineInput
 public import GuthMaynard.Improvement.UniformReduction
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped SchwartzMap

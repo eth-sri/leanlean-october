@@ -2,7 +2,6 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Expdb
 open scoped NNReal

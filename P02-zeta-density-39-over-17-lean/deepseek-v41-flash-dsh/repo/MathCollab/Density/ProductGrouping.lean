@@ -6,7 +6,6 @@ public import MathCollab.Density.ComparisonCutoff
 open Real Complex Set
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

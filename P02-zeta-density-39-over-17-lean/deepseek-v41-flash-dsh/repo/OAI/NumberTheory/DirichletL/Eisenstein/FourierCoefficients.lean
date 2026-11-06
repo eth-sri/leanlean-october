@@ -10,77 +10,13 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
-open MeasureTheory Set Filter
+open MeasureTheory Set Filter ActualEisensteinCubic ConcreteTraceCRT
 open scoped BigOperators Classical ENNReal
 
-open ActualEisensteinCubic ConcreteTraceCRT
 
 lemma breveE_embedding_div_traceLambda (n : O) :
     ShortDraftTrace.breveE (eisEmbedding n/eisLam)=1 := by
@@ -117,10 +53,9 @@ lemma trace_mul_integrable (f : ℂ → ℂ) (hf : Integrable f) (freq : ℂ) :
 end
 
 section
-open MeasureTheory Set Filter Module
+open MeasureTheory Set Filter Module ActualEisensteinCubic ConcreteTraceCRT
 open scoped BigOperators Classical ENNReal MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT
 
 lemma continuous_inverse_upper_operator (v : ℝ) (hv : 0 < v) :
     Continuous (fun z : ℂ => rowOperator (upperSection z v hv)⁻¹) := by
@@ -215,10 +150,9 @@ theorem hasSum_integral_upperEisenstein (v : ℝ) (hv : 0 < v) (s freq : ℂ) (h
 end
 
 section
-open MeasureTheory Set Filter
+open MeasureTheory Set Filter ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 open scoped BigOperators Classical
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 
 def shiftedHeightKernel (v : ℝ) (s b z : ℂ) : ℂ :=
   (v:ℂ)^(-s)*hyperbolicKernel s ((z+b)/(v:ℂ))
@@ -298,10 +232,9 @@ lemma traceIntegral_shiftedHeightKernel (v : ℝ) (hv : 0 < v) (s b freq : ℂ) 
 end
 
 section
-open MeasureTheory Set Filter
+open MeasureTheory Set Filter ActualEisensteinCubic ConcreteTraceCRT
 open scoped BigOperators Classical ENNReal Pointwise
 
-open ActualEisensteinCubic ConcreteTraceCRT
 
 lemma period_integral_translation (f : ℂ → ℂ)
     (hperiod : ∀ (n : O) (z : ℂ), f (z+3*eisEmbedding n)=f z) (b : ℂ) :
@@ -350,10 +283,9 @@ theorem integral_cusp_character (h : O) :
 end
 
 section
-open MeasureTheory Set Filter
+open MeasureTheory Set Filter ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 open scoped BigOperators Classical ENNReal
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 
 def primitiveRowIntegral (v : ℝ) (s freq : ℂ) (c d : O) : ℂ :=
   ∫ z in periodDomain,primitiveTerm z v s c d*ShortDraftTrace.breveE (-freq*z)
@@ -430,10 +362,9 @@ lemma denominator_integral_formula (v : ℝ) (hv : 0 < v) (s : ℂ) (hs : 2 < s.
 end
 
 section
-open MeasureTheory Set Filter
+open MeasureTheory Set Filter ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 open scoped BigOperators Classical ENNReal Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 
 instance : DiscreteTopology periodLattice := by unfold periodLattice; infer_instance
 instance : IsZLattice ℝ periodLattice := by unfold periodLattice; infer_instance
@@ -524,10 +455,9 @@ def scatteringCoefficient (s : ℂ) (h : O) : ℂ :=
 
 end
 
-open MeasureTheory Set Filter
+open MeasureTheory Set Filter ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 open scoped BigOperators Classical
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 
 lemma zero_lower_integral (v : ℝ) (s : ℂ) (h : O) :
     (∑' d : AdmissibleDenominator 0,primitiveRowIntegral v s (cuspFrequency h) 0 d.1)=

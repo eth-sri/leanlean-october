@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic InversePrincipalEnergy InverseSecondPrincipalCaller
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O

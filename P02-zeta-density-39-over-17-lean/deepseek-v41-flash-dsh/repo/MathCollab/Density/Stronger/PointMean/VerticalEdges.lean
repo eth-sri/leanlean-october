@@ -13,10 +13,8 @@ public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter MathCollab.Density.Contour
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

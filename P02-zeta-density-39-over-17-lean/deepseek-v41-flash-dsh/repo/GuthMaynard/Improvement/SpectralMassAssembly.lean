@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.OperatorSchur
 public import GuthMaynard.Improvement.SourceDirichletPairing
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Set
 open scoped InnerProductSpace ContDiff

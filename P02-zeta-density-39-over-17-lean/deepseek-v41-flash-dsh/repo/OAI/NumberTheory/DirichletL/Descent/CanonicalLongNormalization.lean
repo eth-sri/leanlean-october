@@ -11,9 +11,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum InverseInitialClippedColumns
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers IdealMobiusDivisorSum InverseInitialClippedColumns
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem child_ball_unit_mem (u:Oˣ)(R:ℝ)(k:O) :

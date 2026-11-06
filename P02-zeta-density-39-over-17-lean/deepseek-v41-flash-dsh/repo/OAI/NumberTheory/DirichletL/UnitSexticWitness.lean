@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.UnitSexticWitness
 
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalUnitEuler
-open ConcreteTraceCRT
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalUnitEuler ConcreteTraceCRT
 open scoped Classical
 noncomputable section
 local notation "lambda" => ConcretePrimeRowBridge.goodLambda

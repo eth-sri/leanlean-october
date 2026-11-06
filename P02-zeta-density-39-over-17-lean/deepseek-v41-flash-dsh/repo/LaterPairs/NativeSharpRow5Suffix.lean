@@ -3,7 +3,6 @@ public import LaterPairs.NativeSharpRow6
 public import LaterPairs.SharpPreservedCurveComparisons
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 
 namespace TaoTrudgianYang2025

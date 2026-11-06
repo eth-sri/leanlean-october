@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical
 
 namespace SevenEighths.CenteredMomentPrimaryCharacter
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentPrimary CenteredMomentCommonSupport
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentPrimary CenteredMomentCommonSupport
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 

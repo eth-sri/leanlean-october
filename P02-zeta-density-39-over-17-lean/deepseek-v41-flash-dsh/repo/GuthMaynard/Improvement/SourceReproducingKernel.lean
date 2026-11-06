@@ -6,7 +6,6 @@ public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import MathCollab.Density.Packing
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform SchwartzMap ContDiff

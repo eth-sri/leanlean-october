@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.QuarticCellGeometry
 public import GuthMaynard.Improvement.TruncatedSourceAttachment
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

@@ -5,7 +5,6 @@ public import MathCollab.Density.WeylInput
 @[expose] public section
 
 open Real Complex
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 

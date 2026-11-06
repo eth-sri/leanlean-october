@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedRadiusLower
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentFirstAmplificationChoice CenteredMomentFirstScale
-open CenteredMomentFirstPhysicalDyadicRows
+open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentFirstScale CenteredMomentFirstPhysicalDyadicRows
 local notation "O" => ActualEisensteinCubic.O
 
 lemma base_radius_identity (Z K0 Csec xi : ℝ) (hZ : 1<Z) (hC : 0<Csec) :

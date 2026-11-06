@@ -15,7 +15,6 @@ public import Mathlib.Analysis.SpecificLimits.Normed
 
 open Finset
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

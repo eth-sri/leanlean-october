@@ -11,9 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalRowSource QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 private lemma ledger_loss_mono (Z d ell A B P w:ℝ)(hZ:1≤Z)(hd:0≤d)(hell:0≤ell)

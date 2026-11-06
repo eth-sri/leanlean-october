@@ -24,7 +24,6 @@ explicit Tonelli majorant.
 open Complex Set MeasureTheory
 open scoped FourierTransform SchwartzMap Topology
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

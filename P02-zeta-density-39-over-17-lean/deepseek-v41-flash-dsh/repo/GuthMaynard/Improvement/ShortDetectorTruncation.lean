@@ -6,7 +6,6 @@ public import MathCollab.Density.DetectorTruncation
 @[expose] public section
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

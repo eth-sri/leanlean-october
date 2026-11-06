@@ -12,7 +12,6 @@ public import MathCollab.Density.Stronger.PointMean.ExponentialOverlap
 
 open Finset MeasureTheory
 open scoped BigOperators Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 

@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.MixedMaskedInput
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff

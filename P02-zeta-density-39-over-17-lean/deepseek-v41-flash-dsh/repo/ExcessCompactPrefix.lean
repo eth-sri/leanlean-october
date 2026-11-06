@@ -2,7 +2,6 @@ module
 public import IntervalExcessTransfer
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace Montgomery.RationalMoment.RightDetector

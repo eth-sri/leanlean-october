@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductBounds
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
+open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def localMultiplier (η : Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=

@@ -4,8 +4,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
 
 @[expose] public section
 
-open Complex Finset Filter MeasureTheory Real Set
-open ComplexConjugate
+open Complex Finset Filter MeasureTheory Real Set ComplexConjugate
 open scoped BigOperators Interval
 
 namespace GuthMaynard.NativeMoment

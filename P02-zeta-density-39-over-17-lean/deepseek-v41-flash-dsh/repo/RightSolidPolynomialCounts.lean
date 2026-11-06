@@ -5,7 +5,6 @@ public import RightQuadraticParameters
 
 open Filter Finset
 open scoped Topology
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement

@@ -4,7 +4,6 @@ public import MathCollab.Density.Stronger.AtkinsonHeightCover
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.CriticalPeak

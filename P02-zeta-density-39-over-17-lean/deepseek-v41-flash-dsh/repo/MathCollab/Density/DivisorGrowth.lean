@@ -9,7 +9,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 open Real Set
 open scoped BigOperators
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 

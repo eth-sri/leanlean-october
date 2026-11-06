@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
 local notation "O"=>ActualEisensteinCubic.O
 
 def fixedPresentationCost : ℝ:=

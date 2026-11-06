@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentGaussEnergy
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CenteredMomentFourier CenteredMomentPoisson
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CanonicalQuadraticSieve CenteredMomentFourier CenteredMomentPoisson CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 def gaussRow (a : O) (ha : Supported (Ideal.span {a})) (z : O) : ℂ :=

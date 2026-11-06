@@ -10,9 +10,7 @@ public import MathCollab.Density.AbelZetaGrowth
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.GammaBounds MathCollab.Density.ZetaGrowth
-set_option autoImplicit false
+open Complex MathCollab.Density.GammaBounds MathCollab.Density.ZetaGrowth
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

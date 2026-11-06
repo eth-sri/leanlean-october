@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ConcreteTraceCRT
-open ProbePhase ProbeEuler ProbePrimePower FiniteGaussPhase QuadraticGaussRay
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ConcreteTraceCRT ProbePhase ProbeEuler ProbePrimePower FiniteGaussPhase QuadraticGaussRay
 local notation "O" => ActualEisensteinCubic.O
 
 theorem gaussTwo_prime_localGamma (p : O) (hp : Prime p)

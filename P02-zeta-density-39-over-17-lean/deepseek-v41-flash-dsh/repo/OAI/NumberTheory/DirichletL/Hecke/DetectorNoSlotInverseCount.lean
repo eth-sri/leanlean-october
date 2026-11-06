@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff ComplexConjugate
 open Set Filter
 namespace SevenEighths.HeckeDetectorNoSlotInverseCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeInverseAmplification
-open HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeInverseAmplification HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount
 
 theorem no_slot_inverse_count
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)

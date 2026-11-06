@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentPairedEligibleEnergy
-open CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
+open CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentPairedEligibleEnergy

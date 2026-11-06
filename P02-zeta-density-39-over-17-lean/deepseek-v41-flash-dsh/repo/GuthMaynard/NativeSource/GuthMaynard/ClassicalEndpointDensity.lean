@@ -5,8 +5,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
 
 @[expose] public section
 
-open Asymptotics Filter Topology
-open Complex Finset MeasureTheory Real Set
+open Asymptotics Filter Topology Complex Finset MeasureTheory Real Set
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment

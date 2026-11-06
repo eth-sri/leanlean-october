@@ -14,10 +14,8 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-open Complex BigOperators Nat Classical Real Topology Filter
-open Set MeasureTheory intervalIntegral
+open Complex BigOperators Nat Classical Real Topology Filter Set MeasureTheory intervalIntegral
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Contour
 

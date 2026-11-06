@@ -9,11 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalDomains
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry
-open InverseInitialEnergyCallerSourceMask InverseInitialEnergyCallerRanges
-open InverseInitialEnergyCallerSource CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerSourceMask InverseInitialEnergyCallerRanges InverseInitialEnergyCallerSource CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]

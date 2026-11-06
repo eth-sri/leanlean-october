@@ -12,11 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
 local notation "Eis" => ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open InverseInitialKernelBridge InverseSecondChildWindows
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge InverseSecondChildWindows CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 abbrev Windows (a b : Fin 4→ℝ) := ∀ i:Fin 4,↥(indices (a i) (b i))
 

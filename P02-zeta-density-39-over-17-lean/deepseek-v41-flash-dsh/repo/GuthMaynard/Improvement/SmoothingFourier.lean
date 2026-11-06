@@ -6,7 +6,6 @@ public import GuthMaynard.Improvement.PoissonReduction
 
 /-! Fourier transfer for actual real smoothing. Constants precede the signal
 and the smoothing width; no positive lower bound on its mass is required. -/
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped FourierTransform Convolution SchwartzMap

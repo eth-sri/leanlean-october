@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentExceptionalAllocationShell
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
-open CenteredMomentUniformDivisorShell
+open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
 local notation "O" => ActualEisensteinCubic.O
 
 lemma exact_max_cancellation (r r₁ : ℝ) :

@@ -4,7 +4,6 @@ public import TraceAlternatives.CurrentDensityCurve
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open scoped BigOperators
 namespace Montgomery.WrittenDensity

@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalResidueActual
-open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison
-open ProbeFiniteProductBounds ProbeEuler ProbeLocal HeckeSignal ProbePhysical Continuation
-open ActualEisensteinCubic CompletedGauss
+open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison ProbeFiniteProductBounds ProbeEuler ProbeLocal HeckeSignal ProbePhysical Continuation ActualEisensteinCubic CompletedGauss
 
 def residueWeights {κ : Type*} (W : κ → ℝ → ℝ) (scale : κ → ℝ)
     (j : κ) (p : PrimeIdeal) : ℝ :=

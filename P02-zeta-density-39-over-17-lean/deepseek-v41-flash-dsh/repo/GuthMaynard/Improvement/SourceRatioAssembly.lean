@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.ReducedRatioGeometry
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement

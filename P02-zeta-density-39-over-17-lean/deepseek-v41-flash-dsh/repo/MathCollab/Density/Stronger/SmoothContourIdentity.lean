@@ -3,10 +3,8 @@ public import MathCollab.Density.Stronger.SmoothContourEstimates
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.Contour
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

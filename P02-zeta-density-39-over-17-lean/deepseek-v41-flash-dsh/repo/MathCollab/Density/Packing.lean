@@ -7,7 +7,6 @@ public import Mathlib.Analysis.PSeries
 open Real Set MeasureTheory
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks
-open InverseMomentFirstOriginalProfile CompletedHeight
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstOriginalProfile CompletedHeight
 local notation "O"=>ActualEisensteinCubic.O
 
 def actualLongSourceKeys {ι σ:Type}[DecidableEq ι][DecidableEq σ]

@@ -10,7 +10,6 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannLaplaceMoments
 @[expose] public section
 
 open Complex MeasureTheory Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

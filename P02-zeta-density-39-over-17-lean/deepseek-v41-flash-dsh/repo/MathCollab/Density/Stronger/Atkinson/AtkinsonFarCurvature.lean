@@ -17,7 +17,6 @@ The two additional discrete mean-value endpoints give B=2M+2 <= 4M.
 The actual curvature scales are bounded in terms of Q=M*sqrt(H*M).
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 namespace MathCollab.Density.Stronger.Atkinson

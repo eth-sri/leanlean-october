@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
-open PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily ProbePhysical PNT.AnnularPrimeMass PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "Id" => Ideal HeckeFamily.O
 
 def pool (C : Set Id) (S : Finset Id) (a b x : ℝ) : Finset PrimeIdeal :=

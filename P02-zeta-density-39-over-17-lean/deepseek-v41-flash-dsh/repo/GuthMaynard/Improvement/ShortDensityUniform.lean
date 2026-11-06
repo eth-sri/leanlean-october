@@ -7,7 +7,6 @@ public import Mathlib.Algebra.Order.Archimedean.Basic
 
 open Finset MathCollab.Density
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

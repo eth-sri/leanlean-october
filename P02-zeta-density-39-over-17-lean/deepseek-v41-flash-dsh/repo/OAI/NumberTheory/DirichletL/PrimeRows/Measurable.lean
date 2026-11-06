@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
 @[fun_prop] lemma measurable_const_cpow {α : Type*} [MeasurableSpace α]

@@ -20,7 +20,6 @@ The actual Bessel argument is linked to height and divisor index;
 its quadratic expansion error has the summable n^(-5/4) weight.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set

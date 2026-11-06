@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorSimultaneousSupport
-open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorDyadicGeometry HeckeDetectorSaturation HeckeDetectorNormalized
+open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorDyadicGeometry HeckeDetectorSaturation HeckeDetectorNormalized
 
 theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)

@@ -11,9 +11,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentRestrictedWindow
-open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy
-open CenteredMomentPlainWindowEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
-open HeckeFamily FourierBridge CenteredMomentSmooth
+open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentPlainWindowEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge CenteredMomentSmooth
 local notation "O" => ActualEisensteinCubic.O
 
 theorem restricted_hasSum_weighted {α : Type*} (keep : O → Prop)

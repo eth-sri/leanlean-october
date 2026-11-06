@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalTransport
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma gaussianMoment_tendsto (n : ℕ) : Tendsto (gaussianMoment n) atTop (𝓝 0) := by

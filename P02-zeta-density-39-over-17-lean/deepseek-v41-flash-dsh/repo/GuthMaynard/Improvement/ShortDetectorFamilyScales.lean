@@ -7,7 +7,6 @@ public import Mathlib.Analysis.Complex.ExponentialBounds
 
 open Real Set Filter MathCollab.Density
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

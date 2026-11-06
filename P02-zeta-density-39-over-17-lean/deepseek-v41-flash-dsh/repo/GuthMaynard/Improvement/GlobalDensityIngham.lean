@@ -6,7 +6,6 @@ public import MathCollab.Density.DensityTheorem
 @[expose] public section
 
 open MathCollab.Density
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

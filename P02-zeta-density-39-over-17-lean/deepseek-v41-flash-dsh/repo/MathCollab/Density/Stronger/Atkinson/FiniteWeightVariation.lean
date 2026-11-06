@@ -13,7 +13,6 @@ public import Mathlib.Tactic
 @[expose] public section
 
 open Complex Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

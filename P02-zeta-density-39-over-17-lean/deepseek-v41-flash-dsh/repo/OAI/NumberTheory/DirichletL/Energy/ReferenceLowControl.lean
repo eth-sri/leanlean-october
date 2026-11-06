@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowControl
-open CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyReferenceChildProfiles CenteredMomentFiniteProfileExceptional
 
 lemma height_product (v t H:ℝ)(hH:0≤H):
     1+‖v‖+‖t‖≤(1+‖v‖)*(1+|t|+H):=by

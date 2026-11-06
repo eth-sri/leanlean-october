@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRestrictedEnergy
-open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm
-open CenteredMomentPlainEnergy CenteredMomentPlainChildEnergy CenteredMomentCauchy CenteredMomentSmooth
-open ConcreteTraceCRT
+open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentPlainChildEnergy CenteredMomentCauchy CenteredMomentSmooth ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 def restrictedEnergy {α : Type*} (keep : O → Prop) (S : Finset α) (a : α → O)

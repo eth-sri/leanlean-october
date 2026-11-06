@@ -30,7 +30,6 @@ open Real
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 def atkinsonSourcePhase (T : ℝ) (n : ℕ) : ℝ :=

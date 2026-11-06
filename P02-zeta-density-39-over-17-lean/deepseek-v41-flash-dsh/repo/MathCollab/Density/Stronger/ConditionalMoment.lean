@@ -12,7 +12,6 @@ public import WeylPort.GrowthAlgebra
 open MeasureTheory Filter Set
 open scoped Interval
 open TaoTrudgianYang2025 (eventually_const_height_log_pow_mul_rpow_le_rpow)
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

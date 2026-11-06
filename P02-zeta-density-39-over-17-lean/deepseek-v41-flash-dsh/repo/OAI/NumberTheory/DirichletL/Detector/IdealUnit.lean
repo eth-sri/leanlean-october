@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CubicEisenstein ProbePhase ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CubicEisenstein ProbePhase ConcretePrimeRowBridge ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_one_ideal : Supported (1 : Ideal O) := by

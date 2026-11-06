@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSourceInputFirstTailUniform
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstScale
-open ActualEisensteinCubic
+open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstScale ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 
 lemma common_subset_product_dvd_right (I J : Ideal O) (E : Finset (CommonIndex I J)) :

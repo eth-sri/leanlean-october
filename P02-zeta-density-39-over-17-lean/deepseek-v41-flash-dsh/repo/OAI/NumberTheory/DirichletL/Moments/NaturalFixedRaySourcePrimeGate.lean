@@ -13,10 +13,7 @@ open scoped Classical BigOperators Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckePrimeRay
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-open CenteredMomentFixedRowMask CenteredMomentFixedRayInducingTransport
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckePrimeRay CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentFixedRowMask CenteredMomentFixedRayInducingTransport
 local notation "O" => HeckeFamily.O
 
 variable {Δ : ℝ} {D : Parameters.HighData Δ}

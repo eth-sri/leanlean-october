@@ -12,10 +12,8 @@ public import MathCollab.Density.RectangleResidue
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 

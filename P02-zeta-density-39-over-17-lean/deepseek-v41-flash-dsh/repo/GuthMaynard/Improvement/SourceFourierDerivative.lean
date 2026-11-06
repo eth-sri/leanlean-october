@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.MeasureGate
 public import Mathlib.Analysis.Fourier.FourierTransformDeriv
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform

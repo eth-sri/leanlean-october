@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_injective)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

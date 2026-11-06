@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical ContDiff
 open Filter Asymptotics
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues
-open ProbePrincipalResidueActual
+open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 
 def normalizedProbe {K : ℕ} (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]

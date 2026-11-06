@@ -12,10 +12,8 @@ public import MathCollab.Density.Stronger.Atkinson.BesselTransformBridge
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

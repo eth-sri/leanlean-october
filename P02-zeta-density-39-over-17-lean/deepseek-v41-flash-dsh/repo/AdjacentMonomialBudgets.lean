@@ -3,7 +3,6 @@ public import AdjacentWindow
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Real
 namespace Montgomery.RationalMoment

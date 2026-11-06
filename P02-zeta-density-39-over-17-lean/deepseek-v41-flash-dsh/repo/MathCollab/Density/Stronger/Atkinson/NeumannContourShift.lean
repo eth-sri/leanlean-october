@@ -19,7 +19,6 @@ one. The upper horizontal side is shown to vanish before the contour
 identity is passed to the limit.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set Topology

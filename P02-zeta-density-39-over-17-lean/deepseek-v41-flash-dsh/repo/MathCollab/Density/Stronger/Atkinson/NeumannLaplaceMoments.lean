@@ -18,7 +18,6 @@ The three actual Laplace moments give the two leading terms and the
 integrable quadratic remainder. All identities hold for every x > 0.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex MeasureTheory Set

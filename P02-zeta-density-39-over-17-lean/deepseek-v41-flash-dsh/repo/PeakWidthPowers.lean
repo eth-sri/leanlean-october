@@ -2,7 +2,6 @@ module
 public import GenericPeakClusters
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.CriticalPeak
 

@@ -6,7 +6,6 @@ public import GuthMaynard.Improvement.ShortDetectorGamma
 public import MathCollab.Density.DetectorError
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology

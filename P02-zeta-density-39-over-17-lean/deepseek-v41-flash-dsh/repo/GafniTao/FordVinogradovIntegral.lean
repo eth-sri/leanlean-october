@@ -19,9 +19,8 @@ identity (1.3).  Equation (1.4), shifted domination, and both lower-bound
 terms in (1.5) are then proved from the same exact finite count.
 -/
 
-open Finset
+open Finset MeasureTheory
 open scoped BigOperators ComplexConjugate
-open MeasureTheory
 
 namespace GafniTao
 

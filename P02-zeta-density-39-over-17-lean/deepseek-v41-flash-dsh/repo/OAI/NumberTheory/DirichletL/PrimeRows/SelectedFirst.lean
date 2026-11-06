@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
 theorem continuedMarkedLocal_first_analyticAt_x (η : Character) (u : FreeRow) (P : PrimeIdeal)

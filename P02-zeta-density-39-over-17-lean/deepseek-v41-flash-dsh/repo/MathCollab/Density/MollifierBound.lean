@@ -5,7 +5,6 @@ public import Mathlib.Analysis.SpecialFunctions.Sqrt
 @[expose] public section
 
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 

@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSource
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
 local notation "O" => ActualEisensteinCubic.O
 
  theorem primeRoot_ne_zero (p : O) (hp : p ≠ 0) (k : ℕ) : primeRoot p k ≠ 0 := by

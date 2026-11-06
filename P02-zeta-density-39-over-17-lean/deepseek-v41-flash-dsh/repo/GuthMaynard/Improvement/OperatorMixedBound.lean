@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.MixedKernelRow
 public import GuthMaynard.Improvement.MixedCutoffEnvelope
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

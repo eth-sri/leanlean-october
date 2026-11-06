@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.NegativeReflectedBand
 public import GuthMaynard.Improvement.ReflectedBandBudget
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ComplexConjugate

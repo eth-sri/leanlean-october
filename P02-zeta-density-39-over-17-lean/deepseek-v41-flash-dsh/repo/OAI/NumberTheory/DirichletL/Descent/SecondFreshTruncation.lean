@@ -10,8 +10,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

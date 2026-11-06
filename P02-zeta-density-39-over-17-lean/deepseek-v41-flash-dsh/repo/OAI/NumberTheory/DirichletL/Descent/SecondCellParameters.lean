@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseInitialArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 

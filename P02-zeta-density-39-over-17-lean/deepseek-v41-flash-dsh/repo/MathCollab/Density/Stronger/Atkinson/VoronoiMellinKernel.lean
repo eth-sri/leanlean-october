@@ -12,10 +12,8 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory
+open Complex Finset Set Filter Topology MeasureTheory Classical
 open scoped BigOperators ContDiff FourierTransform SchwartzMap Topology
-open Classical
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

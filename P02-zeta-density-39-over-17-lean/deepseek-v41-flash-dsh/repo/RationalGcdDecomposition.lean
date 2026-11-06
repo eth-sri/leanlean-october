@@ -6,7 +6,6 @@ public import Mathlib
 
 /-! Exact gcd decomposition, including multiplicities. No analytic estimate is
 assumed in the identities. The final bound states its reduced-pair input explicitly. -/
-set_option autoImplicit false
 noncomputable section
 open Finset
 

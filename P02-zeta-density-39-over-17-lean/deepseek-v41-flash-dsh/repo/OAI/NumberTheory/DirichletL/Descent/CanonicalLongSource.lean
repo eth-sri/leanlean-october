@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation FourierBridge CompletedHeight
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic JointLogSeparation FourierBridge CompletedHeight
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem long_frequency_profile

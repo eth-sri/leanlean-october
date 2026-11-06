@@ -3,7 +3,6 @@ public import DensityEnergyGM.LargeValuesS2
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace GuthMaynard.NativeMoment
 
 /-- Exact amplitude normalization for the square-level application. -/

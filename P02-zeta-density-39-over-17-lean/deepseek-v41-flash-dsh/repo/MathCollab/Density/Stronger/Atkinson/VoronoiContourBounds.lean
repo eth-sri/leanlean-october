@@ -12,9 +12,7 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology Asymptotics
-open MathCollab.Density.Contour
-set_option autoImplicit false
+open Complex Set MeasureTheory Filter Topology Asymptotics MathCollab.Density.Contour
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

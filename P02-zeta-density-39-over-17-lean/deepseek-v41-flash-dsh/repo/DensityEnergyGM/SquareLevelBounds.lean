@@ -3,7 +3,6 @@ public import DensityEnergyGM.SquareLevelAlgebra
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace GuthMaynard.NativeMoment
 
 theorem rpow_double_square_bound {q x a : ℝ}

@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCertifiedExistence
-open HeckeFamily CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyCappedAnalyticSuccessor CenteredMomentEnergyCappedRadialTransport
-open CenteredMomentEnergyWidthSchedule
+open HeckeFamily CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyCappedAnalyticSuccessor CenteredMomentEnergyCappedRadialTransport CenteredMomentEnergyWidthSchedule
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]

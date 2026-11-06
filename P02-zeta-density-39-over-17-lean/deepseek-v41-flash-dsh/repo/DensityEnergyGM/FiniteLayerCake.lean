@@ -5,7 +5,6 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-set_option autoImplicit false
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 

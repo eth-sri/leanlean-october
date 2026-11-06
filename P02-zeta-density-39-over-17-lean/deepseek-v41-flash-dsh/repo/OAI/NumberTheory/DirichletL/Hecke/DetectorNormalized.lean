@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorNormalized
-open HeckeFamily HeckeDyadic HeckeDetectorFourier HeckeDetectorProfiles
-open HeckeDetectorDyadicBridge HeckeDetectorDyadicProfiles HeckeDetectorFrequency
+open HeckeFamily HeckeDyadic HeckeDetectorFourier HeckeDetectorProfiles HeckeDetectorDyadicBridge HeckeDetectorDyadicProfiles HeckeDetectorFrequency
 
 lemma plainCoefficient_positive (χ : Character) (D : ℝ) (hD : 0<D) (s : ℂ) :
     plainCoefficient χ positiveAnnular D s=

@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentCompleteCommon
-open UniqueFactorizationMonoid IdealMobiusDivisorSum CenteredMomentSupport
-open CenteredExceptionalCount CenteredMomentRankinRadical CanonicalQuadraticSieve
+open UniqueFactorizationMonoid IdealMobiusDivisorSum CenteredMomentSupport CenteredExceptionalCount CenteredMomentRankinRadical CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 def commonSupport (I J : Ideal O) : Finset (Ideal O) := primeSupport I ∩ primeSupport J

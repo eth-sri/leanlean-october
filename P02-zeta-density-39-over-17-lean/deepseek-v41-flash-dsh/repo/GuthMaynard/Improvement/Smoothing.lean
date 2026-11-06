@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.MeasureGate
 @[expose] public section
 
 /-! Mass-preserving positive smoothing and its L2 contraction. -/
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter
 open scoped Convolution

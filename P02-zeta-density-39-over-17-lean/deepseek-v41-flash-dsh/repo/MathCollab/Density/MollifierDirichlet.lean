@@ -12,7 +12,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 
 open Complex Finset Filter
 open scoped ArithmeticFunction.Moebius BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 

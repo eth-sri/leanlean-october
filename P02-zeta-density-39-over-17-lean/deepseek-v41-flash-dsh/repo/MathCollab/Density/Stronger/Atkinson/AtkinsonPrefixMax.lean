@@ -10,7 +10,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixVectors
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

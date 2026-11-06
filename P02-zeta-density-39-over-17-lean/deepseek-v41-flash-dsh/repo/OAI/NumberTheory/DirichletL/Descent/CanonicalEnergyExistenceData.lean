@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseReflectedPhase
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion InverseReflectedPhase
 local notation "O"=>ActualEisensteinCubic.O
 
 def CanonicalEnergyExists (Mcap Fcap c eps L:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ)):Prop :=

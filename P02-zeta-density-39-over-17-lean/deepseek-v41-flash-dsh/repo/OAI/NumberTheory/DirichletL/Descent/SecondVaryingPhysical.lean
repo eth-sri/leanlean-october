@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondVaryingPhysicalUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units

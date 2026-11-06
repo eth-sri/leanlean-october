@@ -7,8 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CubicEisenstein
-open CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CubicEisenstein CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 lemma reciprocitySign_star (a b : O) : star (reciprocitySign a b)=reciprocitySign a b := by

@@ -11,7 +11,6 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiTransforms
 @[expose] public section
 
 open Complex
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

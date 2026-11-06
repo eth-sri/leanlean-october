@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
-open InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})

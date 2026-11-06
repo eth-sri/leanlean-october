@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentOriginalCommonHarmonic
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentSupportedZeroEnergy CenteredMomentSourceZeroEnergy CenteredMomentAddedZeroUniform
-open CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentCommonHarmonicMass
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentSupportedZeroEnergy CenteredMomentSourceZeroEnergy CenteredMomentAddedZeroUniform CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentCommonHarmonicMass
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _

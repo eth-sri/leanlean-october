@@ -19,7 +19,6 @@ The angular phase, arithmetic normalization and entire amplitude
 are retained exactly.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set

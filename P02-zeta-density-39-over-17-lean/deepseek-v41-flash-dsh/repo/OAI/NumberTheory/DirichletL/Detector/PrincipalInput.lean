@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeMellinBoundary
-open PrincipalMellinResidues ProbeFiniteProductBounds
+open CompletedGauss CanonicalQuadraticSieve ProbeMellinBoundary PrincipalMellinResidues ProbeFiniteProductBounds
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

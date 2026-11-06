@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.MiddleLowLargeValues
 public import GuthMaynard.Improvement.SourceTranslation
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Set
 namespace GuthMaynard.Improvement

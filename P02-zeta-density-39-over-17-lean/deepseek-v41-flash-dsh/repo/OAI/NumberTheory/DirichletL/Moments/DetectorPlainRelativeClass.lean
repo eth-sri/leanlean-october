@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainRelativeClass
-open HeckeFamily CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentInductionEnergy
+open HeckeFamily CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentInductionEnergy
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

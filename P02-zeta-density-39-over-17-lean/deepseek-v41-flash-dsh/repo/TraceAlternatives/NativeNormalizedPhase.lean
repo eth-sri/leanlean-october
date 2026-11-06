@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.RealIntegerSource
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset Complex GuthMaynard.NativeMoment GuthMaynard.Improvement
 namespace Montgomery.RationalMoment

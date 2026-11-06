@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.ZetaAtkinsonPhase
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-set_option autoImplicit false
+open Complex MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

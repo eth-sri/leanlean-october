@@ -13,7 +13,6 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 open Complex MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

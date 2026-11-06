@@ -3,7 +3,6 @@ public import CriticalTailThreshold
 public import RightSolidPolynomialCounts
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Filter MathCollab.Density.Stronger MathCollab.Density
 namespace Montgomery.RationalMoment.RightDetector

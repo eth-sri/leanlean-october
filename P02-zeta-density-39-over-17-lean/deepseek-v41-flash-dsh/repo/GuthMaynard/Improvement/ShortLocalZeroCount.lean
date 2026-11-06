@@ -5,10 +5,8 @@ module
 public import MathCollab.Density.LocalZeroCount
 
 @[expose] public section
-open Complex Filter Set MeasureTheory MathCollab.Density
+open Complex Filter Set MeasureTheory MathCollab.Density MathCollab.Density.ZetaGrowth
 open scoped Topology BigOperators
-open MathCollab.Density.ZetaGrowth
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

@@ -4,7 +4,6 @@ public import AdjacentAdditiveEnergy
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment
 structure AdjacentWindow (σ a p α : ℝ) : Prop where

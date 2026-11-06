@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformReflectionChoices
-open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
-open CenteredMomentSectorLocalization CenteredMomentScaleSupremum
-open CenteredMomentUniformReflectionScale
+open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentSectorLocalization CenteredMomentScaleSupremum CenteredMomentUniformReflectionScale
 
 theorem actual_independent_choices (B J : ℕ) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],∀{α : ι→Type},

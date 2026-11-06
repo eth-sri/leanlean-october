@@ -9,11 +9,9 @@ public import MathCollab.Density.ZeroSeparation
 
 @[expose] public section
 
-open Complex Filter Set MeasureTheory
+open Complex Filter Set MeasureTheory MathCollab.Density.ZetaGrowth
 open scoped Topology BigOperators
-open MathCollab.Density.ZetaGrowth
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

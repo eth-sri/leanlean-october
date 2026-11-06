@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductX
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
+open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma marked_differentiableAt_x (η : Character) (P : PrimeIdeal) (x w z : ℂ)

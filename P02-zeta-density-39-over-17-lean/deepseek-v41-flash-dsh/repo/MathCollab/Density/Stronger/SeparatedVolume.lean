@@ -14,7 +14,6 @@ This module imports only the displayed local/mathlib dependencies, not the upstr
 
 open MeasureTheory Set
 open scoped ENNReal BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

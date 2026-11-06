@@ -9,8 +9,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.TwistedDiagonal
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open ArithmeticFunction
+open Complex Filter MeasureTheory Set Topology ArithmeticFunction
 open scoped ArithmeticFunction.zeta ArithmeticFunction.sigma BigOperators Interval
   LSeries.notation
 

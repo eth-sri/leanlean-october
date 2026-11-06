@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalRemainderBounds
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma active_prime_sum_bound (T : Finset PrimeIdeal) (W : ℝ→ℝ)

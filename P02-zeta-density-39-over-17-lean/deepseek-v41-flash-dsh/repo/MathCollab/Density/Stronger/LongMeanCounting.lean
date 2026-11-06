@@ -7,7 +7,6 @@ public import MathCollab.Density.Stronger.ShortPoweredFamily
 @[expose] public section
 open Filter MeasureTheory
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

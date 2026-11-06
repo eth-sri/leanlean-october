@@ -3,7 +3,6 @@ public import ZeroFreeDensityBridge
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open scoped BigOperators
 namespace Montgomery.WrittenDensity

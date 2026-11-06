@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
 

@@ -20,9 +20,7 @@ public import Mathlib.MeasureTheory.Group.Circle
 open Real BigOperators ArithmeticFunction MeasureTheory Filter Set FourierTransform LSeries
   Asymptotics SchwartzMap
 open Complex hiding log
-open scoped Topology
-open scoped ContDiff
-open scoped ComplexConjugate
+open scoped Topology ContDiff ComplexConjugate
 
 variable {n : ℕ} {A a b c d u x y t σ' : ℝ} {ψ Ψ : ℝ → ℂ} {F G : ℂ → ℂ} {f : ℕ → ℂ} {𝕜 : Type}
   [RCLike 𝕜]

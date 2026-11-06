@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.StrengthenedAffine
 public import GuthMaynard.Improvement.SparseAffineInput
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff

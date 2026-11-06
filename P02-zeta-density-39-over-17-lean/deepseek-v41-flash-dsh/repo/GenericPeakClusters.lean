@@ -6,7 +6,6 @@ public import GenericMeanCounting
 public import MathCollab.Density.Stronger.PointMean.PeaksInput
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.CriticalPeak

@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseRawFourier
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform DetectorDictionaryInverseRawFourier
 
 private theorem rawMoment_mono (data : RowData) (W : ℝ→ℂ) (c κ A B : ℝ)
     (hAB : A≤B) (h : RawMoment data W c κ A) : RawMoment data W c κ B := by

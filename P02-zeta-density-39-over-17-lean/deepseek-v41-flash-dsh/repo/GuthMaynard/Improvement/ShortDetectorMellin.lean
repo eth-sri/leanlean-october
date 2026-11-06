@@ -9,7 +9,6 @@ public import MathCollab.Density.DetectorMellin
 @[expose] public section
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped ArithmeticFunction.Moebius BigOperators Topology
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

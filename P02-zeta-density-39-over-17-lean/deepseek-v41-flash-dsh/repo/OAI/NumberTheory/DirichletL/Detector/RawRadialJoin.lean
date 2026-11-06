@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion ProbeCompleted ProbeRow CubicEisenstein
-open EisensteinSchwartzPoisson
+open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion ProbeCompleted ProbeRow CubicEisenstein EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma verticalIntegral_const_mul (σ : ℝ) (F : ℂ→ℂ) (c : ℂ) :

@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedDomain
-open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
-open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
-open CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentLiveDomain
+open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentLiveDomain
 local notation "O" => ActualEisensteinCubic.O
 
 theorem source_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z : O) :

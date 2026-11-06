@@ -19,13 +19,10 @@ Each height retains its own prefix. The exact Gram entry has the minimum
 of the two prefix lengths and the same zero-based source block.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth RiemannZeta.GuthMaynard
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 

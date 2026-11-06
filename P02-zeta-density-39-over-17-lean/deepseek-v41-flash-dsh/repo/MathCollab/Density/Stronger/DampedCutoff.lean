@@ -9,7 +9,6 @@ public import Mathlib.Tactic
 
 open Real Set
 open scoped BigOperators ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

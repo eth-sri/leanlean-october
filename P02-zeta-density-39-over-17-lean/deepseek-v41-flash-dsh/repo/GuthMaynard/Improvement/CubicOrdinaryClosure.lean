@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.CubicClosure
 public import GuthMaynard.Improvement.OrdinaryFourierMoments
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform

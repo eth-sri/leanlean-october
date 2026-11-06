@@ -7,7 +7,6 @@ public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 open Real Complex Set MeasureTheory
 open scoped ContDiff FourierTransform SchwartzMap
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

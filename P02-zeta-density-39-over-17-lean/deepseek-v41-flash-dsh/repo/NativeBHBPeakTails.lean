@@ -4,10 +4,8 @@ public import TaoTrudgianYang2025.ExponentPairBProcess
 public import GenericRestrictedPeakTail
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open Filter Finset
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
+open Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 namespace TaoTrudgianYang2025
 
 theorem exponentPair_BHB10 : ExponentPair (64/135) (122/243) := by

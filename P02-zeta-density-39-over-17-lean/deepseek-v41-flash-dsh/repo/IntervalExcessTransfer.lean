@@ -2,7 +2,6 @@ module
 public import TwoPowerTailTransfer
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Filter
 namespace Montgomery.RationalMoment.RightDetector

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeExpansion
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
 local notation "O" => ActualEisensteinCubic.O
 
 def rowWeight (η : Character) (m A z : O) (t : ℝ) : Ideal O →*₀ ℂ where

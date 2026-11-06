@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]

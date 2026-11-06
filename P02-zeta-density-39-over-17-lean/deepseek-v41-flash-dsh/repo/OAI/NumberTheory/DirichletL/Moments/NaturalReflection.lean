@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalReflection
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentNaturalPrimitive
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 

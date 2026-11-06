@@ -17,7 +17,6 @@ public import Mathlib.Analysis.Complex.JensenFormula
 open Complex Filter Set MeasureTheory Asymptotics
 open scoped Topology
 
-set_option autoImplicit false
 
 namespace MathCollab.Density.ZetaGrowth
 

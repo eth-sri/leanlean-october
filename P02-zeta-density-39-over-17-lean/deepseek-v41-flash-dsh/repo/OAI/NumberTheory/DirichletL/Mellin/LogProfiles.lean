@@ -5,11 +5,8 @@ public import OAI.NumberTheory.DirichletL.Mellin.ExponentialSmoothing
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open scoped BigOperators Topology
+open MulChar AddChar Filter Asymptotics MeasureTheory
 
 namespace ShortDraftMellin
 
@@ -106,9 +103,8 @@ def addCharProd (ψ : AddChar R ℂ) (φ : AddChar S ℂ) : AddChar (R × S) ℂ
 end ProductResidueSieve
 
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped FourierTransform SchwartzMap ContDiff
 
-open scoped ContDiff
 
 namespace FourierBridge
 

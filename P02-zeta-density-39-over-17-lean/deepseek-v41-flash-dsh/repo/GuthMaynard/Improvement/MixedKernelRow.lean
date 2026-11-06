@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.OperatorMixedTrace
 public import GuthMaynard.Improvement.MixedKernelYoung
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement

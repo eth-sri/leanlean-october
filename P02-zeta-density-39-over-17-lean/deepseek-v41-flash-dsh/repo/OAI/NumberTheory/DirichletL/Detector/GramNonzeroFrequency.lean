@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma nonzero_tsum_indicator (f : O→ℂ) :

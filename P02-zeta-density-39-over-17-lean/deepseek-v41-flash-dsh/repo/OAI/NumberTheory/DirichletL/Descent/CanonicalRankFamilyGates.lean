@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CanonicalCoefficientClass InverseTerminalWidths
-open ConcretePrimeRowBridge CompletedGauss
+open ActualEisensteinCubic CanonicalCoefficientClass InverseTerminalWidths ConcretePrimeRowBridge CompletedGauss
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_rank_family_period (q:ℕ)(base Ψ:O→*ℂ)

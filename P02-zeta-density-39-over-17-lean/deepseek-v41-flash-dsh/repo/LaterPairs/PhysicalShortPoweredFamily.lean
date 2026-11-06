@@ -8,11 +8,9 @@ public import MathCollab.Density.Stronger.ShortPoweredHeight
 
 open Real Complex Set Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /- This bound is fixed by sigma and delta, before T and any zero. -/
 /- The complete finite powered family, restricted by scale conditions that

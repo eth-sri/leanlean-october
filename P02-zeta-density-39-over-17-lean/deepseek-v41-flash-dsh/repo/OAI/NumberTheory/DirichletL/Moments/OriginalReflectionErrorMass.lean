@@ -13,9 +13,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentOriginalReflectionErrorMass
-open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
-open QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection QuadraticInitialBound ConcreteTraceCRT
 local notation "O" => HeckeFamily.O
 
 lemma annularWeight_zero_norm (W : ℝ→ℂ) (D freq : ℝ) (hD : 0<D)

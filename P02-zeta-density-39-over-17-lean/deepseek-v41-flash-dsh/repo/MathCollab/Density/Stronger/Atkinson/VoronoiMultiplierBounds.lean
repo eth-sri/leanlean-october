@@ -11,7 +11,6 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiZetaGrowth
 @[expose] public section
 
 open Complex Set MeasureTheory Filter Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

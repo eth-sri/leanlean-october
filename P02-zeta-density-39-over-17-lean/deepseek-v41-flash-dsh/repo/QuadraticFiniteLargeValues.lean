@@ -3,7 +3,6 @@ public import QuadraticSpectralComparison
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset InnerProductSpace
 open scoped InnerProductSpace

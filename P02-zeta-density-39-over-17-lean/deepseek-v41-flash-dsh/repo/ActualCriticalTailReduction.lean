@@ -5,7 +5,6 @@ public import RetunedLongMultiplicity
 
 open MeasureTheory Set Filter
 open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger MathCollab.Density

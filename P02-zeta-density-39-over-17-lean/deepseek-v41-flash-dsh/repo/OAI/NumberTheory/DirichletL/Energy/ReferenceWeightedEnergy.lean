@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceWeightedEnergy
-open HeckeFamily ConcreteTraceCRT CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison
+open HeckeFamily ConcreteTraceCRT CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
 local notation "O"=>HeckeFamily.O
 
 lemma finite_weighted_energy {ι κ:Type*}[Fintype ι][Fintype κ]

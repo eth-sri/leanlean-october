@@ -5,7 +5,6 @@ public import MathCollab.Density.Stronger.ShortPoweredHeight
 
 open Real Complex Set Filter
 open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

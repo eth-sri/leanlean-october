@@ -13,7 +13,6 @@ assumed. Every advertised proof is an exact count transfer from the frozen
 statement surface, preserving endpoints and the constant's quantifier order.
 -/
 
-set_option autoImplicit false
 noncomputable section
 open scoped BigOperators ENNReal
 public section

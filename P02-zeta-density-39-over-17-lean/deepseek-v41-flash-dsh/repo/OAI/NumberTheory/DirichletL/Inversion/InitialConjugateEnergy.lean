@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseInitialConjugateEnergy
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CompletedGauss ConcreteTraceCRT
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialRayAttachment
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss ConcreteTraceCRT InverseInitialOverlap InverseInitialPoissonBridge InverseInitialRayAttachment UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 def conjugateIdealCharacter (η : Ideal O →* ℂ) : Ideal O →* ℂ where

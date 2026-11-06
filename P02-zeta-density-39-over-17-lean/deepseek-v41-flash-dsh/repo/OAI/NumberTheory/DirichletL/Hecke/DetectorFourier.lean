@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesUniform
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
-open MeasureTheory
+open MeasureTheory HeckeDetectorProfiles
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
-open HeckeDetectorProfiles
 noncomputable section
 
 theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)

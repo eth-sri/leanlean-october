@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.ShortTypeIICount
 public import HalfLossShortMoment
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology

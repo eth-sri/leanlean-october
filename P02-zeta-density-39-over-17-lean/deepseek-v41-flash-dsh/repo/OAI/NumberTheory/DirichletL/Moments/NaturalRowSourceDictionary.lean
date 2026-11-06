@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
-open HeckeFamily CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-open CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
+open HeckeFamily CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
 local notation "O" => HeckeFamily.O
 
 lemma NaturalRow.masked_plain {η : Character} {z : O} (F : NaturalRow η z)

@@ -12,7 +12,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonSourceAssembly
 @[expose] public section
 
 open Complex MeasureTheory
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

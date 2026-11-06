@@ -7,7 +7,6 @@ public import MathCollab.Density.ProductGrouping
 open Real Set
 open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density

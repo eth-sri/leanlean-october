@@ -9,7 +9,6 @@ public import MathCollab.Density.Stronger.NativePeaks
 @[expose] public section
 
 open Filter MeasureTheory Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.CenteredPoisson
 public import GuthMaynard.Improvement.LogPoissonBudget
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff FourierTransform

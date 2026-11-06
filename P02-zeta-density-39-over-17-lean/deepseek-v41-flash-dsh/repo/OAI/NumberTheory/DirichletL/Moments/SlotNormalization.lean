@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSlotNormalization
-open HeckeFamily CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open CenteredMomentWholeSlotDeletion CenteredMomentHeckeHeight
+open HeckeFamily CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentWholeSlotDeletion CenteredMomentHeckeHeight
 local notation "O" => HeckeFamily.O
 
 lemma sqrt_product_normalizer {ι:Type*} [Fintype ι] (X:ℝ) (P:ι→ℝ)

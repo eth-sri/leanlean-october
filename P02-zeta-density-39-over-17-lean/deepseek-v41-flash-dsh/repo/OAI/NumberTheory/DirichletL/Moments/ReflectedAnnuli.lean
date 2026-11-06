@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentReflectedAnnuli
-open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization
-open CenteredMomentComparisonReflection LocalLogFourier
+open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization CenteredMomentComparisonReflection LocalLogFourier
 
 def logWindow (v : ℝ) : ℂ := (annulus (Real.exp v) : ℂ)
 

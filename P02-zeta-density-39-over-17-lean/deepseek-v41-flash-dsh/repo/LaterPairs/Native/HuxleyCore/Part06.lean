@@ -3,33 +3,15 @@ public import LaterPairs.Native.HuxleyCore.Part05
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 universe huxleyNarrowV
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 open scoped BigOperators FourierTransform Classical ContDiff NNReal
-open Filter
-open Set Expdb TaoTrudgianYang2025
-open scoped BigOperators FourierTransform ContDiff Classical NNReal
+open Filter Set Expdb TaoTrudgianYang2025
 
 
 public  theorem capped_short_nonAsymptotic_of_window_margins

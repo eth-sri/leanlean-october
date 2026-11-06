@@ -13,10 +13,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalBudget
 public import MathCollab.Density.Stronger.Peaks.Inputs
 
 @[expose] public section
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Set Topology Finset MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

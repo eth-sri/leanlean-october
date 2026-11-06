@@ -8,7 +8,6 @@ public import AdjacentMomentEnvelope
 public import MathCollab.Density.Stronger.Fourth.FourthMoment
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval

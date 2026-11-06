@@ -11,7 +11,6 @@ public import MathCollab.Density.DensityConclusion
 @[expose] public section
 
 open Filter MeasureTheory Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

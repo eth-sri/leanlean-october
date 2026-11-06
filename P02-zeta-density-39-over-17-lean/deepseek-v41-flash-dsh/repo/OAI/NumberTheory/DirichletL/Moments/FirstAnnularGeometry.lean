@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentFirstAnnularGeometry
-open CenteredMomentSectorLocalization CenteredMomentFirstAnnularMajorant
-open CenteredMomentFirstAnnularEnergy CenteredMomentGaussEnergy CanonicalQuadraticSieve
+open CenteredMomentSectorLocalization CenteredMomentFirstAnnularMajorant CenteredMomentFirstAnnularEnergy CenteredMomentGaussEnergy CanonicalQuadraticSieve
 
 local notation "O"=>HeckeFamily.O
 

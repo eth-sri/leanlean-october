@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.OperatorDensityVector
 public import GuthMaynard.Improvement.LogMask
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Set
 open scoped InnerProductSpace FourierTransform Topology

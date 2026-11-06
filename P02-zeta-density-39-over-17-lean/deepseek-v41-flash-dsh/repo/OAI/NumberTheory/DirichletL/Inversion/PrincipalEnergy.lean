@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InversePrincipalEnergy
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
-open InverseMoment
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum InverseMoment
 local notation "Eis" => ActualEisensteinCubic.O
 
 section

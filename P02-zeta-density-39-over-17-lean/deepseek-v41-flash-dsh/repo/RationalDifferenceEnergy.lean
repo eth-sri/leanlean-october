@@ -6,7 +6,6 @@ public import Mathlib
 
 /-! An unconditional finite Gram identity and its coefficient bound.
 These apply to the actual phase kernel in the difference-sum argument. -/
-set_option autoImplicit false
 noncomputable section
 open Finset
 

@@ -27,7 +27,6 @@ open Set
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- Lower first-derivative scale for two heights separated by `t-u` and

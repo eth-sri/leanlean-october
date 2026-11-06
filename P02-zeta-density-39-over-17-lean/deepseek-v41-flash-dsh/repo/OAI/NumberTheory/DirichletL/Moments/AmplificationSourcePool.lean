@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePool
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationAllocation CenteredMomentAmplificationSourceDomain
-open CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentFirstSectors
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationAllocation CenteredMomentAmplificationSourceDomain CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentFirstSectors CenteredMomentSupportedCorrelation CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
 theorem residualIdeal_coprime (p : O) (hp : Prime p) (I : Ideal O) (hI : Supported I) :

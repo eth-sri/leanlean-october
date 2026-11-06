@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 local notation "O"=>HeckeFamily.O
 
 lemma low_or_reflected (M short along xi:ℝ)(hM:0≤M)(hs:short≤M/4)(_hxi:0≤xi)

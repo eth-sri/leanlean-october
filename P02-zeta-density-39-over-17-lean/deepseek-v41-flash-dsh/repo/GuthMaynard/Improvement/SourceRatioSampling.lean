@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.SourceRatioAssembly
 public import GuthMaynard.Improvement.SamplingFourier
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped FourierTransform

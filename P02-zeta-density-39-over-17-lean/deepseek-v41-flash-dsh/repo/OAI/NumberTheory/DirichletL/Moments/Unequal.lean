@@ -93,8 +93,7 @@ theorem fullCorrelation_divisor_eq_zero (p v t k : A) (hv : v ≠ 0)
 
 end Domain
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 

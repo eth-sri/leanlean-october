@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentActiveDivisorShell
-open HeckeFamily CenteredMomentActiveAllocation CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
+open HeckeFamily CenteredMomentActiveAllocation CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
 local notation "O" => ActualEisensteinCubic.O
 
 structure Source (ι:Type*) [Fintype ι] where

@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonPuncture
-open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
+open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
 local notation "O" => ActualEisensteinCubic.O
 
  theorem residualBoxes_filter {ι : Type*} [Fintype ι]

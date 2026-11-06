@@ -19,7 +19,6 @@ real-axis segment becomes the actual sine integral, with the
 endpoint singularity handled by a nonsingular angular parameter.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set Topology

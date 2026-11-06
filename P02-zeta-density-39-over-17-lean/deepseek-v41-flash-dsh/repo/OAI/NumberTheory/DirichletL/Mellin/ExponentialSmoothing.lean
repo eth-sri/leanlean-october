@@ -8,7 +8,6 @@ namespace OAI
 open scoped BigOperators
 open MulChar AddChar
 
-open scoped BigOperators
 
 namespace AnalyticBridge
 

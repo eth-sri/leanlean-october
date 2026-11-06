@@ -7,8 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 def idealMarkedClosed (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=

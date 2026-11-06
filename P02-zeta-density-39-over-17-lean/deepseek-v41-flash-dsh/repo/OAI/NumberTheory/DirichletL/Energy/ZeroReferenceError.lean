@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceError
-open HeckeFamily ConcreteTraceCRT HeckeDyadic QuadraticInitialBound
-open CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentEnergyReferenceHomogeneousError
+open HeckeFamily ConcreteTraceCRT HeckeDyadic QuadraticInitialBound CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison CenteredMomentEnergyReferenceHomogeneousError
 local notation "O"=>HeckeFamily.O
 
 theorem short_energy_bound (b:ℝ):

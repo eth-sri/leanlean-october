@@ -4,9 +4,7 @@ public import PeakWidthPowers
 public import MathCollab.Density.Stronger.Peaks.WidthRanges
 
 @[expose] public section
-open Filter Finset
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
-set_option autoImplicit false
+open Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 noncomputable section
 namespace Montgomery.CriticalPeak
 theorem exists_pointValue_card_le_source_range

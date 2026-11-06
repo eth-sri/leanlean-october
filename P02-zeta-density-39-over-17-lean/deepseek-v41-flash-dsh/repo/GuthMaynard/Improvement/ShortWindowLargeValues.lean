@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.ShortDensityHeight
 @[expose] public section
 
 open Finset Set
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

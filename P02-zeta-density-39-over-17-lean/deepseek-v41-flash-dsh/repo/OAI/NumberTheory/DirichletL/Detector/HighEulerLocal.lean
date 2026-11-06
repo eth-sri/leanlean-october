@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

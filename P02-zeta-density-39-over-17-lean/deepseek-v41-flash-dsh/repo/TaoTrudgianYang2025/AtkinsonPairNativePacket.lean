@@ -5,7 +5,6 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonDyadicGramBudget
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace TaoTrudgianYang2025

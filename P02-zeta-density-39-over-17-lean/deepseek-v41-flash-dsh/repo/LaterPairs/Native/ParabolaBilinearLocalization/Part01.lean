@@ -22,32 +22,11 @@ public import LaterPairs.Native.SargosPrefixFourthMajorant
 public import LaterPairs.Native.SargosQuarticKernelJets
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth GafniTao Set MeasureTheory FourierTransform SchwartzMap
 
-open GafniTao Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open MeasureTheory
-open MeasureTheory FourierTransform SchwartzMap Set GafniTao
-open MeasureTheory GafniTao
-open MeasureTheory GafniTao Set
-open MeasureTheory Set
-open Set
-open scoped BigOperators
-open scoped BigOperators ComplexConjugate
-open scoped BigOperators ContDiff
-open scoped BigOperators ContDiff FourierTransform
-open scoped BigOperators Matrix
-open scoped BigOperators Matrix ContDiff
-open scoped BigOperators NNReal ENNReal
-open scoped ComplexConjugate Convolution ContDiff
-open scoped ContDiff
-open scoped ContDiff BigOperators
-open scoped ContDiff FourierTransform
-open scoped ContDiff Topology
-open scoped Matrix
+open scoped BigOperators ComplexConjugate ContDiff FourierTransform Matrix NNReal ENNReal Convolution Topology
 noncomputable section
 
 open Set Filter MeasureTheory

@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.CenteredKernelBridge
 public import MathCollab.Density.Reflection
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform

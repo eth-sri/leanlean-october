@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentFirstPoisson
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 
 lemma principalCRT_scaled_left (a b : O) (hcop : IsCoprime a b) (x : Residue a) :
     principalCRT a b hcop (scaledResidue a b (a * b) rfl x) =

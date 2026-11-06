@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedProfile
-open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist
-open CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily
-open EisensteinSchwartzPoisson QuadraticInitialBound
+open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily EisensteinSchwartzPoisson QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
 def dilated (W : ℝ → ℂ) (c : ℝ) : ℝ → ℂ := fun x => W (c * x)

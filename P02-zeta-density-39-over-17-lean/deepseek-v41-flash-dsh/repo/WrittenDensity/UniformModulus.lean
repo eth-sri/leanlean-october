@@ -3,7 +3,6 @@ public import WrittenDensity.AllWritten
 public import GuthMaynard.Improvement.CurveUniformization
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.WrittenDensity
 

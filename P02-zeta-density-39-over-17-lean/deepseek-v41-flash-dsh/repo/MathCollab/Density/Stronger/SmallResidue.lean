@@ -5,7 +5,6 @@ public import MathCollab.Density.Stronger.SmoothBlockContour
 
 open Complex MeasureTheory Set Filter
 open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 

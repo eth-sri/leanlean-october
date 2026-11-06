@@ -11,10 +11,7 @@ public import Mathlib.Analysis.ODE.Gronwall
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
+open Complex Set MeasureTheory MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth.Digamma
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 

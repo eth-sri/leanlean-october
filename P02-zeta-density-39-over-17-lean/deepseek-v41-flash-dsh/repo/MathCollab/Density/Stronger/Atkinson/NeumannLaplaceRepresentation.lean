@@ -20,7 +20,6 @@ a new definition of Y0. All principal-power branches and limiting
 integrals enter through the proved contour and angular bridges.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set Topology

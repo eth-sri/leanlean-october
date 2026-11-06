@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyPaidBands
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentPrimeSlot CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentPrimeSlot CenteredMomentRetainedEnergy CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource QuadraticInitialBound
 local notation "O" => HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]

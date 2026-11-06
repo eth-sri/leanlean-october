@@ -4738,9 +4738,7 @@ theorem physicalModelPhase_quartic_curvature_source_scale
                                                                    
                                                                          
                                                                         
-open Set
-open Polynomial
-open Set
+open Set Polynomial
 open scoped Classical
 noncomputable def quarticCurvatureNumerator
     (μ ν r s μ₁ ν₁ r₁ s₁ : ℝ) : Polynomial ℝ :=
@@ -5223,7 +5221,6 @@ theorem quartic_phase_derivative_variation_on_boundary_cell
                                                                     
                                                                   
                                                                        
-open scoped Classical
 open scoped Classical
 theorem quarticPhase_four_point_curvature
     {μ ν r s μ₁ ν₁ r₁ s₁ a b c d h E A B : ℝ}

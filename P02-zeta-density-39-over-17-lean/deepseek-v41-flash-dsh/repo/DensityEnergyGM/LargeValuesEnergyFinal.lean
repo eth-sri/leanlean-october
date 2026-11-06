@@ -405,10 +405,6 @@ theorem sum_gmSecondMomentShape_le
   have hOne := sum_Icc_natDiv_le_harmonic (N := N) hD
   have hTwo := sum_Icc_natDiv_sq_le (N := N) hD
   have hW0 : 0 ≤ (W.card : ℝ) := Nat.cast_nonneg W.card
-  have hH0 : 0 ≤ (((harmonic N : ℚ) : ℝ)) := by
-    rw [harmonic_eq_sum_Icc]
-    push_cast
-    positivity
   unfold gmLargeSecondAggregateShape
   simp_rw [gmSecondMomentShape]
   rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
@@ -454,11 +450,6 @@ theorem sum_gmFourthMomentShape_le
   have hOne := sum_Icc_natDiv_le_harmonic (N := N) hD
   have hTwo := sum_Icc_natDiv_sq_le (N := N) hD
   have hE0 : 0 ≤ (ApproxAddEnergy 1 W : ℝ) := Nat.cast_nonneg _
-  have hW0 : 0 ≤ (W.card : ℝ) := Nat.cast_nonneg W.card
-  have hH0 : 0 ≤ (((harmonic N : ℚ) : ℝ)) := by
-    rw [harmonic_eq_sum_Icc]
-    push_cast
-    positivity
   unfold gmLargeFourthAggregateShape
   simp_rw [gmFourthMomentShape]
   rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
@@ -801,7 +792,6 @@ theorem gmGcdCutoff_le_N
     gmGcdCutoff N T ≤ N := by
   have hUpper : (gmGcdCutoff N T : ℝ) ≤ (N : ℝ) ^ 2 / T := by
     exact Nat.floor_le (div_nonneg (sq_nonneg _) hT.le)
-  have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
   have hxN : (N : ℝ) ^ 2 / T ≤ N := by
     rw [div_le_iff₀ hT]
     nlinarith
@@ -828,12 +818,6 @@ theorem two_le_sq_div_of_three_quarters_le
       _ = T ^ ((1 : ℝ) + 1 / 2) := by congr 1; ring
       _ = T ^ (1 : ℝ) * T ^ (1 / 2 : ℝ) := Real.rpow_add hTpos 1 (1 / 2)
       _ = T * T ^ (1 / 2 : ℝ) := by rw [Real.rpow_one]
-  have htwoT : 2 * T ≤ (N : ℝ) ^ 2 := by
-    calc
-      2 * T ≤ T ^ (1 / 2 : ℝ) * T := by
-        exact mul_le_mul_of_nonneg_right hsqrt hTpos.le
-      _ = (T ^ (3 / 4 : ℝ)) ^ 2 := by rw [hpow]; ring
-      _ ≤ (N : ℝ) ^ 2 := hsq
   exact (le_div_iff₀ hTpos).2 (by nlinarith)
 
 /-- The `gmLargeSecondPaperShape` definition used by the source-facing construction in `LargeValuesEnergyFinal`. -/
@@ -1935,7 +1919,6 @@ theorem gmCubicSelectedScale_first_le
   have hNM : (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ) ≤ 2 * T ^ (1 + η) := by
     rw [le_div_iff₀ hNpos] at hM
     nlinarith
-  have hsq := mul_self_le_mul_self (by positivity : (0 : ℝ) ≤ (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ)) hNM
   calc
     (N : ℝ) ^ 2 / ((2 ^ p.2 : ℕ) : ℝ) *
           (gmCubicAffineTerminalScale p.2 : ℝ) ^ 3 =

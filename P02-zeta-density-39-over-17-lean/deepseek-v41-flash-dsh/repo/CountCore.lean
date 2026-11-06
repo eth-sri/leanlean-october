@@ -5,7 +5,6 @@ public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Tactic
 
-set_option autoImplicit false
 noncomputable section
 open scoped BigOperators ENNReal
 

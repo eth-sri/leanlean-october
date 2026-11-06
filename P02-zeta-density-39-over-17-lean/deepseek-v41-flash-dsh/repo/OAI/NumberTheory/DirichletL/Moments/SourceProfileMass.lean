@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.CenteredMomentSourceProfileMass
-open ActualEisensteinCubic CenteredMomentPrimary CenteredMomentRectangle
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass
+open ActualEisensteinCubic CenteredMomentPrimary CenteredMomentRectangle CenteredMomentAddedZeroUniform CenteredMomentSourceMass
 local notation "O" => ActualEisensteinCubic.O
 
  theorem primary_mod_one (χ : MulChar (O ⧸ Ideal.span {(1:O)}) ℂ) (I : Ideal O) :

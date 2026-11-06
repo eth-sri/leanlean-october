@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstReduced
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentActive
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstMixed CenteredMomentActive
 local notation "O" => ActualEisensteinCubic.O
 
 def tripleRow (a b r : O) (χa : MulChar (Residue a) ℂ)

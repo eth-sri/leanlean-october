@@ -5,13 +5,8 @@ public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped BigOperators Topology FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 
 namespace ShortDraftCRT
 

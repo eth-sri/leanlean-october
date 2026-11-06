@@ -4,8 +4,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.WeylExplicit
 
 @[expose] public section
 
-open Asymptotics Filter Topology
-open Complex Finset MeasureTheory Real Set
+open Asymptotics Filter Topology Complex Finset MeasureTheory Real Set
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
@@ -349,7 +348,6 @@ theorem norm_typeIReflectedMellinIntegral_eq_two_pi_mul_negativeModes
   have hNorm := congrArg norm hEq
   simp only [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity :
       0 < 1 / (2 * Real.pi))] at hNorm
-  have hPi : Real.pi ≠ 0 := Real.pi_ne_zero
   rw [hNorm]
   field_simp
 
@@ -550,14 +548,8 @@ theorem sourceSmoothBlock_large_forces_signedModes
         gcongr
         exact norm_add_le _ _
       _ = ‖c * z‖ + ‖c * neg‖ + ‖c * pos‖ + ‖c * far‖ := by ring
-  have hTotal : V ≤ ‖c * z‖ + ‖c * neg‖ + ‖c * pos‖ + ‖c * far‖ :=
-    hLarge.trans hTriangle
-  have hz : ‖c * z‖ ≤ V / 8 := by simpa only [Q, z, c] using hZero
-  have hf : ‖c * far‖ ≤ V / 8 := by simpa only [Q, far, c] using hFar
   by_contra h
   push Not at h
-  have hn : ‖c * neg‖ < V / 4 := by simpa only [Q, neg, c] using h.1
-  have hp : ‖c * pos‖ < V / 4 := by simpa only [Q, pos, c] using h.2
   linarith
 
 /-! ## Source block to a genuine reflected large value -/
@@ -1350,7 +1342,6 @@ theorem reflected_dyadic_scale_lower_of_expanded_cutoff
     (hPM : P ≤ M) (hM : (M : ℝ) ≤ T ^ (1 + d) / Q) :
     1 / (1 / 2 + d) ≤ typeILogarithmicScale T P := by
   have hTPos : 0 < T := by linarith
-  have hTOne : 1 ≤ T := hT.le
   have hQReal : (1 : ℝ) < Q := by exact_mod_cast hQ
   have hSqrtQ : T ^ (1 / 2 : ℝ) ≤ (Q : ℝ) := by
     rw [← hScale, ← Real.rpow_mul (by positivity : (0 : ℝ) ≤ Q)]
@@ -1542,8 +1533,6 @@ theorem typeISourceSmoothWeight_support
     simp [hQZero]
   constructor
   · by_contra hnot
-    have hnUpper : (n : ℝ) ≤ (Q : ℝ) / 2 := by
-      simpa only [Q] using le_of_not_gt hnot
     have hRatio : (n : ℝ) / Q ≤ 1 / 2 := by
       rw [div_le_iff₀ (by exact_mod_cast hQ)]
       nlinarith

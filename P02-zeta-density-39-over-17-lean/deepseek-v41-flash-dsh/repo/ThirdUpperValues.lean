@@ -7,8 +7,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 1200000
 noncomputable section
 namespace Montgomery.RationalMoment
-open GuthMaynard.Improvement
-open Finset
+open GuthMaynard.Improvement Finset
 theorem third_upper_large_values {σ a p α δ : ℝ}
     (hw : ThirdWindow σ a p α) (hδ : 0 < δ) (hδ' : δ ≤ 1/100) :
     ∃ C : ℝ, 0 < C ∧ ∀ (H N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),

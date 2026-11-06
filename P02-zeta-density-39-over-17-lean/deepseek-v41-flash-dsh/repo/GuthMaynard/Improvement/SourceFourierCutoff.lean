@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.OrdinaryFourierMoments
 public import GuthMaynard.Improvement.RatioFourierBridge
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform ComplexConjugate

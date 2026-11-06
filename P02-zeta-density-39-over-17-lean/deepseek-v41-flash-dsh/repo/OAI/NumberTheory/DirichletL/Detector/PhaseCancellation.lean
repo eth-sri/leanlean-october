@@ -7,8 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT
-open QuadraticAllOddCRT CanonicalRowCompletion CanonicalQuadraticSieve
+open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT QuadraticAllOddCRT CanonicalRowCompletion CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 theorem quadraticRayValue_norm_one (r : EisensteinEPrimaryPhase.Coord)

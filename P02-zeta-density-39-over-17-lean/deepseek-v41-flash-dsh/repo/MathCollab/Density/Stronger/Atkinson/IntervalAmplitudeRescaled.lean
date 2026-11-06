@@ -12,7 +12,6 @@ public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeBounds
 
 open Complex MeasureTheory Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 

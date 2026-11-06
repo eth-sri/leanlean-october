@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyBandMonotonicity
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def widenState {Z B b B' b':ℝ}(s:NaturalState Z B b)(hB:B≤B')(hb:b≤b'):

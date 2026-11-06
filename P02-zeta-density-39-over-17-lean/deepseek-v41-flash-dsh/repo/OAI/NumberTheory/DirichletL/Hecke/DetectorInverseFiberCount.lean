@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorInverseFiberCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
 
 def inverseTest (U tstar r : ℝ) : ℝ→ℂ :=
   HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular (U^tstar) (U^r)
