@@ -42,7 +42,6 @@ theorem prod_linePointDist_nondegenerate_weighted_collision_le
     (bound : ℝ) / Fintype.card (ScalarQ L) *
       avgOver (Distribution.prod (linePointDist L) (linePointDist L)) (fun samples =>
         if samples.1.1.direction ≠ 0 then weight samples.1.1 samples.2 else 0) := by
-  classical
   simp only [SandwichProduct.avgOver_distribution_prod]
   rw [avgOver_comm, avgOver_comm (linePointDist L) (linePointDist L)
     (fun firstSample secondSample =>

@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Observables.LineMeasurement.LinePointConsistency
+public import QPBT.Observables.LineMeasurement.EvalClassConsistency
 
 /-!
 # Expanded line measurements
@@ -66,8 +66,6 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
-local instance pauliEdgeNonemptyLineMeasurement : Nonempty PauliEdge :=
-  pauliEdge_nonempty
 
 /-- The square-root error exhibited by the expanded-line consistency proof.
 This is the final quantitative conclusion of `lem:qld-comm-line-cons`, paper
@@ -96,43 +94,42 @@ theorem exp_line_point_cons_explicit' :
           ((S.pointMeasExpOption p₂.side W sample.2).effect a))
         S.psiHat ≤ 348 * deltaLine ε := by
   intro P ε S p₁ p₂ hopp W
-  have hε : 0 ≤ ε := S.eps_nonneg
-  have key : ∀ (x a : ℝ), 1 ≤ a → a ≤ 86 + 86 → 0 ≤ x → x ≤ 2 * (a * ε) →
-      x ≤ 4 → x ≤ 348 * deltaLine ε := by
-    intro x a ha haC hx0 hxa hx4
-    calc
-      x ≤ (2 * a + 4) * Real.sqrt ε :=
-        le_mul_sqrt_of_le_mul_of_le_four (by linarith) hx0
-          (by rw [mul_assoc]; exact hxa) hx4
-      _ ≤ 348 * Real.sqrt ε := by
-        apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg ε)
-        linarith
-  have htwo : (0 : ℝ) ≤ 2 := by norm_num
+  have key : ∀ {x y : ℝ}, y ≤ 86 * ε → 0 ≤ x → x ≤ min (2 * y) 4 → x ≤ 348 * deltaLine ε :=
+    fun {x y} hy hx0 hx => (le_mul_sqrt_of_le_mul_of_le_four (ε := ε) (a := 344) (by norm_num) hx0
+      (by linarith [min_le_left (2 * y) 4, S.eps_nonneg]) (hx.trans (min_le_right _ _))).trans_eq
+        (by norm_num [deltaLine])
+  have hμ := linePointDist_isProbability P.toLdParams
+  have h1 := WinImplications.win_low_degree_explicit P ε S S.eps_nonneg W
+  have h2 := WinImplications.win_low_degree_interchanged_explicit P ε S S.eps_nonneg W
   cases p₁ <;> cases p₂ <;> simp only [Placement.IsOpposite] at hopp
-  · have hb := (ProjectiveSetting.evalClassDist_aaBa_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
-      (ProjectiveSetting.evalClassDist_aaBa_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_baAa_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
-      (ProjectiveSetting.evalClassDist_baAa_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_bbAb_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
-      (ProjectiveSetting.evalClassDist_bbAb_le_four S W)
-  · have hb := (ProjectiveSetting.evalClassDist_abBb_le S W).trans
-      (mul_le_mul_of_nonneg_left
-        (WinImplications.win_low_degree_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
-      (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
-      (ProjectiveSetting.evalClassDist_abBb_le_four S W)
+  · refine key h1 (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) ?_
+    simp only [opFamilyDistSq, ProjectiveSetting.norm_place_AA'_sub_place_BA'']
+    exact DistanceCalculus.opFamilyDistSq_placed_le_min _ hμ (fun x => S.lineEvalMeasExp .alice W x.1 x.2)
+      (fun x => DistanceCalculus.leftPlacedMeasurement (ιB := PauliRegister P × PauliRegister P)
+        (S.pointMeasExpOption .bob W x.2)) _ (S.norm_reindexState_psiHat _) (fun x => S.lineEvalMeas .alice W x.1 x.2)
+      (fun x => S.pointMeasOption .bob W x.2) _ S.toStrategy.ψ_norm fun x =>
+        (Finset.sum_congr rfl fun a _ => S.stateQForm_aaBa_mul_eq _ _).trans (S.sum_stateQForm_evalClass_AA'_BA''_eq W x.1 x.2)
+  · refine key h2 (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) ?_
+    rw [DistanceCalculus.opFamilyDistSq_symm]; simp only [opFamilyDistSq, ProjectiveSetting.norm_place_AA'_sub_place_BA'']
+    exact DistanceCalculus.opFamilyDistSq_placed_le_min _ hμ (fun x => S.pointMeasExpOption .alice W x.2)
+      (fun x => DistanceCalculus.leftPlacedMeasurement (ιB := PauliRegister P × PauliRegister P)
+        (S.lineEvalMeasExp .bob W x.1 x.2)) _ (S.norm_reindexState_psiHat _) (fun x => S.pointMeasOption .alice W x.2)
+      (fun x => S.lineEvalMeas .bob W x.1 x.2) _ S.toStrategy.ψ_norm fun x =>
+        (Finset.sum_congr rfl fun a _ => S.stateQForm_aaBa_mul_eq _ _).trans (S.sum_stateQForm_evalClass_BA''_AA'_eq W x.1 x.2)
+  · refine key h2 (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) ?_
+    rw [DistanceCalculus.opFamilyDistSq_symm]; simp only [opFamilyDistSq, ProjectiveSetting.norm_place_AB''_sub_place_BB']
+    exact DistanceCalculus.opFamilyDistSq_placed_le_min _ hμ (fun x => S.pointMeasExpOption .alice W x.2)
+      (fun x => DistanceCalculus.leftPlacedMeasurement (ιB := PauliRegister P × PauliRegister P)
+        (S.lineEvalMeasExp .bob W x.1 x.2)) _ (S.norm_reindexState_psiHat _) (fun x => S.pointMeasOption .alice W x.2)
+      (fun x => S.lineEvalMeas .bob W x.1 x.2) _ S.toStrategy.ψ_norm fun x =>
+        (Finset.sum_congr rfl fun a _ => S.stateQForm_abBb_mul_eq _ _).trans (S.sum_stateQForm_evalClass_BB'_AB''_eq W x.1 x.2)
+  · refine key h1 (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) ?_
+    simp only [opFamilyDistSq, ProjectiveSetting.norm_place_AB''_sub_place_BB']
+    exact DistanceCalculus.opFamilyDistSq_placed_le_min _ hμ (fun x => S.lineEvalMeasExp .alice W x.1 x.2)
+      (fun x => DistanceCalculus.leftPlacedMeasurement (ιB := PauliRegister P × PauliRegister P)
+        (S.pointMeasExpOption .bob W x.2)) _ (S.norm_reindexState_psiHat _) (fun x => S.lineEvalMeas .alice W x.1 x.2)
+      (fun x => S.pointMeasOption .bob W x.2) _ S.toStrategy.ψ_norm fun x =>
+        (Finset.sum_congr rfl fun a _ => S.stateQForm_abBb_mul_eq _ _).trans (S.sum_stateQForm_evalClass_AB''_BB'_eq W x.1 x.2)
 
 end
 

@@ -46,7 +46,6 @@ theorem exists_ld_soundness :
                   deltaLd a b ε P.q P.m P.d P.k ∧
                 ldPolynomialPolynomialDefect P S GA GB ≤
                   deltaLd a b ε P.q P.m P.d P.k := by
-  classical
   obtain ⟨a, b, ha, hb, hb1, hsound⟩ := MIPStarRE.QPBT.exists_ld_soundness
   refine ⟨a, b, ha, hb, hb1, ?_⟩
   rintro ⟨q, m, d, k, hm, hd, hk, hq, hdvd⟩ ε hε S hprojective hvalue

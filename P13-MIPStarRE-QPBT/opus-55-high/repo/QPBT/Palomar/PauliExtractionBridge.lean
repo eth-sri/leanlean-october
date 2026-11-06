@@ -1,7 +1,7 @@
 module
 
 public import QPBT.Palomar.ExtractionBridge
-public import QPBT.Palomar.PauliExtraction
+public import QPBT.Palomar.Definitions
 public import QPBT.Palomar.PauliGameStrategyBridge
 
 /-!
@@ -47,20 +47,9 @@ def PauliParams.toAdmissibleParams (P : PauliParams) :
 /-- Compact parameters are recovered exactly after conversion to the library record. -/
 @[simp] theorem PauliParams.ofAdmissibleParams_toAdmissibleParams (P : PauliParams) :
     PauliParams.ofAdmissibleParams P.toAdmissibleParams = P := by
-  cases P
   rfl
 
-/-- Registered parameters are recovered exactly after conversion to the compact record. -/
-@[simp] theorem PauliParams.toAdmissibleParams_ofAdmissibleParams
-    (P : MIPStarRE.QPBT.AdmissibleParams) :
-    (PauliParams.ofAdmissibleParams P).toAdmissibleParams = P := by
-  cases P
-  rfl
 
-/-- The compact error function is definitionally the registered `deltaQld`. -/
-@[simp] theorem deltaQld_eq_library (a b epsilon : ℝ) (m d q : ℕ) :
-    deltaQld a b epsilon m d q = MIPStarRE.QPBT.deltaQld a b epsilon m d q :=
-  rfl
 
 /-- The concrete compact SPCC predicate is exactly the transported symmetric-game predicate. -/
 theorem isPauliSPCC_iff_isSPCC (P : MIPStarRE.QPBT.AdmissibleParams)
@@ -72,11 +61,7 @@ theorem isPauliSPCC_iff_isSPCC (P : MIPStarRE.QPBT.AdmissibleParams)
   unfold SymmetricStrategy.IsPauliSPCC SymmetricStrategy.IsSPCC
   have hgame := congrArg Game.μ
     (pauliSymmetricGame_toGame P)
-  have hmu : (pauliSymmetricGame P).μ =
-      pauliQuestionPMF (PauliParams.ofAdmissibleParams P)
-        (MIPStarRE.QPBT.binaryRepresentation P.model) := by
-    simpa only [pauliGame] using hgame
-  rw [hmu]
+  simp_all [pauliSymmetricGame, pauliQuestionPMF, PauliParams.ofAdmissibleParams, MIPStarRE.QPBT.binaryRepresentation, pauliGame]
 
 /-- Convert a registered qudit soundness witness to the compact strategy. -/
 def ExtractionWitness.ofPauliSoundnessWitness {P : PauliParams}

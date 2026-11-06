@@ -38,40 +38,44 @@ noncomputable section
 
 /-! ## Linearity of the coordinate blocks -/
 
+variable {K : Type*}
+
 /-- The `X` block of a sum of extended points is the sum of the blocks.
 Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projX_add {K : Type*} [AddCommMonoid K] {m : ℕ}
+theorem projX_add [AddCommMonoid K] {m : ℕ}
     (u v : Fin (2 * m + 2) → K) :
     projX (u + v) = projX u + projX v := rfl
 
 /-- The `Z` block of a sum of extended points is the sum of the blocks.
 Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projZ_add {K : Type*} [AddCommMonoid K] {m : ℕ}
+theorem projZ_add [AddCommMonoid K] {m : ℕ}
     (u v : Fin (2 * m + 2) → K) :
     projZ (u + v) = projZ u + projZ v := rfl
 
 /-- The `X` block of a scalar multiple of an extended point is the scalar
 multiple of the block.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projX_smul {K : Type*} [Monoid K] {m : ℕ} (t : K)
+theorem projX_smul [Monoid K] {m : ℕ} (t : K)
     (u : Fin (2 * m + 2) → K) :
     projX (t • u) = t • projX u := rfl
 
 /-- The `Z` block of a scalar multiple of an extended point is the scalar
 multiple of the block.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem projZ_smul {K : Type*} [Monoid K] {m : ℕ} (t : K)
+theorem projZ_smul [Monoid K] {m : ℕ} (t : K)
     (u : Fin (2 * m + 2) → K) :
     projZ (t • u) = t • projZ u := rfl
 
 /-! ## The coordinate blocks of an extended point -/
 
+variable (P : AdmissibleParams)
+
 /-- Split an extended point into its two source point blocks and its two
 scalar coordinates.  Blueprint `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-def extendedPointBlockEquiv (P : AdmissibleParams) :
+def extendedPointBlockEquiv :
     (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) ≃
       ((Fin P.m → DirectScalarQ P.extendedDirectLd) ×
           (Fin P.m → DirectScalarQ P.extendedDirectLd)) ×
@@ -82,23 +86,19 @@ def extendedPointBlockEquiv (P : AdmissibleParams) :
       (Equiv.prodCongr (Equiv.sumArrowEquivProdArrow _ _ _) (Equiv.refl _)))
 
 /-- The first block of the decomposition is the `X` block. -/
-theorem extendedPointBlockEquiv_projX (P : AdmissibleParams)
-    (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
+theorem extendedPointBlockEquiv_projX (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
     (extendedPointBlockEquiv P u).1.1 = projX u := by
-  funext i
   rfl
 
 /-- The second block of the decomposition is the `Z` block. -/
-theorem extendedPointBlockEquiv_projZ (P : AdmissibleParams)
-    (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
+theorem extendedPointBlockEquiv_projZ (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
     (extendedPointBlockEquiv P u).1.2 = projZ u := by
-  funext i
   rfl
 
 /-- The block decomposition of an extended point carries the uniform law to
 the uniform law.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem uniformDistribution_map_extendedPointBlockEquiv (P : AdmissibleParams) :
+theorem uniformDistribution_map_extendedPointBlockEquiv :
     (uniformDistribution
           (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
         (extendedPointBlockEquiv P) =
@@ -111,7 +111,7 @@ theorem uniformDistribution_map_extendedPointBlockEquiv (P : AdmissibleParams) :
 /-- The two source blocks of a uniformly sampled extended point are
 independent and uniform.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem uniformDistribution_map_projX_projZ (P : AdmissibleParams) :
+theorem uniformDistribution_map_projX_projZ :
     (uniformDistribution
           (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
         (fun u => (projX u, projZ u)) =
@@ -145,7 +145,7 @@ base and direction.  This supplies the domain condition preceding Equation
 `eq:combine-lines` in blueprint
 `def:combine-map`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:970-989`. -/
-theorem isCombineLineCompatible_of_blocks {K : Type*} [Field K] {m : ℕ}
+theorem isCombineLineCompatible_of_blocks [Field K] {m : ℕ}
     (u v : Fin (2 * m + 2) → K) (uX vX uZ vZ : Fin m → K) (aX bX aZ bZ : K)
     (hX : projX u = uX + aX • vX) (hXv : projX v = bX • vX)
     (hZ : projZ u = uZ + aZ • vZ) (hZv : projZ v = bZ • vZ) :

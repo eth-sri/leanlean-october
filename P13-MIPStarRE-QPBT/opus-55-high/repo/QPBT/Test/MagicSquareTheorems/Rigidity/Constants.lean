@@ -40,37 +40,8 @@ noncomputable section
 
 /-! ## The fiber embedding of a local space in an extracted register -/
 
-/-- Formalization-only linear embedding of a local space as the fiber of a
-register over one fixed basis vector.  It is the coarse counterpart of the
-swap isometries of `Rigidity/Swap.lean`, used to exhibit a witness of
-`thm:ms-rigidity` for an arbitrary strategy in the regime where the asserted
-bound is vacuous. -/
-def registerFiberEmbeddingMap (κ ι : Type) [Fintype κ] [DecidableEq κ]
-    [Fintype ι] [DecidableEq ι] (k : κ) :
-    EuclideanSpace ℂ ι →ₗ[ℂ] EuclideanSpace ℂ (κ × ι) where
-  toFun x := (EuclideanSpace.equiv (κ × ι) ℂ).symm
-    (fun p => if p.1 = k then x p.2 else 0)
-  map_add' x y := by
-    ext p
-    by_cases h : p.1 = k <;> simp [h]
-  map_smul' c x := by
-    ext p
-    by_cases h : p.1 = k <;> simp [h]
 
-/-- Formalization-only isometric embedding of a local space as the fiber of a
-register over one fixed basis vector. -/
-noncomputable def registerFiberEmbedding (κ ι : Type) [Fintype κ] [DecidableEq κ]
-    [Fintype ι] [DecidableEq ι] (k : κ) :
-    EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ (κ × ι) :=
-  LinearMap.isometryOfInner (registerFiberEmbeddingMap κ ι k) <| by
-    intro x y
-    simp [PiLp.inner_apply, Fintype.sum_prod_type, registerFiberEmbeddingMap]
 
-/-- The coordinates of the fiber embedding. -/
-@[simp]
-theorem registerFiberEmbedding_apply {κ ι : Type} [Fintype κ] [DecidableEq κ]
-    [Fintype ι] [DecidableEq ι] (k : κ) (x : EuclideanSpace ℂ ι) (p : κ × ι) :
-    registerFiberEmbedding κ ι k x p = if p.1 = k then x p.2 else 0 := rfl
 
 /-! ## Coarse contraction estimates -/
 

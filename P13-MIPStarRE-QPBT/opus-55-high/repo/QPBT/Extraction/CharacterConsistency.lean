@@ -32,15 +32,16 @@ open WinImplications
 
 noncomputable section
 
+variable {P : AdmissibleParams}
+
 /-- Regroup a field-weighted observable by its binary trace label. This is the
 postprocessing at paper `14_analysis_of_the_pauli_basis_test.tex:1547-1551`. -/
-theorem sum_basis_character_effect_eq {P : AdmissibleParams} {ι : Type*}
+theorem sum_basis_character_effect_eq {ι : Type*}
     [Fintype ι] [DecidableEq ι] (A : Measurement (PauliScalar P) ι)
     (j : Fin P.model.basisDim) :
     (∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • A.effect a) =
       ∑ b : ZMod 2, phaseSign b •
         (A.postprocess (fun a => fixedBinTrace P.model (P.model.basis j * a))).effect b := by
-  classical
   rw [← Finset.sum_fiberwise_of_maps_to
     (g := fun a : PauliScalar P => fixedBinTrace P.model (P.model.basis j * a))
     (t := (Finset.univ : Finset (ZMod 2))) (fun _ _ => Finset.mem_univ _)]
@@ -48,15 +49,14 @@ theorem sum_basis_character_effect_eq {P : AdmissibleParams} {ι : Type*}
   intro b _
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.smul_sum]
   apply Finset.sum_congr rfl
-  intro a ha
-  rw [(Finset.mem_filter.mp ha).2]
+  simp_all
 
 /-- A fixed basis character costs at most four times the field measurement
 consistency defect. The question distribution and basis coordinate are retained
 exactly. This proves the final conversion in blueprint
 `lem:qld-construct-the-paulis`, without assuming a bound on that defect. -/
 theorem basis_character_opDistSq_le_four_consistencyDefect
-    {P : AdmissibleParams} {X ιA ιB : Type*}
+    {X ιA ιB : Type*}
     [Fintype X] [DecidableEq X]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement (PauliScalar P) ιA)
@@ -69,7 +69,6 @@ theorem basis_character_opDistSq_le_four_consistencyDefect
         (∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • (B x).effect a)) ψ ≤
       4 * consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) ψ := by
-  classical
   let f := fun a : PauliScalar P => fixedBinTrace P.model (P.model.basis j * a)
   let A' := fun x => (A x).postprocess f
   let B' := fun x => (B x).postprocess f
@@ -81,7 +80,7 @@ theorem basis_character_opDistSq_le_four_consistencyDefect
   have hobs := povm_to_obs_of_measurements μ
     (fun x => leftPlacedMeasurement (A' x))
     (fun x => rightPlacedMeasurement (B' x)) phaseSign norm_phaseSign ψ
-  simp only [ZMod.card, Nat.cast_ofNat] at hobs
+  simp at hobs
   have hbound := hobs.trans (mul_le_mul_of_nonneg_left hfam (by norm_num : (0 : ℝ) ≤ 2))
   simpa only [sum_basis_character_effect_eq, heteroKron_left_sum_smul,
     heteroKron_right_sum_smul, leftPlacedMeasurement, rightPlacedMeasurement,
@@ -95,7 +94,7 @@ bound. Its construction-scale bound is the `eq:qld-pulling-cons`
 extraction obligation recorded under issue Dengnifer/MIPStarRE-QPBT-bak#123 in
 `docs/paper-gaps/qpbt_extraction-transfer.tex`; it is not supplied here. -/
 theorem tildeObs_opDistSq_le_four_consistencyDefect
-    {P : AdmissibleParams} {epsilon deltaG : ℝ}
+    {epsilon deltaG : ℝ}
     {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
     (W : PauliKind) (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))
@@ -120,7 +119,7 @@ theorem tildeObs_opDistSq_le_four_consistencyDefect
         (fun u => S.placeSide .alice (tildeObs w .alice W u j))
         (fun u => S.placeSide .bob (tildeObs w .bob W u j)) S.psiHat := by
     unfold opDistSq opFamilyDistSq
-    simp only [Fintype.sum_unique]
+    simp
     apply avgOver_congr
     intro u
     rw [norm_applyOperatorToState_reindexState, reindexOp_sub]
@@ -139,7 +138,7 @@ theorem tildeObs_opDistSq_le_four_consistencyDefect
     apply Finset.sum_congr rfl
     intro b _
     by_cases hab : a = b
-    · simp only [hab, if_true]
+    · simp_all
     · simp only [if_neg hab, consistency_term_eq_stateQForm]
       rw [stateQForm_reindexState, reindexOp_mul]
       rfl
@@ -147,7 +146,7 @@ theorem tildeObs_opDistSq_le_four_consistencyDefect
     (fun u => heteroKron 1 (tildeObs w .bob W u j)) _ ≤
       4 * consistencyDefect _ (fun u a => heteroKron (tildeM w .alice W u a) 1)
         (fun u a => heteroKron 1 (tildeM w .bob W u a)) _ at h
-  rwa [hd, hc] at h
+  simp_all
 
 end
 

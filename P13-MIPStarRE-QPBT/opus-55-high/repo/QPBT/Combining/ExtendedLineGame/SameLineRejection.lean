@@ -62,7 +62,7 @@ def diagonalCoefficientAnswerDefect
       (((lines.Qline .bob line).postprocess (diagonalAnswer P)).effect answer))
     (pairState setting)
 
-private theorem answer_mismatch_eq_consistency
+theorem answer_mismatch_eq_consistency
     (D : DirectLdParams) {X : Type*} [Fintype X] [DecidableEq X]
     (mu : Distribution X) (S : Strategy (directLdGame D))
     (qA qB : X -> DirectLdQuestion D) :
@@ -84,8 +84,9 @@ private theorem answer_mismatch_eq_consistency
   · simp [heq]
   · simp [heq, outcomeWeight, DistanceCalculus.stateQForm]
 
-private theorem sameLine_rejectedMass_eq_answer_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
+theorem sameLine_rejectedMass_eq_answer_mismatch
     (kind : LdType) (hkind : kind = .aline ∨ kind = .dline)
     (sample : DirectLdSpace P.extendedDirectLd) :
     directRejectedMass P.extendedDirectLd (strategy lines)
@@ -95,7 +96,6 @@ private theorem sameLine_rejectedMass_eq_answer_mismatch
         (kind, directLdMap P.extendedDirectLd kind sample)
         (kind, directLdMap P.extendedDirectLd kind sample)
         (fun answerA answerB => answerA ≠ answerB) := by
-  classical
   unfold directRejectedMass outcomeEventWeight
   apply Finset.sum_congr rfl
   intro answerA _
@@ -111,7 +111,7 @@ private theorem sameLine_rejectedMass_eq_answer_mismatch
         rcases hkind with rfl | rfl <;> cases answerA <;>
           simp_all [directLdWinPredicate, validDirectLdAnswer]
       simp [hwin]
-    · have hvalidFalse : validDirectLdAnswer kind answerA = false :=
+    · have hvalidFalse :=
         Bool.eq_false_of_not_eq_true hvalid
       have hzero := outcomeWeight_eq_zero_of_invalid lines
         (kind, directLdMap P.extendedDirectLd kind sample)
@@ -126,18 +126,15 @@ private theorem sameLine_rejectedMass_eq_answer_mismatch
       apply heq
       rcases hkind with rfl | rfl <;> cases answerA <;> cases answerB <;>
         simp_all [directLdWinPredicate, validDirectLdAnswer]
-    have hwinFalse : directLdWinPredicate P.extendedDirectLd
-        (kind, directLdMap P.extendedDirectLd kind sample)
-        (kind, directLdMap P.extendedDirectLd kind sample)
-        answerA answerB = false := Bool.eq_false_of_not_eq_true hnotwin
+    have hwinFalse := Bool.eq_false_of_not_eq_true hnotwin
     simp only [hwinFalse, Bool.false_eq_true, if_false]
     split
     · rfl
     · rename_i hnot
       exact (hnot heq).elim
 
-private theorem axis_answer_effect
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
+theorem axis_answer_effect
+    (side : PlayerSide)
     (sample : DirectLdSpace P.extendedDirectLd)
     (answer : DirectLdAnswer P.extendedDirectLd) :
     (answerMeasurement lines side
@@ -147,8 +144,8 @@ private theorem axis_answer_effect
   unfold answerMeasurement
   rw [axis_description_canonical]
 
-private theorem diagonal_answer_effect
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
+theorem diagonal_answer_effect
+    (side : PlayerSide)
     (sample : DirectLdSpace P.extendedDirectLd)
     (answer : DirectLdAnswer P.extendedDirectLd) :
     (answerMeasurement lines side
@@ -161,7 +158,7 @@ private theorem diagonal_answer_effect
 /-- The axis-axis branch rejection is exactly the consistency defect of the
 two typed axis coefficient answers over the axis-line marginal. -/
 theorem aline_aline_rejection_eq_axisCoefficientAnswerDefect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+    :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.aline, .aline) = axisCoefficientAnswerDefect lines := by
   rw [directLdBranchRejectionProbability_eq_avgOver]
@@ -204,7 +201,7 @@ theorem aline_aline_rejection_eq_axisCoefficientAnswerDefect
 /-- The diagonal-diagonal branch rejection is exactly the consistency defect
 of the two typed diagonal coefficient answers over the diagonal-line marginal. -/
 theorem dline_dline_rejection_eq_diagonalCoefficientAnswerDefect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+    :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.dline, .dline) = diagonalCoefficientAnswerDefect lines := by
   rw [directLdBranchRejectionProbability_eq_avgOver]

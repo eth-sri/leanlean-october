@@ -62,10 +62,11 @@ noncomputable def encodingPauliMeas (setting : ProjectiveSetting params error)
   (tensorMeasurement (setting.pauliMeas side basis) (pauliRegisterMeas basis)).postprocess
     fun answers => encodingPoly (answers.1 + answers.2)
 
+variable (setting : ProjectiveSetting params error) (side : PlayerSide) (basis : PauliKind)
+
 /-- The reference effect sums the product effects over pairs whose sum encodes
 the specified polynomial representative. -/
-theorem encodingPauliMeas_effect (setting : ProjectiveSetting params error)
-    (side : PlayerSide) (basis : PauliKind) (poly : Poly params) :
+theorem encodingPauliMeas_effect (poly : Poly params) :
     (setting.encodingPauliMeas side basis).effect poly =
       ∑ answers ∈ Finset.univ.filter
           (fun answers : PauliRegister params × PauliRegister params =>
@@ -77,10 +78,8 @@ theorem encodingPauliMeas_effect (setting : ProjectiveSetting params error)
 /-- A nonencoding polynomial has zero reference effect. This is exact support of
 the auxiliary measurement, not a bound on the global polynomial measurement. -/
 theorem encodingPauliMeas_effect_eq_zero_of_not_isEncoding
-    (setting : ProjectiveSetting params error) (side : PlayerSide) (basis : PauliKind)
     (poly : Poly params) (hpoly : ¬ IsEncoding poly) :
     (setting.encodingPauliMeas side basis).effect poly = 0 := by
-  classical
   rw [encodingPauliMeas_effect]
   apply Finset.sum_eq_zero
   intro answers hanswers
@@ -90,8 +89,7 @@ theorem encodingPauliMeas_effect_eq_zero_of_not_isEncoding
 /-- Evaluating the reference polynomial is equivalent to evaluating the two Pauli
 answers separately and adding their values. This uses linearity of the encoding,
 not the decoder/evaluation identity for arbitrary polynomial representatives. -/
-theorem encodingPauliMeas_postprocess_eval (setting : ProjectiveSetting params error)
-    (side : PlayerSide) (basis : PauliKind) (point : Fin params.m → PauliScalar params) :
+theorem encodingPauliMeas_postprocess_eval (point : Fin params.m → PauliScalar params) :
     (setting.encodingPauliMeas side basis).postprocess (fun poly => evalPoly poly point) =
       (tensorMeasurement (setting.pauliEvalMeas side basis point)
         ((pauliRegisterMeas basis).postprocess
@@ -111,7 +109,6 @@ theorem encodingPauliMeas_postprocess_eval (setting : ProjectiveSetting params e
 `K^u_a` in the proof of blueprint `eq:qld-nonencoding-mass`. This identity makes no
 approximation or assertion of consistency with the strategy's point measurement. -/
 theorem encodingPauliMeas_eval_effect_eq_convolution
-    (setting : ProjectiveSetting params error) (side : PlayerSide) (basis : PauliKind)
     (point : Fin params.m → PauliScalar params) (value : PauliScalar params) :
     ((setting.encodingPauliMeas side basis).postprocess
       (fun poly => evalPoly poly point)).effect value =

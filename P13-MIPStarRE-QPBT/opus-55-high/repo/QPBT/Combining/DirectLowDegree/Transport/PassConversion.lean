@@ -44,10 +44,11 @@ noncomputable section
 
 /-! ## The failure comparison and the pass hypothesis -/
 
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+
 /-- The uniformly weighted rejection is one ninth of the sum over the nine
 ordered type pairs. -/
-private theorem directLdRejectionProbability_eq_sum (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) :
+theorem directLdRejectionProbability_eq_sum :
     directLdRejectionProbability D S =
       (∑ types : LdType × LdType, directLdBranchRejectionProbability D S types) / 9 := by
   unfold directLdRejectionProbability
@@ -64,55 +65,26 @@ fails for index-sensitive strategies that answer the canonical question of
 a direction badly and the non-canonical questions of the same geometric line
 well, so the surplus term is not an artifact of the proof. -/
 theorem directCoordinate_failure_le_weightedFailure
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     (directCoordinateProjStrat D S hS r).lowIndividualDegreeFailureProbability ≤
       directLdLdtWeightedFailureProbability D S +
         (directLdBranchRejectionProbability D S (.dline, .point) +
           directLdBranchRejectionProbability D S (.point, .dline)) / 6 := by
-  letI := D.toLDTFieldModel
-  rw [ProjStrat.lowIndividualDegreeFailureProbability_eq_role_averages]
-  unfold ProjStrat.axisParallelRoleAverage ProjStrat.diagonalRoleAverage
-    directLdLdtWeightedFailureProbability
-  dsimp only
-  have h1 := directCoordinate_axis_line_point_le D S hS r
-  have h2 := directCoordinate_axis_point_line_le D S hS r
-  have h3 := directCoordinate_point_agreement_le D S hS r
-  have h4 := directCoordinate_diagonal_line_point_le D S hS r
-  have h5 := directCoordinate_diagonal_point_line_le D S hS r
-  linarith
+  grind [ProjStrat.lowIndividualDegreeFailureProbability_eq_role_averages, ProjStrat.axisParallelRoleAverage, ProjStrat.diagonalRoleAverage, directLdLdtWeightedFailureProbability, directCoordinate_axis_line_point_le, directCoordinate_axis_point_line_le, directCoordinate_point_agreement_le, directCoordinate_diagonal_line_point_le, directCoordinate_diagonal_point_line_le]
 
 /-- Failure of the coordinate strategy is at most three times the uniformly
 weighted rejection of the direct game. -/
 theorem directCoordinate_failure_le_three_mul_rejection
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     (directCoordinateProjStrat D S hS r).lowIndividualDegreeFailureProbability ≤
       3 * directLdRejectionProbability D S := by
-  letI := D.toLDTFieldModel
-  have h := directCoordinate_failure_le_weightedFailure D S hS r
-  unfold directLdLdtWeightedFailureProbability at h
-  dsimp only at h
-  rw [directLdRejectionProbability_eq_sum, Fintype.sum_prod_type]
-  simp only [sum_ldType]
-  have hnonneg := directLdBranchRejectionProbability_nonneg D S
-  have hpp := hnonneg (.point, .point)
-  have hpa := hnonneg (.point, .aline)
-  have hpd := hnonneg (.point, .dline)
-  have hap := hnonneg (.aline, .point)
-  have haa := hnonneg (.aline, .aline)
-  have had := hnonneg (.aline, .dline)
-  have hdp := hnonneg (.dline, .point)
-  have hda := hnonneg (.dline, .aline)
-  have hdd := hnonneg (.dline, .dline)
-  linarith
+  grind [directCoordinate_failure_le_weightedFailure, directLdLdtWeightedFailureProbability, directLdRejectionProbability_eq_sum, Fintype.sum_prod_type, sum_ldType, directLdBranchRejectionProbability_nonneg]
 
 /-- A direct strategy of value at least `1 - ε` has coordinate strategies of
 low individual degree failure at most `3 * ε`. -/
 theorem directCoordinate_failure_le_three_mul_error
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
     letI := D.toLDTFieldModel
     (directCoordinateProjStrat D S hS r).lowIndividualDegreeFailureProbability ≤
@@ -131,7 +103,6 @@ theorem directCoordinate_failure_le_three_mul_error
 coordinate of a direct strategy of value at least `1 - ε`, with error
 `3 * ε` and no further assumption. -/
 theorem directCoordinate_passes
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
     letI := D.toLDTFieldModel
     (directCoordinateProjStrat D S hS r).PassesLowIndividualDegreeTest (3 * ε) := by

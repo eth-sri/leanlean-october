@@ -55,8 +55,10 @@ def prefixMap (k n : ℕ) (hk : k ≤ n) :
       intro c x
       rfl }
 
+variable {n : ℕ}
+
 /-- The rank of a prefix restriction used by the pivot characterization. -/
-noncomputable def prefixRank {n : ℕ} (W : Submodule K (Fin n → K))
+noncomputable def prefixRank (W : Submodule K (Fin n → K))
     (k : ℕ) (hk : k ≤ n) : ℕ :=
   Module.finrank K (W.map (prefixMap k n hk))
 
@@ -67,8 +69,7 @@ blueprint `def:canonical-complement`;
 the paper's Gaussian-elimination presentation is
 `references/qpbt-paper/04_preliminaries.tex:303-320`.
 -/
-noncomputable def canonicalComplement {n : ℕ}
-    (W : Submodule K (Fin n → K)) : Finset (Fin n) :=
+noncomputable def canonicalComplement (W : Submodule K (Fin n → K)) : Finset (Fin n) :=
   Finset.univ.filter fun j =>
     prefixRank W (j.1 + 1) (Nat.succ_le_of_lt j.2) =
       prefixRank W j.1 j.2.le
@@ -76,14 +77,13 @@ noncomputable def canonicalComplement {n : ℕ}
 /-- The register submodule is the standard coordinate span on its index set. -/
 lemma registerSubmodule_eq_spanSubset (S : Finset ι) :
     registerSubmodule K S = Pi.spanSubset K (S : Set ι) := by
-  classical
   rw [registerSubmodule, Pi.spanSubset]
   congr 1
   ext v
   simp [Pi.basisFun_apply, eq_comm]
 
 /-- Prefix restriction rank is nondecreasing when one coordinate is added. -/
-lemma prefixRank_mono_succ {n : ℕ} (W : Submodule K (Fin n → K))
+lemma prefixRank_mono_succ (W : Submodule K (Fin n → K))
     (k : ℕ) (hk : k + 1 ≤ n) :
     prefixRank W k (Nat.le_trans (Nat.le_succ k) hk) ≤
       prefixRank W (k + 1) hk := by
@@ -97,15 +97,14 @@ lemma prefixRank_mono_succ {n : ℕ} (W : Submodule K (Fin n → K))
   exact Submodule.finrank_map_le drop (W.map large)
 
 /-- If a coordinate does not increase prefix rank, it vanishes after all earlier coordinates do. -/
-lemma coordinate_eq_zero_of_prefixRank_eq {n : ℕ}
-    (W : Submodule K (Fin n → K)) (j : Fin n)
+lemma coordinate_eq_zero_of_prefixRank_eq (W : Submodule K (Fin n → K)) (j : Fin n)
     (hrank : prefixRank W (j.1 + 1) (Nat.succ_le_of_lt j.2) =
       prefixRank W j.1 j.2.le) {w : Fin n → K} (hw : w ∈ W)
     (hprevious : ∀ i : Fin n, i.1 < j.1 → w i = 0) :
     w j = 0 := by
-  let small : W →ₗ[K] (Fin j.1 → K) :=
+  let small :=
     (prefixMap (K := K) j.1 n j.2.le).domRestrict W
-  let large : W →ₗ[K] (Fin (j.1 + 1) → K) :=
+  let large :=
     (prefixMap (K := K) (j.1 + 1) n
       (Nat.succ_le_of_lt j.2)).domRestrict W
   have hker_le : LinearMap.ker large ≤ LinearMap.ker small := by
@@ -124,7 +123,7 @@ lemma coordinate_eq_zero_of_prefixRank_eq {n : ℕ}
   have hker_rank : Module.finrank K (LinearMap.ker large) =
       Module.finrank K (LinearMap.ker small) := by
     omega
-  have hker_eq : LinearMap.ker large = LinearMap.ker small :=
+  have hker_eq :=
     Submodule.eq_of_le_of_finrank_eq hker_le hker_rank
   let x : W := ⟨w, hw⟩
   have hxsmall : x ∈ LinearMap.ker small := by
@@ -139,21 +138,17 @@ lemma coordinate_eq_zero_of_prefixRank_eq {n : ℕ}
 
 /-- The number of strict steps in a nondecreasing natural-number sequence is at
 most its endpoint. -/
-lemma card_strict_steps_le {n : ℕ} (r : ℕ → ℕ)
+lemma card_strict_steps_le (r : ℕ → ℕ)
     (hmono : ∀ k, k < n → r k ≤ r (k + 1)) :
     ((Finset.range n).filter fun k => r (k + 1) ≠ r k).card ≤ r n := by
-  classical
   induction n with
   | zero => simp
   | succ n ih =>
       have hih := ih fun k hk => hmono k (lt_trans hk (Nat.lt_succ_self n))
       have hn := hmono n (Nat.lt_succ_self n)
       by_cases h : r n = r (n + 1)
-      · simpa [Finset.range_add_one, Finset.filter_insert, h] using hih.trans hn
-      · have hstep : r n < r (n + 1) := lt_of_le_of_ne hn h
-        have h' : r (n + 1) ≠ r n := Ne.symm h
-        have := Nat.succ_le_of_lt (hih.trans_lt hstep)
-        simpa [Finset.range_add_one, Finset.filter_insert, h'] using this
+      · simp_all [Finset.range_add_one, Finset.filter_insert]
+      · grind [Finset.range_add_one, Finset.filter_insert]
 
 /--
 The canonical coordinate complement spans a complement of `W`.  This is the
@@ -163,10 +158,8 @@ proposition blueprint
 The proof uses the intrinsic prefix-rank characterization; equivalence with a
 particular reduced-row-echelon algorithm is outside this statement.
 -/
-theorem isCompl_registerSubmodule_canonicalComplement {n : ℕ}
-    (W : Submodule K (Fin n → K)) :
+theorem isCompl_registerSubmodule_canonicalComplement (W : Submodule K (Fin n → K)) :
     IsCompl W (registerSubmodule K (canonicalComplement W)) := by
-  classical
   let C := canonicalComplement W
   let T := registerSubmodule K C
   change IsCompl W T
@@ -183,16 +176,12 @@ theorem isCompl_registerSubmodule_canonicalComplement {n : ℕ}
           intro hk
           let j : Fin n := ⟨k, hk⟩
           by_cases hj : j ∈ C
-          · apply coordinate_eq_zero_of_prefixRank_eq W j
-            · simpa [C, canonicalComplement] using hj
-            · exact hwW
-            · intro i hi
-              simpa using ih i.1 hi i.2
+          · grind [coordinate_eq_zero_of_prefixRank_eq, canonicalComplement]
           · exact Pi.mem_spanSubset_iff.mp hwT j hj
     funext j
     exact hzero j.1 j.2
   let P := Cᶜ
-  let r : ℕ → ℕ := fun k =>
+  let r := fun k =>
     if hk : k ≤ n then prefixRank W k hk else 0
   have hr_mono : ∀ k, k < n → r k ≤ r (k + 1) := by
     intro k hk
@@ -208,24 +197,19 @@ theorem isCompl_registerSubmodule_canonicalComplement {n : ℕ}
     rw [← Finset.card_map Fin.valEmbedding]
     congr 1
     ext k
-    simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_range]
+    simp
     constructor
     · rintro ⟨j, hj, rfl⟩
       rw [hP_filter] at hj
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
-      refine ⟨j.2, ?_⟩
       simpa [r, Nat.le_of_lt j.2, Nat.succ_le_of_lt j.2] using hj
     · rintro ⟨hk, hstrict⟩
       let j : Fin n := ⟨k, hk⟩
       refine ⟨j, ?_, rfl⟩
-      rw [hP_filter]
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      simpa [j, r, Nat.le_of_lt hk, Nat.succ_le_of_lt hk] using hstrict
+      grind
   have hP_le : P.card ≤ Module.finrank K W := by
     calc
       P.card ≤ r n := by
-        rw [hP_card]
-        exact card_strict_steps_le r hr_mono
+        simp_all [card_strict_steps_le]
       _ ≤ Module.finrank K W := by
         simp only [r, dif_pos le_rfl]
         exact Submodule.finrank_map_le (prefixMap (K := K) n n le_rfl) W
@@ -237,17 +221,16 @@ theorem isCompl_registerSubmodule_canonicalComplement {n : ℕ}
   have hdim : Module.finrank K (Fin n → K) ≤
       Module.finrank K W + Module.finrank K T := by
     rw [hfinrankT]
-    simp only [Module.finrank_fin_fun]
+    simp
     omega
-  exact (Submodule.isCompl_iff_disjoint W T hdim).mpr hdisjoint
+  simp_all [Submodule.isCompl_iff_disjoint]
 
 /--
 The projector onto the canonical coordinate complement along `W`.  This is
 blueprint `def:cl-canonical`,
 originating at `references/qpbt-paper/04_preliminaries.tex:375-384`.
 -/
-noncomputable def canonicalProjOfKernel {n : ℕ}
-    (W : Submodule K (Fin n → K)) : (Fin n → K) →ₗ[K] (Fin n → K) := by
+noncomputable def canonicalProjOfKernel (W : Submodule K (Fin n → K)) : (Fin n → K) →ₗ[K] (Fin n → K) := by
   let T := registerSubmodule K (canonicalComplement W)
   let p : (Fin n → K) →ₗ[K] T :=
     Submodule.projectionOnto T W

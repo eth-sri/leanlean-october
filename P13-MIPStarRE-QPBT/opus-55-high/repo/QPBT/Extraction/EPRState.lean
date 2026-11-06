@@ -38,20 +38,18 @@ def extractionEprFirstEquiv (P : AdmissibleParams) (ιA ιB : Type*) :
 
 namespace Extraction
 
+variable {R V : Type*} [Fintype R] [DecidableEq R] [Fintype V] [DecidableEq V] [Nonempty V]
+
 /-- Partial inner product with the EPR vector, leaving the auxiliary index.
 This is the coordinate form of the vector defined at paper line 1769. -/
-def eprPartialInner {R V : Type*} [Fintype R] [DecidableEq R]
-    [Fintype V] [DecidableEq V] [Nonempty V]
-    (ψ : EuclideanSpace ℂ (R × (V × V))) : EuclideanSpace ℂ R :=
+def eprPartialInner (ψ : EuclideanSpace ℂ (R × (V × V))) : EuclideanSpace ℂ R :=
   (EuclideanSpace.equiv R ℂ).symm
     (fun r => ∑ p : V × V, star (eprState V p) * ψ (r, p))
 
 /-- Tensoring the EPR partial inner product with EPR gives the rank-one
 projection on the second tensor factor. This is the projection equality in
 paper lines 1776-1779; no normalization of the auxiliary vector is assumed. -/
-theorem vecTensor_eprPartialInner {R V : Type*} [Fintype R] [DecidableEq R]
-    [Fintype V] [DecidableEq V] [Nonempty V]
-    (ψ : EuclideanSpace ℂ (R × (V × V))) :
+theorem vecTensor_eprPartialInner (ψ : EuclideanSpace ℂ (R × (V × V))) :
     vecTensor (eprPartialInner ψ) (eprState V) =
       applyOperatorToState
         (heteroKron (1 : Op R) (Matrix.vecMulVec (fun x => eprState V x)
@@ -65,9 +63,7 @@ theorem vecTensor_eprPartialInner {R V : Type*} [Fintype R] [DecidableEq R]
   conv_rhs => rw [Finset.sum_comm]
   simp only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
   rw [Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro p _
-  ring
+  grind
 
 end Extraction
 
@@ -77,11 +73,12 @@ variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
 
 open scoped Classical
 
+variable (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+
 /-- In EPR-first local coordinates, the ideal extraction state is the target
 of the existing auxiliary-state normalization theorem. -/
 theorem reindexState_idealExpState
-    (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+    :
     reindexState (extractionEprFirstEquiv P S.toStrategy.ιA S.toStrategy.ιB)
         (S.idealExpState aux) =
       reindexState prodShuffle (vecTensor (eprState (PauliRegister P)) aux) := by
@@ -89,12 +86,11 @@ theorem reindexState_idealExpState
   change aux ((index.1.2.1, index.1.2.2), (index.2.2.1, index.2.2.2)) *
       eprState (PauliRegister P) (index.1.1, index.2.1) =
     eprState (PauliRegister P) (index.1.1, index.2.1) * aux (index.1.2, index.2.2)
-  exact mul_comm _ _
+  grind
 
 /-- Tensoring an auxiliary vector with EPR preserves its norm. -/
 theorem idealExpState_norm
-    (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+    :
     ‖S.idealExpState aux‖ = ‖aux‖ := by
   rw [idealExpState, reindexState_norm_eq, vecTensor_norm_eq, eprState_norm, mul_one]
 
@@ -125,12 +121,14 @@ def extractionAux0
   Extraction.eprPartialInner
     (reindexState (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm θ)
 
+variable (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
+
 /-- The unnormalized ideal extraction state is the EPR projection of the
 given six-register state. This identifies the actual auxiliary construction
 with the projection in paper lines 1776-1779, retaining the heterogeneous
 player spaces of blueprint `lem:qld-unitary`. -/
 theorem idealExpState_extractionAux0
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
+    :
     S.idealExpState (S.extractionAux0 θ) =
       applyOperatorToState S.extractionEprProjection θ := by
   unfold idealExpState extractionAux0
@@ -141,8 +139,6 @@ theorem idealExpState_extractionAux0
     (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
     (Matrix.vecMulVec (fun x => eprState (PauliRegister P) x)
       (fun y => star (eprState (PauliRegister P) y)))
-  change (T *ᵥ (fun j => θ (e.symm j))) (e x) =
-    ((T.submatrix e e) *ᵥ (fun j => θ j)) x
   exact (congrFun (Matrix.submatrix_mulVec_equiv T (fun j => θ j) e e) x).symm
 
 /-- Normalize the projected auxiliary vector, at twice the projection error.
@@ -150,7 +146,7 @@ This is the normalization step at paper lines 1773-1783. The existing
 normalization theorem also covers a zero projection, using the reference
 vector above; no nonvanishing assumption is added. -/
 theorem exists_unit_aux_near_eprProjection
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) (hθ : ‖θ‖ = 1) :
+    (hθ : ‖θ‖ = 1) :
     ∃ aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB),
       ‖aux‖ = 1 ∧ ‖θ - S.idealExpState aux‖ ≤
         2 * ‖θ - applyOperatorToState S.extractionEprProjection θ‖ := by

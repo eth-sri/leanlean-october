@@ -1,6 +1,7 @@
 module
 
 public import QPBT.Combining.OrderedPolynomialEstimates
+public import QPBT.Combining.Lines.PairStateConsistencyTransport
 public import QPBT.Combining.ExtendedLineGame.PassingValue
 public import QPBT.Combining.DirectLowDegree.AnyStrategySoundness
 public import QPBT.Games.DistanceTheorems.RoundingTransport
@@ -43,7 +44,7 @@ def extendedPolynomialRead (P : AdmissibleParams) (x : ExtendedPointQuestion P)
     (evalDirectPolyTupleAt ((directPointExtendedQuestionEquiv P).symm x) g (0 : Fin 1))
 
 /-- Undoing the joint coordinate equivalence recovers direct polynomial evaluation. -/
-private theorem extendedPolynomialRead_equiv (P : AdmissibleParams)
+theorem extendedPolynomialRead_equiv (P : AdmissibleParams)
     (u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
     extendedPolynomialRead P (directPointExtendedQuestionEquiv P u) =
       fun g => extendedDirectScalarEquiv P (evalDirectPolyTupleAt u g (0 : Fin 1)) := by
@@ -51,10 +52,12 @@ private theorem extendedPolynomialRead_equiv (P : AdmissibleParams)
   unfold extendedPolynomialRead
   rw [Equiv.symm_apply_apply]
 
+variable {P : AdmissibleParams}
+
 /-- The full polynomial-outcome squared-norm sum in `eq:qld-g-42/43`.
 The order parameter selects either `M_X M_Z` or `M_Z M_X`.
 The polynomial effect acts on `p1` and both point effects on `p2`. -/
-def extendedPolynomialOrderedError {P : AdmissibleParams} {ε : ℝ}
+def extendedPolynomialOrderedError {ε : ℝ}
     (S : ProjectiveSetting P ε) (p1 p2 : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (reverse : Bool) : ℝ :=
@@ -71,7 +74,7 @@ def extendedPolynomialOrderedError {P : AdmissibleParams} {ε : ℝ}
               (S.pointMeasExp p2.side .Z x.1.2).effect ab.2))) S.psiHat‖ ^ 2)
 
 /-- Specialize projective refinement to the full polynomial-outcome norm sum. -/
-private theorem ordered_error_le {P : AdmissibleParams} {ε δQ : ℝ}
+theorem ordered_error_le {ε δQ : ℝ}
     {S : ProjectiveSetting P ε} (points : CombinedPointsWitness S δQ)
     (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
@@ -91,7 +94,7 @@ private theorem ordered_error_le {P : AdmissibleParams} {ε δQ : ℝ}
       mul_sub, mul_one, opFamilyDistSq] using h.2
 
 /-- Reading the single scalar of an actual direct-game point answer recovers `Q`. -/
-private theorem point_scalar_measurement {P : AdmissibleParams} {ε δQ δL : ℝ}
+theorem point_scalar_measurement {ε δQ δL : ℝ}
     {S : ProjectiveSetting P ε} {points : CombinedPointsWitness S δQ}
     (lines : ExtendedLinesWitness S points δL) (side : PlayerSide)
     (u : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
@@ -110,58 +113,13 @@ private theorem point_scalar_measurement {P : AdmissibleParams} {ε δQ δL : �
   apply MIPStarRE.Quantum.Measurement.ext
   intro a
   change (∑ b ∈ Finset.univ.filter (fun b : PauliScalar P => b = a), _) = _
-  classical
   erw [Finset.sum_filter, Finset.sum_ite_eq']
-  simp only [Finset.mem_univ, if_true]
+  simp
 
-/-- Transport arbitrary POVM consistency to both heterogeneous expanded placements. -/
-private theorem placed_consistency_pairState {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) {X α : Type*}
-    [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
-    (μ : Distribution X) (A : X → Measurement α (S.ExpandedLocalSpace .alice))
-    (B : X → Measurement α (S.ExpandedLocalSpace .bob)) :
-    (consistencyDefect μ (fun x a => S.place .AA' ((A x).effect a))
-      (fun x a => S.place .BA'' ((B x).effect a)) S.psiHat =
-      consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
-        (fun x a => heteroKron 1 ((B x).effect a)) (pairState S)) ∧
-    (consistencyDefect μ (fun x a => S.place .BB' ((B x).effect a))
-      (fun x a => S.place .AB'' ((A x).effect a)) S.psiHat =
-      consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
-        (fun x a => heteroKron 1 ((B x).effect a)) (pairState S)) := by
-  have hA (x : X) (a : α) := (Matrix.nonneg_iff_posSemidef.mp ((A x).pos a)).isHermitian
-  have hB (x : X) (a : α) := (Matrix.nonneg_iff_posSemidef.mp ((B x).pos a)).isHermitian
-  constructor
-  · unfold consistencyDefect
-    apply avgOver_congr
-    intro x
-    apply Finset.sum_congr rfl
-    intro a _
-    apply Finset.sum_congr rfl
-    intro b _
-    split_ifs
-    · rfl
-    · simp only [consistency_term_eq_stateQForm, placed_product_stateQForm_eq]
-      exact (stateQForm_pairState_eq_AA'_BA'' S _ _ (hA x a) (hB x b)).symm
-  · unfold consistencyDefect
-    apply avgOver_congr
-    intro x
-    rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro a _
-    apply Finset.sum_congr rfl
-    intro b _
-    by_cases hab : a = b
-    · simp [hab]
-    · simp only [hab, Ne.symm hab, if_false, consistency_term_eq_stateQForm,
-        placed_product_stateQForm_eq]
-      rw [S.place_comm .BB' .AB'' (by trivial)]
-      exact (stateQForm_pairState_eq_AB''_BB' S _ _ (hA x a) (hB x b)).symm
-
-set_option maxHeartbeats 800000 in
 /-- Round concrete polynomial measurements satisfying the three direct
 soundness bounds and transport them to the two ordered point comparisons. -/
-private theorem rounded_polynomial_ordered_estimates_of_soundness
-    {P : AdmissibleParams} {ε δQ δL : ℝ} (S : ProjectiveSetting P ε)
+theorem rounded_polynomial_ordered_estimates_of_soundness
+    {ε δQ δL : ℝ} (S : ProjectiveSetting P ε)
     (points : CombinedPointsWitness S δQ) (lines : ExtendedLinesWitness S points δL)
     (delta : ℝ)
     (A : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace .alice))
@@ -196,18 +154,15 @@ private theorem rounded_polynomial_ordered_estimates_of_soundness
       ∀ reverse : Bool,
         extendedPolynomialOrderedError S .AA' .BA'' RA reverse ≤ 4 * eta + 8 * δQ ∧
         extendedPolynomialOrderedError S .BB' .AB'' RB reverse ≤ 4 * eta + 8 * δQ := by
-  classical
   intro eta
-  obtain ⟨RA, RB, hRA, hRB, _, _, htransport⟩ :=
-    projective_rounding_preserves_postprocessed_consistency
-      (pairState S) (pairState_norm S) A B delta hdelta hAB
-  have hround := htransport
-    (uniformDistribution (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))
-    (uniformDistribution_isProbability _) (fun u => evalDirectPolyTupleAt u)
-  have hRApoint := hround.1
+  obtain ⟨RA, hRA, hAt⟩ := projective_rounding_preserves_postprocessed_consistency_left
+    (pairState S) (pairState_norm S) A B delta hdelta hAB
+  obtain ⟨RB, hRB, hBt⟩ := projective_rounding_preserves_postprocessed_consistency_right
+    (pairState S) (pairState_norm S) A B delta hdelta hAB
+  have hRApoint := hAt _ (uniformDistribution_isProbability _) (fun u => evalDirectPolyTupleAt u)
     (fun u => ((strategy lines).B (directLdPointQuestionOf P.extendedDirectLd u)).postprocess
       (directLdPointValuesOrZero P.extendedDirectLd)) delta hA
-  have hRBpoint := hround.2
+  have hRBpoint := hBt _ (uniformDistribution_isProbability _) (fun u => evalDirectPolyTupleAt u)
     (fun u => ((strategy lines).A (directLdPointQuestionOf P.extendedDirectLd u)).postprocess
       (directLdPointValuesOrZero P.extendedDirectLd)) delta hB
   rw [← two_mul delta] at hRApoint hRBpoint
@@ -264,7 +219,6 @@ private theorem rounded_polynomial_ordered_estimates_of_soundness
     ⟨ordered_error_le points .AA' .BA'' (by trivial) RA hRA eta hAplaced reverse,
       ordered_error_le points .BB' .AB'' (by trivial) RB hRB eta hBplaced reverse⟩⟩
 
-set_option maxHeartbeats 800000 in
 -- The proof elaborates both ordered finite-sum estimates and their rounded witnesses.
 /-- Direct soundness and same-space rounding construct extended-polynomial
 projective measurements satisfying both ordered estimates on `AA'|BA''` and
@@ -293,7 +247,6 @@ theorem rounded_polynomial_ordered_estimates_explicit :
         ∀ reverse : Bool,
           extendedPolynomialOrderedError S .AA' .BA'' RA reverse ≤ 4 * eta + 8 * δQ ∧
           extendedPolynomialOrderedError S .BB' .AB'' RB reverse ≤ 4 * eta + 8 * δQ := by
-  classical
   let a := pauliBaselineLowDegreeConstant
   have ha : 1 ≤ a := by
     dsimp only [a, pauliBaselineLowDegreeConstant]
@@ -301,22 +254,24 @@ theorem rounded_polynomial_ordered_estimates_explicit :
   intro P ε δQ δL S points lines delta eta
   have hm := P.one_le_m
   have hd := P.hd
-  have hq : 0 < P.q := by
-    obtain ⟨k, _, hk⟩ := P.hq
-    rw [hk]
-    positivity
+  have hq : 0 < P.q := zero_lt_two.trans_le P.hq.two_le
   have hpos : 0 < directPassingErrorEnvelope (δQ + δL) ((P.m * P.d : ℝ) / P.q) :=
     directPassingErrorEnvelope_pos _ _ (by positivity)
-  obtain ⟨A, B, hB, hA, hAB⟩ :=
-    direct_ld_soundness_of_k_eq_one_any_strategy_explicit P.extendedDirectLd _ rfl hpos
-      (strategy lines) (strategy_value_ge_directPassingErrorEnvelope lines)
+  obtain ⟨A, B, h1, h2, h3⟩ := direct_ld_soundness_of_k_eq_one_explicit P.extendedDirectLd _ rfl hpos
+    (directLdNaimarkStrategy _ (strategy lines)) (directLdNaimarkStrategy_isProjective _ _)
+    (by rw [directLdNaimarkStrategy_value]; exact strategy_value_ge_directPassingErrorEnvelope lines)
+  have hB := (consistencyDefect_padState_compressAt _ _ _ none none _).symm.trans_le h1
+  have hA := (consistencyDefect_padState_compressAt _ _ _ none none _).symm.trans_le h2
+  have hAB := (consistencyDefect_padState_compressAt _ (fun _ => A) (fun _ => B) none none _).symm.trans_le h3
+  simp only [MIPStarRE.Quantum.Measurement.compressAt_postprocess,
+    Measurement.compressAt_dilatedMeasurement] at hA hB
   change consistencyDefect _ _ _ _ ≤ delta at hA hB hAB
   have hdelta : 0 ≤ delta := by
     dsimp [delta, deltaLd]
     have ha0 : 0 ≤ a := le_trans (by norm_num) ha
     positivity
   exact rounded_polynomial_ordered_estimates_of_soundness
-    S points lines delta A B hB hA hAB hdelta
+    S points lines delta (A.compressAt none) (B.compressAt none) hB hA hAB hdelta
 
 end ExtendedLineGame
 

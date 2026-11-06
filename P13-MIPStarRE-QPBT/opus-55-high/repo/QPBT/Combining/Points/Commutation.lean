@@ -96,7 +96,7 @@ theorem sum_norm_sum_smul_sq_of_orthogonal {I J E : Type*} [Fintype I]
           refine Finset.sum_congr rfl fun i' _ => ?_
           rw [horth]
       _ = (N : ℂ) * inner ℂ (v i) (v i) := by
-          simp [ite_mul]
+          simp
   calc ∑ j, ‖∑ i, c j i • v i‖ ^ 2
       = (∑ j, ∑ i, ∑ i', ((starRingEnd ℂ) (c j i) * c j i') *
           inner ℂ (v i) (v i')).re := by
@@ -129,8 +129,8 @@ theorem fixedCharacter_neg (x : PauliScalar P) :
     phaseSign (fixedBinTrace P.model (-x)) =
       phaseSign (fixedBinTrace P.model x) := by
   rw [fixedBinTrace, map_neg]
-  have phaseSign_neg (value : ZMod 2) : phaseSign (-value) = phaseSign value := by
-    exact congrArg phaseSign (ZMod.neg_eq_self_mod_two value)
+  have phaseSign_neg (value : ZMod 2) : phaseSign (-value) = phaseSign value :=
+    congrArg phaseSign (ZMod.neg_eq_self_mod_two value)
   exact phaseSign_neg _
 
 /-- Fourier cancellation for the fixed trace character: the character sums to
@@ -237,12 +237,13 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
 
+variable (S : ProjectiveSetting P ε)
+
 /-- The Fourier form of an expanded point effect as a normalized character
 sum of the expanded observables.  This is the first display of
 `def:expanded-point-measurement`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
-theorem expPointOp_eq_inv_card_smul_sum (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+theorem expPointOp_eq_inv_card_smul_sum (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (a : PauliScalar P) :
     S.expPointOp side W u a =
       (Fintype.card (PauliScalar P) : ℂ)⁻¹ •
@@ -250,10 +251,11 @@ theorem expPointOp_eq_inv_card_smul_sum (S : ProjectiveSetting P ε)
   unfold expPointOp
   rw [averageOperatorOverDistribution_uniform_eq_inv_card_smul_sum]
 
+variable {ι K : Type*} [Fintype K] [Fintype ι] (c : ℂ) (α β : K → ℂ)
+
 /-- Formalization-only auxiliary: the product of two normalized weighted sums
 is the normalized double sum of the weighted products, indexed by pairs. -/
-theorem smul_sum_mul_smul_sum {ι K : Type*} [Fintype K] [Fintype ι]
-    (c : ℂ) (α β : K → ℂ) (X Z : K → Op ι) :
+theorem smul_sum_mul_smul_sum (X Z : K → Op ι) :
     (c • ∑ r, α r • X r) * (c • ∑ s, β s • Z s) =
       (c * c) • ∑ rs : K × K, (α rs.1 * β rs.2) • (X rs.1 * Z rs.2) := by
   rw [Fintype.sum_prod_type, smul_mul_smul_comm, Finset.sum_mul_sum]
@@ -263,8 +265,7 @@ theorem smul_sum_mul_smul_sum {ι K : Type*} [Fintype K] [Fintype ι]
 
 /-- Formalization-only auxiliary: the product of two normalized weighted sums
 in the opposite order, indexed by the same pairs. -/
-theorem smul_sum_mul_smul_sum_swap {ι K : Type*} [Fintype K] [Fintype ι]
-    (c : ℂ) (α β : K → ℂ) (X Z : K → Op ι) :
+theorem smul_sum_mul_smul_sum_swap (X Z : K → Op ι) :
     (c • ∑ s, β s • Z s) * (c • ∑ r, α r • X r) =
       (c * c) • ∑ rs : K × K, (α rs.1 * β rs.2) • (Z rs.2 * X rs.1) := by
   rw [Fintype.sum_prod_type_right, smul_mul_smul_comm, Finset.sum_mul_sum]
@@ -274,7 +275,7 @@ theorem smul_sum_mul_smul_sum_swap {ι K : Type*} [Fintype K] [Fintype ι]
 
 /-- The commutator of two field-valued point effects is the Fourier transform
 of the commutators of the expanded observables. -/
-theorem expPointOp_commutator_eq (S : ProjectiveSetting P ε) (side : PlayerSide)
+theorem expPointOp_commutator_eq (side : PlayerSide)
     (x z : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
     S.expPointOp side .X x a * S.expPointOp side .Z z b -
         S.expPointOp side .Z z b * S.expPointOp side .X x a =
@@ -296,8 +297,7 @@ theorem expPointOp_commutator_eq (S : ProjectiveSetting P ε) (side : PlayerSide
 the placed commutators of the field-valued point effects equal the average over
 `(r, s)` of the squared norms of the placed commutators of the expanded
 observables. -/
-theorem sum_norm_place_expPointOp_commutator_sq (S : ProjectiveSetting P ε)
-    (p : Placement) (x z : Fin P.m → PauliScalar P) :
+theorem sum_norm_place_expPointOp_commutator_sq (p : Placement) (x z : Fin P.m → PauliScalar P) :
     ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState (S.place p
           (S.expPointOp p.side .X x ab.1 * S.expPointOp p.side .Z z ab.2 -
@@ -380,7 +380,7 @@ theorem exp_point_comm_explicit :
         S.psiHat ≤ pauliBaselineTwistedConstant * Real.sqrt ε := by
   intro P ε S p
   have hε : (0 : ℝ) ≤ ε := by
-    have hv := WinImplications.strategy_value_le_one S.toStrategy
+    have hv := S.toStrategy.value_le_one
     have hw := S.win
     linarith
   have hnorm : ∀ (x z : Fin P.m → PauliScalar P)

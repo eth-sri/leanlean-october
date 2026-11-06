@@ -44,16 +44,13 @@ theorem norm_sub_projective_mul_sq_le {α ι : Type*} [Fintype α]
       (hM a).isSelfAdjoint.isHermitian.eq]
     calc
       (1 - M.effect a) * (1 - M.effect a) = 1 - M.effect a := by
-        simp only [sub_mul, mul_sub, one_mul, mul_one, hidem]
-        abel
+        simp_all [sub_mul, mul_sub, one_mul, mul_one]
       _ ≤ 1 := sub_le_self _ (M.pos a)
   have heq : A - M.effect a * A =
       (1 - M.effect a) * (A - M.effect a * D) := by
     simp only [sub_mul, mul_sub, one_mul, ← mul_assoc, hidem]
     abel
-  rw [heq, DistanceCalculus.applyOperatorToState_mul]
-  exact pow_le_pow_left₀ (norm_nonneg _)
-    (MagicSquareRigidity.norm_applyOperatorToState_le hgram _) 2
+  simp_all [DistanceCalculus.applyOperatorToState_mul, pow_le_pow_left₀, norm_nonneg, MagicSquareRigidity.norm_applyOperatorToState_le]
 
 end
 

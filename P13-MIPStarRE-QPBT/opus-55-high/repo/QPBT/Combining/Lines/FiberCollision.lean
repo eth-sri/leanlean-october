@@ -40,7 +40,6 @@ theorem collision_bound_of_fiber_averages {X Y₁ Y₂ R₂ Γ₂ : Type*}
         (if eval₂ first sample.2 = eval₂ second sample.2 then 1 else 0) else 0) ≤
       eta * avgOver dist (fun sample => if sample.1 = fixed then 1 else 0)) :
     HasConditionalCollisionBound dist eval₂ eta := by
-  classical
   intro question point _ first second hne
   have havg (value : ((X × Y₁) × Y₂) → ℝ) :
       avgOver dist value = ∑ sample, dist.weight sample * value sample := by

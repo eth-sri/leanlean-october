@@ -52,7 +52,7 @@ together with the bound `value ≤ 1` satisfied by the value of every strategy.
 Formalization-only auxiliary supplying the sign condition of the winning
 implications used in items 2 and 3 of `lem:qld-comm-line-cons`. -/
 theorem eps_nonneg (S : ProjectiveSetting P ε) : 0 ≤ ε := by
-  have hv := WinImplications.strategy_value_le_one S.toStrategy
+  have hv := S.toStrategy.value_le_one
   have hw := S.win
   linarith
 
@@ -61,15 +61,15 @@ theorem eps_nonneg (S : ProjectiveSetting P ε) : 0 ≤ ε := by
 -- The four-level product indices below exceed the default instance-search
 -- size.
 
+variable (S : ProjectiveSetting P ε) (O₁ : Op (S.toStrategy.ιA × PauliRegister P)) (O₂ : Op (S.toStrategy.ιB × PauliRegister P))
+
 set_option synthInstance.maxSize 400 in
 /-- On the `AA' | BA''(B'B'')` bipartition, the difference of an `AA'` and a
 `BA''` placement acts on the expanded state as the corresponding difference
 of left and right tensor placements. Formalization-only transport for the
 placement pairs of `lem:qld-comm-line-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:527-545`. -/
-theorem norm_place_AA'_sub_place_BA'' (S : ProjectiveSetting P ε)
-    (O₁ : Op (S.toStrategy.ιA × PauliRegister P))
-    (O₂ : Op (S.toStrategy.ιB × PauliRegister P)) :
+theorem norm_place_AA'_sub_place_BA'' :
     ‖applyOperatorToState (S.place .AA' O₁ - S.place .BA'' O₂) S.psiHat‖ =
       ‖applyOperatorToState
         (heteroKron O₁ (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×
@@ -88,9 +88,7 @@ set_option synthInstance.maxSize 400 in
 left and right tensor placements. Formalization-only transport for the
 placement pairs of `lem:qld-comm-line-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:527-545`. -/
-theorem norm_place_AB''_sub_place_BB' (S : ProjectiveSetting P ε)
-    (O₁ : Op (S.toStrategy.ιA × PauliRegister P))
-    (O₂ : Op (S.toStrategy.ιB × PauliRegister P)) :
+theorem norm_place_AB''_sub_place_BB' :
     ‖applyOperatorToState (S.place .AB'' O₁ - S.place .BB' O₂) S.psiHat‖ =
       ‖applyOperatorToState
         (heteroKron O₁ (1 : Op ((S.toStrategy.ιB × PauliRegister P) ×

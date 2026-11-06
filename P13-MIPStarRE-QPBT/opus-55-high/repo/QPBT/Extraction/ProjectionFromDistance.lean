@@ -38,7 +38,6 @@ theorem norm_sub_pauliCorrelation_sq_le
       opDistSq (uniformDistribution (I → K))
         (fun u => heteroKron (1 : Op R) (heteroKron (tauObservable W u) 1))
         (fun u => heteroKron (1 : Op R) (heteroKron 1 (tauObservable W u))) psi := by
-  classical
   let L (u : I → K) :=
     heteroKron (1 : Op R) (heteroKron (tauObservable W u) (1 : Op (I → K)))
   let B (u : I → K) :=
@@ -46,7 +45,7 @@ theorem norm_sub_pauliCorrelation_sq_le
   let C (u : I → K) :=
     heteroKron (1 : Op R) (heteroKron (tauObservable W u) (tauObservable W u))
   have hL (u : I → K) : (L u)ᴴ * L u = 1 := by
-    simp only [L, MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
+    simp only [L, heteroKron_conjTranspose, Matrix.conjTranspose_one,
       heteroKron_mul, Matrix.one_mul, tauObservable_conjTranspose_mul_self,
       heteroKron_one_one]
   have halg (u : I → K) : L u * (L u - B u) = 1 - C u := by
@@ -55,14 +54,14 @@ theorem norm_sub_pauliCorrelation_sq_le
   have hdist : opDistSq (uniformDistribution (I → K)) (fun _ => 1) C psi =
       opDistSq (uniformDistribution (I → K)) L B psi := by
     unfold opDistSq opFamilyDistSq
-    simp only [Fintype.sum_unique]
+    simp
     apply avgOver_congr
     intro u
     rw [← halg, MagicSquareRigidity.norm_applyOperatorToState_isometry_mul (hL u)]
   have havg : averageOperatorOverDistribution (uniformDistribution (I → K))
       (fun u => (1 : ℂ) • ((1 : Op (R × ((I → K) × (I → K)))) - C u)) =
       1 - heteroKron (1 : Op R) (pauliCorrelation W) := by
-    simp only [one_smul]
+    simp
     have hsub : averageOperatorOverDistribution (uniformDistribution (I → K))
         (fun u => (1 : Op (R × ((I → K) × (I → K)))) - C u) =
         averageOperatorOverDistribution (uniformDistribution (I → K)) (fun _ => 1) -
@@ -78,9 +77,7 @@ theorem norm_sub_pauliCorrelation_sq_le
   have h := avg_closeness (uniformDistribution (I → K))
     (uniformDistribution_isProbability _) (fun _ => 1) C (fun _ => 1)
     (fun _ => by simp) psi
-  rw [havg, hdist] at h
-  simpa only [MagicSquareRigidity.applyOperatorToState_sub_op,
-    MagicSquareRigidity.applyOperatorToState_one] using h
+  grind [MagicSquareRigidity.applyOperatorToState_sub_op, MagicSquareRigidity.applyOperatorToState_one]
 
 /-- Bounds on both Pauli disagreements imply proximity to the EPR subspace.
 The auxiliary register is arbitrary, and the estimate requires no division

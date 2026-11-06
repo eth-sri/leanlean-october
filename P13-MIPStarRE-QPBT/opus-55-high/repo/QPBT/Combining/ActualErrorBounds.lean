@@ -1,7 +1,11 @@
 module
 
 public import QPBT.Combining.DirectPassingErrorBounds
-public import QPBT.Combining.ExplicitScalarBounds
+public import QPBT.Combining.ErrorBounds
+public import QPBT.Combining.PassingError
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.ExplicitConstants
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
 public import QPBT.Combining.RootErrorBounds
 
 /-! # Absorption of the actual rounded polynomial-pair error
@@ -31,14 +35,13 @@ theorem actual_rounding_error_le_root {delta point ratio t : ℝ}
     min 1 (32 * delta + 32 * Real.sqrt (220 * delta ^ (1 / 4 : ℝ)) +
       64 * Real.sqrt (2 * delta) + 64 * point + 30 * ratio) ≤
       1024 * Real.sqrt (Real.sqrt (Real.sqrt (min 1 t))) := by
-  have ht : 0 ≤ t := hd.trans hdt
+  have ht := hd.trans hdt
   by_cases ht1 : t ≤ 1
   · rw [min_eq_right ht1]
     have hroot : Real.sqrt (Real.sqrt (Real.sqrt t)) = t ^ (1 / 8 : ℝ) := by
       simp only [Real.sqrt_eq_rpow]
       rw [← Real.rpow_mul ht, ← Real.rpow_mul ht]
       norm_num
-    rw [hroot]
     have h18 : t ≤ t ^ (1 / 8 : ℝ) := by
       simpa using Real.rpow_le_rpow_of_exponent_ge' ht ht1
         (by norm_num : (0 : ℝ) ≤ 1 / 8) (by norm_num : (1 / 8 : ℝ) ≤ 1)
@@ -58,14 +61,12 @@ theorem actual_rounding_error_le_root {delta point ratio t : ℝ}
     have hsecond : Real.sqrt (2 * delta) ≤ 2 * t ^ (1 / 8 : ℝ) := by
       calc
         _ ≤ Real.sqrt (4 * t ^ (1 / 4 : ℝ)) :=
-          Real.sqrt_le_sqrt (by nlinarith [Real.rpow_nonneg ht (1 / 4 : ℝ)])
+          Real.sqrt_le_sqrt (by linarith)
         _ = _ := by rw [Real.sqrt_mul (by norm_num), hsqrt]; norm_num
     have hpoint : point ≤ t := by
       nlinarith [Real.sq_sqrt hp, Real.sqrt_nonneg point]
-    refine (min_le_right _ _).trans ?_
-    nlinarith [Real.rpow_nonneg ht (1 / 8 : ℝ)]
-  · rw [min_eq_left (le_of_not_ge ht1)]
-    norm_num
+    grind
+  grind
 
 /-- A fixed positive coefficient can be absorbed by increasing the universal
 prefactor exponent, for every nonnegative strategy error. -/
@@ -108,12 +109,14 @@ theorem exists_actual_rounded_global_pair_error_bound (pointError : ℝ → ℝ)
         min 1 (8 * (4 * eta + 8 * pointError epsilon) +
           (((12 * P.m * P.d + 4 * P.d + 14 : ℕ) : ℝ) / P.q)) ≤
           deltaQld A B epsilon P.m P.d P.q := by
-  obtain ⟨A, B, hA, hB, hB1, hbound⟩ :=
-    exists_direct_global_pair_error_bound pointError hpoint lineError hline
-      C a b 1 hC ha hb hb1 (by norm_num)
+  obtain ⟨passingError, hpassingError, hpb⟩ :=
+    exists_direct_passing_polynomial_bound pointError hpoint lineError hline C hC
+  obtain ⟨A, B, hA, hB, hB1, habs⟩ :=
+    exists_global_pair_error_bound pointError hpoint passingError hpassingError
+      a b ha hb hb1
   refine ⟨1024 * A, B / 2 / 2 / 2, by linarith, by positivity, by linarith, ?_⟩
   intro P epsilon he delta eta
-  let ratio : ℝ := ((P.m * P.d : ℕ) : ℝ) / P.q
+  let ratio := ((P.m * P.d : ℕ) : ℝ) / P.q
   let passing := directPassingErrorEnvelope
     (pointError epsilon + C * (P.m : ℝ) * lineError epsilon ratio) ratio
   let slack := deltaLd a b (passing + epsilon) P.q (2 * P.m + 2) P.d 1
@@ -123,7 +126,6 @@ theorem exists_actual_rounded_global_pair_error_bound (pointError : ℝ → ℝ)
   have hp : 0 ≤ pointError epsilon := by
     obtain ⟨_, _, _, _, h⟩ := hpoint
     exact (h epsilon he).1
-  have hs : 0 ≤ slack := by dsimp [slack, deltaLd]; positivity
   have hd : 0 ≤ delta := by dsimp [delta, deltaLd, directPassingErrorEnvelope]; positivity
   have hds : delta ≤ slack := by
     change deltaLd a b passing P.q (2 * P.m + 2) P.d 1 ≤ _
@@ -142,8 +144,21 @@ theorem exists_actual_rounded_global_pair_error_bound (pointError : ℝ → ℝ)
     apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
     push_cast
     nlinarith
+  have hbound : min 1 (deltaLd a b (min 1 passing + epsilon) P.q (2 * P.m + 2) P.d 1 +
+      Real.sqrt (pointError epsilon) + ratio) ≤ deltaQld A B epsilon P.m P.d P.q := by
+    refine le_trans (min_le_min_left _ (add_le_add (add_le_add ?_ le_rfl) le_rfl)) (habs P epsilon he)
+    unfold deltaLd
+    refine mul_le_mul_of_nonneg_left (add_le_add (add_le_add ?_ le_rfl) le_rfl)
+      (mul_nonneg (by linarith) (Real.rpow_nonneg (Nat.cast_nonneg _) _))
+    refine Real.rpow_le_rpow (add_nonneg (le_min zero_le_one hpass) he) ?_ hb.le
+    exact add_le_add (hpb epsilon _ (P.m : ℝ) he hr (by exact_mod_cast P.one_le_m)) le_rfl
   have hcap : min 1 t ≤ deltaQld A B epsilon P.m P.d P.q := by
-    simpa only [one_mul] using hbound P epsilon he
+    by_cases hsmall : passing ≤ 1
+    · rwa [min_eq_right hsmall] at hbound
+    rw [min_eq_left (le_of_not_ge hsmall)] at hbound
+    refine (min_le_left _ _).trans (le_trans (le_min le_rfl ?_) hbound)
+    linarith [one_le_deltaLd_of_one_le_error ha hb.le (by linarith : 1 ≤ 1 + epsilon) (q := P.q) (by omega : 1 ≤ 2 * P.m + 2) P.hd le_rfl,
+      Real.sqrt_nonneg (pointError epsilon)]
   have hroot := Real.sqrt_le_sqrt (Real.sqrt_le_sqrt (Real.sqrt_le_sqrt hcap))
   have hrootBound := (Real.sqrt_le_sqrt (Real.sqrt_le_sqrt
     (sqrt_deltaQld_le (P := P) hA.le he))).trans
@@ -153,7 +168,6 @@ theorem exists_actual_rounded_global_pair_error_bound (pointError : ℝ → ℝ)
     ((actual_rounding_error_le_root hd hp hdt hpt hrt).trans
       ((mul_le_mul_of_nonneg_left (hroot.trans hrootBound) (by norm_num)).trans
         (scale_deltaQld_le hA.le he (by norm_num : (1 : ℝ) ≤ 1024))))
-  dsimp [eta]
   linarith
 
 end MIPStarRE.QPBT

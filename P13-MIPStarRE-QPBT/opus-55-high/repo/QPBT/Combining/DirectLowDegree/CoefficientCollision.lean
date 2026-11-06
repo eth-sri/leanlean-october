@@ -41,7 +41,6 @@ theorem directCoefficientCollision_avg_le (D : DirectLdParams) (degree : ℕ)
         (fun t => if evalCoefficient a t = evalCoefficient b t then
           (1 : ℝ) else 0) ≤
       (degree : ℝ) / (D.q : ℝ) := by
-  classical
   let collisionSet : Finset (DirectScalarQ D) :=
     Finset.univ.filter fun t => evalCoefficient a t = evalCoefficient b t
   have hcollision_card : collisionSet.card ≤ degree :=
@@ -62,14 +61,14 @@ theorem directCoefficientCollision_avg_le (D : DirectLdParams) (degree : ℕ)
           simp [avgOver, uniformDistribution]
         _ = ∑ _t ∈ collisionSet,
               (1 / Fintype.card (DirectScalarQ D) : ℝ) := by
-          rw [← Finset.sum_filter]
+          grind [Finset.sum_filter]
         _ = (collisionSet.card : ℝ) /
               Fintype.card (DirectScalarQ D) := by
           simp [div_eq_mul_inv]
     _ ≤ (degree : ℝ) / Fintype.card (DirectScalarQ D) := by
-      exact div_le_div_of_nonneg_right (by exact_mod_cast hcollision_card) (by positivity)
+      simp_all [div_le_div_of_nonneg_right]
     _ = (degree : ℝ) / (D.q : ℝ) := by
-      rw [card_directScalarQ]
+      simp
 
 end
 

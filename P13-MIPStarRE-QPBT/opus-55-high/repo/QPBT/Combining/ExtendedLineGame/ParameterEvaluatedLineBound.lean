@@ -45,7 +45,7 @@ variable {points : CombinedPointsWitness setting deltaQ}
 def lineCoordinate : Fin P.extendedDirectLd.k :=
   ⟨0, by change 0 < 1; decide⟩
 
-private theorem coordinate_eq_lineCoordinate (i : Fin P.extendedDirectLd.k) :
+theorem coordinate_eq_lineCoordinate (i : Fin P.extendedDirectLd.k) :
     i = lineCoordinate (P := P) := by
   apply Fin.ext
   have hi := i.isLt
@@ -100,20 +100,23 @@ noncomputable def diagonalParameterEvaluationDefect
       parameterEvalDefect (strategy lines) (diagonalQuestion sample.1)
         (diagonalQuestion sample.1) diagonalCoefficients diagonalCoefficients parameter
 
-private theorem axisQuestion_directALineDescOf
-    (sample : DirectLdSpace P.extendedDirectLd) :
+variable (sample : DirectLdSpace P.extendedDirectLd)
+
+theorem axisQuestion_directALineDescOf
+    :
     axisQuestion (directALineDescOf P.extendedDirectLd sample) =
       (.aline, directLdMap P.extendedDirectLd .aline sample) := by
   rfl
 
-private theorem diagonalQuestion_directDLineDescOf
-    (sample : DirectLdSpace P.extendedDirectLd) :
+theorem diagonalQuestion_directDLineDescOf
+    :
     diagonalQuestion (directDLineDescOf P.extendedDirectLd sample) =
       (.dline, directLdMap P.extendedDirectLd .dline sample) := by
   rfl
 
-private theorem axis_completed_mismatch_eq
-    (lines : ExtendedLinesWitness setting points deltaL)
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
+theorem axis_completed_mismatch_eq
     (sample : DirectLdSpace P.extendedDirectLd) :
     outcomeEventWeight (strategy lines)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
@@ -127,7 +130,6 @@ private theorem axis_completed_mismatch_eq
         (.aline, directLdMap P.extendedDirectLd .aline sample)
         (.aline, directLdMap P.extendedDirectLd .aline sample)
         (fun answerA answerB => axisGameRead sample answerA ≠ axisGameRead sample answerB) := by
-  classical
   unfold outcomeEventWeight
   apply Finset.sum_congr rfl
   intro answerA _
@@ -138,14 +140,13 @@ private theorem axis_completed_mismatch_eq
   · rw [outcomeWeight_eq_zero_of_invalid lines _ _ answerA answerB hinvalid]
     simp
   · cases answerA <;> cases answerB <;> simp [validDirectLdAnswer] at hinvalid
-    have hmap : Function.Injective (Option.map (extendedDirectScalarEquiv P)) :=
+    have hmap :=
       Option.map_injective (extendedDirectScalarEquiv P).injective
     simp only [axisCoefficients, axisGameRead, coordinate_eq_lineCoordinate,
       ne_eq, hmap.eq_iff]
     rfl
 
-private theorem diagonal_completed_mismatch_eq
-    (lines : ExtendedLinesWitness setting points deltaL)
+theorem diagonal_completed_mismatch_eq
     (sample : DirectLdSpace P.extendedDirectLd) :
     outcomeEventWeight (strategy lines)
         (.dline, directLdMap P.extendedDirectLd .dline sample)
@@ -160,7 +161,6 @@ private theorem diagonal_completed_mismatch_eq
         (.dline, directLdMap P.extendedDirectLd .dline sample)
         (fun answerA answerB =>
           diagonalGameRead sample answerA ≠ diagonalGameRead sample answerB) := by
-  classical
   unfold outcomeEventWeight
   apply Finset.sum_congr rfl
   intro answerA _
@@ -171,14 +171,13 @@ private theorem diagonal_completed_mismatch_eq
   · rw [outcomeWeight_eq_zero_of_invalid lines _ _ answerA answerB hinvalid]
     simp
   · cases answerA <;> cases answerB <;> simp [validDirectLdAnswer] at hinvalid
-    have hmap : Function.Injective (Option.map (extendedDirectScalarEquiv P)) :=
+    have hmap :=
       Option.map_injective (extendedDirectScalarEquiv P).injective
     simp only [diagonalCoefficients, diagonalGameRead, coordinate_eq_lineCoordinate,
       ne_eq, hmap.eq_iff]
     rfl
 
-private theorem axis_none_mass_eq
-    (lines : ExtendedLinesWitness setting points deltaL)
+theorem axis_none_mass_eq
     (side : PlayerSide) (sample : DirectLdSpace P.extendedDirectLd) :
     (match side with
       | .alice => aliceEventWeight (strategy lines)
@@ -229,8 +228,7 @@ private theorem axis_none_mass_eq
       simp [axisCoefficients, axisGameRead, coordinate_eq_lineCoordinate]
       rfl
 
-private theorem diagonal_none_mass_eq
-    (lines : ExtendedLinesWitness setting points deltaL)
+theorem diagonal_none_mass_eq
     (side : PlayerSide) (sample : DirectLdSpace P.extendedDirectLd) :
     (match side with
       | .alice => aliceEventWeight (strategy lines)
@@ -282,8 +280,8 @@ private theorem diagonal_none_mass_eq
       rfl
 
 /-- Averaging the parameter/completed-read comparison over the actual axis law. -/
-private theorem axis_parameter_evaluation_defect_le_completed
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem axis_parameter_evaluation_defect_le_completed
+    :
     axisParameterEvaluationDefect lines ≤
       axisSameLineEvaluationDefect lines + axisAliceNoneMass lines + axisBobNoneMass lines := by
   let F : DirectLineDesc P.extendedDirectLd ×
@@ -315,8 +313,6 @@ private theorem axis_parameter_evaluation_defect_le_completed
       simp only [F, directALinePointDist, Distribution.avgOver_map,
         axisQuestion_directALineDescOf, axis_completed_mismatch_eq,
         axis_none_mass_eq lines .alice, axis_none_mass_eq lines .bob, avgOver_add]
-      change _ + axisAliceNoneMass lines + axisBobNoneMass lines =
-        axisSameLineEvaluationDefect lines + axisAliceNoneMass lines + axisBobNoneMass lines
       congr 2
       exact (WinImplications.consistencyDefect_postprocess_eq_mismatch
         (uniformDistribution (DirectLdSpace P.extendedDirectLd)) (strategy lines)
@@ -325,8 +321,8 @@ private theorem axis_parameter_evaluation_defect_le_completed
         axisGameRead axisGameRead).symm
 
 /-- Averaging the parameter/completed-read comparison over the actual diagonal law. -/
-private theorem diagonal_parameter_evaluation_defect_le_completed
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem diagonal_parameter_evaluation_defect_le_completed
+    :
     diagonalParameterEvaluationDefect lines ≤
       diagonalSameLineEvaluationDefect lines + diagonalAliceNoneMass lines +
         diagonalBobNoneMass lines := by
@@ -359,9 +355,6 @@ private theorem diagonal_parameter_evaluation_defect_le_completed
       simp only [F, directDLinePointDist, Distribution.avgOver_map,
         diagonalQuestion_directDLineDescOf, diagonal_completed_mismatch_eq,
         diagonal_none_mass_eq lines .alice, diagonal_none_mass_eq lines .bob, avgOver_add]
-      change _ + diagonalAliceNoneMass lines + diagonalBobNoneMass lines =
-        diagonalSameLineEvaluationDefect lines + diagonalAliceNoneMass lines +
-          diagonalBobNoneMass lines
       congr 2
       exact (WinImplications.consistencyDefect_postprocess_eq_mismatch
         (uniformDistribution (DirectLdSpace P.extendedDirectLd)) (strategy lines)
@@ -373,7 +366,7 @@ private theorem diagonal_parameter_evaluation_defect_le_completed
 most `6 * deltaL + 2 * sqrt (deltaQ + 2 * deltaL)`. This is a formalization-only
 estimate supporting `lem:qld-4-7`, paper lines 1279--1288. -/
 theorem axis_parameter_evaluation_defect_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+    :
     axisParameterEvaluationDefect lines ≤
       6 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
   have hforward := (completedLinePointDefect_sums_le lines).1
@@ -397,7 +390,7 @@ defect at most `6 * deltaL + 2 * sqrt (deltaQ + 2 * deltaL)`, including zero
 directions. This is a formalization-only estimate supporting `lem:qld-4-7`,
 paper lines 1279--1288. -/
 theorem diagonal_parameter_evaluation_defect_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+    :
     diagonalParameterEvaluationDefect lines ≤
       6 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
   have hforward := (completedLinePointDefect_sums_le lines).1

@@ -47,16 +47,17 @@ instance instNeZeroNatQ (D : DirectLdParams) : NeZero D.q :=
 
 /-! ## Rejected Born mass at a fixed question pair -/
 
+variable (D : DirectLdParams)
+
 /-- The Born mass of the rejected answer pairs at a fixed pair of direct
 questions.  Its uniform average over the common direct sample of an ordered
 type pair is `directLdBranchRejectionProbability`. -/
-def directRejectedMass (D : DirectLdParams) (S : Strategy (directLdGame D))
+def directRejectedMass (S : Strategy (directLdGame D))
     (x y : DirectLdQuestion D) : ℝ :=
   ∑ a : DirectLdAnswer D, ∑ b : DirectLdAnswer D,
     if directLdWinPredicate D x y a b then 0 else outcomeWeight S x y a b
 
-theorem directRejectedMass_nonneg (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (x y : DirectLdQuestion D) :
+theorem directRejectedMass_nonneg (S : Strategy (directLdGame D)) (x y : DirectLdQuestion D) :
     0 ≤ directRejectedMass D S x y := by
   refine Finset.sum_nonneg fun a _ => Finset.sum_nonneg fun b _ => ?_
   split_ifs
@@ -66,8 +67,7 @@ theorem directRejectedMass_nonneg (D : DirectLdParams)
 /-- The branch rejection probability of an ordered type pair is the uniform
 average of the rejected Born mass at the canonical questions of the common
 direct sample. -/
-theorem directLdBranchRejectionProbability_eq_avgOver (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (types : LdType × LdType) :
+theorem directLdBranchRejectionProbability_eq_avgOver (S : Strategy (directLdGame D)) (types : LdType × LdType) :
     directLdBranchRejectionProbability D S types =
       avgOver (uniformDistribution (DirectLdSpace D)) fun sample =>
         directRejectedMass D S
@@ -81,7 +81,7 @@ is at most the rejected direct Born mass there.  The matched mass of the
 readouts is the Born mass of the pairs with equal readouts, and the total
 overlap is the full Born mass, which is one. -/
 theorem qBipartiteConsDefect_le_directRejectedMass
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+    (S : Strategy (directLdGame D))
     (hS : S.IsProjective)
     {Outcome : Type*} [Fintype Outcome]
     (x y : DirectLdQuestion D)
@@ -114,9 +114,11 @@ theorem qBipartiteConsDefect_le_directRejectedMass
             ∑ a ∈ Finset.univ.filter (fun a => readA a = c),
               ∑ b ∈ Finset.univ.filter (fun b => readB b = c),
                 outcomeWeight S x y a b := by
-        refine Finset.sum_congr rfl ?_
-        intro c _
-        exact directPostprocessBornWeight D S hS x y readA readB c c
+        refine Finset.sum_congr rfl fun c _ => ?_
+        rw [strategyQuantumState_ev_eq_vectorBornWeight]
+        simp only [ProjMeas.postprocess, SubMeas.postprocess_outcome,
+          matrixMeasurementToLDTProjMeas_outcome, vectorBornWeight_finset_sum_left]
+        exact Finset.sum_congr rfl fun _ _ => vectorBornWeight_finset_sum_right ..
       _ = ∑ c : Outcome, ∑ a : DirectLdAnswer D,
             if readA a = c then
               ∑ b : DirectLdAnswer D,
@@ -133,7 +135,7 @@ theorem qBipartiteConsDefect_le_directRejectedMass
         refine Finset.sum_congr rfl ?_
         intro a _
         rw [Finset.sum_ite_eq]
-        simp only [Finset.mem_univ, if_true]
+        simp
         refine Finset.sum_congr rfl ?_
         intro b _
         by_cases hab : readA a = readB b
@@ -182,7 +184,7 @@ value at parameter zero. -/
 
 /-- On the point-agreement branch, an accepted pair of point answers has
 equal readouts in every simultaneous coordinate. -/
-theorem directPointAnswerReadout_eq_of_win (D : DirectLdParams) (r : Fin D.k)
+theorem directPointAnswerReadout_eq_of_win (r : Fin D.k)
     (p : Fin D.m → DirectScalarQ D) (a b : DirectLdAnswer D)
     (hwin : directLdWinPredicate D (directLdPointQuestionOf D p)
       (directLdPointQuestionOf D p) a b = true) :
@@ -213,7 +215,7 @@ theorem directPointAnswerReadout_eq_of_win (D : DirectLdParams) (r : Fin D.k)
 
 /-- The axis-line acceptance clause at the canonical rebase parameter gives
 the rebased polynomial its point value at the LDT base point. -/
-private theorem axis_readout_of_condition (D : DirectLdParams) (r : Fin D.k)
+theorem axis_readout_of_condition (r : Fin D.k)
     (line : AxisParallelLine D.toLDTParameters)
     (f : Fin D.k → Fin (D.d + 1) → DirectScalarQ D)
     (c : Fin D.k → DirectScalarQ D)
@@ -237,7 +239,7 @@ private theorem axis_readout_of_condition (D : DirectLdParams) (r : Fin D.k)
 /-- The diagonal-line acceptance clause gives the readout its point value at
 the LDT base point, using the canonical rebase parameter for a nonzero
 direction and the parameter zero for the zero direction. -/
-private theorem diagonal_readout_of_condition (D : DirectLdParams) (r : Fin D.k)
+theorem diagonal_readout_of_condition (r : Fin D.k)
     (line : DiagonalLine D.toLDTParameters)
     (f : Fin D.k → Fin (D.m * D.d + 1) → DirectScalarQ D)
     (c : Fin D.k → DirectScalarQ D)
@@ -259,9 +261,6 @@ private theorem diagonal_readout_of_condition (D : DirectLdParams) (r : Fin D.k)
     rw [hdir] at hcond
     have heval : evalCoefficient (f r) 0 = c r := by
       refine hcond 0 ?_ r
-      change ldtPointToDirect D line.base =
-        lineRepMap (0 : Fin D.m → DirectScalarQ D) (ldtPointToDirect D line.base) +
-          (0 : DirectScalarQ D) • (0 : Fin D.m → DirectScalarQ D)
       rw [smul_zero, add_zero]
       exact hbase
     simp only [directDiagonalAnswerReadout, hdir, if_true]
@@ -278,8 +277,7 @@ private theorem diagonal_readout_of_condition (D : DirectLdParams) (r : Fin D.k)
 /-- On the axis-line branch with the line on the left, an accepted direct
 answer pair has the rebased line answer, evaluated at the LDT base point,
 equal to the point readout. -/
-theorem directAxisAnswerReadout_zeroCoord_eq_of_win (D : DirectLdParams)
-    (r : Fin D.k) (line : AxisParallelLine D.toLDTParameters)
+theorem directAxisAnswerReadout_zeroCoord_eq_of_win (r : Fin D.k) (line : AxisParallelLine D.toLDTParameters)
     (a b : DirectLdAnswer D)
     (hwin : directLdWinPredicate D (directAxisQuestionOf D line)
       (directPointQuestionOf D line.base) a b = true) :
@@ -313,8 +311,7 @@ theorem directAxisAnswerReadout_zeroCoord_eq_of_win (D : DirectLdParams)
 /-- On the axis-line branch with the point on the left, an accepted direct
 answer pair has the point readout equal to the rebased line answer evaluated
 at the LDT base point. -/
-theorem directPointAnswerReadout_eq_axis_zeroCoord_of_win (D : DirectLdParams)
-    (r : Fin D.k) (line : AxisParallelLine D.toLDTParameters)
+theorem directPointAnswerReadout_eq_axis_zeroCoord_of_win (r : Fin D.k) (line : AxisParallelLine D.toLDTParameters)
     (a b : DirectLdAnswer D)
     (hwin : directLdWinPredicate D (directPointQuestionOf D line.base)
       (directAxisQuestionOf D line) a b = true) :
@@ -348,8 +345,7 @@ theorem directPointAnswerReadout_eq_axis_zeroCoord_of_win (D : DirectLdParams)
 /-- On the diagonal-line branch with the line on the left, an accepted direct
 answer pair has the rebased line answer, evaluated at the LDT base point,
 equal to the point readout. -/
-theorem directDiagonalAnswerReadout_zeroCoord_eq_of_win (D : DirectLdParams)
-    (r : Fin D.k) (line : DiagonalLine D.toLDTParameters)
+theorem directDiagonalAnswerReadout_zeroCoord_eq_of_win (r : Fin D.k) (line : DiagonalLine D.toLDTParameters)
     (a b : DirectLdAnswer D)
     (hwin : directLdWinPredicate D (directDiagonalQuestionOf D line)
       (directPointQuestionOf D line.base) a b = true) :
@@ -383,8 +379,7 @@ theorem directDiagonalAnswerReadout_zeroCoord_eq_of_win (D : DirectLdParams)
 /-- On the diagonal-line branch with the point on the left, an accepted
 direct answer pair has the point readout equal to the rebased line answer
 evaluated at the LDT base point. -/
-theorem directPointAnswerReadout_eq_diagonal_zeroCoord_of_win (D : DirectLdParams)
-    (r : Fin D.k) (line : DiagonalLine D.toLDTParameters)
+theorem directPointAnswerReadout_eq_diagonal_zeroCoord_of_win (r : Fin D.k) (line : DiagonalLine D.toLDTParameters)
     (a b : DirectLdAnswer D)
     (hwin : directLdWinPredicate D (directPointQuestionOf D line.base)
       (directDiagonalQuestionOf D line) a b = true) :
@@ -419,7 +414,7 @@ theorem directPointAnswerReadout_eq_diagonal_zeroCoord_of_win (D : DirectLdParam
 
 /-- A direct sample as its point-index pair together with its direction.
 Formalization-only reindexing of the direct sample space. -/
-def directLdSpaceSplitEquiv (D : DirectLdParams) :
+def directLdSpaceSplitEquiv :
     DirectLdSpace D ≃
       ((Fin D.m → DirectScalarQ D) × Fin D.m) × (Fin D.m → DirectScalarQ D) where
   toFun s := ((s.point, s.index), s.direction)
@@ -436,7 +431,7 @@ variable (D : DirectLdParams) (S : Strategy (directLdGame D))
 
 /-- Point-agreement defect at an LDT point is at most the rejected direct
 mass at the direct point question. -/
-private theorem point_defect_le (u : Point D.toLDTParameters) :
+theorem point_defect_le (u : Point D.toLDTParameters) :
     letI := D.toLDTFieldModel
     qBipartiteConsDefect (directCoordinateProjStrat D S hS r).state
         ((directCoordinateProjStrat D S hS r).pointMeasurementA u).toSubMeas
@@ -482,7 +477,7 @@ theorem directCoordinate_point_agreement_le :
 
 /-- Axis-line defect with the line on the left is at most the rejected direct
 mass at the canonical direct questions of the reindexed sample. -/
-private theorem axis_line_point_defect_le
+theorem axis_line_point_defect_le
     (s : AxisParallelTestSample D.toLDTParameters) :
     letI := D.toLDTFieldModel
     qBipartiteConsDefect (directCoordinateProjStrat D S hS r).state
@@ -512,12 +507,12 @@ private theorem axis_line_point_defect_le
           (S.B (directPointQuestionOf D s.1))
           (hS.2 (directPointQuestionOf D s.1)))
         (directPointAnswerReadout D r)).toSubMeas ≤ _
-  simp only [ProjMeas.postprocess_toSubMeas, SubMeas.postprocess_comp] at h ⊢
+  simp at h ⊢
   exact h
 
 /-- Axis-line defect with the point on the left is at most the rejected direct
 mass at the canonical direct questions of the reindexed sample. -/
-private theorem axis_point_line_defect_le
+theorem axis_point_line_defect_le
     (s : AxisParallelTestSample D.toLDTParameters) :
     letI := D.toLDTFieldModel
     qBipartiteConsDefect (directCoordinateProjStrat D S hS r).state
@@ -547,13 +542,13 @@ private theorem axis_point_line_defect_le
             (hS.2 (directAxisQuestionOf D ⟨s.1, s.2⟩)))
           (directAxisAnswerReadout D r ⟨s.1, s.2⟩)).toSubMeas
         (fun g => g zeroCoord)) ≤ _
-  simp only [ProjMeas.postprocess_toSubMeas, SubMeas.postprocess_comp] at h ⊢
+  simp at h ⊢
   exact h
 
 /-- Reindex a uniform average over LDT axis samples to the direct sample
 space; the averaged function depends only on the decoded point and the
 reversed coordinate index. -/
-private theorem avgOver_axis_sample_eq
+theorem avgOver_axis_sample_eq
     (f : (Fin D.m → DirectScalarQ D) × Fin D.m → ℝ) :
     avgOver (uniformDistribution (AxisParallelTestSample D.toLDTParameters))
         (fun s => f (ldtPointToDirect D s.1, Fin.rev s.2)) =

@@ -57,12 +57,13 @@ theorem marginalPoly_postprocess_eval {P : AdmissibleParams} {epsilon deltaG : �
 
 end GlobalPairWitness
 
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
+
 /-- Regrouping polynomial outcomes by their value at a point preserves the
 agreement operator. This is the finite-sum identity behind paper
 `14_analysis_of_the_pauli_basis_test.tex:1626-1637`, blueprint
 `lem:qld-constructing-the-paulis-helper`. -/
-theorem sum_marginalPoly_eval_mul {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+theorem sum_marginalPoly_eval_mul {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
     (placement : Placement) (W : PauliKind) (point : Fin P.m → PauliScalar P)
     (family : PauliScalar P → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
     (∑ answer : PauliScalar P, S.place placement
@@ -70,7 +71,6 @@ theorem sum_marginalPoly_eval_mul {P : AdmissibleParams} {epsilon deltaG : ℝ}
         (fun poly => MvPolynomial.eval point poly.1)).effect answer) * family answer) =
       ∑ poly : Poly P, S.place placement ((w.marginalPoly placement.side W).effect poly) *
         family (MvPolynomial.eval point poly.1) := by
-  classical
   simp only [MIPStarRE.Quantum.Measurement.postprocess_effect, place_finsetSum,
     Finset.sum_mul]
   calc
@@ -82,16 +82,14 @@ theorem sum_marginalPoly_eval_mul {P : AdmissibleParams} {epsilon deltaG : ℝ}
       apply Finset.sum_congr rfl
       intro answer _
       apply Finset.sum_congr rfl
-      intro poly hpoly
-      rw [(Finset.mem_filter.mp hpoly).2]
+      simp_all
     _ = _ := Finset.sum_fiberwise _ _ _
 
 /-- Alice's evaluated marginal on `AA'` retains the witness consistency with
 Bob's expanded point measurement on `BA''`. This is the direct placement in
 paper `14_analysis_of_the_pauli_basis_test.tex:1626-1637`, supporting blueprint
 `lem:qld-constructing-the-paulis-helper`; no register transfer is used. -/
-theorem marginalPoly_pointMeas_consistent_alice {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
+theorem marginalPoly_pointMeas_consistent_alice {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun point answer => S.place .AA'
@@ -106,8 +104,7 @@ Alice's expanded point measurement on `AB''`. This is the reverse-player
 direct placement of paper `14_analysis_of_the_pauli_basis_test.tex:1626-1637`,
 supporting blueprint `lem:qld-constructing-the-paulis-helper`; no register
 transfer is used. -/
-theorem marginalPoly_pointMeas_consistent_bob {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
+theorem marginalPoly_pointMeas_consistent_bob {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun point answer => S.place .BB'

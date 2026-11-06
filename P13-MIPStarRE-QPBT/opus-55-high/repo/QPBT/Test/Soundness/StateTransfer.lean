@@ -109,7 +109,6 @@ theorem ExtractionWitness.idealState_eq (v : ExtractionWitness S w delta) :
     idealState P v.toPauliSoundnessWitness.aux =
       reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
         (S.idealExpState v.aux) := by
-  ext p
   rfl
 
 open Classical in
@@ -130,7 +129,7 @@ theorem ExtractionWitness.state_error_eq (v : ExtractionWitness S w delta) :
       reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB) (x - y) := by
     intros x y
     rfl
-  rw [hsub, reindexState_norm_eq]
+  simp_all [reindexState_norm_eq]
 
 /-- Conditional transfer of the state estimate from fully supplied extraction
 data. The paper-facing theorem must still construct that data; see issue

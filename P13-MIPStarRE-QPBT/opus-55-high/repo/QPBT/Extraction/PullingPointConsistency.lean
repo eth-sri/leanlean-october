@@ -33,10 +33,11 @@ open MIPStarRE.Quantum DistanceCalculus
 
 noncomputable section
 
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
+
 /-- Evaluation of the difference measurement is a convolution with the ideal
 Pauli point projectors. No encoding hypothesis on `g` is needed. -/
-theorem pullingMeas_eval_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+theorem pullingMeas_eval_effect {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (a : PauliScalar P) :
     ((pullingMeas w side W).postprocess (fun g => evalPoly g u)).effect a =
@@ -54,19 +55,11 @@ theorem pullingMeas_eval_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
   rw [Fintype.sum_prod_type]
   unfold tauDotProj bracketOp
   simp_rw [heteroKron_finset_sum_right, Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro g _
-  apply Finset.sum_congr rfl
-  intro h _
-  have hlabel : evalPoly g u - dotProduct h (indicatorVec u) = a ↔
-      dotProduct h (indicatorVec u) = evalPoly g u - a := by
-    constructor <;> intro heq <;> linear_combination -heq
-  simp only [hlabel]
+  grind
 
 /-- Alice's evaluated difference measurement has precisely the overlap with
 Bob's point measurement in the Alice point-consistency estimate of the witness. -/
-theorem sum_pullingMeas_eval_mul_pointMeas {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+theorem sum_pullingMeas_eval_mul_pointMeas {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
     (W : PauliKind) (u : Fin P.m → PauliScalar P) :
     (∑ a : PauliScalar P, S.placeSide .alice
       (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a) *
@@ -83,8 +76,7 @@ theorem sum_pullingMeas_eval_mul_pointMeas {P : AdmissibleParams} {epsilon delta
 
 /-- The reverse-player overlap uses the witness's Bob point-consistency relation, with
 the original `BB'` and `AB''` placements retained. -/
-theorem sum_pointMeas_mul_pullingMeas_eval {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+theorem sum_pointMeas_mul_pullingMeas_eval {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
     (W : PauliKind) (u : Fin P.m → PauliScalar P) :
     (∑ a : PauliScalar P, S.placePlayer .alice ((S.pointMeas .alice W u).effect a) *
       S.placeSide .bob

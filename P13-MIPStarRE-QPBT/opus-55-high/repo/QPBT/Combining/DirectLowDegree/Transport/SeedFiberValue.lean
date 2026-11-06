@@ -40,25 +40,24 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
+variable (L : LdParams)
+
 /-- Canonicalizing the seeded embedding of a canonical direct sample gives the
 canonical seeded sample of the original direct sample: the seed-indexed
 question asked in a residue block of the dilation is the seed-indexed
 question of the common sample carrying that residue. -/
-theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
+theorem ldCL_ldSpaceOfDirectResidue_directLdMap (t : LdType)
     (sample : DirectLdSpace L.toDirectLdParams) (residue : Fin (L.q / L.m)) :
     ldCL L t (ldSpaceOfDirectResidue L
         (directLdMap L.toDirectLdParams t sample) residue) =
       ldCL L t (ldSpaceOfDirectResidue L sample residue) := by
   cases t with
   | point =>
-      funext idx
-      rcases idx with (j | ⟨⟩) | j <;> rfl
+      rfl
   | aline =>
       funext idx
       rcases idx with (j | ⟨⟩) | j
-      · simp only [ldCL, ldALineCL, ldSpaceOfDirectResidue_point,
-          ldSpaceOfDirectResidue_seed, directLdMap, chiIndex_seedOfIndexResidue]
-        exact congrFun (lineRepMap_apply_self _ _) j
+      · simp [ldCL, ldALineCL, ldSpaceOfDirectResidue_point, ldSpaceOfDirectResidue_seed, directLdMap, chiIndex_seedOfIndexResidue, congrFun, lineRepMap_apply_self]
       · rfl
       · rfl
   | dline =>
@@ -73,8 +72,7 @@ theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
             (lineRepMap (directPrefixProjection sample.index sample.direction)
               sample.point) j =
           lineRepMap (directPrefixProjection sample.index sample.direction) sample.point j
-        rw [directPrefixProjection_idem]
-        exact congrFun (lineRepMap_apply_self _ _) j
+        simp [directPrefixProjection_idem, congrFun, lineRepMap_apply_self]
       · rfl
       · simp only [ldCL, ldDLineCL, ldSpaceOfDirectResidue_seed,
           ldSpaceOfDirectResidue_direction, directLdMap, chiIndex_seedOfIndexResidue]
@@ -84,13 +82,13 @@ theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
         rw [directPrefixProjection_idem]
 
 /-- Accepted Born mass at a fixed pair of seed-indexed questions. -/
-private def ldAcceptedMass (L : LdParams) (S : Strategy (ldGame L))
+def ldAcceptedMass (S : Strategy (ldGame L))
     (x y : LdQuestion L) : ℝ :=
   ∑ a : LdAnswer L, ∑ b : LdAnswer L,
     if ldWinPredicate L x y a b then outcomeWeight S x y a b else 0
 
 /-- Accepted Born mass at a fixed pair of direct questions. -/
-private def directAcceptedMass (D : DirectLdParams) (S : Strategy (directLdGame D))
+def directAcceptedMass (D : DirectLdParams) (S : Strategy (directLdGame D))
     (x y : DirectLdQuestion D) : ℝ :=
   ∑ a : DirectLdAnswer D, ∑ b : DirectLdAnswer D,
     if directLdWinPredicate D x y a b then outcomeWeight S x y a b else 0
@@ -98,8 +96,7 @@ private def directAcceptedMass (D : DirectLdParams) (S : Strategy (directLdGame 
 /-- At the canonical direct questions of a common direct sample, the accepted
 mass of the dilation is the uniform residue average of the accepted mass of
 the original strategy at the seeded canonical questions. -/
-private theorem directAcceptedMass_ldStrategyToDirect (L : LdParams)
-    (S : Strategy (ldGame L)) (tA tB : LdType)
+theorem directAcceptedMass_ldStrategyToDirect (S : Strategy (ldGame L)) (tA tB : LdType)
     (sample : DirectLdSpace L.toDirectLdParams) :
     directAcceptedMass L.toDirectLdParams (ldStrategyToDirect L S)
         (tA, directLdMap L.toDirectLdParams tA sample)
@@ -108,7 +105,6 @@ private theorem directAcceptedMass_ldStrategyToDirect (L : LdParams)
         ldAcceptedMass L S
           (tA, ldCL L tA (ldSpaceOfDirectResidue L sample residue))
           (tB, ldCL L tB (ldSpaceOfDirectResidue L sample residue)) := by
-  classical
   have hwin : ∀ (residue : Fin (L.q / L.m)) (a b : DirectLdAnswer L.toDirectLdParams),
       directLdWinPredicate L.toDirectLdParams
           (tA, directLdMap L.toDirectLdParams tA sample)
@@ -148,7 +144,6 @@ private theorem directAcceptedMass_ldStrategyToDirect (L : LdParams)
     rw [← Equiv.sum_comp (ldDirectAnswerEquiv L).symm]
     refine Finset.sum_congr rfl fun b' _ => ?_
     rw [hwin residue a' b']
-  unfold directAcceptedMass
   simp only [hmass]
   calc
     ∑ a' : DirectLdAnswer L.toDirectLdParams,
@@ -176,10 +171,8 @@ private theorem directAcceptedMass_ldStrategyToDirect (L : LdParams)
       by_cases hc : directLdWinPredicate L.toDirectLdParams
           (tA, directLdMap L.toDirectLdParams tA sample)
           (tB, directLdMap L.toDirectLdParams tB sample) a' b' = true
-      · simp only [hc, if_true]
-        rw [← Finset.mul_sum, ldStrategyToDirect_bornWeight]
-        simp only [hseeded]
-      · simp [hc]
+      · simp_all [Finset.mul_sum, ldStrategyToDirect_bornWeight]
+      simp_all
     _ = ∑ a' : DirectLdAnswer L.toDirectLdParams,
           ∑ residue : Fin (L.q / L.m),
             ∑ b' : DirectLdAnswer L.toDirectLdParams,
@@ -219,9 +212,8 @@ value of `S`.  Both values are averages over the ordered type pair and the
 common sample; the direct sample together with a uniform residue is the
 seed-indexed sample, and the dilation realizes, in each residue block, the
 original strategy at the seed-indexed questions of that sample. -/
-theorem ldStrategyToDirect_value_eq (L : LdParams) (S : Strategy (ldGame L)) :
+theorem ldStrategyToDirect_value_eq (S : Strategy (ldGame L)) :
     (ldStrategyToDirect L S).value = S.value := by
-  classical
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   have hsymm : ∀ b : ((LdType × LdType) × DirectLdSpace L.toDirectLdParams) ×
@@ -241,9 +233,7 @@ theorem ldStrategyToDirect_value_eq (L : LdParams) (S : Strategy (ldGame L)) :
       ldAcceptedMass L S
         (src.1.1, ldCL L src.1.1 (ldSpaceOfDirectResidue L src.2 residue))
         (src.1.2, ldCL L src.1.2 (ldSpaceOfDirectResidue L src.2 residue)))]
-  apply avgOver_congr
-  intro src
-  rw [directAcceptedMass_ldStrategyToDirect, avgOver_uniform_eq_inv_card_mul_sum]
+  simp [directAcceptedMass_ldStrategyToDirect, avgOver_uniform_eq_inv_card_mul_sum]
 
 end
 

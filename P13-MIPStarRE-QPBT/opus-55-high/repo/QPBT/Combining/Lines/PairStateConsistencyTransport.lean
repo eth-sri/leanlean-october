@@ -27,87 +27,40 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
-namespace ProjectiveSetting
+namespace ExtendedLineGame
 
-/-- A consistency defect on the two-player expanded state equals the defect
-of the same measurements placed on `AA'` and `BA''` in the six-register state. -/
-theorem consistencyDefect_pairState_eq_AA'_BA''
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
-    {Sample Outcome : Type*} [Fintype Sample] [DecidableEq Sample]
-    [Fintype Outcome] [DecidableEq Outcome]
-    (law : Distribution Sample)
-    (first : Sample → Measurement Outcome (S.ExpandedLocalSpace .alice))
-    (second : Sample → Measurement Outcome (S.ExpandedLocalSpace .bob)) :
-    consistencyDefect law
-        (fun sample answer => heteroKron ((first sample).effect answer) 1)
-        (fun sample answer => heteroKron 1 ((second sample).effect answer))
-        (ExtendedLineGame.pairState S) =
-      consistencyDefect law
-        (fun sample answer => S.place .AA' ((first sample).effect answer))
-        (fun sample answer => S.place .BA'' ((second sample).effect answer))
-        S.psiHat := by
-  classical
-  unfold consistencyDefect
-  apply avgOver_congr
-  intro sample
-  apply Finset.sum_congr rfl
-  intro firstAnswer _
-  apply Finset.sum_congr rfl
-  intro secondAnswer _
-  by_cases hanswer : firstAnswer = secondAnswer
-  · simp [hanswer]
-  · simp only [if_neg hanswer]
-    change DistanceCalculus.stateQForm (ExtendedLineGame.pairState S)
-        (heteroKron ((first sample).effect firstAnswer) 1 *
-          heteroKron 1 ((second sample).effect secondAnswer)) =
-      DistanceCalculus.stateQForm S.psiHat
-        (S.place .AA' ((first sample).effect firstAnswer) *
-          S.place .BA'' ((second sample).effect secondAnswer))
-    rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]
-    exact ExtendedLineGame.stateQForm_pairState_eq_AA'_BA'' S _ _
-      (Matrix.nonneg_iff_posSemidef.mp ((first sample).pos firstAnswer)).isHermitian
-      (Matrix.nonneg_iff_posSemidef.mp ((second sample).pos secondAnswer)).isHermitian
+variable {P : AdmissibleParams} {ε : ℝ}
 
-/-- A consistency defect on the two-player expanded state equals the defect
-of the same measurements placed on `AB''` and `BB'` in the six-register state. -/
-theorem consistencyDefect_pairState_eq_AB''_BB'
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
-    {Sample Outcome : Type*} [Fintype Sample] [DecidableEq Sample]
-    [Fintype Outcome] [DecidableEq Outcome]
-    (law : Distribution Sample)
-    (first : Sample → Measurement Outcome (S.ExpandedLocalSpace .alice))
-    (second : Sample → Measurement Outcome (S.ExpandedLocalSpace .bob)) :
-    consistencyDefect law
-        (fun sample answer => heteroKron ((first sample).effect answer) 1)
-        (fun sample answer => heteroKron 1 ((second sample).effect answer))
-        (ExtendedLineGame.pairState S) =
-      consistencyDefect law
-        (fun sample answer => S.place .AB'' ((first sample).effect answer))
-        (fun sample answer => S.place .BB' ((second sample).effect answer))
-        S.psiHat := by
-  classical
-  unfold consistencyDefect
-  apply avgOver_congr
-  intro sample
-  apply Finset.sum_congr rfl
-  intro firstAnswer _
-  apply Finset.sum_congr rfl
-  intro secondAnswer _
-  by_cases hanswer : firstAnswer = secondAnswer
-  · simp [hanswer]
-  · simp only [if_neg hanswer]
-    change DistanceCalculus.stateQForm (ExtendedLineGame.pairState S)
-        (heteroKron ((first sample).effect firstAnswer) 1 *
-          heteroKron 1 ((second sample).effect secondAnswer)) =
-      DistanceCalculus.stateQForm S.psiHat
-        (S.place .AB'' ((first sample).effect firstAnswer) *
-          S.place .BB' ((second sample).effect secondAnswer))
-    rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]
-    exact ExtendedLineGame.stateQForm_pairState_eq_AB''_BB' S _ _
-      (Matrix.nonneg_iff_posSemidef.mp ((first sample).pos firstAnswer)).isHermitian
-      (Matrix.nonneg_iff_posSemidef.mp ((second sample).pos secondAnswer)).isHermitian
+/-- Transport arbitrary POVM consistency on the two-player expanded state to
+both heterogeneous expanded placements. -/
+theorem placed_consistency_pairState
+    (S : ProjectiveSetting P ε) {X α : Type*}
+    [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
+    (μ : Distribution X) (A : X → Measurement α (S.ExpandedLocalSpace .alice))
+    (B : X → Measurement α (S.ExpandedLocalSpace .bob)) :
+    (consistencyDefect μ (fun x a => S.place .AA' ((A x).effect a))
+      (fun x a => S.place .BA'' ((B x).effect a)) S.psiHat =
+      consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
+        (fun x a => heteroKron 1 ((B x).effect a)) (pairState S)) ∧
+    (consistencyDefect μ (fun x a => S.place .BB' ((B x).effect a))
+      (fun x a => S.place .AB'' ((A x).effect a)) S.psiHat =
+      consistencyDefect μ (fun x a => heteroKron ((A x).effect a) 1)
+        (fun x a => heteroKron 1 ((B x).effect a)) (pairState S)) := by
+  have hA (x : X) (a : α) := (Matrix.nonneg_iff_posSemidef.mp ((A x).pos a)).isHermitian
+  have hB (x : X) (a : α) := (Matrix.nonneg_iff_posSemidef.mp ((B x).pos a)).isHermitian
+  constructor <;> refine avgOver_congr _ _ _ fun x => ?_
+  on_goal 2 => rw [Finset.sum_comm]
+  all_goals refine Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ => ?_
+  all_goals by_cases hab : a = b
+  all_goals try (subst hab; simp)
+  all_goals simp only [hab, Ne.symm hab, ite_false,
+    DistanceCalculus.consistency_term_eq_stateQForm,
+    DistanceCalculus.placed_product_stateQForm_eq]
+  · exact (stateQForm_pairState_eq_AA'_BA'' S _ _ (hA x a) (hB x b)).symm
+  · rw [S.place_comm .BB' .AB'' trivial]
+    exact (stateQForm_pairState_eq_AB''_BB' S _ _ (hA x a) (hB x b)).symm
 
-end ProjectiveSetting
+end ExtendedLineGame
 
 end
 

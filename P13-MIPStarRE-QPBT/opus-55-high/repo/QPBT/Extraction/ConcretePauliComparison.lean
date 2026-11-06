@@ -60,14 +60,9 @@ theorem pauli_distance_on_ideal_right_le {P : AdmissibleParams} {I J : Type*}
     ext p
     simp [reindexState, vecTensor, prodShuffle, eprState, e, ideal, eq_comm]
   have h := pauli_distance_on_ideal_le A W (reindexState (Equiv.prodComm I J) aux)
-    (by rw [reindexState_norm_eq, haux]) (reindexState e theta)
-    (by rw [reindexState_norm_eq, htheta])
-  dsimp only at h ⊢
-  rw [hideal, norm_reindexState_sub_eq] at h
-  dsimp only [e] at h
-  simp_rw [WinImplications.norm_applyOperatorToState_reindexState,
-    WinImplications.stateQForm_reindexState, WinImplications.reindexOp_prodComm_heteroKron] at h
-  exact h
+    (by simp_all [reindexState_norm_eq]) (reindexState e theta)
+    (by simp_all [reindexState_norm_eq])
+  grind [norm_reindexState_sub_eq, WinImplications.norm_applyOperatorToState_reindexState, WinImplications.stateQForm_reindexState, WinImplications.reindexOp_prodComm_heteroKron]
 
 namespace ProjectiveSetting
 
@@ -104,11 +99,11 @@ theorem placeSide_sub (side : PlayerSide)
   · ext row col
     exact mul_sub _ _ _
 
+variable (w : GlobalPairWitness S deltaG) (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+
 /-- The entire answer-summed distance in block coordinates is the distance
 appearing in `ExtractionWitness.pauli_close`, for either player. -/
-theorem extraction_pauli_dist_eq_sum (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
-    (side : PlayerSide) (W : PauliKind) :
+theorem extraction_pauli_dist_eq_sum (side : PlayerSide) (W : PauliKind) :
     opFamilyDistSq (uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>
         conjBy (S.placeSide side (swapUnitary w side))
@@ -122,14 +117,11 @@ theorem extraction_pauli_dist_eq_sum (w : GlobalPairWitness S deltaG)
   simp_rw [S.placeSide_sub, S.placeSide_swappedPauliMeas, S.placeSide_extracted]
   exact avgOver_uniform_const _
 
-set_option maxHeartbeats 800000 in
 /-- For the concrete swaps, the full Pauli distance on the normalized ideal
 state is bounded by the evaluated consistency defect and the two established
 comparison losses. This instantiates `eq:qld-unitary-7`--`eq:qld-unitary-9`
 with all six-register placements and both player orientations. -/
-theorem extraction_pauli_dist_le (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
-    (haux : ‖aux‖ = 1) (side : PlayerSide) (W : PauliKind) :
+theorem extraction_pauli_dist_le (haux : ‖aux‖ = 1) (side : PlayerSide) (W : PauliKind) :
     opFamilyDistSq (uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>
         conjBy (S.placeSide side (swapUnitary w side))

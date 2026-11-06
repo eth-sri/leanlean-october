@@ -31,7 +31,7 @@ variable {F ι : Type*} [Field F] [Fintype F] [DecidableEq F]
   [Fintype ι] [DecidableEq ι]
 
 omit [Field F] in
-private theorem wrong_mul_effect (X : Quantum.Measurement F ι)
+theorem wrong_mul_effect (X : Quantum.Measurement F ι)
     (hX : Measurement.IsProjective X) (r b : F) :
     (1 - X.effect r) * X.effect b = if b = r then 0 else X.effect b := by
   by_cases h : b = r
@@ -39,13 +39,12 @@ private theorem wrong_mul_effect (X : Quantum.Measurement F ι)
   · rw [sub_mul, one_mul, projective_effect_mul_effect_eq_zero X hX (Ne.symm h)]
     simp [h]
 
-private theorem wrong_ordered_gram (X Z : Quantum.Measurement F ι)
+theorem wrong_ordered_gram (X Z : Quantum.Measurement F ι)
     (hX : Measurement.IsProjective X) (r α β a : F) (hβ : β ≠ 0) :
     let T := (1 - X.effect r) * orderedIndicator X Z α β a
     Tᴴ * T = ∑ bc : F × F,
       if α * bc.1 + β * bc.2 = a ∧ bc.1 ≠ r then
         Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2 else 0 := by
-  classical
   have hexpand : (1 - X.effect r) * orderedIndicator X Z α β a =
       ∑ bc : F × F, if α * bc.1 + β * bc.2 = a ∧ bc.1 ≠ r then
         X.effect bc.1 * Z.effect bc.2 else 0 := by
@@ -84,19 +83,19 @@ private theorem wrong_ordered_gram (X Z : Quantum.Measurement F ι)
     · simp [h]
   · simp
 
+variable (X Z : Quantum.Measurement F ι)
+
 /-- The wrong outer projection of a scalar-linear ordered product has
 average squared norm at most `2/q` times the actual vector mass. One `1/q`
 comes from scalar collisions and one from the zero second coefficient.
 This is the retained-outcome calculation supporting `eq:qld-sgg-mhat-sandwich`.
 -/
-theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
-    (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
+theorem avg_wrong_ordered_norm_sq_le (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
     (r t : F) (ψ : EuclideanSpace ℂ ι) :
     avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
       ‖applyOperatorToState ((1 - X.effect r) *
         orderedIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t)) ψ‖ ^ 2) ≤
       2 * (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 := by
-  classical
   let w (bc : F × F) := stateQForm ψ
     (Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2)
   have hw (bc : F × F) : 0 ≤ w bc :=
@@ -135,7 +134,7 @@ theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
     change avgOver (uniformDistribution (Fin 2 → F))
       (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
     rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
-    simp only [Equiv.apply_symm_apply]
+    simp
     rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
     simp [avgOver_uniform_eq_inv_card_mul_sum]
   have hcollision (bc : F × F) :
@@ -160,8 +159,7 @@ theorem avg_wrong_ordered_norm_sq_le (X Z : Quantum.Measurement F ι)
 residual plus `4/q` times its unnormalized mass. Reverse the point order to
 obtain the other Pauli marginal. This supports `eq:qld-sgg-mhat-sandwich`.
 -/
-theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
-    (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
+theorem point_mismatch_le_ordered_error (hX : Measurement.IsProjective X) (hZ : Measurement.IsProjective Z)
     (r t : F) (ψ : EuclideanSpace ℂ ι) :
     ‖applyOperatorToState (1 - X.effect r) ψ‖ ^ 2 ≤
       2 * avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
@@ -178,7 +176,7 @@ theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
     have h := sum_mass_le_residual_add_image (Finset.univ : Finset Unit)
       (fun _ => applyOperatorToState (1 - X.effect r) ψ)
       (fun _ => applyOperatorToState ((1 - X.effect r) * T) ψ)
-    simp only [Finset.univ_unique, Finset.sum_singleton] at h
+    simp at h
     have hcontract :
         ‖applyOperatorToState (1 - X.effect r) ψ -
           applyOperatorToState ((1 - X.effect r) * T) ψ‖ ≤

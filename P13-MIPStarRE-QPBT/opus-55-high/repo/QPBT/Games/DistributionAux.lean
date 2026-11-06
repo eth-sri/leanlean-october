@@ -123,7 +123,6 @@ theorem Distribution.bind_isProbability {α β : Type*} [DecidableEq β]
     (μ : Distribution α) (ν : α → Distribution β) (hμ : μ.IsProbability)
     (hν : ∀ a ∈ μ.support, (ν a).IsProbability) :
     (Distribution.bind μ ν).IsProbability := by
-  classical
   have hν_union (a : α) (ha : a ∈ μ.support) :
       ∑ b ∈ μ.support.biUnion (fun a => (ν a).support), (ν a).weight b = 1 := by
     apply (hν a ha).weight_sum_eq_one_of_subset
@@ -271,13 +270,12 @@ theorem uniformDistribution_map_weight {α γ : Type*}
   rw [Finset.sum_congr rfl fun x _ => uniformDistribution_weight_apply α x,
     Finset.sum_const, nsmul_eq_mul]
 
+variable {α β : Type*} [Fintype α] [DecidableEq α] [Nonempty α] [Fintype β] [DecidableEq β] [Nonempty β]
+
 /-- Formalization-only lemma: a map whose fibers all have the same cardinality
 pushes the uniform distribution forward to the uniform distribution.  This is
 `lem:uniform-map-equal-fibers` in blueprint chapter 13. -/
-theorem uniformDistribution_map_of_card_fiber {α β : Type*}
-    [Fintype α] [DecidableEq α] [Nonempty α]
-    [Fintype β] [DecidableEq β] [Nonempty β]
-    (e : α → β) (c : ℕ)
+theorem uniformDistribution_map_of_card_fiber (e : α → β) (c : ℕ)
     (hc : ∀ b : β, ((Finset.univ : Finset α).filter fun a => e a = b).card = c) :
     (uniformDistribution α).map e = uniformDistribution β := by
   have hcpos : 0 < c := by
@@ -292,11 +290,11 @@ theorem uniformDistribution_map_of_card_fiber {α β : Type*}
       (fun a _ => Finset.mem_univ _)
     rw [Finset.card_univ] at h
     rw [h, Finset.sum_congr rfl fun b _ => hc b]
-    simp [Finset.card_univ, mul_comm]
+    simp
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (Finset.univ : Finset α).image e = (Finset.univ : Finset β)
     ext b
-    simp only [Finset.mem_image, Finset.mem_univ, iff_true, true_and]
+    simp
     have hne : ((Finset.univ : Finset α).filter fun a => e a = b).Nonempty := by
       rw [← Finset.card_pos, hc]
       exact hcpos
@@ -315,9 +313,7 @@ theorem uniformDistribution_map_of_card_fiber {α β : Type*}
 
 /-- Formalization-only lemma: relabelling along a bijection preserves
 uniformity.  This is `lem:uniform-map-equivalence` in blueprint chapter 13. -/
-theorem uniformDistribution_map_equiv {α β : Type*}
-    [Fintype α] [DecidableEq α] [Nonempty α]
-    [Fintype β] [DecidableEq β] [Nonempty β] (E : α ≃ β) :
+theorem uniformDistribution_map_equiv (E : α ≃ β) :
     (uniformDistribution α).map E = uniformDistribution β := by
   refine uniformDistribution_map_of_card_fiber _ 1 fun b => ?_
   have hfilter :
@@ -330,9 +326,7 @@ theorem uniformDistribution_map_equiv {α β : Type*}
 /-- Formalization-only lemma: the first marginal of the uniform distribution on
 a product is uniform.  This is `lem:uniform-product-first-marginal` in blueprint
 chapter 13. -/
-theorem uniformDistribution_map_fst {α β : Type*}
-    [Fintype α] [DecidableEq α] [Nonempty α]
-    [Fintype β] [DecidableEq β] [Nonempty β] :
+theorem uniformDistribution_map_fst :
     (uniformDistribution (α × β)).map Prod.fst = uniformDistribution α := by
   refine uniformDistribution_map_of_card_fiber _ (Fintype.card β) fun a => ?_
   have hfilter : ((Finset.univ : Finset (α × β)).filter fun p => p.1 = a)
@@ -346,9 +340,7 @@ theorem uniformDistribution_map_fst {α β : Type*}
 /-- Formalization-only lemma: the second marginal of the uniform distribution
 on a product is uniform.  This is `lem:uniform-product-second-marginal` in
 blueprint chapter 13. -/
-theorem uniformDistribution_map_snd {α β : Type*}
-    [Fintype α] [DecidableEq α] [Nonempty α]
-    [Fintype β] [DecidableEq β] [Nonempty β] :
+theorem uniformDistribution_map_snd :
     (uniformDistribution (α × β)).map Prod.snd = uniformDistribution β := by
   refine uniformDistribution_map_of_card_fiber _ (Fintype.card α) fun b => ?_
   have hfilter : ((Finset.univ : Finset (α × β)).filter fun p => p.2 = b)
@@ -384,8 +376,7 @@ theorem bind_uniformOnFinset_map {α β γ σ : Type*} [DecidableEq α]
   · change s.biUnion (fun a => (Finset.univ : Finset β).image (g a)) =
       (Finset.univ : Finset (σ × β)).image fun q => g (f q.1) q.2
     ext c
-    simp only [Finset.mem_biUnion, Finset.mem_image, Finset.mem_univ, true_and,
-      Prod.exists]
+    simp
     constructor
     · rintro ⟨a, ha, b, rfl⟩
       obtain ⟨xx, rfl⟩ := (hmem a).mp ha
@@ -453,7 +444,6 @@ theorem Distribution.bind_map {α β γ : Type*} [DecidableEq β] [DecidableEq �
     (μ : Distribution α) (ν : α → Distribution β) (f : β → γ) :
     (Distribution.bind μ ν).map f =
       Distribution.bind μ (fun a => (ν a).map f) := by
-  classical
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (μ.support.biUnion fun a => (ν a).support).image f =
       μ.support.biUnion fun a => (ν a).support.image f
@@ -501,7 +491,6 @@ theorem Distribution.bind_uniform_restrict_eq {α ι : Type*} [DecidableEq α]
     (hunique : ∀ a, ∃! i, p i a) :
     Distribution.bind (uniformDistribution ι)
         (fun i => Distribution.restrict μ (p i) (hpos i)) = μ := by
-  classical
   have hcard : (0 : ℝ) < (Fintype.card ι : ℝ) := by
     exact_mod_cast Fintype.card_pos
   refine Distribution.ext_of_support_of_weight ?_ ?_
@@ -551,7 +540,6 @@ theorem Distribution.bind_map_left {α β γ : Type*} [DecidableEq β]
     [DecidableEq γ] (μ : Distribution α) (f : α → β) (ν : β → Distribution γ) :
     Distribution.bind (μ.map f) ν =
       Distribution.bind μ (fun a => ν (f a)) := by
-  classical
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (μ.support.image f).biUnion (fun b => (ν b).support) =
       μ.support.biUnion (fun a => (ν (f a)).support)
@@ -626,13 +614,12 @@ theorem Distribution.bind_bind {α β γ : Type*} [DecidableEq β] [DecidableEq 
     (μ : Distribution α) (ν : α → Distribution β) (ρ : β → Distribution γ) :
     Distribution.bind (Distribution.bind μ ν) ρ =
       Distribution.bind μ (fun a => Distribution.bind (ν a) ρ) := by
-  classical
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (μ.support.biUnion (fun a => (ν a).support)).biUnion
         (fun b => (ρ b).support) =
       μ.support.biUnion (fun a => (ν a).support.biUnion (fun b => (ρ b).support))
     ext c
-    simp only [Finset.mem_biUnion]
+    simp
     constructor
     · rintro ⟨b, ⟨a, ha, hb⟩, hc⟩
       exact ⟨a, ha, b, hb, hc⟩
@@ -668,12 +655,11 @@ theorem Distribution.prod_bind_left {α β γ : Type*} [DecidableEq β]
     (ρ : Distribution γ) :
     Distribution.prod (Distribution.bind μ ν) ρ =
       Distribution.bind μ (fun a => Distribution.prod (ν a) ρ) := by
-  classical
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (μ.support.biUnion (fun a => (ν a).support)) ×ˢ ρ.support =
       μ.support.biUnion (fun a => (ν a).support ×ˢ ρ.support)
     ext w
-    simp only [Finset.mem_product, Finset.mem_biUnion]
+    simp
     constructor
     · rintro ⟨⟨a, ha, hb⟩, hc⟩
       exact ⟨a, ha, hb, hc⟩
@@ -695,7 +681,6 @@ theorem Distribution.bind_uniform_fin_two {α : Type*} [DecidableEq α]
     (μ ν : Distribution α) :
     Distribution.bind (uniformDistribution (Fin 2)) ![μ, ν] =
       Distribution.mix (1 / 2) (by norm_num) (by norm_num) μ ν := by
-  classical
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (Finset.univ : Finset (Fin 2)).biUnion
         (fun i => (![μ, ν] i).support) = μ.support ∪ ν.support
@@ -726,7 +711,6 @@ theorem avgOver_bind {α β : Type*} [DecidableEq β]
     (μ : Distribution α) (ν : α → Distribution β) (f : β → ℝ) :
     avgOver (Distribution.bind μ ν) f =
       avgOver μ (fun a => avgOver (ν a) f) := by
-  classical
   unfold avgOver
   have h1 : ∀ b : β, (∑ a ∈ μ.support, μ.weight a * (ν a).weight b) * f b =
       ∑ a ∈ μ.support, μ.weight a * ((ν a).weight b * f b) := by
@@ -753,7 +737,6 @@ theorem avgOver_mix {α : Type*} [DecidableEq α] (t : ℝ) (ht0 : 0 ≤ t)
     (ht1 : t ≤ 1) (μ ν : Distribution α) (f : α → ℝ) :
     avgOver (Distribution.mix t ht0 ht1 μ ν) f =
       t * avgOver μ f + (1 - t) * avgOver ν f := by
-  classical
   unfold avgOver
   have hsplit : (∑ a ∈ μ.support ∪ ν.support,
         (t * μ.weight a + (1 - t) * ν.weight a) * f a) =
@@ -784,7 +767,6 @@ theorem avgOver_bind_uniform_component_le {ι β : Type*}
     (ν : ι → Distribution β) (f : β → ℝ) (hf : ∀ b, 0 ≤ f b) (i : ι) :
     1 / (Fintype.card ι : ℝ) * avgOver (ν i) f ≤
       avgOver (Distribution.bind (uniformDistribution ι) ν) f := by
-  classical
   rw [avgOver_bind]
   have hterm : ∀ j ∈ (Finset.univ : Finset ι),
       0 ≤ (uniformDistribution ι).weight j * avgOver (ν j) f := fun j _ =>

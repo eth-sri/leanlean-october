@@ -48,12 +48,11 @@ theorem polyFunc_eval_collision_le {m d : ℕ} {K : Type*} [Field K] [Fintype K]
         (polynomialAgreementProbability m K first.1 second.1 : ℝ) := by
     rw [avgOver_uniform_eq_inv_card_mul_sum, ← Finset.sum_filter]
     simp [polynomialAgreementProbability, div_eq_mul_inv, mul_comm]
-  rw [havg]
   have hbound := schwartzZippel_individualDegree first second hne
   have hreal : (polynomialAgreementProbability m K first.1 second.1 : ℝ) ≤
       ((((m * d : ℕ) : ℚ≥0) / Fintype.card K) : ℝ) := by
     exact_mod_cast hbound
-  simpa using hreal
+  simp_all
 
 /-- The collision hypothesis for the sandwich support comparison on QPBT
 polynomial outcomes, with the field cardinality written as `P.q`.
@@ -66,9 +65,8 @@ theorem poly_eval_collision_le {P : AdmissibleParams}
     avgOver (uniformDistribution (Fin P.m → PauliScalar P))
       (fun point => if evalPoly first point = evalPoly second point then (1 : ℝ) else 0) ≤
         (P.m * P.d : ℝ) / P.q := by
-  have hcard : Fintype.card (PauliScalar P) = P.q :=
+  have hcard :=
     @FieldModel.card P.q P.model.toFieldModel
-  unfold evalPoly
   conv_rhs => rw [← hcard]
   exact polyFunc_eval_collision_le first second hne
 

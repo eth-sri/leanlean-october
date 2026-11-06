@@ -60,8 +60,7 @@ theorem consistencyDefect_directCoefficients_le_evaluated_add
       μ A B ψ (fun coefficients t => evalCoefficient coefficients t)
       ((degree : ℝ) / (D.q : ℝ)) hμ hψ
   · positivity
-  · intro a b hne
-    exact directCoefficientCollision_avg_le D degree a b hne
+  simp_all [directCoefficientCollision_avg_le]
 
 end
 

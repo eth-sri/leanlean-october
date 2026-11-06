@@ -35,9 +35,10 @@ def selectedPairBit (W : PauliKind) (bits : ZMod 2 × ZMod 2) : ZMod 2 :=
   | .X => bits.1
   | .Z => bits.2
 
+variable (P : AdmissibleParams) (W : PauliKind) (z : PauliSpace P)
+
 /-- Winning the commuting Pair/W branch forces equality of the selected bits. -/
-theorem pairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (A B : PauliAnswer P)
+theorem pairLabels_eq_of_win (A B : PauliAnswer P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1)
     (hwin : pauliWinPredicate P
       ((.pairW W), pauliCL P (.pairW W) z)
@@ -55,8 +56,6 @@ theorem pairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     change gammaValue P (pauliXBlock z) (pauliZBlock z)
       (pauliRXBlock z) (pauliRZBlock z) = 0 at hcomm
     rw [pauliCL_shared_eq P (.pairW W) rfl]
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) = 0
     exact hcomm
   cases W <;>
     simp only [pauliPairCondition, hgamma, ne_eq, not_true_eq_false,
@@ -64,7 +63,7 @@ theorem pairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     exact hwin.symm
 
 /-- Commuting Pair/W mismatch is contained in rejection. -/
-private theorem pairMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
+theorem pairMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1) :
     outcomeEventWeight S.toStrategy
@@ -76,13 +75,12 @@ private theorem pairMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
         (pairWPairEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
-  change pauliWinPredicate P _ _ A B = false
   apply Bool.eq_false_iff.mpr
   intro htrue
   exact hne (pairLabels_eq_of_win P W z A B hcomm htrue)
 
 /-- The commuting consistency defect is the mismatch probability of source answers. -/
-private theorem commConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
+theorem commConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
     (S : ProjectiveSetting P ε) (W : PauliKind) :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
@@ -203,15 +201,13 @@ def pointTraceLabel (P : AdmissibleParams) (W : PauliKind)
     (ProjectiveSetting.pointAnswerOrZero A * selectedTupleScalar W ω)
 
 /-- The point coordinate of the low-degree projection is the selected shared block. -/
-theorem pauliToLd_point_eq_selected (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem pauliToLd_point_eq_selected :
     (pauliToLd P W z).point = selectedTuplePoint W (pauliSharedSplit P z).1 := by
   funext i
   cases W <;> rfl
 
 /-- Winning the commuting point/Pair-W branch forces equality of trace labels. -/
-theorem pointPairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (A B : PauliAnswer P)
+theorem pointPairLabels_eq_of_win (A B : PauliAnswer P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1)
     (hwin : pauliWinPredicate P
       ((.point W), pauliCL P (.point W) z)
@@ -231,8 +227,6 @@ theorem pointPairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     change gammaValue P (pauliXBlock z) (pauliZBlock z)
       (pauliRXBlock z) (pauliRZBlock z) = 0 at hcomm
     rw [pauliCL_shared_eq P (.pairW W) rfl]
-    change gammaValue P (pauliXBlock z) (pauliZBlock z)
-      (pauliRXBlock z) (pauliRZBlock z) = 0
     exact hcomm
   rw [pauliCL_shared_eq P (.pairW W) rfl] at hgamma
   rw [pauliCL_shared_eq P (.pairW W) rfl] at hwin
@@ -264,7 +258,6 @@ theorem pointPairMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
         (pointPairWEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
-  change pauliWinPredicate P _ _ A B = false
   apply Bool.eq_false_iff.mpr
   intro htrue
   exact hne (pointPairLabels_eq_of_win P W z A B hcomm htrue)
@@ -286,11 +279,11 @@ theorem commConsConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
             ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
           (fun A B => pointTraceLabel P W ω A ≠
             ProjectiveSetting.pairWAnswerOrZero B)) := by
-  let qA : PauliTuple P → PauliQuestion P := fun ω =>
+  let qA := fun ω =>
     ProjectiveSetting.pointQuestion P W (selectedTuplePoint W ω)
   let qB : PauliTuple P → PauliQuestion P := fun ω =>
     ProjectiveSetting.pairWQuestion P W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2
-  let fA : PauliTuple P → PauliAnswer P → ZMod 2 := fun ω A =>
+  let fA := fun ω A =>
     pointTraceLabel P W ω A
   let fB : PauliTuple P → PauliAnswer P → ZMod 2 := fun _ =>
     ProjectiveSetting.pairWAnswerOrZero

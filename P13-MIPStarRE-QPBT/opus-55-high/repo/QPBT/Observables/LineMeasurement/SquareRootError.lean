@@ -30,11 +30,11 @@ open MIPStarRE.Quantum
 
 namespace DistanceCalculus
 
+variable {α ιA ιB : Type*} [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 /-- The adjoint squares of a left-placed complete measurement sum to at most
 the identity on the product space. -/
-theorem leftPlaced_sum_adjoint_mul_le_one {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : MIPStarRE.Quantum.Measurement α ιA) :
+theorem leftPlaced_sum_adjoint_mul_le_one (M : MIPStarRE.Quantum.Measurement α ιA) :
     ∑ a : α, (heteroKron (M.effect a) (1 : Op ιB))ᴴ *
       heteroKron (M.effect a) (1 : Op ιB) ≤ 1 :=
   MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
@@ -42,9 +42,7 @@ theorem leftPlaced_sum_adjoint_mul_le_one {α ιA ιB : Type*} [Fintype α]
 
 /-- The adjoint squares of a right-placed complete measurement sum to at most
 the identity on the product space. -/
-theorem rightPlaced_sum_adjoint_mul_le_one {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : MIPStarRE.Quantum.Measurement α ιB) :
+theorem rightPlaced_sum_adjoint_mul_le_one (M : MIPStarRE.Quantum.Measurement α ιB) :
     ∑ a : α, (heteroKron (1 : Op ιA) (M.effect a))ᴴ *
       heteroKron (1 : Op ιA) (M.effect a) ≤ 1 :=
   MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
@@ -62,19 +60,9 @@ theorem opFamilyDistSq_placed_le_four {X α ιA ιB : Type*}
     (B : X → MIPStarRE.Quantum.Measurement α ιB)
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1) :
     opFamilyDistSq μ (fun x a => heteroKron ((A x).effect a) 1)
-      (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤ 4 := by
-  unfold opFamilyDistSq
-  calc
-    avgOver μ (fun x => ∑ a : α,
-        ‖applyOperatorToState
-          (heteroKron ((A x).effect a) 1 - heteroKron 1 ((B x).effect a)) ψ‖ ^ 2)
-        ≤ avgOver μ (fun _ => (4 : ℝ)) := by
-      apply avgOver_mono
-      intro x
-      exact sum_norm_sub_apply_sq_le_four _ _ ψ hψ
-        (leftPlaced_sum_adjoint_mul_le_one (A x))
-        (rightPlaced_sum_adjoint_mul_le_one (B x))
-    _ = 4 := avgOver_const_of_isProbability μ hμ 4
+      (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤ 4 :=
+  hμ.avgOver_le_of_forall_le_on_support _ _ fun x _ => sum_norm_sub_apply_sq_le_four _ _ ψ hψ
+    (leftPlaced_sum_adjoint_mul_le_one _) (rightPlaced_sum_adjoint_mul_le_one _)
 
 end DistanceCalculus
 
@@ -90,7 +78,6 @@ theorem le_mul_sqrt_of_le_mul_of_le_four {x ε a : ℝ} (ha : 1 ≤ a) (hx0 : 0 
     by_contra hneg
     have hlt : ε < 0 := lt_of_not_ge hneg
     nlinarith
-  have hsqrt : 0 ≤ Real.sqrt ε := Real.sqrt_nonneg ε
   by_cases hε1 : ε ≤ 1
   · have hle : ε ≤ Real.sqrt ε := by
       rw [Real.le_sqrt hε hε]

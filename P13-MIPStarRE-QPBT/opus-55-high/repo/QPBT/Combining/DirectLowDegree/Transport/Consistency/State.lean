@@ -123,8 +123,10 @@ theorem consRel_iff_consistencyDefect
 
 /-! ## Direct-strategy state and point readout -/
 
+variable {G : Game}
+
 /-- The pure state carried by a game strategy, regarded as an LDT pure state. -/
-noncomputable def gameStrategyPureState {G : Game} (S : Strategy G) :
+noncomputable def gameStrategyPureState (S : Strategy G) :
     letI : Nonempty (S.ιA × S.ιB) :=
       (strategyQuantumState_isNormalized S).nonempty
     PureState (S.ιA × S.ιB) := by
@@ -132,18 +134,11 @@ noncomputable def gameStrategyPureState {G : Game} (S : Strategy G) :
     (strategyQuantumState_isNormalized S).nonempty
   exact strategyPureState S
 
-@[simp] theorem gameStrategyPureState_vector {G : Game} (S : Strategy G) :
-    letI : Nonempty (S.ιA × S.ιB) :=
-      (strategyQuantumState_isNormalized S).nonempty
-    (gameStrategyPureState S).vector = S.ψ := by
-  letI : Nonempty (S.ιA × S.ιB) :=
-    (strategyQuantumState_isNormalized S).nonempty
-  rfl
 
 /-- The Euclidean vector of the strategy's pure-state presentation is the
 original game vector. -/
 @[simp] theorem gameStrategyPureState_euclideanVector
-    {G : Game} (S : Strategy G) :
+    (S : Strategy G) :
     letI : Nonempty (S.ιA × S.ιB) :=
       (strategyQuantumState_isNormalized S).nonempty
     pureStateEuclideanVector (gameStrategyPureState S) = S.ψ := by
@@ -155,7 +150,7 @@ original game vector. -/
 /-- An LDT consistency relation on the density state associated with a game
 strategy gives the identical QPBT defect bound on the strategy vector. -/
 theorem strategyConsRel_consistencyDefect_le
-    {G : Game} (S : Strategy G)
+    (S : Strategy G)
     {Question Outcome : Type*}
     [Fintype Question] [DecidableEq Question]
     [Fintype Outcome] [DecidableEq Outcome]
@@ -169,14 +164,14 @@ theorem strategyConsRel_consistencyDefect_le
       (fun x a => heteroKron 1 ((B x).outcome a)) S.ψ ≤ delta := by
   letI : Nonempty (S.ιA × S.ιB) :=
     (strategyQuantumState_isNormalized S).nonempty
-  let pure : PureState (S.ιA × S.ιB) := strategyPureState S
+  let pure := strategyPureState S
   have hpure :
       ConsRel (pure : QuantumState (S.ιA × S.ιB)) mu
         (fun x => (A x).toSubMeas) (fun x => (B x).toSubMeas) delta := by
     simpa [pure, strategyQuantumState] using h
   have hconverted := (consRel_iff_consistencyDefect pure mu hmu A B delta).mp hpure
-  have hv : pureStateEuclideanVector pure = S.ψ := by
-    exact gameStrategyPureState_euclideanVector S
+  have hv : pureStateEuclideanVector pure = S.ψ :=
+    gameStrategyPureState_euclideanVector S
   rw [hv] at hconverted
   exact hconverted
 
@@ -203,10 +198,11 @@ the scalar coding equivalence. -/
   letI := D.toLDTFieldModel
   cases answer <;> rfl
 
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+
 /-- At corresponding points and scalar outcomes, the LDT point effect is
 the effect of the direct point measurement followed by coordinate projection. -/
 theorem directCoordinatePointMeasurement_effect_transport
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k)
     (u : Fin D.m → DirectScalarQ D) (a : DirectScalarQ D) :
     letI := D.toLDTFieldModel
@@ -215,7 +211,6 @@ theorem directCoordinatePointMeasurement_effect_transport
       ((S.A (directLdPointQuestionOf D u)).postprocess
         (fun answer => directLdPointValuesOrZero D answer r)).effect a := by
   letI := D.toLDTFieldModel
-  classical
   simp only [directCoordinateProjStrat, directCoordinatePointMeasurement,
     directLdGame,
     ProjMeas.postprocess, SubMeas.postprocess_outcome,
@@ -231,7 +226,6 @@ theorem directCoordinatePointMeasurement_effect_transport
 
 /-- Bob's point effects satisfy the same direct-to-LDT readout identity. -/
 theorem directCoordinatePointMeasurementB_effect_transport
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k)
     (u : Fin D.m → DirectScalarQ D) (a : DirectScalarQ D) :
     letI := D.toLDTFieldModel
@@ -240,7 +234,6 @@ theorem directCoordinatePointMeasurementB_effect_transport
       ((S.B (directLdPointQuestionOf D u)).postprocess
         (fun answer => directLdPointValuesOrZero D answer r)).effect a := by
   letI := D.toLDTFieldModel
-  classical
   simp only [directCoordinateProjStrat, directCoordinatePointMeasurement,
     directLdGame,
     ProjMeas.postprocess, SubMeas.postprocess_outcome,
@@ -257,7 +250,6 @@ theorem directCoordinatePointMeasurementB_effect_transport
 /-- Alice's direct point measurement followed by projection to coordinate
 `r`. -/
 noncomputable def directPointCoordinateMeasurementA
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (r : Fin D.k) (u : Fin D.m → DirectScalarQ D) :
     MIPStarRE.Quantum.Measurement (DirectScalarQ D) S.ιA :=
   (S.A (directLdPointQuestionOf D u)).postprocess
@@ -266,7 +258,6 @@ noncomputable def directPointCoordinateMeasurementA
 /-- Bob's direct point measurement followed by projection to coordinate
 `r`. -/
 noncomputable def directPointCoordinateMeasurementB
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (r : Fin D.k) (u : Fin D.m → DirectScalarQ D) :
     MIPStarRE.Quantum.Measurement (DirectScalarQ D) S.ιB :=
   (S.B (directLdPointQuestionOf D u)).postprocess
@@ -287,7 +278,6 @@ noncomputable def directPolynomialEvaluationMeasurement
 
 /-- Alice's LDT point family obtained from direct coordinate `r`. -/
 noncomputable def ldtCoordinatePointMeasurementA
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     IdxProjMeas (Point D.toLDTParameters) (Fq D.toLDTParameters) S.ιA := by
@@ -296,7 +286,6 @@ noncomputable def ldtCoordinatePointMeasurementA
 
 /-- Bob's LDT point family obtained from direct coordinate `r`. -/
 noncomputable def ldtCoordinatePointMeasurementB
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     IdxProjMeas (Point D.toLDTParameters) (Fq D.toLDTParameters) S.ιB := by
@@ -317,7 +306,6 @@ noncomputable def ldtPolynomialEvaluationMeasurement
 
 /-- Left placement of Alice's LDT point family. -/
 noncomputable def ldtPointAPlaced
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     Point D.toLDTParameters → Fq D.toLDTParameters → Op (S.ιA × S.ιB) := by
@@ -327,7 +315,6 @@ noncomputable def ldtPointAPlaced
 
 /-- Right placement of Bob's LDT point family. -/
 noncomputable def ldtPointBPlaced
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) :
     letI := D.toLDTFieldModel
     Point D.toLDTParameters → Fq D.toLDTParameters → Op (S.ιA × S.ιB) := by
@@ -390,55 +377,15 @@ low individual degree test they belong to.  They are retained only because the
 stacked branch `issue-134-simultaneous-polynomial-measurements` refers to them.
 -/
 
-/-- Former name of `ldtCoordinatePointMeasurementA`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias matureCoordinatePointMeasurementA := ldtCoordinatePointMeasurementA
 
-/-- Former name of `ldtCoordinatePointMeasurementB`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias matureCoordinatePointMeasurementB := ldtCoordinatePointMeasurementB
 
-/-- Former name of `ldtPolynomialEvaluationMeasurement`, kept for the stacked
-branch of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationMeasurement := ldtPolynomialEvaluationMeasurement
 
-/-- Former name of `ldtPointAPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePointAPlaced := ldtPointAPlaced
 
-/-- Former name of `ldtPointBPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePointBPlaced := ldtPointBPlaced
 
-/-- Former name of `ldtPolynomialEvaluationLeft`, kept for the stacked branch
-of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationLeft := ldtPolynomialEvaluationLeft
 
-/-- Former name of `ldtPolynomialEvaluationRight`, kept for the stacked branch
-of issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialEvaluationRight := ldtPolynomialEvaluationRight
 
-/-- Former name of `ldtPolynomialLeftPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialLeftPlaced := ldtPolynomialLeftPlaced
 
-/-- Former name of `ldtPolynomialRightPlaced`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias maturePolynomialRightPlaced := ldtPolynomialRightPlaced
 
-/-- Former name of `directLdtPointNonempty`, kept for the stacked branch of
-issue Dengnifer/MIPStarRE-QPBT-bak#134. -/
-@[deprecated (since := "2026-09-05")]
-alias directMaturePointNonempty := directLdtPointNonempty
 
 end
 

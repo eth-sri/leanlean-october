@@ -36,11 +36,13 @@ noncomputable section
 
 /-! ## The coordinate-index event on a single uniform vector -/
 
+variable (L : LdParams)
+
 /-- The coordinate-index event of `def:ith-restricted-line` read on the single
 uniformly sampled low-degree vector that generates the line-point laws.
 Blueprint `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-def ldSeedEvent (L : LdParams) (i : Fin L.m) (z : LdSpace L) : Prop :=
+def ldSeedEvent (i : Fin L.m) (z : LdSpace L) : Prop :=
   chiIndex L (LdSpace.seed z) = i
 
 /-- Decidability of the coordinate-index event. -/
@@ -54,17 +56,16 @@ instance ldSeedEvent_decidablePred (L : LdParams) (i : Fin L.m) :
 low-degree vectors, so the conditioning below is normalized.  Blueprint
 `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-theorem ldSeedEvent_positive (L : LdParams) (i : Fin L.m) :
+theorem ldSeedEvent_positive (i : Fin L.m) :
     0 < ∑ z ∈ (uniformDistribution (LdSpace L)).support.filter
         (ldSeedEvent L i),
       (uniformDistribution (LdSpace L)).weight z := by
-  classical
   refine Finset.sum_pos'
     (fun a _ => (uniformDistribution (LdSpace L)).nonnegative a)
     ⟨(fun _ => seedOfIndexResidue L i ⟨0, L.seedFiberCard_pos⟩),
       Finset.mem_filter.mpr ⟨by simp, ?_⟩, ?_⟩
   · show chiIndex L (seedOfIndexResidue L i ⟨0, L.seedFiberCard_pos⟩) = i
-    exact chiIndex_seedOfIndexResidue L i _
+    simp
   · simp only [uniformDistribution, Distribution.uniformOnFinset_weight,
       Finset.mem_univ, if_true]
     positivity
@@ -80,8 +81,7 @@ theorem lineDesc_axis_congr {L : LdParams}
     (hb : lineRepMap (coordinateDirection (chiIndex L s)) b = b)
     (hb' : lineRepMap (coordinateDirection (chiIndex L s)) b' = b') :
     LineDesc.axis b s hb = LineDesc.axis b' s hb' := by
-  subst h
-  rfl
+  simp_all
 
 /-- Two diagonal-line descriptions with the same seed, the same base and the
 same direction agree: the stored proofs of `def:line-representative`
@@ -96,16 +96,14 @@ theorem lineDesc_diagonal_congr {L : LdParams}
     (h1' : lineRepMap d' b' = b')
     (h2' : ∀ j : Fin L.m, j.val < (chiIndex L s).val → d' j = 0) :
     LineDesc.diagonal b s d h1 h2 = LineDesc.diagonal b' s d' h1' h2' := by
-  subst hb
-  subst hd
-  rfl
+  simp_all
 
 /-- The axis-line decoder is unchanged by the axis conditioning map: the
 canonical representative of `def:line-representative` is idempotent, so
 decoding the conditioned vector and decoding the original vector agree.
 Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem aLineDescOf_ldALineCL (L : LdParams) (z : LdSpace L) :
+theorem aLineDescOf_ldALineCL (z : LdSpace L) :
     aLineDescOf L (ldALineCL L z) = aLineDescOf L z :=
   lineDesc_axis_congr (lineRepMap_apply_self _ _) _ _
 
@@ -114,7 +112,7 @@ the prefix projection and the canonical representative of
 `def:line-representative` are both idempotent.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem dLineDescOf_ldDLineCL (L : LdParams) (z : LdSpace L) :
+theorem dLineDescOf_ldDLineCL (z : LdSpace L) :
     dLineDescOf L (ldDLineCL L z) = dLineDescOf L z := by
   have hdir : prefixProjection (chiIndex L (LdSpace.seed (ldDLineCL L z)))
         (LdSpace.direction (ldDLineCL L z))
@@ -140,12 +138,11 @@ of its seed.  This is the generating description used in the sampling
 procedure of blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrictedALineDist_eq_map_restrict (L : LdParams) (i : Fin L.m) :
+theorem restrictedALineDist_eq_map_restrict (i : Fin L.m) :
     restrictedALineDist L i =
       (Distribution.restrict (uniformDistribution (LdSpace L))
           (ldSeedEvent L i) (ldSeedEvent_positive L i)).map
         (fun z => (aLineDescOf L z, LdSpace.point z)) := by
-  classical
   have hcomp :
       (fun z : LdSpace L =>
           (aLineDescOf L (ldALineCL L z), LdSpace.point (ldPointCL L z))) =
@@ -167,7 +164,7 @@ theorem restrictedALineDist_eq_map_restrict (L : LdParams) (i : Fin L.m) :
       (restrictedLineSeedEvent L i) (ldSeedEvent L i) (fun _ => Iff.rfl)
       hpos (ldSeedEvent_positive L i),
     Distribution.map_map]
-  exact congrArg _ hcomp
+  simp_all
 
 /-- The `i`-th restricted diagonal-line law is the law of the pair consisting
 of the canonical diagonal line through a low-degree vector and its point
@@ -176,12 +173,11 @@ of its seed.  This is the generating description used in the sampling
 procedure of blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrictedDLineDist_eq_map_restrict (L : LdParams) (i : Fin L.m) :
+theorem restrictedDLineDist_eq_map_restrict (i : Fin L.m) :
     restrictedDLineDist L i =
       (Distribution.restrict (uniformDistribution (LdSpace L))
           (ldSeedEvent L i) (ldSeedEvent_positive L i)).map
         (fun z => (dLineDescOf L z, LdSpace.point z)) := by
-  classical
   have hcomp :
       (fun z : LdSpace L =>
           (dLineDescOf L (ldDLineCL L z), LdSpace.point (ldPointCL L z))) =
@@ -203,7 +199,7 @@ theorem restrictedDLineDist_eq_map_restrict (L : LdParams) (i : Fin L.m) :
       (restrictedLineSeedEvent L i) (ldSeedEvent L i) (fun _ => Iff.rfl)
       hpos (ldSeedEvent_positive L i),
     Distribution.map_map]
-  exact congrArg _ hcomp
+  simp_all
 
 end
 

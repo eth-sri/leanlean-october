@@ -44,31 +44,31 @@ noncomputable section
 
 /-! ## The linear form of a tuple of scalars -/
 
+variable {K : Type*} [CommSemiring K]
+
 /-- The linear form `α ↦ ∑_{r < k} c_r α_r` in the combining variables. -/
-def combiningLinearForm {K : Type*} [CommSemiring K] {k : ℕ} (c : Fin k → K) :
+def combiningLinearForm {k : ℕ} (c : Fin k → K) :
     MvPolynomial (Fin k) K :=
   ∑ r : Fin k, MvPolynomial.C (c r) * MvPolynomial.X r
 
-@[simp] theorem combiningLinearForm_eval {K : Type*} [CommSemiring K] {k : ℕ}
+@[simp] theorem combiningLinearForm_eval {k : ℕ}
     (c α : Fin k → K) :
     MvPolynomial.eval α (combiningLinearForm c) = ∑ r : Fin k, c r * α r := by
   simp [combiningLinearForm]
 
 /-- A linear form has total degree at most one. -/
-theorem combiningLinearForm_totalDegree_le_one {K : Type*} [CommSemiring K]
-    [Nontrivial K] {k : ℕ} (c : Fin k → K) :
+theorem combiningLinearForm_totalDegree_le_one [Nontrivial K] {k : ℕ} (c : Fin k → K) :
     (combiningLinearForm c).totalDegree ≤ 1 := by
   refine le_trans (MvPolynomial.totalDegree_finsetSum _ _) (Finset.sup_le fun r _ => ?_)
   refine le_trans (MvPolynomial.totalDegree_mul _ _) ?_
-  simp [MvPolynomial.totalDegree_C, MvPolynomial.totalDegree_X]
+  simp
 
 /-- The coefficient of the variable `α_r` in a linear form is `c r`. -/
-theorem combiningLinearForm_coeff {K : Type*} [CommSemiring K] {k : ℕ}
+theorem combiningLinearForm_coeff {k : ℕ}
     (c : Fin k → K) (r : Fin k) :
     (combiningLinearForm c).coeff (Finsupp.single r 1) = c r := by
-  classical
   rw [combiningLinearForm, MvPolynomial.coeff_sum, Finset.sum_eq_single r]
-  · simp [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X]
+  · simp
   · intro s _ hs
     rw [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, if_neg, mul_zero]
     intro hEq
@@ -77,7 +77,7 @@ theorem combiningLinearForm_coeff {K : Type*} [CommSemiring K] {k : ℕ}
     exact absurd (Finset.mem_univ r) h
 
 /-- A linear form determines its coefficients. -/
-theorem combiningLinearForm_injective {K : Type*} [CommSemiring K] {k : ℕ} :
+theorem combiningLinearForm_injective {k : ℕ} :
     Function.Injective (combiningLinearForm (K := K) (k := k)) := by
   intro c c' h
   funext r
@@ -90,7 +90,7 @@ theorem combiningLinearForm_agreementProbability_le {K : Type*} [Field K] [Finty
     [DecidableEq K] {k : ℕ} (c b : Fin k → K) (hne : c ≠ b) :
     polynomialAgreementProbability k K (combiningLinearForm c) (combiningLinearForm b) ≤
       1 / Fintype.card K := by
-  have hpoly : combiningLinearForm c ≠ combiningLinearForm b := fun h =>
+  have hpoly := fun h =>
     hne (combiningLinearForm_injective h)
   simpa using schwartzZippel_totalDegree (d := 1) hpoly
     (combiningLinearForm_totalDegree_le_one c) (combiningLinearForm_totalDegree_le_one b)
@@ -109,7 +109,6 @@ theorem polynomialAgreement_avg_eq_agreementProbability {m : ℕ} {K : Type*} [F
     avgOver (uniformDistribution (Fin m → K))
         (fun u => if MvPolynomial.eval u g = MvPolynomial.eval u h then (1 : Error) else 0) =
       (polynomialAgreementProbability m K g h : Error) := by
-  classical
   calc
     avgOver (uniformDistribution (Fin m → K))
         (fun u => if MvPolynomial.eval u g = MvPolynomial.eval u h then (1 : Error) else 0)
@@ -138,7 +137,6 @@ theorem directCombiningCollision_avg_le (D : DirectLdParams)
         (fun α => if ∑ r : Fin D.k, c r * α r = ∑ r : Fin D.k, b r * α r then
           (1 : Error) else 0) ≤
       (1 : Error) / D.q := by
-  classical
   have hagree := combiningLinearForm_agreementProbability_le c b hne
   calc
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))

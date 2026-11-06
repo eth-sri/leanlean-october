@@ -54,34 +54,34 @@ theorem place_mul_place_nonneg (S : ProjectiveSetting P ε)
     {X : Op (S.ExpandedLocalSpace p₁.side)}
     {Y : Op (S.ExpandedLocalSpace p₂.side)}
     (hX : 0 ≤ X) (hY : 0 ≤ Y) :
-    0 ≤ S.place p₁ X * S.place p₂ Y := by
-  exact Commute.mul_nonneg (S.place_nonneg p₁ hX) (S.place_nonneg p₂ hY)
+    0 ≤ S.place p₁ X * S.place p₂ Y :=
+  Commute.mul_nonneg (S.place_nonneg p₁ hX) (S.place_nonneg p₂ hY)
     (S.place_comm p₁ p₂ hopp X Y)
 
 end ProjectiveSetting
 
 /-! ## Nonnegativity of the pointwise consistency defect -/
 
+variable {P : AdmissibleParams} {ε : ℝ} {α : Type*} [Fintype α] [DecidableEq α]
+
 /-- The off-diagonal outcome sum of two complete measurements placed on
 opposite registers is a positive operator.  Formalization-only auxiliary for
 blueprint `def:consistency`, paper
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:232-248`. -/
-theorem offDiagonalPlacedProduct_nonneg {P : AdmissibleParams} {ε : ℝ}
-    {α : Type*} [Fintype α] [DecidableEq α] (S : ProjectiveSetting P ε)
+theorem offDiagonalPlacedProduct_nonneg (S : ProjectiveSetting P ε)
     (p₁ p₂ : Placement) (hopp : p₁.IsOpposite p₂)
     (M₁ : MIPStarRE.Quantum.Measurement α (S.ExpandedLocalSpace p₁.side))
     (M₂ : MIPStarRE.Quantum.Measurement α (S.ExpandedLocalSpace p₂.side)) :
     0 ≤ ∑ a : α, ∑ b : α,
       if a = b then 0
       else S.place p₁ (M₁.effect a) * S.place p₂ (M₂.effect b) := by
-  classical
   have hcomplement : ∀ a : α,
       0 ≤ ∑ b : α, if a = b then (0 : Op (S.ExpandedLocalSpace p₂.side))
         else M₂.effect b := by
     intro a
     refine Finset.sum_nonneg fun b _ => ?_
     by_cases h : a = b
-    · rw [if_pos h]
+    · simp_all
     · rw [if_neg h]
       exact M₂.pos b
   have hrow : ∀ a : α,
@@ -94,8 +94,8 @@ theorem offDiagonalPlacedProduct_nonneg {P : AdmissibleParams} {ε : ℝ}
     rw [ProjectiveSetting.place_finsetSum, Finset.mul_sum]
     refine Finset.sum_congr rfl fun b _ => ?_
     by_cases h : a = b
-    · rw [if_pos h, if_pos h, ProjectiveSetting.place_zero, mul_zero]
-    · rw [if_neg h, if_neg h]
+    · simp_all [ProjectiveSetting.place_zero, mul_zero]
+    · simp_all
   rw [Finset.sum_congr rfl fun a _ => hrow a]
   refine Finset.sum_nonneg fun a _ => ?_
   exact ProjectiveSetting.place_mul_place_nonneg S p₁ p₂ hopp (M₁.pos a)
@@ -105,8 +105,7 @@ theorem offDiagonalPlacedProduct_nonneg {P : AdmissibleParams} {ε : ℝ}
 on opposite registers is nonnegative.  This is the positivity hypothesis needed
 by items 1 and 2 of blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1052-1058`. -/
-theorem consistencyDefect_integrand_nonneg {P : AdmissibleParams} {ε : ℝ}
-    {α : Type*} [Fintype α] [DecidableEq α] (S : ProjectiveSetting P ε)
+theorem consistencyDefect_integrand_nonneg (S : ProjectiveSetting P ε)
     (p₁ p₂ : Placement) (hopp : p₁.IsOpposite p₂)
     (M₁ : MIPStarRE.Quantum.Measurement α (S.ExpandedLocalSpace p₁.side))
     (M₂ : MIPStarRE.Quantum.Measurement α (S.ExpandedLocalSpace p₂.side)) :
@@ -117,7 +116,6 @@ theorem consistencyDefect_integrand_nonneg {P : AdmissibleParams} {ε : ℝ}
             ℂ).symm
           ((S.place p₁ (M₁.effect a) * S.place p₂ (M₂.effect b)).mulVec
             S.psiHat))).re := by
-  classical
   have hform : (∑ a : α, ∑ b : α,
         if a = b then 0
         else (inner ℂ S.psiHat
@@ -133,12 +131,10 @@ theorem consistencyDefect_integrand_nonneg {P : AdmissibleParams} {ε : ℝ}
     rw [DistanceCalculus.stateQForm_finset_sum]
     refine Finset.sum_congr rfl fun b _ => ?_
     by_cases h : a = b
-    · rw [if_pos h, if_pos h, DistanceCalculus.stateQForm_zero]
+    · simp_all [DistanceCalculus.stateQForm_zero]
     · rw [if_neg h, if_neg h]
       rfl
-  rw [hform]
-  exact DistanceCalculus.stateQForm_nonneg S.psiHat
-    (offDiagonalPlacedProduct_nonneg S p₁ p₂ hopp M₁ M₂)
+  simp_all [DistanceCalculus.stateQForm_nonneg, offDiagonalPlacedProduct_nonneg]
 
 end
 

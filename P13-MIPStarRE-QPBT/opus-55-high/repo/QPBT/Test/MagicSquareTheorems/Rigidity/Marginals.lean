@@ -1,6 +1,10 @@
 module
 
-public import QPBT.Test.MagicSquareTheorems.Rigidity.Assembly
+public import QPBT.Test.MagicSquareTheorems.Rigidity.JointState
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Constants
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Anticommutation
+public import QPBT.Test.MagicSquareTheorems.Rigidity.Consistency
+public import QPBT.Test.MagicSquareTheorems.Rigidity.TwoQubitSwap
 
 /-!
 # Transporting the first logical pair through the two-qubit controlled swap
@@ -49,7 +53,6 @@ noncomputable section
 
 /-! ## The matrix of the two-qubit controlled swap -/
 
-variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
 /-! ## The shift transport defect -/
 
@@ -57,8 +60,7 @@ variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
 /-! ## Transport on the joint state -/
 
-variable {ιA ιB κA κB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-  [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
+variable {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
 
 /-! ## Magic Square specialization -/
 
@@ -68,10 +70,8 @@ theorem reflectionEffect_heteroKron_left (Z : Op ιA) (b : ZMod 2) :
     heteroKron (reflectionEffect Z b) (1 : Op ιB) =
       reflectionEffect (heteroKron Z (1 : Op ιB)) b := by
   rcases zmod_two_eq_zero_or_one b with rfl | rfl
-  · simp only [reflectionEffect, if_pos]
-    rw [heteroKron_smul_left, heteroKron_add_left, heteroKron_one_one]
-  · simp only [reflectionEffect, if_neg one_ne_zero]
-    rw [heteroKron_smul_left, heteroKron_sub_left, heteroKron_one_one]
+  · simp [reflectionEffect, heteroKron_smul_left, heteroKron_add_left, heteroKron_one_one]
+  simp [reflectionEffect, one_ne_zero, heteroKron_smul_left, heteroKron_sub_left, heteroKron_one_one]
 
 end
 

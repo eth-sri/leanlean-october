@@ -36,7 +36,6 @@ theorem consistencyDefect_measurement_symm {X α I : Type*}
     (mu : Distribution X) (A B : X → Measurement α I) (psi : EuclideanSpace ℂ I) :
     consistencyDefect mu (fun x a => (A x).effect a) (fun x a => (B x).effect a) psi =
       consistencyDefect mu (fun x a => (B x).effect a) (fun x a => (A x).effect a) psi := by
-  unfold consistencyDefect
   apply avgOver_congr
   intro x
   rw [Finset.sum_comm]
@@ -45,7 +44,7 @@ theorem consistencyDefect_measurement_symm {X α I : Type*}
   apply Finset.sum_congr rfl
   intro a _
   by_cases hab : a = b
-  · simp [hab]
+  · simp_all
   · simp only [if_neg hab, if_neg (Ne.symm hab), consistency_term_eq_stateQForm]
     have hstar : ((A x).effect a * (B x).effect b)ᴴ =
         (B x).effect b * (A x).effect a := by
@@ -56,7 +55,6 @@ theorem consistencyDefect_measurement_symm {X α I : Type*}
     exact inner_re_symm (𝕜 := ℂ) _ _
 
 set_option maxRecDepth 4096 in
-set_option maxHeartbeats 800000 in
 -- Both pulled-measurement comparisons expand nested finite averages and matrix products.
 /-- Both evaluated total-Pauli measurements are consistent with the opposite
 pulled-apart measurement at one universal construction scale. This proves the
@@ -118,18 +116,12 @@ theorem evaluated_pauli_tilde_consistency_of_global_pair_witness_explicit :
       (fun u a => (PB u).effect a) S.psiHat ≤
         deltaConstructPaulis (2 + 2 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q := by
-    change consistencyDefect mu
-      (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
-      (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat ≤ _
     exact tilde_m_consistent_point_meas'_of_global_pair_witness_explicit
       P epsilon deltaG he he1 hd S w W
   have hright : consistencyDefect mu (fun u a => (PA u).effect a)
       (fun u a => (T .bob u).effect a) S.psiHat ≤
         deltaConstructPaulis (2 + 2 * Real.sqrt 172)
           epsilon deltaG P.m P.d P.q := by
-    change consistencyDefect mu
-      (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
-      (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat ≤ _
     exact tilde_m_consistent_point_meas_of_global_pair_witness_explicit
       P epsilon deltaG he he1 hd S w W
   have hscalar :

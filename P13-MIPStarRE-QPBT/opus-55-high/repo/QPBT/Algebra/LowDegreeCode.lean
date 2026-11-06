@@ -38,13 +38,15 @@ type in blueprint
 -/
 abbrev Cube (m : ℕ) := Fin m → Bool
 
+variable {K : Type*} [CommRing K] {m : ℕ}
+
 /--
 The representative polynomial which is `1` at `y` on the Boolean cube and
 zero at the other cube points.  This is the indicator polynomial in blueprint
 `def:low-degree-encoding`; paper
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-noncomputable def indicatorPoly {K : Type*} [CommRing K] {m : ℕ} (y : Cube m) :
+noncomputable def indicatorPoly (y : Cube m) :
     MvPolynomial (Fin m) K :=
   ∏ i : Fin m, if y i then X i else (1 - X i)
 
@@ -55,8 +57,7 @@ quotienting by
 functional equality.  Blueprint: `def:low-degree-encoding`; paper origin:
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-noncomputable def lowDegreeEncoding {K : Type*} [CommRing K] {m : ℕ}
-    (a : Cube m → K) : MvPolynomial (Fin m) K :=
+noncomputable def lowDegreeEncoding (a : Cube m → K) : MvPolynomial (Fin m) K :=
   ∑ y : Cube m, a y • indicatorPoly y
 
 /- Evaluation shorthand for the representative polynomial in
@@ -65,8 +66,7 @@ noncomputable def lowDegreeEncoding {K : Type*} [CommRing K] {m : ℕ}
 `def:low-degree-encoding`, paper origin
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-noncomputable def lowDegreeEnc {K : Type*} [CommRing K] {m : ℕ}
-    (a : Cube m → K) (x : Fin m → K) : K :=
+noncomputable def lowDegreeEnc (a : Cube m → K) (x : Fin m → K) : K :=
   eval x (lowDegreeEncoding a)
 
 /--
@@ -74,8 +74,7 @@ The indicator vector `ind_m(x)` of `def:indicator-vector`.
 Blueprint: `def:indicator-vector`; paper origin:
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-noncomputable def indicatorVec {K : Type*} [CommRing K] {m : ℕ}
-    (x : Fin m → K) : Cube m → K :=
+noncomputable def indicatorVec (x : Fin m → K) : Cube m → K :=
   fun y => eval x (indicatorPoly y)
 
 /--
@@ -84,8 +83,7 @@ Equation `eq:low-degree-encoding-definition` and `def:indicator-vector` in the
 blueprint, with source node `def:indicator-vector`; paper origin
 `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-theorem lowDegreeEnc_eq_dotProduct {K : Type*} [CommRing K] {m : ℕ}
-    (a : Cube m → K) (x : Fin m → K) :
+theorem lowDegreeEnc_eq_dotProduct (a : Cube m → K) (x : Fin m → K) :
     lowDegreeEnc a x = dotProduct a (indicatorVec x) := by
   simp [lowDegreeEnc, lowDegreeEncoding, indicatorVec, dotProduct]
 
@@ -96,8 +94,7 @@ true and of `1 - x i` over the remaining ones.  Blueprint
 `def:indicator-vector`;
 paper origin: `references/qpbt-paper/04_preliminaries.tex:832-897`.
 -/
-theorem indicatorVec_apply_eq_prod {K : Type*} [CommRing K] {m : ℕ}
-    (x : Fin m → K) (y : Cube m) :
+theorem indicatorVec_apply_eq_prod (x : Fin m → K) (y : Cube m) :
     indicatorVec x y = ∏ i : Fin m, if y i then x i else 1 - x i := by
   simp [indicatorVec, indicatorPoly, apply_ite]
 
@@ -129,10 +126,7 @@ theorem sum_indicatorVec_mul_indicatorVec {K : Type*} [CommRing K]
   calc ∑ y : Cube m, indicatorVec x y * indicatorVec z y
       = ∑ y : Cube m, ∏ i : Fin m,
           ((if y i then x i else 1 - x i) * (if y i then z i else 1 - z i)) := by
-        refine Finset.sum_congr rfl ?_
-        intro y _
-        rw [indicatorVec_apply_eq_prod x y, indicatorVec_apply_eq_prod z y,
-          ← Finset.prod_mul_distrib]
+        grind [indicatorVec_apply_eq_prod, Finset.prod_mul_distrib]
     _ = ∏ i : Fin m, ∑ b : Bool,
           ((if b then x i else 1 - x i) * (if b then z i else 1 - z i)) := by
         rw [Finset.prod_univ_sum, Fintype.piFinset_univ]

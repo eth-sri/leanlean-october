@@ -60,15 +60,10 @@ the whole domain `0 ≤ ε` of blueprint `thm:pauli`, paper
 theorem deltaQld_mono_epsilon {P : AdmissibleParams} {a b ε ε' : ℝ}
     (ha : 1 ≤ a) (hb : 0 < b) (hε0 : 0 ≤ ε) (hle : ε ≤ ε') :
     deltaQld a b ε P.m P.d P.q ≤ deltaQld a b ε' P.m P.d P.q := by
-  have hmd : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
-    Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have hmd0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := by linarith
   unfold deltaQld
-  simp only [Real.rpow_eq_pow]
-  have hεb : ε ^ b ≤ ε' ^ b := Real.rpow_le_rpow hε0 hle hb.le
-  have hpre : 0 ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
-    mul_nonneg (by linarith) (Real.rpow_nonneg hmd0 a)
-  exact mul_le_mul_of_nonneg_left (by linarith) hpre
+  simp
+  have hεb := Real.rpow_le_rpow hε0 hle hb.le
+  grind [mul_nonneg, Real.rpow_nonneg, mul_le_mul_of_nonneg_left]
 
 end
 

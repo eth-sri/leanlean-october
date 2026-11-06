@@ -34,18 +34,18 @@ variable {Outcome Control Target : Type*}
 variable [Fintype Outcome] [Fintype Control] [DecidableEq Control]
 variable [Fintype Target]
 
+variable (measurement : Measurement Outcome Control)
+
 /-- Multiplication of operator sums controlled by the same projective measurement
 is componentwise. This isolates the orthogonality calculation in the proof of
 `lem:qld-unitary`, before any unitarity of the controlled components is used. -/
 theorem sum_heteroKron_mul_sum_heteroKron
-    (measurement : Measurement Outcome Control)
     (hprojective : MIPStarRE.QPBT.Measurement.IsProjective measurement)
     (leftOperators rightOperators : Outcome → Op Target) :
     (∑ outcome, heteroKron (measurement.effect outcome) (leftOperators outcome)) *
         (∑ outcome, heteroKron (measurement.effect outcome) (rightOperators outcome)) =
       ∑ outcome, heteroKron (measurement.effect outcome)
         (leftOperators outcome * rightOperators outcome) := by
-  classical
   rw [Finset.sum_mul]
   simp_rw [Finset.mul_sum, heteroKron_mul]
   apply Finset.sum_congr rfl
@@ -65,7 +65,6 @@ times its adjoint is the identity. This is the finite controlled-unitary
 calculation at paper `14_analysis_of_the_pauli_basis_test.tex:1687-1700`,
 with arbitrary unitary components in place of the products of Pauli observables. -/
 theorem sum_heteroKron_mul_conjTranspose
-    (measurement : Measurement Outcome Control)
     (hprojective : MIPStarRE.QPBT.Measurement.IsProjective measurement)
     (operators : Outcome → Op Target)
     (hunitary : ∀ outcome, operators outcome * (operators outcome)ᴴ = 1) :
@@ -77,13 +76,12 @@ theorem sum_heteroKron_mul_conjTranspose
   calc
     _ = (∑ outcome, heteroKron (measurement.effect outcome) (operators outcome)) *
         (∑ outcome, heteroKron (measurement.effect outcome) ((operators outcome)ᴴ)) := by
-      simp only [Matrix.conjTranspose_sum, heteroKron, Matrix.kronecker,
-        Matrix.conjTranspose_kronecker, hself]
+      simp_all [Matrix.conjTranspose_sum, heteroKron, Matrix.kronecker, Matrix.conjTranspose_kronecker]
     _ = ∑ outcome, heteroKron (measurement.effect outcome)
         (operators outcome * (operators outcome)ᴴ) :=
       sum_heteroKron_mul_sum_heteroKron measurement hprojective _ _
     _ = ∑ outcome, heteroKron (measurement.effect outcome) (1 : Op Target) := by
-      simp_rw [hunitary]
+      simp_all
     _ = 1 := by
       rw [← DistanceCalculus.heteroKron_finset_sum_left, measurement.sum_eq_one,
         heteroKron_one_one]

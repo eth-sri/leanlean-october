@@ -76,6 +76,8 @@ theorem bind_map_uniformDistribution_congr {α β γ : Type*}
 
 /-! ### The Pauli question sampler as a typed conditionally linear distribution -/
 
+variable (P : AdmissibleParams)
+
 /-- `lem:pauli-question-typed-equality`: the Pauli question sampler equals the
 distribution that `def:typed-cl-distributions` (`ch12_qpbt_games.tex`) produces
 from the family `pauliCL` on the Pauli type graph. Both laws draw an ordered
@@ -86,12 +88,11 @@ assertion is stated separately as `isTypedCondLinearFamily_pauliCL`. Blueprint
 `ch13_qpbt_test.tex`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1115-1120`
 and `references/qpbt-paper/07_types.tex:84-93`. -/
-theorem pauliQuestionDistribution_eq_typedCL (P : AdmissibleParams) :
+theorem pauliQuestionDistribution_eq_typedCL :
     pauliQuestionDistribution P =
       typedCLDistribution pauliEdges (by
         refine ⟨Sym2.mk (.point .X) (.point .X), ?_⟩
         simp [pauliEdges]) (pauliCL P) (pauliCL P) := by
-  classical
   letI : Nonempty PauliEdge := pauliEdge_nonempty
   have himage : (Finset.univ : Finset PauliEdge).image
       (Subtype.val : PauliEdge → PauliType × PauliType) =
@@ -127,8 +128,7 @@ theorem pauliQuestionDistribution_eq_typedCL (P : AdmissibleParams) :
 in `lem:pauli-completeness`. It follows from the identification of the sampler
 with the typed conditionally linear distribution of a single family, whose edge
 law is a law on unordered pairs and is therefore symmetric. -/
-theorem pauliQuestionDistribution_symm (P : AdmissibleParams)
-    (x y : PauliQuestion P) :
+theorem pauliQuestionDistribution_symm (x y : PauliQuestion P) :
     (pauliQuestionDistribution P).weight (x, y) =
       (pauliQuestionDistribution P).weight (y, x) := by
   rw [pauliQuestionDistribution_eq_typedCL P]
@@ -136,8 +136,7 @@ theorem pauliQuestionDistribution_symm (P : AdmissibleParams)
 
 /-- Symmetry of the Pauli decision predicate in the symmetric game appearing in
 `lem:pauli-completeness`. -/
-theorem pauliWinPredicate_symm (P : AdmissibleParams)
-    (x y : PauliQuestion P) (a b : PauliAnswer P) :
+theorem pauliWinPredicate_symm (x y : PauliQuestion P) (a b : PauliAnswer P) :
     pauliWinPredicate P x y a b = pauliWinPredicate P y x b a := by
   obtain ⟨tA, xA⟩ := x
   obtain ⟨tB, xB⟩ := y
@@ -179,7 +178,7 @@ measurement family of `MIPStarRE.QPBT.Test.Completeness.HonestStrategy.Measureme
 on the maximally entangled state of the Pauli register tensored with the Magic
 Square qubit.  Blueprint `lem:pauli-completeness`, paper
 `08_classical_and_quantum_low_degree_tests.tex:1237-1360`. -/
-noncomputable def honestStrategy (P : AdmissibleParams) :
+noncomputable def honestStrategy :
     SymmetricStrategy (pauliBasisTestSymm P) where
   ι := HonestIndex P
   ψ := eprState (HonestIndex P)
@@ -188,12 +187,12 @@ noncomputable def honestStrategy (P : AdmissibleParams) :
   M := fun q => honestMeasurement P q.1 q.2
 
 /-- Every measurement of the honest strategy is projective. -/
-theorem honestStrategy_projective (P : AdmissibleParams) (x : PauliQuestion P) :
+theorem honestStrategy_projective (x : PauliQuestion P) :
     MIPStarRE.QPBT.Measurement.IsProjective ((honestStrategy P).M x) :=
   honestMeasurement_projective P x.1 x.2
 
 /-- The honest strategy is consistent on its maximally entangled state. -/
-theorem honestStrategy_isConsistent (P : AdmissibleParams) :
+theorem honestStrategy_isConsistent :
     (honestStrategy P).IsConsistent :=
   fun x => honestMeasurement_isConsistentOn P x.1 x.2
 
@@ -201,7 +200,7 @@ theorem honestStrategy_isConsistent (P : AdmissibleParams) :
 strategy: every measurement is projective, the family is consistent on the
 maximally entangled state, and the effects commute on every question pair of
 positive weight. -/
-theorem honestStrategy_isSPCC (P : AdmissibleParams) :
+theorem honestStrategy_isSPCC :
     (honestStrategy P).IsSPCC :=
   ⟨honestStrategy_projective P, honestStrategy_isConsistent P,
     honestMeasurement_commuting P⟩
@@ -211,12 +210,10 @@ honest measurement family assigns the zero operator product to every rejected
 answer pair.  This is the operator form of perfect acceptance in
 `lem:pauli-completeness`, paper
 `08_classical_and_quantum_low_degree_tests.tex:1383-1421`. -/
-theorem honestMeasurement_rejected_mul (P : AdmissibleParams)
-    (x y : PauliQuestion P) (hxy : 0 < (pauliQuestionDistribution P).weight (x, y))
+theorem honestMeasurement_rejected_mul (x y : PauliQuestion P) (hxy : 0 < (pauliQuestionDistribution P).weight (x, y))
     (a b : PauliAnswer P) (hrej : pauliWinPredicate P x y a b = false) :
     (honestMeasurement P x.1 x.2).effect a *
       (honestMeasurement P y.1 y.2).effect b = 0 := by
-  classical
   obtain ⟨z, hedge, hx, hy⟩ := pauliQuestionDistribution_pos_incidence P x y hxy
   obtain ⟨t₁, x₁⟩ := x
   obtain ⟨t₂, x₂⟩ := y
@@ -247,10 +244,9 @@ theorem honestMeasurement_rejected_mul (P : AdmissibleParams)
 /-- `lem:pauli-completeness`: every admissible Pauli basis test has a
 value-one SPCC strategy. Blueprint `lem:pauli-completeness`, paper
 `08_classical_and_quantum_low_degree_tests.tex:1229-1421`. -/
-theorem exists_spcc_value_one (P : AdmissibleParams) :
+theorem exists_spcc_value_one :
     ∃ S : SymmetricStrategy (pauliBasisTestSymm P),
       S.IsSPCC ∧ S.toStrategy.value = 1 := by
-  classical
   refine ⟨honestStrategy P, honestStrategy_isSPCC P, ?_⟩
   have hborn : ∀ x y : PauliQuestion P,
       0 < (pauliQuestionDistribution P).weight (x, y) →
@@ -291,7 +287,7 @@ theorem exists_spcc_value_one (P : AdmissibleParams) :
       · simp [hab]
       · have hab' := Bool.eq_false_of_not_eq_true hab
         rw [hborn x y hxy a b hab']
-        simp [hab']
+        simp
     rw [hcong]
     exact outcomeWeight_sum_eq_one (honestStrategy P).toStrategy x y
   change avgOver (pauliQuestionDistribution P) (fun xy =>

@@ -38,13 +38,14 @@ namespace WinImplications
 
 /-! ## Reindexing the identity and the strategy state -/
 
+variable {ι κ : Type*}
+
 /-- Reindexing the identity operator gives the identity operator.
 Formalization-only support for the interchanged conclusions of
 `lem:qld-win-implications`, blueprint `ch14_qpbt_observables.tex:701-703`. -/
-theorem reindexOp_one {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
+theorem reindexOp_one [DecidableEq ι] [DecidableEq κ]
     (e : ι ≃ κ) : reindexOp e (1 : Op κ) = (1 : Op ι) := by
-  ext i j
-  simp [reindexOp, Matrix.one_apply, e.injective.eq_iff]
+  simp [reindexOp]
 
 /-- The interchanged strategy state is again a unit vector.  This is needed to
 chain consistency relations on the interchanged side of
@@ -67,12 +68,12 @@ theorem heteroKron_left_right_comm {ιA ιB : Type*} [Fintype ιA]
     [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] (A : Op ιA) (B : Op ιB) :
     heteroKron A (1 : Op ιB) * heteroKron (1 : Op ιA) B =
       heteroKron (1 : Op ιA) B * heteroKron A 1 := by
-  rw [heteroKron_mul, heteroKron_mul, mul_one, one_mul, one_mul, mul_one]
+  simp [heteroKron_mul, mul_one, one_mul]
 
 /-- Reindexing an operator along an equivalence is multiplicative.
 Formalization-only support for the interchanged conclusions of
 `lem:qld-win-implications`, blueprint `ch14_qpbt_observables.tex:701-703`. -/
-theorem reindexOp_mul {ι κ : Type*} [Fintype ι] [Fintype κ]
+theorem reindexOp_mul [Fintype ι] [Fintype κ]
     (e : ι ≃ κ) (M N : Op κ) :
     reindexOp e (M * N) = reindexOp e M * reindexOp e N := by
   ext i j
@@ -83,29 +84,20 @@ theorem reindexOp_mul {ι κ : Type*} [Fintype ι] [Fintype κ]
 state and operator. Formalization-only support for the interchanged conclusions
 of blueprint `lem:qld-win-implications`; see
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:227`. -/
-theorem stateQForm_reindexState {ι κ : Type*} [Fintype ι] [DecidableEq ι]
+theorem stateQForm_reindexState [Fintype ι] [DecidableEq ι]
     [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (T : Op κ)
     (ψ : EuclideanSpace ℂ ι) :
     DistanceCalculus.stateQForm (reindexState e ψ) T =
       DistanceCalculus.stateQForm ψ (reindexOp e T) := by
   have hstate (k : κ) : (reindexState e ψ).ofLp k = ψ.ofLp (e.symm k) := rfl
-  have hstate_star (k : κ) : star (reindexState e ψ).ofLp k =
-      star (ψ.ofLp (e.symm k)) := congrArg star (hstate k)
+  have hstate_star (k : κ) := congrArg star (hstate k)
   have hop (i j : ι) : reindexOp e T i j = T (e i) (e j) := rfl
   unfold DistanceCalculus.stateQForm applyOperatorToState
-  rw [EuclideanSpace.inner_eq_star_dotProduct,
-    EuclideanSpace.inner_eq_star_dotProduct]
-  change (Complex.re (∑ k : κ,
-      (∑ l : κ, T k l * (reindexState e ψ).ofLp l) *
-        star (reindexState e ψ).ofLp k)) =
-    Complex.re (∑ i : ι, (∑ l : ι, reindexOp e T i l * ψ.ofLp l) *
-      star (ψ.ofLp i))
-  simp_rw [hop, hstate, hstate_star]
   apply congrArg Complex.re
   have hinner (i : ι) : (∑ l : ι, T (e i) (e l) * ψ.ofLp l) =
       ∑ l : κ, T (e i) l * ψ.ofLp (e.symm l) := by
     rw [← e.sum_comp (fun l : κ => T (e i) l * ψ.ofLp (e.symm l))]
-    exact Finset.sum_congr rfl (fun l _ => by rw [e.symm_apply_apply])
+    exact Finset.sum_congr rfl (fun l _ => by simp)
   calc
     (∑ k : κ, (∑ l : κ, T k l * ψ.ofLp (e.symm l)) *
         star (ψ.ofLp (e.symm k))) =
@@ -114,9 +106,7 @@ theorem stateQForm_reindexState {ι κ : Type*} [Fintype ι] [DecidableEq ι]
       (e.sum_comp (fun k : κ => (∑ l : κ, T k l * ψ.ofLp (e.symm l)) *
         star (ψ.ofLp (e.symm k)))).symm
     _ = ∑ i : ι, (∑ l : ι, T (e i) (e l) * ψ.ofLp l) * star (ψ.ofLp i) := by
-      refine Finset.sum_congr rfl ?_
-      intro i _
-      rw [hinner i, e.symm_apply_apply]
+      simp_all
 
 /-- The consistency defect of two oppositely placed families is unchanged by
 interchanging the tensor factors of both the families and the state.  This is
@@ -133,8 +123,6 @@ theorem consistencyDefect_swappedState {X α ιA ιB : Type*}
         (reindexState (Equiv.prodComm ιA ιB) ψ) =
       consistencyDefect μ (fun x a => heteroKron (M x a) 1)
         (fun x a => heteroKron 1 (N x a)) ψ := by
-  classical
-  unfold consistencyDefect
   refine avgOver_congr _ _ _ ?_
   intro x
   rw [Finset.sum_comm]
@@ -143,14 +131,9 @@ theorem consistencyDefect_swappedState {X α ιA ιB : Type*}
   refine Finset.sum_congr rfl ?_
   intro b _
   by_cases hab : b = a
-  · simp [hab]
+  · simp_all
   · have hba : a ≠ b := fun h => hab h.symm
-    simp only [if_neg hab, if_neg hba]
-    rw [DistanceCalculus.consistency_term_eq_stateQForm,
-      DistanceCalculus.consistency_term_eq_stateQForm,
-      stateQForm_reindexState, reindexOp_mul,
-      reindexOp_prodComm_heteroKron, reindexOp_prodComm_heteroKron,
-      heteroKron_left_right_comm]
+    grind [DistanceCalculus.consistency_term_eq_stateQForm, stateQForm_reindexState, reindexOp_mul, reindexOp_prodComm_heteroKron, heteroKron_left_right_comm]
 
 /-! ## Transport of the phase-signed operator distance -/
 
@@ -158,7 +141,7 @@ theorem consistencyDefect_swappedState {X α ιA ιB : Type*}
 Formalization-only support for the second assertion of
 `lem:qld-win-implications-obs`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem reindexOp_smul {ι κ : Type*} (e : ι ≃ κ) (c : ℂ) (M : Op κ) :
+theorem reindexOp_smul (e : ι ≃ κ) (c : ℂ) (M : Op κ) :
     reindexOp e (c • M) = c • reindexOp e M := rfl
 
 /-- The phase-signed operator distance of two left-placed families is
@@ -177,15 +160,9 @@ theorem opDistSq_smul_swappedState {X ιA ιB : Type*}
         (reindexState (Equiv.prodComm ιA ιB) ψ) =
       opDistSq μ (fun x => heteroKron (1 : Op ιA) (M x))
         (fun x => c x • heteroKron (1 : Op ιA) (N x)) ψ := by
-  unfold opDistSq opFamilyDistSq
   refine avgOver_congr _ _ _ ?_
   intro x
-  refine Finset.sum_congr rfl ?_
-  intro _ _
-  rw [norm_applyOperatorToState_reindexState]
-  congr 2
-  rw [reindexOp_sub, reindexOp_smul, reindexOp_prodComm_heteroKron,
-    reindexOp_prodComm_heteroKron]
+  simp [norm_applyOperatorToState_reindexState, reindexOp_sub, reindexOp_smul, reindexOp_prodComm_heteroKron]
 
 end WinImplications
 

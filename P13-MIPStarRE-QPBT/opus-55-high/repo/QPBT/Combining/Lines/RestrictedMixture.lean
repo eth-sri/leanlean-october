@@ -32,18 +32,16 @@ noncomputable section
 
 /-! ## The uniform coordinate-index law of the retained seed -/
 
+variable (L : LdParams)
+
 /-- The coordinate index of the retained seed of a uniformly sampled low-degree
 vector is uniform.  Formalization-only auxiliary for blueprint
 `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-theorem uniformDistribution_map_chiIndex_ldSeed (L : LdParams) :
+theorem uniformDistribution_map_chiIndex_ldSeed :
     (uniformDistribution (LdSpace L)).map
         (fun z : LdSpace L => chiIndex L z.seed) =
       uniformDistribution (Fin L.m) := by
-  classical
-  haveI : Nonempty (ScalarQ L) := ⟨0⟩
-  haveI : Nonempty (Fin L.m) :=
-    Fin.pos_iff_nonempty.mp (lt_of_lt_of_le Nat.zero_lt_one L.hm)
   rw [← Distribution.map_map (uniformDistribution (LdSpace L))
       (fun z : LdSpace L => LdSpace.seed z) (chiIndex L),
     uniformDistribution_map_ldSeed, uniformDistribution_map_chiIndex]
@@ -54,16 +52,13 @@ theorem uniformDistribution_map_chiIndex_ldSeed (L : LdParams) :
 shared scalar coordinate carries mass `1 / m`.  This is the equal-weight
 statement behind blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
-theorem clDistribution_seedEvent_mass (L : LdParams) (i : Fin L.m)
+theorem clDistribution_seedEvent_mass (i : Fin L.m)
     (CL : LdSpace L → LdSpace L)
     (hseed : ∀ z : LdSpace L, (CL z).seed = z.seed) :
     ∑ sample ∈
         (clDistribution CL (ldPointCL L)).support.filter
           (restrictedLineSeedEvent L i),
       (clDistribution CL (ldPointCL L)).weight sample = 1 / (L.m : ℝ) := by
-  classical
-  haveI : Nonempty (Fin L.m) :=
-    Fin.pos_iff_nonempty.mp (lt_of_lt_of_le Nat.zero_lt_one L.hm)
   rw [Distribution.sum_filter_weight_eq_avgOver]
   unfold clDistribution
   rw [Distribution.avgOver_map]
@@ -74,12 +69,10 @@ theorem clDistribution_seedEvent_mass (L : LdParams) (i : Fin L.m)
     by_cases h : chiIndex L z.seed = i
     · rw [if_pos h, if_pos]
       change chiIndex L (LdSpace.seed (CL z)) = i
-      rw [hseed z]
-      exact h
+      simp_all
     · rw [if_neg h, if_neg]
       change ¬ chiIndex L (LdSpace.seed (CL z)) = i
-      rw [hseed z]
-      exact h
+      simp_all
   rw [avgOver_congr _ _ _ hpoint,
     show (fun z : LdSpace L => if chiIndex L z.seed = i then (1 : ℝ) else 0) =
         fun z : LdSpace L => (fun j : Fin L.m => if j = i then (1 : ℝ) else 0)
@@ -97,13 +90,10 @@ theorem clDistribution_seedEvent_mass (L : LdParams) (i : Fin L.m)
 coordinate-index restrictions.  This is the axis half of
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
-theorem aLinePointDist_eq_bind_restricted (L : LdParams) :
+theorem aLinePointDist_eq_bind_restricted :
     aLinePointDist L =
       Distribution.bind (uniformDistribution (Fin L.m))
         (restrictedALineDist L) := by
-  classical
-  haveI : Nonempty (Fin L.m) :=
-    Fin.pos_iff_nonempty.mp (lt_of_lt_of_le Nat.zero_lt_one L.hm)
   have hmix := Distribution.bind_uniform_restrict_eq
     (clDistribution (ldALineCL L) (ldPointCL L))
     (restrictedLineSeedEvent L) (restrictedALineSeedEvent_positive L)
@@ -118,13 +108,10 @@ theorem aLinePointDist_eq_bind_restricted (L : LdParams) :
 restrictions.  This is the diagonal half of
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
-theorem dLinePointDist_eq_bind_restricted (L : LdParams) :
+theorem dLinePointDist_eq_bind_restricted :
     dLinePointDist L =
       Distribution.bind (uniformDistribution (Fin L.m))
         (restrictedDLineDist L) := by
-  classical
-  haveI : Nonempty (Fin L.m) :=
-    Fin.pos_iff_nonempty.mp (lt_of_lt_of_le Nat.zero_lt_one L.hm)
   have hmix := Distribution.bind_uniform_restrict_eq
     (clDistribution (ldDLineCL L) (ldPointCL L))
     (restrictedLineSeedEvent L) (restrictedDLineSeedEvent_positive L)

@@ -1,7 +1,12 @@
 module
 
 public import MIPStarRE.LDT.Preliminaries.Polynomials
-public import QPBT.Games.Sandwich
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
+public import QPBT.Games.Sandwich.Pasting.Assembly
+public import QPBT.Games.Sandwich.Pasting.SchmidtMirror
+public import QPBT.Games.Sandwich.Support
+public import MIPStarRE.LDT.MakingMeasurementsProjective.NaimarkCore
+public import QPBT.Games.ErrorFunctions
 public import QPBT.Test.MagicSquareTheorems.Rigidity.GroundSlice
 
 /-!
@@ -59,11 +64,10 @@ def diagonalIndicator (X Z : Quantum.Measurement F ι) (α β a : F) : Op ι :=
 the field eliminate every off-diagonal term of the ordered Gram operator.
 This is the exact local algebra behind `eq:qld-g-prime`; no commutation of
 the X and Z measurements is assumed. -/
-private theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι)
+theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι)
     (hX : Measurement.IsProjective X) (α β a : F) (hβ : β ≠ 0) :
     (orderedIndicator X Z α β a)ᴴ * orderedIndicator X Z α β a =
       diagonalIndicator X Z α β a := by
-  classical
   unfold orderedIndicator diagonalIndicator
   rw [Matrix.conjTranspose_sum, Finset.sum_mul]
   refine Finset.sum_congr rfl fun bc _ => ?_
@@ -95,7 +99,7 @@ private theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι
 
 /-- The squared state norm of the ordered indicator equals its diagonal
 sandwich quadratic form when the second coefficient is nonzero. -/
-private theorem orderedIndicator_norm_sq_of_ne_zero (X Z : Quantum.Measurement F ι)
+theorem orderedIndicator_norm_sq_of_ne_zero (X Z : Quantum.Measurement F ι)
     (hX : Measurement.IsProjective X) (α β a : F) (hβ : β ≠ 0)
     (ψ : EuclideanSpace ℂ ι) :
     ‖applyOperatorToState (orderedIndicator X Z α β a) ψ‖ ^ 2 =
@@ -106,7 +110,7 @@ private theorem orderedIndicator_norm_sq_of_ne_zero (X Z : Quantum.Measurement F
 
 /-- The diagonal indicator is a positive contraction, since it selects
 effects from the complete sandwich POVM. -/
-private theorem diagonalIndicator_bounds (X Z : Quantum.Measurement F ι)
+theorem diagonalIndicator_bounds (X Z : Quantum.Measurement F ι)
     (hZ : Measurement.IsProjective Z) (α β a : F) :
     0 ≤ diagonalIndicator X Z α β a ∧ diagonalIndicator X Z α β a ≤ 1 := by
   obtain ⟨hpos, hsum⟩ := pastedMeasurement_isMeasurement X Z hZ
@@ -128,13 +132,13 @@ private theorem diagonalIndicator_bounds (X Z : Quantum.Measurement F ι)
 
 /-- At the exceptional coefficient zero, completeness of Z leaves a
 coarse-grained X projection. This includes zero first coefficient. -/
-private theorem orderedIndicator_zero (X Z : Quantum.Measurement F ι) (α a : F) :
+theorem orderedIndicator_zero (X Z : Quantum.Measurement F ι) (α a : F) :
     orderedIndicator X Z α 0 a = (X.postprocess (fun b => α * b)).effect a := by
   unfold orderedIndicator
   rw [Fintype.sum_prod_type, Quantum.Measurement.postprocess_effect, Finset.sum_filter]
   refine Finset.sum_congr rfl fun b _ => ?_
   by_cases h : α * b = a
-  · simp only [zero_mul, add_zero, h, if_true]
+  · simp
     rw [← Finset.mul_sum, Z.sum_eq_one, mul_one]
   · simp [h]
 
@@ -190,13 +194,12 @@ theorem sum_projective_state_norm_sq {Γ : Type*} [Fintype Γ]
 coefficient outside those two monomials. Applied over the ring of base-point
 polynomials, this chooses one coefficient independently of both measurement
 outcomes in the argument following `eq:qld-g-prime`. -/
-private theorem exists_nonzero_nonlinear_coeff {R : Type*} [CommRing R]
+theorem exists_nonzero_nonlinear_coeff {R : Type*} [CommRing R]
     (p : MvPolynomial (Fin 2) R)
     (hp : ¬ ∃ u v : R, p = MvPolynomial.C u * MvPolynomial.X 0 +
       MvPolynomial.C v * MvPolynomial.X 1) :
     ∃ e : Fin 2 →₀ ℕ, e ≠ Finsupp.single 0 1 ∧ e ≠ Finsupp.single 1 1 ∧
       p.coeff e ≠ 0 := by
-  classical
   have h01 : (Finsupp.single (0 : Fin 2) 1 : Fin 2 →₀ ℕ) ≠ Finsupp.single 1 1 := by
     intro h
     simpa using congrArg (fun e : Fin 2 →₀ ℕ => e 0) h
@@ -206,10 +209,10 @@ private theorem exists_nonzero_nonlinear_coeff {R : Type*} [CommRing R]
   ext e
   by_cases h0 : e = Finsupp.single 0 1
   · subst e
-    simp [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, Ne.symm h01]
+    simp
   · by_cases h1 : e = Finsupp.single 1 1
     · subst e
-      simp [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, h01]
+      simp
     · simp [MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, Ne.symm h0, Ne.symm h1,
         h e h0 h1]
 
@@ -217,7 +220,7 @@ omit [Fintype F] [DecidableEq F] in
 /-- A nonzero specialized coefficient outside the scalar-linear monomials
 certifies nonzero difference from every `alpha * b + beta * c` simultaneously.
 This is the common good-base-point criterion needed before sandwich weighting. -/
-private theorem specialization_ne_linear_of_coeff {n : ℕ}
+theorem specialization_ne_linear_of_coeff {n : ℕ}
     (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F)) (e : Fin 2 →₀ ℕ)
     (he0 : e ≠ Finsupp.single 0 1) (he1 : e ≠ Finsupp.single 1 1)
     (u : Fin n → F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) (b c : F) :
@@ -247,7 +250,7 @@ theorem avg_eval_eq_le {n D : ℕ} (p r : MvPolynomial (Fin n) F)
 /-- On every base point where the selected coefficient remains nonzero,
 Schwartz--Zippel bounds agreement with each linear answer polynomial. The
 bound is derived from coefficient polynomials, not assumed as a collision law. -/
-private theorem avg_specialization_eq_linear_le_of_coeff {n : ℕ}
+theorem avg_specialization_eq_linear_le_of_coeff {n : ℕ}
     (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F)) (e : Fin 2 →₀ ℕ)
     (he0 : e ≠ Finsupp.single 0 1) (he1 : e ≠ Finsupp.single 1 1)
     (u : Fin n → F) (hu : MvPolynomial.eval u (p.coeff e) ≠ 0) (b c : F) :
@@ -273,7 +276,7 @@ A single nonzero nonlinear coefficient supplies a common exceptional set for
 all outcomes. Neither a uniform-collision premise nor an outcome-count loss
 occurs. The nested polynomial ring is the coefficient expansion used at paper
 lines 1311--1316; this theorem does not assert the later block-separation step. -/
-private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
+theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
     (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
     (hp : ¬ ∃ r s : MvPolynomial (Fin n) F,
       p = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C s * MvPolynomial.X 1)
@@ -285,7 +288,6 @@ private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
           (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) p))))) ≤
       ((p.support.sup fun e => (p.coeff e).totalDegree) + max 1 p.totalDegree : ℕ) /
         (Fintype.card F : ℝ) * ‖ψ‖ ^ 2 := by
-  classical
   obtain ⟨e, he0, he1, he⟩ := exists_nonzero_nonlinear_coeff p hp
   let D : ℕ := p.support.sup fun e => (p.coeff e).totalDegree
   let E : ℝ := (max 1 p.totalDegree : ℕ) / (Fintype.card F : ℝ)
@@ -346,7 +348,7 @@ private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
 /-- Adding the genuinely uniform zero-coefficient contribution gives the
 ordered-product estimate for a polynomial outside the scalar-linear image.
 The right side retains the squared norm of the unnormalized state. -/
-private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
+theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
     (p : MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
     (hp : ¬ ∃ r s : MvPolynomial (Fin n) F,
       p = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C s * MvPolynomial.X 1)
@@ -367,7 +369,7 @@ private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
     change avgOver (uniformDistribution (Fin 2 → F))
       (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
     rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
-    simp only [Equiv.apply_symm_apply]
+    simp
     rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
     simp [avgOver_uniform_eq_inv_card_mul_sum]
   calc
@@ -392,27 +394,6 @@ private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
         (Fintype.card F : ℝ) * ‖ψ‖ ^ 2 + (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 :=
       add_le_add (avg_diagonalIndicator_le_of_not_linear p hp X Z hZ ψ) le_rfl
     _ = _ := by push_cast; ring
-
-/-- The ordered polynomial estimate sums over any specified set of polynomial
-labels outside the scalar-linear image. Each label is weighted by its actual
-state mass; the estimate never replaces a sum by the number of labels. -/
-private theorem avg_sum_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ} {Γ : Type*}
-    (s : Finset Γ) (p : Γ → MvPolynomial (Fin 2) (MvPolynomial (Fin n) F))
-    (hp : ∀ g ∈ s, ¬ ∃ r t : MvPolynomial (Fin n) F,
-      p g = MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1)
-    (X Z : (Fin n → F) → Quantum.Measurement F ι)
-    (hX : ∀ u, Measurement.IsProjective (X u))
-    (hZ : ∀ u, Measurement.IsProjective (Z u)) (ψ : Γ → EuclideanSpace ℂ ι) :
-    avgOver (uniformDistribution (Fin n → F)) (fun u =>
-      avgOver (uniformDistribution (Fin 2 → F)) (fun v => ∑ g ∈ s,
-        ‖applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
-          (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u) (p g)))) (ψ g)‖ ^ 2)) ≤
-      ∑ g ∈ s,
-        (((p g).support.sup fun e => ((p g).coeff e).totalDegree) +
-          max 1 (p g).totalDegree + 1 : ℕ) / (Fintype.card F : ℝ) * ‖ψ g‖ ^ 2 := by
-  simp_rw [avgOver_finset_sum]
-  exact Finset.sum_le_sum fun g hg =>
-    avg_orderedIndicator_norm_sq_le_of_not_linear (p g) (hp g hg) X Z hX hZ (ψ g)
 
 omit [DecidableEq ι] in
 /-- The squared-norm triangle inequality retains each outcome's state vector.
@@ -459,10 +440,9 @@ theorem nonlinear_mass_le_ordered_error {n : ℕ} {Γ : Type*}
   have havg := avgOver_mono (uniformDistribution (Fin n → F)) _ _ fun u =>
     avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ (hpoint u)
   simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at havg
-  have hnorm := avg_sum_orderedIndicator_norm_sq_le_of_not_linear s p hp X Z hX hZ ψ
-  change ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤ 2 * avgOver (uniformDistribution (Fin n → F))
-    (fun u => avgOver (uniformDistribution (Fin 2 → F))
-      (fun v => ∑ g ∈ s, ‖ψ g - A u v g‖ ^ 2)) + _
+  have hnorm := Finset.sum_le_sum fun g (hg : g ∈ s) =>
+    avg_orderedIndicator_norm_sq_le_of_not_linear (p g) (hp g hg) X Z hX hZ (ψ g)
+  simp_rw [← avgOver_finset_sum] at hnorm
   change avgOver (uniformDistribution (Fin n → F))
     (fun u => avgOver (uniformDistribution (Fin 2 → F))
       (fun v => ∑ g ∈ s, ‖A u v g‖ ^ 2)) ≤ _ at hnorm

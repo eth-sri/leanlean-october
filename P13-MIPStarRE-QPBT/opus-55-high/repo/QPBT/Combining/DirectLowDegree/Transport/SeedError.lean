@@ -18,10 +18,11 @@ error function of blueprint `lem:ld-soundness`.
 
 namespace MIPStarRE.QPBT
 
+variable (D : DirectLdParams) {a b ε : ℝ}
+
 /-- The square-root loss from seed compression is absorbed by enlarging the
 universal prefactor and halving the error exponent in `lem:ld-soundness`. -/
-theorem ten_sqrt_deltaLd_le (D : DirectLdParams) {a b ε : ℝ}
-    (ha : 1 ≤ a) (hε : 0 ≤ ε) :
+theorem ten_sqrt_deltaLd_le (ha : 1 ≤ a) (hε : 0 ≤ ε) :
     10 * Real.sqrt (deltaLd a b ε D.q D.m D.d D.k) ≤
       deltaLd (10 * a) (b / 2) ε D.q D.m D.d D.k := by
   let N : ℝ := (D.d * D.m * D.k : ℕ)
@@ -51,15 +52,12 @@ theorem ten_sqrt_deltaLd_le (D : DirectLdParams) {a b ε : ℝ}
           Real.sqrt ((2 : ℝ) ^ (-(b * (D.m * D.d : ℕ)))) :=
         MIPStarRE.LDT.sqrt_add3_le_add3_sqrt hx hy hz
       _ = _ := by
-        rw [hs ε b hε, hs (D.q : ℝ) (-b) (by positivity),
-          hs 2 (-(b * (D.m * D.d : ℕ))) (by norm_num)]
-        congr 2 <;> congr 1 <;> ring
+        grind
   have hmono : a * N ^ a ≤ a * N ^ (10 * a) := by
     apply mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hN (by linarith)) (by linarith)
   unfold deltaLd
   simp only [Real.rpow_eq_pow]
-  change 10 * Real.sqrt (a * N ^ a * _) ≤ 10 * a * N ^ (10 * a) * _
   rw [Real.sqrt_mul hP0]
   have hbound := mul_le_mul (hsP.trans hmono) hsum (Real.sqrt_nonneg _)
     (by positivity : 0 ≤ a * N ^ (10 * a))
@@ -67,8 +65,7 @@ theorem ten_sqrt_deltaLd_le (D : DirectLdParams) {a b ε : ℝ}
 
 /-- For errors at most one, `deltaLd` dominates the rejection probability and
 the polynomial collision probability needed after seed compression. -/
-theorem error_and_collision_le_deltaLd (D : DirectLdParams) {a b ε : ℝ}
-    (ha : 1 ≤ a) (hb : b ≤ 1) (hε : 0 < ε) (hε1 : ε ≤ 1) :
+theorem error_and_collision_le_deltaLd (ha : 1 ≤ a) (hb : b ≤ 1) (hε : 0 < ε) (hε1 : ε ≤ 1) :
     ε ≤ deltaLd a b ε D.q D.m D.d D.k ∧
       (D.m : ℝ) * D.d / D.q ≤ deltaLd a b ε D.q D.m D.d D.k := by
   let N : ℝ := (D.d * D.m * D.k : ℕ)
@@ -97,13 +94,11 @@ theorem error_and_collision_le_deltaLd (D : DirectLdParams) {a b ε : ℝ}
     Real.rpow_nonneg (by norm_num) _
   unfold deltaLd
   simp only [Real.rpow_eq_pow]
-  change ε ≤ a * N ^ a * _ ∧ (D.m : ℝ) * D.d / D.q ≤ a * N ^ a * _
   constructor
-  · nlinarith [mul_nonneg (sub_nonneg.mpr (hN.trans hP)) hx,
-      mul_nonneg (by linarith : 0 ≤ a * N ^ a) (add_nonneg hy hz)]
+  · nlinarith
   · have hprod := mul_le_mul (hmd.trans hP) hq (by positivity)
       (by linarith : 0 ≤ a * N ^ a)
     rw [div_eq_mul_inv]
-    nlinarith [mul_nonneg (by linarith : 0 ≤ a * N ^ a) (add_nonneg hx hz)]
+    nlinarith
 
 end MIPStarRE.QPBT

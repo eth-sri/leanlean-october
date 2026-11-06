@@ -85,8 +85,7 @@ consolidation is issue Dengnifer/MIPStarRE-QPBT-bak#204. -/
 theorem applyOperatorToState_finset_sum {β ι : Type*} [Fintype ι] [DecidableEq ι]
     (s : Finset β) (M : β → Op ι) (ψ : EuclideanSpace ℂ ι) :
     applyOperatorToState (∑ b ∈ s, M b) ψ = ∑ b ∈ s, applyOperatorToState (M b) ψ := by
-  unfold applyOperatorToState
-  simp only [map_sum, LinearMap.sum_apply]
+  simp [applyOperatorToState, map_sum, LinearMap.sum_apply]
 
 end
 

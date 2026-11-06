@@ -28,7 +28,7 @@ noncomputable section
 
 /-- Translate the point coordinate of a direct sample along a direction that
 depends only on its stored index and direction coordinates. -/
-private def directLdSpacePointTranslateEquiv (D : DirectLdParams)
+def directLdSpacePointTranslateEquiv (D : DirectLdParams)
     (directionOf : Fin D.m → (Fin D.m → DirectScalarQ D) →
       (Fin D.m → DirectScalarQ D))
     (t : DirectScalarQ D) : DirectLdSpace D ≃ DirectLdSpace D where
@@ -41,25 +41,21 @@ private def directLdSpacePointTranslateEquiv (D : DirectLdParams)
   left_inv sample := by
     cases sample with
     | mk point index direction =>
-        simp [add_assoc]
+        simp
   right_inv sample := by
     cases sample with
     | mk point index direction =>
-        simp [add_assoc]
+        simp
 
-@[simp] private theorem directLdSpacePointTranslateEquiv_apply
-    (D : DirectLdParams)
-    (directionOf : Fin D.m → (Fin D.m → DirectScalarQ D) →
-      (Fin D.m → DirectScalarQ D))
+variable (D : DirectLdParams) (directionOf : Fin D.m → (Fin D.m → DirectScalarQ D) → (Fin D.m → DirectScalarQ D))
+
+@[simp] theorem directLdSpacePointTranslateEquiv_apply
     (t : DirectScalarQ D) (sample : DirectLdSpace D) :
     directLdSpacePointTranslateEquiv D directionOf t sample =
       ⟨sample.point + t • directionOf sample.index sample.direction,
         sample.index, sample.direction⟩ := rfl
 
-@[simp] private theorem directLdSpacePointTranslateEquiv_symm_apply
-    (D : DirectLdParams)
-    (directionOf : Fin D.m → (Fin D.m → DirectScalarQ D) →
-      (Fin D.m → DirectScalarQ D))
+@[simp] theorem directLdSpacePointTranslateEquiv_symm_apply
     (t : DirectScalarQ D) (sample : DirectLdSpace D) :
     (directLdSpacePointTranslateEquiv D directionOf t).symm sample =
       ⟨sample.point + (-t) • directionOf sample.index sample.direction,
@@ -67,10 +63,7 @@ private def directLdSpacePointTranslateEquiv (D : DirectLdParams)
 
 /-- Uniformly resampling a canonical affine line by a scalar parameter
 recovers its original joint line-point sample. -/
-private theorem avgOver_directLinePoint_resample
-    (D : DirectLdParams)
-    (directionOf : Fin D.m → (Fin D.m → DirectScalarQ D) →
-      (Fin D.m → DirectScalarQ D))
+theorem avgOver_directLinePoint_resample
     (lineOf : DirectLdSpace D → DirectLineDesc D)
     (hbase : ∀ sample,
       (lineOf sample).base =
@@ -119,8 +112,6 @@ private theorem avgOver_directLinePoint_resample
         have hadd : (Equiv.addRight (-r)).symm t = t + r := by
           simp
         rw [hadd]
-        change lineRepMap direction sample.point + (t + r) • direction =
-          sample.point + t • direction
         rw [add_comm t r, add_smul, ← add_assoc,
           ← directLineRepParameter_spec direction sample.point]
   have hsample : ∀ t : DirectScalarQ D,
@@ -152,7 +143,7 @@ private theorem avgOver_directLinePoint_resample
             lineOf sample
           exact hline sample (-t)
         · rw [directLdSpacePointTranslateEquiv_symm_apply]
-          simp [add_assoc]
+          simp
   calc
     avgOver (uniformDistribution (DirectLdSpace D)) (fun sample =>
         avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>

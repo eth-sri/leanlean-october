@@ -31,10 +31,9 @@ noncomputable section
 
 variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 
-private theorem exists_nonconstant_coeff {R : Type*} [CommSemiring R] {n : ℕ}
+theorem exists_nonconstant_coeff {R : Type*} [CommSemiring R] {n : ℕ}
     (p : MvPolynomial (Fin n) R) (hp : ¬ ∃ r, p = MvPolynomial.C r) :
     ∃ e : Fin n →₀ ℕ, e ≠ 0 ∧ p.coeff e ≠ 0 := by
-  classical
   by_contra! h
   apply hp
   refine ⟨p.coeff 0, ?_⟩
@@ -43,15 +42,15 @@ private theorem exists_nonconstant_coeff {R : Type*} [CommSemiring R] {n : ℕ}
   · simp [he]
   · simp [MvPolynomial.coeff_C, Ne.symm he, h e he]
 
+variable {n k C D : ℕ} (p : MvPolynomial (Fin n) (MvPolynomial (Fin k) F))
+
 /-- A single coefficient defines the exceptional slices for every field
 outcome. Outside its zero set, every fiber has probability at most `D/q`;
 the exceptional set itself has probability at most `C/q`. Both degree
 conditions concern the displayed polynomial, not an assumed collision law.
 This is the common-set argument following `eq:qld-g-2`, supporting
 blueprint `lem:qld-4-7`. -/
-theorem exists_common_exceptional_coefficient {n k C D : ℕ}
-    (p : MvPolynomial (Fin n) (MvPolynomial (Fin k) F))
-    (hp : ¬ ∃ r, p = MvPolynomial.C r)
+theorem exists_common_exceptional_coefficient (hp : ¬ ∃ r, p = MvPolynomial.C r)
     (hcoeff : ∀ e, (p.coeff e).totalDegree ≤ C) (hdegree : p.totalDegree ≤ D) :
     ∃ e : Fin n →₀ ℕ, e ≠ 0 ∧ p.coeff e ≠ 0 ∧
       avgOver (uniformDistribution (Fin k → F))
@@ -78,9 +77,7 @@ theorem exists_common_exceptional_coefficient {n k C D : ℕ}
 slices avoids an outcome-cardinality factor. The weights may depend on `z`
 and their sum is the same mass `M` at every `z`. This is the weighted fiber
 calculation in `eq:qld-g-2`, supporting blueprint `lem:qld-4-7`. -/
-theorem avg_weighted_fiber_le {n k C D : ℕ}
-    (p : MvPolynomial (Fin n) (MvPolynomial (Fin k) F))
-    (hp : ¬ ∃ r, p = MvPolynomial.C r)
+theorem avg_weighted_fiber_le (hp : ¬ ∃ r, p = MvPolynomial.C r)
     (hcoeff : ∀ e, (p.coeff e).totalDegree ≤ C) (hdegree : p.totalDegree ≤ D)
     (w : (Fin k → F) → F → ℝ) (M : ℝ)
     (hw : ∀ z b, 0 ≤ w z b) (hsum : ∀ z, ∑ b, w z b = M) :
@@ -88,7 +85,6 @@ theorem avg_weighted_fiber_le {n k C D : ℕ}
       avgOver (uniformDistribution (Fin n → F))
         (fun x => if MvPolynomial.eval x (MvPolynomial.map (MvPolynomial.eval z) p) = b
           then 1 else 0) * w z b) ≤ ((C + D : ℕ) : ℝ) / Fintype.card F * M := by
-  classical
   obtain ⟨e, _, _, hbad, hgood⟩ :=
     exists_common_exceptional_coefficient p hp hcoeff hdegree
   have hM : 0 ≤ M := by
@@ -128,14 +124,15 @@ theorem avg_weighted_fiber_le {n k C D : ℕ}
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-private theorem avg_diagonalIndicator_linear_le
-    (X Z : Quantum.Measurement F ι) (hZ : Measurement.IsProjective Z)
+variable (X Z : Quantum.Measurement F ι)
+
+theorem avg_diagonalIndicator_linear_le
+    (hZ : Measurement.IsProjective Z)
     (r t : F) (ψ : EuclideanSpace ℂ ι) :
     avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
       stateQForm ψ (diagonalIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t))) ≤
       (Fintype.card F : ℝ)⁻¹ * ‖ψ‖ ^ 2 +
         stateQForm ψ (Z.effect t * X.effect r * Z.effect t) := by
-  classical
   let w (bc : F × F) : ℝ := stateQForm ψ
     (Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2)
   have hw (bc : F × F) : 0 ≤ w bc :=
@@ -171,8 +168,8 @@ private theorem avg_diagonalIndicator_linear_le
       rw [← Finset.mul_sum, hsum]
       simp [w]
 
-private theorem avg_orderedIndicator_linear_le
-    (X Z : Quantum.Measurement F ι) (hX : Measurement.IsProjective X)
+theorem avg_orderedIndicator_linear_le
+    (hX : Measurement.IsProjective X)
     (hZ : Measurement.IsProjective Z) (r t : F) (ψ : EuclideanSpace ℂ ι) :
     avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
       ‖applyOperatorToState (orderedIndicator X Z (v 0) (v 1)
@@ -184,7 +181,7 @@ private theorem avg_orderedIndicator_linear_le
     change avgOver (uniformDistribution (Fin 2 → F))
       (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
     rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
-    simp only [Equiv.apply_symm_apply]
+    simp
     rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
     simp [avgOver_uniform_eq_inv_card_mul_sum]
   have hdrop : stateQForm ψ (Z.effect t * X.effect r * Z.effect t) ≤
@@ -207,9 +204,7 @@ class interchange `X,Z` and the two blocks. The vector is arbitrary and
 need not be normalized. This proves the local norm bound behind
 `eq:qld-g-prime-xpt-bound` and its reversed-order counterpart, supporting
 blueprint `lem:qld-4-7`. -/
-theorem avg_orderedIndicator_norm_sq_le_of_nonconstant {n k C D : ℕ}
-    (p : MvPolynomial (Fin n) (MvPolynomial (Fin k) F))
-    (hp : ¬ ∃ r, p = MvPolynomial.C r)
+theorem avg_orderedIndicator_norm_sq_le_of_nonconstant (hp : ¬ ∃ r, p = MvPolynomial.C r)
     (hcoeff : ∀ e, (p.coeff e).totalDegree ≤ C) (hdegree : p.totalDegree ≤ D)
     (r : (Fin n → F) → (Fin k → F) → F)
     (X : (Fin n → F) → Quantum.Measurement F ι)
@@ -223,7 +218,6 @@ theorem avg_orderedIndicator_norm_sq_le_of_nonconstant {n k C D : ℕ}
             (v 0 * r x z + v 1 *
               MvPolynomial.eval x (MvPolynomial.map (MvPolynomial.eval z) p))) ψ‖ ^ 2))) ≤
       ((C + D + 2 : ℕ) : ℝ) / Fintype.card F * ‖ψ‖ ^ 2 := by
-  classical
   let w (z : Fin k → F) (b : F) := stateQForm ψ ((Z z).effect b)
   have hsum (z : Fin k → F) : ∑ b, w z b = ‖ψ‖ ^ 2 := by
     rw [← stateQForm_finset_sum, (Z z).sum_eq_one, stateQForm_one]

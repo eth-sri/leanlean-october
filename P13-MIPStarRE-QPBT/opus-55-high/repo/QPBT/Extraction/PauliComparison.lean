@@ -98,7 +98,7 @@ theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
   have hoverlap := pauli_overlap_transfer A B theta ideal htheta hideal
   simp only [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
     placed_product_stateQForm_eq] at hdist
-  exact hdist.trans (by dsimp [B] at hoverlap ⊢; linarith)
+  exact hdist.trans (by linarith)
 
 /-- At construction error at most one, a universal extraction coefficient of
 at least eighteen absorbs both the proved state error and the Pauli comparison

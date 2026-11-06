@@ -81,12 +81,14 @@ structure Strategy (G : Game) where
 attribute [instance] Strategy.ιAFintype Strategy.ιBFintype
   Strategy.ιADecidableEq Strategy.ιBDecidableEq
 
+variable {ιA ιB : Type*}
+
 /-- The rectangular tensor placement used in strategy probabilities.  This is
 the finite-matrix realization of blueprint
 `def:tensor-product-strategy`; paper origin
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:26-38`.
 -/
-def heteroKron {ιA ιB : Type*} (A : Op ιA) (B : Op ιB) : Op (ιA × ιB) :=
+def heteroKron (A : Op ιA) (B : Op ιB) : Op (ιA × ιB) :=
   Matrix.kronecker A B
 
 /-! ### Algebra of the tensor placement
@@ -100,25 +102,27 @@ with the definition rather than in either development. -/
 (blueprint `def:tensor-product-strategy`, paper
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:26-38`): the tensor
 placement is multiplicative, `(A ⊗ C) * (B ⊗ D) = (A * B) ⊗ (C * D)`. -/
-theorem heteroKron_mul {ιA ιB : Type*} [Fintype ιA] [Fintype ιB]
+theorem heteroKron_mul [Fintype ιA] [Fintype ιB]
     (A B : Op ιA) (C D : Op ιB) :
     heteroKron A C * heteroKron B D = heteroKron (A * B) (C * D) := by
-  unfold heteroKron Matrix.kronecker
-  exact (Matrix.mul_kronecker_mul A B C D).symm
+  simp [heteroKron, Matrix.kronecker, Matrix.mul_kronecker_mul, symm]
 
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`
 (blueprint `def:tensor-product-strategy`): the tensor
 placement of the two identity operators is the identity operator on the product
 space. -/
-theorem heteroKron_one_one {ιA ιB : Type*} [DecidableEq ιA] [DecidableEq ιB] :
-    heteroKron (1 : Op ιA) (1 : Op ιB) = 1 := by
-  unfold heteroKron Matrix.kronecker
-  exact Matrix.one_kronecker_one
+theorem heteroKron_one_one [DecidableEq ιA] [DecidableEq ιB] :
+    heteroKron (1 : Op ιA) (1 : Op ιB) = 1 :=
+  Matrix.one_kronecker_one
+
+theorem heteroKron_conjTranspose (A : Op ιA) (B : Op ιB) :
+    (heteroKron A B)ᴴ = heteroKron Aᴴ Bᴴ :=
+  Matrix.conjTranspose_kronecker A B
 
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`
 (blueprint `def:tensor-product-strategy`): tensor placement
 respects negation in the left factor. -/
-theorem heteroKron_neg_left {ιA ιB : Type*} (A : Op ιA) (C : Op ιB) :
+theorem heteroKron_neg_left (A : Op ιA) (C : Op ιB) :
     heteroKron (-A) C = -heteroKron A C := by
   ext p q
   simp [heteroKron, Matrix.kronecker]
@@ -126,7 +130,7 @@ theorem heteroKron_neg_left {ιA ιB : Type*} (A : Op ιA) (C : Op ιB) :
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`
 (blueprint `def:tensor-product-strategy`): tensor placement
 respects negation in the right factor. -/
-theorem heteroKron_neg_right {ιA ιB : Type*} (A : Op ιA) (C : Op ιB) :
+theorem heteroKron_neg_right (A : Op ιA) (C : Op ιB) :
     heteroKron A (-C) = -heteroKron A C := by
   ext p q
   simp [heteroKron, Matrix.kronecker]
@@ -134,7 +138,7 @@ theorem heteroKron_neg_right {ιA ιB : Type*} (A : Op ιA) (C : Op ιB) :
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`
 (blueprint `def:tensor-product-strategy`): tensor placement
 is additive in the left factor. -/
-theorem heteroKron_add_left {ιA ιB : Type*} (A B : Op ιA) (C : Op ιB) :
+theorem heteroKron_add_left (A B : Op ιA) (C : Op ιB) :
     heteroKron (A + B) C = heteroKron A C + heteroKron B C := by
   ext p q
   simp [heteroKron, Matrix.kronecker, add_mul]
@@ -142,10 +146,12 @@ theorem heteroKron_add_left {ιA ιB : Type*} (A B : Op ιA) (C : Op ιB) :
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`
 (blueprint `def:tensor-product-strategy`): tensor placement
 is additive in the right factor. -/
-theorem heteroKron_add_right {ιA ιB : Type*} (A : Op ιA) (B C : Op ιB) :
+theorem heteroKron_add_right (A : Op ιA) (B C : Op ιB) :
     heteroKron A (B + C) = heteroKron A B + heteroKron A C := by
   ext p q
   simp [heteroKron, Matrix.kronecker, mul_add]
+
+variable {m n p q : Type*}
 
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`: the
 tensor placement of possibly rectangular matrices respects differences in the
@@ -153,7 +159,7 @@ left factor.  This is the general form of `heteroKron_sub_left` below, needed
 where the left factor is the matrix of an isometry between distinct index
 types (blueprint
 `thm:ms-rigidity`). -/
-theorem kroneckerMap_sub_left {m n p q : Type*} (A B : Matrix m n ℂ) (C : Matrix p q ℂ) :
+theorem kroneckerMap_sub_left (A B : Matrix m n ℂ) (C : Matrix p q ℂ) :
     Matrix.kroneckerMap (· * ·) (A - B) C =
       Matrix.kroneckerMap (· * ·) A C - Matrix.kroneckerMap (· * ·) B C := by
   ext p' q'
@@ -162,7 +168,7 @@ theorem kroneckerMap_sub_left {m n p q : Type*} (A B : Matrix m n ℂ) (C : Matr
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`: the
 tensor placement of possibly rectangular matrices respects differences in the
 right factor.  This is the general form of `heteroKron_sub_right` below. -/
-theorem kroneckerMap_sub_right {m n p q : Type*} (A : Matrix m n ℂ) (B C : Matrix p q ℂ) :
+theorem kroneckerMap_sub_right (A : Matrix m n ℂ) (B C : Matrix p q ℂ) :
     Matrix.kroneckerMap (· * ·) A (B - C) =
       Matrix.kroneckerMap (· * ·) A B - Matrix.kroneckerMap (· * ·) A C := by
   ext p' q'
@@ -171,14 +177,14 @@ theorem kroneckerMap_sub_right {m n p q : Type*} (A : Matrix m n ℂ) (B C : Mat
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`
 (blueprint `def:tensor-product-strategy`): tensor placement
 respects differences in the left factor. -/
-theorem heteroKron_sub_left {ιA ιB : Type*} (A B : Op ιA) (C : Op ιB) :
+theorem heteroKron_sub_left (A B : Op ιA) (C : Op ιB) :
     heteroKron (A - B) C = heteroKron A C - heteroKron B C :=
   kroneckerMap_sub_left A B C
 
 /-- Formalization-only auxiliary lemma for `def:tensor-product-strategy`
 (blueprint `def:tensor-product-strategy`): tensor placement
 respects differences in the right factor. -/
-theorem heteroKron_sub_right {ιA ιB : Type*} (A : Op ιA) (B C : Op ιB) :
+theorem heteroKron_sub_right (A : Op ιA) (B C : Op ιB) :
     heteroKron A (B - C) = heteroKron A B - heteroKron A C :=
   kroneckerMap_sub_right A B C
 
@@ -233,12 +239,12 @@ noncomputable def bobEventWeight {G : Game} (S : Strategy G)
     (y : G.QuestionB) (E : G.AnswerB → Prop) [DecidablePred E] : ℝ :=
   ∑ b : G.AnswerB, if E b then bobOutcomeWeight S y b else 0
 
+variable {G : Game} (S : Strategy G) (x : G.QuestionA) (y : G.QuestionB)
+
 /-- Every answer-pair Born weight is nonnegative.  This is formalization-only
 support for the probability expression in `def:tensor-product-value`. -/
-theorem outcomeWeight_nonneg {G : Game} (S : Strategy G)
-    (x : G.QuestionA) (y : G.QuestionB) (a : G.AnswerA) (b : G.AnswerB) :
+theorem outcomeWeight_nonneg (a : G.AnswerA) (b : G.AnswerB) :
     0 ≤ outcomeWeight S x y a b := by
-  unfold outcomeWeight applyOperatorToState heteroKron
   exact
     (Matrix.isPositive_toEuclideanLin_iff.mpr
       (Matrix.nonneg_iff_posSemidef.mp
@@ -247,141 +253,68 @@ theorem outcomeWeight_nonneg {G : Game} (S : Strategy G)
 /-- The Born weights of all answer pairs at fixed questions sum to one.  This
 is formalization-only support for the POVM normalization implicit in
 `def:tensor-product-value`. -/
-theorem outcomeWeight_sum_eq_one {G : Game} (S : Strategy G)
-    (x : G.QuestionA) (y : G.QuestionB) :
+theorem outcomeWeight_sum_eq_one :
     ∑ a : G.AnswerA, ∑ b : G.AnswerB, outcomeWeight S x y a b = 1 := by
-  have hsum :
-      (∑ a : G.AnswerA, ∑ b : G.AnswerB,
-        heteroKron ((S.A x).effect a) ((S.B y).effect b)) =
-          (1 : Op (S.ιA × S.ιB)) := by
+  have hsum : (∑ a : G.AnswerA, ∑ b : G.AnswerB,
+      heteroKron ((S.A x).effect a) ((S.B y).effect b)) = 1 := by
+    rw [← heteroKron_one_one, ← (S.A x).sum_eq_one, ← (S.B y).sum_eq_one]
     ext i j
-    simp only [Matrix.sum_apply, heteroKron, Matrix.kronecker,
-      Matrix.kroneckerMap_apply]
-    simp_rw [← Finset.mul_sum, ← Finset.sum_mul]
-    rw [show (∑ a : G.AnswerA, (S.A x).effect a i.1 j.1) =
-        (1 : Op S.ιA) i.1 j.1 by
-      simpa only [Matrix.sum_apply] using congrFun (congrFun (S.A x).sum_eq_one i.1) j.1]
-    rw [show (∑ b : G.AnswerB, (S.B y).effect b i.2 j.2) =
-        (1 : Op S.ιB) i.2 j.2 by
-      simpa only [Matrix.sum_apply] using congrFun (congrFun (S.B y).sum_eq_one i.2) j.2]
-    exact congrFun (congrFun
-      (Matrix.one_kronecker_one (m := S.ιA) (n := S.ιB) (α := ℂ)) i) j
-  calc
-    ∑ a : G.AnswerA, ∑ b : G.AnswerB, outcomeWeight S x y a b =
-        (inner ℂ S.ψ
-          (applyOperatorToState
-            (∑ a : G.AnswerA, ∑ b : G.AnswerB,
-              heteroKron ((S.A x).effect a) ((S.B y).effect b)) S.ψ)).re := by
-          simp [outcomeWeight, applyOperatorToState]
-    _ = (inner ℂ S.ψ (applyOperatorToState 1 S.ψ)).re := by rw [hsum]
-    _ = 1 := by
-      simp [applyOperatorToState, S.ψ_norm]
+    simp [heteroKron, Matrix.kronecker, Matrix.sum_apply, Finset.mul_sum, Finset.sum_mul]
+    exact Finset.sum_comm
+  simpa [outcomeWeight, applyOperatorToState, S.ψ_norm] using
+    congrArg (fun M => (inner ℂ S.ψ (applyOperatorToState M S.ψ)).re) hsum
 
 /-- Summing over Bob's answers gives Alice's marginal Born weight. -/
-theorem sum_outcome_weight_right {G : Game} (S : Strategy G)
-    (x : G.QuestionA) (y : G.QuestionB) (a : G.AnswerA) :
+theorem sum_outcome_weight_right (a : G.AnswerA) :
     (∑ b : G.AnswerB, outcomeWeight S x y a b) = aliceOutcomeWeight S x a := by
-  have hsum :
-      (∑ b : G.AnswerB, heteroKron ((S.A x).effect a) ((S.B y).effect b)) =
-        heteroKron ((S.A x).effect a) 1 := by
+  have hsum : (∑ b : G.AnswerB, heteroKron ((S.A x).effect a) ((S.B y).effect b)) =
+      heteroKron ((S.A x).effect a) 1 := by
+    rw [← (S.B y).sum_eq_one]
     ext i j
-    simp only [Matrix.sum_apply, heteroKron, Matrix.kronecker,
-      Matrix.kroneckerMap_apply]
-    rw [← Finset.mul_sum]
-    rw [show (∑ b : G.AnswerB, (S.B y).effect b i.2 j.2) =
-        (1 : Op S.ιB) i.2 j.2 by
-      simpa only [Matrix.sum_apply] using congrFun (congrFun (S.B y).sum_eq_one i.2) j.2]
-  calc
-    (∑ b : G.AnswerB, outcomeWeight S x y a b) =
-        (inner ℂ S.ψ
-          (applyOperatorToState
-            (∑ b : G.AnswerB,
-              heteroKron ((S.A x).effect a) ((S.B y).effect b)) S.ψ)).re := by
-          simp [outcomeWeight, applyOperatorToState]
-    _ = (inner ℂ S.ψ
-        (applyOperatorToState (heteroKron ((S.A x).effect a) 1) S.ψ)).re := by
-      rw [hsum]
-    _ = aliceOutcomeWeight S x a := rfl
+    simp [heteroKron, Matrix.kronecker, Matrix.sum_apply, Finset.mul_sum]
+  simpa [outcomeWeight, aliceOutcomeWeight, applyOperatorToState] using
+    congrArg (fun M => (inner ℂ S.ψ (applyOperatorToState M S.ψ)).re) hsum
 
 /-- Summing over Alice's answers gives Bob's marginal Born weight. -/
-theorem sum_outcome_weight_left {G : Game} (S : Strategy G)
-    (x : G.QuestionA) (y : G.QuestionB) (b : G.AnswerB) :
+theorem sum_outcome_weight_left (b : G.AnswerB) :
     (∑ a : G.AnswerA, outcomeWeight S x y a b) = bobOutcomeWeight S y b := by
-  have hsum :
-      (∑ a : G.AnswerA, heteroKron ((S.A x).effect a) ((S.B y).effect b)) =
-        heteroKron 1 ((S.B y).effect b) := by
+  have hsum : (∑ a : G.AnswerA, heteroKron ((S.A x).effect a) ((S.B y).effect b)) =
+      heteroKron 1 ((S.B y).effect b) := by
+    rw [← (S.A x).sum_eq_one]
     ext i j
-    simp only [Matrix.sum_apply, heteroKron, Matrix.kronecker,
-      Matrix.kroneckerMap_apply]
-    rw [← Finset.sum_mul]
-    rw [show (∑ a : G.AnswerA, (S.A x).effect a i.1 j.1) =
-        (1 : Op S.ιA) i.1 j.1 by
-      simpa only [Matrix.sum_apply] using congrFun (congrFun (S.A x).sum_eq_one i.1) j.1]
-  calc
-    (∑ a : G.AnswerA, outcomeWeight S x y a b) =
-        (inner ℂ S.ψ
-          (applyOperatorToState
-            (∑ a : G.AnswerA,
-              heteroKron ((S.A x).effect a) ((S.B y).effect b)) S.ψ)).re := by
-          simp [outcomeWeight, applyOperatorToState]
-    _ = (inner ℂ S.ψ
-        (applyOperatorToState (heteroKron 1 ((S.B y).effect b)) S.ψ)).re := by
-      rw [hsum]
-    _ = bobOutcomeWeight S y b := rfl
+    simp [heteroKron, Matrix.kronecker, Matrix.sum_apply, Finset.sum_mul]
+  simpa [outcomeWeight, bobOutcomeWeight, applyOperatorToState] using
+    congrArg (fun M => (inner ℂ S.ψ (applyOperatorToState M S.ψ)).re) hsum
 
 /-- Every answer event has nonnegative Born weight. -/
-theorem outcome_event_weight_nonneg {G : Game} (S : Strategy G)
-    (x : G.QuestionA) (y : G.QuestionB)
-    (E : G.AnswerA → G.AnswerB → Prop) [DecidableRel E] :
+theorem outcome_event_weight_nonneg (E : G.AnswerA → G.AnswerB → Prop) [DecidableRel E] :
     0 ≤ outcomeEventWeight S x y E := by
-  unfold outcomeEventWeight
-  exact Finset.sum_nonneg fun a _ => Finset.sum_nonneg fun b _ => by
-    split_ifs
-    · exact outcomeWeight_nonneg S x y a b
-    · exact le_rfl
+  grind [outcomeEventWeight, Finset.sum_nonneg, outcomeWeight_nonneg]
 
 /-- An answer event depending only on Alice has its Alice marginal weight. -/
-theorem outcome_event_weight_left_eq {G : Game} (S : Strategy G)
-    (x : G.QuestionA) (y : G.QuestionB)
-    (E : G.AnswerA → Prop) [DecidablePred E] :
+theorem outcome_event_weight_left_eq (E : G.AnswerA → Prop) [DecidablePred E] :
     outcomeEventWeight S x y (fun a _ => E a) = aliceEventWeight S x E := by
-  unfold outcomeEventWeight aliceEventWeight
   apply Finset.sum_congr rfl
-  intro a _
-  by_cases ha : E a
-  · simp [ha, sum_outcome_weight_right S x y a]
-  · simp [ha]
+  simp [sum_outcome_weight_right]
 
 /-- An answer event depending only on Bob has its Bob marginal weight. -/
-theorem outcome_event_weight_right_eq {G : Game} (S : Strategy G)
-    (x : G.QuestionA) (y : G.QuestionB)
-    (E : G.AnswerB → Prop) [DecidablePred E] :
+theorem outcome_event_weight_right_eq (E : G.AnswerB → Prop) [DecidablePred E] :
     outcomeEventWeight S x y (fun _ b => E b) = bobEventWeight S y E := by
   unfold outcomeEventWeight bobEventWeight
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro b _
-  by_cases hb : E b
-  · simp [hb, sum_outcome_weight_left S x y b]
-  · simp [hb]
+  simp [sum_outcome_weight_left]
 
 /-- Inclusion of answer events implies the corresponding Born-weight inequality. -/
-theorem outcome_event_weight_mono {G : Game} (S : Strategy G)
-    (x : G.QuestionA) (y : G.QuestionB)
-    (E F : G.AnswerA → G.AnswerB → Prop) [DecidableRel E] [DecidableRel F]
+theorem outcome_event_weight_mono (E F : G.AnswerA → G.AnswerB → Prop) [DecidableRel E] [DecidableRel F]
     (hEF : ∀ a b, E a b → F a b) :
     outcomeEventWeight S x y E ≤ outcomeEventWeight S x y F := by
-  unfold outcomeEventWeight
   apply Finset.sum_le_sum
   intro a _
   apply Finset.sum_le_sum
   intro b _
   by_cases hE : E a b
-  · simp [hE, hEF a b hE]
-  · simp only [hE, ↓reduceIte]
-    split_ifs
-    · exact outcomeWeight_nonneg S x y a b
-    · exact le_rfl
+  · simp_all
+  · grind [outcomeWeight_nonneg]
 
 /--
 The tensor-product value, expressed as the distribution average of the Born
@@ -402,7 +335,6 @@ theorem rejectionMass_eq_one_sub_value {G : Game} (S : Strategy G) :
         if G.decide questions.1 questions.2 a b then 0
         else outcomeWeight S questions.1 questions.2 a b) =
       1 - S.value := by
-  classical
   rw [show avgOver G.μ (fun questions =>
       ∑ a, ∑ b,
         if G.decide questions.1 questions.2 a b then 0
@@ -421,26 +353,12 @@ theorem rejectionMass_eq_one_sub_value {G : Game} (S : Strategy G) :
             (outcomeWeight S questions.1 questions.2 a b -
               if G.decide questions.1 questions.2 a b then
                 outcomeWeight S questions.1 questions.2 a b else 0) := by
-        apply Finset.sum_congr rfl
-        intro a ha
-        apply Finset.sum_congr rfl
-        intro b hb
-        split <;> simp
+        grind
       _ = (∑ a, ∑ b, outcomeWeight S questions.1 questions.2 a b) -
           ∑ a, ∑ b,
             if G.decide questions.1 questions.2 a b then
               outcomeWeight S questions.1 questions.2 a b else 0 := by
-        rw [show (∑ a, ∑ b,
-            (outcomeWeight S questions.1 questions.2 a b -
-              if G.decide questions.1 questions.2 a b then
-                outcomeWeight S questions.1 questions.2 a b else 0)) =
-            ∑ a, ((∑ b, outcomeWeight S questions.1 questions.2 a b) -
-              ∑ b, if G.decide questions.1 questions.2 a b then
-                outcomeWeight S questions.1 questions.2 a b else 0) by
-          apply Finset.sum_congr rfl
-          intro a ha
-          rw [Finset.sum_sub_distrib]]
-        rw [Finset.sum_sub_distrib]
+        simp
       _ = 1 - ∑ a, ∑ b,
           if G.decide questions.1 questions.2 a b then
             outcomeWeight S questions.1 questions.2 a b else 0 := by
@@ -459,10 +377,7 @@ theorem Strategy.value_le_one {G : Game} (S : Strategy G) : S.value ≤ 1 := by
           else outcomeWeight S questions.1 questions.2 a b) :=
     avgOver_nonneg _ _ fun questions =>
       Finset.sum_nonneg fun a _ => Finset.sum_nonneg fun b _ => by
-        split_ifs
-        · exact le_rfl
-        · exact outcomeWeight_nonneg S _ _ _ _
-  rw [rejectionMass_eq_one_sub_value S] at hnn
-  linarith
+        grind [outcomeWeight_nonneg]
+  simp_all [rejectionMass_eq_one_sub_value]
 
 end MIPStarRE.QPBT

@@ -65,21 +65,10 @@ theorem mass_outside_support_le_point_defect
               (heteroKron (meas.effect outcome) (reference.effect other)) := by
       apply Finset.sum_congr rfl
       intro outcome houtcome
-      have hzero := hsupport outcome (Finset.mem_filter.mp houtcome).2
       rw [← reference.sum_eq_one, heteroKron_finset_sum_right, stateQForm_finset_sum]
       apply Finset.sum_congr rfl
-      intro other _
-      by_cases heq : outcome = other
-      · subst other
-        simp [hzero, heteroKron, stateQForm, applyOperatorToState]
-      · rw [if_neg heq]
+      simp_all [heteroKron, stateQForm, applyOperatorToState]
     _ ≤ _ := by
-      apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
-      intro outcome _ _
-      apply Finset.sum_nonneg
-      intro other _
-      split_ifs
-      · exact le_rfl
-      · exact hnonneg outcome other
+      grind [Finset.sum_le_sum_of_subset_of_nonneg, Finset.filter_subset, Finset.sum_nonneg, le_rfl]
 
 end MIPStarRE.QPBT

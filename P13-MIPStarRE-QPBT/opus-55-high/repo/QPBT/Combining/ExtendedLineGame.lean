@@ -44,19 +44,16 @@ theorem directEvalOpt_eq_some_iff {params : DirectLdParams} {degree : ℕ}
     (coeffs : DirectDegPoly params degree) (answer : DirectScalarQ params) :
     directEvalOpt line point coeffs = some answer ↔
       DirectEvaluatesTo line coeffs point answer := by
-  classical
   unfold directEvalOpt
   split_ifs with hexists
-  · simp only [Option.some.injEq]
+  · simp
     constructor
-    · intro heq
-      simpa [heq] using Classical.choose_spec hexists
+    · grind
     · intro heval
       obtain ⟨parameter, hparameter⟩ := heval.1
       exact ((Classical.choose_spec hexists).2 parameter hparameter).symm.trans
         (heval.2 parameter hparameter)
-  · simp only [false_iff]
-    exact fun heval => hexists ⟨answer, heval⟩
+  simp_all
 
 /-- The axis answer length fits inside the extended-line coefficient list. -/
 theorem axis_degree_le (params : AdmissibleParams) :
@@ -76,21 +73,15 @@ theorem axisRead_eval (params : AdmissibleParams)
     (hsupport : ∀ index, params.d < index.val → coeffs index = 0)
     (parameter : DirectScalarQ params.extendedDirectLd) :
       evalCoefficient (axisRead params coeffs) parameter = evalCoefficient coeffs parameter := by
-  unfold evalCoefficient axisRead
   refine Fintype.sum_of_injective (Fin.castLE (axis_degree_le params))
     (Fin.castLE_injective _) _ (fun index => coeffs index * parameter ^ index.val)
     ?_ (fun _ => rfl)
-  intro index hindex
-  have hlarge : params.d < index.val := by
-    by_contra hlarge
-    exact hindex ⟨⟨index.val, by omega⟩, Fin.ext rfl⟩
-  simp [hsupport index hlarge]
+  simp_all
 
 /-- The extended-line degree fits the direct game's diagonal answer bound. -/
 theorem diagonal_degree_le (params : AdmissibleParams) :
     params.m * params.d + 2 ≤
       params.extendedDirectLd.m * params.extendedDirectLd.d + 1 := by
-  change params.m * params.d + 2 ≤ (2 * params.m + 2) * params.d + 1
   have hdegree := params.hd
   nlinarith
 
@@ -112,12 +103,8 @@ theorem diagonalRead_eval (params : AdmissibleParams)
   apply Fintype.sum_of_injective (Fin.castLE (diagonal_degree_le params))
     (Fin.castLE_injective _) _ _ ?_ ?_
   · intro index hindex
-    have hlarge : ¬index.val < params.m * params.d + 2 := by
-      intro hsmall
-      exact hindex ⟨⟨index.val, hsmall⟩, Fin.ext rfl⟩
-    simp [diagonalRead, hlarge]
-  · intro index
-    simp [diagonalRead, index.isLt]
+    simp_all [diagonalRead]
+  simp [diagonalRead]
 
 /-- A scalar answer, transported to the direct field and made a singleton tuple. -/
 def pointAnswer (params : AdmissibleParams) (answer : PauliScalar params) :
@@ -153,7 +140,7 @@ theorem diagonal_description_canonical (params : DirectLdParams)
         directPrefixProjection sample.index sample.direction := by
     funext index
     by_cases hindex : index.val < sample.index.val <;> simp [directPrefixProjection, hindex]
-  simp [directDLineDescOf, directLdMap, hprefix, lineRepMap_apply_self]
+  simp_all [directDLineDescOf, directLdMap, lineRepMap_apply_self]
 
 variable {params : AdmissibleParams} {epsilon deltaQ deltaL : ℝ}
 variable {setting : ProjectiveSetting params epsilon}
@@ -176,15 +163,16 @@ def answerMeasurement (lines : ExtendedLinesWitness setting points deltaL)
     (lines.Qline side (directDLineDescOf params.extendedDirectLd question.2)).postprocess
       (diagonalAnswer params)
 
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
 /-- All wrong-tag effects vanish: the measurement construction never uses the
 game's wrong-format fallback answers. -/
 theorem answerMeasurement_effect_eq_zero
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
+    (side : PlayerSide)
     (question : DirectLdQuestion params.extendedDirectLd)
     (answer : DirectLdAnswer params.extendedDirectLd)
     (hanswer : validDirectLdAnswer question.1 answer = false) :
     (answerMeasurement lines side question).effect answer = 0 := by
-  classical
   rcases question with ⟨kind, question⟩
   cases kind <;> cases answer <;>
     simp_all [validDirectLdAnswer, answerMeasurement,
@@ -194,7 +182,7 @@ theorem answerMeasurement_effect_eq_zero
 /-- Axis truncation preserves evaluation on every nonzero effect, directly by
 the degree-support field of the supplied extended-line witness. -/
 theorem axisRead_eval_of_effect_ne_zero
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
+    (side : PlayerSide)
     (line : DirectLineDesc params.extendedDirectLd) (hline : line.kind = .axis)
     (coeffs : DirectDegPoly params.extendedDirectLd (params.m * params.d + 1))
     (heffect : (lines.Qline side line).effect coeffs ≠ 0)
@@ -225,7 +213,6 @@ def completedLinePointDefect (lines : ExtendedLinesWitness setting points deltaL
 
 /-- Exact separation of the witness's equal axis/diagonal mixture. -/
 theorem completedLinePointDefect_eq_half_sum
-    (lines : ExtendedLinesWitness setting points deltaL)
     (linePlacement pointPlacement : Placement) :
     completedLinePointDefect lines linePlacement pointPlacement
         (directLinePointDist params.extendedDirectLd) =
@@ -234,15 +221,14 @@ theorem completedLinePointDefect_eq_half_sum
         completedLinePointDefect lines linePlacement pointPlacement
           (directDLinePointDist params.extendedDirectLd)) / 2 := by
   unfold completedLinePointDefect consistencyDefect
-  rw [directLinePointDist, WinImplications.avgOver_mix]
-  ring
+  grind [directLinePointDist, WinImplications.avgOver_mix]
 
 /-- Both oriented sums of axis and diagonal completed defects are bounded by
 `2 * deltaL`, using exactly the two consistency fields supplied by `lines`.
 Identifying these quantities with game rejection requires the separate
 register-correlation transport recorded in the packet audit. -/
 theorem completedLinePointDefect_sums_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+    :
     (completedLinePointDefect lines .AA' .BA''
         (directALinePointDist params.extendedDirectLd) +
       completedLinePointDefect lines .AA' .BA''
@@ -254,12 +240,10 @@ theorem completedLinePointDefect_sums_le
   constructor
   · have hbound : completedLinePointDefect lines .AA' .BA''
         (directLinePointDist params.extendedDirectLd) ≤ deltaL := lines.consistent_alice
-    rw [completedLinePointDefect_eq_half_sum] at hbound
-    linarith
+    grind [completedLinePointDefect_eq_half_sum]
   · have hbound : completedLinePointDefect lines .BB' .AB''
         (directLinePointDist params.extendedDirectLd) ≤ deltaL := lines.consistent_bob
-    rw [completedLinePointDefect_eq_half_sum] at hbound
-    linarith
+    grind [completedLinePointDefect_eq_half_sum]
 
 /-- The bipartite state on the two expanded local spaces, with one shared EPR
 pair. It is not the six-register vector `psiHat` on a smaller index type. -/
@@ -287,7 +271,6 @@ def strategy (lines : ExtendedLinesWitness setting points deltaL) :
 
 /-- A wrong-format answer pair has zero Born weight in the constructed strategy. -/
 theorem outcomeWeight_eq_zero_of_invalid
-    (lines : ExtendedLinesWitness setting points deltaL)
     (questionA questionB : DirectLdQuestion params.extendedDirectLd)
     (answerA answerB : DirectLdAnswer params.extendedDirectLd)
     (hinvalid : validDirectLdAnswer questionA.1 answerA = false ∨
@@ -298,22 +281,19 @@ theorem outcomeWeight_eq_zero_of_invalid
     change (inner ℂ (pairState setting) (applyOperatorToState
       (heteroKron ((answerMeasurement lines .alice questionA).effect answerA)
         ((answerMeasurement lines .bob questionB).effect answerB)) (pairState setting))).re = 0
-    rw [hzero]
-    simp [heteroKron, applyOperatorToState]
+    simp_all [heteroKron, applyOperatorToState]
   · have hzero := answerMeasurement_effect_eq_zero lines .bob questionB answerB hinvalid
     change (inner ℂ (pairState setting) (applyOperatorToState
       (heteroKron ((answerMeasurement lines .alice questionA).effect answerA)
         ((answerMeasurement lines .bob questionB).effect answerB)) (pairState setting))).re = 0
-    rw [hzero]
-    simp [heteroKron, applyOperatorToState]
+    simp_all [heteroKron, applyOperatorToState]
 
 /-- The two mixed line-type branches accept with probability one. Their only
 possible rejections are wrong-format answers, which have zero effect. -/
 theorem mixed_branch_rejection_eq_zero
-    (lines : ExtendedLinesWitness setting points deltaL) (types : LdType × LdType)
+    (types : LdType × LdType)
     (htypes : types = (.aline, .dline) ∨ types = (.dline, .aline)) :
     directLdBranchRejectionProbability params.extendedDirectLd (strategy lines) types = 0 := by
-  unfold directLdBranchRejectionProbability
   conv_rhs => rw [← avgOver_zero (uniformDistribution (DirectLdSpace params.extendedDirectLd))]
   apply avgOver_congr
   intro sample
@@ -322,18 +302,16 @@ theorem mixed_branch_rejection_eq_zero
   apply Finset.sum_eq_zero
   intro answerB _
   by_cases hvalidA : validDirectLdAnswer types.1 answerA = false
-  · rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inl hvalidA)]
-    simp
+  · simp_all [outcomeWeight_eq_zero_of_invalid, Or.inl]
   by_cases hvalidB : validDirectLdAnswer types.2 answerB = false
-  · rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inr hvalidB)]
-    simp
+  · simp_all [outcomeWeight_eq_zero_of_invalid, Or.inr]
   rcases htypes with rfl | rfl <;> cases answerA <;> cases answerB <;>
     simp_all [validDirectLdAnswer, directLdWinPredicate]
 
 /-- Exact accounting of the seven potentially rejecting branches of the
 constructed strategy. Same-type line branches are retained: their coefficient
 equality checks do not follow merely from the answer tags. -/
-theorem strategy_value_eq (lines : ExtendedLinesWitness setting points deltaL) :
+theorem strategy_value_eq :
     (strategy lines).value = 1 -
       (directLdBranchRejectionProbability params.extendedDirectLd (strategy lines)
           (.point, .point) +

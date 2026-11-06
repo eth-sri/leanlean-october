@@ -52,9 +52,6 @@ side-indexed global measurements, and use only the basis fixed by `P.model`.
 structure ExtractionWitness {P : AdmissibleParams} {epsilon deltaS : ℝ}
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaS)
     (delta : ℝ) where
-  /-- Each swap map is a right unitary. -/
-  swap_right_unitary : ∀ side : PlayerSide,
-    swapUnitary w side * (swapUnitary w side)ᴴ = 1
   /-- Each swap map is a left unitary. -/
   swap_left_unitary : ∀ side : PlayerSide,
     (swapUnitary w side)ᴴ * swapUnitary w side = 1
@@ -79,6 +76,8 @@ structure ExtractionWitness {P : AdmissibleParams} {epsilon deltaS : ℝ}
         S.placeExtractedRegister side (pauliProj W h))
       (S.idealExpState aux) ≤ delta
 
+variable {P : AdmissibleParams}
+
 /-- Construct a conditional extraction witness when the allowed squared error
 is at least four. The auxiliary vector is the normalized original state tensored
 with EPR on the auxiliary registers. Both distances are bounded independently
@@ -97,11 +96,10 @@ composition with `exists_globalPairWitness` are recorded in
 source-facing
 composition is `exists_extractionWitness`. -/
 theorem exists_extractionWitness_ofGlobalPairWitness_of_four_le
-    {P : AdmissibleParams} {epsilon deltaG delta : ℝ}
+    {epsilon deltaG delta : ℝ}
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
     (hdelta : 4 ≤ delta) : Nonempty (ExtractionWitness S w delta) := by
   refine ⟨{
-    swap_right_unitary := swapUnitary_mul_conjTranspose w
     swap_left_unitary := conjTranspose_mul_swapUnitary w
     aux := S.extractionAuxReference
     aux_norm := S.extractionAuxReference_norm
@@ -120,125 +118,11 @@ theorem exists_extractionWitness_ofGlobalPairWitness_of_four_le
     exact (S.extraction_pauli_dist_le_four w S.extractionAuxReference
       S.extractionAuxReference_norm side W).trans hdelta
 
-/-- At construction error at least one, a universal extraction constant at
-least four suffices for the complete witness. This is the large-error branch
-at the unchanged nested scale of `exists_extractionWitness_ofGlobalPairWitness`.
-
-**Scope restriction:** Only the region where `deltaConstructPaulis` is at least
-one is covered. See the normalization correction in
-`docs/paper-gaps/qpbt_extraction-transfer.tex` for blueprint `lem:qld-unitary`,
-paper `14_analysis_of_the_pauli_basis_test.tex:1743-1783`.
-
-**Unfaithful:** The proof uses the supplied-witness helper
-`exists_extractionWitness_ofGlobalPairWitness_of_four_le`. The global-witness
-construction is supplied by `exists_globalPairWitness` in the source-facing
-`exists_extractionWitness`; see issue Dengnifer/MIPStarRE-QPBT-bak#123 and
-`docs/paper-gaps/qpbt_extraction-transfer.tex`. -/
-theorem exists_extractionWitness_ofGlobalPairWitness_of_one_le_construct
-    {P : AdmissibleParams} {epsilon deltaG C : ℝ}
-    (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
-    (hC : 4 ≤ C)
-    (hconstruct : 1 ≤ deltaConstructPaulis C epsilon deltaG P.m P.d P.q) :
-    Nonempty (ExtractionWitness S w
-      (deltaExtract C (deltaConstructPaulis C epsilon deltaG P.m P.d P.q) P.m P.d P.q)) := by
-  apply exists_extractionWitness_ofGlobalPairWitness_of_four_le S w
-  have hroot := Real.one_le_rpow hconstruct (by norm_num : (0 : ℝ) ≤ 1 / 4)
-  have hratio : 0 ≤ ((P.m * P.d : ℕ) : ℝ) / (P.q : ℝ) := by positivity
-  unfold deltaExtract
-  exact hC.trans (le_mul_of_one_le_right (by linarith)
-    (hroot.trans (le_add_of_nonneg_right hratio)))
-
-/-- Conditional extraction for the concrete swap maps at the explicit scale
-obtained by applying `deltaExtract` to `deltaConstructPaulis`. Given a
-`GlobalPairWitness`, it supplies the extraction data appearing in
-blueprint `lem:qld-unitary` and paper
-`14_analysis_of_the_pauli_basis_test.tex:1666-1860`.
-
-**Unfaithful:** This result assumes `w : GlobalPairWitness S deltaG`, which is
-derived inside `lem:qld-unitary` rather than assumed by the paper statement.
-The discrepancy is documented in
-`docs/paper-gaps/qpbt_extraction-transfer.tex`. Elimination: obtain `w` from
-`exists_globalPairWitness` before applying this conditional extraction result;
-`exists_extractionWitness` performs that composition under issue Dengnifer/MIPStarRE-QPBT-bak#123.
-
-**Local fix:** the positive-contraction estimate and normalization case split
-repair the two numerical defects at paper lines 1743-1783 without changing the
-conclusion; see `docs/paper-gaps/qpbt_extraction-transfer.tex`.
-
-The auxiliary state is supplied by `exists_extraction_aux_ofGlobalPairWitness`.
-The two evaluated consistency bounds are transported by the concrete swaps in
-`ProjectiveSetting.extraction_pauli_dist_le`. Choose one universal constant
-above both construction coefficients and eighteen, and use
-`extraction_small_error_absorption` when the construction error is at most one.
-The complete large-error witness covers the other case. Thus every supplied
-global polynomial-pair witness yields a normalized auxiliary state, the
-transformed-state estimate, and both total-Pauli comparison bounds. This result
-neither constructs the global witness nor passes from the swap unitaries to the
-isometries of the source theorem. -/
-theorem exists_extraction_witness_of_global_pair_witness_explicit
-    (P : AdmissibleParams) (epsilon deltaG : ℝ)
-    (hepsilon : 0 ≤ epsilon) (hepsilon_one : epsilon ≤ 1) (hdeltaG : 0 ≤ deltaG)
-    (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG) :
-    Nonempty (ExtractionWitness S w
-      (deltaExtract pauliBaselineExtractionConstant
-        (deltaConstructPaulis pauliBaselineExtractionConstant
-          epsilon deltaG P.m P.d P.q) P.m P.d P.q)) := by
-  let C : ℝ := pauliBaselineExtractionConstant
-  have hCE_C : 2 + 4 * Real.sqrt 172 ≤ C := by
-    have hroot := Real.sqrt_nonneg (172 : ℝ)
-    have hsquare := Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 172)
-    dsimp [C, pauliBaselineExtractionConstant]
-    nlinarith
-  have hC18 : 18 ≤ C := by
-    dsimp [C, pauliBaselineExtractionConstant]
-    norm_num
-  let delta := deltaConstructPaulis C epsilon deltaG P.m P.d P.q
-  have hmono (K : ℝ) (hK : K ≤ C) :
-      deltaConstructPaulis K epsilon deltaG P.m P.d P.q ≤ delta :=
-    mul_le_mul_of_nonneg_right hK (by positivity)
-  have hdelta : 0 ≤ delta := by
-    dsimp [delta, C, deltaConstructPaulis, pauliBaselineExtractionConstant]
-    positivity
-  by_cases hdelta_one : delta ≤ 1
-  · obtain ⟨aux, haux, hclose⟩ :=
-      exists_extraction_aux_of_global_pair_witness_explicit
-        P epsilon deltaG hepsilon hepsilon_one hdeltaG S w
-    have hstate_delta :
-        ‖S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat -
-          S.idealExpState aux‖ ^ 2 ≤ 16 * delta :=
-      hclose
-    have hnorm :
-        ‖S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat -
-          S.idealExpState aux‖ ≤ 4 * Real.sqrt delta := by
-      nlinarith [Real.sq_sqrt hdelta, Real.sqrt_nonneg delta, norm_nonneg
-        (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat -
-          S.idealExpState aux)]
-    have habsorb := extraction_small_error_absorption C delta P.m P.d P.q
-      hC18 hdelta hdelta_one
-    refine ⟨{
-      swap_right_unitary := swapUnitary_mul_conjTranspose w
-      swap_left_unitary := conjTranspose_mul_swapUnitary w
-      aux := aux
-      aux_norm := haux
-      state_close := hstate_delta.trans habsorb.1
-      pauli_close := ?_
-    }⟩
-    intro side W
-    have he := evaluated_pauli_tilde_consistency_of_global_pair_witness_explicit
-      P epsilon deltaG hepsilon hepsilon_one hdeltaG S w W
-    have hdefect : S.evaluatedPauliDefect w side W ≤ delta := by
-      cases side
-      · exact he.1.trans (hmono _ hCE_C)
-      · exact he.2.trans (hmono _ hCE_C)
-    apply (S.extraction_pauli_dist_le w aux haux side W).trans
-    apply le_trans _ habsorb.2
-    push_cast
-    linarith
-  · exact exists_extractionWitness_ofGlobalPairWitness_of_one_le_construct S w
-      (by linarith) (le_of_lt (lt_of_not_ge hdelta_one))
-
 /-- A universal constant guarantees an extraction witness at the composed
-construction-and-extraction error. -/
+construction-and-extraction error. The auxiliary state is supplied by
+`exists_extraction_aux_of_global_pair_witness_explicit`; when the construction
+error is at most one, `extraction_small_error_absorption` absorbs the error
+terms, and otherwise the complete large-error witness applies. -/
 theorem exists_extractionWitness_ofGlobalPairWitness :
     ∃ C : ℝ, 1 ≤ C ∧
       ∀ (P : AdmissibleParams) (epsilon deltaG : ℝ),
@@ -250,10 +134,47 @@ theorem exists_extractionWitness_ofGlobalPairWitness :
                 (deltaExtract C
                   (deltaConstructPaulis C epsilon deltaG P.m P.d P.q)
                   P.m P.d P.q)) := by
-  refine ⟨pauliBaselineExtractionConstant, ?_, ?_⟩
-  · unfold pauliBaselineExtractionConstant
+  have hCE_C : 2 + 4 * Real.sqrt 172 ≤ pauliBaselineExtractionConstant := by
+    dsimp [pauliBaselineExtractionConstant]
+    nlinarith [Real.sqrt_nonneg (172 : ℝ), Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 172)]
+  have hC18 : 18 ≤ pauliBaselineExtractionConstant := by
+    dsimp [pauliBaselineExtractionConstant]
     norm_num
-  · exact exists_extraction_witness_of_global_pair_witness_explicit
+  refine ⟨_, by linarith, fun P epsilon deltaG hepsilon hepsilon_one hdeltaG S w => ?_⟩
+  have hmono : deltaConstructPaulis (2 + 4 * Real.sqrt 172) epsilon deltaG P.m P.d P.q ≤
+      deltaConstructPaulis _ epsilon deltaG P.m P.d P.q :=
+    mul_le_mul_of_nonneg_right hCE_C (by positivity)
+  set δ := deltaConstructPaulis pauliBaselineExtractionConstant epsilon deltaG P.m P.d P.q
+  have hdelta : 0 ≤ δ := by
+    dsimp [δ, deltaConstructPaulis]
+    positivity
+  by_cases hdelta_one : δ ≤ 1
+  · obtain ⟨aux, haux, hclose⟩ :=
+      exists_extraction_aux_of_global_pair_witness_explicit
+        P epsilon deltaG hepsilon hepsilon_one hdeltaG S w
+    have habsorb := extraction_small_error_absorption _ _ P.m P.d P.q hC18 hdelta hdelta_one
+    refine ⟨{
+      swap_left_unitary := conjTranspose_mul_swapUnitary w
+      aux := aux
+      aux_norm := haux
+      state_close := hclose.trans habsorb.1
+      pauli_close := fun side W => (S.extraction_pauli_dist_le w aux haux side W).trans
+        (le_trans ?_ habsorb.2)
+    }⟩
+    have he := evaluated_pauli_tilde_consistency_of_global_pair_witness_explicit
+      P epsilon deltaG hepsilon hepsilon_one hdeltaG S w W
+    have hdefect : S.evaluatedPauliDefect w side W ≤ δ := by
+      cases side
+      exacts [he.1.trans hmono, he.2.trans hmono]
+    push_cast
+    nlinarith [Real.sq_sqrt hdelta, Real.sqrt_nonneg δ, norm_nonneg
+      (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat - S.idealExpState aux)]
+  · apply exists_extractionWitness_ofGlobalPairWitness_of_four_le S w
+    exact (by linarith : (4 : ℝ) ≤ _).trans (le_mul_of_one_le_right (by linarith)
+      ((Real.one_le_rpow (le_of_not_ge hdelta_one) (by norm_num : (0 : ℝ) ≤ 1 / 4)).trans
+        (le_add_of_nonneg_right (by positivity))))
+
+variable (C a b : ℝ)
 
 /-- The composed construction and extraction errors preserve the error family
 of `thm:pauli`: when `deltaG` has the form
@@ -270,134 +191,7 @@ fourth root bounds the three construction terms separately. Admissibility
 gives `md ≥ 1` and `q ≥ 1`, so their polynomial factors and the term `md/q`
 are absorbed into the enlarged prefactor. This discharges the scalar
 estimate tracked by issue Dengnifer/MIPStarRE-QPBT-bak#241. -/
-theorem delta_extract_le_delta_qld_explicit (C a b : ℝ) (hC : 1 ≤ C) (ha : 1 < a)
-    (hb : 0 < b) (hb1 : b < 1) :
-    ∀ (P : AdmissibleParams) (epsilon : ℝ), 0 ≤ epsilon → epsilon ≤ 1 →
-      deltaExtract C
-          (deltaConstructPaulis C epsilon
-            (deltaQld a b epsilon P.m P.d P.q) P.m P.d P.q)
-          P.m P.d P.q ≤
-        deltaQld (4 * C ^ 2 * a) (b / 8) epsilon P.m P.d P.q := by
-  have hC0 : 0 ≤ C := by linarith
-  have ha0 : 0 ≤ a := by linarith
-  have hconstant : a ≤ 4 * C ^ 2 * a := by
-    have hCsq : 1 ≤ C ^ 2 := by nlinarith
-    nlinarith [mul_le_mul_of_nonneg_right hCsq ha0]
-  intro params epsilon hepsilon0 hepsilon1
-  let degree : ℝ := ((params.m * params.d : ℕ) : ℝ)
-  have hdegree1 : 1 ≤ degree :=
-    Nat.one_le_cast.mpr (Nat.mul_pos params.one_le_m params.hd)
-  have hdegree0 : 0 ≤ degree := by linarith
-  have hfield1 : (1 : ℝ) ≤ (params.q : ℝ) := by
-    obtain ⟨size, -, hsize⟩ := params.hq
-    rw [hsize]
-    exact_mod_cast Nat.one_le_pow _ _ (by norm_num)
-  have hfield0 : (0 : ℝ) ≤ (params.q : ℝ) := by positivity
-  let amplitude : ℝ := a * degree ^ a
-  let rate : ℝ := epsilon ^ (b / 8) + (params.q : ℝ) ^ (-(b / 8)) +
-    (2 : ℝ) ^ (-((b / 8) * degree))
-  have hamplitude1 : 1 ≤ amplitude :=
-    one_le_mul_of_one_le_of_one_le ha.le (Real.one_le_rpow hdegree1 ha0)
-  have hamplitude0 : 0 ≤ amplitude := by linarith
-  have hdegree_amplitude : degree ≤ amplitude :=
-    (Real.self_le_rpow_of_one_le hdegree1 ha.le).trans
-      (le_mul_of_one_le_left (Real.rpow_nonneg hdegree0 a) ha.le)
-  have hrate0 : 0 ≤ rate := by dsimp [rate]; positivity
-  have hepsilon_rate : epsilon ^ (b / 8) ≤ rate := by
-    dsimp [rate]
-    linarith [Real.rpow_nonneg hfield0 (-(b / 8)),
-      Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-((b / 8) * degree))]
-  have hfield_rate : (params.q : ℝ) ^ (-(b / 8)) ≤ rate := by
-    dsimp [rate]
-    linarith [Real.rpow_nonneg hepsilon0 (b / 8),
-      Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-((b / 8) * degree))]
-  have hroot_sum {first second third : ℝ}
-      (hfirst : 0 ≤ first) (hsecond : 0 ≤ second) (hthird : 0 ≤ third) :
-      (first + second + third) ^ (1 / 4 : ℝ) ≤
-        first ^ (1 / 4 : ℝ) + second ^ (1 / 4 : ℝ) + third ^ (1 / 4 : ℝ) :=
-    (Real.rpow_add_le_add_rpow (p := (1 / 4 : ℝ)) (add_nonneg hfirst hsecond) hthird
-      (by norm_num) (by norm_num)).trans
-      (add_le_add (Real.rpow_add_le_add_rpow (p := (1 / 4 : ℝ)) hfirst hsecond
-        (by norm_num) (by norm_num)) le_rfl)
-  have hrate_root :
-      (epsilon ^ b + (params.q : ℝ) ^ (-b) + (2 : ℝ) ^ (-(b * degree))) ^
-        (1 / 4 : ℝ) ≤ rate := by
-    refine (hroot_sum (by positivity) (by positivity) (by positivity)).trans ?_
-    rw [← Real.rpow_mul hepsilon0, ← Real.rpow_mul hfield0,
-      ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
-    refine add_le_add (add_le_add ?_ ?_) ?_
-    · exact Real.rpow_le_rpow_of_exponent_ge' hepsilon0 hepsilon1
-        (by positivity) (by linarith)
-    · exact Real.rpow_le_rpow_of_exponent_le hfield1 (by linarith)
-    · apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
-      nlinarith [mul_nonneg hb.le hdegree0]
-  have hglobal0 : 0 ≤ deltaQld a b epsilon params.m params.d params.q := by
-    simp only [deltaQld, Real.rpow_eq_pow]
-    positivity
-  have hglobal_root :
-      (deltaQld a b epsilon params.m params.d params.q) ^ (1 / 4 : ℝ) ≤
-        amplitude * rate := by
-    change (amplitude *
-      (epsilon ^ b + (params.q : ℝ) ^ (-b) + (2 : ℝ) ^ (-(b * degree)))) ^
-        (1 / 4 : ℝ) ≤ amplitude * rate
-    rw [Real.mul_rpow hamplitude0 (by positivity)]
-    exact mul_le_mul (Real.rpow_le_self_of_one_le hamplitude1 (by norm_num))
-      hrate_root (by positivity) hamplitude0
-  have hsqrt_root : (Real.sqrt epsilon) ^ (1 / 4 : ℝ) ≤ amplitude * rate := by
-    rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hepsilon0]
-    exact ((Real.rpow_le_rpow_of_exponent_ge' hepsilon0 hepsilon1
-      (by positivity) (by linarith)).trans hepsilon_rate).trans
-      (le_mul_of_one_le_left hrate0 hamplitude1)
-  have hratio_root : (degree / (params.q : ℝ)) ^ (1 / 4 : ℝ) ≤ amplitude * rate := by
-    rw [Real.div_rpow hdegree0 hfield0, div_eq_mul_inv, ← Real.rpow_neg hfield0]
-    exact mul_le_mul
-      ((Real.rpow_le_self_of_one_le hdegree1 (by norm_num)).trans hdegree_amplitude)
-      ((Real.rpow_le_rpow_of_exponent_le hfield1 (by linarith)).trans hfield_rate)
-      (by positivity) hamplitude0
-  have hratio : degree / (params.q : ℝ) ≤ amplitude * rate := by
-    rw [div_eq_mul_inv, ← Real.rpow_neg_one]
-    exact mul_le_mul hdegree_amplitude
-      ((Real.rpow_le_rpow_of_exponent_le hfield1 (by linarith)).trans hfield_rate)
-      (by positivity) hamplitude0
-  have hconstruct_root :
-      (deltaConstructPaulis C epsilon
-        (deltaQld a b epsilon params.m params.d params.q) params.m params.d params.q) ^
-          (1 / 4 : ℝ) ≤ 3 * C * amplitude * rate := by
-    unfold deltaConstructPaulis
-    rw [Real.mul_rpow hC0 (by positivity)]
-    calc
-      C ^ (1 / 4 : ℝ) *
-          (deltaQld a b epsilon params.m params.d params.q + Real.sqrt epsilon +
-            degree / (params.q : ℝ)) ^ (1 / 4 : ℝ) ≤
-          C * ((deltaQld a b epsilon params.m params.d params.q) ^ (1 / 4 : ℝ) +
-            (Real.sqrt epsilon) ^ (1 / 4 : ℝ) +
-            (degree / (params.q : ℝ)) ^ (1 / 4 : ℝ)) :=
-        mul_le_mul (Real.rpow_le_self_of_one_le hC (by norm_num))
-          (hroot_sum hglobal0 (by positivity) (by positivity))
-          (by positivity) hC0
-      _ ≤ C * (amplitude * rate + amplitude * rate + amplitude * rate) :=
-        mul_le_mul_of_nonneg_left
-          (add_le_add (add_le_add hglobal_root hsqrt_root) hratio_root) hC0
-      _ = 3 * C * amplitude * rate := by ring
-  calc
-    deltaExtract C
-        (deltaConstructPaulis C epsilon
-          (deltaQld a b epsilon params.m params.d params.q) params.m params.d params.q)
-        params.m params.d params.q ≤
-        C * (3 * C * amplitude * rate + amplitude * rate) :=
-      mul_le_mul_of_nonneg_left (add_le_add hconstruct_root hratio) hC0
-    _ = (C * (3 * C + 1)) * (amplitude * rate) := by ring
-    _ ≤ 4 * C ^ 2 * (amplitude * rate) :=
-      mul_le_mul_of_nonneg_right (by nlinarith) (mul_nonneg hamplitude0 hrate0)
-    _ = (4 * C ^ 2 * a) * degree ^ a * rate := by dsimp [amplitude]; ring
-    _ ≤ deltaQld (4 * C ^ 2 * a) (b / 8) epsilon params.m params.d params.q :=
-      mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left
-          (Real.rpow_le_rpow_of_exponent_le hdegree1 hconstant) (by positivity)) hrate0
-
-/-- Every admissible input coefficient and exponent yield new universal constants
-that bound the composed extraction error by an error of `deltaQld` form. -/
-theorem deltaExtract_le_deltaQld (C a b : ℝ) (hC : 1 ≤ C) (ha : 1 < a)
+theorem deltaExtract_le_deltaQld (hC : 1 ≤ C) (ha : 1 < a)
     (hb : 0 < b) (hb1 : b < 1) :
     ∃ a' b' : ℝ, 1 ≤ a' ∧ 0 < b' ∧ b' < 1 ∧
       ∀ (P : AdmissibleParams) (epsilon : ℝ), 0 ≤ epsilon →
@@ -407,11 +201,62 @@ theorem deltaExtract_le_deltaQld (C a b : ℝ) (hC : 1 ≤ C) (ha : 1 < a)
               (deltaQld a b epsilon P.m P.d P.q) P.m P.d P.q)
             P.m P.d P.q ≤
           deltaQld a' b' epsilon P.m P.d P.q := by
-  have hconstant : a ≤ 4 * C ^ 2 * a := by
-    have hCsq : 1 ≤ C ^ 2 := by nlinarith
-    nlinarith [mul_le_mul_of_nonneg_right hCsq (by linarith : 0 ≤ a)]
-  exact ⟨4 * C ^ 2 * a, b / 8, ha.le.trans hconstant, by positivity, by linarith,
-    delta_extract_le_delta_qld_explicit C a b hC ha hb hb1⟩
+  have hconstant : a ≤ 4 * C ^ 2 * a := by nlinarith [mul_le_mul hC hC zero_le_one (by linarith : (0:ℝ) ≤ C)]
+  refine ⟨4 * C ^ 2 * a, b / 8, ha.le.trans hconstant, by positivity, by linarith,
+    fun P ε he0 he1 => ?_⟩
+  have hn : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
+    Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
+  have hq : (1 : ℝ) ≤ P.q := by exact_mod_cast one_le_two.trans P.hq.two_le
+  simp only [deltaExtract, deltaConstructPaulis, deltaQld, Real.rpow_eq_pow, Real.sqrt_eq_rpow]
+  generalize ((P.m * P.d : ℕ) : ℝ) = n at hn ⊢
+  generalize (P.q : ℝ) = q at hq ⊢
+  have hA : 1 ≤ a * n ^ a := one_le_mul_of_one_le_of_one_le ha.le (Real.one_le_rpow hn (by linarith))
+  have hnA : n ≤ a * n ^ a :=
+    (Real.self_le_rpow_of_one_le hn ha.le).trans (le_mul_of_one_le_left (by positivity) ha.le)
+  have hs : (ε ^ (b / 2) + q ^ (-(b / 2)) + 2 ^ (-(b * n / 2))) ^ (1 / 4 : ℝ) ≤
+      ε ^ (b / 8) + q ^ (-(b / 8)) + 2 ^ (-(b / 8 * n)) := by
+    refine ((Real.rpow_add_le_add_rpow (by positivity) (by positivity) (by norm_num)
+      (by norm_num)).trans (add_le_add (Real.rpow_add_le_add_rpow (by positivity) (by positivity)
+        (by norm_num) (by norm_num)) le_rfl)).trans (le_of_eq ?_)
+    rw [← Real.rpow_mul he0, ← Real.rpow_mul (by linarith), ← Real.rpow_mul (by norm_num)]
+    ring_nf
+  have hR := add_le_add (add_le_add
+    (Real.rpow_le_rpow_of_exponent_ge' he0 he1 (by positivity : 0 ≤ b / 2) (by linarith : b / 2 ≤ b))
+    (Real.rpow_le_rpow_of_exponent_le hq (by linarith : -b ≤ -(b / 2))))
+    (Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2)
+      (by nlinarith : -(b * n) ≤ -(b * n / 2)))
+  have h2 := Real.rpow_le_rpow_of_exponent_ge' he0 he1 (by positivity : 0 ≤ b / 2)
+    (by linarith : b / 2 ≤ 1 / 2)
+  have h4 := Real.rpow_le_rpow_of_exponent_le hq (by linarith : (-1 : ℝ) ≤ -(b / 2))
+  have h6 := Real.rpow_le_rpow_of_exponent_le hq (by linarith : (-1 : ℝ) ≤ -(b / 8))
+  have p1 : 0 ≤ ε ^ (b / 2) := by positivity
+  have p2 : 0 ≤ q ^ (-(b / 2)) := by positivity
+  have p3 : 0 ≤ (2 : ℝ) ^ (-(b * n / 2)) := by positivity
+  have p4 : 0 ≤ ε ^ (b / 8) := by positivity
+  have p5 : 0 ≤ q ^ (-(b / 8)) := by positivity
+  have p6 : 0 ≤ (2 : ℝ) ^ (-(b / 8 * n)) := by positivity
+  rw [Real.rpow_neg_one] at h4 h6
+  simp only [div_eq_mul_inv n q]
+  set s := ε ^ (b / 2) + q ^ (-(b / 2)) + 2 ^ (-(b * n / 2))
+  set r := ε ^ (b / 8) + q ^ (-(b / 8)) + 2 ^ (-(b / 8 * n))
+  set A := a * n ^ a
+  have hX := mul_le_mul_of_nonneg_left (add_le_add (add_le_add
+    (mul_le_mul_of_nonneg_left hR (by positivity : 0 ≤ A))
+    (h2.trans ((by linarith : _ ≤ s).trans (le_mul_of_one_le_left (by positivity) hA))))
+    (mul_le_mul hnA (h4.trans (by linarith : _ ≤ s)) (by positivity) (by positivity)))
+    (by linarith : 0 ≤ C)
+  have h11 : (C * (A * s + A * s + A * s)) ^ (1 / 4 : ℝ) ≤ 3 * C * A * r := by
+    rw [show C * (A * s + A * s + A * s) = 3 * C * A * s by ring,
+      Real.mul_rpow (by positivity) (by positivity)]
+    exact mul_le_mul (Real.rpow_le_self_of_one_le (by nlinarith) (by norm_num)) hs (by positivity)
+      (by positivity)
+  have h12 := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hn hconstant)
+    (by positivity : 0 ≤ 4 * C ^ 2 * a * r)
+  have h13 := mul_le_mul_of_nonneg_right (by nlinarith : C * (3 * C + 1) ≤ 4 * C ^ 2)
+    (by positivity : 0 ≤ A * r)
+  have h14 := (Real.rpow_le_rpow (by positivity) hX (by norm_num : (0 : ℝ) ≤ 1 / 4)).trans h11
+  have h15 := mul_le_mul hnA (h6.trans (by linarith : _ ≤ r)) (by positivity) (by positivity)
+  nlinarith
 
 end
 

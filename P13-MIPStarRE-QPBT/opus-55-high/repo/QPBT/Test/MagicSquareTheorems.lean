@@ -10,11 +10,10 @@ public import QPBT.Test.MagicSquareTheorems.Rigidity.Transfer
 public import QPBT.Test.MagicSquareTheorems.Rigidity.AnticommutatorB
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Swap
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Consistency
-public import QPBT.Test.MagicSquareTheorems.Rigidity.SecondPair
 public import QPBT.Test.MagicSquareTheorems.Rigidity.IdealTarget
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Constants
 public import QPBT.Test.MagicSquareTheorems.Rigidity.TwoQubitSwap
-public import QPBT.Test.MagicSquareTheorems.Rigidity.Assembly
+public import QPBT.Test.MagicSquareTheorems.Rigidity.JointState
 public import QPBT.Test.MagicSquareTheorems.Rigidity.Marginals
 
 /-!
@@ -56,25 +55,7 @@ open MIPStarRE.LDT MIPStarRE.Quantum MagicSquareRigidity
 
 noncomputable section
 
-/-- The isometries and auxiliary unit state in the conclusion of
-`thm:ms-rigidity`. -/
-structure MsRigidityWitness (S : Strategy msGame) where
-  ιA'' : Type
-  ιB'' : Type
-  [ιA''Fintype : Fintype ιA'']
-  [ιB''Fintype : Fintype ιB'']
-  [ιA''DecidableEq : DecidableEq ιA'']
-  [ιB''DecidableEq : DecidableEq ιB'']
-  φA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
-    EuclideanSpace ℂ ((Fin 2 → ZMod 2) × ιA'')
-  φB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
-    EuclideanSpace ℂ ((Fin 2 → ZMod 2) × ιB'')
-  aux : EuclideanSpace ℂ (ιA'' × ιB'')
-  aux_norm : ‖aux‖ = 1
 
-attribute [instance] MsRigidityWitness.ιA''Fintype
-  MsRigidityWitness.ιB''Fintype MsRigidityWitness.ιA''DecidableEq
-  MsRigidityWitness.ιB''DecidableEq
 
 /-! ## The coarse witness and the large-error regime -/
 

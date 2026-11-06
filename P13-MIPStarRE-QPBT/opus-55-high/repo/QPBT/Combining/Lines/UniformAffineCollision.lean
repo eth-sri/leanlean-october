@@ -33,7 +33,6 @@ theorem evalOpt_uniform_parameter_collision_le {L : LdParams} {bound : ℕ}
       if evalOpt line (line.base + param • line.direction) first =
         evalOpt line (line.base + param • line.direction) second then 1 else 0) ≤
       (bound : ℝ) / Fintype.card (ScalarQ L) := by
-  classical
   simp_rw [evalOpt_affine_parameter_of_direction_ne_zero line hdir,
     Option.some.injEq]
   have hcard := evalCoefficient_collision_card_le first second hne
@@ -41,7 +40,7 @@ theorem evalOpt_uniform_parameter_collision_le {L : LdParams} {bound : ℕ}
   simp only [uniformDistribution_support, uniformDistribution_weight_apply,
     mul_ite, mul_one, mul_zero, ← Finset.sum_filter]
   rw [Finset.sum_const, nsmul_eq_mul, mul_one_div]
-  exact div_le_div_of_nonneg_right (by exact_mod_cast hcard) (by positivity)
+  simp_all [div_le_div_of_nonneg_right]
 
 end
 

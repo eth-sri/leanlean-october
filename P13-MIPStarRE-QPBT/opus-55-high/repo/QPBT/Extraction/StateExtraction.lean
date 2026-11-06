@@ -30,12 +30,13 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {epsilon : ℝ} (S : ProjectiveSetting P epsilon)
 
-private theorem reindex_extracted_left (T : Op (PauliRegister P)) :
+variable (T : Op (PauliRegister P))
+
+theorem reindex_extracted_left :
     reindexOp (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm
       (heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
         (heteroKron T (1 : Op (PauliRegister P)))) =
       S.placeSide .alice (heteroKron (1 : Op (S.ExpandedLocalSpace .alice)) T) := by
-  classical
   ext row col
   change (if ((row.1.1, row.1.2.1), (row.2.1, row.2.2.1)) =
       ((col.1.1, col.1.2.1), (col.2.1, col.2.2.1)) then (1 : ℂ) else 0) *
@@ -44,15 +45,13 @@ private theorem reindex_extracted_left (T : Op (PauliRegister P)) :
       T row.1.2.2 col.1.2.2) *
       (if ((row.2.1, row.2.2.1), row.2.2.2) =
         ((col.2.1, col.2.2.1), col.2.2.2) then 1 else 0)
-  simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one, zero_mul, mul_zero]
-  split_ifs <;> rfl
+  grind
 
-private theorem reindex_extracted_right (T : Op (PauliRegister P)) :
+theorem reindex_extracted_right :
     reindexOp (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm
       (heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
         (heteroKron (1 : Op (PauliRegister P)) T)) =
       S.placeSide .bob (heteroKron (1 : Op (S.ExpandedLocalSpace .bob)) T) := by
-  classical
   ext row col
   change (if ((row.1.1, row.1.2.1), (row.2.1, row.2.2.1)) =
       ((col.1.1, col.1.2.1), (col.2.1, col.2.2.1)) then (1 : ℂ) else 0) *
@@ -61,8 +60,7 @@ private theorem reindex_extracted_right (T : Op (PauliRegister P)) :
       ((col.1.1, col.1.2.1), col.1.2.2) then 1 else 0) *
       ((if (row.2.1, row.2.2.1) = (col.2.1, col.2.2.1) then 1 else 0) *
         T row.2.2.2 col.2.2.2)
-  simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, zero_mul, mul_zero]
-  split_ifs <;> rfl
+  grind
 
 /-- Changing to auxiliary/EPR coordinates and multiplying all Pauli labels by
 a nonzero basis element preserve the uniform disagreement distance. -/
@@ -82,9 +80,8 @@ theorem pauli_dist_reindex_extraction
         (tauObservable W (P.model.basis j • u))))
       (fun u => S.placeSide .bob (heteroKron (1 : Op (S.ExpandedLocalSpace .bob))
         (tauObservable W (P.model.basis j • u)))) theta := by
-  classical
   unfold opDistSq opFamilyDistSq
-  simp only [Fintype.sum_unique]
+  simp
   simp_rw [WinImplications.norm_applyOperatorToState_reindexState,
     WinImplications.reindexOp_sub, S.reindex_extracted_left, S.reindex_extracted_right]
   let e : PauliRegister P ≃ PauliRegister P := Equiv.piCongrRight
@@ -131,8 +128,8 @@ theorem exists_extraction_aux_of_global_pair_witness_explicit
   let j : Fin P.model.basisDim := ⟨0, P.model.basisDimOdd.pos⟩
   have hdist := Extraction.norm_sub_eprProjection_le_of_pauli_dist
     (reindexState e theta) delta hdelta (fun W => by
-      exact (S.pauli_dist_reindex_extraction theta W j).trans_le
-        (extracted_obs_self_consistent_of_global_pair_witness_explicit
+      exact ((S.pauli_dist_reindex_extraction theta W j).trans (opDistSq_extracted_eq_tildeObs S w W j)).trans_le
+        (tilde_obs_self_consistent_of_global_pair_witness_explicit
           P epsilon deltaG hepsilon hepsilon_one hdeltaG S w W j))
   have htransport :
       ‖reindexState e theta - applyOperatorToState
@@ -157,9 +154,7 @@ theorem exists_extraction_aux_of_global_pair_witness_explicit
   obtain ⟨aux, haux, hclose⟩ := S.exists_unit_aux_near_eprProjection theta (S.applyBoth_swap_norm w)
   refine ⟨aux, haux, ?_⟩
   have hnorm := norm_nonneg (theta - S.idealExpState aux)
-  have hsqrt := Real.sqrt_nonneg delta
   have hsquare := Real.sq_sqrt hdelta
-  change ‖theta - S.idealExpState aux‖ ^ 2 ≤ 16 * delta
   nlinarith
 
 end

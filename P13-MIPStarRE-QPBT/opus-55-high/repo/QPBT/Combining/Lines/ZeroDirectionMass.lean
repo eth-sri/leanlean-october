@@ -28,14 +28,9 @@ direction is nonzero. This is a formalization-only consequence of
 theorem aLinePointDist_zero_direction_mass (L : LdParams) :
     avgOver (aLinePointDist L) (fun sample =>
       if sample.1.direction = 0 then 1 else 0) = 0 := by
-  classical
   unfold aLinePointDist
   rw [Distribution.avgOver_map]
-  have hdir (raw : LdSpace L) : (aLineDescOf L raw).direction ≠ 0 := by
-    intro hzero
-    have hcoord := congrFun hzero (chiIndex L raw.seed)
-    simp [aLineDescOf, LineDesc.direction, coordinateDirection] at hcoord
-  simp [avgOver, hdir]
+  simp [aLineDescOf, chiIndex, LineDesc.direction, coordinateDirection, avgOver]
 
 end
 

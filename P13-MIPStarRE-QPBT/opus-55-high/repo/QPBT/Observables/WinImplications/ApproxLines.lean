@@ -30,16 +30,16 @@ noncomputable section
 
 namespace WinImplications
 
-local instance pauliEdgeNonemptyApproxLines : Nonempty PauliEdge := pauliEdge_nonempty
 
 /-! ## Consistency check -/
 
 /-! ## Low-degree check -/
 
+variable {P : AdmissibleParams} {ε : ℝ}
+
 /-- Reversed-orientation axis-line mismatch is contained in rejection. Paper
 `14_analysis_of_the_pauli_basis_test.tex:200-204,227`. -/
-theorem alineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
+theorem alineMismatch_le_rejection_interchanged (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
     outcomeEventWeight S.toStrategy
         ((.point W), pauliCL P (.point W) z)
         ((.aline W), pauliCL P (.aline W) z)
@@ -55,7 +55,6 @@ theorem alineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ
       pauliRejectionAt S.toStrategy (pointAlineEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
-  change pauliWinPredicate P _ _ A B = false
   apply Bool.eq_false_iff.mpr
   intro htrue
   exact hne (alineLabels_eq_of_win P W z B A
@@ -63,8 +62,7 @@ theorem alineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ
 
 /-- Reversed-orientation diagonal-line mismatch is contained in rejection. Paper
 `14_analysis_of_the_pauli_basis_test.tex:200-204,227`. -/
-theorem dlineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
+theorem dlineMismatch_le_rejection_interchanged (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
     outcomeEventWeight S.toStrategy
         ((.point W), pauliCL P (.point W) z)
         ((.dline W), pauliCL P (.dline W) z)
@@ -80,7 +78,6 @@ theorem dlineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ
       pauliRejectionAt S.toStrategy (pointDlineEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
-  change pauliWinPredicate P _ _ A B = false
   apply Bool.eq_false_iff.mpr
   intro htrue
   exact hne (dlineLabels_eq_of_win P W z B A
@@ -88,8 +85,7 @@ theorem dlineMismatch_le_rejection_interchanged {P : AdmissibleParams} {ε : ℝ
 
 /-- Reversed-orientation source-answer mismatch mass for the completed point and
 line readouts. Paper `14_analysis_of_the_pauli_basis_test.tex:200-204,227`. -/
-noncomputable def lowDegreeMismatchMassInterchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind)
+noncomputable def lowDegreeMismatchMassInterchanged (S : ProjectiveSetting P ε) (W : PauliKind)
     (sample : LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) : ℝ :=
   outcomeEventWeight S.toStrategy
     (ProjectiveSetting.pointQuestion P W sample.2)
@@ -100,8 +96,7 @@ noncomputable def lowDegreeMismatchMassInterchanged {P : AdmissibleParams}
           (ProjectiveSetting.lineAnswerOrZero P sample.1 B))
 
 /-- The reversed axis component of the line sampler is the Pauli axis branch. -/
-theorem avg_alineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem avg_alineMismatch_eq_source_interchanged (S : ProjectiveSetting P ε) (W : PauliKind) :
     avgOver (aLinePointDist P.toLdParams)
         (lowDegreeMismatchMassInterchanged S W) =
       avgOver (uniformDistribution (PauliSpace P)) (fun z =>
@@ -126,8 +121,7 @@ theorem avg_alineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : �
   rfl
 
 /-- The reversed diagonal component of the line sampler is the Pauli branch. -/
-theorem avg_dlineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem avg_dlineMismatch_eq_source_interchanged (S : ProjectiveSetting P ε) (W : PauliKind) :
     avgOver (dLinePointDist P.toLdParams)
         (lowDegreeMismatchMassInterchanged S W) =
       avgOver (uniformDistribution (PauliSpace P)) (fun z =>
@@ -152,8 +146,7 @@ theorem avg_dlineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : �
   rfl
 
 /-- Reversed-orientation low-degree consistency is its mismatch mass. -/
-theorem lowDegreeConsistency_eq_mismatch_interchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem lowDegreeConsistency_eq_mismatch_interchanged (S : ProjectiveSetting P ε) (W : PauliKind) :
     consistencyDefect (linePointDist P.toLdParams)
         (fun sample a => heteroKron
           ((S.pointMeasOption .alice W sample.2).effect a) 1)
@@ -253,8 +246,7 @@ theorem win_low_degree_interchanged_explicit :
 
 /-- Reversed-orientation Pauli/point mismatch is contained in rejection. Paper
 `14_analysis_of_the_pauli_basis_test.tex:205-209,227`. -/
-theorem pauliBasisMismatch_le_rejection_interchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
+theorem pauliBasisMismatch_le_rejection_interchanged (S : ProjectiveSetting P ε) (W : PauliKind) (z : PauliSpace P) :
     outcomeEventWeight S.toStrategy
         ((.pauli W), pauliCL P (.pauli W) z)
         ((.point W), pauliCL P (.point W) z)
@@ -264,15 +256,13 @@ theorem pauliBasisMismatch_le_rejection_interchanged {P : AdmissibleParams}
       pauliRejectionAt S.toStrategy (pauliPointEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
-  change pauliWinPredicate P _ _ A B = false
   apply Bool.eq_false_iff.mpr
   intro htrue
   exact hne (pauliBasisLabels_eq_of_win P W z B A
     ((win_symm_pauli_point P W _ _ A B).symm.trans htrue)).symm
 
 /-- The reversed uniform point average is the sampled Pauli/point branch. -/
-theorem avg_pauliBasisMismatch_eq_source_interchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem avg_pauliBasisMismatch_eq_source_interchanged (S : ProjectiveSetting P ε) (W : PauliKind) :
     avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
         outcomeEventWeight S.toStrategy
           (pauliQuestion P W) (ProjectiveSetting.pointQuestion P W u)
@@ -295,8 +285,7 @@ theorem avg_pauliBasisMismatch_eq_source_interchanged {P : AdmissibleParams}
   exact (hld.trans hpoint).symm
 
 /-- Reversed-orientation Pauli-basis consistency is its mismatch mass. -/
-theorem pauliBasisConsistency_eq_mismatch_interchanged {P : AdmissibleParams}
-    {ε : ℝ} (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem pauliBasisConsistency_eq_mismatch_interchanged (S : ProjectiveSetting P ε) (W : PauliKind) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
         (fun u a => heteroKron ((S.pauliEvalMeas .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a))

@@ -26,27 +26,27 @@ open MIPStarRE.Quantum MIPStarRE.LDT DistanceCalculus
 
 noncomputable section
 
-private theorem conjBy_reindexOp {I J : Type} [Fintype I] [Fintype J]
-    (e : I ≃ J) (U A : Op J) :
-    conjBy (reindexOp e U) (reindexOp e A) = reindexOp e (conjBy U A) := by
-  rw [conjBy, ← ProjectiveSetting.reindexOp_conjTranspose,
-    ← WinImplications.reindexOp_mul, ← WinImplications.reindexOp_mul, conjBy]
+variable {I J : Type} [Fintype I] [Fintype J]
 
-private theorem conjBy_heteroKron {I J : Type} [Fintype I] [Fintype J]
-    (U A : Op I) (V B : Op J) :
+theorem conjBy_reindexOp (e : I ≃ J) (U A : Op J) :
+    conjBy (reindexOp e U) (reindexOp e A) = reindexOp e (conjBy U A) := by
+  simp [conjBy, ProjectiveSetting.reindexOp_conjTranspose, WinImplications.reindexOp_mul]
+
+theorem conjBy_heteroKron (U A : Op I) (V B : Op J) :
     conjBy (heteroKron U V) (heteroKron A B) =
       heteroKron (conjBy U A) (conjBy V B) := by
-  simp only [conjBy, MagicSquareRigidity.heteroKron_conjTranspose, heteroKron_mul]
+  simp [conjBy, heteroKron_conjTranspose, heteroKron_mul]
+
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
 
 /-- Simultaneous swaps conjugate each local operator by its own swap. This
 retains the heterogeneous local spaces in the calculation at paper lines 1701-1713. -/
 theorem ProjectiveSetting.conjBy_placeBoth_swap_placeSide
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} (S : ProjectiveSetting P epsilon)
+    (S : ProjectiveSetting P epsilon)
     (w : GlobalPairWitness S deltaG) (side : PlayerSide)
     (A : Op (ExtractionBlock P (S.LocalSpace side))) :
     conjBy (S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob)) (S.placeSide side A) =
       S.placeSide side (conjBy (swapUnitary w side) A) := by
-  classical
   cases side <;> simp only [ProjectiveSetting.placeBoth, ProjectiveSetting.placeSide,
     conjBy_reindexOp, conjBy_heteroKron]
   · congr 2
@@ -67,9 +67,9 @@ theorem opDistSq_conjBy_apply_eq {X I : Type} [Fintype X] [DecidableEq X]
     simp only [conjBy]
     calc
       _ = U * (M - N) * (Uᴴ * U) := by noncomm_ring
-      _ = _ := by rw [hU, Matrix.mul_one]
+      _ = _ := by simp_all
   unfold opDistSq opFamilyDistSq
-  simp only [Fintype.sum_unique]
+  simp
   apply avgOver_congr
   intro x
   rw [← applyOperatorToState_mul, hterm,
@@ -78,7 +78,7 @@ theorem opDistSq_conjBy_apply_eq {X I : Type} [Fintype X] [DecidableEq X]
 /-- After the swaps, the pulled-apart distance is exactly the distance of the
 canonical Pauli observables on the two extracted blocks. -/
 theorem opDistSq_extracted_eq_tildeObs
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} (S : ProjectiveSetting P epsilon)
+    (S : ProjectiveSetting P epsilon)
     (w : GlobalPairWitness S deltaG) (W : PauliKind) (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))
       (fun u => S.placeSide .alice (heteroKron (1 : Op (S.ExpandedLocalSpace .alice))
@@ -97,33 +97,7 @@ theorem opDistSq_extracted_eq_tildeObs
     S.conjBy_placeBoth_swap_placeSide w .bob,
     swapUnitary_conj_tildeObs w .alice W,
     swapUnitary_conj_tildeObs w .bob W] at h
-  simpa only [ProjectiveSetting.applyBoth] using h
-
-/-- The supplied global witness bounds the canonical Pauli disagreement on
-the swapped state, with a universal constant independent of the parameters.
-This is the distance form of paper `eq:qld-unitary-1`.
-
-**Unfaithful:** This uses the supplied-witness theorem
-`tildeObs_selfConsistent_ofGlobalPairWitness`, not the construction in
-`lem:qld-4-7`. The missing source construction and its planned composition
-with `exists_globalPairWitness` are recorded in
-`docs/paper-gaps/qpbt_extraction-transfer.tex`, issue Dengnifer/MIPStarRE-QPBT-bak#123. -/
-theorem extracted_obs_self_consistent_of_global_pair_witness_explicit
-    (P : AdmissibleParams) (epsilon deltaG : ℝ)
-    (hepsilon : 0 ≤ epsilon) (hepsilon_one : epsilon ≤ 1) (hdeltaG : 0 ≤ deltaG)
-    (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
-    (W : PauliKind) (j : Fin P.model.basisDim) :
-    opDistSq (uniformDistribution (PauliRegister P))
-      (fun u => S.placeSide .alice (heteroKron (1 : Op (S.ExpandedLocalSpace .alice))
-        (tauObservable W (P.model.basis j • u))))
-      (fun u => S.placeSide .bob (heteroKron (1 : Op (S.ExpandedLocalSpace .bob))
-        (tauObservable W (P.model.basis j • u))))
-      (S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat) ≤
-        deltaConstructPaulis pauliBaselineExtractionConstant
-          epsilon deltaG P.m P.d P.q := by
-  rw [opDistSq_extracted_eq_tildeObs]
-  exact tilde_obs_self_consistent_of_global_pair_witness_explicit
-    P epsilon deltaG hepsilon hepsilon_one hdeltaG S w W j
+  simp_all [ProjectiveSetting.applyBoth]
 
 end
 

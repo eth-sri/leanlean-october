@@ -40,7 +40,6 @@ theorem linePointDist_nondegenerate_weighted_collision_le {L : LdParams}
       (bound : ℝ) / Fintype.card (ScalarQ L) *
         avgOver (linePointDist L) (fun sample =>
           if sample.1.direction ≠ 0 then weight sample.1 else 0) := by
-  classical
   rw [avgOver_linePointDist_resample_parameter]
   rw [← avgOver_const_mul]
   apply avgOver_mono
@@ -52,7 +51,7 @@ theorem linePointDist_nondegenerate_weighted_collision_le {L : LdParams}
       (evalOpt_uniform_parameter_collision_le sample.1 hdir first second hne)
       (hweight sample.1)).trans_eq
       (mul_comm _ _)
-  · simp [hdir, avgOver]
+  simp_all [avgOver]
 
 end
 

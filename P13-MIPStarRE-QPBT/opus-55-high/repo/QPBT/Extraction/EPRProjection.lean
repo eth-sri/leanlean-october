@@ -36,7 +36,7 @@ def pauliCorrelation (W : PauliKind) : Op ((ι → K) × (ι → K)) :=
   (Fintype.card (ι → K) : ℂ)⁻¹ •
     ∑ u : ι → K, heteroKron (tauObservable W u) (tauObservable W u)
 
-private theorem avg_phaseSign_dotProduct (v : ι → K) :
+theorem avg_phaseSign_dotProduct (v : ι → K) :
     (Fintype.card (ι → K) : ℂ)⁻¹ *
         ∑ u : ι → K, phaseSign (binTrace K (dotProduct u v)) =
       if v = 0 then 1 else 0 := by
@@ -48,10 +48,7 @@ private theorem avg_phaseSign_dotProduct (v : ι → K) :
     simp only [Fintype.prod_boole, ← funext_iff]
     change (if v = 0 then (1 : ℂ) else 0) * star (if v = 0 then 1 else 0) = _
     split <;> simp
-  simp only [dotProduct_zero, map_zero, phaseSign, ite_true, one_smul] at h
-  rw [hv] at h
-  simpa only [Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul,
-    tauObservable_Z_apply, ite_true, one_mul] using h.symm
+  simp_all [dotProduct_zero, map_zero, phaseSign, one_smul, Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul, tauObservable_Z_apply]
 
 /-- The Z correlation projects onto equal computational-basis labels.
 This is the Fourier cancellation in paper lines 1736-1740. -/
@@ -71,7 +68,7 @@ theorem pauliCorrelation_Z_apply (x y : (ι → K) × (ι → K)) :
     simp_rw [hphase]
     rw [avg_phaseSign_dotProduct]
     letI : CharP K 2 := (Algebra.charP_iff (ZMod 2) K 2).mp (ZMod.charP 2)
-    simp only [funext_iff, Pi.add_apply, Pi.zero_apply, CharTwo.add_eq_zero]
+    simp [funext_iff, Pi.add_apply, CharTwo.add_eq_zero]
   · have h : x.1 ≠ y.1 ∨ x.2 ≠ y.2 := by
       by_contra h
       push Not at h
@@ -87,13 +84,8 @@ theorem pauliCorrelation_X_apply_diagonal (x : (ι → K) × (ι → K)) (a : ι
     heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply]
   simp_rw [tauObservable_X_apply]
   rw [Finset.sum_eq_single (x.1 - a)]
-  · simp [add_sub_cancel, eq_comm]
-  · intro u _ hu
-    have h : x.1 ≠ a + u := by
-      intro h
-      apply hu
-      rw [h, add_sub_cancel_left]
-    simp [h]
+  · grind
+  · grind
   · simp
 
 /-- The product `H_X H_Z` is the ordinary rank-one EPR projection, with no
@@ -118,10 +110,9 @@ theorem pauliCorrelation_mul_eq_epr :
       by_cases hx : x.1 = x.2
       · rw [if_pos hx, if_pos hx, if_pos rfl]
         exact (inv_sqrt_natCast_mul_conj (Fintype.card (ι → K))).symm
-      · simp [hx]
-    · simp [hy, Matrix.vecMulVec_apply, eprState]
-  · intro z _ hz
-    simp [hz]
+      simp_all
+    simp_all [Matrix.vecMulVec_apply, eprState]
+  · simp_all
   · simp
 
 /-- Each Pauli correlation average, with an arbitrary auxiliary register,
@@ -159,9 +150,7 @@ theorem norm_heteroKron_pauliCorrelation_apply_le {R : Type*}
         ‖applyOperatorToState (U u) ψ‖ :=
       mul_le_mul_of_nonneg_left (norm_sum_le _ _) (norm_nonneg _)
     _ = ‖ψ‖ := by
-      simp only [hnorm, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-      rw [norm_inv, Complex.norm_natCast, ← mul_assoc, inv_mul_cancel₀, one_mul]
-      positivity
+      simp_all
 
 end
 

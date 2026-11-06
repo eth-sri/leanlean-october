@@ -47,9 +47,11 @@ structure DirectLdParams where
   hk : 1 ≤ k
   hq : IsAdmissibleSize q
 
+variable (D : DirectLdParams)
+
 /-- The canonical scalar model for directly indexed parameters. -/
 @[reducible] noncomputable def DirectLdParams.model
-    (D : DirectLdParams) : FixedFieldModel D.q :=
+    : FixedFieldModel D.q :=
   fixedFieldModel D.q D.hq
 
 /-- The scalar field of a directly indexed low-degree game. -/
@@ -57,7 +59,7 @@ abbrev DirectScalarQ (D : DirectLdParams) := D.model.K
 
 /-- The first coordinate, available because directly indexed dimensions are
 positive. -/
-def DirectLdParams.firstIndex (D : DirectLdParams) : Fin D.m :=
+def DirectLdParams.firstIndex : Fin D.m :=
   ⟨0, lt_of_lt_of_le Nat.zero_lt_one D.hm⟩
 
 instance instNonemptyFinM_1 (D : DirectLdParams) : Nonempty (Fin D.m) := ⟨D.firstIndex⟩
@@ -93,26 +95,26 @@ instance instNonemptyDirectLdSpace (D : DirectLdParams) : Nonempty (DirectLdSpac
 
 /-- Decompose a direct sample into its point and the remaining independent
 coordinates. -/
-def directLdSpacePointEquiv (D : DirectLdParams) :
+def directLdSpacePointEquiv :
     DirectLdSpace D ≃
       (Fin D.m → DirectScalarQ D) ×
         (Fin D.m × (Fin D.m → DirectScalarQ D)) where
   toFun sample := (sample.point, sample.index, sample.direction)
   invFun sample := ⟨sample.1, sample.2.1, sample.2.2⟩
-  left_inv sample := by cases sample; rfl
-  right_inv sample := by cases sample; rfl
+  left_inv sample := by rfl
+  right_inv sample := by rfl
 
 /-- Decompose a direct sample into its stored index and the remaining
 independent coordinates. -/
-def directLdSpaceIndexEquiv (D : DirectLdParams) :
+def directLdSpaceIndexEquiv :
     DirectLdSpace D ≃
       Fin D.m ×
         ((Fin D.m → DirectScalarQ D) ×
           (Fin D.m → DirectScalarQ D)) where
   toFun sample := (sample.index, sample.point, sample.direction)
   invFun sample := ⟨sample.2.1, sample.1, sample.2.2⟩
-  left_inv sample := by cases sample; rfl
-  right_inv sample := by cases sample; rfl
+  left_inv sample := by rfl
+  right_inv sample := by rfl
 
 /-- Zero the coordinates preceding the directly sampled prefix index. -/
 def directPrefixProjection {D : DirectLdParams} (i : Fin D.m)
@@ -121,13 +123,11 @@ def directPrefixProjection {D : DirectLdParams} (i : Fin D.m)
 
 /-- Zeroing the coordinates preceding a prefix index is idempotent: the
 coordinates it leaves unchanged are exactly those it does not zero. -/
-theorem directPrefixProjection_idem (D : DirectLdParams) (i : Fin D.m)
+theorem directPrefixProjection_idem (i : Fin D.m)
     (v : Fin D.m → DirectScalarQ D) :
     directPrefixProjection i (directPrefixProjection i v) =
       directPrefixProjection i v := by
-  funext j
-  unfold directPrefixProjection
-  split_ifs <;> rfl
+  grind [directPrefixProjection]
 
 /-- Canonical line descriptions whose coordinate index is stored directly.
 Coordinates are numbered from zero, so `index = i` represents coordinate
@@ -150,13 +150,13 @@ abbrev DirectLineDescCode (D : DirectLdParams) :=
       (Fin D.m → DirectScalarQ D))
 
 /-- Encode a directly indexed line by its tag and mathematical data. -/
-def directLineDescCode (D : DirectLdParams) :
+def directLineDescCode :
     DirectLineDesc D → DirectLineDescCode D
   | .axis base index _ => .inl (base, index)
   | .diagonal base index direction _ _ => .inr (base, index, direction)
 
 /-- The direct-line code is injective by proof irrelevance. -/
-private theorem directLineDescCode_injective (D : DirectLdParams) :
+theorem directLineDescCode_injective :
     Function.Injective (directLineDescCode D) := by
   intro line line' h
   cases line with
@@ -164,16 +164,14 @@ private theorem directLineDescCode_injective (D : DirectLdParams) :
       cases line' with
       | axis base' index' baseFixed' =>
           simp only [directLineDescCode, Sum.inl.injEq, Prod.mk.injEq] at h
-          rcases h with ⟨rfl, rfl⟩
-          rfl
-      | diagonal => simp [directLineDescCode] at h
+          simp_all
+      | diagonal => simp_all [directLineDescCode]
   | diagonal base index direction baseFixed prefixZero =>
       cases line' with
-      | axis => simp [directLineDescCode] at h
+      | axis => simp_all [directLineDescCode]
       | diagonal base' index' direction' baseFixed' prefixZero' =>
           simp only [directLineDescCode, Sum.inr.injEq, Prod.mk.injEq] at h
-          rcases h with ⟨rfl, rfl, rfl⟩
-          rfl
+          simp_all
 
 /-- Directly indexed line descriptions form a finite type. -/
 noncomputable instance directLineDescFintype (D : DirectLdParams) :
@@ -210,31 +208,29 @@ noncomputable def DirectLineDesc.pointSet {D : DirectLdParams}
   linePoints line.base line.direction
 
 /-- Turn a direct sample into its canonical axis-line description. -/
-noncomputable def directALineDescOf (D : DirectLdParams)
-    (sample : DirectLdSpace D) : DirectLineDesc D :=
+noncomputable def directALineDescOf (sample : DirectLdSpace D) : DirectLineDesc D :=
   let direction := coordinateDirection sample.index
   let base := lineRepMap direction sample.point
   .axis base sample.index (lineRepMap_apply_self direction sample.point)
 
 /-- Turn a direct sample into its canonical diagonal-line description. -/
-noncomputable def directDLineDescOf (D : DirectLdParams)
-    (sample : DirectLdSpace D) : DirectLineDesc D :=
+noncomputable def directDLineDescOf (sample : DirectLdSpace D) : DirectLineDesc D :=
   let direction := directPrefixProjection sample.index sample.direction
   let base := lineRepMap direction sample.point
   .diagonal base sample.index direction
     (lineRepMap_apply_self direction sample.point) (by
       intro j hj
       change directPrefixProjection sample.index sample.direction j = 0
-      rw [directPrefixProjection, if_pos hj])
+      simp_all [directPrefixProjection])
 
 /-- The axis-line/point law with a directly sampled coordinate index. -/
-noncomputable def directALinePointDist (D : DirectLdParams) :
+noncomputable def directALinePointDist :
     Distribution (DirectLineDesc D × (Fin D.m → DirectScalarQ D)) :=
   (uniformDistribution (DirectLdSpace D)).map fun sample =>
     (directALineDescOf D sample, sample.point)
 
 /-- The diagonal-line/point law with a directly sampled prefix index. -/
-noncomputable def directDLinePointDist (D : DirectLdParams) :
+noncomputable def directDLinePointDist :
     Distribution (DirectLineDesc D × (Fin D.m → DirectScalarQ D)) :=
   (uniformDistribution (DirectLdSpace D)).map fun sample =>
     (directDLineDescOf D sample, sample.point)
@@ -243,25 +239,25 @@ noncomputable def directDLinePointDist (D : DirectLdParams) :
 laws.  This is the replacement for the otherwise undefined extended-dimension
 instance used at paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1020-1116`. -/
-noncomputable def directLinePointDist (D : DirectLdParams) :
+noncomputable def directLinePointDist :
     Distribution (DirectLineDesc D × (Fin D.m → DirectScalarQ D)) :=
   Distribution.mix (1 / 2) (by norm_num) (by norm_num)
     (directALinePointDist D) (directDLinePointDist D)
 
 /-- The directly indexed axis-line/point law is probabilistic. -/
-theorem directALinePointDist_isProbability (D : DirectLdParams) :
-    (directALinePointDist D).IsProbability := by
-  exact (uniformDistribution_isProbability (DirectLdSpace D)).map _
+theorem directALinePointDist_isProbability :
+    (directALinePointDist D).IsProbability :=
+  (uniformDistribution_isProbability (DirectLdSpace D)).map _
 
 /-- The directly indexed diagonal-line/point law is probabilistic. -/
-theorem directDLinePointDist_isProbability (D : DirectLdParams) :
-    (directDLinePointDist D).IsProbability := by
-  exact (uniformDistribution_isProbability (DirectLdSpace D)).map _
+theorem directDLinePointDist_isProbability :
+    (directDLinePointDist D).IsProbability :=
+  (uniformDistribution_isProbability (DirectLdSpace D)).map _
 
 /-- The directly indexed line-point mixture is probabilistic. -/
-theorem directLinePointDist_isProbability (D : DirectLdParams) :
-    (directLinePointDist D).IsProbability := by
-  exact Distribution.mix_isProbability _ _ _
+theorem directLinePointDist_isProbability :
+    (directLinePointDist D).IsProbability :=
+  Distribution.mix_isProbability _ _ _
     (directALinePointDist_isProbability D) (directDLinePointDist_isProbability D)
     (by norm_num) (by norm_num)
 

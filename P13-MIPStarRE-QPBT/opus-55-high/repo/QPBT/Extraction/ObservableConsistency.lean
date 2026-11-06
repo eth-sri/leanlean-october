@@ -72,15 +72,11 @@ theorem tilde_obs_self_consistent_of_global_pair_witness_card :
       (add_le_add (pullingMeas_eval_consistencyDefect_le w W) (le_refl _))
       (by norm_num : (0 : ℝ) ≤ 4))
   have heps : epsilon ≤ Real.sqrt epsilon := Real.le_sqrt_self_iff.mpr hepsilon_one
-  have hsqrt := Real.sqrt_nonneg epsilon
   have hratio : 0 ≤ (P.m * P.d : ℝ) / P.q :=
     div_nonneg (mul_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)) (Nat.cast_nonneg _)
-  have hscaled := mul_le_mul_of_nonneg_left heps
-    (mul_nonneg (by norm_num : (0 : ℝ) ≤ 32) hcard)
-  refine hbound.trans ?_
   unfold deltaConstructPaulis
   rw [Nat.cast_mul]
-  nlinarith [mul_nonneg hcard hdeltaG, mul_nonneg hcard hratio]
+  nlinarith
 
 /-- The pulled-apart observable consistency bound at the closed extraction
 coefficient `2800`. -/

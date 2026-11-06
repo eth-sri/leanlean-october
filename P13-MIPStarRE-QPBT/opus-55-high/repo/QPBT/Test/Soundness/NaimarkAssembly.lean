@@ -81,7 +81,7 @@ theorem exists_arbitrary_strategy_isometry_bounds :
     three_add_six_sq_deltaQld_le ha hb hε0 hε1
   refine ⟨pauliNaimarkWitness P S t, ?_, ?_, ?_⟩
   · rw [pauli_naimark_witness_state_distance_eq]
-    exact hstate'.trans hmono
+    linarith
   · intro W
     have hA' : pauliOperatorDistanceA P (pauliNaimarkStrategy P S) t W ≤
         deltaQld a b ε P.m P.d P.q := hA W

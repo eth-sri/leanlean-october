@@ -29,16 +29,5 @@ namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT
 
-/-- Restricting first to a larger register does not affect a subsequent
-restriction to a smaller register.  This is a formalization-only auxiliary
-for `lem:cl-kth` and `lem:cl-func-prod`, blueprint
-`lem:cl-restriction-idem`. -/
-theorem coordinateRestriction_coordinateRestriction {K ι : Type*} [Field K]
-    [DecidableEq ι] {S T : Finset ι} (hST : S ⊆ T) (x : ι → K) :
-    coordinateRestriction S (coordinateRestriction T x) = coordinateRestriction S x := by
-  ext a
-  by_cases ha : a ∈ S
-  · simp [coordinateRestriction, ha, hST ha]
-  · simp [coordinateRestriction, ha]
 
 end MIPStarRE.QPBT

@@ -43,7 +43,6 @@ theorem norm_marginal_sub_sq_le {β ι : Type*} [Fintype β]
     (D : Op ι) (ψ : EuclideanSpace ℂ ι) :
     ‖applyOperatorToState ((∑ b, Q b) - D) ψ‖ ^ 2 ≤
       4 * ∑ b, ‖applyOperatorToState (Q b - B.effect b * D) ψ‖ ^ 2 := by
-  classical
   let U : Op ι := ∑ b, Q b * (Q b - B.effect b * Q b)
   let V : Op ι := ∑ b, B.effect b * (Q b - B.effect b * D)
   have hU : ‖applyOperatorToState U ψ‖ ^ 2 ≤
@@ -75,7 +74,7 @@ theorem norm_marginal_sub_sq_le {β ι : Type*} [Fintype β]
     simpa only [applyOperatorToState, map_add, LinearMap.add_apply] using
       norm_add_le (applyOperatorToState U ψ) (applyOperatorToState V ψ)
   have hsquare := pow_le_pow_left₀ (norm_nonneg _) htriangle 2
-  nlinarith [sq_nonneg (‖applyOperatorToState U ψ‖ - ‖applyOperatorToState V ψ‖)]
+  nlinarith
 
 end
 

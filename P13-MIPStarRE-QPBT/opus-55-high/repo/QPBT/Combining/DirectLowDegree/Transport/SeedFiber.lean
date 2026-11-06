@@ -62,12 +62,11 @@ theorem matrixMeasurementTransport_isProjective
     MIPStarRE.QPBT.Measurement.IsProjective (matrixMeasurementTransport e M) :=
   fun b => hM (e.symm b)
 
+variable {alpha iota block : Type*} [Fintype alpha] [Fintype iota] [DecidableEq iota] [Fintype block] [DecidableEq block]
+
 /-- Assemble a family of matrix measurements as diagonal blocks indexed by a
 finite classical register. -/
 noncomputable def blockDiagonalMeasurement
-    {alpha iota block : Type*}
-    [Fintype alpha] [Fintype iota] [DecidableEq iota]
-    [Fintype block] [DecidableEq block]
     (M : block → MIPStarRE.Quantum.Measurement alpha iota) :
     MIPStarRE.Quantum.Measurement alpha (iota × block) :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne
@@ -79,7 +78,7 @@ noncomputable def blockDiagonalMeasurement
       simp only [Matrix.sum_apply, Matrix.blockDiagonal_apply]
       by_cases hrs : r = s
       · subst s
-        simp only [if_pos]
+        simp
         calc
           ∑ x, (M r).effect x i j = (1 : Matrix iota iota ℂ) i j :=
             by
@@ -90,12 +89,9 @@ noncomputable def blockDiagonalMeasurement
                 change (if i = j then 1 else 0) =
                   (if (i, r) = (j, r) then 1 else 0)
                 simp
-      · simp [hrs])
+      simp_all)
 
 @[simp] theorem blockDiagonalMeasurement_effect
-    {alpha iota block : Type*}
-    [Fintype alpha] [Fintype iota] [DecidableEq iota]
-    [Fintype block] [DecidableEq block]
     (M : block → MIPStarRE.Quantum.Measurement alpha iota)
     (a : alpha) :
     (blockDiagonalMeasurement M).effect a =
@@ -104,9 +100,6 @@ noncomputable def blockDiagonalMeasurement
 
 /-- A block-diagonal family of projective measurements is projective. -/
 theorem blockDiagonalMeasurement_isProjective
-    {alpha iota block : Type*}
-    [Fintype alpha] [Fintype iota] [DecidableEq iota]
-    [Fintype block] [DecidableEq block]
     (M : block → MIPStarRE.Quantum.Measurement alpha iota)
     (hM : ∀ r, MIPStarRE.QPBT.Measurement.IsProjective (M r)) :
     MIPStarRE.QPBT.Measurement.IsProjective (blockDiagonalMeasurement M) := by
@@ -128,9 +121,11 @@ theorem blockDiagonalMeasurement_isProjective
 
 /-! ## The correlated residue state -/
 
+variable (L : LdParams)
+
 /-- The normalized maximally correlated state on the common seed-fiber
 residue. -/
-noncomputable def seedResidueAncilla (L : LdParams) :
+noncomputable def seedResidueAncilla :
     EuclideanSpace ℂ
       (Fin (L.q / L.m) × Fin (L.q / L.m)) := by
   letI : Nonempty (Fin (L.q / L.m)) :=
@@ -138,16 +133,18 @@ noncomputable def seedResidueAncilla (L : LdParams) :
   exact eprState (Fin (L.q / L.m))
 
 /-- The seed-residue ancilla has unit norm. -/
-theorem seedResidueAncilla_norm (L : LdParams) :
+theorem seedResidueAncilla_norm :
     ‖seedResidueAncilla L‖ = 1 := by
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   exact eprState_norm (Fin (L.q / L.m))
 
+variable {G : Game}
+
 /-- Tensor the original strategy state with the maximally correlated residue
 state and shuffle the factors back into the two local carriers. -/
 noncomputable def seedFiberLiftedState
-    {G : Game} (S : Strategy G) (L : LdParams) :
+    (S : Strategy G) (L : LdParams) :
     EuclideanSpace ℂ
       ((S.ιA × Fin (L.q / L.m)) × (S.ιB × Fin (L.q / L.m))) :=
   reindexState prodShuffle (vecTensor S.ψ (seedResidueAncilla L))
@@ -155,7 +152,7 @@ noncomputable def seedFiberLiftedState
 /-- The correlated seed-fiber lift preserves normalization of the strategy
 state. -/
 theorem seedFiberLiftedState_norm
-    {G : Game} (S : Strategy G) (L : LdParams) :
+    (S : Strategy G) (L : LdParams) :
     ‖seedFiberLiftedState S L‖ = 1 := by
   rw [seedFiberLiftedState, reindexState_norm_eq, vecTensor_norm_eq,
     S.ψ_norm, seedResidueAncilla_norm, one_mul]
@@ -165,16 +162,14 @@ theorem seedFiberLiftedState_norm
 /-- The seed-indexed question selected in one residue block of a direct
 question.  Applying `ldCL` ensures that irrelevant ambient coordinates are
 canonicalized exactly as in the source game. -/
-noncomputable def seededLdQuestion (L : LdParams)
-    (q : DirectLdQuestion L.toDirectLdParams)
+noncomputable def seededLdQuestion (q : DirectLdQuestion L.toDirectLdParams)
     (residue : Fin (L.q / L.m)) : LdQuestion L :=
   (q.1, ldCL L q.1 (ldSpaceOfDirectResidue L q.2 residue))
 
 /-- Dilate a strategy for the seed-indexed low-degree game to the directly
 indexed game.  The two local carriers receive correlated copies of the seed
 residue, and each measurement is block diagonal in that residue. -/
-noncomputable def ldStrategyToDirect (L : LdParams)
-    (S : Strategy (ldGame L)) : Strategy (directLdGame L.toDirectLdParams) where
+noncomputable def ldStrategyToDirect (S : Strategy (ldGame L)) : Strategy (directLdGame L.toDirectLdParams) where
   ιA := S.ιA × Fin (L.q / L.m)
   ιB := S.ιB × Fin (L.q / L.m)
   ψ := seedFiberLiftedState S L
@@ -187,8 +182,7 @@ noncomputable def ldStrategyToDirect (L : LdParams)
       (S.B (seededLdQuestion L q residue))
 
 /-- Projectivity is preserved by the correlated seed-fiber dilation. -/
-theorem ldStrategyToDirect_isProjective (L : LdParams)
-    (S : Strategy (ldGame L)) (hS : S.IsProjective) :
+theorem ldStrategyToDirect_isProjective (S : Strategy (ldGame L)) (hS : S.IsProjective) :
     (ldStrategyToDirect L S).IsProjective := by
   constructor
   · intro q
@@ -202,39 +196,18 @@ theorem ldStrategyToDirect_isProjective (L : LdParams)
     apply matrixMeasurementTransport_isProjective
     exact hS.2 (seededLdQuestion L q residue)
 
-@[simp] theorem ldStrategyToDirect_A_effect (L : LdParams)
-    (S : Strategy (ldGame L))
-    (q : DirectLdQuestion L.toDirectLdParams)
-    (answer : DirectLdAnswer L.toDirectLdParams) :
-    ((ldStrategyToDirect L S).A q).effect answer =
-      Matrix.blockDiagonal fun residue =>
-        (S.A (seededLdQuestion L q residue)).effect
-          ((ldDirectAnswerEquiv L).symm answer) :=
-  rfl
 
-@[simp] theorem ldStrategyToDirect_B_effect (L : LdParams)
-    (S : Strategy (ldGame L))
-    (q : DirectLdQuestion L.toDirectLdParams)
-    (answer : DirectLdAnswer L.toDirectLdParams) :
-    ((ldStrategyToDirect L S).B q).effect answer =
-      Matrix.blockDiagonal fun residue =>
-        (S.B (seededLdQuestion L q residue)).effect
-          ((ldDirectAnswerEquiv L).symm answer) :=
-  rfl
 
 /-- Coordinate formula for the correlated residue lift. -/
 theorem seedFiberLiftedState_apply
-    {G : Game} (S : Strategy G) (L : LdParams)
+    (S : Strategy G) (L : LdParams)
     (i : S.ιA) (j : S.ιB)
     (r s : Fin (L.q / L.m)) :
     seedFiberLiftedState S L ((i, r), (j, s)) =
       if r = s then
         S.ψ (i, j) * (Real.sqrt (Fintype.card (Fin (L.q / L.m)) : ℝ) : ℂ)⁻¹
       else 0 := by
-  letI : Nonempty (Fin (L.q / L.m)) :=
-    Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
-  simp [seedFiberLiftedState, reindexState, vecTensor, seedResidueAncilla,
-    eprState, prodShuffle]
+  simp [seedFiberLiftedState, reindexState, vecTensor, seedResidueAncilla, eprState, prodShuffle]
 
 end
 

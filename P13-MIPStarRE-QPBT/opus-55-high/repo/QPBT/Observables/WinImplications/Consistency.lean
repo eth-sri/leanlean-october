@@ -44,14 +44,7 @@ theorem loopMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
         (t, pauliCL P t z) (t, pauliCL P t z) (fun A B => A ≠ B) ≤
       pauliRejectionAt S.toStrategy (pauliLoopEdge t) z := by
   unfold pauliRejectionAt pauliSourceQuestions pauliLoopEdge
-  dsimp
-  apply outcome_event_weight_mono
-  intro A B hne
-  simp only [pauliWinPredicate, Bool.and_eq_true, ↓reduceIte,
-    Bool.if_false_right, Bool.decide_and, Bool.decide_eq_true,
-    Bool.and_eq_false_imp, decide_eq_false_iff_not, and_imp]
-  intro _ _
-  exact hne
+  simp_all [outcome_event_weight_mono, pauliWinPredicate, Bool.and_eq_true, reduceIte, Bool.decide_and, Bool.decide_eq_true, Bool.and_eq_false_imp, decide_eq_false_iff_not, and_imp]
 
 end WinImplications
 

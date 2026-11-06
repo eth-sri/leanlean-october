@@ -57,19 +57,18 @@ noncomputable def rightPlacedMeasurement {α ιA ιB : Type*}
       change ∑ a : α, rightTensor (ι₁ := ιA) (M.effect a) = 1
       rw [rightTensor_finset_sum, M.sum_eq_one, rightTensor_one])
 
+variable {ιA ιB : Type*} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 /-- Formalization-only auxiliary lemma for Fact 4.26: products of left and right
 placements evaluate as a Kronecker product. -/
-theorem placed_product_stateQForm_eq {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB]
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (A : Op ιA) (B : Op ιB) :
+theorem placed_product_stateQForm_eq (ψ : EuclideanSpace ℂ (ιA × ιB)) (A : Op ιA) (B : Op ιB) :
     stateQForm ψ (heteroKron A 1 * heteroKron 1 B) =
       stateQForm ψ (heteroKron A B) := by
   congr 1
   exact leftTensor_mul_rightTensor_eq_opTensor A B
 
 /-- The (possibly unnormalized) rank-one state associated to a Euclidean vector. -/
-private noncomputable def vectorQuantumState {ι : Type*}
+noncomputable def vectorQuantumState {ι : Type*}
     [Fintype ι] [DecidableEq ι]
     (ψ : EuclideanSpace ℂ ι) : QuantumState ι where
   density := pureDensity ψ.ofLp
@@ -79,24 +78,16 @@ private noncomputable def vectorQuantumState {ι : Type*}
       (by positivity : 0 ≤ (Fintype.card ι : ℂ))
 
 /-- Evaluation in the rank-one vector state is the corresponding quadratic form. -/
-private theorem vectorQuantumState_ev_eq_stateQForm {ι : Type*}
+theorem vectorQuantumState_ev_eq_stateQForm {ι : Type*}
     [Fintype ι] [DecidableEq ι] [Nonempty ι]
     (ψ : EuclideanSpace ℂ ι) (T : Op ι) :
     ev (vectorQuantumState ψ) T = stateQForm ψ T := by
-  have hcard : (Fintype.card ι : ℂ) ≠ 0 :=
-    Nat.cast_ne_zero.mpr Fintype.card_ne_zero
   change (MIPStarRE.Quantum.normalizedTrace (pureDensity ψ.ofLp * T)).re =
     stateQForm ψ T
   rw [MIPStarRE.Quantum.normalizedTrace_mul_comm]
   unfold pureDensity MIPStarRE.Quantum.normalizedTrace
   rw [Matrix.mul_smul, Matrix.mul_vecMulVec, Matrix.trace_smul, Matrix.trace_vecMulVec]
-  change (((Fintype.card ι : ℂ) *
-      ((T *ᵥ ψ.ofLp) ⬝ᵥ star ψ.ofLp)) /
-      (Fintype.card ι : ℂ)).re = stateQForm ψ T
-  rw [mul_div_cancel_left₀ _ hcard]
-  unfold stateQForm applyOperatorToState
-  rw [EuclideanSpace.inner_eq_star_dotProduct]
-  simp [Matrix.toEuclideanLin, Matrix.toLpLin_apply]
+  simp [mul_div_cancel_left₀, stateQForm, applyOperatorToState, EuclideanSpace.inner_eq_star_dotProduct, Matrix.toEuclideanLin, Matrix.toLpLin_apply]
 
 /-- Formalization-only auxiliary lemma for Fact 4.26: postprocessing can only
 increase diagonal tensor overlap. -/
@@ -110,15 +101,11 @@ theorem diagonal_postprocess_stateQForm_ge {α β ιA ιB : Type*}
     (∑ b : β, stateQForm ψ
         (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b))) ≥
       ∑ a : α, stateQForm ψ (heteroKron (A.effect a) (B.effect a)) := by
-  classical
   cases isEmpty_or_nonempty (ιA × ιB) with
   | inl hι =>
-      letI := hι
       have hψ : ψ = 0 := Subsingleton.elim _ _
-      subst ψ
-      simp [stateQForm, applyOperatorToState]
+      simp_all [stateQForm, applyOperatorToState]
   | inr hι =>
-      letI := hι
       letI : Nonempty ιA := ⟨(Classical.choice hι).1⟩
       letI : Nonempty ιB := ⟨(Classical.choice hι).2⟩
       let HA : FiniteHilbertSpace :=
@@ -131,9 +118,9 @@ theorem diagonal_postprocess_stateQForm_ge {α β ιA ιB : Type*}
           instFintype := inferInstance
           instDecidableEq := inferInstance
           instNonempty := inferInstance }
-      let As : SubMeas α ιA :=
+      let As :=
         (MatrixMeasurement.toMeasurement (H := HA) A).toSubMeas
-      let Bs : SubMeas α ιB :=
+      let Bs :=
         (MatrixMeasurement.toMeasurement (H := HB) B).toSubMeas
       have hAoutcome (a : α) : As.outcome a = A.effect a := by
         simp [As, HA]
@@ -157,11 +144,7 @@ theorem diagonal_postprocess_stateQForm_ge {α β ιA ιB : Type*}
         exact hBoutcome a
       have h := MIPStarRE.LDT.Preliminaries.qMatchMass_leftRight_postprocess_ge
         (vectorQuantumState ψ) As Bs f
-      unfold qMatchMass at h
-      simp only [leftPlacedSubMeas_outcome, rightPlacedSubMeas_outcome] at h
-      simpa only [hAoutcome, hBoutcome, hApost, hBpost,
-        leftTensor_mul_rightTensor_eq_opTensor,
-        vectorQuantumState_ev_eq_stateQForm, MIPStarRE.QPBT.heteroKron] using h
+      grind [qMatchMass, leftPlacedSubMeas_outcome, rightPlacedSubMeas_outcome, leftTensor_mul_rightTensor_eq_opTensor, vectorQuantumState_ev_eq_stateQForm, MIPStarRE.QPBT.heteroKron]
 
 /-- The squared effects in one fiber of a pair-valued measurement sum to at
 most the identity. This is the formalization-only estimate
@@ -172,7 +155,6 @@ theorem measurement_fiber_sum_adjoint_mul_le_one {α β ι : Type*}
     [Fintype α] [Fintype β] [Fintype ι] [DecidableEq ι]
     (M : MIPStarRE.Quantum.Measurement (α × β) ι) (a : α) :
     ∑ b : β, (M.effect (a, b))ᴴ * M.effect (a, b) ≤ 1 := by
-  classical
   have hsquare_le (z : α × β) :
       (M.effect z)ᴴ * M.effect z ≤ M.effect z := by
     rw [measurement_effect_hermitian M z]
@@ -203,9 +185,7 @@ theorem left_fiber_contraction {α β ιA ιB : Type*}
           leftTensor (ι₂ := ιB) (M.effect (a, b)) =
         ∑ b : β, leftTensor (ι₂ := ιB)
           ((M.effect (a, b))ᴴ * M.effect (a, b)) := by
-      apply Finset.sum_congr rfl
-      intro b _
-      rw [leftTensor_conjTranspose, leftTensor_mul_leftTensor]
+      simp [leftTensor_conjTranspose, leftTensor_mul_leftTensor]
     _ = leftTensor (ι₂ := ιB)
         (∑ b : β, (M.effect (a, b))ᴴ * M.effect (a, b)) :=
       leftTensor_finset_sum Finset.univ _
@@ -228,9 +208,7 @@ theorem right_fiber_contraction {α β ιA ιB : Type*}
           rightTensor (ι₁ := ιA) (M.effect (a, b)) =
         ∑ b : β, rightTensor (ι₁ := ιA)
           ((M.effect (a, b))ᴴ * M.effect (a, b)) := by
-      apply Finset.sum_congr rfl
-      intro b _
-      rw [rightTensor_conjTranspose, rightTensor_mul_rightTensor]
+      simp [rightTensor_conjTranspose, rightTensor_mul_rightTensor]
     _ = rightTensor (ι₁ := ιA)
         (∑ b : β, (M.effect (a, b))ᴴ * M.effect (a, b)) :=
       rightTensor_finset_sum Finset.univ _
@@ -251,7 +229,6 @@ theorem postprocess_effect_mul_effect {ζ α ι : Type*}
     (f : ζ → α) (b : α) (z : ζ) :
     (M.postprocess f).effect b * M.effect z =
       if f z = b then M.effect z else 0 := by
-  classical
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.sum_mul]
   calc
     ∑ y ∈ Finset.univ.filter (fun y => f y = b), M.effect y * M.effect z =
@@ -263,70 +240,29 @@ theorem postprocess_effect_mul_effect {ζ α ι : Type*}
       · subst y
         rw [if_pos rfl]
         exact (hM z).isIdempotentElem.eq
-      · rw [if_neg hyz]
-        exact projective_effect_mul_effect_eq_zero M hM hyz
+      simp_all [projective_effect_mul_effect_eq_zero]
     _ = if f z = b then M.effect z else 0 := by simp
 
-/-- Formalization-only auxiliary lemma for approximate commutation at paper
-lines 410--461: compatible projective marginals multiply to the joint effect. -/
-theorem joint_marginal_product {α β γ ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype γ] [DecidableEq γ] [Fintype ι] [DecidableEq ι]
-    (M : MIPStarRE.Quantum.Measurement ((α × β) × γ) ι)
-    (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
-    (a : α) (b : β) (c : γ) :
-    ((M.postprocess (fun abc => abc.1)).effect (a, b)) *
-        ((M.postprocess (fun abc => (abc.1.1, abc.2))).effect (a, c)) =
-      M.effect ((a, b), c) := by
-  classical
-  simp only [MIPStarRE.Quantum.Measurement.postprocess_effect]
-  rw [Finset.mul_sum]
-  calc
-    ∑ z ∈ Finset.univ.filter (fun z : (α × β) × γ =>
-        (z.1.1, z.2) = (a, c)),
-        ((M.postprocess (fun abc => abc.1)).effect (a, b)) * M.effect z =
-      ∑ z ∈ Finset.univ.filter (fun z : (α × β) × γ =>
-        (z.1.1, z.2) = (a, c)), if z.1 = (a, b) then M.effect z else 0 := by
-      apply Finset.sum_congr rfl
-      intro z _
-      exact postprocess_effect_mul_effect M hM (fun abc => abc.1) (a, b) z
-    _ = M.effect ((a, b), c) := by
-      rw [Finset.sum_eq_single ((a, b), c)]
-      · simp
-      · intro z hz hne
-        have hzfiber := (Finset.mem_filter.mp hz).2
-        rw [if_neg]
-        intro hzfirst
-        apply hne
-        exact Prod.ext hzfirst (congrArg (fun p : α × γ => p.2) hzfiber)
-      · simp
+variable {α β γ ι : Type*} [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β] [Fintype γ] [DecidableEq γ] [Fintype ι] [DecidableEq ι]
 
-/-- Formalization-only auxiliary lemma for approximate commutation at paper
-lines 410--461: compatible projective marginals multiply to the joint effect in
-reverse order. -/
-theorem joint_marginal_product_rev {α β γ ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype γ] [DecidableEq γ] [Fintype ι] [DecidableEq ι]
-    (M : MIPStarRE.Quantum.Measurement ((α × β) × γ) ι)
-    (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
-    (a : α) (b : β) (c : γ) :
-    ((M.postprocess (fun abc => (abc.1.1, abc.2))).effect (a, c)) *
-        ((M.postprocess (fun abc => abc.1)).effect (a, b)) =
-      M.effect ((a, b), c) := by
-  have habHerm := measurement_effect_hermitian
-    (M.postprocess (fun abc => abc.1)) (a, b)
-  have hacHerm := measurement_effect_hermitian
-    (M.postprocess (fun abc => (abc.1.1, abc.2))) (a, c)
-  have hjointHerm := measurement_effect_hermitian M ((a, b), c)
-  have h := congrArg Matrix.conjTranspose (joint_marginal_product M hM a b c)
-  rw [Matrix.conjTranspose_mul, hacHerm, habHerm, hjointHerm] at h
-  exact h
+/-- Two coarse-grainings of one projective measurement commute. -/
+theorem postprocess_effect_commute {ζ α β V : Type*}
+    [Fintype ζ] [DecidableEq ζ] [Fintype α] [DecidableEq α]
+    [Fintype β] [DecidableEq β] [Fintype V] [DecidableEq V]
+    (M : MIPStarRE.Quantum.Measurement ζ V) (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
+    (f : ζ → α) (g : ζ → β) (a : α) (b : β) :
+    Commute ((M.postprocess f).effect a) ((M.postprocess g).effect b) := by
+  rw [Measurement.postprocess_effect, Measurement.postprocess_effect]
+  refine Commute.sum_left _ _ _ fun x _ => Commute.sum_right _ _ _ fun y _ => ?_
+  by_cases hxy : x = y
+  · subst y
+    exact Commute.refl _
+  · rw [commute_iff_eq, projective_effect_mul_effect_eq_zero M hM hxy,
+      projective_effect_mul_effect_eq_zero M hM (Ne.symm hxy)]
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: operators placed on opposite tensor factors commute. -/
-theorem left_right_commute {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (A : Op ιA) (B : Op ιB) :
+theorem left_right_commute (A : Op ιA) (B : Op ιB) :
     leftTensor (ι₂ := ιB) A * rightTensor (ι₁ := ιA) B =
       rightTensor (ι₁ := ιA) B * leftTensor (ι₂ := ιB) A := by
   rw [leftTensor_mul_rightTensor_eq_opTensor,
@@ -342,31 +278,14 @@ theorem opFamilyDistSq_reindex {X α β ι : Type*}
     opFamilyDistSq μ A B ψ =
       opFamilyDistSq μ (fun x b => A x (e.symm b))
         (fun x b => B x (e.symm b)) ψ := by
-  unfold opFamilyDistSq avgOver
   apply Finset.sum_congr rfl
   intro x _
   congr 1
   exact Fintype.sum_equiv e
     (fun a => ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2)
     (fun b => ‖applyOperatorToState (A x (e.symm b) - B x (e.symm b)) ψ‖ ^ 2)
-    (by intro a; simp)
+    (by simp)
 
-/-- Formalization-only auxiliary lemma for approximate commutation at paper
-lines 410--461: pointwise equal operator families have equal state-dependent
-distance. -/
-theorem opFamilyDistSq_congr {X α ι : Type*}
-    [Fintype α] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A B A' B' : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι)
-    (hA : ∀ x a, A x a = A' x a) (hB : ∀ x a, B x a = B' x a) :
-    opFamilyDistSq μ A B ψ = opFamilyDistSq μ A' B' ψ := by
-  unfold opFamilyDistSq avgOver
-  apply Finset.sum_congr rfl
-  intro x _
-  congr 1
-  apply Finset.sum_congr rfl
-  intro a _
-  rw [hA x a, hB x a]
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: pointwise equal operator differences have equal state-dependent
@@ -378,20 +297,15 @@ theorem opFamilyDistSq_congr_sub {X α ι : Type*}
     (h : ∀ x a, A x a - B x a = A' x a - B' x a) :
     opFamilyDistSq μ A B ψ = opFamilyDistSq μ A' B' ψ := by
   unfold opFamilyDistSq avgOver
-  apply Finset.sum_congr rfl
-  intro x _
-  congr 1
-  apply Finset.sum_congr rfl
-  intro a _
-  rw [h x a]
+  simp_all
 
 /-- Formalization-only definition used in approximate commutation at paper
 lines 410--461: exchange the final two coordinates of a nested product. -/
 def swapLast (α β γ : Type*) : ((α × γ) × β) ≃ ((α × β) × γ) where
   toFun p := ((p.1.1, p.2), p.1.2)
   invFun p := ((p.1.1, p.2), p.1.2)
-  left_inv := by rintro ⟨⟨a, c⟩, b⟩; rfl
-  right_inv := by rintro ⟨⟨a, b⟩, c⟩; rfl
+  left_inv := by grind
+  right_inv := by grind
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: the inverse of `swapLast` has the same coordinate formula. -/

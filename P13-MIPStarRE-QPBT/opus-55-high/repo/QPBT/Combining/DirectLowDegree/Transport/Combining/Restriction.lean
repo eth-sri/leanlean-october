@@ -75,28 +75,26 @@ def combinedRestrictSubstitution {K : Type*} [CommSemiring K] {m : ℕ} (k : ℕ
   fun i => Sum.elim (fun j : Fin m => MvPolynomial.C (u j))
     (fun r : Fin k => MvPolynomial.X r) (finSumFinEquiv.symm i)
 
-@[simp] theorem combinedRestrictSubstitution_point {K : Type*} [CommSemiring K]
-    {m k : ℕ} (u : Fin m → K) (j : Fin m) :
+variable {K : Type*} [CommSemiring K] {m k : ℕ}
+
+@[simp] theorem combinedRestrictSubstitution_point (u : Fin m → K) (j : Fin m) :
     combinedRestrictSubstitution k u (combinedPointVar m k j) =
       MvPolynomial.C (u j) := by
   simp [combinedRestrictSubstitution, combinedPointVar]
 
-@[simp] theorem combinedRestrictSubstitution_coefficient {K : Type*} [CommSemiring K]
-    {m k : ℕ} (u : Fin m → K) (r : Fin k) :
+@[simp] theorem combinedRestrictSubstitution_coefficient (u : Fin m → K) (r : Fin k) :
     combinedRestrictSubstitution k u (combinedCoefficientVar m k r) =
       (MvPolynomial.X r : MvPolynomial (Fin k) K) := by
   simp [combinedRestrictSubstitution, combinedCoefficientVar]
 
 /-- The polynomial `p(u, ·)` in the combining variables obtained from `p` by
 substituting the point `u` for the point variables. -/
-def combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) : MvPolynomial (Fin k) K :=
+def combinedRestrict (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) : MvPolynomial (Fin k) K :=
   MvPolynomial.aeval (combinedRestrictSubstitution k u) p
 
 /-- Evaluating the restriction of `p` at `u` at a combining vector `α`
 evaluates `p` at the combined point with parts `u` and `α`. -/
-theorem eval_combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
-    (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) (α : Fin k → K) :
+theorem eval_combinedRestrict (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) (α : Fin k → K) :
     MvPolynomial.eval α (combinedRestrict p u) =
       MvPolynomial.eval (combinedPoint u α) p := by
   have hcomp : (MvPolynomial.aeval (R := K) α).comp

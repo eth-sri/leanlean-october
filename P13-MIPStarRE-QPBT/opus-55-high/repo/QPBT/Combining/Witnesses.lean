@@ -1,10 +1,40 @@
 module
 
 public import QPBT.Combining.Defs
-public import QPBT.Combining.DirectLowDegree
+public import QPBT.Combining.DirectLowDegree.Soundness
+public import QPBT.Combining.DirectLowDegree.AnyStrategySoundness
+public import QPBT.Combining.DirectLowDegree.CoefficientCollision
+public import QPBT.Combining.DirectLowDegree.CoefficientConsistency
+public import QPBT.Combining.DirectLowDegree.Transport.Consistency.Compression
+public import QPBT.Combining.DirectLowDegree.Transport.Consistency.Defect
+public import QPBT.Combining.DirectLowDegree.Transport.LineResampling
+public import QPBT.Combining.DirectLowDegree.Transport.Strategy
+public import QPBT.Combining.DirectLowDegree.GameValue
+public import QPBT.Combining.DirectLowDegree.RejectionBounds
+public import QPBT.Combining.DirectLowDegree.Transport.PassConversion
+public import QPBT.Combining.DirectLowDegree.Transport.SeedFiberValue
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.Combining.DirectLowDegree.Transport.Simultaneous
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Linearity
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Strategy
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.QuestionLaw
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.GameValue
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.WinPredicate
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Value
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Restriction
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Coefficients
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.ExactLinearity
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Recovery
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.RecoveryDefect
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.RecoveryTransport
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.SimultaneousGeneral
+public import QPBT.Combining.DirectLowDegree.Transport.Combining.Error
+public import QPBT.Combining.DirectLowDegree.Transport.PointAgreement
+public import QPBT.Games.Sandwich.Support
+public import QPBT.Combining.DirectLowDegree.ExtendedCoefficientLoss
 public import QPBT.Games.Consistency
 public import QPBT.Observables.LineMeasurement
-public import QPBT.Observables.WinImplications
+public import QPBT.Observables.WinImplications.InterchangedCommutation
 
 /-!
 # Witnesses for combining the Pauli bases
@@ -40,18 +70,19 @@ noncomputable section
 
 /-! ## The canonical scalar identification -/
 
+variable (P : AdmissibleParams)
+
 /-- Identify the direct extended game's scalar field with the Pauli scalar
 field.  Both are selected by `fixedFieldModel`; only their proof argument for
 admissibility differs. -/
-noncomputable def extendedDirectScalarEquiv (P : AdmissibleParams) :
+noncomputable def extendedDirectScalarEquiv :
     DirectScalarQ P.extendedDirectLd ≃+* PauliScalar P := by
   have h : P.extendedDirectLd.hq = P.hq := Subsingleton.elim _ _
   cases h
   exact RingEquiv.refl _
 
 /-- Transport an extended direct point into the canonical Pauli scalar field. -/
-def directPointToPauli (P : AdmissibleParams)
-    (u : Fin P.extendedDirectLd.m -> DirectScalarQ P.extendedDirectLd) :
+def directPointToPauli (u : Fin P.extendedDirectLd.m -> DirectScalarQ P.extendedDirectLd) :
     Fin (2 * P.m + 2) -> PauliScalar P :=
   fun i => extendedDirectScalarEquiv P (u i)
 
@@ -152,8 +183,7 @@ abbrev SubLineComponent (P : AdmissibleParams) :=
   LineKind × (Fin P.m × Fin P.m)
 
 /-- Select the restricted line-point distribution of a given kind and index. -/
-noncomputable def restrictedLinePointDist (P : AdmissibleParams)
-    (kind : LineKind) (i : Fin P.m) :
+noncomputable def restrictedLinePointDist (kind : LineKind) (i : Fin P.m) :
     Distribution (LineDesc P.toLdParams × (Fin P.m -> PauliScalar P)) :=
   match kind with
   | .axis => restrictedALineDist P.toLdParams i
@@ -161,8 +191,7 @@ noncomputable def restrictedLinePointDist (P : AdmissibleParams)
 
 /-- Sample a subline tuple and then a uniform affine parameter on its
 extended line. -/
-noncomputable def subLinePointDist (P : AdmissibleParams)
-    (D : Distribution (SubLineTriple P)) :
+noncomputable def subLinePointDist (D : Distribution (SubLineTriple P)) :
     Distribution (SubLinePointSample P) :=
   (Distribution.prod D
     (uniformDistribution (DirectScalarQ P.extendedDirectLd))).map fun sample =>
@@ -181,8 +210,7 @@ def subLineZProjection {P : AdmissibleParams} (sample : SubLinePointSample P) :
   (sample.1.2, projZ (directPointToPauli P sample.2))
 
 /-- The X-point marginal associated with one restricted product component. -/
-noncomputable def subLineXComponentDist (P : AdmissibleParams)
-    (component : SubLineComponent P) :
+noncomputable def subLineXComponentDist (component : SubLineComponent P) :
     Distribution
       ((LineDesc P.toLdParams × LineDesc P.toLdParams) ×
         (Fin P.m -> PauliScalar P)) :=
@@ -192,8 +220,7 @@ noncomputable def subLineXComponentDist (P : AdmissibleParams)
       fun sample => ((sample.1.1, sample.2), sample.1.2)
 
 /-- The Z-point marginal associated with one restricted product component. -/
-noncomputable def subLineZComponentDist (P : AdmissibleParams)
-    (component : SubLineComponent P) :
+noncomputable def subLineZComponentDist (component : SubLineComponent P) :
     Distribution
       ((LineDesc P.toLdParams × LineDesc P.toLdParams) ×
         (Fin P.m -> PauliScalar P)) :=
@@ -218,10 +245,6 @@ structure SubLineWitness (P : AdmissibleParams) where
   /-- Its extended-line marginal is the direct line-point marginal. -/
   extended_marginal : D.map Prod.fst =
     (directLinePointDist P.extendedDirectLd).map Prod.fst
-  /-- Every point of an extended line projects onto both stored source lines. -/
-  incidence : ∀ sample ∈ D.support, ∀ u ∈ sample.1.pointSet,
-    projX (directPointToPauli P u) ∈ sample.2.1.pointSet ∧
-      projZ (directPointToPauli P u) ∈ sample.2.2.pointSet
   /-- Each line triple carries affine data sufficient for
   `combineLinePoly_spec`. -/
   compatibility : ∀ sample ∈ D.support,

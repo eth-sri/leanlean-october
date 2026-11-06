@@ -36,9 +36,7 @@ theorem avgOver_linePointDist_resample_parameter (L : LdParams)
       avgOver (linePointDist L) (fun sample =>
         avgOver (uniformDistribution (ScalarQ L)) (fun param =>
           value (sample.1, sample.1.base + param • sample.1.direction))) := by
-  rw [linePointDist, avgOver_mix, avgOver_mix]
-  rw [avgOver_aLinePointDist_resample_parameter L value,
-    avgOver_dLinePointDist_resample_parameter L value]
+  grind [linePointDist, avgOver_mix, avgOver_aLinePointDist_resample_parameter, avgOver_dLinePointDist_resample_parameter]
 
 end
 

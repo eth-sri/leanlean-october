@@ -30,10 +30,11 @@ open MIPStarRE.Quantum DistanceCalculus
 
 noncomputable section
 
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
+
 /-- The Alice evaluation defect is bounded by the supplied global consistency
 error, with no decoder correction or non-encoding mass term. -/
-theorem pullingMeas_eval_point_consistent_alice {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
+theorem pullingMeas_eval_point_consistent_alice {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u a => S.placeSide .alice
@@ -70,14 +71,11 @@ theorem pullingMeas_eval_point_consistent_alice {P : AdmissibleParams}
       (sum_marginalPoly_eval_mul w .AA' W u
         (fun a => S.place .BA'' ((S.pointMeasExp .bob W u).effect a))).symm
   have hbound := marginalPoly_pointMeas_consistent_alice w W
-  change consistencyDefect mu (fun u a => (marginal u).effect a)
-    (fun u a => (expanded u).effect a) S.psiHat ≤ deltaG at hbound
   exact heq.le.trans hbound
 
 /-- Bob's evaluation defect has the same bound, using the Bob point-consistency
 estimate of the supplied witness and its `BB'`--`AB''` placements. -/
-theorem pullingMeas_eval_point_consistent_bob {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
+theorem pullingMeas_eval_point_consistent_bob {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
@@ -114,8 +112,6 @@ theorem pullingMeas_eval_point_consistent_bob {P : AdmissibleParams}
       (sum_marginalPoly_eval_mul w .BB' W u
         (fun a => S.place .AB'' ((S.pointMeasExp .alice W u).effect a))).symm
   have hbound := marginalPoly_pointMeas_consistent_bob w W
-  change consistencyDefect mu (fun u a => (marginal u).effect a)
-    (fun u a => (expanded u).effect a) S.psiHat ≤ deltaG at hbound
   exact heq.le.trans hbound
 
 /-- Tensoring the strategy state with the two normalized EPR states preserves
@@ -128,8 +124,8 @@ theorem point_consistencyDefect_psiHat {P : AdmissibleParams} {epsilon : ℝ}
         (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat =
       consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
         (fun u a => heteroKron ((S.pointMeas .alice W u).effect a) 1)
-        (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a)) S.toStrategy.ψ := by
-  exact S.consistencyDefect_placePlayers
+        (fun u a => heteroKron 1 ((S.pointMeas .bob W u).effect a)) S.toStrategy.ψ :=
+  S.consistencyDefect_placePlayers
     (uniformDistribution (Fin P.m → PauliScalar P))
     (fun u => S.pointMeas .alice W u) (fun u => S.pointMeas .bob W u)
 
@@ -138,8 +134,7 @@ Agreement and two squared-distance triangle inequalities combine the two
 opposite-player comparisons with the original point self-consistency.
 The error is linear in the supplied witness error, as required before
 the collision step `eq:qld-pulling-12`. -/
-theorem pullingMeas_eval_consistencyDefect_le {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
+theorem pullingMeas_eval_consistencyDefect_le {S : ProjectiveSetting P epsilon}
     (w : GlobalPairWitness S deltaG) (W : PauliKind) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
         (fun u a => S.placeSide .alice

@@ -71,10 +71,10 @@ theorem avgOver_rpow_quarter_le {X : Type*} (𝒟 : Distribution X)
     MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise 𝒟 _ _
       (fun x => by rw [abs_of_nonneg (Real.sqrt_nonneg _)])
       (fun x => Real.sqrt_nonneg _) h𝒟
-  have h2 : |avgOver 𝒟 (fun x => Real.sqrt (b x))| ≤ Real.sqrt (avgOver 𝒟 b) :=
+  have h2 :=
     MIPStarRE.LDT.Preliminaries.avgOver_abs_le_sqrt_of_pointwise 𝒟 _ _
       (fun x => by rw [abs_of_nonneg (Real.sqrt_nonneg _)]) hb h𝒟
-  have havg : 0 ≤ avgOver 𝒟 b := avgOver_nonneg 𝒟 b hb
+  have havg := avgOver_nonneg 𝒟 b hb
   rw [rpow_quarter_eq_sqrt_sqrt havg]
   calc avgOver 𝒟 (fun x => Real.rpow (b x) (1 / 4 : ℝ))
       = avgOver 𝒟 (fun x => Real.sqrt (Real.sqrt (b x))) :=
@@ -102,10 +102,11 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
 
+variable (S : ProjectiveSetting P ε)
+
 /-- Under the `BA'' | AA'(B'B'')` bipartition, a `BA''` placement is the
 ordinary left tensor placement. -/
-theorem reindexOp_baAaBipartition_left (S : ProjectiveSetting P ε)
-    (O : Op (S.ExpandedLocalSpace Placement.BA''.side)) :
+theorem reindexOp_baAaBipartition_left (O : Op (S.ExpandedLocalSpace Placement.BA''.side)) :
     reindexOp (baAaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron O
           (1 : Op ((S.toStrategy.ιA × PauliRegister P) ×
@@ -119,12 +120,10 @@ theorem reindexOp_baAaBipartition_left (S : ProjectiveSetting P ε)
     Matrix.kronecker, Matrix.kroneckerMap_apply, Matrix.one_apply, Prod.mk.injEq]
   split_ifs
   all_goals simp_all
-  all_goals rfl
 
 /-- Under the `BA'' | AA'(B'B'')` bipartition, an `AA'` placement is the
 ordinary right tensor placement, with identity on the unused EPR pair. -/
-theorem reindexOp_baAaBipartition_right (S : ProjectiveSetting P ε)
-    (O : Op (S.ExpandedLocalSpace Placement.AA'.side)) :
+theorem reindexOp_baAaBipartition_right (O : Op (S.ExpandedLocalSpace Placement.AA'.side)) :
     reindexOp (baAaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron (1 : Op (S.toStrategy.ιB × PauliRegister P))
           (heteroKron O (1 : Op (PauliRegister P × PauliRegister P)))) =
@@ -137,7 +136,6 @@ theorem reindexOp_baAaBipartition_right (S : ProjectiveSetting P ε)
     Matrix.kronecker, Matrix.kroneckerMap_apply, Matrix.one_apply, Prod.mk.injEq]
   split_ifs
   all_goals simp_all
-  all_goals rfl
 
 /-! ## Transport along a bipartition -/
 
@@ -145,11 +143,13 @@ section Bipartition
 
 variable (S : ProjectiveSetting P ε) (p₁ p₂ : Placement)
 
+variable {α : Type*} [Fintype α]
+
 set_option synthInstance.maxSize 400 in
 /-- The consistency defect of two placed POVMs, read in the bipartite picture
 of the reindexed expanded state, is their off-diagonal mass in the expanded
 state. -/
-theorem consistencyDefect_reindex_eq {α : Type*} [Fintype α] [DecidableEq α]
+theorem consistencyDefect_reindex_eq [DecidableEq α]
     (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
       S.ExpandedLocalSpace p₁.side ×
         (S.ExpandedLocalSpace p₂.side × (PauliRegister P × PauliRegister P)))
@@ -170,7 +170,6 @@ theorem consistencyDefect_reindex_eq {α : Type*} [Fintype α] [DecidableEq α]
         (reindexState e S.psiHat) =
       ∑ a : α, ∑ b : α, if a = b then 0 else
         stateQForm S.psiHat (S.place p₁ (Q.effect a) * S.place p₂ (R.effect b)) := by
-  classical
   unfold consistencyDefect
   rw [avgOver_uniform_const]
   refine Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ => ?_
@@ -186,8 +185,7 @@ set_option synthInstance.maxSize 400 in
 /-- The state-dependent distance of two families placed on the first factor,
 read in the bipartite picture, is their placed distance in the expanded
 state. -/
-theorem opFamilyDistSq_reindex_left_eq {α : Type*} [Fintype α]
-    (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
+theorem opFamilyDistSq_reindex_left_eq (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
       S.ExpandedLocalSpace p₁.side ×
         (S.ExpandedLocalSpace p₂.side × (PauliRegister P × PauliRegister P)))
     (he₁ : ∀ O : Op (S.ExpandedLocalSpace p₁.side),
@@ -200,7 +198,6 @@ theorem opFamilyDistSq_reindex_left_eq {α : Type*} [Fintype α]
         (reindexState e S.psiHat) =
       ∑ a : α, ‖applyOperatorToState (S.place p₁ (A a) - S.place p₁ (B a))
         S.psiHat‖ ^ 2 := by
-  classical
   unfold opFamilyDistSq
   rw [avgOver_uniform_const]
   refine Finset.sum_congr rfl fun a _ => ?_
@@ -245,7 +242,6 @@ theorem exists_projective_close_sandwich (hopp : p₁.IsOpposite p₂)
           S.psiHat ≤
           220 * Real.rpow (avgOver (uniformDistribution (PointPair P))
             (S.sandwichDefectBound p₁ p₂)) (1 / 4 : ℝ) := by
-  classical
   have hψ : ‖reindexState e S.psiHat‖ = 1 := by
     rw [reindexState_norm_eq, psiHat_norm]
   have hxz : ∀ xz : PointPair P,
@@ -296,53 +292,6 @@ theorem exists_projective_close_sandwich (hopp : p₁.IsOpposite p₂)
 
 end Bipartition
 
-/-- Fiberwise orthonormalization on Alice's side, for the placement pair
-`AA'`, `BA''`.  Both the pointwise and the averaged bound are on squared
-distances. -/
-theorem exists_projective_close_sandwich_alice (S : ProjectiveSetting P ε) :
-    ∃ Q : PointPair P →
-        Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace .alice),
-      (∀ xz, MIPStarRE.QPBT.Measurement.IsProjective (Q xz)) ∧
-        (∀ xz, ∑ ab : PauliScalar P × PauliScalar P, ‖applyOperatorToState
-            (S.place .AA' ((Q xz).effect ab) -
-              S.place .AA' ((S.sandwichPoint .alice xz.1 xz.2).effect ab))
-            S.psiHat‖ ^ 2 ≤
-            220 * Real.rpow (S.sandwichDefectBound .AA' .BA'' xz) (1 / 4 : ℝ)) ∧
-        opFamilyDistSq (uniformDistribution (PointPair P))
-          (fun xz (ab : PauliScalar P × PauliScalar P) =>
-            S.place .AA' ((Q xz).effect ab))
-          (fun xz ab => S.place .AA' ((S.sandwichPoint .alice xz.1 xz.2).effect ab))
-          S.psiHat ≤
-          220 * Real.rpow (avgOver (uniformDistribution (PointPair P))
-            (S.sandwichDefectBound .AA' .BA'')) (1 / 4 : ℝ) :=
-  S.exists_projective_close_sandwich .AA' .BA'' trivial
-    (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
-    (fun O => reindexOp_aaBaBipartition_left S O)
-    (fun O => reindexOp_aaBaBipartition_right S O)
-
-/-- Fiberwise orthonormalization on Bob's side, for the placement pair
-`BA''`, `AA'`.  Both the pointwise and the averaged bound are on squared
-distances. -/
-theorem exists_projective_close_sandwich_bob (S : ProjectiveSetting P ε) :
-    ∃ Q : PointPair P →
-        Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace .bob),
-      (∀ xz, MIPStarRE.QPBT.Measurement.IsProjective (Q xz)) ∧
-        (∀ xz, ∑ ab : PauliScalar P × PauliScalar P, ‖applyOperatorToState
-            (S.place .BA'' ((Q xz).effect ab) -
-              S.place .BA'' ((S.sandwichPoint .bob xz.1 xz.2).effect ab))
-            S.psiHat‖ ^ 2 ≤
-            220 * Real.rpow (S.sandwichDefectBound .BA'' .AA' xz) (1 / 4 : ℝ)) ∧
-        opFamilyDistSq (uniformDistribution (PointPair P))
-          (fun xz (ab : PauliScalar P × PauliScalar P) =>
-            S.place .BA'' ((Q xz).effect ab))
-          (fun xz ab => S.place .BA'' ((S.sandwichPoint .bob xz.1 xz.2).effect ab))
-          S.psiHat ≤
-          220 * Real.rpow (avgOver (uniformDistribution (PointPair P))
-            (S.sandwichDefectBound .BA'' .AA')) (1 / 4 : ℝ) :=
-  S.exists_projective_close_sandwich .BA'' .AA' trivial
-    (baAaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
-    (fun O => reindexOp_baAaBipartition_left S O)
-    (fun O => reindexOp_baAaBipartition_right S O)
 
 end ProjectiveSetting
 

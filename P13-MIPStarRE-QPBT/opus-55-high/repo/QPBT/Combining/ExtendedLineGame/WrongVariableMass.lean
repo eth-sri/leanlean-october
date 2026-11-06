@@ -31,13 +31,14 @@ noncomputable section
 
 namespace ExtendedLineGame
 
+variable {P : AdmissibleParams} {ε : ℝ}
+
 /-- Actual mass of scalar-linear outcomes whose second coefficient in the
 chosen order depends on the varying block. In order `XZ` this is the coefficient
 of beta depending on x; in order `ZX` it is the coefficient of alpha depending
 on z. These are the two classes in `eq:qld-g-prime-xpt-bound` and
 `eq:qld-g-prime-zpt-bound`, supporting blueprint `lem:qld-4-7`. -/
-def scalarWrongVariableMass {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+def scalarWrongVariableMass (S : ProjectiveSetting P ε) (p : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side))
     (reverse : Bool) : ℝ := by
   classical
@@ -51,8 +52,7 @@ def scalarWrongVariableMass {P : AdmissibleParams} {ε : ℝ}
 
 /-- Exact placement and order transport for the common joint scalar sample.
 This also transports the retained-overlap calculation in `lem:qld-4-7`. -/
-theorem placed_fiber_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) (reverse : Bool)
+theorem placed_fiber_orderedIndicator (S : ProjectiveSetting P ε) (p : Placement) (reverse : Bool)
     (x z : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P) (a : PauliScalar P) :
     orderedIndicator
       (S.placedMeasurement p (S.pointMeasExp p.side (if reverse then .Z else .X) x))
@@ -83,8 +83,7 @@ and normalization retain the full outcome sum, so there is no outcome-count
 loss. This is the quantitative concentration step of
 `eq:qld-g-prime-xpt-bound` and `eq:qld-g-prime-zpt-bound`, supporting
 blueprint `lem:qld-4-7`. -/
-theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem scalarWrongVariableMass_le_ordered_error (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (reverse : Bool) :
     scalarWrongVariableMass S p1 R reverse ≤
@@ -135,12 +134,9 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
           avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
             ∑ g ∈ s, ‖A z x v g‖ ^ 2))) ≤ B := by
     simp_rw [avgOver_finset_sum]
-    calc
-      _ ≤ ∑ g ∈ s, B * ‖ψ g‖ ^ 2 := Finset.sum_le_sum hnorm
-      _ ≤ ∑ g, B * ‖ψ g‖ ^ 2 :=
-        Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
-          intros; dsimp [B]; positivity)
-      _ = B := by rw [← Finset.mul_sum, hmass, mul_one]
+    exact (Finset.sum_le_sum hnorm).trans (le_of_le_of_eq
+      (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) fun _ _ _ => by positivity)
+      (by rw [← Finset.mul_sum, hmass, mul_one]))
   have hfull :
       avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
         avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
@@ -149,20 +145,13 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
         extendedPolynomialOrderedError S p1 p2 R reverse := by
     rw [← avgOver_uniform_prod (fun z x =>
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
-        ∑ g, ‖ψ g - A z x v g‖ ^ 2))]
-    rw [← avgOver_uniform_prod
+        ∑ g, ‖ψ g - A z x v g‖ ^ 2)), ← avgOver_uniform_prod
       (fun zx : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) =>
-        fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2)]
-    unfold extendedPolynomialOrderedError
-    rw [avgOver_uniform_equiv (fiberQuestionEquiv P reverse).symm]
-    apply avgOver_congr
-    rintro ⟨⟨z, x⟩, v⟩
-    apply Finset.sum_congr rfl
-    intro g _
-    dsimp only [A, X, Z]
-    rw [placed_fiber_orderedIndicator]
-    dsimp only [ψ]
-    rw [placed_residual S p1 p2 hopposite]
+        fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2), extendedPolynomialOrderedError,
+      avgOver_uniform_equiv (fiberQuestionEquiv P reverse).symm]
+    refine avgOver_congr _ _ _ fun _ => Finset.sum_congr rfl fun g _ => ?_
+    dsimp only [A, X, Z, ψ]
+    rw [placed_fiber_orderedIndicator, placed_residual S p1 p2 hopposite]
     rfl
   have herror :
       avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
@@ -170,39 +159,29 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
           avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
             ∑ g ∈ s, ‖ψ g - A z x v g‖ ^ 2))) ≤
         extendedPolynomialOrderedError S p1 p2 R reverse := by
-    rw [← hfull]
-    apply avgOver_mono
-    intro z
-    apply avgOver_mono
-    intro x
-    apply avgOver_mono
-    intro v
-    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
-      intros; exact sq_nonneg _)
+    exact hfull ▸ avgOver_mono _ _ _ fun z => avgOver_mono _ _ _ fun x => avgOver_mono _ _ _
+      fun v => Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) fun _ _ _ => by
+        positivity
   have h := avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ fun z =>
     avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ fun x =>
       avgOver_mono (uniformDistribution (Fin 2 → PauliScalar P)) _ _ fun v =>
         sum_mass_le_residual_add_image s ψ (A z x v)
   simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at h
   change scalarWrongVariableMass S p1 R reverse ≤ _ at h
-  change scalarWrongVariableMass S p1 R reverse ≤ _ + 2 * B
   linarith
 
 /-- Mass outside the existing bounded polynomial-pair combining image after
 the canonical field transport. This is the actual separated image of
 `eq:qld-g-non-separable` and `def:combine-map`, supporting blueprint
 `lem:qld-4-7`; no completion or overlap assertion is included. -/
-def separatedPolynomialMass {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+def separatedPolynomialMass (S : ProjectiveSetting P ε) (p : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side)) : ℝ := by
-  classical
   exact ∑ g ∈ Finset.univ.filter (fun g => ¬ ∃ pair : PolyPair P,
       MvPolynomial.map (extendedDirectScalarEquiv P).toRingHom (g (0 : Fin 1)).1 =
         combinePoly pair.1.1 pair.2.1),
     ‖applyOperatorToState (S.place p (R.effect g)) S.psiHat‖ ^ 2
 
-private theorem separatedPolynomialMass_le_three_masses {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+theorem separatedPolynomialMass_le_three_masses (S : ProjectiveSetting P ε) (p : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side)) :
     separatedPolynomialMass S p R ≤ scalarNonlinearMass S p R +
       scalarWrongVariableMass S p R false + scalarWrongVariableMass S p R true := by
@@ -237,8 +216,7 @@ private theorem separatedPolynomialMass_le_three_masses {P : AdmissibleParams} {
 ordered errors. The image is the existing faithful `combinePoly` encoding
 with both components in `Poly P`. This proves concentration only, as in
 `eq:qld-g-non-separable`, supporting blueprint `lem:qld-4-7`. -/
-theorem separatedPolynomialMass_le_ordered_errors {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem separatedPolynomialMass_le_ordered_errors (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) :
     separatedPolynomialMass S p1 R ≤

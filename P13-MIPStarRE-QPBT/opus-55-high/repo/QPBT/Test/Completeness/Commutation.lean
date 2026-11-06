@@ -51,7 +51,6 @@ theorem pauliEdges_cases {t₁ t₂ : PauliType} (h : Sym2.mk t₁ t₂ ∈ paul
     t₁ = t₂ ∨
       (∃ s₁ s₂ : MsType, t₁ = .ms s₁ ∧ t₂ = .ms s₂ ∧ Sym2.mk s₁ s₂ ∈ msEdges) ∨
       PauliEdgeOriented t₁ t₂ ∨ PauliEdgeOriented t₂ t₁ := by
-  classical
   simp only [pauliEdges, Finset.mem_union, Finset.mem_image, Finset.mem_filter,
     Finset.mem_univ, true_and, Finset.mem_insert, Finset.mem_singleton,
     Prod.exists] at h
@@ -89,14 +88,14 @@ theorem pauliEdges_cases {t₁ t₂ : PauliType} (h : Sym2.mk t₁ t₂ ∈ paul
     · exact Or.inr (Or.inl ⟨s₁, s₂, rfl, rfl, hms⟩)
     · exact Or.inr (Or.inl ⟨s₂, s₁, rfl, rfl, by rwa [Sym2.eq_swap]⟩)
 
+variable (P : AdmissibleParams)
+
 /-- Every question pair of positive weight in the Pauli question distribution
 consists of the typed conditionally linear images of a single ambient
 coefficient vector along an edge of the Pauli type graph. -/
-theorem pauliQuestionDistribution_pos_incidence (P : AdmissibleParams)
-    (x y : PauliQuestion P) (hxy : 0 < (pauliQuestionDistribution P).weight (x, y)) :
+theorem pauliQuestionDistribution_pos_incidence (x y : PauliQuestion P) (hxy : 0 < (pauliQuestionDistribution P).weight (x, y)) :
     ∃ z : PauliSpace P, Sym2.mk x.1 y.1 ∈ pauliEdges ∧
       x.2 = pauliCL P x.1 z ∧ y.2 = pauliCL P y.1 z := by
-  classical
   letI : Nonempty PauliEdge := pauliEdge_nonempty
   set F : PauliEdge × PauliSpace P → PauliQuestion P × PauliQuestion P :=
     fun q => ((q.1.val.1, pauliCL P q.1.val.1 q.2),
@@ -140,10 +139,6 @@ theorem placedPauliMeasurement_effect_eq {P : AdmissibleParams}
     (placedPauliMeasurement M f).effect a =
       heteroKron ((M.postprocess f).effect a) (1 : Op (ZMod 2)) := by
   rw [placedPauliMeasurement, Measurement.postprocess_effect, Measurement.postprocess_effect]
-  change (∑ b ∈ Finset.univ.filter (fun b => f b = a),
-      leftTensor (ι₂ := ZMod 2) (M.effect b)) =
-    leftTensor (ι₂ := ZMod 2)
-      (∑ b ∈ Finset.univ.filter (fun b => f b = a), M.effect b)
   exact leftTensor_finset_sum _ _
 
 /-- Placing a coarse-grained measurement of the Pauli register and relabelling
@@ -160,10 +155,6 @@ theorem placedPauliMeasurement_postprocess_eq {P : AdmissibleParams}
     refine Measurement.ext fun b => ?_
     change heteroKron ((M.postprocess g).effect b) (1 : Op (ZMod 2)) = _
     rw [Measurement.postprocess_effect, Measurement.postprocess_effect]
-    change leftTensor (ι₂ := ZMod 2)
-        (∑ a ∈ Finset.univ.filter (fun a => g a = b), M.effect a) =
-      ∑ a ∈ Finset.univ.filter (fun a => g a = b),
-        leftTensor (ι₂ := ZMod 2) (M.effect a)
     exact (leftTensor_finset_sum _ _).symm
   change (DistanceCalculus.leftPlacedMeasurement (ιB := ZMod 2)
       (M.postprocess g)).postprocess u = _
@@ -184,10 +175,11 @@ theorem placedPauliMeasurement_commute_of_commute {P : AdmissibleParams}
   rw [Measurement.postprocess_effect, Measurement.postprocess_effect]
   exact Commute.sum_left _ _ _ fun x _ => Commute.sum_right _ _ _ fun y _ => h x y
 
+variable {α V : Type*} [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
+
 /-- The deterministic measurement reports its prescribed outcome with the
 identity effect. -/
-theorem deterministicMeasurement_effect_self {α V : Type*}
-    [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V] (a₀ : α) :
+theorem deterministicMeasurement_effect_self (a₀ : α) :
     (deterministicMeasurement (V := V) a₀).effect a₀ = 1 := by
   change ((unitMeasurement V).postprocess (fun _ => a₀)).effect a₀ = 1
   rw [Measurement.postprocess_effect]
@@ -195,9 +187,7 @@ theorem deterministicMeasurement_effect_self {α V : Type*}
 
 /-- Every effect of a deterministic measurement commutes with every
 operator. -/
-theorem deterministicMeasurement_effect_commute {α V : Type*}
-    [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
-    (a₀ a : α) (A : Op V) :
+theorem deterministicMeasurement_effect_commute (a₀ a : α) (A : Op V) :
     Commute ((deterministicMeasurement (V := V) a₀).effect a) A := by
   by_cases h : a = a₀
   · subst h
@@ -210,7 +200,7 @@ theorem deterministicMeasurement_effect_commute {α V : Type*}
 
 /-- Every honest measurement at a question type reading a single Pauli basis is
 a relabelled coarse-graining of that basis measurement. -/
-theorem exists_placedBasis_of_basisType (P : AdmissibleParams) (t : PauliType)
+theorem exists_placedBasis_of_basisType (t : PauliType)
     (W : PauliKind) (z : PauliSpace P)
     (ht : t = .point W ∨ t = .aline W ∨ t = .dline W ∨ t = .pauli W ∨
       t = .pairW W) :
@@ -235,7 +225,7 @@ theorem exists_placedBasis_of_basisType (P : AdmissibleParams) (t : PauliType)
 
 /-- Honest measurements reading one and the same Pauli basis have commuting
 effects, whatever the coefficient vectors carried by their questions. -/
-theorem honestMeasurement_basis_commute (P : AdmissibleParams) {t₁ t₂ : PauliType}
+theorem honestMeasurement_basis_commute {t₁ t₂ : PauliType}
     (W : PauliKind) (z₁ z₂ : PauliSpace P)
     (h₁ : t₁ = .point W ∨ t₁ = .aline W ∨ t₁ = .dline W ∨ t₁ = .pauli W ∨
       t₁ = .pairW W)
@@ -255,15 +245,13 @@ theorem honestMeasurement_basis_commute (P : AdmissibleParams) {t₁ t₂ : Paul
 /-- With a nonzero phase bit the honest measurements at the first and the fifth
 Magic Square variables are the honest Pair/X and Pair/Z measurements, hence
 relabelled coarse-grainings of the Pauli basis measurements. -/
-theorem honestMagicMeasurement_var_eq_placedBasis (P : AdmissibleParams)
-    (z : PauliSpace P) (hg : pauliPairGamma P z ≠ 0) :
+theorem honestMagicMeasurement_var_eq_placedBasis (z : PauliSpace P) (hg : pauliPairGamma P z ≠ 0) :
     honestMagicMeasurement P (.var 0) z =
         placedPauliMeasurement (pauliBasisMeasurement .X)
           (fun h => .bit (pauliTraceBit P (pauliXBlock z) (pauliRXBlock z) h)) ∧
       honestMagicMeasurement P (.var 4) z =
         placedPauliMeasurement (pauliBasisMeasurement .Z)
           (fun h => .bit (pauliTraceBit P (pauliZBlock z) (pauliRZBlock z) h)) := by
-  classical
   have hcell : ∀ (j : Fin 9) (W : PauliKind) (u : Fin P.m → PauliScalar P)
       (r : PauliScalar P),
       (∀ b, (pauliMagicCellMeasurement P z hg j).effect b =
@@ -311,11 +299,10 @@ theorem honestMagicMeasurement_var_eq_placedBasis (P : AdmissibleParams)
     hcell 4 .Z (pauliZBlock z) (pauliRZBlock z) hB⟩
 
 /-- The honest Pair/W and Pair measurements have commuting effects. -/
-theorem honestPairW_pair_commute (P : AdmissibleParams) (W : PauliKind)
+theorem honestPairW_pair_commute (W : PauliKind)
     (z : PauliSpace P) (a b : PauliAnswer P) :
     Commute ((honestPairWMeasurement P W z).effect a)
       ((honestPairMeasurement P z).effect b) := by
-  classical
   by_cases hg : pauliPairGamma P z = 0
   · have hpair : honestPairMeasurement P z =
         placedPauliMeasurement (pauliPairMeasurement P z hg)
@@ -327,7 +314,7 @@ theorem honestPairW_pair_commute (P : AdmissibleParams) (W : PauliKind)
     cases W with
     | X =>
         exact Commute.mul_right
-          (postprocess_effect_commute (pauliBasisMeasurement .X)
+          (DistanceCalculus.postprocess_effect_commute (pauliBasisMeasurement .X)
             (fun h => pauliProj_isProj .X h)
             (pauliTraceBit P (pauliXBlock z) (pauliRXBlock z))
             (pauliTraceBit P (pauliXBlock z) (pauliRXBlock z)) x c.1)
@@ -335,7 +322,7 @@ theorem honestPairW_pair_commute (P : AdmissibleParams) (W : PauliKind)
     | Z =>
         exact Commute.mul_right
           ((pauliTraceMeasurement_effect_commute P z hg c.1 x).symm)
-          (postprocess_effect_commute (pauliBasisMeasurement .Z)
+          (DistanceCalculus.postprocess_effect_commute (pauliBasisMeasurement .Z)
             (fun h => pauliProj_isProj .Z h)
             (pauliTraceBit P (pauliZBlock z) (pauliRZBlock z))
             (pauliTraceBit P (pauliZBlock z) (pauliRZBlock z)) x c.2)
@@ -348,12 +335,10 @@ theorem honestPairW_pair_commute (P : AdmissibleParams) (W : PauliKind)
 
 /-- The honest Magic Square measurements have commuting effects along every
 edge of the Magic Square type graph. -/
-theorem honestMagicMeasurement_ms_commute (P : AdmissibleParams)
-    (z : PauliSpace P) {s₁ s₂ : MsType} (hms : Sym2.mk s₁ s₂ ∈ msEdges)
+theorem honestMagicMeasurement_ms_commute (z : PauliSpace P) {s₁ s₂ : MsType} (hms : Sym2.mk s₁ s₂ ∈ msEdges)
     (a b : PauliAnswer P) :
     Commute ((honestMagicMeasurement P s₁ z).effect a)
       ((honestMagicMeasurement P s₂ z).effect b) := by
-  classical
   by_cases hg : pauliPairGamma P z = 0
   · cases s₁ with
     | constraint i =>
@@ -374,10 +359,8 @@ theorem honestMagicMeasurement_ms_commute (P : AdmissibleParams)
         (pauliMagicMeasurement P z hg s).postprocess (pauliAnswerOfMs (P := P)) := by
       intro s
       simp [honestMagicMeasurement, hg]
-    have hsupp : (s₁, s₂) ∈ msGameSymm.μ.support := by
-      change (s₁, s₂) ∈ (Finset.univ : Finset (MsType × MsType)).filter
-        (fun ab => Sym2.mk ab.1 ab.2 ∈ msEdges)
-      exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hms⟩
+    have hsupp : (s₁, s₂) ∈ msGameSymm.μ.support :=
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, hms⟩
     rcases msGame_support_incidence s₁ s₂ hsupp with
       ⟨i, k, rfl, rfl⟩ | ⟨i, k, rfl, rfl⟩
     · rw [h₁ _, h₁ _]
@@ -392,12 +375,10 @@ theorem honestMagicMeasurement_ms_commute (P : AdmissibleParams)
 
 /-- The honest measurements at the two ends of an ordered incidence form of the
 Pauli type graph have commuting effects. -/
-theorem honestMeasurement_commute_of_oriented (P : AdmissibleParams)
-    {t₁ t₂ : PauliType} (h : PauliEdgeOriented t₁ t₂) (z : PauliSpace P)
+theorem honestMeasurement_commute_of_oriented {t₁ t₂ : PauliType} (h : PauliEdgeOriented t₁ t₂) (z : PauliSpace P)
     (a b : PauliAnswer P) :
     Commute ((honestMeasurement P t₁ (pauliCL P t₁ z)).effect a)
       ((honestMeasurement P t₂ (pauliCL P t₂ z)).effect b) := by
-  classical
   rcases h with ⟨W, rfl, hW⟩ | ⟨W, rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · refine honestMeasurement_basis_commute P W _ _ (Or.inl rfl) ?_ a b
     rcases hW with rfl | rfl | rfl | rfl
@@ -455,7 +436,7 @@ theorem honestMeasurement_commute_of_oriented (P : AdmissibleParams)
 of positive weight for the Pauli question sampler.  This is the commutation
 obligation of the honest strategy in `lem:pauli-completeness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1364-1382`. -/
-theorem honestMeasurement_commuting (P : AdmissibleParams) :
+theorem honestMeasurement_commuting :
     IsCommutingOn (pauliQuestionDistribution P)
       (fun q : PauliQuestion P => honestMeasurement P q.1 q.2)
       (fun q : PauliQuestion P => honestMeasurement P q.1 q.2) := by

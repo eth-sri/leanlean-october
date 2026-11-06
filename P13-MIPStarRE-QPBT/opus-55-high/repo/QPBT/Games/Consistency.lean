@@ -66,10 +66,9 @@ theorem consistencyDefect_outcome_equiv
     consistencyDefect mu
         (fun x b => A x (e b)) (fun x b => B x (e b)) psi =
       consistencyDefect mu A B psi := by
-  unfold consistencyDefect
   apply avgOver_congr
   intro x
-  let term : Alpha → Alpha → ℝ := fun a b =>
+  let term := fun a b =>
     if a = b then 0 else
       (inner ℂ psi ((EuclideanSpace.equiv iota ℂ).symm
         (((A x a) * (B x b)).mulVec psi))).re
@@ -78,18 +77,11 @@ theorem consistencyDefect_outcome_equiv
       apply Finset.sum_congr rfl
       intro a _
       apply Finset.sum_congr rfl
-      intro b _
       unfold term
-      by_cases hab : a = b
-      · subst b
-        simp
-      · have heab : e a ≠ e b := fun h => hab (e.injective h)
-        simp [hab, heab]
+      simp
     _ =
         ∑ a : Beta, ∑ b : Alpha, term (e a) b := by
-      apply Finset.sum_congr rfl
-      intro a _
-      exact Equiv.sum_comp e (fun b => term (e a) b)
+      simp [Equiv.sum_comp]
     _ = ∑ a : Alpha, ∑ b : Alpha, term a b :=
       Equiv.sum_comp e (fun a => ∑ b : Alpha, term a b)
     _ = _ := rfl
@@ -133,51 +125,13 @@ theorem consistencyDefect_congr
     (hA : ∀ x a, A x a = A' x a) (hB : ∀ x a, B x a = B' x a) :
     consistencyDefect mu A B psi = consistencyDefect mu A' B' psi := by
   unfold consistencyDefect
-  apply avgOver_congr
-  intro x
-  apply Finset.sum_congr rfl
-  intro a _
-  apply Finset.sum_congr rfl
-  intro b _
-  by_cases hab : a = b
-  · simp [hab]
-  · simp only [hab, if_false]
-    rw [hA x a, hB x b]
+  simp_all
+
+variable {X ι : Type*} [Fintype X] [DecidableEq X] [Fintype ι] [DecidableEq ι]
 
 /-- Unit-alphabet specialization of blueprint
 `def:povm-distance`, paper `06_nonlocal_games_and_mipstar.tex:258-271`. -/
-noncomputable def opDistSq {X ι : Type*}
-    [Fintype X] [DecidableEq X] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (M N : X → Op ι) (ψ : EuclideanSpace ℂ ι) : ℝ :=
+noncomputable def opDistSq (μ : Distribution X) (M N : X → Op ι) (ψ : EuclideanSpace ℂ ι) : ℝ :=
   opFamilyDistSq μ (fun x (_ : Unit) => M x) (fun x (_ : Unit) => N x) ψ
-
-/-- The unit-alphabet operator distance equals its one-outcome family form from
-blueprint `def:povm-distance`, paper
-`06_nonlocal_games_and_mipstar.tex:258-271`. -/
-theorem opDistSq_eq_opFamilyDistSq {X ι : Type*}
-    [Fintype X] [DecidableEq X] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (M N : X → Op ι) (ψ : EuclideanSpace ℂ ι) :
-    opDistSq μ M N ψ = opFamilyDistSq μ (fun x (_ : Unit) => M x)
-      (fun x (_ : Unit) => N x) ψ := rfl
-
-/-- The strategy-distance relation `def:strategy-distance`. The two strategies'
-local Hilbert spaces are identified, and both measurement distances are
-evaluated on the first strategy's state. Blueprint
-`def:strategy-distance`, paper `06_nonlocal_games_and_mipstar.tex:273-285`. -/
-structure AreCloseStrategies (G : Game) (S S' : Strategy G) (δ : ℝ) : Prop where
-  /-- Identification of Alice's local Hilbert spaces. -/
-  hA : S.ιA = S'.ιA
-  /-- Identification of Bob's local Hilbert spaces. -/
-  hB : S.ιB = S'.ιB
-  state : stateDistSq S.ψ (reindexState
-      (Equiv.prodCongr (Equiv.cast hA).symm (Equiv.cast hB).symm) S'.ψ) ≤ δ
-  alice : opFamilyDistSq (G.μ.map Prod.fst)
-      (fun x a => heteroKron ((S.A x).effect a) 1)
-      (fun x a => heteroKron (reindexOp (Equiv.cast hA) ((S'.A x).effect a)) 1)
-      S.ψ ≤ δ
-  bob : opFamilyDistSq (G.μ.map Prod.snd)
-      (fun y b => heteroKron 1 ((S.B y).effect b))
-      (fun y b => heteroKron 1 (reindexOp (Equiv.cast hB) ((S'.B y).effect b)))
-      S.ψ ≤ δ
 
 end MIPStarRE.QPBT

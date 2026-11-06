@@ -1,6 +1,7 @@
 module
 
-public import QPBT.Combining.DirectLowDegree.ResampledCoefficientConsistency
+public import QPBT.Combining.DirectLowDegree.CoefficientConsistency
+public import QPBT.Combining.DirectLowDegree.Transport.LineResampling
 
 /-!
 # Extended direct coefficient-collision loss
@@ -32,18 +33,13 @@ theorem extendedDirectLd_coefficientCollisionLoss_le_five_mul
       5 * ((P.m * P.d : ℝ) / (P.q : ℝ)) := by
   have hm : (1 : ℝ) ≤ (P.m : ℝ) := by
     exact_mod_cast P.one_le_m
-  have hqNat : 0 < P.q := by
-    rcases P.hq with ⟨k, _, hk⟩
-    rw [hk]
-    exact Nat.pow_pos (by decide)
+  have hqNat : 0 < P.q := zero_lt_two.trans_le P.hq.two_le
   have hq : (0 : ℝ) < (P.q : ℝ) := by
     exact_mod_cast hqNat
-  change ((P.d : ℝ) + ((2 * P.m + 2 : ℕ) : ℝ) * (P.d : ℝ)) /
-      (P.q : ℝ) ≤ 5 * ((P.m : ℝ) * (P.d : ℝ) / (P.q : ℝ))
   push_cast
   rw [show 5 * ((P.m : ℝ) * (P.d : ℝ) / (P.q : ℝ)) =
     (5 * ((P.m : ℝ) * (P.d : ℝ))) / (P.q : ℝ) by ring]
   apply (div_le_div_iff_of_pos_right hq).2
-  nlinarith [show (0 : ℝ) ≤ (P.d : ℝ) by positivity]
+  nlinarith
 
 end MIPStarRE.QPBT

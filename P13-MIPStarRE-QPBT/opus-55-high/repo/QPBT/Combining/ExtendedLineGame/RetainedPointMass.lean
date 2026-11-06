@@ -27,10 +27,11 @@ open MIPStarRE.Quantum DistanceCalculus PolynomialImageBounds
 
 noncomputable section
 
+variable {P : AdmissibleParams} {ε : ℝ}
+
 /-- The retained point mismatch is the squared norm of the incorrect point
 projection on the actual vector `R_g psiHat`, averaged over the point. -/
-def retainedPointMismatch {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement)
+def retainedPointMismatch (S : ProjectiveSetting P ε) (p1 p2 : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (W : PauliKind) : ℝ :=
   avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
@@ -43,13 +44,11 @@ def retainedPointMismatch {P : AdmissibleParams} {ε : ℝ}
 ordered error. The wrong point projection is the outer factor: `XZ` for X,
 `ZX` for Z. Normalization is used only after summing the actual vector masses,
 so there is no outcome-cardinality factor. -/
-theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem retainedPointMismatch_le_ordered_error (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (reverse : Bool) :
     retainedPointMismatch S p1 p2 R (if reverse then .Z else .X) ≤
       2 * extendedPolynomialOrderedError S p1 p2 R reverse + 4 / P.q := by
-  classical
   let ψ := fun g => applyOperatorToState (S.place p1 (R.effect g)) S.psiHat
   let X := fun x : Fin P.m → PauliScalar P => S.placedMeasurement p2
     (S.pointMeasExp p2.side (if reverse then .Z else .X) x)
@@ -63,10 +62,8 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
       sum_projective_state_norm_sq (S.placedMeasurement p1 R)
         (S.placedMeasurement_isProjective p1 R hR) S.psiHat
   have hretained : ∑ pair, ‖ψ (directCombinedEmbedding P pair)‖ ^ 2 ≤ 1 := by
-    rw [← hmass, ← Finset.sum_image (f := fun g => ‖ψ g‖ ^ 2) (fun a _ b _ h =>
-      (directCombinedEmbedding P).injective h)]
-    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
-      intros; exact sq_nonneg _)
+    exact hmass ▸ Finset.sum_le_sum_of_injOn _ (directCombinedEmbedding P).injective.injOn
+      (Finset.subset_univ _) (fun _ _ => le_rfl) fun _ _ _ => by positivity
   have hread (z x : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P)
       (pair : PolyPair P) :
       extendedPolynomialRead P (fiberQuestionEquiv P reverse ((z, x), v))
@@ -88,30 +85,18 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
       (evalAt (if reverse then .X else .Z) z pair) (ψ (directCombinedEmbedding P pair))
     simp_rw [← hread z x] at h
     have hs := Finset.sum_le_sum (s := Finset.univ) (fun pair _ => h pair)
-    simp only [Finset.sum_add_distrib, ← Finset.mul_sum, ← avgOver_sum] at hs
+    simp only [Finset.sum_add_distrib, ← Finset.mul_sum, ← avgOver_sum,
+      @FieldModel.card P.q P.model.toFieldModel] at hs
     have herr : avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
         ∑ pair, ‖ψ (directCombinedEmbedding P pair) -
           A z x v (directCombinedEmbedding P pair)‖ ^ 2) ≤
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
-        ∑ g, ‖ψ g - A z x v g‖ ^ 2) := by
-      apply avgOver_mono
-      intro v
-      rw [← Finset.sum_image (f := fun g => ‖ψ g - A z x v g‖ ^ 2)
-        (fun a _ b _ h => (directCombinedEmbedding P).injective h)]
-      exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
-        intros; exact sq_nonneg _)
-    have hcard : Fintype.card (PauliScalar P) = P.q :=
-      @FieldModel.card P.q P.model.toFieldModel
-    have hc := mul_le_mul_of_nonneg_left hretained
-      (show 0 ≤ 4 * (Fintype.card (PauliScalar P) : ℝ)⁻¹ by positivity)
-    rw [hcard, mul_one] at hc
-    change _ ≤ 2 * _ + 4 * (Fintype.card (PauliScalar P) : ℝ)⁻¹ * _ at hs
-    rw [hcard] at hs
-    change _ ≤ 2 * avgOver _ (fun v => ∑ pair,
-      ‖ψ (directCombinedEmbedding P pair) - A z x v (directCombinedEmbedding P pair)‖ ^ 2) +
-      4 * (P.q : ℝ)⁻¹ * _ at hs
+        ∑ g, ‖ψ g - A z x v g‖ ^ 2) :=
+      avgOver_mono _ _ _ fun v => Finset.sum_le_sum_of_injOn _
+        (directCombinedEmbedding P).injective.injOn (Finset.subset_univ _) (fun _ _ => le_rfl)
+          fun _ _ _ => by positivity
     rw [div_eq_mul_inv]
-    linarith
+    nlinarith [inv_nonneg.2 (P.q.cast_nonneg : (0 : ℝ) ≤ P.q)]
   have hfull :
       avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun z =>
         avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun x =>
@@ -120,20 +105,13 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
         extendedPolynomialOrderedError S p1 p2 R reverse := by
     rw [← avgOver_uniform_prod (fun z x =>
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
-        ∑ g, ‖ψ g - A z x v g‖ ^ 2))]
-    rw [← avgOver_uniform_prod
+        ∑ g, ‖ψ g - A z x v g‖ ^ 2)), ← avgOver_uniform_prod
       (fun zx : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) =>
-        fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2)]
-    unfold extendedPolynomialOrderedError
-    rw [avgOver_uniform_equiv (fiberQuestionEquiv P reverse).symm]
-    apply avgOver_congr
-    rintro ⟨⟨z, x⟩, v⟩
-    apply Finset.sum_congr rfl
-    intro g _
-    dsimp only [A, X, Z]
-    rw [placed_fiber_orderedIndicator]
-    dsimp only [ψ]
-    rw [placed_residual S p1 p2 hopposite]
+        fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2), extendedPolynomialOrderedError,
+      avgOver_uniform_equiv (fiberQuestionEquiv P reverse).symm]
+    refine avgOver_congr _ _ _ fun _ => Finset.sum_congr rfl fun g _ => ?_
+    dsimp only [A, X, Z, ψ]
+    rw [placed_fiber_orderedIndicator, placed_residual S p1 p2 hopposite]
     rfl
   have h := avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ fun z =>
     avgOver_mono (uniformDistribution (Fin P.m → PauliScalar P)) _ _ (hpoint z)

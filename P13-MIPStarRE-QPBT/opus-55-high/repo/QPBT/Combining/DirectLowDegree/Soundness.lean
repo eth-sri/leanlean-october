@@ -101,26 +101,25 @@ theorem exists_direct_ld_soundness :
   refine ⟨a, b, ha, hb0, hb1, ?_⟩
   intro D ε hε S hS hwin
   obtain ⟨GA, GB, h1, h2, h3⟩ :=
-    exists_directSimultaneousPolynomialMeasurements_combinedError D S hS ε hwin
-  refine ⟨GA, GB, ?_, ?_, ?_⟩
-  all_goals by_cases hε1 : ε ≤ 1
-  · exact le_trans h1 (habs D ε hε hε1)
-  · exact le_trans
-      (consistencyDefect_heteroKron_le_one _ (uniformDistribution_isProbability _) _ _
-        S.ψ S.ψ_norm)
-      (one_le_deltaLd_of_one_le_error ha hb0.le (not_le.mp hε1).le D.hm D.hd D.hk)
-  · exact le_trans h2 (habs D ε hε hε1)
-  · exact le_trans
-      (consistencyDefect_heteroKron_le_one _ (uniformDistribution_isProbability _) _ _
-        S.ψ S.ψ_norm)
-      (one_le_deltaLd_of_one_le_error ha hb0.le (not_le.mp hε1).le D.hm D.hd D.hk)
-  · refine le_trans h3 (le_trans ?_ (habs D ε hε hε1))
-    have hloss : (0 : ℝ) ≤ ((D.combined.m * D.d : ℕ) : ℝ) / (D.q : ℝ) := by positivity
-    linarith
-  · exact le_trans
-      (consistencyDefect_heteroKron_le_one _ (uniformDistribution_isProbability _) _ _
-        S.ψ S.ψ_norm)
-      (one_le_deltaLd_of_one_le_error ha hb0.le (not_le.mp hε1).le D.hm D.hd D.hk)
+    exists_directSimultaneousPolynomialMeasurements_of_k_eq_one D.combined rfl
+      (directCombinedStrategy D S) (directCombinedStrategy_isProjective D S hS)
+      (10 * ε) (directCombinedStrategy_value_ge D S ε hwin)
+  refine ⟨GA.postprocess (directTupleOfCombinedTuple D),
+    GB.postprocess (directTupleOfCombinedTuple D), ?_, ?_, ?_⟩ <;> by_cases hε1 : ε ≤ 1 <;>
+    try exact (consistencyDefect_heteroKron_le_one _ (uniformDistribution_isProbability _) _ _
+      S.ψ S.ψ_norm).trans (one_le_deltaLd_of_one_le_error ha hb0.le (not_le.mp hε1).le D.hm D.hd D.hk)
+  · exact ((directCombinedRecovery_relation D S.A GB S.ψ S.ψ_norm).trans
+      (add_le_add h1 le_rfl)).trans (habs D ε hε hε1)
+  · have h := directCombinedRecovery_relation D S.B GA _
+      ((reindexState_norm_eq (Equiv.prodComm S.ιA S.ιB) S.ψ).trans S.ψ_norm)
+    erw [WinImplications.consistencyDefect_swappedState _ (fun u o =>
+        ((GA.postprocess (directTupleOfCombinedTuple D)).postprocess (evalDirectPolyTupleAt u)).effect o),
+      WinImplications.consistencyDefect_swappedState _ (fun (z : Fin D.combined.m → DirectScalarQ D) o =>
+        (GA.postprocess (evalDirectPolyTupleAt (D := D.combined) z)).effect o)] at h
+    exact (h.trans (add_le_add h2 le_rfl)).trans (habs D ε hε hε1)
+  · have hloss : (0 : ℝ) ≤ ((D.combined.m * D.d : ℕ) : ℝ) / (D.q : ℝ) := by positivity
+    exact (consistencyDefect_postprocess_le _ (fun _ => GA) (fun _ => GB) S.ψ _).trans
+      (h3.trans (by linarith [habs D ε hε hε1]))
 
 /-! ## Absorbing the error bound from the low individual degree theorem
 
@@ -187,8 +186,7 @@ theorem consistencyDefect_le_deltaLd_of_transportBound
     consistencyDefect μ (fun x c => heteroKron ((A x).effect c) 1)
         (fun x c => heteroKron 1 ((B x).effect c)) ψ ≤
       deltaLd a b ε D.q D.m D.d D.k := by
-  have hle1 : consistencyDefect μ (fun x c => heteroKron ((A x).effect c) 1)
-      (fun x c => heteroKron 1 ((B x).effect c)) ψ ≤ 1 :=
+  have hle1 :=
     consistencyDefect_heteroKron_le_one μ hμ A B ψ hψ
   rcases le_or_gt ε 1 with hε1 | hε1
   · have hk : (1 : ℝ) ≤ (D.k : ℝ) := by exact_mod_cast D.hk
@@ -212,7 +210,7 @@ theorem consistencyDefect_le_deltaLd_of_transportBound
                 ((D.m : ℝ) * (D.d : ℝ)) / (D.q : ℝ) + ε) := by
           calc (1 : ℝ) = Real.sqrt 1 := Real.sqrt_one.symm
             _ ≤ _ := Real.sqrt_le_sqrt hT1.le
-        nlinarith [mul_nonneg (sub_nonneg.mpr hC₀) (sub_nonneg.mpr hone)]
+        nlinarith
     calc consistencyDefect μ (fun x c => heteroKron ((A x).effect c) 1)
           (fun x c => heteroKron 1 ((B x).effect c)) ψ
         ≤ C₀ *

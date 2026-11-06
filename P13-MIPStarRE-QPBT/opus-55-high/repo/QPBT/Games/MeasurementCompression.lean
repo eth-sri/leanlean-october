@@ -22,14 +22,13 @@ open scoped BigOperators Matrix MatrixOrder ComplexOrder
 
 namespace MIPStarRE.Quantum.Measurement
 
+variable {Outcome I κ : Type*} [Fintype Outcome] [Fintype I] [DecidableEq I] [Fintype κ] [DecidableEq κ]
+
 /-- Restrict every effect of a POVM to the matrix block at one fixed ancillary
 coordinate. The principal submatrix of a positive semidefinite effect remains
 positive semidefinite, and restricting the sum of the effects restricts the
 identity to the identity. -/
 noncomputable def compressAt
-    {Outcome I κ : Type*}
-    [Fintype Outcome] [Fintype I] [DecidableEq I]
-    [Fintype κ] [DecidableEq κ]
     (k₀ : κ) (M : MIPStarRE.Quantum.Measurement Outcome (I × κ)) :
     MIPStarRE.Quantum.Measurement Outcome I :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne
@@ -37,16 +36,12 @@ noncomputable def compressAt
     (fun a => Matrix.nonneg_iff_posSemidef.mpr
       ((Matrix.nonneg_iff_posSemidef.mp (M.pos a)).submatrix (fun i => (i, k₀))))
     (by
-      classical
       ext i j
       simpa only [Matrix.sum_apply, Matrix.submatrix_apply, Matrix.one_apply,
         Prod.mk.injEq, and_true]
         using congrFun (congrFun M.sum_eq_one (i, k₀)) (j, k₀))
 
 @[simp] theorem compressAt_effect
-    {Outcome I κ : Type*}
-    [Fintype Outcome] [Fintype I] [DecidableEq I]
-    [Fintype κ] [DecidableEq κ]
     (k₀ : κ) (M : MIPStarRE.Quantum.Measurement Outcome (I × κ)) (a : Outcome) :
     (M.compressAt k₀).effect a =
       (M.effect a).submatrix (fun i => (i, k₀)) (fun i => (i, k₀)) :=
@@ -60,7 +55,6 @@ theorem compressAt_postprocess
     [Fintype I] [DecidableEq I] [Fintype κ] [DecidableEq κ]
     (k₀ : κ) (M : MIPStarRE.Quantum.Measurement A (I × κ)) (f : A → B) :
     (M.postprocess f).compressAt k₀ = (M.compressAt k₀).postprocess f := by
-  classical
   apply MIPStarRE.Quantum.Measurement.ext
   intro b
   ext i j
@@ -85,7 +79,7 @@ theorem compressAt_dilatedMeasurement
   apply MIPStarRE.Quantum.Measurement.ext
   intro a
   ext i j
-  exact dilatedMeasurement_compression a₀ a M i j
+  simp [dilatedMeasurement_compression]
 
 end Measurement
 
@@ -111,7 +105,6 @@ theorem consistencyDefect_padState_compressAt
         (fun x a => heteroKron (((MA x).compressAt a₀).effect a) 1)
         (fun x a => heteroKron 1 (((MB x).compressAt b₀).effect a))
         ψ := by
-  unfold consistencyDefect
   apply avgOver_congr
   intro x
   apply Finset.sum_congr rfl
@@ -119,7 +112,7 @@ theorem consistencyDefect_padState_compressAt
   apply Finset.sum_congr rfl
   intro b _
   by_cases hab : a = b
-  · simp [hab]
+  · simp_all
   · simp only [hab, if_false]
     change vectorQForm (padState a₀ b₀ ψ)
         (heteroKron ((MA x).effect a) 1 * heteroKron 1 ((MB x).effect b)) =

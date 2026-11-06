@@ -48,24 +48,24 @@ theorem uniformDistribution_map_uncurry {α β γ : Type*}
   rw [← bind_uniformDistribution_map (fun a b => g (a, b)),
     show (fun a => (uniformDistribution β).map (fun b => g (a, b))) =
       fun _ => ν from funext hg]
-  exact Distribution.bind_const _ (uniformDistribution_isProbability α) ν
+  simp [Distribution.bind_const, uniformDistribution_isProbability]
+
+variable (D : DirectLdParams) (V : Fin D.m × (Fin D.m → DirectScalarQ D) → (Fin D.m → DirectScalarQ D))
 
 /-- Reading a point at a uniform affine parameter on the canonical line of a
 uniform direct sample gives a uniform point of the direct coordinate space. -/
-theorem uniformDistribution_map_directLine_add_smul (D : DirectLdParams)
-    (V : Fin D.m × (Fin D.m → DirectScalarQ D) → (Fin D.m → DirectScalarQ D)) :
+theorem uniformDistribution_map_directLine_add_smul :
     (uniformDistribution (DirectLdSpace D × DirectScalarQ D)).map
         (fun p => lineRepMap (V (p.1.index, p.1.direction)) p.1.point +
           p.2 • V (p.1.index, p.1.direction)) =
       uniformDistribution (Fin D.m → DirectScalarQ D) := by
-  classical
   let e : DirectLdSpace D × DirectScalarQ D ≃
       (Fin D.m × (Fin D.m → DirectScalarQ D)) ×
         ((Fin D.m → DirectScalarQ D) × DirectScalarQ D) :=
     { toFun := fun p => ((p.1.index, p.1.direction), (p.1.point, p.2))
       invFun := fun w => (⟨w.2.1, w.1.1, w.1.2⟩, w.2.2)
-      left_inv := by rintro ⟨⟨pt, i, dir⟩, t⟩; rfl
-      right_inv := by rintro ⟨⟨i, dir⟩, pt, t⟩; rfl }
+      left_inv := by grind
+      right_inv := by grind }
   have hequiv :
       (uniformDistribution (DirectLdSpace D × DirectScalarQ D)).map e =
         uniformDistribution ((Fin D.m × (Fin D.m → DirectScalarQ D)) ×
@@ -79,21 +79,16 @@ theorem uniformDistribution_map_directLine_add_smul (D : DirectLdParams)
           (fun w => lineRepMap (V w.1) w.2.1 + w.2.2 • V w.1) := by
     rw [Distribution.map_map]
     rfl
-  rw [hmap, hequiv]
-  refine uniformDistribution_map_uncurry _ _ fun a => ?_
-  exact uniformDistribution_map_lineRepMap_add_smul (V a)
+  simp_all [uniformDistribution_map_uncurry, uniformDistribution_map_lineRepMap_add_smul]
 
 /-- Averaging a function at a uniform affine parameter on the canonical line
 of a uniform direct sample is averaging it at a uniform point. -/
-theorem avgOver_uniform_directLdSpace_line_add_smul (D : DirectLdParams)
-    (V : Fin D.m × (Fin D.m → DirectScalarQ D) → (Fin D.m → DirectScalarQ D))
-    (g : (Fin D.m → DirectScalarQ D) → ℝ) :
+theorem avgOver_uniform_directLdSpace_line_add_smul (g : (Fin D.m → DirectScalarQ D) → ℝ) :
     avgOver (uniformDistribution (DirectLdSpace D)) (fun s =>
         avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
           g (lineRepMap (V (s.index, s.direction)) s.point +
             t • V (s.index, s.direction)))) =
       avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) g := by
-  classical
   rw [← avgOver_uniform_prod]
   calc
     avgOver (uniformDistribution (DirectLdSpace D × DirectScalarQ D))
@@ -115,7 +110,6 @@ theorem avgOver_directLinePointDist_line_add_smul (D : DirectLdParams)
         avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
           g (line.base + t • line.direction))) =
       avgOver (uniformDistribution (Fin D.m → DirectScalarQ D)) g := by
-  classical
   have haxis :
       avgOver (directALinePointDist D) (fun sample =>
           avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
@@ -132,9 +126,7 @@ theorem avgOver_directLinePointDist_line_add_smul (D : DirectLdParams)
     rw [directDLinePointDist, Distribution.avgOver_map]
     exact avgOver_uniform_directLdSpace_line_add_smul D
       (fun w => directPrefixProjection w.1 w.2) g
-  rw [Distribution.avgOver_map, directLinePointDist,
-    WinImplications.avgOver_mix, haxis, hdiag]
-  ring
+  grind [Distribution.avgOver_map, directLinePointDist, WinImplications.avgOver_mix]
 
 /-- Under a sub-line witness, the two source blocks of the point at a uniform
 affine parameter are independent uniform source points. -/
@@ -150,7 +142,6 @@ theorem SubLineWitness.avgOver_projX_projZ (P : AdmissibleParams)
                 (sample.1.base + t • sample.1.direction))))) =
       avgOver (uniformDistribution
         ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P))) f := by
-  classical
   have hmarginal :
       avgOver sublines.D (fun sample =>
           avgOver (uniformDistribution (DirectScalarQ P.extendedDirectLd))
@@ -175,11 +166,5 @@ theorem SubLineWitness.avgOver_projX_projZ (P : AdmissibleParams)
 
 end
 
-/-- Compatibility name for the uniform representative--parameter theorem.
-Its proof is now shared with the subline construction in
-`uniformDistribution_map_lineRepMap_add_smul`. -/
-@[deprecated (since := "2026-09-12")]
-alias uniformDistribution_map_lineRepMap_add_smul_current :=
-  uniformDistribution_map_lineRepMap_add_smul
 
 end MIPStarRE.QPBT

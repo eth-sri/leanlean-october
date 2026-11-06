@@ -31,10 +31,11 @@ noncomputable section
 
 namespace ExtendedLineGame
 
+variable {P : AdmissibleParams} {ε : ℝ}
+
 /-- Actual mass of outcomes outside `alpha*g1(x,z) + beta*g2(x,z)`. The
 coefficients may still depend on both base blocks. -/
-def scalarNonlinearMass {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+def scalarNonlinearMass (S : ProjectiveSetting P ε) (p : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side)) : ℝ := by
   classical
   exact ∑ g ∈ Finset.univ.filter (fun g => ¬ ∃ r t : MvPolynomial (Fin (2 * P.m))
@@ -42,8 +43,7 @@ def scalarNonlinearMass {P : AdmissibleParams} {ε : ℝ}
         MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1),
     ‖applyOperatorToState (S.place p (R.effect g)) S.psiHat‖ ^ 2
 
-private theorem placed_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) (x : ExtendedPointQuestion P)
+theorem placed_orderedIndicator (S : ProjectiveSetting P ε) (p : Placement) (x : ExtendedPointQuestion P)
     (a : PauliScalar P) :
     orderedIndicator (S.placedMeasurement p (S.pointMeasExp p.side .X x.1.1))
       (S.placedMeasurement p (S.pointMeasExp p.side .Z x.1.2)) x.2.1 x.2.2 a =
@@ -52,28 +52,25 @@ private theorem placed_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
       (S.pointMeasExp p.side .X x.1.1).effect ab.1 *
         (S.pointMeasExp p.side .Z x.1.2).effect ab.2) := by
   rw [S.place_finsetSum, Finset.sum_filter]
-  simp only [orderedIndicator, ProjectiveSetting.placedMeasurement_effect,
-    ProjectiveSetting.place_mul]
+  simp [orderedIndicator, ProjectiveSetting.placedMeasurement_effect, ProjectiveSetting.place_mul]
 
 /-- Opposite placements commute, identifying the residual on the actual
 projected state with the ordered-error residual. This supports both orders
 of `eq:qld-g-42/43` and blueprint `lem:qld-4-7`. -/
-theorem placed_residual {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem placed_residual (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : Op (S.ExpandedLocalSpace p1.side)) (T : Op (S.ExpandedLocalSpace p2.side)) :
     applyOperatorToState (S.place p1 R) S.psiHat -
       applyOperatorToState (S.place p2 T)
         (applyOperatorToState (S.place p1 R) S.psiHat) =
       applyOperatorToState (S.place p1 R * (1 - S.place p2 T)) S.psiHat := by
   rw [← applyOperatorToState_mul, ← S.place_comm p1 p2 hopposite R T, mul_sub, mul_one]
-  simp only [applyOperatorToState, map_sub, LinearMap.sub_apply]
+  simp [applyOperatorToState, map_sub, LinearMap.sub_apply]
 
 /-- The scalar-nonlinear outcome mass is bounded by twice the actual full
 ordered error plus `2*((2m+2)d+1)/q`. All transports and degree bounds are
 derived internally from the actual singleton outcomes. This auxiliary applies
 to every opposite placement of a complete projective measurement. -/
-theorem scalarNonlinearMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem scalarNonlinearMass_le_ordered_error (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) :
     scalarNonlinearMass S p1 R ≤ 2 * extendedPolynomialOrderedError S p1 p2 R false +
@@ -106,17 +103,12 @@ theorem scalarNonlinearMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
     have hcard : Fintype.card (PauliScalar P) = P.q :=
       @FieldModel.card P.q P.model.toFieldModel
     rw [hcard]
-    calc
-      _ ≤ ∑ g ∈ s, ((((2 * P.m + 2) * P.d + 1 : ℕ) : ℝ) / P.q) * ‖ψ g‖ ^ 2 := by
-        apply Finset.sum_le_sum
-        intro g _
-        apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
-        apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
-        exact_mod_cast scalarPolynomial_degree_term_le P g
-      _ ≤ ∑ g, ((((2 * P.m + 2) * P.d + 1 : ℕ) : ℝ) / P.q) * ‖ψ g‖ ^ 2 :=
-        Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
-          intros; positivity)
-      _ = _ := by rw [← Finset.mul_sum, hmass, mul_one]
+    refine (Finset.sum_le_sum fun g _ => mul_le_mul_of_nonneg_right
+      (div_le_div_of_nonneg_right (by exact_mod_cast scalarPolynomial_degree_term_le P g :
+        (_ : ℝ) ≤ ((2 * P.m + 2) * P.d + 1 : ℕ))
+        (Nat.cast_nonneg _)) (sq_nonneg _)).trans (le_of_le_of_eq
+      (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) fun _ _ _ => by positivity)
+      (by rw [← Finset.mul_sum, hmass, mul_one]))
   let f := fun (u : Fin (2 * P.m) → PauliScalar P) (v : Fin 2 → PauliScalar P) g =>
     ‖ψ g - applyOperatorToState (orderedIndicator (X u) (Z u) (v 0) (v 1)
       (MvPolynomial.eval v (MvPolynomial.map (MvPolynomial.eval u)
@@ -124,13 +116,9 @@ theorem scalarNonlinearMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
   have hfull : avgOver (uniformDistribution (Fin (2 * P.m) → PauliScalar P)) (fun u =>
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v => ∑ g, f u v g)) =
         extendedPolynomialOrderedError S p1 p2 R false := by
-    rw [← avgOver_uniform_prod (fun u v => ∑ g, f u v g)]
-    unfold extendedPolynomialOrderedError
-    rw [avgOver_uniform_equiv (scalarBaseQuestionEquiv P).symm]
-    apply avgOver_congr
-    rintro ⟨u, v⟩
-    apply Finset.sum_congr rfl
-    intro g _
+    rw [← avgOver_uniform_prod (fun u v => ∑ g, f u v g), extendedPolynomialOrderedError,
+      avgOver_uniform_equiv (scalarBaseQuestionEquiv P).symm]
+    refine avgOver_congr _ _ _ fun ⟨u, v⟩ => Finset.sum_congr rfl fun g _ => ?_
     dsimp only [f]
     rw [scalarPolynomial_eval]
     have hXZ : orderedIndicator (X u) (Z u) (v 0) (v 1)
@@ -145,24 +133,13 @@ theorem scalarNonlinearMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
           (extendedPolynomialRead P (scalarBaseQuestionEquiv P (u, v)) g) := by
       simp [X, Z, scalarBaseQuestionEquiv, Equiv.piCongrLeft_apply]
     rw [hXZ, placed_orderedIndicator]
-    dsimp only [ψ]
-    rw [placed_residual S p1 p2 hopposite]
-    rfl
+    exact congrArg (‖·‖ ^ 2) (placed_residual S p1 p2 hopposite _ _)
   have herror : avgOver (uniformDistribution (Fin (2 * P.m) → PauliScalar P)) (fun u =>
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v => ∑ g ∈ s, f u v g)) ≤
         extendedPolynomialOrderedError S p1 p2 R false := by
-    rw [← hfull]
-    apply avgOver_mono
-    intro u
-    apply avgOver_mono
-    intro v
-    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (by
-      intros; exact sq_nonneg _)
-  change scalarNonlinearMass S p1 R ≤ 2 * _ + 2 * _ at h
-  have hout := h.trans (add_le_add
-    (mul_le_mul_of_nonneg_left herror (by norm_num : (0 : ℝ) ≤ 2))
-    (mul_le_mul_of_nonneg_left hdegree (by norm_num : (0 : ℝ) ≤ 2)))
-  simpa only [mul_div_assoc] using hout
+    exact hfull ▸ avgOver_mono _ _ _ fun u => avgOver_mono _ _ _ fun v =>
+      Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) fun _ _ _ => by positivity
+  grind [scalarNonlinearMass]
 
 end ExtendedLineGame
 

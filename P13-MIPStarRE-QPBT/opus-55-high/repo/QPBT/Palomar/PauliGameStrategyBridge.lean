@@ -35,12 +35,12 @@ namespace PMF
 @[simp] theorem map_equiv_apply {X Y : Type*} (p : PMF X) (e : X ≃ Y) (x : X) :
     (p.map e) (e x) = p x := by
   classical
-  simp [PMF.map_apply, e.injective.eq_iff]
+  simp
 
 /-- A PMF pushed through an equivalence is evaluated by pulling the point back. -/
 theorem map_equiv_apply' {X Y : Type*} (p : PMF X) (e : X ≃ Y) (y : Y) :
     (p.map e) y = p (e.symm y) := by
-  simpa only [e.apply_symm_apply] using map_equiv_apply p e (e.symm y)
+  simpa using map_equiv_apply p e (e.symm y)
 
 end PMF
 
@@ -100,8 +100,6 @@ theorem relabel_symm_relabel {X Y A B X' Y' A' B' : Type}
     change ((G.μ.map (Equiv.prodCongr eX eY)).map
       (Equiv.prodCongr eX.symm eY.symm)) xy = G.μ xy
     rw [PMF.map_equiv_apply']
-    change (G.μ.map (Equiv.prodCongr eX eY))
-      ((Equiv.prodCongr eX eY) xy) = G.μ xy
     exact PMF.map_equiv_apply G.μ (Equiv.prodCongr eX eY) xy
   · funext x y a b
     simp [Game.relabel]
@@ -142,13 +140,6 @@ def relabel {X A X' A' : Type}
   ψ_swap := S.ψ_swap
   meas := fun x => POVM.relabel eA (S.meas (eX.symm x))
 
-/-- Symmetric relabeling agrees with relabeling the underlying general strategy. -/
-@[simp] theorem relabel_toStrategy {X A X' A' : Type}
-    [Fintype X] [Fintype A] [Fintype X'] [Fintype A']
-    (S : SymmetricStrategy X A) (eX : X ≃ X') (eA : A ≃ A') :
-    (relabel S eX eA).toStrategy =
-      Strategy.relabel S.toStrategy eX eX eA eA :=
-  rfl
 
 /-- Symmetric relabeling preserves projectivity of the measurement family exactly. -/
 theorem relabel_isProjective_iff {X A X' A' : Type}
@@ -306,26 +297,7 @@ noncomputable def pauliSymmetricGame (P : MIPStarRE.QPBT.AdmissibleParams) :
         (MIPStarRE.QPBT.fixedBinTrace P.model) :=
       Game.relabel_symm_relabel _ _ _ _ _
 
-/-- Convert a compact symmetric Pauli strategy into a registered symmetric strategy. -/
-def pauliSymmetricStrategyToLibrary (P : MIPStarRE.QPBT.AdmissibleParams)
-    (S : SymmetricStrategy
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))) :
-    MIPStarRE.QPBT.SymmetricStrategy (MIPStarRE.QPBT.pauliBasisTestSymm P) :=
-  SymmetricStrategy.toSymmetricStrategy
-    (SymmetricStrategy.relabel S (pauliQuestionEquiv P) (pauliAnswerEquivCompact P))
 
-/-- Symmetric conversion is exactly the relabeled compact symmetric strategy. -/
-@[simp] theorem of_pauliSymmetricStrategyToLibrary
-    (P : MIPStarRE.QPBT.AdmissibleParams)
-    (S : SymmetricStrategy
-      (PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
-      (PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))) :
-    SymmetricStrategy.ofSymmetricStrategy (pauliSymmetricStrategyToLibrary P S) =
-      SymmetricStrategy.relabel S (pauliQuestionEquiv P)
-        (pauliAnswerEquivCompact P) := by
-  simp [pauliSymmetricStrategyToLibrary]
-  rfl
 
 end
 

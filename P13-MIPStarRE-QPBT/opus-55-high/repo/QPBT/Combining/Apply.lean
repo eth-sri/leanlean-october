@@ -4,11 +4,20 @@ public import QPBT.Combining.Points
 public import QPBT.Combining.PairCompletion
 public import QPBT.Combining.ExtendedLines.Estimates
 public import QPBT.Combining.ActualErrorBounds
-public import QPBT.Combining.ExplicitScalarBounds
+public import QPBT.Combining.ErrorBounds
+public import QPBT.Combining.PassingError
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.ExplicitConstants
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
 public import QPBT.Combining.ExtendedLineGame.PairPointConsistency
-public import QPBT.Combining.PointErrorObstruction
-public import QPBT.Combining.ErrorObstruction
-public import QPBT.Combining.Lines.SubLineJoint
+public import QPBT.Combining.Witnesses
+public import QPBT.Games.ErrorFunctions
+public import QPBT.Test.PauliBasisTest
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+public import QPBT.Combining.Lines.SubLineMixture
+public import QPBT.Combining.Lines.RestrictedAverage
+public import QPBT.Combining.Lines.ConsistencyPositivity
 public import QPBT.Test.SoundnessDefs
 
 /-!
@@ -110,7 +119,6 @@ theorem exists_extendedLinesWitness_established_ofPointsWitness
           Nonempty (ExtendedLinesWitness S points
             (C * (P.m : ℝ) *
               deltaCombine ε ((P.m * P.d : ℕ) / (P.q : ℝ)))) := by
-  classical
   obtain ⟨deltaP, hdeltaP, hlines⟩ :=
     exists_combinedLinesWitness_ofPointsWitness deltaQ hdeltaQ
   obtain ⟨constant, hconstant, hnear⟩ := subline_joint_overlap_near_one_at
@@ -135,17 +143,10 @@ theorem exists_extendedLinesWitness_established_ofPointsWitness
     refine (le_min ?_ ?_).trans
       (hscalar ε ((P.m * P.d : ℕ) / (P.q : ℝ)) (P.m : ℝ)
         S.eps_nonneg (by positivity) (by exact_mod_cast P.one_le_m))
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (directLinePointDist P.extendedDirectLd) (fun _ => 1) :=
-          avgOver_mono _ _ _ fun sample =>
-            consistencyDefect_integrand_le_one S first second hopposite _ _
-        _ = 1 := avgOver_const_of_isProbability _ (directLinePointDist_isProbability _) 1
+    · exact (directLinePointDist_isProbability _).avgOver_le_of_forall_le_on_support _ _
+        fun _ _ => consistencyDefect_integrand_le_one S first second hopposite _ _
     · refine (sublines.extended_consistencyDefect_le lines first second hopposite).trans ?_
-      exact (le_abs_self _).trans (by
-        simpa only [abs_sub_comm] using
-          hnear P ε (deltaQ ε) (deltaP ε ((P.m * P.d : ℕ) / (P.q : ℝ)))
-            S points lines sublines first second hopposite)
+      grind
   refine ⟨{
     Qline := sublines.extendedMeasurement lines
     axis_degree := sublines.extendedMeasurement_axis_degree lines
@@ -190,14 +191,11 @@ theorem exists_extendedLinesWitness_established :
               Nonempty (ExtendedLinesWitness S points
                 (C * (P.m : ℝ) *
                   deltaCombine ε ((P.m * P.d : ℕ) / (P.q : ℝ)))) := by
-  classical
   obtain ⟨deltaQ, hdeltaQ, hpoints⟩ := exists_combinedPointsWitness
   obtain ⟨C, hC, deltaCombine, hdeltaCombine, hlines⟩ :=
     exists_extendedLinesWitness_established_ofPointsWitness deltaQ hdeltaQ
   refine ⟨deltaQ, hdeltaQ, C, hC, deltaCombine, hdeltaCombine, ?_⟩
-  intro P ε S
-  obtain ⟨points⟩ := hpoints P ε S
-  exact ⟨points, hlines P ε S points⟩
+  simp_all
 
 /-- Construction of the projective global polynomial-pair measurements from
 `lem:qld-4-7`, paper lines 1267--1274.  The statement has the source's universal
@@ -230,37 +228,28 @@ theorem exists_globalPairWitness :
         Nonempty (GlobalPairWitness S (deltaQld a b ε P.m P.d P.q)) := by
   obtain ⟨pointError, hpoint, C, hC, lineError, hline, hlines⟩ :=
     exists_extendedLinesWitness_established
-  obtain ⟨a, b, ha, hb, hb1, hpairs⟩ :=
-    ExtendedLineGame.exists_pairWitness_of_points_lines
   obtain ⟨A, B, hA, hB, hB1, hscalar⟩ :=
     exists_actual_rounded_global_pair_error_bound pointError hpoint lineError hline
-      C a b hC.le ha hb hb1
+      C pauliBaselineLowDegreeConstant pauliBaselineLowDegreePower hC.le
+      (by norm_num [pauliBaselineLowDegreeConstant]) (by norm_num [pauliBaselineLowDegreePower])
+      (by norm_num [pauliBaselineLowDegreePower])
   refine ⟨A, B, hA, hB, hB1, ?_⟩
   intro P ε S
   obtain ⟨points, ⟨lines⟩⟩ := hlines P ε S
-  obtain ⟨pair⟩ := hpairs P ε (pointError ε)
+  obtain ⟨pair⟩ := ExtendedLineGame.pair_witness_of_points_lines_explicit P ε (pointError ε)
     (C * (P.m : ℝ) * lineError ε ((P.m * P.d : ℕ) / (P.q : ℝ))) S points lines
   have hbound := hscalar P ε S.eps_nonneg
-  simp only [Nat.cast_mul] at hbound
   refine ⟨{ pair with point_consistent_alice := ?_, point_consistent_bob := ?_ }⟩
   · intro W
     refine (le_min (show _ ≤ (1 : ℝ) from ?_) (pair.point_consistent_alice W)).trans ?_
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun _ => 1) :=
-          avgOver_mono _ _ _ fun u => consistencyDefect_integrand_le_one
-            S .AA' .BA'' (by trivial) _ _
-        _ = 1 := avgOver_const_of_isProbability _ (uniformDistribution_isProbability _) 1
-    · with_unfolding_all simpa only [Nat.cast_mul, Real.rpow_eq_pow] using hbound
+    · exact (uniformDistribution_isProbability _).avgOver_le_of_forall_le_on_support _ _
+        fun _ _ => consistencyDefect_integrand_le_one S .AA' .BA'' (by trivial) _ _
+    simp_all
   · intro W
     refine (le_min (show _ ≤ (1 : ℝ) from ?_) (pair.point_consistent_bob W)).trans ?_
-    · unfold consistencyDefect
-      calc
-        _ ≤ avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun _ => 1) :=
-          avgOver_mono _ _ _ fun u => consistencyDefect_integrand_le_one
-            S .BB' .AB'' (by trivial) _ _
-        _ = 1 := avgOver_const_of_isProbability _ (uniformDistribution_isProbability _) 1
-    · with_unfolding_all simpa only [Nat.cast_mul, Real.rpow_eq_pow] using hbound
+    · exact (uniformDistribution_isProbability _).avgOver_le_of_forall_le_on_support _ _
+        fun _ _ => consistencyDefect_integrand_le_one S .BB' .AB'' (by trivial) _ _
+    simp_all
 
 end
 

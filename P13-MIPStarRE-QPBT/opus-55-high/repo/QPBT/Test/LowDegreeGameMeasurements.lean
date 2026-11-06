@@ -40,9 +40,11 @@ noncomputable section
 ### Formalization-only auxiliary facts about the ambient low-degree space
 -/
 
+variable (L : LdParams)
+
 /-- Formalization-only auxiliary equivalence splitting an ambient low-degree
 vector into its point, seed, and direction blocks. -/
-def ldSpaceSplit (L : LdParams) :
+def ldSpaceSplit :
     LdSpace L ≃ ((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L) where
   toFun z := ((LdSpace.point z, LdSpace.seed z), LdSpace.direction z)
   invFun p := fun i =>
@@ -54,20 +56,17 @@ def ldSpaceSplit (L : LdParams) :
     funext i
     rcases i with (j | u) | j
     · rfl
-    · cases u
-      rfl
+    · rfl
     · rfl
   right_inv p := by
-    obtain ⟨⟨a, b⟩, c⟩ := p
     rfl
 
 /-- Formalization-only auxiliary lemma: the point block of a uniformly random
 ambient vector is uniform. -/
-private theorem map_uniformDistribution_point (L : LdParams) :
+theorem map_uniformDistribution_point :
     (uniformDistribution (LdSpace L)).map LdSpace.point =
       uniformDistribution (Fin L.m → ScalarQ L) := by
-  have hsplit : (uniformDistribution (LdSpace L)).map (ldSpaceSplit L) =
-      uniformDistribution (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L)) :=
+  have hsplit :=
     uniformDistribution_map_equiv (ldSpaceSplit L)
   calc
     (uniformDistribution (LdSpace L)).map LdSpace.point
@@ -77,7 +76,7 @@ private theorem map_uniformDistribution_point (L : LdParams) :
           rfl
     _ = ((uniformDistribution
           (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L))).map
-            Prod.fst).map Prod.fst := by rw [hsplit]
+            Prod.fst).map Prod.fst := by simp_all
     _ = (uniformDistribution ((Fin L.m → ScalarQ L) × ScalarQ L)).map Prod.fst := by
           rw [uniformDistribution_map_fst]
     _ = uniformDistribution (Fin L.m → ScalarQ L) := uniformDistribution_map_fst
@@ -87,11 +86,10 @@ uniformly random ambient vector is uniform. This is the seed marginal used in
 the proof of `lem:alnf`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:243-257`,
 and in blueprint `def:ith-restricted-line`. -/
-theorem uniformDistribution_map_ldSeed (L : LdParams) :
+theorem uniformDistribution_map_ldSeed :
     (uniformDistribution (LdSpace L)).map LdSpace.seed =
       uniformDistribution (ScalarQ L) := by
-  have hsplit : (uniformDistribution (LdSpace L)).map (ldSpaceSplit L) =
-      uniformDistribution (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L)) :=
+  have hsplit :=
     uniformDistribution_map_equiv (ldSpaceSplit L)
   calc
     (uniformDistribution (LdSpace L)).map LdSpace.seed
@@ -101,7 +99,7 @@ theorem uniformDistribution_map_ldSeed (L : LdParams) :
           rfl
     _ = ((uniformDistribution
           (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L))).map
-            Prod.fst).map Prod.snd := by rw [hsplit]
+            Prod.fst).map Prod.snd := by simp_all
     _ = (uniformDistribution ((Fin L.m → ScalarQ L) × ScalarQ L)).map Prod.snd := by
           rw [uniformDistribution_map_fst]
     _ = uniformDistribution (ScalarQ L) := uniformDistribution_map_snd
@@ -111,7 +109,7 @@ balance assertion in `def:ld-question-distribution`, blueprint
 `lem:chi-index-uniform`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:215-221`.
 -/
-theorem uniformDistribution_map_chiIndex (L : LdParams) :
+theorem uniformDistribution_map_chiIndex :
     (uniformDistribution (ScalarQ L)).map (chiIndex L) =
       uniformDistribution (Fin L.m) := by
   letI : Nonempty (Fin (L.q / L.m)) :=
@@ -122,7 +120,7 @@ theorem uniformDistribution_map_chiIndex (L : LdParams) :
 /-- `lem:alnf`: the point and axis-index marginals of the axis line-point
 distribution are uniform. Blueprint `lem:alnf`, paper
 `08_classical_and_quantum_low_degree_tests.tex:243-257`. -/
-theorem aLinePointDist_point_marginal_uniform (L : LdParams) :
+theorem aLinePointDist_point_marginal_uniform :
     (aLinePointDist L).map Prod.snd =
         uniformDistribution (Fin L.m → ScalarQ L) ∧
       (aLinePointDist L).map (fun sample => chiIndex L sample.1.seed) =
@@ -135,7 +133,7 @@ theorem aLinePointDist_point_marginal_uniform (L : LdParams) :
           fun s => (aLineDescOf L s.1, LdSpace.point s.2)).map Prod.snd) = _
       rw [Distribution.map_map, Distribution.map_map]
       rfl
-    rw [hmap, map_uniformDistribution_point]
+    simp_all [map_uniformDistribution_point]
   · have hmap : (aLinePointDist L).map (fun sample => chiIndex L sample.1.seed)
         = ((uniformDistribution (LdSpace L)).map LdSpace.seed).map (chiIndex L) := by
       change ((((uniformDistribution (LdSpace L)).map
@@ -144,12 +142,12 @@ theorem aLinePointDist_point_marginal_uniform (L : LdParams) :
           fun sample => chiIndex L sample.1.seed) = _
       rw [Distribution.map_map, Distribution.map_map, Distribution.map_map]
       rfl
-    rw [hmap, uniformDistribution_map_ldSeed, uniformDistribution_map_chiIndex]
+    simp_all [uniformDistribution_map_ldSeed, uniformDistribution_map_chiIndex]
 
 /-- `lem:dlnf`: the point and prefix-index marginals of the diagonal
 line-point distribution are uniform. Blueprint `lem:dlnf`,
 paper `08_classical_and_quantum_low_degree_tests.tex:261-272`. -/
-theorem dLinePointDist_point_marginal_uniform (L : LdParams) :
+theorem dLinePointDist_point_marginal_uniform :
     (dLinePointDist L).map Prod.snd =
         uniformDistribution (Fin L.m → ScalarQ L) ∧
       (dLinePointDist L).map (fun sample => chiIndex L sample.1.seed) =
@@ -162,7 +160,7 @@ theorem dLinePointDist_point_marginal_uniform (L : LdParams) :
           fun s => (dLineDescOf L s.1, LdSpace.point s.2)).map Prod.snd) = _
       rw [Distribution.map_map, Distribution.map_map]
       rfl
-    rw [hmap, map_uniformDistribution_point]
+    simp_all [map_uniformDistribution_point]
   · have hmap : (dLinePointDist L).map (fun sample => chiIndex L sample.1.seed)
         = ((uniformDistribution (LdSpace L)).map LdSpace.seed).map (chiIndex L) := by
       change ((((uniformDistribution (LdSpace L)).map
@@ -171,7 +169,7 @@ theorem dLinePointDist_point_marginal_uniform (L : LdParams) :
           fun sample => chiIndex L sample.1.seed) = _
       rw [Distribution.map_map, Distribution.map_map, Distribution.map_map]
       rfl
-    rw [hmap, uniformDistribution_map_ldSeed, uniformDistribution_map_chiIndex]
+    simp_all [uniformDistribution_map_ldSeed, uniformDistribution_map_chiIndex]
 
 /-- Bounded multivariate polynomials form a finite set over a finite coefficient
 semiring. This is the finite outcome set required by blueprint
@@ -219,20 +217,20 @@ def evalPolyTupleAt {L : LdParams} (u : Fin L.m → ScalarQ L)
 
 /-- Embed a geometric point into the ambient coefficient space used by a
 point question. -/
-def pointSpaceOf (L : LdParams) (u : Fin L.m → ScalarQ L) : LdSpace L :=
+def pointSpaceOf (u : Fin L.m → ScalarQ L) : LdSpace L :=
   fun i => match i with
   | .inl (.inl j) => u j
   | .inl (.inr _) => 0
   | .inr _ => 0
 
 /-- The typed low-degree point question associated with `u`. -/
-def ldPointQuestionOf (L : LdParams) (u : Fin L.m → ScalarQ L) : LdQuestion L :=
+def ldPointQuestionOf (u : Fin L.m → ScalarQ L) : LdQuestion L :=
   (.point, pointSpaceOf L u)
 
 /-- Read the point component of a low-degree answer, sending answers of the
 wrong form to the fixed zero tuple. This total relabeling turns the strategy's
 answer measurement into the point POVM used by `lem:ld-soundness`. -/
-def ldPointValuesOrZero (L : LdParams) : LdAnswer L → Fin L.k → ScalarQ L
+def ldPointValuesOrZero : LdAnswer L → Fin L.k → ScalarQ L
   | .pointVals values => values
   | .alinePolys _ => 0
   | .dlinePolys _ => 0

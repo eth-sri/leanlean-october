@@ -39,15 +39,8 @@ the original point question. -/
       ldPointQuestionOf L u :=
   rfl
 
-/-- The direct point-answer readout agrees with the seed-indexed readout: the
-answer equivalence preserves point answers. -/
-@[simp] theorem ldPointValuesOrZero_ldDirectAnswerEquiv_symm
-    (L : LdParams) (a : DirectLdAnswer L.toDirectLdParams) :
-    ldPointValuesOrZero L ((ldDirectAnswerEquiv L).symm a) =
-      directLdPointValuesOrZero L.toDirectLdParams a := by
-  cases a <;> rfl
 
-private theorem seedFiberPointMeasurement
+theorem seedFiberPointMeasurement
     (L : LdParams) {iota : Type*} [Fintype iota] [DecidableEq iota]
     (M : LdQuestion L →
       MIPStarRE.Quantum.Measurement (LdAnswer L) iota)
@@ -68,47 +61,33 @@ private theorem seedFiberPointMeasurement
   funext a
   cases a <;> rfl
 
+variable (L : LdParams) (S : Strategy (ldGame L))
+
 /-- The point POVM of the correlated-residue extension of the strategy is the
 block-diagonal amplification of Alice's original seed-indexed point POVM. -/
 theorem ldStrategyToDirect_pointMeasurementA
-    (L : LdParams) (S : Strategy (ldGame L))
     (u : Fin L.m → ScalarQ L) :
     (((ldStrategyToDirect L S).A
         (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
       (directLdPointValuesOrZero L.toDirectLdParams)) =
       blockDiagonalMeasurement fun _ =>
-        (S.A (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L) := by
-  change (blockDiagonalMeasurement fun residue =>
-      matrixMeasurementTransport (ldDirectAnswerEquiv L)
-        (S.A (seededLdQuestion L
-          (directLdPointQuestionOf L.toDirectLdParams u) residue))).postprocess
-      (directLdPointValuesOrZero L.toDirectLdParams) = _
-  exact seedFiberPointMeasurement L S.A u
+        (S.A (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L) :=
+  seedFiberPointMeasurement L S.A u
 
 /-- The point POVM of the correlated-residue extension of the strategy is the
 block-diagonal amplification of Bob's original seed-indexed point POVM. -/
 theorem ldStrategyToDirect_pointMeasurementB
-    (L : LdParams) (S : Strategy (ldGame L))
     (u : Fin L.m → ScalarQ L) :
     (((ldStrategyToDirect L S).B
         (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
       (directLdPointValuesOrZero L.toDirectLdParams)) =
       blockDiagonalMeasurement fun _ =>
-        (S.B (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L) := by
-  change (blockDiagonalMeasurement fun residue =>
-      matrixMeasurementTransport (ldDirectAnswerEquiv L)
-        (S.B (seededLdQuestion L
-          (directLdPointQuestionOf L.toDirectLdParams u) residue))).postprocess
-      (directLdPointValuesOrZero L.toDirectLdParams) = _
-  exact seedFiberPointMeasurement L S.B u
+        (S.B (ldPointQuestionOf L u)).postprocess (ldPointValuesOrZero L) :=
+  seedFiberPointMeasurement L S.B u
 
-private theorem correlatedState_compress_left
-    {iotaA iotaB block : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    [Fintype block] [DecidableEq block] [Nonempty block]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (phi : EuclideanSpace ℂ ((iotaA × block) × (iotaB × block)))
+variable {iotaA iotaB block : Type*} [Fintype iotaA] [DecidableEq iotaA] [Fintype iotaB] [DecidableEq iotaB] [Fintype block] [DecidableEq block] [Nonempty block] (psi : EuclideanSpace ℂ (iotaA × iotaB)) (phi : EuclideanSpace ℂ ((iotaA × block) × (iotaB × block)))
+
+theorem correlatedState_compress_left
     (hphi : ∀ i j r s, phi ((i, r), (j, s)) =
       if r = s then
         psi (i, j) * (Real.sqrt (Fintype.card block : ℝ) : ℂ)⁻¹
@@ -118,57 +97,21 @@ private theorem correlatedState_compress_left
         (heteroKron A (Matrix.blockDiagonal fun _ => B)) =
       DistanceCalculus.stateQForm psi
         (heteroKron (averageDiagonalBlock A) B) := by
-  classical
-  unfold DistanceCalculus.stateQForm
-  apply congrArg Complex.re
-  unfold applyOperatorToState heteroKron Matrix.kronecker averageDiagonalBlock
-  simp_rw [EuclideanSpace.inner_eq_star_dotProduct]
-  simp only [Matrix.toEuclideanLin, Matrix.toLpLin_apply, dotProduct,
-    Matrix.mulVec]
-  simp_rw [← Finset.univ_product_univ, Finset.sum_product]
-  suffices h :
-      (∑ i : iotaA, ∑ r : block, ∑ j : iotaB,
-        ∑ i' : iotaA, ∑ j' : iotaB,
-          (starRingEnd ℂ)
-              (Real.sqrt (Fintype.card block : ℝ) : ℂ)⁻¹ *
-            (starRingEnd ℂ) (psi (i, j)) *
-              (B j j' * (A (i, r) (i', r) *
-                ((Real.sqrt (Fintype.card block : ℝ) : ℂ)⁻¹ *
-                  psi (i', j'))))) =
-        ∑ i : iotaA, ∑ j : iotaB, ∑ i' : iotaA,
-          ∑ j' : iotaB, ∑ r : block,
-            (starRingEnd ℂ) (psi (i, j)) *
-              (psi (i', j') * (B j j' *
-                ((Fintype.card block : ℂ)⁻¹ * A (i, r) (i', r)))) by
-    simpa [hphi, Matrix.blockDiagonal_apply, Matrix.kroneckerMap_apply,
-      apply_ite, map_zero, ite_mul, zero_mul, Finset.sum_ite_eq,
-      Finset.mem_univ, if_true, map_mul, Matrix.submatrix,
-      Matrix.sum_apply, Matrix.of_apply, Finset.mul_sum, Finset.sum_mul,
-      mul_assoc, mul_comm] using h
-  apply Fintype.sum_congr
-  intro i
-  rw [Finset.sum_comm]
-  apply Fintype.sum_congr
-  intro j
-  rw [Finset.sum_comm]
-  apply Fintype.sum_congr
-  intro i'
-  rw [Finset.sum_comm]
-  apply Fintype.sum_congr
-  intro j'
-  apply Fintype.sum_congr
-  intro r
-  ring_nf
-  rw [inv_sqrt_natCast_mul_conj (Fintype.card block)]
-  ring
+  unfold DistanceCalculus.stateQForm applyOperatorToState heteroKron Matrix.kronecker
+    averageDiagonalBlock
+  congr 1
+  simp [EuclideanSpace.inner_eq_star_dotProduct, Matrix.toEuclideanLin, dotProduct, Matrix.mulVec,
+    ← Finset.univ_product_univ, Finset.sum_product, hphi, Matrix.blockDiagonal_apply, apply_ite,
+    Matrix.sum_apply, Finset.mul_sum, Finset.sum_mul]
+  refine Fintype.sum_congr _ _ fun i => ?_
+  rw [Finset.sum_comm]; refine Fintype.sum_congr _ _ fun j => ?_
+  rw [Finset.sum_comm]; refine Fintype.sum_congr _ _ fun i' => ?_
+  rw [Finset.sum_comm]; refine Fintype.sum_congr _ _ fun j' => Fintype.sum_congr _ _ fun r => ?_
+  have h : ((Real.sqrt (Fintype.card block : ℝ) : ℂ)⁻¹) ^ 2 = (Fintype.card block : ℂ)⁻¹ := by
+    rw [inv_pow, ← Complex.ofReal_pow, Real.sq_sqrt (Nat.cast_nonneg _)]; simp
+  linear_combination (A (i, r) (i', r) * B j j' * psi (i', j') * (starRingEnd ℂ) (psi (i, j))) * h
 
-private theorem correlatedState_compress_right
-    {iotaA iotaB block : Type*}
-    [Fintype iotaA] [DecidableEq iotaA]
-    [Fintype iotaB] [DecidableEq iotaB]
-    [Fintype block] [DecidableEq block] [Nonempty block]
-    (psi : EuclideanSpace ℂ (iotaA × iotaB))
-    (phi : EuclideanSpace ℂ ((iotaA × block) × (iotaB × block)))
+theorem correlatedState_compress_right
     (hphi : ∀ i j r s, phi ((i, r), (j, s)) =
       if r = s then
         psi (i, j) * (Real.sqrt (Fintype.card block : ℝ) : ℂ)⁻¹
@@ -178,60 +121,31 @@ private theorem correlatedState_compress_right
         (heteroKron (Matrix.blockDiagonal fun _ => A) B) =
       DistanceCalculus.stateQForm psi
         (heteroKron A (averageDiagonalBlock B)) := by
-  classical
-  unfold DistanceCalculus.stateQForm
-  apply congrArg Complex.re
-  unfold applyOperatorToState heteroKron Matrix.kronecker averageDiagonalBlock
-  simp_rw [EuclideanSpace.inner_eq_star_dotProduct]
-  simp only [Matrix.toEuclideanLin, Matrix.toLpLin_apply, dotProduct,
-    Matrix.mulVec]
-  simp_rw [← Finset.univ_product_univ, Finset.sum_product]
-  suffices h :
-      (∑ i : iotaA, ∑ r : block, ∑ j : iotaB,
-        ∑ i' : iotaA, ∑ j' : iotaB,
-          (starRingEnd ℂ)
-              (Real.sqrt (Fintype.card block : ℝ) : ℂ)⁻¹ *
-            (starRingEnd ℂ) (psi (i, j)) *
-              (A i i' * (B (j, r) (j', r) *
-                ((Real.sqrt (Fintype.card block : ℝ) : ℂ)⁻¹ *
-                  psi (i', j'))))) =
-        ∑ i : iotaA, ∑ j : iotaB, ∑ i' : iotaA,
-          ∑ j' : iotaB, ∑ r : block,
-            (starRingEnd ℂ) (psi (i, j)) *
-              (psi (i', j') * (A i i' *
-                ((Fintype.card block : ℂ)⁻¹ * B (j, r) (j', r)))) by
-    simpa [hphi, Matrix.blockDiagonal_apply, Matrix.kroneckerMap_apply,
-      apply_ite, map_zero, ite_mul, zero_mul, Finset.sum_ite_eq,
-      Finset.mem_univ, if_true, map_mul, Matrix.submatrix,
-      Matrix.sum_apply, Matrix.of_apply, Finset.mul_sum, Finset.sum_mul,
-      mul_assoc, mul_comm] using h
-  apply Fintype.sum_congr
-  intro i
-  rw [Finset.sum_comm]
-  apply Fintype.sum_congr
-  intro j
-  rw [Finset.sum_comm]
-  apply Fintype.sum_congr
-  intro i'
-  rw [Finset.sum_comm]
-  apply Fintype.sum_congr
-  intro j'
-  apply Fintype.sum_congr
-  intro r
-  ring_nf
-  rw [inv_sqrt_natCast_mul_conj (Fintype.card block)]
-  ring
+  unfold DistanceCalculus.stateQForm applyOperatorToState heteroKron Matrix.kronecker
+    averageDiagonalBlock
+  congr 1
+  simp [EuclideanSpace.inner_eq_star_dotProduct, Matrix.toEuclideanLin, dotProduct, Matrix.mulVec,
+    ← Finset.univ_product_univ, Finset.sum_product, hphi, Matrix.blockDiagonal_apply, apply_ite,
+    Matrix.sum_apply, Finset.mul_sum, Finset.sum_mul]
+  refine Fintype.sum_congr _ _ fun i => ?_
+  rw [Finset.sum_comm]; refine Fintype.sum_congr _ _ fun j => ?_
+  rw [Finset.sum_comm]; refine Fintype.sum_congr _ _ fun i' => ?_
+  rw [Finset.sum_comm]; refine Fintype.sum_congr _ _ fun j' => Fintype.sum_congr _ _ fun r => ?_
+  have h : ((Real.sqrt (Fintype.card block : ℝ) : ℂ)⁻¹) ^ 2 = (Fintype.card block : ℂ)⁻¹ := by
+    rw [inv_pow, ← Complex.ofReal_pow, Real.sq_sqrt (Nat.cast_nonneg _)]; simp
+  linear_combination (A i i' * B (j, r) (j', r) * psi (i', j') * (starRingEnd ℂ) (psi (i, j))) * h
+
+variable {G : Game}
 
 /-- Compressing Alice's ancillary register preserves every correlation against
 an operator on Bob's original carrier. -/
 theorem seedFiberLiftedState_compress_left
-    {G : Game} (S : Strategy G) (L : LdParams)
+    (S : Strategy G) (L : LdParams)
     (A : Op (S.ιA × Fin (L.q / L.m))) (B : Op S.ιB) :
     DistanceCalculus.stateQForm (seedFiberLiftedState S L)
         (heteroKron A (Matrix.blockDiagonal fun _ => B)) =
       DistanceCalculus.stateQForm S.ψ
         (heteroKron (averageDiagonalBlock A) B) := by
-  classical
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   apply correlatedState_compress_left S.ψ (seedFiberLiftedState S L)
@@ -241,13 +155,12 @@ theorem seedFiberLiftedState_compress_left
 /-- Compressing Bob's ancillary register preserves every correlation against
 an operator on Alice's original carrier. -/
 theorem seedFiberLiftedState_compress_right
-    {G : Game} (S : Strategy G) (L : LdParams)
+    (S : Strategy G) (L : LdParams)
     (A : Op S.ιA) (B : Op (S.ιB × Fin (L.q / L.m))) :
     DistanceCalculus.stateQForm (seedFiberLiftedState S L)
         (heteroKron (Matrix.blockDiagonal fun _ => A) B) =
       DistanceCalculus.stateQForm S.ψ
         (heteroKron A (averageDiagonalBlock B)) := by
-  classical
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   apply correlatedState_compress_right S.ψ (seedFiberLiftedState S L)
@@ -257,7 +170,7 @@ theorem seedFiberLiftedState_compress_right
 /-- Compressing an arbitrary Alice family preserves its defect against a Bob
 family that is constant on the correlated residue register. -/
 theorem consistencyDefect_seedFiber_compress_left
-    {G : Game} (S : Strategy G) (L : LdParams)
+    (S : Strategy G) (L : LdParams)
     {X alpha : Type*} [Fintype X] [DecidableEq X]
     [Fintype alpha] [DecidableEq alpha]
     (mu : Distribution X)
@@ -270,7 +183,6 @@ theorem consistencyDefect_seedFiber_compress_left
       consistencyDefect mu
         (fun x a => heteroKron (averageDiagonalBlock (A x a)) 1)
         (fun x a => heteroKron 1 (B x a)) S.ψ := by
-  classical
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   unfold consistencyDefect avgOver
@@ -291,7 +203,7 @@ theorem consistencyDefect_seedFiber_compress_left
 /-- Compressing an arbitrary Bob family preserves its defect against an Alice
 family that is constant on the correlated residue register. -/
 theorem consistencyDefect_seedFiber_compress_right
-    {G : Game} (S : Strategy G) (L : LdParams)
+    (S : Strategy G) (L : LdParams)
     {X alpha : Type*} [Fintype X] [DecidableEq X]
     [Fintype alpha] [DecidableEq alpha]
     (mu : Distribution X) (A : X → alpha → Op S.ιA)
@@ -302,7 +214,6 @@ theorem consistencyDefect_seedFiber_compress_right
       consistencyDefect mu
         (fun x a => heteroKron (A x a) 1)
         (fun x a => heteroKron 1 (averageDiagonalBlock (B x a))) S.ψ := by
-  classical
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   unfold consistencyDefect avgOver
@@ -324,7 +235,6 @@ theorem consistencyDefect_seedFiber_compress_right
 of the strategy is exactly the defect of the compressed polynomial tuple on the
 original seed-indexed strategy. -/
 theorem ldStrategyToDirect_pointPolynomial_compression
-    (L : LdParams) (S : Strategy (ldGame L))
     (GB : DirectPolyMeasTuple L.toDirectLdParams
       (S.ιB × Fin (L.q / L.m))) :
     consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
@@ -365,7 +275,6 @@ theorem ldStrategyToDirect_pointPolynomial_compression
 of the strategy is exactly the defect of the compressed polynomial tuple on the
 original seed-indexed strategy. -/
 theorem ldStrategyToDirect_polynomialPoint_compression
-    (L : LdParams) (S : Strategy (ldGame L))
     (GA : DirectPolyMeasTuple L.toDirectLdParams
       (S.ιA × Fin (L.q / L.m))) :
     consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))

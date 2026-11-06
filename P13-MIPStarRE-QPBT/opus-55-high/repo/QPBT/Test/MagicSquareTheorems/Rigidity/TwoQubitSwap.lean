@@ -48,133 +48,15 @@ noncomputable section
 
 /-! ## Sums over a two-qubit label -/
 
-/-- Formalization-only: a sum over two-qubit labels is a double sum over the two
-coordinates. -/
-theorem sum_pi_fin_two {M : Type*} [AddCommMonoid M] (f : ZMod 2 → ZMod 2 → M) :
-    (∑ e : Fin 2 → ZMod 2, f (e 0) (e 1)) = ∑ b : ZMod 2, ∑ c : ZMod 2, f b c :=
-  calc (∑ e : Fin 2 → ZMod 2, f (e 0) (e 1))
-      = ∑ p : ZMod 2 × ZMod 2, f p.1 p.2 :=
-        Fintype.sum_equiv (piFinTwoEquiv fun _ => ZMod 2) _ _ fun _ => rfl
-    _ = ∑ b : ZMod 2, ∑ c : ZMod 2, f b c := Fintype.sum_prod_type _
 
-/-- Formalization-only: the squared norm of the one-qubit controlled-swap image
-is the sum of the squared norms of its two residual components. -/
-theorem sum_norm_sq_binarySwapComponent {ι : Type} [Fintype ι] [DecidableEq ι]
-    (X Z : Op ι) (v : EuclideanSpace ℂ ι) :
-    (∑ b : ZMod 2,
-        ‖applyOperatorToState (X ^ b.val * reflectionEffect Z b) v‖ ^ 2) =
-      ‖binarySwapMap X Z v‖ ^ 2 := by
-  rw [EuclideanSpace.norm_sq_eq, Fintype.sum_prod_type]
-  exact Finset.sum_congr rfl fun b _ => EuclideanSpace.norm_sq_eq _
 
-/-- The two residual components of a controlled swap carry the whole squared
-norm of the input.  This is `binarySwapMap_norm` in the form in which the
-two-qubit construction iterates it. -/
-theorem sum_norm_sq_binarySwapComponent_eq {ι : Type} [Fintype ι] [DecidableEq ι]
-    (X Z : Op ι) (hX : IsBinaryObservable X) (hZ : IsBinaryObservable Z)
-    (v : EuclideanSpace ℂ ι) :
-    (∑ b : ZMod 2,
-        ‖applyOperatorToState (X ^ b.val * reflectionEffect Z b) v‖ ^ 2) = ‖v‖ ^ 2 := by
-  rw [sum_norm_sq_binarySwapComponent, binarySwapMap_norm X Z hX hZ]
 
 /-! ## The two-qubit controlled-swap map -/
 
-/-- Formalization-only linear controlled-swap map on a two-qubit register
-supporting `thm:ms-rigidity`.  The component at the label `e` is obtained by
-applying the residual component of the first pair at `e 0` and then that of the
-second pair at `e 1`. -/
-def twoBinarySwapMap {ι : Type} [Fintype ι] [DecidableEq ι]
-    (X₁ Z₁ X₂ Z₂ : Op ι) :
-    EuclideanSpace ℂ ι →ₗ[ℂ] EuclideanSpace ℂ ((Fin 2 → ZMod 2) × ι) where
-  toFun ψ := (EuclideanSpace.equiv ((Fin 2 → ZMod 2) × ι) ℂ).symm
-    (fun p => applyOperatorToState
-      (X₂ ^ (p.1 1).val * reflectionEffect Z₂ (p.1 1) *
-        (X₁ ^ (p.1 0).val * reflectionEffect Z₁ (p.1 0))) ψ p.2)
-  map_add' ψ ξ := by
-    apply (EuclideanSpace.equiv ((Fin 2 → ZMod 2) × ι) ℂ).injective
-    funext p
-    simp only [ContinuousLinearEquiv.apply_symm_apply]
-    unfold applyOperatorToState
-    rw [map_add]
-    rfl
-  map_smul' c ψ := by
-    apply (EuclideanSpace.equiv ((Fin 2 → ZMod 2) × ι) ℂ).injective
-    funext p
-    simp only [ContinuousLinearEquiv.apply_symm_apply, RingHom.id_apply]
-    unfold applyOperatorToState
-    rw [map_smul]
-    rfl
 
-/-- Formalization-only coordinate formula for the two-qubit controlled-swap
-map. -/
-@[simp]
-theorem twoBinarySwapMap_apply {ι : Type} [Fintype ι] [DecidableEq ι]
-    (X₁ Z₁ X₂ Z₂ : Op ι) (ψ : EuclideanSpace ℂ ι) (e : Fin 2 → ZMod 2) (i : ι) :
-    twoBinarySwapMap X₁ Z₁ X₂ Z₂ ψ (e, i) =
-      applyOperatorToState
-        (X₂ ^ (e 1).val * reflectionEffect Z₂ (e 1) *
-          (X₁ ^ (e 0).val * reflectionEffect Z₁ (e 0))) ψ i := rfl
 
-/-- The two-qubit controlled-swap map preserves norms whenever the four
-controlling operators are binary observables.  No commutation assumption between
-the two pairs is needed: the map is the composition of the controlled swap of
-the first pair with the controlled swap of the second pair applied to the
-residual space. -/
-theorem twoBinarySwapMap_norm {ι : Type} [Fintype ι] [DecidableEq ι]
-    (X₁ Z₁ X₂ Z₂ : Op ι)
-    (hX₁ : IsBinaryObservable X₁) (hZ₁ : IsBinaryObservable Z₁)
-    (hX₂ : IsBinaryObservable X₂) (hZ₂ : IsBinaryObservable Z₂)
-    (ψ : EuclideanSpace ℂ ι) :
-    ‖twoBinarySwapMap X₁ Z₁ X₂ Z₂ ψ‖ = ‖ψ‖ := by
-  apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
-  rw [EuclideanSpace.norm_sq_eq, Fintype.sum_prod_type]
-  have hcomp : ∀ (e : Fin 2 → ZMod 2),
-      (∑ i : ι, ‖twoBinarySwapMap X₁ Z₁ X₂ Z₂ ψ (e, i)‖ ^ 2) =
-        ‖applyOperatorToState (X₂ ^ (e 1).val * reflectionEffect Z₂ (e 1))
-          (applyOperatorToState
-            (X₁ ^ (e 0).val * reflectionEffect Z₁ (e 0)) ψ)‖ ^ 2 := by
-    intro e
-    rw [← MIPStarRE.QPBT.DistanceCalculus.applyOperatorToState_mul]
-    exact (EuclideanSpace.norm_sq_eq (applyOperatorToState
-      (X₂ ^ (e 1).val * reflectionEffect Z₂ (e 1) *
-        (X₁ ^ (e 0).val * reflectionEffect Z₁ (e 0))) ψ)).symm
-  rw [Finset.sum_congr rfl
-    fun e (_ : e ∈ (Finset.univ : Finset (Fin 2 → ZMod 2))) => hcomp e]
-  rw [sum_pi_fin_two (fun b c =>
-    ‖applyOperatorToState (X₂ ^ c.val * reflectionEffect Z₂ c)
-      (applyOperatorToState (X₁ ^ b.val * reflectionEffect Z₁ b) ψ)‖ ^ 2)]
-  have hinner : ∀ b : ZMod 2,
-      (∑ c : ZMod 2, ‖applyOperatorToState (X₂ ^ c.val * reflectionEffect Z₂ c)
-          (applyOperatorToState (X₁ ^ b.val * reflectionEffect Z₁ b) ψ)‖ ^ 2) =
-        ‖applyOperatorToState (X₁ ^ b.val * reflectionEffect Z₁ b) ψ‖ ^ 2 :=
-    fun b => sum_norm_sq_binarySwapComponent_eq X₂ Z₂ hX₂ hZ₂ _
-  rw [Finset.sum_congr rfl
-    fun b (_ : b ∈ (Finset.univ : Finset (ZMod 2))) => hinner b]
-  exact sum_norm_sq_binarySwapComponent_eq X₁ Z₁ hX₁ hZ₁ ψ
 
-/-- Formalization-only local two-qubit controlled-swap embedding for
-`thm:ms-rigidity`, bundled as a linear isometric embedding.  Its codomain is the
-two-qubit register of the conclusion, `(Fin 2 → ZMod 2) × ι`. -/
-noncomputable def twoBinarySwapIsometry {ι : Type} [Fintype ι] [DecidableEq ι]
-    (X₁ Z₁ X₂ Z₂ : Op ι)
-    (hX₁ : IsBinaryObservable X₁) (hZ₁ : IsBinaryObservable Z₁)
-    (hX₂ : IsBinaryObservable X₂) (hZ₂ : IsBinaryObservable Z₂) :
-    EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ((Fin 2 → ZMod 2) × ι) where
-  toLinearMap := twoBinarySwapMap X₁ Z₁ X₂ Z₂
-  norm_map' := twoBinarySwapMap_norm X₁ Z₁ X₂ Z₂ hX₁ hZ₁ hX₂ hZ₂
 
-/-- Formalization-only coordinate formula for the two-qubit controlled-swap
-isometry. -/
-@[simp]
-theorem twoBinarySwapIsometry_apply {ι : Type} [Fintype ι] [DecidableEq ι]
-    (X₁ Z₁ X₂ Z₂ : Op ι)
-    (hX₁ : IsBinaryObservable X₁) (hZ₁ : IsBinaryObservable Z₁)
-    (hX₂ : IsBinaryObservable X₂) (hZ₂ : IsBinaryObservable Z₂)
-    (ψ : EuclideanSpace ℂ ι) (e : Fin 2 → ZMod 2) (i : ι) :
-    twoBinarySwapIsometry X₁ Z₁ X₂ Z₂ hX₁ hZ₁ hX₂ hZ₂ ψ (e, i) =
-      applyOperatorToState
-        (X₂ ^ (e 1).val * reflectionEffect Z₂ (e 1) *
-          (X₁ ^ (e 0).val * reflectionEffect Z₁ (e 0))) ψ i := rfl
 
 /-! ## Magic Square specialization -/
 

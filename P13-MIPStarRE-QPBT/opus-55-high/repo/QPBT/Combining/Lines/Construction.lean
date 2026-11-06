@@ -2,7 +2,10 @@ module
 
 public import QPBT.Combining.Lines.Conditioning
 public import QPBT.Combining.ErrorBounds
-public import QPBT.Combining.ExplicitScalarBounds
+public import QPBT.Combining.PassingError
+public import QPBT.Combining.DirectLowDegree.Transport.Error
+public import QPBT.ExplicitConstants
+public import QPBT.Games.Sandwich.Pasting.Heterogeneous
 
 /-!
 # Construction of consistent combined lines
@@ -42,12 +45,6 @@ def bbAbBipartition (params : AdmissibleParams) (left right : Type*) :
   left_inv indices := by cases indices; rfl
   right_inv indices := by cases indices; rfl
 
-/-- Coordinates of the `BB' | AB''(A'A'')` bipartition. -/
-@[simp] theorem bbAbBipartition_apply (params : AdmissibleParams) (left right : Type*)
-    (indices : SixReg params left right) :
-    bbAbBipartition params left right indices =
-      ((indices.2.1, indices.2.2.1),
-        ((indices.1.1, indices.2.2.2), (indices.1.2.1, indices.1.2.2))) := rfl
 
 set_option synthInstance.maxSize 400 in
 /-- Every directed opposite placement has an actual heterogeneous
@@ -68,7 +65,6 @@ theorem ProjectiveSetting.exists_opposite_bipartition {params : AdmissibleParams
         reindexOp equivalence (heteroKron 1 (heteroKron operator
           (1 : Op (PauliRegister params × PauliRegister params)))) =
           setting.place second operator) := by
-  classical
   cases first <;> cases second <;> try exact False.elim hopposite
   · exact ⟨aaBaBipartition params _ _, setting.reindexOp_aaBaBipartition_left,
       setting.reindexOp_aaBaBipartition_right⟩
@@ -186,13 +182,11 @@ theorem ProjectiveSetting.combinedLineMeasurement_evaluated_eq_pasted
       if (evalOpt lineZ pointZ polyZ, evalOpt lineX pointX polyX) = output then
         pastedMeasurement (setting.lineMeasExp side .Z lineZ).effect
           (setting.lineMeasExp side .X lineX).effect polyZ polyX else 0 := by
-  classical
   rw [Quantum.Measurement.postprocess_effect, Finset.sum_filter, Fintype.sum_prod_type]
   simp_rw [setting.combinedLineMeasurement_effect_eq_pastedMeasurement]
   exact Finset.sum_comm
 
 set_option synthInstance.maxSize 400 in
-set_option maxHeartbeats 800000 in
 -- Heterogeneous pasting elaborates nested postprocesses with dependent measurement types.
 /-- Applying heterogeneous one-sided pasting to the actual completed point
 and line families bounds their conditional defect. Both supplied point
@@ -218,7 +212,6 @@ theorem combined_line_conditioned_defect_le_explicit
               (Fintype.card (ScalarQ params.toLdParams) : ℝ))
               ((8 * pointError + 2080 * (error + deltaLine error)) /
                 nondegenerateLinePastingMass params.toLdParams) := by
-  classical
   obtain ⟨equivalence, hfirst, hsecond⟩ :=
     setting.exists_opposite_bipartition first second hopposite
   have hpoint : 0 ≤ pointError :=
@@ -269,7 +262,6 @@ theorem combined_line_conditioned_defect_le_explicit
   convert hresult using 1
 
 set_option synthInstance.maxSize 400 in
-set_option maxHeartbeats 800000 in
 -- Restoring the discarded directions expands the pasted family and its mass estimate.
 /-- The actual X-outer line POVM and the supplied points satisfy the restored
 source-law bound. Only zero X directions are discarded during the proof;
@@ -297,7 +289,6 @@ theorem combined_line_restored_defect_le_explicit
                 ((8 * pointError + 2080 * (error + deltaLine error)) /
                   nondegenerateLinePastingMass params.toLdParams) +
               1 / (2 * Fintype.card (ScalarQ params.toLdParams)) := by
-  classical
   have hbound := combined_line_conditioned_defect_le_explicit
     params error pointError setting points first second hopposite
   have hswapPoints (side : PlayerSide) (pointX pointZ : Fin params.m → PauliScalar params)
@@ -331,40 +322,17 @@ theorem combined_line_restored_defect_le_explicit
         (fun polys => (evalOpt query.1.1.1 query.2.2 polys.1,
           evalOpt query.1.1.2 query.1.2.2 polys.2))).effect output)) setting.psiHat
   have hnatural := hswap.symm.trans_le hbound
-  refine (setting.combinedLineMeasurement_consistency_le_conditioned
-    points first second hopposite).trans ?_
+  refine (consistencyDefect_le_nondegenerateLinePastingDist_add_mass setting first second hopposite
+    (fun sample => (points.Q first.side sample.1.2 sample.2.2).postprocess
+      (fun pair => (some pair.1, some pair.2)))
+    (fun sample => (setting.combinedLineMeasurement second.side sample.1.1 sample.2.1).postprocess
+      (fun polys => (evalOpt sample.1.1 sample.1.2 polys.1,
+        evalOpt sample.2.1 sample.2.2 polys.2)))).trans ?_
   unfold consistencyDefect nondegenerateLinePastingDist at hnatural ⊢
   simp only [Distribution.avgOver_map] at hnatural ⊢
   have hmass : 0 ≤ nondegenerateLinePastingMass params.toLdParams :=
     (prod_linePointDist_nondegenerate_mass_pos params.toLdParams).le
   exact add_le_add (mul_le_mul_of_nonneg_left hnatural hmass) le_rfl
-
-/-- A two-variable polynomial error bounds the restored combined-line defect,
-including the degenerate-line contribution, with line-marginal coefficient `2080`. -/
-theorem exists_combinedLine_restored_defect_le :
-    ∃ constant : ℝ, 1 ≤ constant ∧
-      ∃ pastingError : ℝ → ℝ → ℝ, IsPolyErr₂ pastingError ∧
-        ∀ (params : AdmissibleParams) (error pointError : ℝ)
-          (setting : ProjectiveSetting params error)
-          (points : CombinedPointsWitness setting pointError)
-          (first second : Placement), first.IsOpposite second →
-          consistencyDefect (Distribution.prod (linePointDist params.toLdParams)
-            (linePointDist params.toLdParams))
-            (fun sample output => setting.place first
-              (((points.Q first.side sample.1.2 sample.2.2).postprocess
-                (fun pair => (some pair.1, some pair.2))).effect output))
-            (fun sample output => setting.place second
-              (((setting.combinedLineMeasurement second.side sample.1.1 sample.2.1).postprocess
-                (fun polys => (evalOpt sample.1.1 sample.1.2 polys.1,
-                  evalOpt sample.2.1 sample.2.2 polys.2))).effect output)) setting.psiHat ≤
-            nondegenerateLinePastingMass params.toLdParams *
-              pastingError ((params.m * params.d : ℕ) /
-                (Fintype.card (ScalarQ params.toLdParams) : ℝ))
-                ((8 * pointError + constant * (error + deltaLine error)) /
-                  nondegenerateLinePastingMass params.toLdParams) +
-              1 / (2 * Fintype.card (ScalarQ params.toLdParams)) := by
-  exact ⟨2080, by norm_num, heterogeneousPastingError,
-    heterogeneous_pasting_error_is_poly_err₂, combined_line_restored_defect_le_explicit⟩
 
 /-- Consistency is symmetric for measurements on opposite registers. The
 operator commutation, rather than symmetry of the state or equality of local
@@ -426,17 +394,14 @@ theorem combined_line_measurement_consistency (deltaQ : ℝ → ℝ)
             (((points.Q p2.side sample.1.2 sample.2.2).postprocess fun ab =>
               (some ab.1, some ab.2)).effect answer))
           S.psiHat ≤ deltaP ε (((P.m * P.d : ℕ) : ℝ) / (P.q : ℝ)) := by
-  classical
-  obtain ⟨constant, hconstant, pastingError, hpasting, hrestored⟩ :=
-    exists_combinedLine_restored_defect_le
-  obtain ⟨lineError, hlineError, hscalar⟩ :=
-    exists_conditioned_polynomial_bound deltaQ hdeltaQ constant hconstant pastingError hpasting
+  obtain ⟨lineError, hlineError, hscalar⟩ := exists_conditioned_polynomial_bound deltaQ hdeltaQ 2080
+    (by norm_num) _ heterogeneous_pasting_error_is_poly_err₂
   refine ⟨lineError, hlineError, ?_⟩
   intro params error setting points first second hopposite
   have hreverse : second.IsOpposite first := by
     cases first <;> cases second <;> trivial
   rw [consistencyDefect_opposite_symm setting first second hopposite]
-  have hbound := hrestored params error (deltaQ error) setting points second first hreverse
+  have hbound := combined_line_restored_defect_le_explicit params error (deltaQ error) setting points second first hreverse
   have hcard : Fintype.card (ScalarQ params.toLdParams) = params.q :=
     @FieldModel.card params.q params.model.toFieldModel
   rw [hcard] at hbound
@@ -461,14 +426,9 @@ theorem combined_line_measurement_consistency (deltaQ : ℝ → ℝ)
           (fun polys => (evalOpt sample.1.1 sample.1.2 polys.1,
             evalOpt sample.2.1 sample.2.2 polys.2))).effect answer)) setting.psiHat ≤ 1 := by
     unfold consistencyDefect
-    calc
-      _ ≤ avgOver (Distribution.prod (linePointDist params.toLdParams)
-          (linePointDist params.toLdParams)) (fun _ => 1) :=
-        avgOver_mono _ _ _ fun sample =>
-          consistencyDefect_integrand_le_one setting second first hreverse _ _
-      _ = 1 := avgOver_const_of_isProbability _
-        (Distribution.prod_isProbability _ _ (linePointDist_isProbability params.toLdParams)
-          (linePointDist_isProbability params.toLdParams)) 1
+    exact (Distribution.prod_isProbability _ _ (linePointDist_isProbability params.toLdParams)
+      (linePointDist_isProbability params.toLdParams)).avgOver_le_of_forall_le_on_support _ _
+        fun _ _ => consistencyDefect_integrand_le_one setting second first hreverse _ _
   exact (le_min hunit (hbound.trans (add_le_add le_rfl hdiscard))).trans
     (hscalar error _ _ setting.eps_nonneg (by positivity)
       (nondegenerateLinePastingMass_bounds params.toLdParams).1

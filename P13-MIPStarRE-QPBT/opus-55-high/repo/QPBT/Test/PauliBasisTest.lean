@@ -46,17 +46,16 @@ structure AdmissibleParams where
   hq : IsAdmissibleSize q
   hdvd : m ∣ q
 
+variable (P : AdmissibleParams)
+
 /-- Every admissible parameter tuple has positive ambient dimension. This
 follows from positivity of the admissible field size and the divisibility
 `P.m ∣ P.q` in `def:admissible`, blueprint
 `blueprint/src/chapter/ch13_qpbt_test.tex`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:958-961`.
 -/
-theorem AdmissibleParams.one_le_m (P : AdmissibleParams) : 1 ≤ P.m := by
-  have hqpos : 0 < P.q := by
-    rcases P.hq with ⟨k, _, hq⟩
-    rw [hq]
-    exact Nat.pow_pos (by decide)
+theorem AdmissibleParams.one_le_m : 1 ≤ P.m := by
+  have hqpos : 0 < P.q := zero_lt_two.trans_le P.hq.two_le
   exact Nat.one_le_iff_ne_zero.mpr
     (ne_zero_of_dvd_ne_zero (Nat.ne_of_gt hqpos) P.hdvd)
 
@@ -67,7 +66,7 @@ quantified field representation.  This is the field representation of
 origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:958-961`.
 -/
 @[reducible] noncomputable def AdmissibleParams.model
-    (P : AdmissibleParams) : FixedFieldModel P.q :=
+    : FixedFieldModel P.q :=
   fixedFieldModel P.q P.hq
 
 /-- The low-degree parameter tuple determined by an admissible Pauli-test
@@ -107,7 +106,7 @@ inductive PauliType where
   | pairW (W : PauliKind)
   | pair
   | ms (t : MsType)
-  deriving DecidableEq, Repr, Inhabited, Fintype
+  deriving DecidableEq, Fintype
 
 /-- The register blocks used by the Pauli question space.  These are the
 coordinates displayed in blueprint
@@ -187,7 +186,7 @@ vector.  This is restriction to the basis-selected registers of
 `def:pauli-question-distribution`, blueprint `ch13_qpbt_test.tex`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def pauliToLd (P : AdmissibleParams) (W : PauliKind) (z : PauliSpace P) :
+def pauliToLd (W : PauliKind) (z : PauliSpace P) :
     LdSpace P.toLdParams :=
   fun i => match i with
   | .inl (.inl j) => pauliPointBlock W z j
@@ -200,7 +199,7 @@ basis-selected registers of `def:pauli-question-distribution`, blueprint
 `blueprint/src/chapter/ch13_qpbt_test.tex`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def embedLd (P : AdmissibleParams) (W : PauliKind)
+def embedLd (W : PauliKind)
     (u : LdSpace P.toLdParams) : PauliSpace P :=
   fun i => match i with
   | .inl (.inl (.inl (.inl (.inl j)))) =>
@@ -237,7 +236,7 @@ is the direct finite-space form of blueprint
 `def:pauli-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-noncomputable def pauliCL (P : AdmissibleParams) (t : PauliType) :
+noncomputable def pauliCL (t : PauliType) :
     PauliSpace P → PauliSpace P :=
   match t with
   | .point W => fun z => embedLd P W (ldPointCL P.toLdParams (pauliToLd P W z))
@@ -286,7 +285,7 @@ abbrev PauliQuestion (P : AdmissibleParams) := PauliType × PauliSpace P
 blueprint `def:pauli-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1006-1008`.
 Its ambient coefficient vector is zero. -/
-def pauliQuestion (P : AdmissibleParams) (W : PauliKind) : PauliQuestion P :=
+def pauliQuestion (W : PauliKind) : PauliQuestion P :=
   (.pauli W, 0)
 
 /-- The ordered-edge subtype used by the Pauli question sampler.  This is
@@ -321,7 +320,7 @@ theorem pauli_edge_card : Fintype.card PauliEdge = 86 := by
 `def:pauli-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1070-1120`.
 -/
-noncomputable def pauliQuestionDistribution (P : AdmissibleParams) :
+noncomputable def pauliQuestionDistribution :
     Distribution (PauliQuestion P × PauliQuestion P) :=
   by
     classical
@@ -371,7 +370,7 @@ is the finite encoding used to state `def:pauli-win-predicate`, blueprint
 `ch13_qpbt_test.tex`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-noncomputable def pauliAnswerEquiv (P : AdmissibleParams) :
+noncomputable def pauliAnswerEquiv :
     PauliAnswer P ≃ PauliAnswerCode P where
   toFun
     | .value a => .inl a
@@ -390,28 +389,9 @@ noncomputable def pauliAnswerEquiv (P : AdmissibleParams) :
     | .inr (.inr (.inr (.inr (.inr (.inl a))))) => .msTriple a
     | .inr (.inr (.inr (.inr (.inr (.inr a))))) => .pauliOutcome a
   left_inv := by
-    intro x
-    cases x <;> rfl
+    grind
   right_inv := by
-    intro x
-    cases x with
-    | inl a => rfl
-    | inr x =>
-        cases x with
-        | inl a => rfl
-        | inr x =>
-            cases x with
-            | inl a => rfl
-            | inr x =>
-                cases x with
-                | inl a => rfl
-                | inr x =>
-                    cases x with
-                    | inl a => rfl
-                    | inr x =>
-                        cases x with
-                        | inl a => rfl
-                        | inr a => rfl
+    grind
 
 noncomputable instance instFintypePauliAnswer (P : AdmissibleParams) : Fintype (PauliAnswer P) :=
   Fintype.ofEquiv (PauliAnswerCode P) (pauliAnswerEquiv P).symm
@@ -425,8 +405,7 @@ self-dual-normal representation.  Blueprint
 `eq:gamma-value`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1198-1212`.
 -/
-noncomputable def gammaValue (P : AdmissibleParams)
-    (uX uZ : Fin P.m → PauliScalar P)
+noncomputable def gammaValue (uX uZ : Fin P.m → PauliScalar P)
     (rX rZ : PauliScalar P) : ZMod 2 :=
   fixedBinTrace P.model
     (dotProduct (rX • indicatorVec uX) (rZ • indicatorVec uZ))
@@ -436,7 +415,7 @@ noncomputable def gammaValue (P : AdmissibleParams)
 `def:pauli-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1198-1212`.
 -/
-noncomputable def pauliPairGamma (P : AdmissibleParams) (z : PauliSpace P) : ZMod 2 :=
+noncomputable def pauliPairGamma (z : PauliSpace P) : ZMod 2 :=
   gammaValue P (pauliXBlock z) (pauliZBlock z)
     (pauliRXBlock z) (pauliRZBlock z)
 
@@ -461,7 +440,7 @@ def validPauliAnswer {P : AdmissibleParams} (t : PauliType) (a : PauliAnswer P) 
 `def:pauli-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-def pauliAlinePointCondition (P : AdmissibleParams) (W : PauliKind)
+def pauliAlinePointCondition (W : PauliKind)
     (line point : PauliSpace P) (f : Fin (P.d + 1) → PauliScalar P)
     (a : PauliScalar P) : Prop :=
   -- The universal form preserves the source's zero-direction convention.
@@ -475,7 +454,7 @@ def pauliAlinePointCondition (P : AdmissibleParams) (W : PauliKind)
 `def:pauli-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-def pauliDlinePointCondition (P : AdmissibleParams) (W : PauliKind)
+def pauliDlinePointCondition (W : PauliKind)
     (line point : PauliSpace P) (f : Fin (P.m * P.d + 1) → PauliScalar P)
     (a : PauliScalar P) : Prop :=
   ∀ t : PauliScalar P,
@@ -487,7 +466,7 @@ def pauliDlinePointCondition (P : AdmissibleParams) (W : PauliKind)
 `def:pauli-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-def pauliPointPauliCondition (P : AdmissibleParams) (W : PauliKind)
+def pauliPointPauliCondition (W : PauliKind)
     (point : PauliSpace P) (h : PauliRegister P) (a : PauliScalar P) : Prop :=
   lowDegreeEnc h (pauliPointBlock W point) = a
 
@@ -495,7 +474,7 @@ def pauliPointPauliCondition (P : AdmissibleParams) (W : PauliKind)
 blueprint `def:pauli-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-def pauliPairCondition (P : AdmissibleParams) (W : PauliKind)
+def pauliPairCondition (W : PauliKind)
     (z : PauliSpace P) (β : ZMod 2) (bits : ZMod 2 × ZMod 2) : Prop :=
   pauliPairGamma P z ≠ 0 ∨
     (match W with
@@ -506,7 +485,7 @@ def pauliPairCondition (P : AdmissibleParams) (W : PauliKind)
 `def:pauli-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-def pauliPointPairCondition (P : AdmissibleParams) (W : PauliKind)
+def pauliPointPairCondition (W : PauliKind)
     (z : PauliSpace P) (a : PauliScalar P) (β : ZMod 2) : Prop :=
   pauliPairGamma P z ≠ 0 ∨
     fixedBinTrace P.model
@@ -520,7 +499,7 @@ Variable 5 in the Z basis.  Blueprint
 `def:pauli-win-predicate`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-def pauliPointVariableCondition (P : AdmissibleParams) (W : PauliKind)
+def pauliPointVariableCondition (W : PauliKind)
     (z : PauliSpace P) (j : Fin 9) (a : PauliScalar P) (β : ZMod 2) : Prop :=
   pauliPairGamma P z = 0 ∨
     (j = ⟨0, by decide⟩ ∧ W = .X ∧
@@ -532,7 +511,7 @@ def pauliPointVariableCondition (P : AdmissibleParams) (W : PauliKind)
 blueprint `def:pauli-win-predicate`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-noncomputable def pauliWinPredicate (P : AdmissibleParams) :
+noncomputable def pauliWinPredicate :
     PauliQuestion P → PauliQuestion P → PauliAnswer P → PauliAnswer P → Bool :=
   open Classical in
   fun (tA, xA) (tB, xB) a b =>

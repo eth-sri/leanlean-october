@@ -22,7 +22,6 @@ the genuine bipartite POVMs underlying the completed line-point defect.
 
 open scoped BigOperators MatrixOrder ComplexOrder
 
-set_option synthInstance.maxSize 400
 
 namespace MIPStarRE.QPBT
 
@@ -31,14 +30,16 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
+variable {P : AdmissibleParams}
+
 /-- This formalization-only auxiliary records that the error parameter of a supplied
 `CombinedPointsWitness` is nonnegative. It supports `lem:qld-4-10`, paper lines
 689--709, and does not construct or assert existence of the witness. -/
-theorem CombinedPointsWitness.delta_nonneg {P : AdmissibleParams} {epsilon deltaQ : ℝ}
+theorem CombinedPointsWitness.delta_nonneg {epsilon deltaQ : ℝ}
     {setting : ProjectiveSetting P epsilon}
     (points : CombinedPointsWitness setting deltaQ) :
-    0 ≤ deltaQ := by
-  exact le_trans
+    0 ≤ deltaQ :=
+  le_trans
     (DistanceCalculus.opFamilyDistSq_nonneg
       (uniformDistribution
         ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
@@ -81,17 +82,12 @@ theorem completedLinePointDefect_aaBa_nonneg
         (projZ (directPointToPauli P sample.2))).postprocess fun values =>
           some (directPointToPauli P sample.2 (alphaVar P.m) * values.1 +
             directPointToPauli P sample.2 (betaVar P.m) * values.2)
-  change 0 ≤ consistencyDefect mu
-    (fun sample answer => setting.place .AA' ((lineMeasurement sample).effect answer))
-    (fun sample answer => setting.place .BA'' ((pointMeasurement sample).effect answer))
-    setting.psiHat
-  unfold consistencyDefect avgOver
   refine Finset.sum_nonneg fun sample _ =>
     mul_nonneg (mu.nonnegative sample) ?_
   refine Finset.sum_nonneg fun answerA _ => ?_
   refine Finset.sum_nonneg fun answerB _ => ?_
   by_cases hab : answerA = answerB
-  · simp [hab]
+  · simp_all
   · simp only [hab, if_false, DistanceCalculus.consistency_term_eq_stateQForm]
     rw [← stateQForm_pairState_eq_AA'_BA'' setting
       ((lineMeasurement sample).effect answerA)
@@ -110,12 +106,11 @@ end ExtendedLineGame
 /-- This formalization-only auxiliary records that the error parameter of a supplied
 `ExtendedLinesWitness` is nonnegative. It supports `lem:qld-4-13`, paper lines
 1020--1034, and does not construct or assert existence of the witness. -/
-theorem ExtendedLinesWitness.delta_nonneg {P : AdmissibleParams}
-    {epsilon deltaQ deltaL : ℝ} {setting : ProjectiveSetting P epsilon}
+theorem ExtendedLinesWitness.delta_nonneg {epsilon deltaQ deltaL : ℝ} {setting : ProjectiveSetting P epsilon}
     {points : CombinedPointsWitness setting deltaQ}
     (lines : ExtendedLinesWitness setting points deltaL) :
-    0 ≤ deltaL := by
-  exact le_trans
+    0 ≤ deltaL :=
+  le_trans
     (ExtendedLineGame.completedLinePointDefect_aaBa_nonneg lines
       (directLinePointDist P.extendedDirectLd))
     lines.consistent_alice

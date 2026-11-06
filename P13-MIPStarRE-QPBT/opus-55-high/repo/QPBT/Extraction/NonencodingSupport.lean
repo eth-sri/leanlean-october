@@ -55,14 +55,14 @@ theorem consistencyDefect_comm_of_commute {X A I : Type*}
   intro a _
   simp only [hcomm x a b, eq_comm]
 
+variable {P : AdmissibleParams} {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+
 /-- A polynomial measurement's mass outside the encoding image is at most
 its evaluated inconsistency with an encoding-supported reference, plus `md/q`.
 This is the Schwartz-Zippel step in blueprint `eq:qld-nonencoding-mass`.
 The reference support is explicit because this auxiliary applies to any POVM;
 the concrete reference above proves it without an additional strategy premise. -/
-theorem mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
-    {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-    (meas : Measurement (Poly P) I) (reference : Measurement (Poly P) J)
+theorem mass_outside_encoding_le_evaluated_defect (meas : Measurement (Poly P) I) (reference : Measurement (Poly P) J)
     (psi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1)
     (hsupport : ∀ g, ¬ IsEncoding g → reference.effect g = 0) :
     (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
@@ -71,10 +71,9 @@ theorem mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
         (fun u a => heteroKron ((meas.postprocess (fun g => evalPoly g u)).effect a) 1)
         (fun u a => heteroKron 1 ((reference.postprocess
           (fun g => evalPoly g u)).effect a)) psi + (P.m * P.d : ℝ) / P.q := by
-  classical
   have hmass := mass_outside_support_le_point_defect meas reference psi
     (Finset.univ.filter IsEncoding) (by simpa using hsupport)
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hmass
+  simp at hmass
   have hcollision := SandwichProduct.point_codeword_defect_le_avg_evaluated_add
     meas reference psi evalPoly ((P.m * P.d : ℝ) / P.q) hpsi
     (by positivity) poly_eval_collision_le
@@ -152,9 +151,7 @@ end ProjectiveSetting
 
 /-- The right-hand marginal version of the support estimate, obtained by
 interchanging the two tensor factors and using the same collision bound. -/
-theorem right_mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
-    {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-    (reference : Measurement (Poly P) I) (meas : Measurement (Poly P) J)
+theorem right_mass_outside_encoding_le_evaluated_defect (reference : Measurement (Poly P) I) (meas : Measurement (Poly P) J)
     (psi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1)
     (hsupport : ∀ g, ¬ IsEncoding g → reference.effect g = 0) :
     (∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
@@ -213,27 +210,19 @@ theorem global_marginal_encoding_consistency_explicit :
     rw [GlobalPairWitness.marginalPoly, Measurement.postprocess_comp]
     cases W <;> rfl
   have hab : consistencyDefect mu (fun u a => (margA u).effect a)
-      (fun u a => (pointB u).effect a) psi ≤ deltaG := by
-    change consistencyDefect mu
-      (fun u a => heteroKron (((w.marginalPoly .alice W).postprocess
-        (fun g => evalPoly g u)).effect a) 1)
-      (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a)) psi ≤ deltaG
-    rw [S.consistencyDefect_pairState_eq_AA'_BA'']
-    simpa only [hpost] using w.point_consistent_alice W
+      (fun u a => (pointB u).effect a) psi ≤ deltaG :=
+    (ExtendedLineGame.placed_consistency_pairState S mu
+      (fun u => (w.marginalPoly .alice W).postprocess (fun g => evalPoly g u))
+      (S.pointMeasExp .bob W)).1.symm.trans_le
+      (by simpa only [hpost] using w.point_consistent_alice W)
   have hba : consistencyDefect mu (fun u a => (margB u).effect a)
       (fun u a => (pointA u).effect a) psi ≤ deltaG := by
     rw [consistencyDefect_comm_of_commute _ _ _ _ (by
       intro u a b
       exact (WinImplications.heteroKron_left_right_comm _ _).symm)]
-    change consistencyDefect mu
-      (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
-      (fun u a => heteroKron 1 (((w.marginalPoly .bob W).postprocess
-        (fun g => evalPoly g u)).effect a)) psi ≤ deltaG
-    rw [S.consistencyDefect_pairState_eq_AB''_BB',
-      consistencyDefect_comm_of_commute _ _ _ _ (by
-        intro u a b
-        exact S.place_comm .AB'' .BB' trivial _ _)]
-    simpa only [hpost] using w.point_consistent_bob W
+    exact (ExtendedLineGame.placed_consistency_pairState S mu (S.pointMeasExp .alice W)
+      (fun u => (w.marginalPoly .bob W).postprocess (fun g => evalPoly g u))).2.symm.trans_le
+      (by simpa only [hpost] using w.point_consistent_bob W)
   have hpoints : consistencyDefect mu (fun u a => (pointA u).effect a)
       (fun u a => (pointB u).effect a) psi ≤ 86 * epsilon := by
     change consistencyDefect mu

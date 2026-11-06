@@ -36,8 +36,6 @@ theorem avgOver_distribution_prod {X Y : Type*}
     avgOver (Distribution.prod μ ν) f =
       avgOver μ (fun x => avgOver ν (fun y => f (x, y))) := by
   unfold avgOver
-  change (∑ p ∈ μ.support.product ν.support,
-    (μ.weight p.1 * ν.weight p.2) * f p) = _
   calc
     (∑ p ∈ μ.support.product ν.support,
         (μ.weight p.1 * ν.weight p.2) * f p) =
@@ -49,9 +47,7 @@ theorem avgOver_distribution_prod {X Y : Type*}
       apply Finset.sum_congr rfl
       intro x _
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro y _
-      ring
+      grind
 
 /-- The diagonal overlap after a common relabeling is the sum over pairs of
 original outcomes with equal labels. This is the formalization-only identity
@@ -68,38 +64,12 @@ theorem diagonal_postprocess_stateQForm_eq_pair_sum
       (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b))) =
       ∑ a : α, ∑ a' : α, if f a = f a' then
         stateQForm ψ (heteroKron (A.effect a) (B.effect a')) else 0 := by
-  classical
-  have hterm (b : β) : stateQForm ψ
-      (heteroKron ((A.postprocess f).effect b) ((B.postprocess f).effect b)) =
-      ∑ a : α, ∑ a' : α, if f a = b ∧ f a' = b then
-        stateQForm ψ (heteroKron (A.effect a) (B.effect a')) else 0 := by
-    rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
-      MIPStarRE.Quantum.Measurement.postprocess_effect,
-      heteroKron_finset_sum_left, stateQForm_finset_sum, Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro a _
-    by_cases hab : f a = b
-    · rw [if_pos hab, heteroKron_finset_sum_right, stateQForm_finset_sum,
-        Finset.sum_filter]
-      apply Finset.sum_congr rfl
-      intro a' _
-      by_cases ha'b : f a' = b <;> simp [hab, ha'b]
-    · simp [hab]
-  simp_rw [hterm]
+  simp only [MIPStarRE.Quantum.Measurement.postprocess_effect, heteroKron_finset_sum_left,
+    heteroKron_finset_sum_right, stateQForm_finset_sum]
+  simp only [Finset.sum_filter]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a _
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a' _
-  by_cases haa' : f a = f a'
-  · rw [haa']
-    simp
-  · apply Eq.trans (Finset.sum_eq_zero (fun b _ => by
-      simp only [ite_eq_right_iff]
-      intro hpair
-      exact (haa' (hpair.1.trans hpair.2.symm)).elim))
-    simp [haa']
+  simp
+  exact Finset.sum_comm
 
 /-- The consistency defect of tensor-placed local measurements is the average
 of their pointwise off-diagonal tensor overlap. This is the formalization-only
@@ -117,19 +87,11 @@ theorem consistencyDefect_placed_eq_avg_point
         (fun x a => heteroKron 1 ((B x).effect a)) ψ =
       avgOver μ (fun x => ∑ a : α, ∑ a' : α, if a = a' then 0 else
         stateQForm ψ (heteroKron ((A x).effect a) ((B x).effect a'))) := by
-  unfold consistencyDefect
-  apply avgOver_congr
-  intro x
-  apply Finset.sum_congr rfl
-  intro a _
-  apply Finset.sum_congr rfl
-  intro a' _
-  by_cases haa' : a = a'
-  · simp [haa']
-  · simp only [if_neg haa']
-    rw [consistency_term_eq_stateQForm, placed_product_stateQForm_eq]
+  refine avgOver_congr _ _ _ fun x => Fintype.sum_congr _ _ fun a => Fintype.sum_congr _ _ fun a' => ?_
+  split_ifs
+  · rfl
+  · rw [consistency_term_eq_stateQForm, placed_product_stateQForm_eq]
 
-set_option maxHeartbeats 600000 in
 -- The collision estimate expands two nested outcome sums at each evaluation point.
 /-- Averaged diagonal overlap after evaluation exceeds the original diagonal
 overlap by at most the collision probability. This is the formalization-only
@@ -153,111 +115,32 @@ theorem avg_diagonal_postprocess_stateQForm_le
           ((A.postprocess (fun g => eval g y)).effect r)
           ((B.postprocess (fun g => eval g y)).effect r))) ≤
       (∑ g : Γ, stateQForm ψ (heteroKron (A.effect g) (B.effect g))) + ε := by
-  classical
   let w : Γ → Γ → ℝ := fun g g' =>
     stateQForm ψ (heteroKron (A.effect g) (B.effect g'))
-  have hw (g g' : Γ) : 0 ≤ w g g' := by
-    apply stateQForm_nonneg
-    exact MIPStarRE.Quantum.kronecker_nonneg (A.pos g) (B.pos g')
-  have hoffdiag_le_one :
-      (∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else w g g') ≤ 1 := by
-    let AL := leftPlacedMeasurement (ιB := ιB) A
-    let BR := rightPlacedMeasurement (ιA := ιA) B
-    have hpoint := point_defect_eq AL BR ψ
-    simp only [AL, BR, leftPlacedMeasurement, rightPlacedMeasurement,
-      MIPStarRE.Quantum.Measurement.ofSumEqOne] at hpoint
-    simp_rw [placed_product_stateQForm_eq] at hpoint
-    have hdiag : 0 ≤ ∑ g : Γ, w g g :=
-      Finset.sum_nonneg fun g _ => hw g g
-    change (∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else
-      stateQForm ψ (heteroKron (A.effect g) (B.effect g'))) ≤ 1
-    rw [hpoint, hψ]
-    norm_num
-    exact hdiag
-  have hdiagpart :
-      (∑ g : Γ, ∑ g' : Γ, if g = g' then w g g' else 0) =
-        ∑ g : Γ, w g g := by
-    apply Finset.sum_congr rfl
-    intro g _
-    rw [Fintype.sum_eq_single g]
-    · simp
-    · intro g' hg'
-      simp [Ne.symm hg']
-  have hsplit :
-      (∑ g : Γ, ∑ g' : Γ,
-        if g = g' then w g g' else ε * w g g') =
-      (∑ g : Γ, w g g) +
-        ε * (∑ g : Γ, ∑ g' : Γ,
-          if g = g' then 0 else w g g') := by
-    calc
-      (∑ g : Γ, ∑ g' : Γ,
-          if g = g' then w g g' else ε * w g g') =
-          ∑ g : Γ, ∑ g' : Γ,
-            ((if g = g' then w g g' else 0) +
-              ε * (if g = g' then 0 else w g g')) := by
-        apply Finset.sum_congr rfl
-        intro g _
-        apply Finset.sum_congr rfl
-        intro g' _
-        by_cases hgg' : g = g' <;> simp [hgg']
-      _ = (∑ g : Γ, ∑ g' : Γ,
-            if g = g' then w g g' else 0) +
-          ε * (∑ g : Γ, ∑ g' : Γ,
-            if g = g' then 0 else w g g') := by
-        simp_rw [Finset.sum_add_distrib, ← Finset.mul_sum]
-      _ = _ := by rw [hdiagpart]
-  change avgOver (uniformDistribution Y) (fun y =>
-      ∑ r : R, stateQForm ψ
-        (heteroKron
-          ((A.postprocess (fun g => eval g y)).effect r)
-          ((B.postprocess (fun g => eval g y)).effect r))) ≤
-    (∑ g : Γ, w g g) + ε
+  have hw (g g' : Γ) : 0 ≤ w g g' :=
+    stateQForm_nonneg _ (MIPStarRE.Quantum.kronecker_nonneg (A.pos g) (B.pos g'))
+  have hpoint := point_defect_eq (leftPlacedMeasurement (ιB := ιB) A)
+    (rightPlacedMeasurement (ιA := ιA) B) ψ
+  simp only [leftPlacedMeasurement, rightPlacedMeasurement,
+    MIPStarRE.Quantum.Measurement.ofSumEqOne, placed_product_stateQForm_eq, hψ] at hpoint
+  have hO : (∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else w g g') ≤ 1 :=
+    hpoint.trans_le (by linarith [Finset.sum_nonneg fun g (_ : g ∈ Finset.univ) => hw g g])
+  simp_rw [diagonal_postprocess_stateQForm_eq_pair_sum, avgOver_sum]
   calc
-    avgOver (uniformDistribution Y) (fun y =>
-        ∑ r : R, stateQForm ψ
-          (heteroKron
-            ((A.postprocess (fun g => eval g y)).effect r)
-            ((B.postprocess (fun g => eval g y)).effect r))) =
-        ∑ g : Γ, ∑ g' : Γ,
-          avgOver (uniformDistribution Y) (fun y =>
-            if eval g y = eval g' y then w g g' else 0) := by
-      simp_rw [diagonal_postprocess_stateQForm_eq_pair_sum]
-      rw [avgOver_sum]
-      apply Finset.sum_congr rfl
-      intro g _
-      rw [avgOver_sum]
-    _ ≤ ∑ g : Γ, ∑ g' : Γ,
-        if g = g' then w g g' else ε * w g g' := by
-      apply Finset.sum_le_sum
-      intro g _
-      apply Finset.sum_le_sum
-      intro g' _
-      by_cases hgg' : g = g'
-      · subst g'
-        simp only [if_pos]
-        exact le_of_eq (avgOver_uniform_const (w g g))
-      · rw [if_neg hgg']
-        calc
-          avgOver (uniformDistribution Y) (fun y =>
-              if eval g y = eval g' y then w g g' else 0) =
-              avgOver (uniformDistribution Y) (fun y =>
-                (if eval g y = eval g' y then 1 else 0) * w g g') := by
-            apply avgOver_congr
-            intro y
-            by_cases heq : eval g y = eval g' y <;> simp [heq]
-          _ = avgOver (uniformDistribution Y)
-              (fun y => if eval g y = eval g' y then 1 else 0) * w g g' :=
-            avgOver_mul_const _ _ _
-          _ ≤ ε * w g g' :=
-            mul_le_mul_of_nonneg_right (hcollision g g' hgg') (hw g g')
-    _ = (∑ g : Γ, w g g) +
-        ε * (∑ g : Γ, ∑ g' : Γ,
-          if g = g' then 0 else w g g') := hsplit
-    _ ≤ (∑ g : Γ, w g g) + ε := by
-      gcongr
-      simpa using mul_le_mul_of_nonneg_left hoffdiag_le_one hε
+    _ ≤ ∑ g : Γ, ∑ g' : Γ, ((if g = g' then w g g' else 0) +
+        ε * if g = g' then 0 else w g g') := by
+      gcongr with g _ g' _
+      split_ifs with h
+      · subst h; simp [w, avgOver_uniform_const]
+      · simp only [zero_add, ← boole_mul _ (stateQForm ψ _)]
+        rw [avgOver_mul_const]
+        exact mul_le_mul_of_nonneg_right (hcollision g g' h) (hw g g')
+    _ ≤ _ := by
+      have := mul_le_mul_of_nonneg_left hO hε
+      simp only [Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_ite_eq, Finset.mem_univ,
+        ite_true]
+      linarith
 
-set_option maxHeartbeats 600000 in
 -- Complementary overlaps require simultaneous expansions before averaging.
 /-- Taking complements converts the diagonal-overlap estimate into a
 pointwise consistency-defect estimate. This is the formalization-only estimate
@@ -314,10 +197,8 @@ theorem point_codeword_defect_le_avg_evaluated_add
     rw [avgOver_sub, avgOver_uniform_const]
     rw [hψ]
     norm_num
-  rw [hfull, hψ, one_pow, heval_avg]
-  linarith
+  grind [one_pow]
 
-set_option maxHeartbeats 600000 in
 -- The proof rearranges question, evaluation, and two outcome sums.
 /-- If distinct codewords collide under a random evaluation with probability
 at most `ε`, their full-outcome consistency defect is at most the evaluated
@@ -345,7 +226,6 @@ theorem consistencyDefect_codewords_le_evaluated_add
           (((A xy.1).postprocess (fun g => eval g xy.2)).effect r) 1)
         (fun xy r => heteroKron 1
           (((B xy.1).postprocess (fun g => eval g xy.2)).effect r)) ψ + ε := by
-  classical
   let w : X → Γ → Γ → ℝ := fun x g g' =>
     stateQForm ψ (heteroKron ((A x).effect g) ((B x).effect g'))
   have hpoint (x : X) :
@@ -363,8 +243,6 @@ theorem consistencyDefect_codewords_le_evaluated_add
     (Distribution.prod μ (uniformDistribution Y))
     (fun xy => (A xy.1).postprocess (fun g => eval g xy.2))
     (fun xy => (B xy.1).postprocess (fun g => eval g xy.2))]
-  change avgOver μ (fun x =>
-      ∑ g : Γ, ∑ g' : Γ, if g = g' then 0 else w x g g') ≤ _
   rw [avgOver_distribution_prod]
   calc
     avgOver μ (fun x =>
@@ -386,7 +264,7 @@ theorem consistencyDefect_codewords_le_evaluated_add
                   (((A x).postprocess (fun g => eval g y)).effect r)
                   (((B x).postprocess (fun g => eval g y)).effect r')))) +
         avgOver μ (fun _ => ε) := avgOver_add _ _ _
-    _ = _ := by rw [avgOver_const_of_isProbability μ hμ]
+    _ = _ := by simp_all [avgOver_const_of_isProbability]
 
 /-- Coarsening the outcomes of a projective measurement preserves
 projectivity. This is the formalization-only fact
@@ -398,7 +276,6 @@ theorem postprocess_isProjective {α β ι : Type*}
     [Fintype ι] [DecidableEq ι]
     (M : Measurement α ι) (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (f : α → β) : MIPStarRE.QPBT.Measurement.IsProjective (M.postprocess f) := by
-  classical
   intro b
   refine { isIdempotentElem := ?_, isSelfAdjoint := ?_ }
   · change (M.postprocess f).effect b * (M.postprocess f).effect b =
@@ -420,15 +297,10 @@ theorem postprocess_isProjective {α β ι : Type*}
         by_cases haa' : a' = a
         · subst a'
           simp [(hM a).isIdempotentElem.eq]
-        · rw [if_neg haa']
-          exact DistanceCalculus.projective_effect_mul_effect_eq_zero
-            M hM (Ne.symm haa')
+        simp_all [DistanceCalculus.projective_effect_mul_effect_eq_zero, Ne.symm]
       _ = ∑ a ∈ Finset.univ.filter (fun a => f a = b), M.effect a := by
-        apply Finset.sum_congr rfl
-        intro a ha
-        simp [ha]
-  · change ((M.postprocess f).effect b)ᴴ = (M.postprocess f).effect b
-    exact
+        simp_all
+  · exact
       (Matrix.nonneg_iff_posSemidef.mp ((M.postprocess f).pos b)).isHermitian.eq
 
 /-- Performing two outcome relabelings has the same effects as their
@@ -459,9 +331,7 @@ theorem postprocess_effect_of_injective {α β ι : Type*}
   simp only [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.sum_filter]
   rw [Fintype.sum_eq_single a]
   · simp
-  · intro z hza
-    rw [if_neg]
-    exact fun h => hza (hf h)
+  grind
 
 /-- A projective joint effect selects its matching postprocessing fiber when
 multiplied on the right. This is the formalization-only identity
@@ -481,9 +351,26 @@ theorem effect_mul_postprocess_effect {α β ι : Type*}
     DistanceCalculus.measurement_effect_hermitian M a,
     DistanceCalculus.measurement_effect_hermitian (M.postprocess f) b] at h
   by_cases hab : f a = b
-  · simpa [hab, DistanceCalculus.measurement_effect_hermitian M a] using h
-  · simpa [hab] using h
+  · simp_all [DistanceCalculus.measurement_effect_hermitian]
+  simp_all
 
 end SandwichProduct
+
+theorem consistencyDefect_placed_eq_one_sub
+    {X α ιA ιB : Type*}
+    [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
+    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+    (μ : Distribution X) (A : X → Measurement α ιA)
+    (B : X → α → Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB))
+    (hψ : ‖ψ‖ = 1) (hB : ∀ x, ∑ a, B x a = 1) :
+    consistencyDefect μ
+        (fun x a => heteroKron ((A x).effect a) 1)
+        (fun x a => heteroKron 1 (B x a)) ψ =
+      avgOver μ (fun x => 1 - ∑ a, stateQForm ψ (heteroKron ((A x).effect a) (B x a))) := by
+  refine avgOver_congr μ _ _ fun x => ?_
+  simp only [consistency_term_eq_stateQForm, placed_product_stateQForm_eq, sum_if_eq_zero_else,
+    Finset.sum_sub_distrib, ← stateQForm_finset_sum, ← heteroKron_finset_sum_right, hB,
+    ← heteroKron_finset_sum_left, (A x).sum_eq_one, heteroKron_one_one, stateQForm_one, hψ]
+  norm_num
 
 end MIPStarRE.QPBT

@@ -97,20 +97,7 @@ theorem tauZ_mul_tauX (P : AdmissibleParams) (ω : PauliTuple P) :
       (dotProduct (fun h => ω.2.2.1 * indicatorVec ω.1 h)
         (fun h => ω.2.2.2 * indicatorVec ω.2.1 h)) =
       gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2 := rfl
-  rw [hg, show (tauObservable .X fun k => ω.2.2.1 * indicatorVec ω.1 k) =
-      tauX P ω from rfl,
-    show (tauObservable .Z fun k => ω.2.2.2 * indicatorVec ω.2.1 k) =
-      tauZ P ω from rfl] at h
-  have hsq := phaseSign_mul_self (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)
-  calc tauZ P ω * tauX P ω
-      = (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) *
-          phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2)) •
-            (tauZ P ω * tauX P ω) := by rw [hsq, one_smul]
-    _ = phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-          (phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-            (tauZ P ω * tauX P ω)) := by rw [smul_smul]
-    _ = phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
-          (tauX P ω * tauZ P ω) := by rw [← h]
+  simp_all [gammaValue, tauZ, tauX, phaseSign, one_smul]
 
 /-- The twisted commutator of the two point observables at a tuple. -/
 noncomputable def twistedCommutator (S : ProjectiveSetting P ε)
@@ -134,9 +121,7 @@ theorem expObs_commutator (S : ProjectiveSetting P ε) (side : PlayerSide)
     tauX P ω from rfl,
     show tauObservable .Z (fun h => ω.2.2.2 * indicatorVec ω.2.1 h) =
       tauZ P ω from rfl]
-  rw [tauZ_mul_tauX, MagicSquareRigidity.heteroKron_smul_right,
-    ← WinImplications.heteroKron_smul_left,
-    ← heteroKron_sub_left, twistedCommutator]
+  simp [tauZ_mul_tauX, MagicSquareRigidity.heteroKron_smul_right, WinImplications.heteroKron_smul_left, heteroKron_sub_left, twistedCommutator]
 
 /-! ## The approximate commutation on each placement -/
 
@@ -166,7 +151,7 @@ theorem twisted_commutator_avg_le_explicit :
               3551040 * (16 * (Fintype.card PauliEdge : ℝ))) + 4) *
             Real.sqrt ε := by
   intro P ε S side hε
-  have hs : (0 : ℝ) ≤ Real.sqrt ε := Real.sqrt_nonneg ε
+  have hs := Real.sqrt_nonneg ε
   cases side with
   | alice =>
       have h := WinImplications.point_obs_twisted_commutation_explicit P ε S hε
@@ -191,7 +176,7 @@ theorem twisted_commutator_avg_le_explicit :
             heteroKron_sub_left _ _ _
           rw [← WinImplications.heteroKron_smul_left]
           exact h1
-        rw [hop]
+        grind
       · have hcoeff : 0 ≤
             2 * (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
                 1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) +
@@ -223,7 +208,7 @@ theorem twisted_commutator_avg_le_explicit :
             heteroKron_sub_right _ _ _
           rw [← MagicSquareRigidity.heteroKron_smul_right]
           exact h1
-        rw [hop]
+        grind
       · have hcoeff : 0 ≤
             2 * (1024 * (2 * (Fintype.card PauliEdge : ℝ)) +
                 1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) +

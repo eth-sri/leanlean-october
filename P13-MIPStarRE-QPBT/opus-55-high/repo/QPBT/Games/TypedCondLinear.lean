@@ -22,14 +22,13 @@ namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT
 
+variable {K T ι : Type*} [Field K] [Fintype K] [DecidableEq K] [Fintype T] [DecidableEq T] [Fintype ι] [DecidableEq ι] (E : Finset (Sym2 T))
+
 /-- The typed CL distribution: sample a type pair from the graph distribution,
 then bind it to the CL distribution selected by those two types. This is
 blueprint `def:typed-cl-distributions`, paper
 `references/qpbt-paper/07_types.tex:84-94`. -/
-noncomputable def typedCLDistribution {K T ι : Type*}
-    [Field K] [Fintype K] [DecidableEq K]
-    [Fintype T] [DecidableEq T] [Fintype ι] [DecidableEq ι]
-    (E : Finset (Sym2 T)) (hE : E.Nonempty)
+noncomputable def typedCLDistribution (hE : E.Nonempty)
     (L R : T → (ι → K) → (ι → K)) :
     Distribution ((T × (ι → K)) × (T × (ι → K))) :=
   Distribution.bind (graphDistribution E hE) fun uv =>
@@ -42,15 +41,11 @@ symmetric under exchanging the two players: the edge law of
 the two images of the common seed.  This is not a named statement of the source
 article; it is `lem:typed-cl-distribution-symm` in
 `blueprint/src/chapter/ch12_qpbt_games.tex`. -/
-theorem typedCLDistribution_symm {K T ι : Type*}
-    [Field K] [Fintype K] [DecidableEq K]
-    [Fintype T] [DecidableEq T] [Fintype ι] [DecidableEq ι]
-    (E : Finset (Sym2 T)) (hE : E.Nonempty)
+theorem typedCLDistribution_symm (hE : E.Nonempty)
     (L : T → (ι → K) → (ι → K))
     (c : (T × (ι → K)) × (T × (ι → K))) :
     (typedCLDistribution E hE L L).weight c =
       (typedCLDistribution E hE L L).weight c.swap := by
-  classical
   have hinner : ∀ (u v : T) (w : (T × (ι → K)) × (T × (ι → K))),
       ((clDistribution (L u) (L v)).map fun xy => ((u, xy.1), (v, xy.2))).weight w =
         (((Finset.univ : Finset (ι → K)).filter
@@ -92,7 +87,7 @@ theorem typedCLDistribution_symm {K T ι : Type*}
         ((clDistribution (L uv.1) (L uv.2)).map
           fun xy => ((uv.1, xy.1), (uv.2, xy.2))).weight w) = _
     rw [hsupport]
-    exact Finset.sum_congr rfl fun uv _ => by rw [hinner uv.1 uv.2 w]
+    exact Finset.sum_congr rfl fun uv _ => by grind
   rw [hbind c, hbind c.swap]
   refine Fintype.sum_equiv (Equiv.prodComm T T) _ _ ?_
   rintro ⟨u, v⟩

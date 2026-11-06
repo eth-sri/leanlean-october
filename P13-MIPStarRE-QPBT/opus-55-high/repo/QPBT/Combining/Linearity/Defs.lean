@@ -69,9 +69,6 @@ adjoint is its own inverse. -/
 theorem isometry (hX : IsBinaryObservable X) : Xᴴ * X = 1 := by
   rw [hX.conjTranspose_eq, hX.mul_self_eq_one]
 
-/-- The identity is a binary observable. -/
-theorem one : IsBinaryObservable (1 : Op ι) :=
-  ⟨Matrix.isHermitian_one, one_mul 1⟩
 
 /-- The product of two commuting binary observables is a binary observable. -/
 theorem mul (hX : IsBinaryObservable X) (hY : IsBinaryObservable Y)
@@ -80,22 +77,23 @@ theorem mul (hX : IsBinaryObservable X) (hY : IsBinaryObservable Y)
   · rw [Matrix.IsHermitian, Matrix.conjTranspose_mul, hX.conjTranspose_eq,
       hY.conjTranspose_eq, ← hcomm]
   · calc X * Y * (X * Y) = X * (Y * X) * Y := by noncomm_ring
-      _ = X * (X * Y) * Y := by rw [hcomm]
+      _ = X * (X * Y) * Y := by simp_all
       _ = X * X * (Y * Y) := by noncomm_ring
       _ = 1 := by rw [hX.mul_self_eq_one, hY.mul_self_eq_one, one_mul]
 
 end IsBinaryObservable
+
+variable {ι ι' : Type} [Fintype ι] [DecidableEq ι] [Fintype ι'] [DecidableEq ι']
 
 /-- The ampliation `O ⊗ 1` of a binary observable by the identity of a second
 tensor factor is a binary observable.  This is the sense in which the original
 observables `A(a)` act on the extended space in display (8) of
 `references/nv-paper/fullpaper.tex:1083-1086`; it is also the way a Magic Square
 observable of one player acts on the joint space of `thm:ms-rigidity`. -/
-theorem isBinaryObservable_heteroKron_one {ι ι' : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype ι'] [DecidableEq ι'] {O : Op ι} (hO : IsBinaryObservable O) :
+theorem isBinaryObservable_heteroKron_one {O : Op ι} (hO : IsBinaryObservable O) :
     IsBinaryObservable (heteroKron O (1 : Op ι')) := by
   unfold heteroKron
-  simp only [Matrix.kronecker]
+  simp
   refine ⟨?_, ?_⟩
   · rw [Matrix.IsHermitian, Matrix.conjTranspose_kronecker, hO.conjTranspose_eq,
       Matrix.conjTranspose_one]
@@ -106,11 +104,10 @@ theorem isBinaryObservable_heteroKron_one {ι ι' : Type} [Fintype ι] [Decidabl
 tensor factor is a binary observable; this is the mirror of
 `isBinaryObservable_heteroKron_one` for the second player's factor in
 blueprint `thm:ms-rigidity`. -/
-theorem isBinaryObservable_one_heteroKron {ι ι' : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype ι'] [DecidableEq ι'] {O : Op ι'} (hO : IsBinaryObservable O) :
+theorem isBinaryObservable_one_heteroKron {O : Op ι'} (hO : IsBinaryObservable O) :
     IsBinaryObservable (heteroKron (1 : Op ι) O) := by
   unfold heteroKron
-  simp only [Matrix.kronecker]
+  simp
   refine ⟨?_, ?_⟩
   · rw [Matrix.IsHermitian, Matrix.conjTranspose_kronecker, hO.conjTranspose_eq,
       Matrix.conjTranspose_one]

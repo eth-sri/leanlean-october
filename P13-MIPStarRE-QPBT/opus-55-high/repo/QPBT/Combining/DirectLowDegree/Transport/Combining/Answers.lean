@@ -68,20 +68,21 @@ theorem evalCoefficient_coefficientsOfPolynomial {K : Type*} [Semiring K] {n : �
     ← Fin.sum_univ_eq_sum_range (fun i => p.coeff i * t ^ i) (n + 1)]
   rfl
 
+variable {K : Type*} [CommSemiring K]
+
 /-- The affine reparametrization `t ↦ evalCoefficient f (t + s)` of a bounded
 coefficient vector, as a univariate polynomial. -/
-def shiftedLinePolynomial {K : Type*} [CommSemiring K] {n : ℕ}
+def shiftedLinePolynomial {n : ℕ}
     (f : Fin (n + 1) → K) (s : K) : Polynomial K :=
   (linePolynomialOfCoefficients f).comp (Polynomial.X + Polynomial.C s)
 
-theorem shiftedLinePolynomial_eval {K : Type*} [CommSemiring K] {n : ℕ}
+theorem shiftedLinePolynomial_eval {n : ℕ}
     (f : Fin (n + 1) → K) (s t : K) :
     (shiftedLinePolynomial f s).eval t = evalCoefficient f (t + s) := by
-  rw [shiftedLinePolynomial, Polynomial.eval_comp]
-  simpa using linePolynomialOfCoefficients_eval f (t + s)
+  simp [shiftedLinePolynomial, Polynomial.eval_comp, linePolynomialOfCoefficients_eval]
 
 /-- Reparametrizing does not raise the degree of a line answer. -/
-theorem shiftedLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {n : ℕ}
+theorem shiftedLinePolynomial_natDegree_le {n : ℕ}
     (f : Fin (n + 1) → K) (s : K) :
     (shiftedLinePolynomial f s).natDegree ≤ n := by
   refine le_trans Polynomial.natDegree_comp_le ?_
@@ -100,18 +101,17 @@ stored index is a point coordinate: the combining part `α` of the canonical
 base is constant along such a line, so the answer is the fixed combination
 `∑ r, α r * f r` of the measured line answers, reparametrized by `s`.  This is
 case 2 of `def:ld-combined-strategy`. -/
-def combinedAxisPolynomial {K : Type*} [CommSemiring K] {k n : ℕ}
+def combinedAxisPolynomial {k n : ℕ}
     (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) : Polynomial K :=
   ∑ r : Fin k, Polynomial.C (α r) * shiftedLinePolynomial (f r) s
 
-theorem combinedAxisPolynomial_natDegree_le {K : Type*} [CommSemiring K] {k n : ℕ}
+theorem combinedAxisPolynomial_natDegree_le {k n : ℕ}
     (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) :
     (combinedAxisPolynomial α s f).natDegree ≤ n := by
   refine Polynomial.natDegree_sum_le_of_forall_le _ _ fun r _ => ?_
-  exact le_trans (Polynomial.natDegree_C_mul_le _ _)
-    (shiftedLinePolynomial_natDegree_le (f r) s)
+  grind [Polynomial.natDegree_C_mul_le, shiftedLinePolynomial_natDegree_le]
 
-theorem combinedAxisPolynomial_eval {K : Type*} [CommSemiring K] {k n : ℕ}
+theorem combinedAxisPolynomial_eval {k n : ℕ}
     (α : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) (t : K) :
     (combinedAxisPolynomial α s f).eval t =
       ∑ r : Fin k, α r * evalCoefficient (f r) (t + s) := by
@@ -123,13 +123,12 @@ theorem combinedAxisPolynomial_eval {K : Type*} [CommSemiring K] {k n : ℕ}
 index is a point coordinate: the combining part of the point at parameter `t`
 is `α + t • w`, so the answer is `∑ r, (α r + t * w r) * f r (t + s)`.  This is
 case 4 of `def:ld-combined-strategy`. -/
-def combinedDiagonalPolynomial {K : Type*} [CommSemiring K] {k n : ℕ}
+def combinedDiagonalPolynomial {k n : ℕ}
     (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) : Polynomial K :=
   ∑ r : Fin k, (Polynomial.C (α r) + Polynomial.C (w r) * Polynomial.X) *
     shiftedLinePolynomial (f r) s
 
-theorem combinedDiagonalPolynomial_natDegree_le {K : Type*} [CommSemiring K]
-    {k n : ℕ} (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) :
+theorem combinedDiagonalPolynomial_natDegree_le {k n : ℕ} (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) :
     (combinedDiagonalPolynomial α w s f).natDegree ≤ n + 1 := by
   refine Polynomial.natDegree_sum_le_of_forall_le _ _ fun r _ => ?_
   refine le_trans (Polynomial.natDegree_mul_le) ?_
@@ -137,12 +136,11 @@ theorem combinedDiagonalPolynomial_natDegree_le {K : Type*} [CommSemiring K]
       (Polynomial.C (α r) + Polynomial.C (w r) * Polynomial.X :
         Polynomial K).natDegree ≤ 1 := by
     refine le_trans (Polynomial.natDegree_add_le _ _) (max_le ?_ ?_)
-    · exact le_trans (le_of_eq (Polynomial.natDegree_C _)) (Nat.zero_le 1)
-    · exact le_trans (Polynomial.natDegree_C_mul_le _ _) Polynomial.natDegree_X_le
-  have := shiftedLinePolynomial_natDegree_le (f r) s
-  omega
+    · simp
+    · grind [Polynomial.natDegree_C_mul_le, Polynomial.natDegree_X_le]
+  grind [shiftedLinePolynomial_natDegree_le]
 
-theorem combinedDiagonalPolynomial_eval {K : Type*} [CommSemiring K] {k n : ℕ}
+theorem combinedDiagonalPolynomial_eval {k n : ℕ}
     (α w : Fin k → K) (s : K) (f : Fin k → Fin (n + 1) → K) (t : K) :
     (combinedDiagonalPolynomial α w s f).eval t =
       ∑ r : Fin k, (α r + t * w r) * evalCoefficient (f r) (t + s) := by
@@ -159,18 +157,18 @@ line, the combined value at parameter `t` is `∑ r, (α r + t * w r) * b r`, an
 the measured outcome is the point answer `b`.  This is cases 3 and 5 of
 `def:ld-combined-strategy`; case 3 is the axis-parallel case, where `w` is the
 standard basis vector of the varying combining coordinate. -/
-def fiberLinePolynomial {K : Type*} [CommSemiring K] {k : ℕ}
+def fiberLinePolynomial {k : ℕ}
     (α w b : Fin k → K) : Polynomial K :=
   Polynomial.C (∑ r : Fin k, α r * b r) +
     Polynomial.C (∑ r : Fin k, w r * b r) * Polynomial.X
 
-theorem fiberLinePolynomial_natDegree_le {K : Type*} [CommSemiring K] {k : ℕ}
+theorem fiberLinePolynomial_natDegree_le {k : ℕ}
     (α w b : Fin k → K) : (fiberLinePolynomial α w b).natDegree ≤ 1 := by
   refine le_trans (Polynomial.natDegree_add_le _ _) (max_le ?_ ?_)
-  · exact le_trans (le_of_eq (Polynomial.natDegree_C _)) (Nat.zero_le 1)
-  · exact le_trans (Polynomial.natDegree_C_mul_le _ _) Polynomial.natDegree_X_le
+  · grind
+  grind [Polynomial.natDegree_C_mul_le, Polynomial.natDegree_X_le]
 
-theorem fiberLinePolynomial_eval {K : Type*} [CommSemiring K] {k : ℕ}
+theorem fiberLinePolynomial_eval {k : ℕ}
     (α w b : Fin k → K) (t : K) :
     (fiberLinePolynomial α w b).eval t =
       ∑ r : Fin k, (α r + t * w r) * b r := by
@@ -178,7 +176,7 @@ theorem fiberLinePolynomial_eval {K : Type*} [CommSemiring K] {k : ℕ}
   simp only [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_C,
     Polynomial.eval_X]
   rw [Finset.sum_mul, ← Finset.sum_add_distrib]
-  exact Finset.sum_congr rfl fun r _ => by ring
+  grind
 
 end
 

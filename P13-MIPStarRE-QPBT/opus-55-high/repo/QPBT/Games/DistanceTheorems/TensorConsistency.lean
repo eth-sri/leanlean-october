@@ -37,11 +37,12 @@ variable {ιA ιB κA κB : Type*}
   [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
   [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
 
+variable (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB)) (A : Op ιA) (B : Op ιB)
+
 /-- Joint expectations factor after regrouping an independent pair of bipartite
 states by player. The shuffle sends `((i, j), (k, l))` to `((i, k), (j, l))`. -/
 theorem inner_prodShuffle_vecTensor_heteroKron
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
-    (A : Op ιA) (B : Op ιB) (R : Op κA) (T : Op κB) :
+    (R : Op κA) (T : Op κB) :
     inner ℂ (reindexState prodShuffle (vecTensor ψ φ))
         (applyOperatorToState (heteroKron (heteroKron A R) (heteroKron B T))
           (reindexState prodShuffle (vecTensor ψ φ))) =
@@ -50,7 +51,6 @@ theorem inner_prodShuffle_vecTensor_heteroKron
   simp only [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
     EuclideanSpace.inner_eq_star_dotProduct, dotProduct, Matrix.mulVec]
   simp_rw [Finset.sum_mul, Finset.mul_sum]
-  rw [← (prodShuffle : (ιA × ιB) × (κA × κB) ≃ _).sum_comp]
   simp_rw [← (prodShuffle : (ιA × ιB) × (κA × κB) ≃ _).sum_comp]
   change (∑ p : (ιA × ιB) × (κA × κB), ∑ q : (ιA × ιB) × (κA × κB),
     ((A p.1.1 q.1.1 * R p.2.1 q.2.1) * (B p.1.2 q.1.2 * T p.2.2 q.2.2) *
@@ -69,8 +69,7 @@ theorem inner_prodShuffle_vecTensor_heteroKron
 /-- For positive ancillary effects, the real joint expectation factors on the
 shuffled tensor state. No normalization or positivity of `A` and `B` is needed. -/
 theorem stateQForm_prodShuffle_vecTensor_heteroKron
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
-    (A : Op ιA) (B : Op ιB) {R : Op κA} {T : Op κB}
+    {R : Op κA} {T : Op κB}
     (hR : 0 ≤ R) (hT : 0 ≤ T) :
     stateQForm (reindexState prodShuffle (vecTensor ψ φ))
         (heteroKron (heteroKron A R) (heteroKron B T)) =
@@ -81,8 +80,7 @@ theorem stateQForm_prodShuffle_vecTensor_heteroKron
     simpa only [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
       EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm, heteroKron] using
       (Complex.nonneg_iff.mp hnonneg).2.symm
-  simp only [stateQForm, inner_prodShuffle_vecTensor_heteroKron, Complex.mul_re,
-    him, mul_zero, sub_zero]
+  simp_all [stateQForm, inner_prodShuffle_vecTensor_heteroKron, Complex.mul_re, mul_zero, sub_zero]
 
 end Factorization
 
@@ -100,7 +98,7 @@ theorem sum_add_fiber_heteroKron {G ι κ : Type*}
 /-- Averaging a common additive shift preserves the off-diagonal mass of any
 weight function. The ancillary joint weights are supported on the diagonal
 and have total diagonal mass one. -/
-private theorem sum_convolution_off_diagonal_eq {G : Type*}
+theorem sum_convolution_off_diagonal_eq {G : Type*}
     [Fintype G] [DecidableEq G] [AddCommGroup G]
     (p q : G → G → ℝ) (hzero : ∀ c d, c ≠ d → q c d = 0)
     (hdiag : ∑ c : G, q c c = 1) :
@@ -111,8 +109,7 @@ private theorem sum_convolution_off_diagonal_eq {G : Type*}
       (∑ d : G, p (z - c) (w - d) * q c d) =
         p (z - c) (w - c) * q c c := by
     apply Finset.sum_eq_single c
-    · intro d _ hdc
-      rw [hzero c d hdc.symm, mul_zero]
+    · grind
     · simp
   have hshift (c : G) :
       (∑ z : G, ∑ w : G, if z = w then 0 else p (z - c) (w - c)) =
@@ -121,18 +118,14 @@ private theorem sum_convolution_off_diagonal_eq {G : Type*}
     refine Fintype.sum_equiv (Equiv.subRight c) _ _ fun w => ?_
     change (if z = w then 0 else p (z - c) (w - c)) =
       if z - c = w - c then 0 else p (z - c) (w - c)
-    simp only [sub_left_inj]
+    simp
   simp_rw [hinner]
   calc
     (∑ z : G, ∑ w : G, if z = w then 0 else
         ∑ c : G, p (z - c) (w - c) * q c c) =
         ∑ z : G, ∑ w : G, ∑ c : G,
           (if z = w then 0 else p (z - c) (w - c)) * q c c := by
-      apply Finset.sum_congr rfl
-      intro z _
-      apply Finset.sum_congr rfl
-      intro w _
-      by_cases hzw : z = w <;> simp [hzw]
+      simp
     _ = ∑ c : G, (∑ z : G, ∑ w : G,
         if z = w then 0 else p (z - c) (w - c)) * q c c := by
       simp_rw [Finset.sum_mul]
@@ -181,14 +174,14 @@ theorem consistencyDefect_convolution_eq_of_perfect
   simp_rw [consistency_term_eq_stateQForm, placed_product_stateQForm_eq]
   apply avgOver_congr
   intro x
-  let q : G → G → ℝ := fun c d =>
+  let q := fun c d =>
     stateQForm φ (heteroKron ((R x).effect c) ((T x).effect d))
   have hnonneg (c d : G) : 0 ≤ q c d :=
     stateQForm_nonneg φ (kronecker_nonneg ((R x).pos c) ((T x).pos d))
   have hoff (c d : G) : 0 ≤ (if c = d then 0 else q c d) := by
     split_ifs
     · exact le_rfl
-    · exact hnonneg c d
+    · simp_all
   have hzero (c d : G) (hcd : c ≠ d) : q c d = 0 := by
     have hrow := (Finset.sum_eq_zero_iff_of_nonneg
       (fun c _ => Finset.sum_nonneg (fun d _ => hoff c d))).mp (hperfect x)

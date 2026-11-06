@@ -57,10 +57,12 @@ noncomputable def directEvalOpt {D : DirectLdParams} {c : ℕ}
 /-- The typed question alphabet of the directly indexed game. -/
 abbrev DirectLdQuestion (D : DirectLdParams) := LdType × DirectLdSpace D
 
+variable (D : DirectLdParams)
+
 /-- Canonicalize a common direct sample for one question type.  Irrelevant
 coordinates are fixed, so point questions reveal no sampled line index and
 axis-line questions reveal no diagonal direction. -/
-noncomputable def directLdMap (D : DirectLdParams) :
+noncomputable def directLdMap :
     LdType → DirectLdSpace D → DirectLdSpace D
   | .point, sample => ⟨sample.point, D.firstIndex, 0⟩
   | .aline, sample =>
@@ -73,16 +75,16 @@ noncomputable def directLdMap (D : DirectLdParams) :
 /-- The directly indexed question distribution.  It has the same uniform
 ordered type-pair branches as `ldQuestionDistribution`, but its common sample
 contains an actual coordinate index rather than a field seed. -/
-noncomputable def directLdQuestionDistribution (D : DirectLdParams) :
+noncomputable def directLdQuestionDistribution :
     Distribution (DirectLdQuestion D × DirectLdQuestion D) :=
   (uniformDistribution ((LdType × LdType) × DirectLdSpace D)).map fun sample =>
     ((sample.1.1, directLdMap D sample.1.1 sample.2),
       (sample.1.2, directLdMap D sample.1.2 sample.2))
 
 /-- The directly indexed question law is probabilistic. -/
-theorem directLdQuestionDistribution_isProbability (D : DirectLdParams) :
-    (directLdQuestionDistribution D).IsProbability := by
-  exact (uniformDistribution_isProbability
+theorem directLdQuestionDistribution_isProbability :
+    (directLdQuestionDistribution D).IsProbability :=
+  (uniformDistribution_isProbability
     ((LdType × LdType) × DirectLdSpace D)).map _
 
 /-- The answer alphabet of the directly indexed game. -/
@@ -100,7 +102,7 @@ abbrev DirectLdAnswerCode (D : DirectLdParams) :=
 
 /-- The canonical code equivalence for `DirectLdAnswer`, sending point,
 axis-line, and diagonal-line answers to the three summands. -/
-noncomputable def directLdAnswerEquiv (D : DirectLdParams) :
+noncomputable def directLdAnswerEquiv :
     DirectLdAnswer D ≃ DirectLdAnswerCode D where
   toFun
     | .pointVals a => .inl a
@@ -110,12 +112,9 @@ noncomputable def directLdAnswerEquiv (D : DirectLdParams) :
     | .inl a => .pointVals a
     | .inr (.inl a) => .alinePolys a
     | .inr (.inr a) => .dlinePolys a
-  left_inv := by intro answer; cases answer <;> rfl
+  left_inv := by grind
   right_inv := by
-    intro answer
-    rcases answer with a | a
-    · rfl
-    · rcases a with a | a <;> rfl
+    grind
 
 instance instInhabitedDirectLdAnswer (D : DirectLdParams) : Inhabited (DirectLdAnswer D) :=
   ⟨.pointVals 0⟩
@@ -135,8 +134,7 @@ def validDirectLdAnswer {D : DirectLdParams} (t : LdType)
   | _, _ => false
 
 /-- The directly indexed axis-line versus point acceptance relation. -/
-def directAlinePointCondition (D : DirectLdParams)
-    (line point : DirectLdSpace D)
+def directAlinePointCondition (line point : DirectLdSpace D)
     (f : Fin D.k → Fin (D.d + 1) → DirectScalarQ D)
     (a : Fin D.k → DirectScalarQ D) : Prop :=
   ∀ t : DirectScalarQ D,
@@ -144,8 +142,7 @@ def directAlinePointCondition (D : DirectLdParams)
       ∀ j : Fin D.k, evalCoefficient (f j) t = a j
 
 /-- The directly indexed diagonal-line versus point acceptance relation. -/
-def directDlinePointCondition (D : DirectLdParams)
-    (line point : DirectLdSpace D)
+def directDlinePointCondition (line point : DirectLdSpace D)
     (f : Fin D.k → Fin (D.m * D.d + 1) → DirectScalarQ D)
     (a : Fin D.k → DirectScalarQ D) : Prop :=
   ∀ t : DirectScalarQ D,
@@ -155,7 +152,7 @@ def directDlinePointCondition (D : DirectLdParams)
 /-- The directly indexed low-degree win predicate.  It differs from
 `ldWinPredicate` only by reading the coordinate index directly from each line
 question. -/
-noncomputable def directLdWinPredicate (D : DirectLdParams) :
+noncomputable def directLdWinPredicate :
     DirectLdQuestion D → DirectLdQuestion D →
       DirectLdAnswer D → DirectLdAnswer D → Bool :=
   open Classical in
@@ -189,14 +186,13 @@ It is an internal analysis game, not the conditionally linear verifier game
   decide := directLdWinPredicate D
 
 /-- The canonical point question associated with a geometric point. -/
-def directLdPointQuestionOf (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) : DirectLdQuestion D :=
+def directLdPointQuestionOf (u : Fin D.m → DirectScalarQ D) : DirectLdQuestion D :=
   (.point, ⟨u, D.firstIndex, 0⟩)
 
 /-- Total point-answer relabeling used in the direct soundness conclusion.
 Wrong-form answers are folded into the zero tuple, exactly as for
 `ldPointValuesOrZero`. -/
-def directLdPointValuesOrZero (D : DirectLdParams) :
+def directLdPointValuesOrZero :
     DirectLdAnswer D → Fin D.k → DirectScalarQ D
   | .pointVals values => values
   | .alinePolys _ => 0

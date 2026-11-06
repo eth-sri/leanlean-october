@@ -59,20 +59,18 @@ admissibility hypothesis are unchanged. -/
   hk := le_refl 1
   hq := D.hq
 
-@[simp] theorem DirectLdParams.combined_q (D : DirectLdParams) :
-    D.combined.q = D.q := rfl
 
-@[simp] theorem DirectLdParams.combined_m (D : DirectLdParams) :
+variable (D : DirectLdParams)
+
+@[simp] theorem DirectLdParams.combined_m :
     D.combined.m = D.m + D.k := rfl
 
-@[simp] theorem DirectLdParams.combined_d (D : DirectLdParams) :
+@[simp] theorem DirectLdParams.combined_d :
     D.combined.d = D.d := rfl
 
-@[simp] theorem DirectLdParams.combined_k (D : DirectLdParams) :
-    D.combined.k = 1 := rfl
 
 /-- The scalar field of a directly indexed low-degree game has `q` elements. -/
-theorem card_directScalarQ (D : DirectLdParams) :
+theorem card_directScalarQ :
     Fintype.card (DirectScalarQ D) = D.q := by
   rw [Fintype.card_congr (binaryRepresentation D.model), Fintype.card_fin]
 
@@ -87,18 +85,18 @@ instance instUniqueFinKCombined (D : DirectLdParams) : Unique (Fin D.combined.k)
 `m + k` variables of the combined parameters.
 
 Source `references/neexp-paper/05_quantum_preliminaries.tex:1425-1435`. -/
-def directCombinedPolynomial (D : DirectLdParams) (g : DirectPolyTuple D) :
+def directCombinedPolynomial (g : DirectPolyTuple D) :
     PolyIndex D.combined.m (DirectScalarQ D) D.d :=
   ⟨combinePolyTuple (fun r => (g r).1),
     combinePolyTuple_mem_polyFunc D.hd _ fun r => (g r).2⟩
 
-@[simp] theorem directCombinedPolynomial_val (D : DirectLdParams) (g : DirectPolyTuple D) :
+@[simp] theorem directCombinedPolynomial_val (g : DirectPolyTuple D) :
     (directCombinedPolynomial D g).1 = combinePolyTuple (fun r => (g r).1) :=
   rfl
 
 /-- Evaluating the combined polynomial at a point of the combined space with
 point part `u` and combining part `α` gives `∑_{r < k} α_r g_r(u)`. -/
-theorem directCombinedPolynomial_eval (D : DirectLdParams) (g : DirectPolyTuple D)
+theorem directCombinedPolynomial_eval (g : DirectPolyTuple D)
     (u : Fin D.m → DirectScalarQ D) (α : Fin D.k → DirectScalarQ D) :
     MvPolynomial.eval (combinedPoint u α) (directCombinedPolynomial D g).1 =
       ∑ r : Fin D.k, α r * evalDirectPolyTupleAt u g r := by
@@ -106,24 +104,15 @@ theorem directCombinedPolynomial_eval (D : DirectLdParams) (g : DirectPolyTuple 
   rfl
 
 /-- The combining map is injective on polynomial tuples. -/
-theorem directCombinedPolynomial_injective (D : DirectLdParams) :
+theorem directCombinedPolynomial_injective :
     Function.Injective (directCombinedPolynomial D) := by
   intro g g' h
-  have hval : combinePolyTuple (fun r => (g r).1) =
-      combinePolyTuple (fun r => (g' r).1) := congrArg Subtype.val h
+  have hval := congrArg Subtype.val h
   have hcomp := combinePolyTuple_injective hval
   funext r
   exact Subtype.ext (congrFun hcomp r)
 
-/-- The one-component polynomial tuple of the combined game carrying the
-combined polynomial of a tuple. -/
-def directCombinedTuple (D : DirectLdParams) (g : DirectPolyTuple D) :
-    DirectPolyTuple D.combined :=
-  fun _ => directCombinedPolynomial D g
 
-@[simp] theorem directCombinedTuple_apply (D : DirectLdParams) (g : DirectPolyTuple D)
-    (r : Fin D.combined.k) :
-    directCombinedTuple D g r = directCombinedPolynomial D g := rfl
 
 /-! ## Recovering the polynomial tuple -/
 
@@ -132,12 +121,10 @@ is the combined polynomial of a tuple.  This is the source's exact linearity in
 the combining variables, together with the individual-degree bound on the
 components.  Source
 `references/neexp-paper/05_quantum_preliminaries.tex:1462-1477`. -/
-def IsDirectCombined (D : DirectLdParams)
-    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d) : Prop :=
+def IsDirectCombined (p : PolyIndex D.combined.m (DirectScalarQ D) D.d) : Prop :=
   ∃ g : DirectPolyTuple D, directCombinedPolynomial D g = p
 
-theorem isDirectCombined_directCombinedPolynomial (D : DirectLdParams)
-    (g : DirectPolyTuple D) : IsDirectCombined D (directCombinedPolynomial D g) :=
+theorem isDirectCombined_directCombinedPolynomial (g : DirectPolyTuple D) : IsDirectCombined D (directCombinedPolynomial D g) :=
   ⟨g, rfl⟩
 
 /-- The polynomial tuple represented by a polynomial in the variables of the
@@ -146,31 +133,22 @@ otherwise.  The source leaves the value on non-combined outcomes arbitrary; the
 zero tuple is one admissible choice, and the estimates use only the value on
 combined outcomes.  Source
 `references/neexp-paper/05_quantum_preliminaries.tex:1477-1483`. -/
-def directTupleOfCombined (D : DirectLdParams)
-    (p : PolyIndex D.combined.m (DirectScalarQ D) D.d) : DirectPolyTuple D := by
+def directTupleOfCombined (p : PolyIndex D.combined.m (DirectScalarQ D) D.d) : DirectPolyTuple D := by
   classical
   exact if h : IsDirectCombined D p then h.choose else fun _ => 0
 
 /-- The components of a combined polynomial are the tuple it combines. -/
-@[simp] theorem directTupleOfCombined_directCombinedPolynomial (D : DirectLdParams)
-    (g : DirectPolyTuple D) :
+@[simp] theorem directTupleOfCombined_directCombinedPolynomial (g : DirectPolyTuple D) :
     directTupleOfCombined D (directCombinedPolynomial D g) = g := by
-  classical
-  have hex : IsDirectCombined D (directCombinedPolynomial D g) :=
+  have hex :=
     isDirectCombined_directCombinedPolynomial D g
   rw [directTupleOfCombined, dif_pos hex]
   exact directCombinedPolynomial_injective D hex.choose_spec
 
 /-- The polynomial tuple represented by an outcome of the combined game. -/
-def directTupleOfCombinedTuple (D : DirectLdParams)
-    (p : DirectPolyTuple D.combined) : DirectPolyTuple D :=
+def directTupleOfCombinedTuple (p : DirectPolyTuple D.combined) : DirectPolyTuple D :=
   directTupleOfCombined D (p default)
 
-@[simp] theorem directTupleOfCombinedTuple_directCombinedTuple (D : DirectLdParams)
-    (g : DirectPolyTuple D) :
-    directTupleOfCombinedTuple D (directCombinedTuple D g) = g := by
-  rw [directTupleOfCombinedTuple, directCombinedTuple_apply,
-    directTupleOfCombined_directCombinedPolynomial]
 
 end
 

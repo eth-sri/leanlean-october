@@ -71,8 +71,7 @@ theorem projective_refinement_ordered_dist_le {X Γ α ι : Type*}
     (fun x g => R.effect g * (B x).effect (ev x g))
     (fun x g => R.effect g * T x (ev x g)) ψ (2 * eta)
     (2 * deltaSelf + 2 * deltaOrder) hinsert htail
-  convert h using 1
-  ring
+  linarith
 
 namespace CombinedPointsWitness
 
@@ -110,7 +109,6 @@ theorem ordered_dist_le {P : AdmissibleParams} {ε δQ : ℝ}
           (S.pointMeasExp p2.side .Z x.1.2).effect ab.2 *
             (S.pointMeasExp p2.side .X x.1.1).effect ab.1)) S.psiHat ≤
         4 * eta + 8 * δQ) := by
-  classical
   let A (x : ExtendedPointQuestion P) := S.placedMeasurement p1
     (points.extendedQ p1.side x.1.1 x.1.2 x.2.1 x.2.2)
   let B (x : ExtendedPointQuestion P) := S.placedMeasurement p2
@@ -130,12 +128,10 @@ theorem ordered_dist_le {P : AdmissibleParams} {ε δQ : ℝ}
   constructor
   · have h := hbound _ S.psiHat eta δQ δQ hpoint' hself
       ((extendedQ_spec points).2.2.1 p1 p2 hopposite)
-    simpa only [ProjectiveSetting.placedMeasurement_effect,
-      show 4 * eta + 4 * δQ + 4 * δQ = 4 * eta + 8 * δQ by ring] using h
+    grind [ProjectiveSetting.placedMeasurement_effect]
   · have h := hbound _ S.psiHat eta δQ δQ hpoint' hself
       ((extendedQ_spec points).2.2.2 p1 p2 hopposite)
-    simpa only [ProjectiveSetting.placedMeasurement_effect,
-      show 4 * eta + 4 * δQ + 4 * δQ = 4 * eta + 8 * δQ by ring] using h
+    grind [ProjectiveSetting.placedMeasurement_effect]
 
 end CombinedPointsWitness
 

@@ -49,12 +49,11 @@ theorem diagonal_parameter_evaluated_coefficient_defect_eq
     (lines : ExtendedLinesWitness setting points deltaL) :
     diagonalParameterEvaluatedCoefficientDefect lines =
       diagonalParameterEvaluationDefect lines := by
-  classical
   let readDiagonal : DirectLdAnswer P.extendedDirectLd →
       DirectDegPoly P.extendedDirectLd
         (P.extendedDirectLd.m * P.extendedDirectLd.d) := fun answer =>
     match answer with
-    | .dlinePolys coefficients => coefficients ⟨0, by change 0 < 1; decide⟩
+    | .dlinePolys coefficients => coefficients ⟨0, by simp⟩
     | _ => 0
   let μ := Distribution.prod (uniformDistribution (DirectLdSpace P.extendedDirectLd))
     (uniformDistribution (DirectScalarQ P.extendedDirectLd))
@@ -110,12 +109,7 @@ theorem diagonal_parameter_evaluated_coefficient_defect_eq
   rw [WinImplications.consistencyDefect_postprocess_eq_mismatch]
   unfold diagonalParameterEvaluationDefect parameterEvalDefect
   simp only [directDLinePointDist, Distribution.avgOver_map]
-  dsimp only [μ]
   rw [SandwichProduct.avgOver_distribution_prod]
-  apply avgOver_congr
-  intro sample
-  apply avgOver_congr
-  intro parameter
   rfl
 
 end ExtendedLineGame

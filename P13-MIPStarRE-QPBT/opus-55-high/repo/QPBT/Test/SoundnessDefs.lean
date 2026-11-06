@@ -54,42 +54,17 @@ theorem deltaQld_mono {P : AdmissibleParams} {a a' b b' ε : ℝ}
     deltaQld a b ε P.m P.d P.q ≤ deltaQld a' b' ε P.m P.d P.q := by
   have hmd : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
     Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have hmd0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := by linarith
-  have hq : (1 : ℝ) ≤ (P.q : ℝ) := by
-    obtain ⟨k, -, hk⟩ := P.hq
-    rw [hk]
-    exact_mod_cast Nat.one_le_pow _ _ (by norm_num)
-  unfold deltaQld
-  simp only [Real.rpow_eq_pow]
-  have h1 : ((P.m * P.d : ℕ) : ℝ) ^ a ≤ ((P.m * P.d : ℕ) : ℝ) ^ a' :=
-    Real.rpow_le_rpow_of_exponent_le hmd ha
-  have h2 : ε ^ b ≤ ε ^ b' := Real.rpow_le_rpow_of_exponent_ge' hε0 hε1 hb'.le hb
-  have h3 : (P.q : ℝ) ^ (-b) ≤ (P.q : ℝ) ^ (-b') :=
-    Real.rpow_le_rpow_of_exponent_le hq (neg_le_neg hb)
-  have h4 : (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) ≤
-      (2 : ℝ) ^ (-(b' * ((P.m * P.d : ℕ) : ℝ))) :=
-    Real.rpow_le_rpow_of_exponent_le (by norm_num)
-      (neg_le_neg (mul_le_mul_of_nonneg_right hb hmd0))
-  have hsum : 0 ≤ ε ^ b + (P.q : ℝ) ^ (-b) +
-      (2 : ℝ) ^ (-(b * ((P.m * P.d : ℕ) : ℝ))) := by
-    have := Real.rpow_nonneg hε0 b
-    have := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
-    have := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-      (-(b * ((P.m * P.d : ℕ) : ℝ)))
-    linarith
-  exact mul_le_mul (mul_le_mul ha h1 (Real.rpow_nonneg hmd0 a) (by linarith))
-    (add_le_add (add_le_add h2 h3) h4) hsum
-    (mul_nonneg (by linarith) (Real.rpow_nonneg hmd0 a'))
+  have hq : (1 : ℝ) ≤ P.q := by exact_mod_cast one_le_two.trans P.hq.two_le
+  grind [deltaQld, Real.rpow_eq_pow, Real.rpow_le_rpow_of_exponent_le, Real.rpow_le_rpow_of_exponent_ge', neg_le_neg, Real.rpow_nonneg, mul_le_mul, add_le_add, mul_nonneg]
+
+variable (P : AdmissibleParams) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA'] [Fintype ιB'] [DecidableEq ιB']
 
 /-- The ideal auxiliary state `aux ⊗ EPR_q^{⊗M}` in the shuffled register
 ordering.  The EPR factor is the concrete `eprState` from blueprint
 `def:EPR`; paper
 `references/qpbt-paper/04_preliminaries.tex:946-955`).
 -/
-noncomputable def idealState (P : AdmissibleParams)
-    {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
-    (aux : EuclideanSpace ℂ (ιA' × ιB')) :
+noncomputable def idealState (aux : EuclideanSpace ℂ (ιA' × ιB')) :
     EuclideanSpace ℂ ((ιA' × PauliRegister P) × (ιB' × PauliRegister P)) :=
   (EuclideanSpace.equiv ((ιA' × PauliRegister P) ×
       (ιB' × PauliRegister P)) ℂ).symm
@@ -103,9 +78,7 @@ B-side registers.  This is a concrete matrix form of the operator comparison
 in blueprint `thm:pauli`; paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`).
 -/
-noncomputable def pauliProjOnA'' (P : AdmissibleParams)
-    {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB'] (W : PauliKind)
+noncomputable def pauliProjOnA'' (W : PauliKind)
     (u : PauliRegister P) :
     Op ((ιA' × PauliRegister P) × (ιB' × PauliRegister P)) :=
   fun p q =>
@@ -117,9 +90,7 @@ noncomputable def pauliProjOnA'' (P : AdmissibleParams)
 `thm:pauli`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`.
 -/
-noncomputable def pauliProjOnB'' (P : AdmissibleParams)
-    {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB'] (W : PauliKind)
+noncomputable def pauliProjOnB'' (W : PauliKind)
     (u : PauliRegister P) :
     Op ((ιA' × PauliRegister P) × (ιB' × PauliRegister P)) :=
   fun p q =>

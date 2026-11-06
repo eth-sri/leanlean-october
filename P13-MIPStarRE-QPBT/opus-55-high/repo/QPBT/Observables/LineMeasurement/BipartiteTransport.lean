@@ -50,31 +50,7 @@ theorem effect_mul_postprocess_effect_self {α β ι : Type*} [Fintype α]
     (M : MIPStarRE.Quantum.Measurement α ι)
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (g : α → β) (a : α) :
     M.effect a * (M.postprocess g).effect (g a) = M.effect a := by
-  simpa using SandwichProduct.effect_mul_postprocess_effect M hM g (g a) a
-
-/-- The distance between two oppositely placed complete measurements is at
-most twice their inconsistency, expressed through the diagonal overlap. This
-is `fact:agreement` combined with the overlap form of the consistency defect. -/
-theorem opFamilyDistSq_placed_le_two_mul_one_sub_overlap {X α ιA ιB : Type*}
-    [Finite X] [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (μ : Distribution X) (hμ : μ.IsProbability)
-    (A : X → MIPStarRE.Quantum.Measurement α ιA)
-    (B : X → MIPStarRE.Quantum.Measurement α ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1) :
-    opFamilyDistSq μ (fun x a => heteroKron ((A x).effect a) 1)
-        (fun x a => heteroKron 1 ((B x).effect a)) ψ ≤
-      2 * (1 - avgOver μ (fun x => ∑ a,
-        stateQForm ψ (heteroKron ((A x).effect a) 1 *
-          heteroKron 1 ((B x).effect a)))) := by
-  classical
-  letI : Fintype X := Fintype.ofFinite X
-  refine (WinImplications.opFamilyDistSq_placed_le_two_mul_consistencyDefect
-    μ A B ψ).trans (le_of_eq ?_)
-  congr 1
-  exact consistencyDefect_eq_one_sub_overlap μ
-    (fun x => leftPlacedMeasurement (A x))
-    (fun x => rightPlacedMeasurement (B x)) ψ hμ hψ
+  grind [SandwichProduct.effect_mul_postprocess_effect]
 
 end DistanceCalculus
 
@@ -84,12 +60,12 @@ variable {P : AdmissibleParams} {ε : ℝ}
 
 /-! ## Transport between the six registers and the bipartitions -/
 
+variable (S : ProjectiveSetting P ε) (X : Op (S.toStrategy.ιA × PauliRegister P)) (Y : Op (S.toStrategy.ιB × PauliRegister P))
+
 set_option synthInstance.maxSize 400 in
 /-- On the `AA' | BA''(B'B'')` bipartition, the overlap of left and right
 tensor placements is the overlap of the `AA'` and `BA''` placements. -/
-theorem stateQForm_aaBa_mul_eq (S : ProjectiveSetting P ε)
-    (X : Op (S.toStrategy.ιA × PauliRegister P))
-    (Y : Op (S.toStrategy.ιB × PauliRegister P)) :
+theorem stateQForm_aaBa_mul_eq :
     DistanceCalculus.stateQForm
         (reindexState (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
           S.psiHat)
@@ -104,9 +80,7 @@ theorem stateQForm_aaBa_mul_eq (S : ProjectiveSetting P ε)
 set_option synthInstance.maxSize 400 in
 /-- On the `AB'' | BB'(A'A'')` bipartition, the overlap of left and right
 tensor placements is the overlap of the `AB''` and `BB'` placements. -/
-theorem stateQForm_abBb_mul_eq (S : ProjectiveSetting P ε)
-    (X : Op (S.toStrategy.ιA × PauliRegister P))
-    (Y : Op (S.toStrategy.ιB × PauliRegister P)) :
+theorem stateQForm_abBb_mul_eq :
     DistanceCalculus.stateQForm
         (reindexState (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
           S.psiHat)

@@ -36,10 +36,7 @@ theorem ext {M N : Measurement α d} (h : ∀ a, M.effect a = N.effect a) :
           | mk effectM posM leM =>
               cases N with
               | mk effectN posN leN =>
-                  simp only at h
-                  have heffect : effectM = effectN := funext h
-                  subst effectN
-                  rfl
+                  grind
 
 /-- Relabeling along `f` and then along `g` is relabeling along `g ∘ f`: the
 fiber of `g ∘ f` over `c` is the disjoint union of the fibers of `f` over the
@@ -49,7 +46,6 @@ theorem postprocess_comp {γ : Type*} [Fintype γ]
     [DecidableEq α] [DecidableEq β] [DecidableEq γ]
     (M : Measurement α d) (f : α → β) (g : β → γ) :
     (M.postprocess f).postprocess g = M.postprocess (fun a => g (f a)) := by
-  classical
   apply ext
   intro c
   calc
@@ -60,12 +56,7 @@ theorem postprocess_comp {γ : Type*} [Fintype γ]
           change (∑ b ∈ Finset.univ.filter (fun b : β => g b = c),
             ∑ a ∈ Finset.univ.filter (fun a : α => f a = b), M.effect a) = _
           rw [Finset.sum_filter]
-          apply Finset.sum_congr rfl
-          intro b _
-          by_cases hgb : g b = c
-          · simp only [hgb, ite_true]
-            rw [Finset.sum_filter]
-          · simp [hgb]
+          simp [Finset.sum_filter]
     _ = ∑ b : β, ∑ a : α,
         if g b = c ∧ f a = b then M.effect a else 0 := by
           apply Finset.sum_congr rfl
@@ -80,22 +71,10 @@ theorem postprocess_comp {γ : Type*} [Fintype γ]
           intro a _
           by_cases hgc : g (f a) = c
           · rw [Finset.sum_eq_single (f a)]
-            · simp [hgc]
-            · intro b _ hba
-              by_cases hfa : f a = b
-              · exact (hba hfa.symm).elim
-              · simp [hfa]
             · simp
-          · have hzero :
-                (∑ b : β,
-                  if g b = c ∧ f a = b then M.effect a else 0) = 0 := by
-              apply Finset.sum_eq_zero
-              intro b _
-              by_cases hfa : f a = b
-              · subst b
-                simp [hgc]
-              · simp [hfa]
-            simp [hgc, hzero]
+            · grind
+            · simp
+          grind [Finset.sum_eq_zero]
     _ = (M.postprocess (fun a => g (f a))).effect c := by
           change _ = ∑ a ∈ Finset.univ.filter
             (fun a : α => g (f a) = c), M.effect a
@@ -122,7 +101,7 @@ theorem avgOver_uniform_eq_inv_card_mul_sum {α : Type*}
     [Fintype α] [DecidableEq α] [Nonempty α] (f : α → ℝ) :
     avgOver (uniformDistribution α) f = (Fintype.card α : ℝ)⁻¹ * ∑ a, f a := by
   unfold avgOver uniformDistribution Distribution.uniformOnFinset
-  simp only [Finset.mem_univ, ite_true, Finset.card_univ, one_div, Finset.mul_sum]
+  simp [Finset.mem_univ, Finset.card_univ, one_div, Finset.mul_sum]
 
 namespace Distribution.IsProbability
 
@@ -132,8 +111,7 @@ theorem weight_sum_eq_one_of_subset {α : Type*}
     {𝒟 : Distribution α} (h𝒟 : 𝒟.IsProbability) {s : Finset α}
     (hsubset : 𝒟.support ⊆ s) :
     ∑ a ∈ s, 𝒟.weight a = 1 := by
-  have hsum :
-      ∑ a ∈ 𝒟.support, 𝒟.weight a = ∑ a ∈ s, 𝒟.weight a :=
+  have hsum :=
     Finset.sum_subset hsubset (fun a _ ha => 𝒟.outsideSupport a ha)
   exact hsum ▸ h𝒟.weight_sum_eq_one
 
@@ -152,17 +130,15 @@ coordinate type. This is the finite-index reindexing of
 theorem expect_ffChar_sum_mul (v : ι → F) :
     𝔼 u : (ι → F), ffChar (p := p) (F := F) (∑ i, u i * v i) =
       if v = 0 then (1 : ℂ) else 0 := by
-  let eι : ι ≃ Fin (Fintype.card ι) := Fintype.equivFin ι
+  let eι := Fintype.equivFin ι
   let reindex : (ι → F) ≃ (Fin (Fintype.card ι) → F) :=
     { toFun := fun u j => u (eι.symm j)
       invFun := fun u i => u (eι i)
       left_inv := fun u => by
-        funext i
         simp
       right_inv := fun u => by
-        funext j
         simp }
-  let v' : Fin (Fintype.card ι) → F := reindex v
+  let v' := reindex v
   calc
     𝔼 u : (ι → F), ffChar (p := p) (F := F) (∑ i, u i * v i) =
         𝔼 u : (Fin (Fintype.card ι) → F),
@@ -174,23 +150,21 @@ theorem expect_ffChar_sum_mul (v : ι → F) :
       exact Fintype.sum_equiv eι
         (fun i => u i * v i)
         (fun j => reindex u j * v' j)
-        (fun i => by simp [reindex, v'])
+        (fun i => by grind)
     _ = if v' = 0 then (1 : ℂ) else 0 := fourier_fact_vector v'
     _ = if v = 0 then (1 : ℂ) else 0 := by
       have reindex_zero : reindex (0 : ι → F) = 0 := by
         ext j
         rfl
       by_cases hv : v = 0
-      · subst v
-        rw [show v' = 0 by exact reindex_zero]
-        simp
+      · grind
       · have hv' : v' ≠ 0 := by
           intro hv'
           apply hv
           apply reindex.injective
           rw [reindex_zero]
           exact hv'
-        simp [hv, hv']
+        simp_all
 
 /-- Sum form of canonical-character orthogonality over an arbitrary finite
 coordinate type. -/
@@ -198,7 +172,7 @@ theorem sum_ffChar_sum_mul (v : ι → F) :
     ∑ u : ι → F, ffChar (p := p) (F := F) (∑ i, u i * v i) =
       if v = 0 then (Fintype.card (ι → F) : ℂ) else 0 := by
   rw [← Fintype.card_smul_expect, expect_ffChar_sum_mul]
-  by_cases hv : v = 0 <;> simp [hv]
+  simp
 
 end MIPStarRE.LDT.Preliminaries
 
@@ -206,49 +180,44 @@ namespace MIPStarRE.LDT.MakingMeasurementsProjective
 open MIPStarRE.LDT
 noncomputable section
 
+variable {ιA ιB : Type*} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 /-- The diagonal block of a bipartite operator at a fixed right index. -/
-def diagBlock {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : MIPStarRE.Quantum.Op (ιA × ιB)) (b : ιB) :
+def diagBlock (M : MIPStarRE.Quantum.Op (ιA × ιB)) (b : ιB) :
     MIPStarRE.Quantum.Op ιA :=
   M.submatrix (fun i => (i, b)) (fun j => (j, b))
 
 /-- The normalized left marginal of a bipartite density, obtained by
 averaging its diagonal right blocks. -/
-def leftMarginalDensity {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Nonempty ιB]
+def leftMarginalDensity [Nonempty ιB]
     (ρ : MIPStarRE.Quantum.Op (ιA × ιB)) : MIPStarRE.Quantum.Op ιA :=
   ((((Fintype.card ιB : Error) : Error)⁻¹ : Error) : ℂ) •
     ∑ b : ιB, diagBlock ρ b
 
 /-- Positivity passes from a bipartite density to its left marginal. -/
-private lemma leftMarginalDensity_nonneg {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Nonempty ιB]
+lemma leftMarginalDensity_nonneg [Nonempty ιB]
     {ρ : MIPStarRE.Quantum.Op (ιA × ιB)} (hρ : 0 ≤ ρ) :
     0 ≤ leftMarginalDensity ρ := by
-  have hρpsd : ρ.PosSemidef := Matrix.nonneg_iff_posSemidef.mp hρ
+  have hρpsd := Matrix.nonneg_iff_posSemidef.mp hρ
   have hsum : 0 ≤ ∑ b : ιB, diagBlock ρ b := by
     refine Finset.sum_nonneg fun b _ => ?_
     refine Matrix.nonneg_iff_posSemidef.mpr ?_
     simpa [diagBlock] using hρpsd.submatrix (fun i => (i, b))
-  have hcoeff : 0 ≤ ((((Fintype.card ιB : Error) : Error)⁻¹ : Error) : ℂ) := by
-    positivity
-  simpa [leftMarginalDensity] using smul_nonneg hcoeff hsum
+  simp_all [leftMarginalDensity, smul_nonneg]
 
 /-- The local state on the left factor defined by the left marginal density
 of a bipartite state. This formalization-only definition supports the
 locality-preserving projectivization lemma and the explicit-constant form of
 the orthonormalization lemma. -/
-def leftMarginalState {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Nonempty ιB]
+def leftMarginalState [Nonempty ιB]
     (ψ : QuantumState (ιA × ιB)) : QuantumState ιA where
   density := leftMarginalDensity ψ.density
-  density_psd := by
-    exact leftMarginalDensity_nonneg ψ.density_psd
+  density_psd :=
+    leftMarginalDensity_nonneg ψ.density_psd
 
 /-- Left tensor placement is block diagonal with the same block at every
 right index. -/
-private lemma leftTensor_eq_blockDiagonal_const {ιA ιB : Type*}
+lemma leftTensor_eq_blockDiagonal_const {ιA ιB : Type*}
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (X : MIPStarRE.Quantum.Op ιA) :
     leftTensor (ι₂ := ιB) X = Matrix.blockDiagonal (fun _ : ιB => X) := by
@@ -256,20 +225,16 @@ private lemma leftTensor_eq_blockDiagonal_const {ιA ιB : Type*}
   rcases x with ⟨i, b⟩
   rcases y with ⟨j, c⟩
   by_cases h : b = c
-  · subst c
-    simp [leftTensor, Matrix.blockDiagonal_apply]
-  · simp [leftTensor, Matrix.blockDiagonal_apply, h]
+  · simp_all [leftTensor, Matrix.blockDiagonal_apply]
+  simp_all [leftTensor, Matrix.blockDiagonal_apply]
 
 /-- The trace against a constant block-diagonal operator is the sum of the
 traces of the diagonal blocks. -/
-private lemma trace_blockDiagonal_const_mul_eq_sum_trace_diagBlock
-    {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+lemma trace_blockDiagonal_const_mul_eq_sum_trace_diagBlock
     (X : MIPStarRE.Quantum.Op ιA)
     (M : MIPStarRE.Quantum.Op (ιA × ιB)) :
     Matrix.trace (Matrix.blockDiagonal (fun _ : ιB => X) * M) =
       ∑ b : ιB, Matrix.trace (X * diagBlock M b) := by
-  classical
   let e : ((ιA × ιB) × ιA) ≃ (ιB × (ιA × ιA)) :=
     { toFun := fun x => (x.1.2, (x.1.1, x.2))
       invFun := fun x => ((x.2.1, x.1), x.2.2)
@@ -282,14 +247,11 @@ private lemma trace_blockDiagonal_const_mul_eq_sum_trace_diagBlock
 
 /-- Evaluating a local operator against the left marginal agrees with
 evaluating its left tensor placement against the bipartite density. -/
-private lemma normalizedTrace_leftMarginalDensity_mul_eq
-    {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Nonempty ιB]
+lemma normalizedTrace_leftMarginalDensity_mul_eq
+    [Nonempty ιB]
     (ρ : MIPStarRE.Quantum.Op (ιA × ιB)) (X : MIPStarRE.Quantum.Op ιA) :
     MIPStarRE.Quantum.normalizedTrace (leftMarginalDensity ρ * X) =
       MIPStarRE.Quantum.normalizedTrace (ρ * leftTensor (ι₂ := ιB) X) := by
-  have hcard : ((Fintype.card ιB : Error) : ℂ) ≠ 0 := by
-    exact_mod_cast Nat.cast_ne_zero.mpr Fintype.card_ne_zero
   unfold MIPStarRE.Quantum.normalizedTrace leftMarginalDensity
   rw [smul_mul_assoc, Matrix.trace_smul, Matrix.sum_mul, Matrix.trace_sum]
   have hswap :
@@ -302,7 +264,7 @@ private lemma normalizedTrace_leftMarginalDensity_mul_eq
   rw [Matrix.trace_mul_comm]
   rw [leftTensor_eq_blockDiagonal_const]
   rw [trace_blockDiagonal_const_mul_eq_sum_trace_diagBlock]
-  simp [Fintype.card_prod]
+  simp
   ring
 
 /-- The complex normalized trace of a local operator is preserved by passage to
@@ -310,23 +272,19 @@ the left marginal. This formalization-only identity supports the marginal
 reduction in the locality-preserving projectivization lemma and the
 explicit-constant form of the orthonormalization lemma. -/
 lemma normalizedTrace_leftMarginalState_density_mul_eq
-    {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Nonempty ιB]
+    [Nonempty ιB]
     (ψ : QuantumState (ιA × ιB)) (X : MIPStarRE.Quantum.Op ιA) :
     MIPStarRE.Quantum.normalizedTrace ((leftMarginalState ψ).density * X) =
       MIPStarRE.Quantum.normalizedTrace (ψ.density * leftTensor (ι₂ := ιB) X) := by
-  simpa [leftMarginalState] using
-    normalizedTrace_leftMarginalDensity_mul_eq (ρ := ψ.density) (X := X)
+  simp [leftMarginalState, normalizedTrace_leftMarginalDensity_mul_eq]
 
 /-- The left marginal of a normalized bipartite state is normalized. This
 formalization-only lemma supports the marginal reduction in the
 locality-preserving projectivization lemma and the explicit-constant form of
 the orthonormalization lemma. -/
-lemma leftMarginalState_isNormalized {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Nonempty ιB]
+lemma leftMarginalState_isNormalized [Nonempty ιB]
     {ψ : QuantumState (ιA × ιB)} (hψ : ψ.IsNormalized) :
     (leftMarginalState ψ).IsNormalized := by
-  unfold QuantumState.IsNormalized
   have hnorm :
       MIPStarRE.Quantum.normalizedTrace (leftMarginalState ψ).density =
         MIPStarRE.Quantum.normalizedTrace ψ.density := by
@@ -339,12 +297,10 @@ lemma leftMarginalState_isNormalized {ιA ιB : Type*}
 left tensor placement. This formalization-only identity supports the marginal
 reduction in the locality-preserving projectivization lemma and the
 explicit-constant form of the orthonormalization lemma. -/
-lemma leftMarginal_ev_eq {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Nonempty ιB]
+lemma leftMarginal_ev_eq [Nonempty ιB]
     (ψ : QuantumState (ιA × ιB)) (X : MIPStarRE.Quantum.Op ιA) :
     ev ψ (leftTensor (ι₂ := ιB) X) = ev (leftMarginalState ψ) X := by
-  simpa [ev] using congrArg Complex.re
-    (normalizedTrace_leftMarginalState_density_mul_eq (ψ := ψ) (X := X)).symm
+  simp [ev, normalizedTrace_leftMarginalState_density_mul_eq, symm]
 
 /-- A finite complex matrix of rank zero is the zero matrix. This
 formalization-only linear-algebra lemma handles the zero-rank alternatives in
@@ -353,7 +309,6 @@ of the orthonormalization lemma. -/
 lemma matrix_eq_zero_of_rank_eq_zero {m n : Type*}
     [Finite m] [Fintype n] (A : Matrix m n ℂ) (hA : A.rank = 0) :
     A = 0 := by
-  let _ : Fintype m := Fintype.ofFinite m
   classical
   have hrange : A.mulVecLin.range = ⊥ := by
     rw [Matrix.rank] at hA
@@ -363,8 +318,7 @@ lemma matrix_eq_zero_of_rank_eq_zero {m n : Type*}
   have hv0 : A.mulVecLin (Pi.single j 1) = 0 := by
     simpa [hrange] using hv
   have hentry := congrArg (fun w => w i) hv0
-  simpa [Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Finset.sum_ite_eq,
-    Pi.single_apply] using hentry
+  simp_all [Matrix.mulVec, dotProduct, Pi.single_apply]
 
 end
 end MIPStarRE.LDT.MakingMeasurementsProjective

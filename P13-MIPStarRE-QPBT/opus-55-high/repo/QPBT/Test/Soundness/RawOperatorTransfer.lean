@@ -30,18 +30,18 @@ open MIPStarRE.Quantum
 noncomputable section
 
 /-- Universal scalar used to absorb the completed-to-raw transfer loss. -/
-private noncomputable def rawPauliTransferFactor : ℝ :=
+noncomputable def rawPauliTransferFactor : ℝ :=
   2 + 4 * (Fintype.card PauliEdge : ℝ)
 
-private theorem epsilon_le_deltaQld {P : AdmissibleParams}
-    {a b ε : ℝ} (ha : 1 ≤ a) (hb : 0 < b) (hb1 : b < 1)
+variable {P : AdmissibleParams} {a b ε : ℝ}
+
+theorem epsilon_le_deltaQld (ha : 1 ≤ a) (hb : 0 < b) (hb1 : b < 1)
     (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
     ε ≤ deltaQld a b ε P.m P.d P.q := by
   have hmd : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
     Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have hmd0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := zero_le_one.trans hmd
-  have ha0 : 0 ≤ a := zero_le_one.trans ha
-  have hpref : 1 ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
+  have ha0 := zero_le_one.trans ha
+  have hpref :=
     one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hmd ha0)
   have hεpow : ε ≤ ε ^ b := by
     simpa using Real.rpow_le_rpow_of_exponent_ge' hε0 hε1 hb.le hb1.le
@@ -50,11 +50,9 @@ private theorem epsilon_le_deltaQld {P : AdmissibleParams}
     (-(b * ((P.m * P.d : ℕ) : ℝ)))
   unfold deltaQld
   simp only [Real.rpow_eq_pow]
-  nlinarith [mul_nonneg (sub_nonneg.mpr hpref)
-    (add_nonneg (add_nonneg (Real.rpow_nonneg hε0 b) hq) htwo)]
+  nlinarith
 
-private theorem raw_pauli_error_absorb {P : AdmissibleParams}
-    {a b ε : ℝ} (ha : 1 ≤ a) (hb : 0 < b) (hb1 : b < 1)
+theorem raw_pauli_error_absorb (ha : 1 ≤ a) (hb : 0 < b) (hb1 : b < 1)
     (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
     2 * deltaQld a b ε P.m P.d P.q +
         4 * deltaQld a b ε P.m P.d P.q ^ 2 +
@@ -75,15 +73,15 @@ private theorem raw_pauli_error_absorb {P : AdmissibleParams}
     2 * d + 4 * d ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε ≤
         (2 + 4 * (Fintype.card PauliEdge : ℝ)) * d + 4 * d ^ 2 := by
       have hcard : (0 : ℝ) ≤ Fintype.card PauliEdge := Nat.cast_nonneg _
-      nlinarith [mul_nonneg hcard (sub_nonneg.mpr hεd)]
+      nlinarith
     _ ≤ K * (3 * d + 6 * d ^ 2) := by
       dsimp only [K, rawPauliTransferFactor]
       have hcard : (0 : ℝ) ≤ Fintype.card PauliEdge := Nat.cast_nonneg _
-      nlinarith [mul_nonneg hcard hd, mul_nonneg hcard (sq_nonneg d), sq_nonneg d]
+      nlinarith
     _ ≤ K * deltaQld (21 * a ^ 2) b ε P.m P.d P.q :=
       mul_le_mul_of_nonneg_left hbase (zero_le_one.trans hK)
-    _ ≤ deltaQld (K * (21 * a ^ 2)) b ε P.m P.d P.q := by
-      exact scale_deltaQld_le (by nlinarith [sq_nonneg a]) hε0 hK
+    _ ≤ deltaQld (K * (21 * a ^ 2)) b ε P.m P.d P.q :=
+      scale_deltaQld_le (by nlinarith) hε0 hK
 
 /-- The arbitrary-strategy soundness estimates for the raw prescribed Pauli
 answer effects of `thm:pauli`. The completed-family Naimark estimates remain
@@ -116,7 +114,7 @@ theorem exists_arbitrary_strategy_raw_isometry_bounds :
   have h21A : 21 * a ^ 2 ≤ A := by
     dsimp only [A]
     exact le_mul_of_one_le_left (by positivity) hfactor
-  have haA : a ≤ A := ha21.trans h21A
+  have haA := ha21.trans h21A
   have hsmall : ∀ (P : AdmissibleParams) (ε : ℝ), 0 ≤ ε → ε ≤ 1 →
       ∀ S : Strategy (pauliBasisTest P), 1 - ε ≤ S.value →
         ∃ w : PauliSoundnessWitness P S,
@@ -146,7 +144,7 @@ theorem exists_arbitrary_strategy_raw_isometry_bounds :
               4 * (Fintype.card PauliEdge : ℝ) * ε :=
           raw_pauli_operator_distanceA_le_completed S hwin w hstate W
         _ ≤ 2 * d + 4 * d ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε := by
-          linarith [hcompletedA W]
+          grind
         _ ≤ _ := habsorb
     · intro W
       calc
@@ -155,19 +153,18 @@ theorem exists_arbitrary_strategy_raw_isometry_bounds :
               4 * (Fintype.card PauliEdge : ℝ) * ε :=
           raw_pauli_operator_distanceB_le_completed S hwin w hstate W
         _ ≤ 2 * d + 4 * d ^ 2 + 4 * (Fintype.card PauliEdge : ℝ) * ε := by
-          linarith [hcompletedB W]
+          grind
         _ ≤ _ := habsorb
   refine ⟨A, b, hA, hb, hb1, ?_⟩
   intro P ε hε0 S hwin
   rcases le_or_gt ε 1 with hε1 | hε1
-  · exact hsmall P ε hε0 hε1 S hwin
+  · simp_all
   · obtain ⟨w, hstate, hAraw, hBraw⟩ :=
       hsmall P 1 zero_le_one le_rfl S (by simpa using S.value_nonneg)
     have hmono : deltaQld A b 1 P.m P.d P.q ≤
         deltaQld A b ε P.m P.d P.q :=
       deltaQld_mono_epsilon hA hb zero_le_one hε1.le
-    exact ⟨w, hstate.trans hmono, fun W => (hAraw W).trans hmono,
-      fun W => (hBraw W).trans hmono⟩
+    grind
 
 end
 

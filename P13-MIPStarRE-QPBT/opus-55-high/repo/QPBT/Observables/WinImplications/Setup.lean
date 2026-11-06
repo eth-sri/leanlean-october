@@ -38,12 +38,6 @@ noncomputable def ProjectiveSetting.swappedState
   reindexState (Equiv.prodComm S.toStrategy.ιA S.toStrategy.ιB)
     S.toStrategy.ψ
 
-/-- The space of Pauli question pairs is finite because the underlying field
-model is finite. Paper `14_analysis_of_the_pauli_basis_test.tex:197-199`;
-blueprint `lem:qld-win-implications`. -/
-noncomputable instance pauliQuestionPairFintype (P : AdmissibleParams) :
-    Fintype (PauliQuestion P × PauliQuestion P) :=
-  Fintype.ofFinite _
 
 /-- Equality of Pauli question pairs is decidable. This is used in the
 consistency defect from item 1 of blueprint
@@ -61,10 +55,12 @@ abbrev LineDescCode (P : AdmissibleParams) :=
     ((Fin P.m → PauliScalar P) × PauliScalar P ×
       (Fin P.m → PauliScalar P))
 
+variable (P : AdmissibleParams)
+
 /-- Map a canonical line to its kind and coordinate data: base and seed for an
 axis line, and base, seed, and direction for a diagonal line. Blueprint
 `lem:qld-win-implications`. -/
-def lineDescCode (P : AdmissibleParams) :
+def lineDescCode :
     LineDesc P.toLdParams → LineDescCode P
   | .axis base seed _ => .inl (base, seed)
   | .diagonal base seed direction _ _ => .inr (base, seed, direction)
@@ -73,7 +69,7 @@ def lineDescCode (P : AdmissibleParams) :
 kind with equal base, seed, and direction data are equal. This supports the
 line-point average in blueprint
 `lem:qld-win-implications`. -/
-private theorem lineDescCode_injective (P : AdmissibleParams) :
+theorem lineDescCode_injective :
     Function.Injective (lineDescCode P) := by
   intro x y h
   cases x with
@@ -81,16 +77,14 @@ private theorem lineDescCode_injective (P : AdmissibleParams) :
       cases y with
       | axis base' seed' baseFixed' =>
           simp only [lineDescCode, Sum.inl.injEq, Prod.mk.injEq] at h
-          rcases h with ⟨rfl, rfl⟩
-          rfl
-      | diagonal => simp [lineDescCode] at h
+          simp_all
+      | diagonal => simp_all [lineDescCode]
   | diagonal base seed direction baseFixed prefixZero =>
       cases y with
-      | axis => simp [lineDescCode] at h
+      | axis => simp_all [lineDescCode]
       | diagonal base' seed' direction' baseFixed' prefixZero' =>
           simp only [lineDescCode, Sum.inr.injEq, Prod.mk.injEq] at h
-          rcases h with ⟨rfl, rfl, rfl⟩
-          rfl
+          simp_all
 
 /-- The set of canonical axis and diagonal lines is finite. This finiteness is
 used in the line-point average from item 2 of blueprint
@@ -113,13 +107,14 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
 
+variable (S : ProjectiveSetting P ε) (side : PlayerSide)
+
 /-- Complete a point measurement with a zero `none` outcome. This is the
 right-hand family in the corrected low-degree item of
 blueprint
 `lem:qld-win-implications`, paper
 `14_analysis_of_the_pauli_basis_test.tex:197-204`. -/
-noncomputable def pointMeasOption (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+noncomputable def pointMeasOption (W : PauliKind) (u : Fin P.m → PauliScalar P) :
     Measurement (Option (PauliScalar P)) (S.LocalSpace side) :=
   (S.pointMeas side W u).postprocess some
 
@@ -128,8 +123,7 @@ noncomputable def pointMeasOption (S : ProjectiveSetting P ε)
 `lem:qld-win-implications`, paper
 `14_analysis_of_the_pauli_basis_test.tex:232-263`, blueprint
 `lem:qld-win-implications`. -/
-noncomputable def pointTraceMeas (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+noncomputable def pointTraceMeas (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (r : PauliScalar P) : Measurement (ZMod 2) (S.LocalSpace side) :=
   (S.pointMeas side W u).postprocess fun a => fixedBinTrace P.model (a * r)
 
@@ -138,8 +132,7 @@ This is `M^(Pauli,W)_[g_h(u)=a]` in item 3 of
 `lem:qld-win-implications`, paper
 `14_analysis_of_the_pauli_basis_test.tex:205-209`, blueprint
 `lem:qld-win-implications`. -/
-noncomputable def pauliEvalMeas (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+noncomputable def pauliEvalMeas (W : PauliKind) (u : Fin P.m → PauliScalar P) :
     Measurement (PauliScalar P) (S.LocalSpace side) :=
   (S.pauliMeas side W).postprocess fun h => lowDegreeEnc h u
 
@@ -147,8 +140,7 @@ noncomputable def pauliEvalMeas (S : ProjectiveSetting P ε)
 item 4 of `lem:qld-win-implications`, paper
 `14_analysis_of_the_pauli_basis_test.tex:210-231`, blueprint
 `lem:qld-win-implications`. -/
-noncomputable def pairComponentMeas (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (ω : PauliTuple P) :
+noncomputable def pairComponentMeas (W : PauliKind) (ω : PauliTuple P) :
     Measurement (ZMod 2) (S.LocalSpace side) :=
   (S.pairMeas side ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).postprocess fun bits =>
     match W with
@@ -159,8 +151,7 @@ noncomputable def pairComponentMeas (S : ProjectiveSetting P ε)
 `M^(Variable_j,omega)_a` in item 7 of `lem:qld-win-implications`, paper
 `14_analysis_of_the_pauli_basis_test.tex:250-263`, blueprint
 `lem:qld-win-implications`. -/
-noncomputable def msVarBitMeas (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (j : Fin 9) (ω : PauliTuple P) :
+noncomputable def msVarBitMeas (j : Fin 9) (ω : PauliTuple P) :
     Measurement (ZMod 2) (S.LocalSpace side) :=
   (S.msMeas side (.var j) ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).postprocess msBitOrZero
 

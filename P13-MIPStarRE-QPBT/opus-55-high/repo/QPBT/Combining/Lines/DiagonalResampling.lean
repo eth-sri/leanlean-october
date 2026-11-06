@@ -36,7 +36,6 @@ theorem avgOver_dLinePointDist_resample_parameter (L : LdParams)
       avgOver (dLinePointDist L) (fun sample =>
         avgOver (uniformDistribution (ScalarQ L)) (fun param =>
           value (sample.1, sample.1.base + param • sample.1.direction))) := by
-  classical
   unfold dLinePointDist clDistribution
   simp only [Distribution.avgOver_map, dLineDescOf_ldDLineCL]
   have hblock := uniformDistribution_map_equiv (ldSpaceBlockEquiv L).symm
@@ -65,7 +64,7 @@ theorem avgOver_dLinePointDist_resample_parameter (L : LdParams)
     (fun base point => value (LineDesc.diagonal
       (lineRepMap direction base) block.1 direction
       (lineRepMap_apply_self direction base) hprefix, point))
-  simpa only [lineRepMap_apply_self] using h
+  grind
 
 end
 

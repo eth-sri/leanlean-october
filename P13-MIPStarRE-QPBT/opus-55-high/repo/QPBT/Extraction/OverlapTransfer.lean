@@ -67,7 +67,7 @@ theorem abs_stateQForm_sub_le_of_contraction {ι : Type*}
     _ ≤ ‖psi - phi‖ * ‖psi‖ + ‖phi‖ * ‖psi - phi‖ :=
       add_le_add (mul_le_mul_of_nonneg_left (hT psi) (norm_nonneg _))
         (mul_le_mul_of_nonneg_left (hT (psi - phi)) (norm_nonneg _))
-    _ = _ := by rw [hpsi, hphi]; ring
+    _ = _ := by grind
 
 /-- The complete diagonal overlap of two local measurements is stable under a
 change of unit state. The tensor factors can have different dimensions. -/
@@ -85,49 +85,25 @@ theorem abs_diagonal_overlap_state_sub_le {α I J : Type*}
       Measurement.ofSumEqOne]
   have h := abs_stateQForm_sub_le_of_contraction _
     (norm_apply_measurement_sum_le (tensorMeasurement A B) s) psi phi hpsi hphi
-  rw [heq, stateQForm_finset_sum, stateQForm_finset_sum] at h
-  exact h
+  simp_all [stateQForm_finset_sum]
 
-/-- Averaging evaluated overlaps does not increase the state-transfer cost.
-This controls the complete overlap in paper `eq:qld-unitary-9`. -/
-theorem evaluated_overlap_state_transfer {Y α R I J : Type*}
-    [Fintype Y] [DecidableEq Y] [Nonempty Y]
-    [Fintype α] [DecidableEq α] [Fintype R] [DecidableEq R]
-    [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
-    (A : Measurement α I) (B : Measurement α J) (eval : α → Y → R)
-    (psi phi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1) (hphi : ‖phi‖ = 1) :
-    avgOver (uniformDistribution Y) (fun y => ∑ r, stateQForm psi
-      (heteroKron ((A.postprocess (fun a => eval a y)).effect r)
-        ((B.postprocess (fun a => eval a y)).effect r))) ≤
-      avgOver (uniformDistribution Y) (fun y => ∑ r, stateQForm phi
-        (heteroKron ((A.postprocess (fun a => eval a y)).effect r)
-          ((B.postprocess (fun a => eval a y)).effect r))) + 2 * ‖psi - phi‖ := by
-  have h := avgOver_mono (uniformDistribution Y) _ _ (fun y =>
-    (le_abs_self _).trans (abs_diagonal_overlap_state_sub_le
-      (A.postprocess (fun a => eval a y)) (B.postprocess (fun a => eval a y))
-      psi phi hpsi hphi))
-  rw [avgOver_sub, avgOver_const_of_isProbability _
-    (uniformDistribution_isProbability _)] at h
-  linarith
+variable {P : AdmissibleParams}
 
 /-- Two distinct Pauli answers have encodings agreeing on at most an `md/q`
 fraction of points. Injectivity follows from the exact decoder identity. -/
-theorem pauli_encoding_collision_le {P : AdmissibleParams}
-    (h k : PauliRegister P) (hne : h ≠ k) :
+theorem pauli_encoding_collision_le (h k : PauliRegister P) (hne : h ≠ k) :
     avgOver (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u => if evalPoly (encodingPoly h) u = evalPoly (encodingPoly k) u
         then (1 : ℝ) else 0) ≤ (P.m * P.d : ℝ) / P.q := by
   apply poly_eval_collision_le
   intro heq
-  apply hne
-  have hd := congrArg (fun g : Poly P => decodeFq g) heq
-  simpa only [decodeFq_lowDegreeEncoding] using hd
+  grind [decodeFq_lowDegreeEncoding]
 
 /-- The unevaluated Pauli overlap on a unit comparison state is bounded below
 by the evaluated overlap on another unit state, minus the collision and state
 errors. This combines paper `eq:qld-unitary-8` with the transfer following
 `eq:qld-unitary-9`, without any dimension or answer-count factor. -/
-theorem pauli_overlap_transfer {P : AdmissibleParams} {I J : Type*}
+theorem pauli_overlap_transfer {I J : Type*}
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (A : Measurement (PauliRegister P) I) (B : Measurement (PauliRegister P) J)
     (theta ideal : EuclideanSpace ℂ (I × J))
@@ -138,12 +114,14 @@ theorem pauli_overlap_transfer {P : AdmissibleParams} {I J : Type*}
           ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a))) ≤
       (∑ h, stateQForm ideal (heteroKron (A.effect h) (B.effect h))) +
         (P.m * P.d : ℝ) / P.q + 2 * ‖theta - ideal‖ := by
-  have ht := evaluated_overlap_state_transfer A B
-    (fun h u => evalPoly (encodingPoly h) u) theta ideal htheta hideal
+  have ht := avgOver_mono (uniformDistribution _) _ _ fun u => (le_abs_self _).trans
+    (abs_diagonal_overlap_state_sub_le (A.postprocess fun h => evalPoly (encodingPoly h) u)
+      (B.postprocess fun h => evalPoly (encodingPoly h) u) theta ideal htheta hideal)
+  rw [avgOver_sub, avgOver_const_of_isProbability _ (uniformDistribution_isProbability _)] at ht
   have hc := SandwichProduct.avg_diagonal_postprocess_stateQForm_le A B ideal
     (fun h u => evalPoly (encodingPoly h) u) ((P.m * P.d : ℝ) / P.q) hideal
     (by positivity) pauli_encoding_collision_le
-  exact ht.trans (add_le_add hc le_rfl)
+  linarith
 
 end
 

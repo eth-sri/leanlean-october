@@ -31,8 +31,9 @@ open MIPStarRE.Quantum
 
 noncomputable section
 
-private theorem directLdAccepted_add_rejected_eq_one
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+
+theorem directLdAccepted_add_rejected_eq_one
     (types : LdType × LdType) (sample : DirectLdSpace D) :
     (∑ a : (directLdGame D).AnswerA, ∑ b : (directLdGame D).AnswerB,
         if directLdWinPredicate D
@@ -59,13 +60,7 @@ private theorem directLdAccepted_add_rejected_eq_one
       apply Finset.sum_congr rfl
       intro a _
       rw [← Finset.sum_add_distrib]
-      apply Finset.sum_congr rfl
-      intro b _
-      by_cases h : directLdWinPredicate D
-          (types.1, directLdMap D types.1 sample)
-          (types.2, directLdMap D types.2 sample) a b
-      · simp [h]
-      · simp [h]
+      grind
     _ = 1 := outcomeWeight_sum_eq_one S
       (types.1, directLdMap D types.1 sample)
       (types.2, directLdMap D types.2 sample)
@@ -107,9 +102,8 @@ branch calculation for the game in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:178-186`. -/
 theorem sum_ldType (f : LdType → ℝ) :
     ∑ t : LdType, f t = f .point + f .aline + f .dline := by
-  change (Finset.univ : Finset LdType).sum f = _
   rw [show (Finset.univ : Finset LdType) = {.point, .aline, .dline} by decide]
-  simp [add_assoc]
+  grind
 
 /-- The uniform average over the nine ordered pairs of low-degree question
 types is the arithmetic mean of the nine values.  Both the directly indexed
@@ -123,34 +117,20 @@ theorem avgOver_ldType_pair (f : LdType × LdType → ℝ) :
         (f (.aline, .point) + f (.aline, .aline) + f (.aline, .dline)) +
         (f (.dline, .point) + f (.dline, .aline) + f (.dline, .dline))) / 9 := by
   unfold avgOver uniformDistribution Distribution.uniformOnFinset
-  simp only [Finset.mem_univ, if_true, Finset.card_univ, Fintype.card_prod]
+  simp
   rw [show Fintype.card LdType = 3 by decide]
-  rw [Fintype.sum_prod_type]
-  simp_rw [sum_ldType]
-  ring
+  grind [Fintype.sum_prod_type, sum_ldType]
 
 /-- Every fixed-type rejection probability is nonnegative. -/
 theorem directLdBranchRejectionProbability_nonneg
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
     (types : LdType × LdType) :
     0 ≤ directLdBranchRejectionProbability D S types := by
   apply avgOver_nonneg
-  intro sample
-  apply Finset.sum_nonneg
-  intro a _
-  apply Finset.sum_nonneg
-  intro b _
-  by_cases h : directLdWinPredicate D
-      (types.1, directLdMap D types.1 sample)
-      (types.2, directLdMap D types.2 sample) a b
-  · simp [h]
-  · simpa [h] using outcomeWeight_nonneg S
-      (types.1, directLdMap D types.1 sample)
-      (types.2, directLdMap D types.2 sample) a b
+  grind [Finset.sum_nonneg, outcomeWeight_nonneg]
 
 /-- Total direct-game rejection is one minus the strategy value. -/
 theorem directLdRejectionProbability_eq_one_sub_value
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+    :
     directLdRejectionProbability D S = 1 - S.value := by
   let accepted : (LdType × LdType) → DirectLdSpace D → ℝ :=
     fun types sample =>
@@ -170,19 +150,16 @@ theorem directLdRejectionProbability_eq_one_sub_value
           (fun sample => 1 - accepted types sample) by
       apply avgOver_congr
       intro sample
-      dsimp [accepted]
       linarith [directLdAccepted_add_rejected_eq_one D S types sample]]
     rw [avgOver_sub, avgOver_uniform_const]
   rw [show directLdRejectionProbability D S =
       avgOver (uniformDistribution (LdType × LdType))
         (fun types => 1 -
           avgOver (uniformDistribution (DirectLdSpace D)) (accepted types)) by
-    unfold directLdRejectionProbability
     apply avgOver_congr
     exact hbranch]
   rw [avgOver_sub, avgOver_uniform_const]
   congr 1
-  rw [Strategy.value]
   symm
   change avgOver (directLdQuestionDistribution D)
       (fun xy : DirectLdQuestion D × DirectLdQuestion D =>

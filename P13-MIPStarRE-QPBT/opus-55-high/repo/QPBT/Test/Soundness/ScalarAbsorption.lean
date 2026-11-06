@@ -27,24 +27,18 @@ The companion constant adjustments are `deltaQld_mono`
 
 namespace MIPStarRE.QPBT
 
+variable {P : AdmissibleParams} {a b epsilon : ℝ}
+
 /-- The Pauli soundness error is nonnegative whenever its prefactor and its
 error argument are. The remaining two summands of the error bracket are
 `rpow`s of nonnegative bases, so no admissibility hypothesis is needed. -/
-theorem deltaQld_nonneg {P : AdmissibleParams} {a b epsilon : ℝ}
-    (ha : 0 ≤ a) (hepsilon : 0 ≤ epsilon) :
+theorem deltaQld_nonneg (ha : 0 ≤ a) (hepsilon : 0 ≤ epsilon) :
     0 ≤ deltaQld a b epsilon P.m P.d P.q := by
-  have hdegree0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := Nat.cast_nonneg _
-  have h1 := Real.rpow_nonneg hepsilon b
-  have h2 := Real.rpow_nonneg (Nat.cast_nonneg P.q) (-b)
-  have h3 := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2)
-    (-(b * ((P.m * P.d : ℕ) : ℝ)))
-  unfold deltaQld
-  simp only [Real.rpow_eq_pow]
-  exact mul_nonneg (mul_nonneg ha (Real.rpow_nonneg hdegree0 a)) (by linarith)
+  grind [Nat.cast_nonneg, Real.rpow_nonneg, deltaQld, Real.rpow_eq_pow, mul_nonneg]
 
 /-- The shape of the absorption once the error bracket has been separated:
 doubling the `rpow` exponent is dominated by raising it to `21 * a ^ 2`. -/
-private theorem rpow_absorb_aux {degree tail a : ℝ}
+theorem rpow_absorb_aux {degree tail a : ℝ}
     (hdegree : 1 ≤ degree) (htail : 0 ≤ tail) (ha : 1 ≤ a) :
     21 * (a * degree ^ a) * (a * degree ^ a * tail) ≤
       21 * a ^ 2 * degree ^ (21 * a ^ 2) * tail := by
@@ -57,7 +51,7 @@ private theorem rpow_absorb_aux {degree tail a : ℝ}
   have hcoeff : (0 : ℝ) ≤ 21 * a ^ 2 := by positivity
   calc 21 * (a * degree ^ a) * (a * degree ^ a * tail)
       = 21 * a ^ 2 * (degree ^ a * degree ^ a) * tail := by ring
-    _ = 21 * a ^ 2 * degree ^ (a + a) * tail := by rw [hsplit]
+    _ = 21 * a ^ 2 * degree ^ (a + a) * tail := by simp_all
     _ ≤ 21 * a ^ 2 * degree ^ (21 * a ^ 2) * tail :=
         mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_left hpow hcoeff) htail
@@ -73,18 +67,14 @@ Lean-only constant-bookkeeping helper, not an additional hypothesis of
 `thm:pauli`: the source absorbs the same universal constants inline at
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1862-1876`.
 It is stated as blueprint `lem:delta-qld-scalar-absorption-support`. -/
-theorem three_add_six_sq_deltaQld_le {P : AdmissibleParams} {a b epsilon : ℝ}
-    (ha : 1 ≤ a) (hb : 0 < b) (hepsilon : 0 ≤ epsilon) (hepsilon1 : epsilon ≤ 1) :
+theorem three_add_six_sq_deltaQld_le (ha : 1 ≤ a) (hb : 0 < b) (hepsilon : 0 ≤ epsilon) (hepsilon1 : epsilon ≤ 1) :
     3 * deltaQld a b epsilon P.m P.d P.q +
         6 * deltaQld a b epsilon P.m P.d P.q ^ 2 ≤
       deltaQld (21 * a ^ 2) b epsilon P.m P.d P.q := by
   have hdegree : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
     Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
   have hdegree0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := zero_le_one.trans hdegree
-  have hq : (1 : ℝ) ≤ (P.q : ℝ) := by
-    obtain ⟨k, -, hk⟩ := P.hq
-    rw [hk]
-    exact_mod_cast Nat.one_le_pow _ _ (by norm_num)
+  have hq : (1 : ℝ) ≤ P.q := by exact_mod_cast one_le_two.trans P.hq.two_le
   have ha0 : (0 : ℝ) ≤ a := zero_le_one.trans ha
   have hprefactor : (1 : ℝ) ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
     one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hdegree ha0)
@@ -114,16 +104,13 @@ theorem three_add_six_sq_deltaQld_le {P : AdmissibleParams} {a b epsilon : ℝ}
       3 * (a * ((P.m * P.d : ℕ) : ℝ) ^ a) := by
     unfold deltaQld
     simp only [Real.rpow_eq_pow]
-    nlinarith [mul_nonneg hprefactor0 (sub_nonneg.mpr htail3)]
+    nlinarith
   calc 3 * deltaQld a b epsilon P.m P.d P.q +
         6 * deltaQld a b epsilon P.m P.d P.q ^ 2
       ≤ 21 * (a * ((P.m * P.d : ℕ) : ℝ) ^ a) *
           deltaQld a b epsilon P.m P.d P.q := by
-        nlinarith [mul_nonneg hnonneg (sub_nonneg.mpr hub),
-          mul_nonneg hnonneg (sub_nonneg.mpr hprefactor)]
+        nlinarith
     _ ≤ deltaQld (21 * a ^ 2) b epsilon P.m P.d P.q := by
-        unfold deltaQld
-        simp only [Real.rpow_eq_pow]
-        exact rpow_absorb_aux hdegree htail0 ha
+        simp_all [deltaQld, Real.rpow_eq_pow, rpow_absorb_aux]
 
 end MIPStarRE.QPBT

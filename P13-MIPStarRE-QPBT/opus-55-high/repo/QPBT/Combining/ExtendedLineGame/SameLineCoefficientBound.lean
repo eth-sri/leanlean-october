@@ -67,8 +67,10 @@ def diagonalParameterEvaluatedCoefficientDefect
         (fun coefficients => evalCoefficient coefficients sample.2)).effect value)))
     (pairState setting)
 
-private theorem axisCoefficientAnswerDefect_le_raw
-    (lines : ExtendedLinesWitness setting points deltaL) :
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
+theorem axisCoefficientAnswerDefect_le_raw
+    :
     @LE.le Real Real.instLE (axisCoefficientAnswerDefect lines)
       (consistencyDefect ((directALinePointDist P.extendedDirectLd).map Prod.fst)
         (fun line coefficients => heteroKron
@@ -107,11 +109,10 @@ private theorem axisCoefficientAnswerDefect_le_raw
       simpa only [B] using
         (SandwichProduct.postprocess_postprocess_effect
           (lines.Qline .bob line) (axisRead P) wrap answer).symm
-  rw [hEq]
-  exact h
+  linarith
 
-private theorem diagonalCoefficientAnswerDefect_le_raw
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem diagonalCoefficientAnswerDefect_le_raw
+    :
     @LE.le Real Real.instLE (diagonalCoefficientAnswerDefect lines)
       (consistencyDefect ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
         (fun line coefficients => heteroKron
@@ -121,9 +122,7 @@ private theorem diagonalCoefficientAnswerDefect_le_raw
         (pairState setting)) := by
   let A := fun line => (lines.Qline .alice line).postprocess (diagonalRead P)
   let B := fun line => (lines.Qline .bob line).postprocess (diagonalRead P)
-  let wrap : DirectDegPoly P.extendedDirectLd
-      (P.extendedDirectLd.m * P.extendedDirectLd.d) ->
-      DirectLdAnswer P.extendedDirectLd := fun coefficients =>
+  let wrap := fun coefficients =>
     @DirectLdAnswer.dlinePolys P.extendedDirectLd (fun _ => coefficients)
   have hwrap : (fun coefficients => wrap (diagonalRead P coefficients)) =
       diagonalAnswer P := by
@@ -151,13 +150,12 @@ private theorem diagonalCoefficientAnswerDefect_le_raw
       simpa only [B] using
         (SandwichProduct.postprocess_postprocess_effect
           (lines.Qline .bob line) (diagonalRead P) wrap answer).symm
-  rw [hEq]
-  exact h
+  linarith
 
 /-- The axis-axis branch rejection is bounded by the independently evaluated
 axis coefficient defect plus `d / q`. -/
 theorem aline_aline_rejection_le_axisParameterEvaluatedCoefficientDefect_add
-    (lines : ExtendedLinesWitness setting points deltaL) :
+    :
     @LE.le Real Real.instLE
       (directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.aline, .aline))
@@ -187,7 +185,7 @@ theorem aline_aline_rejection_le_axisParameterEvaluatedCoefficientDefect_add
 /-- The diagonal-diagonal branch rejection is bounded by the independently
 evaluated diagonal coefficient defect plus `md / q`. -/
 theorem dline_dline_rejection_le_diagonalParameterEvaluatedCoefficientDefect_add
-    (lines : ExtendedLinesWitness setting points deltaL) :
+    :
     @LE.le Real Real.instLE
       (directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.dline, .dline))

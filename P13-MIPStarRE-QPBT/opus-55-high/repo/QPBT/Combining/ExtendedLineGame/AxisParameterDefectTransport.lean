@@ -50,11 +50,10 @@ theorem axis_parameter_evaluated_coefficient_defect_eq
     (lines : ExtendedLinesWitness setting points deltaL) :
     axisParameterEvaluatedCoefficientDefect lines =
       axisParameterEvaluationDefect lines := by
-  classical
   let readAxis : DirectLdAnswer P.extendedDirectLd →
       DirectDegPoly P.extendedDirectLd P.d := fun answer =>
     match answer with
-    | .alinePolys coefficients => coefficients ⟨0, by change 0 < 1; decide⟩
+    | .alinePolys coefficients => coefficients ⟨0, by simp⟩
     | _ => 0
   let law := Distribution.prod (uniformDistribution (DirectLdSpace P.extendedDirectLd))
     (uniformDistribution (DirectScalarQ P.extendedDirectLd))
