@@ -1,0 +1,71 @@
+{
+  "problem_idx": 32,
+  "id": "PALOMAR-2026-10-18-000029-v1",
+  "title": "Galvin's theorem, the Dinitz problem and stable matchings",
+  "abstract": "A Lean 4 / Mathlib formalization of Galvin's theorem that the list chromatic index of a finite bipartite graph equals its maximum degree (if every edge has a list of at least Δ colours, a proper edge colouring can be chosen from the lists), of its corollary solving the Dinitz problem (an n × n array with lists of n symbols per cell admits a choice with distinct symbols in every row and column), and of the Gale–Shapley theorem on the existence of stable matchings with strict preferences and incomplete acceptability lists, which provides the kernels in Galvin's argument. Mathlib has line graphs and colourings but none of these results.",
+  "authors": [
+    "Juan Pablo Traverso Gianini"
+  ],
+  "repository": "jtraverso/galvin-dinitz",
+  "repository_url": "https://github.com/jtraverso/galvin-dinitz",
+  "commit": "0aa98fc17e1e96ec408f7bad3198ce37a08d26fc",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "S",
+  "baseline_tokens": 10465,
+  "lean_files": 13,
+  "protected_theorem_names": [
+    "ListEdgeColouring.gale_shapley",
+    "ListEdgeColouring.galvin",
+    "ListEdgeColouring.dinitz"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.CO"
+  ],
+  "msc2020": [
+    "05C15",
+    "05C70",
+    "91B68"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "The List Chromatic Index of a Bipartite Multigraph",
+      "authors": [
+        "F. Galvin"
+      ],
+      "type": "paper",
+      "identifier": "doi:10.1006/jctb.1995.1011",
+      "location": "Journal of Combinatorial Theory, Series B 63 (1995), 153–158",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "College Admissions and the Stability of Marriage",
+      "authors": [
+        "D. Gale",
+        "L. S. Shapley"
+      ],
+      "type": "paper",
+      "identifier": "doi:10.1080/00029890.1962.11989827",
+      "location": "The American Mathematical Monthly 69 (1962), 9–15",
+      "relationship": "formalizes"
+    }
+  ],
+  "dependency_graph_nodes": 83,
+  "dependency_graph_edges": 337,
+  "project_path": "repos/PALOMAR-2026-10-18-000029-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-18-000029-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-18-000029-v1/LICENSE"
+}
