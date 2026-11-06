@@ -1,0 +1,98 @@
+{
+  "problem_idx": 21,
+  "id": "PALOMAR-2026-10-18-000020-v1",
+  "title": "The radian nine-gon is Euclidean Ramsey iff e^(i theta) is algebraic",
+  "abstract": "Theorem D: for real theta, the nine points (cos k theta, sin k theta), k = 0, ..., 8, of the Euclidean plane are distinct, lie on the unit circle and are not Euclidean Ramsey when tan(theta/2) is transcendental; and whenever they are distinct, they are Ramsey if and only if cos theta and sin theta are algebraic (that is, iff e^(i theta) is algebraic), if and only if tan(theta/2) is algebraic. This is an iff for a whole one-parameter family, where earlier explicit examples with a transcendental parameter (OpenAI's Proposition 7.7 and Corollary 7.5) settle single sets: the same nine-point pattern is Ramsey or not exactly as e^(i theta) is algebraic or transcendental. Nine is the exact threshold (eight consecutive multiples are Ramsey for every theta; by hand, in spherical-ramsey), and at theta = e the question becomes whether e^(i e) is algebraic, which appears to be open. Ramsey is OpenAI's definition from result 172 (for every r >= 2 there is D such that every r-colouring of R^D contains a monochromatic congruent copy). The statements are given in OpenAI's vocabulary plus the two-line definition of the nine points, and again with no definitions beyond Mathlib. The non-Ramsey direction mirrors OpenAI's nine-point proof (their Proposition 7.6): the coordinate field is Q(tan(theta/2)), its tensor square embeds in Q(T, U), and the denominator-cleared 9x9 evaluation matrix is nonsingular, certified at (T, U) = (2, 3) by an explicit integer triangular factorization checked by decide +kernel; OpenAI's linear obstruction concludes. The converse uses the theorem that finite spherical sets with algebraic coordinates are Ramsey (prior work of JD-Jones-ASES, Rogerhu12 and atimics; proved again here in Lean on OpenAI's development). The proof builds on OpenAI's complete Lean proof of the classification (openai/math fd4aeeb2), whose 35 files used here are included with header-only changes for the Lean module system. This repository is a module-system port, with no statement or proof line changed apart from a namespace rename, of Lean already public as rope AV3 of spherical-ramsey v1.1.0 (doi:10.5281/zenodo.23396387), packaged so that Theorem D can be checked on its own. All theorems depend on propext, Classical.choice and Quot.sound only.",
+  "authors": [
+    "Will Strinz"
+  ],
+  "repository": "wstrinz/radian-ramsey",
+  "repository_url": "https://github.com/wstrinz/radian-ramsey",
+  "commit": "37716c59241154354fcc23522253cac7416d6e2c",
+  "license": "MIT",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc2",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "M",
+  "baseline_tokens": 81623,
+  "lean_files": 42,
+  "protected_theorem_names": [
+    "OAI.EuclideanRamsey.Radian.radian_configuration",
+    "OAI.EuclideanRamsey.Radian.radian_not_ramsey",
+    "OAI.EuclideanRamsey.Radian.radian_ramsey_iff",
+    "OAI.EuclideanRamsey.Radian.radian_ramsey_iff_tan",
+    "RadianRamsey.radian_configuration_mathlib",
+    "RadianRamsey.radian_ramsey_iff_mathlib",
+    "RadianRamsey.radian_ramsey_iff_tan_mathlib"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.CO",
+    "math.MG",
+    "math.NT"
+  ],
+  "msc2020": [
+    "05D10",
+    "52C10",
+    "11J81"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Two Möbius groups suffice: Euclidean Ramsey sets on spheres of every dimension, after the tensor classification (note in spherical-ramsey v1.1.0)",
+      "authors": [
+        "Will Strinz"
+      ],
+      "type": "original-proof",
+      "identifier": "doi:10.5281/zenodo.23396387",
+      "location": "note/spherical-ramsey.tex, Section 'Radian progressions and transcendence', Theorem D and the corollary after it; ropes/av3 (the Lean proof at Lean v4.34.1)",
+      "relationship": "other"
+    },
+    {
+      "title": "A classification of finite Euclidean Ramsey configurations (OpenAI math release, result 172)",
+      "authors": [
+        "OpenAI"
+      ],
+      "type": "paper",
+      "identifier": "https://github.com/openai/math/tree/fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb",
+      "location": "preprints/A-classification-of-finite-Euclidean-Ramsey-configurations-September-23-2026/ (Theorem 1.1, Proposition 7.6); lean/OAI/Combinatorics/EuclideanRamsey/ (Main.lean import closure, and the nine-point and circle modules NineLinearObstruction, NineGeometry, IndependentTensor, CircleExtension, CircleGeometry, CircleInterpolation, CircleSpan)",
+      "relationship": "other"
+    },
+    {
+      "title": "Möbius invariance of the Ramsey property for finite spherical sets (mobius-ramsey v1.0.0)",
+      "authors": [
+        "Will Strinz"
+      ],
+      "type": "other",
+      "identifier": "doi:10.5281/zenodo.23339523",
+      "location": "Palomar entry PALOMAR-2026-10-14-000008",
+      "relationship": "background"
+    },
+    {
+      "title": "Spherical sets with algebraic coordinates are Ramsey (used for the converse)",
+      "authors": [
+        "JD-Jones-ASES",
+        "Rogerhu12",
+        "atimics"
+      ],
+      "type": "other",
+      "identifier": "https://github.com/JD-Jones-ASES/six-concyclic-lean; https://github.com/Rogerhu12/openai-math-extensions; https://github.com/atimics/math2",
+      "location": "six-concyclic-lean root commit 0703d7d; openai-math-extensions commit f8a2bb2, papers/172-euclidean-ramsey/algebraic_spherical_configurations.tex; math2 commit 8ab51fa, EndToEnd/AlgebraicRamsey.lean",
+      "relationship": "background"
+    }
+  ],
+  "dependency_graph_nodes": 631,
+  "dependency_graph_edges": 2905,
+  "project_path": "repos/PALOMAR-2026-10-18-000020-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-18-000020-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-18-000020-v1/LICENSE"
+}

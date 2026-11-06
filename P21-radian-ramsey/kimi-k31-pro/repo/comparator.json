@@ -1,0 +1,16 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "OAI.EuclideanRamsey.Radian.radian_configuration",
+    "OAI.EuclideanRamsey.Radian.radian_not_ramsey",
+    "OAI.EuclideanRamsey.Radian.radian_ramsey_iff",
+    "OAI.EuclideanRamsey.Radian.radian_ramsey_iff_tan",
+    "RadianRamsey.radian_configuration_mathlib",
+    "RadianRamsey.radian_ramsey_iff_mathlib",
+    "RadianRamsey.radian_ramsey_iff_tan_mathlib"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}
