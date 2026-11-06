@@ -47,8 +47,7 @@ theorem original_readback_one (hp : RespectsSemanticsBelow Rows (U, j) p)
     (z : (D).below (U, j)) (d : Cell I.boundary)
     (hz : erase I X T hA hB hC t ht z.1 = original I X T hA hB hC t ht d)
     (hg : (D).grade z.1 = 1) :
-    p z = shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p (GrowthOrderedBase.field I d) := by
-  exact GrowthMixedGradeOne.original_readback_one I X T hA hB hC P U
+    p z = shadowSup I X T hA hB hC t ht U hU hm j hj hj0 p (GrowthOrderedBase.field I d) := GrowthMixedGradeOne.original_readback_one I X T hA hB hC P U
     (by rw [GrowthPaddedIteration.build_plan]; exact hU) hm
     (hp.mono (show GradedLe (U, 1) (U, j) from ⟨le_rfl, hj0⟩))
     ⟨z.1, z.2.1, hg.le⟩ d hz
@@ -73,7 +72,7 @@ theorem boundary_one (hp : RespectsSemanticsBelow Rows (U, j) p) :
   rw [he]
   by_cases hz : GrowthMixedGradeOne.spareSup I X T hA hB hC P U hplan hm q = ⊥
   · have htau : ∀ x, τ x = ⊥ := fun x => le_bot_iff.mp ((hb x).trans_eq hz)
-    simp only [htau]
+    simp [htau]
     exact respectsBelow_bot I.rows (A, 1)
   · apply map_respects_of_bottom_reflection hl (fun d => d.2.2) (boundedMap_of_witness hτ)
     intro d
@@ -91,16 +90,16 @@ theorem height_antitone (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤
     Antitone (height I X T hA hB hC t ht U j p) := by
   intro a b hab
   by_cases hb : b ≤ 1
-  · simp only [height, ite_eq_left hb, ite_eq_left (hab.trans hb), le_refl]
+  · simp [height, ite_eq_left hb, ite_eq_left (hab.trans hb)]
   by_cases ha : a ≤ 1
   · rw [height, height, ite_eq_left ha]
     exact le_top
   by_cases hbj : b ≤ j
-  · simp only [height, ite_eq_right hb, ite_eq_right ha,
+  · simp [height, ite_eq_right hb, ite_eq_right ha,
       ite_eq_left hbj, ite_eq_left (hab.trans hbj)]
     exact gradeMax_antitone I X T hA hB hC t ht U hU hm j hj hp a b
       (by omega) (by omega) hab hbj (hbj.trans hjt)
-  · simp only [height, ite_eq_right hb, ite_eq_right hbj, bot_le]
+  · simp [height, ite_eq_right hb, ite_eq_right hbj, bot_le]
 
 /-- One lawful vector on the entire original boundary, including hidden
 owners, preserving lower values above later grade maxima. -/
@@ -141,5 +140,3 @@ theorem projection_readback (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j
     exact original_readback I X T hA hB hC t ht U hU hm j hj hj0 hp z d hz
       (by omega) (hle.trans hjt)
 
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

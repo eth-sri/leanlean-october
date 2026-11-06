@@ -33,5 +33,3 @@ def stableActualLabelling (hcons : W.IsExactParentConsistent)
     intro n m u p v q hv f hfu hpq d
     exact stableValue_mapCell' hcons hv hfu hpq d
 
-end
-end VaughtConjecture.Knight.KnightRealization

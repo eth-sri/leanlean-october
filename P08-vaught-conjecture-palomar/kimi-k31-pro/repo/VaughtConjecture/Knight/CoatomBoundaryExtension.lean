@@ -65,7 +65,7 @@ theorem value_left (d : D.below U) : a.value (left d) = a.onLeft d := by
   rfl
 
 theorem value_right (d : D.below V) : a.value (right d) = a.onRight d := by
-  classical
+
   by_cases h : GradedLe (D.cell d.1) U
   · simp only [value, right, h, ↓reduceDIte]
     exact a.overlap d.1 h d.2
@@ -270,4 +270,3 @@ theorem target_empty (he : U.1 ∩ V.1 = ∅) : IsEmpty (D.below (overlapTarget 
     simpa only [overlapTarget, he, Finset.card_empty, min_zero, CellScheme.grade] using h
   exact (Nat.not_lt_of_ge hg) (D.grade_pos d.1)
 
-end VaughtConjecture.Knight.CoatomBoundaryExtension

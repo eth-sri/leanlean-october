@@ -63,14 +63,14 @@ theorem decoded_base (a : Catalogue X (k + 1)) {δ : ExtOrd → ExtOrd}
       (fun d => δ (a.val (field I d.1)))) :
     RespectsSemanticsBelow (baseRows I X T hA hB hC) (A, k + 1)
       (fun d => δ (source P hk hnext a (baseMap P hnext d.1))) := by
-  simp only [source_base]
+  simp [source_base]
   by_cases hz : δ (ceiling P) = ⊥
   · have he (d : Cell (base I X T hA hB hC)) :
         δ (RelativeLadderLayer.renderWith I.boundary (by omega) (field I) (fields X 1)
           (birth P a) (fields X (k + 1) a) (ceiling P) d) = ⊥ := by
       rw [← source_base P hk hnext a d]
       exact le_bot_iff.mp ((hδ.mono (source_bound P hk hnext a _)).trans_eq hz)
-    simp only [he]
+    simp [he]
     exact ⟨fun _ => (selfVis_bot _).symm, fun c => by
       simpa only [min_self] using TransformsTo.to_bot ((baseRows I X T hA hB hC).E c.1),
       fun _ c _ _ => ⟨c, rfl, le_rfl⟩⟩
@@ -80,7 +80,7 @@ theorem decoded_base (a : Catalogue X (k + 1)) {δ : ExtOrd → ExtOrd}
       (field I) (fields X 1) (proper I hB hC) (birth P a) f
       (hδ.mono.comp (LadderScalarRendering.level_mono
         (LadderScalarRendering.values_bound (anchor_bound X a))))
-      (by simp only [f, LadderScalarRendering.level_zero, hδ.bot])
+      (by simp [f, LadderScalarRendering.level_zero, hδ.bot])
     · intro i
       have hv := LadderScalarRendering.level_visible (C := ceiling P)
         (anchor_visible_one X a)
@@ -130,7 +130,7 @@ theorem decoded_lawful (a : Catalogue X (k + 1)) {δ : ExtOrd → ExtOrd}
         (fun d => δ (source P hk hnext a d.1)) :=
       (base_respects P hk hnext b (fun d => δ (source P hk hnext a d))).mpr (hl.mono hb)
     rcases c with ⟨c, hc⟩
-    dsimp only at he
+    dsimp at he
     subst c
     exact hr.locality ⟨_, GradedLe.refl _⟩
   · exact Or.inl (higher_short P hk hnext c.1 hscope hgrade)
@@ -184,5 +184,3 @@ theorem donor_bottom_supply (hN : k + 1 < X.req.N)
     exact (congrArg Prod.snd (I.leftFace.index d.1)).le.trans d.2.2
   exact (hread ⟨_, hd⟩).trans ((GrowthOrderedBase.field_donor I S d.1).trans (hr d))
 
-end
-end VaughtConjecture.Knight.GrowthPaddedStepSupply

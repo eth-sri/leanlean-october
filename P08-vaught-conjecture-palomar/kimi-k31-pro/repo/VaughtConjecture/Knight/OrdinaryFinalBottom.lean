@@ -85,5 +85,3 @@ theorem exists_private_display
     rw [hgate, hfields, hread, hgateOff] at hh
     exact hh
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalBottom

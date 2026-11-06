@@ -81,5 +81,3 @@ theorem exists_hollow_context (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
   · intro d hd
     exact (hs d).2 hd ((stableValue_eq_label_of_hollow hM hh hp d).trans hd)
 
-end
-end VaughtConjecture.Knight.GrowthContextSynchronization

@@ -36,12 +36,10 @@ open Classical in
 def level (S : Finset ExtOrd) (C : ExtOrd) (i : ℕ) : ExtOrd :=
   if S.card < i then C else (S.filter (fun x => rank S x ≤ i)).sup id
 
-theorem rank_le_card (S : Finset ExtOrd) (x : ExtOrd) : rank S x ≤ S.card := by
-  classical
-  exact Finset.card_le_card (Finset.filter_subset _ _)
+theorem rank_le_card (S : Finset ExtOrd) (x : ExtOrd) : rank S x ≤ S.card := Finset.card_le_card (Finset.filter_subset _ _)
 
 theorem rank_mono (S : Finset ExtOrd) : Monotone (rank S) := by
-  classical
+
   intro x y hxy
   apply Finset.card_le_card
   intro z hz
@@ -50,7 +48,7 @@ theorem rank_mono (S : Finset ExtOrd) : Monotone (rank S) := by
 
 theorem rank_strict {S : Finset ExtOrd} {x y : ExtOrd} (hy : y ∈ S) (hxy : x < y) :
     rank S x < rank S y := by
-  classical
+
   apply Finset.card_lt_card
   apply Finset.ssubset_iff_subset_ne.mpr
   refine ⟨?_, ?_⟩
@@ -62,12 +60,10 @@ theorem rank_strict {S : Finset ExtOrd} {x y : ExtOrd} (hy : y ∈ S) (hxy : x <
     rw [← he] at hm
     exact (not_le_of_gt hxy) (Finset.mem_filter.mp hm).2
 
-theorem rank_pos {S : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ S) : 0 < rank S x := by
-  classical
-  exact Finset.card_pos.mpr ⟨x, Finset.mem_filter.mpr ⟨hx, le_rfl⟩⟩
+theorem rank_pos {S : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ S) : 0 < rank S x := Finset.card_pos.mpr ⟨x, Finset.mem_filter.mpr ⟨hx, le_rfl⟩⟩
 
 theorem rank_bot {S : Finset ExtOrd} (hS : ⊥ ∉ S) : rank S ⊥ = 0 := by
-  classical
+
   apply Finset.card_eq_zero.mpr
   apply Finset.eq_empty_iff_forall_notMem.mpr
   intro x hx
@@ -75,7 +71,7 @@ theorem rank_bot {S : Finset ExtOrd} (hS : ⊥ ∉ S) : rank S ⊥ = 0 := by
   exact hS ((le_bot_iff.mp hx) ▸ hxS)
 
 theorem level_zero (S : Finset ExtOrd) (C : ExtOrd) : level S C 0 = ⊥ := by
-  classical
+
   rw [level, ite_eq_right (by omega)]
   have he : S.filter (fun x => rank S x ≤ 0) = ∅ := by
     apply Finset.eq_empty_iff_forall_notMem.mpr
@@ -87,7 +83,7 @@ theorem level_zero (S : Finset ExtOrd) (C : ExtOrd) : level S C 0 = ⊥ := by
 
 theorem level_rank {S : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ S) (C : ExtOrd) :
     level S C (rank S x) = x := by
-  classical
+
   rw [level, ite_eq_right (not_lt.mpr (rank_le_card S x))]
   apply le_antisymm
   · apply Finset.sup_le
@@ -99,7 +95,7 @@ theorem level_rank {S : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ S) (C : ExtOrd) 
 
 theorem level_le {S : Finset ExtOrd} {C : ExtOrd} (hC : ∀ x ∈ S, x ≤ C) (i : ℕ) :
     level S C i ≤ C := by
-  classical
+
   unfold level
   split_ifs
   · exact le_rfl
@@ -107,7 +103,7 @@ theorem level_le {S : Finset ExtOrd} {C : ExtOrd} (hC : ∀ x ∈ S, x ≤ C) (i
 
 theorem level_mono {S : Finset ExtOrd} {C : ExtOrd} (hC : ∀ x ∈ S, x ≤ C) :
     Monotone (level S C) := by
-  classical
+
   intro i k hik
   by_cases hk : S.card < k
   · rw [show level S C k = C from ite_eq_left hk]
@@ -121,7 +117,7 @@ theorem level_mono {S : Finset ExtOrd} {C : ExtOrd} (hC : ∀ x ∈ S, x ≤ C) 
 
 theorem level_supported (S : Finset ExtOrd) (C : ExtOrd) (i : ℕ) :
     level S C i = ⊥ ∨ level S C i ∈ S ∨ level S C i = C := by
-  classical
+
   unfold level
   split_ifs
   · exact Or.inr (Or.inr rfl)
@@ -132,7 +128,7 @@ theorem level_supported (S : Finset ExtOrd) (C : ExtOrd) (i : ℕ) :
       exact Or.inl rfl
 
 theorem rank_min' {S : Finset ExtOrd} (hS : S.Nonempty) : rank S (S.min' hS) = 1 := by
-  classical
+
   have he : S.filter (· ≤ S.min' hS) = {S.min' hS} := by
     ext x
     constructor
@@ -147,7 +143,7 @@ theorem rank_min' {S : Finset ExtOrd} (hS : S.Nonempty) : rank S (S.min' hS) = 1
 theorem level_pos {S : Finset ExtOrd} {C : ExtOrd} (hS : ⊥ ∉ S)
     (hC : ∀ x ∈ S, x ≤ C) (hpos : C ≠ ⊥) {i : ℕ} (hi : 0 < i) :
     level S C i ≠ ⊥ := by
-  classical
+
   by_cases hn : S.Nonempty
   · have hm := Finset.min'_mem S hn
     have hle : S.min' hn ≤ level S C i := by
@@ -162,13 +158,11 @@ open Classical in
 /-- One more than the number of occupied values strictly below a cap. -/
 def next (S : Finset ExtOrd) (h : ExtOrd) : ℕ := (S.filter (· < h)).card + 1
 
-theorem next_le (S : Finset ExtOrd) (h : ExtOrd) : next S h ≤ S.card + 1 := by
-  classical
-  exact Nat.add_le_add_right (Finset.card_le_card (Finset.filter_subset _ _)) 1
+theorem next_le (S : Finset ExtOrd) (h : ExtOrd) : next S h ≤ S.card + 1 := Nat.add_le_add_right (Finset.card_le_card (Finset.filter_subset _ _)) 1
 
 theorem rank_lt_next {S : Finset ExtOrd} {x h : ExtOrd} (hx : x ∈ S) :
     rank S x < next S h ↔ x < h := by
-  classical
+
   constructor
   · intro hr
     by_contra hn
@@ -183,7 +177,7 @@ theorem rank_lt_next {S : Finset ExtOrd} {x h : ExtOrd} (hx : x ∈ S) :
         rw [← he] at hm
         exact hn (Finset.mem_filter.mp hm).2
     have hc := Finset.card_lt_card hsub
-    dsimp only [rank, next] at hr
+    dsimp [rank, next] at hr
     omega
   · intro hxh
     have hc : (S.filter (· ≤ x)).card ≤ (S.filter (· < h)).card := by
@@ -195,7 +189,7 @@ theorem rank_lt_next {S : Finset ExtOrd} {x h : ExtOrd} (hx : x ∈ S) :
 
 theorem rank_congr_below {S T : Finset ExtOrd} {h x : ExtOrd}
     (hst : ∀ y, y < h → (y ∈ S ↔ y ∈ T)) (hx : x < h) : rank S x = rank T x := by
-  classical
+
   unfold rank
   congr 1
   ext y
@@ -212,7 +206,7 @@ theorem below_eq {S T : Finset ExtOrd} {h : ExtOrd}
 theorem level_agree_below {S T : Finset ExtOrd} {C h : ExtOrd}
     (hst : ∀ y, y < h → (y ∈ S ↔ y ∈ T)) {i : ℕ} (hi : i < next S h) :
     level S C i = level T C i := by
-  classical
+
   have he := below_eq hst
   have hn : next S h = next T h := congrArg (fun s : Finset ExtOrd => s.card + 1) he
   have hiS : ¬S.card < i := by have := next_le S h; omega
@@ -234,7 +228,7 @@ theorem level_agree_below {S T : Finset ExtOrd} {C h : ExtOrd}
 
 theorem level_reaches (S : Finset ExtOrd) {C h : ExtOrd} (hh : h ≤ C) :
     h ≤ level S C (next S h) := by
-  classical
+
   by_cases hc : S.card < next S h
   · rw [level, ite_eq_left hc]
     exact hh
@@ -280,17 +274,11 @@ open Classical in
 def values (p : X → ExtOrd) : Finset ExtOrd := (Finset.univ.image p).erase ⊥
 
 theorem mem_values {p : X → ExtOrd} {x : ExtOrd} :
-    x ∈ values p ↔ x ≠ ⊥ ∧ ∃ d, p d = x := by
-  classical
-  simp only [values, Finset.mem_erase, Finset.mem_image, Finset.mem_univ, true_and]
+    x ∈ values p ↔ x ≠ ⊥ ∧ ∃ d, p d = x := by grind [values]
 
-theorem bot_not_values (p : X → ExtOrd) : ⊥ ∉ values p := by
-  rw [mem_values]
-  simp only [ne_eq, not_true_eq_false, false_and, not_false_eq_true]
+theorem bot_not_values (p : X → ExtOrd) : ⊥ ∉ values p := by grind [mem_values]
 
-theorem values_card_le (p : X → ExtOrd) : (values p).card ≤ Fintype.card X := by
-  classical
-  exact (Finset.card_le_card (Finset.erase_subset _ _)).trans
+theorem values_card_le (p : X → ExtOrd) : (values p).card ≤ Fintype.card X := (Finset.card_le_card (Finset.erase_subset _ _)).trans
     ((Finset.card_image_le).trans_eq (Finset.card_univ))
 
 def fieldRank (p : X → ExtOrd) (d : X) : ℕ := rank (values p) (p d)
@@ -299,24 +287,13 @@ theorem fieldRank_le (p : X → ExtOrd) (d : X) : fieldRank p d ≤ Fintype.card
   (rank_le_card _ _).trans (values_card_le p)
 
 theorem field_readback (p : X → ExtOrd) (C : ExtOrd) (d : X) :
-    level (values p) C (fieldRank p d) = p d := by
-  by_cases hz : p d = ⊥
-  · simp only [fieldRank, hz, rank_bot (bot_not_values p), level_zero]
-  · exact level_rank (mem_values.mpr ⟨hz, d, rfl⟩) C
+    level (values p) C (fieldRank p d) = p d := by grind [rank_bot, fieldRank, level_rank, level_zero, mem_values]
 
 theorem values_bound {p : X → ExtOrd} {C : ExtOrd} (hC : ∀ d, p d ≤ C) :
-    ∀ x ∈ values p, x ≤ C := by
-  intro x hx
-  obtain ⟨_, d, rfl⟩ := mem_values.mp hx
-  exact hC d
+    ∀ x ∈ values p, x ≤ C := by grind [mem_values]
 
 theorem level_visible {p : X → ExtOrd} {C : ExtOrd} (hp : ∀ d, SelfVis 1 (p d))
-    (hC : SelfVis 1 C) (i : ℕ) : SelfVis 1 (level (values p) C i) := by
-  rcases level_supported (values p) C i with hz | hv | hc
-  · rw [hz]; exact selfVis_bot 1
-  · obtain ⟨_, d, hd⟩ := mem_values.mp hv
-    rw [← hd]; exact hp d
-  · rw [hc]; exact hC
+    (hC : SelfVis 1 C) (i : ℕ) : SelfVis 1 (level (values p) C i) := by grind [mem_values, selfVis_bot, level_supported]
 
 private theorem eq_of_capped_lt {x y h : ExtOrd} (he : min x h = min y h) (hx : x < h) :
     x = y := by
@@ -328,16 +305,7 @@ private theorem eq_of_capped_lt {x y h : ExtOrd} (he : min x h = min y h) (hx : 
 
 theorem values_agree_below {p q : X → ExtOrd} {h : ExtOrd}
     (hag : ∀ d, min (p d) h = min (q d) h) :
-    ∀ x, x < h → (x ∈ values p ↔ x ∈ values q) := by
-  intro x hx
-  rw [mem_values, mem_values]
-  constructor
-  · rintro ⟨hz, d, hd⟩
-    refine ⟨hz, d, ?_⟩
-    exact (eq_of_capped_lt (hag d) (hd ▸ hx)).symm.trans hd
-  · rintro ⟨hz, d, hd⟩
-    refine ⟨hz, d, ?_⟩
-    exact (eq_of_capped_lt (hag d).symm (hd ▸ hx)).symm.trans hd
+    ∀ x, x < h → (x ∈ values p ↔ x ∈ values q) := by grind [mem_values]
 
 /-- Capped scalar agreement constructs the common rank prefix. -/
 theorem fieldRank_agreement {p q : X → ExtOrd} {h : ExtOrd} (hh : ⊥ < h)
@@ -401,7 +369,7 @@ theorem render_cap_agreement {a b : Q} {p q : X → ExtOrd} {C h : ExtOrd}
     (hag : ∀ d, min (p d) h = min (q d) h) (v : SupportLadderRows.Point L X Q) :
     min (render profile a p C v) h = min (render profile b q C v) h := by
   by_cases hz : h = ⊥
-  · simp only [hz, min_eq_right bot_le]
+  · simp [hz, min_eq_right bot_le]
   · obtain ⟨k, _, hk, hr, hkp, hkq, he⟩ := common_rank_cut (bot_lt_iff_ne_bot.mpr hz) hC hag
     have hcut : k ≤ FiniteProfileControllers.cut L (profile a) (profile b) := by
       apply FiniteProfileControllers.le_cut (hk.trans hL)
@@ -412,5 +380,3 @@ theorem render_cap_agreement {a b : Q} {p q : X → ExtOrd} {C h : ExtOrd}
       (level_mono (values_bound hp)) (level_mono (values_bound hq)) hkp hkq
       (fun i hi => congrArg (fun x => min x h) (he i hi)) v
 
-end
-end VaughtConjecture.Knight.LadderScalarRendering

@@ -83,8 +83,5 @@ theorem stableValue_eq_bandValue_iSup :
       exact (Nat.cast_le.mpr hy).trans (le_iSup (fun y => (offset Xi htop y : ℕ∞)) y)
     rw [hsup, bandValue_top, hsv]
 
-end RootedCover
 
-end KnightRealization
 
-end VaughtConjecture.Knight

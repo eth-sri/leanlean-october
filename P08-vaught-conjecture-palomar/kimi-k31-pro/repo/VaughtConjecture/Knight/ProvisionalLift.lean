@@ -246,6 +246,4 @@ theorem truncExt_someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) :
     · exact truncExt_id_of_lt hlt
     · exact absurd htop' htop
 
-end StageType
 
-end VaughtConjecture.Knight

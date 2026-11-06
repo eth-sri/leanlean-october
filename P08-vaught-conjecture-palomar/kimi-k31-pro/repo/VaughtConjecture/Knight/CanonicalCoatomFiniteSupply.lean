@@ -36,7 +36,7 @@ theorem compatible_labels {α : Ordinal.{0}} {n : ℕ} (C : CoatomPair n)
     {pa pb : S α (n + 1)} (h : C.Compatible pa pb) :
     let I := (CoatomBoundaryPresentation.of_compatible C h).input
     ∀ i, pa.label (I.shared.f i) = pb.label (I.shared.g i) := by
-  dsimp only
+  dsimp
   intro i
   let r := Classical.choose h
   have hl := (Classical.choose_spec h).1
@@ -68,5 +68,3 @@ theorem supply {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) :
   · exact arity_two hα C h
   · exact CoatomRecursiveOrdered.exists_amalgam hα C h
 
-end
-end VaughtConjecture.Knight.CanonicalCoatomSupply

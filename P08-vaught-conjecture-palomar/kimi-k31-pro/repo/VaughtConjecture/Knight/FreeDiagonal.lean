@@ -45,7 +45,7 @@ theorem clip_witness {τ : ExtOrd → ExtOrd} {K : ℕ} {C : ExtOrd}
         hm.map_min, evr_eq_self_of_selfVis (hC.mono hk)]
     · rw [gTop_of_gt (not_le.mp hk)] at hact
       by_cases hCb : C = ⊥
-      · simp only [hCb, min_bot_right, extVisibilityReplace_bot]
+      · simp [hCb, extVisibilityReplace_bot]
       · have hxb : τ x = ⊥ := by
           rcases le_total (τ x) C with h | h
           · rwa [min_eq_left h, le_bot_iff] at hact
@@ -53,6 +53,4 @@ theorem clip_witness {τ : ExtOrd → ExtOrd} {K : ℕ} {C : ExtOrd}
         rw [hτ.clause5 x k (by rw [hxb]; exact bot_le) i hi, hxb,
           extVisibilityReplace_bot, min_bot_left, extVisibilityReplace_bot]
 
-end FreeDiagonal
 
-end VaughtConjecture.Knight

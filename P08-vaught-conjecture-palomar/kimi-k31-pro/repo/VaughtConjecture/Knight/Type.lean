@@ -132,7 +132,7 @@ theorem ext_of_components {t₁ t₂ : S α n}
 private theorem gradedPlan_fin0_eq_empty (P : Finset (Finset (Fin 0))) :
     Plan.gradedPlan P = ∅ := by
   ext ⟨B, j⟩
-  simp only [Plan.mem_gradedPlan, Plan.MemGraded, Finset.notMem_empty, iff_false, not_and,
+  simp [Plan.mem_gradedPlan, Plan.MemGraded, Finset.notMem_empty, iff_false, not_and,
     not_le]
   intro _ hj
   simpa [Finset.eq_empty_of_forall_notMem (fun x : Fin 0 => x.elim0) (s := B)] using hj
@@ -151,7 +151,7 @@ private theorem plan_eq_of_fin0 {P : Finset (Finset (Fin 0))}
     Finset.eq_empty_of_forall_notMem (fun x => x.elim0)
   rw [huniv] at h
   ext B
-  simp only [Finset.mem_singleton]
+  simp [Finset.mem_singleton]
   exact ⟨fun hB => Finset.subset_empty.mp (h.subset_of_mem hB), fun hB => hB ▸ h.empty_mem⟩
 
 /-- There is at most one stage type on `0`-tuples at each stage: the scheme has no cells and
@@ -233,23 +233,8 @@ noncomputable def restrictFace (t : S α n) (f : Fin m ↪ Fin n)
   label_bound i := t.label_bound (toCell t.scheme.scheme f hr i)
   respects := t.respects.restrictFace f hr
 
-@[simp] theorem restrictFace_scheme (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :
-    (t.restrictFace f hr).scheme = t.scheme.restrictFace f hr := rfl
 
-@[simp] theorem restrictFace_label (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (i : Cell (t.scheme.scheme.restrictFace f hr)) :
-    (t.restrictFace f hr).label i = t.label (toCell t.scheme.scheme f hr i) := rfl
 
-@[simp] theorem restrictFace_rows_E (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (Sig : Cell (t.scheme.scheme.restrictFace f hr))
-    (d : (t.scheme.scheme.restrictFace f hr).below
-      ((t.scheme.scheme.restrictFace f hr).cell Sig)) :
-    (t.restrictFace f hr).scheme.rows.E Sig d =
-      t.scheme.rows.E (toCell t.scheme.scheme f hr Sig) (belowMap t.scheme.scheme f hr Sig d) :=
-  rfl
 
 end StageType
 
@@ -405,4 +390,3 @@ theorem typeMap_trans (f : Fin k ↪ Fin m) (g : Fin m ↪ Fin n) (t : S α n) (
 
 /-! ### Face closure -/
 
-end VaughtConjecture.Knight

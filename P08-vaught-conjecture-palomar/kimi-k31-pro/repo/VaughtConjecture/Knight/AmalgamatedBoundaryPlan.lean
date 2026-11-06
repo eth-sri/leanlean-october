@@ -66,10 +66,7 @@ private theorem restrict_union {A B C : Finset ι} {Q R : Finset (Finset ι)}
   · intro hS
     exact ⟨Or.inl (Or.inl hS), hQ.subset_of_mem hS⟩
 
-theorem erased_inter : A.erase s.a ∩ A.erase s.b = (A.erase s.a).erase s.b := by
-  ext x
-  simp only [Finset.mem_inter, Finset.mem_erase]
-  tauto
+theorem erased_inter : A.erase s.a ∩ A.erase s.b = (A.erase s.a).erase s.b := by grind
 
 theorem restrict_left : Plan.restrictPlan s.plan (A.erase s.a) = s.left := by
   apply restrict_union s.left_plan s.right_plan
@@ -126,4 +123,3 @@ theorem exists_step {P : Finset (Finset ι)} (hP : Plan.IsPlan A P) (hA : 2 ≤ 
   | step ha hb hab hQ hR hmem heq hP =>
     exact ⟨⟨_, _, ha, hb, hab, _, _, hQ, hR, hmem.1, hmem.2, heq⟩, hP.symm⟩
 
-end VaughtConjecture.Knight.AmalgamatedBoundaryPlan

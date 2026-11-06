@@ -73,12 +73,6 @@ theorem mem_primRange_of_eq {target : D → ExtOrd} {d : D} {v : Ordinal.{0}}
   rw [h]
   exact Finset.mem_singleton_self v
 
-theorem keyed_target (l : ℕ) (target : D → ExtOrd) (d : D) :
-    Keyed l (primRange target) (target d) := by
-  rcases ExtOrd.cases (target d) with h | h | ⟨v, h⟩
-  · rw [h]; exact keyed_bot _ _
-  · rw [h]; exact keyed_top _ _
-  · rw [h]; exact keyed_of_mem _ _ (mem_primRange_of_eq h)
 
 /-- The bounded replacement closure of the sources at the controller grade. -/
 noncomputable def inventory (K : ℕ) (E : D → ExtOrd) : Finset ExtOrd :=
@@ -160,7 +154,7 @@ theorem coded_locality_of_capped_S (hmax : ∀ d, grade d ≤ grade c)
     (hloc : TransformsTo grade E (fun d => min (p d) (p c))) {l : ℕ} (hl : grade c ≤ l)
     (S : Finset Ordinal.{0}) (hS : ∀ d, Keyed l S (min (p d) (p c))) :
     TransformsTo grade E fun d => encT l S (min (p d) (p c)) := by
-  classical
+
   obtain ⟨g', τ, -, -, hbot, hmono, -, -, hcap, hsrc, hcomm, hbotprop⟩ :=
     exists_cappedWitness grade E p c hmax (hordp c) hne hloc
   set target : D → ExtOrd := fun d => min (p d) (p c) with htarget
@@ -230,12 +224,6 @@ theorem omul_le_omul {t t' : ℕ} (h : t ≤ t') :
     Ordinal.omega0 * (t : Ordinal) ≤ Ordinal.omega0 * (t' : Ordinal) := by
   gcongr
 
-/-- The two cells. -/
-inductive M2 | a | c
-  deriving DecidableEq
 
-instance : Fintype M2 := ⟨{.a, .c}, by intro x; cases x <;> simp⟩
 
-end Instance
 
-end VaughtConjecture.Knight

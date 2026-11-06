@@ -58,4 +58,3 @@ theorem IsPlan.exists_visible_card_succ_superface
           exact ⟨C, by simp [hCR], hBC, hcard⟩
       · exact absurd hBA hne
 
-end VaughtConjecture.AmalgamationPlan.Plan

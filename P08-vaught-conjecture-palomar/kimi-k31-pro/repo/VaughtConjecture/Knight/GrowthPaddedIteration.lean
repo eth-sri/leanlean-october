@@ -68,5 +68,3 @@ theorem build_plan (t : ℕ) (ht : t + 2 ≤ A.card) :
   | zero => rfl
   | succ t ih => exact ih (by omega)
 
-end
-end VaughtConjecture.Knight.GrowthPaddedIteration

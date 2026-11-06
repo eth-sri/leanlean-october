@@ -123,7 +123,7 @@ theorem eq_of_reduct_eq_of_forall_lt {l : Ordinal.{0}} (hl : Order.IsSuccLimit l
       congrArg (fun q : S (blockStage 0).1 n => q.scheme) (hrt 0 h0)
     obtain ⟨sc, lab, bnd, resp⟩ := p'
     obtain ⟨sc', lab', bnd', resp'⟩ := p''
-    simp only at hsch
+    simp at hsch
     subst hsch
     refine StageType.ext rfl (heq_of_eq (funext fun Xi => ?_))
     refine ExtOrd.eq_of_forall_truncExt_blockLevel_eq hl (bnd Xi) (bnd' Xi) fun ξ hξ => ?_
@@ -161,6 +161,4 @@ theorem eq_of_reduct_eq_of_le (η : Ordinal.{0}) :
     · rw [← Realization.reduct_reduct (blockStage_mono hζξ.le) (blockStage_mono hξη) N, hred,
         Realization.reduct_reduct]
 
-end KnightRealization
 
-end VaughtConjecture.Knight

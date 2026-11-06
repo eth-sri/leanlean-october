@@ -38,8 +38,7 @@ theorem total_below {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
   exact congrArg (sem.E c) (Subtype.ext rfl)
 
 theorem total_outside {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
-    (c d : Cell D) (h : ¬ GradedLe (D.cell d) (D.cell c)) : total sem c d = ⊥ := by
-  simp only [total, dite_eq_right h]
+    (c d : Cell D) (h : ¬ GradedLe (D.cell d) (D.cell c)) : total sem c d = ⊥ := by grind [total]
 
 section Push
 variable {B C : Finset ι} {D : CellScheme B} {K : CellScheme C}
@@ -56,7 +55,7 @@ theorem pushRow_at (c d : Cell D) : pushRow f sem c (f d) = total sem c d :=
 include hf hi in
 theorem pushRow_outside (c : Cell D) (z : Cell K)
     (hz : ¬ GradedLe (K.cell z) (D.cell c)) : pushRow f sem c z = ⊥ := by
-  classical
+
   by_cases h : ∃ d, f d = z
   · obtain ⟨d, rfl⟩ := h
     rw [pushRow_at f hf]
@@ -172,4 +171,3 @@ theorem rows_right (c : Cell E) (d : E.below (E.cell c)) :
       semE.E c d :=
   (table_right s D E w hD hE semD semE hc c d.1).trans (total_below semE c d)
 
-end VaughtConjecture.Knight.AmalgamatedBoundaryRows

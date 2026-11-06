@@ -45,11 +45,7 @@ theorem master_new (q p : Controller D k) :
   simp only [master, p.2, ↓reduceDIte, F.profile_new]
 
 theorem master_le_profile (q : Controller D k) (d : Cell D) :
-    master F weight q d ≤ F.profile q d := by
-  unfold master
-  split_ifs
-  · exact min_le_left _ _
-  · exact le_rfl
+    master F weight q d ≤ F.profile q d := by grind [master]
 
 theorem master_bound (q : Controller D k) (d : Cell D) (hd : D.grade d ≤ k) :
     master F weight q d ≤ F.ceiling :=
@@ -98,13 +94,10 @@ def rows : Semantics D where
     · exact F.base.orderly c d
 
 theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) :
-    (rows F weight hvis).E c = F.base.E c := by
-  funext d
-  simp only [rows, hc, ↓reduceDIte]
+    (rows F weight hvis).E c = F.base.E c := by grind [rows]
 
 theorem row_new (q : Controller D k) (d : D.below (D.cell q.1)) :
-    (rows F weight hvis).E q.1 d = min (master F weight q d.1) (weight q) := by
-  simp only [rows, q.2, ↓reduceDIte]
+    (rows F weight hvis).E q.1 d = min (master F weight q d.1) (weight q) := by grind [rows]
 
 theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
     {r : D.below (D.cell c) → ExtOrd} :
@@ -255,5 +248,3 @@ theorem consistent
   · rw [row_old F weight hvis hc]
     exact (old_respects_iff F weight hvis hc).mpr (hbase c hc)
 
-end
-end VaughtConjecture.Knight.WeightedSourcePrefixLayer

@@ -169,7 +169,7 @@ theorem leaf_row (a : Catalogue X 2)
   have he := WeightedSourcePrefixLayer.row_new J.data J.weight J.weight_visible
     (J.controller (a, none)) d
   have hw : J.weight (J.controller (a, none)) = J.ceiling := by
-    simp only [LadderWeightedSuccessor.Input.weight,
+    simp [LadderWeightedSuccessor.Input.weight,
       LadderWeightedSuccessor.Input.member_controller,
       LadderWeightedSuccessor.Input.nodeWeight]
   exact he.trans ((congrArg (min (J.source a d.1)) hw).trans
@@ -183,10 +183,8 @@ theorem source_leaf (a b : Catalogue X 2) :
   change WeightedSourcePrefixLayer.master J.data J.weight
     (J.controller (a, none)) (J.controller (b, none)).1 = _
   rw [WeightedSourcePrefixLayer.master_new]
-  simp only [LadderWeightedSuccessor.Input.data,
+  simp [LadderWeightedSuccessor.Input.data,
     LadderWeightedSuccessor.Input.member_controller,
     LadderWeightedSuccessor.Input.weight, LadderWeightedSuccessor.Input.nodeWeight]
   exact min_eq_left (cut_le J.grid_bound _ _)
 
-end
-end VaughtConjecture.Knight.GrowthPaddedSuccessor

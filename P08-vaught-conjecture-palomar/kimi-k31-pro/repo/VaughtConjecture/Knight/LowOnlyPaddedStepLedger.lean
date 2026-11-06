@@ -110,7 +110,7 @@ theorem same_grade {S T : Finset ι}
           (Plan.mem_gradedPlan.mp hS).2.2.trans (Finset.card_le_card hb)⟩
       have hcard : B.card = n := by
         rw [← I.imageLeft, Finset.card_image_of_injective _ I.placeLeft.injective]
-        simp only [Finset.card_univ, Fintype.card_fin]
+        simp [Finset.card_univ, Fintype.card_fin]
       have hface : k ≤ n := by
         have ht := (Plan.mem_gradedPlan.mp hBj).2.2
         change k + 1 ≤ B.card at ht
@@ -123,7 +123,7 @@ theorem same_grade {S T : Finset ι}
           (Plan.mem_gradedPlan.mp hS).2.2.trans (Finset.card_le_card hc)⟩
       have hcard : C.card = n := by
         rw [← I.imageRight, Finset.card_image_of_injective _ I.placeRight.injective]
-        simp only [Finset.card_univ, Fintype.card_fin]
+        simp [Finset.card_univ, Fintype.card_fin]
       have hface : k ≤ n := by
         have ht := (Plan.mem_gradedPlan.mp hCj).2.2
         change k + 1 ≤ C.card at ht
@@ -145,5 +145,3 @@ theorem through_successor : TargetGradeLifting.Through (rows P hk hnext) (k + 1)
   · change (T, k + 1) ∈ Plan.gradedPlan P.carrier.plan at hT
     rwa [hplan] at hT
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepLedger

@@ -69,9 +69,4 @@ noncomputable def ofCofinalInterClosed (P : Finset M → Prop)
     (fun S => (hull_spec P hinter hcover S).1)
     (fun S B hSB hB => (hull_spec P hinter hcover S).2.2 B hB hSB)
 
-@[simp] theorem ofCofinalInterClosed_isClosed (P : Finset M → Prop)
-    (hinter : ∀ A B, P A → P B → P (A ∩ B))
-    (hcover : ∀ S, ∃ A, P A ∧ S ⊆ A) (S : Finset M) :
-    (ofCofinalInterClosed P hinter hcover).IsClosed S ↔ P S := Iff.rfl
 
-end VaughtConjecture.FiniteSupportClosure

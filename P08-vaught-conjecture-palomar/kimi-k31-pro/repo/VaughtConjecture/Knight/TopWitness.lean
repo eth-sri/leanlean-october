@@ -79,6 +79,4 @@ theorem sourceTopProduction_of_prolongsToIn {B : LimitStage} (hlt : A₀ < B)
     rw [Realization.reduct_eval, hq]; rfl
   rwa [hred] at this
 
-end KnightRealization
 
-end VaughtConjecture.Knight

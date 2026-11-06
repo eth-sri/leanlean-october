@@ -287,18 +287,14 @@ noncomputable def sel (v : R.Low → ExtOrd) (d : Cell P.scheme) : ExtOrd :=
 theorem cut_le_cap (v : R.Low → ExtOrd) : R.cut v ≤ v R.capL := min_le_left _ _
 
 theorem sel_of_bot {v : R.Low → ExtOrd} {d : Cell P.scheme} (h : R.p d = ⊥) :
-    R.sel v d = ⊥ := by
-  unfold sel; rw [dite_eq_right (fun h' => h'.1 h), ite_eq_left h]
+    R.sel v d = ⊥ := by grind [sel]
 
 theorem sel_of_top {v : R.Low → ExtOrd} {d : Cell P.scheme} (h : R.p d = ⊤) :
-    R.sel v d = R.cut v := by
-  unfold sel
-  rw [dite_eq_right (fun h' => h'.2 h), ite_eq_right (by rw [h]; exact top_ne_bot)]
+    R.sel v d = R.cut v := by grind [sel]
 
 theorem sel_of_proper {v : R.Low → ExtOrd} {d : Cell P.scheme} (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) :
     R.sel v d =
-      min (extVisibilityReplace (v (R.lowRef (R.blk d h))) N (R.poff d h)) (R.cut v) := by
-  unfold sel; rw [dite_eq_left h]
+      min (extVisibilityReplace (v (R.lowRef (R.blk d h))) N (R.poff d h)) (R.cut v) := by grind [sel]
 
 theorem sel_le_cut (v : R.Low → ExtOrd) (d : Cell P.scheme) : R.sel v d ≤ R.cut v := by
   by_cases h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤
@@ -331,14 +327,12 @@ theorem selfVis_cut {v : R.Low → ExtOrd} (hv : SelfVis N (v R.capL)) : SelfVis
 /-! ### Cap naturality (8) -/
 
 theorem sup_min_eq {γ : ExtOrd} (f : I → ExtOrd) :
-    (Finset.univ.sup fun i => min (f i) γ) = min (Finset.univ.sup f) γ := by
-  rw [min_comm, Finset.sup_inf_distrib_left]
-  simp only [min_comm γ]
+    (Finset.univ.sup fun i => min (f i) γ) = min (Finset.univ.sup f) γ := by grind [min_comm, Finset.sup_inf_distrib_left]
 
 theorem cut_min {γ : ExtOrd} (hγ : SelfVis N γ) (v : R.Low → ExtOrd) :
     R.cut (fun d => min (v d) γ) = min (R.cut v) γ := by
   unfold cut
-  simp only [evr_min_of_selfVis hγ le_rfl le_rfl]
+  simp [evr_min_of_selfVis hγ le_rfl le_rfl]
   rw [sup_min_eq, min_min_min_comm, min_self]
 
 theorem sel_min {γ : ExtOrd} (hγ : SelfVis N γ) (v : R.Low → ExtOrd) (d : Cell P.scheme) :
@@ -516,7 +510,7 @@ theorem ray_top (K : ℕ) (μ ν : Ordinal.{0}) :
 theorem emb_top : R.emb ⊤ =
     max (ofOrd ((0 : Ordinal) + N)) (Finset.univ.sup fun i => ofOrd (R.padBlock i + N)) := by
   unfold emb FiniteOrbitEmbedding.interpolate
-  simp only [ray_top]
+  simp [ray_top]
 
 theorem emb_proper (i : I) {k : ℕ} (hk : k ≤ N) :
     R.emb (ofOrd (R.μ i + k)) = ofOrd (R.padBlock i + k) := by
@@ -530,8 +524,7 @@ theorem emb_proper (i : I) {k : ℕ} (hk : k ≤ N) :
     exact le_mul_of_one_le_right zero_le (Nat.one_le_cast.mpr (Nat.succ_pos _))
   · exact hk
 
-theorem e_of_bot {d : Cell P.scheme} (h : R.p d = ⊥) : R.e d = ⊥ := by
-  unfold e; rw [h, R.emb_bot]
+theorem e_of_bot {d : Cell P.scheme} (h : R.p d = ⊥) : R.e d = ⊥ := by grind [e, emb_bot]
 
 theorem e_of_proper {d : Cell P.scheme} (h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤) :
     R.e d = ofOrd (R.padBlock (R.blk d h) + R.poff d h) := by
@@ -559,12 +552,9 @@ theorem read_boundedMap {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop N) τ) :
 
 theorem unpad_padBlock (i : I) (k : ℕ) :
     SourceBlockPadding.unpad (ofOrd (R.padBlock i + k)) =
-      ofOrd (Ordinal.omega0 * R.srcBlock i + k) := by
-  rw [padBlock, ← SourceBlockPadding.pad_code, SourceBlockPadding.unpad_pad]
+      ofOrd (Ordinal.omega0 * R.srcBlock i + k) := by grind [padBlock, SourceBlockPadding.pad_code, SourceBlockPadding.unpad_pad]
 
-theorem unpad_nat (n : ℕ) : SourceBlockPadding.unpad (ofOrd ((0 : Ordinal) + n)) = ⊥ := by
-  rw [SourceBlockPadding.unpad_ofOrd, zero_add,
-    ite_eq_right (not_le_of_gt (Ordinal.natCast_lt_omega0 n))]
+theorem unpad_nat (n : ℕ) : SourceBlockPadding.unpad (ofOrd ((0 : Ordinal) + n)) = ⊥ := by simp_all [SourceBlockPadding.unpad_ofOrd]
 
 section Read
 
@@ -598,7 +588,7 @@ theorem read_e_top (hτ : Witness (gTop N) τ)
   rw [min_comm, ← sup_min_eq]
   congr 1
   funext i
-  simp only [Function.comp_apply]
+  simp [Function.comp_apply]
   rw [R.unpad_padBlock, R.read_ref_rep hτ hread i le_rfl, evr_min_of_selfVis hvis le_rfl le_rfl]
 
 /-- **The selector is the readback of `e`** (notes32 §3): for any exact witness of `v` at the
@@ -643,11 +633,11 @@ theorem Active.cut_ne_bot [Nonempty I] {v : R.Low → ExtOrd} (hv : R.Active v) 
 theorem Active.sel_eq_bot_iff [Nonempty I] {v : R.Low → ExtOrd} (hv : R.Active v)
     (d : Cell P.scheme) : R.sel v d = ⊥ ↔ R.p d = ⊥ := by
   by_cases h : R.p d ≠ ⊥ ∧ R.p d ≠ ⊤
-  · simp only [R.sel_of_proper h, h.1, iff_false, min_eq_bot, not_or]
+  · simp [R.sel_of_proper h, h.1, iff_false, min_eq_bot, not_or]
     exact ⟨extVisibilityReplace_ne_bot (hv.ref_pos _) _ _, Active.cut_ne_bot R hv⟩
   by_cases hb : R.p d = ⊥
-  · simp only [R.sel_of_bot hb, hb]
-  · simp only [R.sel_of_top (not_not.mp fun ht => h ⟨hb, ht⟩), hb, iff_false]
+  · simp [R.sel_of_bot hb, hb]
+  · simp [R.sel_of_top (not_not.mp fun ht => h ⟨hb, ht⟩), hb, iff_false]
     exact Active.cut_ne_bot R hv
 
 /-- **The capped-donor lemma, lawfulness**: for every active lawful private section `v`, the
@@ -712,15 +702,6 @@ theorem Active.sel_face {v : R.Low → ExtOrd} (hv : R.Active v)
 
 /-! ## The actual context (9) -/
 
-theorem actual_active : R.Active R.vactL where
-  respects := R.vactL_respects
-  cap_pos := ne_bot_of_gt R.cap_pos
-  ref_pos i := by
-    change R.vact (R.ref i) ≠ ⊥
-    rw [R.vact_ref i]; exact ofOrd_ne_bot _
-  face_bot a h := by
-    change R.vact (R.face a).1 = ⊥
-    rw [R.face_actual a, h]
 
 theorem cut_actual : R.cut R.vactL = Finset.univ.sup fun i => ofOrd (R.μ i + N) := by
   unfold cut
@@ -742,8 +723,5 @@ theorem sel_actual (d : Cell P.scheme) : R.sel R.vactL d = min (R.p d) (R.cut R.
   · rw [R.sel_of_top (not_not.mp fun ht => h ⟨hb, ht⟩), not_not.mp fun ht => h ⟨hb, ht⟩,
       min_top_left]
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

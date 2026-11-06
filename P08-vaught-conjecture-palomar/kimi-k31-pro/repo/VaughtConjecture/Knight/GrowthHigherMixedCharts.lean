@@ -173,7 +173,7 @@ def gradeMax (p : (D).below (U, j) → ExtOrd) (i : ℕ) : ExtOrd := by
 theorem le_gradeMax (p : (D).below (U, j) → ExtOrd) (i : ℕ)
     (z : (D).below (U, j)) (hz : (D).grade z.1 = i) :
     p z ≤ gradeMax I X T hA hB hC t ht U j p i := by
-  classical
+
   let _ := Fintype.ofFinite ((D).below (U, j))
   have h := Finset.le_sup (s := (Finset.univ : Finset ((D).below (U, j))))
     (f := fun w => if (D).grade w.1 = i then p w else ⊥) (Finset.mem_univ z)
@@ -181,7 +181,7 @@ theorem le_gradeMax (p : (D).below (U, j) → ExtOrd) (i : ℕ)
 
 theorem chart_gradeMax {i : ℕ} (Ch : AmbientGradeCharts.Chart Rows (U, j) p i) :
     p Ch.owner = gradeMax I X T hA hB hC t ht U j p i := by
-  classical
+
   let _ := Fintype.ofFinite ((D).below (U, j))
   refine le_antisymm (le_gradeMax I X T hA hB hC t ht U j p i _ Ch.grade) ?_
   apply Finset.sup_le
@@ -254,5 +254,3 @@ theorem original_readback (hp : RespectsSemanticsBelow Rows (U, j) p)
   rw [hmax, min_eq_left (le_gradeMax I X T hA hB hC t ht U j p _ z rfl)] at he
   exact he
 
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

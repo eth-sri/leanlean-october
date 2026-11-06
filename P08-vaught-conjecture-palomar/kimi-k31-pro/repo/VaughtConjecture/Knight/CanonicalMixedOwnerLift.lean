@@ -71,7 +71,7 @@ theorem exists_owner_capped_lift (c : Cell D) (hc : D.grade c = k)
         r (oldTarget sem j hj hjA hproper k hg hk hkA hjk e.1) =
           min (p e) (p ⟨c, GradedLe.refl _⟩)) ∧
       ∀ d, min (r d) γ = min (q d) γ := by
-  classical
+
   let _ := Fintype.ofFinite (D.below (D.cell c))
   subst k
   let F := data sem j hj hjA hproper (D.grade c) hg hk hkA hjk
@@ -127,7 +127,7 @@ theorem exists_owner_capped_lift (c : Cell D) (hc : D.grade c = k)
     change min (u d) C = ⊤ at hd
     exact ofOrd_ne_top _ (top_le_iff.mp (hd ▸ min_le_right (u d) C))
   have hvcap (d : Cell D) : min (v d) h = min (a.val d) h := by
-    dsimp only [v]
+    dsimp [v]
     rw [min_assoc, min_eq_right hhC]
     exact hucap d
   obtain ⟨w, hw, hwold, hwcap⟩ := CanonicalMixedPrefix.exists_section sem j hj hjA hproper
@@ -148,7 +148,7 @@ theorem exists_owner_capped_lift (c : Cell D) (hc : D.grade c = k)
     change min (pp e) δ = min (ρ (source sem j hj hjA hproper (D.grade c) hg hk hkA hjk a
       (oldCell sem j hj hjA (D.grade c) hk hkA (lowerOld sem j hj hjA e.1)))) δ
     rw [source_boundary]
-    dsimp only [pp]
+    dsimp [pp]
     rw [min_assoc, min_eq_right hδM]
     exact hread e
   · intro e
@@ -162,5 +162,3 @@ theorem exists_owner_capped_lift (c : Cell D) (hc : D.grade c = k)
     rw [hwold, show v e.1 = u e.1 from min_eq_left (hfC e), huface]
     rfl
 
-end
-end VaughtConjecture.Knight.CanonicalMixedOwnerLift

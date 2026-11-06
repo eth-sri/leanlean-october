@@ -39,10 +39,7 @@ variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : Se
 
 /-- The source cap is positive once its image is the actual cap. -/
 theorem capC_ne_bot_of_read {j : ℕ} (hj : N ≤ j) {st : R.State j} {σ : ExtOrd → ExtOrd}
-    (hbot : σ ⊥ = ⊥) (hcap : σ (st.v (R.capC hj)) = R.vact R.cap) : st.v (R.capC hj) ≠ ⊥ := by
-  intro hz
-  rw [hz, hbot] at hcap
-  exact (ne_bot_of_gt R.cap_pos) hcap.symm
+    (hbot : σ ⊥ = ⊥) (hcap : σ (st.v (R.capC hj)) = R.vact R.cap) : st.v (R.capC hj) ≠ ⊥ := by grind [cap_pos]
 
 /-- **One-chart capped readback.**  For an admissible source `st` at cutoff `j ≥ N` with positive
 gate, a witness `σ` through `N` reading its donor section as `u` capped at `m ≥ vact cap`, and
@@ -71,5 +68,3 @@ theorem capped_readback {j : ℕ} (hj : N ≤ j) {st : R.State j} (hst : R.Admis
   have hβm : R.cut R.vactL ≤ m := (cut_actual_lt_cap (R := R)).le.trans hm
   rwa [min_assoc, min_eq_right hβm] at h
 
-end
-end VaughtConjecture.Knight.CappedDonor.Ref

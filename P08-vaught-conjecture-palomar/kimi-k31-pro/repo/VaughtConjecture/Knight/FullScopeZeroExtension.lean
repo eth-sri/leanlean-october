@@ -36,7 +36,7 @@ theorem zeroAbove_low (q : D.below (A, K) → ExtOrd) (d : D.below (A, K)) :
   rfl
 
 theorem zeroAbove_high (q : D.below (A, K) → ExtOrd) {d : Cell D} (hd : ¬ D.grade d ≤ K) :
-    zeroAbove q d = ⊥ := by rw [zeroAbove, dite_of_neg hd]
+    zeroAbove q d = ⊥ := by simp_all [zeroAbove]
 
 end CellScheme
 
@@ -73,4 +73,3 @@ theorem RespectsSemanticsBelow.zeroAbove {sem : Semantics D} {q : D.below (A, K)
       exact hle
     · exact ⟨Xi₀, rfl, by rw [CellScheme.zeroAbove_high q hSig]; exact bot_le⟩
 
-end VaughtConjecture.Knight

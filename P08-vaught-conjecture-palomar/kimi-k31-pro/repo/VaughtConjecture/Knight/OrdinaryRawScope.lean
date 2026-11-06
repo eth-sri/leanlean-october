@@ -252,5 +252,3 @@ theorem completed_highest_row (hk : 0 < k) (hcard : A.card = k + 1)
   · exact OrdinaryScopeMute.apex_row S.carrier S.rows k (k + 1) S.grade
       (Nat.lt_succ_self k) hcard.ge d
 
-end Mute
-end VaughtConjecture.Knight.OrdinaryRawScope

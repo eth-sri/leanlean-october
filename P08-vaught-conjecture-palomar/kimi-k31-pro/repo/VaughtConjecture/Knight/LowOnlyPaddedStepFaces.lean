@@ -75,5 +75,3 @@ theorem lower_lifting (hprev : TargetGradeLifting.Through P.rows k) :
     (Nat.succ_pos k) hnext (P.separated I F hroot hA hB hC (by omega))
     (rows P hk hnext) (inherited_row P hk hnext) (Nat.lt_succ_self k) hprev
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepFaces

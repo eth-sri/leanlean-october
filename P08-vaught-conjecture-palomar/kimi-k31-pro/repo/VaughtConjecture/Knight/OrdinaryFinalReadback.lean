@@ -100,5 +100,3 @@ theorem capped_readback
     (fun i => hread (CellScheme.below.mono (R.capLe le_rfl) (R.lowRef i))
       (R.ref_lt_cap i).le) hg (CappedDonor.Ref.reqCell d (req_grade_le R d))
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalReadback

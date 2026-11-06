@@ -107,7 +107,7 @@ theorem lower_old (q : Profile sem) (d : Cell (predecessor sem hA)) :
     lower sem hA hp q (old sem hA d) = selected sem hA hp q d := by
   change lower sem hA hp q
     (SourceLayerCarrier.toCell (predecessor sem hA) (Profile sem) 3 (by decide) hA (.inl d)) = _
-  simp only [lower, SourceLayerCarrier.toOcc_toCell]
+  simp [lower, SourceLayerCarrier.toOcc_toCell]
 
 def data : ScopedSourcePrefixLayer.Data (carrier sem hA) 3 (Cell D) where
   base := SeparatedSourceLayerCarrier.base (predecessor sem hA) (Profile sem) 3
@@ -160,10 +160,7 @@ theorem source_old (q : Profile sem) (d : Cell (predecessor sem hA)) :
   rw [member_controller, lower_old]
 
 theorem source_boundary (q : Profile sem) (d : Cell D) :
-    source sem hA hp q (boundary sem hA d) = q.val d := by
-  rw [source_old]
-  exact CanonicalPairLocalSections.section_old sem (two_le hA) hp (by decide)
-    (profile_lawful sem q) (profile_proper sem q) d
+    source sem hA hp q (boundary sem hA d) = q.val d := by simp_all [source_old, CanonicalPairLocalSections.section_old]
 
 theorem source_supported (q : Profile sem) (d : Cell (carrier sem hA)) :
     OrbitPrefixSupport.Supported 3 (grid (D := D) : Set ExtOrd) q.val
@@ -222,5 +219,3 @@ theorem consistent (hs : sem.IsConsistent) : (rows sem hA hp).IsConsistent := by
   exact CanonicalPairBoundary.consistent sem 1 2 (by decide)
     (CanonicalPairLocalSections.one_le (two_le hA)) (by decide) (two_le hA) hp (by decide) hs x
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveSeedRows

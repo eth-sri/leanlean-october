@@ -65,11 +65,10 @@ def profile (q : Controller D k) (d : Cell D) : ExtOrd :=
   else F.lower q d
 
 theorem profile_old (q : Controller D k) {d : Cell D} (hd : D.cell d ≠ (A, k)) :
-    F.profile q d = F.lower q d := by simp only [profile, hd, ↓reduceDIte]
+    F.profile q d = F.lower q d := by grind [profile]
 
 theorem profile_new (q p : Controller D k) :
-    F.profile q p.1 = cut F.grid (F.boundary q) (F.boundary p) := by
-  simp only [profile, p.2, ↓reduceDIte]
+    F.profile q p.1 = cut F.grid (F.boundary q) (F.boundary p) := by grind [profile]
 
 theorem profile_diagonal (q : Controller D k) : F.profile q q.1 = F.ceiling := by
   rw [F.profile_new]
@@ -120,12 +119,10 @@ def rows : Semantics D where
         (by simpa only [CellScheme.grade, hc] using d.2.2)).symm
     · exact F.base.orderly c d
 
-theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E c := by
-  funext d
-  simp only [rows, hc, ↓reduceDIte]
+theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E c := by grind [rows]
 
 theorem row_new (q : Controller D k) (d : D.below (D.cell q.1)) :
-    F.rows.E q.1 d = F.profile q d.1 := by simp only [rows, q.2, ↓reduceDIte]
+    F.rows.E q.1 d = F.profile q d.1 := by grind [rows]
 
 theorem old_respects_iff {c : Cell D} (hc : D.cell c ≠ (A, k))
     {r : D.below (D.cell c) → ExtOrd} :
@@ -214,6 +211,3 @@ theorem consistent (hbase : ∀ c : Cell D, D.cell c ≠ (A, k) →
   · rw [F.row_old hc]
     exact (F.old_respects_iff hc).mpr (hbase c hc)
 
-end Data
-end
-end VaughtConjecture.Knight.ScopedSourcePrefixLayer

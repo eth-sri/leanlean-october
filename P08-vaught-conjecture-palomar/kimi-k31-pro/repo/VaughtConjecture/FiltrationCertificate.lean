@@ -68,5 +68,3 @@ theorem cardinality : #Q = aleph 1 :=
   DomainSeparation.mk_eq_aleph_one_of_countable_core c.domain c.antitone
     (fun _ h => c.compl_countable h) c.persistent_core_countable c.cofinal_losses
 
-end FiltrationCertificate
-end VaughtConjecture

@@ -114,8 +114,7 @@ theorem display_lawful {p : F.carrier.below (A, N) → ExtOrd}
 This applies to arbitrary ambients, not only constructed displays. -/
 theorem restrict_lawful {q : Cell (scheme F hcard) → ExtOrd}
     (hq : RespectsSemantics (rows F hD hcard) q) :
-    RespectsSemanticsBelow F.rows (A, N) (fun d => q (old F hcard d.1)) := by
-  exact HighLayerBountiful.pullback_respects F.carrier Unit (N + 1) (by omega) hcard.ge N
+    RespectsSemanticsBelow F.rows (A, N) (fun d => q (old F hcard d.1)) := HighLayerBountiful.pullback_respects F.carrier Unit (N + 1) (by omega) hcard.ge N
     (F.grade_bound hD) (Nat.lt_succ_self N) F.rows (rows F hD hcard)
     (old_row F hD hcard) (fun h => (Nat.not_succ_le_self N) h.2) (hq.toBelow (A, N))
 
@@ -139,5 +138,3 @@ def properFace {S : Finset ι} {D₀ : CellScheme S} {sem₀ : Semantics D₀}
     exact ⟨d, (congrArg (old F hcard) hd).trans hx.symm⟩
   row c d := (old_row F hD hcard (E.map c) (E.belowMap c d)).trans (E.row c d)
 
-end
-end VaughtConjecture.Knight.FinalGateApex

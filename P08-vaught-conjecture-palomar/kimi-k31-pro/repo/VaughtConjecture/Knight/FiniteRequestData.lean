@@ -47,5 +47,3 @@ theorem countable_lt (hβ : α.card ≤ Cardinal.aleph0) :
     Countable {γ : Ordinal.{0} // γ < α} :=
   ((Ordinal.countable_Iic_of_card_le_aleph0 hβ).mono Set.Iio_subset_Iic_self).to_subtype
 
-end FixedHeight
-end VaughtConjecture.Knight

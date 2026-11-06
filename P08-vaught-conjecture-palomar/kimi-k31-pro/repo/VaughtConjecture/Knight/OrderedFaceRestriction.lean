@@ -93,13 +93,4 @@ theorem row_eq (c : Cell D.scheme) (d : D.scheme.below (D.scheme.cell c)) :
   refine (congrArg (sem.E (F.map c)) (Subtype.ext ?_)).trans hr
   exact toCell_eq D K sem f hB F hmono hplan d.1
 
-end VaughtConjecture.Knight.OrderedFaceRestriction
 
-namespace VaughtConjecture.Knight.WholeDonorBoundary.Input
-
-open AmalgamationPlan
-
-variable {n m nL nR : ℕ} {B C : Finset (Fin n)}
-  {R : Finset (Finset (Fin n))} (I : Input Finset.univ B C R m nL nR)
-
-end VaughtConjecture.Knight.WholeDonorBoundary.Input

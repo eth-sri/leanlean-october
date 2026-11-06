@@ -85,7 +85,7 @@ theorem exists_data (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow
       rw [hgr, grade_mapCell hcy]
       have h := C.p₀.scheme.scheme.grade_le_card_scope d
       have hcard := Finset.card_le_univ (C.p₀.scheme.scheme.scope d)
-      simp only [Fintype.card_fin] at hcard
+      simp [Fintype.card_fin] at hcard
       exact h.trans (hcard.trans hNm.le)
   have rootBelow (d : Cell p.scheme.scheme) :
       GradedLe (y.type.scheme.scheme.cell (mapCell hpy d)) (y.type.scheme.scheme.cell c) := by
@@ -120,5 +120,3 @@ theorem exists_data (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow
   rw [heq]
   exact hle
 
-end
-end VaughtConjecture.Knight.HollowGrowthReference

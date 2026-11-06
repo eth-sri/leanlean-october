@@ -46,5 +46,3 @@ theorem row (n : ℕ) (hA : n + 3 ≤ A.card) (c : Cell D) (d : D.below (D.cell 
     exact (CanonicalRecursiveSuccessorRows.inherited_row sem n hA hp
       (CanonicalRecursiveSemantics.state sem hp n hn) c' d').trans (ih hn)
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveLiteralRows

@@ -110,5 +110,3 @@ theorem boundary_support (a : OrdinaryFinalCatalogue.Member R) (G : Set ExtOrd)
   rw [hf]
   exact supported_field N G a.val f
 
-end
-end VaughtConjecture.Knight.OrdinaryReceivingSources

@@ -37,12 +37,10 @@ theorem renderWith_decode_normalized (j : ℕ) (a : Q) (p : X → ExtOrd)
   have hf := PairedSlotIncoming.encoder_bounded j (PairedSlotEncoding.values p)
   have hg : Witness (gTop j) g := PairedSlotDecoder.decode_witness hG hH
   have hinv (x : X) : g (f (p x)) = p x := by
-    dsimp only [f, g]
+    dsimp [f, g]
     rw [PairedSlotIncoming.encoder_profile]
     exact PairedSlotDecoder.decode_normalize hG hH hp x
   have he := RungTableRendering.level_decode p hf.mono hg.mono hf.bot hg.bot hinv T
     (rankIndex D hA field fields a d)
   simpa only [renderWith, image, f, g, PairedSlotIncoming.encoder_profile, hT] using he
 
-end
-end VaughtConjecture.Knight.RelativeLadderLayer

@@ -48,4 +48,3 @@ theorem countableTerminalFibres : CountableTerminalFibres :=
     (fun _ _ W V hgW hgV hhW hhV =>
       HollowGrowth.nonempty_iso W.2.1 V.2.1 hgW hgV hhW hhV)
 
-end VaughtConjecture.Knight.ConstructedSpectrumEndpoint

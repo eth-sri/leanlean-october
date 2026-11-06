@@ -48,7 +48,7 @@ theorem exists_section (a : Profile sem j X occ)
     exists_supported_inverse a.property.2 ht hag
   have hfixGrid : ∀ z ∈ PairedSlotComparison.sourceGrid j (Fintype.card X),
       z < grid j B → κ z = z := by
-    classical
+
     intro z hz hzB
     rcases Finset.mem_insert.mp hz with rfl | hz
     · exact hw.bot
@@ -93,7 +93,7 @@ theorem exists_section (a : Profile sem j X occ)
     hr.toRespects (fun d => ⟨(scheme sem j X occ hj hA).isPlan.subset_of_mem
       ((scheme sem j X occ hj hA).scope_mem_plan d), F.max_grade d⟩), ?_, hcaps⟩
   intro d
-  dsimp only
+  dsimp
   rw [source_old]
   exact hread (occ d)
 
@@ -108,7 +108,7 @@ theorem exists_boundary_section (hinj : Function.Injective occ) (a : Profile sem
       (∀ d, r (old sem j X occ hj hA d) = p d) ∧
       ∀ d, min (r d) (grid j B) =
         min (source sem j X occ hj hA hproper hg a d) (grid j B) := by
-  classical
+
   let v := Function.extend occ p a.val
   have hv (d : Cell D) : v (occ d) = p d := hinj.extend_apply p a.val d
   have hvp : RespectsSemantics sem (v ∘ occ) := by
@@ -130,5 +130,3 @@ theorem exists_boundary_section (hinj : Function.Injective occ) (a : Profile sem
     a hvp hvt hB hva
   exact ⟨r, hr, fun d => (hread d).trans (hv d), hcap⟩
 
-end
-end VaughtConjecture.Knight.CanonicalFieldPrefix

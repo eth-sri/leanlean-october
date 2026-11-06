@@ -45,7 +45,7 @@ theorem decoded_lower (a : Catalogue X 2) {δ : ExtOrd → ExtOrd}
   · have he (d) : δ (J.predecessor a d) = ⊥ :=
       le_bot_iff.mp ((hδ.mono (J.predecessor_bound a d)).trans_eq hz)
     change RespectsSemanticsBelow J.lowerRows (A, 2) (fun d => δ (J.predecessor a d.1))
-    simp only [he]
+    simp [he]
     exact ⟨fun _ => (selfVis_bot _).symm, fun c => by
       simpa only [min_self] using TransformsTo.to_bot (J.lowerRows.E c.1),
       fun _ c _ _ => ⟨c, rfl, le_rfl⟩⟩
@@ -57,7 +57,7 @@ theorem decoded_lower (a : Catalogue X 2) {δ : ExtOrd → ExtOrd}
       (baseAnchor X a) f
       (hδ.mono.comp (LadderScalarRendering.level_mono
         (LadderScalarRendering.values_bound (J.bounded a))))
-      (by simp only [f, LadderScalarRendering.level_zero, hδ.bot])
+      (by simp [f, LadderScalarRendering.level_zero, hδ.bot])
     · intro i
       have hv := LadderScalarRendering.level_visible (J.visible a)
         ((J.grid_visible _ J.ceiling_mem).mono (by decide : 1 ≤ 2)) i
@@ -132,7 +132,7 @@ theorem decoded_lawful (a : Catalogue X 2) {δ : ExtOrd → ExtOrd}
       simpa only [Function.comp_def, SeparatedSourceLayerCarrier.ownerEquiv_val,
         LadderWeightedSuccessor.Input.source_old, CellScheme.below.mono] using hl.mono hxc
     rcases c with ⟨c, hc⟩
-    dsimp only at hx
+    dsimp at hx
     subst c
     exact hp.locality ⟨_, GradedLe.refl _⟩
   · left
@@ -194,5 +194,3 @@ theorem donor_bottom_supply (hN : 2 < X.req.N)
     exact (congrArg Prod.snd (I.leftFace.index d.1)).le.trans d.2.2
   exact (hread ⟨_, hd⟩).trans ((GrowthOrderedBase.field_donor I S d.1).trans (hr d))
 
-end
-end VaughtConjecture.Knight.GrowthPaddedSupply

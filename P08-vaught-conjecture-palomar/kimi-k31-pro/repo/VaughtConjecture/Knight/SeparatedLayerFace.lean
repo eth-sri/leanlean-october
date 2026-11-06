@@ -81,5 +81,3 @@ theorem lift {I J : Finset ι × ℕ} (h : GradedLe I J)
     rw [Equiv.symm_apply_apply]
     exact hread e
 
-end
-end VaughtConjecture.Knight.SeparatedLayerFace

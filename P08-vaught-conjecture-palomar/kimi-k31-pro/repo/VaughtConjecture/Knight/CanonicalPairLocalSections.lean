@@ -193,5 +193,3 @@ theorem section_agreement {q : Cell D → ExtOrd}
   · exact hl _
   · exact hl _
 
-end
-end VaughtConjecture.Knight.CanonicalPairLocalSections

@@ -27,13 +27,8 @@ abbrev privateScope : Finset (Fin (N + 1)) := Finset.univ.image Fin.castSuccEmb
 abbrev donorScope : Finset (Fin (N + 1)) := Finset.univ.image (onePointProj e)
 abbrev rootScope : Finset (Fin (N + 1)) := Finset.univ.image (e.trans Fin.castSuccEmb)
 
-theorem donor_card : (donorScope e).card = n + 1 := by
-  rw [donorScope, Finset.card_image_of_injective _ (onePointProj e).injective]
-  exact Finset.card_fin (n + 1)
 
-theorem fresh_private : Fin.last N ∉ privateScope (N := N) := by
-  rw [privateScope, image_castSuccEmb_univ]
-  exact Finset.notMem_erase _ _
+theorem fresh_private : Fin.last N ∉ privateScope (N := N) := by simp_all
 
 theorem root_private : rootScope e ⊆ privateScope (N := N) := by
   intro x hx
@@ -73,15 +68,9 @@ theorem union : (Finset.univ : Finset (Fin (N + 1))) = privateScope ∪ donorSco
     Finset.union_eq_left.mpr (root_private e)]
   exact image_castSuccEmb_union_last.symm
 
-theorem private_proper : privateScope (N := N) ≠ Finset.univ := by
-  intro he
-  exact fresh_private (he.symm ▸ Finset.mem_univ (Fin.last N))
+theorem private_proper : privateScope (N := N) ≠ Finset.univ := by grind [fresh_private]
 
-theorem donor_proper (h : n + 1 < N) : donorScope e ≠ Finset.univ := by
-  intro he
-  have hc := donor_card e
-  rw [he, Finset.card_fin] at hc
-  omega
+theorem donor_proper (h : n + 1 < N) : donorScope e ≠ Finset.univ := by grind [Finset.card_fin]
 
 section Plans
 variable {a b c : ℕ} (D : SemScheme b) (Q : SemScheme a)
@@ -172,5 +161,3 @@ def input : WholeDonorBoundary.Input Finset.univ privateScope (donorScope e)
 
 local notation "I" => input e P D Q hp hd hpr hdr
 
-end
-end VaughtConjecture.Knight.WholeDonorAttachment

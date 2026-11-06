@@ -126,4 +126,3 @@ theorem RetargetData.exists_retarget_restore
       rw [glueSection_of_not_le w u hg]
       exact (hnon a fun ht' => hK (ht a.1 ht')).symm
 
-end VaughtConjecture.Knight.LowOnly

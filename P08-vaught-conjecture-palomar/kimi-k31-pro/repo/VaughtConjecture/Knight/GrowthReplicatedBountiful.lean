@@ -100,5 +100,3 @@ theorem bountiful (hsmall : n + 1 < X.req.N) :
   exact same_grade I X T hA hB hC (A.card - 2) (by omega) hsmall
     S V j hS' hV' (by omega) hSV
 
-end
-end VaughtConjecture.Knight.GrowthReplicatedBountiful

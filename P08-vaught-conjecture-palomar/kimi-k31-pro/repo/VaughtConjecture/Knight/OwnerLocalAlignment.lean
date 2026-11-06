@@ -66,7 +66,7 @@ theorem alignment_at_endpoint (c : Cell D)
   have hpc := sat.cap
   have hface := sat.face
   have hreach := H.reach sat
-  classical
+
   let self : D.below (D.cell c) := ⟨c, GradedLe.refl _⟩
   let M := p self
   by_cases halign : ∀ e : D.below (D.cell c), γ < min (p e) M → h ≤ s e
@@ -218,5 +218,3 @@ theorem exists_coded_face (c : Cell D) [Fintype (D.below (D.cell c))]
     rw [min_assoc, min_eq_right hδM]
     exact (hread d).symm
 
-end
-end VaughtConjecture.Knight.OwnerLocalAlignment

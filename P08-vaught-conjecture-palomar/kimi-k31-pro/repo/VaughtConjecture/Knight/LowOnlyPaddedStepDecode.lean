@@ -62,8 +62,7 @@ theorem protected_caps {b : ℕ} {a : F.Anchor (k + 1)} {S : State I.left I.righ
     (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1)
     (d : Cell (carrier P hnext)) :
     min (r.decoder (source P hk hnext r.anchor d)) (CanonicalPairedInverse.grid (k + 1) b) =
-      min (source P hk hnext a d) (CanonicalPairedInverse.grid (k + 1) b) := by
-  exact OrbitPrefixSupport.decode_agree r.witness (CanonicalPairedInverse.grid_visible _ _)
+      min (source P hk hnext a d) (CanonicalPairedInverse.grid (k + 1) b) := OrbitPrefixSupport.decode_agree r.witness (CanonicalPairedInverse.grid_visible _ _)
     (by rw [gTop_of_le le_rfl]; exact le_top) r.reaches
     (fun _ hz hlt => LowOnlyPaddedDecode.grid_fixed_below r hz hlt) r.boundary_fixed
     (source_supported P hk hnext a)
@@ -74,8 +73,7 @@ theorem protected_lawful {b : ℕ} {a : F.Anchor (k + 1)} {S : State I.left I.ri
     (r : F.ProtectedRepair a.val S (k + 1) b)
     (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1) :
     RespectsSemanticsBelow (rows P hk hnext) (A, k + 1)
-      (fun d => r.decoder (source P hk hnext r.anchor d.1)) := by
-  exact (OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
+      (fun d => r.decoder (source P hk hnext r.anchor d.1)) := (OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
     (source_lawful P hk hnext a) (source_lawful P hk hnext r.anchor)
     (fun d => d.2.2) (CanonicalPairedInverse.grid_visible _ _) (ofOrd_ne_bot _) r.reaches
     (fun _ hz hlt => LowOnlyPaddedDecode.grid_fixed_below r hz hlt) r.boundary_fixed
@@ -153,5 +151,3 @@ theorem donor_source_repair {b : ℕ} {S : State I.left I.right}
     ((field_read I S' (I.leftFace.map d.1)).trans
       ((I.paste_left S'.u S'.v d.1).trans (congrFun he d)))
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepDecode

@@ -58,7 +58,7 @@ theorem exists_factorization (c : Cell C.scheme) (hc : C.scheme.grade c = N)
         (∀ d, ν (f d) = min (p d) (p (privateCell c))) ∧
         γ ≤ ν (grid N B) ∧
         ∀ x, Short N x → min (ν x) γ = min (σ x) γ := by
-  classical
+
   have hi := owner_index c hc
   let toEff := CellScheme.below.mono (D := C.scheme)
     (show GradedLe (C.scheme.cell c) (effC N N) from hi ▸ GradedLe.refl _)
@@ -95,5 +95,3 @@ theorem exists_factorization (c : Cell C.scheme) (hc : C.scheme.grade c = N)
     exact fac.readback (fromEff d)
   · simpa only [hc] using fac.caps
 
-end
-end VaughtConjecture.Knight.OrdinaryOwnerFactorization

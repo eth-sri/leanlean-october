@@ -64,7 +64,7 @@ theorem proper_lawful {J : Finset ι × ℕ} (hJ : ¬ A ⊆ J.1) {p : Cell D →
       (fun d : D.below J => p d.1) ∘ e.symm := by
     funext d
     obtain ⟨a, rfl⟩ := e.surjective d
-    simp only [Function.comp_apply, Equiv.symm_apply_apply]
+    simp [Function.comp_apply, Equiv.symm_apply_apply]
     exact hread a.1
   rw [he]
   exact (proper_respects_iff sem hA hp J hJ _).mp hpr
@@ -169,5 +169,3 @@ theorem section_agreement {q : Cell D → ExtOrd}
   exact hs.decode (PairedSlotDecoder.decode_witness hG hC).mono
     (PairedSlotDecoder.decode_witness hG hC).mono hpReach hqReach (fun d _ => hcompare _)
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveSeedSections

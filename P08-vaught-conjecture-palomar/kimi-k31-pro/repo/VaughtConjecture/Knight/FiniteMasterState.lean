@@ -103,5 +103,3 @@ noncomputable def initState (β : LimitStage) (M : Type w) : RunState β M := by
   exact RunState.ofMaster
     ⟨0, Function.Embedding.ofIsEmpty, Classical.choice (StageType.nonempty β.2 0)⟩
 
-end FixedHeight
-end VaughtConjecture.Knight

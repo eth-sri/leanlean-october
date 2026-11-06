@@ -128,11 +128,4 @@ of the lengths of any of its rows. -/
 theorem ownerClassification_initial : OwnerClassification sem (id : Cell D → Cell D) :=
   fun _ => Or.inr (fun d => ⟨d.1, rfl⟩)
 
-end
 
-section InitialBoundary
-variable {ι : Type*} [DecidableEq ι] {A L R B : Finset ι}
-variable {P : Finset (Finset ι)} {m nL nR : ℕ}
-
-end InitialBoundary
-end VaughtConjecture.Knight.OrderedScopeRelocation

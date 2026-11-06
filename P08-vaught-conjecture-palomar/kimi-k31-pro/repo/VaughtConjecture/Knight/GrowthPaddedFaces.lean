@@ -44,5 +44,3 @@ def face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
     (LadderWeightedSuccessor.Input.Node (U := Catalogue X 2) (V := Empty)) 2
     (by decide) hA J.separation J.lowerRows J.rows J.inherited_row lowerFace hT
 
-end
-end VaughtConjecture.Knight.GrowthPaddedFaces

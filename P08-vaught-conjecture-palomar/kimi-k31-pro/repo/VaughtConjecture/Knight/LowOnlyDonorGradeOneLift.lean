@@ -53,7 +53,7 @@ include hfield in
 theorem leafSource_donor (a : F.Anchor 1) (d : P.scheme.below (effC n 1)) :
     leafSource F D hA field a (donorAt F D hA incl d).1 =
       SupportLadderRows.source H (fieldRank a.val (.inl d.1)) := by
-  simp only [leafSource, donorAt, image, rankIndex_old, ranks, fieldRank,
+  simp [leafSource, donorAt, image, rankIndex_old, ranks, fieldRank,
     anchor_donor F D field incl hfield a d]
   rfl
 
@@ -69,7 +69,7 @@ theorem donor_active_lift
     (c : P.scheme.below (effC n 1)) (hactive : γ < p c) :
     ∃ w : (L).below (A, 1) → ExtOrd, RespectsSemanticsBelow E (A, 1) w ∧
       (∀ d, w (donorAt F D hA incl d) = p d) ∧ ∀ d, min (w d) γ = min (q d) γ := by
-  classical
+
   let Z := (zero : State P C).normalize 1
   have hz := F.normalize_admissible (by decide : 1 ≤ 1) (F.zero_admissible 1)
   have hzc : Z.profile ∈ CanonicalPairedProfiles.inventory (Field P C) 1 :=
@@ -92,7 +92,7 @@ theorem donor_active_lift
   let k := next (values a.val) δ
   let f : ℕ → ExtOrd := fun i => σ (SupportLadderRows.source H i)
   have hf : Monotone f := hσ.mono.comp (SupportLadderRows.source_mono H)
-  have hf0 : f 0 = ⊥ := by simp only [f, SupportLadderRows.source_zero, hσ.bot]
+  have hf0 : f 0 = ⊥ := by simp [f, SupportLadderRows.source_zero, hσ.bot]
   have hfv (i) : SelfVis 1 (f i) :=
     CappedDonor.Ref.selfVis_map hσ le_rfl (SupportLadderRows.source_visible _ _)
   have hfieldc : δ ≤ a.val (.inl c.1) := by
@@ -120,7 +120,7 @@ theorem donor_active_lift
       (Nat.pos_of_ne_zero hz) (hi.le.trans hkc)
     have hdb : a.val d ≠ ⊥ := by
       intro he
-      have hr : fieldRank a.val d = 0 := by simp only [fieldRank, he, rank_bot (bot_not_values _)]
+      have hr : fieldRank a.val d = 0 := by simp [fieldRank, he, rank_bot (bot_not_values _)]
       exact hz (hd.symm.trans hr)
     have hr : fieldRank a.val d < next (values a.val) δ := hd ▸ hi
     have hl := (rank_lt_next (mem_values.mpr ⟨hdb, d, rfl⟩)).mp hr
@@ -132,7 +132,7 @@ theorem donor_active_lift
     have hlt : a.val d < δ := (hcut d).mpr (by simpa only [hd] using hl)
     have hdb : a.val d ≠ ⊥ := by
       intro he
-      have hr : fieldRank a.val d = 0 := by simp only [fieldRank, he, rank_bot (bot_not_values _)]
+      have hr : fieldRank a.val d = 0 := by simp [fieldRank, he, rank_bot (bot_not_values _)]
       have := hd.symm.trans hr
       omega
     have hr := (rank_lt_next (mem_values.mpr ⟨hdb, d, rfl⟩)).mpr hlt
@@ -199,7 +199,7 @@ theorem donor_positive_lift
     (hag : ∀ d, min (q (donorAt F D hA incl d)) γ = min (p d) γ) :
     ∃ w : (L).below (A, 1) → ExtOrd, RespectsSemanticsBelow E (A, 1) w ∧
       (∀ d, w (donorAt F D hA incl d) = p d) ∧ ∀ d, min (w d) γ = min (q d) γ := by
-  classical
+
   by_cases hsmall : ∀ d, p d ≤ γ
   · exact ⟨fun d => min (q d) γ, hq.cap hγ,
       fun d => (hag d).trans (min_eq_left (hsmall d)),
@@ -208,5 +208,3 @@ theorem donor_positive_lift
     exact donor_active_lift F D sem hA field hproper hboundary incl hfield
       hp hq hγ hpos hag c (not_le.mp hc)
 
-end
-end VaughtConjecture.Knight.LowOnly.Family

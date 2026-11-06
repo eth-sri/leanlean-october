@@ -300,7 +300,7 @@ theorem exists_bandBridge (p : S α n) {Θ : Cell p.scheme.scheme}
       ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ), p.label d.1 = ⊤ →
         ofOrd lam ≤ p.scheme.rows.E Θ d ∧
           p.IsProvisionalValue d.1 (bandMap α lam p.topGrade (p.scheme.rows.E Θ d)) := by
-  classical
+
   set K := p.topGrade with hK
   -- the cap case is uniform; the band index at `Θ` is the finite part of the row
   have hcapval : ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell Θ), p.label d.1 = ⊤ →
@@ -394,6 +394,4 @@ theorem exists_bandBridge (p : S α n) {Θ : Cell p.scheme.scheme}
         rw [bandMap_ofOrd_of_cap hK]
         exact hcapval d hd hc
 
-end StageType
 
-end VaughtConjecture.Knight

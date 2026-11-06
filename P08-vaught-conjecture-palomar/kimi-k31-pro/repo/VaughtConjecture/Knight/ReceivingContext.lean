@@ -238,7 +238,7 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
         X.V f = extVisibilityReplace (semA.E X.req.C (X.req.ρ f)) X.req.N (X.req.off f)) ∧
       (∀ y ∈ X.req.T, extVisibilityReplace (semA.E X.req.C X.req.a) X.req.N X.req.R ≤ X.V y) ∧
       ∀ z ∈ X.req.Z, X.V z = ⊥ := by
-  classical
+
   -- the reading witness of the cap's row
   have hvis : SelfVis (DA.grade req.C) (u₀ req.C) := (hu₀.orderly req.C).symm
   obtain ⟨τ, hbot, hmono, hread, hcomm, -⟩ := exists_exact_capped_shifter
@@ -450,6 +450,4 @@ theorem exists_relativeData_of_context_with_root (req : Requests DA DQ)
     rw [he_eq _ ha_ne'] at h1
     exact h1
 
-end Context
 
-end VaughtConjecture.Knight

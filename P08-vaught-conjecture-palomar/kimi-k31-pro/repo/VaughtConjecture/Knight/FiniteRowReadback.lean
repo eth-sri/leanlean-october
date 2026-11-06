@@ -38,6 +38,4 @@ theorem row_ne_bot_of_label_top (p : S α n) {Θ : Cell p.scheme.scheme}
   rw [hbot, hσbot] at h
   exact absurd h.symm (by simp)
 
-end StageType
 
-end VaughtConjecture.Knight

@@ -34,10 +34,10 @@ theorem boundedMap_of_witness {m : ℕ} {τ : ExtOrd → ExtOrd}
 theorem BoundedMap.comp_witness {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
     (hν : BoundedMap K ν) (hσ : Witness (gTop m) σ) (hmK : m ≤ K) :
     BoundedMap m (ν ∘ σ) where
-  bot := by simp only [Function.comp_apply, hσ.bot, hν.bot]
+  bot := by simp [Function.comp_apply, hσ.bot, hν.bot]
   mono := hν.mono.comp hσ.mono
   comm x k i hk hi := by
-    simp only [Function.comp_apply]
+    simp [Function.comp_apply]
     rw [(boundedMap_of_witness hσ).comm x k i hk hi, hν.comm _ k i (hk.trans hmK) hi]
 
 section Scheme
@@ -78,7 +78,7 @@ theorem map_respects_iff_rowBlockBottom {r : D.below BJ → ExtOrd}
       have h := hν.comm (r d) (D.grade d.1) (D.grade d.1) (hK d) le_rfl
       rwa [← hr.orderly d] at h
     · intro c
-      classical
+
       let _ := Fintype.ofFinite (D.below (D.cell c.1))
       let s := Finset.univ.image (sem.E c.1)
       let hf := hν.comp_witness (C.witness c) (hK c)
@@ -111,7 +111,7 @@ theorem rowBlockBottom_of_same_pattern {q r : D.below BJ → ExtOrd}
   have he (c : D.below BJ) (d : D.below (D.cell c.1)) :
       min (r (CellScheme.below.incl c d)) (r c) = ⊥ ↔
         min (q (CellScheme.below.incl c d)) (q c) = ⊥ := by
-    simp only [min_eq_bot, hpattern]
+    simp [min_eq_bot, hpattern]
   intro c d e hb hz
   exact (he c e).mpr (hq c d e hb ((he c d).mp hz))
 
@@ -121,8 +121,8 @@ theorem bottom_pattern_of_cap_agreement {X : Type*} {q r : X → ExtOrd} {γ : E
     ∀ d, r d = ⊥ ↔ q d = ⊥ := by
   intro d
   have h := hag d
-  have hr : min (r d) γ = ⊥ ↔ r d = ⊥ := by simp only [min_eq_bot, hγ, or_false]
-  have hq : min (q d) γ = ⊥ ↔ q d = ⊥ := by simp only [min_eq_bot, hγ, or_false]
+  have hr : min (r d) γ = ⊥ ↔ r d = ⊥ := by simp [min_eq_bot, hγ, or_false]
+  have hq : min (q d) γ = ⊥ ↔ q d = ⊥ := by simp [min_eq_bot, hγ, or_false]
   rw [← hr, ← hq, h]
 
 /-- Positive-cap agreement supplies all the source-block checks. The transformed labelling's
@@ -137,6 +137,4 @@ theorem map_respects_of_positive_cap_agreement {q r : D.below BJ → ExtOrd}
   exact rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects hq)
     (bottom_pattern_of_cap_agreement hγ hag)
 
-end Scheme
 
-end VaughtConjecture.Knight.SharpWitnessComposition

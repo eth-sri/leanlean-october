@@ -59,14 +59,6 @@ noncomputable def lower (p : Q → Cell D → ExtOrd) (q : Q)
   | .inr _ => ⊥
 
 theorem lower_old (p : Q → Cell D → ExtOrd) (q : Q) (d : Cell D) :
-    lower D Q k hk hA p q (old D Q k hk hA d) = p q d := by
-  simp only [lower, old, toOcc_toCell]
+    lower D Q k hk hA p q (old D Q k hk hA d) = p q d := by simp_all [lower]
 
-variable (G : Finset ExtOrd) (C : ExtOrd)
-variable (hbot : ⊥ ∈ G) (hC : C ∈ G) (hG : ∀ h ∈ G, h ≤ C)
-variable (hvis : ∀ h ∈ G, SelfVis k h)
-variable (p : Q → Cell D → ExtOrd)
-variable (hp : ∀ q, RespectsSemantics sem (p q))
-variable (hb : ∀ q d, p q d ≤ C)
 
-end VaughtConjecture.Knight.ProperBoundarySourceLayer

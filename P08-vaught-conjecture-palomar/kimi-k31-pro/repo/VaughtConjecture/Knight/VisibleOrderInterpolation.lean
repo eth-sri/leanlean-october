@@ -39,7 +39,7 @@ theorem orderInterpolate_bot (E r : X → ExtOrd) : orderInterpolate E r ⊥ = �
   simp [orderInterpolate]
 
 theorem orderInterpolate_mono (E r : X → ExtOrd) : Monotone (orderInterpolate E r) := by
-  classical
+
   intro x y hxy
   by_cases hx : x = ⊥
   · rw [hx, orderInterpolate_bot]
@@ -58,7 +58,7 @@ theorem orderInterpolate_mono (E r : X → ExtOrd) : Monotone (orderInterpolate 
 
 theorem orderInterpolate_visible {E r : X → ExtOrd} {K : ℕ}
     (hr : ∀ i, SelfVis K (r i)) (x : ExtOrd) : SelfVis K (orderInterpolate E r x) := by
-  classical
+
   unfold orderInterpolate
   split_ifs
   · exact extVisibilityReplace_bot _ _
@@ -76,25 +76,25 @@ theorem orderInterpolate_bounded {E r : X → ExtOrd} {K : ℕ}
   bot := orderInterpolate_bot E r
   mono := orderInterpolate_mono E r
   comm x k i hk hi := by
-    classical
+
     rw [evr_eq_self_of_selfVis ((orderInterpolate_visible hr x).mono hk) i]
     by_cases hx : x = ⊥
     · rw [hx, extVisibilityReplace_bot]
     · have he : extVisibilityReplace x k i ≠ ⊥ := extVisibilityReplace_ne_bot hx k i
-      simp only [orderInterpolate, ite_eq_right hx, ite_eq_right he]
+      simp [orderInterpolate, ite_eq_right hx, ite_eq_right he]
       apply Finset.inf_congr rfl
       intro j _
-      simp only [replace_le_visible_cut_iff (hE j) hk hi]
+      simp [replace_le_visible_cut_iff (hE j) hk hi]
 
 /-- Equal source occurrences must have equal targets, as a consequence of the
 two source-order implications. No quotient of the occurrences is taken. -/
 theorem orderInterpolate_read {E r : X → ExtOrd}
     (hord : ∀ i j, E i ≤ E j → r i ≤ r j)
     (hbot : ∀ i, E i = ⊥ → r i = ⊥) (i : X) : orderInterpolate E r (E i) = r i := by
-  classical
+
   by_cases hi : E i = ⊥
   · rw [hi, orderInterpolate_bot, hbot i hi]
-  simp only [orderInterpolate, ite_eq_right hi]
+  simp [orderInterpolate, ite_eq_right hi]
   apply le_antisymm
   · have hh := Finset.inf_le (f := fun j => if E i ≤ E j then r j else ⊤)
       (Finset.mem_univ i)
@@ -107,7 +107,5 @@ theorem orderInterpolate_read {E r : X → ExtOrd}
 
 end Interpolation
 
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ}
 
 end VaughtConjecture.Knight.FullRowLifting

@@ -158,5 +158,3 @@ theorem readback_below
   OrdinaryReceivingProbe.readback_below W R (WholeDonorAttachment.union e) hf
     hq hretain a hg hδ d
 
-end
-end VaughtConjecture.Knight.OrdinaryAttachedReceiving

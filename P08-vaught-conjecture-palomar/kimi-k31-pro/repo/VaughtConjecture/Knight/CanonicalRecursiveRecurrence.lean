@@ -70,5 +70,3 @@ theorem iterate (n : ℕ) (hA : n + 3 ≤ A.card)
     exact successor sem hp hold hL hR hLA hRA hO hcover n hA hs hLc hRc
       (fun C hC hCA hic => hcomplete C hC hCA (n + 4) (by omega) hic le_rfl)
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveRecurrence

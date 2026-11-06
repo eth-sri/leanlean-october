@@ -41,8 +41,6 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 theorem dite_of_pos {c : Prop} [Decidable c] {α : Sort*} {a : c → α} {b : ¬c → α} (h : c) :
     dite c a b = a h := by simp [h]
-theorem dite_of_neg {c : Prop} [Decidable c] {α : Sort*} {a : c → α} {b : ¬c → α} (h : ¬c) :
-    dite c a b = b h := by simp [h]
 
 /-- Same-scope grade extension for any semantics and any scope. Only the
 grade tail is capped; the prescribed lower-grade part stays literal. -/
@@ -68,23 +66,8 @@ theorem bountiful_same_scope (sem : Semantics D) {B : Finset ι} {i j : ℕ}
     ?_, fun d => GradeTailRestoration.splice_low u p (CellScheme.below.mono h d) d.2.2⟩
   intro d
   exact (GradeTailRestoration.splice_cap h.2 hcap d).trans (by
-    dsimp only [u]
+    dsimp [u]
     rw [min_assoc, min_self])
 
-/-- **Bountifulness between full-scope pairs holds for every semantics**: for `(A,i) ≤ (A,j)` the
-extension is `p` on the cells of grade `≤ i` and `q ∧ γ` on the rest.  Locality at a cell of grade
-`> i` is the capped locality of `q` (`TransformsTo.capped`), which agrees with `p` below the cap;
-availability never crosses the grade boundary (a witness has the grade of its request). -/
-theorem bountiful_full_scope (sem : Semantics D) {i j : ℕ} (h : GradedLe (A, i) (A, j))
-    (p : D.below (A, i) → ExtOrd) (q : D.below (A, j) → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow sem (A, i) p) (hq : RespectsSemanticsBelow sem (A, j) q)
-    (hγ : extVisibilityReplace γ j j = γ)
-    (hagree : ∀ d : D.below (A, i), min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ q' : D.below (A, j) → ExtOrd, RespectsSemanticsBelow sem (A, j) q' ∧
-      (∀ d : D.below (A, j), min (q' d) γ = min (q d) γ) ∧
-      (∀ d : D.below (A, i), q' (CellScheme.below.mono h d) = p d) :=
-  bountiful_same_scope sem h p q γ hp hq hγ hagree
 
-end FullScope
 
-end VaughtConjecture.Knight

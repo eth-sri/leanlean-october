@@ -63,13 +63,11 @@ noncomputable def glueSection {CI BJ : Finset ι × ℕ} (w : D.below CI → Ext
 
 theorem glueSection_of_le {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
     (q : D.below BJ → ExtOrd) {d : D.below BJ} (hd : GradedLe (D.cell d.1) CI) :
-    glueSection w q d = w ⟨d.1, hd⟩ := by
-  unfold glueSection; rw [dite_eq_left hd]
+    glueSection w q d = w ⟨d.1, hd⟩ := by grind [glueSection]
 
 theorem glueSection_of_not_le {CI BJ : Finset ι × ℕ} (w : D.below CI → ExtOrd)
     (q : D.below BJ → ExtOrd) {d : D.below BJ} (hd : ¬ GradedLe (D.cell d.1) CI) :
-    glueSection w q d = q d := by
-  unfold glueSection; rw [dite_eq_right hd]
+    glueSection w q d = q d := by grind [glueSection]
 
 /-- **Vertical gluing**: with `CI` of the same scope as `BJ` and lower grade, a lawful section
 `w` on `CI` and a lawful section `q` on `BJ` glue to a lawful section on `BJ` provided that, at
@@ -143,49 +141,21 @@ variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : Se
 
 section Retarget
 
-variable {K : ℕ} (L : R.LowRef K) {j : ℕ} {u : P.scheme.below (effP nP j) → ExtOrd}
-  {b η : ExtOrd}
-
-/-- The hypotheses of the retargeting lemma: a lawful section whose donor non-top values lie
-strictly below a positive `K`-visible `b` and whose donor-top values are at least `b`, and a
-`K`-visible target `η ≥ b`. -/
-structure RetargetData (u : P.scheme.below (effP nP j) → ExtOrd) (b η : ExtOrd) : Prop where
-  respects : RespectsSemanticsBelow P.rows (effP nP j) u
-  b_vis : SelfVis K b
-  b_pos : ⊥ < b
-  nonTop_lt : ∀ d, R.p d.1 ≠ ⊤ → u d < b
-  top_ge : ∀ d, R.p d.1 = ⊤ → b ≤ u d
-  η_vis : SelfVis K η
-  b_le_η : b ≤ η
-
-variable (hj : K ≤ j) (hu : RetargetData (R := R) (K := K) u b η)
-
-include L hj hu
 
 /-- The shifter at a donor-top owner: the old witness where it is bottom or below the rounded
 non-top sources, constantly `η` above. -/
 noncomputable def retargetShifter (τ : ExtOrd → ExtOrd) (a η : ExtOrd) (x : ExtOrd) : ExtOrd :=
   if τ x = ⊥ then ⊥ else if x ≤ a then τ x else η
 
-omit L hj hu in
 theorem retargetShifter_of_bot {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x = ⊥) :
-    retargetShifter τ a η x = ⊥ := by
-  unfold retargetShifter; rw [ite_eq_left h]
+    retargetShifter τ a η x = ⊥ := by grind [retargetShifter]
 
-omit L hj hu in
 theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (hx : x ≤ a) :
-    retargetShifter τ a η x = τ x := by
-  unfold retargetShifter
-  by_cases h : τ x = ⊥
-  · rw [ite_eq_left h, h]
-  · rw [ite_eq_right h, ite_eq_left hx]
+    retargetShifter τ a η x = τ x := by grind [retargetShifter]
 
-omit L hj hu in
 theorem retargetShifter_of_lt {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x ≠ ⊥) (hx : a < x) :
-    retargetShifter τ a η x = η := by
-  unfold retargetShifter; rw [ite_eq_right h, ite_eq_right (not_le.mpr hx)]
+    retargetShifter τ a η x = η := by grind [retargetShifter]
 
-omit L hj hu in
 /-- The retargeting shifter is a normalized witness through `k` whenever the old witness is, the
 split point is `k`-visible with the old witness at most `b ≤ η` there, and `η` is `k`-visible and
 positive. -/
@@ -243,10 +213,6 @@ theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witnes
 
 /-! ## Exact old-face restoration -/
 
-end Retarget
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

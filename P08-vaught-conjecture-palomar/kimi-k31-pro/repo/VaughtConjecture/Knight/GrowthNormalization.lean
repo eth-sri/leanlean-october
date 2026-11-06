@@ -118,5 +118,3 @@ def normalizedMember {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
 def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
   normalizedMember X hj (zero_admitted X j) (fun f => by cases f <;> exact bot_ne_top)
 
-end
-end VaughtConjecture.Knight.Growth

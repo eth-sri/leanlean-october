@@ -18,8 +18,7 @@ long lower ladder rows against original owners, not just upper-row locality.
 
 set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCatalogueIncidences
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref ReceivingLadderCarrier
-open ReceivingCatalogueSources LadderScalarRendering
+open Transform Value ExtOrd
 noncomputable section
 
 /-- Visible postprocessing needs bottom reflection only on the actual target
@@ -41,16 +40,4 @@ theorem postprocess {Y : Type*} [Finite Y] {E t : Y → ExtOrd}
   · intro d e he hd
     exact (hb e).mpr (LongGuardRows.bottom_of_same_block h he ((hb d).mp hd))
 
-variable {I : Type*} [Fintype I] {nP K : ℕ} {P : SemScheme (nP + 1)}
-  {C : SemScheme 2} {R : Ref I nP 2 2 P C} (L : R.LowRef K)
 
-variable (hC : C.scheme.plan = privatePlan) (request : Cell P.scheme)
-
-local notation "H" => ReceivingCatalogueSources.ceiling (P := P) (C := C)
-local notation "G" => grid (P := P) (C := C)
-local notation "D" => carrier L hC
-local notation "T" => SupportLadderRows.Point (rungs (P := P) (C := C))
-  (TField P C) (Controller L)
-
-end
-end VaughtConjecture.Knight.ReceivingCatalogueIncidences

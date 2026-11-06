@@ -57,4 +57,3 @@ theorem isModel (hM : W.IsModel) (hh : ¬ W.IsHollow) (hg : W.HasTopGradeGrowth)
     (stableLiftOf_consistent hM.consistent hM.covering)
     (stableLiftOf_covering hM.consistent hM.covering)
 
-end VaughtConjecture.Knight.CapStableModel

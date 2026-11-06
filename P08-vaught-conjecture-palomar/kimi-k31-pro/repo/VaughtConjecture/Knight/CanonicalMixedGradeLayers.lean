@@ -78,8 +78,7 @@ theorem lowerSection_lawful (q : CanonicalFieldLayer.Profile sem k (Cell D) id) 
     (grid_lower_visible j k hjk (sourceGrid_endpoint le_rfl))
 
 theorem lowerSection_old (q : CanonicalFieldLayer.Profile sem k (Cell D) id) (d : Cell D) :
-    lowerSection sem j hj hjA hproper k q (lowerOld sem j hj hjA d) = q.val d :=
-  CanonicalGradeCutSections.section_old sem j hj hjA hproper q.property.1 _ d
+    lowerSection sem j hj hjA hproper k q (lowerOld sem j hj hjA d) = q.val d := by grind [CanonicalGradeCutSections.section_old]
 
 include hjk in
 theorem lowerSection_bound (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
@@ -153,8 +152,7 @@ def lower (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
 theorem lower_old (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
     (d : Cell (lowerScheme sem j hj hjA)) :
     lower sem j hj hjA hproper k hk hkA q (oldCell sem j hj hjA k hk hkA d) =
-      lowerSection sem j hj hjA hproper k q d := by
-  simp only [lower, oldCell, SourceLayerCarrier.toOcc_toCell]
+      lowerSection sem j hj hjA hproper k q d := by simp_all [lower]
 
 def data : SourcePrefixLayer.Data (scheme sem j hj hjA k hk hkA) k (Cell D) where
   base := SeparatedSourceLayerCarrier.base (lowerScheme sem j hj hjA)
@@ -213,8 +211,7 @@ theorem source_lower (q : CanonicalFieldLayer.Profile sem k (Cell D) id)
 
 theorem source_boundary (q : CanonicalFieldLayer.Profile sem k (Cell D) id) (d : Cell D) :
     source sem j hj hjA hproper k hg hk hkA hjk q
-      (oldCell sem j hj hjA k hk hkA (lowerOld sem j hj hjA d)) = q.val d := by
-  rw [source_lower, lowerSection_old sem j hj hjA hproper k]
+      (oldCell sem j hj hjA k hk hkA (lowerOld sem j hj hjA d)) = q.val d := by grind [source_lower, lowerSection_old]
 
 theorem inherited_row (c : Cell (lowerScheme sem j hj hjA))
     (d : (lowerScheme sem j hj hjA).below ((lowerScheme sem j hj hjA).cell c)) :
@@ -234,9 +231,7 @@ theorem original_row (c : Cell D) (d : D.below (D.cell c)) :
       (oldCell sem j hj hjA k hk hkA (lowerOld sem j hj hjA c))
       (ownerEquiv sem j hj hjA hproper k hk hkA hjk (lowerOld sem j hj hjA c)
         (GradeCutLayerCarrier.ownerEquiv D (CanonicalGradeCutSections.Profiles sem j)
-          j hj hjA hproper c d)) = sem.E c d := by
-  rw [inherited_row]
-  exact CanonicalGradeCutSections.old_row sem j hj hjA hproper c d
+          j hj hjA hproper c d)) = sem.E c d := by grind [inherited_row, CanonicalGradeCutSections.old_row]
 
 theorem consistent (hs : sem.IsConsistent) :
     (rows sem j hj hjA hproper k hg hk hkA hjk).IsConsistent := by
@@ -411,7 +406,7 @@ theorem section_lawful {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
         (member sem j hj hjA hproper k hk hkA hjk
           (controller sem j hj hjA k hk hkA (normalized sem k hg hp ht)))
         (oldCell sem j hj hjA k hk hkA d.1)))
-  simp only [member_controller, lower_old]
+  simp [member_controller, lower_old]
   apply lower_proper_respects sem j hj hjA hproper hp
     (r := fun y => PairedSlotDecoder.decode k (values p) G C
       (lowerSection sem j hj hjA hproper k (normalized sem k hg hp ht) y)) _ x
@@ -452,5 +447,3 @@ theorem section_agreement {p q : Cell D → ExtOrd}
   exact hs.decode (PairedSlotDecoder.decode_witness hG hC).mono
     (PairedSlotDecoder.decode_witness hG hC).mono hpReach hqReach (fun d _ => hcompare _)
 
-end
-end VaughtConjecture.Knight.CanonicalMixedGradeLayers

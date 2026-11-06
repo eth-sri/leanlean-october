@@ -71,10 +71,7 @@ open Transform Value ExtOrd
 /-- The block index `α / ω`. -/
 noncomputable def blockIdx (α : Ordinal.{0}) : Ordinal.{0} := α / Ordinal.omega0
 
-theorem blockIdx_mul_add (t : ℕ) (j : ℕ) : blockIdx (Ordinal.omega0 * t + j) = t := by
-  unfold blockIdx
-  rw [Ordinal.mul_add_div _ Ordinal.omega0_ne_zero,
-    Ordinal.div_eq_zero_of_lt (Ordinal.natCast_lt_omega0 j), add_zero]
+theorem blockIdx_mul_add (t : ℕ) (j : ℕ) : blockIdx (Ordinal.omega0 * t + j) = t := by grind [blockIdx, Ordinal.mul_add_div, Ordinal.omega0_ne_zero, Ordinal.div_eq_zero_of_lt, Ordinal.natCast_lt_omega0]
 
 theorem blockIdx_mono {α β : Ordinal.{0}} (h : α ≤ β) : blockIdx α ≤ blockIdx β := by
   unfold blockIdx
@@ -96,15 +93,9 @@ theorem blockIdx_visibilityReplace (α : Ordinal.{0}) (k i : ℕ) :
   · rfl
 
 theorem finitePart_visibilityReplace (α : Ordinal.{0}) (k i : ℕ) :
-    finitePart (visibilityReplace α k i) = if finitePart α < k then i else finitePart α := by
-  unfold visibilityReplace
-  split_ifs with h
-  · unfold ordinalReplace; exact finitePart_limitPart_add_nat _ _
-  · rfl
+    finitePart (visibilityReplace α k i) = if finitePart α < k then i else finitePart α := by grind [ordinalReplace, visibilityReplace, finitePart_limitPart_add_nat]
 
-theorem limitPart_mul_nat (t : ℕ) : limitPart (Ordinal.omega0 * t) = Ordinal.omega0 * t := by
-  unfold limitPart
-  rw [Ordinal.mul_div_cancel _ Ordinal.omega0_ne_zero]
+theorem limitPart_mul_nat (t : ℕ) : limitPart (Ordinal.omega0 * t) = Ordinal.omega0 * t := by simp_all [limitPart]
 
 theorem finitePart_mul_add (t j : ℕ) : finitePart (Ordinal.omega0 * t + j) = j := by
   have := finitePart_limitPart_add_nat (Ordinal.omega0 * t) j
@@ -162,22 +153,13 @@ variable (l : ℕ) (S : Finset Ordinal.{0}) (γ : ExtOrd)
 noncomputable def keyOrd (v : Ordinal.{0}) : Ordinal.{0} :=
   if finitePart v ≤ l then limitPart v else v
 
-theorem keyOrd_le (v : Ordinal.{0}) : keyOrd l v ≤ v := by
-  unfold keyOrd; split_ifs
-  · exact limitPart_le v
-  · exact le_rfl
+theorem keyOrd_le (v : Ordinal.{0}) : keyOrd l v ≤ v := by grind [keyOrd, limitPart_le]
 
-theorem limitPart_keyOrd (v : Ordinal.{0}) : limitPart (keyOrd l v) = limitPart v := by
-  unfold keyOrd; split_ifs
-  · exact limitPart_idem v
-  · rfl
+theorem limitPart_keyOrd (v : Ordinal.{0}) : limitPart (keyOrd l v) = limitPart v := by grind [keyOrd, limitPart_idem]
 
 /-- A key is an `ω`-block key (finite part `0`) or a large value (finite part `> l`). -/
 theorem finitePart_keyOrd (v : Ordinal.{0}) :
-    finitePart (keyOrd l v) = 0 ∨ l < finitePart (keyOrd l v) := by
-  unfold keyOrd; split_ifs with h
-  · exact Or.inl (finitePart_limitPart v)
-  · exact Or.inr (not_le.mp h)
+    finitePart (keyOrd l v) = 0 ∨ l < finitePart (keyOrd l v) := by grind [keyOrd, finitePart_limitPart]
 
 /-- The key set of the row. -/
 noncomputable def keys : Finset Ordinal.{0} := S.image (keyOrd l)
@@ -219,17 +201,12 @@ theorem code_isCoded (v : Ordinal.{0}) : IsCodedLabel l (ofOrd (code l S v)) :=
   Or.inr ⟨blockOf l S v, min (finitePart v) l, by omega, rfl⟩
 
 theorem code_selfVis {v : Ordinal.{0}} {a : ℕ} (ha : a ≤ finitePart v) (hal : a ≤ l) :
-    SelfVis a (ofOrd (code l S v)) := by
-  rw [selfVis_ofOrd_iff]
-  unfold code
-  rw [finitePart_mul_add]
-  exact le_min ha hal
+    SelfVis a (ofOrd (code l S v)) := by grind [code, selfVis_ofOrd_iff, finitePart_mul_add]
 
 /-- The cap code: one block past every key, finite part `l`. -/
 noncomputable def capCode : Ordinal.{0} := Ordinal.omega0 * (((keys l S).card + 1 : ℕ) : Ordinal) + l
 
-theorem capCode_selfVis : SelfVis l (ofOrd (capCode l S)) := by
-  rw [selfVis_ofOrd_iff]; unfold capCode; rw [finitePart_mul_add]
+theorem capCode_selfVis : SelfVis l (ofOrd (capCode l S)) := by grind [capCode, selfVis_ofOrd_iff, finitePart_mul_add]
 
 theorem capCode_isCoded : IsCodedLabel l (ofOrd (capCode l S)) :=
   Or.inr ⟨(keys l S).card + 1, l, by omega, rfl⟩
@@ -311,7 +288,7 @@ theorem shift_code {v : Ordinal.{0}} (hv : v ∈ S) : shift l S γ (ofOrd (code 
     omega)]
   unfold blockOf
   rw [keyAt_eq_of_mem l S (keyOrd_mem_keys l S hv)]
-  simp only
+  simp
   congr 1
   unfold decodeIn
   rcases finitePart_keyOrd l v with h0 | hl
@@ -335,18 +312,12 @@ theorem shift_code {v : Ordinal.{0}} (hv : v ∈ S) : shift l S γ (ofOrd (code 
     · rfl
 
 /-- **Cap decoding**: the cap code decodes to `γ`. -/
-theorem shift_capCode : shift l S γ (ofOrd (capCode l S)) = γ := by
-  rw [shift_ofOrd]
-  unfold capCode
-  rw [blockIdx_mul_add, if_pos le_rfl]
+theorem shift_capCode : shift l S γ (ofOrd (capCode l S)) = γ := by grind [capCode, shift_ofOrd, blockIdx_mul_add]
 
 /-! ### Monotonicity -/
 
 /-- The values decoded on the block of a key `κ` lie in `[κ, κ + l]`. -/
-theorem decodeIn_ge (κ : Ordinal.{0}) (j : ℕ) : κ ≤ decodeIn l κ j := by
-  unfold decodeIn; split_ifs
-  · exact le_self_add
-  · exact le_rfl
+theorem decodeIn_ge (κ : Ordinal.{0}) (j : ℕ) : κ ≤ decodeIn l κ j := by grind [decodeIn, le_self_add]
 
 theorem decodeIn_le (κ : Ordinal.{0}) (j : ℕ) : decodeIn l κ j ≤ κ + l := by
   unfold decodeIn; split_ifs
@@ -421,7 +392,7 @@ theorem shift_ofOrd_le_γ (hγ : SelfVis l γ) (hS : ∀ v ∈ S, ofOrd v ≤ γ
   · exact le_rfl
   · rcases hk : keyAt l S (blockIdx α) with _ | κ
     · exact bot_le
-    · simp only
+    · simp
       obtain ⟨v, hv, rfl⟩ := Finset.mem_image.mp (keyAt_mem l S hk)
       have hvγ := hS v hv
       rcases ExtOrd.cases γ with rfl | rfl | ⟨g, rfl⟩
@@ -440,8 +411,7 @@ theorem blockOfKey_injOn : Set.InjOn (blockOfKey l S) (keys l S) := by
   · exact absurd h (ne_of_gt (blockOfKey_lt l S hκ hgt))
 
 theorem blockOfKey_mem_Icc {κ : Ordinal.{0}} (hκ : κ ∈ keys l S) :
-    blockOfKey l S κ ∈ Finset.Icc 1 (keys l S).card :=
-  Finset.mem_Icc.mpr ⟨blockOfKey_pos l S hκ, blockOfKey_le l S κ⟩
+    blockOfKey l S κ ∈ Finset.Icc 1 (keys l S).card := by grind [blockOfKey_le, blockOfKey_pos]
 
 /-- Every block `1 … |keys|` is the block of exactly one key. -/
 theorem exists_key_of_block {n : ℕ} (h1 : 1 ≤ n) (hn : n ≤ (keys l S).card) :
@@ -459,12 +429,7 @@ theorem exists_key_of_block {n : ℕ} (h1 : 1 ≤ n) (hn : n ≤ (keys l S).card
   exact ⟨κ, hκ, hb⟩
 
 theorem keyAt_nat_eq_some {t : ℕ} (h1 : 1 ≤ t) (ht : t ≤ (keys l S).card) :
-    ∃ κ ∈ keys l S, keyAt l S t = some κ ∧ blockOfKey l S κ = t := by
-  obtain ⟨κ, hκ, hb⟩ := exists_key_of_block l S h1 ht
-  refine ⟨κ, hκ, ?_, hb⟩
-  have := keyAt_eq_of_mem l S hκ
-  rw [hb] at this
-  exact this
+    ∃ κ ∈ keys l S, keyAt l S t = some κ ∧ blockOfKey l S κ = t := by grind [keyAt_eq_of_mem, exists_key_of_block]
 
 /-- Block indices below `|keys| + 1` are naturals. -/
 theorem exists_nat_of_lt_card {t : Ordinal.{0}} (h : t < (((keys l S).card + 1 : ℕ) : Ordinal)) :
@@ -537,9 +502,7 @@ theorem shift_mono (hγ : SelfVis l γ) (hS : ∀ v ∈ S, ofOrd v ≤ γ) : Mon
 
 /-! ### Clause 5 -/
 
-theorem limitPart_mul (μ : Ordinal.{0}) : limitPart (Ordinal.omega0 * μ) = Ordinal.omega0 * μ := by
-  unfold limitPart
-  rw [Ordinal.mul_div_cancel _ Ordinal.omega0_ne_zero]
+theorem limitPart_mul (μ : Ordinal.{0}) : limitPart (Ordinal.omega0 * μ) = Ordinal.omega0 * μ := by simp_all [limitPart]
 
 theorem finitePart_mul_add' (μ : Ordinal.{0}) (m : ℕ) :
     finitePart (Ordinal.omega0 * μ + m) = m := by
@@ -626,17 +589,17 @@ theorem transformsTo_of_shift {D : Type*} (grade : D → ℕ) (hγ : SelfVis l �
   refine ⟨fun k => if k ≤ l then ρ else ⊥, shift l S γ, ?_, ?_, shift_bot l S γ,
     shift_mono l S γ hγ hS, ?_, fun _ => rfl⟩
   · intro a b hab
-    dsimp only
+    dsimp
     split_ifs with h1 h2 <;> first | exact le_rfl | exact bot_le | omega
   · intro n
-    dsimp only
+    dsimp
     split_ifs with h
     · exact (hρ.mono h).symm
     · simp
   · intro α k hle i hi
     by_cases hk : k ≤ l
     · exact shift_evr_of_le l S γ hγ hk α hi
-    · dsimp only at hle
+    · dsimp at hle
       rw [if_neg hk] at hle
       have h0 : shift l S γ α = ⊥ := le_bot_iff.mp hle
       rw [shift_evr_of_bot l S γ α k i h0, h0]
@@ -646,10 +609,4 @@ end Recoding
 
 /-! ## Integration bridges: nothing here is a construction hypothesis -/
 
-/-- A coded label is never `⊤`. -/
-theorem ExtOrd.IsCodedLabel.ne_top {k : ℕ} {x : ExtOrd} (h : IsCodedLabel k x) : x ≠ ⊤ := by
-  rcases h with rfl | ⟨i, j, -, rfl⟩
-  · exact bot_ne_top
-  · exact ofOrd_ne_top _
 
-end VaughtConjecture.Knight

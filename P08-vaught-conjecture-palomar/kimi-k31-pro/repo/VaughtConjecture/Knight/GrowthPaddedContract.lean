@@ -178,5 +178,3 @@ def initial : Layer I X attach hA hB hC 2 where
     · exact ⟨_, GrowthPaddedSuccessor.leaf_index I X attach hA hB hC _,
         GrowthPaddedRendering.render_ceiling I X attach hA hB hC hj S hS hp hH hb⟩
 
-end
-end VaughtConjecture.Knight.GrowthPaddedContract

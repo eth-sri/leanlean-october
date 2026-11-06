@@ -65,4 +65,3 @@ theorem mem_modelsOf_iff_realize (c : StructureSpace L) (φ : L.Sentenceω) :
 
 /-! ### Thinness -/
 
-end FirstOrder.Language.SmallVocabulary

@@ -175,4 +175,3 @@ theorem bfEquiv_of_commonChart_projected (α : Ordinal.{0}) {M N : Type w}
     target_base := rfl
     chart := hc }
 
-end VaughtConjecture.Knight

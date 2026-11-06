@@ -71,12 +71,10 @@ noncomputable def State.sourceProfile {j : ℕ} (st : R.State j) (f : Field P C)
   if h : f.grade ≤ j then st.numeric f h else st.persistent f
 
 theorem State.sourceProfile_of_present {j : ℕ} (st : R.State j) {f : Field P C}
-    (h : f.grade ≤ j) : st.sourceProfile f = st.numeric f h := by
-  unfold State.sourceProfile; rw [dite_eq_left h]
+    (h : f.grade ≤ j) : st.sourceProfile f = st.numeric f h := by simp_all [State.sourceProfile]
 
 theorem State.sourceProfile_of_future {j : ℕ} (st : R.State j) {f : Field P C}
-    (h : ¬ f.grade ≤ j) : st.sourceProfile f = st.persistent f := by
-  unfold State.sourceProfile; rw [dite_eq_right h]
+    (h : ¬ f.grade ≤ j) : st.sourceProfile f = st.persistent f := by simp_all [State.sourceProfile]
 
 /-- **Synchronized**: every persistent value is the `1`-visible rounding of the source vector. -/
 def Synchronized {j : ℕ} (st : R.State j) : Prop :=
@@ -264,9 +262,7 @@ theorem map_comm {k : ℕ} (hk : k ≤ K) (x : ExtOrd) {i : ℕ} (hi : i ≤ k) 
     σ (extVisibilityReplace x k i) = extVisibilityReplace (σ x) k i :=
   hσ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi
 
-theorem selfVis_map {k : ℕ} (hk : k ≤ K) {x : ExtOrd} (h : SelfVis k x) : SelfVis k (σ x) := by
-  change extVisibilityReplace (σ x) k k = σ x
-  rw [← map_comm hσ hk x le_rfl, h]
+theorem selfVis_map {k : ℕ} (hk : k ≤ K) {x : ExtOrd} (h : SelfVis k x) : SelfVis k (σ x) := by grind [map_comm]
 
 theorem map_ne_bot_iff (hbot : ∀ x, σ x = ⊥ → x = ⊥) (x : ExtOrd) : σ x ≠ ⊥ ↔ x ≠ ⊥ :=
   not_congr ⟨hbot x, fun h => by rw [h, hσ.bot]⟩
@@ -333,10 +329,6 @@ theorem Synchronized.map (hK : 1 ≤ K) {j : ℕ} {st : R.State j} (hs : Synchro
   rw [sourceProfile_map σ, ← map_comm hσ hK _ le_rfl, ← hs f]
   cases f <;> rfl
 
-end Map
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

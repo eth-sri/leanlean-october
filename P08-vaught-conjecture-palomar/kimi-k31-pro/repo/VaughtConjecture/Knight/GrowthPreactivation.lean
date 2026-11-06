@@ -28,8 +28,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
   {p : D.below (A, j) → ExtOrd}
 
 theorem complete_lawful (hp : RespectsSemanticsBelow sem (A, j) p) :
-    RespectsSemanticsBelow sem (A, j) (fun d => complete u p d.1) := by
-  simpa only [complete_present] using hp
+    RespectsSemanticsBelow sem (A, j) (fun d => complete u p d.1) := by simp_all [complete_present]
 
 theorem complete_visible (hu : ∀ d, SelfVis 1 (u d))
     (hp : RespectsSemanticsBelow sem (A, j) p) (d : Cell D) : SelfVis 1 (complete u p d) := by
@@ -182,6 +181,3 @@ theorem donor_before {j : ℕ} (hj : j < X.req.N) {S : State C.scheme P.scheme}
   | inl d => exact complete_caps S.privateValues hcap d
   | inr d => exact complete_caps S.donorValues hag d
 
-end RootAttachment
-end
-end VaughtConjecture.Knight.Growth

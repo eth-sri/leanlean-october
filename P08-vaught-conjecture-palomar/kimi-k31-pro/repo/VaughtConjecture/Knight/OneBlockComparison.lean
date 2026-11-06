@@ -50,4 +50,3 @@ theorem qrank_lt_ord_aleph_one {L : Language.{u, v}} {γ : Type u'} :
 
 /-! ## Sentence agreement -/
 
-end VaughtConjecture.Knight

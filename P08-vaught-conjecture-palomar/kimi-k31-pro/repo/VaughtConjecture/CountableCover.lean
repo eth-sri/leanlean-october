@@ -26,4 +26,3 @@ theorem countable_of_cover {ι κ : Type*} [Countable κ] (P : κ → ι → Pro
   rw [h]
   exact hc j
 
-end VaughtConjecture.CountableCover

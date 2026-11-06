@@ -31,10 +31,7 @@ theorem selfVis_mono {k k' : ℕ} {x : ExtOrd} (h : SelfVis k x) (hk : k' ≤ k)
   extVisReplace_self_of_le h hk
 
 theorem selfVis_min {k : ℕ} {x y : ExtOrd} (hx : SelfVis k x) (hy : SelfVis k y) :
-    SelfVis k (min x y) := by
-  rcases le_total x y with h | h
-  · rwa [min_eq_left h]
-  · rwa [min_eq_right h]
+    SelfVis k (min x y) := by grind
 
 theorem selfVis_bot (k : ℕ) : SelfVis k ⊥ := extVisibilityReplace_bot k k
 
@@ -61,8 +58,7 @@ theorem evr_eq_self_of_selfVis {k : ℕ} {x : ExtOrd} (h : SelfVis k x) (i : ℕ
 
 theorem extVisibilityReplace_of_le_finitePart {α : Ordinal.{0}} {k : ℕ} (h : k ≤ finitePart α)
     (i : ℕ) :
-    extVisibilityReplace (ofOrd α) k i = ofOrd α := by
-  rw [extVisibilityReplace_ofOrd, visibilityReplace, ite_eq_right (not_lt.mpr h)]
+    extVisibilityReplace (ofOrd α) k i = ofOrd α := by grind [visibilityReplace, extVisibilityReplace_ofOrd]
 
 theorem extVisibilityReplace_of_finitePart_lt {α : Ordinal.{0}} {k : ℕ} (h : finitePart α < k)
     (i : ℕ) :
@@ -250,4 +246,3 @@ theorem visReplace_eq (α : Ordinal.{0}) (k i : ℕ) :
   · rfl
   · exact (decomposition α).symm
 
-end VaughtConjecture.Knight

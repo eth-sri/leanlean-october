@@ -93,5 +93,3 @@ theorem full_complete :
   apply complete_through I F hroot hA hB hC hcover (A.card - 2) (by omega) _ (by omega)
   rwa [build_plan] at hJ
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLiftingInduction

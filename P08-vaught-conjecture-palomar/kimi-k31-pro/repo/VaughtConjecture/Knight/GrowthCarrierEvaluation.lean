@@ -57,7 +57,7 @@ theorem private_label {y : M} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
     (d : Cell C.scheme.scheme) :
     L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((F).map d)) = L.label u C d := by
   obtain ⟨Er, v, hb, hv⟩ := r
-  dsimp only at hr
+  dsimp at hr
   subst Er
   rw [← private_cellOf C P Q e hvC hvP hC hP X T hsmall d]
   exact L.mapCell heval (castSuccEmb_trans_snoc u y hy) hco d
@@ -67,8 +67,7 @@ theorem correct_of_coface (hclass : InClass X.ZA (L.label u C))
     {y : M} {hy : y ∉ Set.range u} {r : S α.1 (J + 1)}
     (hr : r.scheme = E) (hco : IsCoface C r) (heval : W.eval (snoc u y hy) = some r) :
     X.req.Correct (X.req.sec (L.label u C))
-      (fun d => L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((G).map d))) := by
-  exact GrowthCappedReadback.full_correct
+      (fun d => L.label (snoc u y hy) r (SemScheme.castCell hr.symm ((G).map d))) := GrowthCappedReadback.full_correct
     (GrowthAttachedCarrier.boundary C.scheme P Q e hvC hvP hC hP) X T
     (GrowthAttachedCarrier.height C.scheme P X hsmall)
     (GrowthAttachedCarrier.donor_proper C.scheme P e X hsmall)
@@ -119,5 +118,3 @@ theorem exists_correct_donor (hM : W.IsModel) (hu : W.eval u = some C)
   refine ⟨y, hy, hyRoot, s, heval, he, ?_⟩
   simpa only [hval] using hc
 
-end
-end VaughtConjecture.Knight.GrowthCarrierEvaluation

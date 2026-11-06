@@ -49,11 +49,6 @@ open CellScheme.restrictFace (pushGraded)
 
 /-! ## The recoding at a grade, generically -/
 
-section Recode
-
-variable (l : ℕ) (S : Finset Ordinal.{0})
-
-end Recode
 
 /-! ## The inventory over the actual context -/
 
@@ -99,6 +94,4 @@ theorem respectsBelow_bot {ι₀ : Type*} [DecidableEq ι₀] {A₀ : Finset ι�
     RespectsSemanticsBelow sem BJ (fun _ => (⊥ : ExtOrd)) :=
   RespectsSemanticsBelow.bot sem BJ
 
-end Inventory
 
-end VaughtConjecture.Knight

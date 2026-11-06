@@ -85,5 +85,3 @@ theorem lift_to_full {I : Finset ι × ℕ} {j : ℕ} (h : GradedLe I (A, j))
       exact (hside.elim (fun hb => a.2.2.1.1 (hs.trans hb))
         (fun hc => a.2.2.1.2 (hs.trans hc))).elim
 
-end
-end VaughtConjecture.Knight.ScopeReplicationLifting

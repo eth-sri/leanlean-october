@@ -78,5 +78,3 @@ theorem exists_source_repair
   rw [F.source_old, hpriv]
   exact (hread (.priv d.1)).trans (hprivate d)
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalRepair

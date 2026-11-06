@@ -156,15 +156,10 @@ theorem value_eq_offset (y : RootedCover x) :
   (exists_offset Xi htop y).choose_spec
 
 theorem offset_le_of_value_le {y : RootedCover x} {K : ℕ}
-    (h : value y Xi ≤ ofOrd (α.1 + K)) : offset Xi htop y ≤ K := by
-  rw [value_eq_offset Xi htop y, ofOrd_le_ofOrd] at h
-  exact Nat.cast_le.mp (le_of_add_le_add_left h)
+    (h : value y Xi ≤ ofOrd (α.1 + K)) : offset Xi htop y ≤ K := by simp_all [value_eq_offset]
 
 theorem offset_eq_of_value_eq {y : RootedCover x} {k : ℕ}
-    (h : value y Xi = ofOrd (α.1 + k)) : offset Xi htop y = k := by
-  have := (value_eq_offset Xi htop y).symm.trans h
-  rw [ofOrd_inj] at this
-  exact Nat.cast_injective (add_left_cancel this)
+    (h : value y Xi = ofOrd (α.1 + k)) : offset Xi htop y = k := by simp_all [value_eq_offset]
 
 /-- **Monotonicity of the offset**, from the ratchet. -/
 theorem offset_mono : Monotone (offset Xi htop) := by
@@ -299,8 +294,5 @@ theorem eventually_syncValues (hcons : R.IsExactParentConsistent)
     change y.1.type.someProvisionalValue (cell y Xi) = x.type.label Xi
     rw [someProvisionalValue_of_ne_top (by rw [label_cell]; exact htop), label_cell]
 
-end RootedCover
 
-end KnightRealization
 
-end VaughtConjecture.Knight

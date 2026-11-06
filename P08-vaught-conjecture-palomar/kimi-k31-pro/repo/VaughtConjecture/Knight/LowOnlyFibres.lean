@@ -73,7 +73,7 @@ theorem private_bottom_supply {j : ℕ} {v : C.scheme.below (effC n j) → ExtOr
     ∃ S : State P C, F.Admissible j S ∧ S.lowerC j = v ∧ S.b = ⊥ ∧
       (zero : State P C).FutureEq j S := by
   obtain ⟨u, hQ, -⟩ := (F.zero_admissible j).toSource.install_private F hv
-    (selfVis_bot _) (fun _ => by simp only [min_bot_right])
+    (selfVis_bot _) (fun _ => by simp)
   refine ⟨(zero : State P C).replace u v ⊥, ⟨?_, selfVis_bot _, ?_⟩,
     State.replace_lowerC _ _ _ _, rfl, State.replace_future _ _ _ _⟩
   · exact hQ
@@ -86,12 +86,10 @@ theorem donor_bottom_supply {j : ℕ} {u : P.scheme.below (effC n j) → ExtOrd}
     ∃ S : State P C, F.Admissible j S ∧ S.lowerP j = u ∧ S.b = ⊥ ∧
       (zero : State P C).FutureEq j S := by
   obtain ⟨v, hQ, -⟩ := (F.zero_admissible j).toSource.install_donor F hu
-    (selfVis_bot _) (fun _ => by simp only [min_bot_right])
+    (selfVis_bot _) (fun _ => by simp)
   refine ⟨(zero : State P C).replace u v ⊥, ⟨?_, selfVis_bot _, ?_⟩,
     State.replace_lowerP _ _ _ _, rfl, State.replace_future _ _ _ _⟩
   · exact hQ
   · intro _ hm
     exact (not_lt_bot hm).elim
 
-end
-end VaughtConjecture.Knight.LowOnly.Family

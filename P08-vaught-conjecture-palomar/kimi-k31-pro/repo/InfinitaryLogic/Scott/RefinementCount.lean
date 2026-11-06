@@ -77,8 +77,7 @@ private theorem chain_step
     hmw
 
 private theorem add_nat_succ (α : Ordinal.{0}) (k : ℕ) :
-    α + ↑(k + 1) = Order.succ (α + ↑k) := by
-  simp only [Order.succ_eq_add_one, Nat.cast_add, Nat.cast_one, add_assoc]
+    α + ↑(k + 1) = Order.succ (α + ↑k) := by grind [Nat.cast_add, Nat.cast_one, Order.succ_eq_add_one]
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 /-- From a forth/back witness at level α₀, upgrade to BFEquiv (α₀+k) for all k.
@@ -166,7 +165,7 @@ theorem countableRefinementHypothesis : CountableRefinementHypothesis.{u, v, w} 
     exact Ordinal.iSup_lt_omega_one fun k => by rw [← Cardinal.ord_aleph]; exact hα_k_lt k
   apply Set.Countable.mono (s₂ := Set.Iio γ) _ (InfinitaryLogic.setCountable_Iio_of_lt_omega1 γ hγ_lt)
   intro ε ⟨_, N, instN, instCN, b, hBF, hNot⟩
-  simp only [Set.mem_Iio]
+  simp [Set.mem_Iio]
   by_contra hge; push Not at hge
   exact hNot (BFEquiv_of_all_finite_levels hstab
     (fun k => BFEquiv.monotone (le_trans (le_ciSup hBdd k) hge) hBF)
@@ -177,10 +176,6 @@ theorem countableRefinementHypothesis : CountableRefinementHypothesis.{u, v, w} 
 Each theorem below is a one-liner applying `countableRefinementHypothesis` to the
 corresponding `_of` variant in Sentence.lean. -/
 
-/-- Complete stabilization below ω₁. -/
-theorem exists_complete_stabilization (M : Type w) [L.Structure M] [Countable M] :
-    ∃ α < (Ordinal.omega 1 : Ordinal.{0}), StabilizesCompletely (L := L) M α :=
-  exists_complete_stabilization_of countableRefinementHypothesis M
 
 /-- The Scott sentence of M characterizes M up to isomorphism among countable structures. -/
 @[blueprint "thm:scott-characterizes"
@@ -206,6 +201,4 @@ theorem scottSentence_self (M : Type w) [L.Structure M] [Countable M] :
     (scottSentence (L := L) M).realize_as_sentence M :=
   (scottSentence_characterizes M M).mpr ⟨Equiv.refl L M⟩
 
-end Language
 
-end FirstOrder

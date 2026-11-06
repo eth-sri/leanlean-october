@@ -150,7 +150,7 @@ private theorem wellFounded_witnessTree [TopologicalSpace X] {f : (ℕ → ℕ) 
     fun n ↦ by simp [fstList, hx, List.map_ofFn, Function.comp_def]
   have hagree : ∀ n i, i < n → w n i = y i := fun n i hi ↦ by
     have := hw n i (by simpa using hi)
-    simp only [List.getElem_ofFn] at this
+    simp [List.getElem_ofFn] at this
     exact this.symm
   -- the witnesses converge to `y` in Baire space
   have htend : Tendsto w atTop (𝓝 y) :=
@@ -198,4 +198,3 @@ theorem analytic_tree_rank_bounded [TopologicalSpace X] {A : Set X} (hA : Analyt
     have := hwf (f y) (mem_range_self y)
     exact (treeHeight_le_of_relHom (witnessHom f T y)).trans_lt (lt_add_one _)
 
-end KleeneBrouwer

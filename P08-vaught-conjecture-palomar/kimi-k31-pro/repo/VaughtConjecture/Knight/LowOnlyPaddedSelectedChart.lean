@@ -106,9 +106,9 @@ theorem exists_whole_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
     exact ⟨hs, ((D.grade_le_card_scope d).trans (Finset.card_le_card hs)).trans_eq hfull.symm⟩
   obtain ⟨a, τ, hτ, hf, hc, hd⟩ := source_chart I F hroot hA hB hC t ht r hr b
   have hcomp : BoundedMap (t + 2) (δ ∘ τ) :=
-    ⟨by simp only [Function.comp_apply, hτ.bot, hδ.bot], hδ.mono.comp hτ.mono,
+    ⟨by simp [Function.comp_apply, hτ.bot, hδ.bot], hδ.mono.comp hτ.mono,
       fun x k i hk hi => by
-        simp only [Function.comp_apply]
+        simp [Function.comp_apply]
         rw [hτ.comm x k i hk hi,
           (boundedMap_of_witness hδ).comm _ k i (by omega) hi]⟩
   have hceiling : δ (CanonicalFieldLayer.ceiling (t + r + 2) (Field I.left I.right)) = ⊤ := by
@@ -127,5 +127,3 @@ theorem exists_whole_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
   · intro d
     exact congrArg δ (hd d)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedSelectedChart

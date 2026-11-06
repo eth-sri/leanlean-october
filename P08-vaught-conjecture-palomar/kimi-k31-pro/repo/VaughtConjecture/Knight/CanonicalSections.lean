@@ -35,7 +35,7 @@ theorem exists_whole {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) :
     ∃ r : CanonicalMixedAmbient.target sem j hj hjA k hk hkA → ExtOrd,
       RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) (A, k) r ∧
       ∀ d, r (oldTarget sem j hj hjA hproper k hg hk hkA hjk d) = p d := by
-  classical
+
   let all (d : Cell D) : D.below (A, k) :=
     ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hg d⟩
   obtain ⟨S, u, hu, _, hcode, hdecode⟩ :=
@@ -75,5 +75,3 @@ theorem exists_section {I U V O : Finset ι × ℕ}
     (b.whole_respects hcover)
   exact ⟨r, hr, fun d => (hold d.1).trans (hread d)⟩
 
-end
-end VaughtConjecture.Knight.CanonicalSections

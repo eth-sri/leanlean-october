@@ -85,7 +85,7 @@ theorem strip_unique {K : ℕ} {α : ExtOrd → ExtOrd} (hα : Witness (gTop K) 
     intro hlt
     have he := hα.mono (ofOrd_le_ofOrd.mpr (limitPart_add_nat_le_of_lt hlt K))
     have hz := hw 0 (Nat.zero_le K)
-    simp only [Nat.cast_zero, add_zero] at hz
+    simp [add_zero] at hz
     rw [hv K le_rfl, hz, ofOrd_le_ofOrd] at he
     have hh : limitPart u < limitPart u + K := by
       have hk : (0 : Ordinal.{0}) < (K : Ordinal.{0}) := Nat.cast_lt.mpr hK
@@ -126,7 +126,7 @@ private theorem ray_cases (K : ℕ) (u v : Ordinal.{0}) (x : ExtOrd) :
     FiniteOrbitEmbedding.ray K (limitPart u) (limitPart v) x = ⊥ ∨
       ofOrd (limitPart u) ≤ x ∧ ofOrd (limitPart v) ≤
         FiniteOrbitEmbedding.ray K (limitPart u) (limitPart v) x := by
-  classical
+
   rcases ExtOrd.cases x with rfl | rfl | ⟨w, rfl⟩
   · exact Or.inl rfl
   · exact Or.inr ⟨le_top, ofOrd_le_ofOrd.mpr le_self_add⟩
@@ -164,7 +164,7 @@ theorem exists_retuning {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
   let κ := (β ∘ η) ∘ trim K
   have hκ : Witness (gTop K) κ := (bounded_comp hη hβ le_rfl).witness
   have hκread (z : ExtOrd) (hz : Short K z) : κ z = β (η z) := by
-    simp only [κ, Function.comp_apply, trim_of_short hz]
+    simp [κ, Function.comp_apply, trim_of_short hz]
   let ρ := fun z => max (τ z) (κ z)
   let δ := β (ofOrd (limitPart v + K))
   have hδ : γ ≤ δ := hbf.trans (hβ.mono (ofOrd_le_ofOrd.mpr le_self_add))
@@ -180,8 +180,8 @@ theorem exists_retuning {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
     have hshort : Short K (ofOrd (limitPart u + n)) :=
       Or.inr (Or.inr ⟨_, rfl, by rw [finitePart_limitPart_add_nat]; exact hn⟩)
     have he : η (ofOrd (limitPart u + n)) = ofOrd (limitPart v + n) := by
-      simp only [η, FiniteOrbitEmbedding.ray_ofOrd, limitPart_limitPart_add_nat,
-        lt_self_iff_false, ite_false, ite_true, finitePart_limitPart_add_nat, min_eq_left hn]
+      simp [η, FiniteOrbitEmbedding.ray_ofOrd, limitPart_limitPart_add_nat,
+        lt_self_iff_false, finitePart_limitPart_add_nat, min_eq_left hn]
     change max _ _ = _
     rw [hκread _ hshort, he, max_eq_right]
     exact (hτbound _).trans (hbf.trans (hβ.mono (ofOrd_le_ofOrd.mpr le_self_add)))
@@ -233,4 +233,3 @@ theorem exists_retuning_with_transfer {K i : ℕ} {α β τ : ExtOrd → ExtOrd}
     have hlow := endpoint_reflects hα (Nat.zero_le i |>.trans_lt hi) horbit hz
     exact (hend.symm.trans (hstrip K le_rfl)).le.trans (hβ.mono hlow)
 
-end VaughtConjecture.Knight.OwnerStripRetuning

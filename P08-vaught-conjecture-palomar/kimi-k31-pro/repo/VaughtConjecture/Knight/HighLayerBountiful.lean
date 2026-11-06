@@ -189,5 +189,3 @@ theorem bountiful (hpos : 0 < K) (hb : sem.IsBountiful) : out.IsBountiful := by
       (I := (C, n)) (J := (B, n)) ⟨hCB, le_rfl⟩ hnew
       (lift_of_bountiful hb hC hB ⟨hCB, le_rfl⟩)
 
-end
-end VaughtConjecture.Knight.HighLayerBountiful

@@ -53,4 +53,3 @@ theorem map_respects_of_short_or_local
     obtain ⟨e, he, hde⟩ := hr.availability d c hs hg
     exact ⟨e, he, hν.mono hde⟩
 
-end VaughtConjecture.Knight.SharpWitnessComposition

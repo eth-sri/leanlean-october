@@ -51,6 +51,4 @@ theorem le_extVisibilityReplace_self (v : ExtOrd) (K : ℕ) : v ≤ extVisibilit
   · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
     exact le_visibilityReplace_self μ K
 
-end Value
 
-end VaughtConjecture.Knight

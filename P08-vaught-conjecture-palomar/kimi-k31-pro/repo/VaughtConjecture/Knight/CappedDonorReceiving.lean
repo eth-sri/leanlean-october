@@ -517,8 +517,5 @@ theorem actual_admissible (j : ℕ) : R.Admissible (R.actualState j) where
     change min (R.p d.1) (R.cut R.vactL) = R.sel R.vactL d.1
     exact (R.sel_actual d.1).symm
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

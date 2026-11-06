@@ -66,8 +66,7 @@ theorem protected_caps {b : ℕ} {a : Catalogue X 2} {S : State I.right.scheme I
     (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1)
     (d : Cell (carrier I X T hA hB hC)) :
     min (r.decoder (source I X T hA hB hC (repairAnchor r) d)) (grid 2 b) =
-      min (source I X T hA hB hC a d) (grid 2 b) := by
-  exact OrbitPrefixSupport.decode_agree r.witness (grid_visible 2 b)
+      min (source I X T hA hB hC a d) (grid 2 b) := OrbitPrefixSupport.decode_agree r.witness (grid_visible 2 b)
     (by rw [gTop_of_le le_rfl]; exact le_top) r.reaches
     (fun _ hz hlt => grid_fixed_below r hz hlt) r.boundary_fixed
     (source_supported I X T hA hB hC a)
@@ -78,8 +77,7 @@ theorem protected_lawful {b : ℕ} {a : Catalogue X 2} {S : State I.right.scheme
     (r : ProtectedRepair X a.val S 2 b)
     (hb : b ≤ 2 * Fintype.card (Field I.right.scheme I.left.scheme) + 1) :
     RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2)
-      (fun d => r.decoder (source I X T hA hB hC (repairAnchor r) d.1)) := by
-  exact (OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
+      (fun d => r.decoder (source I X T hA hB hC (repairAnchor r) d.1)) := (OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
     (source_lawful I X T hA hB hC a) (source_lawful I X T hA hB hC (repairAnchor r))
     (fun d => d.2.2) (grid_visible 2 b) (ofOrd_ne_bot _) r.reaches
     (fun _ hz hlt => grid_fixed_below r hz hlt) r.boundary_fixed
@@ -161,5 +159,3 @@ theorem donor_source_repair (hN : 2 < X.req.N) {b : ℕ} {S : State I.right.sche
     (a := ⟨S.profile, hc, S, hS, rfl⟩) r (I.leftFace.map d.1)).trans
     ((field_donor I S' d.1).trans (he d))
 
-end
-end VaughtConjecture.Knight.GrowthPaddedDecode

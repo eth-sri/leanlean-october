@@ -74,11 +74,5 @@ theorem trans_snoc_cover {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.r
 
 theorem cover_mem_range {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.range t}
     {s : Fin (n + 1 + k) ↪ M} (hst : (Fin.castAddEmb k).trans s = snoc t x hx) :
-    ∃ i, s i = x := by
-  refine ⟨Fin.castAdd k (Fin.last n), ?_⟩
-  have h := DFunLike.congr_fun hst (Fin.last n)
-  simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply] at h
-  rw [h]
-  exact snoc_apply_last t x hx
+    ∃ i, s i = x := by grind [snoc_apply_last, Function.Embedding.trans_apply]
 
-end VaughtConjecture.Knight

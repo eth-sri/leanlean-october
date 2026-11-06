@@ -78,5 +78,3 @@ theorem predecessor_bountiful (hold : CanonicalCoatomBountiful.OldLifts sem)
   exact CanonicalPairLowerLifting.lower_lift sem hp (two_le hA)
     hold hL hR hLA hRA hLc hRc hO hcover hcomplete hC hB ⟨hCB, le_rfl⟩ hi
 
-end
-end VaughtConjecture.Knight.CanonicalSeedLifting

@@ -162,7 +162,7 @@ theorem exists_isEndpoint [Finite ι] {j : ℕ} {s p : ι → ExtOrd} {c : ι} {
     {γ : ExtOrd} (S : Saturation j s p c τ γ) :
     ∃ h, IsEndpoint j s τ γ h ∧ ⊥ < h ∧ h ≠ ⊤ ∧ SelfVis j h ∧ τ h = γ ∧ h ≤ s c ∧
       ∀ d, s d < h → τ (s d) = γ → endpoint j (s d) = h := by
-  classical
+
   let _ : Fintype ι := Fintype.ofFinite ι
   obtain ⟨d₀, hd₀, hmin⟩ := Finset.exists_min_image (Finset.univ.filter fun d ↦ τ (s d) = γ)
     (fun d ↦ endpoint j (s d)) ⟨c, by simp [S.owner_saturated]⟩
@@ -181,6 +181,4 @@ theorem Saturation.of_witness {j : ℕ} {s p : ι → ExtOrd} {c : ι} {τ : Ext
     Saturation j s p c τ γ :=
   ⟨hτ.bot, hτ.mono, bound, pos, cap, face, proper, owner_vis⟩
 
-end OwnerLocalEndpoint
 
-end VaughtConjecture.Knight

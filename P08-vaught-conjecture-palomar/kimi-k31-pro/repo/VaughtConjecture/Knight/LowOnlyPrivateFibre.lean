@@ -121,5 +121,3 @@ theorem private_active {j : ℕ} (hj : K ≤ j) {S : State P C}
         _ = min (Q.u d) γ := (hcap.1 d).symm
         _ ≤ Q.u d := min_le_left _ _
 
-end
-end VaughtConjecture.Knight.LowOnly.Family

@@ -85,8 +85,8 @@ theorem holds_comp_eq_holds_pushforward {m : ℕ} (idx : L.AtomicIdx m)
     (a : Fin n → M) (σ : Fin m → Fin n) :
     idx.holds (a ∘ σ) = (idx.pushforward σ).holds a := by
   cases idx with
-  | eq i j => simp only [holds, pushforward, Function.comp_apply]
-  | rel R f => simp only [holds, pushforward, Function.comp_assoc]
+  | eq i j => simp [holds, pushforward, Function.comp_apply]
+  | rel R f => simp [holds, pushforward, Function.comp_assoc]
 
 end AtomicIdx
 
@@ -107,7 +107,7 @@ theorem realize_atomicFormula (idx : L.AtomicIdx n) (a : Fin n → M) :
   cases idx with
   | eq i j => simp [atomicFormula, AtomicIdx.holds, Term.equal, Term.realize]
   | rel R f =>
-    simp only [atomicFormula, AtomicIdx.holds, Relations.formula, BoundedFormula.realize_rel]
+    simp [atomicFormula, AtomicIdx.holds, Relations.formula, BoundedFormula.realize_rel]
     refine iff_of_eq (congrArg (Structure.RelMap R) ?_)
     funext i
     simp
@@ -148,27 +148,27 @@ theorem sameAtomicType_iff_realize_atomicDiagram [Countable (Σ l, L.Relations l
     {N : Type w'} [L.Structure N] (a : Fin n → M) (b : Fin n → N) :
     SameAtomicType (L := L) (M := M) (N := N) a b ↔
       Formulaω.Realize (atomicDiagram (L := L) (M := M) a) b := by
-  classical
+
   -- keep the formula-level interface intact: unfolding `Formulaω.Realize` would expose the raw
   -- ℕ-indexed `iInf` semantics and lose the `AtomicIdx` index type
-  simp only [atomicDiagram, Formulaω.realize_einf]
+  simp [atomicDiagram, Formulaω.realize_einf]
   constructor
   · intro h idx
     specialize h idx
     by_cases ha : idx.holds a
-    · simp only [ha, ↓reduceIte]
+    · simp [ha, ↓reduceIte]
       exact (realize_atomicFormulaω (M := N) idx b).mpr (h.mp ha)
-    · simp only [ha, ↓reduceIte, Formulaω.realize_not]
+    · simp [ha, ↓reduceIte, Formulaω.realize_not]
       exact fun hb => ha (h.mpr ((realize_atomicFormulaω (M := N) idx b).mp hb))
   · intro h idx
     have hidx := h idx
     constructor
     · intro ha
-      simp only [ha, ↓reduceIte] at hidx
+      simp [ha, ↓reduceIte] at hidx
       exact (realize_atomicFormulaω (M := N) idx b).mp hidx
     · intro hb
       by_contra ha
-      simp only [ha, ↓reduceIte, Formulaω.realize_not] at hidx
+      simp [ha, ↓reduceIte, Formulaω.realize_not] at hidx
       exact hidx ((realize_atomicFormulaω (M := N) idx b).mpr hb)
 
 omit [L.IsRelational] in
@@ -186,14 +186,6 @@ theorem SameAtomicType.symm {N : Type w'} [L.Structure N]
   fun idx => (h idx).symm
 
 omit [L.IsRelational] in
-/-- Same atomic type is transitive. -/
-@[trans]
-theorem SameAtomicType.trans {N P : Type*} [L.Structure N] [L.Structure P]
-    {a : Fin n → M} {b : Fin n → N} {c : Fin n → P}
-    (hab : SameAtomicType (L := L) (M := M) (N := N) a b)
-    (hbc : SameAtomicType (L := L) (M := N) (N := P) b c) :
-    SameAtomicType (L := L) (M := M) (N := P) a c :=
-  fun idx => (hab idx).trans (hbc idx)
 
 omit [L.IsRelational] in
 /-- Same atomic type is preserved under relabeling.
@@ -229,6 +221,4 @@ theorem SameAtomicType.map_equiv.{v₀, u₀, w₀, w₀', u_1, u_2} {L : Langua
     | rwa [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel] at hidx
     | rwa [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel]
 
-end Language
 
-end FirstOrder

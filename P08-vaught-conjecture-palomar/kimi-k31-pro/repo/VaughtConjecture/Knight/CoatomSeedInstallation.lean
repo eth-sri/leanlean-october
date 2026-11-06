@@ -63,7 +63,7 @@ theorem complete : (scheme I F).IsComplete := by
   have ha : (Finset.univ : Finset (Fin (n + 2))).card = n + 2 := by simp
   by_contra hh
   have he : J.1 = Finset.univ := Finset.eq_of_subset_of_card_le hs (by omega)
-  exact hne (Prod.ext he (by dsimp only; omega))
+  exact hne (Prod.ext he (by dsimp; omega))
 
 theorem boundary_exhaustive (B : Finset (Fin (n + 2))) (hB : ¬ Finset.univ ⊆ B)
     (z : Cell (scheme I F)) (hz : (scheme I F).scope z ⊆ B) :
@@ -167,5 +167,3 @@ theorem install {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
       rw [htop, truncExt_id_of_bound (Or.inr rfl)]
       exact le_top
 
-end
-end VaughtConjecture.Knight.CoatomSeedInstallation

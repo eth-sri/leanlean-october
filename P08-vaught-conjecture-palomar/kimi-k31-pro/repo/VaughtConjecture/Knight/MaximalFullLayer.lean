@@ -66,7 +66,7 @@ theorem consistent (hs : sem.IsConsistent) : (base D sem K l hK hKl hlA).IsConsi
     have he : (base D sem K l hK hKl hlA).E
         (toCell D Unit l (positive K l hKl) hlA (.inr u)) = fun _ => ⊥ := by
       funext d
-      simp only [base, SeparatedSourceLayerCarrier.base, toOcc_toCell,
+      simp [base, SeparatedSourceLayerCarrier.base, toOcc_toCell,
         SeparatedSourceLayerCarrier.oldTable]
     rw [he]
     refine ⟨fun _ => (extVisibilityReplace_bot _ _).symm, ?_,
@@ -84,7 +84,7 @@ theorem coded (hc : sem.IsCoded) : (base D sem K l hK hKl hlA).IsCoded := by
     (separated D K l hK hKl) sem _ hc (inherited_row D sem K l hK hKl hlA)
   intro u d
   apply Or.inl
-  simp only [base, SeparatedSourceLayerCarrier.base, toOcc_toCell,
+  simp [base, SeparatedSourceLayerCarrier.base, toOcc_toCell,
     SeparatedSourceLayerCarrier.oldTable]
 
 theorem complete (hc : ∀ J ∈ Plan.gradedPlan D.plan, J ≠ (A, l) → ∃ d, D.cell d = J) :
@@ -116,7 +116,7 @@ theorem exists_active (hk : 1 ≤ K) (hc : sem.IsConsistent) (hb : sem.IsBountif
   obtain ⟨out, q, hoc, hob, hcod, hq, he, hread, htop⟩ :=
     HighGradeExtension.exists_extension (base D sem K l hK hKl hlA)
       (apex D K l hKl hlA) (by rw [hg]; exact hKl) hs low hlaw ⊤
-      (by simp only [SelfVis, extVisibilityReplace_top]) hk
+      (by simp [SelfVis, extVisibilityReplace_top]) hk
       (consistent D sem K l hK hKl hlA hc)
       (bountiful D sem K l hK hKl hlA (Nat.zero_lt_of_lt hk) hb)
       (coded D sem K l hK hKl hlA hcode)
@@ -128,9 +128,7 @@ theorem exists_active (hk : 1 ≤ K) (hc : sem.IsConsistent) (hb : sem.IsBountif
   · intro d
     let dlow : D.below (A, K) := ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hK d⟩
     have hh := hread (e dlow)
-    dsimp only [low] at hh
+    dsimp [low] at hh
     rw [e.symm_apply_apply] at hh
     exact hh
 
-end
-end VaughtConjecture.Knight.MaximalFullLayer

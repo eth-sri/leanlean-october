@@ -78,5 +78,3 @@ theorem receives_exactly (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsH
   rw [donor_tuple] at he
   exact ⟨y, _, he.trans hkeep⟩
 
-end
-end VaughtConjecture.Knight.HollowGrowthTemplate

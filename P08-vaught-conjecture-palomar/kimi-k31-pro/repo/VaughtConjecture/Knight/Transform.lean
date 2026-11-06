@@ -144,9 +144,9 @@ theorem TransformsTo.truncExt_target {α : Ordinal.{0}} (hα : Order.IsSuccLimit
     by rw [Function.comp_apply, hσ_bot]; rfl,
     fun x y hxy => truncExt_mono α (hσ_mono hxy),
     ?_,
-    fun d => by simp only [Function.comp_apply]; rw [hσ_eq d, truncExt_min]⟩
+    fun d => by simp [Function.comp_apply]; rw [hσ_eq d, truncExt_min]⟩
   intro x k hle i hi
-  simp only [Function.comp_apply] at hle ⊢
+  simp [Function.comp_apply] at hle ⊢
   rw [← truncExt_evr_comm hα (σ x) k i]
   by_cases hxk : σ x ≤ g k
   · -- the original clause applies
@@ -210,6 +210,4 @@ theorem TransformsTo.to_bot {X : Type*} {grade : X → ℕ} (p : X → ExtOrd) :
     fun _ _ _ _ _ => (extVisibilityReplace_bot _ _).symm,
     fun _ => (min_eq_left bot_le).symm⟩
 
-end Transform
 
-end VaughtConjecture.Knight

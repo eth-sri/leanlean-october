@@ -41,7 +41,7 @@ def ceiling : ExtOrd := ofOrd (Ordinal.omega0 * (2 * Fintype.card X + 1 : ℕ) +
 
 theorem grid_bound {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card X)) :
     h ≤ ceiling j X := by
-  classical
+
   rcases Finset.mem_insert.mp hh with rfl | hh
   · exact bot_le
   · obtain ⟨b, hb, rfl⟩ := Finset.mem_image.mp hh
@@ -56,7 +56,7 @@ theorem profile_bound (q : Profile sem j X occ) (x : X) : q.val x ≤ ceiling j 
 
 theorem grid_short {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card X)) :
     Short j h := by
-  classical
+
   rcases Finset.mem_insert.mp hh with rfl | hh
   · exact Or.inl rfl
   · obtain ⟨b, _, rfl⟩ := Finset.mem_image.mp hh
@@ -131,7 +131,7 @@ theorem source_old (q : Profile sem j X occ) (d : Cell D) :
     (SeparatedSourceLayerCarrier.separated_of_proper D j hproper) d)]
   change lower sem j X occ hj hA
     (member sem j X occ hj hA hproper (controller sem j X occ hj hA q)) _ = _
-  simp only [lower, member, controller, ProperBoundarySourceLayer.member_controller,
+  simp [lower, member, controller, ProperBoundarySourceLayer.member_controller,
     ProperBoundarySourceLayer.lower_old, Function.comp_apply]
 
 theorem inherited_row (c : Cell D) (d : D.below (D.cell c)) :
@@ -210,7 +210,7 @@ theorem section_lawful (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C) :
         (member sem j X occ hj hA hproper
           (controller sem j X occ hj hA (encode sem j X occ hg hp ht)))
         (old sem j X occ hj hA d.1)))
-  simp only [lower, member, controller, ProperBoundarySourceLayer.member_controller,
+  simp [lower, member, controller, ProperBoundarySourceLayer.member_controller,
     ProperBoundarySourceLayer.lower_old, Function.comp_apply]
   change RespectsSemanticsBelow sem (D.cell x) (fun d =>
     PairedSlotDecoder.decode j (values p) G C (PairedSlotEncoding.normalize j p (occ d.1)))
@@ -246,5 +246,3 @@ theorem section_agreement {q : X → ExtOrd} (hq : RespectsSemantics sem (q ∘ 
   exact hs.decode (PairedSlotDecoder.decode_witness hG hC).mono
     (PairedSlotDecoder.decode_witness hG hC).mono hpReach hqReach (fun _ _ => hcompare _)
 
-end
-end VaughtConjecture.Knight.CanonicalFieldLayer

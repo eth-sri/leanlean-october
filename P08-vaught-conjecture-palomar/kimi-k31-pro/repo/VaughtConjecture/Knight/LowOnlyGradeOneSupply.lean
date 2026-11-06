@@ -158,9 +158,7 @@ theorem private_lift (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A)
       ∀ d, min (w d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨w, hw, hr⟩ := private_bottom_supply I F hroot hA hB hC hp
-    exact ⟨w, hw, hr, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨w, hw, hr, fun _ => by simp [hz]⟩
   · exact private_positive_lift I F hroot hA hB hC hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) hag
 
-end
-end VaughtConjecture.Knight.LowOnlyOrderedLadder

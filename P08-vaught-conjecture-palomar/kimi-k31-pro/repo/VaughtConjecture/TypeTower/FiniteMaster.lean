@@ -48,7 +48,7 @@ theorem factor_unique {n : ℕ} {t : Fin n ↪ M} {f g : Fin n ↪ Fin s.n}
 
 theorem supported_iff {n : ℕ} (t : Fin n ↪ M) :
     s.Supported t ↔ ∀ i, t i ∈ Set.range s.tuple := by
-  classical
+
   constructor
   · rintro ⟨f, rfl⟩ i
     exact ⟨f i, rfl⟩
@@ -68,7 +68,7 @@ theorem chart_factor {n : ℕ} (f : Fin n ↪ Fin s.n) :
     s.chart.eval (f.trans s.tuple) = T.pull f s.type := by
   have h : s.Supported (f.trans s.tuple) := ⟨f, rfl⟩
   have hf : h.choose = f := s.factor_unique h.choose_spec rfl
-  simp only [chart, dite_eq_left h, hf]
+  simp [chart, dite_eq_left h, hf]
 
 theorem chart_nonfactor {n : ℕ} (t : Fin n ↪ M) (h : ¬ s.Supported t) :
     s.chart.eval t = none := dite_eq_right h
@@ -77,10 +77,7 @@ theorem chart_nonfactor {n : ℕ} (t : Fin n ↪ M) (h : ¬ s.Supported t) :
   simpa using (s.chart_factor (Function.Embedding.refl _)).trans (T.pull_refl s.type)
 
 theorem supported_of_eval {n : ℕ} {t : Fin n ↪ M} {p : T.Ty α n}
-    (h : s.chart.eval t = some p) : s.Supported t := by
-  by_contra ht
-  rw [s.chart_nonfactor t ht] at h
-  cases h
+    (h : s.chart.eval t = some p) : s.Supported t := by grind [chart_nonfactor]
 
 theorem consistent : s.chart.IsExactParentConsistent := by
   intro m n t p f hp
@@ -94,7 +91,7 @@ theorem eq_chart {A : T.Realization α M} (hA : A.IsExactParentConsistent)
     (hs : A.eval s.tuple = some s.type)
     (hsupport : ∀ {n} (t : Fin n ↪ M), (A.eval t).isSome → s.Supported t) :
     A = s.chart := by
-  classical
+
   apply Realization.ext
   intro n t
   by_cases ht : s.Supported t
@@ -152,5 +149,3 @@ theorem extends_iff (t : FiniteMaster T α M) : s.Extends t ↔ s.chart.Extends 
     obtain ⟨f, hf⟩ := t.supported_of_eval hp
     exact ⟨f, hf, (t.chart_factor f).symm.trans (hf ▸ hp)⟩
 
-end FiniteMaster
-end VaughtConjecture.TypeTower

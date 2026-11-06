@@ -76,5 +76,3 @@ theorem complete_through (J : Finset ι × ℕ)
   CanonicalRecursiveCoverage.complete_through I.rows (n + 3) (height_le I)
     (fun _ h hA => I.complete_proper h hA) J hJ hj
 
-end
-end VaughtConjecture.Knight.CoatomRecursiveInput

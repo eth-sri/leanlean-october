@@ -127,8 +127,7 @@ abbrev apex : Cell (semScheme W R hunion hface).scheme :=
   FinalGateApex.apex (input W R hunion hface) (Finset.card_fin _)
 
 theorem gate_grade (a : OrdinaryFinalCatalogue.Member R) :
-    (semScheme W R hunion hface).scheme.grade (gate W R hunion hface a) = n + 4 := by
-  exact congrArg Prod.snd
+    (semScheme W R hunion hface).scheme.grade (gate W R hunion hface a) = n + 4 := congrArg Prod.snd
     ((FinalGateApex.old_index (input W R hunion hface) (Finset.card_fin _)
       ((input W R hunion hface).added a true)).trans
         ((input W R hunion hface).added_index a true))
@@ -171,5 +170,3 @@ theorem readback_below {q : Cell (semScheme W R hunion hface).scheme → ExtOrd}
     min (q ((requestFace W R hunion hface).map d)) δ = min (R.p d) δ :=
   GradeTailRestoration.cap_below (capped_readback W R hunion hface hq hretain a hgate d) hδ
 
-end
-end VaughtConjecture.Knight.OrdinaryReceivingProbe

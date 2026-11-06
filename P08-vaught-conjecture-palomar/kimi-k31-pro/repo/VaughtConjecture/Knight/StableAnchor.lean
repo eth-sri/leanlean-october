@@ -187,4 +187,3 @@ theorem stableValue_eq_label_of_hollow (hM : R.IsModel) (hh : R.IsHollow) {n : �
     · rw [heq, htop]
   · exact stableValue_of_ne_top hM.consistent hM.covering hpt htop
 
-end VaughtConjecture.Knight

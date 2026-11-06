@@ -86,16 +86,14 @@ def fill (r : D.below (cut BJ k) → ExtOrd) (η : ExtOrd) (d : D.below BJ) : Ex
 
 theorem fill_old {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
     (d : D.below BJ) (hd : D.grade d.1 ≤ k) :
-    F.fill r η d = r ⟨d.1, d.2.1, le_min d.2.2 hd⟩ := by
-  simp only [fill, hd, ↓reduceDIte]
+    F.fill r η d = r ⟨d.1, d.2.1, le_min d.2.2 hd⟩ := by grind [fill]
 
 theorem fill_high {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
-    (hc : GradedLe (D.cell F.high) BJ) : F.fill r η ⟨F.high, hc⟩ = η := by
-  simp only [fill, not_le_of_gt F.above, ↓reduceDIte, ↓reduceIte]
+    (hc : GradedLe (D.cell F.high) BJ) : F.fill r η ⟨F.high, hc⟩ = η := by grind [fill, above]
 
 theorem fill_mute {r : D.below (cut BJ k) → ExtOrd} {η : ExtOrd}
     (d : D.below BJ) (hd : ¬D.grade d.1 ≤ k) (he : d.1 ≠ F.high) :
-    F.fill r η d = ⊥ := by simp only [fill, hd, he, ↓reduceDIte, ↓reduceIte]
+    F.fill r η d = ⊥ := by grind [fill]
 
 private theorem base_lift (hb : F.base.IsBountiful)
     (hCI : CI ∈ Plan.gradedPlan D.plan) (hBJ : BJ ∈ Plan.gradedPlan D.plan)
@@ -205,4 +203,3 @@ theorem bountiful (hk : 1 ≤ k) (hb : F.base.IsBountiful) : F.rows.IsBountiful 
           congrArg (fun x => min x (q ⟨F.high, hcBJ⟩)) (outcap ⟨e.1, e.2.trans hcBJ⟩)
         _ = _ := by dsimp only [CellScheme.below.incl]; ac_rfl
 
-end VaughtConjecture.Knight.HighGradeExtension.Data

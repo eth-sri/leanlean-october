@@ -79,8 +79,7 @@ theorem respects_iff (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j)
     (p : (CanonicalGradeCutSections.lower sem j hj hjA).below BJ → ExtOrd) :
     RespectsSemanticsBelow (CanonicalGradeCutSections.lowerRows sem j hj hjA hproper) BJ p ↔
       RespectsSemanticsBelow (rows sem j hj hjA hproper k hg hk hkA hjk) BJ
-        (p ∘ (equiv sem j hj hjA k hk hkA hjk BJ hBJ).symm) := by
-  exact (GradeCutLayerRows.lower_respects_iff D (CanonicalGradeCutSections.Profiles sem j)
+        (p ∘ (equiv sem j hj hjA k hk hkA hjk BJ hBJ).symm) := (GradeCutLayerRows.lower_respects_iff D (CanonicalGradeCutSections.Profiles sem j)
     j hj hjA hproper sem (CanonicalGradeCutSections.lowerRows sem j hj hjA hproper)
     (CanonicalGradeCutSections.overlap sem j hj hjA hproper) BJ hBJ p).trans
     (upper_respects_iff sem j hj hjA hproper k hg hk hkA hjk BJ hBJ _)
@@ -93,5 +92,3 @@ theorem pullback_respects {BJ : Finset ι × ℕ} (hBJ : BJ.2 ≤ j)
   apply (respects_iff sem j hj hjA hproper k hg hk hkA hjk BJ hBJ _).mpr
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hq
 
-end
-end VaughtConjecture.Knight.CanonicalLowerDomain

@@ -35,5 +35,3 @@ abbrev lowerScheme := CanonicalPairBoundary.scheme sem 1 2 (by decide)
 abbrev lowerSem := CanonicalPairBoundary.rows sem 1 2 (by decide)
   (one_le k h2k hkA) (by decide) (two_le k h2k hkA) hp (by decide)
 
-end
-end VaughtConjecture.Knight.CanonicalProperOwnerLayer

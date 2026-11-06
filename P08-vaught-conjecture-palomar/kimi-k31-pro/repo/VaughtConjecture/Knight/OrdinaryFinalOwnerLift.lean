@@ -106,5 +106,3 @@ theorem exists_owner_capped_lift
     rw [hfread]
     exact hprivate d
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalOwnerLift

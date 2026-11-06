@@ -71,8 +71,7 @@ theorem cell_toCell (d : Cell D ⊕ Q) :
     exact Fin.addCases_right (Fintype.equivFin Q q)
 
 theorem cell_eq (d : Cell (scheme D Q k hk hA)) :
-    (scheme D Q k hk hA).cell d = index D Q k (toOcc D Q k hk hA d) := by
-  rw [← cell_toCell, toCell_toOcc]
+    (scheme D Q k hk hA).cell d = index D Q k (toOcc D Q k hk hA d) := by grind [cell_toCell, toCell_toOcc]
 
 theorem old_order : StrictMono (fun d : Cell D => toCell D Q k hk hA (.inl d)) :=
   Fin.strictMono_castAdd _
@@ -90,6 +89,4 @@ noncomputable def controller (q : Q) :
     SourcePrefixLayer.Controller (scheme D Q k hk hA) k :=
   ⟨toCell D Q k hk hA (.inr q), cell_toCell D Q k hk hA (.inr q)⟩
 
-variable (sem : Semantics D)
 
-end VaughtConjecture.Knight.SourceLayerCarrier

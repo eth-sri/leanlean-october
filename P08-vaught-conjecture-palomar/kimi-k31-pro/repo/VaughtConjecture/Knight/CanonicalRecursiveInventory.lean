@@ -64,5 +64,3 @@ theorem separated (hp : ∀ d : Cell D, D.scope d ≠ A)
     ¬ GradedLe (A, n + 1) ((scheme sem n hn).cell d) :=
   RecursiveSourceCarrier.separated D (Profile sem) hp n hn d
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveInventory

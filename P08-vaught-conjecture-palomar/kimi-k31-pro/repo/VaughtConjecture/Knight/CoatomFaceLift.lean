@@ -182,5 +182,3 @@ theorem exists_highGrade_coface {β : LimitStage} (H : MaximalCoatomAmalgamation
   refine exists_highGradeDominance_candidate H p r Sig ?_
   rw [hr, ExtOrd.ofOrd_lt_ofOrd]; exact Order.lt_succ γ
 
-end FixedHeight
-end VaughtConjecture.Knight

@@ -46,8 +46,7 @@ variable (U : Finset ι) (hU : U ∈ R)
 
 theorem ladder_lawful (hp : RespectsSemanticsBelow Rows (U, j) p) :
     SupportLadderRows.Lawful ranks₁
-      (fun v => p (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 v)) := by
-  exact GrowthMixedGradeOne.ladder_lawful I X T hA hB hC P U
+      (fun v => p (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 v)) := GrowthMixedGradeOne.ladder_lawful I X T hA hB hC P U
     (by rw [GrowthPaddedIteration.build_plan]; exact hU) hm
     (hp.mono (show GradedLe (U, 1) (U, j) from ⟨le_rfl, hj0⟩))
 
@@ -150,5 +149,3 @@ theorem boundary_capped_lawful (hp : RespectsSemanticsBelow Rows (U, j) p)
   have hl := boundary_lawful_at I X T hS
   simpa only [he] using hl
 
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

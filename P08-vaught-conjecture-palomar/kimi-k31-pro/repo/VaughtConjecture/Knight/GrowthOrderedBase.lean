@@ -170,10 +170,4 @@ theorem anchor_lawful (a : Catalogue X 1) :
   rw [← he]
   exact boundary_lawful I X T hs
 
-include T in
-theorem consistent (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A) :
-    (rows I.boundary I.rows hA (field I) (fields I X) (proper I hB hC)).IsConsistent :=
-  RelativeLadderLayer.consistent _ _ _ _ _ _ I.consistent (anchor_lawful I X T)
 
-end
-end VaughtConjecture.Knight.GrowthOrderedBase

@@ -286,9 +286,7 @@ theorem IsModel.infinite_carrier (h : R.IsModel) : Infinite M := by
   letI := Fintype.ofFinite M
   obtain ⟨s, -⟩ := hm (Fintype.card M + 1)
   have := Fintype.card_le_of_embedding s
-  simp only [Fintype.card_fin] at this
+  simp [Fintype.card_fin] at this
   omega
 
-end KnightRealization
 
-end VaughtConjecture.Knight

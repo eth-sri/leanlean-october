@@ -39,4 +39,3 @@ theorem exists_high_common_cover (hc : R.IsExactParentConsistent)
   refine ⟨z, hxz, ⟨g.trans e, ?_⟩, hhigh, c, hsc, hgr, htop⟩
   rw [Function.Embedding.trans_assoc, heu, hgu]
 
-end VaughtConjecture.Knight.KnightRealization

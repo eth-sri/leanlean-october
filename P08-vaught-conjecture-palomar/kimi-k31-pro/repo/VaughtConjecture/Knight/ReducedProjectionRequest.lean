@@ -88,11 +88,6 @@ universe w
 
 /-! ## Exact below `β`, at least `β` above -/
 
-section LabelSplit
-
-variable {β : Ordinal.{0}}
-
-end LabelSplit
 
 /-! ## The required domain and visible face -/
 
@@ -127,7 +122,7 @@ theorem typeMap_eq_some_iff_labels (f : Fin k ↪ Fin m) (q : S γ m) (P : S γ 
     rfl
   · intro h
     obtain ⟨Ps, Pl, Pb, Pr⟩ := P
-    dsimp only at hs h
+    dsimp at hs h
     subst hs
     exact StageType.ext rfl (heq_of_eq (funext fun i => h i))
 
@@ -135,12 +130,6 @@ end RequiredFace
 
 /-! ## The root part of every projection is the realized reduced root -/
 
-section RootPart
-
-variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
-  {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
-
-end RootPart
 
 /-! ## Geometry: the request face forces a pivot of the context's plan outside the root -/
 
@@ -156,6 +145,4 @@ theorem image_castSuccEmb_univ :
     Fin.castSuccEmb_apply]
   exact Fin.exists_castSucc_eq
 
-end Geometry
 
-end VaughtConjecture.Knight

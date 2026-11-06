@@ -37,7 +37,7 @@ theorem exists_section {p : D.below (A, n + 3) → ExtOrd}
     ∃ r : (carrier sem n hA).below (A, n + 3) → ExtOrd,
       RespectsSemanticsBelow (CanonicalRecursiveSemantics.rows sem hp n hA) (A, n + 3) r ∧
       ∀ d, r (boundaryTarget sem n hA d) = p d := by
-  classical
+
   obtain ⟨S, u, hu, _, hcode, hdecode⟩ := hpr.exists_coded_representative
     (fun d => d.2.2) (le_refl (Nat.card (D.below (A, n + 3))))
   let v : Cell D → ExtOrd := fun d => if hd : D.grade d ≤ n + 3 then
@@ -46,7 +46,7 @@ theorem exists_section {p : D.below (A, n + 3) → ExtOrd}
   have hvr : RespectsSemanticsBelow sem (A, n + 3) (fun d => v d.1) := by
     simpa only [hv] using hu
   have hvt (d : Cell D) : v d ≠ ⊤ := by
-    dsimp only [v]
+    dsimp [v]
     split_ifs with hd
     · rcases mem_codedAlphabet_iff.mp
         (hcode ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩) with
@@ -66,5 +66,3 @@ theorem exists_section {p : D.below (A, n + 3) → ExtOrd}
   change canonicalDecoder S (n + 3) (w (boundary sem n hA d.1)) = p d
   exact (congrArg (canonicalDecoder S (n + 3)) (hr.trans (hv d))).trans (hdecode d)
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveTopSections

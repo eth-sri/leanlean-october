@@ -167,5 +167,3 @@ theorem cover_two_cofaces (s : AmalgamatedBoundaryPlan.Step A)
     · exact Or.inr (hright ▸ s.right_plan.subset_of_mem hr)
   · exact False.elim (hs (Finset.mem_singleton.mp hS))
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedPairLift

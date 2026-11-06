@@ -117,24 +117,9 @@ theorem row_spare (a : Catalogue X 1) (v : Pt) :
 
 /-! ## Uncapped recognition of the complete shadow vector -/
 
-section Chart
-
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hτ
-
-end Chart
 
 /-! ## Lawfulness and admission of the uncapped vector at grade one -/
 
-section Admission
-
-variable (hp : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) p) {a : Catalogue X 1}
-  {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hp hτ
-
-end Admission
 
 /-! ## The two-grade hidden-original projection -/
 
@@ -158,14 +143,4 @@ transports directly.  Root agreement of the grade-dependent projection follows f
 root agreement and root-grade preservation (`RootAttachment.grade`).  None of this uses the
 admission hypothesis `1 < X.req.N`. -/
 
-section Boundary
 
-variable (hp : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) p) {a : Catalogue X 1}
-  {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hp hτ
-
-end Boundary
-
-end
-end VaughtConjecture.Knight.GrowthSpareRecognition

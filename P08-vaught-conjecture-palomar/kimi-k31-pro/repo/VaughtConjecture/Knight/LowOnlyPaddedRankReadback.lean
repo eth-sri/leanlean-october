@@ -33,7 +33,7 @@ def partnerState (S : State P C) : State P C := ⟨S.u, S.v, F.maximum S⟩
 theorem partner_profile (S : State P C) :
     (partnerState F S).profile =
       LowSeparatorRank.rankPartner (donorField F) cutoffField S.profile := by
-  classical
+
   funext d
   rcases d with d | d | d
   · exact (Function.update_of_ne (by simp) _ _).symm
@@ -163,5 +163,3 @@ theorem donor_top_of_separator {S : State I.left I.right}
   · exact top_le_iff.mp (hc ▸ hg (rank_mono (values (state F a).profile) hh))
   · exact top_le_iff.mp (hr ▸ hg (rank_mono (values (state F a).profile) hh))
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedRankReadback

@@ -47,9 +47,4 @@ theorem right_height {k : ℕ} (hcard : A.card = k + 1) : (A.erase s.b).card = k
   rw [Finset.card_erase_of_mem s.hb, hcard]
   omega
 
-variable {m nL nR : ℕ}
-variable (I : WholeDonorBoundary.Input A (A.erase s.a) (A.erase s.b) s.plan m nL nR)
-variable (k : ℕ) (hk : 0 < k) (hcard : A.card = k + 1)
 
-end
-end VaughtConjecture.Knight.OrdinaryPlanScopeStep

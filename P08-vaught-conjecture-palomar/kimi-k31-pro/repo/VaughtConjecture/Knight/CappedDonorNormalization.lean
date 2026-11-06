@@ -114,8 +114,5 @@ theorem normalizeState_synchronized {j : ℕ} (hj : 1 ≤ j) {st : R.State j}
 
 /-! ## Normalized repairs stay in the catalogue -/
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

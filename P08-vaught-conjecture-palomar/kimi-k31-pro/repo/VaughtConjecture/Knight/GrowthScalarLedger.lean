@@ -118,5 +118,3 @@ theorem donor_grade_lt {m N : ℕ} (D : SemScheme m) (hm : m < N) (d : Cell D.sc
     (by simpa only [Finset.card_univ, Fintype.card_fin] using
       Finset.card_le_univ (D.scheme.scope d))).trans_lt hm
 
-end
-end VaughtConjecture.Knight.Growth

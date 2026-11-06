@@ -55,17 +55,8 @@ noncomputable def reduceType (hα : Order.IsSuccLimit α) (_h : α ≤ β) (t : 
   label_bound d := truncExt_bound α (t.label d)
   respects := t.respects.truncate hα
 
-@[simp] theorem reduceType_scheme (hα : Order.IsSuccLimit α) (h : α ≤ β) (t : S β n) :
-    (reduceType hα h t).scheme = t.scheme :=
-  rfl
 
-@[simp] theorem reduceType_label (hα : Order.IsSuccLimit α) (h : α ≤ β) (t : S β n)
-    (d : Cell t.scheme.scheme) : (reduceType hα h t).label d = truncExt α (t.label d) := rfl
 
-/-- The rows are fixed under reduction (the paper's Def. 3.1.2: only `p` is truncated). -/
-@[simp] theorem reduceType_rows_E (hα : Order.IsSuccLimit α) (h : α ≤ β) (t : S β n)
-    (Sig : Cell t.scheme.scheme) (d : t.scheme.scheme.below (t.scheme.scheme.cell Sig)) :
-    (reduceType hα h t).scheme.rows.E Sig d = t.scheme.rows.E Sig d := rfl
 
 /-- Reduction to the stage of the type is the identity: labels are already strictly bounded
 at `α` (`< ofOrd α` or `⊤`), and `truncExt α` fixes them (`truncExt_id_of_bound`). -/
@@ -89,4 +80,3 @@ theorem typeMap_reduceType_comm (hα : Order.IsSuccLimit α) (h : α ≤ β) (f 
     rfl
   · rw [typeMap_eq_none f t hr, typeMap_eq_none f (reduceType hα h t) hr, Option.map_none]
 
-end VaughtConjecture.Knight

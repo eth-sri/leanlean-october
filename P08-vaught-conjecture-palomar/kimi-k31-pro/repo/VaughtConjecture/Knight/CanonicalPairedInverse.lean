@@ -37,7 +37,7 @@ def inverse (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) (x : ExtOrd) : ExtOrd :
 
 theorem grid_visible (j b : ℕ) : SelfVis j (grid j b) := by
   apply selfVis_ofOrd_iff.mpr
-  simp only [finitePart_mul_add, le_refl]
+  simp [finitePart_mul_add]
 
 theorem inverse_witness (j : ℕ) (S : Finset Ordinal.{0}) (B : ℕ) :
     Witness (gTop j) (inverse j S B) :=
@@ -75,18 +75,17 @@ theorem patch_encode_le {a : Ordinal.{0}} (ha : a ∈ S) :
     · exact ofOrd_le_ofOrd.mpr ((code_add_lt_mul (Nat.cast_lt.mpr hlt) j).le.trans
         le_self_add)
     · have ho : ¬ Orbit j S a := fun ho => hbfree ⟨a, ha, ho, heq.symm⟩
-      simp only [encode, offset, ite_eq_right ho, grid, heq, le_refl]
+      simp [encode, offset, ite_eq_right ho, grid, heq]
   · rw [encode, stepShifter_of_lt (ofOrd_ne_bot _)
       (ofOrd_lt_ofOrd.mpr (code_add_lt_mul (Nat.cast_lt.mpr (not_le.mp hba)) _))]
     exact bot_le
 
 theorem inverse_encode {a : Ordinal.{0}} (ha : a ∈ S) :
-    inverse j S B (encode j S a) = ofOrd a := by
-  rw [inverse, PairedSlotDecoder.occupied_encode ha, max_eq_left (patch_encode_le hc ha)]
+    inverse j S B (encode j S a) = ofOrd a := by grind [inverse, patch_encode_le, PairedSlotDecoder.occupied_encode]
 
 theorem occupied_grid_le {b : ℕ} (hb : b < B) :
     PairedSlotDecoder.occupied j S (grid j b) ≤ grid j b := by
-  classical
+
   apply Finset.sup_le
   intro a ha
   by_cases hab : block j S a ≤ b
@@ -113,7 +112,7 @@ theorem occupied_grid_le {b : ℕ} (hb : b < B) :
 
 omit hc in
 theorem patch_grid_le (b : ℕ) : patch j S B (grid j b) ≤ grid j b := by
-  classical
+
   apply Finset.sup_le
   intro n _
   by_cases hn : n ≤ b
@@ -185,7 +184,7 @@ theorem inverse_normalize
     (hag : ∀ d, min (a d) (grid j B) = min (p d) (grid j B)) (d : X) :
     inverse j (values p) B (PairedSlotEncoding.normalize j p d) = p d := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨v, hv⟩
-  · simp only [PairedSlotEncoding.normalize, hb, (inverse_witness j (values p) B).bot]
+  · simp [PairedSlotEncoding.normalize, hb, (inverse_witness j (values p) B).bot]
   · exact (hp d ht).elim
   · rw [normalize_ofOrd hv, inverse_encode (encoded_cap ha hag) (mem_values.mpr ⟨d, hv⟩), hv]
 
@@ -199,7 +198,7 @@ theorem inverse_supported
       extVisibilityReplace (a d) k i := by
   have he : a d = p d := eq_of_cap_eq_lt (hag d) hd
   have hn : PairedSlotEncoding.normalize j p d = a d := by
-    rw [← normalize_prefix (by simp only [finitePart_mul_add, le_refl]) hag d hd, ha.1]
+    rw [← normalize_prefix (by simp [finitePart_mul_add]) hag d hd, ha.1]
   have hr : inverse j (values p) B (a d) = a d := by
     calc
       inverse j (values p) B (a d) =
@@ -227,6 +226,3 @@ theorem exists_supported_inverse
   · exact fun b hb => inverse_grid (encoded_cap ha hag) hb
   · exact fun d hd k hk i hi => inverse_supported ha hp hag d hd hk hi
 
-end Profile
-end
-end VaughtConjecture.Knight.CanonicalPairedInverse

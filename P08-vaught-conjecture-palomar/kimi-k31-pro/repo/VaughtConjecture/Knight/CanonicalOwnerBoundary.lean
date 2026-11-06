@@ -43,7 +43,7 @@ theorem endpoint_grid {X : Type*} [Fintype X] {j : ℕ} {a : X → ExtOrd}
       ite_eq_left (by rwa [finitePart_mul_add]), ordinalReplace, limitPart_mul_add]
     rfl
   · rw [endpoint, he, hn, extVisibilityReplace_of_le_finitePart
-      (by simp only [finitePart_mul_add, le_refl])]
+      (by simp [finitePart_mul_add])]
     rfl
 
 theorem local_endpoint_grid {X Y : Type*} [Fintype X] {j : ℕ} {a : X → ExtOrd}
@@ -127,5 +127,3 @@ theorem exists_completion
     rw [hrread]
     exact hfread e
 
-end
-end VaughtConjecture.Knight.CanonicalOwnerBoundary

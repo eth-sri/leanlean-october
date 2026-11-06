@@ -93,5 +93,3 @@ theorem cap (hV : V ∈ D.plan) (hmV : V = A ∨ Mixed B C V) (hjV : j ≤ V.car
   have hzq : q z = q v := eq_target_copy D B C hcover sem hV hmV hjV hq z hz
   exact (hag u).symm.trans (congrArg (fun x => min x γ) (huq.trans hzq.symm))
 
-end
-end VaughtConjecture.Knight.ScopeReplicationAuxExtension

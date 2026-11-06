@@ -56,13 +56,13 @@ abbrev added (p : Copy D B C) : Cell (scheme D B C) := enumeration D B C (.inr p
 theorem old_index (d : Cell D) : (scheme D B C).cell (old D B C d) = D.cell d := by
   change (scheme D B C).cell (Fin.castAdd (Fintype.card (Copy D B C)) d) = D.cell d
   unfold scheme
-  simp only [Fin.addCases_left]
+  simp [Fin.addCases_left]
 
 theorem added_index (p : Copy D B C) :
     (scheme D B C).cell (added D B C p) = (p.1.1.1, D.grade p.1.2) := by
   change (scheme D B C).cell (Fin.natAdd D.card (Fintype.equivFin (Copy D B C) p)) = _
   unfold scheme
-  simp only [Fin.addCases_right, Equiv.symm_apply_apply]
+  simp [Fin.addCases_right, Equiv.symm_apply_apply]
 
 theorem old_order : StrictMono (old D B C) := Fin.strictMono_castAdd _
 
@@ -78,11 +78,9 @@ def erase (d : Cell (scheme D B C)) : Cell D :=
   | .inl c => c
   | .inr p => p.1.2
 
-@[simp] theorem erase_old (d : Cell D) : erase D B C (old D B C d) = d := by
-  simp only [erase, old, Equiv.symm_apply_apply]
+@[simp] theorem erase_old (d : Cell D) : erase D B C (old D B C d) = d := by simp_all [erase]
 
-@[simp] theorem erase_added (p : Copy D B C) : erase D B C (added D B C p) = p.1.2 := by
-  simp only [erase, added, Equiv.symm_apply_apply]
+@[simp] theorem erase_added (p : Copy D B C) : erase D B C (added D B C p) = p.1.2 := by simp_all [erase]
 
 theorem erase_grade (d : Cell (scheme D B C)) :
     D.grade (erase D B C d) = (scheme D B C).grade d := by
@@ -169,7 +167,7 @@ def atScope (U : Finset ι) (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U)
 theorem atScope_index (U : Finset ι) (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U)
     (c : Cell D) (hc : D.scope c = A) (hg : D.grade c ≤ U.card) :
     (scheme D B C).cell (atScope D B C U hU hm c hc hg) = (U, D.grade c) := by
-  classical
+
   unfold atScope
   split_ifs with h
   · exact (old_index D B C c).trans (Prod.ext (hc.trans h.symm) rfl)
@@ -177,10 +175,7 @@ theorem atScope_index (U : Finset ι) (hU : U ∈ D.plan) (hm : U = A ∨ Mixed 
 
 theorem erase_atScope (U : Finset ι) (hU : U ∈ D.plan) (hm : U = A ∨ Mixed B C U)
     (c : Cell D) (hc : D.scope c = A) (hg : D.grade c ≤ U.card) :
-    erase D B C (atScope D B C U hU hm c hc hg) = c := by
-  classical
-  unfold atScope
-  split_ifs <;> simp only [erase_old, erase_added]
+    erase D B C (atScope D B C U hU hm c hc hg) = c := by grind [atScope, erase_old, erase_added]
 
 /-- Any original availability witness at the erased target has an actual
 occurrence at that target's scope, with exactly the same prototype. -/
@@ -199,5 +194,3 @@ theorem exists_at_index (t : Cell (scheme D B C)) (w : Cell D)
   · refine ⟨old D B C w, (old_index D B C w).trans (hw.trans ?_), erase_old D B C w⟩
     exact Prod.ext (erase_scope_of_ne D B C t ht) (erase_grade D B C t)
 
-end
-end VaughtConjecture.Knight.ScopeReplicationCarrier

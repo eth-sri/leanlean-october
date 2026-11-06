@@ -170,7 +170,7 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
     encode K (values (Function.update s b (ofOrd (Ordinal.omega0 * block K (values s) m₀ + K))))
       (Ordinal.omega0 * block K (values s) m₀ + K) =
       ofOrd (Ordinal.omega0 * block K (values s) m₀ + K) := by
-  classical
+
   set S := values s with hSdef
   set bl := block K S m₀ with hbl
   set off := offset K S m₀ with hoffdef
@@ -197,8 +197,8 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
   have hkey : ∀ c, key K S' c = key K S c := by
     intro c
     by_cases ho : Orbit K S c
-    · simp only [key, ite_eq_left ho, ite_eq_left ((horb c).mpr ho)]
-    · simp only [key, ite_eq_right ho, ite_eq_right (fun h => ho ((horb c).mp h))]
+    · simp [key, ite_eq_left ho, ite_eq_left ((horb c).mpr ho)]
+    · simp [key, ite_eq_right ho, ite_eq_right (fun h => ho ((horb c).mp h))]
   -- (b) the endpoint and the maximum share their orbit status and key in `S`
   have horb₀ : Orbit K S h₀ ↔ Orbit K S m₀ := by
     constructor
@@ -208,7 +208,7 @@ theorem encode_endpoint {s : X → ExtOrd} {m₀ : Ordinal.{0}} {d₀ : X} (hm�
       exact ⟨hh₀fin ▸ le_rfl, e, he, hej, hec.trans (hm₀lim.trans hh₀lim.symm)⟩
   have hkey₀ : key K S h₀ = key K S m₀ := by
     by_cases ho : Orbit K S m₀
-    · simp only [key, ite_eq_left ho, ite_eq_left (horb₀.mpr ho), hh₀lim, hm₀lim]
+    · simp [key, ite_eq_left ho, ite_eq_left (horb₀.mpr ho), hh₀lim, hm₀lim]
     · have hoffK : off = K := by
         by_contra hne
         exact ho (orbit_of_invisible hm₀S (by rw [hm₀fin]; exact lt_of_le_of_ne hoff hne))
@@ -331,14 +331,7 @@ theorem partner_cap (d : X) :
 
 omit [DecidableEq X] in
 include hs in
-theorem cutoffCut_mem_grid : cutoffCut K N s ∈ grid (X := X) K := by
-  rcases cutoffCut_eq_endpoint K N hs with h0 | ⟨m₀, d₀, -, hm₀, -, -, hend⟩
-  · rw [h0]; exact grid_bot K
-  · rw [hend]
-    apply sourceGrid_endpoint
-    have h1 := block_le_twice_card (j := K) (mem_values.mpr ⟨d₀, hm₀⟩)
-    have h2 := values_card_le s
-    omega
+theorem cutoffCut_mem_grid : cutoffCut K N s ∈ grid (X := X) K := by grind [grid_bot, mem_values, values_card_le, block_le_twice_card, sourceGrid_endpoint, cutoffCut_eq_endpoint]
 
 include hs hlt in
 /-- **The common cut of `s` and its partner is the frontier**: `κ_K(s, t) = h`. -/
@@ -437,7 +430,7 @@ theorem maximum_eq_donorMax (S : State P C) :
   · unfold LowOnly.Family.maximum LowOnly.nonTopMax
     apply Finset.sup_le
     intro d hd
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hd
+    simp [Finset.mem_filter, Finset.mem_univ, true_and] at hd
     exact le_donorMax (donorField F) S.profile (d := Sum.inl d) hd
   · unfold donorMax
     apply Finset.sup_le
@@ -467,9 +460,7 @@ theorem partnerState_profile (S : State P C) :
 
 theorem partnerState_mem {S : State P C} (hcan : S.profile ∈
       CanonicalPairedProfiles.inventory (LowOnly.Field P C) K) :
-    (partnerState F S).profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K := by
-  rw [partnerState_profile]
-  exact partner_mem K (donorField F) cutoffField hcan
+    (partnerState F S).profile ∈ CanonicalPairedProfiles.inventory (LowOnly.Field P C) K := by simp_all [partner_mem, partnerState_profile]
 
 /-- **The partner state is admitted**: lowering the cutoff keeps both original sections and the
 root; if the new LOW premise is active the old one was (the frontier bounds the maximum and lies
@@ -531,8 +522,5 @@ theorem serving_readback {S A : State P C} (hA : F.Admissible K A)
     (hd : F.p d = ⊤) : σ (A.u d) = ⊤ :=
   donor_top_readback F hA (activation_of_serving F hcan hlt hσ.mono h) hσ hc hr d hd
 
-end Family
 
-end
 
-end VaughtConjecture.Knight.LowSeparator

@@ -82,11 +82,7 @@ theorem pullback_respects {BJ : Finset ι × ℕ} (hBJ : BJ.1 ⊆ B)
   apply (respects_iff D B hB sem BJ hBJ _).mpr
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hp
 
-theorem consistent (hs : sem.IsConsistent) : (rows D B hB sem).IsConsistent := by
-  intro c
-  exact pullback_respects D B hB sem (scope_bound D B hB c) (hs (toCell D B hB c))
+theorem consistent (hs : sem.IsConsistent) : (rows D B hB sem).IsConsistent := fun c => pullback_respects D B hB sem (scope_bound D B hB c) (hs (toCell D B hB c))
 
 theorem coded (hs : sem.IsCoded) : (rows D B hB sem).IsCoded := fun _ _ => hs _ _
 
-end
-end VaughtConjecture.Knight.ScopeBoundary

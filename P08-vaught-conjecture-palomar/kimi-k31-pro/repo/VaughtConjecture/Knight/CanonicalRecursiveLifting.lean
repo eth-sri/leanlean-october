@@ -61,5 +61,3 @@ theorem lower_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : J.2 ≤ n +
     (hb : CappedLift P.rows h) : CappedLift (rows sem n hA hp P) h :=
   inherited_lift sem n hA hp P h (fun he => by have := he.2; omega) hb
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveLifting

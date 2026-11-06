@@ -40,4 +40,3 @@ theorem exists_extension (hr : Function.Bijective restrict)
   obtain ⟨z, hz⟩ := hr.2 p
   exact ⟨z, hz, preserves_all restrict capX capY hr.1 hcomm hz⟩
 
-end VaughtConjecture.CapCompatibleExtension

@@ -27,9 +27,7 @@ variable (D : CellScheme A) (Q : Type*) [Fintype Q] (k : ℕ)
 variable (hk : 0 < k) (hA : k ≤ A.card)
 
 theorem separated_of_proper (hp : ∀ d : Cell D, D.scope d ≠ A) :
-    ∀ d : Cell D, ¬ GradedLe (A, k) (D.cell d) := by
-  intro d hd
-  exact hp d (Finset.Subset.antisymm
+    ∀ d : Cell D, ¬ GradedLe (A, k) (D.cell d) := fun d hd => hp d (Finset.Subset.antisymm
     (D.isPlan.subset_of_mem (D.scope_mem_plan d)) hd.1)
 
 variable (hseparated : ∀ d : Cell D, ¬ GradedLe (A, k) (D.cell d))
@@ -146,4 +144,3 @@ theorem base_respects_iff (c : Cell D)
     rw [cell_toCell, cell_toCell]
     rfl
   · exact (base_old D Q k hk hA hseparated sem b.1 d).symm
-end VaughtConjecture.Knight.SeparatedSourceLayerCarrier

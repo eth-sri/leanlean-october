@@ -146,6 +146,3 @@ def filtered {j : ℕ} (a : P.scheme.below X.root) (hj : P.scheme.grade a.1 ≤ 
   ⟨a.1, (show GradedLe (P.scheme.cell a.1) (Finset.univ.image fP, r) from
     R.root_eq ▸ a.2).1, hj⟩
 
-end RootAttachment
-end
-end VaughtConjecture.Knight.Growth

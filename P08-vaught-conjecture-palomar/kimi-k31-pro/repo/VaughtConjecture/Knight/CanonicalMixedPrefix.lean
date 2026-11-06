@@ -55,7 +55,7 @@ theorem exists_section
   obtain ⟨κ, hw, hread, hfix, hreach, _⟩ :=
     CanonicalPairedInverse.exists_supported_inverse a.property.2 ht hag
   have hfixGrid : ∀ z ∈ upperGrid (D := D) k, z < grid k B → κ z = z := by
-    classical
+
     intro z hz hzB
     rcases Finset.mem_insert.mp hz with rfl | hz
     · exact hw.bot
@@ -88,9 +88,7 @@ theorem exists_section
     hwhole.toRespects (fun d => ⟨(scheme sem j hj hjA k hk hkA).isPlan.subset_of_mem
       ((scheme sem j hj hjA k hk hkA).scope_mem_plan d), F.max_grade d⟩), ?_, hcaps⟩
   intro d
-  dsimp only
+  dsimp
   rw [source_boundary]
   exact hread d
 
-end
-end VaughtConjecture.Knight.CanonicalMixedPrefix

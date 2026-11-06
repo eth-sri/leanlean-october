@@ -63,7 +63,7 @@ theorem exists_first_cut {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop k) τ)
     {γ : ExtOrd} (hb : γ ≠ ⊥) (hbound : ∀ x, τ x ≤ γ) (hC : τ F.ceiling = γ) :
     ∃ h : ExtOrd, h ∈ F.grid ∧ SelfVis k h ∧ ⊥ < h ∧ h ≤ F.ceiling ∧
       τ h = γ ∧ ∀ z ∈ F.grid, z < h → τ z < γ := by
-  classical
+
   let S := F.grid.filter (fun h => γ ≤ τ h)
   have hne : S.Nonempty := ⟨F.ceiling, Finset.mem_filter.mpr
     ⟨F.ceiling_mem, hC.ge⟩⟩
@@ -80,5 +80,3 @@ theorem exists_first_cut {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop k) τ)
     have hzS : z ∈ S := Finset.mem_filter.mpr ⟨hz, le_of_not_gt hn⟩
     exact (not_le_of_gt hzh) (Finset.min'_le S z hzS)
 
-end
-end VaughtConjecture.Knight.SourcePrefixAmbient

@@ -114,13 +114,4 @@ def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
 
 /-! ## Recognition and finite bottom reflection -/
 
-section Chart
 
-variable {a : Catalogue X 2} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop 2) σ)
-
-include hσ
-
-end Chart
-
-end
-end VaughtConjecture.Knight.GrowthLeafRecognition

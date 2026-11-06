@@ -63,6 +63,4 @@ theorem exists_iso_of_restrictedCommonChartStepSupply
     ∃ e : A₁.Iso A₂, ∀ i, e.1 (seed.tuple₁ i) = seed.tuple₂ i :=
   exists_iso_of_selectedCommonCharts hA₁ hA₂ Good seed seed_good supply
 
-end KnightRealization
 
-end VaughtConjecture.Knight

@@ -70,7 +70,7 @@ theorem exists_positive_lift
       (∀ d, min (r d) γ = min (q d) γ) ∧
       ∀ e, r (CellScheme.below.mono
         (show GradedLe (S, N) (A, N) from ⟨hSA, le_rfl⟩) e) = p e := by
-  classical
+
   by_cases hhigh : ∀ e : F.carrier.below (S, N), F.carrier.grade e.1 = N → p e ≤ γ
   · exact F.lift_inactive hSA hlift hp hq hγ hag hhigh
   push Not at hhigh
@@ -143,12 +143,10 @@ theorem private_lift
       hfields hgate hgridShort hsupport howners E.map hpriv hpn
     refine ⟨fun d => δ (F.source b d.1), hv, ?_, ?_⟩
     · intro d
-      simp only [hbot, min_eq_right bot_le]
+      simp [hbot, min_eq_right bot_le]
     · intro d
       obtain ⟨x, rfl⟩ := e.surjective d
       exact hread x
   · exact exists_positive_lift R F place hS hSA hne E hfields hgrid hsupport hpriv
       hlift hp hq hγ (bot_lt_iff_ne_bot.mpr hbot) hag
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalPrivateLift

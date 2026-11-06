@@ -73,7 +73,7 @@ theorem active_private_lift
     simpa only [Function.comp_def, Equiv.symm_apply_apply] using hp
   have hcard : C.card = n := by
     rw [← I.imageRight, Finset.card_image_of_injective _ I.placeRight.injective]
-    simp only [Finset.card_univ, Fintype.card_fin]
+    simp [Finset.card_univ, Fintype.card_fin]
   have hCmem : (C, k) ∈ Plan.gradedPlan (carrier P hnext).plan := by
     change (C, k) ∈ Plan.gradedPlan P.carrier.plan
     rw [hplan]
@@ -97,5 +97,3 @@ theorem active_private_lift
   intro d
   simpa only [p', Function.comp_apply, Equiv.symm_apply_apply, hid] using hrr (e d)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepPrivateLift

@@ -139,15 +139,6 @@ def privateIncl (d : I.right.scheme.below (effC n 1)) : I.boundary.below (A, 1) 
       exact hg.le.trans (d.2.2.trans (min_le_left _ _))⟩
 
 include hroot in
-/-- Consistency is constructed on these same rows, independently of lifting. -/
-theorem consistent (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A) :
-    (rows I.boundary I.rows hA (field I) (F.fields 1) (proper I hB hC)).IsConsistent := by
-  apply RelativeLadderLayer.consistent _ _ _ _ _ _ I.consistent
-  intro a
-  obtain ⟨S, hs, he⟩ := a.property.2
-  have hvalues : (fun d : I.boundary.below (A, 1) => F.fields 1 a (field I d.1)) =
-      (fun d => S.profile (field I d.1)) := funext (fun d => (congrFun he _).symm)
-  exact hvalues ▸ boundary_lawful I F hroot S hs
 
 include hroot in
 /-- A complete positive-cap physical lift on the actual ordered two-face ladder.
@@ -171,5 +162,3 @@ theorem private_positive_lift (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A)
     (boundary_lawful I F hroot) (privateIncl I)
     (fun _ hs d => field_private I F hroot hs d.1) hp hq hγ hpos hag
 
-end
-end VaughtConjecture.Knight.LowOnlyOrderedLadder

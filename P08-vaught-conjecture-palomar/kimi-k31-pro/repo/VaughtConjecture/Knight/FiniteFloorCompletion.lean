@@ -91,8 +91,7 @@ theorem blockFloor_eq_of_between {x y z : ExtOrd} (hxy : x ≤ y) (hyz : y ≤ z
 
 /-- A moving replacement at offset `0` is the block floor. -/
 theorem evr_zero_eq_blockFloor {a : Ordinal.{0}} {k : ℕ} (h : finitePart a < k) :
-    extVisibilityReplace (ofOrd a) k 0 = blockFloor (ofOrd a) := by
-  rw [extVisibilityReplace_of_finitePart_lt h, blockFloor_ofOrd, Nat.cast_zero, add_zero]
+    extVisibilityReplace (ofOrd a) k 0 = blockFloor (ofOrd a) := by grind [Nat.cast_zero, blockFloor_ofOrd, extVisibilityReplace_of_finitePart_lt]
 
 /-! ## The strip domain -/
 
@@ -166,25 +165,19 @@ noncomputable def roundUp (s : Finset ExtOrd) (x : ExtOrd) : ExtOrd :=
   if h : (sourceBlock s x).Nonempty then max x ((sourceBlock s x).min' h) else x
 
 theorem sourceBlock_eq {s : Finset ExtOrd} {x y : ExtOrd} (h : blockFloor x = blockFloor y) :
-    sourceBlock s x = sourceBlock s y := by
-  classical
-  unfold sourceBlock; simp only [h]
+    sourceBlock s x = sourceBlock s y := by grind [sourceBlock]
 
-theorem le_roundUp (s : Finset ExtOrd) (x : ExtOrd) : x ≤ roundUp s x := by
-  classical
-  unfold roundUp; split_ifs
-  · exact le_max_left _ _
-  · exact le_rfl
+theorem le_roundUp (s : Finset ExtOrd) (x : ExtOrd) : x ≤ roundUp s x := by grind [roundUp]
 
 theorem roundUp_of_mem {s : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ s) : roundUp s x = x := by
-  classical
+
   have hm : x ∈ sourceBlock s x := Finset.mem_filter.mpr ⟨hx, rfl⟩
   unfold roundUp
   rw [dite_eq_left ⟨x, hm⟩, max_eq_left (Finset.min'_le _ _ hm)]
 
 theorem blockFloor_roundUp (s : Finset ExtOrd) (x : ExtOrd) :
     blockFloor (roundUp s x) = blockFloor x := by
-  classical
+
   unfold roundUp
   split_ifs with h
   · have hm := (Finset.mem_filter.mp (Finset.min'_mem (sourceBlock s x) h)).2
@@ -194,7 +187,7 @@ theorem blockFloor_roundUp (s : Finset ExtOrd) (x : ExtOrd) :
   · rfl
 
 theorem roundUp_mono (s : Finset ExtOrd) : Monotone (roundUp s) := by
-  classical
+
   intro x y hxy
   by_cases hb : blockFloor x = blockFloor y
   · have hs := sourceBlock_eq (s := s) hb
@@ -217,7 +210,7 @@ theorem roundUp_bot (s : Finset ExtOrd) : roundUp s ⊥ = ⊥ := by
 
 theorem roundUp_mem_of_nonempty {s : Finset ExtOrd} {x : ExtOrd} (h : (sourceBlock s x).Nonempty)
     (hle : x ≤ (sourceBlock s x).min' h) : roundUp s x ∈ s := by
-  classical
+
   unfold roundUp
   rw [dite_eq_left h, max_eq_right hle]
   exact (Finset.mem_filter.mp (Finset.min'_mem _ h)).1
@@ -229,7 +222,7 @@ theorem roundUp_commutes (s : Finset ExtOrd) (K : ℕ)
     (hClosed : ∀ x ∈ s, ∀ k i : ℕ, k ≤ K → i ≤ k → extVisibilityReplace x k i ∈ s)
     (x : ExtOrd) (k i : ℕ) (hk : k ≤ K) (hi : i ≤ k) :
     roundUp s (extVisibilityReplace x k i) = extVisibilityReplace (roundUp s x) k i := by
-  classical
+
   have hs := sourceBlock_eq (s := s) (blockFloor_evr x k i)
   unfold roundUp
   rw [hs]
@@ -264,7 +257,7 @@ theorem roundUp_commutes (s : Finset ExtOrd) (K : ℕ)
 /-- The rounded floor of a represented input is represented. -/
 theorem roundUp_floor_mem {s : Finset ExtOrd} {x : ExtOrd} (hx : x ∈ s) :
     roundUp s (blockFloor x) ∈ s := by
-  classical
+
   have hxB : x ∈ sourceBlock s (blockFloor x) :=
     Finset.mem_filter.mpr ⟨hx, (blockFloor_idem x).symm⟩
   apply roundUp_mem_of_nonempty ⟨x, hxB⟩
@@ -354,9 +347,7 @@ theorem bridge_tail_of_floorSupport (s : Finset ExtOrd) (f : ExtOrd → ExtOrd) 
     (K : ℕ) (hTail : ∀ k, K < k → g k = ⊥) (hFloor : FloorSupport s f)
     (x : ExtOrd) (k : ℕ) (hk : K < k) (hActive : finiteLowerEnvelope s f x ≤ g k) (i : ℕ)
     (z : ExtOrd) (hz : z ∈ s) (hzReplace : z ≤ extVisibilityReplace x k i) :
-    f z = ⊥ ∨ ∃ y ∈ s, y ≤ x ∧ f z ≤ extVisibilityReplace (f y) k i :=
-  Or.inl (table_eq_bot_after_replace_of_floorSupport s f hFloor x k i
-    (hActive.trans_eq (hTail k hk)) z hz hzReplace)
+    f z = ⊥ ∨ ∃ y ∈ s, y ≤ x ∧ f z ≤ extVisibilityReplace (f y) k i := by grind [table_eq_bot_after_replace_of_floorSupport]
 
 /-! ## The full-strip bridge below the controller grade -/
 
@@ -508,4 +499,3 @@ theorem floorCompletion (K : ℕ) (s : Finset ExtOrd) (τ : ExtOrd → ExtOrd) (
     · exact bridge_tail_of_floorSupport t F g K hTail hFloor x k (lt_of_not_ge hk) hActive i z hz
         hzx
 
-end VaughtConjecture.Knight

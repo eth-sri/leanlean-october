@@ -131,7 +131,7 @@ theorem exists_template (hn : 0 < n) (hq : IsCoface p q) :
       Nonempty (Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP D.face hvC hC X) ∧
       HEq X.ZA {d : D.context.type.scheme.scheme.below
         (D.context.type.scheme.scheme.cell D.cap) | D.context.type.label d.1 = ⊥} := by
-  classical
+
   let C := D.context.type
   have hvP := hq.extendsDomain.visible
   have hP' : q.restrictFace Fin.castSuccEmb hvP = p :=
@@ -229,5 +229,3 @@ theorem exists_template (hn : 0 < n) (hq : IsCoface p q) :
   intro a
   exact belowMap_val_of_heq hr (congrArg (fun r => C.scheme.scheme.cell r.C) hreq) hk a
 
-end
-end VaughtConjecture.Knight.HollowGrowthTemplate

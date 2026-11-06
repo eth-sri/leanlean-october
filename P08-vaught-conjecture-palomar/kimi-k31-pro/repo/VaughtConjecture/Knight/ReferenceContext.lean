@@ -277,8 +277,5 @@ noncomputable def totalize {X : Type*} (reqs : List BlockRequest) (v : ∀ r, r 
 
 theorem totalize_of_ex {X : Type*} (reqs : List BlockRequest) (v : ∀ r, r ∈ reqs → X)
     (dflt : X) {μ : Ordinal.{0}} (h : ∃ r ∈ reqs, r.block = μ) :
-    totalize reqs v dflt μ = v (pick reqs μ h) (pick_mem reqs μ h) := by
-  unfold totalize
-  rw [dite_eq_left h]
+    totalize reqs v dflt μ = v (pick reqs μ h) (pick_mem reqs μ h) := by grind [totalize]
 
-end VaughtConjecture.Knight

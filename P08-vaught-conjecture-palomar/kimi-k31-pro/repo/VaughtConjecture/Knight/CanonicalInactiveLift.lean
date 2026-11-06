@@ -98,5 +98,3 @@ theorem exists_lift {C : Finset ι} {n : ℕ} (hn : 1 ≤ n)
     exact (splice_cap (by decide : 1 ≤ 2) hwcap d).trans
       (show min (min (q d) γ) γ = min (q d) γ by rw [min_assoc, min_self])
 
-end
-end VaughtConjecture.Knight.CanonicalInactiveLift

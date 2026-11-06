@@ -45,10 +45,7 @@ noncomputable def liftBlockZero (W₀ : KnightRealization (blockStage 0) ℕ) :
   W₀.reduct omegaStage_le_blockStage_zero
 
 theorem liftBlockZero_reduct (R : KnightRealization omegaStage ℕ) :
-    liftBlockZero (R.reduct blockStage_zero_le_omegaStage) = R := by
-  unfold liftBlockZero
-  rw [Realization.reduct_reduct]
-  exact Realization.reduct_refl R
+    liftBlockZero (R.reduct blockStage_zero_le_omegaStage) = R := by grind [liftBlockZero, Realization.reduct_refl]
 
 /-- The counted model underlying a terminal model: reduct to block `0`, lifted. -/
 noncomputable def TerminalModel.toNatModel {ρ : Ordinal.{0}} (W : TerminalModel ρ) :
@@ -68,4 +65,3 @@ noncomputable def terminalToClass (ρ : Ordinal.{0}) :
   Quotient.lift (fun W => Quotient.mk knightModelSetoid W.toNatModel)
     (fun _ _ h => Quotient.sound (TerminalModel.toNatModel_iso h))
 
-end VaughtConjecture.Knight

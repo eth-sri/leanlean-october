@@ -34,8 +34,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 
 theorem private_grade (d : I.right.scheme.below (Finset.univ, 2)) :
     (carrier I X T hA hB hC).grade (privateAt I X T hA hB hC d).1 =
-      I.right.scheme.grade d.1 := by
-  exact (congrArg Prod.snd (original_index I X T hA hB hC
+      I.right.scheme.grade d.1 := (congrArg Prod.snd (original_index I X T hA hB hC
     (I.rightFace.map d.1))).trans (congrArg Prod.snd (I.rightFace.index d.1))
 
 /-- A supplied original owner identifies the actual private lower domain.
@@ -52,7 +51,7 @@ theorem owner_capped
     ∃ u, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) u ∧
       (∀ d, u (privateAt I X T hA hB hC d) = min (p d) (p c)) ∧
       (∀ d, min (u d) γ = min (q d) γ) ∧ (∀ d, u d ≤ p c) := by
-  classical
+
   obtain ⟨a, σ, H, hσ, hmax, hread⟩ := GrowthPaddedCharts.exists_chart I X T hA hB hC hq
   have hreach : γ ≤ H := by
     have he := hag c
@@ -124,5 +123,3 @@ theorem owner_capped
   intro d
   exact (congrArg fac.outgoing (hwread d)).trans (fac.readback (fromEff d))
 
-end
-end VaughtConjecture.Knight.GrowthPaddedPrivateRepair

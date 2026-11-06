@@ -72,7 +72,7 @@ theorem exists_equiv_of_mem {M N : Type w} [L.Structure M] [L.Structure N]
   have hmem : (⟨k + p.1, Fin.append a p.2.1, Fin.append b p.2.2⟩ :
       Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family := hp
   have heq := P.compatible _ hmem (.eq (Fin.natAdd k j) (Fin.castAdd p.1 i))
-  simp only [AtomicIdx.holds, Fin.append_right, Fin.append_left] at heq
+  simp [AtomicIdx.holds, Fin.append_right, Fin.append_left] at heq
   exact hj'.symm.trans (heq.mp hj)
 
 end Generic
@@ -117,6 +117,4 @@ theorem exists_iso_of_commonCharts_mem [Countable M] [Countable N]
   exists_iso_of_potentialIso_mem
     (potentialIsoOfCommonCharts hR hR' family empty_mem commonChart forth back) hab
 
-end Knight
 
-end VaughtConjecture.Knight

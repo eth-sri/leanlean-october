@@ -360,6 +360,4 @@ theorem decoder {u' : Cell DA → ExtOrd} (hu' : RespectsSemantics semA u')
       change min (τ (semA.E X.req.C d)) (u' X.req.C) = min (u' d.1) (u' X.req.C)
       rw [hread d, min_assoc, min_self]
 
-end RelativeData
 
-end VaughtConjecture.Knight

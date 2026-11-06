@@ -166,38 +166,6 @@ theorem BFEquiv_upgrade_at_selfStabilization {M : Type w} [L.Structure M] {α₀
     exact (le_or_gt α₀ γ).elim (ih γ hγ h) fun hαγ ↦ BFEquiv.monotone hαγ.le h
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
-/-- At a complete stabilization ordinal, BFEquiv upgrades to all higher ordinals.
-This is the key lemma that resolves the quantifier swap problem.
-
-The proof proceeds by ordinal induction on β. The key insight is that at stabilization,
-forth/back witnesses stay at level α, so we can upgrade them along with the base BFEquiv. -/
-theorem BFEquiv_upgrade_at_stabilization {M N : Type w} [L.Structure M] [L.Structure N]
-    [Countable N]
-    {α : Ordinal} (hstab : StabilizesCompletely (L := L) M α)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (h : BFEquiv (L := L) α n a b) (β : Ordinal) (hβ : α ≤ β) :
-    BFEquiv (L := L) β n a b := by
-  induction β using Ordinal.limitRecOn generalizing n a b with
-  | zero => rwa [le_antisymm hβ bot_le] at h
-  | add_one γ ih =>
-    rw [← Order.succ_eq_add_one] at hβ ⊢
-    rw [BFEquiv.succ]
-    rcases hβ.lt_or_eq with hlt | heq
-    · rw [Order.lt_succ_iff] at hlt
-      have hγ := @ih n a b h hlt
-      have h_succ := (hstab n N a b).mp h
-      refine ⟨hγ, fun m => ?_, fun n' => ?_⟩
-      · obtain ⟨n', hn'⟩ := BFEquiv.forth h_succ m
-        exact ⟨n', @ih (n + 1) (Fin.snoc a m) (Fin.snoc b n') hn' hlt⟩
-      · obtain ⟨m, hm⟩ := BFEquiv.back h_succ n'
-        exact ⟨m, @ih (n + 1) (Fin.snoc a m) (Fin.snoc b n') hm hlt⟩
-    · subst heq; exact (BFEquiv.succ γ a b).mp h
-  | limit β hβlimit ih =>
-    rw [BFEquiv.limit β hβlimit]
-    intro γ hγ
-    by_cases hαγ : α ≤ γ
-    · exact @ih γ hγ n a b h hαγ
-    · exact BFEquiv.monotone (le_of_lt (not_le.mp hαγ)) h
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
 /-- For countable M, there exists α < ω₁ where all tuple sizes self-stabilize
@@ -241,7 +209,7 @@ theorem exists_complete_self_stabilization (M : Type w) [L.Structure M] [Countab
         ∀ α, γ ≤ α → α < Ordinal.omega 1 → Order.succ α < Ordinal.omega 1 →
           (BFEquiv (L := L) α t.1 t.2.1 t.2.2 ↔ BFEquiv (L := L) (Order.succ α) t.1 t.2.1 t.2.2) := by
     intro ⟨n, a, a'⟩
-    simp only
+    simp
     by_cases hFail : ∃ β < (Ordinal.omega 1 : Ordinal.{0}), ¬BFEquiv (L := L) β n a a'
     · obtain ⟨β, hβ_lt, hβ_fail⟩ := hFail
       set S := {δ : Ordinal.{0} | ¬BFEquiv (L := L) δ n a a'}
@@ -295,183 +263,10 @@ theorem exists_complete_self_stabilization (M : Type w) [L.Structure M] [Countab
 /-! ### Countable intersection and BFEquiv-to-PotentialIso lemmas -/
 
 omit [L.IsRelational] [Countable (Σ l, L.Relations l)] in
-/-- A decreasing ω₁-chain of nonempty subsets of a countable type has nonempty intersection.
-
-More precisely: if `S : Ordinal → Set X` where `X` is countable, `S` is antitone
-(S α ⊇ S β for α ≤ β), and each `S α` is nonempty for `α < ω₁`, then
-`⋂ α < ω₁, S α` is nonempty.
-
-**Proof**: For each `x ∈ S 0`, define `d(x) = sInf {α | x ∉ S α}` (the "departure ordinal").
-If all `d(x) < ω₁`, then `sup {d(x)} < ω₁` by regularity of ω₁ and countability of X.
-Let `γ = sup {d(x)}`. Then `S γ = ∅` (every element has departed), contradicting nonemptiness.
-So some `x` has `d(x) ≥ ω₁`, meaning `x ∈ S α` for all `α < ω₁`. -/
-theorem nonempty_iInter_of_antitone_of_nonempty {X : Type*} [Countable X]
-    (S : Ordinal.{0} → Set X) (hAnti : Antitone S)
-    (hNonempty : ∀ α < (Ordinal.omega 1 : Ordinal.{0}), (S α).Nonempty) :
-    (⋂ α ∈ Set.Iio (Ordinal.omega 1 : Ordinal.{0}), S α).Nonempty := by
-  classical
-  -- For each x, define d(x) = sInf {α | x ∉ S α} (possibly = 0 if x ∉ S 0)
-  -- If d(x) ≥ ω₁ for some x, then x ∈ S α for all α < ω₁ and we're done.
-  by_contra hEmpty
-  rw [Set.not_nonempty_iff_eq_empty] at hEmpty
-  -- Every x eventually departs: for every x ∈ S 0, ∃ α < ω₁ with x ∉ S α
-  have hAllDepart : ∀ x ∈ S 0, ∃ α < (Ordinal.omega 1 : Ordinal.{0}), x ∉ S α := by
-    intro x hx0
-    by_contra hall
-    push Not at hall
-    -- x ∈ S α for all α < ω₁
-    have hxmem : x ∈ ⋂ α ∈ Set.Iio (Ordinal.omega 1 : Ordinal.{0}), S α := by
-      simp only [Set.mem_iInter, Set.mem_Iio]
-      exact fun α hα => hall α hα
-    rw [hEmpty] at hxmem
-    exact hxmem
-  -- For each x ∈ S 0, choose a departure ordinal < ω₁
-  have hS0nonempty : (S 0).Nonempty := hNonempty 0 (Ordinal.omega_pos 1)
-  -- Get departure ordinals for ALL elements (set to 0 for x ∉ S 0)
-  let depart : X → Ordinal.{0} := fun x =>
-    if hx : x ∈ S 0 then (hAllDepart x hx).choose else 0
-  have hdepart_lt : ∀ x ∈ S 0, depart x < Ordinal.omega 1 := by
-    intro x hx
-    simp only [depart]
-    rw [dite_eq_left hx]
-    exact (hAllDepart x hx).choose_spec.1
-  have hdepart_spec : ∀ x ∈ S 0, x ∉ S (depart x) := by
-    intro x hx
-    simp only [depart]
-    rw [dite_eq_left hx]
-    exact (hAllDepart x hx).choose_spec.2
-  -- Enumerate X (or rather S 0)
-  -- Take sup of departure ordinals over all of X
-  -- Enumerate X via ℕ to use iSup_sequence_lt_omega_one
-  by_cases hX : IsEmpty X
-  · -- If X is empty, S 0 = ∅, contradicting nonemptiness
-    exact absurd (hNonempty 0 (Ordinal.omega_pos 1)) (by
-      rw [Set.not_nonempty_iff_eq_empty, Set.eq_empty_iff_forall_notMem]
-      intro x; exact hX.elim x)
-  rw [not_isEmpty_iff] at hX; have := hX
-  obtain ⟨enum, henum⟩ := exists_surjective_nat X
-  -- Compose depart with enum to get ℕ → Ordinal.{0}
-  let depart_seq : ℕ → Ordinal.{0} := depart ∘ enum
-  have hdepart_seq_lt : ∀ k, depart_seq k < (Cardinal.aleph 1).ord := by
-    intro k
-    rw [Cardinal.ord_aleph]
-    by_cases hx : enum k ∈ S 0
-    · exact hdepart_lt (enum k) hx
-    · show depart (enum k) < _
-      simp only [depart]
-      rw [dite_eq_right hx]
-      exact Ordinal.omega_pos 1
-  have hSup_lt : (⨆ k, depart_seq k) < Ordinal.omega 1 :=
-    Ordinal.iSup_lt_omega_one fun k => by rw [← Cardinal.ord_aleph]; exact hdepart_seq_lt k
-  have hBdd_seq : BddAbove (Set.range depart_seq) :=
-    ⟨Ordinal.omega 1, fun _ ⟨k, hk⟩ => hk ▸ le_of_lt
-      (by rw [Cardinal.ord_aleph] at hdepart_seq_lt; exact hdepart_seq_lt k)⟩
-  have hle_sup : ∀ x : X, depart x ≤ ⨆ k, depart_seq k := by
-    intro x
-    obtain ⟨k, hk⟩ := henum x
-    calc depart x = depart (enum k) := by rw [hk]
-      _ = depart_seq k := rfl
-      _ ≤ ⨆ k, depart_seq k := le_ciSup hBdd_seq k
-  -- S (iSup depart_seq) is nonempty
-  obtain ⟨x, hx⟩ := hNonempty (⨆ k, depart_seq k) hSup_lt
-  -- x ∈ S (iSup depart_seq) ⊆ S 0
-  have hx0 : x ∈ S 0 := hAnti bot_le hx
-  -- But depart x ≤ iSup depart_seq, so S (iSup ...) ⊆ S (depart x)
-  -- And x ∉ S (depart x), contradiction
-  exact hdepart_spec x hx0 (hAnti (hle_sup x) hx)
 
 omit [Countable (Σ l, L.Relations l)] in
-/-- If two countable structures are BF-equivalent at all ordinal levels below ω₁
-(for the empty tuple), then there exists a potential isomorphism between them,
-and hence they are isomorphic.
-
-**Proof**: Define the family
-`F = {(k, a, b) | ∀ α < ω₁, BFEquiv α k a b}`.
-This family contains the empty tuple (by hypothesis) and is compatible (BFEquiv 0 gives
-SameAtomicType). For the forth property: given (k, a, b) ∈ F and m : M, for each α < ω₁,
-from BFEquiv (succ α) k a b (since succ α < ω₁ by regularity), BFEquiv.forth gives
-n'_α with BFEquiv α (k+1) (snoc a m) (snoc b n'_α). The sets
-`S_α = {n' ∈ N | BFEquiv α (k+1) (snoc a m) (snoc b n')}` form a decreasing chain
-(by BFEquiv.monotone) of nonempty subsets of the countable type N.
-By `nonempty_iInter_of_antitone_of_nonempty`, ∃ n' in the intersection, giving
-BFEquiv α (k+1) (snoc a m) (snoc b n') for all α < ω₁. The back property is symmetric.
-
-The result then follows from `PotentialIso.countable_toEquiv`. -/
-theorem BFEquiv_below_omega1_implies_potentialIso
-    {M : Type w} [L.Structure M] [Countable M]
-    {N : Type w} [L.Structure N] [Countable N]
-    (h : ∀ α < (Ordinal.omega 1 : Ordinal.{0}),
-      BFEquiv (L := L) α 0 (Fin.elim0 : Fin 0 → M) (Fin.elim0 : Fin 0 → N)) :
-    Nonempty (PotentialIso L M N) := by
-  -- Define the family: tuples that are BF-equivalent at ALL levels < ω₁
-  let F : Set (Σ n : ℕ, (Fin n → M) × (Fin n → N)) :=
-    { p | ∀ α < (Ordinal.omega 1 : Ordinal.{0}), BFEquiv (L := L) α p.1 p.2.1 p.2.2 }
-  -- empty_mem: by hypothesis
-  have hempty : ⟨0, Fin.elim0, Fin.elim0⟩ ∈ F := h
-  -- compatible: BFEquiv 0 gives SameAtomicType
-  have hcompat : ∀ p ∈ F, SameAtomicType (L := L) p.2.1 p.2.2 := by
-    intro p hp
-    exact (BFEquiv.zero p.2.1 p.2.2).mp (hp 0 (Ordinal.omega_pos 1))
-  -- forth: use the countable intersection lemma
-  have hforth : ∀ p ∈ F, ∀ m : M, ∃ n' : N,
-      ⟨p.1 + 1, Fin.snoc p.2.1 m, Fin.snoc p.2.2 n'⟩ ∈ F := by
-    intro ⟨k, a, b⟩ hp m
-    simp only [Set.mem_ofPred_eq, F] at hp ⊢
-    -- For each α < ω₁, succ α < ω₁ (ω₁ is a limit), so BFEquiv (succ α) k a b holds.
-    -- By forth, ∃ n'_α with BFEquiv α (k+1) (snoc a m) (snoc b n'_α).
-    -- Define S_α = {n' | BFEquiv α (k+1) (snoc a m) (snoc b n')}
-    let S : Ordinal.{0} → Set N := fun α =>
-      { n' | BFEquiv (L := L) α (k + 1) (Fin.snoc a m) (Fin.snoc b n') }
-    -- S is antitone
-    have hAnti : Antitone S := by
-      intro α β hαβ n' hn'
-      simp only [Set.mem_ofPred_eq, S] at hn' ⊢
-      exact BFEquiv.monotone hαβ hn'
-    -- Each S α is nonempty for α < ω₁
-    have hNonempty : ∀ α < (Ordinal.omega 1 : Ordinal.{0}), (S α).Nonempty := by
-      intro α hα
-      have hsucc_lt : Order.succ α < Ordinal.omega 1 :=
-        Order.IsSuccLimit.succ_lt (Cardinal.isSuccLimit_omega 1) hα
-      obtain ⟨n', hn'⟩ := BFEquiv.forth (hp (Order.succ α) hsucc_lt) m
-      exact ⟨n', hn'⟩
-    -- By countable intersection lemma
-    obtain ⟨n', hn'⟩ := nonempty_iInter_of_antitone_of_nonempty S hAnti hNonempty
-    simp only [Set.mem_iInter, Set.mem_Iio, Set.mem_ofPred_eq, S] at hn'
-    exact ⟨n', hn'⟩
-  -- back: symmetric argument
-  have hback : ∀ p ∈ F, ∀ n' : N, ∃ m : M,
-      ⟨p.1 + 1, Fin.snoc p.2.1 m, Fin.snoc p.2.2 n'⟩ ∈ F := by
-    intro ⟨k, a, b⟩ hp n'
-    simp only [Set.mem_ofPred_eq, F] at hp ⊢
-    let S : Ordinal.{0} → Set M := fun α =>
-      { m | BFEquiv (L := L) α (k + 1) (Fin.snoc a m) (Fin.snoc b n') }
-    have hAnti : Antitone S := by
-      intro α β hαβ m hm
-      simp only [Set.mem_ofPred_eq, S] at hm ⊢
-      exact BFEquiv.monotone hαβ hm
-    have hNonempty : ∀ α < (Ordinal.omega 1 : Ordinal.{0}), (S α).Nonempty := by
-      intro α hα
-      have hsucc_lt : Order.succ α < Ordinal.omega 1 :=
-        Order.IsSuccLimit.succ_lt (Cardinal.isSuccLimit_omega 1) hα
-      obtain ⟨m, hm⟩ := BFEquiv.back (hp (Order.succ α) hsucc_lt) n'
-      exact ⟨m, hm⟩
-    obtain ⟨m, hm⟩ := nonempty_iInter_of_antitone_of_nonempty S hAnti hNonempty
-    simp only [Set.mem_iInter, Set.mem_Iio, Set.mem_ofPred_eq, S] at hm
-    exact ⟨m, hm⟩
-  exact ⟨PotentialIso.mk F hempty hcompat hforth hback⟩
 
 omit [Countable (Σ l, L.Relations l)] in
-/-- Corollary: If BFEquiv at all levels below ω₁ for empty tuples between countable structures,
-then they are isomorphic. Combines `BFEquiv_below_omega1_implies_potentialIso` with
-`PotentialIso.countable_toEquiv`. -/
-theorem BFEquiv_below_omega1_implies_iso
-    {M : Type w} [L.Structure M] [Countable M]
-    {N : Type w} [L.Structure N] [Countable N]
-    (h : ∀ α < (Ordinal.omega 1 : Ordinal.{0}),
-      BFEquiv (L := L) α 0 (Fin.elim0 : Fin 0 → M) (Fin.elim0 : Fin 0 → N)) :
-    Nonempty (M ≃[L] N) := by
-  obtain ⟨P⟩ := BFEquiv_below_omega1_implies_potentialIso (L := L) h
-  exact P.countable_toEquiv
 
 /-! ### Refinement Descent Lemmas
 
@@ -645,10 +440,10 @@ theorem BFEquiv_stabilization_implies_equiv {M N : Type w} [L.Structure M] [L.St
     h
     (fun p hp => (BFEquiv.zero p.2.1 p.2.2).mp (BFEquiv.monotone bot_le hp))
     (fun ⟨k, a, b⟩ hp m => by
-      simp only [Set.mem_ofPred_eq] at hp ⊢
+      simp [Set.mem_ofPred_eq] at hp ⊢
       exact BFEquiv.forth ((hstab k N a b).mp hp) m)
     (fun ⟨k, a, b⟩ hp n' => by
-      simp only [Set.mem_ofPred_eq] at hp ⊢
+      simp [Set.mem_ofPred_eq] at hp ⊢
       exact BFEquiv.back ((hstab k N a b).mp hp) n')
   ).countable_toEquiv
 
@@ -684,8 +479,7 @@ omit [L.IsRelational] [Countable ((l : ℕ) × L.Relations l)] in
 /-- Bridge between `realize_as_sentence` and `Sentenceω.Realize` via `toSentenceω`. -/
 theorem Formulaω.realize_as_sentence_iff_toSentenceω
     (φ : L.Formulaω (Fin 0)) (N : Type w) [L.Structure N] :
-    φ.realize_as_sentence N ↔ Sentenceω.Realize φ.toSentenceω N := by
-  simpa [Formulaω.realize_as_sentence] using (Formulaω.realize_toSentenceω (M := N) φ).symm
+    φ.realize_as_sentence N ↔ Sentenceω.Realize φ.toSentenceω N := by grind [Formulaω.realize_as_sentence, Formulaω.realize_toSentenceω]
 
 /-! ### Conditional Scott Sentence Pipeline
 
@@ -754,6 +548,4 @@ theorem scottSentence_characterizes_of
   rw [h]
   exact stabilizationOrdinal_stabilizes_of hcount M N
 
-end Language
 
-end FirstOrder

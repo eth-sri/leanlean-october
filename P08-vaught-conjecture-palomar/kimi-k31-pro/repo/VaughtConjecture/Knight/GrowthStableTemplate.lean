@@ -54,7 +54,7 @@ theorem exists_input_at (hM : W.IsModel) {n J : ℕ} (hn : 0 < n)
       (∀ j, Growth.Admitted X j (GrowthStableSelectedInput.state
         (W := W) (u := u) (C := C) (q := q))) ∧
       HEq X.ZA {d : C.scheme.scheme.below (C.scheme.scheme.cell c) | C.label d.1 = ⊥} := by
-  classical
+
   obtain ⟨hvP, hvC, hP, hF⟩ := GrowthStableSelectedInput.common_faces hM hp hf hq
   let root : Finset (Fin (n + 1)) × ℕ := (Finset.univ.image Fin.castSuccEmb, n)
   let top : Finset (Fin (n + 1)) × ℕ := (Finset.univ, n + 1)
@@ -215,7 +215,7 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
             X.req.Correct (X.req.sec (W.stableValue u C)) v →
               (∀ d, q.label d ≠ ⊤ → v d = q.label d) ∧
               (∀ d, q.label d = ⊤ → ofOrd γ < v d)) := by
-  classical
+
   have hfloor : ∃ b : ℕ, γ < α.1 + b := by
     rcases lt_or_ge γ α.1 with h | h
     · exact ⟨0, by simpa using h⟩
@@ -261,5 +261,3 @@ theorem exists_input (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
         (W.stableValue u C) (limitPart_eq_self_of_isNonSuccessor (Or.inr α.2))
         hi ha hcut hv hd)
 
-end
-end VaughtConjecture.Knight.GrowthStableTemplate

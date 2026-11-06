@@ -92,13 +92,7 @@ theorem le_visibilityReplace_of_le_of_limitPart_eq {lam ν : Ordinal.{0}}
 /-- Replacing the finite part downwards (`i < fp ν < k`) is undone by replacing it back. -/
 theorem visibilityReplace_visibilityReplace_finitePart {ν : Ordinal.{0}} {k i : ℕ}
     (hfp : finitePart ν < k) (hi : i < k) :
-    visibilityReplace (visibilityReplace ν k i) k (finitePart ν) = ν := by
-  have h1 : visibilityReplace ν k i = limitPart ν + i := by
-    unfold visibilityReplace ordinalReplace; rw [ite_eq_left hfp]
-  rw [h1]
-  have h2 : finitePart (limitPart ν + i) < k := by rw [finitePart_limitPart_add_nat]; exact hi
-  unfold visibilityReplace ordinalReplace
-  rw [ite_eq_left h2, limitPart_limitPart_add_nat, decomposition]
+    visibilityReplace (visibilityReplace ν k i) k (finitePart ν) = ν := by grind [decomposition, ordinalReplace, visibilityReplace, limitPart_limitPart_add_nat, finitePart_limitPart_add_nat]
 
 end Value
 
@@ -107,10 +101,7 @@ namespace ExtOrd
 /-- The band map commutes with `min` at or above `lam`. -/
 theorem bandMap_min {α lam : Ordinal.{0}} (hlam : limitPart lam = lam) (K : ℕ) {x y : ExtOrd}
     (hx : ofOrd lam ≤ x) (hy : ofOrd lam ≤ y) :
-    bandMap α lam K (min x y) = min (bandMap α lam K x) (bandMap α lam K y) := by
-  rcases le_total x y with h | h
-  · rw [min_eq_left h, min_eq_left (bandMap_mono_of_le hlam K hx h)]
-  · rw [min_eq_right h, min_eq_right (bandMap_mono_of_le hlam K hy h)]
+    bandMap α lam K (min x y) = min (bandMap α lam K x) (bandMap α lam K y) := by grind [min_eq_right, bandMap_mono_of_le]
 
 /-- At or above cap level the band map is the cap `α + K`. -/
 theorem bandMap_of_cap_le {α lam : Ordinal.{0}} {K : ℕ} {x : ExtOrd}
@@ -230,7 +221,7 @@ theorem TransformsTo.merge_bandMap {D : Type*} [Finite D] {grade : D → ℕ}
     (hlow : ∀ d, q d < ofOrd α → q' d = q d)
     (htop : ∀ d, q d = ⊤ → ofOrd lam ≤ r d ∧ q' d = bandMap α lam K (r d)) :
     TransformsTo grade p q' := by
-  classical
+
   have := Fintype.ofFinite D
   have hα0 : (0 : Ordinal.{0}) < α := hα.pos
   have hαlam : ∀ x : ExtOrd, x ≠ ⊥ → ofOrd α ≤ bandMap α lam K x :=
@@ -568,6 +559,4 @@ theorem topController_locality_provisional (p : S α n) (hα : Order.IsSuccLimit
     refine ⟨le_min hle hlSg, ?_⟩
     rw [hpd, hpSg, bandMap_min hlam p.topGrade hle hlSg]
 
-end StageType
 
-end VaughtConjecture.Knight

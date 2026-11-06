@@ -29,4 +29,3 @@ theorem CappedLift.raise_target {B C : Finset ι} {i j : ℕ}
   hl.comp (hJK := show GradedLe (C, i) (C, j) from ⟨Finset.Subset.refl _, hij⟩)
     (bountiful_same_scope sem (B := C) (i := i) (j := j) ⟨Finset.Subset.refl _, hij⟩)
 
-end VaughtConjecture.Knight.CoatomBoundaryExtension

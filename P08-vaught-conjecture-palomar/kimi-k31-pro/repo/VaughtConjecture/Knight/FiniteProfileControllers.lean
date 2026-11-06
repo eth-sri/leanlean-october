@@ -75,12 +75,6 @@ theorem cut_triangle (H : ℕ) (a b c : X → ℕ) :
 
 /-- The exact clipped cross-reading identity, not only a triangle inequality. -/
 theorem cross_agreement (H : ℕ) (a b c : X → ℕ) :
-    min (cut H a c) (cut H a b) = min (cut H b c) (cut H a b) := by
-  have h1 := cut_triangle H a b c
-  have h2 := cut_triangle H b a c
-  rw [cut_symm H b a] at h2
-  omega
+    min (cut H a c) (cut H a b) = min (cut H b c) (cut H a b) := by grind [cut_symm, cut_triangle]
 
-variable [Finite X] [Finite Q]
 
-end VaughtConjecture.Knight.FiniteProfileControllers

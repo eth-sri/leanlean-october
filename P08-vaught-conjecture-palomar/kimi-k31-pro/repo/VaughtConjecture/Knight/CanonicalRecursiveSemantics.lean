@@ -35,5 +35,3 @@ abbrev rows (n : ℕ) (hA : n + 3 ≤ A.card) := (state sem hp n hA).rows
 theorem consistent (hs : sem.IsConsistent) (n : ℕ) (hA : n + 3 ≤ A.card) :
     (rows sem hp n hA).IsConsistent := (state sem hp n hA).consistent hs
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveSemantics

@@ -91,6 +91,4 @@ theorem le_iff_evr_le {δ x : ExtOrd} {k i : ℕ} (hδ : SelfVis k δ) (hi : i �
 
 /-! ## Transport on unchanged rows -/
 
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D}
 
-end VaughtConjecture.Knight

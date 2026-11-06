@@ -34,7 +34,7 @@ theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] (p : X → ExtOrd)
     (hfbot : f ⊥ = ⊥) (hgbot : g ⊥ = ⊥)
     (hinv : ∀ d, g (f (p d)) = p d) (d : X) :
     fieldRank (fun e => f (p e)) d = fieldRank p d := by
-  classical
+
   have hpos (e : X) : f (p e) ≠ ⊥ ↔ p e ≠ ⊥ := by
     constructor
     · intro h he
@@ -75,15 +75,10 @@ theorem fieldRank_normalize {X : Type*} [Fintype X] (j : ℕ) (p : X → ExtOrd)
   have hg : Witness (gTop j) g :=
     PairedSlotDecoder.decode_witness (by simp) (selfVis_bot j)
   have hinv (e : X) : g (f (p e)) = p e := by
-    dsimp only [f, g]
+    dsimp [f, g]
     rw [PairedSlotIncoming.encoder_profile]
     exact PairedSlotDecoder.decode_normalize (by simp) (selfVis_bot j) hp e
   have h := fieldRank_of_leftInverse p hf.mono hg.mono hf.bot hg.bot hinv d
   simpa only [f, PairedSlotIncoming.encoder_profile] using h
 
-variable {I : Type*} [Fintype I] {nP N J K : ℕ}
-  {P : SemScheme (nP + 1)} {C : SemScheme J} {R : Ref I nP N J P C}
-  (L : R.LowRef K)
 
-end
-end VaughtConjecture.Knight.ReceivingCatalogueRanks

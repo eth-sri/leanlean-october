@@ -72,5 +72,3 @@ theorem exists_capped_source {q : target sem hA → ExtOrd}
   rw [hf]
   exact hq.cap hγ
 
-end
-end VaughtConjecture.Knight.CanonicalSeedAmbient

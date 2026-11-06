@@ -134,5 +134,3 @@ theorem nonempty_iso_of_receiving [Countable M₁] [Countable M₂]
     Function.Embedding.ofIsEmpty Function.Embedding.ofIsEmpty hp₁ hp₂
   exact ⟨e⟩
 
-end
-end VaughtConjecture.Knight.LowOnlyResidualClassification

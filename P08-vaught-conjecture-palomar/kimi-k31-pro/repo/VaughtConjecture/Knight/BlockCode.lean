@@ -43,14 +43,10 @@ open Transform Value ExtOrd SharpWitnessComposition
 /-! ## Limit arithmetic -/
 
 theorem limitPart_add_nat_of_limit {l : Ordinal.{0}} (hl : limitPart l = l) (n : ℕ) :
-    limitPart (l + n) = l := by
-  conv_lhs => rw [← hl]
-  rw [limitPart_limitPart_add_nat, hl]
+    limitPart (l + n) = l := by grind [limitPart_limitPart_add_nat]
 
 theorem finitePart_add_nat_of_limit {l : Ordinal.{0}} (hl : limitPart l = l) (n : ℕ) :
-    finitePart (l + n) = n := by
-  conv_lhs => rw [← hl]
-  rw [finitePart_limitPart_add_nat]
+    finitePart (l + n) = n := by grind [finitePart_limitPart_add_nat]
 
 /-- Below a larger limit, a limit plus any natural stays below. -/
 theorem add_nat_lt_of_lt_limit {l l' : Ordinal.{0}} (hl : limitPart l = l)
@@ -94,17 +90,12 @@ attribute [instance] BlockCode.dec
 noncomputable def off (a : Ordinal.{0}) : ℕ :=
   if B.listed (limitPart a) then min (finitePart a) B.N else B.N
 
-theorem off_le_N (a : Ordinal.{0}) : B.off a ≤ B.N := by
-  unfold off; split_ifs
-  · exact min_le_right _ _
-  · exact le_rfl
+theorem off_le_N (a : Ordinal.{0}) : B.off a ≤ B.N := by grind [off]
 
 theorem off_of_listed {a : Ordinal.{0}} (h : B.listed (limitPart a)) :
-    B.off a = min (finitePart a) B.N := by
-  unfold off; exact ite_eq_left h
+    B.off a = min (finitePart a) B.N := by simp_all [off]
 
-theorem off_of_not_listed {a : Ordinal.{0}} (h : ¬ B.listed (limitPart a)) : B.off a = B.N := by
-  unfold off; exact ite_eq_right h
+theorem off_of_not_listed {a : Ordinal.{0}} (h : ¬ B.listed (limitPart a)) : B.off a = B.N := by simp_all [off]
 
 /-- The top code. -/
 noncomputable def topCode : ExtOrd := ofOrd B.htop
@@ -137,8 +128,7 @@ theorem code_ofOrd_of_some {a l : Ordinal.{0}} (h : B.Λ (limitPart a) = some l)
 same offset on the target strip. -/
 theorem code_listed {a l : Ordinal.{0}} (hl : B.listed (limitPart a))
     (h : B.Λ (limitPart a) = some l) (hfp : finitePart a ≤ B.N) :
-    B.code (ofOrd a) = ofOrd (l + finitePart a) := by
-  rw [B.code_ofOrd_of_some h, B.off_of_listed hl, min_eq_left hfp]
+    B.code (ofOrd a) = ofOrd (l + finitePart a) := by simp_all [off_of_listed, code_ofOrd_of_some]
 
 /-- Every strip value with offset at most `N` lies below the top code. -/
 theorem strip_le_topCode {μ l : Ordinal.{0}} (h : B.Λ μ = some l) {n : ℕ} (hn : n ≤ B.N) :
@@ -251,17 +241,11 @@ noncomputable def targetOf (μ : Ordinal.{0}) : Option Ordinal.{0} :=
 
 open Classical in
 theorem targetOf_eq_none_iff (μ : Ordinal.{0}) :
-    targetOf S strip μ = none ↔ ¬ (S.filter fun μ' => μ' ≤ μ).Nonempty := by
-  unfold targetOf
-  split_ifs with h
-  · simp [h]
-  · simp [h]
+    targetOf S strip μ = none ↔ ¬ (S.filter fun μ' => μ' ≤ μ).Nonempty := by simp_all [targetOf]
 
 open Classical in
 theorem targetOf_eq_some {μ : Ordinal.{0}} (h : (S.filter fun μ' => μ' ≤ μ).Nonempty) :
-    targetOf S strip μ = some (strip ((S.filter fun μ' => μ' ≤ μ).max' h)) := by
-  unfold targetOf
-  rw [dite_eq_left h]
+    targetOf S strip μ = some (strip ((S.filter fun μ' => μ' ≤ μ).max' h)) := by simp_all [targetOf]
 
 open Classical in
 /-- The largest listed block at or below `μ` is listed, at most `μ`, and above every listed
@@ -353,15 +337,12 @@ theorem ofFinset_Λ_listed (hlim : ∀ μ ∈ S, limitPart (strip μ) = strip μ
     (hstrict : ∀ μ ∈ S, ∀ μ' ∈ S, μ < μ' → strip μ < strip μ')
     (hRtop : R ≤ finitePart htop) {μ : Ordinal.{0}} (hμ : μ ∈ S) :
     (ofFinset N R hR S strip htop hlim hle hstrict hRtop).Λ μ = some (strip μ) := by
-  classical
+
   have h : (S.filter fun ν => ν ≤ μ).Nonempty := ⟨μ, Finset.mem_filter.mpr ⟨hμ, le_rfl⟩⟩
   change targetOf S strip μ = some (strip μ)
   rw [targetOf_eq_some S strip h]
   congr 2
   exact le_antisymm (max'_filter_spec S h).2.1 ((max'_filter_spec S h).2.2 _ hμ le_rfl)
 
-end OfFinset
 
-end BlockCode
 
-end VaughtConjecture.Knight

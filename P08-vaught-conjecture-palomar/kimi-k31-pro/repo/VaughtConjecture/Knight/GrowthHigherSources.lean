@@ -56,19 +56,13 @@ theorem anchor_visible_one {j : ℕ} (a : Catalogue X j) (f : Field DA DQ) :
 def state {j : ℕ} (a : Catalogue X j) : State DA DQ := State.ofProfile a.val
 
 theorem state_admitted {j : ℕ} (a : Catalogue X j) :
-    Admitted X j (state X a) := by
-  obtain ⟨S, hS, he⟩ := a.property.2
-  have hs : state X a = S := State.profile_injective
-    ((State.profile_ofProfile a.val).trans he.symm)
-  exact hs.symm ▸ hS
+    Admitted X j (state X a) := by grind [state, State.profile_injective, State.profile_ofProfile]
 
 theorem state_profile {j : ℕ} (a : Catalogue X j) :
     (state X a).profile = fields X j a := State.profile_ofProfile a.val
 
 theorem state_proper {j : ℕ} (a : Catalogue X j) (f : Field DA DQ) :
-    (state X a).profile f ≠ ⊤ := by
-  rw [state_profile]
-  exact anchor_proper X a f
+    (state X a).profile f ≠ ⊤ := by simp_all [anchor_proper, state_profile]
 
 def normalized {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
     (S : State DA DQ) (hs : Admitted X j S) (hp : ∀ f, S.profile f ≠ ⊤) :
@@ -145,5 +139,3 @@ theorem anchor_lawful_at {j : ℕ} (a : Catalogue X j) :
   rw [← he]
   exact boundary_lawful_at I X T hs
 
-end
-end VaughtConjecture.Knight.GrowthHigherSources

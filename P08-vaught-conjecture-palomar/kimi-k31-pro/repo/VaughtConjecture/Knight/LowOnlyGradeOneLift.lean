@@ -59,21 +59,21 @@ def leafSource (a : F.Anchor 1) (d : Cell L) : ExtOrd :=
 theorem leafSource_eq (a : F.Anchor 1) (d : Cell L) :
     leafSource F D hA field a d = ladderRow D hA field (F.fields 1)
       (SupportLadderRows.leaf (Nat.succ_pos _) a) d := by
-  simp only [leafSource, ladderRow]
+  simp [leafSource, ladderRow]
   rfl
 
 include hfield in
 theorem leafSource_private (a : F.Anchor 1) (d : C.scheme.below (effC n 1)) :
     leafSource F D hA field a (privateAt F D hA incl d).1 =
       SupportLadderRows.source H (fieldRank a.val (.inr (.inl d.1))) := by
-  simp only [leafSource, privateAt, image, rankIndex_old, ranks, fieldRank,
+  simp [leafSource, privateAt, image, rankIndex_old, ranks, fieldRank,
     anchor_private F D field incl hfield a d]
   rfl
 
 include hboundary in
 theorem leafSource_lawful (a : F.Anchor 1) :
     RespectsSemanticsBelow E (A, 1) (fun d => leafSource F D hA field a d.1) := by
-  simp only [leafSource_eq]
+  simp [leafSource_eq]
   apply ladder_respects D sem hA field (F.fields 1) hproper _ _
   intro b
   obtain ⟨S, hs, he⟩ := b.property.2
@@ -93,7 +93,7 @@ theorem private_active_lift
     (c : C.scheme.below (effC n 1)) (hactive : γ < p c) :
     ∃ w : (L).below (A, 1) → ExtOrd, RespectsSemanticsBelow E (A, 1) w ∧
       (∀ d, w (privateAt F D hA incl d) = p d) ∧ ∀ d, min (w d) γ = min (q d) γ := by
-  classical
+
   let Z := (zero : State P C).normalize 1
   have hz := F.normalize_admissible (by decide : 1 ≤ 1) (F.zero_admissible 1)
   have hzc : Z.profile ∈ CanonicalPairedProfiles.inventory (Field P C) 1 :=
@@ -116,7 +116,7 @@ theorem private_active_lift
   let k := next (values a.val) δ
   let f : ℕ → ExtOrd := fun i => σ (SupportLadderRows.source H i)
   have hf : Monotone f := hσ.mono.comp (SupportLadderRows.source_mono H)
-  have hf0 : f 0 = ⊥ := by simp only [f, SupportLadderRows.source_zero, hσ.bot]
+  have hf0 : f 0 = ⊥ := by simp [f, SupportLadderRows.source_zero, hσ.bot]
   have hfv (i) : SelfVis 1 (f i) :=
     CappedDonor.Ref.selfVis_map hσ le_rfl (SupportLadderRows.source_visible _ _)
   have hfieldc : δ ≤ a.val (.inr (.inl c.1)) := by
@@ -144,7 +144,7 @@ theorem private_active_lift
       (Nat.pos_of_ne_zero hz) (hi.le.trans hkc)
     have hdb : a.val d ≠ ⊥ := by
       intro he
-      have hr : fieldRank a.val d = 0 := by simp only [fieldRank, he, rank_bot (bot_not_values _)]
+      have hr : fieldRank a.val d = 0 := by simp [fieldRank, he, rank_bot (bot_not_values _)]
       exact hz (hd.symm.trans hr)
     have hr : fieldRank a.val d < next (values a.val) δ := hd ▸ hi
     have hl := (rank_lt_next (mem_values.mpr ⟨hdb, d, rfl⟩)).mp hr
@@ -156,7 +156,7 @@ theorem private_active_lift
     have hlt : a.val d < δ := (hcut d).mpr (by simpa only [hd] using hl)
     have hdb : a.val d ≠ ⊥ := by
       intro he
-      have hr : fieldRank a.val d = 0 := by simp only [fieldRank, he, rank_bot (bot_not_values _)]
+      have hr : fieldRank a.val d = 0 := by simp [fieldRank, he, rank_bot (bot_not_values _)]
       have := hd.symm.trans hr
       omega
     have hr := (rank_lt_next (mem_values.mpr ⟨hdb, d, rfl⟩)).mpr hlt
@@ -223,7 +223,7 @@ theorem private_positive_lift
     (hag : ∀ d, min (q (privateAt F D hA incl d)) γ = min (p d) γ) :
     ∃ w : (L).below (A, 1) → ExtOrd, RespectsSemanticsBelow E (A, 1) w ∧
       (∀ d, w (privateAt F D hA incl d) = p d) ∧ ∀ d, min (w d) γ = min (q d) γ := by
-  classical
+
   by_cases hsmall : ∀ d, p d ≤ γ
   · exact ⟨fun d => min (q d) γ, hq.cap hγ,
       fun d => (hag d).trans (min_eq_left (hsmall d)),
@@ -232,5 +232,3 @@ theorem private_positive_lift
     exact private_active_lift F D sem hA field hproper hboundary incl hfield
       hp hq hγ hpos hag c (not_le.mp hc)
 
-end
-end VaughtConjecture.Knight.LowOnly.Family

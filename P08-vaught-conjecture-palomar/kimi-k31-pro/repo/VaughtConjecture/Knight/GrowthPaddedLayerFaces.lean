@@ -103,7 +103,4 @@ theorem full_respects_iff (j : ℕ) (q : D.below (V, j) → ExtOrd) :
     rw [G.index d.1, G.index f.1]
     exact (Finset.image_subset_image_iff e.injective).symm
   · exact (G.row c.1 (PointImageSemantics.belowEquiv S.scheme e he c.1 d)).symm
-end FullFace
 
-end
-end VaughtConjecture.Knight.GrowthPaddedLayerFaces

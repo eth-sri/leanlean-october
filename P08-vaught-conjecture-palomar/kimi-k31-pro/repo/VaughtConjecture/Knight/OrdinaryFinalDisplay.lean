@@ -86,5 +86,3 @@ theorem exists_actual_display
     rw [hgate, hfields, hg] at hb
     exact hb
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalDisplay

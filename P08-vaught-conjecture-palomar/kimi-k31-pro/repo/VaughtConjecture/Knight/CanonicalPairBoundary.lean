@@ -103,5 +103,3 @@ theorem exists_whole {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) :
     GradeCutPairRows.glue_old D _ _ j k hj hjA hk hkA p v⟩
   exact hread
 
-end
-end VaughtConjecture.Knight.CanonicalPairBoundary

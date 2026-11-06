@@ -53,12 +53,10 @@ theorem donor_cell (d : Cell I.left.scheme) :
   I.leftFace.index d
 
 theorem private_scope_le (d : Cell I.right.scheme) :
-    (I.right.scheme.scope d).image I.placeRight ⊆ C := by
-  exact (Finset.image_subset_image (Finset.subset_univ _)).trans (Finset.subset_of_eq I.imageRight)
+    (I.right.scheme.scope d).image I.placeRight ⊆ C := (Finset.image_subset_image (Finset.subset_univ _)).trans (Finset.subset_of_eq I.imageRight)
 
 theorem donor_scope_le (d : Cell I.left.scheme) :
-    (I.left.scheme.scope d).image I.placeLeft ⊆ B := by
-  exact (Finset.image_subset_image (Finset.subset_univ _)).trans (Finset.subset_of_eq I.imageLeft)
+    (I.left.scheme.scope d).image I.placeLeft ⊆ B := (Finset.image_subset_image (Finset.subset_univ _)).trans (Finset.subset_of_eq I.imageLeft)
 
 variable (U : Finset ι) (j : ℕ)
 
@@ -156,16 +154,12 @@ theorem threshold_le_card : X.req.N ≤ A.card := by
 /-- The installed private occurrence map is the inherited original occurrence. -/
 theorem privateFace_map (d : Cell I.right.scheme) (hd : I.right.scheme.grade d ≤ A.card) :
     (GrowthReplicatedRows.privateFace I X T hA hB hC t ht).map d =
-      (privateAt I X T hA hB hC t ht A A.card (Finset.ssubset_iff_subset_ne.mp hC).1 d hd).1 := by
-  exact congrArg (ScopeReplicationCarrier.old (P).carrier B C)
+      (privateAt I X T hA hB hC t ht A A.card (Finset.ssubset_iff_subset_ne.mp hC).1 d hd).1 := congrArg (ScopeReplicationCarrier.old (P).carrier B C)
     (GrowthPaddedInstallation.face_map I X T hA hB hC I.rightFace hC.not_ge t ht d)
 
 /-- The installed donor occurrence map is the inherited original occurrence. -/
 theorem donorFace_map (d : Cell I.left.scheme) (hd : I.left.scheme.grade d ≤ A.card) :
     (GrowthReplicatedRows.donorFace I X T hA hB hC t ht).map d =
-      (donorAt I X T hA hB hC t ht A A.card (Finset.ssubset_iff_subset_ne.mp hB).1 d hd).1 := by
-  exact congrArg (ScopeReplicationCarrier.old (P).carrier B C)
+      (donorAt I X T hA hB hC t ht A A.card (Finset.ssubset_iff_subset_ne.mp hB).1 d hd).1 := congrArg (ScopeReplicationCarrier.old (P).carrier B C)
     (GrowthPaddedInstallation.face_map I X T hA hB hC I.leftFace hB.not_ge t ht d)
 
-end
-end VaughtConjecture.Knight.GrowthReplicatedReadback

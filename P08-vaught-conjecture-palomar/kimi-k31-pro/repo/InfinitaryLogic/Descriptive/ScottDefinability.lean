@@ -110,6 +110,4 @@ theorem isolatedPresentation_of_surjective (codes : X → StructureSpace L) (cla
       ← Formulaω.realize_as_sentence_iff_toSentenceω]
     exact @scottSentence_self L _ _ ℕ (codes x).toStructure _
 
-end Presentation
 
-end FirstOrder.Language

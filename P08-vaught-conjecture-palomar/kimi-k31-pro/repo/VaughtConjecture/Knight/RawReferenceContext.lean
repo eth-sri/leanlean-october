@@ -49,7 +49,7 @@ theorem exists_rawReferenceContext (hM : R.IsModel) (p : S α.1 n)
     (hp : R.eval t = some p) (blocks : Finset Ordinal.{0})
     (hblocks : ∀ μ ∈ blocks, IsNonSuccessor μ ∧ μ < α.1) :
     Nonempty (RawReferenceContext R t blocks) := by
-  classical
+
   let reqs : List BlockRequest := blocks.toList.map (fun μ => ⟨μ, 0⟩)
   have hreqs : ∀ r ∈ reqs, IsNonSuccessor r.block ∧ r.block < α.1 := by
     intro r hr
@@ -62,5 +62,3 @@ theorem exists_rawReferenceContext (hM : R.IsModel) (p : S α.1 n)
   choose rep off hrep using href
   exact ⟨{ toCtx := C, repBase := rep, repOff := off, rep_label := hrep }⟩
 
-end
-end VaughtConjecture.Knight

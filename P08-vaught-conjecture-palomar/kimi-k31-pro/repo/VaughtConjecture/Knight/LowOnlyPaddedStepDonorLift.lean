@@ -73,7 +73,7 @@ theorem active_donor_lift
     simpa only [Function.comp_def, Equiv.symm_apply_apply] using hp
   have hcard : B.card = n := by
     rw [← I.imageLeft, Finset.card_image_of_injective _ I.placeLeft.injective]
-    simp only [Finset.card_univ, Fintype.card_fin]
+    simp [Finset.card_univ, Fintype.card_fin]
   have hCmem : (B, k) ∈ Plan.gradedPlan (carrier P hnext).plan := by
     change (B, k) ∈ Plan.gradedPlan P.carrier.plan
     rw [hplan]
@@ -97,5 +97,3 @@ theorem active_donor_lift
   intro d
   simpa only [p', Function.comp_apply, Equiv.symm_apply_apply, hid] using hrr (e d)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepDonorLift

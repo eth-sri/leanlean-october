@@ -82,11 +82,7 @@ theorem le_finitePart_of_visReplace_le_of_lt {μ z : Ordinal.{0}} {K K' : ℕ} (
 
 /-- A self-visible label that is neither `-∞` nor `∞` is an ordinal with finite part `≥ K`. -/
 theorem exists_ordinal_of_selfVis {v : ExtOrd} {K : ℕ} (h : extVisibilityReplace v K K = v)
-    (hbot : v ≠ ⊥) (htop : v ≠ ⊤) : ∃ μ : Ordinal.{0}, v = ofOrd μ ∧ K ≤ finitePart μ := by
-  rcases (extVisibilityReplace_self_iff v K).mp h with rfl | rfl | ⟨μ, rfl, hμ⟩
-  · exact absurd rfl hbot
-  · exact absurd rfl htop
-  · exact ⟨μ, rfl, hμ⟩
+    (hbot : v ≠ ⊥) (htop : v ≠ ⊤) : ∃ μ : Ordinal.{0}, v = ofOrd μ ∧ K ≤ finitePart μ := by grind [extVisibilityReplace_self_iff]
 
 end Value
 
@@ -439,7 +435,7 @@ theorem LabelledExt.emb_unique {x y : R.LabelledExt} {f f' : Fin x.arity ↪ Fin
   apply y.tuple.injective
   have h1 := DFunLike.congr_fun hf i
   have h2 := DFunLike.congr_fun hf' i
-  simp only [Function.Embedding.trans_apply] at h1 h2
+  simp [Function.Embedding.trans_apply] at h1 h2
   exact h1.trans h2.symm
 
 /-! ### Stable-value functionality from exact consistency alone
@@ -504,6 +500,4 @@ theorem HasStableValue.unique (hcons : R.IsExactParentConsistent)
     (h : R.HasStableValue t p Xi γ) (h' : R.HasStableValue t p Xi γ') : γ = γ' :=
   HasStableValue.unique_of_consistent hcons h h'
 
-end KnightRealization
 
-end VaughtConjecture.Knight

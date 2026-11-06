@@ -101,12 +101,10 @@ theorem compatible_labels {α : Ordinal.{0}} (C : CoatomPair (n + 2))
     {pa pb : S α (n + 3)} (h : C.Compatible pa pb) :
     let I := (CoatomBoundaryPresentation.of_compatible C h).input
     ∀ i, pa.label (I.shared.f i) = pb.label (I.shared.g i) := by
-  dsimp only
+  dsimp
   intro i
   let r := Classical.choose h
   have hl := (Classical.choose_spec h).1
   have hr := (Classical.choose_spec h).2
   exact (faceMap_label pa r C.g₁ _ _ hl i).trans (faceMap_label pb r C.g₂ _ _ hr i).symm
 
-end
-end VaughtConjecture.Knight.CoatomRecursiveDisplay

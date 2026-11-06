@@ -34,11 +34,6 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-section Step
-variable {I F hroot hA hB hC} {k r : ℕ}
-  (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
-
-end Step
 
 def original (t : ℕ) (ht : t + 2 ≤ A.card) (d : Cell I.boundary) :
     Cell (build I F hroot hA hB hC t ht).carrier :=
@@ -51,5 +46,3 @@ theorem original_index (t : ℕ) (ht : t + 2 ≤ A.card) (d : Cell I.boundary) :
   ((build I F hroot hA hB hC t ht).base_index _).trans
     (RelativeLadderLayer.old_index I.boundary (by omega) d)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedEndpoints

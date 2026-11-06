@@ -32,26 +32,12 @@ noncomputable def source (t i : ℕ) : ExtOrd :=
   if t ≤ 1 then SlotControllerFamily.value (2 * min i t - 1)
   else LongGuardRows.source (2 * t - 3) (2 * min i t - 1)
 
-theorem source_visible (t i : ℕ) : SelfVis 1 (source t i) := by
-  unfold source
-  split_ifs
-  · exact SlotControllerFamily.value_visible _
-  · exact LongGuardRows.source_visible _ _
+theorem source_visible (t i : ℕ) : SelfVis 1 (source t i) := by grind [source, LongGuardRows.source_visible, SlotControllerFamily.value_visible]
 
-theorem source_coded (t i : ℕ) : IsCodedLabel 1 (source t i) := by
-  unfold source
-  split_ifs
-  · exact SlotControllerFamily.value_coded _
-  · exact LongGuardRows.source_coded _ _
+theorem source_coded (t i : ℕ) : IsCodedLabel 1 (source t i) := by grind [source, LongGuardRows.source_coded, SlotControllerFamily.value_coded]
 
 theorem source_le_iff (t i j : ℕ) :
-    source t i ≤ source t j ↔ min i t ≤ min j t := by
-  unfold source
-  split_ifs with ht
-  · rw [SlotControllerFamily.value_le_iff]
-    omega
-  · rw [LongGuardRows.source_le_iff]
-    omega
+    source t i ≤ source t j ↔ min i t ≤ min j t := by grind [source, LongGuardRows.source_le_iff, SlotControllerFamily.value_le_iff]
 
 theorem source_mono (t : ℕ) : Monotone (source t) :=
   fun _ _ h => (source_le_iff _ _ _).mpr (min_le_min_right _ h)
@@ -104,8 +90,7 @@ theorem transforms_positive {Y : Type*} [Finite Y] (a : Y → ℕ) (t : ℕ)
     have he := (source_floor_bot_iff _ _).mp hde.symm
     rw [(source_bot_iff _ _).mp he, h0]
 
-theorem source_min (t i : ℕ) : source t (min i t) = source t i := by
-  simp only [source, min_assoc, min_self]
+theorem source_min (t i : ℕ) : source t (min i t) = source t i := by grind [source]
 
 variable {X Q : Type*} {H : ℕ} {profile : Q → X → ℕ}
 
@@ -147,9 +132,7 @@ theorem index_le (a : Q) (v : Point H X Q) : index profile a v ≤ H :=
   (min_le_left _ _).trans (cut_le _ _ _)
 
 @[simp] theorem index_rung (a : Q) (i : Fin H) :
-    index profile a (rung a i) = i.val + 1 := by
-  simp only [index, rung, parent, ceiling, cut_refl,
-    min_eq_right (show i.val + 1 ≤ H from i.isLt)]
+    index profile a (rung a i) = i.val + 1 := by grind [rung, index, parent, ceiling, cut_refl]
 
 @[simp] theorem ceiling_leaf (hH : 0 < H) (a : Q) :
     ceiling profile (leaf (X := X) hH a) = H := by
@@ -162,8 +145,7 @@ theorem index_le (a : Q) (v : Point H X Q) : index profile a v ≤ H :=
   exact min_eq_left (cut_le _ _ _)
 
 theorem index_diagonal (hbound : ∀ a d, profile a d ≤ H) (c : Point H X Q) :
-    index profile (parent c) c = ceiling profile c := by
-  rw [index, cut_refl, min_eq_right (ceiling_le hbound c)]
+    index profile (parent c) c = ceiling profile c := by grind [index, cut_refl, ceiling_le]
 
 /-- Whole-coordinate agreement includes every unused rung and every shadow. -/
 theorem index_agreement (a b : Q) (v : Point H X Q) :
@@ -246,7 +228,7 @@ theorem Lawful.predecessor_bot {q : Point H X Q → ExtOrd} (hq : Lawful profile
   have hb : blockFloor (row profile c d) = blockFloor (row profile c c) := by
     change blockFloor (source (i + 1) (index profile a d)) =
       blockFloor (source (i + 1) (index profile a c))
-    dsimp only [d, c]
+    dsimp [d, c]
     rw [index_rung, index_rung]
     have hi' : i - 1 + 1 = i := by omega
     rw [hi']
@@ -268,7 +250,7 @@ theorem Lawful.exists_shape [Nonempty Q] {q : Point H X Q → ExtOrd}
   obtain ⟨g, σ, _, hg, h0, hm, h5, hr⟩ := hq.2 (leaf hH a)
   let f : ℕ → ExtOrd := fun i => min (σ (source H i)) (g 1)
   refine ⟨a, f, fun _ _ h => min_le_min_right _ (hm (source_mono H h)), ?_, ?_, ?_⟩
-  · simp only [f, source_zero, h0, min_bot_left]
+  · simp [f, source_zero, h0]
   · intro i
     change SelfVis 1 (min (σ (source H i)) (g 1))
     by_cases hi : σ (source H i) ≤ g 1
@@ -280,7 +262,7 @@ theorem Lawful.exists_shape [Nonempty Q] {q : Point H X Q → ExtOrd}
       exact (hg 1).symm
   · intro v
     have h := hr v
-    dsimp only at h
+    dsimp at h
     rw [min_eq_left (hdom v)] at h
     rw [row, ceiling_leaf] at h
     exact h
@@ -322,7 +304,7 @@ theorem lawful_iff_shape [Nonempty Q]
     · have he : q = fun _ => ⊥ := funext hz
       rw [he]
       exact ⟨fun _ => selfVis_bot _, fun _ => by
-        simp only [min_self]
+        simp [min_self]
         exact TransformsTo.to_bot _⟩
     · rw [funext he]
       exact image_lawful a f hf h0 hv hp
@@ -336,7 +318,7 @@ omit [Finite X] in
 theorem readout_image (hbound : ∀ a d, profile a d ≤ H) (a : Q)
     {f : ℕ → ExtOrd} (hf : Monotone f) (d : X) :
     readout (image (H := H) profile a f) d = f (profile a d) := by
-  classical
+
   let _ := Fintype.ofFinite Q
   apply le_antisymm
   · apply Finset.sup_le
@@ -364,7 +346,7 @@ theorem cap_agreement (a b : Q) {k : ℕ}
     (hfg : ∀ i, i < k → min (f i) γ = min (g i) γ) (v : Point H X Q) :
     min (image profile a f v) γ = min (image profile b g v) γ := by
   have he := congrArg (fun z => min z k) (index_agreement (profile := profile) a b v)
-  simp only [min_assoc, min_eq_right hk] at he
+  simp [min_assoc, min_eq_right hk] at he
   change min (f (index profile a v)) γ = min (g (index profile b v)) γ
   by_cases ha : index profile a v < k
   · have hb : index profile b v = index profile a v := by omega
@@ -374,4 +356,3 @@ theorem cap_agreement (a b : Q) {k : ℕ}
     have hb' : k ≤ index profile b v := by omega
     rw [min_eq_right (hγf.trans (hf ha')), min_eq_right (hγg.trans (hg hb'))]
 
-end VaughtConjecture.Knight.SupportLadderRows

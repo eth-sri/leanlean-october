@@ -102,6 +102,3 @@ theorem terminal_insertion {j : ℕ} (hj : 1 ≤ j) {S : State P C}
     PairedSlotDecoder.decode_normalize hG hβvis hproper d, State.profile_map]
   exact collapseBlock_min hlβ (S.profile_lt_freshFloor h d)
 
-end Family
-end
-end VaughtConjecture.Knight.LowOnly

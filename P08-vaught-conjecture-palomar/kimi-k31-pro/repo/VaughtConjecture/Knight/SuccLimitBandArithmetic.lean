@@ -31,4 +31,3 @@ theorem add_omega0_le_of_lt_isSuccLimit {γ α : Ordinal.{0}} (hα : Order.IsSuc
   exact mul_le_mul_right
     (Order.succ_le_of_lt ((mul_lt_mul_iff_right₀ Ordinal.omega0_pos).mp h1)) _
 
-end VaughtConjecture.Knight

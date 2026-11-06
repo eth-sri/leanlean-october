@@ -92,4 +92,3 @@ theorem bountiful_of_bounded_same_grade (hpos : 0 < K)
     exact Plan.mem_gradedPlan.mpr ⟨hs, lt_min hi hpos, (min_le_left _ _).trans hc⟩
   exact hsame C B (min i K) (mem C hC) (mem B hB) (min_le_right _ _) h
 
-end VaughtConjecture.Knight.EffectiveGradeLifting

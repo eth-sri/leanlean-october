@@ -55,7 +55,7 @@ theorem faceMap_total (c d : Cell F.scheme) :
     AmalgamatedBoundaryRows.total D.rows (faceMap D F f hv hf c)
       (faceMap D F f hv hf d) = AmalgamatedBoundaryRows.total F.rows c d := by
   subst F
-  classical
+
   change AmalgamatedBoundaryRows.total D.rows
       (CellScheme.restrictFace.toCell D.scheme f hv c)
       (CellScheme.restrictFace.toCell D.scheme f hv d) = _
@@ -148,9 +148,7 @@ def shared : Overlap I.leftScheme I.rightScheme I.common.scheme.card where
       (by rw [← I.imageRight]; exact Finset.image_subset_image (Finset.subset_univ _))
 
 theorem compatible : AmalgamatedBoundaryRows.Compatible s I.leftScheme I.rightScheme
-    I.shared I.leftRows I.rightRows := by
-  intro c d
-  exact (PointImageSemantics.total_eq I.left.scheme I.placeLeft I.imageLeft I.left.rows
+    I.shared I.leftRows I.rightRows := fun c d => (PointImageSemantics.total_eq I.left.scheme I.placeLeft I.imageLeft I.left.rows
     (I.shared.f c) (I.shared.f d)).trans
     (((faceMap_total I.left I.common I.commonLeft I.visibleLeft I.faceLeft c d).trans
       (faceMap_total I.right I.common I.commonRight I.visibleRight I.faceRight c d).symm).trans
@@ -254,6 +252,3 @@ theorem proper_lift {CI BJ : Finset ι × ℕ}
     (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
     hCI hBJ h hne hB p q γ hp hq hγ ha
 
-end Input
-end
-end VaughtConjecture.Knight.SemSchemeBoundaryInput

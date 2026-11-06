@@ -111,9 +111,7 @@ def shared : Overlap I.leftScheme I.rightScheme I.common.scheme.card where
         (Finset.subset_of_eq I.imageRight))
 
 theorem compatible : OrderedFaceBoundaryRows.Compatible I.leftScheme I.rightScheme
-    I.shared I.leftRows I.rightRows := by
-  intro c d
-  exact (PointImageSemantics.total_eq I.left.scheme I.placeLeft I.imageLeft I.left.rows
+    I.shared I.leftRows I.rightRows := fun c d => (PointImageSemantics.total_eq I.left.scheme I.placeLeft I.imageLeft I.left.rows
     (I.shared.f c) (I.shared.f d)).trans
     (((faceMap_total I.left I.common I.commonLeft I.visibleLeft I.faceLeft c d).trans
       (faceMap_total I.right I.common I.commonRight I.visibleRight I.faceRight c d).symm).trans
@@ -259,6 +257,3 @@ theorem inherited_lift {CI BJ : Finset ι × ℕ}
       (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
       p q γ hp hq hγ ha
 
-end Input
-end
-end VaughtConjecture.Knight.WholeDonorBoundary

@@ -49,6 +49,4 @@ theorem exists_eval_empty_at {R : KnightRealization α M} (hR : R.IsModel) :
       R.eval (Function.Embedding.ofIsEmpty : Fin 0 ↪ M) = some p₀ :=
   exists_eval_empty_of_structural hR.consistent hR.covering
 
-end KnightRealization
 
-end VaughtConjecture.Knight

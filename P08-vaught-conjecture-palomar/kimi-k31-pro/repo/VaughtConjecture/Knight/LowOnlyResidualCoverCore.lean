@@ -108,5 +108,3 @@ theorem receive_cover_of_tail {n m : ℕ} (Q : S α.1 m)
     simpa only [Fintype.card_fin] using this
   exact receive_cover_steps_of_tail hcons hFC hcoin hKpos hres (m - n) Q hQK f (by omega) t p hp ht
 
-end
-end VaughtConjecture.Knight.LowOnlyResidualReceiving

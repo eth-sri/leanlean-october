@@ -190,4 +190,3 @@ theorem complete_on_input (hDc : D.IsComplete) (hEc : E.IsComplete)
   · obtain ⟨e, he⟩ := hEc BJ hr
     exact ⟨rightCell D E w R hR hD hE e, (right_index D E w R hR hD hE e).trans he⟩
 
-end VaughtConjecture.Knight.OrderedFaceBoundary

@@ -62,7 +62,7 @@ module's imports out of this one). -/
 theorem ext_of_label {n : ℕ} {t₁ t₂ : S α.1 n} (hs : t₁.scheme = t₂.scheme)
     (hl : ∀ i, t₁.label i = t₂.label (SemScheme.castCell hs i)) : t₁ = t₂ := by
   obtain ⟨s₂, l₂, hb₂, hr₂⟩ := t₂
-  dsimp only at hs
+  dsimp at hs
   subst hs
   exact StageType.ext rfl (heq_of_eq (funext fun i => hl i))
 
@@ -70,7 +70,7 @@ theorem ext_of_label {n : ℕ} {t₁ t₂ : S α.1 n} (hs : t₁.scheme = t₂.s
 theorem respects_of_scheme_eq {n : ℕ} {X : SemScheme n} (t : S α.1 n) (h : t.scheme = X) :
     RespectsSemantics X.rows (fun c => t.label (SemScheme.castCell h.symm c)) := by
   obtain ⟨s, l, hb, hr⟩ := t
-  dsimp only at h
+  dsimp at h
   subst h
   exact hr
 
@@ -176,4 +176,3 @@ theorem finiteCutReceiving (hM : R.IsModel) : FiniteCutReceiving R := by
   exact fc_of_reference hM hp P hm (by omega) C.eval_ctx C.proj C.proj_ctx Rf hRp hRv hK hA' hA
     hface hlt.le
 
-end VaughtConjecture.Knight.OrdinaryModelReceiving

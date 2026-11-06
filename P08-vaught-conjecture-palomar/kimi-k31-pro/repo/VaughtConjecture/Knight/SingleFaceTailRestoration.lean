@@ -96,5 +96,3 @@ theorem exists_inactive
   exact ⟨r, hr, fun d => (hcap d).trans
     (show min (min (q d) γ) γ = min (q d) γ by rw [min_assoc, min_self]), hread⟩
 
-end
-end VaughtConjecture.Knight.SingleFaceTailRestoration

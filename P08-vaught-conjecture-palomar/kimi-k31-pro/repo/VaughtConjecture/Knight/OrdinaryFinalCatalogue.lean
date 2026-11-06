@@ -136,5 +136,3 @@ theorem exists_actual_member :
   obtain ⟨a, δ, hw, hP, hC, hg, -⟩ := exists_actual_member_reflecting R
   exact ⟨a, δ, hw, hP, hC, hg⟩
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalCatalogue

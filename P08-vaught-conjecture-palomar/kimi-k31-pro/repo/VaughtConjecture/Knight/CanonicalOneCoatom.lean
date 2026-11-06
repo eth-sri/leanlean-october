@@ -129,7 +129,7 @@ theorem full_left {C : Finset ι} (hC : C ∈ D.plan) (hCA : C ≠ A) (hCc : 1 �
   · obtain ⟨b, hread⟩ := section_left (show GradedLe (C, 1) (L, 1) from ⟨hCL, le_rfl⟩)
       target_le_left target_le_right inter hl hr (p ∘ e) hpr'
     obtain ⟨r, hrr, he⟩ := exists_whole sem hA hp hg (b.whole_respects cover)
-    refine ⟨fun d => r d.1, hrr.toBelow (A, 1), fun _ => by simp only [hb, min_bot_right], ?_⟩
+    refine ⟨fun d => r d.1, hrr.toBelow (A, 1), fun _ => by simp [hb], ?_⟩
     intro d
     obtain ⟨a, rfl⟩ := e.surjective d
     exact (he a.1).trans (hread a)
@@ -167,5 +167,3 @@ theorem bountiful : (rows sem hA hp hg).IsBountiful := by
         (D.isPlan.subset_of_mem (Plan.mem_gradedPlan.mp hB).1) hh))
       (hold _ _ hC hB hBA ⟨hCB, le_rfl⟩)
 
-end
-end VaughtConjecture.Knight.CanonicalOneCoatom

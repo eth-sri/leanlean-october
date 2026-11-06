@@ -58,7 +58,7 @@ theorem exists_pinned {N n : ℕ} (P : S β.1 N) (hP : ∀ d, P.label d ≠ ⊤)
       ∃ q' : S β.1 (n + 1), typeMap (extendFace g) Q = some q' ∧
         ∃ he : q'.scheme = q.scheme,
           ∀ d, min (q'.label d) δ = min (q.label (SemScheme.castCell he d)) δ := by
-  classical
+
   obtain ⟨Q, hQP, hQq⟩ :=
     pinnedCofaceSupply_of_supply (CanonicalCoatomSupply.supply β.2) P g p hg q hq
   let v : Cell P.scheme.scheme ⊕ Unit → ExtOrd := Sum.elim P.label (fun _ => δ)
@@ -83,4 +83,3 @@ theorem exists_pinned {N n : ℕ} (P : S β.1 N) (hP : ∀ d, P.label d ≠ ⊤)
   rw [min_assoc, min_eq_right hδγ]
   rfl
 
-end VaughtConjecture.Knight.TopFreePinnedExtension

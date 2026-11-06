@@ -32,8 +32,8 @@ variable {X : Type*} [Fintype X]
 theorem normalize_short (j : ℕ) (p : X → ExtOrd) (d : X) :
     Short j (PairedSlotEncoding.normalize j p d) := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
-  · exact Or.inl (by simp only [PairedSlotEncoding.normalize, hb])
-  · exact Or.inr (Or.inl (by simp only [PairedSlotEncoding.normalize, ht]))
+  · exact Or.inl (by simp [PairedSlotEncoding.normalize, hb])
+  · exact Or.inr (Or.inl (by simp [PairedSlotEncoding.normalize, ht]))
   · rw [normalize_ofOrd ha]
     exact Or.inr (Or.inr ⟨_, rfl, by
       rw [finitePart_mul_add]
@@ -48,7 +48,7 @@ theorem normalize_le_ceiling {j : ℕ} {p : X → ExtOrd}
     (hp : ∀ d, p d ≠ ⊤) (d : X) :
     PairedSlotEncoding.normalize j p d ≤ sourceCeiling j X := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
-  · simp only [PairedSlotEncoding.normalize, hb, bot_le]
+  · simp [PairedSlotEncoding.normalize, hb, bot_le]
   · exact (hp d ht).elim
   · have hr := rank_lt_card (j := j) (mem_values.mpr ⟨d, ha⟩)
     have hn := values_card_le p
@@ -61,12 +61,4 @@ theorem normalize_le_ceiling {j : ℕ} {p : X → ExtOrd}
     · gcongr
     · exact Nat.cast_le.mpr (offset_le j (values p) a)
 
-end Profile
 
-section Scheme
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  (sem : Semantics D) (BJ : Finset ι × ℕ) [Fintype (D.below BJ)] (j : ℕ)
-
-end Scheme
-end
-end VaughtConjecture.Knight.PairedSlotProfiles

@@ -159,5 +159,3 @@ theorem installC {j : ℕ} {v : C.scheme.below (effC n j) → ExtOrd}
     exact ⟨v', hv', hcap, fun a => by simpa using hface (R.faceAt j a)⟩
   · exact ⟨v, hv, fun _ => rfl, fun a => (faceIndex_absent hk (R.faceAt j a)).elim⟩
 
-end CommonRoot
-end VaughtConjecture.Knight.LowOnly

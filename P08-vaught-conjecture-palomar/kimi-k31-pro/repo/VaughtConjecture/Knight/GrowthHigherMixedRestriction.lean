@@ -113,5 +113,3 @@ theorem eq_of_restriction (hp : RespectsSemanticsBelow Rows (V, j) p)
       hshadow, hheight]
   · exact haux z hz
 
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

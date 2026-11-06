@@ -78,5 +78,3 @@ theorem Admitted.map_on_profile {j : ℕ} {S : State DA DQ} (hS : Admitted X j S
         ← hσ.mono.map_min]
       exact hσ.mono (ht y hT)
 
-end
-end VaughtConjecture.Knight.Growth

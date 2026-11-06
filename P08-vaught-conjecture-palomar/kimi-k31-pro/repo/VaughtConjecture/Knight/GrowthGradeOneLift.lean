@@ -46,7 +46,7 @@ theorem source_eq (a : Catalogue X 1) (d : Cell L) :
 include T in
 theorem source_lawful (a : Catalogue X 1) :
     RespectsSemanticsBelow E (A, 1) (fun d => source I X hA a d.1) := by
-  simp only [source_eq]
+  simp [source_eq]
   exact ladder_respects I.boundary I.rows hA (field I) (fields I X) (proper I hB hC)
     (anchor_lawful I X T) _
 
@@ -56,13 +56,11 @@ variable {s : ℕ} (O : SemScheme s)
   (pick : Cell O.scheme → Field I.right.scheme I.left.scheme)
   (hfield : ∀ a : Catalogue X 1, ∀ d, a.val (field I (incl d).1) = a.val (pick d.1))
 
-local instance : Fintype (O.scheme.below (Finset.univ, 1)) := Fintype.ofFinite _
 
 include hfield in
 theorem source_face (a : Catalogue X 1) (d : O.scheme.below (Finset.univ, 1)) :
     source I X hA a (oldAt I X hA (incl d)).1 =
-      SupportLadderRows.source H (fieldRank a.val (pick d.1)) := by
-  simp only [source, oldAt, image, rankIndex_old, ranks, fieldRank, fields, hfield a d]
+      SupportLadderRows.source H (fieldRank a.val (pick d.1)) := by simp_all [image, oldAt, ranks, source, fieldRank]
 
 include T hfield in
 private theorem face_active_lift
@@ -85,7 +83,7 @@ private theorem face_active_lift
     (c : O.scheme.below (Finset.univ, 1)) (hactive : γ < p c) :
     ∃ w : (L).below (A, 1) → ExtOrd, RespectsSemanticsBelow E (A, 1) w ∧
       (∀ d, w (oldAt I X hA (incl d)) = p d) ∧ ∀ d, min (w d) γ = min (q d) γ := by
-  classical
+
   let Z := (zero : State I.right.scheme I.left.scheme).normalize 1
   have hz := normalize_admitted X (by decide : 1 ≤ 1) (zero_admitted X 1)
   have hzc : Z.profile ∈ CanonicalPairedProfiles.inventory
@@ -107,7 +105,7 @@ private theorem face_active_lift
   let k := next (values a.val) δ
   let f : ℕ → ExtOrd := fun i => σ (SupportLadderRows.source H i)
   have hf : Monotone f := hσ.mono.comp (SupportLadderRows.source_mono H)
-  have hf0 : f 0 = ⊥ := by simp only [f, SupportLadderRows.source_zero, hσ.bot]
+  have hf0 : f 0 = ⊥ := by simp [f, SupportLadderRows.source_zero, hσ.bot]
   have hfv (i) : SelfVis 1 (f i) :=
     CappedDonor.Ref.selfVis_map hσ le_rfl (SupportLadderRows.source_visible _ _)
   have hfieldc : δ ≤ a.val (pick c.1) := by
@@ -135,7 +133,7 @@ private theorem face_active_lift
       (Nat.pos_of_ne_zero hz) (hi.le.trans hkc)
     have hdb : a.val d ≠ ⊥ := by
       intro he
-      have hr : fieldRank a.val d = 0 := by simp only [fieldRank, he, rank_bot (bot_not_values _)]
+      have hr : fieldRank a.val d = 0 := by simp [fieldRank, he, rank_bot (bot_not_values _)]
       exact hz (hd.symm.trans hr)
     have hr : fieldRank a.val d < next (values a.val) δ := hd ▸ hi
     have hl := (rank_lt_next (mem_values.mpr ⟨hdb, d, rfl⟩)).mp hr
@@ -147,7 +145,7 @@ private theorem face_active_lift
     have hlt : a.val d < δ := (hcut d).mpr (by simpa only [hd] using hl)
     have hdb : a.val d ≠ ⊥ := by
       intro he
-      have hr : fieldRank a.val d = 0 := by simp only [fieldRank, he, rank_bot (bot_not_values _)]
+      have hr : fieldRank a.val d = 0 := by simp [fieldRank, he, rank_bot (bot_not_values _)]
       have := hd.symm.trans hr
       omega
     have hr := (rank_lt_next (mem_values.mpr ⟨hdb, d, rfl⟩)).mpr hlt
@@ -219,7 +217,7 @@ theorem private_lift
       ∀ d, min (w d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨w, hw, hr⟩ := private_bottom_supply I X T hA hB hC hp
-    exact ⟨w, hw, hr, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨w, hw, hr, fun _ => by simp [hz]⟩
   by_cases hi : ∀ d, p d ≤ γ
   · exact ⟨fun d => min (q d) γ, hq.cap hγ,
       fun d => (hag d).trans (min_eq_left (hi d)),
@@ -245,7 +243,7 @@ theorem donor_lift (hN : 1 < X.req.N)
       ∀ d, min (w d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨w, hw, hr⟩ := donor_bottom_supply I X T hA hB hC hN hp
-    exact ⟨w, hw, hr, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨w, hw, hr, fun _ => by simp [hz]⟩
   by_cases hi : ∀ d, p d ≤ γ
   · exact ⟨fun d => min (q d) γ, hq.cap hγ,
       fun d => (hag d).trans (min_eq_left (hi d)),
@@ -273,5 +271,3 @@ theorem donor_lift_of_arity (hsmall : n + 1 < X.req.N)
   donor_lift I X T hA hB hC ((Nat.succ_le_succ (Nat.zero_le n)).trans_lt hsmall)
     hp hq hγ hag
 
-end
-end VaughtConjecture.Knight.GrowthOrderedBase

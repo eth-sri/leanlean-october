@@ -38,12 +38,10 @@ def render (p : Cell D → ExtOrd) : Cell (carrier D K l hKl hlA) → ExtOrd :=
     (toOcc D Unit l (MaximalFullLayer.positive K l hKl) hlA d)
 
 theorem render_old (p : Cell D → ExtOrd) (d : Cell D) :
-    render D K l hKl hlA p (old D K l hKl hlA d) = p d := by
-  simp only [render, old, MaximalFullLayer.old, toOcc_toCell, Sum.elim_inl]
+    render D K l hKl hlA p (old D K l hKl hlA d) = p d := by simp_all [render]
 
 theorem render_apex (p : Cell D → ExtOrd) :
-    render D K l hKl hlA p (apex D K l hKl hlA) = ⊥ := by
-  simp only [render, apex, MaximalFullLayer.apex, toOcc_toCell, Sum.elim_inr]
+    render D K l hKl hlA p (apex D K l hKl hlA) = ⊥ := by simp_all [render]
 
 theorem covered (d : Cell (carrier D K l hKl hlA)) :
     (∃ c, d = old D K l hKl hlA c) ∨ d = apex D K l hKl hlA := by
@@ -75,8 +73,8 @@ theorem render_agreement {p q : Cell D → ExtOrd} {γ : ExtOrd} (hpq : Agree p 
     Agree (render D K l hKl hlA p) (render D K l hKl hlA q) γ := by
   intro d
   rcases covered D K l hKl hlA d with ⟨c, rfl⟩ | rfl
-  · simp only [render_old]; exact hpq c
-  · simp only [render_apex]
+  · simp [render_old]; exact hpq c
+  · simp [render_apex]
 
 /-- No new grid point or supporting original field is introduced. -/
 theorem render_supported {X : Type*} {v : X → ExtOrd} {k : ℕ} {G : Set ExtOrd}
@@ -89,9 +87,7 @@ theorem render_supported {X : Type*} {v : X → ExtOrd} {k : ℕ} {G : Set ExtOr
 
 theorem apex_row (d : (carrier D K l hKl hlA).below
     ((carrier D K l hKl hlA).cell (apex D K l hKl hlA))) :
-    (rows D sem K l hK hKl hlA).E (apex D K l hKl hlA) d = ⊥ := by
-  simp only [rows, MaximalFullLayer.base, apex, MaximalFullLayer.apex,
-    SeparatedSourceLayerCarrier.base, toOcc_toCell, SeparatedSourceLayerCarrier.oldTable]
+    (rows D sem K l hK hKl hlA).E (apex D K l hKl hlA) d = ⊥ := by simp_all [SeparatedSourceLayerCarrier.base, SeparatedSourceLayerCarrier.oldTable]
 
 theorem apex_short (d : (carrier D K l hKl hlA).below
     ((carrier D K l hKl hlA).cell (apex D K l hKl hlA))) :
@@ -147,5 +143,3 @@ theorem complete_last (hcard : A.card = l) (hnext : l = K + 1)
   have he : J.1 = A := Finset.eq_of_subset_of_card_le hsub (by omega)
   exact hne (Prod.ext he hj)
 
-end
-end VaughtConjecture.Knight.OrdinaryScopeMute

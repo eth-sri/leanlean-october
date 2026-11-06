@@ -56,11 +56,7 @@ theorem completeAt_respects (a : Cell P.scheme → ExtOrd)
 theorem completeAt_cap (a : Cell P.scheme → ExtOrd)
     {u : P.scheme.below (effC n j) → ExtOrd} {γ : ExtOrd}
     (hcap : ∀ d, min (u d) γ = min (a d.1) γ) (d : Cell P.scheme) :
-    min (completeAt a u d) γ = min (a d) γ := by
-  unfold completeAt
-  split_ifs with hd
-  · exact hcap ⟨d, hd⟩
-  · rfl
+    min (completeAt a u d) γ = min (a d) γ := by grind [completeAt]
 
 section Barrier
 
@@ -97,7 +93,4 @@ theorem clipped_activation {T : F → Prop} {a a' : F → ExtOrd} {b γ : ExtOrd
 theorem clipped_cutoff_cap (b γ : ExtOrd) : min (min b γ) γ = min b γ := by
   rw [min_assoc, min_self]
 
-end Barrier
-end
 
-end VaughtConjecture.Knight.LowOnly

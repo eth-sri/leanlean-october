@@ -91,7 +91,7 @@ theorem exists_chain {I : Type z'} [Countable I] [Countable M]
     ∃ A : ℕ → S, A 0 = seed ∧ Monotone (master ∘ A) ∧
       (∀ x, ∃ k, x ∈ Set.range (master (A k)).tuple) ∧
       ∀ i, ∃ k, Resolved master (task i) (A k) := by
-  classical
+
   let : Preorder S := Preorder.lift master
   let : Encodable (I ⊕ M) := Encodable.ofCountable _
   let D : I ⊕ M → Order.Cofinal S
@@ -133,7 +133,7 @@ theorem exists_realization {I : Type z'} [Countable I] [Countable M]
       (∀ i, R.eval (task i).root = some (task i).base → (task i).Served R) ∧
       ∀ {n} (t : Fin n ↪ M) (p : T.Ty α n), R.eval t = some p →
         ∃ s, (master s).chart.eval t = some p := by
-  classical
+
   obtain ⟨A, hzero, hA, hpoints, htasks⟩ := exists_chain master absorb task serve seed
   have hchain : ∀ k, (master (A k)).chart.Extends (master (A (k + 1))).chart :=
     fun k => ((master (A k)).extends_iff _).mp (hA (Nat.le_succ k))
@@ -156,5 +156,3 @@ theorem exists_realization {I : Type z'} [Countable I] [Countable M]
     obtain ⟨k, hk⟩ := Realization.chainUnion_eval_some_exists hp
     exact ⟨A k, hk⟩
 
-end FiniteMasterScheduler
-end VaughtConjecture.TypeTower

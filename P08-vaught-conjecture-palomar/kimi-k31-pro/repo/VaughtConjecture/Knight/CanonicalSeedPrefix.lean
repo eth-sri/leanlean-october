@@ -56,7 +56,7 @@ theorem exists_section
     CanonicalPairedInverse.exists_supported_inverse a.property.2 ht hag
   have hfixGrid : ∀ z ∈ CanonicalRecursiveSeedRows.grid (D := D),
       z < CanonicalPairedInverse.grid 3 B → κ z = z := by
-    classical
+
     intro z hz hzB
     rcases Finset.mem_insert.mp hz with rfl | hz
     · exact hw.bot
@@ -92,9 +92,7 @@ theorem exists_section
   refine ⟨fun d => κ (source sem hA hp b d),
     hwhole, ?_, hcaps⟩
   intro d
-  dsimp only
+  dsimp
   rw [source_boundary]
   exact hread d
 
-end
-end VaughtConjecture.Knight.CanonicalSeedPrefix

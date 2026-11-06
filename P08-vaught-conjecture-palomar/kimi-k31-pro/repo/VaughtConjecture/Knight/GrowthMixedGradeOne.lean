@@ -129,8 +129,7 @@ theorem grade_added (v : Pt) : P.carrier.grade (P.baseMap (addedB v)) = 1 := by
   rw [carrier_added_cell]
 
 include hm in
-theorem grade_added_le (v : Pt) : P.carrier.grade (P.baseMap (addedB v)) ≤ U.card := by
-  rw [grade_added]; exact one_le_card hA hm
+theorem grade_added_le (v : Pt) : P.carrier.grade (P.baseMap (addedB v)) ≤ U.card := by grind [grade_added, one_le_card]
 
 /-- The copy at `U` of a padded point. -/
 def ladderAt (v : Pt) : CellScheme.below Carrier (U, 1) :=
@@ -333,7 +332,7 @@ theorem shadowSup_eq_spare (f : Fld) :
       τ (SupportLadderRows.source rungs (ranks₁ a f)) := by
   have he := SupportLadderRows.readout_image (H := rungs)
     (GrowthLeafRecognition.rank_le_rungs I X) a (SupportLadderRows.source_mono rungs) f
-  simp only [SupportLadderRows.readout] at he
+  simp [SupportLadderRows.readout] at he
   rw [show Fintype.ofFinite (Catalogue X 1) = (inferInstance : Fintype (Catalogue X 1)) from
     Subsingleton.elim _ _] at he
   rw [← he, Finset.apply_sup_eq_sup_comp_of_linearOrder τ hτ.mono hτ.bot, shadowSup]
@@ -365,10 +364,7 @@ end Chart
 theorem original_readback_one (hp : RespectsSemanticsBelow Rows (U, 1) p)
     (z : CellScheme.below Carrier (U, 1)) (d : Cell I.boundary)
     (hz : eraseP z.1 = P.baseMap (oldB d)) :
-    p z = shadowSup I X T hA hB hC P U hU hm p (GrowthOrderedBase.field I d) := by
-  obtain ⟨a, τ, hτ, -, -, hread, horig⟩ := exists_spare_chart I X T hA hB hC P U hU hm hp
-  exact (horig z d hz).symm.trans
-    (shadowSup_eq_spare I X T hA hB hC P U hU hm hτ hread _).symm
+    p z = shadowSup I X T hA hB hC P U hU hm p (GrowthOrderedBase.field I d) := by grind [exists_spare_chart, shadowSup_eq_spare]
 
 /-! ## The lawful extension to the full scope -/
 
@@ -395,7 +391,7 @@ theorem base_section_lawful :
     (GrowthOrderedBase.proper I hB hC) (GrowthOrderedBase.anchor_lawful I X T) (spare a)
   by_cases hne : spareSup I X T hA hB hC P U hU hm p = ⊥
   · have hz : ∀ x, τ x = ⊥ := fun x => le_bot_iff.mp ((hb x).trans_eq hne)
-    simp only [hz]
+    simp [hz]
     exact respectsBelow_bot _ (A, 1)
   · refine map_respects_of_bottom_reflection hlad (fun d => d.2.2) (boundedMap_of_witness hτ)
       fun d => ?_
@@ -417,7 +413,7 @@ def layerSection (a : Catalogue X 1) (τ : ExtOrd → ExtOrd) (c : Cell P.carrie
 
 theorem layerSection_baseMap (a : Catalogue X 1) (τ : ExtOrd → ExtOrd) (b : Cell Base) :
     layerSection I X T hA hB hC P a τ (P.baseMap b) = τ (ladderRow₁ (spare a) b) := by
-  classical
+
   unfold layerSection
   split_ifs with h
   · exact congrArg (fun x => τ (ladderRow₁ (spare a) x)) (P.base_mono.injective h.choose_spec.symm)
@@ -467,32 +463,8 @@ theorem A_mem_plan : A ∈ P.carrier.plan := by
     (P.baseMap (addedB (spare (GrowthLeafRecognition.zeroMember I X 1 le_rfl))))
   rwa [scope_added] at h
 
-section Extension
-
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-  (hp : RespectsSemanticsBelow (GrowthReplicatedRows.rows P) (U, 1) p)
-  (hmax : p (ladderAt I X T hA hB hC P U hU hm (SupportLadderRows.leaf
-    (GrowthLeafRecognition.rungs_pos I) a)) = spareSup I X T hA hB hC P U hU hm p)
-  (hb : ∀ x, τ x ≤ spareSup I X T hA hB hC P U hU hm p)
-  (hread : ∀ v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
-      (Q := Catalogue X 1),
-    τ (SupportLadderRows.row (RelativeLadderLayer.ranks (fields X 1))
-      (SupportLadderRows.leaf (GrowthLeafRecognition.rungs_pos I) a) v) =
-        p (ladderAt I X T hA hB hC P U hU hm v))
-  (horig : ∀ (z : CellScheme.below (GrowthReplicatedRows.carrier P) (U, 1)) (d : Cell I.boundary),
-    GrowthReplicatedRows.erase P z.1 = P.baseMap (RelativeLadderLayer.old I.boundary
-      (GrowthLeafRecognition.card_pos hA) d) →
-    τ (SupportLadderRows.source (RelativeLadderLayer.rungs (X := Field I.right.scheme
-      I.left.scheme)) (RelativeLadderLayer.ranks (fields X 1) a (GrowthOrderedBase.field I d))) =
-      p z)
-
-include hτ hp hmax hb hread
-
-end Extension
 
 /-! ## Uniqueness -/
 
 /-! ## The grade-one mixed capped lift -/
 
-end
-end VaughtConjecture.Knight.GrowthMixedGradeOne

@@ -38,4 +38,3 @@ theorem cofinal_losses (η : Ordinal.{0}) (hη : η < (aleph 1).ord) :
     ∃ ξ, η ≤ ξ ∧ ξ < (aleph 1).ord ∧ (domain ξ \ domain (ξ + 1)).Nonempty :=
   ⟨η, le_rfl, hη, loss_nonempty hη⟩
 
-end VaughtConjecture.Knight.ExpansionDomain

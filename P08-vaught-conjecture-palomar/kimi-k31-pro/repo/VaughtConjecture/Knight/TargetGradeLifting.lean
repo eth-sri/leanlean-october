@@ -33,9 +33,6 @@ def Through (r : ℕ) : Prop :=
   ∀ {I J : Finset ι × ℕ}, I ∈ Plan.gradedPlan D.plan →
     J ∈ Plan.gradedPlan D.plan → (h : GradedLe I J) → J.2 ≤ r → CappedLift sem h
 
-theorem zero : Through sem 0 := by
-  intro I J _ hJ _ hj
-  exact False.elim ((not_lt_of_ge hj) (Plan.mem_gradedPlan.mp hJ).2.1)
 
 /-- The successor ledger requires only the genuinely new same-grade clauses.
 All lower-source grade changes are constructed using the lawful upper ambient. -/
@@ -51,8 +48,8 @@ theorem successor {r : ℕ} (hprev : Through sem r)
         h.2.trans (Plan.mem_gradedPlan.mp hB).2.2⟩
     exact (hprev hC hBi (show GradedLe (C, i) (B, i) from ⟨h.1, le_rfl⟩) hi).raise_target
       (h := h.1) h.2
-  · have hi' : i = r + 1 := by have := h.2; dsimp only at hj this; omega
-    have hj' : j = r + 1 := by have := h.2; dsimp only at hj this; omega
+  · have hi' : i = r + 1 := by have := h.2; dsimp at hj this; omega
+    have hj' : j = r + 1 := by have := h.2; dsimp at hj this; omega
     subst i; subst j
     exact hnext C B hC hB h.1
 
@@ -97,7 +94,4 @@ theorem through_separated {r : ℕ} (hrk : r < k) (hprev : Through sem r) :
   apply SeparatedLayerFace.lift D Q k hk hA hs sem out hrow h
     (fun hn => (not_le_of_gt hrk) (hn.2.trans hj))
   exact hprev hI hJ h hj
-end Transport
 
-end
-end VaughtConjecture.Knight.TargetGradeLifting

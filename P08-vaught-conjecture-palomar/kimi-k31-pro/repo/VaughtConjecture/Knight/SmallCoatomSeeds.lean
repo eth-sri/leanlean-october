@@ -129,7 +129,4 @@ def two : Seed I where
     (fun _ hJ hproper => I.complete_proper hJ hproper)
   extend_whole _ hp := CanonicalPairBoundary.exists_whole I.rows 1 2 (by decide)
     (CanonicalPairLocalSections.one_le twoHeight) (by decide) twoHeight I.proper (by decide) hp
-end Two
 
-end
-end VaughtConjecture.Knight.SmallCoatomSeeds

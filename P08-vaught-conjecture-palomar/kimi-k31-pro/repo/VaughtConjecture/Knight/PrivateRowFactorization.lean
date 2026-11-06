@@ -149,7 +149,7 @@ theorem at_first_cut (c : Cell D)
     (hδ : δ ∈ PairedSlotComparison.sourceGrid (D.grade c) m) (hreach : γ ≤ σ δ)
     (hfirst : ∀ z ∈ PairedSlotComparison.sourceGrid (D.grade c) m, z < δ → σ z < γ) :
     Nonempty (Factorization (sem := sem) c s p σ γ δ) := by
-  classical
+
   let := Fintype.ofFinite (D.below (D.cell c))
   let self : D.below (D.cell c) := ⟨c, GradedLe.refl _⟩
   let M := p self
@@ -212,12 +212,6 @@ theorem at_first_cut (c : Cell D)
     rw [min_eq_right hreach] at he
     exact he.ge.trans (min_le_left _ _)
 
-namespace Factorization
-variable {c : Cell D} {s p : D.below (D.cell c) → ExtOrd}
-variable {σ : ExtOrd → ExtOrd} {γ δ : ExtOrd}
-variable (F : Factorization (sem := sem) c s p σ γ δ)
-
-end Factorization
 
 /-- The reaching cut is constructed in the fixed complete-field grid.
 The input supplies the old source, actual chart, and lawful prescription;
@@ -234,7 +228,7 @@ theorem exists_factorization (c : Cell D) {s p : D.below (D.cell c) → ExtOrd} 
     ∃ δ ∈ PairedSlotComparison.sourceGrid (D.grade c) m, ⊥ < δ ∧ γ ≤ σ δ ∧
       (∀ z ∈ PairedSlotComparison.sourceGrid (D.grade c) m, z < δ → σ z < γ) ∧
       Nonempty (Factorization (sem := sem) c s p σ γ δ) := by
-  classical
+
   let self : D.below (D.cell c) := ⟨c, GradedLe.refl _⟩
   let G := PairedSlotComparison.sourceGrid (D.grade c) m
   let R := G.filter (fun z => γ ≤ σ z)
@@ -263,5 +257,3 @@ theorem exists_factorization (c : Cell D) {s p : D.below (D.cell c) → ExtOrd} 
   exact ⟨δ, hd.1, hδpos, hd.2, hfirst,
     at_first_cut c m hs hp hcoded hshort hσ hγ hpos hpc hface hd.1 hd.2 hfirst⟩
 
-end
-end VaughtConjecture.Knight.PrivateRowFactorization

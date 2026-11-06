@@ -53,5 +53,3 @@ theorem normalizedAnchor_fields {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
     F.fields i (normalizedAnchor F hi hij hS hp) = normalize i S.profile :=
   funext (State.profile_normalize i S)
 
-end
-end VaughtConjecture.Knight.LowOnlyRecursiveCoverage

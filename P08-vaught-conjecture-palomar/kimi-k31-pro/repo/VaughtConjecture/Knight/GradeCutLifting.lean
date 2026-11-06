@@ -51,4 +51,3 @@ theorem lift_iff {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : J.2 ≤ k) :
       rw [Function.comp_apply, hm, hread]
       exact congrArg p (eI.symm_apply_apply d)
 
-end VaughtConjecture.Knight.GradeCutLifting

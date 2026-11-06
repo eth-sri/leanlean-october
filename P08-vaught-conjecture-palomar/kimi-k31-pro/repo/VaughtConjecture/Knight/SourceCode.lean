@@ -31,15 +31,8 @@ open AmalgamationPlan Transform Value ExtOrd
 def Supported (S : Finset Ordinal.{0}) (x : ExtOrd) : Prop :=
   ∀ v, x = ofOrd v → v ∈ S
 
-theorem supported_bot (S : Finset Ordinal.{0}) : Supported S ⊥ := by
-  intro v h
-  exact False.elim ((ofOrd_ne_bot v) h.symm)
+theorem supported_bot (S : Finset Ordinal.{0}) : Supported S ⊥ := fun v h => False.elim ((ofOrd_ne_bot v) h.symm)
 
-theorem Supported.min {S : Finset Ordinal.{0}} {x y : ExtOrd}
-    (hx : Supported S x) (hy : Supported S y) : Supported S (min x y) := by
-  rcases le_total x y with h | h
-  · rwa [min_eq_left h]
-  · rwa [min_eq_right h]
 
 theorem Supported.keyed {S : Finset Ordinal.{0}} {x : ExtOrd}
     (h : Supported S x) (K : ℕ) : Keyed K S x := by
@@ -130,6 +123,4 @@ theorem respectsBelow (K : ℕ) (S : Finset Ordinal.{0}) (hK : BJ.2 ≤ K)
     obtain ⟨f, hf, hle⟩ := hp.availability d e hs hg
     exact ⟨f, hf, encode_le K S (hS d) (hS f) hle⟩
 
-end Semantics
 
-end VaughtConjecture.Knight.SourceCode

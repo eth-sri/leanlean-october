@@ -160,6 +160,3 @@ theorem frontier_le_root {j : ℕ} (hj : K ≤ j)
       (F.root.faceAt j a)) :=
   F.gap.e_le_of_gap (F.gap.lowD_respects hj hv) _ (F.root_gap (F.root.fullP a) ht)
 
-end Family
-end
-end VaughtConjecture.Knight.LowOnly

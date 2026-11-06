@@ -32,14 +32,11 @@ noncomputable def trim (m : ℕ) : ExtOrd → ExtOrd
   | some ⊤ => ⊤
   | some (some a) => ofOrd (limitPart a + (min (finitePart a) m : ℕ))
 
-@[simp] theorem trim_bot (m : ℕ) : trim m ⊥ = ⊥ := rfl
-@[simp] theorem trim_top (m : ℕ) : trim m ⊤ = ⊤ := rfl
 @[simp] theorem trim_ofOrd (m : ℕ) (a : Ordinal.{0}) :
     trim m (ofOrd a) = ofOrd (limitPart a + (min (finitePart a) m : ℕ)) := rfl
 
 theorem trim_eq {m : ℕ} {a : Ordinal.{0}} (ha : finitePart a ≤ m) :
-    trim m (ofOrd a) = ofOrd a := by
-  rw [trim_ofOrd, min_eq_left ha, decomposition]
+    trim m (ofOrd a) = ofOrd a := by grind [trim_ofOrd, decomposition]
 
 theorem trim_mono (m : ℕ) : Monotone (trim m) := by
   intro x y hxy
@@ -145,11 +142,11 @@ theorem trim_of_short {m : ℕ} {x : ExtOrd} (hx : Short m x) : trim m x = x := 
 theorem bounded_comp {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
     (hσ : Witness (gTop m) σ) (hν : Witness (gTop K) ν) (hmK : m ≤ K) :
     BoundedMap m (ν ∘ σ) where
-  bot := by simp only [Function.comp_apply, hσ.bot, hν.bot]
+  bot := by simp [Function.comp_apply, hσ.bot, hν.bot]
   mono := hν.mono.comp hσ.mono
   comm := by
     intro x k i hk hi
-    simp only [Function.comp_apply]
+    simp [Function.comp_apply]
     rw [hσ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi,
       hν.clause5 (σ x) k (by rw [gTop_of_le (hk.trans hmK)]; exact le_top) i hi]
 
@@ -160,7 +157,7 @@ theorem comp_read {m K : ℕ} {σ ν : ExtOrd → ExtOrd}
       ∀ x, Short m x → τ x = ν (σ x) := by
   refine ⟨(ν ∘ σ) ∘ trim m, (bounded_comp hσ hν hmK).witness, ?_⟩
   intro x hx
-  simp only [Function.comp_apply, trim_of_short hx]
+  simp [Function.comp_apply, trim_of_short hx]
 
 /-- A source-short controller locality survives any normalized outer shifter of
 at least its grade. The witness is repaired, not the semantic source row. -/
@@ -180,4 +177,3 @@ theorem map_capped_locality
   rw [gTop_of_le (hmax d), min_top_right, hτread _ (hshort d), hread,
     hν.mono.map_min]
 
-end VaughtConjecture.Knight.SharpWitnessComposition

@@ -53,7 +53,6 @@ theorem decode_lift
   refine ⟨q', hq', hread, ?_⟩
   intro d
   have he := congrArg (fun z => min z γ) (hcap d)
-  simp only [min_assoc, min_eq_right hγδ] at he
+  simp [min_assoc, min_eq_right hγδ] at he
   exact he.trans (hambient d)
 
-end VaughtConjecture.Knight.RetunedCutDecoding

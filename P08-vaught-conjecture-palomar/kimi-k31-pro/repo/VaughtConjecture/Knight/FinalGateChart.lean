@@ -39,7 +39,7 @@ theorem node_le_leaf {v : I.carrier.below (A, N) → ExtOrd}
   · change I.fields (I.member (I.controller (a, false))).1 =
       I.fields (I.member (I.controller (a, marked))).1
     rw [I.member_controller, I.member_controller]
-  · simp only [weight, member_controller, nodeWeight, Bool.false_eq_true, ↓reduceIte]
+  · simp [weight, member_controller, nodeWeight, Bool.false_eq_true, ↓reduceIte]
     rfl
 
 /-- Normalize the locality of one actual ceiling leaf over its whole domain. -/
@@ -133,5 +133,3 @@ theorem exists_cap_chart {v : I.carrier.below (A, N) → ExtOrd}
   exact (congrArg (fun x => min x γ) (hr d)).trans (by
     rw [min_assoc, min_eq_right (hreach.trans hca)])
 
-end
-end VaughtConjecture.Knight.FinalGateLayer.Input

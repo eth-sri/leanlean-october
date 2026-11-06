@@ -116,4 +116,3 @@ theorem decode_respects_of_positive_cut
   exact ⟨SharpWitnessComposition.map_respects_of_positive_cap_agreement hb ha hK
     (SharpWitnessComposition.boundedMap_of_witness hw) hpos hag', hag'⟩
 
-end VaughtConjecture.Knight.OrbitPrefixSupport

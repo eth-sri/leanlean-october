@@ -59,4 +59,3 @@ noncomputable def natModelSpectrum (φ : L.Sentenceω) : Cardinal :=
 def HasNoFiniteModels (φ : L.Sentenceω) : Prop :=
   ∀ n : ℕ, ModelsOfOn (α := Fin n) φ = ∅
 
-end VaughtConjecture.Spectrum

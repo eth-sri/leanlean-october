@@ -69,4 +69,3 @@ theorem rank_le_rank_of_relHom {α β : Type u} {r : α → α → Prop} {s : β
     refine Ordinal.iSup_le fun b ↦ Order.succ_le_of_lt ?_
     exact (ih b b.2).trans_lt (WellFounded.rank_lt_of_rel (f.map_rel b.2))
 
-end InfinitaryLogic

@@ -32,7 +32,7 @@ theorem cut_le_next_slot {j B : ℕ} {S : Finset Ordinal.{0}}
     (hu : ∃ a ∈ S, Ordinal.omega0 * B + j ≤ a) :
     (Ordinal.omega0 : Ordinal.{0}) * B + j ≤
       Ordinal.omega0 * (2 * lowerGroups j S (Ordinal.omega0 * B + j) + 1 : ℕ) + j := by
-  classical
+
   let h := Ordinal.omega0 * B + j
   let U := S.filter (fun a => h ≤ a)
   have hU : U.Nonempty := by
@@ -114,9 +114,9 @@ theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
       min (q d) (ofOrd (Ordinal.omega0 * B + j)))
     (d : X) (hd : ofOrd (Ordinal.omega0 * B + j) ≤ q d) :
     ofOrd (Ordinal.omega0 * B + j) ≤ normalize j q d := by
-  classical
+
   let h := Ordinal.omega0 * B + j
-  have hv : j ≤ finitePart h := by simp only [h, finitePart_mul_add, le_refl]
+  have hv : j ≤ finitePart h := by simp [h, finitePart_mul_add]
   have hpref := keys_prefix hv (values_prefix hag)
   have hl : lowerGroups j (values p) h = lowerGroups j (values q) h :=
     congrArg Finset.card hpref
@@ -133,13 +133,13 @@ theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
   rw [hl] at hbound
   rcases ExtOrd.cases (q d) with hb | ht | ⟨a, ha⟩
   · exact (ofOrd_ne_bot h (le_bot_iff.mp (hb ▸ hd))).elim
-  · simp only [PairedSlotEncoding.normalize, ht, le_top]
+  · simp [PairedSlotEncoding.normalize, ht, le_top]
   · have haS : a ∈ values q := mem_values.mpr ⟨d, ha⟩
     have hha : h ≤ a := ofOrd_le_ofOrd.mp (ha ▸ hd)
     by_cases hk : key j (values q) a < h
     · have ho : Orbit j (values q) a := by
         by_contra hn
-        simp only [key, ite_eq_right hn] at hk
+        simp [key, ite_eq_right hn] at hk
         exact hk.not_ge hha
       obtain ⟨b, hbS, hbj, hba⟩ := ho.2
       have hbh : b < h := invisible_lt_cut hbj hv (by
@@ -180,13 +180,13 @@ theorem normalize_upper {j B : ℕ} {p q : X → ExtOrd}
       apply hbound.trans
       by_cases ho : Orbit j (values q) a
       · have hb : 2 * lowerGroups j (values q) h + 1 < block j (values q) a := by
-          simp only [block, ite_eq_left ho]
+          simp [block, ite_eq_left ho]
           omega
         exact (code_add_lt_mul (Nat.cast_lt.mpr hb) j).le.trans le_self_add
       · have hb : 2 * lowerGroups j (values q) h + 1 ≤ block j (values q) a := by
-          simp only [block, ite_eq_right ho]
+          simp [block, ite_eq_right ho]
           omega
-        exact add_le_add (by gcongr) (by simp only [offset, ite_eq_right ho, le_refl])
+        exact add_le_add (by gcongr) (by simp [offset, ite_eq_right ho])
 
 /-- Relative normalization retains the entire original cut, not only the
 coordinates strictly below it. The ambient must be a proper canonical fixed point. -/
@@ -197,13 +197,10 @@ theorem normalize_cap {j B : ℕ} {p q : X → ExtOrd}
     min (normalize j q d) (ofOrd (Ordinal.omega0 * B + j)) =
       min (p d) (ofOrd (Ordinal.omega0 * B + j)) := by
   by_cases hd : p d < ofOrd (Ordinal.omega0 * B + j)
-  · rw [← normalize_prefix (by simp only [finitePart_mul_add, le_refl]) hag d hd, hc]
+  · rw [← normalize_prefix (by simp [finitePart_mul_add]) hag d hd, hc]
   · have hqd : ofOrd (Ordinal.omega0 * B + j) ≤ q d := by
       have he := hag d
       rw [min_eq_right (not_lt.mp hd)] at he
       exact min_eq_right_iff.mp he.symm
     rw [min_eq_right (normalize_upper hc hp hag d hqd), min_eq_right (not_lt.mp hd)]
 
-end Profile
-end
-end VaughtConjecture.Knight.CanonicalPairedPrefix

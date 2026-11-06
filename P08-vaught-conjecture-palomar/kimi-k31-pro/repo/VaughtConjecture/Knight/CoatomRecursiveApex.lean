@@ -148,5 +148,3 @@ def ofCompatible (hα : Order.IsSuccLimit α) (C : CoatomPair (n + 2))
   display _ hα pa.respects pb.respects pa.label_bound pb.label_bound
     (CoatomRecursiveDisplay.compatible_labels C h)
 
-end
-end VaughtConjecture.Knight.CoatomRecursiveApex

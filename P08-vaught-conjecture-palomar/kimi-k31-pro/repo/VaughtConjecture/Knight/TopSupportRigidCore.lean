@@ -54,4 +54,3 @@ theorem exists_labelled_core (hM : R.IsModel)
   obtain ⟨c, hc⟩ := Option.isSome_iff_exists.mp hsome
   exact ⟨k + j, C, c, hc, rigidCore_mono hB (Fin.castAddEmb j) hC⟩
 
-end VaughtConjecture.Knight.TopSupportRigidCore

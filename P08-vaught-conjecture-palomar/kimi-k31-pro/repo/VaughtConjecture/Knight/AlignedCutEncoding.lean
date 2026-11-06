@@ -131,4 +131,3 @@ theorem decode_lift
   exact decode_encode (s ∘ incl) p hσ.mono hroom hactive
     (fun e => (hambient (incl e)).trans (hface e).symm) d
 
-end VaughtConjecture.Knight.AlignedCutEncoding

@@ -57,7 +57,7 @@ theorem rank_shared (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
   unfold rank
   congr 1
   ext j
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and, hf.le_iff_le, hg.le_iff_le]
+  simp [Finset.mem_filter, Finset.mem_univ, true_and, hf.le_iff_le, hg.le_iff_le]
 
 noncomputable def faceKey (f : Fin c ↪ Fin n) (tag : ℕ) (x : Fin n) : ℕ ×ₗ ℕ := by
   classical
@@ -65,7 +65,7 @@ noncomputable def faceKey (f : Fin c ↪ Fin n) (tag : ℕ) (x : Fin n) : ℕ ×
 
 theorem faceKey_strict (f : Fin c ↪ Fin n) {tag : ℕ} (htag : 0 < tag) :
     StrictMono (faceKey f tag) := by
-  classical
+
   intro x y hxy
   change toLex (_, _) < toLex (_, _)
   rw [Prod.Lex.toLex_lt_toLex]
@@ -83,14 +83,12 @@ theorem faceKey_strict (f : Fin c ↪ Fin n) {tag : ℕ} (htag : 0 < tag) :
 
 theorem faceKey_shared (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) (i : Fin c) :
-    faceKey f 1 (f i) = faceKey g (n + 1) (g i) := by
-  classical
-  simp only [faceKey, Set.mem_range_self, ite_true, rank_shared f g hf hg i]
+    faceKey f 1 (f i) = faceKey g (n + 1) (g i) := by grind [faceKey, rank_shared]
 
 theorem faceKey_overlap (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) (x : Fin n) (y : Fin m) :
     faceKey f 1 x = faceKey g (n + 1) y ↔ ∃ i, f i = x ∧ g i = y := by
-  classical
+
   constructor
   · intro h
     have ho := congrArg (fun k : ℕ ×ₗ ℕ => (ofLex k).2) h
@@ -163,4 +161,3 @@ theorem enumeration_right (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
   rw [key_right f g hf hg, key_right f g hf hg]
   exact faceKey_strict g (by omega : 0 < n + 1) hxy
 
-end VaughtConjecture.Knight.ProfileBoundaryOrder

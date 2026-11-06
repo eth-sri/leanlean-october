@@ -107,8 +107,7 @@ def lowerVector (u : U) (d : Cell I.carrier) : ExtOrd :=
   | .inr _ => ⊥
 
 theorem lowerVector_old (u : U) (d : Cell I.lower) :
-    I.lowerVector u (I.old d) = I.predecessor u d := by
-  simp only [lowerVector, old, SourceLayerCarrier.toOcc_toCell]
+    I.lowerVector u (I.old d) = I.predecessor u d := by simp_all [lowerVector]
 
 def data : ScopedSourcePrefixLayer.Data I.carrier 2 X where
   base := SeparatedSourceLayerCarrier.base I.lower (Node (U := U) (V := V)) 2
@@ -164,7 +163,7 @@ theorem parent (q : Controller I.carrier 2) :
   refine ⟨I.controller ((I.member q).1, none), ?_, ?_⟩
   · change I.upper (I.member (I.controller _)).1 = _
     rw [member_controller]; rfl
-  · simp only [weight, member_controller, nodeWeight]; rfl
+  · simp [weight, member_controller, nodeWeight]; rfl
 
 abbrev rows := WeightedSourcePrefixLayer.rows I.data I.weight I.weight_visible
 abbrev source (u : U) := WeightedSourcePrefixLayer.master I.data I.weight (I.controller (u, none))
@@ -290,6 +289,3 @@ theorem source_bound_all (u : U) (d : Cell I.carrier) : I.source u d ≤ I.ceili
     rw [source_old]
     exact I.predecessor_bound u x
 
-end Input
-end
-end VaughtConjecture.Knight.LadderWeightedSuccessor

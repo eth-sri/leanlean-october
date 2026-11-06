@@ -38,7 +38,7 @@ theorem exists_cap_below_limit {I : Type*} [Finite I] (p : I → ExtOrd)
     {β : Ordinal.{0}} (hβ : Order.IsSuccLimit β) (hp : ∀ d, p d < ofOrd β) (K : ℕ) :
     ∃ γ : ExtOrd, extVisibilityReplace γ K K = γ ∧ γ ≠ ⊥ ∧
       (∀ d, p d ≤ γ) ∧ γ < ofOrd β := by
-  classical
+
   let _ := Fintype.ofFinite I
   let m : ExtOrd := max (ofOrd 0) (Finset.univ.sup p)
   have hm : m < ofOrd β := max_lt (ofOrd_lt_ofOrd.mpr hβ.pos)
@@ -66,7 +66,7 @@ theorem exists_ordinal_cap_below_limit {I : Type*} [Finite I] (p : I → ExtOrd)
     {δ : Ordinal.{0}} (hδ : δ < α) (K : ℕ) :
     ∃ b : Ordinal.{0}, b < α ∧ δ < b ∧ SelfVis K (ofOrd b) ∧
       ∀ i, p i < ofOrd b := by
-  classical
+
   let _ := Fintype.ofFinite I
   let a := max δ (Finset.univ.sup fun i => ordOf (p i))
   have ha : a < α := by
@@ -99,7 +99,7 @@ theorem exists_ordinal_cap_below_limit {I : Type*} [Finite I] (p : I → ExtOrd)
     have he : a + ((K + 1 : ℕ) : Ordinal.{0}) =
         limitPart a + ((finitePart a + (K + 1) : ℕ) : Ordinal.{0}) := by
       conv_lhs => rw [← limitPart_add_finitePart a]
-      simp only [add_assoc, Nat.cast_add]
+      simp [add_assoc, Nat.cast_add]
     rw [he, finitePart_limitPart_add_nat]
     omega
   · intro i
@@ -126,4 +126,3 @@ theorem exists_lawful_cutoff {α : LimitStage} {n : ℕ} (p : S α.1 n)
     α.2 (fun d => (p.label_bound d.1).resolve_right d.2) hδ K
   exact ⟨b, hb, hδb, hvis, fun d hd => hp ⟨d, hd⟩⟩
 
-end VaughtConjecture.Knight.StageType

@@ -85,7 +85,7 @@ theorem exists_protected_repair (hj : 1 ≤ j) {a : Field P C → ExtOrd}
     Witness.comp_of_bottom_reflecting hw (collapseBlock_witness j hlim) le_rfl
       (collapseBlock_reflects_bottom l)
   have hδread (d) : δ (Q.profile d) = S.profile d := by
-    dsimp only [δ, Function.comp_apply]
+    dsimp [δ, Function.comp_apply]
     rw [State.profile_normalize, hread, State.profile_map]
     exact collapseBlock_min hlβ (S.profile_lt_freshFloor h d)
   refine ⟨{
@@ -101,7 +101,7 @@ theorem exists_protected_repair (hj : 1 ≤ j) {a : Field P C → ExtOrd}
     boundary_fixed := ?_
   }⟩
   · intro b hb
-    dsimp only [δ, Function.comp_apply]
+    dsimp [δ, Function.comp_apply]
     rw [hfix b hb]
     apply collapseBlock_of_lt
     apply lt_of_le_of_lt _ hh
@@ -144,6 +144,3 @@ theorem donor_protected_repair (hj : 1 ≤ j) {S : State P C}
   exact ⟨S', hS', hu', hcap, hfuture, F.exists_protected_repair hj hcanon hS'
     (fun d => (State.capEq_iff_profile.mp hcap d).symm)⟩
 
-end Family
-end
-end VaughtConjecture.Knight.LowOnly

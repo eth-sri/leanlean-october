@@ -46,7 +46,7 @@ theorem exists_exact_capped_shifter {D : Type*} {grade : D → ℕ} {E p : D →
   by_cases hb : p c = ⊥
   · refine ⟨fun _ => ⊥, rfl, monotone_const, ?_, ?_, ?_⟩
     · intro d
-      simp only [hb, min_bot_right]
+      simp [hb]
     · intro x k i _ _
       exact (extVisibilityReplace_bot k i).symm
     · intros
@@ -55,11 +55,4 @@ theorem exists_exact_capped_shifter {D : Type*} {grade : D → ℕ} {E p : D →
       exists_cappedWitness grade E p c hmax hvis hb hloc
     exact ⟨τ, hbot, hmono, hsrc, hcomm, hprop⟩
 
-section Locality
 
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {q s : D.below BJ → ExtOrd}
-
-end Locality
-
-end VaughtConjecture.Knight

@@ -35,11 +35,7 @@ theorem blocks_limit {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1))
   exact limitPart_eq_self_of_isNonSuccessor (donorRequests_ok q r hr).1
 
 theorem blocks_le {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1))
-    (μ : Ordinal.{0}) (hμ : μ ∈ blocks q) : μ ≤ α.1 := by
-  obtain ⟨r, hr, rfl⟩ := mem_blocks.mp hμ
-  obtain ⟨d, β, hd, rfl⟩ := mem_donorRequests.mp hr
-  exact block_le (ofOrd_lt_ofOrd.mp (hd ▸ (q.label_bound d).resolve_right
-    (hd ▸ ofOrd_ne_top _)))
+    (μ : Ordinal.{0}) (hμ : μ ∈ blocks q) : μ ≤ α.1 := by grind [block_le, mem_blocks, label_bound, ofOrd_ne_top, ofOrd_lt_ofOrd, mem_donorRequests]
 
 /-- One finite cutoff dominates every proper donor label and every represented
 offset, with an independently requested floor. -/
@@ -47,7 +43,7 @@ theorem exists_cut {α : LimitStage} {n : ℕ} (q : S α.nextBlock.1 (n + 1)) (f
     ∃ L : ℕ, floor < L ∧ n + 1 < L ∧
       (∀ d β, q.label d = ofOrd β → finitePart β < L) ∧
       ∀ d, q.label d ≠ ⊤ → q.label d < ofOrd (α.1 + L) := by
-  classical
+
   let L := max floor (max (n + 1)
     (Finset.univ.sup (fun d : Cell q.scheme.scheme => finitePart (ordOf (q.label d))))) + 1
   have hfp (d) (β) (hd : q.label d = ofOrd β) : finitePart β < L := by
@@ -153,5 +149,3 @@ theorem high_readback {v : Cell DQ → ExtOrd}
   rw [dOf_eq c L hL a ref P w hα hi ha hcut] at he
   exact he.trans (min_le_left _ _)
 
-end
-end VaughtConjecture.Knight.GrowthFiniteCapRequests

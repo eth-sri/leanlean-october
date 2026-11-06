@@ -154,4 +154,3 @@ theorem bfEquiv_of_nonempty_gradedReceipt
     (fun ⟨ρ⟩ ↦ atomic ρ) (fun hβα h ⟨ρ⟩ ↦ lower hβα h ρ)
     (fun h ⟨ρ⟩ ↦ forth h ρ) (fun h ⟨ρ⟩ ↦ back h ρ) hα seed
 
-end FirstOrder.Language

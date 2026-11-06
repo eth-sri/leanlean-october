@@ -44,8 +44,6 @@ theorem auxiliary_eq {p q : (scheme D B C).below (V, j) → ExtOrd}
     (γ := ⊤) (fun _ => rfl) z hz
   have hqz := cap D B C hcover sem hU hmU hjU hV hmV hjV hUV p₀ hq
     (γ := ⊤) (fun d => congrArg (fun x => min x ⊤) (hag d).symm) z hz
-  simp only [min_top_right] at hpz hqz
+  simp [min_top_right] at hpz hqz
   exact hpz.symm.trans hqz
 
-end
-end VaughtConjecture.Knight.ScopeReplicationRestriction

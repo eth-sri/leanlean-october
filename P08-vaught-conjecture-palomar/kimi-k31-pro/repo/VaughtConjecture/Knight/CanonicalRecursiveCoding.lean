@@ -69,5 +69,3 @@ theorem coatom {s : AmalgamatedBoundaryPlan.Step A} {m n : ℕ}
     (CoatomRecursiveInput.rows I).IsCoded :=
   coded I.rows I.proper I.coded n (CoatomRecursiveInput.height_le I)
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveCoding

@@ -67,7 +67,7 @@ theorem image_snoc_univ {n N : ℕ} (e : Fin n ↪ Fin N) (x : Fin N) (hx : x �
     (Finset.univ : Finset (Fin (n + 1))).image (snoc e x hx) =
       insert x (Finset.univ.image e) := by
   ext y
-  simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_insert]
+  simp [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_insert]
   constructor
   · rintro ⟨i, rfl⟩
     rcases eq_or_ne i (Fin.last n) with rfl | h
@@ -98,7 +98,7 @@ theorem FaceRealization.step {W : KnightRealization α M} {c₀ : ℕ} {core : F
     (hroot : ∃ e₀ : Fin c₀ ↪ Fin n, e₀.trans t = core) {f : Fin n ↪ Fin N} {P : S α.1 N}
     {B C : Finset (Fin N)} (R : FaceRealization W t f P B) (hC : C ∈ P.scheme.scheme.plan)
     (hBC : B ⊂ C) (hcard : C.card = B.card + 1) : Nonempty (FaceRealization W t f P C) := by
-  classical
+
   obtain ⟨x, hxC, hxB⟩ := Finset.exists_of_ssubset hBC
   have hCeq : C = insert x B := by
     symm
@@ -188,4 +188,3 @@ theorem rootedExtensionOver_of_onePoint {W : KnightRealization α M}
   · rw [exactParent_typeMap hcons R.u _ g R.eval_u,
       typeMap_trans g R.e P _ (typeMap_eq_some R.e P R.hvis), hge, typeMap_refl]
 
-end VaughtConjecture.Knight

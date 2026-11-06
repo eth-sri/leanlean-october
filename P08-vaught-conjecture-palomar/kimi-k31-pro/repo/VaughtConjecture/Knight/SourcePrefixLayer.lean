@@ -77,11 +77,10 @@ noncomputable def profile (q : Controller D k) (d : Cell D) : ExtOrd :=
   else F.lower q d
 
 theorem profile_old (q : Controller D k) {d : Cell D} (hd : D.cell d ≠ (A, k)) :
-    F.profile q d = F.lower q d := by simp only [profile, hd, ↓reduceDIte]
+    F.profile q d = F.lower q d := by grind [profile]
 
 theorem profile_new (q p : Controller D k) :
-    F.profile q p.1 = cut F.grid (F.boundary q) (F.boundary p) := by
-  simp only [profile, p.2, ↓reduceDIte]
+    F.profile q p.1 = cut F.grid (F.boundary q) (F.boundary p) := by grind [profile]
 
 theorem profile_diagonal (q : Controller D k) : F.profile q q.1 = F.ceiling := by
   rw [F.profile_new]
@@ -139,13 +138,10 @@ noncomputable def rows : Semantics D where
     · exact (F.profile_visible ⟨c, hc⟩ d.1).symm
     · exact F.base.orderly c d
 
-theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E c := by
-  funext d
-  simp only [rows, hc, ↓reduceDIte]
+theorem row_old {c : Cell D} (hc : D.cell c ≠ (A, k)) : F.rows.E c = F.base.E c := by grind [rows]
 
 theorem row_new (q : Controller D k) (d : D.below (D.cell q.1)) :
-    F.rows.E q.1 d = F.profile q d.1 := by
-  simp only [rows, q.2, ↓reduceDIte]
+    F.rows.E q.1 d = F.profile q d.1 := by grind [rows]
 
 /-- Full-source shortness propagates from the preceding layers. -/
 theorem full_source_short
@@ -274,6 +270,4 @@ theorem decoded_respects (q : Controller D k) {K : ℕ} (hkK : k ≤ K)
     obtain ⟨w, hw, hle⟩ := (F.profile_respects q).availability c t hs hg
     exact ⟨w, hw, hν.mono hle⟩
 
-end Data
 
-end VaughtConjecture.Knight.SourcePrefixLayer

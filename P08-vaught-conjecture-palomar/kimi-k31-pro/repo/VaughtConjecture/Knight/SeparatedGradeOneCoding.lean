@@ -29,9 +29,7 @@ open AmalgamationPlan Transform Value ExtOrd FullRowLifting
 /-- The fixed offset-one source form. -/
 noncomputable def band (n : ℕ) : ExtOrd := ofOrd (Ordinal.omega0 * n + (1 : ℕ))
 
-theorem band_visible (n : ℕ) : SelfVis 1 (band n) := by
-  rw [band, selfVis_ofOrd_iff]
-  exact (finitePart_mul_add n 1).ge
+theorem band_visible (n : ℕ) : SelfVis 1 (band n) := by grind [band, selfVis_ofOrd_iff, finitePart_mul_add]
 
 theorem band_coded (n k : ℕ) : IsCodedLabel k (band n) :=
   Or.inr ⟨n, 1, by omega, rfl⟩
@@ -40,9 +38,6 @@ theorem band_mono {m n : ℕ} (h : m ≤ n) : band m ≤ band n := by
   apply ofOrd_le_ofOrd.mpr
   gcongr
 
-theorem band_floor (n : ℕ) : blockFloor (band n) = ofOrd (Ordinal.omega0 * n) := by
-  rw [band, blockFloor_ofOrd, limitPart_mul_add n 1]
+theorem band_floor (n : ℕ) : blockFloor (band n) = ofOrd (Ordinal.omega0 * n) := by grind [band, blockFloor_ofOrd, limitPart_mul_add]
 
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
-end VaughtConjecture.Knight.SeparatedGradeOne

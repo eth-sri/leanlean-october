@@ -58,9 +58,7 @@ noncomputable def e (v : L.Dom → ExtOrd) : ExtOrd :=
 theorem e_le_c (v : L.Dom → ExtOrd) : L.e v ≤ v L.cL := min_le_left _ _
 
 theorem e_min {γ : ExtOrd} (hγ : SelfVis K γ) (v : L.Dom → ExtOrd) :
-    L.e (fun d => min (v d) γ) = min (L.e v) γ := by
-  unfold e
-  rw [evr_min_of_selfVis hγ le_rfl le_rfl, min_min_min_comm, min_self]
+    L.e (fun d => min (v d) γ) = min (L.e v) γ := by grind [e, evr_min_of_selfVis]
 
 theorem c_selfVis {v : L.Dom → ExtOrd}
     (hv : RespectsSemanticsBelow C.rows (C.scheme.cell L.c) v) :
@@ -122,6 +120,4 @@ theorem le_r_of_lt_e {v : L.Dom → ExtOrd} {γ : ExtOrd} (hγ : SelfVis K γ)
     evr_le_of_le_selfVis hγ le_rfl le_rfl (not_le.mp hlt).le
   exact absurd ((he.trans_le (min_le_right _ _)).trans_le h1) (lt_irrefl _)
 
-end SourceGap
 
-end VaughtConjecture.Knight.LowOnly

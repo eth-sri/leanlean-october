@@ -37,7 +37,7 @@ theorem transforms_of_visible_table {Y : Type*} [Finite Y] {E t : Y → ExtOrd}
     (hbot : ∀ d, E d = ⊥ → t d = ⊥)
     (hblock : ∀ d e, blockFloor (E d) = blockFloor (E e) → t d = ⊥ → t e = ⊥) :
     TransformsTo (fun _ : Y => 1) E t := by
-  classical
+
   let _ := Fintype.ofFinite Y
   let s := Finset.univ.image E
   have hf := orderInterpolate_bounded hE ht
@@ -73,15 +73,9 @@ noncomputable def endpoint (i : ℕ) : ExtOrd :=
 noncomputable def source (i k : ℕ) : ExtOrd :=
   if k ≤ i then SlotControllerFamily.value k else endpoint i
 
-theorem endpoint_visible (i : ℕ) : SelfVis 1 (endpoint i) := by
-  rw [endpoint, selfVis_ofOrd_iff, finitePart_code]
-  omega
+theorem endpoint_visible (i : ℕ) : SelfVis 1 (endpoint i) := by grind [endpoint, finitePart_code, selfVis_ofOrd_iff]
 
-theorem source_visible (i k : ℕ) : SelfVis 1 (source i k) := by
-  unfold source
-  split_ifs
-  · exact SlotControllerFamily.value_visible k
-  · exact endpoint_visible i
+theorem source_visible (i k : ℕ) : SelfVis 1 (source i k) := by grind [source, endpoint_visible, SlotControllerFamily.value_visible]
 
 theorem source_coded (i k : ℕ) : IsCodedLabel 1 (source i k) := by
   unfold source
@@ -105,24 +99,19 @@ theorem value_lt_endpoint {i k : ℕ} (hk : k ≤ i) :
 theorem source_le_iff (i k l : ℕ) :
     source i k ≤ source i l ↔ min k (i + 1) ≤ min l (i + 1) := by
   by_cases hk : k ≤ i <;> by_cases hl : l ≤ i
-  · simp only [source, ite_eq_left hk, ite_eq_left hl,
+  · simp [source, ite_eq_left hk, ite_eq_left hl,
       SlotControllerFamily.value_le_iff, min_eq_left (by omega : k ≤ i + 1),
       min_eq_left (by omega : l ≤ i + 1)]
   · have hv := (value_lt_endpoint hk).le
-    simp only [source, ite_eq_left hk, ite_eq_right hl]
+    simp [source, ite_eq_left hk, ite_eq_right hl]
     constructor
     · intro _; omega
     · intro _; exact hv
   · have hv := not_le_of_gt (value_lt_endpoint hl)
-    simp only [source, ite_eq_right hk, ite_eq_left hl]
+    simp [source, ite_eq_right hk, ite_eq_left hl]
     constructor
     · intro h; exact (hv h).elim
     · intro h; omega
-  · simp only [source, ite_eq_right hk, ite_eq_right hl, le_refl,
-      min_eq_right (by omega : i + 1 ≤ k), min_eq_right (by omega : i + 1 ≤ l)]
+  · simp [source, ite_eq_right hk, ite_eq_right hl,       min_eq_right (by omega : i + 1 ≤ k), min_eq_right (by omega : i + 1 ≤ l)]
 
-namespace Regression
 
-end Regression
-
-end VaughtConjecture.Knight.LongGuardRows

@@ -107,5 +107,3 @@ theorem exists_supported_decoder {j : ℕ} (hj : 1 ≤ j) {S : State P C}
   rw [hQeq, State.profile_normalize]
   exact (PairedSlotEncoding.normalize_bot_iff j S₀.profile d).mpr hS₀
 
-end
-end VaughtConjecture.Knight.LowOnly.Family

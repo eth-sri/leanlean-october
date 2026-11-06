@@ -66,15 +66,13 @@ theorem read_capped (d : D.below BJ) (hd : D.grade d.1 ≤ k) :
 
 /-- Exact readback on the owner's grade, including all its sibling controllers. -/
 theorem read_grade (d : D.below BJ) (hd : D.grade d.1 = k) :
-    C.shift (sem.E C.owner.1 (C.occurrence d hd.le)) = q d := by
-  rw [C.read_capped, min_eq_left (C.dominates d hd)]
+    C.shift (sem.E C.owner.1 (C.occurrence d hd.le)) = q d := by grind [dominates, read_capped]
 
 /-- If this grade's maximum reaches the external cap, its one witness recovers
 the externally capped labels at every lower grade as well. -/
 theorem read_under_cap {γ : ExtOrd} (hactive : γ ≤ q C.owner)
     (d : D.below BJ) (hd : D.grade d.1 ≤ k) :
-    min (C.shift (sem.E C.owner.1 (C.occurrence d hd))) γ = min (q d) γ := by
-  rw [C.read_capped, min_assoc, min_eq_right hactive]
+    min (C.shift (sem.E C.owner.1 (C.occurrence d hd))) γ = min (q d) γ := by grind [read_capped]
 
 end Chart
 
@@ -84,7 +82,7 @@ theorem exists_maximizer (hq : RespectsSemanticsBelow sem BJ q) {k : ℕ}
     (hfull : ∃ c : D.below BJ, D.cell c.1 = (BJ.1, k)) :
     ∃ c : D.below BJ, D.cell c.1 = (BJ.1, k) ∧
       ∀ d : D.below BJ, D.grade d.1 = k → q d ≤ q c := by
-  classical
+
   let _ := Fintype.ofFinite (D.below BJ)
   let s := Finset.univ.filter (fun c : D.below BJ => D.cell c.1 = (BJ.1, k))
   have hs : s.Nonempty := by
@@ -144,12 +142,5 @@ theorem map_cap_agreement {τ : ExtOrd → ExtOrd} (hτ : Monotone τ)
     _ = min (τ (min b δ)) γ := by rw [hab]
     _ = min (τ b) γ := by rw [hτ.map_min, min_assoc, min_eq_right hγ]
 
-variable {q' : D.below BJ → ExtOrd} {γ : ExtOrd}
 
-namespace Chart
 
-variable {k : ℕ} (C : Chart sem BJ q k)
-
-end Chart
-
-end VaughtConjecture.Knight.AmbientGradeCharts

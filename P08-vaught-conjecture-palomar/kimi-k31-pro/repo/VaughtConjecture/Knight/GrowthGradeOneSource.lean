@@ -79,7 +79,7 @@ theorem exists_private_rank_repair (a : Catalogue X 1) {σ : ExtOrd → ExtOrd}
           (fieldRank a.val f)) < γ) ∧
       (∀ d, ν (b.val (.inl d.1)) = p d) ∧
       ∀ f, min (a.val f) (grid 1 B) = min (b.val f) (grid 1 B) := by
-  classical
+
   let H := RelativeLadderLayer.rungs (X := Field C.scheme P.scheme)
   let v : Field C.scheme P.scheme → ExtOrd :=
     fun f => σ (SupportLadderRows.source H (fieldRank a.val f))
@@ -90,7 +90,7 @@ theorem exists_private_rank_repair (a : Catalogue X 1) {σ : ExtOrd → ExtOrd}
     ⟨.inl c.1, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hact⟩⟩
   have hfg : γ ≤ v f := (Finset.mem_filter.mp hf).2
   have hbot (x) (hx : a.val x = ⊥) : v x = ⊥ := by
-    simp only [v, fieldRank, hx, rank_bot (bot_not_values _), SupportLadderRows.source_zero,
+    simp [v, fieldRank, hx, rank_bot (bot_not_values _), SupportLadderRows.source_zero,
       hσ.bot]
   have hfb : a.val f ≠ ⊥ := fun hz => hpos.not_ge (hfg.trans_eq (hbot f hz))
   obtain ⟨B, hB⟩ := anchor_grid_one X a f hfb
@@ -146,10 +146,10 @@ theorem exists_private_rank_repair (a : Catalogue X 1) {σ : ExtOrd → ExtOrd}
     exact hag e
   let ν := μ ∘ r.decoder
   have hν : BoundedMap 1 ν := by
-    refine ⟨by dsimp only [ν, Function.comp_apply]; rw [r.witness.bot, hμ.bot],
+    refine ⟨by dsimp [ν, Function.comp_apply]; rw [r.witness.bot, hμ.bot],
       hμ.mono.comp r.witness.mono, ?_⟩
     intro x k i hk hi
-    dsimp only [ν, Function.comp_apply]
+    dsimp [ν, Function.comp_apply]
     rw [r.witness.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi,
       hμ.comm _ k i hk hi]
   refine ⟨⟨r.encoded.profile, r.canonical, r.encoded, r.admitted, rfl⟩, ν, B, hν, hcut, ?_, ?_⟩
@@ -180,7 +180,7 @@ theorem exists_donor_rank_repair (hN : 1 < X.req.N) (a : Catalogue X 1) {σ : Ex
           (fieldRank a.val f)) < γ) ∧
       (∀ d, ν (b.val (.inr d.1)) = p d) ∧
       ∀ f, min (a.val f) (grid 1 B) = min (b.val f) (grid 1 B) := by
-  classical
+
   let H := RelativeLadderLayer.rungs (X := Field C.scheme P.scheme)
   let v : Field C.scheme P.scheme → ExtOrd :=
     fun f => σ (SupportLadderRows.source H (fieldRank a.val f))
@@ -191,7 +191,7 @@ theorem exists_donor_rank_repair (hN : 1 < X.req.N) (a : Catalogue X 1) {σ : Ex
     ⟨.inr c.1, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hact⟩⟩
   have hfg : γ ≤ v f := (Finset.mem_filter.mp hf).2
   have hbot (x) (hx : a.val x = ⊥) : v x = ⊥ := by
-    simp only [v, fieldRank, hx, rank_bot (bot_not_values _), SupportLadderRows.source_zero,
+    simp [v, fieldRank, hx, rank_bot (bot_not_values _), SupportLadderRows.source_zero,
       hσ.bot]
   have hfb : a.val f ≠ ⊥ := fun hz => hpos.not_ge (hfg.trans_eq (hbot f hz))
   obtain ⟨B, hB⟩ := anchor_grid_one X a f hfb
@@ -247,10 +247,10 @@ theorem exists_donor_rank_repair (hN : 1 < X.req.N) (a : Catalogue X 1) {σ : Ex
     exact hag e
   let ν := μ ∘ r.decoder
   have hν : BoundedMap 1 ν := by
-    refine ⟨by dsimp only [ν, Function.comp_apply]; rw [r.witness.bot, hμ.bot],
+    refine ⟨by dsimp [ν, Function.comp_apply]; rw [r.witness.bot, hμ.bot],
       hμ.mono.comp r.witness.mono, ?_⟩
     intro x k i hk hi
-    dsimp only [ν, Function.comp_apply]
+    dsimp [ν, Function.comp_apply]
     rw [r.witness.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi,
       hμ.comm _ k i hk hi]
   refine ⟨⟨r.encoded.profile, r.canonical, r.encoded, r.admitted, rfl⟩, ν, B, hν, hcut, ?_, ?_⟩
@@ -261,5 +261,3 @@ theorem exists_donor_rank_repair (hN : 1 < X.req.N) (a : Catalogue X 1) {σ : Ex
   · intro f
     exact (congrArg (fun z => min (z f) (grid 1 B)) heS).symm.trans (r.prefix_eq f).symm
 
-end
-end VaughtConjecture.Knight.Growth

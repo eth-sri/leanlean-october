@@ -96,9 +96,7 @@ theorem source_original (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t + 
     (d : Cell I.boundary) :
     source I X T hA hB hC t ht a ((build I X T hA hB hC t ht).baseMap
       (RelativeLadderLayer.old I.boundary (by omega : 0 < A.card) d)) =
-        fields X (t + 2) a (field I d) := by
-  rw [source_base]
-  exact RelativeLadderLayer.renderWith_old _ _ _ _ _ _ _ (anchor_ranks I X T hA hB hC t ht a) d
+        fields X (t + 2) a (field I d) := by grind [source_base, anchor_ranks, RelativeLadderLayer.renderWith_old]
 
 abbrev ladder (t : ℕ) (ht : t + 2 ≤ A.card)
     (v : RelativeLadderLayer.Point (X := Field I.right.scheme I.left.scheme)
@@ -132,16 +130,16 @@ theorem source_shadow_sup (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t 
       source I X T hA hB hC t ht a
         (ladder I X T hA hB hC t ht (SupportLadderRows.shadow b f))) =
           fields X (t + 2) a f := by
-  classical
+
   have he := SupportLadderRows.readout_image
     (H := RelativeLadderLayer.rungs (X := Field I.right.scheme I.left.scheme))
     (fun b f => le_of_lt (RelativeLadderLayer.rank_bound (fields X 1) b f))
     (anchor I X T hA hB hC t ht a)
     (LadderScalarRendering.level_mono (LadderScalarRendering.values_bound (anchor_bound X a))) f
-  simp only [SupportLadderRows.readout] at he
+  simp [SupportLadderRows.readout] at he
   rw [show Fintype.ofFinite (Catalogue X 1) = (inferInstance : Fintype (Catalogue X 1))
     from Subsingleton.elim _ _] at he
-  simp only [source_ladder]
+  simp [source_ladder]
   unfold ceiling
   rw [he, anchor_ranks, LadderScalarRendering.field_readback]
 
@@ -191,5 +189,3 @@ theorem source_ceiling_at (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t 
     rw [GrowthPaddedStepRows.source_old]
     exact hv
 
-end
-end VaughtConjecture.Knight.GrowthPaddedNativeRows

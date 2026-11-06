@@ -62,5 +62,3 @@ theorem exists_chart
     rfl
   rwa [he] at hr
 
-end
-end VaughtConjecture.Knight.GrowthPaddedStepCharts

@@ -78,5 +78,3 @@ theorem exists_capped_source {q : target sem j hj hjA k hk hkA → ExtOrd}
   rw [hf]
   exact hq.cap hγ
 
-end
-end VaughtConjecture.Knight.CanonicalMixedAmbient

@@ -157,7 +157,7 @@ theorem exists_common_tuple {M : Type w} {n m : ℕ} (t : Fin n ↪ M) (s : Fin 
   obtain ⟨g0, hg0⟩ : ∃ g0 : Fin m → Fin (n + B.card), ∀ i, w (g0 i) = s i := by
     refine ⟨fun i => if h : ∃ j, t j = s i then Fin.castAdd B.card h.choose
       else Fin.natAdd n (B.equivFin ⟨s i, hmem i h⟩), fun i => ?_⟩
-    dsimp only
+    dsimp
     by_cases h : ∃ j, t j = s i
     · rw [dite_eq_left h, hw_left]
       exact h.choose_spec
@@ -165,7 +165,7 @@ theorem exists_common_tuple {M : Type w} {n m : ℕ} (t : Fin n ↪ M) (s : Fin 
       exact congrArg Subtype.val (B.equivFin.symm_apply_apply _)
   refine ⟨B.card, w, ⟨g0, fun i j hij => s.injective (by rw [← hg0 i, ← hg0 j, hij])⟩, ?_, ?_⟩
   · ext j
-    simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply]
+    simp [Function.Embedding.trans_apply, Fin.castAddEmb_apply]
     exact hw_left j
   · ext i
     exact hg0 i
@@ -250,7 +250,6 @@ theorem topGrade_mono {x y : LabelledExt R} (h : x ≤ y) :
 /-- The principal **tail** above a labelled cover: all labelled covers extending it. -/
 def tail (x : LabelledExt R) : Set (LabelledExt R) := {y | x ≤ y}
 
-@[simp] theorem mem_tail {x y : LabelledExt R} : y ∈ x.tail ↔ x ≤ y := Iff.rfl
 
 end LabelledExt
 
@@ -402,6 +401,4 @@ never a theorem-milestone here. -/
 def HasTopGradeGrowth (R : KnightRealization α M) : Prop :=
   ∀ K : ℕ, IsDominating (R.growthSet K)
 
-end KnightRealization
 
-end VaughtConjecture.Knight

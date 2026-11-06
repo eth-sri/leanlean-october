@@ -148,4 +148,3 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
     unfold e
     rw [hw'r, evr_eq_self_of_selfVis hγK, min_eq_right (hγL.le.trans hw'c)]
 
-end VaughtConjecture.Knight.LowOnly.SourceGap

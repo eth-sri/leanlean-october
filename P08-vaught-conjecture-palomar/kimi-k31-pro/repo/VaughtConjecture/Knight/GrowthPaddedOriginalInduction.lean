@@ -52,16 +52,12 @@ variable {I X T hA hB hC} {k : ℕ}
 
 /-- The next output satisfies the same original-private lifting contract. -/
 theorem successor_private (hprev : PrivateLowerLift P) :
-    PrivateLowerLift (successor P hk hnext) := by
-  intro p q γ hp hq hγ hag
-  exact GrowthPaddedStepOriginalLifts.private_lift P hk hnext hprev hp hq hγ hag
+    PrivateLowerLift (successor P hk hnext) := fun p q γ hp hq hγ hag => GrowthPaddedStepOriginalLifts.private_lift P hk hnext hprev hp hq hγ hag
 
 /-- The donor recurrence keeps the strict arity bound, not an upward admission
 or an activated donor repair assumption. -/
 theorem successor_donor (hsmall : n + 1 < X.req.N) (hprev : DonorLowerLift P) :
-    DonorLowerLift (successor P hk hnext) := by
-  intro p q γ hp hq hγ hag
-  exact GrowthPaddedStepOriginalLifts.donor_lift P hk hnext hsmall hprev hp hq hγ hag
+    DonorLowerLift (successor P hk hnext) := fun p q γ hp hq hγ hag => GrowthPaddedStepOriginalLifts.donor_lift P hk hnext hsmall hprev hp hq hγ hag
 
 end Successor
 
@@ -85,5 +81,3 @@ theorem build_donor (hsmall : n + 1 < X.req.N) (t : ℕ) (ht : t + 2 ≤ A.card)
     exact successor_donor (build I X T hA hB hC t (by omega))
       (by omega) (by omega) hsmall (ih (by omega))
 
-end
-end VaughtConjecture.Knight.GrowthPaddedOriginalInduction

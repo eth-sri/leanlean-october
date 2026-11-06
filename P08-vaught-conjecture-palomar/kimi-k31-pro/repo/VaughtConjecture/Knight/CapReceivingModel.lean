@@ -99,5 +99,3 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
       rw [← hc] at hh
       exact hh.trans_le (min_le_left _ _)
 
-end FiniteCutReceiving
-end VaughtConjecture.Knight

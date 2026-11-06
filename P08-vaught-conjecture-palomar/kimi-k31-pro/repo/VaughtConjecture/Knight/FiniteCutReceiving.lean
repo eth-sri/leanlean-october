@@ -32,4 +32,3 @@ def FiniteCutReceiving (R : KnightRealization α M) : Prop :=
           ∃ h : q.scheme = P.scheme,
             ∀ d, min (q.label d) δ = min (P.label (SemScheme.castCell h d)) δ
 
-end VaughtConjecture.Knight

@@ -31,4 +31,3 @@ theorem topGrade_le_of_isCoinitial {K : ℕ}
   obtain ⟨y, hxy, hy⟩ := hcoin x
   exact (LabelledExt.topGrade_mono hxy).trans_eq (hy (le_refl y))
 
-end VaughtConjecture.Knight

@@ -44,14 +44,10 @@ def CappedLift (sem : Semantics D) (h : GradedLe I U) : Prop :=
       ∀ d, r (CellScheme.below.mono h d) = p d
 
 /-- Equal indices require no appeal to strict-pair bountifulness. -/
-theorem lift_refl : CappedLift sem (GradedLe.refl I) := by
-  intro p q γ hp _ _ hag
-  exact ⟨p, hp, fun d => (hag d).symm, fun _ => rfl⟩
+theorem lift_refl : CappedLift sem (GradedLe.refl I) := fun p q γ hp _ _ hag => ⟨p, hp, fun d => (hag d).symm, fun _ => rfl⟩
 
 /-- Empty overlap needs neither a positive grade nor a fictitious owner. -/
-theorem lift_empty (h : GradedLe I U) [IsEmpty (D.below I)] : CappedLift sem h := by
-  intro _ q _ _ hq _ _
-  exact ⟨q, hq, fun _ => rfl, fun d => isEmptyElim d⟩
+theorem lift_empty (h : GradedLe I U) [IsEmpty (D.below I)] : CappedLift sem h := fun _ q _ _ hq _ _ => ⟨q, hq, fun _ => rfl, fun d => isEmptyElim d⟩
 
 /-- The clause is supplied by the old scheme's actual bountifulness. -/
 theorem lift_of_bountiful (hb : sem.IsBountiful)
@@ -92,16 +88,6 @@ theorem CappedLift.of_equiv
       rw [Equiv.apply_symm_apply, hsquare, Equiv.apply_symm_apply]
     rw [Function.comp_apply, he, hf, Function.comp_apply, Equiv.apply_symm_apply]
 
-section FaceTransport
-
-open CellScheme.restrictFace
-
-variable {m n : ℕ} {D₀ : CellScheme (ι := Fin n) Finset.univ}
-variable {s : Semantics D₀} {f : Fin m ↪ Fin n}
-variable {hf : Finset.univ.image f ∈ D₀.plan}
-variable {I' U' : Finset (Fin m) × ℕ}
-
-end FaceTransport
 
 theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
     (hleft : CappedLift sem hIJ) (hright : CappedLift sem hJK) :
@@ -112,4 +98,3 @@ theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
   obtain ⟨r, hr, hcap, hread⟩ := hright u q γ hu hq hγ (fun d => (hucap d).symm)
   exact ⟨r, hr, hcap, fun d => (hread (CellScheme.below.mono hIJ d)).trans (huread d)⟩
 
-end VaughtConjecture.Knight.CoatomBoundaryExtension

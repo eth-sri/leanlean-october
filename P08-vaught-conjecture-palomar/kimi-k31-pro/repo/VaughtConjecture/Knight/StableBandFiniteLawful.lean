@@ -44,7 +44,7 @@ completed-band supremum. The general finite-vector lemma carries the entire
 synchronization argument; no closed-set theorem or occurrence scheduler is used. -/
 theorem stableBand_mem_lawfulBand_of_finiteJump (hc : R.IsExactParentConsistent)
     (hv : R.IsInitialSegmentCovering) : stableBand x ∈ x.type.LawfulBand := by
-  classical
+
   have := isDirectedOrder hc hv x
   exact DirectedFiniteJump.predicate_iSup_of_jump
     (fun d : x.type.TopCell => offset d.1 d.2) (fun d => offset_mono d.1 d.2)
@@ -68,6 +68,4 @@ theorem stableLiftRespects_of_finiteJump (hc : R.IsExactParentConsistent)
   change RespectsSemantics _ _ at h
   rwa [RootedCover.bandLabel_stableBand hc hv] at h
 
-end KnightRealization
 
-end VaughtConjecture.Knight

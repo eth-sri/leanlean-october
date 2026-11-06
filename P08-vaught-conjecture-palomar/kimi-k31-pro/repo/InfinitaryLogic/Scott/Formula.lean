@@ -165,17 +165,14 @@ noncomputable def scottFormula {n : ℕ} (a : Fin n → M) (α : Ordinal) : L.Fo
 
 omit [L.IsRelational] in
 theorem scottFormula_zero {n : ℕ} (a : Fin n → M) :
-    scottFormula (L := L) a 0 = atomicDiagram a := by
-  simp only [scottFormula, Ordinal.limitRecOn_zero]
+    scottFormula (L := L) a 0 = atomicDiagram a := by simp_all [scottFormula]
 
 omit [L.IsRelational] in
 theorem scottFormula_succ {n : ℕ} (a : Fin n → M) (α : Ordinal) :
     scottFormula (L := L) a (Order.succ α) =
       scottFormula a α ⊓
       einf (fun m : M => existsLastVar (scottFormula (snoc a m) α)) ⊓
-      forallLastVar (esup (fun m : M => scottFormula (snoc a m) α)) := by
-  have : Encodable M := Encodable.ofCountable M
-  simp only [scottFormula, Order.succ_eq_add_one, Ordinal.limitRecOn_add_one]
+      forallLastVar (esup (fun m : M => scottFormula (snoc a m) α)) := by simp_all [scottFormula]
 
 omit [L.IsRelational] in
 /-- The fundamental correspondence: a tuple b realizes the Scott formula for a at level α
@@ -246,8 +243,4 @@ end Language
 
 /-! ### The Scott sentence of a structure at a level -/
 
-namespace Language
 
-end Language
-
-end FirstOrder

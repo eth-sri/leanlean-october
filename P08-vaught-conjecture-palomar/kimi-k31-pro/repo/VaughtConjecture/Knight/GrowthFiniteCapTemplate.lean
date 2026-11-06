@@ -64,7 +64,7 @@ theorem exists_template (req : Requests DA DQ)
       (∀ f ∈ req.F, V f = extVisibilityReplace (e (req.ρ f)) req.N (req.off f)) ∧
       (∀ y ∈ req.T, extVisibilityReplace (e req.a) req.N req.R ≤ V y) ∧
       ∀ z ∈ req.Z, V z = ⊥ := by
-  classical
+
   have hma : τ (e req.a) = ofOrd (α + i) := by
     rw [hchart, ha, min_eq_left hai.le]
   have hanb : e req.a ≠ ⊥ := by
@@ -151,5 +151,3 @@ theorem exists_template (req : Requests DA DQ)
     (by simpa only [hheight] using hFlt)
     (fun y hy => (congrArg B.code (hT y hy)).trans (hBtop.trans hheight.symm))
 
-end
-end VaughtConjecture.Knight.GrowthFiniteCapTemplate

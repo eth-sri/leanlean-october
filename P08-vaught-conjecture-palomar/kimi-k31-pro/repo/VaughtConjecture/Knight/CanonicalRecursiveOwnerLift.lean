@@ -50,7 +50,7 @@ theorem exists_owner_capped_lift
       RespectsSemanticsBelow (rows sem n hA hproper P) (A, n + 4) r ∧
       (∀ e, r (oldTarget sem n hA e.1) = min (p e) (p ⟨c, GradedLe.refl _⟩)) ∧
       ∀ d, min (r d) γ = min (q d) γ := by
-  classical
+
   let _ := Fintype.ofFinite ((cut (D := D) n).below ((cut (D := D) n).cell c))
   let F := data sem n hA hproper P
   let M := p ⟨c, GradedLe.refl _⟩
@@ -148,5 +148,3 @@ theorem exists_owner_capped_lift
     change w (oldTarget sem n hA e.1).1 = _
     rw [hwold, show v e.1 = u e.1 from min_eq_left (hfC e), huface]
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveOwnerLift

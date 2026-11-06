@@ -55,8 +55,7 @@ theorem donor_tuple {n : ℕ} (t : Fin n ↪ M) (z : M) (hz : z ∉ Set.range t)
   apply Function.Embedding.ext
   intro i
   refine Fin.lastCases ?_ (fun k => ?_) i
-  · simp only [Function.Embedding.trans_apply, FixedHeight.extendFace_last, snoc_apply_last]
-  · simp only [Function.Embedding.trans_apply, FixedHeight.extendFace_castSucc,
+  · simp [Function.Embedding.trans_apply, FixedHeight.extendFace_last, snoc_apply_last]
+  · simp [Function.Embedding.trans_apply, FixedHeight.extendFace_castSucc,
       Fin.castSuccEmb_apply, snoc_apply_castSucc]
 
-end VaughtConjecture.Knight.HollowGrowthTemplate

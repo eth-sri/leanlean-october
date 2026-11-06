@@ -94,5 +94,3 @@ theorem lower_respects_iff (p : (input I F hroot hA hB hC).lower.below (A, 1) �
   · simp only [CellScheme.scope, lowerEquiv, HighLayerBountiful.equiv_cell]
   · exact (inherited_row I F hroot hA hB hC b.1 d).symm
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedCharts

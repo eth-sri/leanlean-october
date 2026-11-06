@@ -113,7 +113,7 @@ installed height. No two-face coverage hypothesis remains. -/
 theorem complete_through {V : Finset ι × ℕ} (hV : V ∈ Plan.gradedPlan R)
     (hv : V.2 ≤ t + 2) :
     ∃ d, (carrier (built I X attach hA hB hC t ht)).cell d = V := by
-  classical
+
   let P := built I X attach hA hB hC t ht
   by_cases hside : V.1 ⊆ B ∨ V.1 ⊆ C
   · obtain ⟨d, hd⟩ := (I.occupied_iff hV).mpr hside
@@ -164,5 +164,3 @@ theorem inherited_lift (t : ℕ) (ht : t + 2 ≤ A.card) {U V : Finset ι × ℕ
       (I.right_mem hU (h.1.trans hc)) (I.right_mem hV hc) h he
       (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
 
-end
-end VaughtConjecture.Knight.GrowthReplicatedRows

@@ -36,4 +36,3 @@ theorem isThinOn_of_countable_bfObservations [Countable (Σ n, L.Relations n)]
     IsThinOn (structureIsoSetoid L) C :=
   FirstOrder.Language.isThinOn_of_countable_bfObservations C obs hc hobs
 
-end VaughtConjecture.Spectrum

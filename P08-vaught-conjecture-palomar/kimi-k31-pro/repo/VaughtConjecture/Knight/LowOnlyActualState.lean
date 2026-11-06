@@ -68,7 +68,7 @@ theorem exists_active {α : LimitStage} (v : Cell C.scheme → ExtOrd)
       cutoffCut K (donorField F) (State.profile (⟨F.p, v, b⟩ : State P C)) < b ∧
       ∀ f, (State.profile (⟨F.p, v, b⟩ : State P C)) f ≠ ⊤ →
         (State.profile (⟨F.p, v, b⟩ : State P C)) f < ofOrd α.1 := by
-  classical
+
   let S₀ : State P C := ⟨F.p, v, ⊥⟩
   have hm : donorMax (donorField F) S₀.profile < ofOrd α.1 := by
     apply (Finset.sup_lt_iff (bot_lt_ofOrd _)).mpr
@@ -99,5 +99,3 @@ theorem exists_active {α : LimitStage} (v : Cell C.scheme → ExtOrd)
     · exact hvbound d hf
     · exact hb
 
-end
-end VaughtConjecture.Knight.LowOnlyActualState

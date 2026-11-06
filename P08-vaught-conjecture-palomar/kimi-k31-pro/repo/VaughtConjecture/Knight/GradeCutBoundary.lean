@@ -90,12 +90,8 @@ theorem restrict_respects {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
   have hr := pullback_respects D j sem le_rfl (hp.toBelow (A, j))
   exact hr.toRespects (fun d => ⟨D.isPlan.subset_of_mem (D.scope_mem_plan _), grade_bound D j d⟩)
 
-theorem consistent (hs : sem.IsConsistent) : (rows D j sem).IsConsistent := by
-  intro c
-  exact pullback_respects D j sem (grade_bound D j c) (hs (toCell D j c))
+theorem consistent (hs : sem.IsConsistent) : (rows D j sem).IsConsistent := fun c => pullback_respects D j sem (grade_bound D j c) (hs (toCell D j c))
 
 theorem proper (hp : ∀ d : Cell D, D.scope d ≠ A) (d : Cell (scheme D j)) :
     (scheme D j).scope d ≠ A := hp (toCell D j d)
 
-end
-end VaughtConjecture.Knight.GradeCutBoundary

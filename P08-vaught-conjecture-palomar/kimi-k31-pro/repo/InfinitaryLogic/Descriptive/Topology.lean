@@ -38,6 +38,4 @@ instance {α : Type*} : TopologicalSpace (StructureSpaceOn L α) := Pi.topologic
 Since `Bool` has the discrete topology, this is the product of discrete spaces. -/
 instance : TopologicalSpace (StructureSpace L) := Pi.topologicalSpace
 
-end Language
 
-end FirstOrder

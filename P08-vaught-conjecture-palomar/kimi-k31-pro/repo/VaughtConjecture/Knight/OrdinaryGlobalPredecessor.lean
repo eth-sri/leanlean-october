@@ -235,5 +235,3 @@ theorem agreement {q : Cell I.boundary → ExtOrd} (hq : RespectsSemantics I.row
     (height n hcard) _ _ _ _ (fun z hz => selfVis_mono (hG z hz) (by omega))
     (selfVis_mono hθ (by omega)) hγ hγθ (X.state.agreement hp hb hq hqb hγ hγθ he)
 
-end
-end VaughtConjecture.Knight.OrdinaryGlobalPredecessor

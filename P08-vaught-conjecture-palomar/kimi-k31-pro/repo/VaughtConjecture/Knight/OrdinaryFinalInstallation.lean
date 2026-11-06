@@ -130,17 +130,4 @@ theorem capped_readback
   OrdinaryFinalReadback.capped_readback R F req priv hreqGrade hprivGrade hfields hgate hreq hpriv
     (FinalGateApex.restrict_lawful F hD card_eq hq) hretain b hpositive d
 
-section Packaging
 
-variable (hcons : F.sem.IsConsistent) (hcode : F.sem.IsCoded) (hb : F.rows.IsBountiful)
-variable (hcomplete : ∀ J ∈ Plan.gradedPlan D.plan, J.2 ≤ N →
-  J ≠ (Finset.univ, N) → ∃ d, D.cell d = J)
-variable (hfields : ∀ a f, F.fields a f = a.val f)
-variable (hgrid : F.grid = PairedSlotComparison.sourceGrid N (Fintype.card (Field P C)))
-variable (hsupport : ∀ a d, D.grade d ≤ N →
-  OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
-
-end Packaging
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalInstallation

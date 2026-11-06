@@ -53,4 +53,3 @@ theorem coherent (hστ : σ ≤ τ) (hτρ : τ ≤ ρ)
   apply (value_eq hστ S ((isModel _ R).reduct _) ?_).symm
   rw [Realization.reduct_reduct, reduct_value, hRS]
 
-end VaughtConjecture.Knight.PartialExpansion

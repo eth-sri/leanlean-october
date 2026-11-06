@@ -226,4 +226,3 @@ theorem exists_successorOneType_of_lt {α γ : Ordinal} (hα : Order.IsSuccLimit
     ∃ (r : S α 1) (Sig : Cell r.scheme.scheme), r.label Sig = ofOrd (γ + 1) :=
   exists_successorOneType (hα.add_one_lt hγ)
 
-end VaughtConjecture.Knight

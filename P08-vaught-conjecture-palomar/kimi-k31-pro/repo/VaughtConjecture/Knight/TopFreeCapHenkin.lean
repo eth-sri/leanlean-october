@@ -170,4 +170,3 @@ theorem exists_terminal_model [Countable M] [Infinite M]
   obtain ⟨R, hR, htop⟩ := exists_topFree_model (M := M) hβ
   exact ⟨R, hR, fun _ hβγ => hR.noProlongation_of_topFree hβγ htop⟩
 
-end VaughtConjecture.Knight.TopFreeCapHenkin

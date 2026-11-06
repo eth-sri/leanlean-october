@@ -150,5 +150,3 @@ theorem bountiful {L R : Finset ι}
       hA (by decide) (I := (C, i)) (J := (B, i)) ⟨hCB, le_rfl⟩ hBnot
       (hold _ _ hCi hBi hBA ⟨hCB, le_rfl⟩)
 
-end
-end VaughtConjecture.Knight.CanonicalCoatomBountiful

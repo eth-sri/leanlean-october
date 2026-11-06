@@ -153,4 +153,3 @@ theorem proper_lift (hd : semD.IsBountiful) (he : semE.IsBountiful)
     exact (rightFace s D E w hD hE semD semE hc).lift hbs hright.1 hright.2 h hne he
       p q γ hp hq hγ ha
 
-end VaughtConjecture.Knight.AmalgamatedBoundarySemantics

@@ -213,16 +213,12 @@ theorem row_shadow_sup (f : Field I.right.scheme I.left.scheme) :
     (Finset.univ : Finset (Catalogue X 1)).sup
       (fun b => (build I X T hA hB hC t ht).rows.E c
         (O.ladderArgument (SupportLadderRows.shadow b f))) =
-      fields X (O.birth + 2) O.member f := by
-  simp only [O.row_ladder_source]
-  exact source_shadow_sup I X T hA hB hC O.birth O.height O.member f
+      fields X (O.birth + 2) O.member f := by simp_all [row_ladder_source, source_shadow_sup]
 
 theorem row_spare :
     (build I X T hA hB hC t ht).rows.E c
       (O.ladderArgument (SupportLadderRows.leaf (by exact Nat.succ_pos _)
-        (anchor I X T hA hB hC O.birth O.height O.member))) = ceiling I O.birth := by
-  rw [O.row_ladder_source]
-  exact source_spare I X T hA hB hC O.birth O.height O.member
+        (anchor I X T hA hB hC O.birth O.height O.member))) = ceiling I O.birth := by simp_all [source_spare, row_ladder_source]
 
 theorem row_ceiling_at (i : ℕ) (hi : 1 ≤ i) (hib : i ≤ O.birth + 2) :
     ∃ d : (build I X T hA hB hC t ht).carrier.below
@@ -237,9 +233,5 @@ theorem row_ceiling_at (i : ℕ) (hi : 1 ≤ i) (hib : i ≤ O.birth + 2) :
   exact ⟨O.domain e, (congrArg _ (O.domain_val e)).trans ((O.index d).trans hd),
     (O.row e).trans hv⟩
 
-end Origin
 
-open GrowthPaddedCutTransport
 
-end
-end VaughtConjecture.Knight.GrowthPaddedOwnerProvenance

@@ -55,4 +55,3 @@ theorem map_respects_of_bottom_reflecting {BJ : Finset ι × ℕ} {r : D.below B
   rw [← hν.mono.map_min] at hz ⊢
   rw [h0 (hrefl _ hz), hν.bot]
 
-end VaughtConjecture.Knight

@@ -86,10 +86,5 @@ theorem donor_arity_lt : n + 1 < I.relative.req.N := by
 /-- Correctness, if extracted from the eventual physical rows over this actual
 private face, reads the entire donor literally. It is not assumed extracted. -/
 theorem exact_of_correct {v : Cell q.scheme.scheme → ExtOrd}
-    (h : I.relative.req.Correct (I.relative.req.sec D.context.type.label) v) : v = q.label := by
-  rw [I.req_eq] at h
-  exact (correct_iff_eq_actual q D v).mp h
+    (h : I.relative.req.Correct (I.relative.req.sec D.context.type.label) v) : v = q.label := by grind [req_eq, correct_iff_eq_actual]
 
-end Input
-end
-end VaughtConjecture.Knight.HollowGrowthTemplate

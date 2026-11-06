@@ -115,5 +115,3 @@ theorem lower_lift {I J : Finset ι × ℕ}
   · subst J; exact lift_refl
   · exact hb I J hI hJ h he
 
-end
-end VaughtConjecture.Knight.CanonicalPairLowerLifting

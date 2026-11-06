@@ -61,7 +61,7 @@ theorem respects_below_iff (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B)
     (fun d e => ?_) (fun c d hd => ?_) (q ∘ F.belowEquiv BJ hB)
   · have he : (q ∘ F.belowEquiv BJ hB) ∘ (F.belowEquiv BJ hB).symm = q := by
       funext d
-      simp only [Function.comp_apply, Equiv.apply_symm_apply]
+      simp [Function.comp_apply, Equiv.apply_symm_apply]
     rw [he] at h
     exact h.symm
   · change D.scope d.1 ⊆ D.scope e.1 ↔ (K.cell (F.map d.1)).1 ⊆ (K.cell (F.map e.1)).1
@@ -118,8 +118,7 @@ actual lower domain rather than only on named occurrences. -/
 theorem locality_of_restrict {q : Cell K → ExtOrd}
     (hq : RespectsSemantics semD (q ∘ F.map)) (c : Cell D) :
     TransformsTo (fun d : K.below (K.cell (F.map c)) => K.grade d.1)
-      (semK.E (F.map c)) (fun d => min (q d.1) (q (F.map c))) := by
-  exact TransformsTo.of_equiv (F.ownerEquiv c)
+      (semK.E (F.map c)) (fun d => min (q d.1) (q (F.map c))) := TransformsTo.of_equiv (F.ownerEquiv c)
     (fun d => congrArg Prod.snd (F.index d.1))
     (fun d => F.row c d) (fun _ => rfl) (hq.locality c)
 
@@ -200,6 +199,4 @@ theorem lift {CI BJ : Finset ι × ℕ} (hB : BJ.1 ⊆ B)
   · intro p
     exact F.respects_below_iff CI (h.1.trans hB) p
 
-end ExactSemanticFace
 
-end VaughtConjecture.Knight

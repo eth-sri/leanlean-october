@@ -89,7 +89,7 @@ theorem full_lift
   by_cases hγb : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := exists_section sem n hA hp hC hCA
       hcover hCU hOU hOV hinter hleft hright hpr
-    exact ⟨r, hr, fun _ => by simp only [hγb, min_bot_right], hread⟩
+    exact ⟨r, hr, fun _ => by simp [hγb], hread⟩
   by_cases hactive : ∃ d : (carrier sem n hA).below (C, n + 4),
       (carrier sem n hA).grade d.1 = n + 4 ∧ γ < p d
   · obtain ⟨r, hr, hread, hcap⟩ := CanonicalRecursiveActiveLift.exists_lift
@@ -100,5 +100,3 @@ theorem full_lift
       (predecessorState sem n hA hp) hb hC (Nat.le_of_succ_le hCc) hpr hqr hγ hag
       (fun d hd => not_lt.mp (fun h => hactive ⟨d, hd, h⟩))
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveFullLift

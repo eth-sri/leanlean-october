@@ -52,7 +52,7 @@ theorem exists_section (a : Profile sem n)
       (∀ d, r (oldTarget sem n hA d).1 = p d) ∧
       ∀ d, min (r d) (CanonicalPairedInverse.grid (n + 4) B) =
         min (source sem n hA hp P a d) (CanonicalPairedInverse.grid (n + 4) B) := by
-  classical
+
   let occ := occurrence (D := D) n
   let v := Function.extend occ p a.val
   have hv (d) : v (occ d) = p d := occ.injective.extend_apply p a.val d
@@ -83,5 +83,3 @@ theorem exists_section (a : Profile sem n)
     CanonicalRecursivePrefix.exists_section sem n hA hp P a hvl hvt hB hva
   exact ⟨r, hr, fun d => (hread (occ d)).trans (hv d), hcap⟩
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveCutPrefix

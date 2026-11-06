@@ -136,5 +136,3 @@ theorem exists_positive_lift {C : Finset ι}
     change min (r (eA.symm d)) γ = min (q (eA (eA.symm d))) γ at he
     simpa only [Function.comp_apply, eA.apply_symm_apply] using he
 
-end
-end VaughtConjecture.Knight.CanonicalLowerLift

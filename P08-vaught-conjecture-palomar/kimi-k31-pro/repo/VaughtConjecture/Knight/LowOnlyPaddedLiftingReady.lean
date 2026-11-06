@@ -38,5 +38,3 @@ include hcover
 theorem through_two : TargetGradeLifting.Through (rows I F hroot hA hB hC) 2 :=
   fun hU hV h hj => LowOnlyPaddedPairLift.lift I F hroot hA hB hC hcover hU hV h hj
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLiftingReady

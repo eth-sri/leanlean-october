@@ -56,13 +56,9 @@ open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
 /-! ## Meets under nested caps -/
 
 theorem min_cap_of_le {x x' c' γ : ExtOrd} (h : c' ≤ γ) (hag : min x γ = min x' γ) :
-    min x c' = min x' c' := by
-  calc min x c' = min (min x γ) c' := by rw [min_assoc, min_eq_right h]
-    _ = min (min x' γ) c' := by rw [hag]
-    _ = min x' c' := by rw [min_assoc, min_eq_right h]
+    min x c' = min x' c' := by grind
 
-theorem min_min_of_le {x c c' : ExtOrd} (h : c' ≤ c) : min (min x c) c' = min x c' := by
-  rw [min_assoc, min_eq_right h]
+theorem min_min_of_le {x c c' : ExtOrd} (h : c' ≤ c) : min (min x c) c' = min x c' := by grind
 
 /-- `min e c = v` with `v < c` forces `e = v`. -/
 theorem eq_of_min_eq_of_lt' {e c v : ExtOrd} (h : min e c = v) (hv : v < c) : e = v :=
@@ -238,8 +234,7 @@ theorem θ_evr (x : ExtOrd) {i : ℕ} (hi : i ≤ X.req.N) :
   hθ.comm x X.req.N i le_rfl hi
 
 include hθe in
-theorem θ_cap : θ (X.e X.req.capCell) = u' X.req.C := by
-  rw [hθe, Requests.sec_capCell, min_self]
+theorem θ_cap : θ (X.e X.req.capCell) = u' X.req.C := by grind [Requests.sec_capCell]
 
 theorem tOf_e_eq (f : Cell DQ) : X.req.tOf X.e f =
     min (extVisibilityReplace (X.e (X.req.ρ f)) X.req.N (X.req.off f)) (X.e X.req.capCell) := rfl
@@ -291,8 +286,7 @@ theorem V_bot {z : Cell DQ} (hz : z ∈ X.req.Z) : X.V z = ⊥ := by
 include hθe in
 /-- On the root, the template image is the capped old labelling. -/
 theorem image_root (r : DQ.below X.root) :
-    θ (X.V r.1) = min (u' (X.κ r).1) (u' X.req.C) := by
-  rw [X.V_root r, hθe, Requests.sec_apply]
+    θ (X.V r.1) = min (u' (X.κ r).1) (u' X.req.C) := by grind [V_root, Requests.sec_apply]
 
 include hu' hcls' hθ hθe in
 /-- **The template image is lawful** on the candidate, by same-bottom-pattern transport: in the
@@ -439,6 +433,4 @@ theorem relative_lift {u v u' : _} (hall : X.Allowed u v) (hu' : RespectsSemanti
       change min (θ (X.V r.1)) γ = min (v r.1) γ
       rw [image_root X hθe r, min_min_of_le hγc'.le, hag, hroot r]
 
-end RelativeData
 
-end VaughtConjecture.Knight

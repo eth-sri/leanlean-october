@@ -113,4 +113,3 @@ theorem paste_right (p : Cell D → ExtOrd) (q : Cell E → ExtOrd)
   rw [Equiv.symm_apply_apply]
   exact ProfileFaceUnion.paste_right w.f w.g h e
 
-end VaughtConjecture.Knight.OrderedFaceBoundarySemantics

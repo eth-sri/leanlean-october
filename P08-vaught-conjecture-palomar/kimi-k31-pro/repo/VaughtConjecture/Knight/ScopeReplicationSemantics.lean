@@ -74,9 +74,7 @@ theorem duplicateBelow_respects {J K : Finset ι × ℕ}
 
 /-- Consistency of the installed replicated rows is constructed, independently
 of any lifting theorem. -/
-theorem consistent (hc : sem.IsConsistent) : (rows D B C hcover sem).IsConsistent := by
-  intro c
-  exact duplicateBelow_respects D B C hcover sem
+theorem consistent (hc : sem.IsConsistent) : (rows D B C hcover sem).IsConsistent := fun c => duplicateBelow_respects D B C hcover sem
     (fun d => erase_le D B C hcover d.2) (hc (erase D B C c))
 
 /-- Restriction to the retained single-copy occurrences is lawful. Availability
@@ -163,5 +161,3 @@ def face {T : Finset ι} {E : CellScheme T} {semE : Semantics E}
   row c d := (inherited_row D B C hcover sem (F.map c)
     ⟨F.map d.1, by rw [F.index, F.index]; exact d.2⟩).trans (F.row c d)
 
-end
-end VaughtConjecture.Knight.ScopeReplicationSemantics

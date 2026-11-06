@@ -61,5 +61,3 @@ theorem lower_full_short (c : Cell (lowerScheme sem k h2k hkA))
     (GradeCutPairCarrier.embed_index D _ _ 1 2 (by decide) (one_le k h2k hkA)
       (by decide) (two_le k h2k hkA) a))).mpr hv
 
-end
-end VaughtConjecture.Knight.CanonicalProperOwnerSections

@@ -48,4 +48,3 @@ theorem prolongsToOnIn_of_eq_nextBlock (hM : W.IsModel) (hh : ¬ W.IsHollow)
   subst β
   exact exists_nextBlock_model hM hh hg
 
-end VaughtConjecture.Knight.NonHollowGrowthReceiving

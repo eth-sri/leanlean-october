@@ -59,7 +59,7 @@ def nativeValue (c : Cell (P).carrier) : ExtOrd := by
 theorem native_original (d : Cell I.boundary) :
     nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p (original I X T hA hB hC t ht d) =
       boundaryValue I X T hA hB hC t ht U hU hm j hj hj0 p d := by
-  classical
+
   unfold nativeValue
   split_ifs with ho
   · exact congrArg (boundaryValue I X T hA hB hC t ht U hU hm j hj hj0 p)
@@ -70,7 +70,7 @@ theorem native_full (c : Cell (P).carrier) (hc : (P).carrier.scope c = A)
     (hg : (P).carrier.grade c ≤ j) :
     nativeValue I X T hA hB hC t ht U hU hm j hj hj0 p c =
       p (place I X T hA hB hC t ht U hU hm j hj c hc hg) := by
-  classical
+
   unfold nativeValue
   split_ifs with ho ha
   · obtain ⟨d, rfl⟩ := ho
@@ -99,5 +99,3 @@ theorem literal (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2)
         (place_index I X T hA hB hC t ht U hU hm j hj _ _ _)).symm.le)
       (erase_place I X T hA hB hC t ht U hU hm j hj _ _ _).symm).symm
 
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

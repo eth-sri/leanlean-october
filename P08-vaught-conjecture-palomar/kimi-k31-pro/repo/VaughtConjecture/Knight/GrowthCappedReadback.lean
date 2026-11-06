@@ -96,7 +96,7 @@ theorem maximum_le_height (hp : RespectsSemanticsBelow Rows (U, j) p)
     (k : ℕ) (hk : k ≤ X.req.N) :
     H ≤ height I X T hA hB hC t ht U j p k := by
   have he : height I X T hA hB hC t ht U j p X.req.N = H := by
-    simp only [height, ite_eq_right (by omega : ¬ X.req.N ≤ 1), ite_eq_left hN]
+    simp [height, ite_eq_right (by omega : ¬ X.req.N ≤ 1), ite_eq_left hN]
   rw [← he]
   exact height_antitone I X T hA hB hC t ht U hU hm j hj hp hjt hk
 
@@ -221,7 +221,3 @@ theorem full_correct (hfull : A.card ≤ t + 2)
   rw [hps, hds] at h
   exact h
 
-end Full
-end GrowthCappedReadback
-end
-end VaughtConjecture.Knight

@@ -31,19 +31,17 @@ noncomputable def right (y : Y) : Carrier (X := X) g :=
   if h : y ∈ Set.range g then .inl (f h.choose) else .inr ⟨y, h⟩
 
 theorem right_shared (c : C) : right f g (g c) = left g (f c) := by
-  classical
+
   have h : g c ∈ Set.range g := ⟨c, rfl⟩
   rw [right, dite_eq_left h]
   exact congrArg (fun d => Sum.inl (f d)) (g.injective h.choose_spec)
 
 theorem right_private (y : {y : Y // y ∉ Set.range g}) :
-    right f g y = .inr y := by
-  classical
-  simp only [right, dite_eq_right y.property]
+    right f g y = .inr y := by grind [right]
 
 theorem overlap (x : X) (y : Y) :
     left g x = right f g y ↔ ∃ c, f c = x ∧ g c = y := by
-  classical
+
   constructor
   · intro h
     by_cases hy : y ∈ Set.range g
@@ -67,7 +65,7 @@ def paste {V : Type*} (p : X → V) (q : Y → V) : Carrier (X := X) g → V
 
 theorem paste_right {V : Type*} {p : X → V} {q : Y → V}
     (h : ∀ c, p (f c) = q (g c)) (y : Y) : paste g p q (right f g y) = q y := by
-  classical
+
   by_cases hy : y ∈ Set.range g
   · obtain ⟨c, rfl⟩ := hy
     rw [right_shared]
@@ -75,6 +73,5 @@ theorem paste_right {V : Type*} {p : X → V} {q : Y → V}
   · rw [right, dite_eq_right hy]
     rfl
 
-open NormalizedProfileFamily Transform Value ExtOrd
 
-end VaughtConjecture.Knight.ProfileFaceUnion
+

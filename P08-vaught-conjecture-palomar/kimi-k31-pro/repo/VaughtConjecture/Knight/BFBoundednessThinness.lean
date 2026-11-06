@@ -38,4 +38,3 @@ theorem isThinOnNatModels_of_bfBoundedness (hct : CountableTerminalFibres) :
   · intro η _ c d h
     exact Quotient.exact h
 
-end VaughtConjecture.Knight.ExpansionDomain

@@ -62,7 +62,7 @@ theorem pullback (r : ℕ) (hr : t + r + 2 ≤ A.card)
         (LowOnlyPaddedStepRows.inherited_row P (by omega) (by omega)) J hnot _).mpr
       change RespectsSemanticsBelow (LowOnlyPaddedStepRows.rows P (by omega) (by omega))
         J (fun x => q (e (e.symm x)))
-      simp only [Equiv.apply_symm_apply]
+      simp [Equiv.apply_symm_apply]
       exact hq
     exact ih (by omega) hp
 
@@ -110,5 +110,3 @@ theorem base_pullback {k : ℕ} (P : Layer I F hroot hA hB hC k)
   exact GradeCutLayerRows.cast_respects (base I F hroot hA hB hC)
     (baseRows I F hroot hA hB hC) hc hp
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedRestriction

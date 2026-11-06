@@ -69,18 +69,13 @@ variable (hB : B ∈ D₀.plan) (hnew : B ∉ F)
 variable (hready : ∀ C ∈ D₀.plan, C ⊂ B → C ∈ F)
 
 include hB hnew in
-theorem separated : OrderedScopeRelocation.Separated (D := X.carrier) (B := B) := by
-  intro d hd
-  exact hnew (X.closed _ (X.occupied d) B hB hd)
+theorem separated : OrderedScopeRelocation.Separated (D := X.carrier) (B := B) := fun d hd => hnew (X.closed _ (X.occupied d) B hB hd)
 
-def restricted := ScopeBoundary.scheme X.carrier B (X.plan.symm ▸ hB)
 def restrictedRows := ScopeBoundary.rows X.carrier B (X.plan.symm ▸ hB) X.rows
 
 include hnew hready in
 theorem ready : OrdinaryRawScope.Ready (restrictedRows X hB) where
-  proper d := by
-    intro he
-    exact separated X hB hnew (ScopeBoundary.toCell X.carrier B (X.plan.symm ▸ hB) d)
+  proper d := fun he => separated X hB hnew (ScopeBoundary.toCell X.carrier B (X.plan.symm ▸ hB) d)
       (subset_of_eq he.symm)
   consistent := ScopeBoundary.consistent _ _ _ _ X.consistent
   coded := ScopeBoundary.coded _ _ _ _ X.coded
@@ -284,7 +279,7 @@ theorem exists_completed
     (hG : ∀ z ∈ G, SelfVis N z) (hθ : SelfVis N θ) (htθ : θ ≠ ⊤) (hθG : θ ∈ G)
     {F : Finset (Finset ι)} (X : State sem F₀ N G θ F) :
     ∃ F', Nonempty (State sem F₀ N G θ F') ∧ ∀ B ∈ D.plan, B ≠ A → B ∈ F' := by
-  classical
+
   suffices ∀ n, ∀ (F : Finset (Finset ι)), (D.plan \ insert A F).card = n →
       State sem F₀ N G θ F →
       ∃ F', Nonempty (State sem F₀ N G θ F') ∧ ∀ B ∈ D.plan, B ≠ A → B ∈ F' by
@@ -309,7 +304,7 @@ theorem exists_completed
           subst C
           omega
         have hcm : C ∈ D.plan \ insert A F :=
-          Finset.mem_sdiff.mpr ⟨hC, by simp only [Finset.mem_insert, not_or]; exact ⟨hCA, hc⟩⟩
+          Finset.mem_sdiff.mpr ⟨hC, by simp [Finset.mem_insert, not_or]; exact ⟨hCA, hc⟩⟩
         exact (not_le_of_gt (Finset.card_lt_card hCB)) (hmin C hcm)
       have htwo : 2 ≤ B.card := by
         by_contra hh
@@ -325,18 +320,16 @@ theorem exists_completed
         apply Finset.ssubset_iff_subset_ne.mpr
         refine ⟨?_, ?_⟩
         · intro C hC
-          simp only [Finset.mem_sdiff, Finset.mem_insert, not_or] at hC ⊢
+          simp [Finset.mem_sdiff, Finset.mem_insert, not_or] at hC ⊢
           exact ⟨hC.1, hC.2.1, hC.2.2.2⟩
         · intro he
           have hm := he.symm ▸ hB
-          simp only [Finset.mem_sdiff, Finset.mem_insert, true_or, or_true, not_true_eq_false,
+          simp [Finset.mem_sdiff, Finset.mem_insert, true_or, or_true, not_true_eq_false,
             and_false] at hm
       exact ih _ hlt _ rfl Y
     · refine ⟨F, ⟨X⟩, ?_⟩
       intro B hB hBA
       by_contra hf
       exact hempty ⟨B, Finset.mem_sdiff.mpr
-        ⟨hB, by simp only [Finset.mem_insert, not_or]; exact ⟨hBA, hf⟩⟩⟩
+        ⟨hB, by simp [Finset.mem_insert, not_or]; exact ⟨hBA, hf⟩⟩⟩
 
-end
-end VaughtConjecture.Knight.OrdinaryScopeIteration

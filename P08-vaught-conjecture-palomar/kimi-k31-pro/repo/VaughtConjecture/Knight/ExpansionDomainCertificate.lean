@@ -41,4 +41,3 @@ def filtrationCertificate (hct : CountableTerminalFibres)
     ⟨φ.qrank, qrank_lt_ord_aleph_one φ,
       fun _ hp _ hq => realizes_iff_of_mem_domain_uniform φ le_rfl hp hq⟩
 
-end VaughtConjecture.Knight.ExpansionDomain

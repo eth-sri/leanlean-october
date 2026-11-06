@@ -30,9 +30,7 @@ variable (hp : ∀ d : Cell D, D.scope d ≠ A)
 variable (sem : Semantics D) (low : Semantics (small D Q j hj hA))
 
 include hp in
-theorem proper_scope (c : Cell D) : ¬ A ⊆ D.scope c := by
-  intro hc
-  exact hp c (Finset.Subset.antisymm (D.isPlan.subset_of_mem (D.scope_mem_plan c)) hc)
+theorem proper_scope (c : Cell D) : ¬ A ⊆ D.scope c := fun hc => hp c (Finset.Subset.antisymm (D.isPlan.subset_of_mem (D.scope_mem_plan c)) hc)
 
 def oldBelow (c : Cell D) := properEquiv D Q j hj hA (D.cell c) (proper_scope D hp c)
 
@@ -239,8 +237,7 @@ def glue (p : Cell D → ExtOrd) (r : Cell (small D Q j hj hA) → ExtOrd)
 
 omit hmatch in
 theorem glue_old (p : Cell D → ExtOrd) (r : Cell (small D Q j hj hA) → ExtOrd)
-    (c : Cell D) : glue D Q j hj hA p r (toCell D Q j hj hA (.inl c)) = p c := by
-  simp only [glue, toOcc_toCell]
+    (c : Cell D) : glue D Q j hj hA p r (toCell D Q j hj hA (.inl c)) = p c := by grind [glue, toOcc_toCell]
 
 omit hmatch in
 theorem glue_embed (p : Cell D → ExtOrd) (r : Cell (small D Q j hj hA) → ExtOrd)
@@ -255,7 +252,7 @@ theorem glue_embed (p : Cell D → ExtOrd) (r : Cell (small D Q j hj hA) → Ext
   | inl c => exact (glue_old D Q j hj hA p r _).trans (hr c).symm
   | inr q =>
     change glue D Q j hj hA p r (toCell D Q j hj hA (.inr q)) = _
-    simp only [glue, toOcc_toCell]
+    simp [glue, toOcc_toCell]
     rfl
 
 theorem glue_respects {p : Cell D → ExtOrd} {r : Cell (small D Q j hj hA) → ExtOrd}
@@ -287,5 +284,3 @@ theorem glue_respects {p : Cell D → ExtOrd} {r : Cell (small D Q j hj hA) → 
         (glue_embed D Q j hj hA p r hag _)
     exact heq.symm ▸ ht
 
-end
-end VaughtConjecture.Knight.GradeCutLayerRows

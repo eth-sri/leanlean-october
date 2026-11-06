@@ -88,5 +88,3 @@ theorem anchor_lawful (j : ℕ) (a : F.Anchor j) :
       (fun d => S.profile (field I d.1)) := funext (fun d => (congrFun he _).symm)
   exact hv ▸ boundary_lawful_at I F hroot j S hS
 
-end
-end VaughtConjecture.Knight.LowOnlyOrderedSources

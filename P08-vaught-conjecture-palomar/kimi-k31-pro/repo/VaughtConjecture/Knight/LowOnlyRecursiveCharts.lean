@@ -68,5 +68,3 @@ theorem anchor_visible_one {j : ℕ} (hj : 1 ≤ j) (a : F.Anchor j) (d : Field 
   rw [← he]
   exact profile_visible_one F hj hS d
 
-end
-end VaughtConjecture.Knight.LowOnlyRecursiveCharts

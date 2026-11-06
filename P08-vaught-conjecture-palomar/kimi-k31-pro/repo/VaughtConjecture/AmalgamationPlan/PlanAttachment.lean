@@ -25,10 +25,7 @@ namespace VaughtConjecture.AmalgamationPlan.Plan
 variable {α : Type*} [DecidableEq α]
 
 private theorem restrict_restrict {P : Finset (Finset α)} {A B : Finset α}
-    (hBA : B ⊆ A) : restrictPlan (restrictPlan P A) B = restrictPlan P B := by
-  ext S
-  simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
-  exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hBA⟩, h.2⟩⟩
+    (hBA : B ⊆ A) : restrictPlan (restrictPlan P A) B = restrictPlan P B := by grind [restrictPlan]
 
 private theorem restrict_self {A : Finset α} {P : Finset (Finset α)}
     (hP : IsPlan A P) : restrictPlan P A = P := by
@@ -92,11 +89,11 @@ private theorem attach_coatom {A : Finset α} {P Q : Finset (Finset α)}
       Finset.union_singleton]
   have hi : A ∩ (A.erase a ∪ {x}) = A.erase a := by
     ext y
-    simp only [Finset.mem_inter, Finset.mem_union, Finset.mem_erase, Finset.mem_singleton]
+    simp [Finset.mem_inter, Finset.mem_erase]
     aesop
   have hu : A ∪ (A.erase a ∪ {x}) = A ∪ {x} := by
     ext y
-    simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_singleton]
+    simp [Finset.mem_union, Finset.mem_erase]
     tauto
   have hare : a ∉ A.erase a ∪ {x} := by simp [hax]
   have hover : restrictPlan P (A ∩ (A.erase a ∪ {x})) =
@@ -164,4 +161,3 @@ theorem IsPlan.attach_one_over_face {A B : Finset α} {P Q : Finset (Finset α)}
 -- Both inputs contribute two private points, not just one. The overlap
 -- is the singleton {2}; each side retains its arbitrary prescribed plan.
 
-end VaughtConjecture.AmalgamationPlan.Plan

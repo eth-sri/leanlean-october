@@ -99,8 +99,7 @@ def lower (a : F.Anchor (k + 1)) (d : Cell (carrier P hnext)) : ExtOrd :=
   | .inr _ => ⊥
 
 theorem lower_old (a : F.Anchor (k + 1)) (d : Cell P.carrier) :
-    lower P hnext a (old P hnext d) = selected P a d := by
-  simp only [lower, old, SourceLayerCarrier.toOcc_toCell]
+    lower P hnext a (old P hnext d) = selected P a d := by simp_all [lower]
 
 include hk in
 theorem old_not_full (d : Cell P.carrier) :
@@ -160,7 +159,7 @@ theorem source_new (a b : F.Anchor (k + 1)) :
       cut (grid P) (F.fields (k + 1) a) (F.fields (k + 1) b) := by
   change (data P hk hnext).profile _ _ = _
   rw [ScopedSourcePrefixLayer.Data.profile_new]
-  simp only [data, member_controller]
+  simp [data, member_controller]
 
 theorem source_lawful (a : F.Anchor (k + 1)) :
     RespectsSemanticsBelow (rows P hk hnext) (A, k + 1)
@@ -231,5 +230,3 @@ theorem consistent : (rows P hk hnext).IsConsistent := by
   rw [he]
   exact P.consistent x
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepRows

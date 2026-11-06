@@ -82,13 +82,5 @@ noncomputable def potentialIsoOfCommonCharts
     (fun h => forth _ h)
     (fun h => back _ h)
 
-end Constructor
 
-section Countable
 
-variable {M N : Type w}
-variable {R : KnightRealization α M} {R' : KnightRealization α N}
-
-end Countable
-
-end VaughtConjecture.Knight

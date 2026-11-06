@@ -80,10 +80,10 @@ theorem rowAt_orderly (x : (Cell D ⊕ Q) ⊕ R)
     rw [he] at hg
     rw [hg]
     exact (sem.orderly c (e.symm d)).symm
-  · dsimp only [rowAt]
+  · dsimp [rowAt]
     exact liftedRow_orderly D Q R j k hj hjA hk hkA hjk low
       (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inl (.inr q))) _
-  · dsimp only [rowAt]
+  · dsimp [rowAt]
     exact liftedRow_orderly D Q R j k hj hjA hk hkA hjk low
       (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inr r)) _
 
@@ -123,8 +123,7 @@ theorem old_row (c : Cell D) (d : D.below (D.cell c)) :
       ⟨(ownerEquiv D Q R j k hj hjA hk hkA hp c d).1, by
         simpa only [old, cell_idx, GradeCutPairCarrier.idx] using
           (ownerEquiv D Q R j k hj hjA hk hkA hp c d).2⟩ =
-    sem.E c d := by
-  exact (rows_cell D Q R j k hj hjA hk hkA hp hjk sem low (.inl (.inl c)) _).trans
+    sem.E c d := (rows_cell D Q R j k hj hjA hk hkA hp hjk sem low (.inl (.inl c)) _).trans
     (congrArg (sem.E c) ((ownerEquiv D Q R j k hj hjA hk hkA hp c).symm_apply_apply d))
 
 variable (hmatch : ∀ (c : Cell (GradeCutBoundary.scheme D k))
@@ -287,8 +286,7 @@ def glue (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk hkA) → E
   | .inr q => r (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA (.inr q))
 
 theorem glue_old (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk hkA) → ExtOrd)
-    (d : Cell D) : glue D Q R j k hj hjA hk hkA p r (old D Q R j k hj hjA hk hkA d) = p d := by
-  simp only [glue, old, cell, Equiv.symm_apply_apply]
+    (d : Cell D) : glue D Q R j k hj hjA hk hkA p r (old D Q R j k hj hjA hk hkA d) = p d := by simp_all [cell, glue]
 
 theorem glue_embed (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk hkA) → ExtOrd)
     (hag : ∀ c, r (old (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA c) =
@@ -300,8 +298,8 @@ theorem glue_embed (p : Cell D → ExtOrd) (r : Cell (small D Q R j k hj hjA hk 
   rw [embed_cell]
   rcases x with (d | q) | q
   · exact (glue_old D Q R j k hj hjA hk hkA p r _).trans (hag d).symm
-  · simp only [Sum.map_inl, Sum.map_inr, id_eq, glue, cell, Equiv.symm_apply_apply]
-  · simp only [Sum.map_inr, id_eq, glue, cell, Equiv.symm_apply_apply]
+  · simp [Sum.map_inl, Sum.map_inr, id_eq, glue, cell, Equiv.symm_apply_apply]
+  · simp [Sum.map_inr, id_eq, glue, cell, Equiv.symm_apply_apply]
 
 include hmatch in
 theorem glue_respects {p : Cell D → ExtOrd} {r : Cell (small D Q R j k hj hjA hk hkA) → ExtOrd}
@@ -347,5 +345,3 @@ theorem glue_respects {p : Cell D → ExtOrd} {r : Cell (small D Q R j k hj hjA 
   · exact hlow _ (by rw [cell_idx]; exact hjk)
   · exact hlow _ (by rw [cell_idx]; exact le_rfl)
 
-end
-end VaughtConjecture.Knight.GradeCutPairRows

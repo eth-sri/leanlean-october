@@ -130,5 +130,3 @@ theorem exists_lift {C : Finset ι}
       rw [min_assoc, min_eq_right hpc.le]
       exact hcap d)
 
-end
-end VaughtConjecture.Knight.CanonicalTwoGradeLift

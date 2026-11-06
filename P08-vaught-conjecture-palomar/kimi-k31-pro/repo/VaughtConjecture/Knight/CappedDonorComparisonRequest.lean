@@ -86,6 +86,4 @@ theorem exists_ref_above_cut_min (hM : R.IsModel) (p : S α.1 n) (hp : R.eval t 
   calc ν = limitPart ν + finitePart ν := (decomposition ν).symm
     _ < limitPart ν + C.N := (add_lt_add_iff_left _).mpr (Nat.cast_lt.mpr hoff)
 
-end CappedDonor
 
-end VaughtConjecture.Knight

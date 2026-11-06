@@ -56,6 +56,4 @@ theorem prolongsToIn_isModelClass_iff_on {δ δ' : LimitStage} {N : Type w}
   Realization.prolongsToIn_iff_prolongsToOnIn
     (fun e R' hR' => isModelClass_map e R' hR') R h
 
-end KnightRealization
 
-end VaughtConjecture.Knight

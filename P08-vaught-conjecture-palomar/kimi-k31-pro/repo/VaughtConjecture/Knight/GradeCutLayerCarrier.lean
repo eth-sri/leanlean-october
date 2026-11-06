@@ -40,8 +40,7 @@ def embed (d : Cell (small D Q j hj hA)) : Cell (enlarged D Q j hj hA) :=
 
 theorem embed_toCell (x : Cell (GradeCutBoundary.scheme D j) ⊕ Q) :
     embed D Q j hj hA (toCell (GradeCutBoundary.scheme D j) Q j hj hA x) =
-      toCell D Q j hj hA (embedOcc D Q j x) := by
-  simp only [embed, toOcc_toCell]
+      toCell D Q j hj hA (embedOcc D Q j x) := by grind [embed, toOcc_toCell]
 
 theorem embed_cell (d : Cell (small D Q j hj hA)) :
     (enlarged D Q j hj hA).cell (embed D Q j hj hA d) =
@@ -108,5 +107,3 @@ def properEquiv (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) :
           simpa only [CellScheme.scope, cell_eq, he, index] using d.2.1
         exact False.elim (hB hc)⟩
 
-end
-end VaughtConjecture.Knight.GradeCutLayerCarrier

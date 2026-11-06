@@ -45,4 +45,3 @@ theorem map_respects_of_short_or_reflecting {r : D.below BJ → ExtOrd}
       (rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects (hr.mono c.2)) hb)
     exact hlocal.locality ⟨c.1, GradedLe.refl _⟩
 
-end VaughtConjecture.Knight.SharpWitnessComposition

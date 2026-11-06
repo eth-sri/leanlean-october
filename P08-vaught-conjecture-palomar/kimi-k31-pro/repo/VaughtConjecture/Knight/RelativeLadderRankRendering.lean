@@ -29,8 +29,7 @@ def renderWith (a : Q) (p : X → ExtOrd) (C : ExtOrd) :
 
 theorem renderWith_old (a : Q) (p : X → ExtOrd) (C : ExtOrd)
     (hr : ∀ x, ranks fields a x = fieldRank p x) (d : Cell D) :
-    renderWith D hA field fields a p C (old D hA d) = p (field d) := by
-  simp only [renderWith, image, rankIndex_old, hr, field_readback]
+    renderWith D hA field fields a p C (old D hA d) = p (field d) := by simp_all [image, renderWith, field_readback]
 
 theorem renderWith_bound (a : Q) (p : X → ExtOrd) {C : ExtOrd}
     (hC : ∀ x, p x ≤ C) (d : Cell (carrier D hA (X := X) (Q := Q))) :
@@ -46,7 +45,7 @@ theorem renderWith_respects {j : ℕ} (a : Q) (p : X → ExtOrd) {C : ExtOrd}
   · have he (d : Cell (carrier D hA (X := X) (Q := Q))) :
         renderWith D hA field fields a p C d = ⊥ :=
       le_bot_iff.mp ((renderWith_bound D hA field fields a p hC d).trans_eq hz)
-    simp only [he]
+    simp [he]
     exact ⟨fun _ => (selfVis_bot _).symm, fun c => by
       simpa only [min_self] using TransformsTo.to_bot ((rows D sem hA field fields hp).E c.1),
       fun _ t _ _ => ⟨t, rfl, le_rfl⟩⟩
@@ -90,5 +89,3 @@ theorem renderWith_supported (a : Q) (p : X → ExtOrd) (C : ExtOrd)
     exact Or.inr (Or.inl ⟨x, hx.symm⟩)
   · exact Or.inr (Or.inr hc)
 
-end
-end VaughtConjecture.Knight.RelativeLadderLayer

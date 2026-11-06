@@ -50,4 +50,3 @@ theorem natModelSpectrum_eq_aleph_one : natModelSpectrum knightSentence = aleph 
   rw [natModelSpectrum_knightSentence]
   exact certificate.cardinality
 
-end VaughtConjecture.Knight.ExpansionDomainEndpoint

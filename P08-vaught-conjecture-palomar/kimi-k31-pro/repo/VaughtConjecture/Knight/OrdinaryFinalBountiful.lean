@@ -141,5 +141,3 @@ theorem bountiful
   · exact F.inherited_lift (I := (B, i)) (J := (B', i)) ⟨hsub, le_rfl⟩ hJ
       (hpred (B, i) (B', i) hB hB' ⟨hsub, le_rfl⟩ hJ)
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalBountiful

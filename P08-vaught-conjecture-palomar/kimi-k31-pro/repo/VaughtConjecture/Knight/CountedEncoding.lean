@@ -44,7 +44,6 @@ variable (l : ℕ) (S : Finset Ordinal.{0})
 noncomputable def encOrdK (v : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * (blockOf l S v : ℕ) + (min (finitePart v) l : ℕ)
 
-theorem encOrdK_eq_code (v : Ordinal.{0}) : encOrdK l S v = code l S v := rfl
 
 /-- The counted encoding on labels: `⊥`, `⊤` fixed, ordinals coded. -/
 noncomputable def encT : ExtOrd → ExtOrd
@@ -66,13 +65,7 @@ theorem keyed_of_mem {v : Ordinal.{0}} (hv : v ∈ S) : Keyed l S (ofOrd v) :=
 
 /-- Replacement at a threshold `≤ l` preserves the key. -/
 theorem keyOrd_visibilityReplace {k : ℕ} (hk : k ≤ l) (α : Ordinal.{0}) {i : ℕ} (hi : i ≤ k) :
-    keyOrd l (visibilityReplace α k i) = keyOrd l α := by
-  unfold visibilityReplace
-  split_ifs with hfp
-  · unfold ordinalReplace keyOrd
-    rw [finitePart_limitPart_add_nat, limitPart_limitPart_add_nat, ite_eq_left (by omega),
-      ite_eq_left (by omega)]
-  · rfl
+    keyOrd l (visibilityReplace α k i) = keyOrd l α := by grind [keyOrd, ordinalReplace, visibilityReplace, limitPart_limitPart_add_nat, finitePart_limitPart_add_nat]
 
 /-- Replacement images of keyed values at thresholds `≤ l` are keyed. -/
 theorem keyed_evr {k : ℕ} (hk : k ≤ l) {x : ExtOrd} (hx : Keyed l S x) {i : ℕ} (hi : i ≤ k) :
@@ -83,28 +76,11 @@ theorem keyed_evr {k : ℕ} (hk : k ≤ l) {x : ExtOrd} (hx : Keyed l S x) {i : 
   · rw [extVisibilityReplace_ofOrd]
     exact Or.inr (Or.inr ⟨_, rfl, by rw [keyOrd_visibilityReplace l hk α hi]; exact hα⟩)
 
-theorem keyed_min {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) : Keyed l S (min x y) := by
-  rcases le_total x y with h | h
-  · rw [min_eq_left h]; exact hx
-  · rw [min_eq_right h]; exact hy
+theorem keyed_min {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) : Keyed l S (min x y) := by grind
 
 /-- **The encoder's clause 5 at thresholds `≤ l`**, on all values. -/
 theorem encOrdK_evr_of_le {k : ℕ} (hk : k ≤ l) (α : Ordinal.{0}) {i : ℕ} (hi : i ≤ k) :
-    encOrdK l S (visibilityReplace α k i) = visibilityReplace (encOrdK l S α) k i := by
-  unfold encOrdK
-  have hkey := keyOrd_visibilityReplace l hk α hi
-  unfold blockOf
-  rw [hkey]
-  unfold visibilityReplace
-  by_cases hfp : finitePart α < k
-  · rw [ite_eq_left hfp]
-    unfold ordinalReplace
-    rw [finitePart_limitPart_add_nat, finitePart_mul_add, ite_eq_left (by omega), limitPart_mul_add,
-      min_eq_left (by omega : i ≤ l)]
-  · rw [ite_eq_right hfp, finitePart_mul_add, ite_eq_right (by
-      intro h
-      have := min_le_left (finitePart α) l
-      omega)]
+    encOrdK l S (visibilityReplace α k i) = visibilityReplace (encOrdK l S α) k i := by grind [blockOf, encOrdK, ordinalReplace, limitPart_mul_add, visibilityReplace, finitePart_mul_add, keyOrd_visibilityReplace, finitePart_limitPart_add_nat]
 
 theorem encT_evr_of_le {k : ℕ} (hk : k ≤ l) (x : ExtOrd) {i : ℕ} (hi : i ≤ k) :
     encT l S (extVisibilityReplace x k i) = extVisibilityReplace (encT l S x) k i := by
@@ -183,15 +159,12 @@ theorem encT_le_iff_keyed {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) :
   exact absurd h (not_le.mpr (encT_lt_keyed l S hy hx (not_le.mp hc)))
 
 theorem encT_min_keyed {x y : ExtOrd} (hx : Keyed l S x) (hy : Keyed l S y) :
-    encT l S (min x y) = min (encT l S x) (encT l S y) := by
-  rcases le_total x y with h | h
-  · rw [min_eq_left h, min_eq_left (encT_le_keyed l S hx hy h)]
-  · rw [min_eq_right h, min_eq_right (encT_le_keyed l S hy hx h)]
+    encT l S (min x y) = min (encT l S x) (encT l S y) := by grind [min_eq_right, encT_le_keyed]
 
 /-- The encoding of a finite supremum of keyed values is the supremum of the encodings. -/
 theorem encT_finsetSup {ι : Type*} (s : Finset ι) (f : ι → ExtOrd) (hf : ∀ i ∈ s, Keyed l S (f i)) :
     encT l S (s.sup f) = s.sup fun i => encT l S (f i) := by
-  classical
+
   rcases Finset.eq_empty_or_nonempty s with rfl | hne
   · simp [encT_bot]
   · obtain ⟨i₀, hi₀, hsup⟩ := Finset.exists_mem_eq_sup s hne f
@@ -218,7 +191,7 @@ theorem finiteTargetSuppressor_eq (k : ℕ) :
 theorem finiteTargetSuppressor_encode (ht : ∀ d, Keyed l S (target d)) (k : ℕ) :
     finiteTargetSuppressor grade (fun d => encT l S (target d)) k =
       encT l S (finiteTargetSuppressor grade target k) := by
-  classical
+
   rw [finiteTargetSuppressor_eq, finiteTargetSuppressor_eq]
   rw [encT_finsetSup l S _ _ (fun d _ => by
     split_ifs
@@ -230,7 +203,7 @@ theorem finiteTargetSuppressor_encode (ht : ∀ d, Keyed l S (target d)) (k : �
 
 theorem finiteTargetSuppressor_keyed (ht : ∀ d, Keyed l S (target d)) (k : ℕ) :
     Keyed l S (finiteTargetSuppressor grade target k) := by
-  classical
+
   rw [finiteTargetSuppressor_eq]
   rcases Finset.eq_empty_or_nonempty (@Finset.univ D (Fintype.ofFinite D)) with he | hne
   · rw [he]; exact keyed_bot l S
@@ -350,8 +323,5 @@ theorem isOrderly_encode (hl : ∀ d, grade d ≤ l) (hord : IsOrderly grade tar
   show encT l S (target d) = extVisibilityReplace (encT l S (target d)) (grade d) (grade d)
   rw [← encT_evr_of_le l S (hl d) _ le_rfl, ← hord d]
 
-end Transport
 
-open Transform Value ExtOrd
 
-end VaughtConjecture.Knight

@@ -136,5 +136,3 @@ theorem whole_readback (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
       ((hm (privateIncl I (F.gap.cC le_rfl))).trans hc)
       ((hm (privateIncl I (F.gap.rC le_rfl))).trans hr) hsep d' hd)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedPairReadback

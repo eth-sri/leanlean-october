@@ -46,7 +46,7 @@ theorem le_floor {G : Finset ExtOrd} {h B : ExtOrd} (hh : h ∈ G) (hle : h ≤ 
     h ≤ floor G B := by
   unfold floor
   apply Finset.le_sup_of_le hh
-  simp only [ite_eq_left hle, le_refl]
+  simp [ite_eq_left hle]
 
 /-- A finite maximum creates no extra value between the grid points. -/
 theorem floor_eq_bot_or_mem (G : Finset ExtOrd) (B : ExtOrd) :
@@ -62,4 +62,3 @@ theorem floor_eq_bot_or_mem (G : Finset ExtOrd) (B : ExtOrd) :
     · exact Or.inr hz
     · exact Or.inl rfl
 
-end VaughtConjecture.Knight.RightFilledGap

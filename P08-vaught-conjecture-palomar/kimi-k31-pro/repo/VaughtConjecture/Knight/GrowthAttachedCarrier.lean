@@ -75,7 +75,7 @@ theorem donor_arity_lt : n + 1 < J :=
 include hsmall in
 theorem height : 2 ≤ (Finset.univ : Finset (Fin (J + 1))).card := by
   have := donor_arity_lt C P X hsmall
-  simp only [Finset.card_univ, Fintype.card_fin]
+  simp [Finset.card_univ, Fintype.card_fin]
   omega
 
 include hsmall in
@@ -126,5 +126,3 @@ theorem private_occurrence (d : Cell C.scheme) :
       (privateFace C P Q e hvC hvP hC hP X T hsmall).map d :=
   GrowthReplicatedLegal.private_occurrence I X T hA hB hD hsmall d
 
-end
-end VaughtConjecture.Knight.GrowthAttachedCarrier

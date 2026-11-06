@@ -92,5 +92,3 @@ theorem proper_lift (hp : ∀ d : Cell D, D.scope d ≠ A)
     rw [Function.comp_apply, hd, hread]
     exact congrArg p (eI.apply_symm_apply d)
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveBoundaryTransport

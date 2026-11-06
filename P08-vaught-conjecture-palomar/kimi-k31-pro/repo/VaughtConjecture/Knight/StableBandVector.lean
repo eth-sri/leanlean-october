@@ -135,8 +135,5 @@ theorem bandLabel_stableBand :
     rfl
   · rw [dite_eq_right h, stableValue_of_ne_top hcons hcov x.eval_eq h]
 
-end RootedCover
 
-end KnightRealization
 
-end VaughtConjecture.Knight

@@ -30,4 +30,3 @@ theorem eq_masterChart {A : KnightRealization β M}
     (hw : A.eval w = some P) (hmaster : MasteredBy A w) : A = masterChart w P :=
   FiniteMaster.eq_chart (T := knightTower) ⟨N, w, P⟩ hcons hw (fun t ht => hmaster t ht)
 
-end VaughtConjecture.Knight.FixedHeight

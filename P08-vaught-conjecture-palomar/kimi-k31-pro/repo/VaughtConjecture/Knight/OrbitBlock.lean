@@ -27,11 +27,7 @@ open Transform Value ExtOrd
 
 /-! ## Replacement orbits of a grade-one self-visible value -/
 
-theorem evr_eq_bot_iff {a : ExtOrd} (k i : ℕ) : extVisibilityReplace a k i = ⊥ ↔ a = ⊥ := by
-  constructor
-  · intro h; by_contra ha; exact extVisibilityReplace_ne_bot ha k i h
-  · rintro rfl; exact extVisibilityReplace_bot _ _
+theorem evr_eq_bot_iff {a : ExtOrd} (k i : ℕ) : extVisibilityReplace a k i = ⊥ ↔ a = ⊥ := by grind [extVisibilityReplace_bot, extVisibilityReplace_ne_bot]
 
 /-! ## The orbit-block map -/
 
-end VaughtConjecture.Knight

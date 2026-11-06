@@ -80,15 +80,13 @@ abbrev lower (a : OrdinaryFinalCatalogue.Member R) : Cell (predecessor W R hunio
     (OrdinaryReceivingSources.boundary_bound W R hface a)
 
 theorem lower_private (a : OrdinaryFinalCatalogue.Member R) (d : Cell W.left.scheme) :
-    lower W R hunion hface a ((predecessor W R hunion).leftFace.map d) = a.val (.priv d) := by
-  exact (congrArg (lower W R hunion hface a)
+    lower W R hunion hface a ((predecessor W R hunion).leftFace.map d) = a.val (.priv d) := (congrArg (lower W R hunion hface a)
     ((predecessor W R hunion).left_map d)).trans
       (((predecessor W R hunion).readback _ _ _).trans
         (OrdinaryReceivingSources.boundary_private W R a d))
 
 theorem lower_request (a : OrdinaryFinalCatalogue.Member R) (d : Cell W.right.scheme) :
-    lower W R hunion hface a ((predecessor W R hunion).rightFace.map d) = a.val (.req d) := by
-  exact (congrArg (lower W R hunion hface a)
+    lower W R hunion hface a ((predecessor W R hunion).rightFace.map d) = a.val (.req d) := (congrArg (lower W R hunion hface a)
     ((predecessor W R hunion).right_map d)).trans
       (((predecessor W R hunion).readback _ _ _).trans
         (OrdinaryReceivingSources.boundary_request W R hface a d))
@@ -173,5 +171,3 @@ def semScheme : SemScheme (n + 5) :=
     (complete_before_final W R hunion) (fun _ _ => rfl) rfl
     (fun a d _ => lower_support W R hunion hface a d)
 
-end
-end VaughtConjecture.Knight.OrdinaryReceivingAssembly

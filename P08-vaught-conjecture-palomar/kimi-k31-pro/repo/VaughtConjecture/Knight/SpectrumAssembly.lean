@@ -69,21 +69,5 @@ theorem KnightNatModel.iso_atBlockZero {R R' : KnightNatModel}
   obtain ⟨i⟩ := hi
   exact ⟨i.reduct blockStage_zero_le_omegaStage⟩
 
-/-- **The intrinsic stopping rank on the actual quotient counted by the sentence**:
-`stopRank ∘ atBlockZero` descends to `Quotient knightModelSetoid` along
-`stopRank_eq_of_iso`. -/
-noncomputable def knightNatStopRank : Quotient knightModelSetoid → Ordinal.{0} :=
-  Quotient.lift
-    (fun R : KnightNatModel =>
-      KnightRealization.stopRank R.atBlockZero)
-    (fun R R' h => by
-      have hi : Nonempty (R.1.Iso R'.1) := knightModelSetoid_r_iff.mp h
-      have hi' : Nonempty (R.atBlockZero.Iso R'.atBlockZero) :=
-        KnightNatModel.iso_atBlockZero hi
-      exact KnightRealization.stopRank_eq_of_iso hi')
 
-@[simp] theorem knightNatStopRank_mk (R : KnightNatModel) :
-    knightNatStopRank (Quotient.mk knightModelSetoid R) =
-      KnightRealization.stopRank R.atBlockZero := rfl
 
-end VaughtConjecture.Knight

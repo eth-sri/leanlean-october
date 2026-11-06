@@ -96,4 +96,3 @@ theorem exists_lt_blockStage_of_cofinal {γ : Ordinal.{0}} (hlim : Order.IsSuccL
     rw [← hsub]
     exact (add_lt_add_iff_left _).mpr (hltx.trans_le (mul_le_mul_right hn.le Ordinal.omega0))
 
-end VaughtConjecture.Knight

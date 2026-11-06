@@ -164,5 +164,3 @@ theorem nonprivate_mute (hcard : A.card = N + 1) (hB : B.card = N) (hC : C.card 
   · have := Finset.card_le_card hr
     omega
 
-end
-end VaughtConjecture.Knight.OrdinaryProperPredecessor

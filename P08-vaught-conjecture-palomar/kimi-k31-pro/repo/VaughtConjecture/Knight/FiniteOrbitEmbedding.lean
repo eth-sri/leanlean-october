@@ -33,7 +33,6 @@ noncomputable def ray (K : ℕ) (μ ν : Ordinal.{0}) : ExtOrd → ExtOrd
       else if limitPart ξ = μ then ofOrd (ν + (min (finitePart ξ) K : ℕ))
       else ofOrd (ν + K)
 
-@[simp] theorem ray_bot (K : ℕ) (μ ν : Ordinal.{0}) : ray K μ ν ⊥ = ⊥ := rfl
 
 open Classical in
 theorem ray_ofOrd (K : ℕ) (μ ν ξ : Ordinal.{0}) :
@@ -44,7 +43,7 @@ theorem ray_ofOrd (K : ℕ) (μ ν ξ : Ordinal.{0}) :
 
 theorem ray_le (K : ℕ) (μ ν : Ordinal.{0}) (x : ExtOrd) :
     ray K μ ν x ≤ ofOrd (ν + K) := by
-  classical
+
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
   · exact bot_le
   · exact le_rfl
@@ -55,7 +54,7 @@ theorem ray_le (K : ℕ) (μ ν : Ordinal.{0}) (x : ExtOrd) :
     · exact le_rfl
 
 theorem ray_mono (K : ℕ) (μ ν : Ordinal.{0}) : Monotone (ray K μ ν) := by
-  classical
+
   intro x y hxy
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
   · exact bot_le
@@ -90,7 +89,7 @@ theorem ray_step (K : ℕ) {μ ν : Ordinal.{0}} (hν : limitPart ν = ν) :
   map_bot := rfl
   mono := ray_mono K μ ν
   selfVis := by
-    classical
+
     intro x k hk hx
     have hfp (j : ℕ) : finitePart (ν + j) = j := by
       simpa only [hν] using finitePart_limitPart_add_nat ν j
@@ -107,25 +106,25 @@ theorem ray_step (K : ℕ) {μ ν : Ordinal.{0}} (hν : limitPart ν = ν) :
       · exact hv _ (le_min (selfVis_ofOrd_iff.mp hx) hk)
       · exact hv K hk
   blockwise := by
-    classical
+
     intro ξ
     by_cases hl : limitPart ξ < μ
     · exact Or.inr ⟨⊥, rfl, fun i _ => by
-        simp only [ray_ofOrd, limitPart_limitPart_add_nat, ite_eq_left hl]⟩
+        simp [ray_ofOrd, limitPart_limitPart_add_nat, ite_eq_left hl]⟩
     by_cases he : limitPart ξ = μ
     · refine Or.inl ⟨ν, ?_, ?_⟩
       · have h := finitePart_limitPart ν
         rwa [hν] at h
       · intro i hi
-        simp only [ray_ofOrd, limitPart_limitPart_add_nat, finitePart_limitPart_add_nat,
+        simp [ray_ofOrd, limitPart_limitPart_add_nat, finitePart_limitPart_add_nat,
           ite_eq_right hl, ite_eq_left he, min_eq_left hi]
     · refine Or.inr ⟨ofOrd (ν + K), ?_, ?_⟩
       · apply selfVis_ofOrd_iff.mpr
         simpa only [hν] using (finitePart_limitPart_add_nat ν K).ge
       · intro i hi
-        simp only [ray_ofOrd, limitPart_limitPart_add_nat, ite_eq_right hl, ite_eq_right he]
+        simp [ray_ofOrd, limitPart_limitPart_add_nat, ite_eq_right hl, ite_eq_right he]
   bot_blocks := by
-    classical
+
     intro ξ ζ he hx
     change (if limitPart ξ < μ then ⊥ else if limitPart ξ = μ then _ else _) = ⊥ at hx
     change (if limitPart ζ < μ then ⊥ else if limitPart ζ = μ then _ else _) = ⊥
@@ -135,18 +134,12 @@ theorem ray_step (K : ℕ) {μ ν : Ordinal.{0}} (hν : limitPart ν = ν) :
 
 /-- Exact readback on every finite offset up to the grade bound. -/
 theorem ray_at (K : ℕ) {μ ν : Ordinal.{0}} (hμ : limitPart μ = μ)
-    {i : ℕ} (hi : i ≤ K) : ray K μ ν (ofOrd (μ + i)) = ofOrd (ν + i) := by
-  classical
-  have hl : limitPart (μ + i) = μ := by
-    simpa only [hμ] using limitPart_limitPart_add_nat μ i
-  have hf : finitePart (μ + i) = i := by
-    simpa only [hμ] using finitePart_limitPart_add_nat μ i
-  rw [ray_ofOrd, hl, hf, ite_eq_right (lt_irrefl μ), ite_eq_left rfl, min_eq_left hi]
+    {i : ℕ} (hi : i ≤ K) : ray K μ ν (ofOrd (μ + i)) = ofOrd (ν + i) := by grind [ray_ofOrd, limitPart_limitPart_add_nat, finitePart_limitPart_add_nat]
 
 /-- The initial ray reflects bottom while retaining the finite offsets in block zero. -/
 theorem baseline_reflects_bottom (K : ℕ) (x : ExtOrd)
     (hx : ray K 0 0 x = ⊥) : x = ⊥ := by
-  classical
+
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
   · rfl
   · exact False.elim (ofOrd_ne_bot _ hx)
@@ -183,7 +176,7 @@ theorem interpolate_at
     (hroom : ∀ i, μ i ≠ 0 → Ordinal.omega0 ≤ ν i)
     (j : I) {k : ℕ} (hk : k ≤ K) :
     interpolate K μ ν (ofOrd (μ j + k)) = ofOrd (ν j + k) := by
-  classical
+
   apply le_antisymm
   · apply max_le
     · by_cases hzero : μ j = 0
@@ -251,6 +244,4 @@ theorem incoming_respects
     RespectsSemanticsBelow sem BJ (fun d => interpolate K μ ν (r d)) :=
   map_respects hr hK (interpolate_witness K μ ν hν) (interpolate_reflects_bottom K μ ν)
 
-end FiniteOrbitEmbedding
 
-end VaughtConjecture.Knight

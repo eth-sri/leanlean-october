@@ -102,9 +102,9 @@ theorem later_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
       (S := PairedSlotEncoding.values S.profile) hG hH
     have hδb : BoundedMap (t + r + 2 + 1) δ := boundedMap_of_witness hδ
     have hcomp : BoundedMap (t + 2) (δ ∘ τ) :=
-      ⟨by simp only [Function.comp_apply, hτ.bot, hδb.bot], hδb.mono.comp hτ.mono,
+      ⟨by simp [Function.comp_apply, hτ.bot, hδb.bot], hδb.mono.comp hτ.mono,
         fun x k i hk hi => by
-          simp only [Function.comp_apply]
+          simp [Function.comp_apply]
           rw [hτ.comm x k i hk hi, hδb.comm _ k i (by omega) hi]⟩
     have hfields (f : Field I.left I.right) : δ (T.profile f) = S.profile f := by
       change δ ((state F a₁).profile f) = _
@@ -157,5 +157,3 @@ theorem source_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
       rw [LowOnlyPaddedStepRows.source_old]
       exact hd d
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedRenderChart

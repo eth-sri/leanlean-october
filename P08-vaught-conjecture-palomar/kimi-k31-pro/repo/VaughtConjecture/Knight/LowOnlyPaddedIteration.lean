@@ -70,5 +70,3 @@ theorem build_consistent (t : ℕ) (ht : t + 2 ≤ A.card) :
     (build I F hroot hA hB hC t ht).rows.IsConsistent :=
   (build I F hroot hA hB hC t ht).consistent
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedIteration

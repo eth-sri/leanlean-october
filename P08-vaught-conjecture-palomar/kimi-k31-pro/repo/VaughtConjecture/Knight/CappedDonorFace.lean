@@ -107,8 +107,7 @@ theorem commonFace_apply (a : P.scheme.below (Finset.univ.image fP, KA)) :
 theorem commonFace_symm_apply (e : C.scheme.below (Finset.univ.image fC, KA)) :
     (commonFace fP hvP hP fC hvC hC KA).symm e =
       bP fP hvP KA (castBelow hP.symm (Finset.univ, KA)
-        (castBelow hC (Finset.univ, KA) ((bC fC hvC KA).symm e))) := by
-  simp only [commonFace, Equiv.symm_trans_apply, Equiv.symm_symm, castBelow_symm]
+        (castBelow hC (Finset.univ, KA) ((bC fC hvC KA).symm e))) := by simp_all [commonFace, castBelow_symm]
 
 /-- The underlying cell of the identification. -/
 theorem commonFace_val (a : P.scheme.below (Finset.univ.image fP, KA)) :
@@ -194,8 +193,5 @@ theorem commonFace_respects (r : C.scheme.below (Finset.univ.image fC, KA) → E
     rw [← he]
     exact h4
 
-end CommonFace
 
-end CappedDonor
 
-end VaughtConjecture.Knight

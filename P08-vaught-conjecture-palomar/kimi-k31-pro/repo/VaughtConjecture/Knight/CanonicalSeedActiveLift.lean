@@ -146,5 +146,3 @@ theorem exists_lift
     hpr hu hM hpc.le hreadPhys hmaxPhys hcap
   exact ⟨r, hr, hrlit, hrcap⟩
 
-end
-end VaughtConjecture.Knight.CanonicalSeedActiveLift

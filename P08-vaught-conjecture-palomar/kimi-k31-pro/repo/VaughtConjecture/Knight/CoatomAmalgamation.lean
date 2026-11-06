@@ -124,14 +124,8 @@ def ofPoints (a : Fin (n + 2)) (b' : Fin (n + 1)) : CoatomPair n where
     obtain ⟨k, -, hk⟩ := Finset.mem_image.mp hb
     exact Fin.succAbove_ne _ k hk
 
-@[simp] theorem ofPoints_f₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₁ = Fin.succAboveEmb a := rfl
 
-@[simp] theorem ofPoints_f₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₂ = Fin.succAboveEmb (a.succAbove b') := rfl
 
-@[simp] theorem ofPoints_g₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').g₁ = Fin.succAboveEmb b' := rfl
 
 @[simp] theorem ofPoints_g₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
     (ofPoints a b').g₂ = Fin.succAboveEmb (b'.predAbove a) := rfl
@@ -169,10 +163,7 @@ def MaximalCoatomAmalgamationSupply (α : Ordinal.{0}) : Prop :=
 
 /-- The range of `Fin.succAboveEmb p` is the coatom omitting `p`. -/
 theorem image_succAboveEmb (p : Fin (n + 1)) :
-    Finset.univ.image (Fin.succAboveEmb p) = Finset.univ.erase p := by
-  apply Finset.coe_injective
-  rw [Finset.coe_image, Finset.coe_univ, Set.image_univ, Finset.coe_erase, Finset.coe_univ,
-    Fin.coe_succAboveEmb, Fin.range_succAbove, Set.compl_eq_univ_sdiff]
+    Finset.univ.image (Fin.succAboveEmb p) = Finset.univ.erase p := by grind [Set.image_univ, Finset.coe_univ, Finset.coe_erase, Finset.coe_image, Fin.range_succAbove, Fin.coe_succAboveEmb, Set.compl_eq_univ_sdiff]
 
 /-- Every plan on `Fin (n+1)` has a visible coatom: for `n = 0` the empty face, otherwise a
 pivot of the step decomposition (`IsPlan.pivot_pair`). -/
@@ -304,4 +295,3 @@ theorem exists_highGradeDominance_candidate (H : MaximalCoatomAmalgamationSupply
     rw [IsCoface, castSuccEmb_eq_succAboveEmb_last]
     exact hq
 
-end VaughtConjecture.Knight

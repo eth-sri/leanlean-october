@@ -169,5 +169,3 @@ theorem exists_amalgam (hα : Order.IsSuccLimit α) (C : CoatomPair (n + 2))
     ⟨left_typeMap I O pa.respects pa.label_bound,
       right_typeMap I O pb.respects pb.label_bound⟩, O.maximal⟩
 
-end
-end VaughtConjecture.Knight.CoatomRecursiveOrdered

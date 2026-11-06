@@ -51,9 +51,7 @@ theorem exists_nat_of_lt_add_omega {α μ : Ordinal.{0}} (hle : α ≤ μ)
 
 /-- `visibilityReplace` below the threshold: `μ ⊔_K i = limitPart μ + i` when `fp μ < K`. -/
 theorem visibilityReplace_of_finitePart_lt {μ : Ordinal.{0}} {K i : ℕ} (h : finitePart μ < K) :
-    visibilityReplace μ K i = limitPart μ + i := by
-  unfold visibilityReplace ordinalReplace
-  rw [ite_eq_left h]
+    visibilityReplace μ K i = limitPart μ + i := by grind [ordinalReplace, visibilityReplace]
 
 /-- `limitPart μ + K ≤ μ ⊔_K K` always. -/
 theorem limitPart_add_le_visibilityReplace (μ : Ordinal.{0}) (K : ℕ) :
@@ -284,6 +282,4 @@ theorem isProvisionalValue_band_of_expansion (hα : Order.IsSuccLimit α) (hαβ
     rw [hν, extVisibilityReplace_ofOrd, hi', visibilityReplace_of_finitePart_lt hfp,
       decomposition]
 
-end StageType
 
-end VaughtConjecture.Knight

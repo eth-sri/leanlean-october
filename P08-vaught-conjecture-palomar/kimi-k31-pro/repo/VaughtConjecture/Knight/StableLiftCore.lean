@@ -248,6 +248,4 @@ theorem stableLift_consistent (hR : R.IsModel) :
     (stableLift hR).IsExactParentConsistent :=
   stableLiftOf_consistent hR.consistent hR.covering
 
-end KnightRealization
 
-end VaughtConjecture.Knight

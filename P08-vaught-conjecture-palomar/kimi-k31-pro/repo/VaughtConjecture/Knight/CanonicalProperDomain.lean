@@ -83,5 +83,3 @@ theorem lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hB : ¬ A ⊆ J.1)
     rw [Function.comp_apply, hd, hread]
     exact congrArg p (eI.apply_symm_apply d)
 
-end
-end VaughtConjecture.Knight.CanonicalProperDomain

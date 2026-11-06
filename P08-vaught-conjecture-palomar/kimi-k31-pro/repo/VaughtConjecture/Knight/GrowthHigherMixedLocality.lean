@@ -148,5 +148,3 @@ theorem higher_locality (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤
     rw [native_full I X T hA hB hC t ht U hU hm j hj hj0 p d.1 hdf hgd]
     exact (hr _ hz).symm.trans (congrArg τ he)
 
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

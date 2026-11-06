@@ -54,7 +54,7 @@ theorem respects_iff (p : D.below (S, N) → ExtOrd) :
     (fun d e => ?_) (fun c d hd => ?_) (p ∘ fullEquiv C place hS E)
   · have he : (p ∘ fullEquiv C place hS E) ∘ (fullEquiv C place hS E).symm = p := by
       funext d
-      simp only [Function.comp_apply, Equiv.apply_symm_apply]
+      simp [Function.comp_apply, Equiv.apply_symm_apply]
     rw [he] at h
     exact h.symm
   · change C.scheme.scope d.1 ⊆ C.scheme.scope e.1 ↔
@@ -63,5 +63,3 @@ theorem respects_iff (p : D.below (S, N) → ExtOrd) :
   · exact ((E.row c.1 (PointImageSemantics.belowEquiv C.scheme place hS c.1 d)).trans
       (PointImageSemantics.row C.scheme place hS C.rows c.1 d)).symm
 
-end
-end VaughtConjecture.Knight.NativePrivateFace

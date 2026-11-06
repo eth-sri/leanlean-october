@@ -69,7 +69,7 @@ theorem exists_common_cover {M₁ M₂ : Type w}
     ∃ (N : ℕ) (f : Fin n ↪ Fin N) (s : Fin N ↪ M₁) (u : Fin N ↪ M₂) (P : S α.1 N),
       f.trans s = t₁ ∧ f.trans u = t₂ ∧ V.eval s = some P ∧ W.eval u = some P ∧
         ∃ i, s i = x := by
-  classical
+
   by_cases hx : x ∈ Set.range t₁
   · obtain ⟨i, hi⟩ := hx
     exact ⟨n, Function.Embedding.refl _, t₁, t₂, p, Function.Embedding.refl_trans _,
@@ -132,5 +132,3 @@ theorem nonempty_iso {M₁ M₂ : Type w} [Countable M₁] [Countable M₂]
     Function.Embedding.ofIsEmpty Function.Embedding.ofIsEmpty hsV hsW
   exact ⟨e⟩
 
-end
-end VaughtConjecture.Knight.HollowGrowth

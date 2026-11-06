@@ -132,13 +132,7 @@ noncomputable def ofRespects (hα : Order.IsSuccLimit α) (D : SemScheme n)
   label_bound _ := truncExt_bound α _
   respects := hq'.truncate hα
 
-@[simp] theorem ofRespects_scheme (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') :
-    (ofRespects hα D q' hq').scheme = D := rfl
 
-@[simp] theorem ofRespects_label (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') (d : Cell D.scheme) :
-    (ofRespects hα D q' hq').label d = truncExt α (q' d) := rfl
 
 /-- **Truncation does not disturb the face.**  If `q'` respects the rows of an extension domain
 `D` of `dom p` and extends `p.label` along the cell map of the initial face (`hD.cellOf`),
@@ -151,7 +145,7 @@ theorem isCoface_ofRespects (hα : Order.IsSuccLimit α) {p : S α n} {D : SemSc
     (hext : ∀ d, q' (hD.cellOf d) = p.label d) : IsCoface p (ofRespects hα D q' hq') := by
   obtain ⟨Ps, pl, pb, pr⟩ := p
   obtain ⟨hvis, hres⟩ := hD
-  dsimp only at hres ⊢
+  dsimp at hres ⊢
   subst hres
   unfold IsCoface
   rw [typeMap_eq_some _ _ hvis]
@@ -186,7 +180,7 @@ theorem exists_respects_extends_capped {p : S α n} {D : SemScheme (n + 1)}
       (∀ d, min (q'' d) γ = min (q' d) γ) ∧ ∀ d, q'' (hD.cellOf d) = p.label d := by
   obtain ⟨Ps, pl, pb, pr⟩ := p
   obtain ⟨hvis, hres⟩ := hD
-  dsimp only at hres hcap ⊢
+  dsimp at hres hcap ⊢
   subst hres
   cases n with
   | zero =>
@@ -286,6 +280,4 @@ theorem bottomPatternFamily_nonempty (hα : Order.IsSuccLimit α) {p : S α n}
     ∃ q ∈ BottomPatternFamily (α := α) D q', IsCoface p q :=
   ⟨ofRespects hα D q' hq', ⟨rfl, fun _ => truncExt_eq_bot_iff⟩, isCoface_ofRespects hα hD hq' hext⟩
 
-end StageType
 
-end VaughtConjecture.Knight

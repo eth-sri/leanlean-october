@@ -83,7 +83,7 @@ theorem exists_lift {C : Finset ι} {n : ℕ} (hn : n ≤ 2)
   by_cases hγb : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := CanonicalSections.exists_section sem 1 (by decide) (by omega)
       hproper 2 hg (by decide) hA (by decide) hcover hCU hOU hOV hinter hleft hright hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hγb, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by simp [hγb]⟩
   by_cases hactive : ∃ d : D.below (C, n), D.grade d.1 = 2 ∧ γ < p d
   · have hn2 : n = 2 := by
       obtain ⟨d, hd, _⟩ := hactive
@@ -101,5 +101,3 @@ theorem exists_lift {C : Finset ι} {n : ℕ} (hn : n ≤ 2)
       hp hq hγ hγb hag (fun d hd => not_lt.mp (fun h => hactive ⟨d, hd, h⟩))
       hcover₁ hCU₁ hOU₁ hOV₁ hinter₁ hleft₁ hright₁ hU₁ hV₁
 
-end
-end VaughtConjecture.Knight.CanonicalOriginalLift

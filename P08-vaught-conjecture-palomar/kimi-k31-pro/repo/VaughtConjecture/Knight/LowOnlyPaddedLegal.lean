@@ -122,5 +122,3 @@ theorem private_occurrence (d : Cell I.right.scheme) :
     (privateFace I F hroot hA hB hC hcover) (private_order I F hroot hA hB hC _ _)
     (private_plan I F hroot hA hB hC hcover) d
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLegal

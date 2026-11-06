@@ -46,5 +46,3 @@ def face : ExactSemanticFace old (CanonicalRecursiveSemantics.rows sem hp n hA) 
   row c d := (CanonicalRecursiveLiteralRows.row sem hp n hA (F.map c)
     (F.belowMap c d)).trans (F.row c d)
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveFace

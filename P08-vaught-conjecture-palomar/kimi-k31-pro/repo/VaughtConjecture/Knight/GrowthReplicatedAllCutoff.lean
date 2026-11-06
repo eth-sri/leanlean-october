@@ -45,5 +45,3 @@ theorem donor_subface (hsmall : n + 1 < X.req.N) {S : Finset ι} {i j : ℕ}
   lift_to_full (build I X T hA hB hC t ht) _ (Or.inl hSB)
     (GrowthPaddedAllCutoff.donor_subface I X T hA hB hC hsmall t ht hS hSB hij hj)
 
-end
-end VaughtConjecture.Knight.GrowthReplicatedAllCutoff

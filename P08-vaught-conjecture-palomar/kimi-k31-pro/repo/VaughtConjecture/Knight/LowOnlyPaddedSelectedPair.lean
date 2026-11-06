@@ -220,5 +220,3 @@ theorem exists_whole_rank_pair (F : LowOnly.Family I.left I.right 1)
       (RelativeLadderLayer.ranks (F.fields 1)) (Nat.succ_pos _) hlt
       (Nat.le_succ _) hqs' hqt _)).trans hm)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedSelectedPair

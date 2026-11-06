@@ -63,10 +63,7 @@ theorem label_eq_provisional_or_threshold_le (hα : Order.IsSuccLimit α) (hαβ
 literal reduct, coordinate by coordinate in the common scalar value space. -/
 theorem provisional_reduct_le_label (hα : Order.IsSuccLimit α) (hαβ : α ≤ β)
     (q : S β n) (d : Cell q.scheme.scheme) :
-    (reduceType hα hαβ q).someProvisionalValue d ≤ q.label d := by
-  rcases label_eq_provisional_or_threshold_le hα hαβ q d with h | h
-  · exact h.ge
-  · exact (someProvisionalValue_le _ _).trans h
+    (reduceType hα hαβ q).someProvisionalValue d ≤ q.label d := by grind [someProvisionalValue_le, label_eq_provisional_or_threshold_le]
 
 /-- Fixed-scheme form: every lawful bounded vector reducing to `p` dominates its
 provisional vector. Rows and cells are literally those of `p`. -/
@@ -111,4 +108,3 @@ theorem provisional_le_mapCell_of_least {m : ℕ} {p : S α m} {q : S α n}
     ⟨visible_of_typeMap_eq_some hf, restrictFace_eq_of_typeMap_eq_some hf⟩
   exact provisional_le_restrict_of_least q hα f hr d
 
-end VaughtConjecture.Knight.StageType

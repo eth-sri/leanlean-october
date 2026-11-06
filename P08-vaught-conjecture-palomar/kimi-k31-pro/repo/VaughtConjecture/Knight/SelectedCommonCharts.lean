@@ -141,6 +141,4 @@ theorem exists_iso_of_selectedCommonCharts [Countable M₁] [Countable M₂]
     (selectedChartFamily_forth supply) (selectedChartFamily_back supply)
     (node_mem_selectedChartFamily seed_good)
 
-end KnightRealization
 
-end VaughtConjecture.Knight

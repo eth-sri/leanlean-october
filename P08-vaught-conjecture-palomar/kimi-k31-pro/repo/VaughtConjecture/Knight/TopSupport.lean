@@ -68,16 +68,13 @@ noncomputable def lower (P : Cell D → ExtOrd) (H : Set (Cell D)) (β : ExtOrd)
   if P d = ⊤ then (if d ∈ H then ⊤ else β) else P d
 
 theorem lower_of_ne_top {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd} {d : Cell D}
-    (h : P d ≠ ⊤) : lower P H β d = P d := by
-  unfold lower; rw [ite_eq_right h]
+    (h : P d ≠ ⊤) : lower P H β d = P d := by grind [lower]
 
 theorem lower_of_mem {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd} {d : Cell D}
-    (h : P d = ⊤) (hd : d ∈ H) : lower P H β d = ⊤ := by
-  unfold lower; rw [ite_eq_left h, ite_eq_left hd]
+    (h : P d = ⊤) (hd : d ∈ H) : lower P H β d = ⊤ := by grind [lower]
 
 theorem lower_of_not_mem {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd} {d : Cell D}
-    (h : P d = ⊤) (hd : d ∉ H) : lower P H β d = β := by
-  unfold lower; rw [ite_eq_left h, ite_eq_right hd]
+    (h : P d = ⊤) (hd : d ∉ H) : lower P H β d = β := by grind [lower]
 
 /-- The top set of the lowering is `H`, for `H` a set of top cells and `β` proper. -/
 theorem topSet_lower {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd}
@@ -122,12 +119,7 @@ theorem evr_ne_top {x : ExtOrd} (h : x ≠ ⊤) (k i : ℕ) : extVisibilityRepla
 theorem selfVis_top_ext (k : ℕ) : SelfVis k ⊤ := extVisibilityReplace_top k k
 
 theorem selfVis_max_of {K : ℕ} {a b : ExtOrd} (ha : SelfVis K a) (hb : SelfVis K b) :
-    SelfVis K (max a b) := by
-  change extVisibilityReplace (max a b) K K = max a b
-  rw [extVisibilityReplace_max a b le_rfl]
-  change extVisibilityReplace a K K = a at ha
-  change extVisibilityReplace b K K = b at hb
-  rw [ha, hb]
+    SelfVis K (max a b) := by grind
 
 /-- A rounding at grade `K` is `K`-visible. -/
 theorem selfVis_evr_self (K : ℕ) (t : ExtOrd) : SelfVis K (extVisibilityReplace t K K) := by
@@ -208,10 +200,7 @@ theorem retune_of_gt {σ : ExtOrd → ExtOrd} {t β x : ExtOrd} (h : ¬ x ≤ t)
 
 /-- The retuned map has the bottom fibre of the old witness. -/
 theorem retune_eq_bot_iff {σ : ExtOrd → ExtOrd} {t β x : ExtOrd} (hβ : β ≠ ⊥) :
-    retune σ t β x = ⊥ ↔ σ x = ⊥ := by
-  by_cases h : x ≤ t
-  · rw [retune_of_le h, min_eq_bot, or_iff_left hβ]
-  · rw [retune_of_gt h]
+    retune σ t β x = ⊥ ↔ σ x = ⊥ := by grind [retune_of_gt, retune_of_le]
 
 /-- **The retuned map is a bounded map** at grade `K`, for a `K`-visible cut and cap. -/
 theorem boundedMap_retune {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop K) σ) {t β : ExtOrd}
@@ -248,8 +237,7 @@ theorem exists_witness_retune {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness 
 
 /-- The rounded sources of the lowered tops beneath an owner are self-visible at its grade. -/
 theorem selfVis_sup_evr {X : Type*} (s : Finset X) (f : X → ExtOrd) (k : ℕ) :
-    SelfVis k (s.sup fun x => extVisibilityReplace (f x) k k) := by
-  exact Finset.sup_induction (selfVis_bot k) (fun a ha b hb => selfVis_max_of ha hb)
+    SelfVis k (s.sup fun x => extVisibilityReplace (f x) k k) := Finset.sup_induction (selfVis_bot k) (fun a ha b hb => selfVis_max_of ha hb)
     fun x _ => selfVis_evr_self k (f x)
 
 /-! ## Sufficiency -/
@@ -381,4 +369,3 @@ theorem eq_of_unique_admissible {P Q : Cell D → ExtOrd} (hQ : RespectsSemantic
   · rw [hd]; exact (mem_topSet.mp (hH ▸ (mem_topSet.mpr hd)))
   · exact hoff d hd
 
-end VaughtConjecture.Knight.TopSupport

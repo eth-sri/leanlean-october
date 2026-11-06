@@ -70,7 +70,7 @@ universe u v w
 sends the initial segment `Fin.castAdd k i` to `f i`. -/
 theorem exists_perm_castAdd_eq {n k : ℕ} (f : Fin n ↪ Fin (n + k)) :
     ∃ σ : Equiv.Perm (Fin (n + k)), ∀ i, σ (Fin.castAdd k i) = f i := by
-  classical
+
   let e : {x // x ∈ Set.range (Fin.castAdd (n := n) k)} ≃ {x // x ∈ Set.range f} :=
     (Equiv.ofInjective (Fin.castAdd k) (Fin.castAdd_injective n k)).symm.trans
       (Equiv.ofInjective f f.injective)
@@ -128,7 +128,7 @@ theorem ext {R R' : T.Realization α M}
   | mk eval =>
     cases R' with
     | mk eval' =>
-      simp only [Realization.mk.injEq]
+      simp [Realization.mk.injEq]
       funext n t
       exact h t
 
@@ -198,7 +198,7 @@ theorem reduct_eval (h : α ≤ β) (R : T.Realization β M) {n : ℕ} (t : Fin 
 theorem reduct_refl (R : T.Realization α M) : R.reduct le_rfl = R := by
   cases R with
   | mk eval =>
-    simp only [reduct, Realization.mk.injEq]
+    simp [reduct, Realization.mk.injEq]
     funext n t
     cases eval t <;> simp [T.reduce_refl]
 
@@ -206,7 +206,7 @@ theorem reduct_reduct {γ : Λ} (hαβ : α ≤ β) (hβγ : β ≤ γ) (R : T.R
     (R.reduct hβγ).reduct hαβ = R.reduct (hαβ.trans hβγ) := by
   cases R with
   | mk eval =>
-    simp only [reduct, Realization.mk.injEq]
+    simp [reduct, Realization.mk.injEq]
     funext n t
     cases eval t <;> simp [T.reduce_trans]
 
@@ -214,7 +214,7 @@ theorem reduct_reduct {γ : Λ} (hαβ : α ≤ β) (hβγ : β ≤ γ) (R : T.R
 theorem IsExactParentConsistent.reduct (h : α ≤ β) {R : T.Realization β M}
     (hR : R.IsExactParentConsistent) : (R.reduct h).IsExactParentConsistent := by
   intro m n t q f hq
-  simp only [reduct_eval, Option.map_eq_some_iff] at hq
+  simp [reduct_eval, Option.map_eq_some_iff] at hq
   obtain ⟨q', hq', rfl⟩ := hq
   rw [reduct_eval, hR t q' f hq', T.pull_reduce]
 
@@ -232,9 +232,6 @@ The four predicates above take their leading `ℕ` binders strict-implicitly (`�
 dot-notation projections elaborate (with plain implicit binders Lean eagerly instantiates the
 metavariables and the projections fail).  One `example` per predicate, as tests only. -/
 
-section DotNotationTests
-
-end DotNotationTests
 
 /-! ### Isomorphisms of realizations
 
@@ -381,10 +378,6 @@ theorem IsIso.isInitialSegmentCovering {R : T.Realization α M} {R' : T.Realizat
   have := congrArg (fun v : Fin n ↪ M => e (v i)) hu
   simpa using this
 
-end Iso
 
-end Realization
 
-end TypeTower
 
-end VaughtConjecture

@@ -74,7 +74,7 @@ theorem Witness.comp_of_bottom_reflecting
     Witness (gTop m) (ν ∘ τ) where
   anti := hτ.anti
   vis := hτ.vis
-  bot := by simp only [Function.comp_apply, hτ.bot, hν.bot]
+  bot := by simp [Function.comp_apply, hτ.bot, hν.bot]
   mono := hν.mono.comp hτ.mono
   clause5 := by
     intro x k hact i hi
@@ -97,16 +97,14 @@ theorem Transform.IsStepShifter.normalizedWitness {K : ℕ} {ν : ExtOrd → Ext
   vis := (witness_id K).vis
   bot := hν.map_bot
   mono := hν.mono
-  clause5 := by
-    intro x k hact i hi
-    exact hν.clause5 x k hact i hi
+  clause5 := fun x k hact i hi => hν.clause5 x k hact i hi
 
 /-- Adding ordinal zero to the finite inventory removes every nonbottom point
 from the canonical normalizer's bottom fibre. -/
 theorem canonicalNormalizer_reflects_bottom_of_zero_mem
     {S : Finset Ordinal.{0}} {K : ℕ} (h0 : (0 : Ordinal.{0}) ∈ S)
     (x : ExtOrd) (hx : canonicalNormalizer S K x = ⊥) : x = ⊥ := by
-  classical
+
   rcases ExtOrd.cases x with rfl | rfl | ⟨ξ, rfl⟩
   · rfl
   · rw [canonicalNormalizer_top] at hx
@@ -135,7 +133,7 @@ theorem map_capped_locality_of_bottom_reflecting
   obtain ⟨τ, hτ, _, hread⟩ := exists_bounded_exact_capped_witness hmax hvis hloc
   apply (hτ.comp_of_bottom_reflecting hν hcK hbot).transformsTo
   intro d
-  simp only [Function.comp_apply, gTop_of_le (hmax d), min_top_right]
+  simp [Function.comp_apply, gTop_of_le (hmax d)]
   rw [hread d, hν.mono.map_min]
 
 /-- **Respect is closed under every bottom-reflecting `K`-step shifter**, with the semantic rows
@@ -186,9 +184,7 @@ theorem RespectsSemanticsBelow.canonical_insert_zero
     {K : ℕ} (S : Finset Ordinal.{0})
     (hr : RespectsSemanticsBelow sem BJ r)
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) :
-    RespectsSemanticsBelow sem BJ (fun d => canonicalNormalizer (insert 0 S) K (r d)) := by
-  classical
-  exact hr.canonical_of_zero_mem hK (Finset.mem_insert_self _ _)
+    RespectsSemanticsBelow sem BJ (fun d => canonicalNormalizer (insert 0 S) K (r d)) := by simp_all [canonical_of_zero_mem]
 
 /-! ## The finite cover of a fixed finite lower domain -/
 
@@ -201,11 +197,7 @@ open Classical in
 noncomputable def ordOf (x : ExtOrd) : Ordinal.{0} :=
   if h : ∃ s : Ordinal.{0}, x = ofOrd s then h.choose else 0
 
-theorem ordOf_ofOrd (s : Ordinal.{0}) : ordOf (ofOrd s) = s := by
-  have h : ∃ t : Ordinal.{0}, ofOrd s = ofOrd t := ⟨s, rfl⟩
-  unfold ordOf
-  rw [dite_eq_left h]
-  exact (ofOrd_inj.mp h.choose_spec).symm
+theorem ordOf_ofOrd (s : Ordinal.{0}) : ordOf (ofOrd s) = s := by simp_all [ordOf]
 
 /-- **Every respecting labelling of a finite lower domain has a respecting representative in one
 uniformly bounded finite coded inventory, decoding exactly to it.**  With at most `m` cells and
@@ -277,6 +269,4 @@ theorem RespectsSemanticsBelow.decoded
     RespectsSemanticsBelow sem BJ (fun d => canonicalDecoder S K (r d)) :=
   hr.map_bottom_reflecting hK isStepShifter_canonicalDecoder canonicalDecoder_reflects_bottom
 
-end DecoderTransport
 
-end VaughtConjecture.Knight

@@ -57,7 +57,7 @@ theorem exists_section
     CanonicalPairedInverse.exists_supported_inverse a.property.2 ht hag
   have hfixGrid : ∀ z ∈ CanonicalRecursiveSuccessorRows.grid (D := D) n,
       z < CanonicalPairedInverse.grid (n + 4) B → κ z = z := by
-    classical
+
     intro z hz hzB
     rcases Finset.mem_insert.mp hz with rfl | hz
     · exact hw.bot
@@ -93,9 +93,7 @@ theorem exists_section
   refine ⟨fun d => κ (source sem n hA hp P b d),
     hwhole, ?_, hcaps⟩
   intro d
-  dsimp only
+  dsimp
   rw [source_boundary]
   exact hread d
 
-end
-end VaughtConjecture.Knight.CanonicalRecursivePrefix

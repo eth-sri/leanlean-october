@@ -170,9 +170,5 @@ theorem active_private_lift (hprev : PrivateLowerLift P)
 variable (I X T hA hB hC)
 
 /-- The actual grade-two lift initializes higher literal restoration. -/
-theorem initial_private : PrivateLowerLift (initial I X T hA hB hC) := by
-  intro p q γ hp hq hγ hag
-  exact GrowthPaddedOriginalLifts.private_lift I X T hA hB hC hp hq hγ hag
+theorem initial_private : PrivateLowerLift (initial I X T hA hB hC) := fun p q γ hp hq hγ hag => GrowthPaddedOriginalLifts.private_lift I X T hA hB hC hp hq hγ hag
 
-end
-end VaughtConjecture.Knight.GrowthPaddedStepPrivateLift

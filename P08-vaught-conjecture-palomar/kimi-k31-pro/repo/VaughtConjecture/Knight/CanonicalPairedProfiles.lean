@@ -72,12 +72,4 @@ theorem normalize_cap {a p : X → ExtOrd} {B : ℕ}
       min (a d) (ofOrd (Ordinal.omega0 * B + j)) :=
   CanonicalPairedPrefix.normalize_cap ha.1 ha.2 hag d
 
-end Inventory
 
-section Scheme
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  (sem : Semantics D) (BJ : Finset ι × ℕ) [Fintype (D.below BJ)] (j : ℕ)
-
-end Scheme
-end
-end VaughtConjecture.Knight.CanonicalPairedProfiles

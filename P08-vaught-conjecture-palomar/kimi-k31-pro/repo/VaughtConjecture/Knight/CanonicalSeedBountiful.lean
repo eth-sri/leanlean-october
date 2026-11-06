@@ -126,5 +126,3 @@ theorem bountiful :
         (D.isPlan.subset_of_mem (Plan.mem_gradedPlan.mp hb').1) h))
     exact hold _ _ hc hb' hBA ⟨hCB, le_rfl⟩
 
-end
-end VaughtConjecture.Knight.CanonicalSeedBountiful

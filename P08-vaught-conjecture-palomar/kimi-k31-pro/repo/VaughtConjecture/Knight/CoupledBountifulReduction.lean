@@ -52,19 +52,6 @@ namespace VaughtConjecture.Knight
 open AmalgamationPlan Transform Value ExtOrd
 open CellScheme.restrictFace (toCell belowMap pushGraded)
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
-
-section Reduction
-
-end Reduction
-
-/-! ## The smallest scope-changing case: grade one -/
-
-section GradeOne
-
-variable {q : D₂.below (Finset.univ, 1) → ExtOrd}
-
-end GradeOne
 
 /-! ## A step witness at a limit cutoff -/
 
@@ -75,18 +62,11 @@ open Classical in
 noncomputable def stepShifter (n : ℕ) (c₀ c₁ : ExtOrd) : ExtOrd → ExtOrd :=
   fun a => if a = ⊥ then ⊥ else if a < ofOrd (Ordinal.omega0 * (n : Ordinal)) then c₀ else c₁
 
-theorem stepShifter_bot (n : ℕ) (c₀ c₁ : ExtOrd) : stepShifter n c₀ c₁ ⊥ = ⊥ := by
-  classical
-  unfold stepShifter; rw [ite_eq_left rfl]
+theorem stepShifter_bot (n : ℕ) (c₀ c₁ : ExtOrd) : stepShifter n c₀ c₁ ⊥ = ⊥ := by grind [stepShifter]
 theorem stepShifter_of_lt {n : ℕ} {c₀ c₁ a : ExtOrd} (ha : a ≠ ⊥)
-    (h : a < ofOrd (Ordinal.omega0 * (n : Ordinal))) : stepShifter n c₀ c₁ a = c₀ := by
-  classical
-  unfold stepShifter; rw [ite_eq_right ha, ite_eq_left h]
+    (h : a < ofOrd (Ordinal.omega0 * (n : Ordinal))) : stepShifter n c₀ c₁ a = c₀ := by grind [stepShifter]
 theorem stepShifter_of_ge {n : ℕ} {c₀ c₁ a : ExtOrd}
-    (h : ofOrd (Ordinal.omega0 * (n : Ordinal)) ≤ a) : stepShifter n c₀ c₁ a = c₁ := by
-  classical
-  unfold stepShifter
-  rw [ite_eq_right (fun hb => not_ofOrd_le_bot _ (hb ▸ h)), ite_eq_right (not_lt.mpr h)]
+    (h : ofOrd (Ordinal.omega0 * (n : Ordinal)) ≤ a) : stepShifter n c₀ c₁ a = c₁ := by grind [stepShifter, not_ofOrd_le_bot]
 
 theorem limitPart_omega_mul (n : ℕ) : limitPart (Ordinal.omega0 * (n : Ordinal)) =
     Ordinal.omega0 * (n : Ordinal) := by
@@ -161,6 +141,4 @@ theorem Witness.stepLimit (K n : ℕ) {c₀ c₁ : ExtOrd} (h : c₀ ≤ c₁) (
         rw [stepShifter_of_ge (not_lt.mp hal), stepShifter_of_ge (evr_ge_limit (not_lt.mp hal) k i),
           hσ, extVisibilityReplace_bot]
 
-end StepLimit
 
-end VaughtConjecture.Knight

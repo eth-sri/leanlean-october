@@ -24,4 +24,3 @@ here. -/
 def CountableTerminalFibres : Prop :=
   ∀ ρ : Ordinal.{0}, ρ < (Cardinal.aleph 1).ord → #(TerminalClass ρ) ≤ Cardinal.aleph0
 
-end VaughtConjecture.Knight

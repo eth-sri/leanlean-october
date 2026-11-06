@@ -193,5 +193,3 @@ theorem receive_of_shared_of_receiving {M : Type w} {W : KnightRealization α M}
       W.eval t = some P ∧ Fin.castSuccEmb.trans t = Fin.castSuccEmb.trans u :=
   receive_of_receiving hP hC hcons hFC u hu (rebase hP hC F hB hp hshared) rfl hp hc hr
 
-end
-end VaughtConjecture.Knight.LowOnlyCofaceAttachment

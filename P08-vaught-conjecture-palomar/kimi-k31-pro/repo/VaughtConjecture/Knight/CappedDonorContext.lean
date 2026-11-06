@@ -73,15 +73,7 @@ noncomputable def donorRequests (q : S α.1 (n + 1)) : List BlockRequest :=
 
 theorem mem_donorRequests {q : S α.1 (n + 1)} {r : BlockRequest} :
     r ∈ donorRequests q ↔ ∃ (d : Cell q.scheme.scheme) (β : Ordinal.{0}),
-      q.label d = ofOrd β ∧ r = ⟨limitPart β, finitePart β⟩ := by
-  unfold donorRequests
-  rw [List.mem_filterMap]
-  constructor
-  · rintro ⟨d, -, hd⟩
-    obtain ⟨β, hβ, hr⟩ := properRequest_eq_some hd
-    exact ⟨d, β, hβ, hr⟩
-  · rintro ⟨d, β, hβ, rfl⟩
-    exact ⟨d, List.mem_finRange d, by rw [hβ, properRequest_ofOrd]⟩
+      q.label d = ofOrd β ∧ r = ⟨limitPart β, finitePart β⟩ := by grind [donorRequests, properRequest_ofOrd, properRequest_eq_some]
 
 /-- The limit part of an ordinal is a non-successor (ported from the reviewer's private lemma in
 `FiniteBlockBridge`, with attribution). -/
@@ -95,15 +87,7 @@ theorem isNonSuccessor_limitPart (δ : Ordinal.{0}) : IsNonSuccessor (limitPart 
 
 /-- The requested blocks are non-successors below the stage. -/
 theorem donorRequests_ok (q : S α.1 (n + 1)) :
-    ∀ r ∈ donorRequests q, IsNonSuccessor r.block ∧ r.block < α.1 := by
-  intro r hr
-  obtain ⟨d, β, hβ, rfl⟩ := mem_donorRequests.mp hr
-  refine ⟨isNonSuccessor_limitPart β, ?_⟩
-  rcases q.label_bound d with h | h
-  · rw [hβ, ofOrd_lt_ofOrd] at h
-    exact (limitPart_le β).trans_lt h
-  · rw [hβ] at h
-    exact absurd h (ofOrd_ne_top β)
+    ∀ r ∈ donorRequests q, IsNonSuccessor r.block ∧ r.block < α.1 := by grind [label_bound, limitPart_le, ofOrd_ne_top, ofOrd_lt_ofOrd, mem_donorRequests, isNonSuccessor_limitPart]
 
 open Classical in
 /-- The blocks of a request list. -/
@@ -112,9 +96,7 @@ noncomputable def blocksOf (reqs : List BlockRequest) : Finset Ordinal.{0} :=
 
 open Classical in
 theorem mem_blocksOf {reqs : List BlockRequest} {μ : Ordinal.{0}} :
-    μ ∈ blocksOf reqs ↔ ∃ r ∈ reqs, r.block = μ := by
-  unfold blocksOf
-  simp only [Finset.mem_image, List.mem_toFinset]
+    μ ∈ blocksOf reqs ↔ ∃ r ∈ reqs, r.block = μ := by simp_all [blocksOf]
 
 /-- The requested blocks of a donor. -/
 noncomputable def blocks (q : S α.1 (n + 1)) : Finset Ordinal.{0} := blocksOf (donorRequests q)
@@ -150,7 +132,7 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
         (hvC : Finset.univ.image C.proj ∈ C.p₀.scheme.scheme.plan)
         (hC : C.p₀.scheme.restrictFace C.proj hvC = p.scheme),
         HEq Rf.face (commonFace Fin.castSuccEmb hvP hP C.proj hvC hC n) := by
-  classical
+
   obtain ⟨F⟩ := C.exists_fullController
   -- the consistency clause: the root type is the restriction of the context along the projection
   have hcons : typeMap C.proj C.p₀ = some p := by
@@ -248,6 +230,4 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
       exact commonFace_val_congr Fin.castSuccEmb hvP hP C.proj hvC hC k a _ rfl }, rfl, rfl, rfl,
     rfl, rfl, rfl, rfl, rfl, rfl, rfl, hvP, hP, hvC, hC, HEq.rfl⟩
 
-end CappedDonor
 
-end VaughtConjecture.Knight

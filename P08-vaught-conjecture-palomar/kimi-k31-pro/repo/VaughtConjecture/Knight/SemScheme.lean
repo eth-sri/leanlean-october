@@ -58,8 +58,6 @@ def CellScheme.below.mono {X Y : Finset ι × ℕ} (h : GradedLe X Y) (d : D.bel
     D.below Y :=
   ⟨d.1, d.2.trans h⟩
 
-@[simp] theorem CellScheme.below.mono_val {X Y : Finset ι × ℕ} (h : GradedLe X Y)
-    (d : D.below X) : (CellScheme.below.mono (D := D) h d).1 = d.1 := rfl
 
 /-- **Restriction of respect**: a labelling respecting the restricted semantics `E⟨B,j⟩` restricts
 along `D⟨C,i⟩ ⊆ D⟨B,j⟩` to one respecting `E⟨C,i⟩`.  Availability restricts because the ambient
@@ -154,16 +152,6 @@ namespace SemScheme
 
 variable {n : ℕ}
 
-/-- Extensionality: two domains are equal when their schemes and rows agree (`rows` depends
-on `scheme`, hence `HEq`); the `Prop` fields follow by proof irrelevance. -/
-@[ext]
-theorem ext {D₁ D₂ : SemScheme n} (h_scheme : D₁.scheme = D₂.scheme)
-    (h_rows : HEq D₁.rows D₂.rows) : D₁ = D₂ := by
-  obtain ⟨s₁, r₁, _, _, _, _⟩ := D₁
-  obtain ⟨s₂, r₂, _, _, _, _⟩ := D₂
-  subst h_scheme
-  obtain rfl := eq_of_heq h_rows
-  rfl
 
 /-- There are countably many domains with associated semantics (Knight, Prop. 2.6.3(4)):
 a domain is its (countable, `CellScheme.countable_fin`) scheme together with finitely many
@@ -203,13 +191,13 @@ def pushGraded (BJ' : Finset (Fin m) × ℕ) : Finset (Fin n) × ℕ := (BJ'.1.i
 
 theorem pushGraded_injective : Function.Injective (pushGraded f) := by
   rintro ⟨B, j⟩ ⟨C, k⟩ h
-  simp only [pushGraded, Prod.mk.injEq] at h
+  simp [pushGraded, Prod.mk.injEq] at h
   obtain ⟨hB, rfl⟩ := h
   rw [Finset.image_injective f.injective hB]
 
 theorem gradedLe_pushGraded_iff {X Y : Finset (Fin m) × ℕ} :
     GradedLe (pushGraded f X) (pushGraded f Y) ↔ GradedLe X Y := by
-  simp only [GradedLe, pushGraded, Finset.image_subset_image_iff f.injective]
+  simp [GradedLe, pushGraded, Finset.image_subset_image_iff f.injective]
 
 /-- The graded index of a restricted cell pushes forward to that of the underlying cell. -/
 theorem pushGraded_cell (i : Cell (D.restrictFace f hr)) :
@@ -221,7 +209,7 @@ in `P̂`. -/
 theorem mem_gradedPlan_restrictFace {BJ' : Finset (Fin m) × ℕ} :
     BJ' ∈ Plan.gradedPlan (D.restrictFace f hr).plan ↔
       pushGraded f BJ' ∈ Plan.gradedPlan D.plan := by
-  simp only [Plan.mem_gradedPlan, Plan.MemGraded, pushGraded, mem_restrictFace_plan,
+  simp [Plan.mem_gradedPlan, Plan.MemGraded, pushGraded, mem_restrictFace_plan,
     Finset.card_image_of_injective _ f.injective]
 
 /-- A restricted cell lies below `BJ'` iff its underlying cell lies below the push-forward
@@ -229,8 +217,7 @@ of `BJ'`. -/
 theorem gradedLe_cell_pushGraded_iff {BJ' : Finset (Fin m) × ℕ}
     (i : Cell (D.restrictFace f hr)) :
     GradedLe ((D.restrictFace f hr).cell i) BJ' ↔
-      GradedLe (D.cell (toCell D f hr i)) (pushGraded f BJ') := by
-  rw [← pushGraded_cell, gradedLe_pushGraded_iff]
+      GradedLe (D.cell (toCell D f hr i)) (pushGraded f BJ') := by grind [pushGraded_cell, gradedLe_pushGraded_iff]
 
 variable {BJ' : Finset (Fin m) × ℕ} {BJ : Finset (Fin n) × ℕ}
 
@@ -305,9 +292,7 @@ theorem belowEquiv_symm_mono {X Y : Finset (Fin m) × ℕ} (h : GradedLe X Y)
     (e : D.below (pushGraded f X)) :
     (belowEquiv D f hr (BJ' := Y) rfl).symm
         (CellScheme.below.mono ((gradedLe_pushGraded_iff f).mpr h) e) =
-      CellScheme.below.mono h ((belowEquiv D f hr (BJ' := X) rfl).symm e) := by
-  apply (belowEquiv D f hr (BJ' := Y) rfl).injective
-  rw [Equiv.apply_symm_apply, belowEquiv_mono, Equiv.apply_symm_apply]
+      CellScheme.below.mono h ((belowEquiv D f hr (BJ' := X) rfl).symm e) := by grind [belowEquiv_mono]
 
 end CellScheme.restrictFace
 
@@ -458,14 +443,6 @@ noncomputable def restrictFace (X : SemScheme n) (f : Fin m ↪ Fin n)
     obtain ⟨i, rfl⟩ := exists_toCell_eq X.scheme f hr hvis
     exact ⟨i, pushGraded_injective f ((pushGraded_cell X.scheme f hr i).trans hd)⟩
 
-@[simp] theorem restrictFace_scheme (X : SemScheme n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ X.scheme.plan) :
-    (X.restrictFace f hr).scheme = X.scheme.restrictFace f hr := rfl
 
-@[simp] theorem restrictFace_rows (X : SemScheme n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ X.scheme.plan) :
-    (X.restrictFace f hr).rows = X.rows.restrictFace f hr := rfl
 
-end SemScheme
 
-end VaughtConjecture.Knight

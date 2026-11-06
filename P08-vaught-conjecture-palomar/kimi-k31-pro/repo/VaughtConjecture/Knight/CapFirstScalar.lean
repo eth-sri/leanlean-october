@@ -51,4 +51,3 @@ theorem map_cap_agreement_of_clipped_prefix {σ τ : ExtOrd → ExtOrd}
   intro z hz
   rw [hprefix z hz, min_assoc, min_self]
 
-end VaughtConjecture.Knight.CapFirstScalar

@@ -101,13 +101,6 @@ def State.persistent {j : ℕ} (st : R.State j) : Field P C → ExtOrd
   | .priv d => st.shadowC d
   | .gate => st.gate
 
-/-- Numerical values are self-visible at their field's grade. -/
-theorem Admissible.numeric_selfVis {j : ℕ} {st : R.State j} (hst : R.Admissible st)
-    (f : Field P C) (h : f.grade ≤ j) : SelfVis f.grade (st.numeric f h) := by
-  cases f with
-  | req d => exact (hst.u_respects.orderly ⟨d, (present_req_iff j d).mpr h⟩).symm
-  | priv d => exact (hst.v_respects.orderly ⟨d, (present_priv_iff j d).mpr h⟩).symm
-  | gate => exact hst.gate_vis
 
 /-- Persistent values are `1`-visible. -/
 theorem Admissible.persistent_selfVis {j : ℕ} {st : R.State j} (hst : R.Admissible st)
@@ -139,9 +132,7 @@ theorem effC_mono {j' j : ℕ} (h : j' ≤ j) : GradedLe (effC J j') (effC J j) 
 
 /-- The cut depends only on the cap and reference values. -/
 theorem cut_congr {v₁ v₂ : R.Low → ExtOrd} (hcap : v₁ R.capL = v₂ R.capL)
-    (href : ∀ i, v₁ (R.lowRef i) = v₂ (R.lowRef i)) : R.cut v₁ = R.cut v₂ := by
-  unfold cut
-  simp only [hcap, href]
+    (href : ∀ i, v₁ (R.lowRef i) = v₂ (R.lowRef i)) : R.cut v₁ = R.cut v₂ := by grind [cut]
 
 /-- The selector depends only on the cap and reference values. -/
 theorem sel_congr {v₁ v₂ : R.Low → ExtOrd} (hcap : v₁ R.capL = v₂ R.capL)
@@ -154,8 +145,5 @@ theorem sel_congr {v₁ v₂ : R.Low → ExtOrd} (hcap : v₁ R.capL = v₂ R.ca
   · have ht := not_not.mp fun ht => h ⟨hb, ht⟩
     rw [R.sel_of_top ht, R.sel_of_top ht, cut_congr hcap href]
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

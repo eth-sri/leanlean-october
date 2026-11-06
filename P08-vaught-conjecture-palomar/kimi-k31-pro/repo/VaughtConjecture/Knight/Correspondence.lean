@@ -228,10 +228,4 @@ theorem natModelSpectrum_knightSentence :
 
 /-! ### All countable carriers, through `codeModel` -/
 
-section Coded
 
-variable {M N : Type} [Countable M] [Countable N]
-
-end Coded
-
-end VaughtConjecture.Knight

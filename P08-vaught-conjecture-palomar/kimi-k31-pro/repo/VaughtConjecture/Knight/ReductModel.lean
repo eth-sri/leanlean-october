@@ -73,9 +73,7 @@ theorem finitePart_natCast (k : ℕ) : finitePart (k : Ordinal.{0}) = k := by
 /-- The label `n + 1` is self-visible at the threshold `n + 1` (`γ = γ ⊔⁺_{n+1} (n+1)`, Lemma
 2.2.4: its finite part is `n + 1`). -/
 theorem extVisibilityReplace_natCast_succ_self (n : ℕ) :
-    extVisibilityReplace (ofOrd (n + 1 : ℕ)) (n + 1) (n + 1) = ofOrd (n + 1 : ℕ) := by
-  rw [extVisibilityReplace_self_iff]
-  exact Or.inr (Or.inr ⟨_, rfl, (finitePart_natCast (n + 1)).symm.le⟩)
+    extVisibilityReplace (ofOrd (n + 1 : ℕ)) (n + 1) (n + 1) = ofOrd (n + 1 : ℕ) := by grind [finitePart_natCast, extVisibilityReplace_self_iff]
 
 /-- Capping at a label `γ ≠ ⊥` preserves and reflects `⊥`. -/
 theorem min_eq_bot_iff_of_ne_bot {x γ : ExtOrd} (hγ : γ ≠ ⊥) : min x γ = ⊥ ↔ x = ⊥ := by
@@ -254,6 +252,4 @@ vertical reduction. -/
 theorem IsModel.reduct (hR : R.IsModel) (h : α ≤ β) : IsModel (R.reduct h) :=
   (hR.reduct_exceptBottomPattern h).isModel (hR.reduct_bottomPattern h)
 
-end KnightRealization
 
-end VaughtConjecture.Knight

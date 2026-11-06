@@ -195,6 +195,4 @@ theorem isProvisionalValue_iff {p : S α n} {Xi : Cell p.scheme.scheme} {v : Ext
   ⟨fun h => h.unique (isProvisionalValue_someProvisionalValue p Xi),
     fun h => h ▸ isProvisionalValue_someProvisionalValue p Xi⟩
 
-end StageType
 
-end VaughtConjecture.Knight

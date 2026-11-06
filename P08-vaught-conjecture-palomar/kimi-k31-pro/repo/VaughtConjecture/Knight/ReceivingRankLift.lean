@@ -26,7 +26,7 @@ noncomputable section
 /-- Every occupied rank has an actual field representative. -/
 theorem exists_field_rank {X : Type*} [Fintype X] (a : X → ExtOrd) {i : ℕ}
     (hi : 0 < i) (hic : i ≤ (values a).card) : ∃ f, fieldRank a f = i := by
-  classical
+
   let S := values a
   have he : S.image (rank S) = Finset.Icc 1 S.card := by
     apply Finset.eq_of_subset_of_card_le
@@ -63,7 +63,7 @@ theorem exists_table {X : Type*} [Finite X] (a b : X → ℕ) (p : X → ExtOrd)
     (horder : ∀ d e, b d ≤ b e → p d ≤ p e) :
     ∃ g, Monotone g ∧ g 0 = ⊥ ∧ (∀ i, SelfVis 1 (g i)) ∧
       (∀ i, i < k → g i = f i) ∧ γ ≤ g k ∧ ∀ d, g (b d) = p d := by
-  classical
+
   let : Fintype X := Fintype.ofFinite X
   let g := table b p f k γ
   have glow (i) (hi : i < k) : g i = f i := ite_eq_left hi
@@ -128,5 +128,3 @@ theorem exists_rank_decoder (H : ℕ) (g : ℕ → ExtOrd) (hg : Monotone g)
   intro i hi
   exact orderInterpolate_read ho hz ⟨i, by omega⟩
 
-end
-end VaughtConjecture.Knight.ReceivingRankLift

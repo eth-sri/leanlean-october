@@ -130,5 +130,3 @@ theorem active_donor_lift (hN : 2 < X.req.N)
   obtain ⟨r, hr, hrr, hrc⟩ := restore I X T hA hB hC (by omega) hp hu hM hread hbound hmax
   exact ⟨r, hr, hrr, fun e => (cap_below (hrc e) hpc.le).trans (hcap e)⟩
 
-end
-end VaughtConjecture.Knight.GrowthPaddedDonorLift

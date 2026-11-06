@@ -143,7 +143,4 @@ def finish (S : Core sem k) (hk : 0 < k) (hcard : A.card = k + 1) : Core sem (k 
 theorem finish_complete : (S.finish hk hcard).carrier.IsComplete :=
   OrdinaryScopeMute.complete_last S.carrier k (k + 1) (by omega) hcard.ge hcard rfl S.complete
 
-end Core
 
-end
-end VaughtConjecture.Knight.OrdinaryScopeOperator

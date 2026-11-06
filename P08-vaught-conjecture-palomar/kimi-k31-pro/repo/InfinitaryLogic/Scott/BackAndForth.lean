@@ -153,22 +153,18 @@ variable {n : ℕ}
 
 omit [L.IsRelational] in
 theorem BFEquiv.zero (a : Fin n → M) (b : Fin n → N) :
-    BFEquiv (L := L) 0 n a b ↔ SameAtomicType (L := L) (M := M) (N := N) a b := by
-  simp only [BFEquiv, Ordinal.limitRecOn_zero]
+    BFEquiv (L := L) 0 n a b ↔ SameAtomicType (L := L) (M := M) (N := N) a b := by simp_all [BFEquiv]
 
 omit [L.IsRelational] in
 theorem BFEquiv.succ (α : Ordinal) (a : Fin n → M) (b : Fin n → N) :
     BFEquiv (L := L) (Order.succ α) n a b ↔
       BFEquiv (L := L) α n a b ∧
       (∀ m : M, ∃ n' : N, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) ∧
-      (∀ n' : N, ∃ m : M, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) := by
-  simp only [BFEquiv, Order.succ_eq_add_one, Ordinal.limitRecOn_add_one]
+      (∀ n' : N, ∃ m : M, BFEquiv (L := L) α (n + 1) (snoc a m) (snoc b n')) := by simp_all [BFEquiv]
 
 omit [L.IsRelational] in
 theorem BFEquiv.limit (α : Ordinal) (hα : Order.IsSuccLimit α) (a : Fin n → M) (b : Fin n → N) :
-    BFEquiv (L := L) α n a b ↔ ∀ β, β < α → BFEquiv (L := L) β n a b := by
-  unfold BFEquiv
-  rw [Ordinal.limitRecOn_limit _ _ _ _ hα]
+    BFEquiv (L := L) α n a b ↔ ∀ β, β < α → BFEquiv (L := L) β n a b := by simp_all [BFEquiv]
 
 omit [L.IsRelational] in
 /-- BF-equivalence at level α + 1 implies BF-equivalence at level α. -/
@@ -183,7 +179,7 @@ theorem BFEquiv.monotone {α β : Ordinal} (hαβ : α ≤ β)
     BFEquiv (L := L) α n a b := by
   induction β using Ordinal.limitRecOn generalizing n a b with
   | zero =>
-    simp only [nonpos_iff_eq_zero] at hαβ
+    simp [nonpos_iff_eq_zero] at hαβ
     rwa [hαβ]
   | add_one γ ih =>
     rw [← Order.succ_eq_add_one] at hαβ h
@@ -280,6 +276,4 @@ Winning all finite back-and-forth games does not give an ω-round strategy. The 
 BFEquiv is defined by `Ordinal.limitRecOn`, which is universe-specific. These lemmas
 transport BFEquiv between ordinal universes via `Ordinal.lift`. -/
 
-end Language
 
-end FirstOrder

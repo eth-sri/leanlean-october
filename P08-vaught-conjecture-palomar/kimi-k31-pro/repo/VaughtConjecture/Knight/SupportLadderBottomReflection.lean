@@ -95,33 +95,16 @@ def Component (profile : Q → X → ℕ) (a : Q) (v : Point H X Q) : Prop := in
 
 theorem component_iff (hH : 0 < H) (a : Q) (v : Point H X Q) :
     Component profile a v ↔
-      Agree (profile a) (profile (parent v)) 1 ∧ ceiling profile v ≠ 0 := by
-  unfold Component index
-  rw [Ne, Nat.min_eq_zero_iff, not_or]
-  constructor
-  · rintro ⟨h1, h2⟩
-    exact ⟨(cut_pos_iff hH _ _).mp (Nat.pos_of_ne_zero h1), h2⟩
-  · rintro ⟨h1, h2⟩
-    exact ⟨Nat.pos_iff_ne_zero.mp ((cut_pos_iff hH _ _).mpr h1), h2⟩
+      Agree (profile a) (profile (parent v)) 1 ∧ ceiling profile v ≠ 0 := by grind [index, Component, cut_pos_iff]
 
 /-- Agreeing anchors have the same component. -/
 theorem component_iff_of_agree (hH : 0 < H) {a b : Q} (h : Agree (profile a) (profile b) 1)
-    (v : Point H X Q) : Component profile a v ↔ Component profile b v := by
-  rw [component_iff hH, component_iff hH]
-  exact and_congr_left fun _ =>
-    ⟨fun ha => agree_trans (agree_symm h) ha, fun hb => agree_trans h hb⟩
+    (v : Point H X Q) : Component profile a v ↔ Component profile b v := by grind [agree_symm, agree_trans, component_iff]
 
 /-- The image of an anchor under a positive scalar table is positive exactly on its component. -/
 theorem image_ne_bot_iff (a : Q) {f : ℕ → ExtOrd} (h0 : f 0 = ⊥)
     (hp : ∀ i, 0 < i → i ≤ H → f i ≠ ⊥) (v : Point H X Q) :
-    image profile a f v ≠ ⊥ ↔ Component profile a v := by
-  unfold image Component
-  constructor
-  · intro hne hz
-    rw [hz, h0] at hne
-    exact hne rfl
-  · intro hne
-    exact hp _ (Nat.pos_of_ne_zero hne) (index_le a v)
+    image profile a f v ≠ ⊥ ↔ Component profile a v := by grind [image, index_le, Component]
 
 /-! ## Every nonzero lawful section occupies one complete component -/
 
@@ -151,12 +134,7 @@ include hbound hH hp hτ hh hread hdiag
 omit [Finite X] [Finite Q] [Nonempty Q] hp hτ in
 /-- The actual spare rung — the parent's leaf, reading the source ceiling — is positive in the
 ambient. -/
-theorem spare_ne_bot : p (leaf hH (parent c)) ≠ ⊥ := by
-  have h1 := hread (leaf hH (parent c))
-  rw [row_parent hbound hH, hdiag] at h1
-  intro hz
-  rw [hz, min_bot_left] at h1
-  exact hh h1
+theorem spare_ne_bot : p (leaf hH (parent c)) ≠ ⊥ := by grind [row_parent]
 
 omit [Finite X] [Finite Q] [Nonempty Q] hbound hH hp hdiag in
 /-- Outside the row's component the ambient is bottom. -/
@@ -226,12 +204,7 @@ include hbound hH hp h0 hf hh hread hspare
 
 omit [Finite X] [Finite Q] [Nonempty Q] hbound hp h0 hf in
 /-- The spare rung: the anchor's leaf reads the table's ceiling `f H`, hence the height. -/
-theorem spare_ne_bot_image : p (leaf hH a₀) ≠ ⊥ := by
-  have h1 := hread (leaf hH a₀)
-  rw [image, index_leaf, cut_refl, hspare] at h1
-  intro hz
-  rw [hz, min_bot_left] at h1
-  exact hh h1
+theorem spare_ne_bot_image : p (leaf hH a₀) ≠ ⊥ := by grind [image, cut_refl, index_leaf]
 
 omit h0 hf in
 /-- **Same component**: the ambient's support is the anchor's component. -/
@@ -262,8 +235,5 @@ theorem bottom_reflection_image (v : Point H X Q) :
     have hpv : p v = ⊥ := not_not.mp fun hne => (himg.mpr (hsup.mp hne)) h1
     rw [hpv, min_bot_left]
 
-end Image
 
-end SupportLadderRows
 
-end VaughtConjecture.Knight

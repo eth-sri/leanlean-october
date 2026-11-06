@@ -91,5 +91,3 @@ theorem code_of_read {p b : Ordinal.{0}} (hp : limitPart p ∈ S)
   rw [code_listed hτ hα ha hi hrL S hS hle src off hoff hread hp hfp.le,
     ← hsame, ← hf, limitPart_add_finitePart]
 
-end
-end VaughtConjecture.Knight.GrowthFiniteCapEncoding

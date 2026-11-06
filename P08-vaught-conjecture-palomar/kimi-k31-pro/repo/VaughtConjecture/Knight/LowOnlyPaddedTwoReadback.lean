@@ -39,9 +39,6 @@ theorem exists_top_chart {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtO
   have hMt : M = ⊤ := top_le_iff.mp (htop ▸ hM d hd)
   exact ⟨a, σ, hσ, fun d => (hread d).trans (by rw [hMt, min_top_right])⟩
 
-variable (S : State I.left I.right) (hS : F.Admissible 2 S)
-  (hcan : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.left I.right) 2)
-  (hlt : LowSeparator.cutoffCut 2 (LowSeparator.donorField F) S.profile < S.b)
 
 end
 end VaughtConjecture.Knight.LowOnlyPaddedTwoReadback

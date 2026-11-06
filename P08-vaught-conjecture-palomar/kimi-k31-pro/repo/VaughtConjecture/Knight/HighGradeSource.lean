@@ -60,14 +60,13 @@ def selected (d : Cell D) : ExtOrd :=
   if hd : D.grade d ≤ k then p (Data.oldCell d hd) else if d = h then N else ⊥
 
 theorem selected_old (d : Cell D) (hd : D.grade d ≤ k) :
-    selected h p N d = p (Data.oldCell d hd) := by simp only [selected, hd, ↓reduceDIte]
+    selected h p N d = p (Data.oldCell d hd) := by grind [selected]
 
 include hh in
-theorem selected_high : selected h p N h = N := by
-  simp only [selected, not_le_of_gt hh, ↓reduceDIte, ↓reduceIte]
+theorem selected_high : selected h p N h = N := by grind [selected]
 
 theorem selected_other (d : Cell D) (hd : ¬D.grade d ≤ k) (he : d ≠ h) :
-    selected h p N d = ⊥ := by simp only [selected, hd, he, ↓reduceDIte, ↓reduceIte]
+    selected h p N d = ⊥ := by grind [selected]
 
 include hh in
 theorem selected_supported (d : Cell D) :
@@ -97,12 +96,12 @@ theorem selected_visible (d : Cell D) : SelfVis (D.grade d) (selected h p N d) :
 theorem source_read (d : D.below (D.cell h)) :
     (adapted base h hh hfull p hp N hN).rows.E h d =
       SourceCode.encode (D.grade h) (sourceValues p N) (selected h p N d.1) := by
-  simp only [Data.rows, adapted, not_le_of_gt hh, ↓reduceIte]
+  simp [Data.rows, adapted, not_le_of_gt hh, ↓reduceIte]
   by_cases hd : D.grade d.1 ≤ k
-  · simp only [Data.display, selected, hd, ↓reduceDIte]
+  · simp [Data.display, selected, hd, ↓reduceDIte]
   · by_cases he : d.1 = h
-    · simp only [Data.display, selected, he, not_le_of_gt hh, ↓reduceDIte, ↓reduceIte]
-    · simp only [Data.display, selected, hd, he, ↓reduceDIte, ↓reduceIte,
+    · simp [Data.display, selected, he, not_le_of_gt hh, ↓reduceDIte, ↓reduceIte]
+    · simp [Data.display, selected, hd, he, ↓reduceDIte, ↓reduceIte,
         SourceCode.encode]
 
 /-- All retained labels, including previously active high controllers, are
@@ -116,8 +115,8 @@ theorem selected_respects :
     by_cases hc : D.grade c ≤ k
     · rw [F.row_old hc]
       have ht := hp.locality (Data.oldCell c hc)
-      dsimp only [Data.oldCell, CellScheme.below.incl] at ht
-      dsimp only [F, adapted]
+      dsimp [Data.oldCell, CellScheme.below.incl] at ht
+      dsimp [F, adapted]
       convert ht using 1
       funext d
       rw [selected_old h p N c hc, selected_old h p N d.1 (d.2.2.trans hc)]
@@ -178,6 +177,4 @@ theorem exists_extension (hk : 1 ≤ k) (hc : base.IsConsistent)
   rw [selected_old h p N d.1 d.2.2]
   exact congrArg p (Subtype.ext rfl)
 
-variable {n : ℕ} {D : CellScheme (ι := Fin n) Finset.univ} {k : ℕ}
 
-end VaughtConjecture.Knight.HighGradeExtension

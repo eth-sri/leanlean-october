@@ -84,7 +84,7 @@ theorem exists_referenceContext_margin_from' (hM : R.IsModel) (reqs : List Block
     {Q : Ctx R t → Prop} (hQ : Ctx.StepClosed Q) (C₀ : Ctx R t) (hQ₀ : Q C₀) :
     ∃ C : ReferenceContext R t reqs, Nmin < C.N ∧ ⊥ < C.p₀.label C.capBase ∧
       (∀ r ∈ reqs, ofOrd (r.block + C.N) < C.p₀.label C.capBase) ∧ Q C.toCtx ∧ C.m = C.N := by
-  classical
+
   -- representatives, then Skolemize their offsets
   obtain ⟨C₁, h₁, hQ₁⟩ := exists_ctx_hasCells_pres hM hQ C₀ hQ₀ reqs hreqs
   choose cell₁ off hcell₁ using h₁
@@ -208,4 +208,3 @@ theorem exists_referenceContext_margin (hM : R.IsModel) (p : S α.1 n) (hp : R.e
     (Q := fun _ => True) (fun _ _ _ _ _ _ _ => trivial) (Ctx.root p hp) trivial
   exact ⟨C, h1, h2, h3⟩
 
-end VaughtConjecture.Knight

@@ -78,5 +78,3 @@ theorem complete_through (n : ℕ) (hn : n ≤ A.card)
     exact ⟨CanonicalRecursiveInventory.boundary sem n hn d,
       (CanonicalRecursiveInventory.boundary_cell sem n hn d).trans hd⟩
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveCoverage

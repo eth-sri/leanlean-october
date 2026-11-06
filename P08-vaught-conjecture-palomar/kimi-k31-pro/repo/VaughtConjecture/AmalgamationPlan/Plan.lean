@@ -92,78 +92,22 @@ def MemGraded (P : Finset (Finset α)) (BJ : Finset α × ℕ) : Prop :=
   BJ.1 ∈ P ∧ 0 < BJ.2 ∧ BJ.2 ≤ BJ.1.card
 
 theorem mem_gradedPlan {P : Finset (Finset α)} {BJ : Finset α × ℕ} :
-    BJ ∈ gradedPlan P ↔ MemGraded P BJ := by
-  unfold gradedPlan MemGraded
-  simp only [Finset.mem_biUnion, Finset.mem_image, Finset.mem_Ioc]
-  constructor
-  · rintro ⟨B, hBP, j, ⟨hj0, hjcard⟩, hjB⟩
-    obtain ⟨h1, h2⟩ := Prod.ext_iff.mp hjB
-    rw [← h1, ← h2]
-    exact ⟨hBP, hj0, hjcard⟩
-  · rintro ⟨hBP, hj0, hjcard⟩
-    exact ⟨BJ.1, hBP, BJ.2, ⟨hj0, hjcard⟩, rfl⟩
+    BJ ∈ gradedPlan P ↔ MemGraded P BJ := by grind [MemGraded, gradedPlan]
 
 /-! ### Basic structure of a plan -/
 
 /-- Every visible face is a subset of the domain. -/
 theorem IsPlan.subset_of_mem {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) {S : Finset α} (hS : S ∈ P) : S ⊆ A := by
-  induction hP with
-  | empty =>
-    simp only [Finset.mem_singleton] at hS
-    subst hS; exact Finset.empty_subset _
-  | singleton a =>
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hS
-    rcases hS with rfl | rfl
-    · exact Finset.empty_subset _
-    · exact Finset.Subset.refl _
-  | step ha hb hab hQ hR h_inter_mem h_restr_eq hP ihQ ihR =>
-    subst hP
-    simp only [Finset.mem_union, Finset.mem_singleton] at hS
-    rcases hS with (hS | hS) | rfl
-    · exact (ihQ hS).trans (Finset.erase_subset _ _)
-    · exact (ihR hS).trans (Finset.erase_subset _ _)
-    · exact Finset.Subset.refl _
+    (hP : IsPlan A P) {S : Finset α} (hS : S ∈ P) : S ⊆ A := by induction hP <;> grind
 
 /-- The domain is a visible face. -/
 theorem IsPlan.domain_mem {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) : A ∈ P := by
-  induction hP with
-  | empty => exact Finset.mem_singleton_self _
-  | singleton a => simp
-  | step ha hb hab hQ hR h_inter_mem h_restr_eq hP ihQ ihR =>
-    subst hP; simp
+    (hP : IsPlan A P) : A ∈ P := by induction hP <;> simp_all
 
 /-- The empty face is visible. -/
 theorem IsPlan.empty_mem {A : Finset α} {P : Finset (Finset α)}
-    (hP : IsPlan A P) : ∅ ∈ P := by
-  induction hP with
-  | empty => exact Finset.mem_singleton_self _
-  | singleton a => simp
-  | step ha hb hab hQ hR h_inter_mem h_restr_eq hP ihQ ihR =>
-    subst hP
-    simp only [Finset.mem_union, Finset.mem_singleton]
-    left; left; exact ihQ
+    (hP : IsPlan A P) : ∅ ∈ P := by induction hP <;> simp_all
 
-/-- Every singleton of the domain is a visible face: a plan never drops a one-point face.
-In the `step` case `P = Q ∪ R ∪ {A}`, the singleton `{x}` lives in `Q` when `x ≠ a` and in
-`R` when `x = a` (then `x ≠ b`). -/
-theorem IsPlan.singleton_mem {A : Finset α} {P : Finset (Finset α)} (hP : IsPlan A P)
-    {x : α} (hx : x ∈ A) : {x} ∈ P := by
-  induction hP with
-  | empty => exact absurd hx (Finset.notMem_empty x)
-  | singleton a =>
-    rw [Finset.mem_singleton] at hx
-    subst hx
-    simp
-  | @step A a b Q R P ha hb hab hQ hR h_inter_mem h_restr_eq hP ihQ ihR =>
-    subst hP
-    by_cases hxa : x = a
-    · subst hxa
-      have hxR : {x} ∈ R := ihR (Finset.mem_erase.mpr ⟨hab, hx⟩)
-      simp [hxR]
-    · have hxQ : {x} ∈ Q := ihQ (Finset.mem_erase.mpr ⟨hxa, hx⟩)
-      simp [hxQ]
 
 /-- **Pivot rigidity** (Knight-VC `PaperExactPlanTraceGlue`): for `2 ≤ |A|` the visible
 co-arity-one faces `A ∖ {z}` are exactly those at the two pivots `a ≠ b` of (any) step
@@ -576,7 +520,7 @@ theorem pullbackPlan_refl {n : ℕ} {P : Finset (Finset (Fin n))} (hP : IsPlan F
   rw [pullbackPlan_eq_some _ hr]
   congr 1
   ext C
-  simp only [Finset.mem_filter, Finset.mem_powerset, Finset.subset_univ, true_and,
+  simp [Finset.mem_filter, Finset.mem_powerset, Finset.subset_univ, true_and,
     Function.Embedding.coe_refl, Finset.image_id]
 
 /-- **Conditional composition** of pullbacks (Knight, Lemma 2.1.11 style): when the
@@ -958,6 +902,4 @@ theorem isPlan_extend_one
 
 /-! ### Plans are never full on three or more points -/
 
-end Plan
 
-end VaughtConjecture.AmalgamationPlan

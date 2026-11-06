@@ -51,7 +51,7 @@ theorem proper_lawful {J : Finset ι × ℕ} (hJ : ¬ A ⊆ J.1) {p : Cell D →
       (fun d : (predecessor sem n hA).below J => r (old sem n hA d.1)) ∘ e.symm := by
     funext d
     obtain ⟨a, rfl⟩ := e.surjective d
-    simp only [Function.comp_apply, Equiv.symm_apply_apply]
+    simp [Function.comp_apply, Equiv.symm_apply_apply]
     rfl
   rw [he]
   exact (respects_iff sem n hA hp P J (fun h => hJ h.1) _).mp hl
@@ -171,5 +171,3 @@ def successor : CanonicalRecursiveContract.State sem (n + 1) hA where
   section_agreement := fun {_} hK {_ _} hpr htp hqr htq =>
     section_agreement sem n hA hp P hK hpr htp hqr htq
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveSuccessorSections

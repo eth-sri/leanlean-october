@@ -75,12 +75,10 @@ variable {X : Type*} {s p : X → ExtOrd} {a γ : ExtOrd} {v : ExtOrd → ExtOrd
   (halign : ∀ d, γ < p d → a ≤ s d)
 
 include hlow in
-theorem paste_of_le (d : X) (hd : p d ≤ γ) : paste s p a v d = min (s d) a := by
-  rw [paste, hlow d hd, max_bot_right]
+theorem paste_of_le (d : X) (hd : p d ≤ γ) : paste s p a v d = min (s d) a := by grind [paste]
 
 include hhigh in
-theorem paste_of_gt (d : X) (hd : γ < p d) : paste s p a v d = v (p d) := by
-  exact max_eq_right ((min_le_right _ _).trans (hhigh d hd).le)
+theorem paste_of_gt (d : X) (hd : γ < p d) : paste s p a v d = v (p d) := max_eq_right ((min_le_right _ _).trans (hhigh d hd).le)
 
 include hlow hhigh halign in
 /-- Every old source cut is preserved, even when the old output witness
@@ -134,7 +132,7 @@ theorem locality_of_bounded_read {q : D.below BJ → ExtOrd}
     (hread : ∀ d, f (sem.E c.1 d) = min (q (CellScheme.below.incl c d)) (q c)) :
     TransformsTo (fun d : D.below (D.cell c.1) => D.grade d.1) (sem.E c.1)
       (fun d => min (q (CellScheme.below.incl c d)) (q c)) := by
-  classical
+
   let _ := Fintype.ofFinite (D.below (D.cell c.1))
   let sources := Finset.univ.image (sem.E c.1)
   have hbs : BlockBottom sources f := by
@@ -196,6 +194,4 @@ theorem paste_respects {s p : D.below BJ → ExtOrd} {K : ℕ} {a γ : ExtOrd}
       rw [max_eq_right (not_le.mp h).le]
       exact (hv.mono hde).trans (le_max_right _ _)
 
-end Scheme
 
-end VaughtConjecture.Knight.AlignedCutJoin

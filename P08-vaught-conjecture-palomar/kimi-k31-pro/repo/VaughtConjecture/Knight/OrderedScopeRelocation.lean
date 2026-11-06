@@ -162,7 +162,7 @@ local notation "r" => localCell sem hB S
 theorem total_shared (c d : Cell (shared hB)) :
     total sem (ScopeBoundary.toCell D B hB c) (ScopeBoundary.toCell D B hB d) =
       total S.rows (S.original c) (S.original d) := by
-  classical
+
   by_cases hd : GradedLe ((shared hB).cell d) ((shared hB).cell c)
   · exact (total_below sem (ScopeBoundary.toCell D B hB c)
       ⟨ScopeBoundary.toCell D B hB d, hd⟩).trans
@@ -274,5 +274,3 @@ theorem coded (hc : sem.IsCoded) : (rows sem hB S hsep).IsCoded := by
     exact hc c e
   · exact (localFace sem hB S hsep).coded_at S.coded c d
 
-end
-end VaughtConjecture.Knight.OrderedScopeRelocation

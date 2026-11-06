@@ -39,10 +39,7 @@ theorem min_truncExt_of_lt {γ : ExtOrd} (hγ : γ < ofOrd α.1) (x : ExtOrd) :
   min_truncExt_of_le hγ.le x
 
 /-- An ordinal is at most its sum with a natural number. -/
-theorem le_add_nat (ν : Ordinal.{0}) (m : ℕ) : ν ≤ ν + m := by
-  first
-    | exact Ordinal.le_add_right ν m
-    | exact le_self_add
+theorem le_add_nat (ν : Ordinal.{0}) (m : ℕ) : ν ≤ ν + m := by grind [le_self_add]
 
 /-- Adding a finite offset stays below a nonzero limit stage. -/
 theorem add_nat_lt_limitStage {ν : Ordinal.{0}} (hν : ν < α.1) (m : ℕ) : ν + m < α.1 := by
@@ -75,7 +72,7 @@ theorem exists_respects_extends_capped_emb {k m : ℕ} (hk : 0 < k) (D : SemSche
       (∀ d, min (l d) γ = min (Q d) γ) ∧
       ∀ i, l (toCell D.scheme g hv i) = q'.label (SemScheme.castCell hs i) := by
   obtain ⟨Ps, pl, pb, pr⟩ := q'
-  dsimp only at hs hcap ⊢
+  dsimp at hs hcap ⊢
   subst hs
   set CI : Finset (Fin m) × ℕ := (Finset.univ.image g, k) with hCIdef
   set BJ : Finset (Fin m) × ℕ := (Finset.univ, m) with hBJdef
@@ -152,8 +149,7 @@ theorem exists_stage_extends_capped_emb {k m : ℕ} (D : SemScheme m)
     rw [hlp i]
     exact truncExt_id_of_bound (p.label_bound _)
   obtain ⟨ps, pl, pb, pr⟩ := p
-  dsimp only at hs he ⊢
+  dsimp at hs he ⊢
   cases hs
   exact StageType.ext rfl (heq_of_eq (funext he))
 
-end VaughtConjecture.Knight.FiniteCoverReceiving

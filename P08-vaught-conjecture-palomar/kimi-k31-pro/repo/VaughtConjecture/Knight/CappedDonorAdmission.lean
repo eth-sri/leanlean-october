@@ -48,7 +48,7 @@ open Transform Value ExtOrd AmalgamationPlan
 noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N J K : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-  {R : Ref I nP N J P C} (L : R.LowRef K)
+  {R : Ref I nP N J P C}
 
 /-! ## Synchronization identifies the persistent and source vectors -/
 
@@ -98,5 +98,3 @@ theorem zeroState_synchronized (j : ℕ) : Synchronized (zeroState R j) := by
   rw [zeroState_sourceProfile, extVisibilityReplace_bot]
   cases f <;> rfl
 
-end
-end VaughtConjecture.Knight.CappedDonor.Ref

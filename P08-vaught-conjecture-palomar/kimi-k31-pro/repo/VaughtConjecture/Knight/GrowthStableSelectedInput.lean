@@ -108,7 +108,7 @@ theorem exists_cleaned_source_chart (c : Cell C.scheme.scheme) (hc : C.label c =
   have heq (d) (hd : C.label d.1 ≠ ⊥) : e d = C.scheme.rows.E c d := ite_eq_right hd
   have heb (d) : e d = ⊥ ↔ C.label d.1 = ⊥ := by
     by_cases hd : C.label d.1 = ⊥
-    · simp only [e, hd, ite_true]
+    · simp [e, hd]
     · rw [heq d hd]
       exact ⟨fun h => (hd ((private_bottom hM hC d.1).mp
         ((hbottom d).mp (by rw [h, hbot])))).elim, fun h => (hd h).elim⟩
@@ -126,16 +126,4 @@ theorem exists_cleaned_source_chart (c : Cell C.scheme.scheme) (hc : C.label c =
     · rw [(heb d).mpr hd, hbot, (private_bottom hM hC d.1).mpr hd]
     · rw [heq d hd, hread d, min_assoc, min_self]
 
-section Attachment
-variable
-  (hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan)
-  (hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme)
-  (hvC : Finset.univ.image f ∈ C.scheme.scheme.plan)
-  (hF : C.scheme.restrictFace f hvC = p.scheme)
-  (X : RelativeData C.scheme.scheme C.scheme.rows q.scheme.scheme q.scheme.rows)
-  (T : Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP f hvC hF X)
 
-end Attachment
-
-end
-end VaughtConjecture.Knight.GrowthStableSelectedInput

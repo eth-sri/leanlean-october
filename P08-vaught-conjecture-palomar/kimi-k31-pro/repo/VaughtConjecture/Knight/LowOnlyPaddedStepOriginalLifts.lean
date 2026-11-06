@@ -64,7 +64,7 @@ theorem private_inactive (hface : k ≤ n)
     simpa only [Function.comp_def, Equiv.symm_apply_apply] using hp
   have hcard : C.card = n := by
     rw [← I.imageRight, Finset.card_image_of_injective _ I.placeRight.injective]
-    simp only [Finset.card_univ, Fintype.card_fin]
+    simp [Finset.card_univ, Fintype.card_fin]
   have hCmem : (C, k) ∈ Plan.gradedPlan (carrier P hnext).plan := by
     change (C, k) ∈ Plan.gradedPlan P.carrier.plan
     rw [hplan]
@@ -101,7 +101,7 @@ theorem private_lift (hface : k ≤ n)
       ∀ d, min (r d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := LowOnlyPaddedStepSupply.private_bottom_supply P hk hnext hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by simp [hz]⟩
   by_cases ha : ∃ d, I.right.scheme.grade d.1 = k + 1 ∧ γ < p d
   · exact LowOnlyPaddedStepPrivateLift.active_private_lift P hk hnext hplan hprev hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
@@ -133,7 +133,7 @@ theorem donor_inactive (hface : k ≤ n)
     simpa only [Function.comp_def, Equiv.symm_apply_apply] using hp
   have hcard : B.card = n := by
     rw [← I.imageLeft, Finset.card_image_of_injective _ I.placeLeft.injective]
-    simp only [Finset.card_univ, Fintype.card_fin]
+    simp [Finset.card_univ, Fintype.card_fin]
   have hCmem : (B, k) ∈ Plan.gradedPlan (carrier P hnext).plan := by
     change (B, k) ∈ Plan.gradedPlan P.carrier.plan
     rw [hplan]
@@ -170,12 +170,10 @@ theorem donor_lift (hface : k ≤ n)
       ∀ d, min (r d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := LowOnlyPaddedStepSupply.donor_bottom_supply P hk hnext hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by simp [hz]⟩
   by_cases ha : ∃ d, I.left.scheme.grade d.1 = k + 1 ∧ γ < p d
   · exact LowOnlyPaddedStepDonorLift.active_donor_lift P hk hnext hplan hprev hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
   · exact donor_inactive P hk hnext hplan hprev hface hp hq hγ
       (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepOriginalLifts

@@ -22,12 +22,9 @@ set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.ProfileFaceGluing
 
-open Transform Value ExtOrd NormalizedProfileFamily
-
 variable {C X Y Z : Type*}
 
-variable (f : C ↪ X) (g : C ↪ Y) (L : OrderLaw X) (R : OrderLaw Y)
-variable {K : (C → ExtOrd) → Prop}
+variable (f : C ↪ X) (g : C ↪ Y)
 
 open ProfileFaceUnion
 
@@ -36,4 +33,3 @@ noncomputable instance [Fintype X] [Fintype Y] : Fintype (Carrier (X := X) g) :=
   unfold Carrier
   infer_instance
 
-end VaughtConjecture.Knight.ProfileFaceGluing

@@ -76,16 +76,4 @@ theorem extend_bounded (S : Finset Ordinal.{0}) {b : ℕ} {τ : ExtOrd → ExtOr
   · exact boundedMap_of_witness (PaddedSourceDecoder.witness_release
       (isStepShifter_canonicalDecoder (S := S) (K := 1)).normalizedWitness b)
 
-open CappedDonor CappedDonor.Ref ReceivingLadderCarrier ReceivingCatalogueSources
-variable {I : Type*} [Fintype I] {nP K : ℕ} {P : SemScheme (nP + 1)}
-  {C : SemScheme 2} {R : Ref I nP 2 2 P C} (L : R.LowRef K)
 
-local instance : Fintype (C.scheme.below (effC 2 1)) := Fintype.ofFinite _
-local notation "ℓ" => rungs (P := P) (C := C)
-
-variable (hC : C.scheme.plan = privatePlan) (request : Cell P.scheme)
-local notation "D" => carrier L hC
-local notation "E" => semantics L hC request
-
-end
-end VaughtConjecture.Knight.ReceivingCutDecoder

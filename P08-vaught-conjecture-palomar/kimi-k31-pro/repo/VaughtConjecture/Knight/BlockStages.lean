@@ -52,6 +52,4 @@ theorem blockStage_zero_le (ξ : Ordinal.{0}) : blockStage 0 ≤ blockStage ξ :
 theorem blockStage_le_succ (ξ : Ordinal.{0}) : blockStage ξ ≤ blockStage (ξ + 1) :=
   blockStage_mono (le_self_add : ξ ≤ ξ + 1)
 
-end KnightRealization
 
-end VaughtConjecture.Knight

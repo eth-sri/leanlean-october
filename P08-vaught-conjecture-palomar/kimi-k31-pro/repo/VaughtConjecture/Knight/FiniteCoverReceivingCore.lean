@@ -113,7 +113,7 @@ theorem receive_cover_at_cap_of_receiving (hcons : R.IsExactParentConsistent)
     obtain ⟨⟨Ds, labels, bounds, lawful⟩, hDs, hQ₁g, hQ₁γ⟩ :=
       exists_stage_extends_capped_emb Q.scheme g hvg q' h.symm Q.respects hγ hγα
         (fun i => (hagree (SemScheme.castCell h.symm i)).symm)
-    dsimp only at hDs
+    dsimp at hDs
     subst Ds
     let Q₁ : S α.1 m := ⟨Q.scheme, labels, bounds, lawful⟩
     -- the induction hypothesis over the received root
@@ -148,4 +148,3 @@ theorem finiteCoverReceiving_of_receiving (hcons : R.IsExactParentConsistent)
   exact ⟨u, Q', hfu, hu, h, fun d => GradeTailRestoration.cap_below (hagree d)
     (ofOrd_le_ofOrd.mpr (le_add_nat ν m))⟩
 
-end VaughtConjecture.Knight.FiniteCoverReceiving

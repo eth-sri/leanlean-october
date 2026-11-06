@@ -87,7 +87,7 @@ variable (F : Family P C K)
 
 theorem maximum_map {j : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop j) σ)
     (S : State P C) : F.maximum (S.map σ) = σ (F.maximum S) := by
-  classical
+
   unfold maximum nonTopMax
   rw [Finset.apply_sup_eq_sup_comp σ (fun _ _ => hσ.mono.map_max) hσ.bot]
   rfl
@@ -125,6 +125,3 @@ theorem normalize_inventory (j : ℕ) {S : State P C} (hp : ∀ d, S.profile d �
   rw [he]
   exact CanonicalPairedProfiles.normalize_mem_inventory _ _ hp
 
-end Family
-end
-end VaughtConjecture.Knight.LowOnly

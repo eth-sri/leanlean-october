@@ -271,6 +271,4 @@ theorem RespectsSemantics.restrictFace {sem : Semantics D} {p : Cell D → ExtOr
     obtain ⟨Xi, rfl⟩ := CellScheme.restrictFace.exists_toCell_eq D f hr hvis
     exact ⟨Xi, CellScheme.pullCell_congr D f hcell, hle⟩
 
-end RestrictFace
 
-end VaughtConjecture.Knight

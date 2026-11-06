@@ -65,7 +65,7 @@ theorem private_lift (hprev : GrowthPaddedStepPrivateLift.PrivateLowerLift P)
       ∀ d, min (r d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := GrowthPaddedStepSupply.private_bottom_supply P hk hnext hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by simp [hz]⟩
   by_cases ha : ∃ d, I.right.scheme.grade d.1 = k + 1 ∧ γ < p d
   · exact GrowthPaddedStepPrivateLift.active_private_lift P hk hnext hprev hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
@@ -108,9 +108,7 @@ theorem donor_lift (hsmall : n + 1 < X.req.N)
     hg ▸ Growth.donor_grade_lt I.left hsmall d.1
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := GrowthPaddedStepSupply.donor_bottom_supply P hk hnext hN hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by simp [hz]⟩
   exact GrowthPaddedStepDonorLift.active_donor_lift P hk hnext hN hprev hp hq hγ
     (bot_lt_iff_ne_bot.mpr hz) ⟨d, hg, not_le.mp hv⟩ hag
 
-end
-end VaughtConjecture.Knight.GrowthPaddedStepOriginalLifts

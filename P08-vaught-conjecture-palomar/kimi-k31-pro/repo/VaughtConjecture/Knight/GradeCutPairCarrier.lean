@@ -62,8 +62,7 @@ def embed (d : Cell (small D Q R j k hj hjA hk hkA)) :=
 theorem embed_cell (x : (Cell (GradeCutBoundary.scheme D k) ⊕ Q) ⊕ R) :
     embed D Q R j k hj hjA hk hkA
       (cell (GradeCutBoundary.scheme D k) Q R j k hj hjA hk hkA x) =
-    cell D Q R j k hj hjA hk hkA (Sum.map (Sum.map (GradeCutBoundary.toCell D k) id) id x) := by
-  simp only [embed, cell, Equiv.symm_apply_apply]
+    cell D Q R j k hj hjA hk hkA (Sum.map (Sum.map (GradeCutBoundary.toCell D k) id) id x) := by grind [cell, embed]
 
 theorem embed_index (d : Cell (small D Q R j k hj hjA hk hkA)) :
     (enlarged D Q R j k hj hjA hk hkA).cell (embed D Q R j k hj hjA hk hkA d) =
@@ -126,5 +125,3 @@ theorem small_grade (hjk : j ≤ k) (d : Cell (small D Q R j k hj hjA hk hkA)) :
   · exact hjk
   · exact le_rfl
 
-end
-end VaughtConjecture.Knight.GradeCutPairCarrier

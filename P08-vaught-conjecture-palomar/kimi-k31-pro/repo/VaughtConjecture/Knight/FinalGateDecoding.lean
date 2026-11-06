@@ -118,12 +118,10 @@ theorem decoded_respects (a : Q) {ν : ExtOrd → ExtOrd} (hν : Witness (gTop N
         simpa only [Function.comp_def, SeparatedSourceLayerCarrier.ownerEquiv_val,
           I.source_old, CellScheme.below.mono] using hlower.mono hxc
       rcases c with ⟨c, hcl⟩
-      dsimp only at hx
+      dsimp at hx
       subst c
       exact ho.locality ⟨I.old x, GradedLe.refl _⟩
   · intro c t hs hg
     obtain ⟨w, hw, hle⟩ := hr.availability c t hs hg
     exact ⟨w, hw, hν.mono hle⟩
 
-end
-end VaughtConjecture.Knight.FinalGateLayer.Input

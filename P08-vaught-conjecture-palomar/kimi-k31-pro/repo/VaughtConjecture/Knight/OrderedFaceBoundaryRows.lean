@@ -134,4 +134,3 @@ theorem rows_right (c : Cell E) (d : E.below (E.cell c)) :
       semE.E c d :=
   (table_right D E w R hR hD hE semD semE hc c d.1).trans (total_below semE c d)
 
-end VaughtConjecture.Knight.OrderedFaceBoundaryRows

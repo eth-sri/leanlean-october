@@ -54,4 +54,3 @@ theorem realizes_modelClass (φ : knightLang.Sentenceω) (c : ModelsOf knightSen
     (isKnightModel_of_mem c).structureOfToRealizationEquiv φ).trans
     (FirstOrder.Language.SmallVocabulary.mem_modelsOf_iff_realize knightLang c.1 φ).symm
 
-end VaughtConjecture.Knight.StoppingRankFiltration

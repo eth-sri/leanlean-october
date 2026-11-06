@@ -36,9 +36,7 @@ theorem state_admissible {j : ℕ} (a : F.Anchor j) : F.Admissible j (state F a)
 theorem state_profile {j : ℕ} (a : F.Anchor j) : (state F a).profile = F.fields j a :=
   State.profile_ofProfile a.val
 theorem state_proper {j : ℕ} (a : F.Anchor j) (d : Field P C) :
-    (state F a).profile d ≠ ⊤ := by
-  rw [state_profile]
-  exact LowOnlyRecursiveCharts.anchor_proper F a d
+    (state F a).profile d ≠ ⊤ := by simp_all [state_profile, LowOnlyRecursiveCharts.anchor_proper]
 end Catalogue
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
@@ -195,5 +193,3 @@ def initial : Layer I F hroot hA hB hC 2 where
     · exact ⟨_, LowOnlyPaddedSuccessor.leaf_index I F hroot hA hB hC _,
         LowOnlyPaddedRendering.render_ceiling I F hroot hA hB hC hj S hS hp hH hb⟩
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedContract

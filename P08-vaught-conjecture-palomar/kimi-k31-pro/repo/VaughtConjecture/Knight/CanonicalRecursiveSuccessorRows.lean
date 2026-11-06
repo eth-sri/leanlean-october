@@ -107,7 +107,7 @@ theorem lower_old (q : Profile sem n) (d : Cell (predecessor sem n hA)) :
   change lower sem n hA P q
     (SourceLayerCarrier.toCell (predecessor sem n hA) (Profile sem n)
       (n + 4) (Nat.succ_pos (n + 3)) hA (.inl d)) = _
-  simp only [lower, SourceLayerCarrier.toOcc_toCell]
+  simp [lower, SourceLayerCarrier.toOcc_toCell]
 
 def data : ScopedSourcePrefixLayer.Data (carrier sem n hA) (n + 4) (Cell D) where
   base := SeparatedSourceLayerCarrier.base (predecessor sem n hA) (Profile sem n) (n + 4)
@@ -224,5 +224,3 @@ theorem consistent (hs : sem.IsConsistent) : (rows sem n hA hp P).IsConsistent :
   rw [he]
   exact P.consistent hs x
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveSuccessorRows

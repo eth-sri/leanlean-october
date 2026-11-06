@@ -226,12 +226,7 @@ theorem pullCell_congr {a b : Cell D} (h : D.cell a = D.cell b) :
 
 /-- The pulled-back scope maps back onto the original scope when the latter is visible. -/
 theorem image_pullCell_fst {d : Cell D} (hd : D.scope d ⊆ Finset.univ.image f) :
-    (D.pullCell f d).1.image f = D.scope d := by
-  ext x
-  simp only [pullCell, Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and]
-  refine ⟨fun ⟨i, hi, hix⟩ => hix ▸ hi, fun hx => ?_⟩
-  obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp (hd hx)
-  exact ⟨i, hx, rfl⟩
+    (D.pullCell f d).1.image f = D.scope d := by grind [pullCell]
 
 theorem card_pullCell_fst {d : Cell D} (hd : D.scope d ⊆ Finset.univ.image f) :
     (D.pullCell f d).1.card = (D.scope d).card := by
@@ -338,9 +333,6 @@ noncomputable def belowMap (Sig : Cell (D.restrictFace f hr)) :
       D.below (D.cell (toCell D f hr Sig)) :=
   fun d => ⟨toCell D f hr d.1, gradedLe_of_restrictFace D f hr d.2⟩
 
-@[simp] theorem belowMap_val (Sig : Cell (D.restrictFace f hr))
-    (d : (D.restrictFace f hr).below ((D.restrictFace f hr).cell Sig)) :
-    (belowMap D f hr Sig d).1 = toCell D f hr d.1 := rfl
 
 /-! The canonical enumeration is determined by its range: any strictly monotone `e : Fin k → Cell D`
 whose range is exactly the visible cells is `toCell` up to `Fin.cast`.  This is the one fact
@@ -352,11 +344,7 @@ variable {k : ℕ} {e : Fin k → Cell D}
 
 theorem visibleCells_eq_image_of_emb (hvis : ∀ c, D.scope (e c) ⊆ Finset.univ.image f)
     (hsurj : ∀ d, D.scope d ⊆ Finset.univ.image f → ∃ c, e c = d) :
-    D.visibleCells f = Finset.univ.image e := by
-  ext d
-  rw [mem_visibleCells, Finset.mem_image]
-  exact ⟨fun hd => (hsurj d hd).imp fun c hc => ⟨Finset.mem_univ _, hc⟩,
-    fun ⟨c, _, hc⟩ => hc ▸ hvis c⟩
+    D.visibleCells f = Finset.univ.image e := by grind [mem_visibleCells]
 
 theorem card_restrictFace_of_emb (he : StrictMono e)
     (hvis : ∀ c, D.scope (e c) ⊆ Finset.univ.image f)
@@ -373,10 +361,6 @@ theorem toCell_cast_eq_of_emb (he : StrictMono e)
   rw [Finset.orderEmbOfFin_unique hk' (fun c => (D.mem_visibleCells f).mpr (hvis c)) he, toCell,
     Finset.orderEmbOfFin_eq_orderEmbOfFin_iff, Fin.val_cast]
 
-end Emb
 
-end restrictFace
 
-end CellScheme
 
-end VaughtConjecture.Knight

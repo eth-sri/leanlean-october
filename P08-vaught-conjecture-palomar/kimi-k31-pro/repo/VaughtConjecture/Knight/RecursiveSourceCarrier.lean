@@ -117,5 +117,3 @@ theorem separated (hp : ∀ d : Cell D, D.scope d ≠ A)
     ((scheme D Q n hn).isPlan.subset_of_mem ((scheme D Q n hn).scope_mem_plan d)) h.1
   exact (Nat.not_succ_le_self n) (h.2.trans (full_grade D Q hp n hn d hs))
 
-end
-end VaughtConjecture.Knight.RecursiveSourceCarrier

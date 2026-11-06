@@ -82,6 +82,4 @@ def RestrictedCommonChartStepSupply
   ∀ (nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)), Good nd →
     ∀ z : M₁ ⊕ M₂, Nonempty (GoodCommonChartExtension Good nd z)
 
-end KnightRealization
 
-end VaughtConjecture.Knight

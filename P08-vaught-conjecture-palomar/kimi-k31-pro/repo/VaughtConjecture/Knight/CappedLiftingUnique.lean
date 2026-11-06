@@ -99,4 +99,3 @@ theorem AllCapsExtension.cappedLift (hall : AllCapsExtension sem h) :
   obtain ⟨r, hr, hres, hcaps⟩ := hall p hp
   exact ⟨r, hr, hcaps γ q hγ hq hag, hres⟩
 
-end VaughtConjecture.Knight.ExtensionInjectivity

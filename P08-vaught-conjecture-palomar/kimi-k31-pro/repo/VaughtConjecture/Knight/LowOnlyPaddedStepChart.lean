@@ -68,5 +68,3 @@ theorem exists_top_chart {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
   have hMt : M = ⊤ := top_le_iff.mp (htop ▸ hM d hd)
   exact ⟨a, σ, hσ, fun d => (hread d).trans (by rw [hMt, min_top_right])⟩
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepChart

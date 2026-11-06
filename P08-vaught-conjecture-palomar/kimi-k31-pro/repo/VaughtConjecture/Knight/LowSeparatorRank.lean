@@ -64,10 +64,7 @@ theorem rankPartner_apply_of_ne [DecidableEq X] (s : X → ExtOrd) {d : X} (hdb 
 def rankCut (s : X → ExtOrd) : ℕ := LadderScalarRendering.rank (values s) (donorMax N s)
 
 theorem donorMax_mem_values {s : X → ExtOrd} (hne : donorMax N s ≠ ⊥) :
-    donorMax N s ∈ values s := by
-  rcases donorMax_cases N s with h | ⟨d, -, hd⟩
-  · exact absurd h hne
-  · exact mem_values.mpr ⟨hne, d, hd⟩
+    donorMax N s ∈ values s := by grind [mem_values, donorMax_cases]
 
 theorem rankCut_le (s : X → ExtOrd) : rankCut N s ≤ Fintype.card X :=
   (rank_le_card _ _).trans (values_card_le s)
@@ -110,10 +107,7 @@ theorem values_rankPartner_below :
 
 include hlt in
 /-- **The partner's cutoff rank is `k`.** -/
-theorem rankPartner_cutoff : fieldRank (rankPartner N b s) b = rankCut N s := by
-  unfold fieldRank rankCut
-  rw [rankPartner_apply_self N b]
-  exact rank_congr_below (values_rankPartner_below N b hlt) hlt
+theorem rankPartner_cutoff : fieldRank (rankPartner N b s) b = rankCut N s := by grind [rankCut, fieldRank, rank_congr_below, rankPartner_apply_self, values_rankPartner_below]
 
 include hlt in
 /-- **Rank-prefix agreement through `k`**, on every complete field. -/
@@ -214,14 +208,6 @@ end Scalar
 
 /-! ## The two-spare-tip separator on the actual ladder -/
 
-section Ladder
-
-variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N] (b : X)
-  {Q : Type*} [Finite Q] {H : ℕ} (profile : Q → X → ℕ)
-  (hbound : ∀ a d, profile a d ≤ H) (hH : 0 < H)
-  (src : Q → X → ExtOrd) (hsrc : ∀ a, profile a = fieldRank (src a))
-
-end Ladder
 
 /-! ## The selected rendered readings -/
 
@@ -249,7 +235,7 @@ include hH in
 /-- The rendering of `s` reads its own tip at the ceiling. -/
 theorem render_tip_self (s : X → ExtOrd) (hHX : Fintype.card X < H) (qs : Q) (C : ExtOrd) :
     render profile qs s C (leaf hH qs) = C := by
-  classical
+
   unfold render
   rw [image, index_leaf, cut_refl, LadderScalarRendering.level,
     ite_eq_left ((values_card_le s).trans_lt hHX)]
@@ -277,8 +263,5 @@ theorem low_min_le {A : State P C} (hA : F.Admissible 1 A) (hm : F.maximum A < A
   rw [evr_eq_self_of_selfVis hvis] at hlow
   exact (le_max_right _ _).trans hlow
 
-end Family
 
-end
 
-end VaughtConjecture.Knight.LowSeparatorRank

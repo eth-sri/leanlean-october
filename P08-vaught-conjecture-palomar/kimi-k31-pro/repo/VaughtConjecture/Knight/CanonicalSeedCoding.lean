@@ -102,11 +102,5 @@ theorem pairSplice (D : CellScheme A) (Q R : Type*) [Fintype Q] [Fintype R]
 
 theorem pair (sem : Semantics D) (hA : 2 ≤ A.card)
     (hp : ∀ d : Cell D, D.scope d ≠ A) (hc : sem.IsCoded) :
-    (CanonicalPairLocalSections.semantics sem hA hp).IsCoded := by
-  apply pairSplice D _ _ 1 2 (by decide) _ (by decide) hA hp (by decide) sem _ hc
-  exact mixed (GradeCutBoundary.rows D 2 sem) 1 (by decide) _
-    (GradeCutBoundary.proper D 2 hp) 2 (GradeCutBoundary.grade_bound D 2)
-    (by decide) hA (by decide) (gradeCut sem 2 hc)
+    (CanonicalPairLocalSections.semantics sem hA hp).IsCoded := by grind [mixed, gradeCut, pairSplice]
 
-end
-end VaughtConjecture.Knight.CanonicalSeedCoding

@@ -96,5 +96,3 @@ def shadowSup (p : (D).below (U, j) → ExtOrd) (f : Fld) : ExtOrd :=
   Finset.univ.sup fun a : Catalogue X 1 =>
     p (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 (shadow a f))
 
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

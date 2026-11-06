@@ -189,7 +189,7 @@ theorem render_lawful (hG : ∀ z ∈ G, SelfVis 2 z) (hH : SelfVis 2 H)
   · have hxc : GradedLe ((input I X attach hA hB hC).lower.cell x) (A, j) := by
       simpa only [hx, SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index] using c.2
     rcases c with ⟨c, hc⟩
-    dsimp only at hx
+    dsimp at hx
     subst c
     exact render_below_old I X attach hA hB hC hj S hS hp hG hH hb x hxc
   · have he : (carrier I X attach hA hB hC).cell c.1 = (A, 2) :=
@@ -262,5 +262,3 @@ theorem render_base_ceiling (hG : ∀ z ∈ G, SelfVis 2 z) (hH : SelfVis 2 H)
       unfold RelativeLadderLayer.rungs
       omega)
 
-end
-end VaughtConjecture.Knight.GrowthPaddedRendering

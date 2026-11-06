@@ -48,7 +48,6 @@ theorem persistent_subsingleton_of_separation
     (homogeneous : ∀ s : S, ∃ i : I,
       ∀ p : Q, D i p → ∀ q : Q, D i q → (holds s p ↔ holds s q))
     (p q : Q) (hp : ∀ i : I, D i p) (hq : ∀ i : I, D i q) : p = q := by
-  classical
   by_contra hne
   obtain ⟨s, hs⟩ := separates p q hne
   obtain ⟨i, hi⟩ := homogeneous s
@@ -123,7 +122,7 @@ theorem mk_eq_aleph_one_of_countable_core {X : Type 1} (D : Ordinal.{0} → Set 
               _ = aleph 1 := by simp only [Cardinal.aleph_mul_aleph, max_self]
       _ = aleph 1 := by simp only [Cardinal.aleph_add_aleph, max_self]
   · -- one point from each nonempty loss; losses are pairwise disjoint by antitonicity
-    classical
+
     let T : Set Ordinal.{0} := {ξ | ξ < (aleph 1).ord ∧ (D ξ \ D (ξ + 1)).Nonempty}
     have hT : ∀ ξ ∈ T, ξ < (aleph 1).ord := fun _ h => h.1
     have hcof : ∀ η, η < (aleph 1).ord → ∃ ξ ∈ T, η ≤ ξ := fun η hη => by
@@ -141,4 +140,3 @@ theorem mk_eq_aleph_one_of_countable_core {X : Type 1} (D : Ordinal.{0} → Set 
         exact (hpick ζ).2 (hξζ.symm ▸ hanti h1 (hpick ξ).1)
     exact (aleph_one_le_mk_of_cofinal T hT hcof).trans (Cardinal.mk_le_of_injective hinj)
 
-end VaughtConjecture.DomainSeparation

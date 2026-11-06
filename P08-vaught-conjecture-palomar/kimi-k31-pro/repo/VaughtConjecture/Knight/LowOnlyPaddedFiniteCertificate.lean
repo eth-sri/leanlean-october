@@ -29,26 +29,14 @@ noncomputable section
 ordered after receiving below a larger cutoff. -/
 theorem separator_of_cap {D : Type*} {w q : D → ExtOrd} {lo hi : D} {a δ : ExtOrd}
     (hwlo : w lo = a) (hwhi : w hi = ⊤) (hδ : a < δ)
-    (hcap : ∀ d, min (q d) δ = min (w d) δ) : q lo < q hi := by
-  have hlo : q lo = a := (AmbientGradeCharts.eq_of_cap_below (hcap lo)
-    (hwlo.trans_lt hδ)).trans hwlo
-  have hhi : δ ≤ q hi := by
-    have he := hcap hi
-    rw [hwhi, min_top_left] at he
-    exact min_eq_right_iff.mp he
-  exact hlo.trans_lt (hδ.trans_le hhi)
+    (hcap : ∀ d, min (q d) δ = min (w d) δ) : q lo < q hi := by grind
 
 /-- Proper donor values are recovered by ordinary cap cancellation. -/
 theorem exact_of_cap_and_top {D X : Type*} {w q : D → ExtOrd} {p : X → ExtOrd}
     (f : X → D) {δ : ExtOrd} (hw : ∀ d, w (f d) = p d)
     (hcap : ∀ d, min (q d) δ = min (w d) δ)
     (hproper : ∀ d, p d ≠ ⊤ → p d < δ)
-    (htop : ∀ d, p d = ⊤ → q (f d) = ⊤) : ∀ d, q (f d) = p d := by
-  intro d
-  by_cases hd : p d = ⊤
-  · exact (htop d hd).trans hd.symm
-  · exact (AmbientGradeCharts.eq_of_cap_below (hcap (f d))
-      ((hw d).trans_lt (hproper d hd))).trans (hw d)
+    (htop : ∀ d, p d = ⊤ → q (f d) = ⊤) : ∀ d, q (f d) = p d := by grind
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n : ℕ}
@@ -198,5 +186,3 @@ theorem certificate {K : ℕ} (F : LowOnly.Family I.left I.right K)
     subst u
     simpa only [he] using hres
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedFiniteCertificate

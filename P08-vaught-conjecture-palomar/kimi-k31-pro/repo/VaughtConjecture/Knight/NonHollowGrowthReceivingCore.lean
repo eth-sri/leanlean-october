@@ -63,5 +63,3 @@ theorem receives_positive (hM : W.IsModel) (hh : ¬ W.IsHollow)
   rw [htup] at hev hc
   exact ⟨y, hy, s, hev, he.symm, hread _ hc⟩
 
-end
-end VaughtConjecture.Knight.NonHollowGrowthReceiving

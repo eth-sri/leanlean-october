@@ -70,4 +70,3 @@ theorem IsPlan.inter_mem {A : Finset α} {P : Finset (Finset α)}
         exact Or.inl (Or.inr hY)
       · simp
 
-end VaughtConjecture.AmalgamationPlan.Plan

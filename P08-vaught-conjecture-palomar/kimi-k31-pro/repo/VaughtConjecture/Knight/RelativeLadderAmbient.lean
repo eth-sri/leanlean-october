@@ -52,7 +52,7 @@ theorem exists_maximal_leaf (seed : Q)
     have hh := chart.read_grade d (hg d)
     have he : (rows D sem hA field fields hp).E chart.owner.1
         (chart.occurrence d (hg d).le) = ladderRow D hA field fields v d.1 := by
-      simp only [rows, hv, view, added, SourceLayerCarrier.toOcc_toCell,
+      simp [rows, hv, view, added, SourceLayerCarrier.toOcc_toCell,
         AmbientGradeCharts.Chart.occurrence]
     rwa [he] at hh
   let a := SupportLadderRows.parent v
@@ -61,7 +61,7 @@ theorem exists_maximal_leaf (seed : Q)
     rw [hv]
     change ladderRow D hA field fields v
       (added D hA (SupportLadderRows.leaf (Nat.succ_pos _) a)) = _
-    simp only [ladderRow, image, rankIndex_added]
+    simp [ladderRow, image, rankIndex_added]
     exact SupportLadderRows.row_parent (fun a x => (rank_bound fields a x).le)
       (Nat.succ_pos _) v
   have hqeq : q (leafOccurrence D hA a) = q chart.owner := by
@@ -111,5 +111,3 @@ theorem exists_capped_leaf_chart (seed : Q)
   obtain ⟨a, τ, hw, hb, hr⟩ := exists_leaf_chart D sem hA field fields hp seed (hq.cap hγ)
   exact ⟨a, τ, hw, fun x => (hb x).trans (min_le_right _ _), hr⟩
 
-end
-end VaughtConjecture.Knight.RelativeLadderLayer

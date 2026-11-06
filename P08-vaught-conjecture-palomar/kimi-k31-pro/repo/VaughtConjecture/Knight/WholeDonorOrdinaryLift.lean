@@ -35,14 +35,7 @@ theorem left_mem : B ∈ I.boundary.plan :=
 theorem right_mem : C ∈ I.boundary.plan :=
   I.rightPlan_le I.rightScheme.isPlan.domain_mem
 
-variable (n : ℕ) (hA : n + 3 ≤ A.card)
 
-theorem coded : (rows I hBA hCA n hA).IsCoded :=
-  CanonicalRecursiveCoding.coded I.rows (proper_boundary I hBA hCA) I.coded n hA
 
-variable {CI BJ : Finset ι × ℕ}
 
-variable (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
 
-end
-end VaughtConjecture.Knight.WholeDonorOrdinaryLift

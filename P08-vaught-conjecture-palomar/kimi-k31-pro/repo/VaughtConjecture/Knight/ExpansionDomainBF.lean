@@ -80,12 +80,7 @@ the projected receipt comparison, transported to the sentence's language. -/
 theorem bfEquiv_of_mem_domain {η : Ordinal.{0}} {R S : KnightNatModel}
     (hR : Quotient.mk knightModelSetoid R ∈ domain η)
     (hS : Quotient.mk knightModelSetoid S ∈ domain η) :
-    @BFEquiv knightLang ℕ (structureOf R.1) ℕ (structureOf S.1) η 0 Fin.elim0 Fin.elim0 := by
-  obtain ⟨W, hWm, hWr⟩ := exists_model_of_mem_domain hR
-  obtain ⟨V, hVm, hVr⟩ := exists_model_of_mem_domain hS
-  have h := bfEquiv_of_commonChart_projected_omega W V hWm hVm
-    (hasCommonChart_elim0 hWm hVm)
-  rwa [reduct_omegaStage_eq hWr, reduct_omegaStage_eq hVr] at h
+    @BFEquiv knightLang ℕ (structureOf R.1) ℕ (structureOf S.1) η 0 Fin.elim0 Fin.elim0 := by grind [hasCommonChart_elim0, reduct_omegaStage_eq, exists_model_of_mem_domain, bfEquiv_of_commonChart_projected_omega]
 
 /-- **The library relation on a domain**: coded `ℕ`-models of `knightSentence` whose classes
 lie in `domain η` are related by `bfEquivSetoid knightSentence η`. -/
@@ -136,4 +131,3 @@ theorem mk_bfEquivSetoid_quotient_le_aleph0 (hct : CountableTerminalFibres)
   have hcount := (((compl_countable hct hη).image π).union hsub.countable).mono hcover
   exact mk_le_aleph0_iff.mpr (Set.countable_univ_iff.mp hcount)
 
-end VaughtConjecture.Knight.ExpansionDomain

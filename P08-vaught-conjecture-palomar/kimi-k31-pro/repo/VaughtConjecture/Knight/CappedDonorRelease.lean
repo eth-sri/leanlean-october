@@ -52,8 +52,7 @@ namespace CappedDonor
 
 namespace Ref
 
-variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-  {R : Ref I nP N J P C} {K : ℕ} (L : R.LowRef K)
+variable {K : ℕ}
 
 namespace LowRef
 
@@ -63,33 +62,18 @@ namespace LowRef
 noncomputable def releaseShifter (τ : ExtOrd → ExtOrd) (h γ : ExtOrd) (x : ExtOrd) : ExtOrd :=
   if x ≤ h then min (τ x) γ else τ x
 
-omit L in
 theorem releaseShifter_of_le {τ : ExtOrd → ExtOrd} {h γ x : ExtOrd} (hx : x ≤ h) :
-    releaseShifter τ h γ x = min (τ x) γ := by
-  unfold releaseShifter; rw [ite_eq_left hx]
+    releaseShifter τ h γ x = min (τ x) γ := by grind [releaseShifter]
 
-omit L in
 theorem releaseShifter_of_lt {τ : ExtOrd → ExtOrd} {h γ x : ExtOrd} (hx : h < x) :
-    releaseShifter τ h γ x = τ x := by
-  unfold releaseShifter; rw [ite_eq_right (not_le.mpr hx)]
+    releaseShifter τ h γ x = τ x := by grind [releaseShifter]
 
-omit L in
 theorem releaseShifter_eq_bot_iff {τ : ExtOrd → ExtOrd} {h γ : ExtOrd} (hγ : γ ≠ ⊥) (x : ExtOrd) :
-    releaseShifter τ h γ x = ⊥ ↔ τ x = ⊥ := by
-  unfold releaseShifter
-  split_ifs
-  · simp only [min_eq_bot, hγ, or_false]
-  · exact Iff.rfl
+    releaseShifter τ h γ x = ⊥ ↔ τ x = ⊥ := by grind [releaseShifter]
 
-omit L in
 theorem releaseShifter_le {τ : ExtOrd → ExtOrd} (h γ x : ExtOrd) :
-    releaseShifter τ h γ x ≤ τ x := by
-  unfold releaseShifter
-  split_ifs
-  · exact min_le_left _ _
-  · exact le_rfl
+    releaseShifter τ h γ x ≤ τ x := by grind [releaseShifter]
 
-omit L in
 /-- The release shifter is a normalized witness through `K` whenever the old witness is, the
 split point `h` and the cap `γ` are `K`-visible and `γ` is positive. -/
 theorem releaseShifter_witness {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop K) τ) {h γ : ExtOrd}
@@ -127,10 +111,6 @@ theorem releaseShifter_witness {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop K) 
 
 /-! ## Exact frontier release -/
 
-end LowRef
 
-end Ref
 
-end CappedDonor
 
-end VaughtConjecture.Knight

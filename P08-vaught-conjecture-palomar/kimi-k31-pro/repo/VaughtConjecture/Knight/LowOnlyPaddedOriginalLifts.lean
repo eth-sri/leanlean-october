@@ -61,7 +61,7 @@ theorem private_lift
       ∀ d, min (r d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := LowOnlyPaddedSupply.private_bottom_supply I F hroot hA hB hC hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by simp [hz]⟩
   by_cases ha : ∃ d, I.right.scheme.grade d.1 = 2 ∧ γ < p d
   · exact LowOnlyPaddedPrivateLift.active_private_lift I F hroot hA hB hC hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
@@ -97,12 +97,10 @@ theorem donor_lift
       ∀ d, min (r d) γ = min (q d) γ := by
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := LowOnlyPaddedSupply.donor_bottom_supply I F hroot hA hB hC hp
-    exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
+    exact ⟨r, hr, hread, fun _ => by simp [hz]⟩
   by_cases ha : ∃ d, I.left.scheme.grade d.1 = 2 ∧ γ < p d
   · exact LowOnlyPaddedDonorLift.active_donor_lift I F hroot hA hB hC hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
   · exact donor_inactive I F hroot hA hB hC hp hq hγ
       (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedOriginalLifts

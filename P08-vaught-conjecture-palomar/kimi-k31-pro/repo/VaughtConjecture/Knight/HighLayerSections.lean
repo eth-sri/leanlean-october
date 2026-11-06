@@ -46,7 +46,7 @@ theorem exists_zero_tail {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) 
     (bottomSection out (A, l) (A, l)).left_lawful
   have hs : RespectsSemanticsBelow out (A, l) (splice u v) :=
     splice_respects hKl.le hu hv (M := ⊥) (fun _ _ => le_rfl)
-      (fun _ => by simp only [u, min_bot_right])
+      (fun _ => by simp [u])
   have hall (d : Cell (scheme D Q l hl hlA)) :
       GradedLe ((scheme D Q l hl hlA).cell d) (A, l) := by
     refine ⟨(scheme D Q l hl hlA).isPlan.subset_of_mem
@@ -70,5 +70,3 @@ theorem exists_zero_tail {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) 
     rw [(SourceLayerCarrier.controller D Q l hl hlA q).2]
     exact not_le_of_gt hKl
 
-end
-end VaughtConjecture.Knight.HighLayerBountiful

@@ -255,4 +255,3 @@ theorem complete_proper (hDc : D.IsComplete) (hEc : E.IsComplete)
     obtain ⟨e, he⟩ := hEc BJ hr
     exact ⟨rightCell s D E w hD hE e, (right_index s D E w hD hE e).trans he⟩
 
-end VaughtConjecture.Knight.AmalgamatedBoundary

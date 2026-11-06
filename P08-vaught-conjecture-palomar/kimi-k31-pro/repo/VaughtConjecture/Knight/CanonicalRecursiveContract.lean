@@ -78,5 +78,3 @@ def seed (sem : Semantics D) (hA : 3 ≤ A.card) (hp : ∀ d : Cell D, D.scope d
   section_agreement := fun {_} hK {_ _} hpr htp hqr htq =>
     CanonicalRecursiveSeedSections.section_agreement sem hA hp hK hpr htp hqr htq
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveContract

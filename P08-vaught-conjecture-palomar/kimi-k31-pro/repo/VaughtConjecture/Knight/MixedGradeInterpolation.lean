@@ -83,9 +83,7 @@ theorem zero_witness (K : ℕ) : Witness (gTop K) (fun _ => ⊥) where
   vis := (witness_id K).vis
   bot := rfl
   mono := monotone_const
-  clause5 := by intros; exact (extVisibilityReplace_bot _ _).symm
+  clause5 := by grind [extVisibilityReplace_bot]
 
 /-! ## A non-vacuous mixed-grade tie regression -/
 
-end MixedGradeInterpolation
-end VaughtConjecture.Knight

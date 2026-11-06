@@ -37,4 +37,3 @@ theorem IsModel.noProlongation_of_topFree (hR : R.IsModel) {β : LimitStage} (h�
   obtain ⟨p, hp⟩ := Option.isSome_iff_exists.mp ht
   exact KnightRealization.noProlongation_of_topFree hαβ htop t p hp
 
-end VaughtConjecture.Knight.KnightRealization

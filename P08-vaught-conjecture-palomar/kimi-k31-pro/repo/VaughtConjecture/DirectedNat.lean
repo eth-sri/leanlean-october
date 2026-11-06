@@ -53,4 +53,3 @@ theorem synchronize {ι : Type*} [Finite ι] (P : ι → D → Prop)
   obtain ⟨e, hbe, hde⟩ := exists_ge_ge base d
   exact ⟨e, hbe, fun e' he' => hd e' (hde.trans he')⟩
 
-end VaughtConjecture.DirectedNat

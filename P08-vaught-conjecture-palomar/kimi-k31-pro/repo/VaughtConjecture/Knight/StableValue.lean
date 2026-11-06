@@ -208,6 +208,4 @@ theorem stableValue_mapCell (hcons : R.IsExactParentConsistent)
     R.stableValue u q (mapCell hpq Xi) = R.stableValue t p Xi :=
   stableValue_mapCell' hcons hqu hfu hpq Xi
 
-end KnightRealization
 
-end VaughtConjecture.Knight

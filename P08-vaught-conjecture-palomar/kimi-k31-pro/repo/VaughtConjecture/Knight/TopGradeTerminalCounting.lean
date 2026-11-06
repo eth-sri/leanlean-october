@@ -152,10 +152,6 @@ theorem countableTerminalFibres_of_growth_results
     (hcompare : ∀ (ρ : Ordinal.{0}), ρ < (aleph 1).ord →
       ∀ W V : TerminalModel ρ,
         W.1.HasTopGradeGrowth → V.1.HasTopGradeGrowth → W.1.IsHollow → V.1.IsHollow →
-          Nonempty (W.1.Iso V.1)) : CountableTerminalFibres := by
-  intro ρ hρ
-  exact Cardinal.mk_le_aleph0_iff.mpr
+          Nonempty (W.1.Iso V.1)) : CountableTerminalFibres := fun ρ hρ => Cardinal.mk_le_aleph0_iff.mpr
     (countable_terminalClass hρ (hprolong ρ hρ) (hcompare ρ hρ))
 
-end
-end VaughtConjecture.Knight.TopGradeTerminalCounting

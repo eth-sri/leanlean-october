@@ -295,5 +295,3 @@ theorem Admitted.normalize_mem_catalogue {a : Field P C → ExtOrd} (h : R.Admit
     (hproper : ∀ f, a f ≠ ⊤) : PairedSlotEncoding.normalize N a ∈ R.Catalogue :=
   ⟨CanonicalPairedProfiles.normalize_mem_inventory _ _ hproper, h.normalize⟩
 
-end
-end VaughtConjecture.Knight.CappedDonor.Ref

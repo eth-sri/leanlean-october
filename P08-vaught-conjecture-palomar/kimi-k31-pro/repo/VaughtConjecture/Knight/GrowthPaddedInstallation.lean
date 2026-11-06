@@ -151,5 +151,3 @@ theorem full_occupied (t : ℕ) (ht : t + 2 ≤ A.card) (j : ℕ)
     (G := ∅) (H := ⊤) (by simp) (by simp [SelfVis]) (fun _ => le_top) j hj hjt
   exact ⟨d, hd⟩
 
-end
-end VaughtConjecture.Knight.GrowthPaddedInstallation

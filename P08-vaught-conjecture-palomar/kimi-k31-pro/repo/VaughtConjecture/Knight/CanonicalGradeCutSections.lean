@@ -161,5 +161,3 @@ theorem section_agreement {q : Cell D → ExtOrd} (hq : RespectsSemantics sem q)
   | inl c => exact hag c
   | inr q => exact hl _
 
-end
-end VaughtConjecture.Knight.CanonicalGradeCutSections

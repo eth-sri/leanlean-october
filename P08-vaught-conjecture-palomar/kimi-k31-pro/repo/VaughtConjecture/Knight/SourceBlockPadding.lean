@@ -30,7 +30,6 @@ noncomputable def pad : ExtOrd → ExtOrd
   | some (some α) => ofOrd (Ordinal.omega0 + α)
 
 @[simp] theorem pad_bot : pad ⊥ = ⊥ := rfl
-@[simp] theorem pad_top : pad ⊤ = ⊤ := rfl
 @[simp] theorem pad_ofOrd (α : Ordinal.{0}) : pad (ofOrd α) = ofOrd (Ordinal.omega0 + α) := rfl
 
 theorem pad_mono : Monotone pad := by
@@ -92,21 +91,20 @@ noncomputable def unpad : ExtOrd → ExtOrd
   | some (some α) => if Ordinal.omega0 ≤ α then ofOrd (α - Ordinal.omega0) else ⊥
 
 @[simp] theorem unpad_bot : unpad ⊥ = ⊥ := rfl
-@[simp] theorem unpad_top : unpad ⊤ = ⊤ := rfl
 
 open Classical in
 theorem unpad_ofOrd (α : Ordinal.{0}) :
     unpad (ofOrd α) = if Ordinal.omega0 ≤ α then ofOrd (α - Ordinal.omega0) else ⊥ := rfl
 
 theorem unpad_pad (x : ExtOrd) : unpad (pad x) = x := by
-  classical
+
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · rfl
   · rfl
   · rw [pad_ofOrd, unpad_ofOrd, ite_eq_left le_self_add, Ordinal.add_sub_cancel]
 
 theorem unpad_mono : Monotone unpad := by
-  classical
+
   intro x y hxy
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · exact bot_le
@@ -126,7 +124,7 @@ theorem unpad_mono : Monotone unpad := by
 thresholds above the eventual owner grade. -/
 theorem unpad_comm (x : ExtOrd) (k i : ℕ) :
     unpad (extVisibilityReplace x k i) = extVisibilityReplace (unpad x) k i := by
-  classical
+
   rcases ExtOrd.cases x with rfl | rfl | ⟨α, rfl⟩
   · rfl
   · rfl
@@ -162,6 +160,4 @@ theorem pad_code (b j : ℕ) : pad (ofOrd (Ordinal.omega0 * b + j)) =
   congr 2
   rw [show b + 1 = 1 + b by omega, Nat.cast_add, Nat.cast_one, mul_add, mul_one]
 
-end SourceBlockPadding
 
-end VaughtConjecture.Knight

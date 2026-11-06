@@ -75,10 +75,7 @@ theorem paste_old (p : Cell D → ExtOrd) (q : Cell S.carrier → ExtOrd) (d : C
 
 theorem paste_local {p : Cell D → ExtOrd} {q : Cell S.carrier → ExtOrd}
     (he : ∀ c, p (ScopeBoundary.toCell D B hB c) = q (S.original c)) (d : Cell S.carrier) :
-    paste sem hB S p q (r d) = q d := by
-  unfold paste localCell
-  rw [Equiv.symm_apply_apply]
-  exact ProfileFaceUnion.paste_right _ _ he d
+    paste sem hB S p q (r d) = q d := by simp_all [paste, localCell, ProfileFaceUnion.paste_right]
 
 theorem paste_lawful {p : Cell D → ExtOrd} {q : Cell S.carrier → ExtOrd}
     (hp : RespectsSemantics sem p) (hq : RespectsSemantics S.rows q)
@@ -138,5 +135,3 @@ theorem render_agreement {q : Cell D → ExtOrd} (hq : RespectsSemantics sem q)
   · rw [render_local sem hB S hp ht hG hθ, render_local sem hB S hq htq hG hθ]
     exact S.agreement _ _ _ _ hG hθ hγ hγθ (fun c => he _) c
 
-end
-end VaughtConjecture.Knight.OrderedScopeRelocation

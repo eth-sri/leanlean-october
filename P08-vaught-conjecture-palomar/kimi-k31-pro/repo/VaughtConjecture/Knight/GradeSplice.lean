@@ -108,5 +108,3 @@ theorem splice_respects (hj : j ≤ BJ.2) {u : D.below BJ → ExtOrd}
       rw [splice_high u v d h, splice_high u v w hwj]
       exact hdw
 
-end
-end VaughtConjecture.Knight.GradeTailRestoration

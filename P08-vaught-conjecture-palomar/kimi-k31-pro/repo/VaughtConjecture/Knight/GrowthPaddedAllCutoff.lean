@@ -192,5 +192,3 @@ theorem donor_subface (hsmall : n + 1 < X.req.N) (t : ℕ) (ht : t + 2 ≤ A.car
         (hij.trans hj))
   exact hl.raise_target (h := hSB.trans hB.subset) hij
 
-end
-end VaughtConjecture.Knight.GrowthPaddedAllCutoff

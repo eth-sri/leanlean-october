@@ -107,5 +107,3 @@ theorem private_occurrence (d : Cell I.right.scheme) :
     (privateFace I X T hA hB hC hsmall) (GrowthReplicatedRows.private_order I X T hA hB hC _ _)
     (private_plan I X T hA hB hC hsmall) d
 
-end
-end VaughtConjecture.Knight.GrowthReplicatedLegal

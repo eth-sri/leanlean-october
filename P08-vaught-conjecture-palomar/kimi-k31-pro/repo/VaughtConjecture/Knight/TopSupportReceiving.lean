@@ -107,22 +107,14 @@ def rootTops {p : S α.1 n} {P : S α.1 (n + 1)} (hP : IsCoface p P) : Set (Cell
 
 /-! ## A proper cutoff above the proper labels always exists -/
 
-theorem ordOf_bot : ordOf (⊥ : ExtOrd) = 0 := by
-  unfold ordOf
-  rw [dite_eq_right]
-  rintro ⟨s, hs⟩
-  exact ofOrd_ne_bot s hs.symm
+theorem ordOf_bot : ordOf (⊥ : ExtOrd) = 0 := by grind [ordOf, ofOrd_ne_bot]
 
-theorem ordOf_top : ordOf (⊤ : ExtOrd) = 0 := by
-  unfold ordOf
-  rw [dite_eq_right]
-  rintro ⟨s, hs⟩
-  exact ofOrd_ne_top s hs.symm
+theorem ordOf_top : ordOf (⊤ : ExtOrd) = 0 := by grind [ordOf, ofOrd_ne_top]
 
 /-- A proper cutoff below the stage and strictly above every proper label of a stage type. -/
 theorem exists_proper_cutoff (P : S α.1 m) :
     ∃ δ : ExtOrd, ⊥ < δ ∧ δ < ofOrd α.1 ∧ ∀ d, P.label d ≠ ⊤ → P.label d < δ := by
-  classical
+
   have h0 : (0 : Ordinal.{0}) < α.1 := by
     rw [← Ordinal.bot_eq_zero]; exact bot_lt_iff_ne_bot.mpr α.2.ne_bot
   let a : Ordinal.{0} := Finset.univ.sup fun d : Cell P.scheme.scheme => ordOf (P.label d)
@@ -190,4 +182,3 @@ theorem isCoface_lowerType {p : S α.1 n} {P : S α.1 (n + 1)} (hP : IsCoface p 
 
 /-! ## The two receiving corollaries -/
 
-end VaughtConjecture.Knight

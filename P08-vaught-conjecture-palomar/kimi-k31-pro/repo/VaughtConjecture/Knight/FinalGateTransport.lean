@@ -51,7 +51,7 @@ theorem inheritedBelow_respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A,
     (fun d e => ?_) (fun c d hd => ?_) (p ∘ F.inheritedBelow J hJ)
   · have he : (p ∘ F.inheritedBelow J hJ) ∘ (F.inheritedBelow J hJ).symm = p := by
       funext d
-      simp only [Function.comp_apply, Equiv.apply_symm_apply]
+      simp [Function.comp_apply, Equiv.apply_symm_apply]
     rw [he] at h
     exact h.symm
   · change D.scope d.1 ⊆ D.scope e.1 ↔
@@ -77,7 +77,7 @@ theorem inherited_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
   · apply (F.inheritedBelow_respects_iff J hJ _).mpr
     have he : (r ∘ eJ.symm) ∘ eJ = r := by
       funext d
-      simp only [Function.comp_apply, Equiv.symm_apply_apply]
+      simp [Function.comp_apply, Equiv.symm_apply_apply]
     exact he.symm ▸ hr
   · intro d
     simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcaps (eJ.symm d)
@@ -155,5 +155,3 @@ def inheritedFace {S : Finset ι} {D₀ : CellScheme S} {sem₀ : Semantics D₀
     exact ⟨e, (congrArg F.old he).trans hd.symm⟩
   row c d := (F.inherited_row (E.map c) (E.belowMap c d)).trans (E.row c d)
 
-end
-end VaughtConjecture.Knight.FinalGateLayer.Input

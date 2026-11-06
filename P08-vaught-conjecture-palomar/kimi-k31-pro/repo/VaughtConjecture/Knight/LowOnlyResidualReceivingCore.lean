@@ -69,5 +69,3 @@ theorem receive_of_tail {M : Type w} {α : LimitStage} {W : KnightRealization α
         (congrArg (fun f : Fin n ↪ M => f j) hprefix).symm
   exact ⟨v₀ (Fin.last n), hy, heq.symm ▸ hval⟩
 
-end
-end VaughtConjecture.Knight.LowOnlyResidualReceiving

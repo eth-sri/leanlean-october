@@ -104,7 +104,7 @@ theorem exists_owner_capped_lift (hinj : Function.Injective occ)
       (∀ e : D.below (D.cell c), r (oldTarget sem j X occ hj hA hproper hg e.1) =
         min (p e) (p ⟨c, GradedLe.refl _⟩)) ∧
       ∀ d, min (r d) γ = min (q d) γ := by
-  classical
+
   let _ := Fintype.ofFinite (D.below (D.cell c))
   subst j
   let F := data sem (D.grade c) X occ hj hA hproper hg
@@ -160,7 +160,7 @@ theorem exists_owner_capped_lift (hinj : Function.Injective occ)
     change min (u d) C = ⊤ at hd
     exact ofOrd_ne_top _ (top_le_iff.mp (hd ▸ min_le_right (u d) C))
   have hvcap (d : Cell D) : min (v d) h = min (a.val (occ d)) h := by
-    dsimp only [v]
+    dsimp [v]
     rw [min_assoc, min_eq_right hhC]
     exact hucap d
   obtain ⟨w, hw, hwold, hwcap⟩ := CanonicalFieldPrefix.exists_boundary_section
@@ -182,7 +182,7 @@ theorem exists_owner_capped_lift (hinj : Function.Injective occ)
     change min (pp e) δ = min (ρ (source sem (D.grade c) X occ hj hA hproper hg a
       (old sem (D.grade c) X occ hj hA e.1))) δ
     rw [source_old]
-    dsimp only [pp]
+    dsimp [pp]
     rw [min_assoc, min_eq_right hδM]
     exact hread e
   · intro e
@@ -195,5 +195,3 @@ theorem exists_owner_capped_lift (hinj : Function.Injective occ)
     change w (old sem (D.grade c) X occ hj hA e.1) = _
     rw [hwold, show v e.1 = u e.1 from min_eq_left (hfC e), huface]
 
-end
-end VaughtConjecture.Knight.CanonicalFieldOwnerLift

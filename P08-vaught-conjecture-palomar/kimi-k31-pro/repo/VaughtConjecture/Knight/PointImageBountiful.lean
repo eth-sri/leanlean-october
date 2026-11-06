@@ -51,4 +51,3 @@ theorem bountiful (hD : D.IsComplete) (hb : sem.IsBountiful) :
     (hb (D.cell c) (D.cell d) (D.cell_mem c) (D.cell_mem d) h' hne') rfl
     p a γ hp ha hγ hag
 
-end VaughtConjecture.Knight.PointImageSemantics

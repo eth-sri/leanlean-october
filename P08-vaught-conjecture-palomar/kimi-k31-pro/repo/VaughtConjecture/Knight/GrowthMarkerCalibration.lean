@@ -85,7 +85,7 @@ theorem exists_marker (hsc : p.scheme.scheme.scope c = Finset.univ)
         ∀ d : p.scheme.scheme.below (p.scheme.scheme.cell c), p.label d.1 = ⊤ →
           ofOrd (α + L) ≤ p.someProvisionalValue d.1 →
             extVisibilityReplace (p.scheme.rows.E c r) p.topGrade L ≤ p.scheme.rows.E c d := by
-  classical
+
   let : Fintype (p.scheme.scheme.below (p.scheme.scheme.cell c)) := Fintype.ofFinite _
   let T := Finset.univ.filter fun d : p.scheme.scheme.below (p.scheme.scheme.cell c) =>
     p.label d.1 = ⊤
@@ -131,5 +131,3 @@ theorem exists_hollow_marker_context {M : Type*} {α : LimitStage}
   exact ⟨hbelow, hm L ((le_max_right K L).trans hN.le)
     ⟨mapCell hpy d, hbelow⟩ hdtop (htop d hd).le⟩
 
-end
-end VaughtConjecture.Knight.GrowthMarkerCalibration

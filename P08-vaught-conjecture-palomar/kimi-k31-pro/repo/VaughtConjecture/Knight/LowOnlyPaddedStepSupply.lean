@@ -61,14 +61,14 @@ theorem decoded_base (a : F.Anchor (k + 1)) {δ : ExtOrd → ExtOrd}
       (fun d => δ (a.val (field I d.1)))) :
     RespectsSemanticsBelow (baseRows I F hroot hA hB hC) (A, k + 1)
       (fun d => δ (source P hk hnext a (baseMap P hnext d.1))) := by
-  simp only [source_base]
+  simp [source_base]
   by_cases hz : δ (ceiling P) = ⊥
   · have he (d : Cell (base I F hroot hA hB hC)) :
         δ (RelativeLadderLayer.renderWith I.boundary (by omega) (field I) (F.fields 1)
           (birth P a) (F.fields (k + 1) a) (ceiling P) d) = ⊥ := by
       rw [← source_base P hk hnext a d]
       exact le_bot_iff.mp ((hδ.mono (source_bound P hk hnext a _)).trans_eq hz)
-    simp only [he]
+    simp [he]
     exact ⟨fun _ => (selfVis_bot _).symm, fun c => by
       simpa only [min_self] using TransformsTo.to_bot ((baseRows I F hroot hA hB hC).E c.1),
       fun _ c _ _ => ⟨c, rfl, le_rfl⟩⟩
@@ -78,7 +78,7 @@ theorem decoded_base (a : F.Anchor (k + 1)) {δ : ExtOrd → ExtOrd}
       (field I) (F.fields 1) (proper I hB hC) (birth P a) f
       (hδ.mono.comp (LadderScalarRendering.level_mono
         (LadderScalarRendering.values_bound (LowOnlyRecursiveCharts.anchor_bound F a))))
-      (by simp only [f, LadderScalarRendering.level_zero, hδ.bot])
+      (by simp [f, LadderScalarRendering.level_zero, hδ.bot])
     · intro i
       have hv := LadderScalarRendering.level_visible (C := ceiling P)
         (LowOnlyRecursiveCharts.profile_visible_one F (Nat.succ_pos k) (state_admissible F a))
@@ -129,7 +129,7 @@ theorem decoded_lawful (a : F.Anchor (k + 1)) {δ : ExtOrd → ExtOrd}
         (fun d => δ (source P hk hnext a d.1)) :=
       (base_respects P hk hnext b (fun d => δ (source P hk hnext a d))).mpr (hl.mono hb)
     rcases c with ⟨c, hc⟩
-    dsimp only at he
+    dsimp at he
     subst c
     exact hr.locality ⟨_, GradedLe.refl _⟩
   · exact Or.inl (higher_short P hk hnext c.1 hscope hgrade)
@@ -193,5 +193,3 @@ theorem donor_bottom_supply
   exact (hread ⟨_, hd⟩).trans ((field_read I S (I.leftFace.map d.1)).trans
     ((I.paste_left S.u S.v d.1).trans (congrFun hr d)))
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepSupply

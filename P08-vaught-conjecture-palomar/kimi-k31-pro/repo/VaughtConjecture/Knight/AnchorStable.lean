@@ -183,4 +183,3 @@ theorem hasInfinityAnchor_iff_exists_finite_stable (hM : R.IsModel) :
 
 /-! ## The sharp threshold under top-grade growth -/
 
-end VaughtConjecture.Knight

@@ -61,10 +61,8 @@ theorem exists_lift {C : Finset ι}
       hproper 2 hg (by decide) hA (by decide) hcover hCU hOU hOV hinter hleft hright hp
     let h12 : GradedLe (A, 1) (A, 2) := ⟨Finset.Subset.refl _, (by decide : 1 ≤ 2)⟩
     exact ⟨fun d => r (CellScheme.below.mono h12 d), hr.mono h12,
-      hread, fun _ => by simp only [hγb, min_bot_right]⟩
+      hread, fun _ => by simp [hγb]⟩
   · exact CanonicalLowerLift.exists_positive_lift sem (by omega) hproper 2 hg (by decide)
       hA (by decide) (hfull hne) hp hq hγ hγb hag hcover₁ hCU₁ hOU₁ hOV₁ hinter₁
       hleft₁ hright₁ hU₁ hV₁
 
-end
-end VaughtConjecture.Knight.CanonicalLowerAllCaps

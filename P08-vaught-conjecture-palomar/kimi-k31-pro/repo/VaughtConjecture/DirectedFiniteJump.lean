@@ -65,7 +65,7 @@ theorem exists_eventually_jump_eq_iSup (f : J → I → ℕ) (hf : ∀ j, Monoto
     (K0 : ℕ) :
     ∃ K : ℕ, K0 ≤ K ∧ ∀ᶠ i in atTop,
       jump K (fun j => (f j i : ℕ∞)) = (fun j => ⨆ a, (f j a : ℕ∞)) := by
-  classical
+
   let := Fintype.ofFinite J
   let r : J → ℕ∞ := fun j => ⨆ a, (f j a : ℕ∞)
   let B : ℕ := Finset.univ.sup fun j => (r j).toNat
@@ -102,4 +102,3 @@ theorem predicate_iSup_of_jump (f : J → I → ℕ) (hf : ∀ j, Monotone (f j)
   rw [← hi]
   exact hjump K hK _ (hfinite i)
 
-end VaughtConjecture.DirectedFiniteJump

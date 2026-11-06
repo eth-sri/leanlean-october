@@ -127,7 +127,7 @@ theorem complete_present {j : ℕ} (u : Cell DA → ExtOrd)
 
 theorem complete_future {j : ℕ} (u : Cell DA → ExtOrd)
     (p : DA.below (A, j) → ExtOrd) (d : Cell DA) (hd : j < DA.grade d) :
-    complete u p d = u d := by rw [complete, dite_eq_right (not_le.mpr hd)]
+    complete u p d = u d := by grind [complete]
 
 /-- All-cap active private repair on the actual full-scope grade cutoff.
 Neither the replacement donor nor its correctness is an input. Future private
@@ -202,5 +202,3 @@ theorem private_repair {j : ℕ} (hj : X.req.N ≤ j) {S : State DA DQ}
           complete_future S.privateValues p d (not_le.mp hd)]
     | inr d => exact hvcap d
 
-end
-end VaughtConjecture.Knight.Growth

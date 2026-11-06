@@ -149,9 +149,7 @@ theorem lawful (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2) (
 include hU hm hj hj0 in
 theorem lawfulExtension (hjt : j ≤ t + 2) (V : Finset ι) (hUV : U ⊆ V) :
     ExtensionInjectivity.LawfulExtension Rows
-      (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩) := by
-  intro p hp
-  exact ⟨value I X T hA hB hC t ht U hU hm j hj hj0 p,
+      (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩) := fun p hp => ⟨value I X T hA hB hC t ht U hU hm j hj hj0 p,
     lawful I X T hA hB hC t ht U hU hm j hj hj0 hp hjt V,
     literal I X T hA hB hC t ht U hU hm j hj hj0 p hp hjt hUV⟩
 
@@ -177,5 +175,3 @@ theorem cappedLift (hjt : j ≤ t + 2) (V : Finset ι) (hV : V ∈ R)
       (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩) :=
   (allCapsExtension I X T hA hB hC t ht U hU hm j hj hj0 hjt V hV hmV hjV hUV).cappedLift
 
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

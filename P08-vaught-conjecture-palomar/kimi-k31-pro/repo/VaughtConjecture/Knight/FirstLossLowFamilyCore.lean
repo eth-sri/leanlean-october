@@ -404,4 +404,3 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : ‚Ñ
           have hd' : Q'.label d = ‚ä§ := hd
           exact le_top.trans_eq hd'.symm }
 
-end VaughtConjecture.Knight.FirstLossLowFamily

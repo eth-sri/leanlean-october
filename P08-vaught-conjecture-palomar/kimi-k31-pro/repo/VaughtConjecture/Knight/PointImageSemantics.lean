@@ -49,20 +49,16 @@ theorem row (c : Cell D) (d : D.below (D.cell c)) :
   change sem.E c ((belowEquiv D e he c).symm (belowEquiv D e he c d)) = _
   rw [Equiv.symm_apply_apply]
 
-theorem consistent (hc : sem.IsConsistent) : (rows D e he sem).IsConsistent := by
-  intro c
-  exact RespectsSemanticsBelow.of_equiv (sem := sem) (sem' := rows D e he sem)
+theorem consistent (hc : sem.IsConsistent) : (rows D e he sem).IsConsistent := fun c => RespectsSemanticsBelow.of_equiv (sem := sem) (sem' := rows D e he sem)
     (belowEquiv D e he c).symm (fun _ => rfl)
     (fun _ _ => Finset.image_subset_image_iff e.injective) (fun _ _ _ => rfl) (hc c)
 
-theorem coded (hc : sem.IsCoded) : (rows D e he sem).IsCoded := by
-  intro c d
-  exact hc c ((belowEquiv D e he c).symm d)
+theorem coded (hc : sem.IsCoded) : (rows D e he sem).IsCoded := fun c d => hc c ((belowEquiv D e he c).symm d)
 
 theorem total_eq (c d : Cell D) :
     AmalgamatedBoundaryRows.total (rows D e he sem) c d =
       AmalgamatedBoundaryRows.total sem c d := by
-  classical
+
   by_cases h : GradedLe (D.cell d) (D.cell c)
   · have hh := (below_iff D e he d c).mpr h
     exact (AmalgamatedBoundaryRows.total_below (rows D e he sem) c ⟨d, hh⟩).trans
@@ -97,4 +93,3 @@ theorem respects_iff (p : Cell D → ExtOrd) :
       exact Prod.ext (congrArg (Finset.image e) (congrArg Prod.fst hz))
         (congrArg (fun x : Finset ι × ℕ => x.2) hz)
 
-end VaughtConjecture.Knight.PointImageSemantics

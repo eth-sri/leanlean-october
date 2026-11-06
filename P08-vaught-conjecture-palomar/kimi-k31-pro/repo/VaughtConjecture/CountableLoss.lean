@@ -40,9 +40,7 @@ universe u
 theorem compl_countable_of_loss {X : Type u} (D : Ordinal.{0} → Set X) (h0 : D 0 = Set.univ)
     (hsucc : ∀ ξ, ξ < (aleph 1).ord → (D ξ \ D (ξ + 1)).Countable)
     (hlim : ∀ l, Order.IsSuccLimit l → l < (aleph 1).ord → (⋂ ξ < l, D ξ) ⊆ D l) :
-    ∀ β, β < (aleph 1).ord → (D β)ᶜ.Countable := by
-  rw [Cardinal.ord_aleph] at hsucc hlim ⊢
-  exact InfinitaryLogic.compl_countable_of_loss D h0 hsucc hlim
+    ∀ β, β < (aleph 1).ord → (D β)ᶜ.Countable := by simp_all [InfinitaryLogic.compl_countable_of_loss]
 
 /-! ## Exact cardinality from decreasing domains
 
@@ -53,4 +51,3 @@ The space is taken in `Type 1`, where the counted quotients live; the ordinal in
 theorem mk_Iio_ord_aleph_one : #(Set.Iio (aleph 1).ord) = aleph 1 := by
   rw [Cardinal.mk_Iio_ordinal, Cardinal.card_ord, Cardinal.lift_aleph, Ordinal.lift_one]
 
-end VaughtConjecture.CountableLoss

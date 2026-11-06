@@ -57,7 +57,7 @@ theorem exists_restriction_with_map {α : Ordinal.{0}} {m n : ℕ}
     ∃ s : S α m, ∃ hs : typeMap f r = some s, ∃ hp : s.scheme = P,
       ∀ d, mapCell hs (SemScheme.castCell hp.symm d) = SemScheme.castCell hr.symm (occ d) := by
   obtain ⟨Er, v, hb, hlaw⟩ := r
-  dsimp only at hr
+  dsimp at hr
   subst Er
   let r : S α n := ⟨E, v, hb, hlaw⟩
   exact ⟨r.restrictFace f hv, typeMap_eq_some _ _ hv, he, hocc⟩
@@ -94,5 +94,3 @@ theorem restrict_actual_extension {α : LimitStage} {W : KnightRealization α M}
   rw [← he, hW (snoc u y hy) r (onePointProj e) hr]
   exact hs
 
-end KnightRealization
-end VaughtConjecture.Knight

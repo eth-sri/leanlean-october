@@ -130,5 +130,3 @@ theorem active_private_lift
   obtain ⟨r, hr, hrr, hrc⟩ := restore I X T hA hB hC hp hu hM hread hbound hmax
   exact ⟨r, hr, hrr, fun e => (cap_below (hrc e) hpc.le).trans (hcap e)⟩
 
-end
-end VaughtConjecture.Knight.GrowthPaddedPrivateLift

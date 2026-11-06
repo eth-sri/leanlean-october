@@ -31,7 +31,7 @@ variable {n : ℕ}
 
 theorem exists_missing (f : Fin (n + 1) ↪ Fin (n + 2)) :
     ∃ a, Finset.univ.image f = Finset.univ.erase a := by
-  classical
+
   have hc : (Finset.univ \ Finset.univ.image f).card = 1 := by
     rw [Finset.card_sdiff_of_subset (Finset.subset_univ _),
       Finset.card_image_of_injective _ f.injective]
@@ -62,7 +62,7 @@ theorem missing_ne : missing C.f₁ ≠ missing C.f₂ := by
 theorem common_image :
     (Finset.univ.image C.g₁).image C.f₁ =
       (Finset.univ.erase (missing C.f₁)).erase (missing C.f₂) := by
-  classical
+
   have hcomm : (Finset.univ.image C.g₁).image C.f₁ =
       (Finset.univ.image C.g₂).image C.f₂ := by
     rw [Finset.image_image, Finset.image_image]
@@ -118,7 +118,7 @@ theorem common_plan :
   rw [hl, hr, Finset.image_image, Finset.image_image]
   congr 1
   funext T
-  simp only [Function.comp_apply, Finset.image_image]
+  simp [Function.comp_apply, Finset.image_image]
   exact congrArg (fun e : Fin n ↪ Fin (n + 2) => T.image e) C.comm
 
 /-- The step plan is derived, including its common restriction equation. -/
@@ -174,5 +174,3 @@ def of_compatible {α : Ordinal.{0}} {pa pb : S α (n + 1)}
     Classical.choose_spec (face_of_typeMap_eq_some C.g₁ hl),
     Classical.choose_spec (face_of_typeMap_eq_some C.g₂ hr)⟩
 
-end
-end VaughtConjecture.Knight.CoatomBoundaryPresentation

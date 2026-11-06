@@ -35,16 +35,16 @@ theorem after_bounded {j : ℕ} {a c : ExtOrd}
   mono := by
     intro x y hxy
     by_cases hx : a < x
-    · simp only [after, ite_eq_left hx, ite_eq_left (hx.trans_le hxy), le_refl]
-    · simp only [after, ite_eq_right hx, bot_le]
+    · simp [after, ite_eq_left hx, ite_eq_left (hx.trans_le hxy)]
+    · simp [after, ite_eq_right hx, bot_le]
   comm := by
     intro x k i hk hi
     have he : a < extVisibilityReplace x k i ↔ a < x := by
       simpa only [not_le] using not_congr (replace_le_visible_cut_iff ha hk hi)
     by_cases hx : a < x
-    · simp only [after, ite_eq_left hx, ite_eq_left (he.mpr hx)]
+    · simp [after, ite_eq_left hx, ite_eq_left (he.mpr hx)]
       exact (evr_eq_self_of_selfVis (selfVis_mono hc hk) i).symm
-    · simp only [after, ite_eq_right hx, ite_eq_right (fun h => hx (he.mp h)),
+    · simp [after, ite_eq_right hx, ite_eq_right (fun h => hx (he.mp h)),
         extVisibilityReplace_bot]
 
 theorem bounded_max {j : ℕ} {f g : ExtOrd → ExtOrd}
@@ -104,11 +104,11 @@ theorem piece_bounded (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) :
 theorem offset_eq_min {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     (ha : a ∈ S) : offset j S a = min (finitePart a) j := by
   by_cases h : finitePart a < j
-  · simp only [offset, ite_eq_left (orbit_of_invisible ha h), min_eq_left h.le]
+  · simp [offset, ite_eq_left (orbit_of_invisible ha h), min_eq_left h.le]
   · unfold offset
     split_ifs with ho
     · have he : finitePart a = j := le_antisymm ho.1 (not_lt.mp h)
-      simp only [he, min_self]
+      simp [he, min_self]
     · exact (min_eq_right (not_lt.mp h)).symm
 
 theorem piece_at {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
@@ -160,7 +160,7 @@ theorem piece_before {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
         exact hba.not_ge (le_of_finitePart_le he.symm (not_lt.mp hn))
       have hob := orbit_of_invisible hb (hf.trans_le ha)
       have hoa : Orbit j S a := ⟨ha, b, hb, hf.trans_le ha, he⟩
-      simp only [key, ite_eq_left hoa, ite_eq_left hob, he, lt_self_iff_false] at hk
+      simp [key, ite_eq_left hoa, ite_eq_left hob, he, lt_self_iff_false] at hk
     rw [FiniteOrbitEmbedding.ray_ofOrd, ite_eq_left hl]
   · exact ite_eq_right (not_lt.mpr
       (ofOrd_le_ofOrd.mpr (le_predecessor_of_lt (by omega) hba)))
@@ -218,25 +218,20 @@ theorem encoder_bounded (j : ℕ) (S : Finset Ordinal.{0}) :
   mono := by
     intro x y hxy
     by_cases hy : y = ⊤
-    · simp only [encoder, hy, ite_true, le_top]
+    · simp [encoder, hy, le_top]
     · have hx : x ≠ ⊤ := fun hx => hy (top_le_iff.mp (hx ▸ hxy))
       simpa only [encoder, ite_eq_right hx, ite_eq_right hy] using
         (incoming_bounded j S).mono hxy
   comm := by
     intro x k i hk hi
     rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-    · simp only [encoder, extVisibilityReplace_bot, bot_ne_top, ite_false,
-        (incoming_bounded j S).bot]
-    · simp only [encoder, extVisibilityReplace_top, ite_true]
+    · simp [encoder, extVisibilityReplace_bot, bot_ne_top,         (incoming_bounded j S).bot]
+    · simp [encoder, extVisibilityReplace_top]
     · simpa only [encoder, extVisibilityReplace_ofOrd, ofOrd_ne_top, ite_false] using
         (incoming_bounded j S).comm (ofOrd a) k i hk hi
 
 theorem encoder_reflects_bottom (j : ℕ) (S : Finset Ordinal.{0}) (x : ExtOrd)
-    (hx : encoder j S x = ⊥) : x = ⊥ := by
-  unfold encoder at hx
-  split_ifs at hx with ht
-  · exact (top_ne_bot hx).elim
-  · exact incoming_reflects_bottom j S x hx
+    (hx : encoder j S x = ⊥) : x = ⊥ := by grind [encoder, incoming_reflects_bottom]
 
 /-- Bottom reflection supplies the clause-5 tail above the bounded commutation range. -/
 theorem witness_of_bounded_reflecting {j : ℕ} {f : ExtOrd → ExtOrd}
@@ -257,8 +252,7 @@ theorem encoder_witness (j : ℕ) (S : Finset Ordinal.{0}) :
   witness_of_bounded_reflecting (encoder_bounded j S) (encoder_reflects_bottom j S)
 
 theorem encoder_at {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}} (ha : a ∈ S) :
-    encoder j S (ofOrd a) = encode j S a := by
-  simpa only [encoder, ofOrd_ne_top, ite_false] using incoming_at ha
+    encoder j S (ofOrd a) = encode j S a := by grind [encoder, incoming_at, ofOrd_ne_top]
 
 section Profile
 variable {X : Type*} [Fintype X]
@@ -267,11 +261,8 @@ theorem encoder_profile (j : ℕ) (p : X → ExtOrd) (d : X) :
     encoder j (values p) (p d) = PairedSlotEncoding.normalize j p d := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
   · simpa only [PairedSlotEncoding.normalize, hb] using (encoder_bounded j (values p)).bot
-  · simp only [encoder, ht, ite_true, PairedSlotEncoding.normalize]
+  · simp [encoder, ht, PairedSlotEncoding.normalize]
   · rw [normalize_ofOrd ha, ha]
     exact encoder_at (mem_values.mpr ⟨d, ha⟩)
 
-end Profile
 
-end
-end VaughtConjecture.Knight.PairedSlotIncoming

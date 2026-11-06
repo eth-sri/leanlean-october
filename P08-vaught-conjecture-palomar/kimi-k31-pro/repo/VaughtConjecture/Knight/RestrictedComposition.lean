@@ -40,11 +40,9 @@ namespace ExtOrd
 /-- The threshold map: identity at or below `τ`, `⊤` above. -/
 noncomputable def jump (τ x : ExtOrd) : ExtOrd := if x ≤ τ then x else ⊤
 
-theorem jump_of_le {τ x : ExtOrd} (h : x ≤ τ) : jump τ x = x := by
-  unfold jump; rw [ite_eq_left h]
+theorem jump_of_le {τ x : ExtOrd} (h : x ≤ τ) : jump τ x = x := by grind [jump]
 
-theorem jump_of_not_le {τ x : ExtOrd} (h : ¬ x ≤ τ) : jump τ x = ⊤ := by
-  unfold jump; rw [ite_eq_right h]
+theorem jump_of_not_le {τ x : ExtOrd} (h : ¬ x ≤ τ) : jump τ x = ⊤ := by grind [jump]
 
 theorem le_jump (τ x : ExtOrd) : x ≤ jump τ x := by
   unfold jump; split_ifs <;> simp
@@ -65,17 +63,9 @@ open Classical in
 noncomputable def ordOrZero (x : ExtOrd) : Ordinal.{0} :=
   if h : ∃ μ : Ordinal.{0}, x = ofOrd μ then h.choose else 0
 
-theorem ordOrZero_bot : ordOrZero ⊥ = 0 := by
-  unfold ordOrZero
-  rw [dite_eq_right]
-  rintro ⟨μ, hμ⟩
-  exact ofOrd_ne_bot μ hμ.symm
+theorem ordOrZero_bot : ordOrZero ⊥ = 0 := by grind [ordOrZero, ofOrd_ne_bot]
 
-theorem ordOrZero_ofOrd (μ : Ordinal.{0}) : ordOrZero (ofOrd μ) = μ := by
-  unfold ordOrZero
-  have h : ∃ μ' : Ordinal.{0}, ofOrd μ = ofOrd μ' := ⟨μ, rfl⟩
-  rw [dite_eq_left h]
-  exact (ofOrd_inj.mp h.choose_spec).symm
+theorem ordOrZero_ofOrd (μ : Ordinal.{0}) : ordOrZero (ofOrd μ) = μ := by simp_all [ordOrZero]
 
 end ExtOrd
 
@@ -94,9 +84,7 @@ theorem visibilityReplace_lt_of_lt {α μ : Ordinal.{0}} (hα : Order.IsSuccLimi
   · exact hμ
 
 theorem visibilityReplace_of_not_lt {μ : Ordinal.{0}} {k i : ℕ} (h : ¬ finitePart μ < k) :
-    visibilityReplace μ k i = μ := by
-  unfold visibilityReplace ordinalReplace
-  rw [ite_eq_right h]
+    visibilityReplace μ k i = μ := by grind [visibilityReplace]
 
 /-- Below `α + K`, band replacement at threshold `k ≤ K` with `i ≤ K` stays below `α + K`. -/
 theorem visibilityReplace_le_add_of_le {α μ : Ordinal.{0}} (hα : Order.IsSuccLimit α) {K i : ℕ}
@@ -125,7 +113,7 @@ theorem TransformsTo.comp_jump {D : Type*} [Finite D] {grade : D → ℕ} {p q :
     (h : TransformsTo grade p q) {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) (K n : ℕ)
     (hK_le_n : K ≤ n) (hn : ∀ d, grade d ≤ n) (hK : ∀ d, K < grade d → q d < ofOrd α) :
     TransformsTo grade p (fun d => jump (ofOrd (α + K)) (q d)) := by
-  classical
+
   have := Fintype.ofFinite D
   obtain ⟨g, σ, hganti, hgself, hσbot, hσmono, hσ5, heq⟩ := h
   set τ : ExtOrd := ofOrd (α + K) with hτ
@@ -287,13 +275,13 @@ theorem TransformsTo.comp_jump {D : Type*} [Finite D] {grade : D → ℕ} {p q :
       · rw [extVisibilityReplace_ofOrd, hcself k hkn]
     · rw [hg'top k (not_le.mp hkn), extVisibilityReplace_bot]
   · -- `σ' ⊥ = ⊥`
-    simp only [σ', hσbot, jump_bot]
+    simp [σ', hσbot, jump_bot]
   · -- monotone
     intro x y hxy
     exact jump_mono τ (hσmono hxy)
   · -- clause 5
     intro a k hak i hik
-    simp only [σ'] at hak ⊢
+    simp [σ'] at hak ⊢
     by_cases hkK : k ≤ K
     · rw [hg'K k hkK] at hak
       by_cases hσa : σ a ≤ τ
@@ -490,15 +478,11 @@ namespace Value
 
 /-- `finitePart (μ + i) = i` for a multiple of `ω`. -/
 theorem finitePart_limitPart_add_nat' {μ : Ordinal.{0}} (hμ : limitPart μ = μ) (i : ℕ) :
-    finitePart (μ + i) = i := by
-  have := finitePart_limitPart_add_nat μ i
-  rwa [hμ] at this
+    finitePart (μ + i) = i := by grind [finitePart_limitPart_add_nat]
 
 /-- `limitPart (μ + i) = μ` for a multiple of `ω`. -/
 theorem limitPart_add_nat_of_limitPart_eq {μ : Ordinal.{0}} (hμ : limitPart μ = μ) (i : ℕ) :
-    limitPart (μ + i) = μ := by
-  have := limitPart_limitPart_add_nat μ i
-  rwa [hμ] at this
+    limitPart (μ + i) = μ := by grind [limitPart_limitPart_add_nat]
 
 /-- A multiple of `ω` strictly below a limit part sits a whole `ω` below it. -/
 theorem add_omega0_le_limitPart_of_lt {μ ν : Ordinal.{0}} (hμ : limitPart μ = μ)
@@ -628,7 +612,7 @@ theorem min_extVisibilityReplace_cap {μ : Ordinal.{0}} (hμ : limitPart μ = μ
   have hfp : ¬ finitePart (μ + K') < k := by
     rw [finitePart_limitPart_add_nat' hμ]; exact not_lt.mpr (hk.trans hKK')
   rcases ExtOrd.cases x with rfl | rfl | ⟨ν, rfl⟩
-  · simp only [extVisibilityReplace_bot, min_eq_left bot_le]
+  · simp [extVisibilityReplace_bot, min_eq_left bot_le]
   · exact absurd rfl hx
   · rw [extVisibilityReplace_ofOrd]
     rcases le_or_gt ν (μ + K') with hle | hlt
@@ -641,4 +625,3 @@ theorem min_extVisibilityReplace_cap {μ : Ordinal.{0}} (hμ : limitPart μ = μ
       rw [min_eq_right (ofOrd_le_ofOrd.mpr h1), min_eq_right (ofOrd_le_ofOrd.mpr hlt.le),
         extVisibilityReplace_ofOrd, visibilityReplace_of_not_lt hfp]
 
-end VaughtConjecture.Knight

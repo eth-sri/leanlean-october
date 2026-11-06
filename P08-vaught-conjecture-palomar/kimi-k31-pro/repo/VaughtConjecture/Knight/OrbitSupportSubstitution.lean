@@ -27,9 +27,9 @@ theorem replace_replace (x : ExtOrd) (K i j : ℕ) :
     extVisibilityReplace (extVisibilityReplace x K i) K j =
       extVisibilityReplace x K (if i < K then j else i) := by
   rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
-  · simp only [extVisibilityReplace_bot]
-  · simp only [extVisibilityReplace_top]
-  · simp only [extVisibilityReplace_ofOrd, ofOrd_inj]
+  · simp [extVisibilityReplace_bot]
+  · simp [extVisibilityReplace_top]
+  · simp [extVisibilityReplace_ofOrd, ofOrd_inj]
     rw [visReplace_eq (visibilityReplace a K i), limitPart_visibilityReplace,
       finitePart_visibilityReplace, visReplace_eq a K]
     split_ifs <;> simp_all
@@ -76,4 +76,3 @@ theorem supported_field {X : Type*} (K : ℕ) (G : Set ExtOrd) (p : X → ExtOrd
       exact (decomposition a).symm
     · rfl
 
-end VaughtConjecture.Knight.OrbitPrefixSupport

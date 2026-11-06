@@ -124,27 +124,13 @@ theorem cut_triangle {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b c : X → ExtOr
     ((agree_cut hbot b c).mono (min_le_right _ _) x)
 
 theorem cross_agreement {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b c : X → ExtOrd) :
-    min (cut G a c) (cut G a b) = min (cut G b c) (cut G a b) := by
-  apply le_antisymm
-  · apply le_min _ (min_le_right _ _)
-    have hh := cut_triangle hbot b a c
-    rw [cut_symm hbot b a, min_comm] at hh
-    exact hh
-  · apply le_min _ (min_le_right _ _)
-    simpa only [min_comm] using cut_triangle hbot a b c
+    min (cut G a c) (cut G a b) = min (cut G b c) (cut G a b) := by grind [cut_symm, cut_triangle]
 
 /-- Proper cells, existing full lower controllers, and the new controllers
 remain distinct occurrences. -/
 abbrev Occ (X Y Q : Type*) := (X ⊕ Y) ⊕ Q
 
-def grade (gx : X → ℕ) (gy : Y → ℕ) (k : ℕ) : Occ X Y Q → ℕ :=
-  Sum.elim (Sum.elim gx gy) (fun _ => k)
 
-noncomputable def row (G : Finset ExtOrd) (a : Q → X → ExtOrd)
-    (lower : Q → Y → ExtOrd) (q : Q) : Occ X Y Q → ExtOrd
-  | .inl (.inl x) => a q x
-  | .inl (.inr y) => lower q y
-  | .inr p => cut G (a q) (a p)
 
 /-! ## Boundary-orbit support and hidden prefixes
 
@@ -153,4 +139,3 @@ of numerical blocks. The lower section's support is an induction hypothesis;
 the support of every new-controller reading follows from the row formula.
 -/
 
-end VaughtConjecture.Knight.SourcePrefixRows

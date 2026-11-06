@@ -35,8 +35,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 
 theorem donor_grade (d : I.left.scheme.below (effC n (k + 1))) :
     (carrier P hnext).grade (donorAt P hnext d).1 =
-      I.left.scheme.grade d.1 := by
-  exact (congrArg Prod.snd (original_index P hnext
+      I.left.scheme.grade d.1 := (congrArg Prod.snd (original_index P hnext
     (I.leftFace.map d.1))).trans (congrArg Prod.snd (I.leftFace.index d.1))
 
 /-- A supplied original owner identifies the actual donor lower domain.
@@ -53,7 +52,7 @@ theorem owner_capped
     ∃ u, RespectsSemanticsBelow (rows P hk hnext) (A, (k + 1)) u ∧
       (∀ d, u (donorAt P hnext d) = min (p d) (p c)) ∧
       (∀ d, min (u d) γ = min (q d) γ) ∧ (∀ d, u d ≤ p c) := by
-  classical
+
   obtain ⟨a, σ, H, hσ, hmax, hread⟩ := LowOnlyPaddedStepCharts.exists_chart P hk hnext hq
   have hreach : γ ≤ H := by
     have he := hag c
@@ -124,5 +123,3 @@ theorem owner_capped
   exact (congrArg fac.outgoing (hwread d)).trans (fac.readback (fromEff d))
 
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepDonorRepair

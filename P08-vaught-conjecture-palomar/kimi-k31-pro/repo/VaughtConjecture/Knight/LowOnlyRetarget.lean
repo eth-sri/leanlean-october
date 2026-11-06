@@ -57,12 +57,10 @@ noncomputable def retargetTops (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd
   if p d.1 = ⊤ then η else u d
 
 theorem retargetTops_of_top (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd)
-    {d : P.scheme.below (BJ)} (h : p d.1 = ⊤) : retargetTops (p := p) η u d = η := by
-  unfold retargetTops; rw [ite_eq_left h]
+    {d : P.scheme.below (BJ)} (h : p d.1 = ⊤) : retargetTops (p := p) η u d = η := by grind [retargetTops]
 
 theorem retargetTops_of_nonTop (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd)
-    {d : P.scheme.below (BJ)} (h : p d.1 ≠ ⊤) : retargetTops (p := p) η u d = u d := by
-  unfold retargetTops; rw [ite_eq_right h]
+    {d : P.scheme.below (BJ)} (h : p d.1 ≠ ⊤) : retargetTops (p := p) η u d = u d := by grind [retargetTops]
 
 section Retarget
 
@@ -208,6 +206,4 @@ theorem RetargetData.retargetTops_respects
         exact (hu.nonTop_lt Sig hS).le.trans hu.b_le_η
       · rw [retargetTops_of_nonTop η u hX]; exact hle
 
-end Retarget
 
-end VaughtConjecture.Knight.LowOnly

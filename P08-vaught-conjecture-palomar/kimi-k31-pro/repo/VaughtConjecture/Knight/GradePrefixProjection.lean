@@ -47,4 +47,3 @@ theorem respectsBelow (ha : Antitone H)
     rw [hgrade]
     exact hle
 
-end VaughtConjecture.Knight.GradePrefixProjection

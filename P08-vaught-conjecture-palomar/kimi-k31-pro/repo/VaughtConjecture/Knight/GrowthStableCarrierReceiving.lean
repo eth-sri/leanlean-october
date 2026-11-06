@@ -57,10 +57,7 @@ theorem exists_correct_donor (hclass : InClass X.ZA C.label) :
       ∃ hs : s.scheme = P,
         X.req.Correct (X.req.sec (W.stableValue u C))
           (fun d => W.stableValue (snoc (e.trans u) y hyRoot) s
-            (SemScheme.castCell hs.symm d)) := by
-  exact GrowthCarrierEvaluation.exists_correct_donor C P Q e hvC hvP hC hP X T hsmall
+            (SemScheme.castCell hs.symm d)) := GrowthCarrierEvaluation.exists_correct_donor C P Q e hvC hvP hC hP X T hsmall
     (stableActualLabelling hM.consistent hM.covering) hM hu
     (fun d => (GrowthStableSelectedInput.private_bottom hM hu d.1).trans (hclass d))
 
-end
-end VaughtConjecture.Knight.GrowthStableCarrierReceiving

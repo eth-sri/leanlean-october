@@ -68,4 +68,3 @@ theorem exists_model_at_limit_of_forall_lt {l : Ordinal.{0}} (hlim : Order.IsSuc
         rw [reduct_limitOfChain]
     _ = R := hWr 0
 
-end VaughtConjecture.Knight.KnightRealization

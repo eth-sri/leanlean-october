@@ -74,7 +74,7 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
                   W.stableValue u Q (ref μ).1 = ofOrd (μ + off μ) ∧
                   ofOrd (μ + off μ) < W.stableValue u Q c) ∧
                 ref α.1 = ⟨mapCell hf a, hab⟩ ∧ off α.1 = i := by
-  classical
+
   let old := S.filter (fun μ => μ < α.1)
   have hold : ∀ μ ∈ old, IsNonSuccessor μ ∧ μ < α.1 := by
     intro μ hμ
@@ -159,5 +159,3 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     simpa [ref, off, heq, hmem, b] using
       And.intro ((C.rep_off_le b).trans_lt hoff) (And.intro hstable hlt)
 
-end
-end VaughtConjecture.Knight.GrowthStableCalibration

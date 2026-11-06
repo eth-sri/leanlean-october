@@ -76,5 +76,3 @@ theorem lift (n : ℕ) (hA : n + 3 ≤ A.card)
   · change J ∈ Plan.gradedPlan (CanonicalRecursiveContract.carrier sem n hA).plan
     rw [CanonicalRecursiveBoundaryTransport.plan_eq]; exact hJ
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveInitialized

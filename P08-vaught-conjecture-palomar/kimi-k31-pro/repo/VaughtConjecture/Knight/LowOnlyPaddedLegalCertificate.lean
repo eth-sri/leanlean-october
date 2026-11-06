@@ -77,5 +77,3 @@ theorem exists_supported_certificate {S : State I.left I.right}
       (((congrArg q (hcmap F.gap.c)).symm.trans (hp F.gap.c)).trans hc)
       (((congrArg q (hcmap F.gap.r.1)).symm.trans (hp F.gap.r.1)).trans hr) δ hδ hcap d)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLegalCertificate

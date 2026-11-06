@@ -81,7 +81,7 @@ theorem receive_raw_of_receiving {M : Type w} {α : LimitStage} {W : KnightReali
         pC.label (SemScheme.castCell (hsC.trans hCs.symm) i)
     intro i
     have hi := hoccC (SemScheme.castCell hsC i)
-    simp only [SemScheme.castCell_castCell_symm] at hi
+    simp [SemScheme.castCell_castCell_symm] at hi
     change truncExt α.1 (w (toCell (E).scheme I.placeRight hvC i)) = _
     rw [(congrArg w hi).trans ((hwp _).trans
       (hCv (SemScheme.castCell (hsC.trans hCs.symm) i)).symm)]
@@ -147,5 +147,3 @@ theorem receive_of_shared_of_receiving {M : Type w} {α : LimitStage} {W : Knigh
   exact receive_raw_of_receiving I F hroot hA hB hC hcover hcons hFC
     (S := ⟨F.p, v, b⟩) (hadm _) rfl hc hr hactive hb u pC hu hCs (fun _ => rfl)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedModelReceiving

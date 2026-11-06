@@ -101,36 +101,15 @@ structure enters the range). -/
 def bfRight (s : List ℕ) : Fin s.length → ℕ :=
   fun j ↦ if j.val % 2 = 0 then s[j.val] else j.val / 2
 
-/-- Position `2 i` of the left tuple is `i`. -/
-@[simp]
-theorem bfLeft_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfLeft s ⟨2 * i, h⟩ = i := by
-  simp [bfLeft]
 
-/-- Position `2 i + 1` of the left tuple is the node's entry there. -/
-@[simp]
-theorem bfLeft_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfLeft s ⟨2 * i + 1, h⟩ = s[2 * i + 1] := by
-  simp [bfLeft, Nat.add_mod]
 
-/-- Position `2 i` of the right tuple is the node's entry there. -/
-@[simp]
-theorem bfRight_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfRight s ⟨2 * i, h⟩ = s[2 * i] := by
-  simp [bfRight]
 
-/-- Position `2 i + 1` of the right tuple is `i`. -/
-@[simp]
-theorem bfRight_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfRight s ⟨2 * i + 1, h⟩ = i := by
-  simp [bfRight, Nat.add_mod]
-  omega
 
 /-- On a prefix, the decoded tuples are restrictions. -/
 private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :
     bfLeft t ∘ Fin.castLE hst.length_le = bfLeft s := by
   funext j
-  simp only [Function.comp_apply, bfLeft, Fin.val_castLE]
+  simp [Function.comp_apply, bfLeft, Fin.val_castLE]
   split_ifs
   · rfl
   · exact (hst.getElem j.2).symm
@@ -138,7 +117,7 @@ private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :
 private theorem bfRight_comp_castLE {s t : List ℕ} (hst : s <+: t) :
     bfRight t ∘ Fin.castLE hst.length_le = bfRight s := by
   funext j
-  simp only [Function.comp_apply, bfRight, Fin.val_castLE]
+  simp [Function.comp_apply, bfRight, Fin.val_castLE]
   split_ifs
   · exact (hst.getElem j.2).symm
   · rfl
@@ -249,7 +228,7 @@ private theorem setOf_mem_bfTree_eq_iInter (s : List ℕ) :
       ⋂ idx : L.AtomicIdx s.length, {p | @AtomicIdx.holds L ℕ p.1.toStructure _ idx (bfLeft s) ↔
         @AtomicIdx.holds L ℕ p.2.toStructure _ idx (bfRight s)} := by
   ext p
-  simp only [Set.mem_ofPred_eq, Set.mem_iInter]
+  simp [Set.mem_ofPred_eq, Set.mem_iInter]
   rfl
 
 /-- **Node conditions are closed**, for every relational `L`: the set of code pairs whose tree
@@ -273,16 +252,13 @@ private theorem seqLeft_two_mul (z : ℕ → ℕ) (i : ℕ) : seqLeft z (2 * i) 
   simp [seqLeft]
 
 private theorem seqLeft_two_mul_add_one (z : ℕ → ℕ) (i : ℕ) :
-    seqLeft z (2 * i + 1) = z (2 * i + 1) := by
-  simp [seqLeft, Nat.add_mod]
+    seqLeft z (2 * i + 1) = z (2 * i + 1) := by grind [seqLeft]
 
 private theorem seqRight_two_mul (z : ℕ → ℕ) (i : ℕ) : seqRight z (2 * i) = z (2 * i) := by
   simp [seqRight]
 
 private theorem seqRight_two_mul_add_one (z : ℕ → ℕ) (i : ℕ) :
-    seqRight z (2 * i + 1) = i := by
-  simp [seqRight, Nat.add_mod]
-  omega
+    seqRight z (2 * i + 1) = i := by grind [seqRight]
 
 private theorem bfLeft_ofFn (z : ℕ → ℕ) (n : ℕ)
     (j : Fin (List.ofFn fun i : Fin n ↦ z i).length) :
@@ -405,9 +381,7 @@ private theorem bfEquiv_append_singleton_iff {c d : StructureSpace L} {α : Ordi
       (bfRight (s ++ [x])) ↔
     @BFEquiv L ℕ c.toStructure ℕ d.toStructure α (s.length + 1)
       (Fin.snoc (bfLeft s) (if s.length % 2 = 0 then s.length / 2 else x))
-      (Fin.snoc (bfRight s) (if s.length % 2 = 0 then x else s.length / 2)) := by
-  rw [bfLeft_append_singleton, bfRight_append_singleton]
-  exact bfEquiv_comp_cast _ _ _
+      (Fin.snoc (bfRight s) (if s.length % 2 = 0 then x else s.length / 2)) := by grind [bfEquiv_comp_cast, bfLeft_append_singleton, bfRight_append_singleton]
 
 /-- **Node rank comparison**: if the decoded tuples of a node are `α`-back-and-forth
 equivalent, the node has rank at least `α`, with no offset.  Each tree step is one move: at
@@ -457,4 +431,3 @@ theorem lt_treeHeight_bfTree_of_codeBFEquiv {c d : StructureSpace L}
         Ordinal.le_iSup (fun x : ↥(bfTree c d) ↦
           Order.succ (WellFounded.rank (extBelow (bfTree c d)) x)) ⟨[], hnil⟩
 
-end FirstOrder.Language

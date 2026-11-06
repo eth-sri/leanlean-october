@@ -75,5 +75,3 @@ theorem exists_positive_lift {C : Finset ι}
     · intro d
       rw [min_assoc, min_self]
 
-end
-end VaughtConjecture.Knight.CanonicalGradeOneLift

@@ -76,10 +76,7 @@ def castLE (h : α ≤ β) (t : S α n) : S β n where
   label_bound d := (t.label_bound d).imp (fun hlt => hlt.trans_le (ofOrd_le_ofOrd.mpr h)) id
   respects := t.respects
 
-@[simp] theorem castLE_scheme (h : α ≤ β) (t : S α n) : (castLE h t).scheme = t.scheme := rfl
 
-@[simp] theorem castLE_label (h : α ≤ β) (t : S α n) (d : Cell t.scheme.scheme) :
-    (castLE h t).label d = t.label d := rfl
 
 /-- **Reduction undoes stage weakening**: reducing the lift of `t : S α n` to any intermediate
 limit stage `β` with `α ≤ β ≤ γ` is again the lift of `t` — the labels are already strictly
@@ -202,9 +199,7 @@ noncomputable def IsReduceChain.cell (hp : IsReduceChain hc p) (i : ℕ)
 
 /-- The label chain of one transported cell is a coherent label chain. -/
 theorem IsReduceChain.isTruncChain (hp : IsReduceChain hc p) (d : Cell (p 0).scheme.scheme) :
-    ExtOrd.IsTruncChain (fun i => (c i).1) (fun i => (p i).label (hp.cell i d)) := by
-  intro i j hij
-  exact (label_congr (hp hij) (hp.cell j d)).symm
+    ExtOrd.IsTruncChain (fun i => (c i).1) (fun i => (p i).label (hp.cell i d)) := fun i j hij => (label_congr (hp hij) (hp.cell j d)).symm
 
 open Classical in
 /-- A stage index past which every cell's label chain has stabilised: for each of the finitely
@@ -251,12 +246,7 @@ noncomputable def limitOfChain (hp : IsReduceChain hc p) (δ : LimitStage)
 theorem limitOfChain_def (hp : IsReduceChain hc p) (δ : LimitStage) (hδ : ∀ i, c i ≤ δ) :
     limitOfChain hp δ hδ = castLE (hδ hp.stabIndex) (p hp.stabIndex) := rfl
 
-@[simp] theorem limitOfChain_scheme (hp : IsReduceChain hc p) (δ : LimitStage)
-    (hδ : ∀ i, c i ≤ δ) : (limitOfChain hp δ hδ).scheme = (p hp.stabIndex).scheme := rfl
 
-@[simp] theorem limitOfChain_label (hp : IsReduceChain hc p) (δ : LimitStage)
-    (hδ : ∀ i, c i ≤ δ) (d : Cell (p hp.stabIndex).scheme.scheme) :
-    (limitOfChain hp δ hδ).label d = (p hp.stabIndex).label d := rfl
 
 /-- **Lower reductions of the limit equal the chain entries** — the acceptance equation
 ("reductions equal stages"). -/
@@ -281,7 +271,7 @@ type: finitely many cells, and cofinality supplies a stage above each non-`⊤` 
 theorem exists_truncExt_label_id (hc : Monotone c) {δ : LimitStage}
     (hcof : ∀ γ : Ordinal.{0}, γ < δ.1 → ∃ i, γ < (c i).1) (q : S δ.1 n) :
     ∃ i₀ : ℕ, ∀ d : Cell q.scheme.scheme, truncExt (c i₀).1 (q.label d) = q.label d := by
-  classical
+
   choose g hg using fun d : Cell q.scheme.scheme =>
     show ∃ i, q.label d = ⊤ ∨ q.label d < ofOrd (c i).1 from by
       rcases q.label_bound d with hlt | htop
@@ -594,6 +584,4 @@ theorem IsModel.limitOfChain (hc : Monotone c) {R : ∀ i, KnightRealization (c 
     · rwa [truncExt_id_of_lt hlt] at hl'
     · exact lt_of_lt_of_le (ofOrd_lt_ofOrd.mpr hi₁) hge
 
-end KnightRealization
 
-end VaughtConjecture.Knight

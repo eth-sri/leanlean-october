@@ -32,12 +32,12 @@ theorem node_row (a : Q) (marked : Bool)
     F.rows.E (F.added a marked) d = min (F.source a d.1) (F.nodeWeight (a, marked)) := by
   have hm : WeightedSourcePrefixLayer.master F.data F.weight (F.controller (a, marked)) d.1 =
       F.source a d.1 := by
-    simp only [source, WeightedSourcePrefixLayer.master, ScopedSourcePrefixLayer.Data.profile,
+    simp [source, WeightedSourcePrefixLayer.master, ScopedSourcePrefixLayer.Data.profile,
       data, member_controller]
   exact (WeightedSourcePrefixLayer.row_new F.data F.weight F.weight_visible
     (F.controller (a, marked)) d).trans (by
       rw [hm]
-      simp only [weight, member_controller])
+      simp [weight, member_controller])
 
 theorem grade_bound (hD : ∀ d : Cell D, D.grade d ≤ N) :
     ∀ d : Cell F.carrier, F.carrier.grade d ≤ N := by
@@ -99,5 +99,3 @@ theorem member_coded (a : Member R) (f : Field P C) : IsCodedLabel N (a.val f) :
   · exact Or.inl hb
   · exact Or.inr ⟨b, i, hi, he⟩
 
-end
-end VaughtConjecture.Knight.OrdinaryFinalCatalogue

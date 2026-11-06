@@ -39,4 +39,3 @@ def actualLabelling : W.ActualLabelling where
   lawful := by intro n u p _; exact p.respects
   mapCell := by intro n m u p v q _ f _ hpq d; exact StageType.label_mapCell hpq d
 
-end VaughtConjecture.Knight.KnightRealization

@@ -73,13 +73,13 @@ theorem piece_at {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
   · have hob := ho.mp hoa
     have hl : limitPart a = limitPart b := by
       simpa only [key, ite_eq_left hoa, ite_eq_left hob] using hk
-    simp only [piece, ite_eq_left hoa, encode, offset, ite_eq_left hob, hblock]
+    simp [piece, ite_eq_left hoa, encode, offset, ite_eq_left hob, hblock]
     rw [FiniteOrbitEmbedding.ray_at j (limitPart_mul_nat _) hob.1, hl,
       limitPart_add_finitePart]
   · have hob : ¬ Orbit j S b := fun h => hoa (ho.mpr h)
     have hab : a = b := by
       simpa only [key, ite_eq_right hoa, ite_eq_right hob] using hk
-    simp only [piece, ite_eq_right hoa, hab]
+    simp [piece, ite_eq_right hoa, hab]
     apply stepShifter_of_ge
     exact ofOrd_le_ofOrd.mpr le_self_add
 
@@ -132,7 +132,7 @@ theorem block_lt_gapStart {j : ℕ} {S : Finset Ordinal.{0}} {a b : Ordinal.{0}}
   change block j S a + 1 ≤ gapStart j S b
   unfold gapStart
   apply Finset.le_sup_of_le ha
-  simp only [ite_eq_left hk, le_refl]
+  simp [ite_eq_left hk]
 
 def gap (j : ℕ) (S : Finset Ordinal.{0}) (G : Finset ExtOrd)
     (a : Ordinal.{0}) : ExtOrd → ExtOrd :=
@@ -208,15 +208,12 @@ theorem decode_gap_reaches {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd
 
 theorem decode_tail {j : ℕ} {S : Finset Ordinal.{0}} {G : Finset ExtOrd}
     {C x : ExtOrd} (hx : ofOrd (Ordinal.omega0 * tailStart j S) ≤ x) :
-    C ≤ decode j S G C x := by
-  have he := stepShifter_of_ge (c₀ := (⊥ : ExtOrd)) (c₁ := C) hx
-  rw [decode, he]
-  exact (le_max_right _ _).trans (le_max_right _ _)
+    C ≤ decode j S G C x := by simp_all [decode, stepShifter_of_ge]
 
 theorem ceiling_eq_replace {j : ℕ} {S : Finset Ordinal.{0}} {a : Ordinal.{0}}
     (ha : a ∈ S) : ofOrd (ceiling j S a) = extVisibilityReplace (ofOrd a) j j := by
   by_cases hf : finitePart a < j
-  · simp only [ceiling, ite_eq_left (orbit_of_invisible ha hf),
+  · simp [ceiling, ite_eq_left (orbit_of_invisible ha hf),
       extVisibilityReplace_of_finitePart_lt hf]
   · rw [extVisibilityReplace_of_le_finitePart (not_lt.mp hf)]
     unfold ceiling
@@ -249,7 +246,7 @@ theorem decode_normalize {j : ℕ} {p : X → ExtOrd} {G : Finset ExtOrd} {C : E
     (hp : ∀ d, p d ≠ ⊤) (d : X) :
     decode j (values p) G C (PairedSlotEncoding.normalize j p d) = p d := by
   rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
-  · simp only [PairedSlotEncoding.normalize, hb]
+  · simp [PairedSlotEncoding.normalize, hb]
     exact (decode_witness hG hC).bot
   · exact (hp d ht).elim
   · rw [normalize_ofOrd ha, ha]
@@ -259,17 +256,14 @@ omit [Fintype X] in
 private theorem supported_max {K : ℕ} {G : Set ExtOrd} {p : X → ExtOrd} {a b : ExtOrd}
     (ha : OrbitPrefixSupport.Supported K G p a)
     (hb : OrbitPrefixSupport.Supported K G p b) :
-    OrbitPrefixSupport.Supported K G p (max a b) := by
-  rcases le_total a b with h | h
-  · rwa [max_eq_right h]
-  · rwa [max_eq_left h]
+    OrbitPrefixSupport.Supported K G p (max a b) := by grind
 
 omit [Fintype X] in
 private theorem supported_sup {I : Type*} (s : Finset I) {K : ℕ} {G : Set ExtOrd}
     {p : X → ExtOrd} {f : I → ExtOrd}
     (hf : ∀ a ∈ s, OrbitPrefixSupport.Supported K G p (f a)) :
     OrbitPrefixSupport.Supported K G p (s.sup f) := by
-  classical
+
   apply Finset.sup_induction (p := OrbitPrefixSupport.Supported K G p)
   · exact Or.inl rfl
   · intro a ha b hb
@@ -340,7 +334,4 @@ theorem decode_supported {j K : ℕ} {p : X → ExtOrd} {G : Finset ExtOrd} {C :
       · change OrbitPrefixSupport.Supported K (G : Set ExtOrd) p (if _ then _ else _)
         split_ifs <;> first | exact Or.inl rfl | exact Or.inr (Or.inl hC)
 
-end Profile
 
-end
-end VaughtConjecture.Knight.PairedSlotDecoder

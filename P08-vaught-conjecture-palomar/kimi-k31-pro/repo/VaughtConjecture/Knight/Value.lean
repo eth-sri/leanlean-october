@@ -115,9 +115,7 @@ theorem finitePart_spec (α : Ordinal.{0}) :
   (Ordinal.lt_omega0.mp (Ordinal.mod_lt α Ordinal.omega0_ne_zero)).choose_spec
 
 /-- The fundamental decomposition `α = limitPart α + finitePart α`. -/
-theorem decomposition (α : Ordinal.{0}) : limitPart α + ↑(finitePart α) = α := by
-  rw [limitPart, ← finitePart_spec]
-  exact Ordinal.div_add_mod α Ordinal.omega0
+theorem decomposition (α : Ordinal.{0}) : limitPart α + ↑(finitePart α) = α := by grind [limitPart, finitePart_spec, Ordinal.div_add_mod]
 
 /-- `limitPart` is monotone. -/
 theorem limitPart_mono {γ δ : Ordinal.{0}} (h : γ ≤ δ) : limitPart γ ≤ limitPart δ :=
@@ -214,12 +212,7 @@ theorem extVisibilityReplace_self_iff (γ : ExtOrd) (K : ℕ) :
 /-- Self-visibility at threshold `k` implies self-visibility at every `k' ≤ k`. -/
 theorem extVisReplace_self_of_le {v : ExtOrd} {k k' : ℕ}
     (h : extVisibilityReplace v k k = v) (hle : k' ≤ k) :
-    extVisibilityReplace v k' k' = v := by
-  rw [extVisibilityReplace_self_iff] at h ⊢
-  rcases h with rfl | rfl | ⟨α, rfl, hfp⟩
-  · exact Or.inl rfl
-  · exact Or.inr (Or.inl rfl)
-  · exact Or.inr (Or.inr ⟨α, rfl, hle.trans hfp⟩)
+    extVisibilityReplace v k' k' = v := by grind [extVisibilityReplace_self_iff]
 
 /-- For a limit ordinal `α`, visibility replacement of an ordinal `≥ α` stays `≥ α`:
 `limitPart δ ≥ α`, so `ordinalReplace δ i = limitPart δ + i ≥ α`. -/
@@ -287,16 +280,6 @@ theorem visReplace_le_of_le_selfVis {γ δ : Ordinal.{0}} {k i : ℕ}
       _ = δ := decomposition δ
   · exact hγδ
 
-/-- `extVisibilityReplace` stays `≤ ofOrd δ` when `x ≤ ofOrd γ`, `γ ≤ δ`, `δ` is self-visible
-at `k`, and the replacement value is `≤ k`. -/
-theorem extVisReplace_le_of_le {γ δ : Ordinal.{0}} {k i : ℕ} {x : ExtOrd}
-    (hx : x ≤ ofOrd γ) (hγδ : γ ≤ δ) (hδ_sv : k ≤ finitePart δ) (hi : i ≤ k) :
-    extVisibilityReplace x k i ≤ ofOrd δ := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact bot_le
-  · exact absurd hx (not_top_le_ofOrd γ)
-  · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
-    exact visReplace_le_of_le_selfVis ((ofOrd_le_ofOrd.mp hx).trans hγδ) hδ_sv hi
 
 /-! ### Vertical truncation of labels -/
 
@@ -321,12 +304,10 @@ theorem truncExt_ofOrd (α β : Ordinal.{0}) :
     truncExt α (ofOrd β) = if β < α then ofOrd β else ⊤ := rfl
 
 @[simp] theorem truncExt_ofOrd_of_lt {α β : Ordinal.{0}} (h : β < α) :
-    truncExt α (ofOrd β) = ofOrd β := by
-  rw [truncExt_ofOrd, ite_eq_left h]
+    truncExt α (ofOrd β) = ofOrd β := by grind [truncExt_ofOrd]
 
 @[simp] theorem truncExt_ofOrd_of_le {α β : Ordinal.{0}} (h : α ≤ β) :
-    truncExt α (ofOrd β) = ⊤ := by
-  rw [truncExt_ofOrd, ite_eq_right (not_lt_of_ge h)]
+    truncExt α (ofOrd β) = ⊤ := by grind [truncExt_ofOrd]
 
 /-- A truncated label is `< ofOrd α` or the top label (the label bound of a stage-`α` type;
 note `⊥ < ofOrd α`). -/
@@ -493,6 +474,4 @@ theorem isSuccLimit_blockLevel (ξ : Ordinal.{0}) : Order.IsSuccLimit (blockLeve
   exact ⟨(Ordinal.omega0_pos.trans_le le_self_add).ne',
     (Ordinal.dvd_add_iff dvd_rfl).mpr (dvd_mul_right _ _)⟩
 
-end Value
 
-end VaughtConjecture.Knight

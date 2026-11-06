@@ -105,18 +105,13 @@ theorem cleaned_respects_of_bottom_agreement {BJ : Finset ι × ℕ} {r u : D.be
     (fun d => (cleaner_eq_bot_iff hσ.bot _).trans (hbot d))
   have e : (fun d => cleaner σ (r d)) = fun d => if u d = ⊥ then ⊥ else r d := by
     funext d
-    simp only [cleaner, hbot d]
+    simp [cleaner, hbot d]
   rwa [e] at h
 
 end Cleaning
 
 /-! ## The cleaned donor at a cap -/
 
-section Cap
-
-variable {ιA : Type*} [DecidableEq ιA] {A : Finset ιA} {DA : CellScheme A} {semA : Semantics DA}
-
-end Cap
 
 /-! ## The template from an encoding -/
 
@@ -297,12 +292,9 @@ theorem template_of_encoding_capped (req : Requests DA DQ)
       req.Correct e V ∧ (req.T.Nonempty → ∀ f ∈ req.F, req.tOf e f ≤ req.dOf e) ∧
       (∀ f ∈ req.F, V f = extVisibilityReplace (e (req.ρ f)) req.N (req.off f)) ∧
       (∀ y ∈ req.T, extVisibilityReplace (e req.a) req.N req.R ≤ V y) ∧
-      ∀ z ∈ req.Z, V z = ⊥ := by
-  exact template_of_encoding_at_grade req e he ha_ne hP root_mem top_mem root_le root_ne
+      ∀ z ∈ req.Z, V z = ⊥ := template_of_encoding_at_grade req e he ha_ne hP root_mem top_mem root_le root_ne
     below_top κ hroot bountiful
     ⟨henc.bot, henc.mono, fun x k i hk hi => henc.comm x k i (hk.trans top_le_R) hi⟩
     hbotP (hvis.mono top_le_R) hroot_cap hZ hF hFlt hT
 
-end Template
 
-end VaughtConjecture.Knight

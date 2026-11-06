@@ -99,8 +99,7 @@ def lowerVector (a : Q) (d : Cell I.carrier) : ExtOrd :=
   | .inr _ => ⊥
 
 theorem lowerVector_old (a : Q) (d : Cell D) :
-    I.lowerVector a (I.old d) = I.lower a d := by
-  simp only [lowerVector, old, SourceLayerCarrier.toOcc_toCell]
+    I.lowerVector a (I.old d) = I.lower a d := by simp_all [lowerVector]
 
 def data : ScopedSourcePrefixLayer.Data I.carrier N X where
   base := SeparatedSourceLayerCarrier.base D (Node (Q := Q)) N
@@ -150,11 +149,7 @@ theorem weight_visible (q : Controller I.carrier N) : SelfVis N (I.weight q) := 
   · exact I.gate_visible _
   · exact I.grid_visible _ I.ceiling_mem
 
-theorem weight_bound (q : Controller I.carrier N) : I.weight q ≤ I.ceiling := by
-  unfold weight nodeWeight
-  split
-  · exact I.gate_bound _
-  · exact le_rfl
+theorem weight_bound (q : Controller I.carrier N) : I.weight q ≤ I.ceiling := by grind [weight, gate_bound, nodeWeight]
 
 theorem weight_kind (q : Controller I.carrier N) :
     I.weight q = I.data.ceiling ∨ ∃ x, I.weight q = I.data.boundary q x := by
@@ -169,7 +164,7 @@ theorem parent (q : Controller I.carrier N) :
   · change I.fields (I.member (I.controller _)).1 = _
     rw [member_controller]
     rfl
-  · simp only [weight, member_controller, nodeWeight, Bool.false_eq_true, ↓reduceIte]
+  · simp [weight, member_controller, nodeWeight, Bool.false_eq_true, ↓reduceIte]
     rfl
 
 abbrev rows := WeightedSourcePrefixLayer.rows I.data I.weight I.weight_visible
@@ -191,7 +186,7 @@ theorem source_added (a b : Q) (marked : Bool) :
       min (cut I.grid (I.fields a) (I.fields b)) (I.nodeWeight (b, marked)) := by
   rw [source, show I.added b marked = (I.controller (b, marked)).1 from rfl,
     WeightedSourcePrefixLayer.master_new]
-  simp only [data, weight, member_controller]
+  simp [data, weight, member_controller]
 
 theorem source_marked (a b : Q) : I.source a (I.added b true) =
     min (I.fields a I.gate) (cut I.grid (I.fields a) (I.fields b)) := by
@@ -200,12 +195,9 @@ theorem source_marked (a b : Q) : I.source a (I.added b true) =
   rw [min_comm]
   exact (agree_cut I.bot_mem _ _ I.gate).symm
 
-theorem source_marked_le (a b : Q) : I.source a (I.added b true) ≤ I.fields a I.gate := by
-  rw [source_marked]
-  exact min_le_left _ _
+theorem source_marked_le (a b : Q) : I.source a (I.added b true) ≤ I.fields a I.gate := by grind [source_marked]
 
-theorem source_own_marked (a : Q) : I.source a (I.added a true) = I.fields a I.gate := by
-  rw [source_marked, cut_refl I.ceiling_mem I.grid_bound, min_eq_left (I.gate_bound a)]
+theorem source_own_marked (a : Q) : I.source a (I.added a true) = I.fields a I.gate := by grind [cut_refl, gate_bound, grid_bound, ceiling_mem, source_marked]
 
 theorem source_own_leaf (a : Q) : I.source a (I.added a false) = I.ceiling := by
   rw [source_added, cut_refl I.ceiling_mem I.grid_bound]
@@ -218,7 +210,7 @@ theorem source_bound (a : Q) (d : Cell I.carrier) (hd : I.carrier.grade d ≤ N)
 theorem leaf_row (a : Q) (d : I.carrier.below (I.carrier.cell (I.added a false))) :
     I.rows.E (I.added a false) d = I.source a d.1 := by
   have hw : I.weight (I.controller (a, false)) = I.ceiling := by
-    simp only [weight, member_controller, nodeWeight, Bool.false_eq_true, ↓reduceIte]
+    simp [weight, member_controller, nodeWeight, Bool.false_eq_true, ↓reduceIte]
   exact (WeightedSourcePrefixLayer.row_new I.data I.weight I.weight_visible
     (I.controller (a, false)) d).trans (by
       rw [hw, min_eq_left]
@@ -263,6 +255,3 @@ theorem consistent (hs : I.sem.IsConsistent) : I.rows.IsConsistent := by
     I.positive I.height I.separated I.sem x _).mpr
   simpa only [Function.comp_def, data, SeparatedSourceLayerCarrier.base_old] using hs x
 
-end Input
-end
-end VaughtConjecture.Knight.FinalGateLayer

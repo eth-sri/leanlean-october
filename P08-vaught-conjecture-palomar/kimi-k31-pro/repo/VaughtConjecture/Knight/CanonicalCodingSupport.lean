@@ -86,5 +86,3 @@ theorem layer (D : CellScheme A) (Q : Type*) [Fintype Q]
     exact hc c e
   | inr q => exact hnew q d
 
-end
-end VaughtConjecture.Knight.CanonicalCodingSupport

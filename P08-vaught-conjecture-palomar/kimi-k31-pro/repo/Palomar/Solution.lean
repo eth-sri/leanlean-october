@@ -147,4 +147,3 @@ theorem independent_challenge :
     by_contra hne
     exact hanti c hc d hd hne ((isomorphic_iff_library c d).mpr hcd)
 
-end PalomarChallenge

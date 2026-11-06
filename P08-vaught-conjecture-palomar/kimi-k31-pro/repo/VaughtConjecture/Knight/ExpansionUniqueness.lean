@@ -94,8 +94,7 @@ theorem mapCell_reduceType (hα : Order.IsSuccLimit α) (h : α ≤ β) {q : S �
 
 theorem typeMap_reduceType_eq_some (hα : Order.IsSuccLimit α) (h : α ≤ β) {q : S β n}
     {p : S β m} {f : Fin m ↪ Fin n} (hpq : typeMap f q = some p) :
-    typeMap f (reduceType hα h q) = some (reduceType hα h p) := by
-  rw [typeMap_reduceType_comm, hpq, Option.map_some]
+    typeMap f (reduceType hα h q) = some (reduceType hα h p) := by grind [typeMap_reduceType_comm]
 
 /-! ### The `∞` case -/
 
@@ -487,7 +486,7 @@ theorem eq_of_reduct_eq (hαβ : α ≤ β) (hβ : β.1 = α.1 + Ordinal.omega0)
     have hlab := label_eq_of_expansions hαβ hβ hN hN' hred hp' hp'' hsch
     obtain ⟨sc, lab, bnd, resp⟩ := p'
     obtain ⟨sc', lab', bnd', resp'⟩ := p''
-    simp only at hsch
+    simp at hsch
     subst hsch
     refine StageType.ext rfl (heq_of_eq (funext fun Xi => ?_))
     have := hlab Xi
@@ -499,4 +498,3 @@ theorem eq_of_reduct_eq_blockStage {ξ : Ordinal.{0}}
     (hred : N.reduct (blockStage_le_succ ξ) = N'.reduct (blockStage_le_succ ξ)) : N = N' :=
   eq_of_reduct_eq (blockStage_le_succ ξ) (blockStage_succ_toOrdinal ξ) hN hN' hred
 
-end VaughtConjecture.Knight.KnightRealization

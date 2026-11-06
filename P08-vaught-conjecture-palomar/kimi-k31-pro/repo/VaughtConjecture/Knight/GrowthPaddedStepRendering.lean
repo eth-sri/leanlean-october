@@ -154,7 +154,7 @@ theorem render_base_lawful (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (
     RespectsSemanticsBelow (rows P hk hnext) ((carrier P hnext).cell (baseMap P hnext c))
       (fun d => render P hk hnext hj S hS hp G H d.1) := by
   apply (base_respects P hk hnext c _).mpr
-  simp only [render_base P hk hnext hj S hS hp hG hH hb]
+  simp [render_base P hk hnext hj S hS hp hG hH hb]
   have ht := RelativeLadderLayer.renderWith_respects I.boundary I.rows (by omega : 0 < A.card)
     (field I) (fields X 1) (proper I hB hC) (birth P hj S hS hp) S.profile
     (birth_ranks P hj S hS hp) hb (hS.visible)
@@ -177,7 +177,7 @@ theorem render_native_lawful (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis
       simpa only [he, CellScheme.grade, base_index] using hc
     have hrb := render_base_lawful P hk hnext hj S hS hp hG hH hb b hb'
     rcases c with ⟨c, hc⟩
-    dsimp only at he
+    dsimp at he
     subst c
     exact hrb.locality ⟨baseMap P hnext b, GradedLe.refl _⟩
   · exact Or.inl (higher_short P hk hnext c.1 hs hl)
@@ -192,7 +192,7 @@ theorem render_lawful (hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (k + 1
   · have hb' : (base I X attach hA hB hC).grade b ≤ j := by
       simpa only [he, CellScheme.grade, base_index] using c.2.2
     rcases c with ⟨c, hc⟩
-    dsimp only at he
+    dsimp at he
     subst c
     exact render_base_lawful P hk hnext hj S hS hp hG hH hb b hb'
   · exact (render_native_lawful P hk hnext hj S hS hp hG hH hb).mono
@@ -252,5 +252,3 @@ theorem render_ceiling_at (_hG : ∀ z ∈ G, SelfVis (k + 1) z) (hH : SelfVis (
     exact (congrArg (PairedSlotDecoder.decode (k + 1)
       (PairedSlotEncoding.values S.profile) G H) hv).trans (decode_reserved_ceiling hH hb)
 
-end
-end VaughtConjecture.Knight.GrowthPaddedStepRendering

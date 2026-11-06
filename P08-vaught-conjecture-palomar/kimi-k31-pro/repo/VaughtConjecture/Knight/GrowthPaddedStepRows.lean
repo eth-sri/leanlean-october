@@ -99,8 +99,7 @@ def lower (a : Catalogue X (k + 1)) (d : Cell (carrier P hnext)) : ExtOrd :=
   | .inr _ => ⊥
 
 theorem lower_old (a : Catalogue X (k + 1)) (d : Cell P.carrier) :
-    lower P hnext a (old P hnext d) = selected P a d := by
-  simp only [lower, old, SourceLayerCarrier.toOcc_toCell]
+    lower P hnext a (old P hnext d) = selected P a d := by simp_all [lower]
 
 include hk in
 theorem old_not_full (d : Cell P.carrier) :
@@ -225,5 +224,3 @@ theorem consistent : (rows P hk hnext).IsConsistent := by
   rw [he]
   exact P.consistent x
 
-end
-end VaughtConjecture.Knight.GrowthPaddedStepRows

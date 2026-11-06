@@ -227,6 +227,4 @@ theorem nonempty_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂
     r₂
   ⟨e⟩
 
-end Classification
 
-end VaughtConjecture.Knight.TopSupportRigidCore

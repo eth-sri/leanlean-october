@@ -48,7 +48,7 @@ theorem fix_sourceGrid {κ : ExtOrd → ExtOrd} (hbot : κ ⊥ = ⊥) {B : ℕ}
     (hfix : ∀ b < B, κ (CanonicalPairedInverse.grid N b) = CanonicalPairedInverse.grid N b)
     (n : ℕ) : ∀ z ∈ PairedSlotComparison.sourceGrid N n, z < CanonicalPairedInverse.grid N B →
       κ z = z := by
-  classical
+
   intro z hz hlt
   rcases Finset.mem_insert.mp hz with rfl | hz
   · exact hbot
@@ -109,7 +109,7 @@ theorem bottom_supply' {v₁ : C.scheme.below (effC J N) → ExtOrd}
           (∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f) ∧
           ∀ x, OrbitPrefixSupport.Supported N ({⊤} : Set ExtOrd) a (δ x) := by
   obtain ⟨st₁, hst₁, hv, -, -, -⟩ := R.exists_private_lift (zeroState_admissible N) hv₁
-    (selfVis_bot _) (fun d => by simp only [min_bot_right])
+    (selfVis_bot _) (fun d => by simp)
   let st₂ : R.State N := Ref.gateOff (resync st₁)
   have hadm : R.Admitted st₂.sourceProfile :=
     ⟨st₂, hst₁.resync.gateOff, (resync_synchronized hst₁).gateOff R.one_le_N,
@@ -136,5 +136,3 @@ theorem bottom_supply {v₁ : C.scheme.below (effC J N) → ExtOrd}
   obtain ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread, -⟩ := bottom_supply' (R := R) hv₁
   exact ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread⟩
 
-end
-end VaughtConjecture.Knight.CappedDonor.Ref

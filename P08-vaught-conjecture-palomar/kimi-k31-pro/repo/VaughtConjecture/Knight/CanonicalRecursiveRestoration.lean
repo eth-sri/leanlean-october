@@ -97,5 +97,3 @@ theorem inactive
   SingleFaceTailRestoration.exists_inactive (rows sem n hA hp P) (D.isPlan.subset_of_mem hC)
     (lower_clause sem n hA hp P hb hC hCc) hpr hqr hγ hag hhigh
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveRestoration

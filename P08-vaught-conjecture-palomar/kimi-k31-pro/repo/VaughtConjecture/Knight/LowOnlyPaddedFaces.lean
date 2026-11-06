@@ -100,5 +100,3 @@ theorem inherited_lift {U V : Finset ι × ℕ}
       (I.right_mem hU (h.1.trans hc)) (I.right_mem hV hc) h he
       (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
 
-end
-end VaughtConjecture.Knight.LowOnlyPaddedFaces
