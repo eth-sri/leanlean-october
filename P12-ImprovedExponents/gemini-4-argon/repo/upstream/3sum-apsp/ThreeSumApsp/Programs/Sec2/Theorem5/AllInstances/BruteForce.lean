@@ -1,33 +1,102 @@
+module
+
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.Sec2.Lemma10
+public import ThreeSumApsp.Sec2.Orders
+public import ThreeSumApsp.Util.Sum
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import ThreeSumApsp.Sec2.Tiling
+public import ThreeSumApsp.Util.Choose
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import ThreeSumApsp.Programs.Tasks
+
+@[expose] public section
+
 /-
 Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
 
 /-!
-# The wanted entries of a thin matrix product, as inner products
+# Theorem 5: an instance of the task, in the terms of Section 2
 
-X is an N × D matrix at the address x and Y a D × N matrix at y, both row by row, with entries of
-absolute value at most U; the cells from wi and from wj on hold the rows and the columns of w wanted
-positions.  thinBrute(N, D, w, U, x, y, wi, wj, out, fr) computes every wanted entry (XY)[I, J] as
-the inner product of row I of X and column J of Y, and writes it to the cells from out on.  It is
-right on every instance for which D U² fits in a word, so that no partial sum overflows; it is what
-the solver of Theorem 5 falls back to outside the regime of the theorem.  At most
-40 (w + 1) (D + 1) steps.
-
-bruteInner_spec treats the inner product: after t rounds the sum holds the first t terms
-(brutePartial), which stay within a word (abs_brutePartial_le).  bruteRound_spec treats one wanted
-position, and thinBrute_spec the loop over the positions.
+An instance of the thin matrix product is given by lists in the memory. This file reads them as the
+matrices X and Y and the set W of Section 2, and has the facts that link the two descriptions.
 -/
 
-@[expose] public section
 
 namespace Light.Sec2
 
 open ThreeSumApsp
+
+/-- The row of the wanted position number i. -/
+def thinI (x : ThinInst) (i : ℕ) : ℕ := x.WI.getD i 0
+
+/-- The column of the wanted position number i. -/
+def thinJ (x : ThinInst) (i : ℕ) : ℕ := x.WJ.getD i 0
+
+variable {x : ThinInst} {m : ℕ} {μ : ℕ → ℤ} {fr : ℕ}
+
+section positions
+
+variable {i : ℕ}
+
+/-- A number of a wanted position is an index of the list of the rows. -/
+theorem _root_.Light.ThinInst.Pre.lt_lenWI (hpre : x.Pre μ fr) (hi : i < x.w) : i < x.WI.length :=
+  hi.trans_eq hpre.lenWI.symm
+
+/-- A number of a wanted position is an index of the list of the columns. -/
+theorem _root_.Light.ThinInst.Pre.lt_lenWJ (hpre : x.Pre μ fr) (hi : i < x.w) : i < x.WJ.length :=
+  hi.trans_eq hpre.lenWJ.symm
+
+/-- A number of a wanted position is an index of the list of the positions. -/
+theorem _root_.Light.ThinInst.Pre.lt_lenZip (hpre : x.Pre μ fr) (hi : i < x.w) :
+    i < (x.WI.zip x.WJ).length := by
+  simp [hpre.lenWI, hpre.lenWJ, hi]
+
+theorem thinI_eq (h : i < x.WI.length) : thinI x i = x.WI[i] := List.getD_eq_getElem _ _ h
+
+theorem thinJ_eq (h : i < x.WJ.length) : thinJ x i = x.WJ[i] := List.getD_eq_getElem _ _ h
+
+/-- The rows of the wanted positions are rows of the matrix. -/
+theorem thinI_lt (hpre : x.Pre μ fr) (hi : i < x.w) : thinI x i < x.N := by
+  rw [thinI_eq (hpre.lt_lenWI hi)]
+  exact hpre.ltWI _ (List.getElem_mem _)
+
+/-- The columns of the wanted positions are columns of the matrix. -/
+theorem thinJ_lt (hpre : x.Pre μ fr) (hi : i < x.w) : thinJ x i < x.N := by
+  rw [thinJ_eq (hpre.lt_lenWJ hi)]
+  exact hpre.ltWJ _ (List.getElem_mem _)
+
+/-- The rows of the wanted positions, in the memory. -/
+theorem mem_thinI (hpre : x.Pre μ fr) (hi : i < x.w) : μ (x.wi + i) = (thinI x i : ℕ) := by
+  rw [thinI_eq (hpre.lt_lenWI hi), hpre.segWI i (by simpa using hpre.lt_lenWI hi),
+    List.getElem_map]
+
+/-- The columns of the wanted positions, in the memory. -/
+theorem mem_thinJ (hpre : x.Pre μ fr) (hi : i < x.w) : μ (x.wj + i) = (thinJ x i : ℕ) := by
+  rw [thinJ_eq (hpre.lt_lenWJ hi), hpre.segWJ i (by simpa using hpre.lt_lenWJ hi),
+    List.getElem_map]
+
+end positions
+
+/-- There is one answer for each wanted position. -/
+theorem length_thinOut (hpre : x.Pre μ fr) : (thinOut x.N x.D x.X x.Y x.WI x.WJ).length = x.w := by
+  simp [thinOut, hpre.lenWI, hpre.lenWJ]
+
+/-- The answer number i. -/
+theorem getD_thinOut (hpre : x.Pre μ fr) {i : ℕ} (hi : i < x.w) :
+    (thinOut x.N x.D x.X x.Y x.WI x.WJ).getD i 0
+      = thinEntry x.N x.D x.X x.Y (thinI x i) (thinJ x i) := by
+  rw [thinI_eq (hpre.lt_lenWI hi), thinJ_eq (hpre.lt_lenWJ hi)]
+  unfold thinOut
+  rw [List.getD_eq_getElem _ _ (by simpa using hpre.lt_lenZip hi), List.getElem_map,
+    List.getElem_zip]
+
+
+
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -121,16 +190,16 @@ theorem bruteInner_spec (std : Std lim) (x : ThinInst) {μ : ℕ → ℤ} {fr i 
     Ends lim P d bruteInner ⟨frame (bruteLocs x u fr i 0 (x.x + I * x.D) (x.y + J) 0), μ⟩
       (24 * x.D + 4) fun σ' => σ' = ⟨frame (bruteLocs x u fr i x.D (x.x + I * x.D + x.D)
         (x.y + x.D * x.N + J) (brutePartial x.N x.D x.X x.Y I J x.D)), μ⟩ := by
-  have hw := std.space_le
-  have h100 := std.const_le
-  have hID := Nat.mul_add_le_mul hI (le_refl x.D)
+  have := std.space_le
+  have := std.const_le
+  have := Nat.mul_add_le_mul hI (le_refl x.D)
   unfold bruteInner
   refine Ends.whileBlock (fun t σ => σ = ⟨frame (bruteLocs x u fr i t (x.x + I * x.D + t)
     (x.y + t * x.N + J) (brutePartial x.N x.D x.X x.Y I J t)), μ⟩) x.D
     (by simp [brutePartial]) ?round ?done
   case round =>
     rintro t _ ht rfl
-    have htN := Nat.mul_add_le_mul ht (le_refl x.N)
+    have := Nat.mul_add_le_mul ht (le_refl x.N)
     have rX : μ (x.x + I * x.D + t) = x.X.getD (I * x.D + t) 0 := by
       rw [Nat.add_assoc]
       exact segX.getD (by omega) 0
@@ -141,15 +210,15 @@ theorem bruteInner_spec (std : Std lim) (x : ThinInst) {μ : ℕ → ℤ} {fr i 
       le_trans (by exact_mod_cast Nat.mul_le_mul_right (x.U * x.U) hn) hword
     have hsum := abs_le.mp ((abs_brutePartial_le (N := x.N) (D := x.D) bX bY I J (t + 1)).trans
       (by exact_mod_cast hmono (t + 1) (by omega)))
-    have hterm := abs_le.mp ((abs_bruteTerm_le bX bY (I * x.D + t) (t * x.N + J)).trans
+    have := abs_le.mp ((abs_bruteTerm_le bX bY (I * x.D + t) (t * x.N + J)).trans
       (by simpa using hmono 1 (by omega)))
     have hnext := brutePartial_succ x.N x.D x.X x.Y I J t
     rw [hnext] at hsum
     generalize x.X.getD (I * x.D + t) 0 = a, x.Y.getD (t * x.N + J) 0 = b at *
     generalize hpx : x.x + I * x.D + t = px at *
     generalize hpy : x.y + t * x.N + J = py at *
-    have hpx' : (px : ℤ) + 1 = x.x + I * x.D + (t + 1) := by rw [← hpx]; push_cast; ring
-    have hpy' : (py : ℤ) + x.N = x.y + (t + 1) * x.N + J := by rw [← hpy]; push_cast; ring
+    have hpy' : (px : ℤ) + 1 = x.x + I * x.D + (t + 1) := by rw [← hpx]; push_cast; ring
+    have hpx' : (py : ℤ) + x.N = x.y + (t + 1) * x.N + J := by rw [← hpy]; push_cast; ring
     exact ⟨by simp, by simp [bruteLocs]; omega,
       by light_side [bruteLocs, rX, rY],
       by simp [bruteLocs, update_frame_setLocal, rX, rY, hnext, hpx', hpy']⟩
@@ -171,9 +240,9 @@ theorem bruteRound_spec (std : Std lim) {x : ThinInst} {μ : ℕ → ℤ} {fr : 
     (h : BruteInv x μ u fr i σ) :
     Ends lim P d bruteRound σ (24 * x.D + 33) (BruteInv x μ u fr (i + 1)) := by
   obtain ⟨t, px, py, s, μ', rfl, hdone, hfr⟩ := h
-  have hw := std.space_le
-  have h100 := std.const_le
-  have hbelow := And.intro hpre.belowX (And.intro hpre.belowY (And.intro hpre.belowWI
+  have := std.space_le
+  have := std.const_le
+  have := And.intro hpre.belowX (And.intro hpre.belowY (And.intro hpre.belowWI
     (And.intro hpre.belowWJ hpre.belowOut)))
   have hI := thinI_lt hpre hi
   have hJ := thinJ_lt hpre hi
@@ -187,8 +256,8 @@ theorem bruteRound_spec (std : Std lim) {x : ThinInst} {μ : ℕ → ℤ} {fr : 
   have rJ : μ' (x.wj + i) = (thinJ x i : ℕ) := by
     rw [hfr _ (by rcases hpre.apartWJ with h | h <;> omega)]
     exact mem_thinJ hpre hi
-  have hID := Nat.mul_add_le_mul hI (le_refl x.D)
-  have hND : x.N ≤ x.D * x.N := Nat.le_mul_of_pos_left _ hpre.D_pos
+  have := Nat.mul_add_le_mul hI (le_refl x.D)
+  have : x.N ≤ x.D * x.N := Nat.le_mul_of_pos_left _ hpre.D_pos
   unfold bruteRound bruteLocs
   -- t := 0; px := x + mem[wi + i] * D; py := y + mem[wj + i]; s := 0
   light_set 0
@@ -238,8 +307,8 @@ theorem thinBrute_spec (std : Std lim) (x : ThinInst) (μ : ℕ → ℤ) (fr : �
     change μ' (x.out + i) = _
     rw [hdone i hi', ← getD_thinOut hpre hi', List.getD_eq_getElem _ _ hi]
   case time =>
-    have hleft : x.w * (4 + (24 * x.D + 33)) = 24 * (x.w * x.D) + 37 * x.w := by ring
-    have hright : (x.w + 1) * (x.D + 1) = x.w * x.D + x.w + x.D + 1 := by ring
+    have : x.w * (4 + (24 * x.D + 33)) = 24 * (x.w * x.D) + 37 * x.w := by ring
+    have : (x.w + 1) * (x.D + 1) = x.w * x.D + x.w + x.D + 1 := by ring
     simp
     omega
 

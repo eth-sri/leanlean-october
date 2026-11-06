@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Sec2.Lemma7_8
+public import ThreeSumApsp.Sec2.Lemma10
 public import ThreeSumApsp.Util.Counting
 public import Mathlib.Algebra.Order.Field.Basic
 public import Mathlib.Algebra.Order.Ring.Rat
@@ -47,28 +47,28 @@ theorem OutVar.privateTerm_eq_P0_iff (z : OutVar) : z.privateTerm = Term.P0 ↔ 
   cases z <;> simp [OutVar.IsInner, OutVar.privateTerm]
 
 /-- One term is `P₀`. -/
-private theorem card_term_P0 : (univ.filter fun lam : Term => lam = Term.P0).card = 1 := by decide
+theorem card_term_P0 : (univ.filter fun lam : Term => lam = Term.P0).card = 1 := by decide
 
 /-- Nine terms are different from `P₀`. -/
-private theorem card_term_ne_P0 : (univ.filter fun lam : Term => ¬ lam = Term.P0).card = 9 := by
+theorem card_term_ne_P0 : (univ.filter fun lam : Term => ¬ lam = Term.P0).card = 9 := by
   decide
 
 /-- Among the terms contributing to `z`, the number of those equal to `P₀`: one if `z = z₀`, none if
 `z = z_ij`. -/
-private theorem card_contributing_P0 (z : OutVar) :
+theorem card_contributing_P0 (z : OutVar) :
     ((univ.filter fun lam : Term => lam.Contributes z).filter fun lam => lam = Term.P0).card
       = if z.IsInner then 1 else 0 := by
   decide +revert
 
 /-- Among the terms contributing to `z`, the number of those different from `P₀`: nine if `z = z₀`,
 one if `z = z_ij`. -/
-private theorem card_contributing_ne_P0 (z : OutVar) :
+theorem card_contributing_ne_P0 (z : OutVar) :
     ((univ.filter fun lam : Term => lam.Contributes z).filter fun lam => ¬ lam = Term.P0).card
       = if z.IsInner then 9 else 1 := by
   decide +revert
 
 /-- The number of terms contributing to `z`: ten if `z = z₀`, one if `z = z_ij`. -/
-private theorem card_contributing_term (z : OutVar) :
+theorem card_contributing_term (z : OutVar) :
     (univ.filter fun lam : Term => lam.Contributes z).card = if z.IsInner then 10 else 1 := by
   decide +revert
 
@@ -98,7 +98,7 @@ theorem P0Levels_subset {L : ℕ} {τ : Leaf L} {w : OutStr L} (h : Leaf.Contrib
 /-- Section 2.4.3: "so its order is at least 0." -/
 theorem order_nonneg {L m : ℕ} {w : OutStr L} (hw : (innerSetO w).card = m) {τ : Leaf L}
     (h : Leaf.Contributes τ w) : 0 ≤ order m τ := by
-  have hc := card_le_card (P0Levels_subset h)
+  have := card_le_card (P0Levels_subset h)
   unfold order
   omega
 
@@ -158,7 +158,7 @@ theorem sec2_card_contributing_of_order {L m : ℕ} (w : OutStr L) (hw : (innerS
   · -- No leaf has order more than `m`.
     rw [alpha, Nat.choose_eq_zero_of_lt (by omega), zero_mul, card_eq_zero]
     refine filter_eq_empty_iff.mpr fun τ _ h => ?_
-    have hle := order_le m τ
+    have := order_le m τ
     omega
 
 /-- Section 2.4.3: "The total number of leaves of order d in the entire recursion tree is

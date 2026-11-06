@@ -1,9 +1,303 @@
 module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.QuerySum
-public import ImprovedExponents.PrunedProgram.Query.Contracts
+public import ThreeSumApsp.Lang.Tactics
+public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import Mathlib.Data.List.Iterate
+public import ImprovedExponents.PrunedProgram.SegOn
 
 @[expose] public section
+
+/-
+Copyright (c) 2026 Anthropic, PBC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+SPDX-License-Identifier: Apache-2.0
+-/
+
+
+/-!
+# A query, once the digits of its output string are known
+
+Proof of Theorem 30, "Query"; these are steps (2) and (3) of the query in Section 4.3. The routine
+adds up the sum of Lemma 28: for each leaf of order below t contributing to the output string the
+product of its two numbers in the encodings of the tile (queryLowRound), and for each box of the
+output string its value (queryBoxRound): "we look up its value in the trie of the tile". The root of
+this trie is an argument of the routine.
+
+Leaves and boxes are enumerated through the strings of m digits with a bounded number of nines. For
+the boxes the proof of Theorem 30 says "for every V ⊆ Q with |V| = m - t and every box of 𝓑_V". The
+routine has one loop (queryBoxes), over the strings with exactly m - t nines: such a string gives V
+(the places of its nines) and the box of 𝓑_V (its other digits) at once. This is the other way in
+which Section 4.2 describes the boxes of w, "in terms of the leaves of order exactly t contributing
+to w. For such a leaf, consider the lowest level of Q at which it chooses a term other than P₀, and
+replace its P₀ by a star at every lower level of Q (or at every level of Q, if t = 0). The result is
+a box of w, and each box of w arises exactly once in this way" (for cubes:
+`existsUnique_starBelow_eq`). The members of the list of the routine are exactly the strings of the
+cubes so obtained (`mem_boxesOf_iff`), and a sum over the list is the sum over the sets 𝓑_V
+(`sum_boxesOf`). The sets V come interleaved, in the lexicographic order of the strings.
+
+Both loops have one invariant, Query.Inv: the sum of the first terms stands in a local, and the
+current string of the enumeration in the scratch area ss. Query.low_term and Query.box_term say
+which term a round adds; Query.lowRound and Query.boxRound are the two rounds, Query.loop is either
+loop, and queryCore_spec puts the two loops together.
+-/
+
+
+open ThreeSumApsp
+
+namespace Light.Sec4
+
+open ThreeSumApsp.Spec
+
+/-! ## The program -/
+
+namespace Query
+
+/-- The local variables of queryCore: the arguments aA, aB, tr, root, wd, ss, box, L, m, t; the sum
+so far, whether there is a further string, the code of the leaf (the result of scatter, which is not
+used, goes there too), the value of the box, and m - t. -/
+abbrev EncA : ℕ := 0
+@[inherit_doc EncA] abbrev EncB : ℕ := 1
+@[inherit_doc EncA] abbrev Tries : ℕ := 2
+@[inherit_doc EncA] abbrev Root : ℕ := 3
+@[inherit_doc EncA] abbrev Digits : ℕ := 4
+@[inherit_doc EncA] abbrev Str : ℕ := 5
+@[inherit_doc EncA] abbrev Box : ℕ := 6
+@[inherit_doc EncA] abbrev Levels : ℕ := 7
+@[inherit_doc EncA] abbrev Inner : ℕ := 8
+@[inherit_doc EncA] abbrev Switch : ℕ := 9
+@[inherit_doc EncA] abbrev Sum : ℕ := 10
+@[inherit_doc EncA] abbrev More : ℕ := 11
+@[inherit_doc EncA] abbrev Code : ℕ := 12
+@[inherit_doc EncA] abbrev Value : ℕ := 13
+@[inherit_doc EncA] abbrev Nines : ℕ := 14
+
+end Query
+
+open Query in
+/-- One round of the first loop: a leaf of order below t. -/
+def queryLowRound : Stmt :=
+  .call Proc.scatter [v Digits, v Str, v Box, v Levels, k 0] Code ;;
+  .call Proc.horner [v Box, v Levels] Code ;;
+  .set Sum (v Sum +' M (v EncA +' v Code) *' M (v EncB +' v Code)) ;;
+  .call Proc.nineNext [v Str, v Inner, v Nines +' k 1, v Inner] More
+
+open Query in
+/-- One round of the second loop: a box, looked up in the trie of the tile. -/
+def queryBoxRound : Stmt :=
+  .call Proc.scatter [v Digits, v Str, v Box, v Levels, k 1] Code ;;
+  .call Proc.lookup [v Tries, v Root, v Box, v Levels] Value ;;
+  .set Sum (v Sum +' v Value) ;;
+  .call Proc.nineNext [v Str, v Inner, v Nines, v Nines] More
+
+open Query in
+/-- The leaves of order below t: the strings with more than m - t nines. -/
+def queryLow : Stmt :=
+  .call Proc.nineFirst [v Str, v Inner, v Nines +' k 1] More ;;
+  .set More (k 1) ;;
+  .while (v More =' k 1) queryLowRound
+
+open Query in
+/-- The boxes: the strings with exactly m - t nines. -/
+def queryBoxes : Stmt :=
+  .call Proc.nineFirst [v Str, v Inner, v Nines] More ;;
+  .set More (k 1) ;;
+  .while (v More =' k 1) queryBoxRound
+
+open Query in
+/-- queryCore(aA, aB, tr, root, wd, ss, box, L, m, t) returns the sum of Lemma 28. The sum starts
+at 0, as all locals that are not arguments; the result of a procedure is its local 0, so the last
+statement puts the sum there. -/
+def queryCoreBody : Stmt :=
+  .set Nines (v Inner -' v Switch) ;;
+  .ite (v Switch =' k 0) .skip queryLow ;;
+  queryBoxes ;;
+  .set EncA (v Sum)
+
+namespace Query
+
+/-! ## The pure side: the terms of the sum -/
+
+variable {lim : Limits} {P : Program} {d : ℕ} {μ : ℕ → ℤ} {x : QueryCoreArgs} {i : ℕ}
+
+/-- The number of leaves of order below t. -/
+abbrev lowCount (x : QueryCoreArgs) : ℕ := (nineStrs x.m (x.m - x.t + 1) x.m).length
+
+/-- The number of boxes. -/
+abbrev boxCount (x : QueryCoreArgs) : ℕ := (nineStrs x.m (x.m - x.t) (x.m - x.t)).length
+
+/-- The output string has one digit for each level. -/
+theorem length_digits (x : QueryCoreArgs) : (digitsO x.η).length = x.L := length_digitsO x.η
+
+/-- The string that round i of the first loop writes at box: a leaf of order below t. -/
+def leafAt (x : QueryCoreArgs) (i : ℕ) : List ℕ :=
+  scatter (digitsO x.η) (nineStr x.m (x.m - x.t + 1) x.m i)
+
+/-- The string that round i of the second loop writes at box: a box of the output string. -/
+def boxAt (x : QueryCoreArgs) (i : ℕ) : List ℕ :=
+  scatter (digitsO x.η) (starRunIf true (nineStr x.m (x.m - x.t) (x.m - x.t) i))
+
+/-- Round i of the second loop treats a box and adds its value, looked up in the trie of the
+tile. -/
+theorem box_term (hi : i < boxCount x) :
+    boxAt x i ∈ boxesOf x.m x.t (digitsO x.η) ∧
+      (x.terms.take (lowCount x + (i + 1))).sum = (x.terms.take (lowCount x + i)).sum +
+        trieLookup x.T x.root (boxAt x i) := by
+  refine ⟨List.mem_map.mpr ⟨_, nineStr_mem hi, rfl⟩, ?_⟩
+  have hlows : ((lowList x.m x.t (digitsO x.η)).map
+      (leafProduct (arrT x.encA) (arrT x.encB))).length = lowCount x := by simp [lowList]
+  have hlen : i < (boxesOf x.m x.t (digitsO x.η)).length := by simpa [boxesOf] using hi
+  have hmember : (boxesOf x.m x.t (digitsO x.η))[i] = boxAt x i := by
+    refine Option.some.inj ((List.getElem?_eq_getElem hlen).symm.trans ?_)
+    rw [boxesOf, List.getElem?_map, List.getElem?_eq_getElem hi, getElem_nineStrs hi]
+    rfl
+  rw [← Nat.add_assoc, List.sum_take_succ_getD, QueryCoreArgs.terms, queryTerms, ← hlows,
+    List.getD_append_add,
+    List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getElem_map, hmember]
+
+/-! ## The memory and the invariant -/
+
+section Same
+
+variable {μ₁ μ₂ : ℕ → ℤ} {ss m box L a : ℕ} {l : List ℤ}
+
+/-- A write to the string at ss stays within the two scratch strings. -/
+theorem same_of_ss (h : SameOutside2 μ μ₁ ss m box L) (h' : SameOutside μ₁ μ₂ ss m) :
+    SameOutside2 μ μ₂ ss m box L := h.then h' fun _ hb => ⟨hb, hb.1⟩
+
+/-- A write to the string at box stays within the two scratch strings. -/
+theorem same_of_box (h : SameOutside2 μ μ₁ ss m box L) (h' : SameOutside μ₁ μ₂ box L) :
+    SameOutside2 μ μ₂ ss m box L := h.then h' fun _ hb => ⟨hb, hb.2⟩
+
+/-- A segment that meets neither scratch string is kept. -/
+theorem seg_of_same (h : SameOutside2 μ μ₁ ss m box L) (hl : Seg μ a l)
+    (h1 : Apart ss m a l.length) (h2 : Apart box L a l.length) : Seg μ₁ a l :=
+  hl.of_sameOn h fun i hi => ⟨by omega, by omega⟩
+
+end Same
+
+/-- The specifications of the routines that queryCore calls. -/
+structure Callees (lim : Limits) (P : Program) : Prop where
+  nineFirst : NineFirstSpec lim P
+  nineNext : NineNextSpec lim P
+  scatter : ScatterSpec lim P
+  horner : HornerSpec lim P
+  lookup : LookupSpec lim P
+
+/-- The state before round i of the loop over the strings with lo to hi nines, when base terms have
+been added before the loop: the sum of the first base + i terms stands in the local Sum, the local
+More says whether there is a string number i, and this string stands at ss. -/
+def Inv (μ : ℕ → ℤ) (x : QueryCoreArgs) (lo hi base i : ℕ) (σ : State) : Prop :=
+  ∃ (code value : ℤ) (μ' : ℕ → ℤ),
+    σ = ⟨frame [x.aA, x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L, x.m, x.t,
+      (x.terms.take (base + i)).sum, if i < (nineStrs x.m lo hi).length then 1 else 0, code, value,
+      (x.m - x.t : ℕ)], μ'⟩ ∧
+    SegN μ' x.ss (nineStr x.m lo hi i) ∧ SameOutside2 μ μ' x.ss x.m x.box x.L
+
+variable {σ : State}
+
+/-! ## The two calls that both rounds make -/
+
+section Calls
+
+variable {lo hi : ℕ} {μ₀ : ℕ → ℤ}
+
+end Calls
+
+/-! ## The two rounds -/
+
+/-! ## The two loops -/
+
+/-- The state between the loops: the sum of the first n terms stands in the local Sum. -/
+def Mid (μ : ℕ → ℤ) (x : QueryCoreArgs) (n : ℕ) (σ : State) : Prop :=
+  ∃ (more code value : ℤ) (μ' : ℕ → ℤ),
+    σ = ⟨frame [x.aA, x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L, x.m, x.t, (x.terms.take n).sum,
+      more, code, value, (x.m - x.t : ℕ)], μ'⟩ ∧ SameOutside2 μ μ' x.ss x.m x.box x.L
+
+/-- After a loop, only the sum and the memory matter. -/
+theorem Inv.mid {lo hi base : ℕ} (h : Inv μ x lo hi base i σ) : Mid μ x (base + i) σ := by
+  obtain ⟨code, value, μ', rfl, -, same⟩ := h
+  exact ⟨_, code, value, μ', rfl, same⟩
+
+end Query
+
+
+
+
+
+
+/-!
+# The specification of `queryCore` on pruned encodings
+
+Upstream's `queryCore` (procedure 53) assumes the two encodings of the tile as full segments
+(`QueryCorePre.segA/segB : Seg μ aA (arrT encA)`).  It reads them at the leaves of order below `t`
+contributing to the output string only, and such a leaf has at most `m` symbols `P₀`
+(`card_P0Levels_le_of_contributes`, with `QueryCorePre.card`).  `QueryCorePreP` is `QueryCorePre`
+with `SegOn m` in place of `Seg` in these two fields, and `QueryCoreSpecP` is `QueryCoreSpec` with
+this weaker assumption; the routine and its time are upstream's.  `QueryCorePre.toP` says that the
+full assumption implies the weaker one, and `segOn_of_same` that the two scratch strings of the
+routine do not disturb a pruned encoding.
+
+Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean` (Apache-2.0).
+-/
+
+
+
+/-- What `queryCore` assumes when the encodings are right at the leaves with at most `m` symbols
+`P₀` only: upstream's `QueryCorePre` with `SegOn x.m` in place of `Seg` for the two encodings. -/
+-- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (QueryCorePre)
+structure QueryCorePreP (lim : Limits) (μ : ℕ → ℤ) (x : QueryCoreArgs) : Prop where
+  std : Std lim
+  t_le : x.t ≤ x.m
+  card : (innerSetO x.η).card = x.m
+  segA : SegOn x.m μ x.aA x.encA
+  segB : SegOn x.m μ x.aB x.encB
+  segT : Seg μ x.tr x.T
+  segDigits : SegN μ x.wd (digitsO x.η)
+  walk : ∀ l ∈ boxesOf x.m x.t (digitsO x.η), WalkOK x.T x.root l
+  sums : ∀ j, |(x.terms.take j).sum| ≤ lim.word
+  prod : ∀ τ, |x.encA τ * x.encB τ| ≤ lim.word
+  pow : (10 : ℤ) ^ x.L ≤ lim.word
+  ss_wd : Apart x.ss x.m x.wd x.L
+  box_wd : Apart x.box x.L x.wd x.L
+  ss_box : Apart x.ss x.m x.box x.L
+  ss_aA : Apart x.ss x.m x.aA (10 ^ x.L)
+  ss_aB : Apart x.ss x.m x.aB (10 ^ x.L)
+  box_aA : Apart x.box x.L x.aA (10 ^ x.L)
+  box_aB : Apart x.box x.L x.aB (10 ^ x.L)
+  ss_tr : Apart x.ss x.m x.tr x.T.length
+  box_tr : Apart x.box x.L x.tr x.T.length
+  aA_lt : x.aA + 10 ^ x.L < lim.space
+  aB_lt : x.aB + 10 ^ x.L < lim.space
+  tr_lt : x.tr + x.T.length < lim.space
+  wd_lt : x.wd + x.L < lim.space
+  ss_lt : x.ss + x.m < lim.space
+  box_lt : x.box + x.L < lim.space
+
+/-- `queryCore` returns the sum `trieQuery` for the output string whose digits are at wd, when the
+two encodings are right at the leaves with at most `m` symbols `P₀` only; it changes only the two
+scratch strings.  Same procedure number and time as upstream. -/
+-- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Contracts.lean (QueryCoreSpec)
+def QueryCoreSpecP (lim : Limits) (P : Program) : Prop :=
+  ∀ (x : QueryCoreArgs) (μ : ℕ → ℤ), QueryCorePreP lim μ x →
+    ∀ d, d + 1 ≤ lim.depth →
+    Meets lim P Proc.queryCore d [x.aA, x.aB, x.tr, x.root, x.wd, x.ss, x.box, x.L, x.m, x.t] μ
+      (tQueryCore x.L x.m x.t) fun r μ' =>
+        r = trieQuery x.m x.t (arrT x.encA) (arrT x.encB) x.T x.root (digitsO x.η) ∧
+          SameOutside2 μ μ' x.ss x.m x.box x.L
+
+variable {lim : Limits} {μ μ₁ : ℕ → ℤ} {x : QueryCoreArgs}
+
+/-- A pruned encoding that meets neither scratch string is kept. -/
+-- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean (Query.seg_of_same)
+theorem segOn_of_same {ss m box L a k L' : ℕ} {enc : Leaf L' → ℤ}
+    (h : SameOutside2 μ μ₁ ss m box L) (hl : SegOn k μ a enc)
+    (h1 : Apart ss m a (10 ^ L')) (h2 : Apart box L a (10 ^ L')) : SegOn k μ₁ a enc :=
+  hl.congr fun i hi => h _ ⟨by omega, by omega⟩
+
+
+
+
+
 
 /-!
 # A query, once the digits of its output string are known, on pruned encodings
@@ -25,11 +319,8 @@ same names with a `P` (`lowRoundP`, `low_specP`, …).
 Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/QuerySum.lean` (Apache-2.0).
 -/
 
-open ThreeSumApsp
 
-namespace Light.Sec4
 
-open ThreeSumApsp.Spec
 
 namespace QueryP
 
@@ -98,7 +389,7 @@ theorem scatter_meetsP (K : Callees lim P) (C : QueryCorePreP lim μ x) (star : 
       fun _ μ₁ => SegN μ₁ x.box (scatter (digitsO x.η) (starRunIf star (nineStr x.m lo hi i))) ∧
         SegN μ₁ x.ss (nineStr x.m lo hi i) ∧ SameOutside2 μ μ₁ x.ss x.m x.box x.L := by
   obtain ⟨hlen, -⟩ := (mem_nineStrs _).mp (nineStr_mem hstr)
-  have hapart := C.ss_box
+  have := C.ss_box
   refine (K.scatter x.wd x.ss x.box x.L star (digitsO x.η) _ μ₀ (segDigitsP C same) hss
     (length_digits x) (by rw [hlen, count_digitsP C]) C.box_wd
     (by omega) C.wd_lt (by rw [hlen]; exact C.ss_lt) C.box_lt _
@@ -142,13 +433,13 @@ theorem lowRoundP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 �
   obtain rfl : μ₁ = μ' := hμ'.symm
   rw [ofDigitList_digitsT]
   -- sum := sum + aA[code] * aB[code]: the leaf has few symbols P₀, so its cells are right
-  have hcode : codeT τ < 10 ^ x.L := codeT_lt τ
+  have : codeT τ < 10 ^ x.L := codeT_lt τ
   light_facts C
   have hreadA : μ₁ (x.aA + codeT τ) = x.encA τ :=
     (segOn_of_same same₁ C.segA C.ss_aA C.box_aA).get hfew
   have hreadB : μ₁ (x.aB + codeT τ) = x.encB τ :=
     (segOn_of_same same₁ C.segB C.ss_aB C.box_aB).get hfew
-  have hprod := abs_le.1 (C.prod τ)
+  have := abs_le.1 (C.prod τ)
   have hfits := abs_le.1 (C.sums (i + 1))
   rw [hsum] at hfits
   light_set ((x.terms.take i).sum + x.encA τ * x.encB τ) using hreadA, hreadB
@@ -194,8 +485,8 @@ theorem loopP (C : QueryCorePreP lim μ x) {round : Stmt} {lo hi base b : ℕ}
     (h : Inv μ x lo hi base 0 σ) :
     Ends lim P d (.while (v More =' k 1) round) σ ((nineStrs x.m lo hi).length * (b + 90) + 4)
       (Inv μ x lo hi base (nineStrs x.m lo hi).length) := by
-  have hc := C.std.const_le
-  have htime := Nat.mul_le_mul_left (nineStrs x.m lo hi).length
+  have := C.std.const_le
+  have := Nat.mul_le_mul_left (nineStrs x.m lo hi).length
     (show 1 + 1 + 1 + 1 + (b + 31) ≤ b + 90 by omega)
   refine Ends.whileConst (Inv μ x lo hi base) (nineStrs x.m lo hi).length (b + 31) h ?round ?done
     (by simp only [Cond.cost, Expr.cost]; omega)
@@ -206,8 +497,8 @@ theorem loopP (C : QueryCorePreP lim μ x) {round : Stmt} {lo hi base b : ℕ}
     exact ⟨by simp; omega, by simp [hi], hends⟩
   case done =>
     rintro σ hI
-    have hI' := hI
-    obtain ⟨code, value, μ', rfl, -⟩ := hI'
+    have := hI
+    obtain ⟨code, value, μ', rfl, -⟩ := this
     exact ⟨by simp; omega, by simp, hI⟩
 
 /-- The leaves of order below t. -/
@@ -218,7 +509,7 @@ theorem low_specP (K : Callees lim P) (C : QueryCorePreP lim μ x) (hd : d + 1 �
       (tNineFirst x.m + lowCount x * (tScatter x.L + tHorner x.L + tNineNext x.m + 90) + 16)
       (Mid μ x (lowCount x)) := by
   obtain ⟨more, code, value, μ₀, rfl, same⟩ := h
-  have htm := C.t_le
+  have := C.t_le
   light_facts C C.std
   have hpos : 0 < lowCount x := length_nineStrs_pos (by omega) (by omega)
   -- nineFirst(ss, m, m - t + 1); more := 1
@@ -284,7 +575,7 @@ theorem queryCoreP_spec {lim : Limits} {P : Program}
     (hP : P[Proc.queryCore]? = some queryCoreBody) (K : Callees lim P) : QueryCoreSpecP lim P := by
   intro x μ C
   refine fun d hd => ⟨queryCoreBody, hP, ?_⟩
-  have htm := C.t_le
+  have := C.t_le
   light_facts C C.std
   have hlows : (lowList x.m x.t ([] : List ℕ)).length = lowCount x := by simp [lowList]
   have hboxes : (boxesOf x.m x.t ([] : List ℕ)).length = boxCount x := by simp [boxesOf]
@@ -307,3 +598,4 @@ theorem queryCoreP_spec {lim : Limits} {P : Program}
     light_piece (tail_specP K C hd hmid)
 
 end Light.Sec4
+

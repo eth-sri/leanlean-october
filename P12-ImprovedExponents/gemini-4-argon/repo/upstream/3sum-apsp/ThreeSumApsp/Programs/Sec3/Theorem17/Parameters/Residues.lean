@@ -83,7 +83,7 @@ theorem bitLen_spec {μ : ℕ → ℤ} {U : ℕ} (hU : ((2 * U + 2 : ℕ) : ℤ)
     exact ⟨by light_side, by light_side, by light_side, by simp [update_frame_setLocal]⟩
   case done =>
     rintro _ rfl
-    have hupZ : (U : ℤ) < 2 ^ n := by exact_mod_cast hup
+    have : (U : ℤ) < 2 ^ n := by exact_mod_cast hup
     -- return len
     exact ⟨by light_side, by light_side, Ends.setTo n (by simp)⟩
 
@@ -184,12 +184,12 @@ def greedyAt (p len : ℕ) (w : ℤ) : ℕ → ℤ
     else greedyAt p len w i
 
 /-- A multiple of p is congruent to 0. -/
-private theorem mul_pow_modEq_zero (p j : ℕ) : ((p * 2 ^ j : ℕ) : ℤ) ≡ 0 [ZMOD (p : ℤ)] := by
+theorem mul_pow_modEq_zero (p j : ℕ) : ((p * 2 ^ j : ℕ) : ℤ) ≡ 0 [ZMOD (p : ℤ)] := by
   rw [Int.modEq_zero_iff_dvd, Nat.cast_mul]
   exact Dvd.intro _ rfl
 
 /-- 2^(j+1) p is twice 2^j p. -/
-private theorem cast_mul_pow_succ (p j : ℕ) :
+theorem cast_mul_pow_succ (p j : ℕ) :
     ((p * 2 ^ (j + 1) : ℕ) : ℤ) = 2 * ((p * 2 ^ j : ℕ) : ℤ) := by
   rw [pow_succ]
   push_cast
@@ -204,7 +204,7 @@ theorem greedyAt_inv {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len)
   | zero =>
     intro _
     obtain ⟨hlow, hhigh⟩ := abs_lt.1 hw
-    have hle : (2 : ℤ) ^ len ≤ ((p * 2 ^ len : ℕ) : ℤ) := by
+    have : (2 : ℤ) ^ len ≤ ((p * 2 ^ len : ℕ) : ℤ) := by
       exact_mod_cast Nat.le_mul_of_pos_left (2 ^ len) hp
     rw [greedyAt, Nat.sub_zero, cast_mul_pow_succ]
     exact ⟨by linarith, by linarith,
@@ -270,8 +270,8 @@ theorem resid_meets {μ : ℕ → ℤ} {pResid dbl p len : ℕ} {w : ℤ} (hP : 
   have hhigh := fun i (hi : i ≤ len + 1) => greedyAt_lt hp hlt hi
   unfold tResid
   -- num := w + dbl[len]; exp := len + 1
-  have hlow0 := hlow 0 (by omega)
-  have hhigh0 := hhigh 0 (by omega)
+  have := hlow 0 (by omega)
+  have := hhigh 0 (by omega)
   have hfirst : w + μ (dbl + len) = greedyAt p len w 0 := by rw [read_dblList hseg le_rfl, greedyAt]
   light_set (greedyAt p len w 0) using hfirst
   light_set (len + 1 : ℕ)

@@ -120,13 +120,13 @@ theorem glue_outerLevel (f : Fin m → α) (g : Fin (L - m) → α) (k : Fin (L 
 
 /-- At the `k`-th lowest level of a set `Q'` that is equal to `Q`, the string glued along `Q` has
 the `k`-th letter of `f`. -/
-private theorem glue_innerLevel_of_eq (f : Fin m → α) (g : Fin (L - m) → α) {Q' : Finset (Fin L)}
+theorem glue_innerLevel_of_eq (f : Fin m → α) (g : Fin (L - m) → α) {Q' : Finset (Fin L)}
     (h : Q' = Q) (hQ' : Q'.card = m) (k : Fin m) : glue Q hQ f g (innerLevel Q' hQ' k) = f k := by
   rw [innerLevel_congr Q hQ h, glue_innerLevel]
 
 /-- At the `k`-th lowest level outside a set `Q'` that is equal to `Q`, the string glued along `Q`
 has the `k`-th letter of `g`. -/
-private theorem glue_outerLevel_of_eq (f : Fin m → α) (g : Fin (L - m) → α) {Q' : Finset (Fin L)}
+theorem glue_outerLevel_of_eq (f : Fin m → α) (g : Fin (L - m) → α) {Q' : Finset (Fin L)}
     (h : Q' = Q) (hQ' : Q'.card = m) (k : Fin (L - m)) :
     glue Q hQ f g (outerLevel Q' hQ' k) = g k := by
   rw [outerLevel_congr Q hQ h, glue_outerLevel]
@@ -233,24 +233,6 @@ theorem outerPartR_rightStrOf (π : InnerStr m) (c : OuterStr L m)
     (h : (innerSetR (rightStrOf Q hQ π c)).card = m) : outerPartR (rightStrOf Q hQ π c) h = c :=
   funext fun k => congrArg RightVar.outerIndex
     (glue_outerLevel_of_eq Q hQ _ _ (innerSetR_rightStrOf Q hQ π c) h k)
-
-/-- The variable of `outStrOf Q hQ r c` at the `k`-th lowest level outside its inner set. -/
-private theorem outStrOf_outerLevel (r c : OuterStr L m)
-    (h : (innerSetO (outStrOf Q hQ r c)).card = m) (k : Fin (L - m)) :
-    outStrOf Q hQ r c (outerLevel (innerSetO (outStrOf Q hQ r c)) h k) = .z (r k) (c k) := by
-  rw [outerLevel_congr Q hQ (innerSetO_outStrOf Q hQ r c), outStrOf, glue_outerLevel]
-
-/-- The row of `outStrOf Q hQ r c` is `r`. -/
-@[simp]
-theorem rowO_outStrOf (r c : OuterStr L m) (h : (innerSetO (outStrOf Q hQ r c)).card = m) :
-    rowO (outStrOf Q hQ r c) h = r :=
-  funext fun k => congrArg OutVar.rowIndex (outStrOf_outerLevel Q hQ r c h k)
-
-/-- The column of `outStrOf Q hQ r c` is `c`. -/
-@[simp]
-theorem colO_outStrOf (r c : OuterStr L m) (h : (innerSetO (outStrOf Q hQ r c)).card = m) :
-    colO (outStrOf Q hQ r c) h = c :=
-  funext fun k => congrArg OutVar.colIndex (outStrOf_outerLevel Q hQ r c h k)
 
 variable {Q}
 

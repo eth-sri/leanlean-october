@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
 /-!
@@ -89,15 +89,15 @@ structure Areas (p : Sec2.Par) (t b0 : ℕ) : Prop where
 
 /-- The tables and the areas lie as Areas says. -/
 theorem areas (p : Sec2.Par) (t b0 : ℕ) : Areas p t b0 := by
-  have hplaces := p.places b0
-  have hWD : aWD p b0 = p.sharedEnd b0 := rfl
-  have hCUR : aCUR p b0 = aWD p b0 + p.L := rfl
-  have hBOX : aBOX p b0 = aCUR p b0 + p.L := rfl
-  have hSS : aSS p b0 = aBOX p b0 + p.L := rfl
-  have hFP : aFP p b0 = aSS p b0 + p.m := rfl
-  have hROOTS : aROOTS p b0 = aFP p b0 + 1 := rfl
-  have hTR : aTR p b0 = aROOTS p b0 + p.nB * p.nB := rfl
-  have hTOP : top p t b0 = aTR p b0 + trieCap p t + 1 := rfl
+  have := p.places b0
+  have : aWD p b0 = p.sharedEnd b0 := rfl
+  have : aCUR p b0 = aWD p b0 + p.L := rfl
+  have : aBOX p b0 = aCUR p b0 + p.L := rfl
+  have : aSS p b0 = aBOX p b0 + p.L := rfl
+  have : aFP p b0 = aSS p b0 + p.m := rfl
+  have : aROOTS p b0 = aFP p b0 + 1 := rfl
+  have : aTR p b0 = aROOTS p b0 + p.nB * p.nB := rfl
+  have : top p t b0 = aTR p b0 + trieCap p t + 1 := rfl
   constructor <;> omega
 
 /-- The directory lies before the areas of Section 4. -/
@@ -167,16 +167,6 @@ def dsTries (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (
     TrieStore :=
   allTries p.L p.m t (tileList p.nB (encRow p hmL X) (encCol p hmL Y))
 
-/-- **The block from b0 on holds the data structure for X and Y.** The preprocessing establishes
-this, and every query needs it and keeps it. -/
-structure DSReady (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop where
-  shared : Sec2.SharedReady p hmL aX aY b0 X Y μ
-  cellT : μ (b0 + 31) = t
-  roots : SegN μ (aROOTS p b0) (dsTries p t hmL X Y).roots
-  trie : Seg μ (aTR p b0) (dsTries p t hmL X Y).cells
-
 section
 
 variable {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
@@ -197,9 +187,8 @@ structure Lim30 (lim : Limits) (p : Sec2.Par) (t b0 : ℕ) (U : ℤ) : Prop wher
 
 /-! ## The two routines that know the map -/
 
-/-- The numbers of the two routines. -/
-abbrev Proc.preCore : ℕ := 54
-@[inherit_doc Proc.preCore] abbrev Proc.queryAt : ℕ := 55
+/-- The number of the query routine. -/
+abbrev Proc.queryAt : ℕ := 55
 
 /-- The time of `queryAt`. -/
 def tQueryAt (L m t : ℕ) : ℕ := tOutDigits L + tQueryCore L m t + 400

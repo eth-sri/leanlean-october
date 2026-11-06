@@ -93,8 +93,8 @@ theorem polyNeed {need : ℕ → ℕ → Need} (hw : PolyBounded fun n U => (nee
   obtain ⟨K, e, hK⟩ := exists_nat_le (F := fun n U => (need n U).word + (need n U).cells +
     (need n U).depth) (by growth_poly [hw, hc, hd])
   refine ⟨Nat.size K, e, fun n U => ?_⟩
-  have hsum := hK n U
-  have hpoly : K * ((n + 1) * (U + 1)) ^ e ≤ Light.polyBound (Nat.size K) e [n, U] := by
+  have := hK n U
+  have : K * ((n + 1) * (U + 1)) ^ e ≤ Light.polyBound (Nat.size K) e [n, U] := by
     simp only [Light.polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
     exact Nat.mul_le_mul_right _ (Nat.lt_size_self K).le
   exact ⟨by omega, by omega, by omega⟩
@@ -110,7 +110,7 @@ namespace PolyNeed
 
 variable {need : ℕ → ℕ → Need} {A B : ℕ × ℕ → ℕ} {a b : Fin 0 → ℕ}
 
-private theorem part (h : PolyNeed need) (hA : polyScale.SoftO A a) (hB : polyScale.SoftO B b) :
+theorem part (h : PolyNeed need) (hA : polyScale.SoftO A a) (hB : polyScale.SoftO B b) :
     ∃ R : ℕ → ℕ → ℕ, PolyBounded R ∧ ∀ n U, (need (A (n, U)) (B (n, U))).word ≤ R n U ∧
       (need (A (n, U)) (B (n, U))).cells ≤ R n U ∧ (need (A (n, U)) (B (n, U))).depth ≤ R n U :=
   let ⟨s, k, hle⟩ := h

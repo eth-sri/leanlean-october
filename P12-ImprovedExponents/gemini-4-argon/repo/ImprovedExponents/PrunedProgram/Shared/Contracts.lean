@@ -1,6 +1,6 @@
 module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ImprovedExponents.PrunedProgram.SegOn
 public import ImprovedExponents.PrunedProgram.Work
 public import ImprovedExponents.PrunedProgram.Procs
@@ -51,7 +51,7 @@ shared block, but for cell 31 of the directory, which the shared stage does not 
 theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
     (hag : ∀ a, b0 ≤ a → a < p.sharedEnd b0 → a ≠ b0 + 31 → μ' a = μ a) :
     SharedReadyP p hmL aX aY b0 X Y μ' := by
-  have hplaces := p.places b0
+  have := p.places b0
   have tb : SharedTables p b0 μ' :=
     h.toSharedTables.congr fun x hlo hx => hag x (by omega) (by omega) (by omega)
   have henc : ∀ {a β i : ℕ}, p.aENCA b0 ≤ a → a + p.nB * p.T ≤ p.sharedEnd b0 → β < p.nB →

@@ -46,10 +46,10 @@ theorem choose_mul_pow_mul_pow_le (a b n k : ℕ) :
 /-! ## The largest term of a binomial expansion -/
 
 /-- The term number `j` of the expansion of `n^n = (k + (n-k))^n`. -/
-private def modeTerm (n k j : ℕ) : ℕ := n.choose j * k ^ j * (n - k) ^ (n - j)
+def modeTerm (n k j : ℕ) : ℕ := n.choose j * k ^ j * (n - k) ^ (n - j)
 
 /-- The quotient of two consecutive terms is `(n - j) k / ((n - k) (j + 1))`. -/
-private theorem modeTerm_succ_mul {n j : ℕ} (k : ℕ) (hj : j < n) :
+theorem modeTerm_succ_mul {n j : ℕ} (k : ℕ) (hj : j < n) :
     modeTerm n k (j + 1) * ((n - k) * (j + 1)) = modeTerm n k j * ((n - j) * k) := by
   have he : n - j = n - (j + 1) + 1 := by omega
   calc modeTerm n k (j + 1) * ((n - k) * (j + 1))
@@ -60,21 +60,21 @@ private theorem modeTerm_succ_mul {n j : ℕ} (k : ℕ) (hj : j < n) :
     _ = modeTerm n k j * ((n - j) * k) := by rw [modeTerm]; ring
 
 /-- The terms increase up to `j = k`. -/
-private theorem modeTerm_le_succ {n k j : ℕ} (hjk : j < k) (hkn : k ≤ n) :
+theorem modeTerm_le_succ {n k j : ℕ} (hjk : j < k) (hkn : k ≤ n) :
     modeTerm n k j ≤ modeTerm n k (j + 1) := by
   refine Nat.le_of_mul_le_mul_right ?_ (Nat.mul_pos (by omega : 0 < n - j) (by omega : 0 < k))
   rw [← modeTerm_succ_mul k (by omega)]
   exact Nat.mul_le_mul_left _ (Nat.mul_le_mul (by omega) (by omega))
 
 /-- The terms decrease from `j = k` on. -/
-private theorem modeTerm_succ_le {n k j : ℕ} (hkj : k ≤ j) (hjn : j < n) :
+theorem modeTerm_succ_le {n k j : ℕ} (hkj : k ≤ j) (hjn : j < n) :
     modeTerm n k (j + 1) ≤ modeTerm n k j := by
   refine Nat.le_of_mul_le_mul_right ?_ (Nat.mul_pos (by omega : 0 < n - k) j.succ_pos)
   rw [modeTerm_succ_mul k hjn]
   exact Nat.mul_le_mul_left _ (Nat.mul_le_mul (by omega) (by omega))
 
 /-- Every term is at most the term with `j = k`. -/
-private theorem modeTerm_le_mode {n k j : ℕ} (hkn : k ≤ n) (hjn : j ≤ n) :
+theorem modeTerm_le_mode {n k j : ℕ} (hkn : k ≤ n) (hjn : j ≤ n) :
     modeTerm n k j ≤ modeTerm n k k := by
   rcases le_total j k with hjk | hkj
   · induction hjk using Nat.decreasingInduction with

@@ -62,7 +62,7 @@ theorem code_cons (b : ℕ) {n : ℕ} (s : ℕ) (d : Fin n → ℕ) :
   rw [code, Fin.cons_zero, Fin.tail_cons]
 
 /-- Horner's rule, started with `acc`, shifts `acc` by `n` digits and adds the code. -/
-private theorem foldl_ofFn (b : ℕ) {n : ℕ} (d : Fin n → ℕ) (acc : ℕ) :
+theorem foldl_ofFn (b : ℕ) {n : ℕ} (d : Fin n → ℕ) (acc : ℕ) :
     (List.ofFn d).foldl (fun acc x => acc * b + x) acc = acc * b ^ n + code b d := by
   induction n generalizing acc with
   | zero => simp [code]
@@ -81,8 +81,8 @@ theorem code_lt {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b) : code
   induction n with
   | zero => simp [code]
   | succ n ih =>
-    have hrest : code b (Fin.tail d) < b ^ n := ih fun ℓ => hd _
-    have hfirst : d 0 * b ^ n + b ^ n ≤ b * b ^ n := by
+    have : code b (Fin.tail d) < b ^ n := ih fun ℓ => hd _
+    have : d 0 * b ^ n + b ^ n ≤ b * b ^ n := by
       rw [← Nat.succ_mul]
       exact Nat.mul_le_mul_right _ (hd 0)
     rw [code, pow_succ']
@@ -177,11 +177,6 @@ theorem digitList_code {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b)
     digitList b n (code b d) = List.ofFn d := by
   refine List.ext_getElem (by simp) fun i hi _ => ?_
   simpa using digit_code hd ⟨i, by simpa using hi⟩
-
-/-- The empty list of digits has the value `0`. -/
-@[simp]
-theorem ofDigitList_nil (b : ℕ) : ofDigitList b [] = 0 :=
-  rfl
 
 /-- One more digit at the end multiplies the value by `b` and adds the digit. -/
 theorem ofDigitList_append_singleton (b : ℕ) (l : List ℕ) (x : ℕ) :

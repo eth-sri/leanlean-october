@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Claim
+public import ThreeSumApsp.Programs.LightModel
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ChoosePrime
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.Chunks
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.WriteMatrices
@@ -210,21 +210,21 @@ theorem steps_D : StepsMon (fun θ => θ.D) 0 2 0 :=
     simp only [mon_eq, pow_zero, mul_one, one_mul, Real.sq_sqrt θ.D.cast_nonneg, le_refl]
 
 /-- `g ≤ √D`. -/
-private theorem steps_g : StepsMon (fun θ => θ.g) 0 1 0 :=
+theorem steps_g : StepsMon (fun θ => θ.g) 0 1 0 :=
   (Scale.SoftO.of_le_base (s := costScale) 1 fun _ hθ => hθ.hgD).mono (by decide)
 
 /-- `2^⌈log₂ n⌉ ≤ 2n`. -/
-private theorem steps_two_pow_clog : StepsMon (fun θ => 2 ^ Nat.clog 2 θ.n) 1 0 0 :=
+theorem steps_two_pow_clog : StepsMon (fun θ => 2 ^ Nat.clog 2 θ.n) 1 0 0 :=
   (by growth [steps_n] : StepsMon (fun θ => 2 * θ.n) 1 0 0).of_le fun _ hθ =>
     Nat.pow_clog_le_mul one_lt_two hθ.one_le_n_nat
 
 /-- `⌈log₂ n⌉ ≤ 2^⌈log₂ n⌉`. -/
-private theorem steps_clog : StepsMon (fun θ => Nat.clog 2 θ.n) 1 0 0 :=
+theorem steps_clog : StepsMon (fun θ => Nat.clog 2 θ.n) 1 0 0 :=
   steps_two_pow_clog.of_le fun _ _ => Nat.lt_two_pow_self.le
 
 /-- The number of binary digits of `U ≤ n^κ` is `O(κ log n)`: `2^{len - 1} ≤ U` gives
 `(len - 1) log 2 ≤ κ log n`. -/
-private theorem steps_bitLen : StepsMon (fun θ => bitLen θ.U) 0 0 1 := by
+theorem steps_bitLen : StepsMon (fun θ => bitLen θ.U) 0 0 1 := by
   refine .of_dominated (Dominated.of_le_const_mul (C := 3) (by norm_num) fun θ hθ => ?_)
   simp only [mon_eq, pow_zero, one_mul, pow_one]
   have hΛ : 1 ≤ θ.κ * Real.log θ.n := hθ.one_le_κ_mul_log
@@ -243,7 +243,7 @@ private theorem steps_bitLen : StepsMon (fun θ => bitLen θ.U) 0 0 1 := by
     linarith [hlog, hhalf, hΛ]
 
 /-- A piece has `⌈s/g⌉ ≤ s` vertices. -/
-private theorem steps_pieceSizeNat : StepsMon (fun θ => pieceSizeNat θ.D θ.g) 0 1 0 :=
+theorem steps_pieceSizeNat : StepsMon (fun θ => pieceSizeNat θ.D θ.g) 0 1 0 :=
   steps_sqrt.of_le fun _ hθ => (Nat.ceilDiv_le_iff hθ.hg).2 (Nat.le_mul_of_pos_right _ hθ.hg)
 
 /-- `⌊n²/√D⌋ ≤ n²/√D`. -/
@@ -253,7 +253,7 @@ theorem cast_queryCapNat_le {θ : CostParams} (hθ : θ.Hyp) :
   exact Nat.floor_le (by positivity)
 
 /-- `⌊n²/√D⌋ ≤ n²`. -/
-private theorem steps_queryCapNat : StepsMon (fun θ => queryCapNat θ.n θ.D) 2 0 0 :=
+theorem steps_queryCapNat : StepsMon (fun θ => queryCapNat θ.n θ.D) 2 0 0 :=
   .of_dominated <| .of_le fun θ hθ => (cast_queryCapNat_le hθ).trans (by
     simpa only [mon_eq, pow_zero, mul_one] using div_le_self (by positivity) hθ.one_le_sqrt)
 
@@ -285,7 +285,7 @@ theorem steps_tChunks : StepsMon (fun θ => tChunks (Nat.sqrt θ.D) (4 * θ.n * 
   growth [steps_n, steps_sqrt, steps_g]
 
 /-- The list of the primes in `[√D/2, √D)`. -/
-private theorem steps_tPrimes : StepsMon (fun θ => tPrimes θ.D) 0 3 0 := by
+theorem steps_tPrimes : StepsMon (fun θ => tPrimes θ.D) 0 3 0 := by
   unfold tPrimes
   growth [steps_sqrt]
 
@@ -300,18 +300,18 @@ theorem steps_tWriteY : StepsMon (fun θ => tWriteY θ.n θ.D (pieceSizeNat θ.D
   growth [steps_n, steps_D, steps_pieceSizeNat]
 
 /-- The table of the sizes of the blocks. -/
-private theorem steps_tSzTable : StepsMon (fun θ => tSzTable (Nat.clog 2 θ.n)) 1 0 0 := by
+theorem steps_tSzTable : StepsMon (fun θ => tSzTable (Nat.clog 2 θ.n)) 1 0 0 := by
   unfold tSzTable
   growth [steps_clog]
 
 /-- One of the matrices `P`, `Q` over `ℤ[x]/(x^p - 1)` in Z-order: `O(n² √D)`. -/
-private theorem steps_buildZTime :
+theorem steps_buildZTime :
     StepsMon (fun θ => buildZTime θ.n (2 ^ Nat.clog 2 θ.n) (Nat.sqrt θ.D)) 2 1 0 := by
   unfold buildZTime
   growth [steps_n, steps_sqrt, steps_two_pow_clog]
 
 /-- Reading the count off the product. -/
-private theorem steps_countZeroTime : StepsMon (fun θ => countZeroTime θ.n) 2 0 0 := by
+theorem steps_countZeroTime : StepsMon (fun θ => countZeroTime θ.n) 2 0 0 := by
   unfold countZeroTime
   growth [steps_n]
 
@@ -330,7 +330,7 @@ theorem steps_tCeilDiv_piece : StepsMon (fun θ => tCeilDiv (Nat.sqrt θ.D) θ.g
 theorem steps_tCeilDiv_num : StepsMon (fun θ => tCeilDiv θ.n (pieceSizeNat θ.D θ.g)) 1 0 0 := by
   have hnum : StepsMon (fun θ => θ.n ⌈/⌉ pieceSizeNat θ.D θ.g) 1 0 0 :=
     steps_n.of_le fun θ hθ => by
-      have hsqrt : 0 < Nat.sqrt θ.D := Nat.sqrt_pos.2 ((by norm_num : 0 < 16).trans_le hθ.hD16)
+      have : 0 < Nat.sqrt θ.D := Nat.sqrt_pos.2 ((by norm_num : 0 < 16).trans_le hθ.hD16)
       have hpiece : 0 < pieceSizeNat θ.D θ.g := (Nat.lt_ceilDiv_iff hθ.hg).2 (by rwa [zero_mul])
       exact (Nat.ceilDiv_le_iff hpiece).2 (Nat.le_mul_of_pos_right _ hpiece)
   unfold tCeilDiv
@@ -339,12 +339,12 @@ theorem steps_tCeilDiv_num : StepsMon (fun θ => tCeilDiv θ.n (pieceSizeNat θ.
 /-! ## The three terms of the bound dominate the monomials -/
 
 /-- `D^{3/2} = (√D)³`. -/
-private theorem rpow_three_half (D : ℕ) : (D : ℝ) ^ (3 / 2 : ℝ) = Real.sqrt D ^ 3 := by
+theorem rpow_three_half (D : ℕ) : (D : ℝ) ^ (3 / 2 : ℝ) = Real.sqrt D ^ 3 := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_mul D.cast_nonneg]
   norm_num
 
 /-- `n² √D κ log n ≤ κ n³ log n/g`, because `√D g ≤ n`. -/
-private theorem mon_le_termScans {θ : CostParams} (hθ : θ.Hyp) :
+theorem mon_le_termScans {θ : CostParams} (hθ : θ.Hyp) :
     mon 2 1 1 θ ≤ termScans θ.n θ.g θ.κ := by
   have hκ : 0 ≤ θ.κ := zero_le_one.trans hθ.hκ
   rw [termScans, le_div_iff₀ hθ.g_pos]
@@ -358,9 +358,9 @@ private theorem mon_le_termScans {θ : CostParams} (hθ : θ.Hyp) :
     _ = θ.κ * (θ.n : ℝ) ^ 3 * Real.log θ.n := by ring
 
 /-- `n² (√D)³ ≤ n^{log₂ 7} D^{3/2}`. -/
-private theorem mon_le_termPrime {θ : CostParams} (hθ : θ.Hyp) :
+theorem mon_le_termPrime {θ : CostParams} (hθ : θ.Hyp) :
     mon 2 3 0 θ ≤ termPrime strassen θ.n θ.D := by
-  have htwo : (2 : ℝ) ≤ Real.logb 2 7 := by
+  have : (2 : ℝ) ≤ Real.logb 2 7 := by
     rw [Real.le_logb_iff_rpow_le (by norm_num) (by norm_num)]
     norm_num
   rw [termPrime, strassen, rpow_three_half, mon_eq, pow_zero, mul_one, ← Real.rpow_ofNat]
@@ -368,7 +368,7 @@ private theorem mon_le_termPrime {θ : CostParams} (hθ : θ.Hyp) :
   exact hθ.one_le_n
 
 /-- `n² (√D)² ≤ n² D g`. -/
-private theorem mon_le_termBuild {θ : CostParams} (hθ : θ.Hyp) :
+theorem mon_le_termBuild {θ : CostParams} (hθ : θ.Hyp) :
     mon 2 2 0 θ ≤ termBuild θ.n θ.D θ.g := by
   rw [termBuild, mon_eq, pow_zero, mul_one, Real.sq_sqrt θ.D.cast_nonneg]
   exact le_mul_of_one_le_right (by positivity) hθ.one_le_g
@@ -378,18 +378,18 @@ noncomputable def budget (θ : CostParams) : ℝ :=
   termScans θ.n θ.g θ.κ + termPrime strassen θ.n θ.D + termBuild θ.n θ.D θ.g
 
 /-- The first term is not negative. -/
-private theorem termScans_nonneg {θ : CostParams} (hθ : θ.Hyp) : 0 ≤ termScans θ.n θ.g θ.κ := by
+theorem termScans_nonneg {θ : CostParams} (hθ : θ.Hyp) : 0 ≤ termScans θ.n θ.g θ.κ := by
   have hκ : 0 ≤ θ.κ := zero_le_one.trans hθ.hκ
   unfold termScans
   positivity
 
 /-- The second term is not negative. -/
-private theorem termPrime_nonneg (θ : CostParams) : 0 ≤ termPrime strassen θ.n θ.D := by
+theorem termPrime_nonneg (θ : CostParams) : 0 ≤ termPrime strassen θ.n θ.D := by
   unfold termPrime strassen
   positivity
 
 /-- The third term is not negative. -/
-private theorem termBuild_nonneg (θ : CostParams) : 0 ≤ termBuild θ.n θ.D θ.g := by
+theorem termBuild_nonneg (θ : CostParams) : 0 ≤ termBuild θ.n θ.D θ.g := by
   unfold termBuild
   positivity
 
@@ -403,7 +403,7 @@ theorem termScans_le_budget (θ : CostParams) : termScans θ.n θ.g θ.κ ≤ bu
   linarith [termPrime_nonneg θ, termBuild_nonneg θ]
 
 /-- The second term is at most the sum. -/
-private theorem termPrime_le_budget {θ : CostParams} (hθ : θ.Hyp) :
+theorem termPrime_le_budget {θ : CostParams} (hθ : θ.Hyp) :
     termPrime strassen θ.n θ.D ≤ budget θ := by
   unfold budget
   linarith [termScans_nonneg hθ, termBuild_nonneg θ]
@@ -452,7 +452,7 @@ end Steps
 /-! ## The choice of the prime -/
 
 /-- A sequence with `a(j+1) = 7 a(j) + b 4^j x + c` grows like `7^j`. -/
-private theorem le_mul_seven_pow {a : ℕ → ℕ} {b c x : ℕ}
+theorem le_mul_seven_pow {a : ℕ → ℕ} {b c x : ℕ}
     (h : ∀ j, a (j + 1) = 7 * a j + b * (4 ^ j * x) + c) (j : ℕ) :
     a j + b * (4 ^ j * x) + c ≤ (a 0 + a 1) * 7 ^ j := by
   induction j with
@@ -465,7 +465,7 @@ private theorem le_mul_seven_pow {a : ℕ → ℕ} {b c x : ℕ}
     linarith [ih, Nat.zero_le (b * (4 ^ j * x)), Nat.zero_le c]
 
 /-- `7^⌈log₂ n⌉ = O(n^{log₂ 7})`. -/
-private theorem steps_seven_pow_clog :
+theorem steps_seven_pow_clog :
     Steps (fun θ => 7 ^ Nat.clog 2 θ.n) fun θ => (θ.n : ℝ) ^ Real.logb 2 7 :=
   Dominated.of_le_const_mul (C := 7) (by norm_num) fun θ hθ => by
     have hn : 1 ≤ θ.n := hθ.one_le_n_nat
@@ -473,7 +473,7 @@ private theorem steps_seven_pow_clog :
 
 /-- Strassen's recursion on matrices over `ℤ[x]/(x^p - 1)`, for all primes of the range:
 `O(√D · 7^⌈log₂ n⌉ p²) = O(n^{log₂ 7} D^{3/2})`. -/
-private theorem steps_sqrt_mul_strSteps :
+theorem steps_sqrt_mul_strSteps :
     Steps (fun θ => Nat.sqrt θ.D * strSteps (Nat.sqrt θ.D) (Nat.clog 2 θ.n)) budget := by
   -- `strSteps p 0` is a quadratic polynomial in `p`, and
   -- `strSteps p (j + 1) = 7 strSteps p j + b 4^j p + c` with two numerals `b`, `c`.
@@ -490,7 +490,7 @@ private theorem steps_sqrt_mul_strSteps :
 
 /-- The counts for all primes of the range: at most `√D` times the time of one count and a constant
 `k`.  The summands stand in the order of `countTime`. -/
-private theorem steps_sqrt_mul_countTime {k : ℕ} :
+theorem steps_sqrt_mul_countTime {k : ℕ} :
     Steps (fun θ => Nat.sqrt θ.D *
       (countTime θ.n (Nat.sqrt θ.D) (bitLen θ.U) (Nat.clog 2 θ.n) + k)) budget :=
   -- the table of doubles

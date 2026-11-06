@@ -99,7 +99,7 @@ theorem neg_emod_nat (a M : ℕ) (hM : 1 ≤ M) :
     (-(a : ℤ)) % (M : ℤ) = if a % M = 0 then 0 else (M : ℤ) - ((a % M : ℕ) : ℤ) := by
   have h : (a : ℤ) = (M : ℤ) * ((a / M : ℕ) : ℤ) + ((a % M : ℕ) : ℤ) := by
     exact_mod_cast (Nat.div_add_mod a M).symm
-  have hlt : a % M < M := Nat.mod_lt _ (by omega)
+  have : a % M < M := Nat.mod_lt _ (by omega)
   split_ifs with h0
   · rw [h0] at h
     rw [h, Nat.cast_zero, add_zero, ← mul_neg]
@@ -214,7 +214,7 @@ theorem reduce_ends (F : Pre lim Mo V fr) (haV : a ≤ V) {μ' : ℕ → ℤ} {t
 theorem sign_ends (F : Pre lim Mo V fr) (hax : (a : ℤ) = |x|) {μ' : ℕ → ℤ} {t : ℤ} :
     Ends lim P d emodSign ⟨frame [x, Mo, fr, (a % Mo : ℕ), 0, t], μ'⟩ 12 fun σ' =>
       σ'.loc 0 = x % (Mo : ℤ) ∧ σ'.mem = μ' := by
-  have hword := F.word
+  have := F.word
   have hr : a % Mo < Mo := Nat.mod_lt _ F.mod_pos
   generalize hrem : a % Mo = r at hr
   refine Ends.iteLast (fun hneg => ?_) (fun hpos => ?_)
@@ -237,7 +237,7 @@ theorem _root_.Light.emod_meets {p : ℕ} (hp : P[p]? = some emodBody) (F : Pre 
     (hx : |x| ≤ (V : ℤ)) :
     Meets lim P p d [x, Mo, fr] μ (emodTime x.natAbs Mo) fun r μ' =>
       r = x % (Mo : ℤ) ∧ Kept μ μ' fr := by
-  have hword := F.word
+  have := F.word
   have hax : ((x.natAbs : ℕ) : ℤ) = |x| := Int.natCast_natAbs x
   have haV : x.natAbs ≤ V := by omega
   refine .of_body hp ?_

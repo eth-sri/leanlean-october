@@ -98,7 +98,7 @@ theorem powLt_meets {μ : ℕ → ℤ} {pPow g e t : ℕ} (hP : P[pPow]? = some 
       r = (if g ^ e < t then 1 else 0) ∧ μ' = μ := by
   refine .of_body hP ?_
   push_cast at hword
-  have htg : (0 : ℤ) ≤ (t : ℤ) * g := by positivity
+  have : (0 : ℤ) ≤ (t : ℤ) * g := by positivity
   -- cnt := 0; prod := 1
   light_set (0 : ℕ)
   light_set (1 : ℕ)
@@ -113,7 +113,7 @@ theorem powLt_meets {μ : ℕ → ℤ} {pPow g e t : ℕ} (hP : P[pPow]? = some 
     -- if prod < t then prod := prod * g; cnt := cnt + 1
     by_cases hlt : c < t
     · have hmul : (c : ℤ) * g ≤ t * g := by exact_mod_cast Nat.mul_le_mul_right g hlt.le
-      have hmul0 : (0 : ℤ) ≤ (c : ℤ) * g := by positivity
+      have : (0 : ℤ) ≤ (c : ℤ) * g := by positivity
       exact ⟨by light_side, by light_side, by light_side [hlt],
         by simp [update_frame_setLocal, hlt]⟩
     · exact ⟨by light_side, by light_side, by simp [abs_le, hlt]; omega,
@@ -167,7 +167,7 @@ theorem rootCeil_meets {μ : ℕ → ℤ} {pRoot pPow e t : ℕ} (hR : P[pRoot]?
   unfold tRootCeil
   generalize rootCeil e t = G at key hpos hword
   obtain ⟨y, rfl⟩ : ∃ y, G = y + 1 := ⟨G - 1, by omega⟩
-  have hyt : y + 1 ≤ t * (y + 1) := Nat.le_mul_of_pos_left _ ht
+  have : y + 1 ≤ t * (y + 1) := Nat.le_mul_of_pos_left _ ht
   -- The test of a candidate g ≤ y + 1.
   have test : ∀ g, 1 ≤ g → g ≤ y + 1 → Meets lim P pPow (d + 1) [g, e, t] μ (16 * e + 14)
       fun r μ' => r = (if g < y + 1 then 1 else 0) ∧ μ' = μ := fun g hg hgy => by
@@ -218,7 +218,7 @@ def tQueryCapNat (n D : ℕ) : ℕ := 18 * queryCapNat n D + 26
 
 /-- The numbers that the test of queryCapNat forms for a candidate c that is at most the result
 C. -/
-private theorem queryCapNat_test_bounds {n D C c : ℕ} (hD : 1 ≤ D)
+theorem queryCapNat_test_bounds {n D C c : ℕ} (hD : 1 ≤ D)
     (hmax : (C + 1) * (C + 1) * D ≤ 4 * n ^ 4 + D) (hc : c ≤ C) :
     (c : ℤ) + 1 ≤ ((c : ℤ) + 1) * ((c : ℤ) + 1) ∧
       ((c : ℤ) + 1) * ((c : ℤ) + 1) ≤ ((c : ℤ) + 1) * ((c : ℤ) + 1) * D ∧
@@ -251,8 +251,8 @@ theorem queryCapNat_meets {μ : ℕ → ℤ} {q n D : ℕ} (hP : P[q]? = some qu
       rw [show n ^ 4 = n * n * (n * n) by ring]
       exact Nat.mul_le_mul_left _ (Nat.le_mul_self n))
   have hfour : (n : ℤ) * n * n * n = ((n ^ 4 : ℕ) : ℤ) := by push_cast; ring
-  have hsq0 : (0 : ℤ) ≤ (n : ℤ) * n := by positivity
-  have hcube0 : (0 : ℤ) ≤ (n : ℤ) * n * n := by positivity
+  have : (0 : ℤ) ≤ (n : ℤ) * n := by positivity
+  have : (0 : ℤ) ≤ (n : ℤ) * n * n := by positivity
   generalize ((n ^ 4 : ℕ) : ℤ) = N at *
   -- n4 := n⁴; cand := 0
   light_set N using hfour
@@ -262,13 +262,13 @@ theorem queryCapNat_meets {μ : ℕ → ℤ} {q n D : ℕ} (hP : P[q]? = some qu
     ?done le_rfl)
   case round =>
     rintro c _ hc rfl
-    have hb := bounds c hc.le
-    have hle := (test c).1 hc
+    have := bounds c hc.le
+    have := (test c).1 hc
     exact ⟨by light_side, by light_side, by light_side, by simp [update_frame_setLocal]⟩
   case done =>
     rintro _ rfl
-    have hb := bounds C le_rfl
-    have hnot := mt (test C).2 (Nat.not_succ_le_self C)
+    have := bounds C le_rfl
+    have := mt (test C).2 (Nat.not_succ_le_self C)
     -- return cand
     exact ⟨by light_side, by light_side, Ends.setTo C (by simp)⟩
 

@@ -91,12 +91,12 @@ theorem zIdx_lt {K a c : ℕ} (ha : a < 2 ^ K) (hc : c < 2 ^ K) : zIdx a c < 4 ^
     simp [zIdx, spread_zero]
   | succ K ih =>
     rw [pow_succ] at ha hc
-    have h := ih (a := a / 2) (c := c / 2) (by omega) (by omega)
+    have := ih (a := a / 2) (c := c / 2) (by omega) (by omega)
     rw [zIdx_eq, pow_succ]
     omega
 
 /-- The row and the column of the place of `(a, c)` are `a` and `c`. -/
-private theorem zRow_zCol_zIdx (a c : ℕ) : zRow (zIdx a c) = a ∧ zCol (zIdx a c) = c := by
+theorem zRow_zCol_zIdx (a c : ℕ) : zRow (zIdx a c) = a ∧ zCol (zIdx a c) = c := by
   induction hm : a + c using Nat.strong_induction_on generalizing a c with
   | _ m ih =>
     rcases Nat.eq_zero_or_pos (a + c) with h0 | hpos
@@ -183,7 +183,7 @@ theorem quarter_zList {p K t : ℕ} (M : ℕ → ℕ → List ℤ) (hM : ∀ a c
   rw [hrow, hcol]
 
 /-- A list of length `4 q` is put together from its four quarters. -/
-private theorem eq_append_quarters {q : ℕ} {l : List ℤ} (hl : l.length = 4 * q) :
+theorem eq_append_quarters {q : ℕ} {l : List ℤ} (hl : l.length = 4 * q) :
     l = quarter q 0 l ++ quarter q 1 l ++ quarter q 2 l ++ quarter q 3 l := by
   unfold quarter
   refine List.ext_getElem (by simp; omega) fun i _ _ => ?_

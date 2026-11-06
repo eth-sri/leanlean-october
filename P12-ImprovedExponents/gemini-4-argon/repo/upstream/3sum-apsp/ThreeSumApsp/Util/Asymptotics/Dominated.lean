@@ -84,13 +84,6 @@ theorem of_le (hfg : ∀ x, dom x → f x ≤ g x) : Dominated dom f g :=
 protected theorem refl (dom : α → Prop) (f : α → ℝ) : Dominated dom f f :=
   of_le fun _ _ => le_rfl
 
-/-- A bound with a constant of unknown sign, when `g` is nonnegative on the domain. -/
-theorem of_exists_const (hfg : ∃ C : ℝ, ∀ x, dom x → f x ≤ C * g x) (hg : ∀ x, dom x → 0 ≤ g x) :
-    Dominated dom f g := by
-  obtain ⟨C, hC⟩ := hfg
-  exact ⟨|C|, abs_nonneg C, fun x hx =>
-    (hC x hx).trans (mul_le_mul_of_nonneg_right (le_abs_self C) (hg x hx))⟩
-
 /-- A constant is `O(g)` when `g ≥ 1` on the domain. -/
 protected theorem const (c : ℝ) (hg : ∀ x, dom x → 1 ≤ g x) : Dominated dom (fun _ => c) g :=
   ⟨|c|, abs_nonneg c, fun x hx =>
@@ -155,21 +148,6 @@ protected theorem add (hf : Dominated dom f h) (hg : Dominated dom g h) :
   rw [add_mul]
   exact add_le_add (hf x hx) (hg x hx)
 
-/-- A case distinction: a bound on `f₁` where `p` holds and a bound on `f₂` where it does not, both
-by the same nonnegative `g`. -/
-protected theorem ite {p : α → Prop} [DecidablePred p]
-    (h₁ : Dominated (fun x => dom x ∧ p x) f₁ g) (h₂ : Dominated (fun x => dom x ∧ ¬p x) f₂ g)
-    (hg : ∀ x, dom x → 0 ≤ g x) : Dominated dom (fun x => if p x then f₁ x else f₂ x) g := by
-  obtain ⟨C, hC, h₁⟩ := h₁
-  obtain ⟨D, hD, h₂⟩ := h₂
-  refine ⟨C + D, add_nonneg hC hD, fun x hx => ?_⟩
-  change (if p x then f₁ x else f₂ x) ≤ (C + D) * g x
-  split_ifs with hp
-  · exact (h₁ x ⟨hx, hp⟩).trans
-      (mul_le_mul_of_nonneg_right (le_add_of_nonneg_right hD) (hg x hx))
-  · exact (h₂ x ⟨hx, hp⟩).trans
-      (mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hC) (hg x hx))
-
 /-! ### Products and quotients -/
 
 /-- A nonnegative constant factor on the left side is absorbed. -/
@@ -179,17 +157,6 @@ theorem const_mul (hfg : Dominated dom f g) {c : ℝ} (hc : 0 ≤ c) :
   refine ⟨c * C, mul_nonneg hc hC, fun x hx => ?_⟩
   rw [mul_assoc]
   exact mul_le_mul_of_nonneg_left (hf x hx) hc
-
-/-- A nonnegative constant factor on the left side is absorbed. -/
-theorem mul_const (hfg : Dominated dom f g) {c : ℝ} (hc : 0 ≤ c) :
-    Dominated dom (fun x => f x * c) g := by
-  simpa only [mul_comm] using hfg.const_mul hc
-
-/-- A constant factor of any sign in front of a function that is nonnegative on the domain is
-absorbed. -/
-theorem const_mul_of_nonneg (hfg : Dominated dom f g) (c : ℝ) (hf : ∀ x, dom x → 0 ≤ f x) :
-    Dominated dom (fun x => c * f x) g :=
-  (of_exists_const ⟨c, fun _ _ => le_rfl⟩ hf).trans hfg
 
 /-- Both sides may be multiplied from the left by a function that is nonnegative on the domain. -/
 theorem mul_left (hfg : Dominated dom f g) (hk : ∀ x, dom x → 0 ≤ k x) :

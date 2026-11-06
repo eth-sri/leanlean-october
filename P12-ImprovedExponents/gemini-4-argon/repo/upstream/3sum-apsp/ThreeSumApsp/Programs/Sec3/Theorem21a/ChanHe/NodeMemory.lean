@@ -61,8 +61,8 @@ theorem card_heavy_le (h : SetAt μ s len S) (M : ℕ) : #(ChanHe.heavy S M) ≤
 theorem Env.Ok.kept (h : e.Ok μ) (hk : Kept μ μ' e.fr) : e.Ok μ' :=
   { h with
     primes := ⟨h.primes.1, h.primes.2.congr fun i hi => hk _ (by
-      have hbelow := h.belowPr
-      have hnp := h.primes.1
+      have := h.belowPr
+      have := h.primes.1
       simp only [List.length_map, Finset.length_sort] at hi
       omega)⟩
     zero := fun r hr => (hk _ (by have := h.belowCnt; omega)).trans (h.zero r hr) }

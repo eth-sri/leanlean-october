@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Sec2.Lemma9
+public import ThreeSumApsp.Sec2.Lemma10
 public import ThreeSumApsp.Sec2.Orders
 public import ThreeSumApsp.Util.Choose
 
@@ -79,12 +79,12 @@ theorem Cube.disjoint_starLevels_P0Levels (π : Cube L) :
   cases hP0
 
 /-- The terms that a leaf of a cube may have at a level with the given symbol. -/
-private def symbolTerms : CubeSymbol → Finset Term
+def symbolTerms : CubeSymbol → Finset Term
   | .term lam => {lam}
   | .star => univ
 
 /-- The leaves of a cube form a product set: the choices at the levels are independent. -/
-private lemma leaves_eq_piFinset (π : Cube L) :
+lemma leaves_eq_piFinset (π : Cube L) :
     Cube.leaves π = Fintype.piFinset fun ℓ => symbolTerms (π ℓ) := by
   ext τ
   rw [Cube.mem_leaves, Fintype.mem_piFinset]
@@ -266,12 +266,12 @@ theorem lowest_subset (k : ℕ) (S : Finset (Fin L)) : lowest k S ⊆ S :=
   filter_subset _ _
 
 /-- Membership in the set of the `k` lowest levels of `S`. -/
-private lemma mem_lowest {k : ℕ} {S : Finset (Fin L)} {ℓ : Fin L} :
+lemma mem_lowest {k : ℕ} {S : Finset (Fin L)} {ℓ : Fin L} :
     ℓ ∈ lowest k S ↔ ℓ ∈ S ∧ (S.filter fun ℓ' => ℓ' < ℓ).card < k := by
   simp [lowest]
 
 /-- The number of levels of `S` below a level of `S` grows strictly with the level. -/
-private lemma card_below_strictMonoOn (S : Finset (Fin L)) :
+lemma card_below_strictMonoOn (S : Finset (Fin L)) :
     StrictMonoOn (fun ℓ => (S.filter fun x => x < ℓ).card) S := by
   intro ℓ hℓ ℓ' _ hlt
   refine card_lt_card ⟨fun x hx => ?_, fun hsub => ?_⟩
@@ -307,7 +307,7 @@ theorem eq_lowest_of_lt {S T : Finset (Fin L)} (hT : T ⊆ S)
     exact mem_filter.2 ⟨hT hx, h x hx ℓ (mem_sdiff.2 ⟨hℓS, hℓT⟩)⟩
 
 /-- The numbers of levels of `S` below the levels of `S` are `0, …, |S| - 1`. -/
-private lemma image_card_below (S : Finset (Fin L)) :
+lemma image_card_below (S : Finset (Fin L)) :
     (S.image fun ℓ => (S.filter fun x => x < ℓ).card) = range S.card := by
   refine eq_of_subset_of_card_le (fun n hn => ?_) ?_
   · obtain ⟨ℓ, hℓ, rfl⟩ := mem_image.1 hn

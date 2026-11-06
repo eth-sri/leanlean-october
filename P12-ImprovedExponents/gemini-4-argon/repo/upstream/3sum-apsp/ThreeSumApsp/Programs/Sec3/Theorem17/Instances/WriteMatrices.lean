@@ -284,7 +284,7 @@ theorem index_lt (pre : WritePre lim μ base m res n D p c0 len R) {u c : ℕ} (
 /-- The residues can be read at any time. -/
 theorem read (pre : WritePre lim μ base m res n D p c0 len R) (h : SameOutside μ μ' base m) {i : ℕ}
     (hi : i < n * n) : μ' (res + i) = (R.getD i 0 : ℕ) := by
-  have hap := pre.apart
+  have := pre.apart
   have hil : i < R.length := pre.length ▸ hi
   rw [h _ (by omega), pre.seg _ (by simpa using hil), List.getElem_map,
     List.getD_eq_getElem _ 0 hil]
@@ -376,7 +376,7 @@ variable {μ μ' : ℕ → ℤ} {y rbc n D p c0 len : ℕ} {RBC : List ℕ}
 /-- The cell of a pair lies in the matrix. -/
 theorem posY_lt (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) {c b : ℕ} (hc : c < len)
     (hb : b < n) : posY n p c0 RBC c b < D * n := by
-  have hp := pre.getD_lt (pre.index_lt hb hc)
+  have := pre.getD_lt (pre.index_lt hb hc)
   exact Nat.mul_add_lt_mul (pre.middle_lt hc (Nat.mod_lt _ (by omega))) hb
 
 /-- The label, as the program computes it. -/
@@ -540,7 +540,7 @@ variable {μ μ' : ℕ → ℤ} {x rac n D p c0 len rho : ℕ} {RAC : List ℕ}
 /-- The cell of a pair lies in the matrix. -/
 theorem posX_lt (pre : WritePre lim μ x (n * D) rac n D p c0 len RAC) {a c : ℕ} (ha : a < n)
     (hc : c < len) : posX n D p c0 rho RAC a c < n * D := by
-  have hp := pre.getD_lt (pre.index_lt ha hc)
+  have := pre.getD_lt (pre.index_lt ha hc)
   exact Nat.mul_add_lt_mul ha (pre.middle_lt hc (Nat.mod_lt _ (by omega)))
 
 /-- The label, as the program computes it. -/

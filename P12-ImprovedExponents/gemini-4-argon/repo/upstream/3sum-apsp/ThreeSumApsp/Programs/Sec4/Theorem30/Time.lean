@@ -94,7 +94,7 @@ theorem tTile_eq (L m t : ℕ) : tTile L m t
 29). The enumeration of the boxes with e stars is started once for each e ≤ m - t, in O(L) steps
 each time; these m - t + 1 starts are paid for by the boxes, of which there are at least m - t + 1
 (succ_le_card_boxes). -/
-private theorem exists_tTile_le : ∃ c : ℕ, ∀ L m t : ℕ, 1 ≤ L → m ≤ L →
+theorem exists_tTile_le : ∃ c : ℕ, ∀ L m t : ℕ, 1 ≤ L → m ≤ L →
     tTile L m t + 120 ≤ c * (L * (boxes L m t).card) := by
   refine ⟨2000, fun L m t hL1 hmL => ?_⟩
   have hcard := succ_le_card_boxes (t := t) hmL

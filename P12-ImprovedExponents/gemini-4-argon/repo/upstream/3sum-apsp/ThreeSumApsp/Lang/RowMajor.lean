@@ -21,7 +21,7 @@ namespace Light
 
 open ThreeSumApsp ThreeSumApsp.WordRam
 
-private theorem rowMajor_succ {n m : ℕ} (A : Fin (n + 1) → Fin m → ℤ) :
+theorem rowMajor_succ {n m : ℕ} (A : Fin (n + 1) → Fin m → ℤ) :
     rowMajor A = (List.finRange m).map (A 0) ++ rowMajor fun i : Fin n => A i.succ := by
   simp [rowMajor, List.finRange_succ, List.flatMap_map]
 
@@ -48,10 +48,6 @@ theorem getD_rowMajor : ∀ {n m : ℕ} (A : Fin n → Fin m → ℤ) (i : Fin n
       rw [this]
       exact getD_rowMajor (fun i : Fin n => A i.succ) i' j
 
-theorem mem_rowMajor {n m : ℕ} {A : Fin n → Fin m → ℤ} {x : ℤ} (h : x ∈ rowMajor A) :
-    ∃ i j, A i j = x := by
-  simp only [rowMajor, List.mem_flatMap, List.mem_map, List.mem_finRange, true_and] at h
-  exact h
 
 /-- A cell in the first part of a concatenation. -/
 theorem memOf_append_left {l₁ : List ℤ} (l₂ : List ℤ) {a : ℕ} (h : a < l₁.length) :

@@ -1,44 +1,259 @@
+module
+
+public import ThreeSumApsp.Lang.Lib.Seg
+public import ThreeSumApsp.Lang.Tactics
+public import Mathlib.Data.Int.SuccPred
+public import ThreeSumApsp.Sec2.Tiling
+public import Mathlib.Data.Nat.Choose.Bounds
+public import ThreeSumApsp.Spec.Sec2.Theorem5.Layout
+public import ThreeSumApsp.Spec.Sec2.Theorem5.Arrays
+public import ThreeSumApsp.Sec2.Lemma10
+public import Mathlib.Data.List.TakeWhile
+
+@[expose] public section
+
 /-
 Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.PowTable
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Places
-public import ThreeSumApsp.Spec.Sec2.Theorem5.Layout
-public import ThreeSumApsp.Spec.Sec2.Theorem5.PrunedList
 
 /-!
-# Theorem 5 in the light language: the map
+# Tables of powers
 
-One file that fixes everything on which two routines have to agree, besides the sizes and the places
-of the arrays: the numbers of the procedures, and for every procedure its arguments, what it needs,
-what it leaves behind, which cells it may change, and the shape of its running time. A routine is
-proved against its own entry; a caller assumes the entries of the routines it calls. So the proof of
-a routine does not depend on the proofs of the routines that it calls.
-
-* Routines never contain an address.  They receive scalars and base addresses as arguments.  Only
-  the two main routines (Theorem 5 here, the data structure of Section 4) know the places.
-* The stages up to the encodings of all bands are shared with Section 4: procedure pShared fills the
-  shared block, which starts at an address b0 above the input and the output of the program that
-  calls it (the free pointer).
-* An entry XSpec lim P c says: in the program P, within the limits lim, procedure number pX does its
-  job within c times the shape of its running time (Meets).  The theorem on a routine proves its
-  entry for every c from the constant of the routine on, so a caller can assume several entries at
-  one constant.
-* The entries of encStep, encodeBands, countSort, copy, runTiles and report stand with these
-  routines.
-* Strings are numbers: a string over an alphabet of b symbols is its code in base b, level 1 most
-  significant (namespace Spec).
+powTable(dst, L, b) writes 1, b, b², …, b^(L-1) into the L cells from dst and changes nothing else,
+within `powTableTime L` steps (`powTable_meets`).  The list of these powers is `powList b L`.
 -/
 
-@[expose] public section
+
+namespace Light
+
+variable {lim : Limits} {P : Program} {d : ℕ}
+
+/-- The pure model: the powers 1, b, …, b^(L-1). -/
+def powList (b L : ℕ) : List ℤ := (List.range L).map fun j => ((b ^ j : ℕ) : ℤ)
+
+@[simp] theorem length_powList (b L : ℕ) : (powList b L).length = L := by simp [powList]
+
+@[simp] theorem getElem_powList {b L j : ℕ} (h : j < (powList b L).length) :
+    (powList b L)[j] = ((b ^ j : ℕ) : ℤ) := by
+  simp [powList]
+
+namespace PowTable
+
+/-- The local variables of powTable: the arguments dst, L and b, the exponent j, and the power b^j.
+-/
+abbrev Dest : ℕ := 0
+@[inherit_doc Dest] abbrev Len : ℕ := 1
+@[inherit_doc Dest] abbrev Base : ℕ := 2
+@[inherit_doc Dest] abbrev Expo : ℕ := 3
+@[inherit_doc Dest] abbrev Power : ℕ := 4
+
+end PowTable
+
+open PowTable
+
+/-- One round: dst[j] := p; p := p * b. -/
+def powTableRound : Stmt :=
+  .store (v Dest +' v Expo) (v Power) ;;
+  .set Power (v Power *' v Base)
+
+/-- powTable(dst, L, b): p := 1; for j < L: dst[j] := p; p := p * b. -/
+def powTableBody : Stmt :=
+  .set Power (k 1) ;;
+  .for Expo (v Len) powTableRound
+
+/-- The time of powTable. -/
+def powTableTime (L : ℕ) : ℕ := 17 * L + 8
+
+/-- The state before round j: p = b^j, the first j cells hold the powers up to b^(j-1), and no cell
+outside the L cells from dst has changed.  The list t holds the local variables after the five of
+powTable. -/
+def PowTable.Filled (μ : ℕ → ℤ) (dst L b : ℕ) (t : List ℤ) (j : ℕ) (σ : State) : Prop :=
+  ∃ μ' : ℕ → ℤ, σ = ⟨frame (dst :: L :: b :: j :: ((b ^ j : ℕ) : ℤ) :: t), μ'⟩ ∧
+    (∀ i < j, μ' (dst + i) = ((b ^ i : ℕ) : ℤ)) ∧ SameOutside μ μ' dst L
+
+/-- The body of powTable writes the powers of b and changes nothing else, whatever its local
+variables hold apart from the three arguments. -/
+theorem powTable_ends {μ : ℕ → ℤ} {dst L b : ℕ} (e p : ℤ) (t : List ℤ)
+    (hw : (lim.space : ℤ) ≤ lim.word) (hdst : dst + L ≤ lim.space)
+    (hpow : ∀ j ≤ L, ((b ^ j : ℕ) : ℤ) ≤ lim.word) :
+    Ends lim P d powTableBody ⟨frame (dst :: L :: b :: e :: p :: t), μ⟩ (powTableTime L) fun σ' =>
+      Seg σ'.mem dst (powList b L) ∧ SameOutside μ σ'.mem dst L := by
+  have : (1 : ℤ) ≤ lim.word := by simpa using hpow 0 (Nat.zero_le _)
+  unfold powTableBody powTableTime
+  -- p := 1
+  light_set 1
+  -- for j < L
+  refine Ends.for (Filled μ dst L b t) L powTableRound.blockCost ?start ?round ?done ?bound
+    (hT := by light_time [powTableRound])
+  case start => exact ⟨μ, by simp [update_frame_setLocal], fun i hi => absurd hi (by omega), .refl⟩
+  case bound =>
+    rintro j _ - - ⟨μ', rfl, -⟩
+    light_side
+  case done =>
+    rintro _ - ⟨μ', rfl, powers, same⟩
+    exact ⟨fun i hi => by rw [getElem_powList]; exact powers i (by simpa using hi), same⟩
+  case round =>
+    rintro j _ hj - ⟨μ', rfl, powers, same⟩
+    have : (b : ℤ) ^ (j + 1) ≤ lim.word := by exact_mod_cast hpow (j + 1) (by omega)
+    have : 0 ≤ (b : ℤ) ^ (j + 1) := by positivity
+    unfold powTableRound
+    -- dst[j] := p
+    light_store (dst + j) (b ^ j : ℕ)
+    -- p := p * b
+    light_set (b ^ (j + 1) : ℕ) using ← pow_succ
+    refine ⟨by simp, Function.update μ' (dst + j) (b ^ j : ℕ), by simp [update_frame_setLocal],
+      fun i hi => ?_, by light_keep⟩
+    obtain hi | rfl := Nat.lt_succ_iff_lt_or_eq.1 hi
+    · rw [Function.update_of_ne (by omega)]
+      exact powers i hi
+    · exact Function.update_self ..
+
+end Light
 
 namespace Light.Sec2
 
 open ThreeSumApsp
+
+/-! ## Sizes -/
+
+/-- The parameters of the recursion and of the matrices: `L` levels, `m` of them inner, matrices
+`N × D` and `D × N` with `D = 4^m`. -/
+structure Par where
+  /-- The number of levels of the recursion. -/
+  L : ℕ
+  /-- The number of inner levels. -/
+  m : ℕ
+  /-- The number of rows of `X` and of columns of `Y`. -/
+  N : ℕ
+
+namespace Par
+
+/-- `D = 4^m`. -/
+def D (p : Par) : ℕ := ThreeSumApsp.D p.m
+/-- The number `L - m` of outer levels. -/
+def Lo (p : Par) : ℕ := p.L - p.m
+/-- `N₀ = 3^{L-m}`. -/
+def N0 (p : Par) : ℕ := ThreeSumApsp.N0 p.L p.m
+/-- `K = binom(L, m)`. -/
+def K (p : Par) : ℕ := ThreeSumApsp.K p.L p.m
+/-- `K₀ = ⌊√K⌋`. -/
+def K0 (p : Par) : ℕ := ThreeSumApsp.K0 p.L p.m
+/-- The number `K₀²` of subsets in the table. -/
+def KK (p : Par) : ℕ := p.K0 * p.K0
+/-- The number of row bands, and of column bands. -/
+def nB (p : Par) : ℕ := numBands p.L p.m p.N
+/-- The number `10^L` of leaves: the length of an encoding. -/
+def T (p : Par) : ℕ := 10 ^ p.L
+/-- The number `7^L` of left strings: the length of an input array. -/
+def S7 (p : Par) : ℕ := 7 ^ p.L
+
+/-! ## The shared block, from its base address `b0` on -/
+
+/-- The directory: 32 cells, see `dirList`. -/
+def aDIR (_p : Par) (b0 : ℕ) : ℕ := b0
+/-- Powers of 3: `L + 1` cells. -/
+def aP3 (_p : Par) (b0 : ℕ) : ℕ := b0 + 32
+/-- Powers of 4: `L + 1` cells. -/
+def aP4 (p : Par) (b0 : ℕ) : ℕ := p.aP3 b0 + (p.L + 1)
+/-- Powers of 7: `L + 1` cells. -/
+def aP7 (p : Par) (b0 : ℕ) : ℕ := p.aP4 b0 + (p.L + 1)
+/-- Powers of 10: `L + 1` cells. -/
+def aP10 (p : Par) (b0 : ℕ) : ℕ := p.aP7 b0 + (p.L + 1)
+/-- Scratch for a row of Pascal's triangle: `L + 2` cells. -/
+def aPAS (p : Par) (b0 : ℕ) : ℕ := p.aP10 b0 + (p.L + 1)
+/-- The coefficients `φ_λ(s)`: 70 cells, row `λ` at `7 λ`. -/
+def aPHI (p : Par) (b0 : ℕ) : ℕ := p.aPAS b0 + (p.L + 2)
+/-- The coefficients `ψ_λ(t)`: 70 cells. -/
+def aPSI (p : Par) (b0 : ℕ) : ℕ := p.aPHI b0 + 70
+/-- The table of subsets: `K₀²` rows of `L` bits, the subset of the block product `(g, h)` in row
+`g K₀ + h`. -/
+def aMASK (p : Par) (b0 : ℕ) : ℕ := p.aPSI b0 + 70
+/-- The band of every row: `N` cells. -/
+def aBAND (p : Par) (b0 : ℕ) : ℕ := p.aMASK b0 + p.KK * p.L
+/-- The block, within its band, of every row: `N` cells. -/
+def aBLOCK (p : Par) (b0 : ℕ) : ℕ := p.aBAND b0 + p.N
+/-- The base-3 digits of the offset of every row within its block: `N` rows of `L - m` cells, most
+significant digit first. -/
+def aDIG3 (p : Par) (b0 : ℕ) : ℕ := p.aBLOCK b0 + p.N
+/-- The base-4 digits of every column of `X`: `D` rows of `m` cells, most significant digit first.
+-/
+def aDIG4 (p : Par) (b0 : ℕ) : ℕ := p.aDIG3 b0 + p.N * p.Lo
+/-- The encodings of the row bands: band `β` at `β 10^L`. -/
+def aENCA (p : Par) (b0 : ℕ) : ℕ := p.aDIG4 b0 + p.D * p.m
+/-- The encodings of the column bands. -/
+def aENCB (p : Par) (b0 : ℕ) : ℕ := p.aENCA b0 + p.nB * p.T
+/-- The input array of the band that is being encoded: `7^L` cells.  Dead after the shared stage.
+-/
+def aARR (p : Par) (b0 : ℕ) : ℕ := p.aENCB b0 + p.nB * p.T
+/-- Scratch of the recursive encoding: `7^L` cells (`7^{L-1} + … + 1` are used). Dead after the
+shared stage. -/
+def aZS (p : Par) (b0 : ℕ) : ℕ := p.aARR b0 + p.S7
+/-- The first address after the shared block. -/
+def sharedEnd (p : Par) (b0 : ℕ) : ℕ := p.aZS b0 + p.S7
+
+
+
+end Par
+
+def dirList (p : Par) (aX aY b0 : ℕ) : List ℕ :=
+  [p.L, p.m, p.N, p.D, p.Lo, p.N0, p.K, p.K0, p.KK, p.nB, p.T, p.S7, aX, aY,
+   p.aP3 b0, p.aP4 b0, p.aP7 b0, p.aP10 b0, p.aPAS b0, p.aPHI b0, p.aPSI b0, p.aMASK b0,
+   p.aBAND b0, p.aBLOCK b0, p.aDIG3 b0, p.aDIG4 b0, p.aENCA b0, p.aENCB b0, p.aARR b0, p.aZS b0,
+   p.sharedEnd b0]
+
+/-! ## The places and the sizes, as equations and inequalities -/
+
+/-- The places of the shared block: each area begins where the one before it ends. -/
+theorem Par.places (p : Par) (b0 : ℕ) :
+    p.aDIR b0 = b0 ∧ p.aP3 b0 = b0 + 32 ∧ p.aP4 b0 = p.aP3 b0 + (p.L + 1)
+      ∧ p.aP7 b0 = p.aP4 b0 + (p.L + 1)
+      ∧ p.aP10 b0 = p.aP7 b0 + (p.L + 1) ∧ p.aPAS b0 = p.aP10 b0 + (p.L + 1)
+      ∧ p.aPHI b0 = p.aPAS b0 + (p.L + 2) ∧ p.aPSI b0 = p.aPHI b0 + 70
+      ∧ p.aMASK b0 = p.aPSI b0 + 70 ∧ p.aBAND b0 = p.aMASK b0 + p.KK * p.L
+      ∧ p.aBLOCK b0 = p.aBAND b0 + p.N ∧ p.aDIG3 b0 = p.aBLOCK b0 + p.N
+      ∧ p.aDIG4 b0 = p.aDIG3 b0 + p.N * p.Lo ∧ p.aENCA b0 = p.aDIG4 b0 + p.D * p.m
+      ∧ p.aENCB b0 = p.aENCA b0 + p.nB * p.T ∧ p.aARR b0 = p.aENCB b0 + p.nB * p.T
+      ∧ p.aZS b0 = p.aARR b0 + p.S7 ∧ p.sharedEnd b0 = p.aZS b0 + p.S7 :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+namespace Par
+variable (p : Par)
+
+theorem one_le_T : 1 ≤ p.T := Nat.one_le_pow _ _ (by omega)
+
+theorem L_lt_T : p.L < p.T := Nat.lt_pow_self (by omega)
+
+/-- `2^L ≤ 10^L`. -/
+theorem two_pow_le_T : 2 ^ p.L ≤ p.T := Nat.pow_le_pow_left (by omega) _
+
+theorem K_le_T : p.K ≤ p.T := (Nat.choose_le_two_pow _ _).trans p.two_pow_le_T
+
+theorem N0_le_T : p.N0 ≤ p.T :=
+  (Nat.pow_le_pow_left (by omega) _).trans (Nat.pow_le_pow_right (by omega) (Nat.sub_le _ _))
+
+theorem D_le_T (hmL : p.m ≤ p.L) : p.D ≤ p.T :=
+  (Nat.pow_le_pow_left (by omega) _).trans (Nat.pow_le_pow_right (by omega) hmL)
+
+theorem K0_le_K : p.K0 ≤ p.K := Nat.sqrt_le_self _
+
+/-- `K₀² ≤ K`. -/
+theorem KK_le_K : p.KK ≤ p.K := Nat.sqrt_le _
+
+/-- The sizes: 1, `L`, `2^L`, `K`, `N₀` and `D` are at most `T = 10^L`; `K₀` and `K₀²` are at most
+`K`; `K₀` and `N₀` are positive; and the definition of `Lo`. -/
+theorem sizes (hmL : p.m ≤ p.L) :
+    1 ≤ p.T ∧ p.L < p.T ∧ 2 ^ p.L ≤ p.T ∧ p.K ≤ p.T ∧ p.N0 ≤ p.T ∧ p.D ≤ p.T ∧ p.K0 ≤ p.K
+      ∧ p.KK ≤ p.K ∧ 0 < p.K0 ∧ 0 < p.N0 ∧ p.Lo = p.L - p.m :=
+  ⟨p.one_le_T, p.L_lt_T, p.two_pow_le_T, p.K_le_T, p.N0_le_T, p.D_le_T hmL, p.K0_le_K, p.KK_le_K,
+    ThreeSumApsp.K0_pos hmL, ThreeSumApsp.N0_pos _ _, rfl⟩
+
+end Par
+
+
+
 
 /-! ## Vocabulary -/
 
@@ -57,8 +272,6 @@ Number 0 is empty.  1 to 25: the shared routines and those of Theorem 5.  26 to 
 regime, the brute force, and the solver for all instances.  29 to 39 are not used.  From 40 on:
 Section 4. -/
 
-/-- The number of shared. -/
-def pShared : ℕ := 1
 /-- The number of pow. -/
 def pPow : ℕ := 2
 /-- The number of binom. -/
@@ -77,38 +290,6 @@ def pCoef : ℕ := 8
 def pBandArray : ℕ := 9
 /-- The number of encStep. -/
 def pEncStep : ℕ := 10
-/-- The number of encode. -/
-def pEncode : ℕ := 11
-/-- The number of encodeBands. -/
-def pEncodeBands : ℕ := 12
-/-- The number of wanted. -/
-def pWanted : ℕ := 13
-/-- The number of countSort. -/
-def pCountSort : ℕ := 14
-/-- The number of sortWanted. -/
-def pSortWanted : ℕ := 15
-/-- The number of segBounds. -/
-def pSegBounds : ℕ := 16
-/-- The number of union. -/
-def pUnion : ℕ := 17
-/-- The number of pick. -/
-def pPick : ℕ := 18
-/-- The number of pruned. -/
-def pPruned : ℕ := 19
-/-- The number of runTiles. -/
-def pRunTiles : ℕ := 20
-/-- The number of report. -/
-def pReport : ℕ := 21
-/-- The number of fill. -/
-def pFill : ℕ := 22
-/-- The number of copy. -/
-def pCopy : ℕ := 23
-/-- The number of gather. -/
-def pGather : ℕ := 24
-/-- The number of the solver of Theorem 5. -/
-def pThm5 : ℕ := 25
-/-- The number of the test of the regime. -/
-def pRegime : ℕ := 26
 /-- The number of the brute force. -/
 def pThinBrute : ℕ := 27
 
@@ -233,27 +414,6 @@ structure EncodePlaces (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) 
   src_le : src + 7 ^ n ≤ scr
   scr_le : scr + 7 ^ n ≤ lim.space
 
-/-- encode(n, src, dst, scr, tab, p7, p10), the procedure of Section 2.4.1, recursive as
-printed, with the coefficients φ: from the array a at src it computes the encoding of a at dst. -/
-def EncodeLSpec : Prop :=
-  ∀ (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) (a : LeftStr n → ℤ) (V : ℤ),
-    EncodePlaces lim n Lmax src dst scr tab p7 p10 μ →
-    Seg μ tab Spec.phiFlat → Seg μ src (Spec.arrL a) → (∀ u, |a u| ≤ V) →
-    7 ^ (n + 1) * V ≤ lim.word →
-    ∀ d, d + (n + 1) ≤ lim.depth →
-    Meets lim P pEncode d [n, src, dst, scr, tab, p7, p10] μ (c * 10 ^ n) fun _ μ' =>
-      Seg μ' dst (Spec.arrT (encodingL a)) ∧ SameOutside2 μ μ' dst (10 ^ n) scr (7 ^ n)
-
-/-- The same procedure with the coefficients ψ. -/
-def EncodeRSpec : Prop :=
-  ∀ (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) (b : RightStr n → ℤ) (V : ℤ),
-    EncodePlaces lim n Lmax src dst scr tab p7 p10 μ →
-    Seg μ tab Spec.psiFlat → Seg μ src (Spec.arrR b) → (∀ v, |b v| ≤ V) →
-    7 ^ (n + 1) * V ≤ lim.word →
-    ∀ d, d + (n + 1) ≤ lim.depth →
-    Meets lim P pEncode d [n, src, dst, scr, tab, p7, p10] μ (c * 10 ^ n) fun _ μ' =>
-      Seg μ' dst (Spec.arrT (encodingR b)) ∧ SameOutside2 μ μ' dst (10 ^ n) scr (7 ^ n)
-
 /-! ## The shared stage -/
 
 /-- The tables of the powers of 3, 4, 7 and 10 in the shared block. -/
@@ -278,18 +438,6 @@ structure RowTables (p : Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop where
 structure SharedTables (p : Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop
   extends PowTables p b0 μ, RowTables p b0 μ
 
-/-- What the shared stage leaves behind: the tables, the directory, and the encodings of all bands.
-(Cell 31 of the directory is not used by it.) -/
-structure SharedReady (p : Par) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ)
-    (Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop
-  extends SharedTables p b0 μ where
-  dir : SegN μ (p.aDIR b0) (dirList p aX aY b0)
-  encA : ∀ β < p.nB, Seg μ (p.aENCA b0 + β * p.T)
-    (Spec.arrT (encodingL (bandArrayL (Spec.stdLayout hmL) X β)))
-  encB : ∀ β < p.nB, Seg μ (p.aENCB b0 + β * p.T)
-    (Spec.arrT (encodingR (bandArrayR (Spec.stdLayout hmL) Y β)))
-
 /-- The shape of the running time of the shared stage. -/
 def sharedShape (p : Par) : ℕ :=
   (p.L + 1) ^ 2 + (Nat.sqrt p.K + 1) + (p.KK + 1) * (p.L + 1) + (p.N + 1) * (p.Lo + 1)
@@ -312,108 +460,49 @@ structure SharedPre (p : Par) (aX aY b0 : ℕ) (X : Matrix (Fin p.N) (Fin (Three
 
 /-! ## Theorem 5 -/
 
-/-- What wanted reads, apart from the positions: all of it lies below the area it writes. -/
-structure WantedTables (p : Par) (μ : ℕ → ℤ) (band dig3 mask tid : ℕ) : Prop where
-  hband : ∀ I < p.N, μ (band + I) = (I / (p.K0 * p.N0) : ℕ)
-  hblock : ∀ I < p.N, μ (band + p.N + I) = (I / p.N0 % p.K0 : ℕ)
-  hdig3 : ∀ I < p.N, SegN μ (dig3 + I * p.Lo) (ThreeSumApsp.digitList 3 p.Lo (I % p.N0))
-  hmask : ∀ s < p.KK, SegB μ (mask + s * p.L) (Spec.unrank p.L p.m s)
-  band_le : band + 2 * p.N ≤ tid
-  dig3_le : dig3 + p.N * p.Lo ≤ tid
-  mask_le : mask + p.KK * p.L ≤ tid
-
-/-- What wanted assumes. -/
-structure Wanted.WantedPre (p : Par) (w aWI aWJ band dig3 mask tid : ℕ) (I J : ℕ → ℕ)
-    (μ : ℕ → ℤ) : Prop where
-  hmL : p.m ≤ p.L
-  tab : WantedTables p μ band dig3 mask tid
-  hI : ∀ i < w, μ (aWI + i) = I i ∧ I i < p.N
-  hJ : ∀ i < w, μ (aWJ + i) = J i ∧ J i < p.N
-  hpow : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word
-  hnB : (((p.nB + 1) * (p.nB + 1) : ℕ) : ℤ) ≤ lim.word
-  room : tid + (2 * w + w * p.L) ≤ lim.space := by light_arith
-  hWI : aWI + w ≤ tid := by light_arith
-  hWJ : aWJ + w ≤ tid := by light_arith
-
 namespace SortWanted
-
-/-- The arguments of sortWanted. -/
-structure Args where
-  /-- the number of positions -/
-  w : ℕ
-  /-- the number of digits of a code -/
-  L : ℕ
-  /-- the number of tiles -/
-  nT : ℕ
-  /-- where the numbers of the tiles stand -/
-  tid : ℕ
-  /-- where the digits of the codes stand -/
-  dgt : ℕ
-  /-- where the sorted list goes -/
-  perm : ℕ
-
-/-- The number of cells from perm on that may change. -/
-def Args.room (A : Args) : ℕ := 2 * A.w + (A.nT + 11) + (A.nT + 1)
 
 end SortWanted
 
-/-- The arguments of pick but for the mode, with the data behind them: the list small stands at
-pSub, the list big at pU, the list values at pVal, and pDst is the destination. -/
-structure PickArgs : Type where
-  (pSub pU pVal pDst : ℕ)
-  (small big : List ℕ) (values : List ℤ)
-
-/-- What pick assumes: big is an increasing list, values has a value for each of its numbers, and
-small is an increasing list of numbers of big; all of it lies above the cells that pick writes. -/
-structure PickPre (μ : ℕ → ℤ) (x : PickArgs) : Prop where
-  small : SegN μ x.pSub x.small
-  big : SegN μ x.pU x.big
-  values : Seg μ x.pVal x.values
-  len : x.values.length = x.big.length
-  big_sorted : x.big.Pairwise (· < ·)
-  small_sorted : x.small.Pairwise (· < ·)
-  sub : ∀ c ∈ x.small, c ∈ x.big
-  dst_sub : x.pDst + x.small.length ≤ x.pSub := by light_arith
-  dst_big : x.pDst + x.small.length ≤ x.pU := by light_arith
-  dst_val : x.pDst + x.small.length ≤ x.pVal := by light_arith
-  sub_le : x.pSub + x.small.length ≤ lim.space := by light_arith
-  big_le : x.pU + x.big.length ≤ lim.space := by light_arith
-  val_le : x.pVal + x.big.length ≤ lim.space := by light_arith
-
-/-- The arguments of pruned but for the number n of levels that are left, with the data behind them.
-The two encodings are the lists EA at aEA and EB at aEB, and the parts of them below the current
-vertex begin at the position base.  The list codes stands at l, the values are written to out, the
-stack begins at sp, and the powers of ten up to 10^Lmax stand at p10.  A and B bound the numbers in
-the two encodings. -/
-structure PrunedArgs : Type where
-  (aEA aEB base l out sp p10 : ℕ)
-  (Lmax : ℕ) (EA EB : List ℤ) (codes : List ℕ) (A B : ℤ)
-
-/-- What a call of pruned with n levels left assumes.  The list codes is an increasing list of
-output strings, as numbers below 10^n.  The two encodings and the powers of ten lie below that list;
-then come the cells of out, one for each code; then, from sp on, the stack, n frames of 3 len + 11
-cells.  Sums of 10^n products of a number of EA and a number of EB fit in a word. -/
-structure PrunedPre (μ : ℕ → ℤ) (n : ℕ) (x : PrunedArgs) : Prop where
-  powers : Seg μ x.p10 (powList 10 (x.Lmax + 1))
-  encA : Seg μ x.aEA x.EA
-  encB : Seg μ x.aEB x.EB
-  list : SegN μ x.l x.codes
-  sorted : x.codes.Pairwise (· < ·)
-  lt : ∀ c ∈ x.codes, c < 10 ^ n
-  boundA : AbsLe x.EA x.A
-  boundB : AbsLe x.EB x.B
-  word : 10 ^ n * (x.A * x.B) ≤ lim.word
-  pow : ((10 ^ (n + 1) : ℕ) : ℤ) ≤ lim.word
-  levels : n ≤ x.Lmax := by light_arith
-  partA : x.base + 10 ^ n ≤ x.EA.length := by light_arith
-  partB : x.base + 10 ^ n ≤ x.EB.length := by light_arith
-  belowPowers : x.p10 + (x.Lmax + 1) ≤ x.l := by light_arith
-  belowA : x.aEA + x.EA.length ≤ x.l := by light_arith
-  belowB : x.aEB + x.EB.length ≤ x.l := by light_arith
-  belowOut : x.l + x.codes.length ≤ x.out := by light_arith
-  belowStack : x.out + x.codes.length ≤ x.sp := by light_arith
-  space : x.sp + n * (3 * x.codes.length + 11) ≤ lim.space := by light_arith
-
 end Entries
+
+
+
+
+/-! ## The directory -/
+
+variable {p : Par} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
+  {X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ}
+  {Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ} {μ μ' : ℕ → ℤ}
+
+/-! ## Only the shared block matters -/
+
+/-- The tables lie between the directory and the encodings: they are still there in a memory that
+agrees on these cells. -/
+theorem SharedTables.congr {p : Par} {b0 : ℕ} {μ μ' : ℕ → ℤ} (h : SharedTables p b0 μ)
+    (he : ∀ x, p.aP3 b0 ≤ x → x < p.aENCA b0 → μ' x = μ x) : SharedTables p b0 μ' := by
+  have := p.places b0
+  have lp : ∀ b, (powList b (p.L + 1)).length = p.L + 1 := fun b => length_powList b _
+  have := Spec.length_phiFlat
+  have := Spec.length_psiFlat
+  refine
+    { p3 := h.p3.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
+      p4 := h.p4.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
+      p7 := h.p7.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
+      p10 := h.p10.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
+      phi := h.phi.congr fun i hi => he _ (by omega) (by omega)
+      psi := h.psi.congr fun i hi => he _ (by omega) (by omega)
+      mask := fun s hs => (h.mask s hs).congr fun i hi => he _ (by omega) ?_
+      band := fun I hI => (he _ (by omega) (by omega)).trans (h.band I hI)
+      block := fun I hI => (he _ (by omega) (by omega)).trans (h.block I hI)
+      dig3 := fun I hI => (h.dig3 I hI).congr fun i hi => he _ (by omega) ?_
+      dig4 := fun x hx => (h.dig4 x hx).congr fun i hi => he _ (by omega) ?_ }
+  · rw [List.length_map, Spec.length_unrank] at hi
+    have := Nat.mul_add_lt_mul hs hi
+    omega
+  · have := Nat.mul_add_lt_mul hI (show i < p.Lo by simpa [ThreeSumApsp.digitList] using hi)
+    omega
+  · have := Nat.mul_add_lt_mul hx (show i < p.m by simpa [ThreeSumApsp.digitList] using hi)
+    omega
 
 end Light.Sec2

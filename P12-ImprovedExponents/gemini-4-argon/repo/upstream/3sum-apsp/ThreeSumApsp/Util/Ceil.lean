@@ -37,10 +37,6 @@ theorem ceilDiv_le_iff {a b k : ℕ} (hb : 0 < b) : a ⌈/⌉ b ≤ k ↔ a ≤ 
 theorem lt_ceilDiv_iff {a b i : ℕ} (hb : 0 < b) : i < a ⌈/⌉ b ↔ i * b < a := by
   rw [← Nat.not_le, ceilDiv_le_iff hb, Nat.not_le]
 
-/-- `a ⌈/⌉ b` pieces of size `b` cover `a`. -/
-theorem le_ceilDiv_mul {a b : ℕ} (hb : 0 < b) : a ≤ a ⌈/⌉ b * b :=
-  (ceilDiv_le_iff hb).1 le_rfl
-
 /-- `a ⌈/⌉ b` pieces of size `b` overshoot `a` by less than one piece. -/
 theorem ceilDiv_mul_lt {a b : ℕ} (hb : 0 < b) : a ⌈/⌉ b * b < a + b := by
   have := Nat.div_mul_le_self (a + b - 1) b
@@ -95,8 +91,5 @@ theorem rpow_inv_le_natCast_iff {e : ℕ} (he : e ≠ 0) (x t : ℕ) :
 end Real
 
 namespace ThreeSumApsp
-
-/-- The cube root of `n`, rounded up: `⌈n^{1/3}⌉`. -/
-@[expose] noncomputable def cbrtCeil (n : ℕ) : ℕ := ⌈(n : ℝ) ^ (1 / 3 : ℝ)⌉₊
 
 end ThreeSumApsp

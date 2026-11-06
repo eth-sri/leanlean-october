@@ -125,7 +125,7 @@ theorem sum_div_pow_le (m k : ℕ) : ∑ r ∈ Finset.range (2 ^ k - 1), m / (r 
       rw [pow_succ]
       omega
     rw [h2, Finset.sum_range_add]
-    have hblock : ∑ x ∈ Finset.range (2 ^ k), m / (2 ^ k - 1 + x + 1) ≤ m := by
+    have : ∑ x ∈ Finset.range (2 ^ k), m / (2 ^ k - 1 + x + 1) ≤ m := by
       calc ∑ x ∈ Finset.range (2 ^ k), m / (2 ^ k - 1 + x + 1)
           ≤ ∑ _x ∈ Finset.range (2 ^ k), m / 2 ^ k := by
             refine Finset.sum_le_sum fun x _ => Nat.div_le_div_left ?_ (by positivity)
@@ -216,8 +216,8 @@ def loopTime (m : ℕ) : ℕ :=
 
 /-- Clearing the table, two assignments, the main loop and the last assignment. -/
 theorem time_le (m : ℕ) : 15 * m + 23 + 4 + loopTime m + 2 ≤ sieveTime m := by
-  have hsum := sum_div_le m
-  have hmul : 15 * m * (Nat.log 2 m + 5) = 15 * ((Nat.log 2 m + 1) * m) + 60 * m := by ring
+  have := sum_div_le m
+  have : 15 * m * (Nat.log 2 m + 5) = 15 * ((Nat.log 2 m + 1) * m) + 60 * m := by ring
   simp only [loopTime, sieveTime, Finset.sum_add_distrib, Finset.sum_const, Finset.card_range,
     smul_eq_mul, ← Finset.mul_sum]
   omega
@@ -382,7 +382,7 @@ theorem _root_.Light.sieve_meets {p : ℕ} (hp : P[p]? = some sieveBody) (pre : 
       r = ((Nat.primesLE m).card : ℤ) ∧ SegN μ' out ((Nat.primesLE m).sort (· ≤ ·)) ∧
         SameOutside2 μ μ' out m fr (m + 1) := by
   light_facts pre
-  have htime := time_le m
+  have := time_le m
   refine .of_body hp ?_
   -- the table is cleared
   light_piece (clear_ends pre) with _ ⟨μ₁, rfl, hzero, same⟩

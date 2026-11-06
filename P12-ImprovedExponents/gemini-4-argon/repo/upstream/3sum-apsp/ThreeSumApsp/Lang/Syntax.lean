@@ -36,7 +36,6 @@ namespace Light
 /-- The operations on two words. -/
 inductive Op : Type
   | add | sub | mul
-  deriving DecidableEq, Repr
 
 /-- The result of an operation. -/
 def Op.eval : Op → ℤ → ℤ → ℤ
@@ -51,13 +50,11 @@ inductive Expr : Type
   | var (x : ℕ)
   | op (o : Op) (a b : Expr)
   | load (a : Expr)
-  deriving Repr
 
 /-- Tests. -/
 inductive Cond : Type
   | lt (a b : Expr)
   | eq (a b : Expr)
-  deriving Repr
 
 /-- Statements.  `call p args x` runs procedure number p on the values of args and puts its result
 into x. -/
@@ -69,7 +66,6 @@ inductive Stmt : Type
   | ite (c : Cond) (s₁ s₂ : Stmt)
   | while (c : Cond) (s : Stmt)
   | call (p : ℕ) (args : List Expr) (x : ℕ)
-  deriving Repr
 
 /-- A program: the bodies of its procedures, numbered from 0. -/
 abbrev Program : Type := List Stmt

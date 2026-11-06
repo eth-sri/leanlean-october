@@ -147,8 +147,6 @@ def Chunk.Contains (x : Chunk) (j : ℕ) : Prop := x.start ≤ j ∧ j < x.start
 places. -/
 structure Chunk.Fits (x : Chunk) (n p cap : ℕ) : Prop where
   residue_lt : x.residue < p
-  len_pos : 1 ≤ x.len
-  len_le : x.len ≤ cap
   end_le : x.start + x.len ≤ n * n
 
 /-- The segment `[lo, hi)` of the class `rho`, cut into chunks of `cap` places; the last one may be
@@ -174,7 +172,7 @@ theorem chunkTab_eq (n p cap : ℕ) (RAB : List ℕ) :
       (List.range ((classIdx n RAB rho).length ⌈/⌉ cap)).map (chunkAt n cap RAB rho) := by
   unfold chunkTab chunkTabOf
   refine List.flatMap_congr fun rho hrho => ?_
-  have h := List.mem_range.1 hrho
+  have := List.mem_range.1 hrho
   rw [getD_classStarts_eq n p RAB (by omega), getD_classStarts_eq n p RAB (by omega), chunksOf,
     classStart_succ, Nat.add_sub_cancel_left]
   rfl
@@ -190,7 +188,7 @@ places of the list. -/
 theorem chunkTab_entry (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p) {x : Chunk}
     (hx : x ∈ chunkTab n p cap RAB) : x.Fits n p cap := by
   obtain ⟨rho, hrho, i, hi, rfl⟩ := (mem_chunkTab x).1 hx
-  have hleft := (Nat.lt_ceilDiv_iff hcap).1 hi
+  have := (Nat.lt_ceilDiv_iff hcap).1 hi
   have hend := classStart_mono n RAB (show rho + 1 ≤ p by omega)
   rw [classStart_succ, classStart_eq_sq hlt] at hend
   constructor <;> simp only [chunkAt] <;> omega
@@ -199,7 +197,7 @@ theorem chunkTab_entry (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p
 theorem chunkTab_class (hcap : 1 ≤ cap) {x : Chunk} (hx : x ∈ chunkTab n p cap RAB) {i : ℕ}
     (hi : i < x.len) : RAB.getD ((sortedIdx n p RAB).getD (x.start + i) 0) 0 = x.residue := by
   obtain ⟨rho, hrho, i', hi', rfl⟩ := (mem_chunkTab x).1 hx
-  have hleft := (Nat.lt_ceilDiv_iff hcap).1 hi'
+  have := (Nat.lt_ceilDiv_iff hcap).1 hi'
   simp only [chunkAt] at hi ⊢
   exact getD_sortedIdx_class hrho (by omega) (by rw [classStart_succ]; omega)
 
@@ -220,7 +218,7 @@ theorem chunkTab_pairwise (hcap : 1 ≤ cap) :
     refine List.pairwise_lt_range.imp fun {rho rho'} hrr x hx y hy => ?_
     obtain ⟨i, hi, rfl⟩ := List.mem_map.1 hx
     obtain ⟨i', -, rfl⟩ := List.mem_map.1 hy
-    have hleft := (Nat.lt_ceilDiv_iff hcap).1 (List.mem_range.1 hi)
+    have := (Nat.lt_ceilDiv_iff hcap).1 (List.mem_range.1 hi)
     have hnext := classStart_mono n RAB (show rho + 1 ≤ rho' by omega)
     rw [classStart_succ] at hnext
     simp only [chunkAt]
@@ -263,21 +261,30 @@ theorem length_chunkTab (n p cap : ℕ) (RAB : List ℕ) :
   rw [chunkTab_eq, List.length_flatMap]
   simp
 
-/-- Proof of Theorem 17: "There are at most p + √D ≤ 2√D chunks in all", in the form: at most `p +
-n²/cap`. -/
-theorem length_chunkTab_le (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p) :
-    (chunkTab n p cap RAB).length ≤ p + n * n / cap := by
-  -- The bound holds for the first `q` classes, for every `q`.
+theorem length_chunkTab_mul_le (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p) :
+    (chunkTab n p cap RAB).length * cap + p ≤ n * n + p * cap := by
   rw [length_chunkTab, ← classStart_eq_sq hlt]
   generalize p = q
   induction q with
   | zero => simp
   | succ q ih =>
-    -- One more class: `⌈x/cap⌉ ≤ x/cap + 1`, and rounding down is superadditive.
-    have hceil : (classIdx n RAB q).length ⌈/⌉ cap ≤ (classIdx n RAB q).length / cap + 1 := by
+    have := Nat.ceilDiv_mul_lt (a := (classIdx n RAB q).length) hcap
+    rw [List.sum_range_succ, classStart_succ, Nat.add_mul, Nat.add_mul, Nat.one_mul]
+    omega
+
+/-- Proof of Theorem 17: "There are at most p + √D ≤ 2√D chunks in all", in the form: at most `p +
+n²/cap`. -/
+theorem length_chunkTab_le (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p) :
+    (chunkTab n p cap RAB).length ≤ p + n * n / cap := by
+  rw [length_chunkTab, ← classStart_eq_sq hlt]
+  generalize p = q
+  induction q with
+  | zero => simp
+  | succ q ih =>
+    have : (classIdx n RAB q).length ⌈/⌉ cap ≤ (classIdx n RAB q).length / cap + 1 := by
       rw [Nat.ceilDiv_eq_add_pred_div, ← Nat.add_div_right _ hcap]
       exact Nat.div_le_div_right (by omega)
-    have hfloor : classStart n RAB q / cap + (classIdx n RAB q).length / cap ≤
+    have : classStart n RAB q / cap + (classIdx n RAB q).length / cap ≤
         (classStart n RAB q + (classIdx n RAB q).length) / cap := Nat.div_add_div_le_add_div
     rw [List.sum_range_succ, classStart_succ]
     omega

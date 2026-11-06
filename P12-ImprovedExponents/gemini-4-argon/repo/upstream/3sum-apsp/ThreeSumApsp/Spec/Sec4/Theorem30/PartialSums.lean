@@ -39,13 +39,13 @@ theorem mul_nonneg_of_abs_le : 0 ≤ A * B :=
     ((abs_nonneg _).trans (hB fun _ => Term.P0))
 
 /-- The product at a leaf is at most A B in absolute value. -/
-private theorem abs_mul_le (τ : Leaf L) : |encA τ * encB τ| ≤ A * B := by
+theorem abs_mul_le (τ : Leaf L) : |encA τ * encB τ| ≤ A * B := by
   rw [abs_mul]
   exact mul_le_mul (hA τ) (hB τ) (abs_nonneg _) ((abs_nonneg _).trans (hA τ))
 
 /-- What the dynamic program computes at depth e is at most 10^e A B in absolute value. -/
 theorem abs_dpValue_le (e : ℕ) (π : Cube L) : |dpValue encA encB e π| ≤ 10 ^ e * (A * B) := by
-  have hAB := mul_nonneg_of_abs_le hA hB
+  have := mul_nonneg_of_abs_le hA hB
   induction e generalizing π with
   | zero =>
     rw [dpValue, pow_zero, one_mul]
@@ -66,7 +66,7 @@ theorem abs_dpValue_le (e : ℕ) (π : Cube L) : |dpValue encA encB e π| ≤ 10
 
 /-- What the dynamic program on digits computes for a cube at depth e is at most 10^e A B in
 absolute value. -/
-private theorem abs_dpValueD_le (e : ℕ) (π : Cube L) :
+theorem abs_dpValueD_le (e : ℕ) (π : Cube L) :
     |dpValueD (arrT encA) (arrT encB) e (digitsC π)| ≤ 10 ^ e * (A * B) := by
   rw [dpValueD_digitsC]
   exact abs_dpValue_le hA hB e π
@@ -81,10 +81,10 @@ theorem abs_dp_partial_sum_le (e : ℕ) (π : Cube L) (ℓ : Fin L) (k : ℕ) :
     (fun d hd => ?_) k).trans
     (le_of_eq ?_)
   · -- each of the ten strings is a cube
-    have hd' : d < 10 := List.mem_range.mp hd
-    have hcube : (digitsC π).set ℓ d = digitsC (Cube.replace π ℓ (termOfIdx ⟨d, hd'⟩)) := by
+    have : d < 10 := List.mem_range.mp hd
+    have hcube : (digitsC π).set ℓ d = digitsC (Cube.replace π ℓ (termOfIdx ⟨d, this⟩)) := by
       rw [digitsC_replace]
-      exact congrArg _ (congrArg Fin.val (termEquiv.apply_symm_apply ⟨d, hd'⟩).symm)
+      exact congrArg _ (congrArg Fin.val (termEquiv.apply_symm_apply ⟨d, this⟩).symm)
     rw [hcube]
     exact abs_dpValueD_le hA hB e _
   · rw [List.length_range]

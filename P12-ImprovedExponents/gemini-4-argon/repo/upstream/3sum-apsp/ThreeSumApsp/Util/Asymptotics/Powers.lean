@@ -5,7 +5,16 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Util.Basic
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.GCongr
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 /-!
@@ -92,10 +101,5 @@ theorem eventually_mul_rpow_mul_log_pow_le (C : ℝ) {a b : ℝ} (hab : a < b) (
   rw [one_mul, Real.norm_eq_abs, Real.norm_eq_abs,
     abs_of_nonneg (Real.rpow_nonneg n.cast_nonneg b)] at hn
   exact (le_abs_self _).trans hn
-
-/-- `C * n ^ a ≤ n ^ b` for all large `n`, if `a < b`. -/
-theorem eventually_mul_rpow_le (C : ℝ) {a b : ℝ} (hab : a < b) :
-    ∀ᶠ n : ℕ in atTop, C * (n : ℝ) ^ a ≤ (n : ℝ) ^ b := by
-  simpa only [pow_zero, mul_one] using eventually_mul_rpow_mul_log_pow_le C hab 0
 
 end ThreeSumApsp

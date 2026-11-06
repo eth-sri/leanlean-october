@@ -47,7 +47,7 @@ SS. -/
 theorem DSReadyP.congr (h : DSReadyP p t hmL aX aY b0 X Y μ)
     (he : ∀ a, b0 ≤ a → Outside (aWD p b0) (3 * p.L + p.m) a → μ' a = μ a) :
     DSReadyP p t hmL aX aY b0 X Y μ' := by
-  have hend : p.sharedEnd b0 = aWD p b0 := rfl
+  have : p.sharedEnd b0 = aWD p b0 := rfl
   obtain ⟨⟩ := areas p t b0
   exact ⟨h.shared.congr fun a ha hlt _ => he a ha (by omega),
     by rw [he _ (by omega) (by omega)]; exact h.cellT,

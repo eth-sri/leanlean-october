@@ -26,33 +26,6 @@ namespace Light.Sec3
 
 open ThreeSumApsp.Spec
 
-/-- Three matrices of weights, and the place for the three vertices of a triangle. -/
-structure FindInst : Type extends TriInst where
-  res : ℕ
-
-/-- The place for the answer lies below the free pointer and does not meet the three matrices. -/
-structure FindInst.Pre (x : FindInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop
-    extends TriInst.Pre x.toTriInst μ fr where
-  belowRes : x.res + 3 ≤ fr
-  apartAB : Apart x.ab (x.n * x.n) x.res 3
-  apartBC : Apart x.bc (x.n * x.n) x.res 3
-  apartAC : Apart x.ac (x.n * x.n) x.res 3
-
-/-- **Finding a negative triangle**: find(n, U, ab, bc, ac, res, fr) returns 1 if there is a
-negative triangle, and then the cells res, res + 1, res + 2 hold the vertices `a`, `b`, `c` of one;
-it returns 0 if there is none. -/
-noncomputable def findTask : Task where
-  Inst := FindInst
-  size x := x.n
-  bound x := x.U
-  args x := [x.n, x.U, x.ab, x.bc, x.ac, x.res]
-  Pre := FindInst.Pre
-  Post x μ fr r μ' :=
-    r = flag (triOf x.n x.AB x.BC x.AC).HasNegativeTriangle ∧
-    (r = 1 → ∃ a b c : Fin x.n, μ' x.res = a.val ∧ μ' (x.res + 1) = b.val ∧ μ' (x.res + 2) = c.val ∧
-      (triOf x.n x.AB x.BC x.AC).S a b c < 0) ∧
-    KeptBut μ μ' fr x.res 3
-
 /-- Three `n × n` matrices, and the place for `n²` flags. -/
 structure PairsInst : Type where
   n : ℕ
@@ -84,14 +57,6 @@ structure PairsInst.Pre (q : PairsInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop whe
   belowV : q.v + q.n * q.n ≤ fr
   belowOut : q.out + q.n * q.n ≤ fr
   apartX : Apart q.x (q.n * q.n) q.out (q.n * q.n)
-  apartY : Apart q.y (q.n * q.n) q.out (q.n * q.n)
-  apartV : Apart q.v (q.n * q.n) q.out (q.n * q.n)
-
-/-- An instance stays where it is if no cell below the free pointer changes, except the flags. -/
-theorem PairsInst.Pre.keep {q : PairsInst} {μ μ' : ℕ → ℤ} {fr : ℕ} (h : q.Pre μ fr)
-    (hs : KeptBut μ μ' fr q.out (q.n * q.n) := by light_keep) : q.Pre μ' fr := by
-  light_facts h
-  exact { h with segX := h.segX.keep, segY := h.segY.keep, segV := h.segV.keep }
 
 /-- The flags: cell `i n + j` holds 1 if `X[i,k] + Y[k,j] < V[i,j]` for some `k < n`, and 0 if
 not. -/

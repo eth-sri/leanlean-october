@@ -1,36 +1,50 @@
-/-
-Copyright (c) 2026 Anthropic, PBC. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-SPDX-License-Identifier: Apache-2.0
--/
 module
 
+public import ThreeSumApsp.Lang.Lib.Seg
+public import ThreeSumApsp.Spec.Sec3.Theorem17.ZOrder
+public import Mathlib.Tactic.Common
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
 public import ThreeSumApsp.Lang.Lib.NextPair
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ZOrderFacts
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
 
-/-!
-# Matrices over ℤ[x]/(x^p - 1) in Z-order: the table of places, and P and Q of Theorem 17's proof
-
-spreadTable(dst, N2) writes the table of `spread`: the number with the binary digits of i, read in
-base 4.  There is no division: a pointer j = ⌊i/2⌋ and the parity of i are carried along, and
-dst[i] = 4 dst[j] + parity (`spreadStep_spec`, `spreadTable_spec`).
-
-buildZ(dst, r, mort, n, N2, p, mx, my), with N2 = 2^K, writes an N2 × N2 matrix of vectors of length
-p in Z-order, 4^K p cells in all, whose entry for the pair (x, y), x, y < n, is the unit vector with
-its 1 at place r[x n + y], and whose other entries are zero vectors.  Here mort is the address of
-the table that spreadTable has written, so that mort[x] = spread x.  The place of the pair (x, y) is
-mx · spread x + my · spread y.  With (mx, my) = (2, 1) the pair is (row, column), which gives
-"P[a,c] := x^{w(a,c) mod p}"; with (1, 2) it is (column, row), which gives
-"Q[c,b] := x^{w(b,c) mod p}" from the residues of w(b,c) stored at b n + c.  (Inside the two quoted
-formulas x is the paper's indeterminate, and P and Q are the paper's matrices; in the code `P` is
-the program.)  The routine clears the matrix (`buildZClear_spec`) and marks one cell for each pair
-(`buildZMark_spec`); `markList_eq_zList` identifies the marked list with the matrix.
--/
-
 @[expose] public section
 
+section
+namespace Light.Sec3
+
+open ThreeSumApsp ThreeSumApsp.Spec
+
+/-- The number whose digits in base 4 are the binary digits of i is at most i². -/
+theorem spread_le_sq (i : ℕ) : spread i ≤ i * i := by
+  induction i using Nat.strong_induction_on with
+  | _ i ih =>
+    rcases Nat.eq_zero_or_pos i with rfl | hi
+    · simp [spread_zero]
+    · have h := ih (i / 2) (by omega)
+      rw [spread_eq]
+      obtain ⟨q, b, hb, rfl⟩ : ∃ q b, b < 2 ∧ i = 2 * q + b :=
+        ⟨i / 2, i % 2, Nat.mod_lt _ (by norm_num), by omega⟩
+      rw [show (2 * q + b) / 2 = q by omega] at h ⊢
+      rw [show (2 * q + b) % 2 = b by omega]
+      nlinarith
+
+theorem spreadList_succ (i : ℕ) : spreadList (i + 1) = spreadList i ++ [((spread i : ℕ) : ℤ)] := by
+  simp [spreadList, List.range_succ]
+
+theorem length_spreadList (i : ℕ) : (spreadList i).length = i := by simp [spreadList]
+
+/-- A cell of the table. -/
+theorem seg_spreadList_get {μ : ℕ → ℤ} {a n i : ℕ} (h : Seg μ a (spreadList n)) (hi : i < n) :
+    μ (a + i) = (spread i : ℕ) := by
+  have := h i (by rw [length_spreadList]; exact hi)
+  simpa [spreadList] using this
+
+end Light.Sec3
+end
+
+section
 namespace Light.Sec3
 
 open ThreeSumApsp ThreeSumApsp.Spec
@@ -82,12 +96,12 @@ theorem spreadStep_spec (hw : (lim.space : ℤ) ≤ lim.word) (h4 : (4 : ℤ) �
       σ' = ⟨frame [dst, N₂, (i + 1 : ℕ), ((i + 1) / 2 : ℕ), ((i + 1) % 2 : ℕ)],
         Function.update μ' (dst + i) (spread i : ℕ)⟩ := by
   have hcell : μ' (dst + i / 2) = (spread (i / 2) : ℕ) := seg_spreadList_get hseg (by omega)
-  have hspread := spread_eq i
-  have hle : spread i ≤ N₂ * N₂ := (spread_le_sq i).trans (Nat.mul_le_mul hi.le hi.le)
+  have := spread_eq i
+  have : spread i ≤ N₂ * N₂ := (spread_le_sq i).trans (Nat.mul_le_mul hi.le hi.le)
   have heven : i % 2 = 0 → (i + 1) / 2 = i / 2 ∧ (i + 1) % 2 = 1 := by omega
   have hodd : i % 2 ≠ 0 → (i + 1) / 2 = i / 2 + 1 ∧ (i + 1) % 2 = 0 := by omega
-  have hj : i / 2 < i := by omega
-  have hb : i % 2 < 2 := by omega
+  have : i / 2 < i := by omega
+  have : i % 2 < 2 := by omega
   generalize i / 2 = j at *
   generalize i % 2 = b at *
   -- dst[i] := 4 dst[j] + parity
@@ -114,7 +128,7 @@ theorem spreadTable_spec (hw : (lim.space : ℤ) ≤ lim.word) (h4 : (4 : ℤ) �
   swap
   · obtain rfl : N₂ = 0 := by simpa using hzero
     exact Ends.skip ⟨by simp [spreadList], .refl⟩
-  have hN : 0 < N₂ := by simpa using hpos
+  have : 0 < N₂ := by simpa using hpos
   -- dst[0] := 0; i := 1; j := 0; parity := 1
   light_store dst 0
   light_set (1 : ℕ)
@@ -359,7 +373,7 @@ theorem buildZClear_spec (hw : (lim.space : ℤ) ≤ lim.word) {N₂ len : ℕ}
       ∃ μ' : ℕ → ℤ,
         σ' = ⟨frame [dst, r, mort, n, N₂, p, mx, my, (dst + len : ℕ), (dst + len : ℕ)], μ'⟩ ∧
         Seg μ' dst (List.replicate len 0) ∧ SameOutside μ μ' dst len := by
-  have hlenZ : (N₂ : ℤ) * N₂ * p = len := by exact_mod_cast hlen
+  have : (N₂ : ℤ) * N₂ * p = len := by exact_mod_cast hlen
   -- ptr := dst; end := dst + N2 N2 p
   light_set (dst : ℕ)
   light_set (dst + len : ℕ)
@@ -401,17 +415,17 @@ theorem buildZMark_spec (pre : BuildZPre lim μ dst r mort n K p R)
   have hreadR := pre.readR hrest ht
   have hidx := Nat.mul_add_lt_mul (hplace _ hrow _ hcol) (pre.res.getD_lt ht)
   have hz := hplace _ hrow _ hcol
-  have h4 : 4 ^ K ≤ 4 ^ K * p := Nat.le_mul_of_pos_right _ pre.p_pos
+  have : 4 ^ K ≤ 4 ^ K * p := Nat.le_mul_of_pos_right _ pre.p_pos
   generalize R.getD t 0 = rho at *
   generalize t / n = x at *
   generalize t % n = y at *
   generalize spread x = sx at *
   generalize spread y = sy at *
-  have hidxZ : ((mx : ℤ) * sx + my * sy) * p + rho < (4 ^ K * p : ℕ) := by exact_mod_cast hidx
-  have hzZ : (mx : ℤ) * sx + my * sy < (4 ^ K : ℕ) := by exact_mod_cast hz
-  have hx0 : (0 : ℤ) ≤ (mx : ℤ) * sx := by positivity
-  have hy0 : (0 : ℤ) ≤ (my : ℤ) * sy := by positivity
-  have hp0 : (0 : ℤ) ≤ ((mx : ℤ) * sx + my * sy) * p := by positivity
+  have : ((mx : ℤ) * sx + my * sy) * p + rho < (4 ^ K * p : ℕ) := by exact_mod_cast hidx
+  have : (mx : ℤ) * sx + my * sy < (4 ^ K : ℕ) := by exact_mod_cast hz
+  have : (0 : ℤ) ≤ (mx : ℤ) * sx := by positivity
+  have : (0 : ℤ) ≤ (my : ℤ) * sy := by positivity
+  have : (0 : ℤ) ≤ ((mx : ℤ) * sx + my * sy) * p := by positivity
   exact Ends.storeTo (dst + ((mx * sx + my * sy) * p + rho)) 1 rfl
     (by light_side [hreadX, hreadY, hreadR])
 
@@ -541,3 +555,4 @@ theorem absLe_matQList (n p K : ℕ) (R : List ℕ) : AbsLe (matQList n p K R) 1
   absLe_zList_unit _ _ fun _ _ => absLe_unitOrZero _ _ _
 
 end Light.Sec3
+end

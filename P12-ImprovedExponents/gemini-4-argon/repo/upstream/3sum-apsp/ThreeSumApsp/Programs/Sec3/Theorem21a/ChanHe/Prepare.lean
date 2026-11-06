@@ -7,7 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Lib.Copy
 public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.HostContracts
+public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 
 /-!
 # 3SUM from Convolution-3SUM: filling the arrays of the host
@@ -136,7 +136,7 @@ abbrev prepFrame (a : Map) (V x : ℕ) : List ℤ :=
 theorem prepAddr_runs (a : Map) (V x : ℕ) (μ : ℕ → ℤ) (htop : (a.top : ℤ) ≤ lim.word)
     (hword : (6 : ℤ) ≤ lim.word) :
     prepAddr.Runs lim ⟨frame [a.n, V, a.Λ, a.m, x, a.b], μ⟩ (· = ⟨frame (prepFrame a V x), μ⟩) := by
-  have hmap := a.layout
+  have := a.layout
   have : (0 : ℤ) ≤ (a.m : ℤ) * a.m := by positivity
   have : (0 : ℤ) ≤ (a.n : ℤ) * a.Λ := by positivity
   exact ⟨by light_side [prepAddr],
@@ -144,13 +144,13 @@ theorem prepAddr_runs (a : Map) (V x : ℕ) (μ : ℕ → ℤ) (htop : (a.top : 
       Map.mul, Map.val, Map.srt, Map.cnt, Map.pr]⟩
 
 /-- What prep may use covers what the sieve needs. -/
-private theorem ok_primes {n V Λ m fr : ℕ} (h : (prepNeed n V Λ m).Ok lim fr d) :
+theorem ok_primes {n V Λ m fr : ℕ} (h : (prepNeed n V Λ m).Ok lim fr d) :
     (primesNeed m).Ok lim fr (d + 1) := by
   have : m + 1 ≤ (m + 1) ^ 2 := Nat.le_self_pow (by norm_num) _
   refine h.mono ?_ ?_ ?_ <;> simp only [primesNeed, prepNeed] <;> omega
 
 /-- What prep may use covers what sorting needs. -/
-private theorem ok_sort {n V Λ m fr : ℕ} (h : (prepNeed n V Λ m).Ok lim fr d) :
+theorem ok_sort {n V Λ m fr : ℕ} (h : (prepNeed n V Λ m).Ok lim fr d) :
     (sortNeed n V).Ok lim fr (d + 1) := by
   refine h.mono ?_ ?_ ?_ <;> simp only [sortNeed, prepNeed] <;> omega
 
@@ -164,14 +164,14 @@ theorem prepTables_ends {pPrimes pFill : ℕ} (hPr : PrimesSpec lim P pPrimes)
         σ' = ⟨frame (prepFrame a V x ++ [(#(Nat.primesLE a.m) : ℤ), r]), μ'⟩ ∧
         PrimesAt μ' a.pr #(Nat.primesLE a.m) a.m ∧ ZeroAt μ' a.cnt (a.m * a.m) ∧
         SameOn (fun c => c < a.top ∧ Outside a.pr (a.m + a.m * a.m) c) μ μ' := by
-  have hmap := a.layout
+  have := a.layout
   have hw := hok.space
   have hcells := hok.cells
   have hword := hok.word
   have hdepth := hok.depth
   simp only [prepNeed] at hcells hword hdepth
   push_cast at hword
-  have hnp := Nat.card_primesLE_le a.m
+  have := Nat.card_primesLE_le a.m
   unfold prepTables
   -- NumPrimes := primes(PrimeBound, Primes, Top)
   light_call (hPr (d + 1) a.top a.m a.pr μ (by omega) (ok_primes hok))
@@ -194,14 +194,14 @@ theorem prepSorted_ends {pCopy pSort : ℕ} (hCo : P[pCopy]? = some copyBody)
       (10 + (16 * a.n + 6) + tSort a.n) fun σ' => ∃ (μ' : ℕ → ℤ) (r' : ℤ) (Ls : List ℤ),
         σ' = ⟨frame (prepFrame a V x ++ [np, r']), μ'⟩ ∧ Seg μ' a.srt Ls ∧ Ls.Perm X ∧
         Ls.Pairwise (· ≤ ·) ∧ SameOn (· < a.srt) μ μ' := by
-  have hmap := a.layout
+  have := a.layout
   have hlen := C.len
-  have hbelow := C.below
+  have := C.below
   have hw := C.ok.space
   have hcells := C.ok.cells
   have hdepth := C.ok.depth
   simp only [prepNeed] at hcells hdepth
-  have htime : tSort X.length = tSort a.n := by rw [hlen]
+  have : tSort X.length = tSort a.n := by rw [hlen]
   unfold prepSorted
   -- Unread := copy(Src, Sorted, Len)
   have hroom : a.srt + X.length ≤ lim.space := by omega
@@ -215,21 +215,21 @@ theorem prepSorted_ends {pCopy pSort : ℕ} (hCo : P[pCopy]? = some copyBody)
     hkept₁.then hkept₂ fun c hc => ⟨by omega, by omega, by omega⟩⟩
 
 /-- The labels for V have `Lam V` binary digits. -/
-private theorem two_mul_lt_two_pow_Lam (V : ℕ) : 2 * V < 2 ^ Lam V :=
+theorem two_mul_lt_two_pow_Lam (V : ℕ) : 2 * V < 2 ^ Lam V :=
   Nat.lt_pow_succ_log_self (by norm_num) _
 
 /-- `2 ^ Lam V` is at most twice as large as it has to be. -/
-private theorem two_pow_Lam_le {V : ℕ} (hV : 1 ≤ V) : 2 ^ Lam V ≤ 4 * V + 4 := by
+theorem two_pow_Lam_le {V : ℕ} (hV : 1 ≤ V) : 2 ^ Lam V ≤ 4 * V + 4 := by
   have := Nat.pow_log_le_self 2 (x := 2 * V) (by omega)
   rw [Lam, pow_succ]
   omega
 
 /-- The time of bits grows with the number of elements. -/
-private theorem tBits_mono {len len' : ℕ} (h : len ≤ len') (Λ : ℕ) : tBits len Λ ≤ tBits len' Λ :=
+theorem tBits_mono {len len' : ℕ} (h : len ≤ len') (Λ : ℕ) : tBits len Λ ≤ tBits len' Λ :=
   Nat.add_le_add_right (Nat.add_le_add_right (Nat.mul_le_mul_right _ h) _) _
 
 /-- What distinct assumes holds when the three regions stand one after the other. -/
-private theorem Distinct.Ctx.of_consecutive {μ : ℕ → ℤ} {s val mul : ℕ} {L : List ℤ}
+theorem Distinct.Ctx.of_consecutive {μ : ℕ → ℤ} {s val mul : ℕ} {L : List ℤ}
     (hsorted : L.Pairwise (· ≤ ·)) (hseg : Seg μ s L) (hval : s + L.length ≤ val)
     (hmul : val + L.length ≤ mul) (hspace : mul + L.length ≤ lim.space)
     (hw : (lim.space : ℤ) ≤ lim.word) (hword : (2 * L.length + 8 : ℤ) ≤ lim.word) :
@@ -269,7 +269,7 @@ theorem prepValues_ends {pDistinct pBits : ℕ} (hDi : DistinctSpec lim P pDisti
       (14 + tDistinct a.n + tBits a.n a.Λ) fun σ' => ∃ (μ' : ℕ → ℤ) (r' : ℤ) (D M : List ℤ),
         σ' = ⟨frame (prepFrame a V x ++ [np, r', D.length]), μ'⟩ ∧ PrepValues μ' a V X D M ∧
         SameOn (· < a.val) μ μ' := by
-  have hmap := a.layout
+  have := a.layout
   have hlen : Ls.length = a.n := hperm.length_eq.trans C.len
   have hLsV : AbsLe Ls V := fun e he => C.bounded e (hperm.mem_iff.1 he)
   have hw := C.ok.space
@@ -289,10 +289,10 @@ theorem prepValues_ends {pDistinct pBits : ℕ} (hDi : DistinctSpec lim P pDisti
     with _ μ₁ ⟨⟨D, rfl, hDn, hDv, hsegD, hsegM⟩, hkept₁⟩
   have hvalues := Values.of_perm C.len hperm hDn hDv
   have hDle := hvalues.length_le
-  have hrows := Nat.mul_le_mul_right a.Λ hDle
+  have := Nat.mul_le_mul_right a.Λ hDle
   have hDV : AbsLe D V := fun e he =>
     hLsV e (List.mem_toFinset.1 (hDv ▸ List.mem_toFinset.2 he))
-  have htime' := tBits_mono hDle a.Λ
+  have := tBits_mono hDle a.Λ
   -- Unread := bits(NumValues, Val, Bound, Digits, Table, Top)
   have hapart : Apart a.val D.length a.bt (D.length * a.Λ) := .inl (by omega)
   have hctx' : Bits.Ctx lim μ₁ a.val V a.Λ a.bt D :=
@@ -310,7 +310,7 @@ theorem prepTail_ends (a : Map) {V x np nd : ℕ} {μ : ℕ → ℤ} (r : ℤ) (
     Ends lim P d prepTail ⟨frame (prepFrame a V x ++ [(np : ℤ), r, nd]), μ⟩ 33 fun σ' =>
       σ'.loc 0 = nd ∧ CtxAt σ'.mem a.cx V a.m a.Λ np a.pr a.cnt ∧ σ'.mem a.one = 0 ∧
       SameOn (fun c => Outside a.b 6 c ∧ c ≠ a.one) μ σ'.mem := by
-  have hmap := a.layout
+  have := a.layout
   unfold prepTail
   -- mem[Base], …, mem[Base + 5] := Bound, PrimeBound, Digits, NumPrimes, Primes, Count
   light_store a.b V
@@ -339,9 +339,9 @@ theorem FrontMem.of_map (a : Map) {μ : ℕ → ℤ} {V : ℕ} {D : List ℤ} (h
     (hctx : CtxAt μ a.cx V a.m a.Λ #(Nat.primesLE a.m) a.pr a.cnt)
     (hprimes : PrimesAt μ a.pr #(Nat.primesLE a.m) a.m) (hzero : ZeroAt μ a.cnt (a.m * a.m)) :
     FrontMem μ (a.front V D) := by
-  have hmap := a.layout
-  have hnp := Nat.card_primesLE_le a.m
-  have hrows := Nat.mul_le_mul_right a.Λ hle
+  have := a.layout
+  have := Nat.card_primesLE_le a.m
+  have := Nat.mul_le_mul_right a.Λ hle
   exact {
     lenD := rfl
     nd_le := hle
@@ -374,12 +374,12 @@ theorem PrepValues.frontMem {a : Map} {V : ℕ} {X D M : List ℤ} {μ₁ μ₃ 
     (hctx : CtxAt μ₄ a.cx V a.m a.Λ #(Nat.primesLE a.m) a.pr a.cnt)
     (htail : SameOn (fun c => Outside a.b 6 c ∧ c ≠ a.one) μ₃ μ₄) :
     Seg μ₄ a.mul M ∧ FrontMem μ₄ (a.front V D) := by
-  have hmap := a.layout
+  have := a.layout
   have hle := h.values.length_le
-  have hrows := Nat.mul_le_mul_right a.Λ hle
-  have hlenM : M.length = D.length := by rw [h.values.counts, List.length_map]
-  have hlenT := length_bitTable V a.Λ D
-  have hnp := Nat.card_primesLE_le a.m
+  have := Nat.mul_le_mul_right a.Λ hle
+  have : M.length = D.length := by rw [h.values.counts, List.length_map]
+  have := length_bitTable V a.Λ D
+  have := Nat.card_primesLE_le a.m
   have htables : SameOn (fun c => a.pr ≤ c ∧ c < a.srt) μ₁ μ₄ :=
     hlate.then htail fun c hc => ⟨hc.2, by omega, by omega⟩
   refine ⟨h.segMul.of_sameOn htail fun i hi => ⟨by omega, by omega⟩,
@@ -401,7 +401,7 @@ theorem prepBody_ends {pPrimes pFill pCopy pSort pDistinct pBits : ℕ}
       ⟨frame [a.n, V, a.Λ, a.m, x, a.b], μ⟩ (tPrep a.n a.Λ a.m) fun σ' =>
       (∃ D M : List ℤ, σ'.loc 0 = (D.length : ℤ) ∧ Values a.n X D M ∧ Seg σ'.mem a.mul M ∧
         σ'.mem a.one = 0 ∧ FrontMem σ'.mem (a.front V D)) ∧ Kept μ σ'.mem a.b := by
-  have hmap := a.layout
+  have := a.layout
   have hw := C.ok.space
   have hcells := C.ok.cells
   have hword := C.ok.word

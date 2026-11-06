@@ -6,7 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import PaperStatements
-public import ThreeSumApsp.Util.Basic
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.Linarith
 public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.List
 public import Mathlib.Data.Nat.Size
 public import Mathlib.Data.Nat.SuccPred
@@ -37,7 +42,7 @@ open ThreeSumApsp.WordRam
 /-- The bound 2^s · ((p₁ + 1) (p₂ + 1) ⋯)^k in the parameters of an instance. -/
 def polyBound (s k : ℕ) (params : List ℕ) : ℕ := 2 ^ s * ((params.map (· + 1)).prod) ^ k
 
-private theorem prod_succ_le (params : List ℕ) :
+theorem prod_succ_le (params : List ℕ) :
     (params.map (· + 1)).prod ≤ 2 ^ ((params.map Nat.log2).sum + params.length) := by
   induction params with
   | nil => simp
@@ -72,12 +77,6 @@ theorem one_le_polyBound (s k : ℕ) (params : List ℕ) : 1 ≤ polyBound s k p
   have : 0 < (params.map (· + 1)).prod := List.prod_pos (by simp)
   exact Nat.mul_pos (by positivity) (by positivity)
 
-/-- The bound grows with its first parameter. -/
-theorem polyBound_cons_le {p p' : ℕ} (h : p ≤ p') (s k : ℕ) (params : List ℕ) :
-    polyBound s k (p :: params) ≤ polyBound s k (p' :: params) := by
-  simp only [polyBound, List.map_cons, List.prod_cons]
-  gcongr
-
 /-- The bound grows with its two exponents. -/
 theorem polyBound_mono {s s' k k' : ℕ} (hs : s ≤ s') (hk : k ≤ k') (params : List ℕ) :
     polyBound s k params ≤ polyBound s' k' params := by
@@ -92,8 +91,8 @@ theorem polyBound_mul (s s' k : ℕ) (params : List ℕ) :
 /-- The sum of two numbers with such bounds has such a bound. -/
 theorem add_le_polyBound {a b s s' k k' : ℕ} {params : List ℕ} (ha : a ≤ polyBound s k params)
     (hb : b ≤ polyBound s' k' params) : a + b ≤ polyBound (1 + (s + s')) (k + k') params := by
-  have ha' := ha.trans (polyBound_mono (Nat.le_add_right s s') (Nat.le_add_right k k') params)
-  have hb' := hb.trans (polyBound_mono (Nat.le_add_left s' s) (Nat.le_add_left k' k) params)
+  have := ha.trans (polyBound_mono (Nat.le_add_right s s') (Nat.le_add_right k k') params)
+  have := hb.trans (polyBound_mono (Nat.le_add_left s' s) (Nat.le_add_left k' k) params)
   rw [← polyBound_mul]
   omega
 

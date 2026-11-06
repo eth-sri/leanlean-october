@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.FrontFacts
+public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 public import ThreeSumApsp.Spec.Sec3.Theorem21a.Passes
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.NegativeTriangle
 
@@ -131,7 +131,7 @@ theorem Pick.Ctx.step {μ μ' : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {L BT 
         pickPart Λ β β' x x' two L BT i ++ [μ' (s + i)]
       else pickPart Λ β β' x x' two L BT i := by
   light_facts C
-  have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
+  have : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
   have hread : ∀ γ < Λ, μ' (bt + i * Λ + γ) = BT.getD (i * Λ + γ) 0 := fun γ hγ => by
     rw [hsame _ (by omega), Nat.add_assoc]
     exact C.segTable.getD (by have := C.lenTable; omega) 0
@@ -159,8 +159,8 @@ theorem pickRound_runs {μ : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {x x' two
   have hnext : row + Λ = bt + (i + 1) * Λ := by rw [hrow, Nat.add_mul, Nat.one_mul, Nat.add_assoc]
   -- what the addresses are compared with
   light_facts C
-  have hle : (pickPart Λ β β' x x' two L BT i).length ≤ i := length_passList_le _ _ _ _
-  have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
+  have : (pickPart Λ β β' x x' two L BT i).length ≤ i := length_passList_le _ _ _ _
+  have : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
   by_cases hA : μ' (row + β) ≠ x
   · -- the first digit differs: pickNext
     rw [if_neg (by simp [hA])] at hstep
@@ -253,7 +253,6 @@ abbrev Len : ℕ := 0
 @[inherit_doc Len] abbrev Bound : ℕ := 2
 @[inherit_doc Len] abbrev Width : ℕ := 3
 @[inherit_doc Len] abbrev Table : ℕ := 4
-@[inherit_doc Len] abbrev Free : ℕ := 5
 @[inherit_doc Len] abbrev Idx : ℕ := 6
 @[inherit_doc Len] abbrev Pow : ℕ := 7
 @[inherit_doc Len] abbrev Row : ℕ := 8
@@ -307,7 +306,7 @@ theorem bitsPow_ends {μ : ℕ → ℤ} {len s V bt fr : ℤ} {Λ B : ℕ} (hB :
     (hword : (B : ℤ) ≤ lim.word) :
     Ends lim P d bitsPow ⟨frame [len, s, V, Λ, bt, fr], μ⟩ (12 * Λ + 8)
       (· = ⟨frame [len, s, V, Λ, bt, fr, 0, 2 ^ Λ, 0, 0, 0, Λ], μ⟩) := by
-  have hB1 : (1 : ℤ) ≤ B := by exact_mod_cast Nat.one_le_two_pow.trans hB
+  have : (1 : ℤ) ≤ B := by exact_mod_cast Nat.one_le_two_pow.trans hB
   unfold bitsPow
   -- Pow := 1 ; Cnt := 0
   light_set 1
@@ -319,9 +318,9 @@ theorem bitsPow_ends {μ : ℕ → ℤ} {len s V bt fr : ℤ} {Λ B : ℕ} (hB :
     -- Pow := 2 * Pow ; Cnt := Cnt + 1
     rintro j _ hj rfl
     have hpow : 2 ^ (j + 1) ≤ B := (Nat.pow_le_pow_right (by norm_num) hj).trans hB
-    have hpow' : (2 : ℤ) ^ j * 2 ≤ B := by exact_mod_cast hpow
-    have hj' : ((j + 1 : ℕ) : ℤ) ≤ B := by exact_mod_cast Nat.lt_two_pow_self.le.trans hpow
-    have : (0 : ℤ) < 2 ^ j := by positivity
+    have : (2 : ℤ) ^ j * 2 ≤ B := by exact_mod_cast hpow
+    have : ((j + 1 : ℕ) : ℤ) ≤ B := by exact_mod_cast Nat.lt_two_pow_self.le.trans hpow
+    have hj' : (0 : ℤ) < 2 ^ j := by positivity
     push_cast at hj'
     exact ⟨by light_side, by light_side, by light_side,
       by simp [BitsPowInv, update_frame_setLocal, pow_succ, mul_comm]⟩
@@ -346,7 +345,7 @@ theorem bitsRow_ends {μ : ℕ → ℤ} {len s V bt fr idx : ℤ} {row Λ z B : 
       fun σ' => ∃ μ',
         σ' = ⟨frame [len, s, V, Λ, bt, fr, idx, 2 ^ Λ, row, row, prefR Λ 0 z, Λ], μ'⟩ ∧
         Seg μ' row (bitRow Λ z) ∧ SameOutside μ μ' row Λ := by
-  have hB' : (2 : ℤ) ^ Λ ≤ B := by exact_mod_cast hB
+  have : (2 : ℤ) ^ Λ ≤ B := by exact_mod_cast hB
   push_cast at hword
   unfold bitsRow
   -- while Row < Cur
@@ -401,13 +400,13 @@ theorem bitsElem_ends {μ : ℕ → ℤ} {s V Λ bt fr i : ℕ} {L : List ℤ}
   -- where the regions lie
   have hw := C.space_le
   light_facts C
-  have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
+  have : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
   have hnext : row + Λ = bt + (i + 1) * Λ := by rw [hrow, Nat.add_mul, Nat.one_mul, Nat.add_assoc]
   have hread : μ' (s + i) = L.getD i 0 := (hsame _ (by omega)).trans (C.seg.getD hi 0)
   have hfits := abs_le.1 (C.bounded.getElem hi)
   rw [← List.getD_eq_getElem _ 0 hi, ← hread] at hfits
   obtain ⟨z, hz⟩ : ∃ z, z = lab V (L.getD i 0) := ⟨_, rfl⟩
-  have hlab : (z : ℤ) = μ' (s + i) + V := by
+  have : (z : ℤ) = μ' (s + i) + V := by
     rw [hz, ← hread]
     exact Int.toNat_of_nonneg (by omega)
   unfold bitsElem
@@ -439,7 +438,7 @@ theorem bits_spec {p : ℕ} (hP : P[p]? = some bitsBody) : BitsSpec lim P p := b
   -- Row := Table
   light_set bt
   -- for Idx < Len
-  have htime := Nat.mul_le_mul_left L.length (show 1 + (23 * Λ + 19) + 7 ≤ 60 * Λ + 40 by omega)
+  have := Nat.mul_le_mul_left L.length (show 1 + (23 * Λ + 19) + 7 ≤ 60 * Λ + 40 by omega)
   refine Ends.for (BitsInv μ s V Λ bt fr L) L.length (23 * Λ + 19) ?start ?round ?done ?bound
     (hT := by simp only [Expr.cost]; omega)
   case start =>

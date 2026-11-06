@@ -32,10 +32,6 @@ namespace Real
 theorem one_half_lt_log_two : 1 / 2 < log 2 :=
   lt_trans (by norm_num) log_two_gt_d9
 
-/-- `log 2 < 1`. -/
-theorem log_two_lt_one : log 2 < 1 :=
-  log_two_lt_d9.trans (by norm_num)
-
 /-- `log 4 = 2 log 2`. -/
 theorem log_four : log 4 = 2 * log 2 := by
   rw [show (4 : ℝ) = 2 ^ 2 by norm_num, log_pow, Nat.cast_ofNat]
@@ -55,10 +51,6 @@ theorem one_le_log_of_three_le {x : ℝ} (hx : 3 ≤ x) : 1 ≤ log x :=
 /-- `1 ≤ log n` for a natural number `n ≥ 3`. -/
 theorem one_le_log_natCast_of_three_le {n : ℕ} (hn : 3 ≤ n) : 1 ≤ log n :=
   one_le_log_of_three_le (by exact_mod_cast hn)
-
-/-- `1 / 2 ≤ log x` for `x ≥ 2`. -/
-theorem one_half_le_log_of_two_le {x : ℝ} (hx : 2 ≤ x) : 1 / 2 ≤ log x :=
-  one_half_lt_log_two.le.trans (log_le_log two_pos hx)
 
 /-- `4 ≤ √D` for a natural number `D ≥ 16`. -/
 theorem four_le_sqrt_natCast_of_sixteen_le {D : ℕ} (hD : 16 ≤ D) : 4 ≤ √(D : ℝ) :=

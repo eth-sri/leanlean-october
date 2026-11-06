@@ -201,7 +201,7 @@ theorem twiceRound_runs {μ : ℕ → ℤ} {val mul out V i : ℕ} {D C : List �
   obtain ⟨μ', rfl, hseg, hsame⟩ := hI
   -- where the regions lie
   light_facts K
-  have hle : (twicePart D C i).length ≤ i := length_passList_le _ _ _ _
+  have : (twicePart D C i).length ≤ i := length_passList_le _ _ _ _
   -- what the program reads
   have hreadVal : μ' (val + i) = D.getD i 0 := (hsame _ (by omega)).trans (K.segVal.getD hi 0)
   have hreadMul : μ' (mul + i) = C.getD i 0 :=
@@ -278,7 +278,7 @@ theorem opens (h : DistinctMem μ μ' val mul L D i) (hs : L.Pairwise (· ≤ ·
       (Function.update (Function.update μ' (val + D.length) (L.getD i 0)) (mul + D.length) 1)
       val mul L (D ++ [L.getD i 0]) (i + 1) := by
   obtain ⟨hvalues, hnew⟩ := h.values.opens hs hi hne
-  have hle := h.values.le
+  have := h.values.le
   refine ⟨hvalues, (h.segVal.snoc _).update_out (by simp; omega) _, ?_,
     (h.same.write (by omega) _).write (by omega) _⟩
   rw [map_countTo_opens h.values hi hnew]
@@ -291,7 +291,7 @@ theorem bumps (h : DistinctMem μ μ' val mul L D i) (hi : i < L.length)
     DistinctMem μ
       (Function.update μ' (mul + (D.length - 1)) (countTo L i (D.getD (D.length - 1) 0) + 1))
       val mul L D (i + 1) := by
-  have hle := h.values.le
+  have := h.values.le
   refine ⟨h.values.bumps hi hpos he, h.segVal.update_out (by omega) _, ?_,
     h.same.write (by omega) _⟩
   rw [map_countTo_bumps h.values hi hpos he]
@@ -308,24 +308,24 @@ abbrev Len : ℕ := 0
 @[inherit_doc Len] abbrev Val : ℕ := 2
 @[inherit_doc Len] abbrev Mul : ℕ := 3
 @[inherit_doc Len] abbrev Idx : ℕ := 4
-@[inherit_doc Len] abbrev Values : ℕ := 5
+@[inherit_doc Len] abbrev Vals : ℕ := 5
 
 end Distinct
 
 open Distinct in
 /-- A new value opens a new cell of val and of mul. -/
 def distinctOpen : Stmt :=
-  .store (v Val +' v Values) (M (v Src +' v Idx)) ;;
-  .store (v Mul +' v Values) (k 1) ;;
-  .set Values (v Values +' k 1)
+  .store (v Val +' v Vals) (M (v Src +' v Idx)) ;;
+  .store (v Mul +' v Vals) (k 1) ;;
+  .set Vals (v Vals +' k 1)
 
 open Distinct in
 /-- One round of distinct: the next element opens a cell if there is no value yet or if it differs
 from the last value, and raises the last cell of mul if not. -/
 def distinctRound : Stmt :=
-  .ite (v Values =' k 0) distinctOpen
-    (.iteNe (M (v Src +' v Idx)) (M (v Val +' v Values -' k 1)) distinctOpen
-      (.store (v Mul +' v Values -' k 1) (M (v Mul +' v Values -' k 1) +' k 1))) ;;
+  .ite (v Vals =' k 0) distinctOpen
+    (.iteNe (M (v Src +' v Idx)) (M (v Val +' v Vals -' k 1)) distinctOpen
+      (.store (v Mul +' v Vals -' k 1) (M (v Mul +' v Vals -' k 1) +' k 1))) ;;
   .set Idx (v Idx +' k 1)
 
 open Distinct in
@@ -333,9 +333,9 @@ open Distinct in
 val and how often each occurs to mul, and returns the number of distinct values. -/
 def distinctBody : Stmt :=
   .set Idx (k 0) ;;
-  .set Values (k 0) ;;
+  .set Vals (k 0) ;;
   .while (v Idx <' v Len) distinctRound ;;
-  .set Len (v Values)
+  .set Len (v Vals)
 
 /-- The invariant of the loop of distinct before round number i: the memory is as `DistinctMem`
 says for the first i elements, and Values holds the number of distinct values among them. -/
@@ -350,7 +350,7 @@ theorem distinctRound_runs {μ : ℕ → ℤ} {a val mul i : ℕ} {L : List ℤ}
     distinctRound.Runs lim σ (DistinctInv μ a val mul L (i + 1)) := by
   obtain ⟨μ', D, rfl, hmem⟩ := hI
   -- where the regions lie
-  have hle := hmem.values.le
+  have := hmem.values.le
   light_facts C
   have hread : μ' (a + i) = L.getD i 0 :=
     (hmem.same _ ⟨by omega, by omega⟩).trans (C.seg.getD hi 0)

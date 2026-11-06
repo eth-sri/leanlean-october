@@ -31,28 +31,6 @@ None of them mentions a claim or a machine.
 
 namespace ThreeSumApsp
 
-/-- Proof of Theorem 17: the number of chunks "in all", summed over the residues `ϱ`. -/
-noncomputable def TriangleInstance.totalChunks {n : ℕ} (T : TriangleInstance ℤ n) (D p : ℕ) : ℕ :=
-  ∑ ϱ : Fin p, numChunks (T.residueClass p ϱ) (queryCap n D)
-
-/-- Theorem 21(b): "with T(s)/s nondecreasing". -/
-def DivNondecreasing (T : ℕ → ℝ) : Prop :=
-  ∀ s₁ s₂ : ℕ, 1 ≤ s₁ → s₁ ≤ s₂ → T s₁ / s₁ ≤ T s₂ / s₂
-
-/-- Theorem 21(b): a running time "T(s) with T(s)/s nondecreasing", for every fixed bound
-`u` on the numbers.
-
-NOTE.  We also ask that `T(s) ≥ s² (1 + log u)`, which is an upper bound for the time to write down
-the `3s²` weights of an instance. The paper does not say this, but its bound
-`O(n² T(n^{1/3}) log² U)` leaves no room for writing down the instances otherwise.  The condition is
-a hypothesis on the running times that are fed into Theorem 21(b), so it makes the claims that use
-it weaker, not stronger. -/
-def GoodTime (T : ℕ → ℝ → ℝ) : Prop :=
-  (∀ (s : ℕ) (u : ℝ), 1 ≤ s → (s : ℝ) ^ 2 * (1 + logU u) ≤ T s u) ∧
-    ∀ u : ℝ, DivNondecreasing fun s => T s u
-
-/-- The running time `K s^{3−δ} (log s + 1)^e (1 + log u)²` for Exact Triangle on `s` vertices per
-part with weights of absolute value at most `u`, as a function of both arguments. -/
 noncomputable def uniformTime (K δ : ℝ) (e : ℕ) (s : ℕ) (u : ℝ) : ℝ :=
   K * ((s : ℝ) ^ (3 - δ) * (Real.log s + 1) ^ e * (1 + logU u) ^ 2)
 

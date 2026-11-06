@@ -77,16 +77,6 @@ theorem getD_map_of_lt (f : α → β) {l : List α} {i : ℕ} (hi : i < l.lengt
   rw [List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getD_eq_getElem _ _ hi,
     List.getElem_map]
 
-/-- The entries of a list in which entry `q < l.length` was replaced by `a`. -/
-theorem getD_set_of_lt {l : List α} {q : ℕ} (hq : q < l.length) (a d : α) (q' : ℕ) :
-    (l.set q a).getD q' d = if q' = q then a else l.getD q' d := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_set]
-  split_ifs with h1 h2 h3
-  · rfl
-  · exact absurd h1.symm h2
-  · exact absurd (h3 ▸ hq) (by omega)
-  · rfl
-
 /-- One more member at the end changes the entry number `l.length` only. -/
 theorem getD_append_singleton (l : List α) (a d : α) :
     (fun e => (l ++ [a]).getD e d) = Function.update (fun e => l.getD e d) l.length a := by
@@ -354,7 +344,7 @@ theorem getD_notMem_take_of_sorted {l : List α} (hs : l.Pairwise (· ≤ ·)) {
     (d : α) (h : i = 0 ∨ l.getD i d ≠ l.getD (i - 1) d) : l.getD i d ∉ l.take i := by
   intro hm
   obtain ⟨j, hj, hsame⟩ := List.mem_iff_getElem.1 hm
-  have hji : j < i := (List.length_take_le i l).trans_lt' hj
+  have : j < i := (List.length_take_le i l).trans_lt' hj
   rcases h with rfl | hne
   · omega
   rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (show i - 1 < l.length by omega)] at hne

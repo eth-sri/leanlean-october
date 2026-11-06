@@ -163,11 +163,11 @@ theorem check_ends {pColl : ℕ} (hColl : CollSpec lim P pColl)
       ∃ μ', Kept μ μ' fr ∧ σ' = ⟨updateLocals loc [(Search.Pairs, (coll S Mo : ℤ)),
         (Search.Passed, if coll S Mo * np ≤ b then loc Search.Passed else 0)], μ'⟩ := by
   obtain ⟨el, es, eb, emod, ecnt, efr, enp⟩ := hloc
-  have hdepth := hok.depth
-  have hcoll : (coll S Mo : ℤ) * np ≤ lim.word := by
+  have := hok.depth
+  have : (coll S Mo : ℤ) * np ≤ lim.word := by
     have hsq : coll S Mo ≤ len ^ 2 := hB.set.card ▸ coll_le_sq S Mo
     exact le_trans (mul_le_mul_of_nonneg_right (by exact_mod_cast hsq) (by positivity)) hprod
-  have hnonneg : (0 : ℤ) ≤ (coll S Mo : ℤ) * np := by positivity
+  have : (0 : ℤ) ≤ (coll S Mo : ℤ) * np := by positivity
   simp only [checkStmt, Search.Modulus, Search.Count, Search.Free, Search.Pairs, Search.NumPrimes,
     Search.Passed]
   -- pairs := coll(len, s, modulus, cnt, fr)
@@ -177,12 +177,12 @@ theorem check_ends {pColl : ℕ} (hColl : CollSpec lim P pColl)
   -- if b < pairs * np
   refine Ends.iteLast (fun hlarge => ?_) (fun hsmall => ?_) (by simp [enp]; omega)
   · -- passed := 0
-    have hlarge' : ¬ coll S Mo * np ≤ b := fun h => by
-      have hlt : (b : ℤ) < (coll S Mo : ℤ) * np := by simpa [hxb, eb, enp] using hlarge
+    have : ¬ coll S Mo * np ≤ b := fun h => by
+      have : (b : ℤ) < (coll S Mo : ℤ) * np := by simpa [hxb, eb, enp] using hlarge
       have hle : ((coll S Mo * np : ℕ) : ℤ) ≤ b := by exact_mod_cast h
       push_cast at hle
       omega
-    exact Ends.setLast ⟨μ', kept, by simp [if_neg hlarge']⟩ (by simp; omega)
+    exact Ends.setLast ⟨μ', kept, by simp [if_neg this]⟩ (by simp; omega)
   · have hsmall' : coll S Mo * np ≤ b := by
       have hnlt : ¬ (b : ℤ) < (coll S Mo : ℤ) * np := by simpa [hxb, eb, enp] using hsmall
       exact_mod_cast not_lt.1 hnlt
@@ -230,8 +230,8 @@ variable {d pColl : ℕ} {x : SearchArgs} {μ : ℕ → ℤ}
 /-- There are at most m² + 1 primes up to m.  (This is the shape y ≤ M + 1 that `mul_le_word` asks
 for, with M = m².) -/
 theorem Env.Ok.np_le {e : Env} (h : e.Ok μ) : e.np ≤ e.m * e.m + 1 := by
-  have hcard := h.primes.1 ▸ Nat.card_primesLE_le e.m
-  have hsq := Nat.le_mul_self e.m
+  have := h.primes.1 ▸ Nat.card_primesLE_le e.m
+  have := Nat.le_mul_self e.m
   omega
 
 /-- What is allowed for search covers what coll needs one level of calls further down. -/
@@ -328,13 +328,13 @@ theorem searchRound_ends (hColl : CollSpec lim P pColl) (hN : NodeMem μ x.toNod
   have hread : μ' (x.pr + t) = (ps[t] : ℕ) := SegN.getElem (hps ▸ hN'.envOk.primes.2) htl
   have hsucc := hit_take_succ (good := x.Good) (fun q hq => (hprime q hq).1.ne_zero) htl
   have hMo : x.mult * ps[t] ≤ x.m * x.m := Nat.mul_le_mul hmult_le hqm
-  have hMw : (x.mult : ℤ) * ps[t] ≤ lim.word := by
+  have : (x.mult : ℤ) * ps[t] ≤ lim.word := by
     exact_mod_cast le_word_of_le (y := x.mult * ps[t]) hok.word (by omega)
-  have hMpos : (1 : ℤ) ≤ (x.mult : ℤ) * ps[t] := by
+  have : (1 : ℤ) ≤ (x.mult : ℤ) * ps[t] := by
     exact_mod_cast Nat.mul_pos hmult_pos hqp.one_le
   have hw := hok.space
-  have hcells := hok.cells
-  have hpr := hN.envOk.belowPr
+  have := hok.cells
+  have := hN.envOk.belowPr
   -- modulus := mult * mem[pr + t]
   light_set (x.mult * ps[t] : ℕ) using hread
   -- passed := 1
@@ -352,8 +352,8 @@ theorem search_spec {p : ℕ} (hP : P[p]? = some (searchBody pColl)) (hColl : Co
     SearchSpec lim P p := by
   intro x μ hN hmult_pos hmult_le d hok
   refine .of_body hP ?_
-  have hone : ((1 : ℕ) : ℤ) ≤ lim.word := le_word_of_le hok.word (by omega)
-  have hnp : (x.np : ℤ) ≤ lim.word := le_word_of_le hok.word hN.envOk.np_le
+  have : ((1 : ℕ) : ℤ) ≤ lim.word := le_word_of_le hok.word (by omega)
+  have : (x.np : ℤ) ≤ lim.word := le_word_of_le hok.word hN.envOk.np_le
   -- found := 0
   refine Ends.setToThen 0 ?_ (hT := by simp [tSearch])
   -- for t < np
@@ -570,16 +570,16 @@ theorem modulusMain_ends (hSearch : SearchSpec lim P pSearch) (hColl : CollSpec 
     rw [hsecond, secondP]
     exact pick_bounds hm (Finset.filter_subset _ _)
   -- The words that are formed: 3, 3 Λ, 3 Λ lᵢ, 3 Λ lᵢ², 3 Λ cᵢ and p₁ p₂.
-  have hthree := three_lam_mul_le (Λ := 1) hok.word (by omega) (x := 1)
+  have := three_lam_mul_le (Λ := 1) hok.word (by omega) (x := 1)
     (Nat.one_le_pow _ _ (by omega))
-  have hlam := three_lam_mul_le hok.word hΛ (x := 1) (Nat.one_le_pow _ _ (by omega))
-  have hlen₁ := three_lam_sq_le hok.word hΛ hN.set₁.le
-  have hlen₂ := three_lam_sq_le hok.word hΛ hN.set₂.le
-  have hlen₃ := three_lam_sq_le hok.word hΛ hN.set₃.le
-  have hcoll₁ := three_lam_coll_le (M := p₁) hok.word hΛ hN.set₁.set hN.set₁.le
-  have hcoll₂ := three_lam_coll_le (M := p₁) hok.word hΛ hN.set₂.set hN.set₂.le
-  have hcoll₃ := three_lam_coll_le (M := p₁) hok.word hΛ hN.set₃.set hN.set₃.le
-  have hprod : 0 ≤ (p₁ : ℤ) * p₂ ∧ (p₁ : ℤ) * p₂ ≤ lim.word := ⟨by positivity, by
+  have := three_lam_mul_le hok.word hΛ (x := 1) (Nat.one_le_pow _ _ (by omega))
+  have := three_lam_sq_le hok.word hΛ hN.set₁.le
+  have := three_lam_sq_le hok.word hΛ hN.set₂.le
+  have := three_lam_sq_le hok.word hΛ hN.set₃.le
+  have := three_lam_coll_le (M := p₁) hok.word hΛ hN.set₁.set hN.set₁.le
+  have := three_lam_coll_le (M := p₁) hok.word hΛ hN.set₂.set hN.set₂.le
+  have := three_lam_coll_le (M := p₁) hok.word hΛ hN.set₃.set hN.set₃.le
+  have : 0 ≤ (p₁ : ℤ) * p₂ ∧ (p₁ : ℤ) * p₂ ≤ lim.word := ⟨by positivity, by
     exact_mod_cast le_word_of_le (y := p₁ * p₂) hok.word
       ((Nat.mul_le_mul hp₁_le hp₂_le).trans (by omega))⟩
   simp only [tModulus]
@@ -603,19 +603,19 @@ theorem modulus_spec {p : ℕ} (hP : P[p]? = some (modulusBody pSearch pColl))
     (hSearch : SearchSpec lim P pSearch) (hColl : CollSpec lim P pColl) : ModulusSpec lim P p := by
   intro a Λ μ hN hΛ d hok
   refine .of_body hP ?_
-  have hone : ((1 : ℕ) : ℤ) ≤ lim.word := le_word_of_le hok.word (by omega)
-  have hcard := hN.envOk.primes.1
+  have : ((1 : ℕ) : ℤ) ≤ lim.word := le_word_of_le hok.word (by omega)
+  have := hN.envOk.primes.1
   -- if np = 0
   refine Ends.iteLast (fun hnone => ?_) (fun hsome => ?_) (hT := by simp [tModulus])
   · -- return 1
     have hempty : Nat.primesLE a.m = ∅ := Finset.card_eq_zero.1 (by
-      have hnp : a.np = 0 := by simpa using hnone
+      have : a.np = 0 := by simpa using hnone
       omega)
     exact Ends.setTo 1 ⟨by simp [modulus, firstP, secondP, pick, hempty], .refl⟩
       (hT := by simp [tModulus])
   · have hm : 1 ≤ a.m := by
       have hpos : 0 < #(Nat.primesLE a.m) := by
-        have hnp : ¬ a.np = 0 := by simpa using hsome
+        have : ¬ a.np = 0 := by simpa using hsome
         omega
       obtain ⟨q, hq⟩ := Finset.card_pos.1 hpos
       exact (Nat.prime_of_mem_primesLE hq).one_le.trans (Nat.le_of_mem_primesLE hq)

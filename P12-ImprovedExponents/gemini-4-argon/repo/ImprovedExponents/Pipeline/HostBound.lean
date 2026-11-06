@@ -1,7 +1,7 @@
 module
 
-public import ThreeSumApsp.TimeClaims.Sec3.Theorem19
-public import ImprovedExponents.Pipeline.ThinClaim
+public import ThreeSumApsp.Util.Asymptotics.LogU
+public import ImprovedExponents.PrunedProgram.Wrapper.Program
 
 @[expose] public section
 

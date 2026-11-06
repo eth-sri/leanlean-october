@@ -1,15 +1,227 @@
+module
+
+public import ThreeSumApsp.Spec.Sec3.Problems
+public import ThreeSumApsp.Util.Flag
+public import ThreeSumApsp.Lang.Calls
+public import ThreeSumApsp.Lang.Lib.Pass
+public import ThreeSumApsp.Lang.Lib.Copy
+public import ThreeSumApsp.Lang.PolyBounded
+public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Tasks
+
+@[expose] public section
+
 /-
 Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-module
 
-public import ThreeSumApsp.Lang.Lib.Copy
-public import ThreeSumApsp.Lang.PolyBounded
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Passes
-public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Tasks
-public import ThreeSumApsp.Spec.Sec3.Theorem21b.BitSearch
+
+/-!
+# The entries of a (min,+)-product, found bit by bit
+
+Theorem 21(b), after [VW18, Theorem 4.2]: the (min,+)-product is computed
+by a binary search for all entries at once.  An entry `c` with `-2U ≤ c ≤ 2U` is approached from
+below: `bitLo U t c` is `c` with the lowest `t` bits of `c + 2U` cleared.
+
+* The search starts at `t = R`, where `4U < 2^R`, with `-2U` (`bitLo_top`), and it ends at `t = 0`
+  with `c` (`bitLo_zero`).
+* One round goes from `t + 1` to `t`: it asks whether `c < bitLo U (t + 1) c + 2^t` and adds `2^t`
+  if not (`bitLo_step`).
+* The question is whether the pair `(i, j)` has a witness: `c` is below a number exactly if one of
+  the sums `A[i,k] + B[k,j]` is (`exists_sum_lt_iff`).  So one round for all entries is one call of
+  a routine that finds all pairs with a witness.
+-/
+
+
+namespace ThreeSumApsp.Spec
+
+/-- Some sum `A[i,k] + B[k,j]` is below `z` exactly if the entry `(i, j)` of the product is. -/
+theorem exists_sum_lt_iff {n : ℕ} (hn : 1 ≤ n) (A B : List ℤ) (i j : ℕ) (z : ℤ) :
+    (∃ k < n, entry n A i k + entry n B k j < z) ↔ minPlusEntry n A B i j < z := by
+  constructor
+  · rintro ⟨k, hk, h⟩
+    exact (minPlusEntry_le n A B i j hk).trans_lt h
+  · intro h
+    obtain ⟨k, hk, he⟩ := exists_minPlusEntry_eq hn A B i j
+    exact ⟨k, hk, he ▸ h⟩
+
+/-- `c` with the lowest `t` bits of `c + 2U` cleared. -/
+def bitLo (U : ℤ) (t : ℕ) (c : ℤ) : ℤ := -(2 * U) + (((c + 2 * U).toNat / 2 ^ t * 2 ^ t : ℕ) : ℤ)
+
+/-- With no bit cleared the number is `c`: the end of the search. -/
+theorem bitLo_zero {U c : ℤ} (h : -(2 * U) ≤ c) : bitLo U 0 c = c := by
+  rw [bitLo, pow_zero, Nat.div_one, Nat.mul_one, Int.toNat_of_nonneg (by linarith)]
+  ring
+
+/-- With all bits cleared the number is `-2U`: the start of the search. -/
+theorem bitLo_top {U c : ℤ} {R : ℕ} (h : c + 2 * U < 2 ^ R) : bitLo U R c = -(2 * U) := by
+  have hlt : (c + 2 * U).toNat < 2 ^ R := by
+    rw [Int.toNat_lt' (by positivity)]
+    exact_mod_cast h
+  simp [bitLo, Nat.div_eq_of_lt hlt]
+
+/-- The search never goes below `-2U`. -/
+theorem le_bitLo (U : ℤ) (t : ℕ) (c : ℤ) : -(2 * U) ≤ bitLo U t c :=
+  le_add_of_nonneg_right (Int.natCast_nonneg _)
+
+/-- The search never goes above `c`. -/
+theorem bitLo_le {U c : ℤ} (h : -(2 * U) ≤ c) (t : ℕ) : bitLo U t c ≤ c := by
+  have hle : (c + 2 * U).toNat / 2 ^ t * 2 ^ t ≤ (c + 2 * U).toNat := Nat.div_mul_le_self _ _
+  have : ((c + 2 * U).toNat : ℤ) = c + 2 * U := Int.toNat_of_nonneg (by linarith)
+  rw [bitLo]
+  linarith [Int.ofNat_le.2 hle]
+
+/-- Clearing one bit less: the bit number `t` of `y` is 0 exactly if `y` is less than `2^t` above
+`y` with its lowest `t + 1` bits cleared. -/
+theorem div_mul_pow_step (y t : ℕ) :
+    y / 2 ^ t * 2 ^ t = y / 2 ^ (t + 1) * 2 ^ (t + 1) +
+      if y < y / 2 ^ (t + 1) * 2 ^ (t + 1) + 2 ^ t then 0 else 2 ^ t := by
+  have hp : 0 < 2 ^ t := by positivity
+  rw [pow_succ, ← Nat.div_div_eq_div_mul]
+  generalize 2 ^ t = p at hp
+  have hlow : y / p * p ≤ y := Nat.div_mul_le_self y p
+  have hhigh : y < y / p * p + p := Nat.lt_div_mul_add hp
+  generalize y / p = q at hlow hhigh
+  rcases Nat.even_or_odd' q with ⟨b, rfl | rfl⟩
+  · rw [show 2 * b / 2 = b by omega, show b * (p * 2) = 2 * b * p by ring, if_pos hhigh,
+      Nat.add_zero]
+  · have hle : b * (p * 2) + p ≤ y := (show _ = (2 * b + 1) * p by ring).trans_le hlow
+    rw [show (2 * b + 1) / 2 = b by omega, if_neg (not_lt.2 hle)]
+    ring
+
+/-- **One round of the search**: `bitLo U t c` is `bitLo U (t + 1) c`, plus `2^t` unless
+`c < bitLo U (t + 1) c + 2^t`. -/
+theorem bitLo_step {U c : ℤ} (h : -(2 * U) ≤ c) (t : ℕ) :
+    bitLo U t c = bitLo U (t + 1) c + 2 ^ t * (1 - flag (c < bitLo U (t + 1) c + 2 ^ t)) := by
+  have hy : ((c + 2 * U).toNat : ℤ) = c + 2 * U := Int.toNat_of_nonneg (by linarith)
+  have hstep := div_mul_pow_step (c + 2 * U).toNat t
+  have hpow : ((2 ^ t : ℕ) : ℤ) = 2 ^ t := by push_cast; rfl
+  simp only [bitLo, hstep]
+  generalize (c + 2 * U).toNat = y at hy
+  generalize y / 2 ^ (t + 1) * 2 ^ (t + 1) = z
+  rw [← hpow]
+  generalize 2 ^ t = p
+  -- With `y = c + 2U` the question is whether `y < z + 2^t`.
+  split_ifs with hlt
+  · rw [flag_of (by omega)]
+    push_cast
+    ring
+  · rw [flag_of_not (by omega)]
+    push_cast
+    ring
+
+end ThreeSumApsp.Spec
+
+/-
+Copyright (c) 2026 Anthropic, PBC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+SPDX-License-Identifier: Apache-2.0
+-/
+
+
+/-!
+# Two passes over an array, for the (min,+)-product found bit by bit
+
+Two routines of the host for [VW18, Theorem 4.2], one of the reductions behind Theorem 21(b).
+
+addc(len, x, src, dst): dst[i] := src[i] + x, in at most 19 len + 6 steps (addc_meets).
+bump(len, x, fl, lo): lo[i] := lo[i] + x (1 − fl[i]), in at most 30 len + 6 steps: where the flag
+is 0 the entry grows by x (bump_meets).
+Both change no other cell.  Each is one pass, so each proof only says what round j reads.
+-/
+
+
+namespace Light.Sec3
+
+open ThreeSumApsp
+
+variable {lim : Limits} {P : Program} {d : ℕ}
+
+namespace Pass
+
+/-- The local variables of addc and bump: the arguments len, x (Summand), the array that is only
+read (src or fl) and the array that is written (dst or lo), and the counter. -/
+abbrev Len : ℕ := 0
+@[inherit_doc Len] abbrev Summand : ℕ := 1
+@[inherit_doc Len] abbrev Source : ℕ := 2
+@[inherit_doc Len] abbrev Dest : ℕ := 3
+@[inherit_doc Len] abbrev Index : ℕ := 4
+
+end Pass
+
+open Pass in
+/-- addc(len, x, src, dst): for i < len, dst[i] := src[i] + x. -/
+def addcBody : Stmt := pass Index (v Len) (v Dest) (M (v Source +' v Index) +' v Summand)
+
+open Pass in
+/-- bump(len, x, fl, lo): for i < len, lo[i] := lo[i] + x (1 − fl[i]). -/
+def bumpBody : Stmt :=
+  pass Index (v Len) (v Dest)
+    (M (v Dest +' v Index) +' v Summand *' (k 1 -' M (v Source +' v Index)))
+
+/-- **addc** writes the list with x added to every entry to dst and changes nothing else. -/
+theorem addc_meets {p : ℕ} (hp : P[p]? = some addcBody) {μ : ℕ → ℤ} {src len : ℕ} {L : List ℤ}
+    (x : ℤ) (dst : ℕ) (hL : Seg μ src L) (hlen : L.length = len)
+    (hsep : Apart src len dst len)
+    (hlim : (lim.space : ℤ) ≤ lim.word ∧ src + len ≤ lim.space ∧ dst + len ≤ lim.space)
+    (hfits : ∀ y ∈ L, |y + x| ≤ lim.word) :
+    Meets lim P p d [(len : ℤ), x, src, dst] μ (19 * len + 6) fun _ μ' =>
+      Seg μ' dst (L.map (· + x)) ∧ SameOutside μ μ' dst len := by
+  subst hlen
+  obtain ⟨hw, hsrc, hdst⟩ := hlim
+  set f : ℕ → ℤ := fun i => L.getD i 0 + x with hf
+  have hfi : ∀ i (hi : i < L.length), f i = L[i] + x := fun i hi => by
+    rw [hf]
+    simp only [List.getD_eq_getElem _ _ hi]
+  refine .of_body hp (Ends.pass f (fun j hj => ?_) ?_ hw hdst rfl rfl)
+  · -- round j reads src[j], which lies outside the cells that are written
+    have hread : wrote μ dst f j (src + j) = L[j] := (wrote_rest (by omega)).trans (hL j hj)
+    have := abs_le.1 (hfits _ (List.getElem_mem hj))
+    rw [update_frame_setLocal]
+    simp [Limits.Addr, abs_le, hread, hfi j hj]; omega
+  · dsimp only
+    refine ⟨fun i hi => ?_, sameOutside_wrote le_rfl⟩
+    have hi' : i < L.length := by simpa using hi
+    rw [wrote_done hi', List.getElem_map, hfi i hi']
+
+/-- **bump** adds x (1 − flag) to every entry of the list at lo and changes nothing else.  The flags
+are 0 or 1, and V bounds the entries. -/
+theorem bump_meets {p : ℕ} (hp : P[p]? = some bumpBody) {μ : ℕ → ℤ} {fl lo len : ℕ} {F L : List ℤ}
+    {V : ℤ} (x : ℤ) (hF : Seg μ fl F) (hL : Seg μ lo L) (hlen : F.length = len ∧ L.length = len)
+    (hsep : Apart fl len lo len)
+    (hlim : (lim.space : ℤ) ≤ lim.word ∧ fl + len ≤ lim.space ∧ lo + len ≤ lim.space)
+    (hflag : ∀ f ∈ F, f = 0 ∨ f = 1) (hle : AbsLe L V) (hfits : |x| + V ≤ lim.word ∧ 1 ≤ lim.word) :
+    Meets lim P p d [(len : ℤ), x, fl, lo] μ (30 * len + 6) fun _ μ' =>
+      Seg μ' lo (List.zipWith (fun l f => l + x * (1 - f)) L F) ∧ SameOutside μ μ' lo len := by
+  obtain ⟨lF, lL⟩ := hlen
+  obtain ⟨hw, hfl, hlo⟩ := hlim
+  set f : ℕ → ℤ := fun i => L.getD i 0 + x * (1 - F.getD i 0) with hf
+  have hfi : ∀ i (hF : i < F.length) (hL : i < L.length), f i = L[i] + x * (1 - F[i]) :=
+    fun i hF hL => by
+      rw [hf]
+      simp only [List.getD_eq_getElem _ _ hF, List.getD_eq_getElem _ _ hL]
+  refine .of_body hp (Ends.pass f (fun j hj => ?_) ?_ hw hlo rfl rfl)
+  · -- round j reads the flag fl[j], which is never written, and lo[j], which it then overwrites
+    have hreadF : wrote μ lo f j (fl + j) = F[j] := (wrote_rest (by omega)).trans (hF j (by omega))
+    have hreadL : wrote μ lo f j (lo + j) = L[j] := (wrote_rest (by omega)).trans (hL j (by omega))
+    have := abs_le.1 (hle.getElem (i := j) (by omega))
+    have := abs_le.1 (le_refl |x|)
+    rw [update_frame_setLocal]
+    rcases hflag _ (List.getElem_mem (show j < F.length by omega)) with h | h
+    all_goals
+      simp [Limits.Addr, abs_le, -abs_mul, hreadF, hreadL, hfi j (by omega) (by omega), h]; omega
+  · dsimp only
+    exact ⟨seg_wrote (by simp [lF, lL]) fun i hi => by
+      rw [List.getElem_zipWith, hfi], sameOutside_wrote le_rfl⟩
+
+
+/-
+Copyright (c) 2026 Anthropic, PBC. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+SPDX-License-Identifier: Apache-2.0
+-/
+
 
 /-!
 # The (min,+)-product from "all pairs", bit by bit
@@ -31,11 +243,8 @@ bump changes them (lows_round, from bitLo_step).  Then the program: the powers o
 a round (round_spec, with the invariant Inv), all rounds (rounds_spec), the host (mp_spec).
 -/
 
-@[expose] public section
 
-open ThreeSumApsp
 
-namespace Light.Sec3
 
 open ThreeSumApsp.Spec
 
@@ -232,8 +441,8 @@ theorem abs_asked_le (hpre : x.Pre μ fr) {t : ℕ} (ht : t < mpRounds x.U) :
     ∀ y ∈ lows x (t + 1), |y + (2 : ℤ) ^ t| ≤ 6 * (x.U : ℤ) := by
   intro y hy
   obtain ⟨q, hq, rfl⟩ := List.getElem_of_mem hy
-  have hpow := pow_range hpre.U_pos ht
-  have hrange := lows_range hpre (t + 1) q hq
+  have := pow_range hpre.U_pos ht
+  have := lows_range hpre (t + 1) q hq
   exact abs_le.2 ⟨by omega, by omega⟩
 
 /-! ## The surroundings -/
@@ -258,7 +467,7 @@ structure Lim (lim : Limits) (d : ℕ) (r : ℕ → ℕ → Need) (x : MatInst) 
   space : (lim.space : ℤ) ≤ lim.word
   depth : d + ((r x.n (6 * x.U)).depth + 1) ≤ lim.depth
 
-private theorem lim_of_ok (hok : (mpNeed r x.n x.U).Ok lim fr d) : Lim lim d r x fr where
+theorem lim_of_ok (hok : (mpNeed r x.n x.U).Ok lim fr d) : Lim lim d r x fr where
   solver := le_trans (by exact_mod_cast le_max_left _ _) hok.word
   word := le_trans (by exact_mod_cast le_max_right (r x.n (6 * x.U)).word (8 * x.U + 1)) hok.word
   cells := hok.cells
@@ -281,7 +490,7 @@ abbrev locals (x : MatInst) (fr count : ℕ) (power unused : ℤ) : List ℤ :=
 theorem consts_spec {P : Program} (hpre : x.Pre μ fr) (hlim : Lim lim d r x fr) :
     Ends lim P d mpConsts ⟨frame [x.n, x.U, x.a, x.b, x.c, fr], μ⟩ 20 fun σ' =>
       σ' = ⟨frame (consts x fr), μ⟩ := by
-  have hcells := hlim.cells
+  have := hlim.cells
   light_facts hlim hpre
   unfold mpConsts
   refine Ends.setToThen (x.n * x.n : ℕ) ?_
@@ -295,7 +504,7 @@ theorem powers_spec {P : Program} (hpre : x.Pre μ fr) (hlim : Lim lim d r x fr)
     Ends lim P d mpPowers ⟨frame (consts x fr), μ⟩ (19 * mpRounds x.U + 10) fun σ' =>
       σ' = ⟨frame (consts x fr ++ [(mpRounds x.U : ℤ), 2 ^ mpRounds x.U]),
         wrote μ fr (fun i => 2 ^ i) (mpRounds x.U)⟩ := by
-  have hcells := hlim.cells
+  have := hlim.cells
   light_facts hlim
   unfold mpPowers
   -- count := 0; power := 1
@@ -306,13 +515,13 @@ theorem powers_spec {P : Program} (hpre : x.Pre μ fr) (hlim : Lim lim d r x fr)
     wrote μ fr (fun i => 2 ^ i) i⟩) (mpRounds x.U) (by rw [wrote_zero]; rfl) ?round ?done
   case round =>
     rintro i _ hi rfl
-    have hpow := pow_range hpre.U_pos hi
+    have := pow_range hpre.U_pos hi
     refine ⟨by light_side, by simp; omega, by light_side, ?_⟩
     rw [← wrote_succ]
     simp [update_frame_setLocal, pow_succ, mul_two]
   case done =>
     rintro _ rfl
-    have hpow := lt_pow_rounds x.U
+    have := lt_pow_rounds x.U
     exact ⟨by light_side, by simp; omega, rfl⟩
 
 /-! ## A round -/
@@ -328,7 +537,7 @@ structure Mem (x : MatInst) (μ : ℕ → ℤ) (fr t : ℕ) (μ' : ℕ → ℤ) 
 def Inv (x : MatInst) (μ : ℕ → ℤ) (fr t : ℕ) (σ : State) : Prop :=
   ∃ (power unused : ℤ) (μ' : ℕ → ℤ), σ = ⟨frame (locals x fr t power unused), μ'⟩ ∧ Mem x μ fr t μ'
 
-private theorem Inv.loc_count {t : ℕ} {σ : State} (hI : Inv x μ fr t σ) : σ.loc Count = t := by
+theorem Inv.loc_count {t : ℕ} {σ : State} (hI : Inv x μ fr t σ) : σ.loc Count = t := by
   obtain ⟨_, _, _, rfl, -⟩ := hI
   rfl
 
@@ -341,9 +550,9 @@ def pairsInst (x : MatInst) (fr t : ℕ) : PairsInst :=
 theorem pairsInst_pre (hpre : x.Pre μ fr) {t : ℕ} (ht : t < mpRounds x.U) {μ' : ℕ → ℤ}
     (sA : Seg μ' x.a x.A) (sB : Seg μ' x.b x.B) (sV : Seg μ' (fr + mpRounds x.U) (asked x t)) :
     (pairsInst x fr t).Pre μ' (fr + mpRounds x.U + x.n * x.n + x.n * x.n) :=
-  have hA := hpre.belowA
-  have hB := hpre.belowB
-  have hU := hpre.U_pos
+  have := hpre.belowA
+  have := hpre.belowB
+  have := hpre.U_pos
   have hle : ∀ L : List ℤ, AbsLe L x.U → AbsLe L (6 * x.U : ℕ) := fun L hL y hy =>
     (hL y hy).trans (by push_cast; omega)
   { n_pos := hpre.n_pos
@@ -363,9 +572,7 @@ theorem pairsInst_pre (hpre : x.Pre μ fr) {t : ℕ} (ht : t < mpRounds x.U) {μ
     belowY := by simp only [pairsInst]; omega
     belowV := by simp only [pairsInst]; omega
     belowOut := by simp only [pairsInst]; omega
-    apartX := by simp only [pairsInst]; omega
-    apartY := by simp only [pairsInst]; omega
-    apartV := by simp only [pairsInst]; omega }
+    apartX := by simp only [pairsInst]; omega }
 
 /-- **One round** goes from the state with t + 1 remaining rounds to the state with t. -/
 theorem round_spec (C : Ctx P₀ R₀ pPairs pFill pAddc pBump T r) (hpre : x.Pre μ fr)
@@ -374,7 +581,7 @@ theorem round_spec (C : Ctx P₀ R₀ pPairs pFill pAddc pBump T r) (hpre : x.Pr
     Ends lim (P₀ ++ R₀) d (mpRound pPairs pAddc pBump) σ (roundTime T x.n x.U) (Inv x μ fr t) := by
   obtain ⟨power, unused, μ₀, rfl, hM⟩ := hI
   have hw := hlim.space
-  have hlenLo := length_lows x (t + 1)
+  have := length_lows x (t + 1)
   light_facts hlim hpre hM
   unfold mpRound roundTime
   -- count := count - 1; power := mem[fr + count]
@@ -443,12 +650,12 @@ theorem mp_spec {P₀ R₀ : Program} {pPairs pFill pAddc pBump : ℕ} {T : ℕ 
       fun σ' => mpTask.Post x μ fr (σ'.loc 0) σ'.mem := by
   have hlim := lim_of_ok hok
   have hw := hlim.space
-  have hcells := hlim.cells
+  have := hlim.cells
   light_facts hlim hpre
-  have harea : 1 ≤ x.n * x.n := Nat.mul_pos hpre.n_pos hpre.n_pos
+  have : 1 ≤ x.n * x.n := Nat.mul_pos hpre.n_pos hpre.n_pos
   -- For the comparisons of times below: of the steps counted for each round, 24 pay for its power
   -- of two.
-  have hsplit : mpRounds x.U * (T x.n (6 * x.U) + 49 * (x.n * x.n) + 70) =
+  have : mpRounds x.U * (T x.n (6 * x.U) + 49 * (x.n * x.n) + 70) =
       mpRounds x.U * (roundTime T x.n x.U + 4) + 24 * mpRounds x.U := by unfold roundTime; ring
   unfold mpBody mpTime
   -- The numbers n², 2U, 4U, −2U, 6U, and the powers of two.

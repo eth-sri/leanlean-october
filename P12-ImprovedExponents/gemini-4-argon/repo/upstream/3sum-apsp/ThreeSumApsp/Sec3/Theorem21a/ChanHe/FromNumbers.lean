@@ -49,18 +49,18 @@ section distinct
 variable {U : ℕ} {S : Finset ℤ}
 
 /-- On `[-U, U]` the label of `x` is `x + U`. -/
-private theorem lab_cast {x : ℤ} (hx : |x| ≤ (U : ℤ)) : ((lab U x : ℕ) : ℤ) = x + U :=
+theorem lab_cast {x : ℤ} (hx : |x| ≤ (U : ℤ)) : ((lab U x : ℕ) : ℤ) = x + U :=
   Int.toNat_of_nonneg (by have := (abs_le.mp hx).1; omega)
 
 /-- The label of an element of `[-U, U]` has at most `Lam U` binary digits. -/
-private theorem lab_lt {x : ℤ} (hx : |x| ≤ (U : ℤ)) : lab U x < 2 ^ Lam U := by
+theorem lab_lt {x : ℤ} (hx : |x| ≤ (U : ℤ)) : lab U x < 2 ^ Lam U := by
   have := lab_cast hx
   have := (abs_le.mp hx).2
   exact (by omega : lab U x ≤ 2 * U).trans_lt (Nat.lt_pow_succ_log_self (by norm_num) _)
 
 /-- The labels of two different elements of `[-U, U]` differ in one of their `Lam U` lowest binary
 digits. -/
-private theorem exists_testBit_lab_ne {x y : ℤ} (hx : |x| ≤ (U : ℤ)) (hy : |y| ≤ (U : ℤ))
+theorem exists_testBit_lab_ne {x y : ℤ} (hx : |x| ≤ (U : ℤ)) (hy : |y| ≤ (U : ℤ))
     (hne : x ≠ y) : ∃ β < Lam U, (lab U x).testBit β ≠ (lab U y).testBit β := by
   have hlab : lab U x ≠ lab U y := fun h => hne (by have := lab_cast hx; have := lab_cast hy; omega)
   obtain ⟨β, hβ⟩ := Nat.exists_testBit_ne_of_ne hlab
@@ -72,7 +72,7 @@ private theorem exists_testBit_lab_ne {x y : ℤ} (hx : |x| ≤ (U : ℤ)) (hy :
 
 /-- Let `x + y + z = 0` in `S`.  If the label of `x` differs from those of `y` and `z` in digit `β`,
 and `y ≠ z`, then one of the three-set inputs obtained by splitting `S` has a solution. -/
-private theorem exists_split_of_testBit (h : Bdd U S) {x y z : ℤ} (hx : x ∈ S) (hy : y ∈ S)
+theorem exists_split_of_testBit (h : Bdd U S) {x y z : ℤ} (hx : x ∈ S) (hy : y ∈ S)
     (hz : z ∈ S) {β : ℕ} (hβ : β < Lam U) (hxy : (lab U y).testBit β = !(lab U x).testBit β)
     (hxz : (lab U z).testBit β = !(lab U x).testBit β) (hyz : y ≠ z) (hs : x + y + z = 0) :
     ∃ β < Lam U, ∃ β' < Lam U, ∃ v : Bool,
@@ -126,7 +126,7 @@ def Degenerate (x : Fin n → ℤ) : Prop :=
   (∃ a : ℤ, a ≠ 0 ∧ 2 ≤ #{i : Fin n | x i = a} ∧ ∃ k, x k = -2 * a) ∨ 3 ≤ #{i : Fin n | x i = 0}
 
 /-- A solution at three different positions, two of which hold the same value, repeats a value. -/
-private theorem degenerate_of_eq {i j k : Fin n} (hij : i ≠ j) (hik : i ≠ k) (hjk : j ≠ k)
+theorem degenerate_of_eq {i j k : Fin n} (hij : i ≠ j) (hik : i ≠ k) (hjk : j ≠ k)
     (he : x i = x j) (hs : x i + x j + x k = 0) : Degenerate x := by
   by_cases h0 : x i = 0
   · exact .inr (two_lt_card.mpr ⟨i, by simpa using h0, j, by simpa using he ▸ h0,
@@ -196,14 +196,14 @@ section oneArray
 variable {N W : ℕ} {X Y Z : ℕ → ℤ}
 
 /-- The definition of `oneArray` with `G` written out. -/
-private theorem oneArray_val (W : ℕ) (X Y Z : ℕ → ℤ) (u : ℕ) :
+theorem oneArray_val (W : ℕ) (X Y Z : ℕ → ℤ) (u : ℕ) :
     oneArray W X Y Z u = if u % 4 = 1 then X (u / 4) + (3 * W + 1)
       else if u % 4 = 2 then Y (u / 4) + 3 * (3 * W + 1)
       else if u % 4 = 3 then Z (u / 4) + 4 * (3 * W + 1) else 10 * (3 * W + 1) := rfl
 
 /-- A solution `(i, j)` of the three arrays gives the solution `(4i + 1, 4j + 2)` of the one
 array. -/
-private theorem oneArray_sol (W : ℕ) {i j : ℕ} (h : X i + Y j = Z (i + j)) :
+theorem oneArray_sol (W : ℕ) {i j : ℕ} (h : X i + Y j = Z (i + j)) :
     oneArray W X Y Z (4 * i + 1) + oneArray W X Y Z (4 * j + 2) =
       oneArray W X Y Z (4 * i + 1 + (4 * j + 2)) := by
   simp only [oneArray_val, show (4 * i + 1) % 4 = 1 by omega, show (4 * j + 2) % 4 = 2 by omega,
@@ -214,16 +214,16 @@ private theorem oneArray_sol (W : ℕ) {i j : ℕ} (h : X i + Y j = Z (i + j)) :
 
 /-- A solution of the one array is a solution of the three arrays: the multiples of `G = 3W + 1`
 cancel only if the two indices have the remainders 1 and 2 modulo 4. -/
-private theorem convSol_of_oneArray (hX : ∀ i < N, |X i| ≤ (W : ℤ)) (hY : ∀ i < N, |Y i| ≤ (W : ℤ))
+theorem convSol_of_oneArray (hX : ∀ i < N, |X i| ≤ (W : ℤ)) (hY : ∀ i < N, |Y i| ≤ (W : ℤ))
     (hZ : ∀ i < N, |Z i| ≤ (W : ℤ)) {u v : ℕ} (huv : u + v < 4 * N)
     (h : oneArray W X Y Z u + oneArray W X Y Z v = oneArray W X Y Z (u + v)) :
     ConvSol N X Y Z := by
   have hW : ∀ i < N, (-(W : ℤ) ≤ X i ∧ X i ≤ W) ∧ (-(W : ℤ) ≤ Y i ∧ Y i ≤ W) ∧
       (-(W : ℤ) ≤ Z i ∧ Z i ≤ W) :=
     fun i hi => ⟨abs_le.mp (hX i hi), abs_le.mp (hY i hi), abs_le.mp (hZ i hi)⟩
-  have hWu := hW (u / 4) (by omega)
-  have hWv := hW (v / 4) (by omega)
-  have hWuv := hW ((u + v) / 4) (by omega)
+  have := hW (u / 4) (by omega)
+  have := hW (v / 4) (by omega)
+  have := hW ((u + v) / 4) (by omega)
   simp only [oneArray_val] at h
   by_cases h12 : u % 4 = 1 ∧ v % 4 = 2
   · refine ⟨u / 4, v / 4, by omega, ?_⟩
@@ -264,7 +264,7 @@ variable {n U : ℕ} {ν : Node}
 
 /-- The entries of the three arrays of a node are bounded by the number `2U + 1` with which its
 one-array instance is built. -/
-private theorem Node.abs_arr_le (b₁ : Bdd U ν.S₁) (b₂ : Bdd U ν.S₂) (b₃ : Bdd U ν.S₃) :
+theorem Node.abs_arr_le (b₁ : Bdd U ν.S₁) (b₂ : Bdd U ν.S₂) (b₃ : Bdd U ν.S₃) :
     (∀ i, |arrXY ν.S₁ ν.M U i| ≤ ((2 * U + 1 : ℕ) : ℤ)) ∧
       (∀ i, |arrXY ν.S₂ ν.M U i| ≤ ((2 * U + 1 : ℕ) : ℤ)) ∧
       ∀ i, |arrZ ν.S₃ ν.M U i| ≤ ((2 * U + 1 : ℕ) : ℤ) := by
@@ -305,7 +305,7 @@ section inputs
 variable {n U : ℕ} {x : Fin n → ℤ}
 
 /-- The values of `x` are bounded by `2U`. -/
-private theorem bdd_image (hx : ∀ i, |x i| ≤ (U : ℤ)) : Bdd (2 * U) (univ.image x) := by
+theorem bdd_image (hx : ∀ i, |x i| ≤ (U : ℤ)) : Bdd (2 * U) (univ.image x) := by
   intro a ha
   obtain ⟨i, -, rfl⟩ := mem_image.mp ha
   exact (hx i).trans (by omega)
@@ -336,11 +336,11 @@ theorem card_image_univ_le (x : Fin n → ℤ) : #(univ.image x) ≤ n :=
   card_image_le.trans_eq (card_fin n)
 
 /-- `twiceSet x` has at most `n` elements. -/
-private theorem card_twiceSet_le (x : Fin n → ℤ) : #(twiceSet x) ≤ n :=
+theorem card_twiceSet_le (x : Fin n → ℤ) : #(twiceSet x) ≤ n :=
   card_image_le.trans ((card_filter_le _ _).trans (card_image_univ_le x))
 
 /-- `zeroSet x` has at most one element. -/
-private theorem card_zeroSet_le (x : Fin n → ℤ) : #(zeroSet x) ≤ 1 := by
+theorem card_zeroSet_le (x : Fin n → ℤ) : #(zeroSet x) ≤ 1 := by
   unfold zeroSet
   split_ifs <;> simp
 
@@ -358,7 +358,7 @@ inductive IsInput (U : ℕ) (x : Fin n → ℤ) : Finset ℤ → Finset ℤ → 
 
 /-- A property holds for one of the three-set inputs iff it holds for one of the splittings or for
 one of the two further inputs. -/
-private theorem exists_isInput_iff (P : Finset ℤ → Finset ℤ → Finset ℤ → Prop) :
+theorem exists_isInput_iff (P : Finset ℤ → Finset ℤ → Finset ℤ → Prop) :
     (∃ T₁ T₂ T₃, IsInput U x T₁ T₂ T₃ ∧ P T₁ T₂ T₃) ↔
       (∃ β < Lam (2 * U), ∃ β' < Lam (2 * U), ∃ v : Bool,
         P (splitA (2 * U) β v (univ.image x)) (splitB (2 * U) β β' v false (univ.image x))

@@ -129,23 +129,23 @@ section prefMem
 variable {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q R : List ℤ} {j : ℕ}
 
 /-- A cell of q that has made its step. -/
-private theorem prefMem_q_done (hsep : q + Q.length ≤ r ∨ r + Q.length ≤ q) (hj : j ≤ Q.length)
+theorem prefMem_q_done (hsep : q + Q.length ≤ r ∨ r + Q.length ≤ q) (hj : j ≤ Q.length)
     {i : ℕ} (hi : i < j) :
     prefMem μ q r Pw Q R j (q + i) = shiftQ Pw (Q.getD i 0) (R.getD i 0) :=
   (wrote_rest (by omega)).trans (wrote_done hi)
 
 /-- A cell of r that has made its step. -/
-private theorem prefMem_r_done {i : ℕ} (hi : i < j) :
+theorem prefMem_r_done {i : ℕ} (hi : i < j) :
     prefMem μ q r Pw Q R j (r + i) = shiftR Pw (R.getD i 0) :=
   wrote_done hi
 
 /-- A cell that has not been written (yet). -/
-private theorem prefMem_rest {a : ℕ} (hq : a < q ∨ q + j ≤ a) (hr : a < r ∨ r + j ≤ a) :
+theorem prefMem_rest {a : ℕ} (hq : a < q ∨ q + j ≤ a) (hr : a < r ∨ r + j ≤ a) :
     prefMem μ q r Pw Q R j a = μ a :=
   (wrote_rest hr).trans (wrote_rest hq)
 
 /-- What round j writes. -/
-private theorem prefMem_succ (hsep : q + Q.length ≤ r ∨ r + Q.length ≤ q) (hj : j < Q.length) :
+theorem prefMem_succ (hsep : q + Q.length ≤ r ∨ r + Q.length ≤ q) (hj : j < Q.length) :
     Function.update (Function.update (prefMem μ q r Pw Q R j) (q + j)
       (shiftQ Pw (Q.getD j 0) (R.getD j 0))) (r + j) (shiftR Pw (R.getD j 0)) =
         prefMem μ q r Pw Q R (j + 1) := by
@@ -169,17 +169,17 @@ structure PrefPre (lim : Limits) (μ : ℕ → ℤ) (q r : ℕ) (Pw : ℤ) (Q R 
   fitsR : ∀ x ∈ R, |2 * x| ≤ lim.word ∧ |2 * x - Pw| ≤ lim.word
 
 /-- **One round of prefDown** makes the step on the pair (q[j], r[j]) and leaves 2 r[j] in Twice. -/
-private theorem prefDownRound_spec {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q R : List ℤ}
+theorem prefDownRound_spec {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q R : List ℤ}
     (C : PrefPre lim μ q r Pw Q R) {j : ℕ} (hj : j < Q.length) (s : ℤ) :
     Ends lim P d prefDownRound ⟨frame [Q.length, q, r, Pw, j, s], prefMem μ q r Pw Q R j⟩
       prefDownRound.blockCost fun σ' =>
         σ' = ⟨frame [Q.length, q, r, Pw, j, 2 * R.getD j 0], prefMem μ q r Pw Q R (j + 1)⟩ := by
   have hlen := C.len
-  have hw := C.space
-  have hq := C.inQ
-  have hr := C.inR
+  have := C.space
+  have := C.inQ
+  have := C.inR
   have hsep := C.apart
-  have h2 := C.two_le
+  have := C.two_le
   have hreadQ : prefMem μ q r Pw Q R j (q + j) = Q.getD j 0 :=
     (prefMem_rest (by omega) (by omega)).trans (C.segQ.getD hj 0)
   have hreadR : prefMem μ q r Pw Q R j (r + j) = R.getD j 0 :=
@@ -224,7 +224,7 @@ theorem prefDown_meets {p : ℕ} (hp : P[p]? = some prefDownBody) {μ : ℕ → 
   refine .of_body hp ?_
   have hlen := C.len
   have hsep := C.apart
-  have hfits : (Q.length : ℤ) ≤ lim.word :=
+  have : (Q.length : ℤ) ≤ lim.word :=
     le_trans (by exact_mod_cast (Nat.le_add_left _ q).trans C.inQ) C.space
   refine Ends.forShape (fun j s μ' => ⟨frame [Q.length, q, r, Pw, j, s], μ'⟩)
     (fun j μ' => μ' = prefMem μ q r Pw Q R j) Q.length prefDownRound.blockCost 0

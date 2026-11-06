@@ -96,7 +96,7 @@ def strassenList (p : ℕ) : ℕ → List ℤ → List ℤ → List ℤ
     vadd (vsub (vadd m1 m4) m5) m7 ++ vadd m3 m5 ++ vadd m2 m4 ++ vadd (vadd (vsub m1 m2) m3) m6
 
 /-- A sum over twice as many indices. -/
-private theorem sum_range_two_pow_succ {R : Type} [AddCommMonoid R] (K : ℕ) (f : ℕ → R) :
+theorem sum_range_two_pow_succ {R : Type} [AddCommMonoid R] (K : ℕ) (f : ℕ → R) :
     ∑ c ∈ range (2 ^ (K + 1)), f c =
       ∑ c ∈ range (2 ^ K), f c + ∑ c ∈ range (2 ^ K), f (c + 2 ^ K) := by
   rw [pow_succ, Nat.mul_two, Finset.sum_range_add]
