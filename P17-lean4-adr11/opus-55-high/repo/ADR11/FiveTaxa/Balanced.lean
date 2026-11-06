@@ -1,8 +1,9 @@
 module
 
-public import ADR11.FiveTaxa.Basic
-public import ADR11.Computation.FiveTaxa
-public import ADR11.FiveTaxa.Explanations
+public import ADR11.Identifiability.FiveTaxa.Common
+public import ADR11.Identifiability.FiveTaxa.Classes
+public import ADR11.Rootings.Proofs
+public meta import ADR11.Rootings.Proofs
 
 /-!
 # The balanced 5-taxon species tree `(((a,b):x,c):y,(d,e):z)`
@@ -37,56 +38,21 @@ theorem equation11 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
       u σ 12 = u σ 5 ∧
     u σ 7 = 1 / 15 * X * Y ^ 3 * Z ∧ u σ 8 = u σ 7 ∧ u σ 10 = u σ 7 ∧ u σ 11 = u σ 7 ∧
       u σ 14 = u σ 7 ∧ u σ 15 = u σ 7 := by
-  have h (i : ℕ) (hi : i ∈ Icc 1 15) :
-      u σ i = Computation.evalPoly σ.length (Computation.bal5Poly i) :=
-    Computation.u_bal5 σ hσ hi
-  dsimp only
-  rw [h 1 (by decide), h 2 (by decide), h 3 (by decide), h 4 (by decide), h 5 (by decide),
-    h 6 (by decide), h 7 (by decide), h 8 (by decide), h 9 (by decide), h 10 (by decide),
-    h 11 (by decide), h 12 (by decide), h 13 (by decide), h 14 (by decide), h 15 (by decide)]
-  simp only [Computation.bal5Poly, Computation.evalPoly_cons, Computation.evalPoly_nil,
-    Computation.monoVal_cons, Computation.monoVal_nil, Computation.decC_5_3,
-    Computation.decC_5_7, Computation.decC_5_24]
-  push_cast
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> first | trivial | ring
-
-/-! ### Helpers: the formulas (11) on the classes, and balanced trees with given `X, Y, Z` -/
-
-/-- For a balanced species tree, `X, Y, Z ∈ (0, 1)`. -/
-theorem tables_bal_bounds (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
-    0 < exp (-σ.length {0, 1}) ∧ exp (-σ.length {0, 1}) < 1 ∧
-    0 < exp (-σ.length {0, 1, 2}) ∧ exp (-σ.length {0, 1, 2}) < 1 ∧
-    0 < exp (-σ.length {3, 4}) ∧ exp (-σ.length {3, 4}) < 1 := by
-  have h : ∀ A ∈ balanced5, A ≠ univ → exp (-σ.length A) < 1 := fun A hA hne =>
-    Real.exp_lt_one_iff.2 (neg_lt_zero.2 (σ.length_pos A (hσ ▸ hA) hne))
-  exact ⟨exp_pos _, h _ (by decide) (by decide), exp_pos _, h _ (by decide) (by decide),
-    exp_pos _, h _ (by decide) (by decide)⟩
-
-/-- Equation (11) on the names of the classes, with `X, Y, Z ∈ (0, 1)`. -/
-private theorem tables_bal_formulas (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
-    ∃ X Y Z : ℝ, 0 < X ∧ X < 1 ∧ 0 < Y ∧ Y < 1 ∧ 0 < Z ∧ Z < 1 ∧
-      u σ 1 = 1 - 2 / 3 * X - 2 / 3 * Y * Z + 1 / 3 * X * Y * Z + 1 / 15 * X * Y ^ 3 * Z ∧
-      u σ 2 = 1 / 3 * Y * Z - 1 / 6 * X * Y * Z - 1 / 10 * X * Y ^ 3 * Z ∧
-      u σ 4 = 1 / 3 * X - 1 / 3 * X * Y * Z + 1 / 15 * X * Y ^ 3 * Z ∧
-      u σ 5 = 1 / 6 * X * Y * Z - 1 / 10 * X * Y ^ 3 * Z ∧
-      u σ 7 = 1 / 15 * X * Y ^ 3 * Z := by
-  obtain ⟨h1, h2, -, h4, -, h5, -, -, -, h7, -⟩ := equation11 σ hσ
-  obtain ⟨a, b, c, d, e, f⟩ := tables_bal_bounds σ hσ
-  exact ⟨_, _, _, a, b, c, d, e, f, h1, h2, h4, h5, h7⟩
+  msc hσ
 
 /-! ### The invariants of Table 1, by their explanations (Section 4.2.1) -/
-
-/-- The class of `T_i` in the partition of Section 4.2.1, named by its smallest index:
-`{T₁}, {T₂,T₃}, {T₄,T₁₃}, {T₅,T₆,T₉,T₁₂}, {T₇,T₈,T₁₀,T₁₁,T₁₄,T₁₅}`. -/
-def balancedClass : ℕ → ℕ
-  | 3 => 2 | 13 => 4 | 6 => 5 | 9 => 5 | 12 => 5
-  | 8 => 7 | 10 => 7 | 11 => 7 | 14 => 7 | 15 => 7 | i => i
 
 /-- **Inequalities (4)**: for all branch lengths, `u₁ > u₂ > u₅`, `u₁ > u₄ > u₅` and `u₅ > u₇`. -/
 theorem equation4 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
     u σ 1 > u σ 2 ∧ u σ 1 > u σ 4 ∧ u σ 2 > u σ 5 ∧ u σ 4 > u σ 5 ∧ u σ 5 > u σ 7 := by
-  obtain ⟨X, Y, Z, hX, hX1, hY, hY1, hZ, hZ1, h1, h2, h4, h5, h7⟩ := tables_bal_formulas σ hσ
+  obtain ⟨h1, h2, -, h4, -, h5, -, -, -, h7, -⟩ := equation11 σ hσ
+  obtain ⟨hX, hX1⟩ := five_exp_bounds hσ {0, 1}
+  obtain ⟨hY, hY1⟩ := five_exp_bounds hσ {0, 1, 2}
+  obtain ⟨hZ, hZ1⟩ := five_exp_bounds hσ {3, 4}
   rw [h1, h2, h4, h5, h7]
+  generalize exp (-σ.length {0, 1}) = X at *
+  generalize exp (-σ.length {0, 1, 2}) = Y at *
+  generalize exp (-σ.length {3, 4}) = Z at *
   have hX' : 0 < 1 - X := by linarith
   have hZ' : 0 < 1 - Z := by linarith
   have hYZ : Y * Z < 1 := by nlinarith
@@ -101,62 +67,17 @@ theorem equation4 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
   -- `u₂ - u₅ = k₄/3`
   have k4 : 0 < Y * Z * (1 - X) := by positivity
   -- `u₄ - u₅ = k₅/6`
-  have k5 : 0 < X * (2 * (1 - Z) + Z * ((1 - Y) ^ 2 * (2 + Y))) := mul_pos hX (by positivity)
+  have k5 : 0 < X * (2 * (1 - Z) + Z * ((1 - Y) ^ 2 * (2 + Y))) := by positivity
   -- `u₅ - u₇ = k₆/6`
   have k6 : 0 < X * Y * Z * (1 - Y ^ 2) := by positivity
-  exact ⟨by linarith only [k1, k2, hZ'], by linarith only [k3], by linarith only [k4],
-    by linarith only [k5], by linarith only [k6]⟩
+  grind
 
-open scoped Classical in
-/-- Section 4.2.1: the 6-element class always has the strictly smallest probability, the
-4-element class the next smallest, and the class of the largest probability is the singleton
-`{T₁}`. -/
-theorem balanced_extremeClasses (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
-    {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ i ≤ u σ j} = {7, 8, 10, 11, 14, 15} ∧
-    {i ∈ Icc 1 15 | u σ 7 < u σ i ∧ ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ i ≤ u σ j} =
-      {5, 6, 9, 12} ∧
-    {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ j ≤ u σ i} = {1} := by
+/-- Section 4.2.1: the 6-element class always has the strictly smallest probability, and the
+4-element class the next smallest. -/
+theorem balanced_extremeClasses {σ : SpeciesTree (Fin 5)} (hσ : σ.clusters = balanced5) :
+    cls_leastClass σ = {7, 8, 10, 11, 14, 15} ∧ cls_secondClass σ = {5, 6, 9, 12} := by
   obtain ⟨h12, h14, h25, h45, h57⟩ := equation4 σ hσ
   obtain ⟨-, -, e3, -, e13, -, e6, e9, e12, -, e8, e10, e11, e14, e15⟩ := equation11 σ hσ
-  have K1 : ∀ j ∈ Icc 1 15, u σ 7 ≤ u σ j := by
-    intro j hj
-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
-    interval_cases j <;> linarith
-  have K2 : ∀ j ∈ Icc 1 15, u σ 7 < u σ j → u σ 5 ≤ u σ j := by
-    intro j hj hj7
-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
-    interval_cases j <;> linarith
-  have K3 : ∀ j ∈ Icc 1 15, u σ j ≤ u σ 1 := by
-    intro j hj
-    obtain ⟨hj1, hj2⟩ := mem_Icc.1 hj
-    interval_cases j <;> linarith
-  refine ⟨?_, ?_, ?_⟩
-  · ext i
-    simp only [mem_filter, mem_insert, mem_singleton]
-    constructor
-    · rintro ⟨hi, h⟩
-      have h7 := h 7 (by simp)
-      obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-      interval_cases i <;> first | (exfalso; linarith) | simp
-    · rintro (rfl | rfl | rfl | rfl | rfl | rfl) <;>
-        exact ⟨by simp, fun j hj => by linarith [K1 j hj]⟩
-  · ext i
-    simp only [mem_filter, mem_insert, mem_singleton]
-    constructor
-    · rintro ⟨hi, hlt, h⟩
-      have h5 := h 5 (by simp) h57
-      obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-      interval_cases i <;> first | (exfalso; linarith) | simp
-    · rintro (rfl | rfl | rfl | rfl) <;>
-        exact ⟨by simp, by linarith, fun j hj hj7 => by linarith [K2 j hj hj7]⟩
-  · ext i
-    simp only [mem_filter, mem_singleton]
-    constructor
-    · rintro ⟨hi, h⟩
-      have h1 := h 1 (by simp)
-      obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-      interval_cases i <;> first | (exfalso; linarith) | rfl
-    · rintro rfl
-      exact ⟨by simp, K3⟩
+  ac1_cases ac1_least_second (u σ 7) (u σ 5) using h12, h14, h25, h45, h57
 
 end ADR11

@@ -12,12 +12,10 @@ lineages carry the same labels (`A, B, C, D, E` in the paper).
   in the representation of `ADR11.unroot`.
 * `T5 i` (`1 ≤ i ≤ 15`): the paper's unrooted 5-taxon gene tree `T_i` (Table 5), given by one side
   of each of its two nontrivial splits.
-* Cluster sets of the rooted species tree shapes: on 3 taxa `((a,b),c)`; on 4 taxa the balanced
-  tree `((a,b),(c,d))` and the caterpillar `(((a,b),c),d)` (Fig. 2a, b); on 5 taxa the balanced
-  tree `(((a,b),c),(d,e))`, the caterpillar `((((a,b),c),d),e)` and the pseudocaterpillar
-  `(((a,b),(d,e)),c)` (Fig. 2c–e), and the nine nonbinary representatives `P₁, …, P₉` of Table 6.
-* Species trees with these shapes and given internal edge lengths; pendant edges get length `1`,
-  which does not affect the distributions with one lineage per taxon.
+* Cluster sets of the five-taxon species tree shapes: the balanced tree `(((a,b),c),(d,e))`, the
+  caterpillar `((((a,b),c),d),e)` and the pseudocaterpillar `(((a,b),(d,e)),c)` (Fig. 2c–e).
+* `SpeciesTree.ofLengths`: species trees with given clusters and internal edge lengths; pendant
+  edges get length `1`, which does not affect the distributions with one lineage per taxon.
 -/
 
 @[expose] public section
@@ -37,18 +35,6 @@ singletons. -/
 def hierarchyOf (C : Finset (Finset X)) : Finset (Finset X) :=
   insert univ (C ∪ univ.image fun x => {x})
 
-/-! ### Three taxa -/
-
-/-! ### Four taxa -/
-
-/-- The balanced species tree `((a,b),(c,d))` (Fig. 2a). -/
-def balanced4 : Finset (Finset (Fin 4)) := hierarchyOf {{0, 1}, {2, 3}}
-
-/-- The rooted caterpillar species tree `(((a,b),c),d)` (Fig. 2b). -/
-def caterpillar4 : Finset (Finset (Fin 4)) := hierarchyOf {{0, 1}, {0, 1, 2}}
-
-/-! ### Five taxa -/
-
 /-- The balanced species tree `(((a,b),c),(d,e))` (Fig. 2c). -/
 def balanced5 : Finset (Finset (Fin 5)) := hierarchyOf {{0, 1}, {0, 1, 2}, {3, 4}}
 
@@ -57,22 +43,6 @@ def caterpillar5 : Finset (Finset (Fin 5)) := hierarchyOf {{0, 1}, {0, 1, 2}, {0
 
 /-- The pseudocaterpillar species tree `(((a,b),(d,e)),c)` (Fig. 2e). -/
 def pseudocaterpillar5 : Finset (Finset (Fin 5)) := hierarchyOf {{0, 1}, {3, 4}, {0, 1, 3, 4}}
-
-/-- The nine nonbinary rooted 5-taxon shapes of Table 6, with the labellings given there:
-`P₁ = (a,b,c,d,e)`, `P₂ = (a,b,c,(d,e))`, `P₃ = ((a,b,c,d),e)`, `P₄ = ((a,b,c),d,e)`,
-`P₅ = ((a,b),(d,e),c)`, `P₆ = (((a,b),c),d,e)`, `P₇ = (((a,b),d,e),c)`, `P₈ = ((a,b,c),(d,e))`,
-`P₉ = (((a,b,c),d),e)`. -/
-def polytomy5 : ℕ → Finset (Finset (Fin 5))
-  | 1 => hierarchyOf ∅
-  | 2 => hierarchyOf {{3, 4}}
-  | 3 => hierarchyOf {{0, 1, 2, 3}}
-  | 4 => hierarchyOf {{0, 1, 2}}
-  | 5 => hierarchyOf {{0, 1}, {3, 4}}
-  | 6 => hierarchyOf {{0, 1}, {0, 1, 2}}
-  | 7 => hierarchyOf {{0, 1}, {0, 1, 3, 4}}
-  | 8 => hierarchyOf {{0, 1, 2}, {3, 4}}
-  | 9 => hierarchyOf {{0, 1, 2}, {0, 1, 2, 3}}
-  | _ => ∅
 
 /-- The paper's unrooted 5-taxon gene trees `T₁, …, T₁₅` (Table 5), each given by one side of
 each of its two nontrivial splits. For instance `T₁` has the splits `AB|CDE` and `ABC|DE`. -/
@@ -114,8 +84,6 @@ noncomputable def SpeciesTree.ofLengths (H : Finset (Finset X)) (len : Finset X 
   laminar := h₄
   length A := if #A ≤ 1 then 1 else len A
   length_pos A hA hne := by
-    split_ifs with h
-    · exact one_pos
-    · exact h₅ A hA hne (by omega)
+    split_ifs with h <;> grind
 
 end ADR11

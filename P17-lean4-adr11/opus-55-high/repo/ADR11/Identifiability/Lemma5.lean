@@ -28,34 +28,26 @@ open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
-omit [Fintype X] in
-private theorem lemma5_exists_iff (S A : Finset X) :
+theorem lemma5_exists_iff (S A : Finset X) :
     (∃ l : S, (Function.Embedding.subtype (· ∈ S)) l ∈ A) ↔ (A ∩ S).Nonempty := by
-  simp only [Function.Embedding.coe_subtype]
   constructor
   · rintro ⟨l, hl⟩
     exact ⟨l, mem_inter.2 ⟨hl, l.2⟩⟩
-  · rintro ⟨x, hx⟩
-    rw [mem_inter] at hx
-    exact ⟨⟨x, hx.2⟩, hx.1⟩
+  · simp_all <;> grind
 
-omit [Fintype X] in
-private theorem lemma5_trace (S A : Finset X) :
+theorem lemma5_trace (S A : Finset X) :
     (univ.filter fun l : S => (Function.Embedding.subtype (· ∈ S)) l ∈ A) =
-      A.subtype (· ∈ S) := by
-  ext l
-  rw [mem_filter, mem_subtype, Function.Embedding.coe_subtype]
-  exact and_iff_right (mem_univ l)
+      A.subtype (· ∈ S) := by simp_all; grind
 
 /-- Restricting an unrooted tree along the inclusion `S ↪ X` is the induced unrooted tree. -/
-private theorem lemma5_restrictUnrooted_subtype (S : Finset X) (T : Finset (Finset X)) :
+theorem lemma5_restrictUnrooted_subtype (S : Finset X) (T : Finset (Finset X)) :
     restrictUnrooted (Function.Embedding.subtype (· ∈ S)) T = restrictSplits S T := by
   unfold restrictUnrooted restrictSplits
   have h : ∀ A : Finset X, (∃ l : S, (Function.Embedding.subtype (· ∈ S)) l ∉ A) ↔
       (Aᶜ ∩ S).Nonempty := by
     intro A
     rw [← lemma5_exists_iff S Aᶜ]
-    simp only [mem_compl]
+    simp
   rw [filter_congr fun A _ => and_congr (lemma5_exists_iff S A) (h A)]
   exact image_congr fun A _ => lemma5_trace S A
 

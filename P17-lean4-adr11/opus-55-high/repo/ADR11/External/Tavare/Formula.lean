@@ -28,12 +28,12 @@ noncomputable def tavareCoeff (i j k : ℕ) : ℝ :=
     ∏ m ∈ range k, (((j : ℝ) + m) * ((i : ℝ) - m) / ((i : ℝ) + m))
 
 /-- The death process never increases the number of lineages. -/
-private theorem tavare_deathPow_of_lt (m : ℕ) {k j : ℕ} (h : k < j) : deathPow m k j = 0 := by
+theorem tavare_deathPow_of_lt (m : ℕ) {k j : ℕ} (h : k < j) : deathPow m k j = 0 := by
   induction m generalizing k with
   | zero => simp [deathPow, h.ne]
   | succ m ih => rw [deathPow, ih (by omega), ih h, sub_self, mul_zero]
 
-private theorem tavareCoeff_self {j : ℕ} (hj : 1 ≤ j) : tavareCoeff j j j = 1 := by
+theorem tavareCoeff_self {j : ℕ} (hj : 1 ≤ j) : tavareCoeff j j j = 1 := by
   unfold tavareCoeff
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
   have h1 : ∏ m ∈ range j, (((j : ℝ) + m) * ((j : ℝ) - m) / ((j : ℝ) + m)) =
@@ -43,18 +43,18 @@ private theorem tavareCoeff_self {j : ℕ} (hj : 1 ≤ j) : tavareCoeff j j j = 
         (0 : ℝ) < (j : ℝ) + m)))]
     rw [← Nat.descFactorial_self, Nat.descFactorial_eq_prod_range, Nat.cast_prod]
     refine prod_congr rfl fun m hm => ?_
-    rw [Nat.cast_sub (by simp only [mem_range] at hm; omega)]
+    rw [Nat.cast_sub (by simp at hm; omega)]
   rw [h1, Nat.sub_self, pow_zero, Nat.factorial_zero, Nat.cast_one, mul_one, mul_one,
     show (j : ℝ) + j - 1 = 2 * j - 1 by ring]
   have h2 : (2 * j - 1 : ℝ) ≠ 0 := by linarith
   have h3 : (j.factorial : ℝ) ≠ 0 := by positivity
   field_simp
 
-private theorem tavareCoeff_succ_self (i j : ℕ) : tavareCoeff i j (i + 1) = 0 := by
+theorem tavareCoeff_succ_self (i j : ℕ) : tavareCoeff i j (i + 1) = 0 := by
   unfold tavareCoeff
   simp [prod_range_succ]
 
-private theorem tavareCoeff_succ_ratio {i j k : ℕ} (hj : 1 ≤ j) (hjk : j ≤ k) :
+theorem tavareCoeff_succ_ratio {i j k : ℕ} (hj : 1 ≤ j) (hjk : j ≤ k) :
     tavareCoeff i j (k + 1) * ((2 * k - 1) * ((k : ℝ) + 1 - j) * ((i : ℝ) + k)) =
       -((2 * k + 1) * ((j : ℝ) + k - 1) * ((i : ℝ) - k)) * tavareCoeff i j k := by
   unfold tavareCoeff
@@ -74,7 +74,7 @@ private theorem tavareCoeff_succ_ratio {i j k : ℕ} (hj : 1 ≤ j) (hjk : j ≤
 
 /-- Gosper telescoping: `a_ijk = G(k+1) - G(k)` with `G(k) = -(k-j)(i+k-1)/((i-j)(2k-1)) a_ijk`,
 so the coefficients sum to zero when `j < i`. -/
-private theorem tavare_sum_eq_zero {i j : ℕ} (hj : 1 ≤ j) (hji : j < i) :
+theorem tavare_sum_eq_zero {i j : ℕ} (hj : 1 ≤ j) (hji : j < i) :
     ∑ k ∈ Icc j i, tavareCoeff i j k = 0 := by
   set G : ℕ → ℝ := fun k =>
     -(((k : ℝ) - j) * ((i : ℝ) + k - 1)) / (((i : ℝ) - j) * (2 * k - 1)) * tavareCoeff i j k
@@ -82,8 +82,7 @@ private theorem tavare_sum_eq_zero {i j : ℕ} (hj : 1 ≤ j) (hji : j < i) :
   have hstep : ∀ k ∈ Icc j i, tavareCoeff i j k = G (k + 1) - G k := by
     intro k hk
     rw [mem_Icc] at hk
-    have h := tavareCoeff_succ_ratio (i := i) hj hk.1
-    simp only [hG]
+    simp [hG]
     push_cast
     have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
     have hk' : (j : ℝ) ≤ k := by exact_mod_cast hk.1
@@ -93,12 +92,12 @@ private theorem tavare_sum_eq_zero {i j : ℕ} (hj : 1 ≤ j) (hji : j < i) :
     have h2 : ((i : ℝ) - j) * (2 * k - 1) ≠ 0 := mul_ne_zero (by linarith) (by linarith)
     rw [div_mul_eq_mul_div, div_mul_eq_mul_div, div_sub_div _ _ h1 h2,
       eq_div_iff (mul_ne_zero h1 h2)]
-    linear_combination ((i : ℝ) - j) * h
+    linear_combination ((i : ℝ) - j) * (tavareCoeff_succ_ratio (i := i) hj hk.1)
   rw [sum_congr rfl hstep, sum_Icc_sub hji.le]
   simp [hG, tavareCoeff_succ_self]
 
 /-- The `i`-dependent part of `a_ijk` under `i ↦ i + 1`. -/
-private theorem tavare_prod_step (x : ℝ) (hx : 0 < x) (k : ℕ) :
+theorem tavare_prod_step (x : ℝ) (hx : 0 < x) (k : ℕ) :
     ((x + 1) * x / 2) * ∏ m ∈ range k, ((x - m) / (x + m)) =
       ((x + 1) * x / 2 - k * (k - 1) / 2) * ∏ m ∈ range k, ((x + 1 - m) / (x + 1 + m)) := by
   induction k with
@@ -113,7 +112,7 @@ private theorem tavare_prod_step (x : ℝ) (hx : 0 < x) (k : ℕ) :
     ring
 
 /-- `c_{i+1} a_{i,j,k} = (c_{i+1} - c_k) a_{i+1,j,k}`. -/
-private theorem tavareCoeff_pred {i j k : ℕ} (hi : 1 ≤ i) :
+theorem tavareCoeff_pred {i j k : ℕ} (hi : 1 ≤ i) :
     (((i + 1).choose 2 : ℕ) : ℝ) * tavareCoeff i j k =
       ((((i + 1).choose 2 : ℕ) : ℝ) - ((k.choose 2 : ℕ) : ℝ)) * tavareCoeff (i + 1) j k := by
   unfold tavareCoeff
@@ -122,19 +121,18 @@ private theorem tavareCoeff_pred {i j k : ℕ} (hi : 1 ≤ i) :
       (∏ m ∈ range k, ((j : ℝ) + m)) * ∏ m ∈ range k, ((y - m) / (y + m)) := by
     intro y
     rw [← prod_mul_distrib]
-    exact prod_congr rfl fun m _ => by ring
+    grind
   rw [hsplit, hsplit]
-  have h := tavare_prod_step (i : ℝ) (by exact_mod_cast hi) k
   push_cast
   linear_combination ((2 * k - 1) * (-1) ^ (k - j) / ((j.factorial : ℝ) * (k - j).factorial *
-    (j + k - 1)) * ∏ m ∈ range k, ((j : ℝ) + m)) * h
+    (j + k - 1)) * ∏ m ∈ range k, ((j : ℝ) + m)) * (tavare_prod_step (i : ℝ) (by exact_mod_cast hi) k)
 
 /-- The spectral form of the powers of the generator of the pure death process. -/
 theorem deathPow_eq_tavare (m i j : ℕ) (hj : 1 ≤ j) (hji : j ≤ i) :
     deathPow m i j = ∑ k ∈ Icc j i, tavareCoeff i j k * (-(((k.choose 2 : ℕ) : ℝ))) ^ m := by
   induction m generalizing i with
   | zero =>
-    simp only [deathPow, pow_zero, mul_one]
+    simp [deathPow, pow_zero, mul_one]
     rcases eq_or_lt_of_le hji with rfl | hlt
     · simp [tavareCoeff_self hj]
     · rw [tavare_sum_eq_zero hj hlt]

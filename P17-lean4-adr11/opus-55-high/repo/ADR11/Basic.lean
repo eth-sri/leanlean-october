@@ -49,7 +49,7 @@ theorem restrict_singleton_mem (σ : SpeciesTree X) (S : Finset X) (x : S) :
     {x} ∈ restrictClusters S σ.clusters := by
   unfold restrictClusters
   rw [mem_image]
-  refine ⟨{x.1}, mem_filter.2 ⟨σ.singleton_mem x.1, ⟨x.1, by simp [x.2]⟩⟩, ?_⟩
+  refine ⟨{x.1}, mem_filter.2 ⟨σ.singleton_mem x.1, ⟨x.1, by simp⟩⟩, ?_⟩
   ext ⟨y, hy⟩
   rw [mem_subtype, mem_singleton, mem_singleton, Subtype.ext_iff]
 
@@ -67,13 +67,7 @@ theorem restrict_laminar (σ : SpeciesTree X) (S : Finset X) :
   intro C hC D hD
   obtain ⟨A, hA, rfl⟩ := mem_image.1 hC
   obtain ⟨B, hB, rfl⟩ := mem_image.1 hD
-  rcases σ.laminar A (mem_filter.1 hA).1 B (mem_filter.1 hB).1 with h | h | h
-  · exact Or.inl (subtype_mono h)
-  · exact Or.inr (Or.inl (subtype_mono h))
-  · refine Or.inr (Or.inr ?_)
-    rw [Finset.disjoint_left] at h ⊢
-    intro a ha hb
-    exact h (mem_subtype.1 ha) (mem_subtype.1 hb)
+  grind [σ.laminar A (mem_filter.1 hA).1 B (mem_filter.1 hB).1, Finset.disjoint_left]
 
 /-- The length of the edge above the cluster `C` of the induced tree `σ(S)`: the sum of the
 lengths of the edges above the clusters of `σ` whose trace on `S` is `C`. -/
@@ -84,16 +78,12 @@ theorem restrictLength_pos (σ : SpeciesTree X) (S : Finset X) :
     ∀ C ∈ restrictClusters S σ.clusters, C ≠ univ → 0 < σ.restrictLength S C := by
   intro C hC hCu
   obtain ⟨A, hA, rfl⟩ := mem_image.1 hC
-  have hA' := (mem_filter.1 hA).1
-  have hAu : A ≠ univ := by
-    rintro rfl
-    exact hCu (subtype_univ _)
-  unfold restrictLength
+  have hAu : A ≠ univ := by grind
   apply Finset.sum_pos
   · intro B hB
     rw [mem_filter] at hB
     exact σ.length_pos B hB.1 hB.2.1
-  · exact ⟨A, mem_filter.2 ⟨hA', hAu, rfl⟩⟩
+  · exact ⟨A, mem_filter.2 ⟨(mem_filter.1 hA).1, hAu, rfl⟩⟩
 
 /-- The induced species tree `σ⁺(S)` on a nonempty set of taxa `S`. -/
 noncomputable def restrict (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) :

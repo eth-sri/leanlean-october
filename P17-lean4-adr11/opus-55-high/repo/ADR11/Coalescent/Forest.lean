@@ -48,25 +48,14 @@ def lineages (F : Finset (Finset L)) : Finset L :=
 theorem mem_roots {F : Finset (Finset L)} {A : Finset L} :
     A ∈ roots F ↔ A ∈ F ∧ ∀ B ∈ F, A ⊆ B → B = A := by
   unfold roots
-  exact mem_filter
+  grind
 
 theorem roots_subset (F : Finset (Finset L)) : roots F ⊆ F := by
   unfold roots
-  exact filter_subset _ _
-
-@[simp] theorem roots_empty : roots (∅ : Finset (Finset L)) = ∅ := by
-  unfold roots
-  exact filter_empty _
+  grind
 
 theorem mem_merges {F G : Finset (Finset L)} :
-    G ∈ merges F ↔ ∃ A ∈ roots F, ∃ B ∈ roots F, A ≠ B ∧ G = insert (A ∪ B) F := by
-  unfold merges
-  simp only [mem_image, mem_filter, mem_product, Prod.exists]
-  constructor
-  · rintro ⟨A, B, ⟨⟨hA, hB⟩, hAB⟩, rfl⟩
-    exact ⟨A, hA, B, hB, hAB, rfl⟩
-  · rintro ⟨A, hA, B, hB, hAB, rfl⟩
-    exact ⟨A, B, ⟨⟨hA, hB⟩, hAB⟩, rfl⟩
+    G ∈ merges F ↔ ∃ A ∈ roots F, ∃ B ∈ roots F, A ≠ B ∧ G = insert (A ∪ B) F := by simp [merges]; grind
 
 /-! ### Lineages -/
 
@@ -74,9 +63,7 @@ section Lineages
 
 omit [Fintype L]
 
-theorem mem_lineages {F : Finset (Finset L)} {l : L} : l ∈ lineages F ↔ ∃ A ∈ F, l ∈ A := by
-  unfold lineages
-  simp only [mem_sup, id]
+theorem mem_lineages {F : Finset (Finset L)} {l : L} : l ∈ lineages F ↔ ∃ A ∈ F, l ∈ A := by simp_all [lineages]
 
 theorem subset_lineages {F : Finset (Finset L)} {A : Finset L} (hA : A ∈ F) :
     A ⊆ lineages F :=
@@ -89,9 +76,6 @@ theorem lineages_subset_iff {F : Finset (Finset L)} {S : Finset L} :
 theorem lineages_mono {F G : Finset (Finset L)} (h : F ⊆ G) : lineages F ⊆ lineages G :=
   sup_mono h
 
-@[simp] theorem lineages_empty : lineages (∅ : Finset (Finset L)) = ∅ :=
-  sup_empty
-
 @[simp] theorem lineages_singleton (A : Finset L) : lineages {A} = A :=
   sup_singleton
 
@@ -99,31 +83,20 @@ theorem lineages_mono {F G : Finset (Finset L)} (h : F ⊆ G) : lineages F ⊆ l
     lineages (insert A F) = A ∪ lineages F :=
   sup_insert
 
-@[simp] theorem lineages_union (F G : Finset (Finset L)) :
-    lineages (F ∪ G) = lineages F ∪ lineages G :=
-  sup_union
-
 end Lineages
 
 /-! ### Roots and merges of forests -/
 
-/-- Every cluster lies below a maximal one (for any finite family of clusters). -/
-private theorem forest_exists_mem_roots_subset {F : Finset (Finset L)} {A : Finset L}
-    (hA : A ∈ F) : ∃ R ∈ roots F, A ⊆ R := by
-  obtain ⟨R, hAR, hR⟩ := F.exists_le_maximal hA
-  exact ⟨R, mem_roots.2 ⟨hR.1, fun B hB hRB => le_antisymm (hR.2 hB hRB) hRB⟩, hAR⟩
-
 theorem IsForest.disjoint_of_mem_roots {F : Finset (Finset L)} (hF : IsForest F) {A B : Finset L}
     (hA : A ∈ roots F) (hB : B ∈ roots F) (hAB : A ≠ B) : Disjoint A B := by
   rw [mem_roots] at hA hB
-  rcases hF.2 A hA.1 B hB.1 with h | h | h
-  · exact absurd (hA.2 B hB.1 h).symm hAB
-  · exact absurd (hB.2 A hA.1 h) hAB
-  · exact h
+  rcases hF.2 A hA.1 B hB.1 with h | h | h <;> grind
 
+/-- Every cluster lies below a maximal one (for any finite family of clusters). -/
 theorem exists_mem_roots_subset {F : Finset (Finset L)} {A : Finset L}
     (hA : A ∈ F) : ∃ R ∈ roots F, A ⊆ R := by
-  exact forest_exists_mem_roots_subset hA
+  obtain ⟨R, hAR, hR⟩ := F.exists_le_maximal hA
+  exact ⟨R, mem_roots.2 ⟨hR.1, fun B hB hRB => le_antisymm (hR.2 hB hRB) hRB⟩, hAR⟩
 
 theorem lineages_roots {F : Finset (Finset L)} :
     lineages (roots F) = lineages F := by
@@ -135,14 +108,12 @@ theorem union_not_mem_of_mem_roots {F : Finset (Finset L)} {A B : Finset L}
     (hA : A ∈ roots F) (hB : B ∈ roots F) (hAB : A ≠ B) : A ∪ B ∉ F := by
   intro h
   rw [mem_roots] at hA hB
-  have h1 : A ∪ B = A := hA.2 _ h subset_union_left
-  have h2 : B ⊆ A := by
-    rw [← h1]
-    exact subset_union_right
-  exact hAB (hB.2 A hA.1 h2)
+  have h1 : A ∪ B = A := by grind
+  have h2 : B ⊆ A := by grind
+  grind
 
 /-- A root contained in the union of two roots is one of them. -/
-private theorem forest_root_subset_union {F : Finset (Finset L)} (hF : IsForest F)
+theorem forest_root_subset_union {F : Finset (Finset L)} (hF : IsForest F)
     {A B C : Finset L} (hA : A ∈ roots F) (hB : B ∈ roots F) (hC : C ∈ roots F)
     (h : C ⊆ A ∪ B) : C = A ∨ C = B := by
   by_contra hne
@@ -153,16 +124,14 @@ private theorem forest_root_subset_union {F : Finset (Finset L)} (hF : IsForest 
   · exact disjoint_left.1 (hF.disjoint_of_mem_roots hC hB hne.2) hx h'
 
 /-- A cluster of a forest is contained in, or disjoint from, the union of two roots. -/
-private theorem forest_subset_or_disjoint_union {F : Finset (Finset L)} (hF : IsForest F)
+theorem forest_subset_or_disjoint_union {F : Finset (Finset L)} (hF : IsForest F)
     {A B : Finset L} (hA : A ∈ roots F) (hB : B ∈ roots F) {C : Finset L} (hC : C ∈ F) :
     C ⊆ A ∪ B ∨ Disjoint C (A ∪ B) := by
   obtain ⟨R, hR, hCR⟩ := exists_mem_roots_subset hC
   by_cases hRA : R = A
-  · subst hRA
-    exact Or.inl (hCR.trans subset_union_left)
+  · grind
   by_cases hRB : R = B
-  · subst hRB
-    exact Or.inl (hCR.trans subset_union_right)
+  · grind
   right
   rw [disjoint_union_right]
   exact ⟨(hF.disjoint_of_mem_roots hR hA hRA).mono_left hCR,
@@ -170,19 +139,18 @@ private theorem forest_subset_or_disjoint_union {F : Finset (Finset L)} (hF : Is
 
 theorem IsForest.isForest_merge {F : Finset (Finset L)} (hF : IsForest F) {A B : Finset L}
     (hA : A ∈ roots F) (hB : B ∈ roots F) : IsForest (insert (A ∪ B) F) := by
-  have hAF : A ∈ F := roots_subset F hA
   refine ⟨fun C hC => ?_, fun C hC D hD => ?_⟩
   · rcases mem_insert.1 hC with rfl | hC
-    · exact (hF.1 A hAF).mono subset_union_left
+    · exact (hF.1 A (roots_subset F hA)).mono subset_union_left
     · exact hF.1 C hC
   · rcases mem_insert.1 hC with rfl | hC <;> rcases mem_insert.1 hD with rfl | hD
-    · exact Or.inl subset_rfl
+    · grind
     · rcases forest_subset_or_disjoint_union hF hA hB hD with h | h
-      · exact Or.inr (Or.inl h)
-      · exact Or.inr (Or.inr h.symm)
+      · grind
+      · grind
     · rcases forest_subset_or_disjoint_union hF hA hB hC with h | h
-      · exact Or.inl h
-      · exact Or.inr (Or.inr h)
+      · grind
+      · grind
     · exact hF.2 C hC D hD
 
 theorem IsForest.roots_merge {F : Finset (Finset L)} (hF : IsForest F) {A B : Finset L}
@@ -195,40 +163,22 @@ theorem IsForest.roots_merge {F : Finset (Finset L)} (hF : IsForest F) {A B : Fi
   · intro hCm
     obtain ⟨hCi, hmax⟩ := mem_roots.1 hCm
     rcases mem_insert.1 hCi with rfl | hC
-    · exact mem_insert_self _ _
+    · grind
     · have hCr : C ∈ roots F :=
         mem_roots.2 ⟨hC, fun D hD hCD => hmax D (mem_insert_of_mem hD) hCD⟩
-      refine mem_insert_of_mem (mem_erase.2 ⟨?_, mem_erase.2 ⟨?_, hCr⟩⟩)
-      · rintro rfl
-        have h1 : A ∪ C = C := hmax _ (mem_insert_self _ _) subset_union_right
-        have h2 : A ⊆ C := by
-          rw [← h1]
-          exact subset_union_left
-        exact hAB (hA'.2 C hC h2).symm
-      · rintro rfl
-        have h1 : C ∪ B = C := hmax _ (mem_insert_self _ _) subset_union_left
-        have h2 : B ⊆ C := by
-          rw [← h1]
-          exact subset_union_right
-        exact hAB (hB'.2 C hC h2)
+      refine mem_insert_of_mem (mem_erase.2 ⟨?_, mem_erase.2 ⟨?_, hCr⟩⟩) <;> grind
   · intro hCm
     rcases mem_insert.1 hCm with rfl | hC
     · refine mem_roots.2 ⟨mem_insert_self _ _, fun D hDi hUD => ?_⟩
-      rcases mem_insert.1 hDi with rfl | hD
-      · rfl
-      · have h1 : D = A := hA'.2 D hD (subset_union_left.trans hUD)
-        subst h1
-        exact absurd (hB'.2 D hD (subset_union_right.trans hUD)) hAB
+      grind
     · obtain ⟨hCB, hCe⟩ := mem_erase.1 hC
       obtain ⟨hCA, hCr⟩ := mem_erase.1 hCe
       have hC' := mem_roots.1 hCr
       refine mem_roots.2 ⟨mem_insert_of_mem hC'.1, fun D hD hCD => ?_⟩
       rcases mem_insert.1 hD with rfl | hD
       · exfalso
-        rcases forest_root_subset_union hF hA hB hCr hCD with h | h
-        · exact hCA h
-        · exact hCB h
-      · exact hC'.2 D hD hCD
+        rcases forest_root_subset_union hF hA hB hCr hCD with h | h <;> grind
+      · grind
 
 theorem IsForest.card_roots_merge {F : Finset (Finset L)} (hF : IsForest F) {A B : Finset L}
     (hA : A ∈ roots F) (hB : B ∈ roots F) (hAB : A ≠ B) :
@@ -244,44 +194,37 @@ theorem lineages_merge {F : Finset (Finset L)} {A B : Finset L}
   rw [lineages_insert, union_eq_right]
   exact union_subset (subset_lineages (roots_subset F hA)) (subset_lineages (roots_subset F hB))
 
+/-- A merge determines the pair of roots merged. -/
+theorem IsForest.merge_inj {F : Finset (Finset L)} (hF : IsForest F) {A B C D : Finset L}
+    (hA : A ∈ roots F) (hB : B ∈ roots F) (hAB : A ≠ B) (hC : C ∈ roots F) (hD : D ∈ roots F)
+    (hCD : C ≠ D) (h : insert (A ∪ B) F = insert (C ∪ D) F) : s(A, B) = s(C, D) := by
+  have hU :=
+    (mem_insert.1 (h ▸ mem_insert_self _ _)).resolve_right (union_not_mem_of_mem_roots hA hB hAB)
+  rcases forest_root_subset_union hF hA hB hC (hU ▸ subset_union_left) with rfl | rfl <;>
+    rcases forest_root_subset_union hF hA hB hD (hU ▸ subset_union_right) with rfl | rfl
+  exacts [absurd rfl hCD, rfl, Sym2.eq_swap, absurd rfl hCD]
+
 /-- A forest with `k` roots has exactly `k.choose 2` merges: distinct pairs of roots give
 distinct forests. -/
 theorem IsForest.card_merges {F : Finset (Finset L)} (hF : IsForest F) :
     #(merges F) = (#(roots F)).choose 2 := by
   -- A merge depends only on the unordered pair of roots, and determines it.
   let g : Sym2 (Finset L) → Finset (Finset L) :=
-    Sym2.lift ⟨fun A B => insert (A ∪ B) F, fun A B => by simp only [union_comm]⟩
+    Sym2.lift ⟨fun A B => insert (A ∪ B) F, fun A B => by simp [union_comm]⟩
   have hg : ∀ A B, g s(A, B) = insert (A ∪ B) F := fun A B => Sym2.lift_mk _ A B
   have h1 : merges F = ((roots F).offDiag.image Sym2.mk.uncurry).image g := by
     ext G
     rw [mem_merges, image_image, mem_image]
     constructor
-    · rintro ⟨A, hA, B, hB, hAB, rfl⟩
-      exact ⟨(A, B), mem_offDiag.2 ⟨hA, hB, hAB⟩, hg A B⟩
-    · rintro ⟨⟨A, B⟩, hp, rfl⟩
-      obtain ⟨hA, hB, hAB⟩ : A ∈ roots F ∧ B ∈ roots F ∧ A ≠ B := mem_offDiag.1 hp
-      exact ⟨A, hA, B, hB, hAB, (hg A B).symm⟩
+    · simp_all <;> grind
+    · grind
   rw [h1, card_image_of_injOn, Sym2.card_image_offDiag]
   rintro _ hz _ hw hzw
   obtain ⟨⟨A, B⟩, hp, rfl⟩ := mem_image.1 hz
   obtain ⟨⟨C, D⟩, hq, rfl⟩ := mem_image.1 hw
-  obtain ⟨hA, hB, hAB⟩ : A ∈ roots F ∧ B ∈ roots F ∧ A ≠ B := mem_offDiag.1 hp
-  obtain ⟨hC, hD, hCD⟩ : C ∈ roots F ∧ D ∈ roots F ∧ C ≠ D := mem_offDiag.1 hq
-  change g s(A, B) = g s(C, D) at hzw
-  rw [hg, hg] at hzw
-  have hU : A ∪ B = C ∪ D := by
-    have h : A ∪ B ∈ insert (C ∪ D) F := hzw ▸ mem_insert_self _ _
-    rcases mem_insert.1 h with h | h
-    · exact h
-    · exact absurd h (union_not_mem_of_mem_roots hA hB hAB)
-  have hC' := forest_root_subset_union hF hA hB hC (hU ▸ subset_union_left)
-  have hD' := forest_root_subset_union hF hA hB hD (hU ▸ subset_union_right)
-  change s(A, B) = s(C, D)
-  rcases hC' with rfl | rfl <;> rcases hD' with rfl | rfl
-  · exact absurd rfl hCD
-  · rfl
-  · exact Sym2.eq_swap
-  · exact absurd rfl hCD
+  obtain ⟨hA, hB, hAB⟩ := mem_offDiag.1 hp
+  obtain ⟨hC, hD, hCD⟩ := mem_offDiag.1 hq
+  exact hF.merge_inj hA hB hAB hC hD hCD (by rwa [← hg, ← hg])
 
 /-- What a merge of a forest is. -/
 theorem IsForest.of_mem_merges {F G : Finset (Finset L)} (hF : IsForest F) (hG : G ∈ merges F) :
@@ -290,7 +233,7 @@ theorem IsForest.of_mem_merges {F G : Finset (Finset L)} (hF : IsForest F) (hG :
   refine ⟨hF.isForest_merge hA hB, hF.card_roots_merge hA hB hAB, subset_insert _ _,
     fun h => union_not_mem_of_mem_roots hA hB hAB ?_, lineages_merge hA hB⟩
   rw [← h]
-  exact mem_insert_self _ _
+  grind
 
 /-- The generator of Kingman's coalescent at a forest: `-(k choose 2)` on the diagonal and `1` at
 each of the `k choose 2` merges. -/
@@ -298,18 +241,9 @@ theorem kingmanGenerator_apply_of_isForest {F : Finset (Finset L)}
     (G : Finset (Finset L)) :
     kingmanGenerator F G =
       if G = F then -((#(roots F)).choose 2 : ℝ) else if G ∈ merges F then 1 else 0 := by
-  simp only [kingmanGenerator, mem_merges]
+  simp [kingmanGenerator, mem_merges]
 
 /-! ### More on roots -/
-
-theorem roots_eq_empty_iff {F : Finset (Finset L)} : roots F = ∅ ↔ F = ∅ := by
-  refine ⟨fun h => eq_empty_of_forall_notMem fun A hA => ?_, fun h => h ▸ roots_empty⟩
-  obtain ⟨R, hR, -⟩ := forest_exists_mem_roots_subset hA
-  rw [h] at hR
-  exact notMem_empty R hR
-
-theorem roots_nonempty_iff {F : Finset (Finset L)} : (roots F).Nonempty ↔ F.Nonempty := by
-  rw [nonempty_iff_ne_empty, nonempty_iff_ne_empty, Ne, Ne, roots_eq_empty_iff]
 
 /-- A lineage of a forest lies in only one root. -/
 theorem IsForest.eq_of_mem_roots_of_mem {F : Finset (Finset L)} (hF : IsForest F)
@@ -318,23 +252,7 @@ theorem IsForest.eq_of_mem_roots_of_mem {F : Finset (Finset L)} (hF : IsForest F
   by_contra hAB
   exact disjoint_left.1 (hF.disjoint_of_mem_roots hA hB hAB) hlA hlB
 
-/-- A forest with a single root is a tree: the root is the set of all its lineages. -/
-theorem roots_eq_singleton_lineages {F : Finset (Finset L)}
-    (h : #(roots F) = 1) : roots F = {lineages F} := by
-  obtain ⟨R, hR⟩ := card_eq_one.1 h
-  rw [hR, ← lineages_roots, hR, lineages_singleton]
-
-theorem lineages_mem_of_card_roots_eq_one {F : Finset (Finset L)}
-    (h : #(roots F) = 1) : lineages F ∈ F :=
-  roots_subset F (by rw [roots_eq_singleton_lineages h]; exact mem_singleton_self _)
-
 /-! ### More on merges and the generator -/
-
-@[simp] theorem merges_empty : merges (∅ : Finset (Finset L)) = ∅ := by
-  refine eq_empty_of_forall_notMem fun G hG => ?_
-  obtain ⟨A, hA, -⟩ := mem_merges.1 hG
-  rw [roots_empty] at hA
-  exact notMem_empty A hA
 
 /-- A forest with at most one root has no merges. -/
 theorem merges_eq_empty_of_card_roots_le_one {F : Finset (Finset L)} (h : #(roots F) ≤ 1) :
@@ -348,7 +266,7 @@ theorem IsForest.self_not_mem_merges {F : Finset (Finset L)} (hF : IsForest F) :
   (hF.of_mem_merges h).2.2.2.1 rfl
 
 /-- The generator at a forest, split into its diagonal part and its merge part. -/
-private theorem forest_kingmanGenerator_eq_add {F : Finset (Finset L)} (hF : IsForest F)
+theorem forest_kingmanGenerator_eq_add {F : Finset (Finset L)} (hF : IsForest F)
     (G : Finset (Finset L)) :
     kingmanGenerator F G =
       (if G = F then -((#(roots F)).choose 2 : ℝ) else 0) + (if G ∈ merges F then 1 else 0) := by
@@ -356,7 +274,7 @@ private theorem forest_kingmanGenerator_eq_add {F : Finset (Finset L)} (hF : IsF
   by_cases h1 : G = F
   · subst h1
     simp [hF.self_not_mem_merges]
-  · simp [h1]
+  · grind
 
 /-- First-step decomposition at a forest `F` with `k` roots:
 `∑ G, Q(F, G) v(G) = -(k choose 2) v(F) + ∑ G ∈ merges F, v(G)`. -/
@@ -364,7 +282,7 @@ theorem IsForest.sum_kingmanGenerator_mul {F : Finset (Finset L)} (hF : IsForest
     (v : Finset (Finset L) → ℝ) :
     ∑ G, kingmanGenerator F G * v G =
       -((#(roots F)).choose 2 : ℝ) * v F + ∑ G ∈ merges F, v G := by
-  simp only [forest_kingmanGenerator_eq_add hF, add_mul, ite_mul, one_mul, zero_mul,
+  simp [forest_kingmanGenerator_eq_add hF, add_mul, ite_mul, one_mul, zero_mul,
     sum_add_distrib, sum_ite_eq', mem_univ, ite_true, sum_ite_mem, univ_inter]
 
 /-- The rows of `Q * M` at a forest. -/
@@ -381,43 +299,9 @@ section Building
 
 omit [Fintype L]
 
-omit [DecidableEq L] in
-theorem IsForest.subset {F G : Finset (Finset L)} (hG : IsForest G) (h : F ⊆ G) : IsForest F :=
-  ⟨fun A hA => hG.1 A (h hA), fun A hA B hB => hG.2 A (h hA) B (h hB)⟩
-
-/-- The union of two forests whose clusters are pairwise nested or disjoint is a forest. -/
-theorem IsForest.union {F G : Finset (Finset L)} (hF : IsForest F) (hG : IsForest G)
-    (h : ∀ A ∈ F, ∀ B ∈ G, A ⊆ B ∨ B ⊆ A ∨ Disjoint A B) : IsForest (F ∪ G) := by
-  refine ⟨fun A hA => ?_, fun A hA B hB => ?_⟩
-  · rcases mem_union.1 hA with hA | hA
-    · exact hF.1 A hA
-    · exact hG.1 A hA
-  · rcases mem_union.1 hA with hA | hA <;> rcases mem_union.1 hB with hB | hB
-    · exact hF.2 A hA B hB
-    · exact h A hA B hB
-    · rcases h B hB A hA with h' | h' | h'
-      · exact Or.inr (Or.inl h')
-      · exact Or.inl h'
-      · exact Or.inr (Or.inr h'.symm)
-    · exact hG.2 A hA B hB
-
 /-- A forest of singletons. -/
-private theorem forest_isForest_image_singleton (S : Finset L) :
-    IsForest (S.image fun l => {l}) := by
-  refine ⟨fun A hA => ?_, fun A hA B hB => ?_⟩
-  · obtain ⟨l, -, rfl⟩ := mem_image.1 hA
-    exact singleton_nonempty l
-  · obtain ⟨l, -, rfl⟩ := mem_image.1 hA
-    obtain ⟨m, -, rfl⟩ := mem_image.1 hB
-    by_cases hlm : l = m
-    · subst hlm
-      exact Or.inl subset_rfl
-    · exact Or.inr (Or.inr (disjoint_singleton.2 hlm))
-
-@[simp] theorem lineages_image_singleton (S : Finset L) :
-    lineages (S.image fun l => {l}) = S := by
-  ext l
-  simp [mem_lineages]
+theorem forest_isForest_image_singleton (S : Finset L) :
+    IsForest (S.image fun l => {l}) := by simp [IsForest]; grind
 
 end Building
 
@@ -426,9 +310,5 @@ end Building
 theorem isForest_sampledForest {X : Type*} [DecidableEq X] (s : L → X) (A : Finset X) :
     IsForest (sampledForest s A) :=
   forest_isForest_image_singleton _
-
-@[simp] theorem lineages_sampledForest {X : Type*} [DecidableEq X] (s : L → X) (A : Finset X) :
-    lineages (sampledForest s A) = univ.filter fun l => s l ∈ A :=
-  lineages_image_singleton _
 
 end ADR11

@@ -1,6 +1,7 @@
 module
 
-public import ADR11.Rootings.Statements
+public import ADR11.SmallTrees
+public import ADR11.Rootings.Proofs
 public import ADR11.Trees.Classify
 
 /-!
@@ -28,9 +29,10 @@ open Finset Real
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- `exp (-ℓ)` lies in `(0, 1)` for the length `ℓ` of an edge of a species tree. -/
-theorem five_exp_bounds (τ : SpeciesTree X) {A : Finset X} (hA : A ∈ τ.clusters)
-    (hAu : A ≠ univ) : 0 < exp (-τ.length A) ∧ exp (-τ.length A) < 1 :=
-  ⟨exp_pos _, Real.exp_lt_one_iff.2 (neg_lt_zero.2 (τ.length_pos A hA hAu))⟩
+theorem five_exp_bounds {H : Finset (Finset X)} {τ : SpeciesTree X} (h : τ.clusters = H)
+    (A : Finset X) (hA : A ∈ H := by decide) (hAu : A ≠ univ := by decide) :
+    0 < exp (-τ.length A) ∧ exp (-τ.length A) < 1 :=
+  ⟨exp_pos _, Real.exp_lt_one_iff.2 (neg_lt_zero.2 (τ.length_pos A (h ▸ hA) hAu))⟩
 
 /-- The length of the split `S | T` (`T = Sᶜ`) when `S` is a cluster and `T` is not. -/
 theorem five_unrootedLength_mem (τ : SpeciesTree X) {S T : Finset X} (hST : Sᶜ = T)
@@ -40,9 +42,7 @@ theorem five_unrootedLength_mem (τ : SpeciesTree X) {S T : Finset X} (hST : S�
   rw [Finset.sum_eq_single_of_mem S (mem_filter.2 ⟨hS, hSu, Or.inl rfl⟩)]
   intro C hCf hCS
   obtain ⟨hC, -, hC'⟩ := mem_filter.1 hCf
-  rcases hC' with rfl | rfl
-  · exact absurd rfl hCS
-  · exact absurd (hST ▸ hC) hT
+  rcases hC' with rfl | rfl <;> grind
 
 /-- The length of the split `S | T` (`T = Sᶜ`) when both `S` and `T` are clusters (the root lies
 on the edge of the split). -/
@@ -52,37 +52,28 @@ theorem five_unrootedLength_both (τ : SpeciesTree X) {S T : Finset X} (hST : S�
   have hne : S ≠ T := by
     intro hST'
     obtain ⟨x, hx⟩ := τ.nonempty_of_mem S hS
-    have hx' : x ∈ T := hST' ▸ hx
+    have hx' := hST' ▸ hx
     rw [← hST, mem_compl] at hx'
-    exact hx' hx
-  unfold SpeciesTree.unrootedLength
+    grind
   rw [← Finset.sum_pair hne]
   refine Finset.sum_congr ?_ fun _ _ => rfl
   ext C
-  simp only [mem_filter, mem_insert, mem_singleton, hST]
-  constructor
-  · rintro ⟨-, -, hC⟩
-    exact hC
-  · rintro (rfl | rfl)
-    · exact ⟨hS, hSu, Or.inl rfl⟩
-    · exact ⟨hT, hTu, Or.inr rfl⟩
+  constructor <;> grind
 
-/-- A length is determined by an affine relation `v = A * exp (-ℓ) ^ n + B` with `A ≠ 0`,
-`n ≠ 0`. -/
-theorem five_length_eq {x y A B v : ℝ} {n : ℕ} (hn : n ≠ 0) (hA : A ≠ 0)
-    (hx : v = A * exp (-x) ^ n + B) (hy : v = A * exp (-y) ^ n + B) : x = y := by
-  have h1 : exp (-x) ^ n = exp (-y) ^ n := mul_left_cancel₀ hA (by linarith)
-  have h2 := Real.exp_injective ((pow_left_inj₀ (exp_pos _).le (exp_pos _).le hn).1 h1)
+/-- A length is determined by `A * exp (-ℓ) ^ n` with `A > 0`, `n ≠ 0`. -/
+theorem five_length_eq {x y A : ℝ} (n : ℕ) (hn : n ≠ 0) (hA : 0 < A)
+    (h : A * exp (-x) ^ n = A * exp (-y) ^ n) : x = y := by
+  have := Real.exp_injective
+    ((pow_left_inj₀ (exp_pos _).le (exp_pos _).le hn).1 (mul_left_cancel₀ hA.ne' h))
   linarith
 
 /-- A member of `hierarchyOf C` with at least two elements, other than `univ`, lies in `C`. -/
 theorem five_mem_of_mem_hierarchyOf {C : Finset (Finset X)} {A : Finset X}
     (hA : A ∈ hierarchyOf C) (h2 : 2 ≤ #A) (hu : A ≠ univ) : A ∈ C := by
-  unfold hierarchyOf at hA
   rcases mem_insert.1 hA with rfl | hA
-  · exact absurd rfl hu
+  · grind
   rcases mem_union.1 hA with hA | hA
-  · exact hA
+  · grind
   obtain ⟨x, -, rfl⟩ := mem_image.1 hA
   simp at h2
 
