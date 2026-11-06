@@ -1,5 +1,4 @@
-module
-public import RequestProject.ChainFormula
-public import RequestProject.FinitelyDeterminedInf
-public import RequestProject.Pigeonhole
-public import RequestProject.CoverAcyclic
+import RequestProject.ChainFormula
+import RequestProject.FinitelyDeterminedInf
+import RequestProject.Pigeonhole
+import RequestProject.CoverAcyclic

@@ -1,2 +1,1 @@
-module
-public import RequestProject.GenusCappedSpineChains
+import RequestProject.GenusCappedSpineChains

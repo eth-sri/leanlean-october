@@ -1,9 +1,6 @@
-module
+import RequestProject.GenusMarkedSpineInjection
+import RequestProject.BlockFamilyBlockwise
 
-public import RequestProject.GenusMarkedSpineInjection
-public import RequestProject.BlockFamilyBlockwise
-
-@[expose] public section
 
 /-! Simultaneous substitution by the actual finite surviving two-dimensional spines. -/
 namespace FiniteChains.Davis.Genus
@@ -15,7 +12,7 @@ variable {α Jr Sx : Type} (ρ : Jr ⊕ Sx → FreeGroup α)
 
 noncomputable def familyFiniteSpineWordBlock (s : Sx) :
     NamedSpineRel (q s) → FreeGroup (α ⊕ SpinePresentationGen (q s)) :=
-  finiteSpineWordBlock (q s) (u s) PUnit.unit
+  finiteSpineWordBlock _ (u s) PUnit.unit
 
 variable (hrho : ∀ s, ρ (Sum.inr s) = commWord (u s) (finitePairs (q s)))
 
@@ -26,19 +23,18 @@ theorem familyFiniteSpineWordBlock_consequence (s : Sx) :
       Subgroup.normalClosure (Set.range (familyFiniteSpineWordBlock q u s)) := by
   let φ := blockSubst (Zt := fun _ : PUnit.{1} => SpinePresentationGen (q s))
     (fun _ => u s) PUnit.unit
-  have hv : φ (commWord (fun x => FreeGroup.of (Sum.inl x)) (finitePairs (q s))) =
+  have hv : φ (commWord (fun x => FreeGroup.of (Sum.inl x)) (finitePairs _)) =
       FreeGroup.map (Sum.inl (β := SpinePresentationGen (q s))) (ρ (Sum.inr s)) := by
     rw [map_commWord]
-    simp only [φ, blockSubst_of_inl]
-    rw [← map_commWord, hrho s]
+    simp [φ, blockSubst_of_inl, ← map_commWord, hrho s]
   rw [← hv]
-  apply map_mem_normalClosure φ ?_ (markedSpine_surface_mem (q s))
+  apply map_mem_normalClosure φ ?_ (markedSpine_surface_mem _)
   rintro v ⟨m, rfl⟩
   exact Subgroup.subset_normalClosure ⟨m, rfl⟩
 
 include hrho in
 theorem familyFiniteSpineWordBlock_filled : FilledF ρ (familyFiniteSpineWordBlock q u) :=
-  filledF_of_block_consequences ρ (familyFiniteSpineWordBlock q u)
+  filledF_of_block_consequences ρ _
     (familyFiniteSpineWordBlock_consequence ρ q u hrho)
 
 /-- The actual finite-spine structural inclusion is injective for every family,
@@ -46,10 +42,8 @@ including infinite families and independently varying genera. -/
 theorem familyFiniteSpineWordBlock_injective : Function.Injective
     (substHomF ρ (familyFiniteSpineWordBlock q u)
       (familyFiniteSpineWordBlock_filled ρ q u hrho)) := by
-  apply injective_substHomF_of_individual ρ (familyFiniteSpineWordBlock q u)
-    (familyFiniteSpineWordBlock_filled ρ q u hrho)
-    (fun s => finiteSpineWordBlock_filled (oneRel ρ s) (q s) (u s) (hrho s))
+  apply injective_substHomF_of_individual ρ _
+    _
+    _
   intro s
-  exact finiteSpineWordBlock_injective (oneRel ρ s) (q s) (u s) (hrho s)
-
-end FiniteChains.Davis.Genus
+  exact finiteSpineWordBlock_injective _ _ _ (hrho s)

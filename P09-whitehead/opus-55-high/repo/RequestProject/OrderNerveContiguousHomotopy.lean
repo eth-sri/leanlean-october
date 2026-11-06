@@ -1,8 +1,6 @@
-module
+import RequestProject.OrderNerveCommonSimplex
+noncomputable section
 
-public import RequestProject.OrderNerveCommonSimplex
-
-@[expose] public section
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -14,8 +12,8 @@ include hc
 
 /-- Cross-comparability gives a common target simplex for both actual maps
 on each source simplex. This is stronger than pointwise comparison. -/
-theorem orderNerveSimplex_common_maps {n : SimplexCategory}
-    (s : (nerve P).obj (Opposite.op n)) :
+theorem orderNerveSimplex_common_maps
+    s :
     ∃ (m : SimplexCategory) (u : (nerve Q).obj (Opposite.op m))
       (a b : n ⟶ m),
       (∀ z, orderNerveRealizationSimplex Q u (SimplexCategory.toTop.map a z) =
@@ -32,25 +30,21 @@ theorem orderNerveSimplex_common_maps {n : SimplexCategory}
     ((nerveMap hf.functor).app _ s) ((nerveMap hg.functor).app _ s) hcross
   refine ⟨m, u, a, b, ?_, ?_⟩
   · intro z
-    have h := congrArg (fun k => k z) (orderNerveRealizationSimplex_operator Q a u)
-    change orderNerveRealizationSimplex Q u (SimplexCategory.toTop.map a z) =
-      orderNerveRealizationSimplex Q ((nerve Q).map a.op u) z at h
+    have h := congrArg (· z) (orderNerveRealizationSimplex_operator Q a u)
     rw [ha] at h
-    have hn := congrArg (fun k => k z) (orderNerveRealizationSimplex_natural f hf s)
+    have hn := congrArg (· z) (orderNerveRealizationSimplex_natural f hf s)
     exact h.trans hn.symm
   · intro z
-    have h := congrArg (fun k => k z) (orderNerveRealizationSimplex_operator Q b u)
-    change orderNerveRealizationSimplex Q u (SimplexCategory.toTop.map b z) =
-      orderNerveRealizationSimplex Q ((nerve Q).map b.op u) z at h
+    have h := congrArg (· z) (orderNerveRealizationSimplex_operator Q b u)
     rw [hb] at h
-    have hn := congrArg (fun k => k z) (orderNerveRealizationSimplex_natural g hg s)
+    have hn := congrArg (· z) (orderNerveRealizationSimplex_natural g hg s)
     exact h.trans hn.symm
 
-theorem orderNerveRealization_blend_exists (t : I) (x : orderNerveRealization P) :
-    ∃ y : orderNerveRealization Q, ∀ q,
+theorem orderNerveRealization_blend_exists (t : I) x :
+    ∃ y, ∀ q,
       orderNerveRealizationCoordinates Q y q =
-        (1 - (t : ℝ)) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap f hf x) q +
-        (t : ℝ) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap g hg x) q := by
+        (1 - t) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap f hf x) q +
+        t * orderNerveRealizationCoordinates Q (orderNerveRealizationMap g hg x) q := by
   obtain ⟨n, s, z, rfl⟩ := orderNerveRealizationSimplex_jointly_surjective P x
   obtain ⟨m, u, a, b, ha, hb⟩ := orderNerveSimplex_common_maps f hf g hg hc s
   refine ⟨orderNerveRealizationSimplex Q u
@@ -59,13 +53,12 @@ theorem orderNerveRealization_blend_exists (t : I) (x : orderNerveRealization P)
   rw [orderNerveRealizationCoordinates_blend, ha, hb]
 
 /-- The unique affine interpolation, defined in global barycentric coordinates. -/
-noncomputable def orderNerveRealizationBlend (t : I) (x : orderNerveRealization P) :
-    orderNerveRealization Q := (orderNerveRealization_blend_exists f hf g hg hc t x).choose
+def orderNerveRealizationBlend (t : I) (x : orderNerveRealization P) := (orderNerveRealization_blend_exists f hf g hg hc t x).choose
 
-theorem orderNerveRealizationBlend_coordinates (t : I) (x : orderNerveRealization P) (q : Q) :
+theorem orderNerveRealizationBlend_coordinates t x q :
     orderNerveRealizationCoordinates Q (orderNerveRealizationBlend f hf g hg hc t x) q =
-      (1 - (t : ℝ)) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap f hf x) q +
-      (t : ℝ) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap g hg x) q :=
+      (1 - t) * orderNerveRealizationCoordinates Q (orderNerveRealizationMap f hf x) q +
+      t * orderNerveRealizationCoordinates Q (orderNerveRealizationMap g hg x) q :=
   (orderNerveRealization_blend_exists f hf g hg hc t x).choose_spec q
 
 /-- Joint continuity holds in the actual weak CW topology, including infinite posets. -/
@@ -91,20 +84,20 @@ theorem orderNerveRealizationBlend_continuous :
         (((SimplexCategory.toTop.map a).hom.continuous.comp continuous_snd).prodMk
           ((SimplexCategory.toTop.map b).hom.continuous.comp continuous_snd))))
 
-@[simp] theorem orderNerveRealizationBlend_zero (x : orderNerveRealization P) :
+@[simp] theorem orderNerveRealizationBlend_zero x :
     orderNerveRealizationBlend f hf g hg hc 0 x = orderNerveRealizationMap f hf x := by
   apply orderNerveRealizationCoordinates_injective Q
   funext q
   simp [orderNerveRealizationBlend_coordinates]
 
-@[simp] theorem orderNerveRealizationBlend_one (x : orderNerveRealization P) :
+@[simp] theorem orderNerveRealizationBlend_one x :
     orderNerveRealizationBlend f hf g hg hc 1 x = orderNerveRealizationMap g hg x := by
   apply orderNerveRealizationCoordinates_injective Q
   funext q
   simp [orderNerveRealizationBlend_coordinates]
 
 /-- A concrete topological homotopy between maps with cross-comparable images. -/
-noncomputable def orderNerveRealizationContiguousHomotopy :
+def orderNerveRealizationContiguousHomotopy :
     ContinuousMap.Homotopy
       (⟨orderNerveRealizationMap f hf, (orderNerveRealizationMap f hf).hom.continuous⟩ :
         C(orderNerveRealization P, orderNerveRealization Q))
@@ -113,5 +106,3 @@ noncomputable def orderNerveRealizationContiguousHomotopy :
   continuous_toFun := orderNerveRealizationBlend_continuous f hf g hg hc
   map_zero_left := orderNerveRealizationBlend_zero f hf g hg hc
   map_one_left := orderNerveRealizationBlend_one f hf g hg hc
-
-end FiniteChains.Comb

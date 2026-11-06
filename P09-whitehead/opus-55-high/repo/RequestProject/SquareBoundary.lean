@@ -1,9 +1,6 @@
-module
+import Mathlib.Topology.Homotopy.HomotopyGroup
+import Mathlib.Topology.Connected.Basic
 
-public import Mathlib.Topology.Homotopy.HomotopyGroup
-public import Mathlib.Topology.Connected.Basic
-
-@[expose] public section
 
 /-! Connectedness of the boundary used in Mathlib's two-dimensional based-loop model. -/
 
@@ -14,11 +11,11 @@ namespace Whitehead
 def squareEdge (i : Fin 2) (v : I) (s : I) : Fin 2 → I :=
   fun j => if j = i then v else s
 
-theorem squareEdge_continuous (i : Fin 2) (v : I) : Continuous (squareEdge i v) := by
+theorem squareEdge_continuous i v : Continuous (squareEdge i v) := by
   apply continuous_pi
   intro j
   by_cases h : j = i
-  · simpa [squareEdge, h] using (continuous_const : Continuous (fun _ : I => v))
+  · simpa [squareEdge, h] using continuous_const
   · exact continuous_id.congr fun s => by simp [squareEdge, h]
 
 theorem square_boundary_eq : Cube.boundary (Fin 2) =
@@ -35,26 +32,24 @@ theorem square_boundary_eq : Cube.boundary (Fin 2) =
       · exact Or.inl (Or.inl (Or.inr ⟨t 0, by apply funext; intro j; fin_cases j; rfl; exact hi.symm⟩))
       · exact Or.inr ⟨t 0, by apply funext; intro j; fin_cases j; rfl; exact hi.symm⟩
   · rintro (((⟨s, rfl⟩ | ⟨s, rfl⟩) | ⟨s, rfl⟩) | ⟨s, rfl⟩)
-    · exact ⟨0, Or.inl (by simp [squareEdge])⟩
-    · exact ⟨1, Or.inl (by simp [squareEdge])⟩
-    · exact ⟨0, Or.inr (by simp [squareEdge])⟩
-    · exact ⟨1, Or.inr (by simp [squareEdge])⟩
+    · exact ⟨0, Or.inl (by rfl)⟩
+    · exact ⟨1, Or.inl (by rfl)⟩
+    · exact ⟨0, Or.inr (by rfl)⟩
+    · exact ⟨1, Or.inr (by rfl)⟩
 
 /-- The boundary of the two-dimensional cube is preconnected. -/
 theorem square_boundary_isPreconnected : IsPreconnected (Cube.boundary (Fin 2)) := by
   rw [square_boundary_eq]
-  have he (i : Fin 2) (v : I) : IsPreconnected (Set.range (squareEdge i v)) :=
+  have he (i : Fin 2) (v : I) :=
     isPreconnected_range (squareEdge_continuous i v)
   have h00 : squareEdge 0 0 0 = squareEdge 1 0 0 := by
-    ext j; fin_cases j <;> simp [squareEdge]
+    grind [squareEdge]
   have h10 : squareEdge 0 1 0 = squareEdge 1 0 1 := by
-    ext j; fin_cases j <;> simp [squareEdge]
+    grind [squareEdge]
   have h01 : squareEdge 1 1 0 = squareEdge 0 0 1 := by
-    ext j; fin_cases j <;> simp [squareEdge]
+    grind [squareEdge]
   have hleft : IsPreconnected (Set.range (squareEdge 0 0) ∪ Set.range (squareEdge 1 0)) := (he 0 0).union' ⟨squareEdge 0 0 0, ⟨0, rfl⟩, ⟨0, h00.symm⟩⟩ (he 1 0)
   have hthree : IsPreconnected ((Set.range (squareEdge 0 0) ∪ Set.range (squareEdge 1 0)) ∪ Set.range (squareEdge 0 1)) := hleft.union'
     ⟨squareEdge 0 1 0, Or.inr ⟨1, h10.symm⟩, ⟨0, rfl⟩⟩ (he 0 1)
   exact hthree.union'
-    ⟨squareEdge 1 1 0, Or.inl (Or.inl ⟨1, h01.symm⟩), ⟨0, rfl⟩⟩ (he 1 1)
-
-end Whitehead
+    ⟨squareEdge 1 1 0, by simp_all, ⟨0, rfl⟩⟩ (he 1 1)

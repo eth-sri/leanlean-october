@@ -1,8 +1,5 @@
-module
+import RequestProject.FoxCommutator
 
-public import RequestProject.FoxCommutator
-
-@[expose] public section
 
 /-!
 # Formula (2.3): a chain of two-complexes produces normal subgroups of `G = π₁(K)`
@@ -41,29 +38,21 @@ requirements that hypothesis is now a theorem about the cell-level data of the
 chain.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
-universe u
 
 variable {G : Type u} [Group G] {I J : Type u}
 
 /-! ### Reduction of coefficients along a group homomorphism -/
 
 /-- Reduction of coefficients is functorial. -/
-theorem mapDomainRingHom_comp_apply {A B C : Type*} [Group A] [Group B] [Group C]
-    (f : A →* B) (g : B →* C) (x : MonoidAlgebra ℤ A) :
+theorem mapDomainRingHom_comp_apply {A B C} [Group A] [Group B] [Group C]
+    (f : A →* B) (g : B →* C) x :
     MonoidAlgebra.mapDomainRingHom ℤ g (MonoidAlgebra.mapDomainRingHom ℤ f x)
       = MonoidAlgebra.mapDomainRingHom ℤ (g.comp f) x := by
-  apply MonoidAlgebra.coeff_injective
-  change Finsupp.mapDomain _ (Finsupp.mapDomain _ x.coeff) = Finsupp.mapDomain _ x.coeff
-  rw [← Finsupp.mapDomain_comp]
-  rfl
+  simp
 
 /-! ### The cell-level data of a chain of two-complexes -/
 
@@ -119,16 +108,12 @@ noncomputable def oldVec (r : ℕ) (v : J →₀ MonoidAlgebra ℤ G) :
   Finsupp.mapDomain (h.cellIncl r)
     (Finsupp.mapRange (MonoidAlgebra.mapDomainRingHom ℤ (h.phi r)) (map_zero _) v)
 
-theorem oldVec_apply_cellIncl (r : ℕ) (v : J →₀ MonoidAlgebra ℤ G) (j : J) :
+theorem oldVec_apply_cellIncl r v j :
     h.oldVec r v (h.cellIncl r j) = MonoidAlgebra.mapDomainRingHom ℤ (h.phi r) (v j) :=
   Finsupp.mapDomain_apply_of_injective (h.cellIncl_injective r) _ j
 
-theorem oldVec_support_subset (r : ℕ) [DecidableEq (Cell r)] (v : J →₀ MonoidAlgebra ℤ G) :
+theorem oldVec_support_subset (r : ℕ) [DecidableEq (Cell r)] v :
     (h.oldVec r v).support ⊆ v.support.image (h.cellIncl r) := by
   classical
   refine Finsupp.mapDomain_support.trans ?_
-  exact Finset.image_subset_image (Finsupp.support_mapRange)
-
-end ChainInput
-
-end FiniteChains
+  grind

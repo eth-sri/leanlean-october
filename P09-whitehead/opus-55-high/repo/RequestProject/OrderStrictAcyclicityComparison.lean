@@ -1,9 +1,6 @@
-module
+import RequestProject.OrderStrictHomologyVanishing
+import RequestProject.ConnectedCellularZeroFillings
 
-public import RequestProject.OrderStrictHomologyVanishing
-public import RequestProject.ConnectedCellularZeroFillings
-
-@[expose] public section
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -16,11 +13,9 @@ theorem orderRealization_acyclic_iff_strict_isAcyclic (hP : IsConnected (orderCx
   constructor
   · intro h
     refine ⟨?_, ?_, ?_⟩
-    · apply (injective_iff_map_eq_zero (bdry2 (strictOrderCx P))).mpr
-      exact strict_twoCycle_eq_zero_of_singular_homology_zero (h 2 (by decide))
-    · exact orderRealization_homology_one_isZero_iff_strict_fillings.mp (h 1 (by decide))
+    · apply (injective_iff_map_eq_zero _).mpr
+      exact strict_twoCycle_eq_zero_of_singular_homology_zero (by aesop)
+    · exact orderRealization_homology_one_isZero_iff_strict_fillings.mp (by aesop)
     · exact strict_order_zeroCycle_filling_of_connected (P := P)
         (Classical.choice ‹Nonempty P›) hP
   · exact orderRealization_acyclic_of_strict_isAcyclic
-
-end FiniteChains.Comb

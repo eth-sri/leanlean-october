@@ -1,9 +1,7 @@
-module
+import RequestProject.WallSpaceDual
+import RequestProject.RollerGraphMetric
+import RequestProject.Tac
 
-public import RequestProject.WallSpaceDual
-public import RequestProject.RollerGraphMetric
-
-@[expose] public section
 
 /-!
 # The dual of a wall space is a connected median graph
@@ -32,30 +30,4 @@ halfspace coordinates this is `FiniteChains.WallSpace.dualW_step`, which gives
   `FiniteChains.WallSpace.gatedDual_ker_d₂_eq_range_d₃`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-universe u v
-
-open RollerBridge
-
-namespace WallSpace
-
-variable {X : Type u} {ι : Type v} [DecidableEq ι] {S : WallSpace X ι}
-
-variable (S) in
-/-- The halfspace chosen by an orientation at a wall. -/
-def hs (o : ι → Bool) (i : ι) : Set X := {x | S.side i x = o i}
-
-section Coordinates
-
-/-! ## The dual as a gated Roller model -/
-
-end Coordinates
-
-end WallSpace
-
-end FiniteChains
+bwd

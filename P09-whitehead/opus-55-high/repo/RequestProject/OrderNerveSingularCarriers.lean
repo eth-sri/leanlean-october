@@ -1,9 +1,6 @@
-module
+import RequestProject.OrderNerveRealizationStarContractible
+import RequestProject.TopologicalSingular.SingularChains
 
-public import RequestProject.OrderNerveRealizationStarContractible
-public import RequestProject.TopologicalSingular.SingularChains
-
-@[expose] public section
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -11,7 +8,7 @@ open scoped Classical
 
 /-- The vertices with positive coordinates at a realization point form a
 finite chain. This remains true in an infinite, non-locally-finite realization. -/
-theorem orderNerveRealization_activeVertices_finite_chain {P : Type} [PartialOrder P]
+theorem orderNerveRealization_activeVertices_finite_chain {P} [PartialOrder P]
     (x : orderNerveRealization P) :
     {v | x ∈ orderNerveRealizationOpenStar P v}.Finite ∧
       IsChain (· ≤ ·) {v | x ∈ orderNerveRealizationOpenStar P v} := by
@@ -28,47 +25,46 @@ theorem orderNerveRealization_activeVertices_finite_chain {P : Type} [PartialOrd
   · exact Or.inr (leOfHom (s.val.map (homOfLE hij)))
 
 /-- All open vertex stars that contain the entire singular simplex. -/
-def orderNerveSingularStarIndices {P : Type} [PartialOrder P] {n : ℕ}
-    (σ : TopologicalSingular.Simplex (orderNerveRealization P) n) : Set P :=
+def orderNerveSingularStarIndices {P} [PartialOrder P] {n}
+    (σ : TopologicalSingular.Simplex (orderNerveRealization P) n) :=
   {v | ∀ z, σ z ∈ orderNerveRealizationOpenStar P v}
 
-theorem orderNerveSingularStarIndices_chain {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderNerveSingularStarIndices_chain {P} [PartialOrder P] {n : ℕ}
     (σ : TopologicalSingular.Simplex (orderNerveRealization P) n) :
     IsChain (· ≤ ·) (orderNerveSingularStarIndices σ) :=
   (orderNerveRealization_activeVertices_finite_chain (σ (stdSimplex.vertex 0))).2.mono
-    (fun _ h => h (stdSimplex.vertex 0))
+    (by tauto)
 
 /-- Every star containing a simplex also contains each of its faces. -/
-theorem orderNerveSingularStarIndices_face {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderNerveSingularStarIndices_face {P} [PartialOrder P] {n}
     (σ : TopologicalSingular.Simplex (orderNerveRealization P) (n + 1))
-    (i : Fin (n + 2)) :
+    i :
     orderNerveSingularStarIndices σ ⊆
       orderNerveSingularStarIndices (TopologicalSingular.face i σ) := by
-  intro v hv z
-  exact hv _
+  tauto
 
 /-- The common closed-star subposet of every star containing a singular simplex.
 Taking all such stars makes this carrier monotone under passage to faces. -/
-def orderNerveSingularCarrier {P : Type} [PartialOrder P] {n : ℕ}
-    (σ : TopologicalSingular.Simplex (orderNerveRealization P) n) : Set P :=
+def orderNerveSingularCarrier {P} [PartialOrder P] {n}
+    (σ : TopologicalSingular.Simplex (orderNerveRealization P) n) :=
   {p | ∀ v ∈ orderNerveSingularStarIndices σ, p ≤ v ∨ v ≤ p}
 
-theorem orderNerveSingularCarrier_face {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderNerveSingularCarrier_face {P} [PartialOrder P] {n}
     (σ : TopologicalSingular.Simplex (orderNerveRealization P) (n + 1))
-    (i : Fin (n + 2)) :
+    i :
     orderNerveSingularCarrier (TopologicalSingular.face i σ) ⊆ orderNerveSingularCarrier σ := by
   intro p hp v hv
   exact hp v (orderNerveSingularStarIndices_face σ i hv)
 
-theorem orderNerveSingularStarIndices_subset_carrier {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderNerveSingularStarIndices_subset_carrier {P} [PartialOrder P] {n}
     (σ : TopologicalSingular.Simplex (orderNerveRealization P) n) :
     orderNerveSingularStarIndices σ ⊆ orderNerveSingularCarrier σ := by
   intro p hp v hv
   exact (orderNerveSingularStarIndices_chain σ).total hp hv
 
 /-- The whole singular simplex lies in its genuine supported CW carrier. -/
-theorem orderNerveSingularSimplex_mem_carrier {P : Type} [PartialOrder P] {n : ℕ}
-    (σ : TopologicalSingular.Simplex (orderNerveRealization P) n)
+theorem orderNerveSingularSimplex_mem_carrier {P} [PartialOrder P] {n}
+    σ
     (z : TopologicalSingular.Domain n) :
     σ z ∈ (orderNerveRealizationSubcomplex P (orderNerveSingularCarrier σ) :
       Set (orderNerveRealization P)) := by
@@ -81,21 +77,19 @@ theorem orderNerveSingularSimplex_mem_carrier {P : Type} [PartialOrder P] {n : �
 
 /-- The carrier of a star-small simplex has a universally comparable vertex,
 so its order realization is contractible. -/
-theorem orderNerveSingularCarrier_realization_contractible {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderNerveSingularCarrier_realization_contractible {P} [PartialOrder P] {n}
     (σ : TopologicalSingular.Simplex (orderNerveRealization P) n)
     (hσ : (orderNerveSingularStarIndices σ).Nonempty) :
     ContractibleSpace (orderNerveRealization (orderNerveSingularCarrier σ)) := by
-  obtain ⟨v, hv⟩ := hσ
+  cases' hσ with v hv
   let a : orderNerveSingularCarrier σ :=
     ⟨v, orderNerveSingularStarIndices_subset_carrier σ hv⟩
-  exact orderNerveRealization_contractible_of_comparable a (fun p => p.property v hv)
+  exact orderNerveRealization_contractible_of_comparable a (by aesop)
 
-theorem orderNerveSingularCarrier_subcomplex_contractible {P : Type} [PartialOrder P] {n : ℕ}
+theorem orderNerveSingularCarrier_subcomplex_contractible {P} [PartialOrder P] {n}
     (σ : TopologicalSingular.Simplex (orderNerveRealization P) n)
     (hσ : (orderNerveSingularStarIndices σ).Nonempty) :
     ContractibleSpace (orderNerveRealizationSubcomplex P (orderNerveSingularCarrier σ) :
       Set (orderNerveRealization P)) := by
   letI := orderNerveSingularCarrier_realization_contractible σ hσ
-  exact (orderNerveRealizationSubtypeHomeomorph (orderNerveSingularCarrier σ)).symm.contractibleSpace
-
-end FiniteChains.Comb
+  exact (orderNerveRealizationSubtypeHomeomorph _).symm.contractibleSpace

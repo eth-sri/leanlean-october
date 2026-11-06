@@ -1,9 +1,7 @@
-module
+import RequestProject.GenerationStep
+import RequestProject.CockcroftExtStep
+import RequestProject.Tac
 
-public import RequestProject.GenerationStep
-public import RequestProject.CockcroftExtStep
-
-@[expose] public section
 
 /-!
 # The composite operation: finitely many moves of rule 1
@@ -28,74 +26,4 @@ relator at a time), on top of the formal layer of `RequestProject/GenerationStep
   of `π₂` of the transformed complex.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-open MonoidAlgebra
-
-universe u
-
-section OneStep
-
-variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
-variable (ρ : J → FreeGroup α) (w₀ : FreeGroup (Option α))
-
-end OneStep
-
-/-! ### Iterating the elementary move -/
-
-/-- The generators (resp. two-cells) after `n` moves: `n` new names are adjoined one at a
-time. -/
-abbrev optIter (α : Type u) : ℕ → Type u
-  | 0 => α
-  | n + 1 => Option (optIter α n)
-
-instance optIterFintype (α : Type u) [Fintype α] : ∀ n, Fintype (optIter α n)
-  | 0 => ‹Fintype α›
-  | n + 1 => @instFintypeOption _ (optIterFintype α n)
-
-instance optIterDecidableEq (α : Type u) [DecidableEq α] : ∀ n, DecidableEq (optIter α n)
-  | 0 => ‹DecidableEq α›
-  | n + 1 => fun a b => @Option.instDecidableEq _ (optIterDecidableEq α n) a b
-
-section Iterate
-
-variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
-variable (ρ : J → FreeGroup α) (w : ∀ n : ℕ, FreeGroup (Option (optIter α n)))
-
-/-- The presentation after `n` elementary moves: at stage `n` the new generator is the fresh
-name `none` and the new relator is `w n`. -/
-def iterPres : ∀ n : ℕ, optIter J n → FreeGroup (optIter α n)
-  | 0 => ρ
-  | n + 1 => extRel (iterPres n) (w n)
-
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
-@[simp] theorem iterPres_zero : iterPres ρ w 0 = ρ := rfl
-
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
-@[simp] theorem iterPres_succ (n : ℕ) :
-    iterPres ρ w (n + 1) = extRel (iterPres ρ w n) (w n) := rfl
-
-/-- The identity structural map of a presentation. -/
-def PresMor.id {β K : Type u} [Fintype β] [DecidableEq β] [Fintype K] (σ : K → FreeGroup β) :
-    PresMor σ σ where
-  hom := MonoidHom.id _
-  cells := _root_.id
-  cells_add := fun _ _ => rfl
-  cells_smul := fun c y => by
-    have h : (MonoidAlgebra.mapDomainRingHom ℤ (MonoidHom.id (PresGroup σ)) c
-        : MonoidAlgebra ℤ (PresGroup σ)) = c := MonoidAlgebra.mapDomain_id c
-    show _root_.id (c • y)
-      = (MonoidAlgebra.mapDomainRingHom ℤ (MonoidHom.id (PresGroup σ)) c
-          : MonoidAlgebra ℤ (PresGroup σ)) • _root_.id y
-    rw [h]
-    rfl
-  cells_cycle := fun _ hy => hy
-  cells_aug := fun _ hy => hy
-
-end Iterate
-
-end FiniteChains
+bwd

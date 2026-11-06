@@ -1,3 +1,2 @@
-module
-public import RequestProject.OrderUniversalPosetHom
-public import RequestProject.StrictOrderChains
+import RequestProject.OrderUniversalPosetHom
+import RequestProject.StrictOrderChains

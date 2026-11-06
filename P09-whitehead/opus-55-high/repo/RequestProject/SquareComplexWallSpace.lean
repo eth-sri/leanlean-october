@@ -1,9 +1,6 @@
-module
+import RequestProject.SquareComplexWalls
+import RequestProject.WallSpaceDualConnected
 
-public import RequestProject.SquareComplexWalls
-public import RequestProject.WallSpaceDualConnected
-
-@[expose] public section
 
 /-!
 # From the walls of a square complex to a wall space
@@ -29,50 +26,3 @@ Granting it:
 Thus, granting separation, the one-skeleton of such a complex maps injectively and
 edge-preservingly into a median (CAT(0) cube complex) graph.
 -/
-
-namespace FiniteChains
-
-open RollerBridge
-
-universe u
-
-namespace SquareComplex
-
-variable {Vx : Type u}
-
-section WallSpace
-
-variable {ι : Type*} {σ : ι → Vx → ZMod 2} {x₀ : Vx}
-
-theorem decide_ne_of_ne {a b : ZMod 2} (h : a ≠ b) : decide (a = 1) ≠ decide (b = 1) := by
-  revert h; revert a b; decide
-
-theorem ne_of_decide_ne {a b : ZMod 2} (h : decide (a = 1) ≠ decide (b = 1)) : a ≠ b := by
-  revert h; revert a b; decide
-
-/-- **The vertices of a square complex with separating walls form a wall space.**  The
-coordinates `σ` are those produced by `FiniteChains.SquareComplex.exists_rollerCoordinates`;
-`hsep` is the separation property, the one step of Sageev's theorem that is not proved in the
-project. -/
-def wallSpaceOf (hfin : ∀ v : Vx, {i : ι | σ i v ≠ σ i x₀}.Finite)
-    (hsep : ∀ u v : Vx, u ≠ v → ∃ i, σ i u ≠ σ i v) : WallSpace Vx ι where
-  side i v := decide (σ i v = 1)
-  sep := by
-    intro u v huv
-    obtain ⟨i, hi⟩ := hsep u v huv
-    exact ⟨i, decide_ne_of_ne hi⟩
-  fin := by
-    intro u v
-    refine Set.Finite.subset (separating_finite hfin u v) ?_
-    intro i hi
-    exact ne_of_decide_ne hi
-
-@[simp] theorem wallSpaceOf_side (hfin : ∀ v : Vx, {i : ι | σ i v ≠ σ i x₀}.Finite)
-    (hsep : ∀ u v : Vx, u ≠ v → ∃ i, σ i u ≠ σ i v) (i : ι) (v : Vx) :
-    (wallSpaceOf hfin hsep).side i v = decide (σ i v = 1) := rfl
-
-end WallSpace
-
-end SquareComplex
-
-end FiniteChains

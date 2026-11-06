@@ -1,8 +1,5 @@
-module
+import RequestProject.OrderComplexPi1Transfer
 
-public import RequestProject.OrderComplexPi1Transfer
-
-@[expose] public section
 
 namespace FiniteChains.Comb
 universe u
@@ -14,15 +11,13 @@ theorem orderIso_pi1_surjective (e : P ≃o Q) (a : P) :
   intro z
   induction z using Quotient.inductionOn with
   | h p =>
-    have hp : IsPath (orderCx P).src (orderCx P).tgt
+    have hp : IsPathX (orderCx P)
         (mapPath (orderCxMap e.symm e.symm.monotone) p.val) a a := by
-      simpa only [orderCxMap, e.symm_apply_apply] using
+      simpa [orderCxMap, e.symm_apply_apply] using
         isPath_mapPath (orderCxMap e.symm e.symm.monotone) p.property
     refine ⟨Pi1.mk ⟨_, hp⟩, Quotient.sound ?_⟩
-    change Htpy (orderCx Q) (e a) (e a)
+    change Htpy _ (e a) (e a)
       (mapPath (orderCxMap e e.monotone)
         (mapPath (orderCxMap e.symm e.symm.monotone) p.val)) p.val
     rw [mapPath_comp_eq_self e.symm.monotone e.monotone e.apply_symm_apply]
     exact Htpy.refl _
-
-end FiniteChains.Comb

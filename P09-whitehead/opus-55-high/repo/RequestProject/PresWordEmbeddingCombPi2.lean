@@ -1,10 +1,7 @@
-module
+import RequestProject.PresWordEmbeddingValidPi2
+import RequestProject.Pi2DictionaryFinsupp
+import RequestProject.PresUnivCoverIso
 
-public import RequestProject.PresWordEmbeddingValidPi2
-public import RequestProject.Pi2DictionaryFinsupp
-public import RequestProject.PresUnivCoverIso
-
-@[expose] public section
 
 namespace FiniteChains
 open Comb
@@ -21,20 +18,16 @@ theorem fox_kernel_vanish_iff_univCover (ρ : J → FreeGroup α)
       Finsupp.mapDomain (Prod.map φ g) c = 0 := by
   have hb (c : PresGroup ρ × J →₀ ℤ) :
       Comb.bdry2 (univCover ρ) c = 0 ↔
-        coverSecondBoundary (relSub ρ) ρ (groupCellChainEquiv c) = 0 := by
+        coverSecondBoundary _ ρ (groupCellChainEquiv c) = 0 := by
     change Comb.bdry2 (univCover ρ) c = 0 ↔
-      coverSecondBoundary (relSub ρ) ρ (fsCoords (relSub ρ) J c) = 0
+      coverSecondBoundary _ ρ (fsCoords _ J c) = 0
     rw [fs_coverComplex_bdry2]
     exact (map_eq_zero_iff _ (fsCoords (relSub ρ) α).injective).symm
   constructor
   · intro hz c hc
     have he := hz ⟨groupCellChainEquiv c, (hb c).mp hc⟩
-    simpa only [LinearEquiv.symm_apply_apply] using he
-  · intro hz z
-    apply hz
-    apply (hb _).mpr
-    rw [LinearEquiv.apply_symm_apply]
-    exact z.property
+    simp_all
+  simp_all
 
 namespace PresModel.PresWordEmbedding
 variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
@@ -51,7 +44,7 @@ theorem killsPi2_iff_univCover :
       ∀ c : PresGroup ρ × J →₀ ℤ, Comb.bdry2 (univCover ρ) c = 0 →
         Finsupp.mapDomain (Prod.map (h.groupHom ρ σ hwm hvm) h.cell) c = 0 :=
   (h.killsPi2_iff_fox hw hv ρ σ hwm hvm).trans
-    (fox_kernel_vanish_iff_univCover ρ (h.groupHom ρ σ hwm hvm) h.cell)
+    (fox_kernel_vanish_iff_univCover ρ _ h.cell)
 
 variable [DecidableEq β]
 
@@ -64,7 +57,4 @@ theorem killsPi2_iff_combPi2 :
         (h.relator_compat ρ σ hwm hvm)) :=
   (h.killsPi2_iff_univCover hw hv ρ σ hwm hvm).trans
     (zeroPi2_presInclHom_iff ρ h.gen h.gen.injective h.cell
-      (h.relator_compat ρ σ hwm hvm)).symm
-
-end PresModel.PresWordEmbedding
-end FiniteChains
+      _).symm

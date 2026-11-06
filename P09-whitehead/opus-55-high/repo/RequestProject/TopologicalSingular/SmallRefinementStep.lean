@@ -1,8 +1,5 @@
-module
+import RequestProject.TopologicalSingular.SubdivisionSupport
 
-public import RequestProject.TopologicalSingular.SubdivisionSupport
-
-@[expose] public section
 
 namespace FiniteChains.SingularSubdivision
 open TopologicalSingular
@@ -21,12 +18,12 @@ structure SmallRefinementStage (U : ι → Set X) (n : ℕ) where
     boundary n (homotopyMap (boundary n c)) = boundary n c - smallMap (boundary n c)
 
 theorem all_zero_chains_small (U : ι → Set X) (hcover : ∀ x, ∃ i, x ∈ U i)
-    (c : Chain X 0) : c ∈ smallChains U 0 := by
+    c : c ∈ smallChains U 0 := by
   induction c using Finsupp.induction_linear with
   | zero => exact Submodule.zero_mem _
-  | add c d hc hd => exact Submodule.add_mem _ hc hd
+  | add c d hc hd => aesop
   | single σ r =>
-    obtain ⟨i, hi⟩ := hcover (σ (stdSimplex.vertex 0))
+    cases' hcover _ with i hi
     apply single_mem_small U 0 σ r
     refine ⟨i, fun z => ?_⟩
     letI : Subsingleton (Domain 0) := inferInstanceAs (Subsingleton (stdSimplex ℝ (Fin 1)))
@@ -44,34 +41,30 @@ noncomputable def smallRefinementStageZero (U : ι → Set X) (hcover : ∀ x, �
 /-- Correct the boundary first, then subdivide. The correction and homotopy stay
 inside the image of the original simplex. -/
 theorem smallRefinementStep_exists (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
-    (hcover : ∀ x, ∃ i, x ∈ U i) {n : ℕ} (s : SmallRefinementStage U n)
+    (hcover : ∀ x, ∃ i, x ∈ U i) {n} (s : SmallRefinementStage U n)
     (σ : Simplex X (n + 1)) :
-    ∃ d : Chain X (n + 1), ∃ h : Chain X (n + 2),
+    ∃ d, ∃ h,
       d ∈ smallChains U (n + 1) ∧ d ∈ subChains (Set.range σ) (n + 1) ∧
       h ∈ subChains (Set.range σ) (n + 2) ∧
       boundary (n + 1) h = Finsupp.single σ 1 - d - s.homotopyMap (boundary n (Finsupp.single σ 1)) := by
   let c := Finsupp.single σ 1 - s.homotopyMap (boundary n (Finsupp.single σ 1))
-  have hc : c ∈ subChains (Set.range σ) (n + 1) :=
+  have hc :=
     Submodule.sub_mem _ (single_mem_range_subChains σ 1)
       (carried_linearMap_mem_subChains s.homotopyMap s.homotopy_support _
         (boundary_mem_subChains _ n (single_mem_range_subChains σ 1)))
   have hbc : boundary n c = s.smallMap (boundary n (Finsupp.single σ 1)) := by
-    dsimp only [c]
     rw [map_sub, s.on_boundary]
     abel
   have hsmallbc : boundary n c ∈ smallChains U n := by
     rw [hbc]
     exact s.small _
-  obtain ⟨k, hk⟩ := exists_subdivision_small U hU hcover (n + 1) c
+  cases' exists_subdivision_small U hU hcover _ c with k hk
   refine ⟨((subdivide (n + 1))^[k]) c - iteratedHomotopy n k (boundary n c),
-    -iteratedHomotopy (n + 1) k c,
+    -iteratedHomotopy _ k c,
     Submodule.sub_mem _ hk (iteratedHomotopy_mem_small U k n hsmallbc),
-    Submodule.sub_mem _ (iterated_subdivide_mem_subChains _ k (n + 1) hc)
+    Submodule.sub_mem _ (iterated_subdivide_mem_subChains _ k _ hc)
       (iteratedHomotopy_mem_subChains _ k n (boundary_mem_subChains _ n hc)),
-    Submodule.neg_mem _ (iteratedHomotopy_mem_subChains _ k (n + 1) hc), ?_⟩
+    Submodule.neg_mem _ (iteratedHomotopy_mem_subChains _ k _ hc), ?_⟩
   have he := eq_sub_of_add_eq (iteratedHomotopy_identity_succ k n c)
   rw [map_neg, he]
-  dsimp only [c]
-  abel
-
-end FiniteChains.SingularSubdivision
+  grind

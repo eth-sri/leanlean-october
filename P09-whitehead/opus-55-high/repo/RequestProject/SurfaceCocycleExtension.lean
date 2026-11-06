@@ -1,9 +1,6 @@
-module
+import RequestProject.SurfaceCocycleFan
+import RequestProject.BarycentricCocycleDescent
 
-public import RequestProject.SurfaceCocycleFan
-public import RequestProject.BarycentricCocycleDescent
-
-@[expose] public section
 
 /-! Boundary flat sections extend across the actual closed polygon surface. -/
 namespace FiniteChains.Davis.SurfaceSection
@@ -21,9 +18,7 @@ include hb in
 theorem section_flat : c.IsFlatSection (surfaceSection hc c rv re (centreValue hc c rv)) := by
   intro a b hab
   rcases hab with heq | h
-  · subst b
-    rw [c.val_refl, one_smul]
-  change plt vc ec a b at h
+  · simp_all
   cases a <;> cases b <;> simp only [plt] at h
   case vtx.bed v e =>
     obtain ⟨p, hp, hv⟩ := h
@@ -33,63 +28,62 @@ theorem section_flat : c.IsFlatSection (surfaceSection hc c rv re (centreValue h
     · subst v; exact (hb p).2
   case vtx.dia v p =>
     subst v
-    exact v_d hc c rv re (centreValue hc c rv) p
+    exact v_d hc c rv re _ p
   case vtx.gdi v p =>
     subst v
-    exact v_g hc c rv re (centreValue hc c rv) p
+    exact v_g hc c rv re _ p
   case cvx.ced x p =>
     rcases h with h | h
-    · subst x; exact w_f hc c rv re (centreValue hc c rv) p
-    · subst x; exact w1_f hc c rv re (centreValue hc c rv) hb p
+    · subst x; exact w_f hc c rv re _ p
+    · subst x; exact w1_f hc c rv re _ hb p
   case cvx.dia x p =>
-    subst x
-    exact w_d hc c rv re (centreValue hc c rv) p
+    aesop
   case cvx.gdi x p =>
     subst x
-    exact w1_g hc c rv re (centreValue hc c rv) hb p
+    exact w1_g hc c rv re _ hb p
   case cvx.rad x p =>
     subst x
     exact w_r hc c rv re hb p
   case ctr.rad p => exact c_r hc c rv re p
   case bed.tr1 e p =>
     subst e
-    exact e_t1 hc c rv re (centreValue hc c rv) p
+    exact e_t1 hc c rv re _ p
   case ced.tr2 x p =>
     subst x
-    exact f_t2 hc c rv re (centreValue hc c rv) p
+    exact f_t2 hc c rv re _ p
   case ced.inn x p =>
     subst x
     exact f_i hc c rv re hb p
   case dia.tr1 x p =>
     subst x
-    exact d1_t1 hc c rv re (centreValue hc c rv) hb p
+    exact d1_t1 hc c rv re _ hb p
   case dia.tr2 x p =>
     subst x
-    exact d_t2 hc c rv re (centreValue hc c rv) p
+    exact d_t2 hc c rv re _ p
   case gdi.tr1 x p =>
     subst x
-    exact g_t1 hc c rv re (centreValue hc c rv) hb p
+    exact g_t1 hc c rv re _ hb p
   case gdi.tr2 x p =>
     subst x
-    exact g_t2 hc c rv re (centreValue hc c rv) p
+    exact g_t2 hc c rv re _ p
   case rad.inn x p =>
     rcases h with h | h
     · subst x; exact r_i hc c rv re p
     · subst x; exact r1_i hc c rv re p
   case vtx.tr1 v p =>
     rcases h with h | h
-    · subst v; exact v_t1 hc c rv re (centreValue hc c rv) hb p
-    · subst v; exact v1_t1 hc c rv re (centreValue hc c rv) hb p
+    · subst v; exact v_t1 hc c rv re _ hb p
+    · subst v; exact v1_t1 hc c rv re _ hb p
   case vtx.tr2 v p =>
     subst v
-    exact v_t2 hc c rv re (centreValue hc c rv) p
+    exact v_t2 hc c rv re _ p
   case cvx.tr1 x p =>
     subst x
-    exact w1_t1 hc c rv re (centreValue hc c rv) hb p
+    exact w1_t1 hc c rv re _ hb p
   case cvx.tr2 x p =>
     rcases h with h | h
-    · subst x; exact w_t2 hc c rv re (centreValue hc c rv) p
-    · subst x; exact w1_t2 hc c rv re (centreValue hc c rv) hb p
+    · subst x; exact w_t2 hc c rv re _ p
+    · subst x; exact w1_t2 hc c rv re _ hb p
   case cvx.inn x p =>
     rcases h with h | h
     · subst x; exact w_i hc c rv re hb p
@@ -116,5 +110,3 @@ variable {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
   {G : Type v} [Group G] {Ω : Type w} [MulAction G Ω]
   (c : OrdCocycle (NeSpx (cmpRel (SCell vc ec hc))) G)
   (rv : κ → Ω) (re : ι → Ω)
-
-end FiniteChains.Davis

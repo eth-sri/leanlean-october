@@ -1,8 +1,6 @@
-module
+import RequestProject.CockcroftExtStep
+import RequestProject.Tac
 
-public import RequestProject.CockcroftExtStep
-
-@[expose] public section
 
 /-!
 # Subpresentations that are retracts: their Fox cycles have zero augmentation
@@ -25,9 +23,7 @@ retraction, so the base change statement of `RequestProject/BaseChangeCycles.lea
 block coordinates as a combination of images of Fox cycles of `ρ`, whose augmentations vanish.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains
 
@@ -69,9 +65,9 @@ theorem IsBlock.relSub_le_comap : relSub ρ ≤ (relSub τ).comap (FreeGroup.map
 
 /-- The map of fundamental groups induced by the inclusion of the block. -/
 def IsBlock.hom : PresGroup ρ →* PresGroup τ :=
-  QuotientGroup.map _ _ (FreeGroup.map f) hb.relSub_le_comap
+  QuotientGroup.map _ _ _ hb.relSub_le_comap
 
-@[simp] theorem IsBlock.hom_mk (w : FreeGroup α) :
+@[simp] theorem IsBlock.hom_mk w :
     hb.hom (QuotientGroup.mk w) = QuotientGroup.mk (FreeGroup.map f w) := rfl
 
 theorem IsBlock.relSub_le_comap_retract : relSub τ ≤ (relSub ρ).comap r := by
@@ -84,41 +80,33 @@ def IsBlock.retract : PresGroup τ →* PresGroup ρ :=
   QuotientGroup.map _ _ r hb.relSub_le_comap_retract
 
 /-- The ring map of group rings induced by the inclusion of the block. -/
-noncomputable def IsBlock.ringHom :
-    MonoidAlgebra ℤ (PresGroup ρ) →+* MonoidAlgebra ℤ (PresGroup τ) :=
+noncomputable def IsBlock.ringHom :=
   MonoidAlgebra.mapDomainRingHom ℤ hb.hom
 
-theorem IsBlock.quot_freeRingMap (x : FreeGroupRing α) :
+theorem IsBlock.quot_freeRingMap x :
     quotRingHom ℤ (relSub τ) (freeRingMap f x) = hb.ringHom (quotRingHom ℤ (relSub ρ) x) := by
   induction x using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add x y hx hy => simp only [map_add, hx, hy]
+  | add x y hx hy => simp_all
   | single w m =>
-      show quotRingHom ℤ (relSub τ)
+      show quotRingHom ℤ _
           (MonoidAlgebra.mapDomain (FreeGroup.map f) (MonoidAlgebra.single w m)) = _
-      rw [MonoidAlgebra.mapDomain_single, quotRingHom_single]
-      show _ = MonoidAlgebra.mapDomain hb.hom (quotRingHom ℤ (relSub ρ) (MonoidAlgebra.single w m))
-      rw [quotRingHom_single, MonoidAlgebra.mapDomain_single, IsBlock.hom_mk]
+      show _ = MonoidAlgebra.mapDomain hb.hom (quotRingHom ℤ _ (MonoidAlgebra.single w m))
+      simp
 
-/-- The image of the block group inside the ambient group. -/
-abbrev IsBlock.range : Subgroup (PresGroup τ) := hb.hom.range
 
 section FoxMatrix
 
 variable [DecidableEq α]
 
 /-- Inside the block the Fox matrix of `τ` is the image of the Fox matrix of `ρ`. -/
-theorem IsBlock.foxMatrix_block (i : α) (j : J) :
+theorem IsBlock.foxMatrix_block i j :
     foxMatrixPres τ (f i) (g j) = hb.ringHom (foxMatrixPres ρ i j) := by
   have hfox : @fox γ _ (f i) (τ (g j)) = freeRingMap f (fox i (ρ j)) := by
     rw [hb.rel_eq j]
-    exact fox_map f hb.gen_injective i (ρ j)
-  show quotRingHom ℤ (relSub τ) (fox (f i) (τ (g j))) = _
+    exact fox_map f hb.gen_injective i _
+  show quotRingHom ℤ _ (fox (f i) (τ (g j))) = _
   rw [hfox, hb.quot_freeRingMap]
   rfl
 
 variable [Fintype J] [Fintype L]
-
-end FoxMatrix
-
-end FiniteChains

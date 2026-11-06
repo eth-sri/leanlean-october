@@ -1,3 +1,2 @@
-module
-public import RequestProject.TruncatedCubePi1
-public import RequestProject.OrderNerveCellMaps
+import RequestProject.TruncatedCubePi1
+import RequestProject.OrderNerveCellMaps

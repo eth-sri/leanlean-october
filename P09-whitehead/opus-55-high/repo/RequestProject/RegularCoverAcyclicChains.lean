@@ -1,9 +1,6 @@
-module
+import RequestProject.AcyclicRelativeTreeChains
+import RequestProject.TreeChainFinsupp
 
-public import RequestProject.AcyclicRelativeTreeChains
-public import RequestProject.TreeChainFinsupp
-
-@[expose] public section
 
 /-! The actual regular-cover sufficiency construction in the cellular
 category: build relative chains upstairs and descend their particular
@@ -18,29 +15,27 @@ universe v
 variable {D K : Complex2} (T : SpanningTree D) (hD : IsAcyclic D)
   (p : Hom D K)
 
-def regularCoverChainStages (n : ℕ) : ℕ → Complex2 :=
+def regularCoverChainStages (n : ℕ) :=
   (acyclicRelativeCellChain T hD n).desc p
 
-def regularCoverChainInclusion (n i : ℕ) :
+def regularCoverChainInclusion n i :
     Hom (regularCoverChainStages T hD p n i) (regularCoverChainStages T hD p n (i + 1)) :=
   (acyclicRelativeCellChain T hD n).descInc p i
 
-@[simp] theorem regularCoverChainStages_zero (n : ℕ) :
-    regularCoverChainStages T hD p n 0 = K := rfl
 
-theorem regularCoverChainInclusion_V (n i : ℕ) :
+theorem regularCoverChainInclusion_V n i :
     Function.Injective (regularCoverChainInclusion T hD p n i).onV :=
   (acyclicRelativeCellChain T hD n).descInc_injective_V p i
 
-theorem regularCoverChainInclusion_E (n i : ℕ) :
+theorem regularCoverChainInclusion_E n i :
     Function.Injective (regularCoverChainInclusion T hD p n i).onE :=
   (acyclicRelativeCellChain T hD n).descInc_injective_E p i
 
-theorem regularCoverChainInclusion_F (n i : ℕ) :
+theorem regularCoverChainInclusion_F n i :
     Function.Injective (regularCoverChainInclusion T hD p n i).onF :=
   (acyclicRelativeCellChain T hD n).descInc_injective_F p i
 
-theorem regularCoverChain_connected (hp : IsCovering p) (n i : ℕ) :
+theorem regularCoverChain_connected (hp : IsCovering p) n i :
     IsConnected (regularCoverChainStages T hD p n i) :=
   (acyclicRelativeCellChain T hD n).desc_connected p hp T.root i
 
@@ -68,5 +63,3 @@ def regularCoverTopChain (n : ℕ) : TopChainFS K (n + 1) where
   baseE := Function.injective_id
   baseF := Function.injective_id
   zero_pi2 := regularCoverChain_zeroPi2 T hD p hp a hr he hf n
-
-end FiniteChains.Comb

@@ -1,21 +1,16 @@
-module
+import RequestProject.PresUniversalLetterGroupCoordinates
+import RequestProject.PresUniversalRelatorGroupCoordinates
 
-public import RequestProject.PresUniversalLetterGroupCoordinates
-public import RequestProject.PresUniversalRelatorGroupCoordinates
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
   (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
 
 /-- The genuine universal relator boundary expressed in actual group coordinates. -/
-noncomputable def presUniversalGroupBoundary :
-    (PresGroup ρ × J →₀ ℤ) →ₗ[ℤ] (PresGroup ρ × α →₀ ℤ) :=
+noncomputable def presUniversalGroupBoundary :=
   (presUniversalGeneratorGroupChainEquiv ρ w hw hpos).toLinearMap.comp
-    ((presCoverRelatorGeneratorBoundary (P := UOrder (PresPos w) (ptBase w)) w uOrderEnd
+    ((presCoverRelatorGeneratorBoundary (P := UOrder _ (ptBase w)) w uOrderEnd
       (presUniversalEnd_isPosetCover w hpos)).comp
         (presUniversalRelatorGroupChainEquiv ρ w hw hpos).symm.toLinearMap)
 
@@ -45,5 +40,3 @@ theorem presUniversalGroupBoundary_actual_column
   congr 1
   rw [presUniversalGeneratorGroupChainEquiv, Finsupp.domLCongr_single,
     presUniversalGeneratorGroupEquiv_midpoint, presUniversalLetter_midpoint_coordinates]
-
-end FiniteChains.PresModel

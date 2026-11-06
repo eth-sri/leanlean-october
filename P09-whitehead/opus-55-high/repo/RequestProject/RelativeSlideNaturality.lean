@@ -1,9 +1,7 @@
-module
+import RequestProject.RelativeRuleOneNaturality
+import RequestProject.RelativeCoreSlides
+import RequestProject.Tac
 
-public import RequestProject.RelativeRuleOneNaturality
-public import RequestProject.RelativeCoreSlides
-
-@[expose] public section
 
 /-! Simultaneous core slides respect all restrictions of the shared ambient
 relator labels. This completes actual zero-arrow preservation for rules
@@ -13,9 +11,7 @@ relator labels. This completes actual zero-arrow preservation for rules
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.RelativeNormalForm
 open BlockFamily
@@ -50,15 +46,12 @@ theorem slide_core_group_square :
       change QuotientGroup.mk (FreeGroup.map id w) = QuotientGroup.mk w
       simp
 
-theorem slide_columns_natural (s : {s // p s}) :
+theorem slide_columns_natural s :
     (slideColumns core hcore (restrictedExtra extra p) s).mapRange
       (MonoidAlgebra.mapDomainRingHom ℤ (normalizedInclusion core hcore extra hpt).hom)
       (map_zero _) =
     slideColumns core hcore (restrictedExtra extra t) (labelIncl hpt s) := by
   ext c : 1
-  change MonoidAlgebra.mapDomainRingHom ℤ (normalizedInclusion core hcore extra hpt).hom
-    (MonoidAlgebra.mapDomainRingHom ℤ (pairCoreToNormalized core hcore (restrictedExtra extra p))
-      (pairCorrectionFilling core hcore (extra s.val) c)) = _
   erw [BlockMor.mapDomainRingHom_comp']
   erw [slide_core_group_square]
   rfl
@@ -76,8 +69,7 @@ theorem normalizedInclusion_core_chain
       rw [fsOldOneIncl_single, Finsupp.mapRange_single, fsOldOneIncl_single]
       change Finsupp.mapDomain (oldCellIncl hpt)
         ((Finsupp.single (Sum.inl c) a).mapRange _ _) = _
-      rw [Finsupp.mapRange_single, Finsupp.mapDomain_single]
-      rfl
+      aesop
 
 theorem slide_correction_natural
     (x : (C ⊕ {s // p s}) →₀ MonoidAlgebra ℤ
@@ -89,14 +81,13 @@ theorem slide_correction_natural
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add x y hx hy =>
-      rw [map_add, PresMorFS.cells_add, PresMorFS.cells_add, map_add, hx, hy]
+      simp [map_add, PresMorFS.cells_add, hx, hy]
   | single k a =>
       have hi : (normalizedInclusion core hcore extra hpt).cells (Finsupp.single k a) =
           Finsupp.single (oldCellIncl hpt k)
             (MonoidAlgebra.mapDomainRingHom ℤ (normalizedInclusion core hcore extra hpt).hom a) := by
         change Finsupp.mapDomain _ ((Finsupp.single k a).mapRange _ _) = _
-        rw [Finsupp.mapRange_single, Finsupp.mapDomain_single]
-        rfl
+        aesop
       rw [hi]
       cases k with
       | inl c => simp [oldCellIncl]
@@ -104,11 +95,10 @@ theorem slide_correction_natural
           rw [coreSlideCorrection_single_inr, PresMorFS.cells_smul]
           change _ = coreSlideCorrection _ (Finsupp.single (Sum.inr (labelIncl hpt s)) _)
           rw [coreSlideCorrection_single_inr]
-          exact congrArg (fun z => MonoidAlgebra.mapDomainRingHom ℤ
-              (normalizedInclusion core hcore extra hpt).hom a • z)
+          exact congrArg _
             ((normalizedInclusion_core_chain core hcore extra hpt
-                (slideColumns core hcore (restrictedExtra extra p) s)).trans
-              (congrArg (fsOldOneIncl (Z := {s // t s}))
+                _).trans
+              (congrArg _
                 (slide_columns_natural core hcore extra hpt s)))
 
 theorem slide_forward_natural
@@ -123,8 +113,7 @@ theorem slide_forward_natural
   rfl
 
 theorem slide_coefficient_chain_square
-    (x : (C ⊕ {s // p s}) →₀ MonoidAlgebra ℤ
-      (PresGroup (beforeCorrection core (restrictedExtra extra p)))) :
+    x :
     (normalizedInclusion core hcore extra hpt).cells
       (x.mapRange (slideCoefficients core hcore (restrictedExtra extra p)) (map_zero _)) =
     ((pairInclusion core extra hpt).cells x).mapRange
@@ -133,9 +122,9 @@ theorem slide_coefficient_chain_square
   | zero => simp
   | add x y hx hy =>
       have hp := Finsupp.mapRange_add'
-        (f := slideCoefficients core hcore (restrictedExtra extra p)) x y
+        (f := slideCoefficients core hcore _) x y
       have ht := Finsupp.mapRange_add'
-        (f := slideCoefficients core hcore (restrictedExtra extra t))
+        (f := slideCoefficients core hcore _)
         ((pairInclusion core extra hpt).cells x) ((pairInclusion core extra hpt).cells y)
       rw [hp, PresMorFS.cells_add, PresMorFS.cells_add, ht, hx, hy]
   | single j a =>
@@ -147,24 +136,20 @@ theorem slide_coefficient_chain_square
       congr 1
       change MonoidAlgebra.mapDomainRingHom ℤ (normalizedInclusion core hcore extra hpt).hom
           (MonoidAlgebra.mapDomainRingHom ℤ
-            (slideGroupHom core hcore (restrictedExtra extra p)) a) =
-        MonoidAlgebra.mapDomainRingHom ℤ (slideGroupHom core hcore (restrictedExtra extra t))
+            (slideGroupHom core hcore _) a) =
+        MonoidAlgebra.mapDomainRingHom ℤ (slideGroupHom core hcore _)
           (MonoidAlgebra.mapDomainRingHom ℤ (pairInclusion core extra hpt).hom a)
       erw [BlockMor.mapDomainRingHom_comp', BlockMor.mapDomainRingHom_comp', slide_group_square]
       rfl
 
 theorem slide_chain_square
-    (x : (C ⊕ {s // p s}) →₀ MonoidAlgebra ℤ
-      (PresGroup (beforeCorrection core (restrictedExtra extra p)))) :
+    x :
     (normalizedInclusion core hcore extra hpt).cells
       ((normalizationSlideMap core hcore (restrictedExtra extra p)).cells x) =
     (normalizationSlideMap core hcore (restrictedExtra extra t)).cells
-      ((pairInclusion core extra hpt).cells x) := by
-  change (normalizedInclusion core hcore extra hpt).cells (coreSlideForward _ _) =
-    coreSlideForward _ _
-  exact (slide_forward_natural core hcore extra hpt
-    (x.mapRange (slideCoefficients core hcore (restrictedExtra extra p)) (map_zero _))).trans
-      (congrArg (coreSlideForward (slideColumns core hcore (restrictedExtra extra t)))
+      ((pairInclusion core extra hpt).cells x) := (slide_forward_natural core hcore extra hpt
+    _).trans
+      (congrArg _
         (slide_coefficient_chain_square core hcore extra hpt x))
 
 theorem slide_preserves_zero
@@ -173,11 +158,11 @@ theorem slide_preserves_zero
     {x} (hx : FSIsFoxCycle (restrictedPresentation core hcore extra p) x) :
     (normalizedInclusion core hcore extra hpt).cells x = 0 :=
   fsCells_eq_zero_of_generates
-    (normalizationSlideMap core hcore (restrictedExtra extra p))
-    (normalizationSlideMap core hcore (restrictedExtra extra t))
-    (pairInclusion core extra hpt) (normalizedInclusion core hcore extra hpt)
+    _
+    _
+    _ _
     (slide_chain_square core hcore extra hpt) hzero
-    (normalizationSlideMap_generates core hcore (restrictedExtra extra p)) hx
+    (normalizationSlideMap_generates core hcore _) hx
 
 /-- The full actual replacement preserves every zero inclusion between
 positive stages. All three required chain squares have been proved. -/
@@ -191,5 +176,3 @@ theorem relativeReplacement_preserves_zero
   apply slide_preserves_zero core hcore extra hpt ?_ hy
   intro z hz
   exact ruleOne_preserves_zero core extra hpt hzero hz
-
-end FiniteChains.RelativeNormalForm

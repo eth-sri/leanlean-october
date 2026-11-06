@@ -1,10 +1,7 @@
-module
+import Mathlib.Topology.Homeomorph.Lemmas
+import Mathlib.Topology.Constructions.SumProd
+import Mathlib.Topology.ContinuousMap.Basic
 
-public import Mathlib.Topology.Homeomorph.Lemmas
-public import Mathlib.Topology.Constructions.SumProd
-public import Mathlib.Topology.ContinuousMap.Basic
-
-@[expose] public section
 
 /-! An explicit attachment space retaining every point of its base. The
 base is proved to embed as a closed subspace when the boundary inclusion is
@@ -26,41 +23,39 @@ variable {A X D : Type u}
 
 /-- The old points and the interior points are distinct summands. The base
 map is retained in the type because it determines the attachment topology. -/
-def Space (_r : A → X) (i : A → D) : Type u :=
+def Space (_r : A → X) (i : A → D) :=
   X ⊕ {d : D // d ∉ Set.range i}
 
 def old (r : A → X) (i : A → D) : X → Space r i := Sum.inl
 
 def cell (r : A → X) (i : A → D) (d : D) : Space r i :=
-  if h : d ∈ Set.range i then Sum.inl (r (Classical.choose h))
+  if h : d ∈ Set.range i then Sum.inl (r h.choose)
   else Sum.inr ⟨d, h⟩
 
-def quotientMap (r : A → X) (i : A → D) : X ⊕ D → Space r i :=
+def quotientMap (r : A → X) (i : A → D) :=
   Sum.elim (old r i) (cell r i)
 
 /-- The genuinely added interior points. -/
-def fresh (r : A → X) (i : A → D) : {d : D // d ∉ Set.range i} → Space r i :=
+def fresh (r : A → X) i : {d : D // d ∉ Set.range i} → Space r i :=
   Sum.inr
 
 theorem old_injective (r : A → X) (i : A → D) : Function.Injective (old r i) :=
   Sum.inl_injective
 
-@[simp] theorem cell_of_not_mem (r : A → X) (i : A → D) (d : D)
-    (hd : d ∉ Set.range i) : cell r i d = Sum.inr ⟨d, hd⟩ := by
+@[simp] theorem cell_of_not_mem (r : A → X) i (d : D)
+    hd : cell r i d = Sum.inr ⟨d, hd⟩ := by
   unfold cell
   rw [dite_eq_right hd]
 
-theorem cell_boundary (r : A → X) (i : A → D) (hi : Function.Injective i) (a : A) :
+theorem cell_boundary (r : A → X) (i : A → D) (hi : Function.Injective i) a :
     cell r i (i a) = old r i (r a) := by
-  have h : i a ∈ Set.range i := ⟨a, rfl⟩
-  simp only [cell, old]
-  rw [dite_eq_left h]
-  exact congrArg Sum.inl (congrArg r (hi (Classical.choose_spec h)))
+  simp [cell, old]
+  grind
 
 theorem quotientMap_surjective (r : A → X) (i : A → D) :
     Function.Surjective (quotientMap r i) := by
   rintro (x | d)
-  · exact ⟨Sum.inl x, rfl⟩
+  · tauto
   · exact ⟨Sum.inr d.val, cell_of_not_mem r i d.val d.property⟩
 
 variable [TopologicalSpace X] [TopologicalSpace D]
@@ -81,8 +76,7 @@ theorem cell_continuous (r : A → X) (i : A → D) : Continuous (cell r i) :=
 
 theorem fresh_continuous (r : A → X) (i : A → D) : Continuous (fresh r i) := by
   have he : fresh r i = cell r i ∘ Subtype.val := by
-    funext d
-    exact (cell_of_not_mem r i d.val d.property).symm
+    aesop
   rw [he]
   exact (cell_continuous r i).comp continuous_subtype_val
 
@@ -104,19 +98,15 @@ theorem cell_preimage_fresh_image (r : A → X) (i : A → D)
   constructor
   · rintro ⟨v, hv, he⟩
     by_cases hd : d ∈ Set.range i
-    · have he' : Sum.inr v = Sum.inl (r (Classical.choose hd)) := by
-        simp only [fresh, cell] at he
-        rw [dite_eq_left hd] at he
-        exact he
-      exact (Sum.inr_ne_inl he').elim
+    · have he' : Sum.inr v = Sum.inl (r hd.choose) := by
+        simp_all [fresh, cell]
+      simp_all
     · have hvd : v = ⟨d, hd⟩ := by
         apply Sum.inr_injective
         simp only [fresh, cell] at he
-        rw [dite_eq_right hd] at he
-        exact he
-      exact ⟨v, hv, congrArg Subtype.val hvd⟩
-  · rintro ⟨v, hv, rfl⟩
-    exact ⟨v, hv, (cell_of_not_mem r i v.val v.property).symm⟩
+        rwa [dite_eq_right hd] at he
+      grind
+  aesop
 
 /-- The new interiors have their original topology and form an open subset
 of the attachment whenever the boundary is closed. -/
@@ -145,18 +135,16 @@ theorem old_fresh_disjoint (r : A → X) (i : A → D) :
 variable {Z : Type u} [TopologicalSpace Z]
 
 def descFun (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z)) :
-    Space r i → Z := Sum.elim f (fun d => g d.val)
+    Space r i → Z := Sum.elim f (g ·.val)
 
-theorem descFun_cell (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
-    (h : ∀ a, f (r a) = g (i a)) (d : D) : descFun r i f g (cell r i d) = g d := by
+theorem descFun_cell r (i : A → D) (f : C(X, Z)) g
+    (h : ∀ a, f (r a) = g (i a)) d : descFun r i f g (cell r i d) = g d := by
   simp only [cell, descFun]
-  split_ifs with hd
-  · simp only [Sum.elim_inl]; rw [h, Classical.choose_spec hd]
-  · simp only [Sum.elim_inr]
+  grind
 
 /-- The actual continuous pushout map determined by compatible maps on the
 base and the disks. -/
-def desc (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
+def desc r (i : A → D) (f : C(X, Z)) (g : C(D, Z))
     (h : ∀ a, f (r a) = g (i a)) : C(Space r i, Z) where
   toFun := descFun r i f g
   continuous_toFun := by
@@ -169,11 +157,9 @@ def desc (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
     rw [he]
     exact f.continuous.sumElim g.continuous
 
-@[simp] theorem desc_old (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
-    (h : ∀ a, f (r a) = g (i a)) (x : X) : desc r i f g h (old r i x) = f x := rfl
 
-@[simp] theorem desc_cell (r : A → X) (i : A → D) (f : C(X, Z)) (g : C(D, Z))
-    (h : ∀ a, f (r a) = g (i a)) (d : D) : desc r i f g h (cell r i d) = g d :=
+@[simp] theorem desc_cell r (i : A → D) (f : C(X, Z)) g
+    h d : desc r i f g h (cell r i d) = g d :=
   descFun_cell r i f g h d
 
 theorem hom_ext (r : A → X) (i : A → D) {f g : C(Space r i, Z)}
@@ -182,9 +168,7 @@ theorem hom_ext (r : A → X) (i : A → D) {f g : C(Space r i, Z)}
   apply ContinuousMap.ext
   intro z
   obtain ⟨z, rfl⟩ := quotientMap_surjective r i z
-  cases z with
-  | inl x => exact hOld x
-  | inr d => exact hCell d
+  aesop
 
 variable [TopologicalSpace A]
 
@@ -198,17 +182,15 @@ theorem cell_preimage_old_image (r : A → X) (i : A → D)
   constructor
   · rintro ⟨x, hx, he⟩
     by_cases hd : d ∈ Set.range i
-    · refine ⟨Classical.choose hd, ?_, Classical.choose_spec hd⟩
-      have hr : x = r (Classical.choose hd) := by
+    · refine ⟨hd.choose, ?_, hd.choose_spec⟩
+      have hr : x = r hd.choose := by
         apply Sum.inl_injective
         simp only [old, cell] at he
-        rw [dite_eq_left hd] at he
-        exact he
-      change r (Classical.choose hd) ∈ S
-      rwa [← hr]
+        rwa [dite_eq_left hd] at he
+      simp_all
     · have he' := he
       rw [cell_of_not_mem r i d hd] at he'
-      exact (Sum.inl_ne_inr he').elim
+      tauto
   · rintro ⟨a, ha, rfl⟩
     exact ⟨r a, ha, (cell_boundary r i hi a).symm⟩
 
@@ -223,10 +205,7 @@ theorem old_isClosedEmbedding (r : A → X) (i : A → D)
   apply isClosed_sum_iff.mpr
   constructor
   · change IsClosed ((old r i) ⁻¹' ((old r i) '' S))
-    rw [Set.preimage_image_eq S (old_injective r i)]
-    exact hS
+    grind [S.preimage_image_eq (old_injective r i)]
   · change IsClosed ((cell r i) ⁻¹' ((old r i) '' S))
     rw [cell_preimage_old_image r i hi.injective]
     exact hi.isClosedMap _ (hS.preimage hr)
-
-end FiniteChains.RelativeAttachment

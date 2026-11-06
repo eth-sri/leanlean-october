@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberQuotientPushdownFillings
-public import RequestProject.GenusCappedPosetCyclePushdown
+import RequestProject.ChamberQuotientPushdownFillings
+import RequestProject.GenusCappedPosetCyclePushdown

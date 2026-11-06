@@ -1,4 +1,3 @@
-module
-public import RequestProject.ChamberQuotientConnectedGeneration
-public import RequestProject.PresPosetConnected
-public import RequestProject.PresPosetPartialOrder
+import RequestProject.ChamberQuotientConnectedGeneration
+import RequestProject.PresPosetConnected
+import RequestProject.PresPosetPartialOrder

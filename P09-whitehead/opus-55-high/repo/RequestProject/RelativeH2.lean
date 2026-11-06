@@ -1,2 +1,1 @@
-module
-public import RequestProject.TransitiveGeneration
+import RequestProject.TransitiveGeneration

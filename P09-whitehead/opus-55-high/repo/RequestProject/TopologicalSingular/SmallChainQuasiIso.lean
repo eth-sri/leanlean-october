@@ -1,3 +1,2 @@
-module
-public import RequestProject.TopologicalSingular.SmallChainComplex
-public import Mathlib.Algebra.Homology.QuasiIso
+import RequestProject.TopologicalSingular.SmallChainComplex
+import Mathlib.Algebra.Homology.QuasiIso

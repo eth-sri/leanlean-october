@@ -1,24 +1,19 @@
-module
+import RequestProject.TruncatedCoverRetraction
+import RequestProject.GenusCoveredSpineCycleFaithfulness
 
-public import RequestProject.TruncatedCoverRetraction
-public import RequestProject.GenusCoveredSpineCycleFaithfulness
-
-@[expose] public section
 
 /-! Actual covered-spine cycles are detected in the old cubical block. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
-open RACG Mirror Comb Nerve
+open Comb Nerve
 variable (q : ℕ) [NeZero q]
   {P : Type} [PartialOrder P] (f : P → QOld (cmpRel (GenusVertex q)))
 
 abbrev OldCoveredSpine :=
   {p : TruncatedCover f // truncatedCoverProjection f p ∈ genusSpineCellSet q}
 
-def oldCoveredSpineToOld (p : OldCoveredSpine q f) : P := truncatedCoverRetraction f p.1
+def oldCoveredSpineToOld (p : OldCoveredSpine q f) := truncatedCoverRetraction f p.1
 
 theorem oldCoveredSpineToOld_monotone : Monotone (oldCoveredSpineToOld q f) :=
   fun _ _ h => h.1
@@ -33,9 +28,9 @@ theorem genus_old_cover_spine_chain_zero_of_boundary (hf : IsPosetCover f)
       cmap (oldCoveredSpineToOld q f) (ordNerveChain2 (ordStrictInclusion2 c))) : c = 0 := by
   have hp := truncatedCoverProjection_isPosetCover f hf
   apply genus_covered_spine_chain_zero_of_boundary q hp c
-  let z := cmap (Subtype.val : OldCoveredSpine q f → TruncatedCover f)
+  let z := cmap Subtype.val
     (ordNerveChain2 (ordStrictInclusion2 c))
-  have hz : z ∈ Inc (TruncatedCover f) :=
+  have hz : z ∈ Inc _ :=
     cmap_mem_inc_of_monotone monotone_subtypeVal (ordNerveChain2_mem_inc _)
   have hweak : Comb.bdry2 (orderCx (OldCoveredSpine q f)) (ordStrictInclusion2 c) = 0 := by
     change Comb.bdry2 _ (chain2 (strictOrderIncl _) c) = 0
@@ -44,8 +39,6 @@ theorem genus_old_cover_spine_chain_zero_of_boundary (hf : IsPosetCover f)
     rw [← cmap_bdry, (ordNerveChain2_cycle_iff _).mpr hweak, map_zero]
   apply truncatedCoverRetraction_reflects_boundaries f hf.mono z hz hcyc
   change ∃ y ∈ Inc P, Nerve.bdry y =
-    cmap (fun x : OldCoveredSpine q f => truncatedCoverRetraction f x.val)
+    cmap (truncatedCoverRetraction f ·.val)
       (ordNerveChain2 (ordStrictInclusion2 c)) at hbound
-  simpa only [z, cmap_comp, oldCoveredSpineToOld, Function.comp_def] using hbound
-
-end FiniteChains.Davis.Genus
+  simp_all [z, cmap_comp, oldCoveredSpineToOld, Function.comp_def]

@@ -1,11 +1,8 @@
-module
+import RequestProject.AcyclicPresentationActualChains
+import RequestProject.PresWordDiskTopologicalChains
+import RequestProject.PresAcyclicExponentMatrix
+import RequestProject.TopologicalSingular.MathlibComparison
 
-public import RequestProject.AcyclicPresentationActualChains
-public import RequestProject.PresWordDiskTopologicalChains
-public import RequestProject.PresAcyclicExponentMatrix
-public import RequestProject.TopologicalSingular.MathlibComparison
-
-@[expose] public section
 
 /-! The actual algebraic acyclic-core construction yields chains in the
 literal original CW complex. Acyclicity of the original space and its actual
@@ -41,27 +38,24 @@ theorem actual_hasOriginalFiniteChain [Finite A] [Finite C]
 /-- Transport the original singular acyclicity through the actual disk-model
 comparison and extract the original presentation's exponent isomorphism. -/
 theorem actual_expMatrix_bijective_of_acyclic
-    (K : Whitehead.TwoComplex) (hK : Whitehead.Acyclic K) (a : A)
+    (K : Whitehead.TwoComplex) (hK : Whitehead.Acyclic K) a
     (e₀ : ContinuousMap.HomotopyEquiv
       (ClassicalPresWordDisks (presCanonicalWords core a) (presCanonicalWords_ne_nil core a)) K) :
     Function.Bijective (expMatrix core) := by
-  let e := (presClassicalDiskComparison (presCanonicalWords core a)
-    (presCanonicalWords_ne_nil core a)).trans e₀
-  have hmodel : Whitehead.Acyclic
-      (Comb.orderNerveRealization (PresPos (presCanonicalWords core a))) :=
+  let e := (presClassicalDiskComparison _
+    _).trans e₀
+  have hmodel :=
     (Whitehead.acyclic_iff_of_homotopyEquiv e).mpr hK
-  exact expMatrix_bijective_of_presRealization_acyclic core (presCanonicalWords core a)
+  exact expMatrix_bijective_of_presRealization_acyclic core _
     (mk_presCanonicalWords core a) (presCanonicalWords_positive core a) hmodel
 
 /-- The finite original-cell version also derives its matrix premise from
 actual singular acyclicity; finiteness is used only for the finite conclusion. -/
 theorem actual_hasOriginalFiniteChain_of_acyclic [Finite A] [Finite C]
-    (K : Whitehead.TwoComplex) (hfinite : Whitehead.FiniteCells K)
-    (hK : Whitehead.Acyclic K) (a : A)
+    K (hfinite : Whitehead.FiniteCells K)
+    (hK : Whitehead.Acyclic K) a
     (e₀ : ContinuousMap.HomotopyEquiv
       (ClassicalPresWordDisks (presCanonicalWords core a) (presCanonicalWords_ne_nil core a)) K)
-    (n : ℕ) : Whitehead.HasChain K (n + 1) true :=
+    n : Whitehead.HasChain K (n + 1) true :=
   actual_hasOriginalFiniteChain core (actual_expMatrix_bijective_of_acyclic core K hK a e₀)
     K hfinite a e₀ n
-
-end FiniteChains.RelativeNormalForm

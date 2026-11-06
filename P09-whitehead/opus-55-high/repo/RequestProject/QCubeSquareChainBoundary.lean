@@ -1,8 +1,6 @@
-module
+import RequestProject.QCubeSquareChainEmbedding
+import RequestProject.Tac
 
-public import RequestProject.QCubeSquareChainEmbedding
-
-@[expose] public section
 
 /-! Degree-two boundary naturality of the actual finite square-chain subdivision. -/
 namespace FiniteChains.Davis
@@ -14,18 +12,11 @@ variable {V C : Type} [DecidableEq V] {A : CommRel V}
 noncomputable def squareChainEdgeBoundary : (C →₀ ℤ) →ₗ[ℤ]
     ((strictOrderCx (QCube A)).E →₀ ℤ) :=
   Finsupp.linearCombination ℤ
-    (fun i => cubeSquareEdgeBoundary (cell i) (left i) (right i) (hne i) (hspx i))
+    (fun i => cubeSquareEdgeBoundary _ _ _ (hne i) (hspx i))
 
-theorem squareChainSubdivision_boundary (z : C →₀ ℤ) :
+theorem squareChainSubdivision_boundary z :
     Comb.bdry2 (strictOrderCx (QCube A))
       (squareChainSubdivision cell left right hne hspx z) =
       squareChainEdgeBoundary cell left right hne hspx z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, map_add, hz, hw, map_add]
-  | single i n =>
-      rw [squareChainSubdivision, Finsupp.linearCombination_single, map_smul,
-        cubeSquareSubdivision_boundary, squareChainEdgeBoundary,
-        Finsupp.linearCombination_single]
-
-end FiniteChains.Davis
+  lin_ind z i n =>
+      grind [squareChainSubdivision, Finsupp.linearCombination_single, map_smul, cubeSquareSubdivision_boundary, squareChainEdgeBoundary]

@@ -1,9 +1,6 @@
-module
+import RequestProject.BlockGeneration
+import RequestProject.GenerationStep
 
-public import RequestProject.BlockGeneration
-public import RequestProject.GenerationStep
-
-@[expose] public section
 
 /-!
 # From the homology of the double mapping cylinder to equation (3.3)
@@ -35,50 +32,3 @@ As everywhere in this part of the development, the single geometric input that i
 is the vanishing `H₂(W̃, U) = 0`, which the paper obtains from the cubical curvature criterion
 for the collapsed space `V`.
 -/
-
-namespace FiniteChains
-
-open MonoidAlgebra
-
-universe u
-
-section FoxBoundary
-
-variable {α J : Type u} [DecidableEq α] [Fintype J] (ρ : J → FreeGroup α)
-
-/-- The Fox boundary `∂₂` of a presentation, as a map of `ℤ[G]`-modules from the two-chains
-to the one-chains of the universal cover of the presentation complex. -/
-noncomputable def foxBdry :
-    (J → MonoidAlgebra ℤ (PresGroup ρ)) →ₗ[MonoidAlgebra ℤ (PresGroup ρ)]
-      (α → MonoidAlgebra ℤ (PresGroup ρ)) where
-  toFun v := fun i => ∑ j, v j * foxMatrixPres ρ i j
-  map_add' v w := by
-    funext i
-    simp [Finset.sum_add_distrib, add_mul]
-  map_smul' c v := by
-    funext i
-    simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply, Finset.mul_sum, mul_assoc]
-
-@[simp] theorem foxBdry_apply (v : J → MonoidAlgebra ℤ (PresGroup ρ)) (i : α) :
-    foxBdry ρ v i = ∑ j, v j * foxMatrixPres ρ i j := rfl
-
-end FoxBoundary
-
-section Bridge
-
-variable {α J α' J' : Type u}
-  [DecidableEq α] [Fintype J] [Fintype α'] [DecidableEq α'] [Fintype J']
-  {ρ : J → FreeGroup α} {ρ' : J' → FreeGroup α'}
-
-variable {ι : Type*} {A₂ A₁ Q Q₃ Q₂ Q₁ B₃ : Type*}
-  [AddCommGroup A₂] [Module (MonoidAlgebra ℤ (PresGroup ρ')) A₂]
-  [AddCommGroup A₁] [Module (MonoidAlgebra ℤ (PresGroup ρ')) A₁]
-  [AddCommGroup Q] [Module (MonoidAlgebra ℤ (PresGroup ρ')) Q]
-  [AddCommGroup B₃] [Module (MonoidAlgebra ℤ (PresGroup ρ')) B₃]
-  [AddCommGroup Q₃] [Module (MonoidAlgebra ℤ (PresGroup ρ')) Q₃]
-  [AddCommGroup Q₂] [Module (MonoidAlgebra ℤ (PresGroup ρ')) Q₂]
-  [AddCommGroup Q₁] [Module (MonoidAlgebra ℤ (PresGroup ρ')) Q₁]
-
-end Bridge
-
-end FiniteChains

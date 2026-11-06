@@ -1,2 +1,1 @@
-module
-public import RequestProject.BlockFoxModel
+import RequestProject.BlockFoxModel

@@ -1,15 +1,11 @@
-module
+import RequestProject.ChamberQuotientBaseCover
+import RequestProject.OrderUniversalPosetConnected
+import RequestProject.Tac
 
-public import RequestProject.ChamberQuotientBaseCover
-public import RequestProject.OrderUniversalPosetConnected
-
-@[expose] public section
 
 /-! Each actual lifted base component is simply connected, proved from the
 genuine covering and the proved injection of the base fundamental group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -30,7 +26,6 @@ theorem qBaseCover_path_projection (a : Qpos A X att)
   | nil => rfl
   | cons e l ih =>
     simp only [mapPath, List.map_cons] at ih ⊢
-    rw (config := { transparency := .default }) [ih]
     congr 1
     apply Prod.ext
     · apply Subtype.ext
@@ -42,30 +37,26 @@ different components are not identified with one another. -/
 theorem qLiftedBase_simplyConnected (a : Qpos A X att)
     (hc : IsConnected (orderCx (Qpos A X att))) :
     SimplyConnected (orderCx (QLiftedBase a)) := by
-  let beta := orderCxMap (qBaseCoverEnd a) (qBaseCoverEnd_isPosetCover a hc).mono
-  have hcov : IsCovering beta := isCovering_orderCxMap (qBaseCoverEnd_isPosetCover a hc)
+  let beta := orderCxMap _ (qBaseCoverEnd_isPosetCover a hc).mono
+  have hcov := isCovering_orderCxMap (qBaseCoverEnd_isPosetCover a hc)
   let incl := orderCxMap (Subtype.val : QLiftedBase a → UOrder (Qpos A X att) a)
-    (fun _ _ h => h)
+    (by tauto)
   let proj := orderCxMap (uOrderEnd (P := Qpos A X att) (a := a)) uOrderEnd_monotone
   intro b p hp
   have hi := uOrder_complex_simplyConnected (P := Qpos A X att) (a := a)
-    b.1 (mapPath incl p) (isPath_mapPath incl hp)
+    b.1 _ (isPath_mapPath incl hp)
   have hnull := mapPath_htpy proj hi
   have hq : Htpy (orderCx (Qpos A X att)) (qNew (A := A) (att := att) (qBaseCoverEnd (X := X) a b))
       (qNew (A := A) (att := att) (qBaseCoverEnd (X := X) a b))
-      (mapPath (orderCxMap (qNew (A := A) (X := X) (att := att)) qNew_monotone)
+      (mapPath (orderCxMap _ qNew_monotone)
         (mapPath beta p)) [] := by
-    rw (config := { transparency := .default }) [qBaseCover_path_projection a hc, qBaseCoverEnd_spec]
+    rwd [qBaseCover_path_projection a hc, qBaseCoverEnd_spec]
     exact hnull
   let l : Loop (orderCx X) (qBaseCoverEnd (X := X) a b) := ⟨mapPath beta p, isPath_mapPath beta hp⟩
   have hcl : Pi1.mk l = 1 := by
-    apply pi1Map_qNew_injective (A := A) (att := att) (qBaseCoverEnd (X := X) a b)
-    rw (config := { transparency := .default }) [map_one]
+    apply pi1Map_qNew_injective (A := A) (att := att) _
     exact Quotient.sound hq
-  have hl : Htpy (orderCx X) (qBaseCoverEnd (X := X) a b) (qBaseCoverEnd (X := X) a b)
-      (mapPath beta p) [] := Quotient.exact hcl
+  have hl := Quotient.exact hcl
   obtain ⟨m, _, hmap, hpm⟩ := lift_htpy hcov hp hl
-  have hm : m = [] := List.map_eq_nil_iff.mp hmap
-  rwa [hm] at hpm
-
-end FiniteChains.Davis
+  have hm := List.map_eq_nil_iff.mp hmap
+  simp_all

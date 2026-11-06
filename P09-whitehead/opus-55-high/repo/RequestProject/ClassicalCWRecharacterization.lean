@@ -1,8 +1,5 @@
-module
+import RequestProject.ClassicalCWCellEmbedding
 
-public import RequestProject.ClassicalCWCellEmbedding
-
-@[expose] public section
 
 /-! Replace the characteristic maps on an embedded subcomplex by the
 literal transported maps of its given CW structure. All ambient open and
@@ -16,42 +13,39 @@ namespace Whitehead.CWCellEmbedding
 open FiniteChains
 variable {K L : TwoComplex} (e : CWCellEmbedding K L)
 
-def recharacterizationMap (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set L) n) :
-    PartialEquiv (Fin n → ℝ) L :=
+def recharacterizationMap (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set L) n) :=
   if hj : j ∈ Set.range (e.cellIndex n) then
-    ClosedEmbeddingCW.imageCharacteristic e.map e.closedEmbedding n (Classical.choose hj)
+    ClosedEmbeddingCW.imageCharacteristic e.map e.closedEmbedding n hj.choose
   else RelCWComplex.map (C := (Set.univ : Set L)) n j
 
-theorem recharacterizationMap_old (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set K) n) :
+theorem recharacterizationMap_old n j :
     recharacterizationMap e n (e.cellIndex n j) =
       ClosedEmbeddingCW.imageCharacteristic e.map e.closedEmbedding n j := by
-  have hj : e.cellIndex n j ∈ Set.range (e.cellIndex n) := ⟨j, rfl⟩
-  have he : Classical.choose hj = j := (e.cellIndex n).injective (Classical.choose_spec hj)
-  simp only [recharacterizationMap, dif_pos hj, he]
+  have hj : e.cellIndex n j ∈ Set.range (e.cellIndex n) := by simp
+  have he : hj.choose = j := by simp
+  simp [recharacterizationMap, dif_pos hj, he]
 
-theorem recharacterizationMap_open (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set L) n) :
-    recharacterizationMap e n j '' ball 0 1 = CWComplex.openCell (C := (Set.univ : Set L)) n j := by
+theorem recharacterizationMap_open n j :
+    recharacterizationMap e n j '' ball 0 1 = CWComplex.openCell (C := Set.univ) n j := by
   by_cases hj : j ∈ Set.range (e.cellIndex n)
   · rw [recharacterizationMap, dif_pos hj, ClosedEmbeddingCW.imageCharacteristic_image]
-    change e.map '' CWComplex.openCell (C := (Set.univ : Set K)) n (Classical.choose hj) = _
-    rw [e.openCell_image, Classical.choose_spec hj]
+    change e.map '' CWComplex.openCell (C := Set.univ) n hj.choose = _
+    rw [e.openCell_image, hj.choose_spec]
   · rw [recharacterizationMap, dif_neg hj]
     rfl
 
-theorem image_closedCell (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set K) n) :
-    e.map '' CWComplex.closedCell (C := (Set.univ : Set K)) n j =
-      CWComplex.closedCell (C := (Set.univ : Set L)) n (e.cellIndex n j) := by
-  rw [← CWComplex.closure_openCell_eq_closedCell,
-    ← CWComplex.closure_openCell_eq_closedCell, ← e.openCell_image,
-    e.closedEmbedding.closure_image_eq]
+theorem image_closedCell n j :
+    e.map '' CWComplex.closedCell (C := Set.univ) n j =
+      CWComplex.closedCell (C := Set.univ) n (e.cellIndex n j) := by
+  simp [← CWComplex.closure_openCell_eq_closedCell, ← e.openCell_image, e.closedEmbedding.closure_image_eq]
 
-theorem recharacterizationMap_closed (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set L) n) :
+theorem recharacterizationMap_closed n j :
     recharacterizationMap e n j '' closedBall 0 1 =
-      CWComplex.closedCell (C := (Set.univ : Set L)) n j := by
+      CWComplex.closedCell (C := Set.univ) n j := by
   by_cases hj : j ∈ Set.range (e.cellIndex n)
   · rw [recharacterizationMap, dif_pos hj, ClosedEmbeddingCW.imageCharacteristic_image]
-    change e.map '' CWComplex.closedCell (C := (Set.univ : Set K)) n (Classical.choose hj) = _
-    rw [image_closedCell, Classical.choose_spec hj]
+    change e.map '' CWComplex.closedCell (C := Set.univ) n hj.choose = _
+    rw [image_closedCell, hj.choose_spec]
   · rw [recharacterizationMap, dif_neg hj]
     rfl
 
@@ -88,8 +82,8 @@ def recharacterizedCW : CWComplex (Set.univ : Set L) where
   mapsTo' := by
     intro n j
     by_cases hj : j ∈ Set.range (e.cellIndex n)
-    · let k := Classical.choose hj
-      obtain ⟨I, hI⟩ := CWComplex.mapsTo' (C := (Set.univ : Set K)) n k
+    · let k := hj.choose
+      cases' CWComplex.mapsTo' (C := (Set.univ : Set K)) n k with I hI
       refine ⟨fun m => (I m).map (e.cellIndex m), ?_⟩
       intro x hx
       obtain ⟨m, hm, a, ha, hy⟩ := by simpa only [Set.mem_iUnion] using hI hx
@@ -99,21 +93,18 @@ def recharacterizedCW : CWComplex (Set.univ : Set L) where
       refine ⟨RelCWComplex.map (C := (Set.univ : Set K)) n k x, hy, ?_⟩
       rw [recharacterizationMap, dif_pos hj]
       rfl
-    · obtain ⟨I, hI⟩ := CWComplex.mapsTo' (C := (Set.univ : Set L)) n j
+    · cases' CWComplex.mapsTo' (C := (Set.univ : Set L)) n j with I hI
       refine ⟨I, ?_⟩
       intro x hx
-      change recharacterizationMap e n j x ∈
-        ⋃ m, ⋃ (_ : m < n), ⋃ k ∈ I m, recharacterizationMap e m k '' closedBall 0 1
       simp only [recharacterizationMap_closed]
       rw [recharacterizationMap, dif_neg hj]
       exact hI hx
   closed' := by
     intro A hA hclosed
     apply (CWComplex.closed (Set.univ : Set L) A hA).mpr
-    intro n j
-    simpa only [recharacterizationMap_closed] using hclosed n j
+    simp_all [recharacterizationMap_closed]
   union' := by
-    simp only [recharacterizationMap_closed]
+    simp [recharacterizationMap_closed]
     exact CWComplex.union
 
 def recharacterizedComplex : TwoComplex where
@@ -124,10 +115,10 @@ def recharacterizedComplex : TwoComplex where
   connected := L.connected
   dimension := L.dimension
 
-theorem recharacterized_openCell (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set L) n) :
+theorem recharacterized_openCell n (j : RelCWComplex.cell (Set.univ : Set L) n) :
     @RelCWComplex.openCell L L.topology Set.univ ∅
       (@CWComplex.instRelCWComplex L L.topology Set.univ (recharacterizedCW e)) n j =
-      CWComplex.openCell (C := (Set.univ : Set L)) n j :=
+      CWComplex.openCell (C := Set.univ) n j :=
   recharacterizationMap_open e n j
 
 def recharacterizedSubcomplex (D : CWComplex.Subcomplex (Set.univ : Set L)) :
@@ -147,10 +138,10 @@ def recharacterizedEmbedding : CWCellEmbedding K (recharacterizedComplex e) wher
   cellIndex := e.cellIndex
   openCell_image n j := (e.openCell_image n j).trans (recharacterized_openCell e n _).symm
 
-theorem recharacterizedEmbedding_characteristic (n : ℕ)
-    (j : RelCWComplex.cell (Set.univ : Set K) n) (x : Fin n → ℝ) :
+theorem recharacterizedEmbedding_characteristic n
+    j x :
     @CWComplex.map L L.topology Set.univ (recharacterizedCW e) n (e.cellIndex n j) x =
-      e.map (RelCWComplex.map (C := (Set.univ : Set K)) n j x) := by
+      e.map (RelCWComplex.map (C := Set.univ) n j x) := by
   change recharacterizationMap e n (e.cellIndex n j) x = _
   rw [recharacterizationMap_old]
   rfl
@@ -175,7 +166,5 @@ theorem initialCellEmbedding_range : Set.range (initialCellEmbedding C e he).map
   · rintro ⟨x, rfl⟩
     exact (e x).property
   · intro hy
-    obtain ⟨x, hx⟩ := e.surjective ⟨y, hy⟩
+    cases' e.surjective ⟨y, hy⟩ with x hx
     exact ⟨x, congrArg Subtype.val hx⟩
-
-end Whitehead

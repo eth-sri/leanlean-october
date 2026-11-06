@@ -1,11 +1,8 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalGraphModel
+import RequestProject.PathTailContraction
+import RequestProject.AttachmentBaseChange
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalGraphModel
-public import RequestProject.PathTailContraction
-public import RequestProject.AttachmentBaseChange
-
-@[expose] public section
 
 /-! Cellwise contraction of an arbitrary disk graph from compatible vertex
 paths. Compactness is used only for the homotopy time parameter. -/
@@ -31,32 +28,19 @@ theorem graphEdgeContraction_exists (j : J) : ∃ H : C(I × I, (DiskAttachment 
     (∀ t, H (t, 0) = Q (graphSrc r j) t) ∧
     (∀ t, H (t, 1) = Q (graphTgt r j) t) := by
   rcases hQ j with hj | hj
-  · let H := (Path.tailContraction (graphEdgePath r j).symm (Q (graphTgt r j))).comp
+  · let H := (Path.tailContraction (graphEdgePath r j).symm (Q _)).comp
       ⟨fun ts : I × I => (ts.1, unitInterval.symm ts.2),
         continuous_fst.prodMk (unitInterval.continuous_symm.comp continuous_snd)⟩
-    refine ⟨H, ?_, ?_, ?_, ?_⟩
-    · intro s
-      change Path.tailContraction _ _ (0, unitInterval.symm s) = _
-      simp only [Path.tailContraction_zero, Path.symm_apply, Function.comp_apply,
-        unitInterval.symm_symm]
-    · intro s
-      exact Path.tailContraction_one _ _ _
-    · intro t
-      change Path.tailContraction _ _ (t, unitInterval.symm 0) = _
-      rw [unitInterval.symm_zero, Path.tailContraction_right, Path.symm_symm, ← hj]
-    · intro t
-      change Path.tailContraction _ _ (t, unitInterval.symm 1) = _
-      rw [unitInterval.symm_one, Path.tailContraction_left]
-  · refine ⟨Path.tailContraction (graphEdgePath r j) (Q (graphSrc r j)),
+    refine ⟨H, ?_, ?_, ?_, ?_⟩ <;> aesop
+  · refine ⟨Path.tailContraction (graphEdgePath r j) (Q _),
       Path.tailContraction_zero _ _, Path.tailContraction_one _ _,
       Path.tailContraction_left _ _, ?_⟩
-    intro t
-    rw [Path.tailContraction_right, ← hj]
+    simp_all
 
-def graphEdgeContraction (j : J) : C(I × I, (DiskAttachment r)) :=
+def graphEdgeContraction (j : J) :=
   Classical.choose (graphEdgeContraction_exists r root Q hQ j)
 
-theorem graphEdgeContraction_spec (j : J) :
+theorem graphEdgeContraction_spec j :
     (∀ s, graphEdgeContraction r root Q hQ j (0, s) = graphEdgePath r j s) ∧
     (∀ s, graphEdgeContraction r root Q hQ j (1, s) = (old r (boundaryFamilyInclusion J (Fin 1 → ℝ))) root) ∧
     (∀ t, graphEdgeContraction r root Q hQ j (t, 0) = Q (graphSrc r j) t) ∧
@@ -65,7 +49,7 @@ theorem graphEdgeContraction_spec (j : J) :
 
 variable [DiscreteTopology V]
 
-def graphVertexContraction : C(I × V, (DiskAttachment r)) :=
+def graphVertexContraction :=
   (⟨fun a => (Q a).toContinuousMap, continuous_of_discreteTopology⟩ : C(V, C(I, (DiskAttachment r)))).uncurry.comp
     ⟨Prod.swap, continuous_swap⟩
 
@@ -74,7 +58,7 @@ def graphDiskContraction (j : J) : C(I × ClosedUnitBall (Fin 1 → ℝ), (DiskA
     ⟨fun td => (td.1, graphDiskHomeomorph.symm td.2),
       continuous_fst.prodMk (graphDiskHomeomorph.symm.continuous.comp continuous_snd)⟩
 
-def graphDiskFamilyContraction : C(I × DiskFamily J (Fin 1 → ℝ), (DiskAttachment r)) :=
+def graphDiskFamilyContraction :=
   let F : C(DiskFamily J (Fin 1 → ℝ), C(I, (DiskAttachment r))) := {
     toFun := fun d => ((graphDiskContraction r root Q hQ d.1).comp
       ⟨Prod.swap, continuous_swap⟩).curry d.2
@@ -82,10 +66,10 @@ def graphDiskFamilyContraction : C(I × DiskFamily J (Fin 1 → ℝ), (DiskAttac
       ((graphDiskContraction r root Q hQ j).comp ⟨Prod.swap, continuous_swap⟩).curry.continuous) }
   F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
 
-theorem graphContraction_compatible (t : I) (a : BoundaryFamily J (Fin 1 → ℝ)) :
+theorem graphContraction_compatible t a :
     graphVertexContraction r root Q (t, r a) =
       graphDiskFamilyContraction r root Q hQ (t, boundaryFamilyInclusion J _ a) := by
-  rcases a with ⟨j, a⟩
+  cases' a with j a
   rcases graphBoundary_cases a with rfl | rfl
   · change Q (graphSrc r j) t =
       graphEdgeContraction r root Q hQ j
@@ -119,9 +103,7 @@ def graphContraction : ContinuousMap.Homotopy (ContinuousMap.id (DiskAttachment 
         rw [(graphEdgeContraction_spec r root Q hQ d.1).1]
         change cell r (boundaryFamilyInclusion J (Fin 1 → ℝ))
           ⟨d.1, graphDiskHomeomorph (graphDiskHomeomorph.symm d.2)⟩ = _
-        exact congrArg (fun x : ClosedUnitBall (Fin 1 → ℝ) =>
-          cell r (boundaryFamilyInclusion J (Fin 1 → ℝ)) ⟨d.1, x⟩)
-          (graphDiskHomeomorph.apply_symm_apply d.2)
+        aesop
   map_one_left z := by
     obtain ⟨w, rfl⟩ := quotientMap_surjective r (boundaryFamilyInclusion J _) z
     cases w with
@@ -133,8 +115,3 @@ def graphContraction : ContinuousMap.Homotopy (ContinuousMap.id (DiskAttachment 
           (1, cell r (boundaryFamilyInclusion J (Fin 1 → ℝ)) d) = _
         rw [attachmentHomotopyPasting_cell]
         exact (graphEdgeContraction_spec r root Q hQ d.1).2.1 _
-
-@[simp] theorem graphContraction_old (t : I) (a : V) :
-    graphContraction r root Q hQ (t, (old r (boundaryFamilyInclusion J (Fin 1 → ℝ))) a) = Q a t := rfl
-
-end FiniteChains.ClassicalGraphModel

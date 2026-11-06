@@ -1,2 +1,1 @@
-module
-public import RequestProject.PresCoverRelatorSingleCoordinates
+import RequestProject.PresCoverRelatorSingleCoordinates

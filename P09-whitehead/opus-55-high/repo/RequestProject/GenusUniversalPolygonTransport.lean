@@ -1,9 +1,7 @@
-module
+import RequestProject.GenusUniversalPolygonReference
+import RequestProject.GenusAttachingRelativeOldBoundary
+import RequestProject.Tac
 
-public import RequestProject.GenusUniversalPolygonReference
-public import RequestProject.GenusAttachingRelativeOldBoundary
-
-@[expose] public section
 
 /-! Transport of the explicit pre-substitution degree-one polygon to the
 actual named quotient. All chains retain their actual cover sheets.
@@ -11,9 +9,7 @@ actual named quotient. All chains retain their actual cover sheets.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 universe u
@@ -22,11 +18,11 @@ variable {P Q : Type u} [PartialOrder P] [PartialOrder Q]
 theorem cellularOrderHom_vertex_monotone (f : Hom (orderCx P) (orderCx Q)) :
     Monotone (show P → Q from f.onV) := by
   intro a b hab
-  let e : OrdEdge P := ⟨(a, b), hab⟩
+  let e : OrdEdge P := by tauto
   have h := (f.onE e).2
   have hs : (f.onE e).1.1 = f.onV a := f.src_onE e
   have ht : (f.onE e).1.2 = f.onV b := f.tgt_onE e
-  simpa only [hs, ht] using h
+  simp_all
 
 variable {a : P}
 
@@ -51,9 +47,7 @@ variable {α Jr : Type} (ρ : Jr ⊕ PUnit.{1} → FreeGroup α)
 
 /-- The source old-cover base is the actual spanning-tree root. The same
 cylinder path used by the received comparison transports it to the quotient base. -/
-def universalOldToNamedQuotient :
-    Hom (uCover (orderCx (QOld (cmpRel (GenusVertex q)))) (universalSpineOldBase q))
-      (uCover (orderCx (namedQuotientPos ρ q u)) (namedQuotientBase ρ q u)) :=
+def universalOldToNamedQuotient :=
   (uCoverPathTransport (spineQuotientCylinderPath_isPath q ρ u)).comp
     (univLift (orderCx (QOld (cmpRel (GenusVertex q))))
       (oldIntoNamedQuotient q ρ u) (universalSpineOldBase q))
@@ -70,15 +64,14 @@ theorem universalOldToNamedOrder_monotone : Monotone (universalOldToNamedOrder �
   change @LE.le (UOrder (namedQuotientPos ρ q u) (namedQuotientBase ρ q u)) inferInstance
     (uOrderHomInv.onV (universalOldToNamedOrder ρ q u p))
     (uOrderHomInv.onV (universalOldToNamedOrder ρ q u r)) at h
-  simpa only [uOrderHomInv_vertex] using h
+  simp_all [uOrderHomInv_vertex]
 
-theorem universalOldToNamedOrder_end (p : universalOldOrder q) :
+theorem universalOldToNamedOrder_end p :
     uOrderEnd (universalOldToNamedOrder ρ q u p) =
       qOldIncl (att := namedAtt ρ q u) (uOrderEnd p) := by
   change endV (pathTransportV (spineQuotientCylinderPath_isPath q ρ u)
     (univLiftV (universalSpineOldBase q) (oldIntoNamedQuotient q ρ u) p)) = _
-  rw [endV_pathTransportV, endV_univLiftV]
-  rfl
+  aesop
 
 theorem universalOldToNamedOrder_edge (e : OrdEdge (universalOldOrder q)) :
     uOrderEdge ((orderCxMap (universalOldToNamedOrder ρ q u)
@@ -108,13 +101,12 @@ theorem universalOldToNamedOrder_square :
       (universalOldToNamedOrder_monotone ρ q u)) =
       (universalOldToNamedQuotient ρ q u).comp uOrderHom := by
   apply Hom.ext'
-  · funext p; rfl
+  · rfl
   · funext e; exact universalOldToNamedOrder_edge ρ q u e
   · funext t; exact universalOldToNamedOrder_face ρ q u t
 
 theorem universalOldToNamedQuotient_nerve_chain2
-    (c : (uCover (orderCx (QOld (cmpRel (GenusVertex q))))
-      (universalSpineOldBase q)).F →₀ ℤ) :
+    c :
     universalNerveChain2 (chain2 (universalOldToNamedQuotient ρ q u) c) =
       cmap (universalOldToNamedOrder ρ q u) (universalNerveChain2 c) := by
   have hsource : chain2 uOrderHom (chain2 uOrderHomInv c) = c := by
@@ -129,7 +121,7 @@ theorem universalOldToNamedQuotient_nerve_chain2
     rw [hi, Finsupp.mapDomain_id]
   calc
     _ = universalNerveChain2 (chain2 (universalOldToNamedQuotient ρ q u)
-        (chain2 uOrderHom (chain2 uOrderHomInv c))) := by rw [hsource]
+        (chain2 uOrderHom (chain2 uOrderHomInv c))) := by simp_all
     _ = universalNerveChain2 (chain2 uOrderHom
         (chain2 (orderCxMap (universalOldToNamedOrder ρ q u)
           (universalOldToNamedOrder_monotone ρ q u)) (chain2 uOrderHomInv c))) := by
@@ -138,7 +130,7 @@ theorem universalOldToNamedQuotient_nerve_chain2
       rw [universalNerveChain2_uOrderHom, ordNerveChain2_chain2]
       rfl
 
-theorem universalOldToNamedOrder_nerve_old (c : Ch (universalOldOrder q))
+theorem universalOldToNamedOrder_nerve_old c
     (hc : c ∈ Inc _) :
     cmap (universalOldToNamedOrder ρ q u) c ∈
       IncOn (fun p => InQOld (uOrderEnd p)) := by
@@ -153,14 +145,14 @@ def universalPolygonAttachingRealization
     (σ : NeSpx (cmpRel (UniversalPolygonCover q))) : namedAttachingCover q ρ u :=
   ⟨universalOldToNamedOrder ρ q u (universalPolygonRealization q σ), by
     rw [universalOldToNamedOrder_end, universalPolygonRealization_end]
-    exact ⟨trivial, rfl⟩⟩
+    tauto⟩
 
 theorem universalPolygonAttachingRealization_monotone :
     Monotone (universalPolygonAttachingRealization ρ q u) :=
   (universalOldToNamedOrder_monotone ρ q u).comp (universalPolygonRealization_monotone q)
 
 theorem universalPolygonAttachingRealization_projection
-    (σ : NeSpx (cmpRel (UniversalPolygonCover q))) :
+    σ :
     qAttachingCoverEnd (namedQuotientBase ρ q u)
       (universalPolygonAttachingRealization ρ q u σ) =
       barycentricMap (universalPolygonProjection q)
@@ -180,7 +172,7 @@ def universalPolygonToNamedSurface (p : UniversalPolygonCover q) : NamedSurfaceC
     (namedQuotientPos_isConnected ρ q u)
       (universalPolygonAttachingRealization ρ q u (spx1 p))
 
-theorem universalPolygonToNamedSurface_projection (p : UniversalPolygonCover q) :
+theorem universalPolygonToNamedSurface_projection p :
     namedSurfaceProjection ρ q u (universalPolygonToNamedSurface ρ q u p) =
       universalPolygonProjection q p := by
   change chainMax (qAttachingCoverEnd (namedQuotientBase ρ q u)
@@ -209,7 +201,7 @@ theorem universalPolygonToNamedSurface_monotone :
       barycentricMap_spx2]
     letI : DecidableEq (GenusVertex q) := Classical.decEq _
     exact (chainMax_spx2 ((universalPolygonProjection_isPosetCover q).mono hpr)).symm
-  exact he.symm ▸ hp
+  simp_all
 
 theorem universalPolygonToNamedSurface_strictMono :
     StrictMono (universalPolygonToNamedSurface ρ q u) := by
@@ -223,13 +215,13 @@ theorem universalPolygonToNamedSurface_strictMono :
 /-- Singleton lifts and general simplex lifts give the same surface sheet
 at the maximal original cell. This is stronger than equality after projection. -/
 theorem universalPolygonAttachingRealization_lastVertex
-    (σ : NeSpx (cmpRel (UniversalPolygonCover q))) :
+    σ :
     attachingToSurfaceCover (namedSurfaceLabel ρ q u) (namedQuotientBase ρ q u)
       (namedQuotientPos_isConnected ρ q u) (universalPolygonAttachingRealization ρ q u σ) =
       universalPolygonToNamedSurface ρ q u (chainMax σ) := by
   have hs : spx1 (chainMax σ) ≤ σ := by
     intro p hp
-    have he : p = chainMax σ := by simpa only [spx1, Finset.mem_singleton] using hp
+    have he : p = chainMax σ := by simp_all
     rw [he]
     exact chainMax_mem σ
   have hm := attachingToSurfaceCover_monotone (namedSurfaceLabel ρ q u)
@@ -266,7 +258,7 @@ theorem universalPolygonToNamedSurface_fundamental :
     (universalPolygonToNamedSurface_strictMono ρ q u)
     (universalPolygonToNamedSurface_projection ρ q u) (universalPolygonPole q)
 
-def transportedUniversalPolygonAttachingChain : Ch (namedAttachingCover q ρ u) :=
+def transportedUniversalPolygonAttachingChain :=
   ordNerveChain2 (chain2 (orderCxMap (universalPolygonAttachingRealization ρ q u)
     (universalPolygonAttachingRealization_monotone ρ q u))
       (barycentricChain2 (decodeOrdNerve2 (universalPolygon q).fundamental)))
@@ -286,7 +278,7 @@ theorem transportedUniversalPolygonAttachingChain_normalized :
   let F : namedAttachingCover q ρ u → NamedSurfaceCover ρ q u :=
     attachingToSurfaceCover (namedSurfaceLabel ρ q u) (namedQuotientBase ρ q u)
     (namedQuotientPos_isConnected ρ q u)
-  have hF : Monotone F := attachingToSurfaceCover_monotone (namedSurfaceLabel ρ q u)
+  have hF := attachingToSurfaceCover_monotone (namedSurfaceLabel ρ q u)
     (namedQuotientBase ρ q u) (namedQuotientPos_isConnected ρ q u)
   have hs : (orderCxMap F hF).comp
       (orderCxMap (universalPolygonAttachingRealization ρ q u)
@@ -322,7 +314,7 @@ theorem universalPolygonAttachingRealization_square :
         (universalPolygonAttachingRealization_monotone ρ q u)) =
       (universalOldToNamedQuotient ρ q u).comp (universalPolygonLift q) := by
   apply Hom.ext'
-  · funext σ; rfl
+  · rfl
   · funext e
     exact universalOldToNamedOrder_edge ρ q u
       ((orderCxMap (universalPolygonRealization q) (universalPolygonRealization_monotone q)).onE e)
@@ -333,7 +325,7 @@ theorem universalPolygonAttachingRealization_square :
 /-- The reference in the attaching intersection is the exact image of the
 source old-cover polygon, with every sheet and face coefficient unchanged. -/
 theorem transportedUniversalPolygonAttachingChain_image :
-    cmap (Subtype.val : namedAttachingCover q ρ u → _)
+    cmap Subtype.val
       (transportedUniversalPolygonAttachingChain ρ q u) =
       universalNerveChain2 (chain2 (universalOldToNamedQuotient ρ q u)
         (universalOldPolygonChain q)) := by
@@ -365,5 +357,3 @@ theorem universalOldToNamedQuotient_polygon_reference
     universalOldToNamedOrder_nerve_old ρ q u y hy, ?_⟩
   rw [universalOldToNamedQuotient_nerve_chain2, hcy, map_add, cmap_bdry,
     ← universalOldToNamedQuotient_nerve_chain2, ← transportedUniversalPolygonAttachingChain_image]
-
-end FiniteChains.Davis.Genus

@@ -1,10 +1,7 @@
-module
-
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologyPaths.PathSubdivision
+import RequestProject.TopologyPaths.PathSubdivision
 
-@[expose] public section
 
 /-! # Induction over paths subordinate to an open cover
 
@@ -24,10 +21,9 @@ universe u v
 variable {X : Type u} [TopologicalSpace X]
 
 theorem property_cast_iff (P : ∀ {a b : X}, Path a b → Prop)
-    {a b a' b' : X} (p : Path a b) (ha : a' = a) (hb : b' = b) :
+    {a b a' b'} p (ha : a' = a) (hb : b' = b) :
     P (p.cast ha hb) ↔ P p := by
-  subst a'; subst b'
-  rfl
+  aesop
 
 theorem path_induction {ι : Type v} (U : ι → Set X)
     (hU : ∀ i, IsOpen (U i)) (hcover : ∀ x, ∃ i, x ∈ U i)
@@ -36,19 +32,17 @@ theorem path_induction {ι : Type v} (U : ι → Set X)
     (htrans : ∀ {a b c} (p : Path a b) (q : Path b c), P p → P q → P (p.trans q))
     (hhomotopy : ∀ {a b} {p q : Path a b}, p.Homotopic q → P p → P q)
     (hlocal : ∀ {a b} (p : Path a b), (∃ i, Set.range p ⊆ U i) → P p)
-    {a b : X} (p : Path a b) : P p := by
+    {a b} (p : Path a b) : P p := by
   obtain ⟨t,N,ht0,htN,_,ht⟩ := PathSubdivision.exists_subdivision p U hU
-    (fun s => hcover (p s))
+    (by simp_all)
   have hall : ∀ k ≤ N, P (PathSubdivision.concatenateCuts p t k) := by
     intro k
     induction k with
-    | zero => intro _; exact hrefl _
+    | zero => tauto
     | succ k ih =>
       intro hk
-      exact htrans _ _ (ih (by omega)) (hlocal _ (ht k (by omega)))
+      exact htrans _ _ (by grind) (by tauto)
   have hend := hhomotopy (PathSubdivision.concatenateCuts_homotopic p t N) (hall N le_rfl)
   rw [ht0,htN] at hend
   have hp := hhomotopy (PathSubdivision.cut_zero_one_homotopic p) hend
   exact (property_cast_iff P p p.source p.target).mp hp
-
-end FiniteChains.OpenCoverPaths

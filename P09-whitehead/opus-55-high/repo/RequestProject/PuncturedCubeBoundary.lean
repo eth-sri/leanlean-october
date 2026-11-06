@@ -1,8 +1,5 @@
-module
+import RequestProject.CoordinateFacetContraction
 
-public import RequestProject.CoordinateFacetContraction
-
-@[expose] public section
 
 /-! The actual proper face poset of an ordinary cube, with one facet deleted, contracts
 onto the opposite facet by an explicit zigzag of monotone coordinate maps. -/
@@ -13,22 +10,20 @@ variable {V : Type} [DecidableEq V]
 def PuncturedCubeFace (t : Cube V) (j : V) (b : CubeCoord) :=
   {c : Cube V // CoordinateFace c t ∧ c ≠ t ∧ c ≠ coordinateFix j b t}
 
-instance (t : Cube V) (j : V) (b : CubeCoord) : PartialOrder (PuncturedCubeFace t j b) where
+instance (t : Cube V) j b : PartialOrder (PuncturedCubeFace t j b) where
   le c d := CoordinateFace c.1 d.1
   le_refl c v := Or.inr rfl
   le_trans c d e hcd hde v := by
     rcases hde v with he | he
     · exact Or.inl he
     · rcases hcd v with hd | hd
-      · exact Or.inl (he.symm.trans hd)
-      · exact Or.inr (hd.trans he)
+      · simp_all
+      simp_all
   le_antisymm c d hcd hdc := by
     apply Subtype.ext
     funext v
     rcases hcd v with hd | hd
-    · rcases hdc v with hc | hc
-      · exact hc.trans hd.symm
-      · exact hc.symm
+    · rcases hdc v with hc | hc <;> simp_all
     · exact hd
 
 omit [DecidableEq V] in
@@ -38,8 +33,8 @@ theorem face_trans {c d e : Cube V} (hcd : CoordinateFace c d)
   rcases hde v with he | he
   · exact Or.inl he
   · rcases hcd v with hd | hd
-    · exact Or.inl (he.symm.trans hd)
-    · exact Or.inr (hd.trans he)
+    · simp_all
+    simp_all
 
 variable (t : Cube V) (j : V) (b z : CubeCoord)
   (hb : b ≠ CubeCoord.free) (hz : z ≠ CubeCoord.free) (hbz : b ≠ z)
@@ -60,7 +55,7 @@ def punctureOpen (c : PuncturedCubeFace t j b) : PuncturedCubeFace t j b :=
 def punctureOpposite : PuncturedCubeFace t j b :=
   ⟨coordinateFix j z t,
     face_trans (coordinate_fix_face_open j z t)
-      (coordinateOpen_face_top j z ht (fun _ => Or.inr rfl)),
+      (coordinateOpen_face_top j z ht (by tauto)),
     coordinateFix_ne_top j z hz ht, coordinateFix_ne_facet j b z hbz t t⟩
 
 theorem punctureProject_monotone : Monotone (punctureProject t j b z hz hbz ht) := by
@@ -78,8 +73,8 @@ theorem puncturedCubeBoundary_simplyConnected :
   apply simplyConnected_orderCx_of_zigzag
     (punctureProject_monotone t j b z hz hbz ht)
     (punctureOpen_monotone t j b z hb hz hbz ht)
-    (fun c => coordinate_face_open j z c.1)
-    (fun c => coordinate_fix_face_open j z c.1)
+    (coordinate_face_open j z ·.1)
+    (coordinate_fix_face_open j z ·.1)
     (punctureOpposite t j b z hz hbz ht)
   intro c
   exact coordinateFix_face_opposite_facet j z c.2.1
@@ -90,28 +85,26 @@ theorem puncturedCubeBoundary_isConnected :
   apply isConnected_orderCx_of_zigzag
     (f := punctureProject t j b z hz hbz ht)
     (g := punctureOpen t j b z hb hz hbz ht)
-    (fun c => coordinate_face_open j z c.1)
-    (fun c => coordinate_fix_face_open j z c.1)
+    (coordinate_face_open j z ·.1)
+    (coordinate_fix_face_open j z ·.1)
     (punctureOpposite t j b z hz hbz ht)
   intro c
   exact coordinateFix_face_opposite_facet j z c.2.1
 
 /-- Every genuine facet puncture is connected; no contraction data are assumed. -/
-theorem ordinary_puncturedCubeBoundary_connected (t : Cube V) (j : V) (b : CubeCoord)
+theorem ordinary_puncturedCubeBoundary_connected t (j : V) b
     (hb : b ≠ CubeCoord.free) (ht : t j = CubeCoord.free) :
     IsConnected (orderCx (PuncturedCubeFace t j b)) := by
   cases b with
-  | free => exact False.elim (hb rfl)
+  | free => simp_all
   | pos => exact puncturedCubeBoundary_isConnected t j .pos .neg hb (by decide) (by decide) ht
   | neg => exact puncturedCubeBoundary_isConnected t j .neg .pos hb (by decide) (by decide) ht
 
 /-- Every genuine facet puncture is simply connected; no homotopy property is assumed. -/
-theorem ordinary_puncturedCubeBoundary_simplyConnected (t : Cube V) (j : V) (b : CubeCoord)
+theorem ordinary_puncturedCubeBoundary_simplyConnected t (j : V) b
     (hb : b ≠ CubeCoord.free) (ht : t j = CubeCoord.free) :
     SimplyConnected (orderCx (PuncturedCubeFace t j b)) := by
   cases b with
-  | free => exact False.elim (hb rfl)
+  | free => simp_all
   | pos => exact puncturedCubeBoundary_simplyConnected t j .pos .neg hb (by decide) (by decide) ht
   | neg => exact puncturedCubeBoundary_simplyConnected t j .neg .pos hb (by decide) (by decide) ht
-
-end FiniteChains.Davis

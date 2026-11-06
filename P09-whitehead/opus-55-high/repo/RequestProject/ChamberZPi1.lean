@@ -1,9 +1,7 @@
-module
+import RequestProject.ChamberZPoset
+import RequestProject.OrderComplexGluing
+import RequestProject.Tac
 
-public import RequestProject.ChamberZPoset
-public import RequestProject.OrderComplexGluing
-
-@[expose] public section
 
 /-!
 # When a copy of the base splits off the fundamental group of `Z`
@@ -27,12 +25,9 @@ free-product argument along the simply connected attaching intersections `J_w`, 
 open (see `THEOREM-A-OBLIGATIONS.md`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb
 
@@ -43,20 +38,9 @@ variable {V : Type u} [DecidableEq V] {A : CommRel V} {X : Type u} [Preorder X]
   (attExt : Finset V →o X)
   (hext : ∀ (σ : Finset V) (h : σ.Nonempty ∧ IsSimplex A σ), attExt σ = att ⟨σ, h⟩)
 
-/-- **The retraction of `Z` onto the base poset**, available when the attaching map extends
-monotonically over the cone point: an old cell of type `σ` goes to `attExt σ`, a cell of an
-adjoined copy of `X` goes to itself. -/
-def zRetrAll : Zpos A X M att → X
-  | Sum.inl p => attExt p.1.spx
-  | Sum.inr vx => vx.2
 
-@[simp] theorem zRetrAll_zNew (w : {w : CayGroup A // M w}) (x : X) :
-    zRetrAll (att := att) attExt (zNew w x) = x := rfl
 
 /-- The inclusion of a copy of the base is monotone. -/
-theorem zNew_monotone (w : {w : CayGroup A // M w}) :
+theorem zNew_monotone w :
     Monotone (zNew (A := A) (X := X) (M := M) (att := att) w) :=
-  fun _ _ h => ⟨rfl, h⟩
-
-end Davis
-end FiniteChains
+  by tauto

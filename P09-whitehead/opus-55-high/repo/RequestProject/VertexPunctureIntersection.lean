@@ -1,9 +1,6 @@
-module
+import RequestProject.VertexPuncturedCube
+import RequestProject.OrderComplexRetraction
 
-public import RequestProject.VertexPuncturedCube
-public import RequestProject.OrderComplexRetraction
-
-@[expose] public section
 
 namespace FiniteChains.Davis
 open Comb
@@ -17,22 +14,19 @@ def vertexIntersectionCoordinates (i : Fin 7) : Cube (Fin 3) :=
 def vertexIntersectionCell (i : Fin 7) : VertexPuncturedCube :=
   ⟨vertexIntersectionCoordinates i, by fin_cases i <;> decide⟩
 
-theorem vertexIntersectionCell_mem (i : Fin 7) :
+theorem vertexIntersectionCell_mem i :
     vertexPunctureLeft (vertexIntersectionCell i) ∧
       vertexPunctureRight (vertexIntersectionCell i) := by
   unfold vertexPunctureLeft vertexPunctureRight
   fin_cases i <;> decide
 
-theorem vertexIntersection_classify (c : VertexPuncturedCube)
+theorem vertexIntersection_classify c
     (hc : vertexPunctureLeft c ∧ vertexPunctureRight c) :
-    ∃ i : Fin 7, c = vertexIntersectionCell i := by
-  obtain ⟨h0, hne⟩ := (vertexPuncture_intersection_iff c).mp hc
+    ∃ i, c = vertexIntersectionCell i := by
+  cases' (vertexPuncture_intersection_iff c).mp hc with h0 hne
   have hv : c.1 = ![CubeCoord.free, c.1 1, c.1 2] := by
     funext v
-    fin_cases v
-    · exact h0
-    · rfl
-    · rfl
+    fin_cases v <;> simp_all
   cases h1 : c.1 1 <;> cases h2 : c.1 2 <;> rw [h1, h2] at hv
   case free.free =>
     exact False.elim (c.2.1 (hv.trans (by decide)))
@@ -45,7 +39,7 @@ theorem vertexIntersection_classify (c : VertexPuncturedCube)
   case neg.pos => exact ⟨2, Subtype.ext hv⟩
   case neg.neg => exact ⟨0, Subtype.ext hv⟩
 
-def vertexIntersectionAdjacent (i j : Fin 7) : Prop :=
+def vertexIntersectionAdjacent (i j : Fin 7) :=
   CoordinateFace (vertexIntersectionCoordinates i) (vertexIntersectionCoordinates j) ∨
     CoordinateFace (vertexIntersectionCoordinates j) (vertexIntersectionCoordinates i)
 
@@ -54,13 +48,13 @@ instance (i j : Fin 7) : Decidable (vertexIntersectionAdjacent i j) := by
   infer_instance
 
 /-- A finite, kernel-checked reachability certificate for the seven actual intersection cells. -/
-theorem vertexIntersection_links : ∀ i : Fin 7, ∃ j k : Fin 7,
+theorem vertexIntersection_links : ∀ i, ∃ j k,
     vertexIntersectionAdjacent i j ∧ vertexIntersectionAdjacent j k ∧
       vertexIntersectionAdjacent k 0 := by decide
 
-theorem intersection_path_of_adjacent (i j : Fin 7)
+theorem intersection_path_of_adjacent i j
     (h : vertexIntersectionAdjacent i j) :
-    ∃ p, IsPath (orderCx VertexPuncturedCube).src (orderCx VertexPuncturedCube).tgt
+    ∃ p, IsPathX (orderCx VertexPuncturedCube)
       p (vertexIntersectionCell i) (vertexIntersectionCell j) ∧
       PathIn (fun c => vertexPunctureLeft c ∧ vertexPunctureRight c) p := by
   rcases h with h | h
@@ -70,9 +64,9 @@ theorem intersection_path_of_adjacent (i j : Fin 7)
       pathIn_cons ⟨vertexIntersectionCell_mem j, vertexIntersectionCell_mem i⟩ (pathIn_nil _)⟩
 
 theorem vertexPuncture_intersection_connected :
-    ConnectedIn (fun c : VertexPuncturedCube => vertexPunctureLeft c ∧ vertexPunctureRight c) := by
+    ConnectedIn (fun c => vertexPunctureLeft c ∧ vertexPunctureRight c) := by
   have reach (i : Fin 7) : ∃ p,
-      IsPath (orderCx VertexPuncturedCube).src (orderCx VertexPuncturedCube).tgt
+      IsPathX (orderCx VertexPuncturedCube)
         p (vertexIntersectionCell i) (vertexIntersectionCell 0) ∧
       PathIn (fun c => vertexPunctureLeft c ∧ vertexPunctureRight c) p := by
     obtain ⟨j, k, hij, hjk, hk0⟩ := vertexIntersection_links i
@@ -91,7 +85,7 @@ theorem vertexPuncture_intersection_connected :
 
 theorem vertexPuncturedCube_simplyConnected : SimplyConnected (orderCx VertexPuncturedCube) := by
   have hnull := htpy_nil_of_pathIn_union
-    (U := fun _ : VertexPuncturedCube => True)
+    (U := fun _ => True)
     (A := vertexPunctureLeft) (B := vertexPunctureRight)
     (fun c => ⟨fun _ => vertexPuncture_cover c, fun _ => trivial⟩)
     (fun c d h _ _ => vertexPuncture_unmixed c d h)
@@ -101,22 +95,20 @@ theorem vertexPuncturedCube_simplyConnected : SimplyConnected (orderCx VertexPun
     (connectedIn_of_isConnected vertexPunctureRight_connected)
     vertexPuncture_intersection_connected (vertexIntersectionCell_mem 0)
   intro a p hp
-  exact hnull a p trivial hp (fun _ _ => ⟨trivial, trivial⟩)
+  exact hnull a p trivial hp (by tauto)
 
 theorem vertexPuncturedCube_connected : IsConnected (orderCx VertexPuncturedCube) := by
   have reach (c : VertexPuncturedCube) : ∃ p,
-      IsPath (orderCx VertexPuncturedCube).src (orderCx VertexPuncturedCube).tgt
+      IsPathX (orderCx VertexPuncturedCube)
         p c (vertexIntersectionCell 0) := by
     rcases vertexPuncture_cover c with hc | hc
     · obtain ⟨p, hp, _⟩ := (connectedIn_of_isConnected vertexPunctureLeft_connected)
-        c (vertexIntersectionCell 0) hc (vertexIntersectionCell_mem 0).1
-      exact ⟨p, hp⟩
+        c _ hc (vertexIntersectionCell_mem 0).1
+      tauto
     · obtain ⟨p, hp, _⟩ := (connectedIn_of_isConnected vertexPunctureRight_connected)
-        c (vertexIntersectionCell 0) hc (vertexIntersectionCell_mem 0).2
-      exact ⟨p, hp⟩
+        c _ hc (vertexIntersectionCell_mem 0).2
+      tauto
   intro a b
-  obtain ⟨p, hp⟩ := reach a
-  obtain ⟨r, hr⟩ := reach b
+  cases' reach a with p hp
+  cases' reach b with r hr
   exact ⟨p ++ revPath r, hp.append (isPath_revPath hr)⟩
-
-end FiniteChains.Davis

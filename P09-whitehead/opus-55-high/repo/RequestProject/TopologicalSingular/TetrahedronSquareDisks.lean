@@ -1,2 +1,1 @@
-module
-public import RequestProject.TopologicalSingular.SimplexFaceIntersections
+import RequestProject.TopologicalSingular.SimplexFaceIntersections

@@ -1,19 +1,16 @@
-module
+import RequestProject.GenusSpinePresentation
+import RequestProject.Tac
+noncomputable section
 
-public import RequestProject.GenusSpinePresentation
-
-@[expose] public section
 
 /-! The genuine finite complex obtained by capping the marked surviving spine. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-noncomputable def cappedSpineCx : Complex2 where
+def cappedSpineCx : Complex2 where
   V := (markedSpineCx q).V
   E := (markedSpineCx q).E
   F := (markedSpineCx q).F ⊕ (Fin q × Bool)
@@ -24,14 +21,10 @@ noncomputable def cappedSpineCx : Complex2 where
   att_isLoop := by
     rintro (f | x)
     · exact (markedSpineCx q).att_isLoop f
-    · exact (markedSpineLoop q x).2
+    grind
 
-instance : Finite (cappedSpineCx q).V := inferInstanceAs (Finite (markedSpineCx q).V)
-instance : Finite (cappedSpineCx q).E := inferInstanceAs (Finite (markedSpineCx q).E)
-instance : Finite (cappedSpineCx q).F :=
-  inferInstanceAs (Finite ((markedSpineCx q).F ⊕ (Fin q × Bool)))
 
-noncomputable def cappedSpineTree : SpanningTree (cappedSpineCx q) where
+def cappedSpineTree : SpanningTree (cappedSpineCx q) where
   root := (markedSpineTree q).root
   ht := (markedSpineTree q).ht
   isTree := (markedSpineTree q).isTree
@@ -48,7 +41,7 @@ theorem cappedSpineTree_rel :
   funext f
   cases f <;> rfl
 
-noncomputable def cappedSpineIncl : Hom (markedSpineCx q) (cappedSpineCx q) where
+def cappedSpineIncl : Hom (markedSpineCx q) (cappedSpineCx q) where
   onV := id
   onE := id
   onF := Sum.inl
@@ -56,8 +49,4 @@ noncomputable def cappedSpineIncl : Hom (markedSpineCx q) (cappedSpineCx q) wher
   tgt_onE _ := rfl
   base_onF _ := rfl
   att_onF f := by
-    change (markedSpineCx q).att f = List.map (fun eb : (markedSpineCx q).E × Bool => (eb.1, eb.2))
-      ((markedSpineCx q).att f)
-    simp
-
-end FiniteChains.Davis.Genus
+    aesop

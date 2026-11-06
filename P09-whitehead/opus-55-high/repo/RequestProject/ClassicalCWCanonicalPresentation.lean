@@ -1,13 +1,10 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalCWWordDiskModel
+import RequestProject.ClassicalRoseWordNaturality
+import RequestProject.PresCircleWordParametrization
+import RequestProject.PresCanonicalWords
+import RequestProject.StabilizedDiskPresentation
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalCWWordDiskModel
-public import RequestProject.ClassicalRoseWordNaturality
-public import RequestProject.PresCircleWordParametrization
-public import RequestProject.PresCanonicalWords
-public import RequestProject.StabilizedDiskPresentation
-
-@[expose] public section
 
 /-! Every original connected two-dimensional CW complex has an actual
 homotopy equivalence to the canonical nonempty-word presentation model.
@@ -36,20 +33,20 @@ construction, including its final cancelling pair. -/
 def canonicalWords : CanonicalRel K → List (CanonicalGen K × Bool) :=
   presCanonicalWords (canonicalRelators K) (canonicalDummy K)
 
-theorem canonicalWords_ne_nil (j : CanonicalRel K) : canonicalWords K j ≠ [] :=
-  presCanonicalWords_ne_nil (canonicalRelators K) (canonicalDummy K) j
+theorem canonicalWords_ne_nil j : canonicalWords K j ≠ [] :=
+  presCanonicalWords_ne_nil _ _ j
 
-theorem canonicalWords_mk (j : CanonicalRel K) :
+theorem canonicalWords_mk j :
     FreeGroup.mk (canonicalWords K j) = canonicalRelators K j :=
-  mk_presCanonicalWords (canonicalRelators K) (canonicalDummy K) j
+  mk_presCanonicalWords _ _ j
 
 def stabilizedOriginalCellBoundary (j : CanonicalRel K) :
     C(UnitBoundary (Fin 2 → ℝ), ClassicalGraphModel.Rose (CanonicalGen K)) :=
   (StabilizedDiskPresentation.attaching (originalRoseWordAttaching K)).comp
     ⟨Sigma.mk (β := fun _ : CanonicalRel K => UnitBoundary (Fin 2 → ℝ)) j,
-      by exact continuous_sigmaMk⟩
+      continuous_sigmaMk⟩
 
-theorem stabilizedOriginalCellBoundary_old (j : OriginalRoseRel K) :
+theorem stabilizedOriginalCellBoundary_old j :
     (stabilizedOriginalCellBoundary K (Sum.inl j)).Homotopic
       (classicalPresCellBoundary (canonicalWords K) (Sum.inl j) (canonicalWords_ne_nil K)) := by
   let f : OriginalRoseGen K → CanonicalGen K := Sum.inl
@@ -60,13 +57,13 @@ theorem stabilizedOriginalCellBoundary_old (j : OriginalRoseRel K) :
       FreeGroup.mk (canonicalWords K (Sum.inl j)) := by
     calc
       _ = canonicalRelators K (Sum.inl j) := rfl
-      _ = _ := (canonicalWords_mk K (Sum.inl j)).symm
+      _ = _ := (canonicalWords_mk K _).symm
   have Hword := classicalRoseWordBoundary_homotopic_of_mk_eq he
   have Hcanonical := classicalPresWordAttaching_homotopic_read
-    (canonicalWords K) (Sum.inl j) (canonicalWords_ne_nil K)
+    _ (Sum.inl j) (canonicalWords_ne_nil K)
   exact H.trans (Hword.trans Hcanonical.symm)
 
-theorem stabilizedOriginalCellBoundary_dummy (u : PUnit) :
+theorem stabilizedOriginalCellBoundary_dummy u :
     (stabilizedOriginalCellBoundary K (Sum.inr u)).Homotopic
       (classicalPresCellBoundary (canonicalWords K) (Sum.inr u) (canonicalWords_ne_nil K)) := by
   cases u
@@ -74,15 +71,14 @@ theorem stabilizedOriginalCellBoundary_dummy (u : PUnit) :
   have H := (ContinuousMap.Homotopic.refl (diskRoseMap f)).comp
     dummyCircleBoundaryHomeomorph_homotopic_word
   rw [classicalRoseWordBoundary_map] at H
-  have he : FreeGroup.mk ([(PUnit.unit, true)].map (fun p => (f p.1, p.2))) =
-      FreeGroup.mk (canonicalWords K (Sum.inr PUnit.unit)) :=
+  have he :=
     (canonicalWords_mk K (Sum.inr PUnit.unit)).symm
   have Hword := classicalRoseWordBoundary_homotopic_of_mk_eq he
   have Hcanonical := classicalPresWordAttaching_homotopic_read
-    (canonicalWords K) (Sum.inr PUnit.unit) (canonicalWords_ne_nil K)
+    _ (Sum.inr PUnit.unit) (canonicalWords_ne_nil K)
   exact H.trans (Hword.trans Hcanonical.symm)
 
-theorem stabilizedOriginalCellBoundary_homotopic (j : CanonicalRel K) :
+theorem stabilizedOriginalCellBoundary_homotopic j :
     (stabilizedOriginalCellBoundary K j).Homotopic
       (classicalPresCellBoundary (canonicalWords K) j (canonicalWords_ne_nil K)) := by
   cases j with
@@ -102,8 +98,8 @@ def originalCanonicalAttachingHomotopy :
         ((H j).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry.continuous)⟩
   exact {
     toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun a => (H a.1).apply_zero a.2
-    map_one_left := fun a => (H a.1).apply_one a.2 }
+    map_zero_left := by aesop
+    map_one_left := by aesop }
 
 /-- The original space itself, with no replacement hypothesis, is
 homotopy equivalent to the literal canonical rose-and-word-disks model. -/
@@ -112,16 +108,15 @@ def originalClassicalPresWordDiskEquiv :
       (ClassicalPresWordDisks (presCanonicalWords (canonicalRelators K) (canonicalDummy K))
         (presCanonicalWords_ne_nil (canonicalRelators K) (canonicalDummy K))) :=
   ((originalWordDiskHomotopyEquiv K).trans
-    (StabilizedDiskPresentation.homotopyEquiv (originalRoseWordAttaching K))).trans
+    (StabilizedDiskPresentation.homotopyEquiv _)).trans
       (diskAttachingHomotopyEquiv
         (StabilizedDiskPresentation.attaching (originalRoseWordAttaching K))
-        (classicalPresWordAttaching (canonicalWords K) (canonicalWords_ne_nil K))
+        (classicalPresWordAttaching _ (canonicalWords_ne_nil K))
         (originalCanonicalAttachingHomotopy K))
 
-def originalCanonicalRealizationEquiv :
-    ContinuousMap.HomotopyEquiv K (Comb.orderNerveRealization (PresPos (canonicalWords K))) :=
+def originalCanonicalRealizationEquiv :=
   (originalClassicalPresWordDiskEquiv K).trans
-    (presClassicalDiskComparison (canonicalWords K) (canonicalWords_ne_nil K)).symm
+    (presClassicalDiskComparison _ _).symm
 
 theorem canonicalGen_finite (hK : Whitehead.FiniteCells K) : Finite (CanonicalGen K) := by
   letI := originalRoseGen_finite K hK
@@ -130,5 +125,3 @@ theorem canonicalGen_finite (hK : Whitehead.FiniteCells K) : Finite (CanonicalGe
 theorem canonicalRel_finite (hK : Whitehead.FiniteCells K) : Finite (CanonicalRel K) := by
   letI := originalRoseRel_finite K hK
   infer_instance
-
-end FiniteChains.ClassicalCW

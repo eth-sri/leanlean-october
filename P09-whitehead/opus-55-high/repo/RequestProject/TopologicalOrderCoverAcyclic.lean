@@ -1,13 +1,10 @@
-module
+import RequestProject.TopologicalOrderCoverHomeomorph
+import RequestProject.OrderNerveConnectedReflection
+import RequestProject.OrderNerveCoverDimension
+import RequestProject.OrderNerveTwoComplex
+import RequestProject.OrderStrictAcyclicityComparison
+import RequestProject.TopologicalSingular.MathlibComparison
 
-public import RequestProject.TopologicalOrderCoverHomeomorph
-public import RequestProject.OrderNerveConnectedReflection
-public import RequestProject.OrderNerveCoverDimension
-public import RequestProject.OrderNerveTwoComplex
-public import RequestProject.OrderStrictAcyclicityComparison
-public import RequestProject.TopologicalSingular.MathlibComparison
-
-@[expose] public section
 
 /-! Reverse cover dictionary for the original topological definition.
 The total space, projection, and deck action are constructed from the
@@ -26,7 +23,7 @@ include hs in
 theorem realization_connected [ConnectedSpace E] :
     ConnectedSpace (orderNerveRealization (Cover p hp)) :=
   (realizationHomeomorph p hp hs).symm.surjective.connectedSpace
-    (realizationHomeomorph p hp hs).symm.continuous
+    (by fun_prop)
 
 include hs in
 theorem orderCover_connected [ConnectedSpace E] : IsConnected (orderCx (Cover p hp)) := by
@@ -41,11 +38,11 @@ include hs in
 theorem strictCover_acyclic [ConnectedSpace E] [(nerve P).HasDimensionLE 2]
     (hac : Whitehead.Acyclic E) : IsAcyclic (strictOrderCx (Cover p hp)) := by
   letI := realization_connected p hp hs
-  obtain ⟨x⟩ := (inferInstance : Nonempty (orderNerveRealization (Cover p hp)))
-  obtain ⟨n, s, z, hz⟩ := orderNerveRealizationSimplex_jointly_surjective (Cover p hp) x
+  cases' (inferInstance : Nonempty (orderNerveRealization (Cover p hp))) with x
+  obtain ⟨n, s, z, hz⟩ := orderNerveRealizationSimplex_jointly_surjective _ x
   letI : Nonempty (Cover p hp) := ⟨s.obj 0⟩
   letI := (projection_isPosetCover p hp hs).realization_hasDimensionLE 2
-  apply (orderRealization_acyclic_iff_strict_isAcyclic (Cover p hp)
+  apply (orderRealization_acyclic_iff_strict_isAcyclic _
     (orderCover_connected p hp hs)).mp
   exact (Whitehead.acyclic_iff_of_homotopyEquiv
     (realizationHomeomorph p hp hs).toHomotopyEquiv).mpr hac
@@ -69,5 +66,3 @@ theorem reconstructed_cover_conclusions [ConnectedSpace E] [(nerve P).HasDimensi
 end TopologicalOrderCover
 
 open CategoryTheory Topology
-
-end FiniteChains.Comb

@@ -1,20 +1,16 @@
-module
+import RequestProject.TopologicalSingular.SquareSubdivisionGeometry
+noncomputable section
 
-public import RequestProject.TopologicalSingular.SquareSubdivisionGeometry
-
-@[expose] public section
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
 universe u
 variable {X : Type u} [TopologicalSpace X] {x : X}
 
-noncomputable def leftSquareSweep (p : GenLoop (Fin 2) X x) :
-    ContinuousMap.Homotopy (p.val.comp (leftRectangle 0)) (p.val.comp (leftRectangle squareHalf)) :=
+def leftSquareSweep (p : GenLoop (Fin 2) X x) :=
   (ContinuousMap.Homotopy.refl p.val).comp leftRectangleSweep
 
-noncomputable def rightSquareSweep (p : GenLoop (Fin 2) X x) :
-    ContinuousMap.Homotopy (p.val.comp (rightRectangle 0)) (p.val.comp (rightRectangle squareHalf)) :=
+def rightSquareSweep (p : GenLoop (Fin 2) X x) :=
   (ContinuousMap.Homotopy.refl p.val).comp rightRectangleSweep
 
 theorem squareSweep_common_prism (p : GenLoop (Fin 2) X x) :
@@ -24,7 +20,7 @@ theorem squareSweep_common_prism (p : GenLoop (Fin 2) X x) :
   apply Finset.sum_congr rfl
   intro i _
   congr 1
-  apply congrArg (fun tau => Finsupp.single tau (1 : ℤ))
+  apply congrArg (Finsupp.single · (1))
   apply ContinuousMap.ext
   intro z
   change p (leftRectangle ((SingularPrism.prismMap i z).1 * squareHalf)
@@ -41,21 +37,18 @@ theorem squareSweep_boundary_prisms_cancel (p : GenLoop (Fin 2) X x) :
   have hlh (v : I) (hv : v = 0 ∨ v = 1) :
       SingularPrism.prism (leftSquareSweep p) 1 (Finsupp.single (cubeEdge 1 v) 1) = 0 :=
     SingularPrism.prism_one_single_eq_zero_of_constant _ _ 1 x
-      (fun t z => GenLoop.boundary p _ (leftRectangle_horizontal_boundary (t * squareHalf) v hv z))
+      (fun t z => GenLoop.boundary p _ (leftRectangle_horizontal_boundary _ v hv z))
   have hrh (v : I) (hv : v = 0 ∨ v = 1) :
       SingularPrism.prism (rightSquareSweep p) 1 (Finsupp.single (cubeEdge 1 v) 1) = 0 :=
     SingularPrism.prism_one_single_eq_zero_of_constant _ _ 1 x
-      (fun t z => GenLoop.boundary p _ (rightRectangle_horizontal_boundary (t * squareHalf) v hv z))
+      (fun t z => GenLoop.boundary p _ (rightRectangle_horizontal_boundary _ v hv z))
   have hlo : SingularPrism.prism (leftSquareSweep p) 1 (Finsupp.single (cubeEdge 0 0) 1) = 0 :=
     SingularPrism.prism_one_single_eq_zero_of_constant _ _ 1 x
-      (fun t z => GenLoop.boundary p _ (leftRectangle_outer_boundary (t * squareHalf) z))
+      (fun t z => GenLoop.boundary p _ (leftRectangle_outer_boundary _ z))
   have hro : SingularPrism.prism (rightSquareSweep p) 1 (Finsupp.single (cubeEdge 0 1) 1) = 0 :=
     SingularPrism.prism_one_single_eq_zero_of_constant _ _ 1 x
-      (fun t z => GenLoop.boundary p _ (rightRectangle_outer_boundary (t * squareHalf) z))
-  simp only [squareFundamentalChain_boundary, map_sub, map_add,
-    hlh 0 (Or.inl rfl), hlh 1 (Or.inr rfl), hrh 0 (Or.inl rfl), hrh 1 (Or.inr rfl), hlo, hro]
-  rw [squareSweep_common_prism]
-  abel
+      (fun t z => GenLoop.boundary p _ (rightRectangle_outer_boundary _ z))
+  simp [squareFundamentalChain_boundary, map_sub, map_add, hlh 0 (Or.inl rfl), hlh 1 (Or.inr rfl), hrh 0 (Or.inl rfl), hrh 1 (Or.inr rfl), hlo, hro, squareSweep_common_prism]
 
 theorem squareSweep_left_start (p : GenLoop (Fin 2) X x) :
     map (p.val.comp (leftRectangle 0)) 2 squareFundamentalChain = 0 := by
@@ -82,5 +75,3 @@ theorem squareCycle_rectangle_sum_difference_bounds (p : GenLoop (Fin 2) X x) :
   rw [map_add]
   change _ = _ - map p.val 2 squareFundamentalChain
   linear_combination (norm := abel) hl + hr - hz
-
-end FiniteChains.TopologicalSingular

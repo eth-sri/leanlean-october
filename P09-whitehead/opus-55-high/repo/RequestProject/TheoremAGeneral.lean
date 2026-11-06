@@ -1,8 +1,5 @@
-module
+import RequestProject.TreeChainTopological
 
-public import RequestProject.TreeChainTopological
-
-@[expose] public section
 
 /-!
 # Condition (1) of Theorem A, as stated by the interface, implies condition (2)
@@ -26,24 +23,3 @@ what the collapse to a finite presentation needs.
   Theorem A, in the form carried by the interface `combData`, implies condition (2)** for a
   finite connected two-complex whose chains have finite connected stages.
 -/
-
-namespace FiniteChains
-namespace Comb
-
-universe u
-
-/-! ### Transport of cellular maps along equalities of complexes -/
-
-/-- Transport of a cellular map along equalities of its source and target. -/
-def Hom.congr : ∀ {X X' Y Y' : Complex2.{u}}, X = X' → Y = Y' → Hom X Y → Hom X' Y'
-  | _, _, _, _, rfl, rfl, f => f
-
-@[simp] theorem Hom.congr_rfl {X Y : Complex2.{u}} (f : Hom X Y) :
-    Hom.congr rfl rfl f = f := rfl
-
-/-! ### From the interface-level chains to `TopChain` -/
-
-/-! ### Non-vacuity: the circle -/
-
-end Comb
-end FiniteChains

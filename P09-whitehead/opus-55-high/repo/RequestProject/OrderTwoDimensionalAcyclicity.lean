@@ -1,14 +1,10 @@
-module
+import RequestProject.OrderNerveHomologyDimension
+import RequestProject.OrderNervePositiveFillings
+import RequestProject.TopologicalSingular.MathlibH1Comparison
+import RequestProject.Tac
 
-public import RequestProject.OrderNerveHomologyDimension
-public import RequestProject.OrderNervePositiveFillings
-public import RequestProject.TopologicalSingular.MathlibH1Comparison
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular
@@ -23,21 +19,18 @@ theorem orderRealization_acyclic_iff_homology_one_two [(nerve P).HasDimensionLE 
       Limits.IsZero (((singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
         (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization P)) := by
   constructor
-  · intro h
-    exact ⟨h 1 (by decide), h 2 (by decide)⟩
+  · tauto
   · rintro ⟨h1, h2⟩ n hn
     by_cases he1 : n = 1
-    · subst n
-      exact h1
+    · simp_all
     by_cases he2 : n = 2
-    · subst n
-      exact h2
+    · simp_all
     exact orderNerve_singularHomology_isZero_of_dimension P 2 n (by omega)
 
 /-- Genuine finite fillings in the order nerve annihilate actual singular H2. -/
 theorem orderRealization_homology_two_isZero_of_fillings
     (hfill : ∀ c : OrdTri P →₀ ℤ, bdry2 (orderCx P) c = 0 →
-      ∃ b : OrdTet P →₀ ℤ, ordBoundary3 b = c) :
+      ∃ b, ordBoundary3 b = c) :
     Limits.IsZero (((singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj
       (ModuleCat.of ℤ ℤ)).obj (orderNerveRealization P)) := by
   have hz (z : OrderNerveH2 P) : z = 0 := by
@@ -45,7 +38,7 @@ theorem orderRealization_homology_two_isZero_of_fillings
     | H c =>
       exact (orderNerveH2Class_eq_zero_iff P c.val c.property).mpr
         (hfill c.val c.property)
-  letI : Subsingleton (OrderNerveH2 P) := ⟨fun x y => (hz x).trans (hz y).symm⟩
+  letI : Subsingleton (OrderNerveH2 P) := ⟨by simp_all⟩
   letI := (orderCellSingularH2Equiv P).surjective.subsingleton
   exact ModuleCat.isZero_of_subsingleton _
 
@@ -57,6 +50,4 @@ theorem orderRealization_homology_two_isZero_of_strict_cycles_zero
   apply orderRealization_homology_two_isZero_of_fillings P
   apply weak_twoCycle_filling_of_strict
   intro c hc
-  exact ⟨0, by rw [map_zero, hz c hc]⟩
-
-end FiniteChains.Comb
+  exact ⟨0, by simp_all⟩

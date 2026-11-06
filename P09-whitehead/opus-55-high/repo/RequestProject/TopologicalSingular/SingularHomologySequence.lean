@@ -1,5 +1,4 @@
-module
-public import RequestProject.TopologicalSingular.RelativeChainHomotopy
-public import RequestProject.TopologicalSingular.ContractibleSingularChains
-public import Mathlib.Algebra.Homology.HomologySequence
-public import Mathlib.Algebra.Category.ModuleCat.EpiMono
+import RequestProject.TopologicalSingular.RelativeChainHomotopy
+import RequestProject.TopologicalSingular.ContractibleSingularChains
+import Mathlib.Algebra.Homology.HomologySequence
+import Mathlib.Algebra.Category.ModuleCat.EpiMono

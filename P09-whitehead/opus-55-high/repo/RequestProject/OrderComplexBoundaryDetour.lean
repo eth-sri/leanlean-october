@@ -1,4 +1,3 @@
-module
-public import RequestProject.OrderComplexLoopRepresentatives
-public import RequestProject.CmpNerve
-public import RequestProject.OrderCxMonodromy
+import RequestProject.OrderComplexLoopRepresentatives
+import RequestProject.CmpNerve
+import RequestProject.OrderCxMonodromy

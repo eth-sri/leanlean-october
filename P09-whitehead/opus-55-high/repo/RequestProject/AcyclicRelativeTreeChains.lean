@@ -1,9 +1,6 @@
-module
+import RequestProject.RelativeTreeAmbientChain
+import RequestProject.TreeAcyclicExponentMatrix
 
-public import RequestProject.RelativeTreeAmbientChain
-public import RequestProject.TreeAcyclicExponentMatrix
-
-@[expose] public section
 
 /-! Unconditional relative chains over any acyclic combinatorial
 two-complex with a spanning tree. All original cells and the full
@@ -17,13 +14,8 @@ open SpanningTree RelativeNormalForm RelativeTreeAmbientChain
 variable {D : Complex2.{0}} (T : SpanningTree D) (hD : IsAcyclic D)
 
 def acyclicRelativeStages (n : ℕ) : ℕ → Complex2 :=
-  stages T (actualAmbientChain (treeRel T) (expMatrix_bijective_of_acyclic T hD) n)
+  stages T (actualAmbientChain _ (expMatrix_bijective_of_acyclic T hD) n)
 
-def acyclicRelativeCellChain (n : ℕ) :
+def acyclicRelativeCellChain n :
     RelativeCellChain (acyclicRelativeStages T hD n) (n + 1) :=
-  actualRelativeChain T (expMatrix_bijective_of_acyclic T hD) n
-
-@[simp] theorem acyclicRelativeStages_zero (n : ℕ) :
-    acyclicRelativeStages T hD n 0 = D := rfl
-
-end FiniteChains.Comb
+  actualRelativeChain T _ n

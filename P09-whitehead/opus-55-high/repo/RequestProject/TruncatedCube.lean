@@ -1,8 +1,5 @@
-module
+import RequestProject.MomentAngle
 
-public import RequestProject.MomentAngle
-
-@[expose] public section
 
 /-!
 # The truncated complex `M_q` and Lemma 3.2 (iii)
@@ -62,13 +59,13 @@ omit [LinearOrder V] in
   have : ∏ h ∈ univ \ σ, ((posCube σ) h).sgn = 1 := by
     refine Finset.prod_eq_one ?_
     intro h hh
-    have : h ∉ σ := (Finset.mem_sdiff.mp hh).2
+    have := (Finset.mem_sdiff.mp hh).2
     simp [posCube, this, CubeCoord.sgn]
   simp [cubeChain, this]
 
 /-- The sign with which the cut cell `Δ_σ` occurs in the boundary of the truncated cube
 with free set `σ` and remaining coordinates `+1`. -/
-def cutSign (σ : Finset V) : ℤ := (-1) ^ σ.card
+def cutSign (σ : Finset V) := (-1) ^ σ.card
 
 /-- A chain of the truncated complex: coefficients on the cubes and on the cut cells. -/
 abbrev TChain (V : Type) := (Cube V → ℤ) × (Finset V → ℤ)
@@ -78,13 +75,13 @@ def bdryT (x : TChain V) : TChain V :=
   (bdry x.1, fun τ => cutSign τ * x.1 (posCube τ) + simpBdry x.2 τ)
 
 /-- The cubical boundary of the cube `posCube τ`, written out. -/
-theorem bdry_posCube (c : Cube V → ℤ) (τ : Finset V) :
+theorem bdry_posCube c (τ : Finset V) :
     bdry c (posCube τ)
-      = ∑ j ∈ univ.filter (fun j => j ∉ τ),
-          (-1 : ℤ) ^ (τ.filter (fun i => i < j)).card * c (posCube (insert j τ)) := by
+      = ∑ j ∈ univ.filter (· ∉ τ),
+          (-1) ^ (τ.filter (· < j)).card * c (posCube (insert j τ)) := by
   have hidx : (univ.filter fun j => (posCube τ) j ≠ CubeCoord.free)
       = univ.filter fun j => j ∉ τ := by
-    ext j; simp [posCube]
+    simp [posCube]
   rw [bdry, hidx]
   refine Finset.sum_congr rfl ?_
   intro j hj
@@ -97,17 +94,15 @@ oriented triangulated closed surface `L` (a simplicial cycle supported on the tr
 Then the signed sum of the three-cubes of `C(L)`, viewed in the truncated complex, has
 boundary equal to the fundamental cycle of the cut copy of `L`, up to sign.  In particular
 the class of the cut surface vanishes in `H₂(M)`. -/
-theorem cutSurface_isBoundary {o : Finset V → ℤ} (hcyc : simpBdry o = 0)
+theorem cutSurface_isBoundary (hcyc : simpBdry o = 0)
     (hsupp : ∀ σ : Finset V, σ.card ≠ 3 → o σ = 0) :
     bdryT (cubeChain o, 0) = (0, -o) := by
   refine Prod.ext ?_ ?_
   · exact cubeChain_cycle hcyc
   · funext τ
     show cutSign τ * cubeChain o (posCube τ) + simpBdry 0 τ = -o τ
-    have hzero : simpBdry (0 : Finset V → ℤ) τ = 0 := by simp [simpBdry]
+    have hzero : simpBdry (0) τ = 0 := by simp [simpBdry]
     rw [hzero, add_zero, cubeChain_posCube]
     by_cases h3 : τ.card = 3
     · simp [cutSign, h3]
-    · simp [hsupp τ h3]
-
-end FiniteChains
+    simp_all

@@ -1,8 +1,5 @@
-module
+import RequestProject.CombPi1
 
-public import RequestProject.CombPi1
-
-@[expose] public section
 
 /-!
 # Reading a word of generators as an edge loop
@@ -23,8 +20,7 @@ loops**.  This file provides exactly that dictionary for `FiniteChains.Comb.Pi1`
   actually produced.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u v
 
@@ -32,35 +28,32 @@ variable {X : Complex2.{u}} {a : X.V} {G : Type v}
 
 /-- The edge path contributed by one signed letter: the chosen loop of the letter, reversed if
 the letter carries the negative sign. -/
-def germLoopPath (g : G → Loop X a) (gb : G × Bool) : List (X.E × Bool) :=
+def germLoopPath (g : G → Loop X a) (gb : G × Bool) :=
   if gb.2 then (g gb.1).1 else revPath (g gb.1).1
 
-@[simp] theorem germLoopPath_pos (g : G → Loop X a) (x : G) :
+@[simp] theorem germLoopPath_pos (g : G → Loop X a) x :
     germLoopPath g (x, true) = (g x).1 := rfl
 
-@[simp] theorem germLoopPath_neg (g : G → Loop X a) (x : G) :
+@[simp] theorem germLoopPath_neg (g : G → Loop X a) x :
     germLoopPath g (x, false) = revPath (g x).1 := rfl
 
 /-- **The edge loop spelled by a word**: the concatenation of the chosen loops of its letters. -/
-def wordPath (g : G → Loop X a) (l : List (G × Bool)) : List (X.E × Bool) :=
+def wordPath (g : G → Loop X a) (l : List (G × Bool)) :=
   (l.map (germLoopPath g)).flatten
 
-@[simp] theorem wordPath_nil (g : G → Loop X a) : wordPath g ([] : List (G × Bool)) = [] := rfl
+@[simp] theorem wordPath_nil (g : G → Loop X a) : wordPath g ([]) = [] := rfl
 
-@[simp] theorem wordPath_cons (g : G → Loop X a) (gb : G × Bool) (l : List (G × Bool)) :
+@[simp] theorem wordPath_cons (g : G → Loop X a) gb l :
     wordPath g (gb :: l) = germLoopPath g gb ++ wordPath g l := rfl
 
-theorem wordPath_append (g : G → Loop X a) (l l' : List (G × Bool)) :
+theorem wordPath_append (g : G → Loop X a) l l' :
     wordPath g (l ++ l') = wordPath g l ++ wordPath g l' := by
   simp [wordPath]
 
 /-- **The homomorphism determined by concrete loops on the generators.** -/
-def loopHom (g : G → Loop X a) : FreeGroup G →* Pi1 X a :=
+def loopHom (g : G → Loop X a) :=
   FreeGroup.lift (fun x => Pi1.mk (g x))
 
-@[simp] theorem loopHom_of (g : G → Loop X a) (x : G) :
+@[simp] theorem loopHom_of (g : G → Loop X a) x :
     loopHom g (FreeGroup.of x) = Pi1.mk (g x) := by
   simp [loopHom]
-
-end Comb
-end FiniteChains

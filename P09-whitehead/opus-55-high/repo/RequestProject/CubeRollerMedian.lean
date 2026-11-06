@@ -1,9 +1,6 @@
-module
+import RequestProject.CubeRollerModel
+import RequestProject.CubeMedianGraph
 
-public import RequestProject.CubeRollerModel
-public import RequestProject.CubeMedianGraph
-
-@[expose] public section
 
 /-!
 # The Roller model is a median graph
@@ -25,31 +22,3 @@ The combinatorial content is elementary but worth recording:
 * `FiniteChains.RollerBridge.eq_med_of_between` — a vertex between each pair of `A`, `B`, `C`
   is the majority set, so the median is unique.
 -/
-
-namespace FiniteChains
-
-universe u
-
-namespace RollerBridge
-
-variable {ι : Type u} [DecidableEq ι]
-
-/-- The number of hyperplanes separating two vertices. -/
-def dsym (A B : Finset ι) : ℕ := (A \ B).card + (B \ A).card
-
-@[simp] theorem dsym_self (A : Finset ι) : dsym A A = 0 := by simp [dsym]
-
-theorem dsym_comm (A B : Finset ι) : dsym A B = dsym B A := by
-  simp only [dsym]; omega
-
-end RollerBridge
-
-namespace RollerModel
-
-open RollerBridge
-
-variable {ι : Type u} [DecidableEq ι] (M : RollerModel ι)
-
-end RollerModel
-
-end FiniteChains

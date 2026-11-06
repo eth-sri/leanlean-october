@@ -1,9 +1,6 @@
-module
+import RequestProject.DavisSimplyConnected
+import RequestProject.NerveSupport
 
-public import RequestProject.DavisSimplyConnected
-public import RequestProject.NerveSupport
-
-@[expose] public section
 
 /-!
 # The chamber complex `𝒟` is acyclic: `H_*(𝒟) = 0`, in particular `H₂(𝒟) = 0`
@@ -33,8 +30,7 @@ Main results:
   is truncated.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb Nerve
 
@@ -53,8 +49,8 @@ theorem acyclicIn_chamber (x : CayGroup A) : AcyclicIn (InChamber (A := A) x) :=
 
 /-- **The attaching subcomplex of the chamber `F_x` is acyclic**, as a subgroup of chains of the
 ambient complex. -/
-theorem acyclicIn_chamberInter {x : CayGroup A} (hx : x ≠ 1) :
-    AcyclicIn (fun p : Sph A => InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty) := by
+theorem acyclicIn_chamberInter (hx : x ≠ 1) :
+    AcyclicIn (fun p => InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty) := by
   refine Nerve.acyclicIn_of_subtype _ ⟨(interTop hx).1, (interTop hx).2⟩ ?_
   intro c hc hcyc
   exact chamberInter_exists_bdry_eq_of_cycle hx hc hcyc
@@ -63,42 +59,40 @@ theorem acyclicIn_chamberInter {x : CayGroup A} (hx : x ≠ 1) :
 
 /-- **The gluing step for chains.**  Adding one chamber to an upward closed acyclic union whose
 intersection with the chamber is the attaching subcomplex keeps the union acyclic. -/
-theorem acyclicIn_union_chamber {x : CayGroup A} (hx : x ≠ 1) (Prev : Sph A → Prop)
-    (hup : ∀ p q : Sph A, p ≤ q → Prev p → Prev q)
+theorem acyclicIn_union_chamber (hx : x ≠ 1) Prev
+    (hup : ∀ p q, p ≤ q → Prev p → Prev q)
     (hPrev : AcyclicIn Prev)
-    (hinter : ∀ p : Sph A, (Prev p ∧ InChamber x p) ↔
+    (hinter : ∀ p, (Prev p ∧ InChamber x p) ↔
       (InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty)) :
-    AcyclicIn (fun p : Sph A => Prev p ∨ InChamber x p) := by
+    AcyclicIn (fun p => Prev p ∨ InChamber x p) := by
   refine Nerve.acyclicIn_union_of_unmixed (A := Prev) (B := InChamber (A := A) x)
-    (fun _ => Iff.rfl) ?_ hPrev (acyclicIn_chamber x)
-    (Nerve.acyclicIn_congr (fun p => (hinter p).symm) (acyclicIn_chamberInter hx))
+    (by simp) ?_ hPrev (acyclicIn_chamber x)
+    (Nerve.acyclicIn_congr (by simp_all) (acyclicIn_chamberInter hx))
   rintro a b hab (ha | ha) hb
-  · exact Or.inl ⟨ha, hup a b hab ha⟩
+  · tauto
   · exact Or.inr ⟨ha, inChamber_of_le hab ha⟩
 
 /-- Adding, one at a time, finitely many chambers of length `n + 1`. -/
-theorem acyclicIn_upto_insert (n : ℕ) (hprev : AcyclicIn (Upto (A := A) n)) :
+theorem acyclicIn_upto_insert n (hprev : AcyclicIn (Upto (A := A) n)) :
     ∀ (S : Set (CayGroup A)), S.Finite → (∀ y ∈ S, RACG.clen A y = n + 1) →
-      AcyclicIn (fun p : Sph A => Upto n p ∨ ∃ y ∈ S, InChamber y p) := by
+      AcyclicIn (fun p => Upto n p ∨ ∃ y ∈ S, InChamber y p) := by
   intro S hS
   induction S, hS using Set.Finite.induction_on with
   | empty =>
-      intro _
-      exact Nerve.acyclicIn_congr (fun p => by simp [Upto]) hprev
+      simp_all
   | @insert x S hxS hSfin ih =>
       intro hlen
       have hPrevAcyc := ih (fun y hy => hlen y (Set.mem_insert_of_mem _ hy))
-      have hxlen : RACG.clen A x = n + 1 := hlen x (Set.mem_insert _ _)
+      have hxlen : RACG.clen A x = n + 1 := by simp_all
       have hx1 : x ≠ 1 := by
         intro h
-        rw [h] at hxlen
-        simp at hxlen
+        simp_all
       set Prev : Sph A → Prop := fun p => Upto n p ∨ ∃ y ∈ S, InChamber y p with hPrev
-      have hup : ∀ p q : Sph A, p ≤ q → Prev p → Prev q := by
+      have hup : ∀ p q, p ≤ q → Prev p → Prev q := by
         rintro p q hpq (h | ⟨y, hy, hyp⟩)
         · exact Or.inl (upto_up hpq h)
         · exact Or.inr ⟨y, hy, inChamber_of_le hpq hyp⟩
-      have hinter : ∀ p : Sph A, (Prev p ∧ InChamber x p) ↔
+      have hinter : ∀ p, (Prev p ∧ InChamber x p) ↔
           (InChamber x p ∧ (p.spx ∩ rdescFinset A x).Nonempty) := by
         intro p
         constructor
@@ -107,34 +101,23 @@ theorem acyclicIn_upto_insert (n : ℕ) (hprev : AcyclicIn (Upto (A := A) n)) :
           rcases hprev' with ⟨y, hy, hyp⟩ | ⟨y, hyS, hyp⟩
           · exact (mem_shorter_chamber_iff hpx).1 ⟨y, by omega, hyp⟩
           · refine (mem_earlier_chamber_iff hpx).1 ⟨y, ?_, ?_, hyp⟩
-            · intro hxy
-              exact hxS (hxy ▸ hyS)
-            · rw [hlen y (Set.mem_insert_of_mem _ hyS), hxlen]
+            · grind
+            simp_all
         · rintro ⟨hpx, hne⟩
           obtain ⟨y, hylt, hyp⟩ := (mem_shorter_chamber_iff hpx).2 hne
           exact ⟨Or.inl ⟨y, by omega, hyp⟩, hpx⟩
       have hmain := acyclicIn_union_chamber hx1 Prev hup hPrevAcyc hinter
-      refine Nerve.acyclicIn_congr (fun p => ?_) hmain
-      constructor
-      · rintro ((h | ⟨y, hy, hyp⟩) | h)
-        · exact Or.inl h
-        · exact Or.inr ⟨y, Set.mem_insert_of_mem _ hy, hyp⟩
-        · exact Or.inr ⟨x, Set.mem_insert _ _, h⟩
-      · rintro (h | ⟨y, hy, hyp⟩)
-        · exact Or.inl (Or.inl h)
-        · rcases Set.mem_insert_iff.1 hy with rfl | hy
-          · exact Or.inr hyp
-          · exact Or.inl (Or.inr ⟨y, hy, hyp⟩)
+      grind
 
 /-- **Every cycle supported on the first `n` length levels of chambers is a boundary there.** -/
-theorem acyclicIn_upto (A : CommRel V) : ∀ n : ℕ, AcyclicIn (Upto (A := A) n) := by
+theorem acyclicIn_upto (A : CommRel V) : ∀ n, AcyclicIn (Upto (A := A) n) := by
   intro n
   induction n with
   | zero =>
       exact Nerve.acyclicIn_congr (fun p => (upto_zero_iff p).symm) (acyclicIn_chamber 1)
   | succ n ih =>
-      have h := acyclicIn_upto_insert n ih {x : CayGroup A | RACG.clen A x = n + 1}
-        (level_finite A (n + 1)) (fun _ hy => hy)
+      have h := acyclicIn_upto_insert n ih _
+        (level_finite A (n + 1)) (by simp)
       refine Nerve.acyclicIn_congr (fun p => ?_) h
       constructor
       · rintro (⟨y, hy, hyp⟩ | ⟨y, hy, hyp⟩)
@@ -143,13 +126,13 @@ theorem acyclicIn_upto (A : CommRel V) : ∀ n : ℕ, AcyclicIn (Upto (A := A) n
       · rintro ⟨y, hy, hyp⟩
         rcases Nat.lt_or_ge (RACG.clen A y) (n + 1) with h' | h'
         · exact Or.inl ⟨y, by omega, hyp⟩
-        · exact Or.inr ⟨y, le_antisymm hy h', hyp⟩
+        grind
 
 /-! ### Acyclicity of the whole complex -/
 
 /-- A bound on the lengths of the representatives of the vertices occurring in a chain. -/
-noncomputable def chainBound (z : Nerve.Ch (Sph A)) : ℕ :=
-  z.support.sup (fun l => (l.map (fun p : Sph A => RACG.clen A p.rep)).sum)
+noncomputable def chainBound (z : Nerve.Ch (Sph A)) :=
+  z.support.sup (fun l => (l.map (RACG.clen A ·.rep)).sum)
 
 omit [Fintype V] in
 theorem mem_incOn_upto_chainBound {z : Nerve.Ch (Sph A)} (hz : z ∈ Nerve.Inc (Sph A)) :
@@ -159,20 +142,17 @@ theorem mem_incOn_upto_chainBound {z : Nerve.Ch (Sph A)} (hz : z ∈ Nerve.Inc (
   refine ⟨(Nerve.mem_inc_iff z).1 hz l hl, ?_⟩
   intro p hp
   refine ⟨p.rep, ?_, inChamber_rep p⟩
-  have h1 : RACG.clen A p.rep ≤ (l.map (fun q : Sph A => RACG.clen A q.rep)).sum :=
-    List.single_le_sum (fun _ _ => Nat.zero_le _) _ (List.mem_map_of_mem hp)
+  have h1 : RACG.clen A p.rep ≤ (l.map (RACG.clen A ·.rep)).sum :=
+    List.single_le_sum (by omega) _ (List.mem_map_of_mem hp)
   refine le_trans h1 ?_
-  exact Finset.le_sup (f := fun l : List (Sph A) => (l.map (fun p : Sph A => RACG.clen A p.rep)).sum) hl
+  exact Finset.le_sup (f := fun l => (l.map (RACG.clen A ·.rep)).sum) hl
 
 /-- **`H_*(𝒟) = 0`.**  Every increasing cycle of the augmented simplicial chain complex of the
 poset of spherical cosets — in every degree, in particular every two-cycle — is the boundary of
 an increasing chain.  For `z ∈ C₂(𝒟)` with `∂z = 0` this produces `v ∈ C₃(𝒟)` with `∂₃ v = z`. -/
-theorem exists_bdry_eq_of_cycle_davis (A : CommRel V) {z : Nerve.Ch (Sph A)}
+theorem exists_bdry_eq_of_cycle_davis (A : CommRel V) {z}
     (hz : z ∈ Nerve.Inc (Sph A)) (hcyc : Nerve.bdry z = 0) :
     ∃ v ∈ Nerve.Inc (Sph A), Nerve.bdry v = z := by
   obtain ⟨v, hv, hdv⟩ :=
-    acyclicIn_upto A (chainBound z) z (mem_incOn_upto_chainBound hz) hcyc
+    acyclicIn_upto A _ z (mem_incOn_upto_chainBound hz) hcyc
   exact ⟨v, Nerve.incOn_le_inc _ hv, hdv⟩
-
-end Davis
-end FiniteChains

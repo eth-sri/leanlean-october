@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberQuotientBaseDeck
-public import RequestProject.OrderSubposetChains
+import RequestProject.ChamberQuotientBaseDeck
+import RequestProject.OrderSubposetChains

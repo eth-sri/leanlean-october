@@ -1,3 +1,2 @@
-module
-public import RequestProject.SubstOneWayQuotient
-public import RequestProject.CombLoopWord
+import RequestProject.SubstOneWayQuotient
+import RequestProject.CombLoopWord

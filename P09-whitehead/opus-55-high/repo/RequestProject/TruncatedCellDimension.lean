@@ -1,13 +1,10 @@
-module
+import RequestProject.TruncatedCubePoset
 
-public import RequestProject.TruncatedCubePoset
-
-@[expose] public section
 
 /-! Dimension and coordinate indices of the actual truncated-cell incidence model. -/
 
 namespace FiniteChains.Davis
-open RACG Mirror
+open RACG
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
 def truncatedCellDimension : TruncatedCell A → ℕ
@@ -24,29 +21,22 @@ theorem truncatedCellDimension_strictMono : StrictMono (truncatedCellDimension (
     cases d with
     | inl d =>
       change c.1.spx.card < d.1.spx.card
-      change c.1 ≤ d.1 at hle
-      have hc := Finset.card_le_card hle.1
       by_contra hnot
-      have hs : c.1.spx = d.1.spx :=
+      have hs :=
         Finset.eq_of_subset_of_card_le hle.1 (by omega)
       exact hne (congrArg Sum.inl (Subtype.ext (QCube.ext' hs hle.2)))
-    | inr σ => exact False.elim hle
+    | inr σ => exact hle.elim
   | inr σ =>
     cases d with
     | inl d =>
       change σ.1.card - 1 < d.1.spx.card
-      change σ.1 ⊆ d.1.spx ∧ d.1.sgn = 0 at hle
       have hc := Finset.card_le_card hle.1
-      have hp := Finset.card_pos.mpr σ.2.1
-      omega
+      grind
     | inr τ =>
       change σ.1.card - 1 < τ.1.card - 1
-      change σ.1 ⊆ τ.1 at hle
-      have hc := Finset.card_le_card hle
       have hσ := Finset.card_pos.mpr σ.2.1
-      have hτ := Finset.card_pos.mpr τ.2.1
       by_contra hnot
-      have hs : σ.1 = τ.1 := Finset.eq_of_subset_of_card_le hle (by omega)
+      have hs := Finset.eq_of_subset_of_card_le hle (by omega)
       exact hne (congrArg Sum.inr (Subtype.ext hs))
 
 theorem truncatedCellDimension_monotone : Monotone (truncatedCellDimension (A := A)) :=
@@ -71,13 +61,11 @@ theorem truncatedFaceIndex_injective : Function.Injective (truncatedFaceIndex (A
   | inl c =>
     cases d with
     | inl d =>
-      have hcoord : qCubeToCoordinate c.1 = qCubeToCoordinate d.1 := Sum.inl.inj he
-      have hcube : c.1 = d.1 := qCubeCoordinateEquiv.injective (Subtype.ext hcoord)
+      have hcoord := Sum.inl.inj he
+      have hcube := qCubeCoordinateEquiv.injective (Subtype.ext hcoord)
       exact congrArg Sum.inl (Subtype.ext hcube)
     | inr σ => cases he
   | inr σ =>
     cases d with
     | inl d => cases he
     | inr τ => exact congrArg Sum.inr (Subtype.ext (Sum.inr.inj he))
-
-end FiniteChains.Davis

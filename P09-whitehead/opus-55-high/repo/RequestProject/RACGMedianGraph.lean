@@ -1,9 +1,6 @@
-module
+import RequestProject.RACGMedian
+import RequestProject.CubeMedianGraph
 
-public import RequestProject.RACGMedian
-public import RequestProject.CubeMedianGraph
-
-@[expose] public section
 
 /-!
 # The Cayley graph of a right-angled Coxeter group is a median graph
@@ -23,18 +20,3 @@ complex of a median graph is simply connected with flag links) this makes Gromov
 theorem for the cube complexes `C(L)` of the paper: the one-skeleton of the universal cover of
 `C(L)` is the Cayley graph above.
 -/
-
-namespace FiniteChains
-namespace RACG
-
-universe u
-
-variable {V : Type u} [DecidableEq V] (A : CommRel V)
-
-/-- An arbitrary linear order on the group, needed only to orient the cells. -/
-noncomputable instance instLinearOrderCayGroup : LinearOrder (CayGroup A) := by
-  classical
-  exact linearOrderOfSTO (@WellOrderingRel (CayGroup A))
-
-end RACG
-end FiniteChains

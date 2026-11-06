@@ -1,10 +1,7 @@
-module
+import RequestProject.ChamberZCoverIntersectionCycles
+import RequestProject.OrderNervePositiveFillings
+import RequestProject.NerveDegreeTransfer
 
-public import RequestProject.ChamberZCoverIntersectionCycles
-public import RequestProject.OrderNervePositiveFillings
-public import RequestProject.NerveDegreeTransfer
-
-@[expose] public section
 
 /-! Local degree-two generation and degree-one intersection fillings on actual covers. -/
 namespace FiniteChains.Davis
@@ -19,7 +16,7 @@ theorem fillsDegreeIn_cover_unmarked_chamber (hf : IsPosetCover f)
     (w : CayGroup A) (hw : ¬ M w) :
     FillsDegreeIn (fun p : P => InZChamber w (f p)) 3 := by
   have hne : ∃ p : P, InZChamber w (f p) := by
-    obtain ⟨p, hp⟩ := hf.surj (zApex (X := X) (att := att) hw)
+    cases' hf.surj _ with p hp
     refine ⟨p, ?_⟩
     rw [hp]
     exact inZChamber_zApex (X := X) (att := att) hw
@@ -29,12 +26,12 @@ theorem fillsDegreeIn_cover_unmarked_chamber (hf : IsPosetCover f)
     (strict_twoCycle_cover_unmarked_chamber hf w hw) c hi hd hc
 
 theorem fillsDegreeIn_cover_attaching_intersection (hf : IsPosetCover f)
-    (w : CayGroup A) (hw : w ≠ 1) :
-    FillsDegreeIn (fun p : P => ZJSet w (f p)) 2 := by
+    w (hw : w ≠ 1) :
+    FillsDegreeIn (fun p => ZJSet w (f p)) 2 := by
   let q := (zJSetOrderIso (A := A) (X := X) (M := M) (att := att) w).symm (interTop hw)
   have hne : ∃ p : P, ZJSet w (f p) := by
-    obtain ⟨p, hp⟩ := hf.surj q.1
-    exact ⟨p, hp.symm ▸ q.2⟩
+    cases' hf.surj q.1 with p hp
+    grind
   apply fillsDegreeIn_of_subtype hne
   intro c hi hd hc
   exact nerve_oneCycle_filling_of_strict
@@ -49,5 +46,3 @@ theorem generatesDegreeIn_cover_chamber [Nonempty X] (hf : IsPosetCover f)
   by_cases hw : M w
   · exact generatesDegreeIn_of_acyclicRelIn (acyclicRelIn_cover_marked_chamber hf w hw)
   · exact generatesDegreeIn_of_fillsDegreeIn (fillsDegreeIn_cover_unmarked_chamber hf w hw)
-
-end FiniteChains.Davis

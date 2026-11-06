@@ -1,9 +1,6 @@
-module
+import RequestProject.ChamberZDegree
+import RequestProject.OrderNerveDecoding
 
-public import RequestProject.ChamberZDegree
-public import RequestProject.OrderNerveDecoding
-
-@[expose] public section
 
 /-! Cellular two-cycle generation for the actual modified-chamber poset. -/
 
@@ -25,5 +22,3 @@ instance zposPartialOrder : PartialOrder (Zpos A X M att) where
       cases t with
       | inl p => exact hts.elim
       | inr vy => exact congrArg Sum.inr (Prod.ext hst.1 (le_antisymm hst.2 hts.2))
-
-end FiniteChains.Davis

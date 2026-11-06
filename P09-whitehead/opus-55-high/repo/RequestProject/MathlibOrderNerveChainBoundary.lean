@@ -1,14 +1,10 @@
-module
+import RequestProject.MathlibOrderNerveCells
+import Mathlib.Algebra.Category.ModuleCat.Adjunctions
+import Mathlib.AlgebraicTopology.AlternatingFaceMapComplex
+import RequestProject.Tac
 
-public import RequestProject.MathlibOrderNerveCells
-public import Mathlib.Algebra.Category.ModuleCat.Adjunctions
-public import Mathlib.AlgebraicTopology.AlternatingFaceMapComplex
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -20,7 +16,7 @@ noncomputable def mathlibOrderNerveModule : SimplicialObject (ModuleCat ℤ) :=
 
 /-- The actual Mathlib alternating-face differential on a triangle agrees with
 its actual cellular second boundary in order coordinates. -/
-theorem mathlibOrderNerve_d2_single (t : OrdTri P) :
+theorem mathlibOrderNerve_d2_single t :
     (AlgebraicTopology.AlternatingFaceMapComplex.objD (mathlibOrderNerveModule P) 1).hom
       (Finsupp.single (ordTriNerveEquiv P t) 1) =
         Finsupp.mapDomain (ordEdgeNerveEquiv P)
@@ -32,7 +28,7 @@ theorem mathlibOrderNerve_d2_single (t : OrdTri P) :
 
 /-- The actual Mathlib alternating-face differential on a tetrahedron agrees
 with its genuine order-nerve third boundary. -/
-theorem mathlibOrderNerve_d3_single (t : OrdTet P) :
+theorem mathlibOrderNerve_d3_single t :
     (AlgebraicTopology.AlternatingFaceMapComplex.objD (mathlibOrderNerveModule P) 2).hom
       (Finsupp.single (ordTetNerveEquiv P t) 1) =
         Finsupp.mapDomain (ordTriNerveEquiv P) (ordTetBoundary t) := by
@@ -50,11 +46,9 @@ theorem mathlibOrderNerve_d2 (c : OrdTri P →₀ ℤ) :
     (mathlibOrderNerveModule P) 1).hom.comp
       (Finsupp.lmapDomain ℤ ℤ (ordTriNerveEquiv P))) c =
     ((Finsupp.lmapDomain ℤ ℤ (ordEdgeNerveEquiv P)).comp (bdry2 (orderCx P))) c
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => rw [map_add, map_add, hc, hd]
-  | single t n =>
-    have hn : Finsupp.single t n = n • Finsupp.single t (1 : ℤ) := by simp
+  lin_ind c with c d hc hd => rw [map_add, map_add, hc, hd]
+  | t n =>
+    have hn : Finsupp.single t n = n • Finsupp.single t (1) := by simp
     rw [hn, map_smul, map_smul]
     congr 1
     change (AlgebraicTopology.AlternatingFaceMapComplex.objD
@@ -72,11 +66,9 @@ theorem mathlibOrderNerve_d3 (c : OrdTet P →₀ ℤ) :
     (mathlibOrderNerveModule P) 2).hom.comp
       (Finsupp.lmapDomain ℤ ℤ (ordTetNerveEquiv P))) c =
     ((Finsupp.lmapDomain ℤ ℤ (ordTriNerveEquiv P)).comp ordBoundary3) c
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => rw [map_add, map_add, hc, hd]
-  | single t n =>
-    have hn : Finsupp.single t n = n • Finsupp.single t (1 : ℤ) := by simp
+  lin_ind c with c d hc hd => rw [map_add, map_add, hc, hd]
+  | t n =>
+    have hn : Finsupp.single t n = n • Finsupp.single t (1) := by simp
     rw [hn, map_smul, map_smul]
     congr 1
     change _ = Finsupp.mapDomain (ordTriNerveEquiv P)
@@ -87,5 +79,3 @@ theorem mathlibOrderNerve_d3 (c : OrdTet P →₀ ℤ) :
       (Finsupp.mapDomain (ordTetNerveEquiv P) (Finsupp.single t 1)) = _
     rw [Finsupp.mapDomain_single]
     exact mathlibOrderNerve_d3_single P t
-
-end FiniteChains.Comb

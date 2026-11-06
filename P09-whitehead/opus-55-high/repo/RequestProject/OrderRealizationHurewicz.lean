@@ -1,4 +1,3 @@
-module
-public import RequestProject.TopologicalSingular.HurewiczIsomorphism
-public import RequestProject.OrderNerveSingularH2Iso
-public import RequestProject.OrderUniversalRealizationSimplyConnected
+import RequestProject.TopologicalSingular.HurewiczIsomorphism
+import RequestProject.OrderNerveSingularH2Iso
+import RequestProject.OrderUniversalRealizationSimplyConnected

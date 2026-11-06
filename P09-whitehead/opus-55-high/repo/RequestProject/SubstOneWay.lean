@@ -1,8 +1,5 @@
-module
+import RequestProject.BlockFamilySubst
 
-public import RequestProject.BlockFamilySubst
-
-@[expose] public section
 
 /-!
 # The one-way comparison which makes the structural map of a substitution injective
@@ -39,8 +36,7 @@ marked homomorphism `bq s : FreeGroup (Su s ⊕ Zt s) →* H` of the block itsel
 two marking equalities `bq s (of (inl h)) = j [u_h]` of the surface generators.
 -/
 
-namespace FiniteChains
-namespace BlockFamily
+namespace FiniteChains.BlockFamily
 
 universe u v
 
@@ -70,41 +66,39 @@ def gen : α ⊕ (Σ s : Sx, Zt s) → H :=
   Sum.elim (fun a => j (QuotientGroup.mk (FreeGroup.of a)))
     (fun p => B.b p.1 (FreeGroup.of (Sum.inr p.2)))
 
-@[simp] theorem gen_inl (a : α) : B.gen (Sum.inl a) = j (QuotientGroup.mk (FreeGroup.of a)) := rfl
 
-@[simp] theorem gen_inr (s : Sx) (z : Zt s) :
+@[simp] theorem gen_inr s z :
     B.gen (Sum.inr ⟨s, z⟩) = B.b s (FreeGroup.of (Sum.inr z)) := rfl
 
 /-- On the old generators the lift of `gen` is `j`. -/
-theorem lift_gen_map_inl (w : FreeGroup α) :
-    FreeGroup.lift B.gen (FreeGroup.map (Sum.inl (β := Σ s : Sx, Zt s)) w)
+theorem lift_gen_map_inl w :
+    FreeGroup.lift B.gen (FreeGroup.map (Sum.inl (β := Σ s, Zt s)) w)
       = j (QuotientGroup.mk w) := by
   have key : (FreeGroup.lift B.gen).comp (FreeGroup.map (Sum.inl (β := Σ s : Sx, Zt s)))
-      = j.comp (QuotientGroup.mk' (relSub ρ)) := by
-    refine FreeGroup.ext_hom _ _ fun a => ?_
-    simp [gen]
+      = j.comp (QuotientGroup.mk' _) := by
+    aesop
   exact DFunLike.congr_fun key w
 
 /-- On the generators of the block at `s` the lift of `gen` is `b s`. -/
-theorem lift_gen_map_genEmb (s : Sx) (w : FreeGroup (α ⊕ Zt s)) :
+theorem lift_gen_map_genEmb s w :
     FreeGroup.lift B.gen (FreeGroup.map (genEmb (Zt := Zt) s) w) = B.b s w := by
   have key : (FreeGroup.lift B.gen).comp (FreeGroup.map (genEmb (Zt := Zt) s)) = B.b s := by
     refine FreeGroup.ext_hom _ _ ?_
     rintro (a | z)
     · simpa [gen] using (B.mark s a).symm
-    · simp [gen]
+    simp
   exact DFunLike.congr_fun key w
 
 /-- Every relator of the substituted presentation dies under the lift of `gen`. -/
-theorem lift_gen_relator (k : Jr ⊕ (Σ s : Sx, Mt s)) :
+theorem lift_gen_relator k :
     FreeGroup.lift B.gen (substPresF ρ bsub k) = 1 := by
   cases k with
   | inl i =>
       rw [substPresF_inl, lift_gen_map_inl]
       have h1 : (QuotientGroup.mk (ρ (Sum.inl i)) : PresGroup ρ) = 1 :=
         (QuotientGroup.eq_one_iff _).2
-          (Subgroup.subset_normalClosure (Set.mem_range.2 ⟨Sum.inl i, rfl⟩))
-      rw [h1, map_one]
+          (Subgroup.subset_normalClosure (by simp))
+      grind
   | inr p =>
       rw [substPresF_inr, lift_gen_map_genEmb]
       exact B.rel p.1 p.2
@@ -117,19 +111,14 @@ def psi : PresGroup (substPresF ρ bsub) →* H :=
     rintro _ ⟨k, rfl⟩
     exact B.lift_gen_relator k)
 
-@[simp] theorem psi_mk (w : FreeGroup (α ⊕ (Σ s : Sx, Zt s))) :
+@[simp] theorem psi_mk w :
     B.psi (QuotientGroup.mk w) = FreeGroup.lift B.gen w := rfl
 
 /-- **The comparison triangle.**  The composite of the structural map of the substitution with
 `ψ` is the given homomorphism `j`. -/
-theorem psi_comp_substHomF (hfill : FilledF ρ bsub) :
+theorem psi_comp_substHomF hfill :
     B.psi.comp (substHomF ρ bsub hfill) = j := by
-  refine MonoidHom.ext ?_
-  intro x
-  induction x using QuotientGroup.induction_on with
-  | _ w =>
-      show B.psi (substHomF ρ bsub hfill (QuotientGroup.mk w)) = j (QuotientGroup.mk w)
-      rw [substHomF_mk, psi_mk, lift_gen_map_inl]
+  aesop
 
 include B in
 /-- **The one-way comparison proves `hinj`.**  If the marked block maps exist over an injective
@@ -138,11 +127,11 @@ theorem injective_substHomF (hfill : FilledF ρ bsub) (hj : Function.Injective j
     Function.Injective (substHomF ρ bsub hfill) := by
   intro x y hxy
   refine hj ?_
-  have hx : B.psi (substHomF ρ bsub hfill x) = j x :=
+  have hx :=
     DFunLike.congr_fun (B.psi_comp_substHomF hfill) x
-  have hy : B.psi (substHomF ρ bsub hfill y) = j y :=
+  have hy :=
     DFunLike.congr_fun (B.psi_comp_substHomF hfill) y
-  rw [← hx, ← hy, hxy]
+  simp_all
 
 end BlockMaps
 
@@ -154,18 +143,18 @@ variable {Su : Sx → Type u}
 
 /-- The substitution which reads the distinguished generators of the block at `s` as the
 prescribed words in the old generators, and is the identity on the internal generators. -/
-def blockSubst (u : ∀ s : Sx, Su s → FreeGroup α) (s : Sx) :
+def blockSubst (u : ∀ s, Su s → FreeGroup α) s :
     FreeGroup (Su s ⊕ Zt s) →* FreeGroup (α ⊕ Zt s) :=
   FreeGroup.lift (Sum.elim (fun x => FreeGroup.map Sum.inl (u s x))
     (fun z => FreeGroup.of (Sum.inr z)))
 
-@[simp] theorem blockSubst_of_inl (u : ∀ s : Sx, Su s → FreeGroup α) (s : Sx) (x : Su s) :
+@[simp] theorem blockSubst_of_inl (u : ∀ s, Su s → FreeGroup α) s x :
     blockSubst (Zt := Zt) u s (FreeGroup.of (Sum.inl x)) = FreeGroup.map Sum.inl (u s x) := by
   simp [blockSubst]
 
-@[simp] theorem blockSubst_of_inr (u : ∀ s : Sx, Su s → FreeGroup α) (s : Sx) (z : Zt s) :
+@[simp] theorem blockSubst_of_inr (u : ∀ s, Su s → FreeGroup α) s z :
     blockSubst (Zt := Zt) u s (FreeGroup.of (Sum.inr z)) = FreeGroup.of (Sum.inr z) := by
-  simp [blockSubst]
+  rfl
 
 /-- **The one-way comparison in the marked form of the article.**  The block at `s` is given by
 its own presentation with distinguished generators `Su s` and internal generators `Zt s`, and
@@ -174,47 +163,38 @@ group on the generators of the block which kills the block relators and whose va
 distinguished generator is the image under `j` of the prescribed old word (the two marking
 equalities `b [s_h] = j [u_h]`, `b [t_h] = j [v_h]` of the article).  The conclusion is the
 injectivity of the actual structural homomorphism of the substitution. -/
-theorem injective_substHomF_of_markedBlock {H : Type v} [Group H]
-    {ρ : Jr ⊕ Sx → FreeGroup α} (u : ∀ s : Sx, Su s → FreeGroup α)
-    (beta : ∀ s : Sx, Mt s → FreeGroup (Su s ⊕ Zt s))
-    (hfill : FilledF ρ (fun s m => blockSubst u s (beta s m)))
+theorem injective_substHomF_of_markedBlock {H} [Group H]
+    {ρ : Jr ⊕ Sx → FreeGroup α} u
+    (beta : ∀ s, Mt s → FreeGroup (Su s ⊕ Zt s))
+    hfill
     (j : PresGroup ρ →* H) (hj : Function.Injective j)
-    (bq : ∀ s : Sx, FreeGroup (Su s ⊕ Zt s) →* H)
-    (hmark : ∀ (s : Sx) (x : Su s),
+    (bq : ∀ s, FreeGroup (Su s ⊕ Zt s) →* H)
+    (hmark : ∀ s x,
       bq s (FreeGroup.of (Sum.inl x)) = j (QuotientGroup.mk (u s x)))
-    (hrel : ∀ (s : Sx) (m : Mt s), bq s (beta s m) = 1) :
+    (hrel : ∀ s m, bq s (beta s m) = 1) :
     Function.Injective (substHomF ρ (fun s m => blockSubst u s (beta s m)) hfill) := by
   classical
   -- the block map on the substituted generators: old generators go to their `j`-images,
   -- internal generators to their images under the marked block map
-  set bb : ∀ s : Sx, FreeGroup (α ⊕ Zt s) →* H := fun s => FreeGroup.lift (Sum.elim
-      (fun a : α => j (QuotientGroup.mk (FreeGroup.of a)))
-      (fun z : Zt s => bq s (FreeGroup.of (Sum.inr z)))) with hbb
+  set bb : ∀ s, FreeGroup (α ⊕ Zt s) →* H := fun s => FreeGroup.lift (Sum.elim
+      (fun a => j (QuotientGroup.mk (FreeGroup.of a)))
+      (fun z => bq s (FreeGroup.of (Sum.inr z)))) with hbb
   -- the block map factors the substitution: both sides agree on the generators of the block
-  have key : ∀ s : Sx, (bb s).comp (blockSubst (Zt := Zt) u s) = bq s := by
+  have key : ∀ s, (bb s).comp (blockSubst (Zt := Zt) u s) = bq s := by
     intro s
     refine FreeGroup.ext_hom _ _ ?_
     rintro (x | z)
     · rw [MonoidHom.comp_apply, blockSubst_of_inl, hmark s x]
       have hcomp : (bb s).comp (FreeGroup.map (Sum.inl (β := Zt s)))
-          = j.comp (QuotientGroup.mk' (relSub ρ)) := by
-        refine FreeGroup.ext_hom _ _ fun a => ?_
-        simp [hbb]
-      exact DFunLike.congr_fun hcomp (u s x)
-    · simp [hbb]
-  have hmark' : ∀ (s : Sx) (a : α),
+          = j.comp (QuotientGroup.mk' _) := by
+        aesop
+      exact DFunLike.congr_fun hcomp _
+    simp_all
+  have hmark' : ∀ s a,
       bb s (FreeGroup.of (Sum.inl a)) = j (QuotientGroup.mk (FreeGroup.of a)) := by
-    intro s a
-    simp [hbb]
-  have hrel' : ∀ (s : Sx) (m : Mt s), bb s (blockSubst (Zt := Zt) u s (beta s m)) = 1 := by
-    intro s m
-    rw [← MonoidHom.comp_apply, key s]
-    exact hrel s m
+    simp_all
+  have hrel' : ∀ s m, bb s (blockSubst (Zt := Zt) u s (beta s m)) = 1 := by
+    grind [← MonoidHom.comp_apply]
   have hmaps : BlockMaps ρ (fun s m => blockSubst u s (beta s m)) j :=
-    { b := bb, mark := hmark', rel := hrel' }
-  exact BlockMaps.injective_substHomF hmaps hfill hj
-
-end Marked
-
-end BlockFamily
-end FiniteChains
+    by tauto
+  exact hmaps.injective_substHomF hfill hj

@@ -1,8 +1,5 @@
-module
+import RequestProject.CubeRollerModel
 
-public import RequestProject.CubeRollerModel
-
-@[expose] public section
 
 /-!
 # One-coordinate paths in the Roller model
@@ -39,46 +36,3 @@ The conclusion `ker d₂ = im d₃` proved in `RequestProject/CubeRollerModel.le
 (it holds for every median-closed `W`); what this file adds is that under the extra hypothesis
 the combinatorial data really is the data of a connected graph with one-coordinate edges.
 -/
-
-namespace FiniteChains
-
-universe u
-
-variable {ι : Type u} [DecidableEq ι]
-
-/-- A single move inside `W` changing exactly one coordinate: `B` is obtained from `A` by
-deleting or inserting one hyperplane, and both are vertices. -/
-def OneStep (W : Set (Finset ι)) (A B : Finset ι) : Prop :=
-  A ∈ W ∧ B ∈ W ∧ ∃ p : ι, (p ∈ A ∧ B = A.erase p) ∨ (p ∈ B ∧ A = B.erase p)
-
-theorem OneStep.symm {W : Set (Finset ι)} {A B : Finset ι} (h : OneStep W A B) :
-    OneStep W B A := by
-  obtain ⟨hA, hB, p, hp⟩ := h
-  exact ⟨hB, hA, p, hp.symm⟩
-
-/-- A path of one-coordinate moves inside `W`, together with its length. -/
-inductive StepPath (W : Set (Finset ι)) : Finset ι → Finset ι → ℕ → Prop
-  | nil {A : Finset ι} (hA : A ∈ W) : StepPath W A A 0
-  | cons {A B C : Finset ι} {n : ℕ} (h : OneStep W A B) (t : StepPath W B C n) :
-      StepPath W A C (n + 1)
-
-theorem StepPath.append {W : Set (Finset ι)} {A B C : Finset ι} {m n : ℕ}
-    (h₁ : StepPath W A B m) (h₂ : StepPath W B C n) : StepPath W A C (m + n) := by
-  induction h₁ with
-  | nil _ => simpa using h₂
-  | cons h _ ih =>
-      rename_i m' _
-      have : StepPath W _ C (m' + n) := ih h₂
-      simpa [Nat.succ_add] using StepPath.cons h this
-
-namespace ConnectedRollerModel
-
-end ConnectedRollerModel
-
-section Counterexample
-
-variable {p q : ι}
-
-end Counterexample
-
-end FiniteChains

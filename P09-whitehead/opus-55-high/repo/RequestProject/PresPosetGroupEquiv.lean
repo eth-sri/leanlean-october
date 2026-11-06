@@ -1,14 +1,10 @@
-module
+import RequestProject.PresCylinderInclusionPi1
+import RequestProject.RoseRootedLoops
+import RequestProject.PresPosetReadingSurjective
+import RequestProject.Tac
 
-public import RequestProject.PresCylinderInclusionPi1
-public import RequestProject.RoseRootedLoops
-public import RequestProject.PresPosetReadingSurjective
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.PresModel
 open Comb
@@ -19,23 +15,16 @@ variable {α J : Type u} (w : J → List (α × Bool))
 theorem roseLoopHom_inclusion :
     (pi1Map (orderCxMap (iRose w) (iRose_monotone w)) Rose.base).comp
       (loopHom (roseGeneratorLoop (α := α))) = alphaFree w := by
-  apply FreeGroup.ext_hom
-  intro i
-  rw [MonoidHom.comp_apply, loopHom_of]
-  exact (show (pi1Map (orderCxMap (iRose w) (iRose_monotone w)) Rose.base)
-    (Pi1.mk (roseGeneratorLoop i)) = genClass w i from rfl).trans
-      (alphaFree_of w i).symm
+  aesop
 
 /-- The actual free-group marking surjects onto the presentation fundamental group. -/
 theorem alphaFree_surjective (hpos : ∀ j, 0 < (w j).length) :
     Function.Surjective (alphaFree w) := by
   intro z
-  obtain ⟨q, hq⟩ := presRoseInclusion_pi1_surjective w hpos Rose.base z
-  obtain ⟨p, hp⟩ := roseLoopHom_surjective q
-  refine ⟨p, ?_⟩
+  cases' presRoseInclusion_pi1_surjective w hpos Rose.base z with q hq
+  cases' roseLoopHom_surjective q with p hp
   have h := DFunLike.congr_fun (roseLoopHom_inclusion w) p
-  rw [MonoidHom.comp_apply, hp, hq] at h
-  exact h.symm
+  aesop
 
 variable (ρ : J → FreeGroup α) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
 
@@ -43,12 +32,12 @@ variable (ρ : J → FreeGroup α) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
 theorem alphaHomW_surjective (hpos : ∀ j, 0 < (w j).length) :
     Function.Surjective (alphaHomW ρ w hw) := by
   intro z
-  obtain ⟨p, hp⟩ := alphaFree_surjective w hpos z
+  cases' alphaFree_surjective w hpos z with p hp
   exact ⟨QuotientGroup.mk p, hp⟩
 
 /-- Reading and marking are actual inverse maps on the presentation fundamental group. -/
 theorem alphaHomW_readingPresW (hpos : ∀ j, 0 < (w j).length)
-    (z : Pi1 (orderCx (PresPos w)) (ptBase w)) :
+    z :
     alphaHomW ρ w hw (readingPresW ρ w hw z) = z := by
   obtain ⟨p, rfl⟩ := alphaHomW_surjective w ρ hw hpos z
   rw [readingPresW_alphaHomW]
@@ -57,5 +46,3 @@ theorem alphaHomW_readingPresW (hpos : ∀ j, 0 < (w j).length)
 theorem readingPresW_injective (hpos : ∀ j, 0 < (w j).length) :
     Function.Injective (readingPresW ρ w hw) :=
   Function.LeftInverse.injective (alphaHomW_readingPresW w ρ hw hpos)
-
-end FiniteChains.PresModel

@@ -1,12 +1,9 @@
-module
+import RequestProject.Statement
+import RequestProject.OrderNerveRealizationPaths
 
-public import RequestProject.Statement
-public import RequestProject.OrderNerveRealizationPaths
-
-@[expose] public section
 
 namespace FiniteChains.Comb
-open CategoryTheory Topology
+open CategoryTheory
 
 /-- The actual realized poset nerve, with its proved topology, CW structure,
 connectedness and dimension, is a genuine two-complex of the submission statement. -/
@@ -19,6 +16,4 @@ noncomputable def orderNerveTwoComplex (P : Type) [PartialOrder P] [Nonempty P]
       hausdorff := inferInstance
       cw := inferInstance
       connected := inferInstance
-      dimension := fun n hn => orderNerveRealization_cell_isEmpty P 2 n hn }
-
-end FiniteChains.Comb
+      dimension := (orderNerveRealization_cell_isEmpty P 2) }

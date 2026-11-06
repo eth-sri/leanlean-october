@@ -1,25 +1,19 @@
-module
+import RequestProject.TopologicalSingular.SmallMathlibComparison
+import RequestProject.OrderNerveRealizationStarAcyclic
+import RequestProject.Tac
 
-public import RequestProject.TopologicalSingular.SmallMathlibComparison
-public import RequestProject.OrderNerveRealizationStarAcyclic
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular SingularSubdivision
 
 /-- Every positive-dimensional singular cycle is homologous to one whose
 individual simplices each lie in an open vertex star. -/
-theorem orderNerveRealization_exists_small_cycle (P : Type) [PartialOrder P]
-    (n : ℕ) (c : Chain (orderNerveRealization P) (n + 1)) (hc : boundary n c = 0) :
-    ∃ d : Chain (orderNerveRealization P) (n + 1),
+theorem orderNerveRealization_exists_small_cycle P [PartialOrder P]
+    n c (hc : boundary n c = 0) :
+    ∃ d,
       d ∈ smallChains (orderNerveRealizationOpenStar P) (n + 1) ∧
       boundary n d = 0 ∧ d - c ∈ LinearMap.range (boundary (n + 1)) :=
-  exists_small_cycle_representative (orderNerveRealizationOpenStar P)
+  exists_small_cycle_representative _
     (orderNerveRealizationOpenStar_isOpen P) (orderNerveRealizationOpenStar_cover P) n c hc
-
-end FiniteChains.Comb

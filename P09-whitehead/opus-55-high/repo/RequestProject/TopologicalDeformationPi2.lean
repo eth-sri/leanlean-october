@@ -1,2 +1,1 @@
-module
-public import RequestProject.TopologicalCoverPi2
+import RequestProject.TopologicalCoverPi2

@@ -1,10 +1,7 @@
-module
+import RequestProject.ChamberQuotient
+import RequestProject.TruncatedCube
+import RequestProject.CmpNerve
 
-public import RequestProject.ChamberQuotient
-public import RequestProject.TruncatedCube
-public import RequestProject.CmpNerve
-
-@[expose] public section
 
 /-! The quotient cube cells are the actual coordinate cubes used in the geometric collapse. -/
 
@@ -32,8 +29,7 @@ def coordinateToQCube (c : CoordinateCube A) : QCube A where
     | _ => 0
   isSimplex := c.2
   sgn_eq_zero v hv := by
-    rw [mem_freeSet] at hv
-    simp [hv]
+    simp_all
 
 @[simp] theorem coordinateToQCube_toCoordinate (c : CoordinateCube A) :
     qCubeToCoordinate (coordinateToQCube c) = c.1 := by
@@ -64,14 +60,13 @@ theorem qCubeToCoordinate_sgn_zero (c : QCube A) (hc : c.sgn = 0) :
   simp [qCubeToCoordinate, posCube, hc]
 
 /-- Recover the parity sign from the actual fixed coordinate. -/
-theorem qCubeToCoordinate_parity (c : QCube A) (v : V) :
+theorem qCubeToCoordinate_parity (c : QCube A) v :
     (match qCubeToCoordinate c v with | CubeCoord.neg => (1 : ZMod 2) | _ => 0) =
-      c.sgn v := by
-  exact congrArg (fun d : QCube A => d.sgn v) (qCubeCoordinateEquiv.left_inv c)
+      c.sgn v := congrArg (·.sgn v) (qCubeCoordinateEquiv.left_inv c)
 
 /-- A coordinate cube is a face of another when each coordinate of the larger cube is
  free or agrees with the smaller cube. -/
-def CoordinateFace (c d : Cube V) : Prop := ∀ v, d v = CubeCoord.free ∨ c v = d v
+def CoordinateFace (c d : Cube V) := ∀ v, d v = CubeCoord.free ∨ c v = d v
 
 /-- The poset used in the full Davis nerve is exactly the coordinate-cube face poset. -/
 theorem qCubeToCoordinate_face_iff (c d : QCube A) :
@@ -91,42 +86,13 @@ theorem qCubeToCoordinate_face_iff (c d : QCube A) :
       have hd : qCubeToCoordinate d v = CubeCoord.free := by
         rcases h v with hd | hd
         · exact hd
-        · exact hd.symm.trans hc
-      have hm : v ∈ freeSet (qCubeToCoordinate d) := mem_freeSet.mpr hd
+        simp_all
+      have hm := mem_freeSet.mpr hd
       simpa using hm
     · intro v hv
       have hd : qCubeToCoordinate d v ≠ CubeCoord.free := by
         intro he
         have hm := mem_freeSet.mpr he
-        rw [freeSet_qCubeToCoordinate] at hm
-        exact hv hm
-      have he : qCubeToCoordinate c v = qCubeToCoordinate d v := (h v).resolve_left hd
+        simp_all
+      have he := (h v).resolve_left hd
       rw [← qCubeToCoordinate_parity c v, ← qCubeToCoordinate_parity d v, he]
-
-instance : PartialOrder (CoordinateCube A) where
-  le c d := CoordinateFace c.1 d.1
-  le_refl c v := Or.inr rfl
-  le_trans c d e hcd hde v := by
-    rcases hde v with he | he
-    · exact Or.inl he
-    · rcases hcd v with hd | hd
-      · exact Or.inl (he.symm.trans hd)
-      · exact Or.inr (hd.trans he)
-  le_antisymm c d hcd hdc := by
-    apply Subtype.ext
-    funext v
-    rcases hcd v with hd | hd
-    · rcases hdc v with hc | hc
-      · exact hc.trans hd.symm
-      · exact hc.symm
-    · exact hd
-
-end FiniteChains.Davis
-
-namespace FiniteChains.Davis
-
-open RACG Mirror
-
-variable {P : Type} [PartialOrder P] [DecidableEq P] [Fintype P]
-
-end FiniteChains.Davis

@@ -1,12 +1,10 @@
-module
+import RequestProject.GenusCollapse
+import RequestProject.CutSurfaceSpine
+import Mathlib.Order.Extension.Linear
+import RequestProject.GeometricChainCollapse
+import RequestProject.CutFacetCollapse
+noncomputable section
 
-public import RequestProject.GenusCollapse
-public import RequestProject.CutSurfaceSpine
-public import Mathlib.Order.Extension.Linear
-public import RequestProject.GeometricChainCollapse
-public import RequestProject.CutFacetCollapse
-
-@[expose] public section
 
 /-! Integral chain collapse of the actual genus block, chosen independently of a cycle. -/
 
@@ -16,25 +14,24 @@ variable (q : ℕ) [NeZero q]
 
 abbrev GenusVertex := SCell (gvc q) (gec q) (gc q)
 
-noncomputable instance genusVertexLinearOrder : LinearOrder (GenusVertex q) := by
+instance genusVertexLinearOrder : LinearOrder (GenusVertex q) := by
   classical
   exact LinearOrder.lift' (toLinearExtension : GenusVertex q → LinearExtension (GenusVertex q))
-    (fun _ _ h => h)
+    (by tauto)
 
 /-- The actual sequence of oriented cellular cancellation pairs. -/
 theorem exists_genus_geometric_chainCollapse :
-    ∃ lp : List (Cube (GenusVertex q) ×
-        (Cube (GenusVertex q) ⊕ Finset (GenusVertex q))),
+    ∃ lp,
       Collapse.IsPairCollapse (spineInc (orderComplex (GenusVertex q))) lp
         (topCubes (orderComplex (GenusVertex q))) ∧
       CollapseChain.IsChainCollapse (cubeBdry (V := GenusVertex q)) lp ∧
-      ∀ o : Finset (GenusVertex q) → ℤ,
+      ∀ o,
         simpBdry o = 0 →
         (∀ σ, σ.card ≠ 3 → o σ = 0) →
         (∀ σ, σ ∉ (orderComplex (GenusVertex q)).faces → o σ = 0) →
         CollapseChain.cmap (cubeBdry (V := GenusVertex q)) lp
           (Sum.elim 0 (fun τ => -o τ)) = 0 := by
-  obtain ⟨l, hl⟩ := genus_spine_collapse q
+  cases' genus_spine_collapse q with l hl
   obtain ⟨lp, hm, hp, hc⟩ := exists_geometric_chainCollapse (Finset.Subset.refl _) hl
   exact ⟨lp, hp, hc, fun o hcyc hsupp hfaces =>
     cutSurface_cmap_eq_zero hcyc hsupp hfaces hl hm hc⟩
@@ -42,12 +39,11 @@ theorem exists_genus_geometric_chainCollapse :
 /-- Choose cut facets for all positive corner cubes while retaining both certificates and
 the proved vanishing of the cut-surface cycle. -/
 theorem exists_genus_cut_geometric_chainCollapse :
-    ∃ lp : List (Cube (GenusVertex q) ×
-        (Cube (GenusVertex q) ⊕ Finset (GenusVertex q))),
+    ∃ lp,
       Collapse.IsPairCollapse (spineInc (orderComplex (GenusVertex q))) lp
         (topCubes (orderComplex (GenusVertex q))) ∧
       CollapseChain.IsChainCollapse (cubeBdry (V := GenusVertex q)) lp ∧
-      (∀ o : Finset (GenusVertex q) → ℤ,
+      (∀ o,
         simpBdry o = 0 →
         (∀ σ, σ.card ≠ 3 → o σ = 0) →
         (∀ σ, σ ∉ (orderComplex (GenusVertex q)).faces → o σ = 0) →
@@ -65,7 +61,7 @@ theorem exists_genus_cut_geometric_chainCollapse :
 
 /-- The actual sequence retains geometric and oriented certificates and uses the cut facet
 of every positive corner cube. -/
-noncomputable def genusChainCollapse := Classical.choose (exists_genus_cut_geometric_chainCollapse q)
+def genusChainCollapse := Classical.choose (exists_genus_cut_geometric_chainCollapse q)
 
 theorem genusChainCollapse_isPairCollapse :
     Collapse.IsPairCollapse (spineInc (orderComplex (GenusVertex q))) (genusChainCollapse q)
@@ -77,7 +73,7 @@ theorem genusChainCollapse_isChainCollapse :
   (Classical.choose_spec (exists_genus_cut_geometric_chainCollapse q)).2.1
 
 theorem genusChainCollapse_cutSurface_eq_zero
-    (o : Finset (GenusVertex q) → ℤ) (hcyc : simpBdry o = 0)
+    o (hcyc : simpBdry o = 0)
     (hsupp : ∀ σ, σ.card ≠ 3 → o σ = 0)
     (hfaces : ∀ σ, σ ∉ (orderComplex (GenusVertex q)).faces → o σ = 0) :
     CollapseChain.cmap (cubeBdry (V := GenusVertex q)) (genusChainCollapse q)
@@ -85,29 +81,25 @@ theorem genusChainCollapse_cutSurface_eq_zero
   (Classical.choose_spec (exists_genus_cut_geometric_chainCollapse q)).2.2.1 o hcyc hsupp hfaces
 
 theorem genusChainCollapse_positive_pair
-    (p : Cube (GenusVertex q) × (Cube (GenusVertex q) ⊕ Finset (GenusVertex q)))
+    p
     (hp : p ∈ genusChainCollapse q) (hpos : p.1 = posCube (freeSet p.1)) :
     p.2 = Sum.inr (freeSet p.1) :=
   (Classical.choose_spec (exists_genus_cut_geometric_chainCollapse q)).2.2.2 p hp hpos
 
 theorem genusChainCollapse_old_face_nonpositive
-    (t g : Cube (GenusVertex q))
+    t g
     (hp : (t, Sum.inl g) ∈ genusChainCollapse q) : t ≠ posCube (freeSet t) := by
   intro ht
-  have hh := genusChainCollapse_positive_pair q (t, Sum.inl g) hp ht
+  have hh := genusChainCollapse_positive_pair q _ hp ht
   cases hh
 
 /-- Every cut triangle is removed by its own positive corner cube. -/
-theorem genusChainCollapse_removes_cut_triangle (σ : Finset (GenusVertex q))
+theorem genusChainCollapse_removes_cut_triangle σ
     (hσ : IsTri (orderComplex (GenusVertex q)) σ) :
     Sum.inr σ ∈ (genusChainCollapse q).map Prod.snd := by
-  have ht : posCube σ ∈ topCubes (orderComplex (GenusVertex q)) := by
-    apply mem_topCubes.mpr
-    simpa using hσ
-  obtain ⟨f, hf⟩ := (genusChainCollapse_isPairCollapse q).covers ht
+  have ht : posCube σ ∈ topCubes (orderComplex _) := by
+    simp_all
+  cases' (genusChainCollapse_isPairCollapse q).covers ht with f hf
   have he : f = Sum.inr σ := by
-    simpa using genusChainCollapse_positive_pair q (posCube σ, f) hf (by simp)
-  subst f
-  exact List.mem_map.mpr ⟨(posCube σ, Sum.inr σ), hf, rfl⟩
-
-end FiniteChains.Davis.Genus
+    simpa using genusChainCollapse_positive_pair q _ hf (by simp)
+  grind

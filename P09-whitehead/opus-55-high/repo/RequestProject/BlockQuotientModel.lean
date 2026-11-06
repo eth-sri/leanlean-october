@@ -1,2 +1,1 @@
-module
-public import RequestProject.FoxBaseChangeExact
+import RequestProject.FoxBaseChangeExact

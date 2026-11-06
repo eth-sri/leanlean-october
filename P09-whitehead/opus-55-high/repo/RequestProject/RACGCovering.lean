@@ -1,8 +1,6 @@
-module
+import RequestProject.RACGCayleyGraph
+import RequestProject.Tac
 
-public import RequestProject.RACGCayleyGraph
-
-@[expose] public section
 
 /-!
 # The Cayley graph covers the one-skeleton of `C(L)`
@@ -32,12 +30,9 @@ a median graph, this identifies the Cayley graph with the one-skeleton of the un
 of `C(L)`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
-namespace FiniteChains
-namespace RACG
+namespace FiniteChains.RACG
 
 universe u
 
@@ -55,10 +50,8 @@ def eVec (s : V) : V → ZMod 2 := fun v => if v = s then 1 else 0
 /-- The parity vector of a word: the number of occurrences of each letter, modulo two. -/
 def parList (l : List V) : V → ZMod 2 := fun v => (l.count v : ZMod 2)
 
-@[simp] theorem parList_nil : parList ([] : List V) = fun _ => 0 := by
-  funext v; simp [parList]
 
-@[simp] theorem parList_cons (s : V) (l : List V) :
+@[simp] theorem parList_cons s (l : List V) :
     parList (s :: l) = eVec s + parList l := by
   funext v
   by_cases h : v = s
@@ -68,105 +61,90 @@ def parList (l : List V) : V → ZMod 2 := fun v => (l.count v : ZMod 2)
 
 theorem parList_append (l m : List V) : parList (l ++ m) = parList l + parList m := by
   funext v
-  simp only [parList, List.count_append, Pi.add_apply, Nat.cast_add]
+  simp [parList, List.count_append, Pi.add_apply, Nat.cast_add]
 
 omit [DecidableEq V] in
 /-- A commutation of adjacent letters permutes the word. -/
 theorem Swap.perm {Cm : V → V → Prop} {l m : List V} (h : Swap Cm l m) : l.Perm m := by
   induction h with
-  | head _ q => exact List.Perm.swap _ _ q
+  | head _ q => tauto
   | cons x _ ih => exact ih.cons x
 
-theorem parList_ceq {l m : List V} (h : CEq A.rel l m) : parList l = parList m := by
+theorem parList_ceq (h : CEq A.rel l m) : parList l = parList m := by
   induction h with
   | refl => rfl
   | tail _ hstep ih =>
       refine ih.trans ?_
       funext v
-      exact congrArg (Nat.cast) (Swap.perm hstep |>.count_eq v)
+      exact congrArg Nat.cast (hstep.perm |>.count_eq v)
 
 /-- The parity vector of a reduced trace. -/
 def parTr : Tr A → V → ZMod 2 :=
-  Quotient.lift (fun l : {l : List V // IsRed A.rel l} => parList l.1)
+  Quotient.lift (parList ·.1)
     (fun _ _ h => parList_ceq A h)
 
-@[simp] theorem parTr_mkTr (l : List V) (h : IsRed A.rel l) :
-    parTr A (mkTr A l h) = parList l := rfl
 
 /-- An elementary move changes the parity vector by the corresponding generator. -/
-theorem parTr_act (s : V) (t : Tr A) : parTr A (act A s t) = eVec s + parTr A t := by
+theorem parTr_act s t : parTr A (act A s t) = eVec s + parTr A t := by
   classical
   induction t using Quotient.inductionOn with
   | _ l =>
       by_cases hc : canStart A.rel s l.1
-      · have hpop : (actRep A s l).1 = popStart s l.1 := actRep_of_canStart A hc
-        have hceq : CEq A.rel l.1 (s :: popStart s l.1) :=
+      · have hpop := actRep_of_canStart A hc
+        have hceq :=
           ceq_popStart A.rel_symm hc
         have h1 : parList l.1 = eVec s + parList (popStart s l.1) := by
           rw [parList_ceq A hceq, parList_cons]
-        have h2 : parTr A (act A s (Quotient.mk (redSetoid A) l)) = parList (popStart s l.1) := by
+        have h2 : parTr A (act A s (Quotient.mk _ l)) = parList (popStart s l.1) := by
           show parList (actRep A s l).1 = _
-          rw [hpop]
+          simp_all
         rw [h2]
         show parList (popStart s l.1) = eVec s + parList l.1
         rw [h1]
-        funext v
-        simp only [Pi.add_apply]
-        have h0 : eVec s v + eVec s v = 0 := zmod2_add_self _
-        linear_combination (norm := ring_nf) -h0
-      · have hact : (actRep A s l).1 = s :: l.1 := actRep_of_not_canStart A hc
-        have h2 : parTr A (act A s (Quotient.mk (redSetoid A) l)) = parList (s :: l.1) := by
+        grind [Pi.add_apply]
+      · have hact := actRep_of_not_canStart A hc
+        have h2 : parTr A (act A s (Quotient.mk _ l)) = parList (s :: l.1) := by
           show parList (actRep A s l).1 = _
-          rw [hact]
-        rw [h2, parList_cons]
-        rfl
+          simp_all
+        aesop
 
 /-! ### The parity homomorphism of the group -/
 
 /-- The parity homomorphism `W_L → (ℤ/2)^{L⁰}`: the abelianisation of the right-angled Coxeter
 group, read on reduced traces. -/
-noncomputable def phi (x : CayGroup A) : V → ZMod 2 :=
+noncomputable def phi (x : CayGroup A) :=
   parTr A ((x : Equiv.Perm (Tr A)) (oneTr A))
 
-theorem cword_append (l m : List V) : cword A (l ++ m) = cword A l * cword A m :=
+theorem cword_append l m : cword A (l ++ m) = cword A l * cword A m :=
   Subtype.ext (by simpa using wordPerm_append A l m)
 
-theorem phi_cword (l : List V) : phi A (cword A l) = parList l := by
+theorem phi_cword l : phi A (cword A l) = parList l := by
   induction l with
   | nil =>
-      show parTr A ((wordPerm A []) (oneTr A)) = parList []
       rfl
   | cons s t ih =>
       have hval : ((cword A (s :: t) : CayGroup A) : Equiv.Perm (Tr A)) (oneTr A)
           = act A s (((cword A t : CayGroup A) : Equiv.Perm (Tr A)) (oneTr A)) := by
-        rw [cword_cons]
-        show (actPerm A s) _ = _
-        rw [actPerm_apply]
+        rfl
       show parTr A _ = _
       rw [hval, parTr_act, parList_cons]
-      exact congrArg (fun z => eVec s + z) ih
+      tauto
 
-theorem phi_mul (x y : CayGroup A) : phi A (x * y) = phi A x + phi A y := by
+theorem phi_mul x y : phi A (x * y) = phi A x + phi A y := by
   obtain ⟨l, _, rfl⟩ := exists_cword A x
   obtain ⟨m, _, rfl⟩ := exists_cword A y
-  rw [← cword_append, phi_cword, phi_cword, phi_cword, parList_append]
+  simp [← cword_append, phi_cword, parList_append]
 
 /-! ### The one-skeleton of `C(L)` and the covering property -/
 
 /-! ### The deck transformations -/
 
-@[simp] theorem phi_one : phi A (1 : CayGroup A) = 0 := by
-  have h : (1 : CayGroup A) = cword A [] := by simp
-  rw [h, phi_cword, parList_nil]
+@[simp] theorem phi_one : phi A 1 = 0 := by
   rfl
 
-theorem phi_inv (x : CayGroup A) : phi A x⁻¹ = phi A x := by
+theorem phi_inv x : phi A x⁻¹ = phi A x := by
   have h : phi A x + phi A x⁻¹ = 0 := by
     rw [← phi_mul, mul_inv_cancel, phi_one]
   funext v
   have hv : phi A x v + phi A x⁻¹ v = 0 := congrFun h v
-  have h0 : phi A x v + phi A x v = 0 := zmod2_add_self _
-  linear_combination (norm := ring_nf) hv - h0
-
-end RACG
-end FiniteChains
+  grind

@@ -1,10 +1,7 @@
-module
+import RequestProject.StrictSubposetChains
+import RequestProject.NormalizedStrictBoundary
+import RequestProject.PresCylinderCoverCycles
 
-public import RequestProject.StrictSubposetChains
-public import RequestProject.NormalizedStrictBoundary
-public import RequestProject.PresCylinderCoverCycles
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
 open Comb
@@ -12,14 +9,14 @@ universe u
 variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → CylBase w) (hf : IsPosetCover f)
 
-def cylinderCoverRoseSet : Set P := {p | ∃ x : Rose α, f p = cylIn (aHom w) x}
+def cylinderCoverRoseSet := {p | ∃ x : Rose α, f p = cylIn _ x}
 
-theorem cylinderCoverCollapse_mem_rose (p : P) :
+theorem cylinderCoverCollapse_mem_rose p :
     cylinderCoverCollapse w hf p ∈ cylinderCoverRoseSet w f :=
-  ⟨cylRetr (aHom w) (f p), cylinderCoverCollapse_projection w hf p⟩
+  ⟨cylRetr _ (f p), cylinderCoverCollapse_projection w hf p⟩
 
 /-- Every surviving genuine edge of a collapsed finite chain lies in the actual rose preimage. -/
-theorem cylinderCoverCollapsedChain_support_rose (c : StrictOrdEdge P →₀ ℤ) :
+theorem cylinderCoverCollapsedChain_support_rose c :
     ∀ e ∈ (normalizedStrictChain1 (cylinderCoverCollapse w hf)
       (cylinderCoverCollapse_monotone w hf) c).support,
       e.1.1 ∈ cylinderCoverRoseSet w f ∧ e.1.2 ∈ cylinderCoverRoseSet w f := by
@@ -30,8 +27,8 @@ theorem cylinderCoverCollapsedChain_support_rose (c : StrictOrdEdge P →₀ ℤ
     intro e he
     rw [map_add] at he
     rcases Finset.mem_union.mp (Finsupp.support_add he) with h | h
-    · exact hc e h
-    · exact hd e h
+    · simp_all
+    simp_all
   | single t n =>
     intro e he
     rw [normalizedStrictChain1_single] at he
@@ -40,14 +37,11 @@ theorem cylinderCoverCollapsedChain_support_rose (c : StrictOrdEdge P →₀ ℤ
     · simp only [normalizeOrdEdge, dif_neg h] at he
       let r : StrictOrdEdge P := ⟨(cylinderCoverCollapse w hf t.1.1,
         cylinderCoverCollapse w hf t.1.2),
-        lt_of_le_of_ne (cylinderCoverCollapse_monotone w hf t.2.le) h⟩
-      change e ∈ (n • Finsupp.single r (1 : ℤ)).support at he
+        by grind⟩
+      change e ∈ (n • Finsupp.single r (1)).support at he
       have hr : e = r := by
         by_contra hn
-        have hz : (n • Finsupp.single r (1 : ℤ)) e = 0 := by simp [Ne.symm hn]
-        exact (Finsupp.mem_support_iff.mp he) hz
+        simp_all
       subst e
       exact ⟨cylinderCoverCollapse_mem_rose w f hf t.1.1,
         cylinderCoverCollapse_mem_rose w f hf t.1.2⟩
-
-end FiniteChains.PresModel

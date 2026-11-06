@@ -1,8 +1,5 @@
-module
+import RequestProject.PresPosetAlphaW
 
-public import RequestProject.PresPosetAlphaW
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
 open Comb
@@ -14,5 +11,3 @@ variable {α J : Type u} (ρ : J → FreeGroup α) (w : J → List (α × Bool))
 theorem readingPresW_surjective : Function.Surjective (readingPresW ρ w hw) := by
   intro x
   exact ⟨alphaHomW ρ w hw x, readingPresW_alphaHomW ρ w hw x⟩
-
-end FiniteChains.PresModel

@@ -1,3 +1,2 @@
-module
-public import RequestProject.PosetCoverUpTransform
-public import RequestProject.StrictOrderChains
+import RequestProject.PosetCoverUpTransform
+import RequestProject.StrictOrderChains

@@ -1,3 +1,2 @@
-module
-public import RequestProject.GenusCappedQuotientPushdown
-public import RequestProject.MathlibOrderNerveCategoricalNaturality
+import RequestProject.GenusCappedQuotientPushdown
+import RequestProject.MathlibOrderNerveCategoricalNaturality

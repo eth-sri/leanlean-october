@@ -1,9 +1,6 @@
-module
+import RequestProject.QCubeCoordinateEquiv
+import RequestProject.NerveDegree
 
-public import RequestProject.QCubeCoordinateEquiv
-public import RequestProject.NerveDegree
-
-@[expose] public section
 
 /-! Face incidences of the truncated complex, including its new cut cells. -/
 
@@ -67,14 +64,14 @@ instance : PartialOrder (TruncatedCell A) where
       | inr d => exact congrArg Sum.inr (Subtype.ext (Finset.Subset.antisymm hcd hdc))
 
 /-- A cut cell meets precisely the positive cubes whose directions contain its simplex. -/
-theorem cut_le_old_iff (σ : CutCell A) (c : QOld A) :
+theorem cut_le_old_iff σ c :
     (Sum.inr σ : TruncatedCell A) ≤ Sum.inl c ↔
       σ.1 ⊆ c.1.spx ∧ c.1.sgn = 0 := Iff.rfl
 
 /-- Retained cubes embed as their actual truncated cells. -/
 def oldCellIncl : QOld A → TruncatedCell A := Sum.inl
 
-theorem oldCellIncl_monotone : Monotone (oldCellIncl (A := A)) := fun _ _ h => h
+theorem oldCellIncl_monotone : Monotone (oldCellIncl (A := A)) := by tauto
 
 /-- Project a cut simplex to the positive cube containing it; retained cubes are fixed.
 This supplies the comparison with the older cube-poset block model. -/
@@ -88,13 +85,13 @@ theorem truncatedCellRetraction_monotone : Monotone (truncatedCellRetraction (A 
   | inl c =>
     cases d with
     | inl d => exact h
-    | inr d => exact False.elim h
+    | inr d => exact h.elim
   | inr σ =>
     cases d with
     | inl d =>
       refine ⟨h.1, ?_⟩
       intro v _
-      change (0 : ZMod 2) = d.1.sgn v
+      change (0) = d.1.sgn v
       rw [h.2]
       rfl
     | inr τ => exact posQCube_monotone h
@@ -108,13 +105,13 @@ have a pointwise order homotopy, including the cut cells. -/
 theorem truncatedCell_le_retraction (c : TruncatedCell A) :
     c ≤ oldCellIncl (truncatedCellRetraction c) := by
   cases c with
-  | inl c => exact le_refl _
-  | inr σ => exact ⟨Finset.Subset.refl _, rfl⟩
+  | inl c => rfl
+  | inr σ => tauto
 
 variable [Fintype V]
 
 /-- The cut incidence can also be read directly from the coordinates used by the collapse. -/
-theorem cut_le_old_coordinate_iff (σ : CutCell A) (c : QOld A) :
+theorem cut_le_old_coordinate_iff σ c :
     (Sum.inr σ : TruncatedCell A) ≤ Sum.inl c ↔
       σ.1 ⊆ freeSet (qCubeToCoordinate c.1) ∧
         qCubeToCoordinate c.1 = posCube c.1.spx := by
@@ -129,5 +126,3 @@ theorem cut_le_old_coordinate_iff (σ : CutCell A) (c : QOld A) :
     · exact c.1.sgn_eq_zero v hv
     · rw [← qCubeToCoordinate_parity c.1 v, hz]
       simp [posCube, hv]
-
-end FiniteChains.Davis

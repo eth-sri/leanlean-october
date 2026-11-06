@@ -1,9 +1,6 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.AttachmentBacktrackHomotopy
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.AttachmentBacktrackHomotopy
-
-@[expose] public section
 
 /-! Homotopic attaching maps have homotopy equivalent attachment spaces.
 The equivalence is the identity on the literal old summand. The inverse
@@ -22,7 +19,7 @@ theorem exists_attachingDiskExtension (S : Set D)
     ∃ L : C(I × D, Space a₀ Subtype.val),
       (∀ d, L (0, d) = cell a₀ Subtype.val d) ∧
       ∀ t a, L (t, a.val) = old a₀ Subtype.val (H (t, a)) := by
-  apply hext (Space a₀ Subtype.val)
+  apply hext _
     ⟨cell a₀ Subtype.val, cell_continuous _ _⟩
     ((⟨old a₀ Subtype.val, old_continuous _ _⟩ : C(P, Space a₀ Subtype.val)).comp
       H.toContinuousMap)
@@ -33,47 +30,45 @@ theorem exists_attachingDiskExtension (S : Set D)
 
 def attachingDiskExtension (S : Set D)
     (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) : C(I × D, Space a₀ Subtype.val) :=
+    (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) :=
   Classical.choose (exists_attachingDiskExtension S hext a₀ a₁ H)
 
 theorem attachingDiskExtension_zero (S : Set D)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) (d : D) :
+    hext
+    (a₀ a₁ : C(S, P)) H d :
     attachingDiskExtension S hext a₀ a₁ H (0, d) = cell a₀ Subtype.val d :=
   (Classical.choose_spec (exists_attachingDiskExtension S hext a₀ a₁ H)).1 d
 
 theorem attachingDiskExtension_side (S : Set D)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) (t : I) (a : S) :
+    hext
+    (a₀ a₁ : C(S, P)) H t a :
     attachingDiskExtension S hext a₀ a₁ H (t, a.val) = old a₀ Subtype.val (H (t, a)) :=
   (Classical.choose_spec (exists_attachingDiskExtension S hext a₀ a₁ H)).2 t a
 
 def attachingBackwardMap (S : Set D)
     (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) :
-    C(Space a₁ Subtype.val, Space a₀ Subtype.val) :=
+    (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) :=
   desc a₁ Subtype.val ⟨old a₀ Subtype.val, old_continuous _ _⟩
     ((attachingDiskExtension S hext a₀ a₁ H).comp
       ⟨fun d => (1, d), continuous_const.prodMk continuous_id⟩)
     (fun a => by
-      change old a₀ Subtype.val (a₁ a) = attachingDiskExtension S hext a₀ a₁ H (1, a.val)
-      rw [attachingDiskExtension_side, H.apply_one])
+      simp [attachingDiskExtension_side, H.apply_one])
 
 @[simp] theorem attachingBackwardMap_old (S : Set D)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) (p : P) :
+    hext
+    a₀ a₁ H (p : P) :
     attachingBackwardMap S hext a₀ a₁ H (old a₁ Subtype.val p) = old a₀ Subtype.val p := rfl
 
 @[simp] theorem attachingBackwardMap_cell (S : Set D)
-    (hext : HasHomotopyExtension (Subtype.val : S → D))
-    (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) (d : D) :
+    hext
+    (a₀ a₁ : C(S, P)) H d :
     attachingBackwardMap S hext a₀ a₁ H (cell a₁ Subtype.val d) =
       attachingDiskExtension S hext a₀ a₁ H (1, d) := by
   unfold attachingBackwardMap
   rw [desc_cell]
   rfl
 
-def attachingHomotopyEquiv (S : Set D) (hS : IsClosed S)
+def attachingHomotopyEquiv S (hS : IsClosed S)
     (hext : HasHomotopyExtension (Subtype.val : S → D))
     (hfull : HasHomotopyExtension (Subtype.val : FullCylinderBoundary S → I × D))
     (a₀ a₁ : C(S, P)) (H : a₀.Homotopy a₁) :
@@ -103,7 +98,5 @@ def attachingHomotopyEquiv (S : Set D) (hS : IsClosed S)
       (attachingBackwardMap_cell S hext a₁ a₀ H.symm)
       (attachingBackwardMap_cell S hext a₀ a₁ H)
     intro t a
-    simpa only [ContinuousMap.Homotopy.symm_symm] using
+    simpa [ContinuousMap.Homotopy.symm_symm] using
       attachingDiskExtension_side S hext a₀ a₁ H t a
-
-end FiniteChains.RelativeAttachment

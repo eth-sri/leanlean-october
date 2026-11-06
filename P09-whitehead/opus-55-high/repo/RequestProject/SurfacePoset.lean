@@ -1,8 +1,5 @@
-module
+import RequestProject.CmpNerve
 
-public import RequestProject.CmpNerve
-
-@[expose] public section
 
 /-!
 # The face poset of a polygon with identified boundary
@@ -35,8 +32,7 @@ positions carrying the same edge label carry, in one of the two possible orders,
 of endpoint labels.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb
 
@@ -133,18 +129,18 @@ def plt (vc : Fin M → κ) (ec : Fin M → ι) : Cell κ ι M → Cell κ ι M 
 
 variable {vc : Fin M → κ} {ec : Fin M → ι}
 
-theorem rk_lt_of_plt {x y : Cell κ ι M} (h : plt vc ec x y) : x.rk < y.rk := by
+theorem rk_lt_of_plt (h : plt vc ec x y) : x.rk < y.rk := by
   cases x <;> cases y <;> simp_all [plt, rk]
 
-theorem plt_irrefl (x : Cell κ ι M) : ¬ plt vc ec x x := fun h => absurd (rk_lt_of_plt h) (by omega)
+theorem plt_irrefl x : ¬ plt vc ec x x := fun h => absurd (rk_lt_of_plt h) (by omega)
 
-theorem not_plt_of_rk_le {x y : Cell κ ι M} (h : y.rk ≤ x.rk) : ¬ plt vc ec x y :=
+theorem not_plt_of_rk_le (h : y.rk ≤ x.rk) : ¬ plt vc ec x y :=
   fun hh => absurd (rk_lt_of_plt hh) (by omega)
 
 omit [NeZero M] in
 theorem rk_le_two (x : Cell κ ι M) : x.rk ≤ 2 := by cases x <;> simp [rk]
 
-theorem plt_asymm {x y : Cell κ ι M} (h : plt vc ec x y) : ¬ plt vc ec y x := by
+theorem plt_asymm (h : plt vc ec x y) : ¬ plt vc ec y x := by
   intro h'
   have := rk_lt_of_plt h
   have := rk_lt_of_plt h'
@@ -153,122 +149,109 @@ theorem plt_asymm {x y : Cell κ ι M} (h : plt vc ec x y) : ¬ plt vc ec y x :=
 /-- **The compatibility of the identification of the boundary with the identification of its
 endpoints**: two positions of the polygon carrying the same edge of the surface carry, in one of
 the two orders, the same pair of endpoints. -/
-def Compat (vc : Fin M → κ) (ec : Fin M → ι) : Prop :=
-  ∀ i j : Fin M, ec i = ec j →
+def Compat (vc : Fin M → κ) (ec : Fin M → ι) :=
+  ∀ i j, ec i = ec j →
     (vc i = vc j ∧ vc (i + 1) = vc (j + 1)) ∨ (vc i = vc (j + 1) ∧ vc (i + 1) = vc j)
 
-theorem plt_trans (hc : Compat vc ec) {x y z : Cell κ ι M} (hxy : plt vc ec x y)
+theorem plt_trans (hc : Compat vc ec) {x y z} (hxy : plt vc ec x y)
     (hyz : plt vc ec y z) : plt vc ec x z := by
   cases y with
   | vtx _ => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
   | cvx _ => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
   | ctr => exact absurd hxy (not_plt_of_rk_le (Nat.zero_le _))
-  | tr1 _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | tr2 _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
-  | inn _ => exact absurd hyz (not_plt_of_rk_le (rk_le_two z))
+  | tr1 _ => tauto
+  | tr2 _ => tauto
+  | inn _ => tauto
   | bed e =>
       cases x with
       | vtx v =>
           cases z with
           | tr1 p =>
               obtain ⟨i, hi, hv⟩ := hxy
-              have hep : ec i = ec p := by rw [hi]; exact hyz
+              have hep : ec i = ec p := by aesop
               rcases hc i p hep with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hv with rfl | rfl
               · exact Or.inl h1.symm
               · exact Or.inr h2.symm
               · exact Or.inr h1.symm
-              · exact Or.inl h2.symm
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+              tauto
+          | _ => tauto
+      | _ => tauto
   | ced r =>
       cases x with
       | cvx q =>
           cases z with
           | tr2 p =>
               have h : r = p := hyz
-              subst h
-              exact hxy
+              aesop
           | inn p =>
               have h : r = p := hyz
-              subst h
-              exact hxy
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+              aesop
+          | _ => tauto
+      | _ => tauto
   | dia r =>
       cases x with
       | vtx v =>
           cases z with
           | tr1 p =>
-              have hr : r = p + 1 := hyz
+              have hr := hyz
               subst hr
               exact Or.inr hxy
           | tr2 p =>
               have hr : r = p := hyz
-              subst hr
-              exact hxy
-          | _ => simp [plt] at hyz
+              aesop
+          | _ => tauto
       | cvx q =>
           cases z with
           | tr1 p =>
               have hr : r = p + 1 := hyz
-              have hq : q = r := hxy
-              show q = p + 1
-              rw [hq, hr]
+              aesop
           | tr2 p =>
               have hr : r = p := hyz
               have hq : q = r := hxy
               show q = p ∨ q = p + 1
-              exact Or.inl (by rw [hq, hr])
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+              omega
+          | _ => tauto
+      | _ => tauto
   | gdi r =>
       cases x with
       | vtx v =>
           cases z with
           | tr1 p =>
-              have hr : r = p := hyz
+              have hr := hyz
               subst hr
               exact Or.inl hxy
           | tr2 p =>
               have hr : r = p := hyz
-              subst hr
-              exact hxy
-          | _ => simp [plt] at hyz
+              aesop
+          | _ => tauto
       | cvx q =>
           cases z with
           | tr1 p =>
               have hr : r = p := hyz
-              have hq : q = r + 1 := hxy
-              show q = p + 1
-              rw [hq, hr]
+              aesop
           | tr2 p =>
               have hr : r = p := hyz
               have hq : q = r + 1 := hxy
               show q = p ∨ q = p + 1
-              exact Or.inr (by rw [hq, hr])
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+              simp_all
+          | _ => tauto
+      | _ => tauto
   | rad r =>
       cases x with
       | cvx q =>
           cases z with
           | inn p =>
               have hq : q = r := hxy
-              show q = p ∨ q = p + 1
-              rcases hyz with hr | hr
-              · exact Or.inl (by rw [hq, hr])
-              · exact Or.inr (by rw [hq, hr])
-          | _ => simp [plt] at hyz
+              aesop
+          | _ => tauto
       | ctr =>
-          cases z with
-          | inn p => trivial
-          | _ => simp [plt] at hyz
-      | _ => simp [plt] at hxy
+          cases z <;> aesop
+      | _ => tauto
 
 /-! ### The face poset -/
 
 /-- **The face poset of the polygon with identified boundary.** -/
-def SCell (_vc : Fin M → κ) (_ec : Fin M → ι) (_hc : Compat vc ec) : Type u := Cell κ ι M
+def SCell (_vc : Fin M → κ) (_ec : Fin M → ι) (_hc : Compat vc ec) := Cell κ ι M
 
 variable (vc ec) in
 /-- The order of the face poset: equality or a strict face. -/
@@ -303,10 +286,5 @@ def toS (hc : Compat vc ec) (x : Cell κ ι M) : SCell vc ec hc := x
 
 variable {vc ec}
 
-theorem le_of_plt (hc : Compat vc ec) {x y : Cell κ ι M} (h : plt vc ec x y) :
+theorem le_of_plt hc {x y} (h : plt vc ec x y) :
     toS vc ec hc x ≤ toS vc ec hc y := Or.inr h
-
-end Order
-
-end Davis
-end FiniteChains

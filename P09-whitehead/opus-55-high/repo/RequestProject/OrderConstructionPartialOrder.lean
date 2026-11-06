@@ -1,37 +1,28 @@
-module
+import RequestProject.CylinderPoset
+import RequestProject.ConeAdjPoset
 
-public import RequestProject.CylinderPoset
-public import RequestProject.ConeAdjPoset
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u
 
-instance cylP_partialOrder {X S : Type u} [PartialOrder X] [PartialOrder S]
+instance cylP_partialOrder {X S} [PartialOrder X] [PartialOrder S]
     (a : S →o X) : PartialOrder (CylP a) :=
   { (inferInstance : Preorder (CylP a)) with
     le_antisymm := by
       intro p q hpq hqp
       cases p <;> cases q
       · exact congrArg Sum.inl (le_antisymm hpq hqp)
-      · exact False.elim hpq
-      · exact False.elim hqp
+      · exact hpq.elim
+      · exact hqp.elim
       · exact congrArg Sum.inr (le_antisymm hpq hqp) }
 
-instance coneAdj_partialOrder {P T : Type u} [PartialOrder P] (S : T → P → Prop) :
+instance coneAdj_partialOrder {P T} [PartialOrder P] (S : T → P → Prop) :
     PartialOrder (ConeAdj S) :=
   { (inferInstance : Preorder (ConeAdj S)) with
     le_antisymm := by
       intro p q hpq hqp
       cases p <;> cases q
       · exact congrArg Sum.inl (le_antisymm hpq hqp)
-      · exact False.elim hqp
-      · exact False.elim hpq
+      · exact hqp.elim
+      · exact hpq.elim
       · exact congrArg Sum.inr hpq }
-
-end FiniteChains.Comb

@@ -1,2 +1,1 @@
-module
-public import RequestProject.ChamberZBaseGeneration
+import RequestProject.ChamberZBaseGeneration

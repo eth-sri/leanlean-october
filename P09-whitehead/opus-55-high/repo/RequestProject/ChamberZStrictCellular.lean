@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberZCellular
-public import RequestProject.OrderNormalizationSupport
+import RequestProject.ChamberZCellular
+import RequestProject.OrderNormalizationSupport

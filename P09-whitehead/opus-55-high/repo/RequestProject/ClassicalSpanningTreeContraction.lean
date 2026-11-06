@@ -1,17 +1,13 @@
-module
+import RequestProject.ClassicalGraphContraction
+import Mathlib.Topology.Homotopy.Contractible
+import RequestProject.Tac
 
-public import RequestProject.ClassicalGraphContraction
-public import Mathlib.Topology.Homotopy.Contractible
-
-@[expose] public section
 
 /-! A genuine continuous contraction of the disk realization of an arbitrary
 spanning tree. Only each vertex's natural-number height is finite. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -26,7 +22,7 @@ def treeAttaching : BoundaryFamily {j : J // T.isTree j} (Fin 1 → ℝ) → V :
 abbrev TreeSpace := DiskAttachment (treeAttaching r T)
 
 def treeVertex (a : V) : TreeSpace r T :=
-  old (treeAttaching r T) (boundaryFamilyInclusion {j : J // T.isTree j} _) a
+  old _ _ a
 
 def treeUpPath (a : V) (ha : a ≠ T.root) :
     Path (treeVertex r T a) (treeVertex r T (T.parent a ha)) :=
@@ -35,28 +31,24 @@ def treeUpPath (a : V) (ha : a ≠ T.root) :
       (congrArg (treeVertex r T) (T.up_src a ha).symm) rfl
 
 /-- Follow the finitely many chosen parent edges to the root. -/
-def treeRootPath (a : V) : Path (treeVertex r T a) (treeVertex r T T.root) :=
+def treeRootPath a : Path (treeVertex r T a) (treeVertex r T T.root) :=
   if ha : a = T.root then
-    (Path.refl (treeVertex r T T.root)).cast (congrArg (treeVertex r T) ha) rfl
+    (Path.refl _).cast (by simp_all) rfl
   else (treeUpPath r T a ha).trans (treeRootPath (T.parent a ha))
   termination_by T.ht a
   decreasing_by
     have h := T.ht_parent ha
     omega
 
-@[simp] theorem treeRootPath_root :
-    treeRootPath r T T.root = Path.refl (treeVertex r T T.root) := by
-  rw [treeRootPath]
-  simp
 
-theorem treeRootPath_of_ne {a : V} (ha : a ≠ T.root) :
+theorem treeRootPath_of_ne ha :
     treeRootPath r T a = (treeUpPath r T a ha).trans (treeRootPath r T (T.parent a ha)) := by
   rw [treeRootPath]
-  simp only [dif_neg ha]
+  simp_all
 
 /-- Every retained edge is a chosen parent edge, so the actual vertex paths
 have precisely the compatibility used by the cellwise contraction. -/
-theorem treeRootPath_edge (j : {j : J // T.isTree j}) :
+theorem treeRootPath_edge j :
     treeRootPath r T (graphSrc (treeAttaching r T) j) =
       (graphEdgePath (treeAttaching r T) j).trans
         (treeRootPath r T (graphTgt (treeAttaching r T) j)) ∨
@@ -70,67 +62,57 @@ theorem treeRootPath_edge (j : {j : J // T.isTree j}) :
       have ha' : a = graphTgt (treeAttaching r T) j := by
         simpa [hg, Comb.germSrc_false, graphTgt, graphCx, treeAttaching] using (T.up_src a ha).symm
       have hp : T.parent a ha = graphSrc (treeAttaching r T) j := by
-        simp only [Comb.SpanningTree.parent, hg, Comb.germTgt_false]
+        simp [Comb.SpanningTree.parent, hg, Comb.germTgt_false]
         rfl
       right
       apply Path.ext
       funext t
-      have h := congrArg (fun p => p t) (treeRootPath_of_ne r T ha)
-      have hu : ∀ s, treeUpPath r T a ha s = (graphEdgePath (treeAttaching r T) j).symm s := by
+      have h := congrArg (· t) (treeRootPath_of_ne r T ha)
+      have hu : ∀ s, treeUpPath r T a ha s = (graphEdgePath _ j).symm s := by
         intro s
-        change graphGermPath (treeAttaching r T)
-          (⟨(T.up a ha).1, T.isTree_up ha⟩, (T.up a ha).2) s = _
         have hpair :
-            ((⟨(T.up a ha).1, T.isTree_up ha⟩, (T.up a ha).2) :
-              {j : J // T.isTree j} × Bool) = (j, false) := by
-          apply Prod.ext
-          · exact Subtype.ext he
-          · exact hb
+            ((⟨(T.up a ha).1, T.isTree_up ha⟩, (T.up a ha).2)) = (j, false) := by
+          simp_all
         exact congrArg
-          (fun g : {j : J // T.isTree j} × Bool => graphGermPath (treeAttaching r T) g s)
+          (graphGermPath _ · s)
           hpair
       calc
         treeRootPath r T (graphTgt (treeAttaching r T) j) t = treeRootPath r T a t :=
-          congrArg (fun v => treeRootPath r T v t) ha'.symm
-        _ = ((treeUpPath r T a ha).trans (treeRootPath r T (T.parent a ha))) t := h
+          by grind
+        _ = ((treeUpPath r T a ha).trans (treeRootPath r T _)) t := h
         _ = _ := by
-          simp only [Path.trans_apply]
+          simp [Path.trans_apply]
           split_ifs
           · exact hu _
-          · exact congrArg (fun v => treeRootPath r T v _) hp
+          · exact congrArg (treeRootPath r T · _) hp
   | true =>
       have hg : T.up a ha = (j.val, true) := Prod.ext he hb
       have ha' : a = graphSrc (treeAttaching r T) j := by
         simpa [hg, Comb.germSrc_true, graphSrc, graphCx, treeAttaching] using (T.up_src a ha).symm
       have hp : T.parent a ha = graphTgt (treeAttaching r T) j := by
-        simp only [Comb.SpanningTree.parent, hg, Comb.germTgt_true]
+        simp [Comb.SpanningTree.parent, hg, Comb.germTgt_true]
         rfl
       left
       apply Path.ext
       funext t
-      have h := congrArg (fun p => p t) (treeRootPath_of_ne r T ha)
-      have hu : ∀ s, treeUpPath r T a ha s = graphEdgePath (treeAttaching r T) j s := by
+      have h := congrArg (· t) (treeRootPath_of_ne r T ha)
+      have hu : ∀ s, treeUpPath r T a ha s = graphEdgePath _ j s := by
         intro s
-        change graphGermPath (treeAttaching r T)
-          (⟨(T.up a ha).1, T.isTree_up ha⟩, (T.up a ha).2) s = _
         have hpair :
-            ((⟨(T.up a ha).1, T.isTree_up ha⟩, (T.up a ha).2) :
-              {j : J // T.isTree j} × Bool) = (j, true) := by
-          apply Prod.ext
-          · exact Subtype.ext he
-          · exact hb
+            ((⟨(T.up a ha).1, T.isTree_up ha⟩, (T.up a ha).2)) = (j, true) := by
+          simp_all
         exact congrArg
-          (fun g : {j : J // T.isTree j} × Bool => graphGermPath (treeAttaching r T) g s)
+          (graphGermPath _ · s)
           hpair
       calc
         treeRootPath r T (graphSrc (treeAttaching r T) j) t = treeRootPath r T a t :=
-          congrArg (fun v => treeRootPath r T v t) ha'.symm
-        _ = ((treeUpPath r T a ha).trans (treeRootPath r T (T.parent a ha))) t := h
+          by grind
+        _ = ((treeUpPath r T a ha).trans (treeRootPath r T _)) t := h
         _ = _ := by
-          simp only [Path.trans_apply]
+          simp [Path.trans_apply]
           split_ifs
           · exact hu _
-          · exact congrArg (fun v => treeRootPath r T v _) hp
+          · exact congrArg (treeRootPath r T · _) hp
 
 variable [DiscreteTopology V]
 
@@ -138,15 +120,9 @@ variable [DiscreteTopology V]
 old root vertex. The entire tree may have arbitrarily many edges. -/
 def treeContraction : ContinuousMap.Homotopy (ContinuousMap.id (TreeSpace r T))
     (ContinuousMap.const (TreeSpace r T) (treeVertex r T T.root)) :=
-  graphContraction (treeAttaching r T) T.root (treeRootPath r T) (treeRootPath_edge r T)
+  graphContraction (treeAttaching r T) T.root _ (treeRootPath_edge r T)
 
-@[simp] theorem treeContraction_vertex (t : I) (a : V) :
-    treeContraction r T (t, treeVertex r T a) = treeRootPath r T a t := rfl
 
-@[simp] theorem treeContraction_root (t : I) :
-    treeContraction r T (t, treeVertex r T T.root) = treeVertex r T T.root := by
-  rw [treeContraction_vertex, treeRootPath_root]
-  rfl
 
 /-- The same specified collapse, with the universe-polymorphic singleton. -/
 def treeHomotopyEquivPUnit : ContinuousMap.HomotopyEquiv (TreeSpace r T) PUnit where
@@ -154,9 +130,4 @@ def treeHomotopyEquivPUnit : ContinuousMap.HomotopyEquiv (TreeSpace r T) PUnit w
   invFun := ContinuousMap.const _ (treeVertex r T T.root)
   left_inv := ⟨(treeContraction r T).symm⟩
   right_inv := by
-    have he : (ContinuousMap.const PUnit PUnit.unit : C(PUnit, PUnit)) = ContinuousMap.id PUnit := by
-      ext x
-    change ContinuousMap.Homotopic (ContinuousMap.const PUnit PUnit.unit) (ContinuousMap.id PUnit)
-    rw [he]
-
-end FiniteChains.ClassicalGraphModel
+    rfl

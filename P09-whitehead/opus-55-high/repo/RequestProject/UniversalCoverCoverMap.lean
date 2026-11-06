@@ -1,14 +1,10 @@
-module
+import RequestProject.CombPi2
+import RequestProject.CombCoveringLift
+import RequestProject.Tac
 
-public import RequestProject.CombPi2
-public import RequestProject.CombCoveringLift
-
-@[expose] public section
 
 /-! A genuine covering induces bijective universal-cover vertices and two-cells. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 universe u
@@ -26,20 +22,19 @@ theorem univLiftV_injective_of_covering : Function.Injective (univLiftV a p) := 
         have ht := Quotient.exact h
         change Htpy Y (p.onV a) (endpt Y (p.onV a) (mapPath p m.1))
           (mapPath p m.1) (mapPath p n.1) at ht
-        rwa [endpt_mapPath] at ht
+        grind [endpt_mapPath]
       obtain ⟨l, hl, hmap, hml⟩ := lift_htpy hp m.2 hh
-      have hn : l = n.1 := liftPath_unique hp l n.1 a _ _ hl n.2 hmap
+      have hn := liftPath_unique hp l n.1 a _ _ hl n.2 hmap
       apply UV.sound
-      rwa [hn] at hml
+      simp_all
 
 theorem univLiftV_surjective_of_covering : Function.Surjective (univLiftV a p) := by
   intro v
   induction v using UV.ind with
   | h n =>
     obtain ⟨l, b, hl, hmap⟩ := exists_liftPathAt hp n.1 a _ n.2
-    have hl' : IsPath X.src X.tgt l a (endpt X a l) := by
-      rw [endpt_eq_of_isPath hl]
-      exact hl
+    have hl' : IsPathX X l a (endpt X a l) := by
+      grind [endpt_eq_of_isPath hl]
     refine ⟨UV.mk ⟨l, hl'⟩, ?_⟩
     rw [univLiftV_mk]
     congr 1
@@ -47,17 +42,17 @@ theorem univLiftV_surjective_of_covering : Function.Surjective (univLiftV a p) :
 
 theorem univLiftF_injective_of_covering : Function.Injective (univLiftF a p) := by
   intro v w h
-  have hv : v.1.1 = w.1.1 := univLiftV_injective_of_covering hp a
-    (congrArg (fun f : UF Y (p.onV a) => f.1.1) h)
-  have hf : p.onF v.1.2 = p.onF w.1.2 :=
-    congrArg (fun f : UF Y (p.onV a) => f.1.2) h
-  have hb : X.base v.1.2 = X.base w.1.2 := v.2.symm.trans ((congrArg endV hv).trans w.2)
-  have hc : v.1.2 = w.1.2 := hp.cell.1 (Subtype.ext (Prod.ext hf hb))
+  have hv := univLiftV_injective_of_covering hp a
+    (congrArg (·.1.1) h)
+  have hf :=
+    congrArg (·.1.2) h
+  have hb : X.base v.1.2 = X.base w.1.2 := by grind
+  have hc := hp.cell.1 (by aesop)
   exact Subtype.ext (Prod.ext hv hc)
 
 theorem univLiftF_surjective_of_covering : Function.Surjective (univLiftF a p) := by
   intro t
-  obtain ⟨v, hv⟩ := univLiftV_surjective_of_covering hp a t.1.1
+  cases' univLiftV_surjective_of_covering hp a t.1.1 with v hv
   have he : p.onV (endV v) = endV t.1.1 := by
     rw [← endV_univLiftV, hv]
   obtain ⟨f, ⟨hf, hb⟩, _⟩ := exists_unique_liftCell hp t.1.2 (t.2.symm.trans he.symm)
@@ -66,15 +61,15 @@ theorem univLiftF_surjective_of_covering : Function.Surjective (univLiftF a p) :
 
 theorem univLiftE_injective_of_covering : Function.Injective (univLiftE a p) := by
   intro v w h
-  have hv : v.1.1 = w.1.1 := univLiftV_injective_of_covering hp a
-    (congrArg (fun e : UE Y (p.onV a) => e.1.1) h)
-  have he : p.onE v.1.2 = p.onE w.1.2 :=
-    congrArg (fun e : UE Y (p.onV a) => e.1.2) h
-  have hs : germSrc X.src X.tgt (w.1.2, true) = endV v.1.1 :=
+  have hv := univLiftV_injective_of_covering hp a
+    (congrArg (·.1.1) h)
+  have he :=
+    congrArg (·.1.2) h
+  have hs :=
     w.2.symm.trans (congrArg endV hv.symm)
   have hg := liftGerm_unique hp (a := endV v.1.1) (x := (v.1.2, true))
     (y := (w.1.2, true)) v.2.symm hs (Prod.ext he rfl)
-  exact Subtype.ext (Prod.ext hv (congrArg Prod.fst hg))
+  exact Subtype.ext (by grind)
 
 theorem univLift_cycle_iff_of_covering (c : UF X a →₀ ℤ) :
     bdry2 (uCover Y (p.onV a)) (chain2 (univLift X p a) c) = 0 ↔
@@ -83,21 +78,16 @@ theorem univLift_cycle_iff_of_covering (c : UF X a →₀ ℤ) :
   constructor
   · intro h
     apply Finsupp.mapDomain_injective (univLiftE_injective_of_covering hp a)
-    change chain1 (univLift X p a) (bdry2 (uCover X a) c) = Finsupp.mapDomain _ 0
-    rw [Finsupp.mapDomain_zero]
-    exact h
-  · intro h
-    rw [h, map_zero]
+    tauto
+  simp_all
 
 theorem exists_unique_cycle_lift_of_covering (c : UF Y (p.onV a) →₀ ℤ)
     (hc : bdry2 (uCover Y (p.onV a)) c = 0) :
     ∃! d : UF X a →₀ ℤ,
       chain2 (univLift X p a) d = c ∧ bdry2 (uCover X a) d = 0 := by
-  obtain ⟨d, hd⟩ := Finsupp.mapDomain_surjective (univLiftF_surjective_of_covering hp a) c
+  cases' Finsupp.mapDomain_surjective (univLiftF_surjective_of_covering hp a) c with d hd
   have hd' : chain2 (univLift X p a) d = c := hd
-  refine ⟨d, ⟨hd', (univLift_cycle_iff_of_covering hp a d).mp (by rw [hd']; exact hc)⟩, ?_⟩
+  refine ⟨d, ⟨hd', (univLift_cycle_iff_of_covering hp a d).mp (by simp_all)⟩, ?_⟩
   intro e he
   exact Finsupp.mapDomain_injective (univLiftF_injective_of_covering hp a)
     (he.1.trans hd'.symm)
-
-end FiniteChains.Comb

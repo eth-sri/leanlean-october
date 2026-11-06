@@ -1,10 +1,8 @@
-module
+import RequestProject.BlockRelativeVanishing
+import RequestProject.UniversalCoverPi2
+import RequestProject.CoverHomologyOne
+import RequestProject.Tac
 
-public import RequestProject.BlockRelativeVanishing
-public import RequestProject.UniversalCoverPi2
-public import RequestProject.CoverHomologyOne
-
-@[expose] public section
 
 /-!
 # Exactness of the Fox complex in degree one, and its base change
@@ -48,77 +46,4 @@ model of `V` in `RequestProject/BlockCubeV.lean`.  The statements of this file s
 be read as an auxiliary implication, not as the article's argument.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-open MonoidAlgebra
-
-universe u
-
-/-! ### Exactness of the Fox complex of the universal cover in degree one -/
-
-section UnivCover
-
-variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] (ρ : J → FreeGroup α)
-
-end UnivCover
-
-/-! ### Base change of exactness along a subgroup -/
-
-section BaseChange
-
-variable {G : Type*} [Group G] (H : Subgroup G)
-variable {α J ι : Type*} [Fintype α] [Fintype J]
-
-end BaseChange
-
-/-! ### `H₁` of the preimage of `X` in the cover of the double mapping cylinder -/
-
-namespace BlockFox
-
-variable {α J α' J' : Type u}
-  [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J]
-  [Fintype α'] [DecidableEq α'] [Fintype J']
-  {ρ : J → FreeGroup α} {ρ' : J' → FreeGroup α'}
-
-/-- The image in `ℤ[G']` of the group-ring element `x_a - 1`: the boundary of the one-cell `a`
-of the preimage of `X`. -/
-noncomputable def pushEdge (f : PresMor ρ ρ') (a : α) : MonoidAlgebra ℤ (PresGroup ρ') :=
-  f.pushRing (qgrp (relSub ρ) (FreeGroup.of a) - 1)
-
-/-- The boundary `∂₁` of the preimage of `X`, in the base-changed coordinates. -/
-noncomputable def bdry1Push (f : PresMor ρ ρ') (w : α → MonoidAlgebra ℤ (PresGroup ρ')) :
-    MonoidAlgebra ℤ (PresGroup ρ') :=
-  ∑ a, w a * pushEdge f a
-
-omit [DecidableEq J] [Fintype α'] in
-theorem bdry1Push_add (f : PresMor ρ ρ') (w v : α → MonoidAlgebra ℤ (PresGroup ρ')) :
-    bdry1Push f (w + v) = bdry1Push f w + bdry1Push f v := by
-  simp only [bdry1Push, Pi.add_apply, add_mul, Finset.sum_add_distrib]
-
-omit [DecidableEq J] [Fintype α'] in
-theorem bdry1Push_smul (f : PresMor ρ ρ') (c : MonoidAlgebra ℤ (PresGroup ρ'))
-    (w : α → MonoidAlgebra ℤ (PresGroup ρ')) :
-    bdry1Push f (c • w) = c * bdry1Push f w := by
-  simp only [bdry1Push, Pi.smul_apply, smul_eq_mul, Finset.mul_sum, mul_assoc]
-
-/-- The boundary `∂₁` of the preimage of `X`, as a map of `ℤ[G']`-modules. -/
-noncomputable def bdry1PushL (f : PresMor ρ ρ') :
-    (α → MonoidAlgebra ℤ (PresGroup ρ')) →ₗ[MonoidAlgebra ℤ (PresGroup ρ')]
-      MonoidAlgebra ℤ (PresGroup ρ') where
-  toFun := bdry1Push f
-  map_add' := bdry1Push_add f
-  map_smul' := bdry1Push_smul f
-
-omit [DecidableEq J] [Fintype α'] in
-@[simp] theorem bdry1PushL_apply (f : PresMor ρ ρ') (w : α → MonoidAlgebra ℤ (PresGroup ρ')) :
-    bdry1PushL f w = bdry1Push f w := rfl
-
-variable {Q : Type*} [AddCommGroup Q] [Module (MonoidAlgebra ℤ (PresGroup ρ')) Q]
-
-end BlockFox
-
-end FiniteChains
+bwd

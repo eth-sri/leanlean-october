@@ -1,11 +1,10 @@
-module
-
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.SingularChains
-public import Mathlib.Data.Fin.Tuple.Basic
+import RequestProject.TopologicalSingular.SingularChains
+import Mathlib.Data.Fin.Tuple.Basic
+import RequestProject.Tac
+noncomputable section
 
-@[expose] public section
 
 /-! # Integral chains of ordered vertex lists
 
@@ -15,9 +14,7 @@ no acyclicity or subdivision identity is assumed.
 -/
 
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.VertexChains
 
@@ -29,45 +26,41 @@ abbrev Chain (V : Type u) (n : ℕ) := Vertices V n →₀ ℤ
 
 def simplices (V : Type u) : SimplicialObject (Type u) where
   obj n := Vertices V n.unop.len
-  map f := TypeCat.ofHom (fun v => v ∘ f.unop.toOrderHom)
+  map f := TypeCat.ofHom (· ∘ f.unop.toOrderHom)
 
-noncomputable def modules (V : Type u) := simplices V ⋙ TopologicalSingular.freeZ
+def modules (V : Type u) := simplices V ⋙ TopologicalSingular.freeZ
 
 variable {V : Type u} {W : Type v}
 
 theorem linearMap_ext_basis {ι M : Type*} [AddCommGroup M] [Module ℤ M]
     {f g : (ι →₀ ℤ) →ₗ[ℤ] M} (h : ∀ v, f (Finsupp.single v 1) = g (Finsupp.single v 1)) : f = g := by
-  apply Finsupp.lhom_ext
-  intro v r
-  have he : Finsupp.single v r = r • Finsupp.single v (1 : ℤ) := by simp
-  rw [he, f.map_smul, g.map_smul, h]
+  aesop
 
-def face {n : ℕ} (i : Fin (n + 2)) (v : Vertices V (n + 1)) : Vertices V n :=
+def face (i : Fin (n + 2)) (v : Vertices V (n + 1)) : Vertices V n :=
   v ∘ i.succAbove
 
-noncomputable def boundary (n : ℕ) : Chain V (n + 1) →ₗ[ℤ] Chain V n :=
+def boundary n : Chain V (n + 1) →ₗ[ℤ] Chain V n :=
   (AlternatingFaceMapComplex.objD (modules V) n).hom
 
-theorem boundary_eq_sum (n : ℕ) :
-    boundary (V := V) n = ∑ i : Fin (n + 2), (-1 : ℤ) ^ i.val • Finsupp.lmapDomain ℤ ℤ (face i) := by
-  simp only [boundary, AlternatingFaceMapComplex.objD, ModuleCat.hom_sum, ModuleCat.hom_zsmul]
+theorem boundary_eq_sum n :
+    boundary (V := V) n = ∑ i : Fin (n + 2), (-1) ^ i.val • Finsupp.lmapDomain ℤ ℤ (face i) := by
+  simp [boundary, AlternatingFaceMapComplex.objD, ModuleCat.hom_sum, ModuleCat.hom_zsmul]
   rfl
 
-theorem boundary_single (n : ℕ) (v : Vertices V (n + 1)) (r : ℤ) :
+theorem boundary_single n (v : Vertices V (n + 1)) r :
     boundary n (Finsupp.single v r) =
-      ∑ i : Fin (n + 2), (-1 : ℤ) ^ i.val • Finsupp.single (face i v) r := by
+      ∑ i : Fin (n + 2), (-1) ^ i.val • Finsupp.single (face i v) r := by
   rw [boundary_eq_sum]
-  simp only [LinearMap.sum_apply, LinearMap.smul_apply, Finsupp.lmapDomain_apply,
-    Finsupp.mapDomain_single]
+  simp
 
-theorem boundary_boundary (n : ℕ) (c : Chain V (n + 2)) : boundary n (boundary (n + 1) c) = 0 := by
+theorem boundary_boundary n (c : Chain V (n + 2)) : boundary n (boundary (n + 1) c) = 0 := by
   have h := congrArg ModuleCat.Hom.hom (AlternatingFaceMapComplex.d_squared (modules V) n)
   exact DFunLike.congr_fun h c
 
-noncomputable def augmentation : Chain V 0 →ₗ[ℤ] ℤ :=
+def augmentation : Chain V 0 →ₗ[ℤ] ℤ :=
   Finsupp.linearCombination ℤ (fun _ : Vertices V 0 => 1)
 
-@[simp] theorem augmentation_single (v : Vertices V 0) (r : ℤ) :
+@[simp] theorem augmentation_single (v : Vertices V 0) r :
     augmentation (Finsupp.single v r) = r := by simp [augmentation]
 
 theorem augmentation_boundary (c : Chain V 1) : augmentation (boundary 0 c) = 0 := by
@@ -79,52 +72,51 @@ theorem augmentation_boundary (c : Chain V 1) : augmentation (boundary 0 c) = 0 
     simp
   exact DFunLike.congr_fun he c
 
-noncomputable def map (f : V → W) (n : ℕ) : Chain V n →ₗ[ℤ] Chain W n :=
-  Finsupp.lmapDomain ℤ ℤ (fun v => f ∘ v)
+def map (f : V → W) n : Chain V n →ₗ[ℤ] Chain W n :=
+  Finsupp.lmapDomain ℤ ℤ (f ∘ ·)
 
-@[simp] theorem map_single (f : V → W) (n : ℕ) (v : Vertices V n) (r : ℤ) :
+@[simp] theorem map_single (f : V → W) n v r :
     map f n (Finsupp.single v r) = Finsupp.single (f ∘ v) r := Finsupp.mapDomain_single
 
-theorem map_boundary (f : V → W) (n : ℕ) (c : Chain V (n + 1)) :
+theorem map_boundary (f : V → W) n c :
     map f n (boundary n c) = boundary n (map f (n + 1) c) := by
-  have he : (map f n).comp (boundary n) = (boundary n).comp (map f (n + 1)) := by
+  have he : (map f n).comp (boundary n) = (boundary n).comp (map f _) := by
     apply Finsupp.lhom_ext
     intro v r
     simp only [LinearMap.comp_apply, boundary_single, map_single, map_sum, map_zsmul]
     rfl
   exact DFunLike.congr_fun he c
 
-noncomputable def cone (p : V) (n : ℕ) : Chain V n →ₗ[ℤ] Chain V (n + 1) :=
-  Finsupp.lmapDomain ℤ ℤ (fun v : Vertices V n => Fin.cons p v)
+def cone (p : V) n : Chain V n →ₗ[ℤ] Chain V (n + 1) :=
+  Finsupp.lmapDomain ℤ ℤ (Fin.cons p ·)
 
-@[simp] theorem cone_single (p : V) (n : ℕ) (v : Vertices V n) (r : ℤ) :
+@[simp] theorem cone_single p n (v : Vertices V n) r :
     cone p n (Finsupp.single v r) = Finsupp.single (Fin.cons p v) r := Finsupp.mapDomain_single
 
-theorem face_cone_zero (p : V) {n : ℕ} (v : Vertices V n) : face 0 (Fin.cons p v) = v := by
-  funext j
-  simp [face]
+theorem face_cone_zero p {n} (v : Vertices V n) : face 0 (Fin.cons p v) = v := by
+  rfl
 
-theorem face_cone_succ (p : V) {n : ℕ} (v : Vertices V (n + 1)) (i : Fin (n + 2)) :
+theorem face_cone_succ p {n} (v : Vertices V (n + 1)) (i : Fin (n + 2)) :
     face i.succ (Fin.cons p v) = Fin.cons p (face i v) := by
   funext j
   refine Fin.cases ?_ (fun k => ?_) j
-  · simp [face]
+  · rfl
   · simp [face]
 
-theorem face_cone_one (p : V) (v : Vertices V 0) :
+theorem face_cone_one p (v : Vertices V 0) :
     face 1 (Fin.cons p v) = fun _ => p := by
   funext j
-  have hj : j = 0 := by apply Fin.ext; omega
+  have hj : j = 0 := by omega
   subst j
   rfl
 
-theorem boundary_cone_zero_single (p : V) (v : Vertices V 0) (r : ℤ) :
+theorem boundary_cone_zero_single p (v : Vertices V 0) (r : ℤ) :
     boundary 0 (cone p 0 (Finsupp.single v r)) =
       Finsupp.single v r - r • Finsupp.single (fun _ : Fin 1 => p) 1 := by
   rw [cone_single, boundary_single, Fin.sum_univ_two, face_cone_zero, face_cone_one]
-  simp [sub_eq_add_neg]
+  aesop
 
-theorem boundary_cone_zero (p : V) (c : Chain V 0) :
+theorem boundary_cone_zero p (c : Chain V 0) :
     boundary 0 (cone p 0 c) = c - augmentation c • Finsupp.single (fun _ : Fin 1 => p) 1 := by
   induction c using Finsupp.induction with
   | zero => simp
@@ -132,30 +124,28 @@ theorem boundary_cone_zero (p : V) (c : Chain V 0) :
     rw [map_add, map_add, boundary_cone_zero_single, ih, map_add, augmentation_single, add_smul]
     abel
 
-theorem boundary_cone_single (p : V) (n : ℕ) (v : Vertices V (n + 1)) (r : ℤ) :
+theorem boundary_cone_single p n (v : Vertices V (n + 1)) r :
     boundary (n + 1) (cone p (n + 1) (Finsupp.single v r)) =
       Finsupp.single v r - cone p n (boundary n (Finsupp.single v r)) := by
   rw [cone_single, boundary_single, Fin.sum_univ_succ, face_cone_zero, boundary_single]
   simp only [Fin.val_zero, pow_zero, one_smul, face_cone_succ, Fin.val_succ, pow_succ,
     mul_neg_one, neg_smul, Finset.sum_neg_distrib, map_sum, map_zsmul, cone_single, sub_eq_add_neg]
 
-theorem boundary_cone (p : V) (n : ℕ) (c : Chain V (n + 1)) :
+theorem boundary_cone p n (c : Chain V (n + 1)) :
     boundary (n + 1) (cone p (n + 1) c) = c - cone p n (boundary n c) := by
-  have he : (boundary (n + 1)).comp (cone p (n + 1)) =
+  have he : (boundary _).comp (cone p _) =
       LinearMap.id - (cone p n).comp (boundary n) := by
     apply Finsupp.lhom_ext
     exact boundary_cone_single p n
   exact DFunLike.congr_fun he c
 
-theorem map_cone (f : V → W) (p : V) (n : ℕ) (c : Chain V n) :
+theorem map_cone (f : V → W) p n c :
     map f (n + 1) (cone p n c) = cone (f p) n (map f n c) := by
-  have he : (map f (n + 1)).comp (cone p n) = (cone (f p) n).comp (map f n) := by
+  have he : (map f _).comp (cone p n) = (cone (f p) n).comp (map f n) := by
     apply Finsupp.lhom_ext
     intro v r
-    simp only [LinearMap.comp_apply, cone_single, map_single]
+    simp [LinearMap.comp_apply, cone_single, map_single]
     congr 1
     funext i
     exact Fin.cases rfl (fun _ => rfl) i
   exact DFunLike.congr_fun he c
-
-end FiniteChains.VertexChains

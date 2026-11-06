@@ -1,9 +1,6 @@
-module
+import RequestProject.PresUniversalGroupBoundaryColumns
+import RequestProject.GroupCellChainCoordinates
 
-public import RequestProject.PresUniversalGroupBoundaryColumns
-public import RequestProject.GroupCellChainCoordinates
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
 open Comb
@@ -45,5 +42,3 @@ theorem presUniversalGroupRingBoundary_actual_column
   rw [map_smul, groupCellChainEquiv_single]
   congr 3
   rw [prefixVal, presGroup_wordVal]
-
-end FiniteChains.PresModel

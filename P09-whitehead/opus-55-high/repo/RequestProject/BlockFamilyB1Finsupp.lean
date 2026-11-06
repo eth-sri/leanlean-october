@@ -1,9 +1,7 @@
-module
+import RequestProject.BlockFamilyBlockwiseFinsupp
+import RequestProject.BaseChangeExactFinsupp
+import RequestProject.Tac
 
-public import RequestProject.BlockFamilyBlockwiseFinsupp
-public import RequestProject.BaseChangeExactFinsupp
-
-@[expose] public section
 
 /-!
 The actual B1 chain identity for simultaneous block substitution, with finite
@@ -19,9 +17,7 @@ inputs. This source has not been compiled under the current workflow.
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains
 
@@ -30,25 +26,22 @@ section RingMap
 variable {R S : Type*} [Ring R] [Ring S] {J I : Type*}
 
 /-- Extend every finite matrix column along a coefficient ring homomorphism. -/
-def fsRingMapBoundary (φ : R →+* S) (A : J → I →₀ R) :
-    (J →₀ S) →ₗ[S] (I →₀ S) :=
+def fsRingMapBoundary (φ : R →+* S) (A : J → I →₀ R) :=
   Finsupp.linearCombination S (fun j => (A j).mapRange φ (map_zero _))
 
 /-- The base-changed boundary commutes with the actual coefficient map. -/
 theorem fsRingMapBoundary_mapRange (φ : R →+* S) (A : J → I →₀ R)
-    (y : J →₀ R) :
+    y :
     fsRingMapBoundary φ A (y.mapRange φ (map_zero _)) =
       (Finsupp.linearCombination R A y).mapRange φ (map_zero _) := by
   induction y using Finsupp.induction_linear with
-  | zero => simp [fsRingMapBoundary]
+  | zero => simp
   | add y z hy hz =>
-      rw [Finsupp.mapRange_add, map_add, map_add, Finsupp.mapRange_add, hy, hz] <;>
-        exact fun a b => map_add φ a b
+      simp [Finsupp.mapRange_add, map_add, hy, hz]
   | single j a =>
-      simp only [Finsupp.mapRange_single, fsRingMapBoundary,
+      simp [Finsupp.mapRange_single, fsRingMapBoundary,
         Finsupp.linearCombination_single]
-      ext i
-      exact (map_mul φ a (A j i)).symm
+      aesop
 
 end RingMap
 
@@ -62,7 +55,7 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
     (A : J → I →₀ MonoidAlgebra ℤ G) (x : J →₀ MonoidAlgebra ℤ G')
     (hx : fsRingMapBoundary (MonoidAlgebra.mapDomainRingHom ℤ f) A x = 0) :
     x ∈ Submodule.span (MonoidAlgebra ℤ G')
-      {v : J →₀ MonoidAlgebra ℤ G' | ∃ y : J →₀ MonoidAlgebra ℤ G,
+      {v | ∃ y,
         Finsupp.linearCombination (MonoidAlgebra ℤ G) A y = 0 ∧
         v = y.mapRange (MonoidAlgebra.mapDomainRingHom ℤ f) (map_zero _)} := by
   classical
@@ -83,10 +76,7 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
     intro a
     change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ a) = a
     rw [← MonoidAlgebra.mapDomain_comp]
-    have he : (e.toMonoidHom : G → H) ∘ (e.symm.toMonoidHom : H → G) = id := by
-      funext g
-      exact e.apply_symm_apply g
-    rw [he, MonoidAlgebra.mapDomain_id]
+    simp
   have hφinj : Function.Injective φ := fun _ _ h => MonoidAlgebra.coeff_injective (Finsupp.mapDomain_injective e.injective (congrArg MonoidAlgebra.coeff h))
   let A' : J → I →₀ MonoidAlgebra ℤ H :=
     fun j => (A j).mapRange φ (map_zero _)
@@ -94,36 +84,23 @@ theorem fs_cycle_mem_span_groupMap_cycles (f : G →* G') (hf : Function.Injecti
     apply Finsupp.lhom_ext
     intro j a
     simp only [fsExtendedBoundary, fsRingMapBoundary, Finsupp.linearCombination_single]
-    congr 1
-    ext i : 1
-    exact hφ (A j i)
+    aesop
   have hx' : fsExtendedBoundary H A' x = 0 := by
-    rw [hboundary]
-    exact hx
+    grind
   have hmem := fs_cycle_mem_span_subgroup_cycles H A' x hx'
   refine Submodule.span_mono ?_ hmem
   rintro v ⟨w, hw, rfl⟩
   let y := w.mapRange ψ (map_zero _)
   have hy : y.mapRange φ (map_zero _) = w := by
-    ext j : 1
-    exact hφψ (w j)
+    aesop
   refine ⟨y, ?_, ?_⟩
-  · have hb : (Finsupp.linearCombination (MonoidAlgebra ℤ G) A y).mapRange
+  · have hb : (Finsupp.linearCombination _ A y).mapRange
         φ (map_zero _) = 0 := by
       rw [← fsRingMapBoundary_mapRange]
-      change Finsupp.linearCombination (MonoidAlgebra ℤ H) A'
-        (y.mapRange φ (map_zero _)) = 0
-      rw [hy]
-      exact hw
-    apply Finsupp.ext
-    intro i
-    apply hφinj
-    have hi := congrArg (fun z : I →₀ MonoidAlgebra ℤ H => z i) hb
-    simpa only [Finsupp.mapRange_apply, Finsupp.zero_apply, map_zero] using hi
+      aesop
+    simp_all
   · apply Finsupp.ext
-    intro j
-    change subRingHom H (w j) = θ (ψ (w j))
-    rw [← hφ, hφψ]
+    grind
 
 end GroupMap
 
@@ -139,41 +116,40 @@ variable {Jr Sx R : Type u} {Mt : Sx → Type u} [Ring R]
 def fsSurfaceChain (c : ∀ s, Mt s →₀ R) (s : Sx) : (Jr ⊕ (Σ s, Mt s)) →₀ R :=
   (c s).mapDomain (fun m => Sum.inr ⟨s, m⟩)
 
-@[simp] theorem fsSurfaceChain_inl (c : ∀ s, Mt s →₀ R) (s : Sx) (j : Jr) :
+@[simp] theorem fsSurfaceChain_inl (c : ∀ s, Mt s →₀ R) s (j : Jr) :
     fsSurfaceChain c s (Sum.inl j) = 0 := by
   apply Finsupp.mapDomain_notin_range
   rintro ⟨m, h⟩
   exact Sum.inr_ne_inl h
 
-@[simp] theorem fsSurfaceChain_inr (c : ∀ s, Mt s →₀ R) (s : Sx) (m : Mt s) :
+@[simp] theorem fsSurfaceChain_inr (c : ∀ s, Mt s →₀ R) s m :
     fsSurfaceChain (Jr := Jr) c s (Sum.inr ⟨s, m⟩) = c s m := by
   apply Finsupp.mapDomain_apply_of_injective
   intro a b h
-  exact eq_of_heq (Sigma.mk.inj (Sum.inr_injective h)).2
+  exact by simp_all
 
-theorem fsSurfaceChain_inr_of_ne (c : ∀ s, Mt s →₀ R) {s t : Sx}
-    (hst : s ≠ t) (m : Mt t) :
+theorem fsSurfaceChain_inr_of_ne (c : ∀ s, Mt s →₀ R) {s t}
+    (hst : s ≠ t) m :
     fsSurfaceChain (Jr := Jr) c s (Sum.inr ⟨t, m⟩) = 0 := by
   apply Finsupp.mapDomain_notin_range
-  rintro ⟨a, h⟩
-  exact hst (congrArg Sigma.fst (Sum.inr_injective h))
+  simp_all
 
 @[simp] theorem fsCellsBase_single_inl (c : ∀ s, Mt s →₀ R) (j : Jr) :
     fsCellsBase c (Finsupp.single (Sum.inl j) 1) = Finsupp.single (Sum.inl j) 1 := by
   classical
   ext k
   cases k with
-  | inl i => simp only [fsCellsBase_inl, Finsupp.single_apply, Sum.inl.injEq]
-  | inr p => obtain ⟨s, m⟩ := p; simp
+  | inl i => simp [fsCellsBase_inl, Finsupp.single_apply, Sum.inl.injEq]
+  | inr p => cases' p with s m; simp
 
-@[simp] theorem fsCellsBase_single_inr (c : ∀ s, Mt s →₀ R) (s : Sx) :
+@[simp] theorem fsCellsBase_single_inr (c : ∀ s, Mt s →₀ R) s :
     fsCellsBase (Jr := Jr) c (Finsupp.single (Sum.inr s) 1) = fsSurfaceChain c s := by
   classical
   ext k
   cases k with
   | inl j => simp
   | inr p =>
-      obtain ⟨t, m⟩ := p
+      cases' p with t m
       by_cases hst : s = t
       · subst t
         simp
@@ -182,20 +158,20 @@ theorem fsSurfaceChain_inr_of_ne (c : ∀ s, Mt s →₀ R) {s t : Sx}
 /-- Include old generator chains by extension by zero on the internal ones. -/
 def fsOldOneIncl {α Z : Type u} : (α →₀ R) →ₗ[R] ((α ⊕ Z) →₀ R) where
   toFun x := Finsupp.sumElim x 0
-  map_add' x y := by ext k; cases k <;> simp [Finsupp.sumElim_apply]
-  map_smul' a x := by ext k; cases k <;> simp [Finsupp.sumElim_apply]
+  map_add' x y := by aesop
+  map_smul' a x := by aesop
 
-@[simp] theorem fsOldOneIncl_inl {α Z : Type u} (x : α →₀ R) (i : α) :
+@[simp] theorem fsOldOneIncl_inl (x : α →₀ R) i :
     fsOldOneIncl (Z := Z) x (Sum.inl i) = x i := rfl
 
-@[simp] theorem fsOldOneIncl_inr {α Z : Type u} (x : α →₀ R) (z : Z) :
+@[simp] theorem fsOldOneIncl_inr (x : α →₀ R) (z : Z) :
     fsOldOneIncl x (Sum.inr z) = 0 := rfl
 
-theorem fsOldOneIncl_injective {α Z : Type u} :
+theorem fsOldOneIncl_injective :
     Function.Injective (fsOldOneIncl (α := α) (Z := Z) (R := R)) := by
   intro x y h
   ext i
-  exact congrArg (fun z : (α ⊕ Z) →₀ R => z (Sum.inl i)) h
+  exact congrArg (· (Sum.inl i)) h
 
 end ChainColumns
 
@@ -213,13 +189,13 @@ local notation "R₀" => MonoidAlgebra ℤ (PresGroup ρ)
 /-- The old Fox boundary over the actual substituted group ring. -/
 def fsFoxPushBoundary : ((Jr ⊕ Sx) →₀ R') →ₗ[R'] (α →₀ R') :=
   fsRingMapBoundary (coeffF ρ bsub hfill)
-    (fun k => coverFoxGradient (relSub ρ) (ρ k))
+    (fun k => coverFoxGradient _ (ρ k))
 
 omit [DecidableEq Sx] [∀ s, DecidableEq (Zt s)] in
 @[simp] theorem fsFoxPushBoundary_single (k : Jr ⊕ Sx) (i : α) :
     fsFoxPushBoundary ρ bsub hfill (Finsupp.single k 1) i =
       coeffF ρ bsub hfill (foxMatrixPres ρ i k) := by
-  simp only [fsFoxPushBoundary, fsRingMapBoundary, Finsupp.linearCombination_single,
+  simp [fsFoxPushBoundary, fsRingMapBoundary, Finsupp.linearCombination_single,
     one_smul, Finsupp.mapRange_apply]
   rfl
 
@@ -237,33 +213,33 @@ structure IsFillingFS (c : ∀ s, Mt s →₀ R') : Prop where
 /-- A geometric B1 calculation on each finite block supplies the supported
 input without imposing any finiteness on the family or the old presentation. -/
 theorem isFillingFS_of_finite_blocks [∀ s, Fintype (Mt s)]
-    (c : ∀ s, Mt s →₀ R')
-    (hbase : ∀ (s : Sx) (i : α), ∑ m : Mt s, c s m *
+    c
+    (hbase : ∀ s i, ∑ m : Mt s, c s m *
       foxMatrixPres (substPresF ρ bsub) (Sum.inl i) (Sum.inr ⟨s, m⟩) =
         coeffF ρ bsub hfill (foxMatrixPres ρ i (Sum.inr s)))
-    (hinternal : ∀ (s : Sx) (z : Zt s), ∑ m : Mt s, c s m *
+    (hinternal : ∀ s z, ∑ m : Mt s, c s m *
       foxMatrixPres (substPresF ρ bsub) (Sum.inr ⟨s, z⟩) (Sum.inr ⟨s, m⟩) = 0) :
     IsFillingFS ρ bsub hfill c where
   base s i := by
     rw [Finsupp.sum_fintype _ _ (fun _ => zero_mul _)]
-    exact hbase s i
+    simp_all
   internal s z := by
     rw [Finsupp.sum_fintype _ _ (fun _ => zero_mul _)]
-    exact hinternal s z
+    simp_all
 
-theorem fsSurfaceChain_boundary_apply (c : ∀ s, Mt s →₀ R') (s : Sx)
-    (i : α ⊕ (Σ s, Zt s)) :
+theorem fsSurfaceChain_boundary_apply (c : ∀ s, Mt s →₀ R') s
+    i :
     coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)
         (fsSurfaceChain c s) i =
       (c s).sum (fun m a => a *
         foxMatrixPres (substPresF ρ bsub) i (Sum.inr ⟨s, m⟩)) := by
   rw [fsCoverSecondBoundary_apply]
-  exact Finsupp.sum_mapDomain_index (fun _ => zero_mul _)
-    (fun _ _ _ => add_mul _ _ _)
+  exact Finsupp.sum_mapDomain_index (by simp)
+    (by grind)
 
 /-- B1 extends from every single actual surface filling to the full
 simultaneous substitution chain map, without finite index assumptions. -/
-theorem fsCellsBase_chainMap (c : ∀ s, Mt s →₀ R')
+theorem fsCellsBase_chainMap c
     (hc : IsFillingFS ρ bsub hfill c) :
     (coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)).comp
         (fsCellsBase c) =
@@ -273,10 +249,9 @@ theorem fsCellsBase_chainMap (c : ∀ s, Mt s →₀ R')
   intro k a
   rw [← Finsupp.smul_single_one k a, map_smul, map_smul]
   congr 1
-  simp only [LinearMap.comp_apply]
+  simp [LinearMap.comp_apply]
   cases k with
   | inl j =>
-      rw [fsCellsBase_single_inl]
       ext i : 1
       cases i with
       | inl i =>
@@ -293,7 +268,7 @@ theorem fsCellsBase_chainMap (c : ∀ s, Mt s →₀ R')
           rw [fsOldOneIncl_inl, fsFoxPushBoundary_single, fsSurfaceChain_boundary_apply]
           exact hc.base s i
       | inr p =>
-          obtain ⟨t, z⟩ := p
+          cases' p with t z
           rw [fsOldOneIncl_inr, fsSurfaceChain_boundary_apply]
           by_cases hst : s = t
           · subst t
@@ -302,8 +277,8 @@ theorem fsCellsBase_chainMap (c : ∀ s, Mt s →₀ R')
 
 /-- The supported structural map carries the actual old boundary to the
 actual new boundary using the existing coefficient homomorphism. -/
-theorem fsCellsF_boundary (c : ∀ s, Mt s →₀ R')
-    (hc : IsFillingFS ρ bsub hfill c) (y : (Jr ⊕ Sx) →₀ R₀) :
+theorem fsCellsF_boundary c
+    (hc : IsFillingFS ρ bsub hfill c) y :
     coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)
         (fsCellsF ρ bsub hfill c y) =
       fsOldOneIncl ((coverSecondBoundary (relSub ρ) ρ y).mapRange
@@ -312,62 +287,47 @@ theorem fsCellsF_boundary (c : ∀ s, Mt s →₀ R')
     (y.mapRange (coeffF ρ bsub hfill) (map_zero _))
   change _ = fsOldOneIncl (fsFoxPushBoundary ρ bsub hfill
     (y.mapRange (coeffF ρ bsub hfill) (map_zero _))) at h
-  rw [fsFoxPushBoundary, fsRingMapBoundary_mapRange] at h
-  exact h
+  rwa [fsFoxPushBoundary, fsRingMapBoundary_mapRange] at h
 
 /-- Under B1, every cycle preimage constructed by block-local B2 is an
 actual cycle for the base-changed old Fox boundary. -/
-theorem fsCycle_preimage (c : ∀ s, Mt s →₀ R')
+theorem fsCycle_preimage c
     (hc : IsFillingFS ρ bsub hfill c)
     (hblock : BlockSurfaceGeneratesFS ρ bsub c)
     (x : (Jr ⊕ (Σ s, Mt s)) →₀ R')
     (hx : coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub) x = 0) :
-    ∃ y : (Jr ⊕ Sx) →₀ R', fsFoxPushBoundary ρ bsub hfill y = 0 ∧
+    ∃ y, fsFoxPushBoundary ρ bsub hfill y = 0 ∧
       fsCellsBase c y = x := by
   obtain ⟨y, hy, _, _⟩ := fsCellsBase_preimage_of_internal_zero ρ bsub c hblock x
-    (fun s z => congrArg (fun v => v (Sum.inr ⟨s, z⟩)) hx)
+    (by simp_all)
   refine ⟨y, ?_, hy⟩
   apply fsOldOneIncl_injective (Z := Σ s, Zt s)
-  rw [map_zero]
   have h := LinearMap.congr_fun (fsCellsBase_chainMap ρ bsub hfill c hc) y
-  change coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub)
-    (fsCellsBase c y) = fsOldOneIncl (fsFoxPushBoundary ρ bsub hfill y) at h
-  rw [hy, hx] at h
-  exact h.symm
+  simp_all
 
 /-- Full arbitrary-family generation by actual original-group cycles. The
 only remaining inputs are the geometric B1 filling, block-local B2, and the
 already separately constructed injection of presentation groups. -/
-theorem fsGenerates_familySubst (c : ∀ s, Mt s →₀ R')
+theorem fsGenerates_familySubst c
     (hc : IsFillingFS ρ bsub hfill c)
     (hblock : BlockSurfaceGeneratesFS ρ bsub c)
     (hinj : Function.Injective (substHomF ρ bsub hfill))
     (x : (Jr ⊕ (Σ s, Mt s)) →₀ R')
     (hx : coverSecondBoundary (relSub (substPresF ρ bsub)) (substPresF ρ bsub) x = 0) :
     x ∈ Submodule.span R'
-      {v : (Jr ⊕ (Σ s, Mt s)) →₀ R' | ∃ y : (Jr ⊕ Sx) →₀ R₀,
+      {v | ∃ y : (Jr ⊕ Sx) →₀ R₀,
         coverSecondBoundary (relSub ρ) ρ y = 0 ∧ v = fsCellsF ρ bsub hfill c y} := by
   obtain ⟨y, hy, hxy⟩ := fsCycle_preimage ρ bsub hfill c hc hblock x hx
-  have hmem := fs_cycle_mem_span_groupMap_cycles (substHomF ρ bsub hfill) hinj
-    (fun k => coverFoxGradient (relSub ρ) (ρ k)) y hy
+  have hmem := fs_cycle_mem_span_groupMap_cycles _ hinj
+    _ y hy
   rw [← hxy]
   clear hy hxy
   induction hmem using Submodule.span_induction with
   | mem v hv =>
-      obtain ⟨a, ha, rfl⟩ := hv
-      apply Submodule.subset_span
-      exact ⟨a, ha, rfl⟩
+      aesop
   | zero =>
-      rw [map_zero]
-      exact Submodule.zero_mem _
+      simp
   | add v w hv hw hv' hw' =>
-      rw [map_add]
-      exact Submodule.add_mem _ hv' hw'
+      aesop
   | smul a v hv hv' =>
-      rw [map_smul]
-      exact Submodule.smul_mem _ a hv'
-
-end Substitution
-
-end BlockFamily
-end FiniteChains
+      aesop

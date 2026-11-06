@@ -1,15 +1,11 @@
-module
+import RequestProject.PresWordEmbedding
+import RequestProject.PresPosetReading
+import RequestProject.OrderUniversalCocycleReading
+import RequestProject.CombPi2
+import RequestProject.Tac
 
-public import RequestProject.PresWordEmbedding
-public import RequestProject.PresPosetReading
-public import RequestProject.OrderUniversalCocycleReading
-public import RequestProject.CombPi2
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
@@ -23,9 +19,7 @@ include hb in
 theorem wordVal_map (l : List (α × Bool)) :
     wordVal b (l.map (fun p => (h.gen p.1, p.2))) = φ (wordVal a l) := by
   have he : (FreeGroup.lift b).comp (FreeGroup.map h.gen) = φ.comp (FreeGroup.lift a) := by
-    apply FreeGroup.ext_hom
-    intro i
-    simp [hb]
+    aesop
   exact DFunLike.congr_fun he (FreeGroup.mk l)
 
 include hb in
@@ -39,7 +33,7 @@ include hb in
 theorem roseVal_map (p q : Rose α) :
     roseVal b (h.roseMap p) (h.roseMap q) = φ (roseVal a p q) := by
   cases p <;> cases q <;> simp [roseMap, Function.Embedding.coeFn_mk, roseVal, hb, apply_ite]
-  split_ifs <;> simp_all
+  simp_all
 
 include hb in
 theorem trivVal_map (j : J) (k : ℕ) (c : CPos) :
@@ -56,10 +50,10 @@ def cylinderFun : CylBase w → CylBase v
   | .inl p => .inl (h.roseMap p)
   | .inr p => .inr (h.circleFun p)
 
-theorem posMap_inl (p : CylBase w) : h.posMap (.inl p) = .inl (h.cylinderFun p) := by
+theorem posMap_inl p : h.posMap (.inl p) = .inl (h.cylinderFun p) := by
   cases p <;> rfl
 
-theorem cylinderFun_retraction (p : CylBase w) :
+theorem cylinderFun_retraction p :
     cylRetr (aHom v) (h.cylinderFun p) = h.roseMap (cylRetr (aHom w) p) := by
   cases p with
   | inl p => rfl
@@ -82,9 +76,9 @@ theorem presCoc_map (p q : PresPos w) :
     cases q with
     | inl q =>
       rw [h.posMap_inl, h.posMap_inl]
-      change roseVal b (cylRetr (aHom v) (h.cylinderFun p))
-        (cylRetr (aHom v) (h.cylinderFun q)) =
-          φ (roseVal a (cylRetr (aHom w) p) (cylRetr (aHom w) q))
+      change roseVal b (cylRetr _ (h.cylinderFun p))
+        (cylRetr _ (h.cylinderFun q)) =
+          φ (roseVal a (cylRetr _ p) (cylRetr _ q))
       rw [h.cylinderFun_retraction, h.cylinderFun_retraction]
       exact h.roseVal_map a b φ hb _ _
     | inr j =>
@@ -96,7 +90,7 @@ include hb in
 theorem readGerm_map (e : (orderCx (PresPos w)).E × Bool) :
     (presCoc v b hv).readGerm ((orderCxMap h.posMap h.posMap.monotone).onE e.1, e.2) =
       φ ((presCoc w a hw).readGerm e) := by
-  rcases e with ⟨e, s⟩
+  cases' e with e s
   cases s <;> simp only [OrdCocycle.readGerm, Bool.false_eq_true, if_false, if_true]
   · rw [map_inv]
     exact congrArg Inv.inv (h.presCoc_map a b φ hb hw hv _ _)
@@ -107,7 +101,7 @@ theorem readPath_map (p : List ((orderCx (PresPos w)).E × Bool)) :
     (presCoc v b hv).readPath (mapPath (orderCxMap h.posMap h.posMap.monotone) p) =
       φ ((presCoc w a hw).readPath p) := by
   induction p with
-  | nil => exact (map_one φ).symm
+  | nil => simp
   | cons e p ih =>
     change (presCoc v b hv).readPath
       (((orderCxMap h.posMap h.posMap.monotone).onE e.1, e.2) ::
@@ -124,5 +118,3 @@ theorem readVertex_map (x : PresPos w) (p : UV (orderCx (PresPos w)) x) :
         φ ((presCoc w a hw).readVertex x p) := by
   induction p using Quotient.inductionOn with
   | h p => exact h.readPath_map a b φ hb hw hv p.val
-
-end FiniteChains.PresModel.PresWordEmbedding

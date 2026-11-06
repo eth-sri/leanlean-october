@@ -1,3 +1,2 @@
-module
-public import RequestProject.OrderNerveH2
-public import RequestProject.PresUniversalRelatorKernel
+import RequestProject.OrderNerveH2
+import RequestProject.PresUniversalRelatorKernel

@@ -1,9 +1,6 @@
-module
+import RequestProject.RelativeNormalizedRestrictions
+import RequestProject.SimultaneousCoreSlidesFinsupp
 
-public import RequestProject.RelativeNormalizedRestrictions
-public import RequestProject.SimultaneousCoreSlidesFinsupp
-
-@[expose] public section
 
 /-! Actual finite-support simultaneous rule 2. The correction chains are
 chosen in the core-only presentation, before any extra relators are imposed.
@@ -26,19 +23,19 @@ def pairCorePresentation : C → FreeGroup (PairGen A Z) :=
 def pairCorrection (w : FreeGroup (A ⊕ Z)) : FreeGroup (PairGen A Z) :=
   FreeGroup.map Sum.inl (correctionWord core (correctionCoefficients core hcore w))
 
-theorem pairCorrection_mem (w : FreeGroup (A ⊕ Z)) :
+theorem pairCorrection_mem w :
     pairCorrection core hcore w ∈ relSub (pairCorePresentation (Z := Z) core) :=
   coreCorrection_mem core (relSub (pairCorePresentation (Z := Z) core))
     (fun c => Subgroup.subset_normalClosure ⟨c, rfl⟩) _
 
-theorem pairCorrection_filling_exists (w : FreeGroup (A ⊕ Z)) :
+theorem pairCorrection_filling_exists w :
     ∃ v : C →₀ MonoidAlgebra ℤ (PresGroup (pairCorePresentation (Z := Z) core)),
       coverSecondBoundary (relSub (pairCorePresentation (Z := Z) core))
         (pairCorePresentation core) v =
       coverFoxGradient (relSub (pairCorePresentation (Z := Z) core))
         (pairCorrection core hcore w) := by
   apply (coverFoxGradient_mem_range_iff (relSub (pairCorePresentation (Z := Z) core))
-    (pairCorePresentation (Z := Z) core)
+    _
     (fun c => Subgroup.subset_normalClosure ⟨c, rfl⟩)
     (pairCorrection_mem core hcore w)).mpr
   exact (le_sup_left : relSub (pairCorePresentation (Z := Z) core) ≤
@@ -46,11 +43,10 @@ theorem pairCorrection_filling_exists (w : FreeGroup (A ⊕ Z)) :
       ⁅relSub (pairCorePresentation (Z := Z) core),
         relSub (pairCorePresentation (Z := Z) core)⁆) (pairCorrection_mem core hcore w)
 
-def pairCorrectionFilling (w : FreeGroup (A ⊕ Z)) :
-    C →₀ MonoidAlgebra ℤ (PresGroup (pairCorePresentation (Z := Z) core)) :=
+def pairCorrectionFilling (w : FreeGroup (A ⊕ Z)) :=
   Classical.choose (pairCorrection_filling_exists core hcore w)
 
-theorem pairCorrectionFilling_boundary (w : FreeGroup (A ⊕ Z)) :
+theorem pairCorrectionFilling_boundary w :
     coverSecondBoundary (relSub (pairCorePresentation (Z := Z) core))
       (pairCorePresentation core) (pairCorrectionFilling core hcore w) =
     coverFoxGradient (relSub (pairCorePresentation (Z := Z) core))
@@ -61,20 +57,19 @@ variable (extra : S → FreeGroup (A ⊕ Z))
 
 def slideGroupHom : PresGroup (beforeCorrection core extra) →*
     PresGroup (normalizedPresentation core hcore extra) :=
-  QuotientGroup.map _ _ (MonoidHom.id _) (by
+  QuotientGroup.map _ _ _ (by
     rw [Subgroup.comap_id, relSub_normalizedPresentation core hcore extra])
 
 def slideGroupInverse : PresGroup (normalizedPresentation core hcore extra) →*
     PresGroup (beforeCorrection core extra) :=
-  QuotientGroup.map _ _ (MonoidHom.id _) (by
+  QuotientGroup.map _ _ _ (by
     rw [Subgroup.comap_id, relSub_normalizedPresentation core hcore extra])
 
 theorem slideGroupHom_injective :
     Function.Injective (slideGroupHom core hcore extra) := by
   apply Function.LeftInverse.injective (g := slideGroupInverse core hcore extra)
   intro g
-  induction g using QuotientGroup.induction_on with
-  | H w => rfl
+  induction g using QuotientGroup.induction_on <;> aesop
 
 def pairCoreToNormalized : PresGroup (pairCorePresentation (Z := Z) core) →*
     PresGroup (normalizedPresentation core hcore extra) :=
@@ -84,29 +79,25 @@ def pairCoreToNormalized : PresGroup (pairCorePresentation (Z := Z) core) →*
     exact Subgroup.subset_normalClosure ⟨Sum.inl c, rfl⟩)
 
 theorem ringMap_quotient_word {G H : Subgroup (FreeGroup (PairGen A Z))}
-    [G.Normal] [H.Normal] (f : (FreeGroup (PairGen A Z) ⧸ G) →*
-      (FreeGroup (PairGen A Z) ⧸ H))
+    [G.Normal] [H.Normal] f
     (hf : ∀ w, f (QuotientGroup.mk w) = QuotientGroup.mk w)
-    (x : FreeGroupRing (PairGen A Z)) :
+    x :
     MonoidAlgebra.mapDomainRingHom ℤ f (proj G x) = proj H x := by
   induction x using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add x y hx hy => rw [map_add, map_add, hx, hy, map_add]
+  | add x y hx hy => grind
   | single w a =>
-      apply MonoidAlgebra.coeff_injective
-      change Finsupp.mapDomain f (Finsupp.mapDomain (QuotientGroup.mk' G)
-        (Finsupp.single w a)) = Finsupp.mapDomain (QuotientGroup.mk' H) (Finsupp.single w a)
-      simp only [Finsupp.mapDomain_single, QuotientGroup.mk'_apply, hf]
+      simp_all
 
 theorem gradient_groupMap {G H : Subgroup (FreeGroup (PairGen A Z))}
     [G.Normal] [H.Normal] (f : (FreeGroup (PairGen A Z) ⧸ G) →*
       (FreeGroup (PairGen A Z) ⧸ H))
     (hf : ∀ w, f (QuotientGroup.mk w) = QuotientGroup.mk w)
-    (w : FreeGroup (PairGen A Z)) :
+    w :
     (coverFoxGradient G w).mapRange (MonoidAlgebra.mapDomainRingHom ℤ f) (map_zero _) =
       coverFoxGradient H w := by
   ext i : 1
-  exact ringMap_quotient_word f hf (fox i w)
+  exact ringMap_quotient_word f hf _
 
 def slideCoefficients := MonoidAlgebra.mapDomainRingHom ℤ (slideGroupHom core hcore extra)
 
@@ -115,8 +106,7 @@ def slideCoreCoefficients :=
 
 /-- Actual correction columns in the target ring, obtained from fixed
 core-only chains. There is no dependence of the choice on the stage group. -/
-def slideColumns (s : S) :
-    C →₀ MonoidAlgebra ℤ (PresGroup (normalizedPresentation core hcore extra)) :=
+def slideColumns (s : S) :=
   (pairCorrectionFilling core hcore (extra s)).mapRange
     (slideCoreCoefficients core hcore extra) (map_zero _)
 
@@ -125,38 +115,38 @@ def slideOldBoundary :
       MonoidAlgebra ℤ (PresGroup (normalizedPresentation core hcore extra))]
       (PairGen A Z →₀ MonoidAlgebra ℤ (PresGroup (normalizedPresentation core hcore extra))) :=
   fsRingMapBoundary (slideCoefficients core hcore extra)
-    (fun j => coverFoxGradient (relSub (beforeCorrection core extra))
+    (fun j => coverFoxGradient _
       (beforeCorrection core extra j))
 
-theorem slideOldBoundary_single (k : C ⊕ S)
-    (a : MonoidAlgebra ℤ (PresGroup (normalizedPresentation core hcore extra))) :
+theorem slideOldBoundary_single k
+    a :
     slideOldBoundary core hcore extra (Finsupp.single k a) =
       a • coverFoxGradient (relSub (normalizedPresentation core hcore extra))
         (beforeCorrection core extra k) := by
   rw [slideOldBoundary, fsRingMapBoundary, Finsupp.linearCombination_single]
   congr 1
-  exact gradient_groupMap (slideGroupHom core hcore extra) (fun _ => rfl) _
+  exact gradient_groupMap _ (by aesop) _
 
-theorem slideColumns_boundary (s : S) :
+theorem slideColumns_boundary s :
     slideOldBoundary core hcore extra (fsOldOneIncl (slideColumns core hcore extra s)) =
       coverFoxGradient (relSub (normalizedPresentation core hcore extra))
         (pairCorrection core hcore (extra s)) := by
   have hm : (slideOldBoundary core hcore extra).comp fsOldOneIncl =
       fsRingMapBoundary (slideCoreCoefficients core hcore extra)
-        (fun c => coverFoxGradient (relSub (pairCorePresentation (Z := Z) core))
+        (fun c => coverFoxGradient _
           (pairCorePresentation core c)) := by
     apply Finsupp.lhom_ext
     intro c a
-    simp only [LinearMap.comp_apply, fsOldOneIncl_single, slideOldBoundary_single,
+    simp [LinearMap.comp_apply, fsOldOneIncl_single, slideOldBoundary_single,
       fsRingMapBoundary, Finsupp.linearCombination_single]
     congr 1
-    exact (gradient_groupMap (pairCoreToNormalized core hcore extra) (fun _ => rfl) _).symm
+    exact (gradient_groupMap _ (by aesop) _).symm
   change ((slideOldBoundary core hcore extra).comp fsOldOneIncl)
     ((pairCorrectionFilling core hcore (extra s)).mapRange
       (slideCoreCoefficients core hcore extra) (map_zero _)) = _
   rw [hm, fsRingMapBoundary_mapRange]
   erw [pairCorrectionFilling_boundary]
-  exact gradient_groupMap (pairCoreToNormalized core hcore extra) (fun _ => rfl) _
+  exact gradient_groupMap _ (by aesop) _
 
 /-- The actual normalized Fox boundary is the old boundary after the
 explicit triangular correction. -/
@@ -185,19 +175,14 @@ def normalizationSlideMap : PresMorFS (beforeCorrection core extra)
   cells := fun x => coreSlideForward (slideColumns core hcore extra)
     (x.mapRange (slideCoefficients core hcore extra) (map_zero _))
   cells_add := by
-    intro x y
-    rw [Finsupp.mapRange_add, map_add]
-    exact map_add _
+    simp [Finsupp.mapRange_add, map_add]
   cells_smul := by
     intro a x
     have h : (a • x).mapRange (slideCoefficients core hcore extra) (map_zero _) =
         (slideCoefficients core hcore extra a) •
           x.mapRange (slideCoefficients core hcore extra) (map_zero _) := by
-      ext k : 1
-      simp only [Finsupp.mapRange_apply, Finsupp.smul_apply, smul_eq_mul]
-      exact map_mul _ _ _
-    rw [h, map_smul]
-    rfl
+      aesop
+    aesop
   cells_cycle := by
     intro x hx
     change coverSecondBoundary _ _ _ = 0
@@ -211,8 +196,6 @@ def normalizationSlideMap : PresMorFS (beforeCorrection core extra)
     intro x hx k
     apply coreSlideForward_aug_zero
     intro j
-    change augPres (normalizedPresentation core hcore extra)
-      (MonoidAlgebra.mapDomainRingHom ℤ (slideGroupHom core hcore extra) (x j)) = 0
     exact (augQ_mapDomain (slideGroupHom core hcore extra) (x j)).trans (hx j)
 
 /-- Genuine rule-2 generation for arbitrary cores and relator families.
@@ -223,10 +206,9 @@ theorem normalizationSlideMap_generates :
   let y := coreSlideReverse (slideColumns core hcore extra) x
   have hy : slideOldBoundary core hcore extra y = 0 :=
     (normalizationSlide_boundary core hcore extra x).symm.trans hx
-  have hspan := fs_cycle_mem_span_groupMap_cycles (slideGroupHom core hcore extra)
+  have hspan := fs_cycle_mem_span_groupMap_cycles _
     (slideGroupHom_injective core hcore extra)
-    (fun j => coverFoxGradient (relSub (beforeCorrection core extra))
-      (beforeCorrection core extra j)) y hy
+    _ y hy
   have he : coreSlideForward (slideColumns core hcore extra) y = x :=
     coreSlideForward_reverse _ _
   rw [← he]
@@ -235,10 +217,7 @@ theorem normalizationSlideMap_generates :
   clear y x
   induction hspan using Submodule.span_induction with
   | mem z hz =>
-      obtain ⟨a, ha, rfl⟩ := hz
-      exact Submodule.subset_span ⟨a, ha, rfl⟩
-  | zero => rw [map_zero]; exact Submodule.zero_mem _
-  | add z w _ _ hz hw => rw [map_add]; exact Submodule.add_mem _ hz hw
-  | smul a z _ hz => rw [map_smul]; exact Submodule.smul_mem _ a hz
-
-end FiniteChains.RelativeNormalForm
+      aesop
+  | zero => simp
+  | add z w _ _ hz hw => aesop
+  | smul a z _ hz => aesop

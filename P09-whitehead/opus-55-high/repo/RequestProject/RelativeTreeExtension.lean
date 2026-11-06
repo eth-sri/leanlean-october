@@ -1,9 +1,7 @@
-module
+import RequestProject.TreePi2Reflection
+import RequestProject.CombPushout
+import RequestProject.Tac
 
-public import RequestProject.TreePi2Reflection
-public import RequestProject.CombPushout
-
-@[expose] public section
 
 /-! Undo a spanning-tree collapse relative to the original complex.
 New generators are actual loops at the original tree root. An old
@@ -13,9 +11,7 @@ paths. Original vertices, edges and two-cells are retained literally.
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb.RelativeTreeExtension
 open SpanningTree
@@ -38,12 +34,12 @@ def loopGraph : Complex2 where
 def oldPath (l : List (D.E × Bool)) : List ((D.E ⊕ Z) × Bool) :=
   l.map (fun e => (Sum.inl e.1, e.2))
 
-theorem oldPath_isPath {l : List (D.E × Bool)} {a b : D.V}
-    (hl : IsPath D.src D.tgt l a b) :
+theorem oldPath_isPath
+    (hl : IsPathX D l a b) :
     IsPath (source T) (target T) (oldPath (Z := Z) l) a b :=
   FiniteChains.Comb.isPath_map (src := D.src) (tgt := D.tgt)
-    (src' := source T) (tgt' := target T) (fun x : D.V => x)
-    (Sum.inl : D.E → D.E ⊕ Z) (fun _ => rfl) (fun _ => rfl) hl
+    (src' := source T) (tgt' := target T) (·)
+    _ (by aesop) (by aesop) hl
 
 def generatorLoop : NonTree T ⊕ Z → List ((D.E ⊕ Z) × Bool)
   | Sum.inl e => oldPath (conjPath T [(e.val, true)] (D.src e.val) (D.tgt e.val))
@@ -52,20 +48,20 @@ def generatorLoop : NonTree T ⊕ Z → List ((D.E ⊕ Z) × Bool)
 theorem generatorLoop_isPath (a : NonTree T ⊕ Z) :
     IsPath (source T) (target T) (generatorLoop T a) T.root T.root := by
   cases a with
-  | inl e => exact oldPath_isPath T (conjPath_isLoop T (isPath_single (e.val, true)))
-  | inr z => exact ⟨rfl, rfl⟩
+  | inl e => exact oldPath_isPath T (conjPath_isLoop T (by simp))
+  | inr z => tauto
 
-def signedLoop (e : (NonTree T ⊕ Z) × Bool) : List ((D.E ⊕ Z) × Bool) :=
+def signedLoop (e : (NonTree T ⊕ Z) × Bool) :=
   if e.2 then generatorLoop T e.1 else revPath (X := loopGraph (Z := Z) T) (generatorLoop T e.1)
 
 theorem signedLoop_isPath (e : (NonTree T ⊕ Z) × Bool) :
     IsPath (source T) (target T) (signedLoop T e) T.root T.root := by
-  rcases e with ⟨a, b⟩
+  cases' e with a b
   cases b
   · exact isPath_revPath (X := loopGraph (Z := Z) T) (generatorLoop_isPath T a)
   · exact generatorLoop_isPath T a
 
-def readWord (l : List ((NonTree T ⊕ Z) × Bool)) : List ((D.E ⊕ Z) × Bool) :=
+def readWord (l : List ((NonTree T ⊕ Z) × Bool)) :=
   l.flatMap (signedLoop T)
 
 theorem readWord_isPath (l : List ((NonTree T ⊕ Z) × Bool)) :
@@ -119,12 +115,11 @@ def tree : SpanningTree (complex T extra) where
     cases e with
     | inl e =>
         change T.isTree e ↔ ∃ a ha, Sum.inl (T.up a ha).1 = Sum.inl e
-        simpa only [Sum.inl.injEq] using T.isTree_iff e
+        simpa [Sum.inl.injEq] using T.isTree_iff e
     | inr z =>
-        change False ↔ ∃ a ha, Sum.inl (T.up a ha).1 = Sum.inr z
         simp
 
-theorem tree_old (e : D.E) :
+theorem tree_old e :
     (tree T extra).isTree ((oldInclusion T extra).onE e) ↔ T.isTree e := Iff.rfl
 
 def generatorEquiv : NonTree (tree T extra) ≃ NonTree T ⊕ Z where
@@ -134,19 +129,19 @@ def generatorEquiv : NonTree (tree T extra) ≃ NonTree T ⊕ Z where
   invFun a := match a with
     | Sum.inl e => ⟨Sum.inl e.val, e.property⟩
     | Sum.inr z => ⟨Sum.inr z, not_false⟩
-  left_inv e := by rcases e with ⟨e | z, he⟩ <;> rfl
-  right_inv a := by cases a <;> rfl
+  left_inv e := by grind
+  right_inv a := by grind
 
-theorem oldPath_collapsed (l : List (D.E × Bool)) :
+theorem oldPath_collapsed l :
     FreeGroup.map (generatorEquiv T extra)
       (pathWord (tree T extra) (oldPath (Z := Z) l)) =
         FreeGroup.map Sum.inl (pathWord T l) := by
   change FreeGroup.map (generatorEquiv T extra)
-    (pathWord (tree T extra) (mapPath (oldInclusion T extra) l)) = _
+    (pathWord _ (mapPath (oldInclusion T extra) l)) = _
   rw [pathWord_mapPath (tree_old T extra), FreeGroup.map.comp]
   rfl
 
-theorem generatorLoop_collapsed (a : NonTree T ⊕ Z) :
+theorem generatorLoop_collapsed a :
     FreeGroup.map (generatorEquiv T extra)
       (pathWord (tree T extra) (generatorLoop T a)) = FreeGroup.of a := by
   cases a with
@@ -156,29 +151,29 @@ theorem generatorLoop_collapsed (a : NonTree T ⊕ Z) :
         germWord, e.property]
   | inr z =>
       change FreeGroup.map (generatorEquiv T extra)
-        (pathWord (tree T extra) [(Sum.inr z, true)]) = _
+        (pathWord _ [(Sum.inr z, true)]) = _
       rw [pathWord_cons, pathWord_nil, mul_one]
       simp [germWord, tree, generatorEquiv]
 
-theorem readWord_collapsed (l : List ((NonTree T ⊕ Z) × Bool)) :
+theorem readWord_collapsed l :
     FreeGroup.map (generatorEquiv T extra)
       (pathWord (tree T extra) (readWord T l)) = FreeGroup.mk l := by
   induction l with
-  | nil => change FreeGroup.map _ (pathWord (tree T extra) []) = FreeGroup.mk []; rw [pathWord_nil, map_one]; rfl
+  | nil => rfl
   | cons e l ih =>
-      rcases e with ⟨a, b⟩
+      cases' e with a b
       cases b
       · have happ := pathWord_append (tree T extra)
           (revPath (X := complex T extra) (generatorLoop T a)) (readWord T l)
         have hrev := pathWord_revPath (tree T extra) (generatorLoop T a)
-        have hpw : pathWord (tree T extra) (readWord T ((a, false) :: l)) =
-            (pathWord (tree T extra) (generatorLoop T a))⁻¹ *
+        have hpw : pathWord _ (readWord T ((a, false) :: l)) =
+            (pathWord _ (generatorLoop T a))⁻¹ *
               pathWord (tree T extra) (readWord T l) :=
-          happ.trans (congrArg (fun w => w * pathWord (tree T extra) (readWord T l)) hrev)
+          by aesop
         rw [hpw, map_mul, map_inv,
           generatorLoop_collapsed, ih, mk_cons_false]
       · change FreeGroup.map (generatorEquiv T extra)
-          (pathWord (tree T extra) (generatorLoop T a ++ readWord T l)) = _
+          (pathWord _ (generatorLoop T a ++ readWord T l)) = _
         rw [pathWord_append, map_mul, generatorLoop_collapsed, ih, mk_cons_true]
 
 /-- Collapsing the retained tree recovers exactly the prescribed relative
@@ -187,15 +182,13 @@ theorem treeRel_equation (f : D.F ⊕ S) :
     FreeGroup.map (generatorEquiv T extra) (treeRel (tree T extra) f) =
       Sum.elim (fun d => FreeGroup.map Sum.inl (treeRel T d)) extra f := by
   cases f with
-  | inl f => exact oldPath_collapsed T extra (D.att f)
+  | inl f => exact oldPath_collapsed T extra _
   | inr s =>
       change FreeGroup.map (generatorEquiv T extra)
-        (pathWord (tree T extra) (readWord T (extra s).toWord)) = extra s
+        (pathWord _ (readWord T (extra s).toWord)) = extra s
       rw [readWord_collapsed, FreeGroup.mk_toWord]
 
 theorem connected : IsConnected (complex T extra) := by
   intro a b
   exact ⟨oldPath (revPath (T.treePath a) ++ T.treePath b),
     oldPath_isPath T ((isPath_revPath (T.treePath_isPath a)).append (T.treePath_isPath b))⟩
-
-end FiniteChains.Comb.RelativeTreeExtension

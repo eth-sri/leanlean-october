@@ -1,11 +1,8 @@
-module
+import RequestProject.ChamberQuotientOldGeneration
+import RequestProject.ChamberQuotientStarOneFillings
+import RequestProject.NerveRelativeIntersection
+import RequestProject.NerveBoundaryReflection
 
-public import RequestProject.ChamberQuotientOldGeneration
-public import RequestProject.ChamberQuotientStarOneFillings
-public import RequestProject.NerveRelativeIntersection
-public import RequestProject.NerveBoundaryReflection
-
-@[expose] public section
 
 /-! Actual relative degree-two vanishing for the old/attaching pair in the Q cover. -/
 namespace FiniteChains.Davis
@@ -17,7 +14,7 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 /-- An old two-chain whose boundary is on the attaching locus is an attaching
 two-chain modulo an old three-boundary, with exactly the same boundary.
 In particular, the original chain is not assumed to be an absolute cycle. -/
-theorem qUniversal_old_relative_filling (x : X) (hx : IsConnected (orderCx X))
+theorem qUniversal_old_relative_filling x (hx : IsConnected (orderCx X))
     (z : Ch (UOrder (Qpos A X att) (qNew x)))
     (hz : z ∈ IncOn (fun p => InQOld (uOrderEnd p)))
     (hd : lengthProjection 3 z = z)
@@ -33,9 +30,7 @@ theorem qUniversal_old_relative_filling (x : X) (hx : IsConnected (orderCx X))
     obtain ⟨b, hb, y, hy, hbc, he⟩ := qUniversal_generatesDegreeIn_base x hx c hc hdc hcyc
     exact ⟨b, incOn_mono (fun _ h => inQBase_in_star h) hb, y, hy, hbc, he⟩
   exact relative_filling_intersection_of_ambient (n := 2)
-    (fun _ _ => True.intro) (fun _ _ => True.intro)
+    (by simp) (by simp)
     (fun a b hab _ _ => qOld_baseStar_unmixed _ _ (uOrderEnd_monotone hab))
     hgen (qUniversal_baseStar_fillsDegree_two x hx) z hz hd
-    (incOn_mono (fun _ h => h.2) hdz)
-
-end FiniteChains.Davis
+    (incOn_mono (by simp) hdz)

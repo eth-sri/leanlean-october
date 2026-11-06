@@ -1,9 +1,7 @@
-module
+import RequestProject.PresentationDictionary
+import RequestProject.CoverChainComplex
+noncomputable section
 
-public import RequestProject.PresentationDictionary
-public import RequestProject.CoverChainComplex
-
-@[expose] public section
 
 /-!
 # The Cockcroft property of a presentation complex
@@ -27,32 +25,29 @@ because the augmentation of a Fox cycle is a vector killed by the exponent-sum m
 
 namespace FiniteChains
 
-open MonoidAlgebra
 
 variable {α : Type*} [Fintype α] [DecidableEq α] {J : Type*} [Fintype J] (ρ : J → FreeGroup α)
 
 /-- The augmentation `ℤ[G] → ℤ` of the group ring of the presented group. -/
-noncomputable abbrev augPres : MonoidAlgebra ℤ (PresGroup ρ) →+* ℤ := augQ (relSub ρ)
+abbrev augPres : MonoidAlgebra ℤ (PresGroup ρ) →+* ℤ := augQ _
 
 /-- The entries `M_{ij}` of the exponent-sum matrix of the presentation: the exponent sum of
 `x_i` in the relator `r_j`. -/
-noncomputable def expEntry (i : α) (j : J) : ℤ := Multiplicative.toAdd (expSum i (ρ j))
+def expEntry (i : α) (j : J) := Multiplicative.toAdd (expSum i (ρ j))
 
 omit [Fintype α] [Fintype J] in
 /-- Augmenting the Fox matrix gives the exponent-sum matrix. -/
 theorem augPres_foxMatrixPres (i : α) (j : J) :
     augPres ρ (foxMatrixPres ρ i j) = expEntry ρ i j := by
-  have h : foxMatrixPres ρ i j = proj (relSub ρ) (fox i (ρ j)) := rfl
+  have h : foxMatrixPres ρ i j = proj _ (fox i (ρ j)) := rfl
   rw [h, augQ_proj, aug_fox, expEntry]
 
 /-- A **Fox cycle**: an element of `π₂` of the presentation complex, in the coordinates of
 `RequestProject/UniversalCoverPi2.lean`. -/
-def IsFoxCycle (v : J → MonoidAlgebra ℤ (PresGroup ρ)) : Prop :=
-  ∀ i : α, ∑ j, v j * foxMatrixPres ρ i j = 0
+def IsFoxCycle (v : J → MonoidAlgebra ℤ (PresGroup ρ)) :=
+  ∀ i, ∑ j, v j * foxMatrixPres ρ i j = 0
 
 /-- **The Cockcroft property.**  The Hurewicz map of the presentation complex is zero: every
 Fox cycle (i.e. every element of `π₂`) has zero augmentation in every coordinate. -/
-def IsCockcroft : Prop :=
-  ∀ v : J → MonoidAlgebra ℤ (PresGroup ρ), IsFoxCycle ρ v → ∀ j, augPres ρ (v j) = 0
-
-end FiniteChains
+def IsCockcroft :=
+  ∀ v, IsFoxCycle ρ v → ∀ j, augPres ρ (v j) = 0

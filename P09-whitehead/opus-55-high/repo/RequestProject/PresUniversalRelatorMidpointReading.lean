@@ -1,10 +1,7 @@
-module
+import RequestProject.PresUniversalReadingPrefix
+import RequestProject.PresUniversalRelatorDeck
+import RequestProject.PresCoverRelatorFan
 
-public import RequestProject.PresUniversalReadingPrefix
-public import RequestProject.PresUniversalRelatorDeck
-public import RequestProject.PresCoverRelatorFan
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
 open Comb
@@ -23,12 +20,10 @@ theorem presUniversalRelator_midpoint_reading
       (presCoc w gen hrel).readVertex (ptBase w) p.val.1 *
         (prefixVal w gen p.val.2 k.val *
           (if ((w p.val.2)[k.val]).2 then 1 else (gen ((w p.val.2)[k.val]).1)⁻¹)) := by
-  apply presUniversal_midpoint_reading w gen hrel (ptBase w) p.val.2 k.val _
+  apply presUniversal_midpoint_reading w gen hrel _ p.val.2 k.val _
     (List.getElem?_eq_getElem k.isLt)
-  · exact (presCoverCircleInclusion_lt_apex (P := UOrder (PresPos w) (ptBase w)) w uOrderEnd
-      (presUniversalEnd_isPosetCover w hpos) p _).le
-  · exact presCoverConeCircleOrderIso_symm_projection (P := UOrder (PresPos w) (ptBase w)) w uOrderEnd
-      (presUniversalEnd_isPosetCover w hpos) p.val.1 p.val.2 p.property _
+  · exact (presCoverCircleInclusion_lt_apex (P := UOrder _ (ptBase w)) w uOrderEnd
+      _ p _).le
+  · exact presCoverConeCircleOrderIso_symm_projection (P := UOrder _ (ptBase w)) w uOrderEnd
+      _ p.val.1 p.val.2 p.property _
   · exact p.property
-
-end FiniteChains.PresModel

@@ -1,12 +1,9 @@
-module
+import RequestProject.GenusChainCollapse
+import RequestProject.TruncatedCellDimension
+import RequestProject.ChamberQuotientFinite
+import RequestProject.StrictOrderComplex
+import RequestProject.CombData
 
-public import RequestProject.GenusChainCollapse
-public import RequestProject.TruncatedCellDimension
-public import RequestProject.ChamberQuotientFinite
-public import RequestProject.StrictOrderComplex
-public import RequestProject.CombData
-
-@[expose] public section
 
 /-! Surviving cells of the actual chosen truncated genus-block collapse. -/
 
@@ -26,7 +23,7 @@ def GenusSpineCell := {c : GenusTruncatedCell q // c ∈ genusSpineCellSet q}
 instance : PartialOrder (GenusSpineCell q) := Subtype.partialOrder _
 
 instance : Finite (GenusSpineCell q) :=
-  Finite.of_injective (fun c : GenusSpineCell q => truncatedFaceIndex c.1)
+  Finite.of_injective (truncatedFaceIndex ·.1)
     (fun _ _ h => Subtype.ext (truncatedFaceIndex_injective h))
 
 theorem genus_removedFace_dimension (c : GenusTruncatedCell q)
@@ -39,11 +36,10 @@ theorem genus_removedFace_dimension (c : GenusTruncatedCell q)
   | inl c =>
     have hd : (freeSet (qCubeToCoordinate c.1)).card = 2 := by
       by_contra hn
-      rw [freeSet_qCubeToCoordinate] at hn
-      simp [truncatedFaceIndex, spineInc, hn] at hi
-    simpa [truncatedCellDimension] using hd
+      simp_all [freeSet_qCubeToCoordinate, truncatedFaceIndex, spineInc, hn]
+    aesop
   | inr σ =>
-    have hs : IsTri (orderComplex (GenusVertex q)) σ.1 := by
+    have hs : IsTri (orderComplex _) σ.1 := by
       by_contra hn
       simp [truncatedFaceIndex, spineInc, hn] at hi
     change σ.1.card - 1 = 2
@@ -60,14 +56,14 @@ theorem genusSpineCellSet_of_dimension_lt_two (c : GenusTruncatedCell q)
 theorem genusSpineCell_dimension_le_two (c : GenusSpineCell q) :
     truncatedCellDimension c.1 ≤ 2 := c.2.1
 
-theorem genus_simplex_mem_faces {σ : Finset (GenusVertex q)}
+theorem genus_simplex_mem_faces
     (hσ : IsSimplex (cmpRel (GenusVertex q)) σ) :
     σ ∈ (orderComplex (GenusVertex q)).faces := by
   intro a ha b hb _
   exact (isSimplex_cmpRel_iff.mp hσ) a ha b hb
 
 theorem genus_oldCell_removed_iff_dimension_three
-    (c : QOld (cmpRel (GenusVertex q))) :
+    c :
     qCubeToCoordinate c.1 ∈ (genusChainCollapse q).map Prod.fst ↔
       truncatedCellDimension (Sum.inl c : GenusTruncatedCell q) = 3 := by
   constructor
@@ -77,12 +73,12 @@ theorem genus_oldCell_removed_iff_dimension_three
     rw [he] at ht
     simpa [truncatedCellDimension] using (mem_topCubes.mp ht).2
   · intro hd
-    have ht : qCubeToCoordinate c.1 ∈ topCubes (orderComplex (GenusVertex q)) := by
+    have ht : qCubeToCoordinate c.1 ∈ topCubes (orderComplex _) := by
       apply mem_topCubes.mpr
       rw [freeSet_qCubeToCoordinate]
       exact ⟨genus_simplex_mem_faces q c.1.isSimplex, hd⟩
-    obtain ⟨f, hf⟩ := (genusChainCollapse_isPairCollapse q).covers ht
-    exact List.mem_map.mpr ⟨(qCubeToCoordinate c.1, f), hf, rfl⟩
+    cases' (genusChainCollapse_isPairCollapse q).covers ht with f hf
+    grind
 
 theorem genusTruncatedCell_dimension_le_three (c : GenusTruncatedCell q) :
     truncatedCellDimension c ≤ 3 := by
@@ -93,7 +89,7 @@ theorem genusTruncatedCell_dimension_le_three (c : GenusTruncatedCell q) :
     change σ.1.card - 1 ≤ 3
     omega
 
-theorem genus_cutCell_dimension_le_two (σ : CutCell (cmpRel (GenusVertex q))) :
+theorem genus_cutCell_dimension_le_two σ :
     truncatedCellDimension (Sum.inr σ : GenusTruncatedCell q) ≤ 2 := by
   have hs := genus_chain_card_le_three q (genus_simplex_mem_faces q σ.2.2)
   change σ.1.card - 1 ≤ 2
@@ -109,7 +105,7 @@ theorem genusSpineCellSet_iff_survives (c : GenusTruncatedCell q) :
   cases c with
   | inl c =>
     have hmax := genusTruncatedCell_dimension_le_three q (Sum.inl c)
-    dsimp only
+    dsimp
     rw [genus_oldCell_removed_iff_dimension_three]
     constructor
     · intro h
@@ -130,15 +126,14 @@ theorem genusSpineCellDimension_strictMono :
   exact hcd
 
 /-- The genuine finite simplicial two-complex associated with the surviving cells. -/
-def genusSpineCx : Comb.Complex2 := Comb.strictOrderCx (GenusSpineCell q)
+def genusSpineCx := Comb.strictOrderCx (GenusSpineCell q)
 
-instance : Finite (genusSpineCx q).V := inferInstanceAs (Finite (GenusSpineCell q))
 instance : Finite (genusSpineCx q).E :=
   inferInstanceAs (Finite (Comb.strictOrderCx (GenusSpineCell q)).E)
 instance : Finite (genusSpineCx q).F :=
   inferInstanceAs (Finite (Comb.strictOrderCx (GenusSpineCell q)).F)
 
-def genusSpineCellToOld (c : GenusSpineCell q) : QOld (cmpRel (GenusVertex q)) :=
+def genusSpineCellToOld (c : GenusSpineCell q) :=
   truncatedCellRetraction c.1
 
 theorem genusSpineCellToOld_monotone : Monotone (genusSpineCellToOld q) :=
@@ -146,8 +141,8 @@ theorem genusSpineCellToOld_monotone : Monotone (genusSpineCellToOld q) :=
 
 /-- The comparison to the older cube-poset block is constructed from the actual cells. -/
 def genusSpineToOld : Comb.Hom (genusSpineCx q) (Comb.orderCx (QOld (cmpRel (GenusVertex q)))) :=
-  Comb.Hom.comp (Comb.orderCxMap (genusSpineCellToOld q) (genusSpineCellToOld_monotone q))
-    (Comb.strictOrderIncl (GenusSpineCell q))
+  Comb.Hom.comp (Comb.orderCxMap _ (genusSpineCellToOld_monotone q))
+    (Comb.strictOrderIncl _)
 
 /-- The full cut one-skeleton survives. This supplies the cells of the canonical markings. -/
 def genusSpineCutCell (σ : NeSpx (cmpRel (GenusVertex q))) (hσ : σ.1.card ≤ 2) :
@@ -155,12 +150,3 @@ def genusSpineCutCell (σ : NeSpx (cmpRel (GenusVertex q))) (hσ : σ.1.card ≤
   ⟨Sum.inr ⟨σ.1, σ.2⟩, genusSpineCellSet_of_dimension_lt_two q _ (by
     change σ.1.card - 1 < 2
     omega)⟩
-
-@[simp] theorem genusSpineCellToOld_cutCell (σ : NeSpx (cmpRel (GenusVertex q)))
-    (hσ : σ.1.card ≤ 2) :
-    genusSpineCellToOld q (genusSpineCutCell q σ hσ) = posQCube σ := rfl
-
-instance : Nonempty (GenusSpineCell q) :=
-  ⟨genusSpineCutCell q (spx1 (cC (gc q))) (by simp [spx1_val])⟩
-
-end FiniteChains.Davis.Genus

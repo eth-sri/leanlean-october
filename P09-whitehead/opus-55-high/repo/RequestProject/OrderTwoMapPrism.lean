@@ -1,16 +1,12 @@
-module
+import RequestProject.OrderNerveCellMaps
+import RequestProject.Tac
 
-public import RequestProject.OrderNerveCellMaps
-
-@[expose] public section
 
 /-! Explicit finite cellular prisms for two monotone maps with different
 source and target posets. Proof terms only; not compiled. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 universe u
@@ -35,7 +31,7 @@ def ordMapPrism1 : (OrdEdge P →₀ ℤ) →ₗ[ℤ] (OrdTri Q →₀ ℤ) :=
 def ordMapPrism2 : (OrdTri P →₀ ℤ) →ₗ[ℤ] (OrdTet Q →₀ ℤ) :=
   Finsupp.linearCombination ℤ (ordMapPrismTriangle f g hf hg hfg)
 
-theorem ordMapPrism_triangle_identity (t : OrdTri P) :
+theorem ordMapPrism_triangle_identity t :
     ordBoundary3 (ordMapPrismTriangle f g hf hg hfg t) +
       ordMapPrism1 f g hf hg hfg (Comb.bdry2 (orderCx P) (Finsupp.single t 1)) =
     chain2 (orderCxMap g hg) (Finsupp.single t 1) -
@@ -44,7 +40,7 @@ theorem ordMapPrism_triangle_identity (t : OrdTri P) :
     ordTetBoundary, Comb.bdry2, orderCx, pathChain, chain2, orderCxMap]
   abel
 
-theorem ordMapPrism_identity (c : OrdTri P →₀ ℤ) :
+theorem ordMapPrism_identity c :
     ordBoundary3 (ordMapPrism2 f g hf hg hfg c) +
       ordMapPrism1 f g hf hg hfg (Comb.bdry2 (orderCx P) c) =
     chain2 (orderCxMap g hg) c - chain2 (orderCxMap f hf) c := by
@@ -55,7 +51,7 @@ theorem ordMapPrism_identity (c : OrdTri P →₀ ℤ) :
     rw [add_add_add_comm, hc, hd]
     abel
   | single t n =>
-    have h := congrArg (fun z : OrdTri Q →₀ ℤ => n • z)
+    have h := congrArg (n • ·)
       (ordMapPrism_triangle_identity f g hf hg hfg t)
     simpa [ordMapPrism2, Comb.bdry2, smul_add, smul_sub, Finsupp.smul_single] using h
 
@@ -64,6 +60,4 @@ theorem ordMapPrism_cycle (c : OrdTri P →₀ ℤ) (hc : Comb.bdry2 (orderCx P)
     ordBoundary3 (ordMapPrism2 f g hf hg hfg c) =
       chain2 (orderCxMap g hg) c - chain2 (orderCxMap f hf) c := by
   have h := ordMapPrism_identity f g hf hg hfg c
-  simpa only [hc, map_zero, add_zero] using h
-
-end FiniteChains.Comb
+  simp_all

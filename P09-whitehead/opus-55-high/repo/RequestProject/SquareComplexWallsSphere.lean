@@ -1,8 +1,6 @@
-module
+import RequestProject.SquareComplexWallSpace
+import RequestProject.Tac
 
-public import RequestProject.SquareComplexWallSpace
-
-@[expose] public section
 
 /-!
 # Walls of a simply connected square complex need not separate its vertices
@@ -38,71 +36,4 @@ vertices `x, y, z` have two distinct medians `a` and `b` in the one-skeleton
 of the missing step must therefore carry the link condition as a hypothesis.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-/-- The five vertices of the smallest square-complex sphere: the complete bipartite graph
-`K_{2,3}` with its three four-cycles glued in. -/
-inductive SphereV
-  | a | b | x | y | z
-  deriving DecidableEq, Fintype, Repr
-
-namespace SphereV
-
-/-- The bipartition of `K_{2,3}`: `a, b` on one side, `x, y, z` on the other. -/
-def side : SphereV → Bool
-  | a => true
-  | b => true
-  | _ => false
-
-end SphereV
-
-/-- Adjacency of `K_{2,3}`: two vertices are adjacent when they lie on opposite sides of the
-bipartition. -/
-def sphereAdj (u v : SphereV) : Prop := u.side ≠ v.side
-
-instance : DecidableRel sphereAdj := fun _ _ => inferInstanceAs (Decidable (_ ≠ _))
-
-/-- The two-cells: every four-cycle of `K_{2,3}` is glued in.  There are exactly three of them,
-namely `a x b y`, `a y b z` and `a z b x`, read from any vertex and in either orientation. -/
-def sphereSq (p q r s : SphereV) : Prop :=
-  sphereAdj p q ∧ sphereAdj q r ∧ sphereAdj r s ∧ sphereAdj s p ∧ p ≠ r ∧ q ≠ s
-
-instance : ∀ p q r s, Decidable (sphereSq p q r s) := fun _ _ _ _ =>
-  inferInstanceAs (Decidable (_ ∧ _))
-
-theorem sphereAdj_symm : ∀ u v : SphereV, sphereAdj u v → sphereAdj v u := by decide
-
-theorem sphereAdj_irrefl : ∀ u : SphereV, ¬ sphereAdj u u := by decide
-
-theorem sphereSq_adj : ∀ p q r s : SphereV, sphereSq p q r s →
-    sphereAdj p q ∧ sphereAdj q r ∧ sphereAdj r s ∧ sphereAdj s p := by decide
-
-theorem sphereSq_rotate : ∀ p q r s : SphereV, sphereSq p q r s → sphereSq q r s p := by decide
-
-theorem sphereSq_reverse : ∀ p q r s : SphereV, sphereSq p q r s → sphereSq s r q p := by decide
-
-/-- **The square-complex sphere**: `K_{2,3}` with its three four-cycles glued in.  Its geometric
-realisation is a two-sphere built from three squares. -/
-def sphereCx : SquareComplex SphereV where
-  adj := sphereAdj
-  adj_symm := fun {u v} h => sphereAdj_symm u v h
-  adj_irrefl := sphereAdj_irrefl
-  sq := sphereSq
-  sq_adj := fun {p q r s} h => sphereSq_adj p q r s h
-  sq_rotate := fun {p q r s} h => sphereSq_rotate p q r s h
-  sq_reverse := fun {p q r s} h => sphereSq_reverse p q r s h
-
-instance : DecidableRel sphereCx.adj := fun u v => inferInstanceAs (Decidable (sphereAdj u v))
-
-instance : ∀ p q r s, Decidable (sphereCx.sq p q r s) := fun p q r s =>
-  inferInstanceAs (Decidable (sphereSq p q r s))
-
-/-! ### Every wall of the sphere fails to separate `a` from `b` -/
-
-/-! ### Why it fails: the link condition and medianness -/
-
-end FiniteChains
+bwd

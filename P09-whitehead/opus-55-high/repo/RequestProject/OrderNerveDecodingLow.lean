@@ -1,8 +1,5 @@
-module
+import RequestProject.OrderNerveOneDecoding
 
-public import RequestProject.OrderNerveOneDecoding
-
-@[expose] public section
 
 namespace FiniteChains.Comb
 open FreeAbelianGroup
@@ -19,10 +16,8 @@ theorem ordNerveChain0_decode (c : Nerve.Ch P) :
     (F := ordNerveChain0.toAddMonoidHom.comp decodeOrdNerve0) (G := Nerve.lengthProjection 1)
   intro l
   cases l with
-  | nil => simp [decodeOrdVertexList]
+  | nil => rfl
   | cons a l =>
     cases l with
     | nil => simp [decodeOrdVertexList, ordNerveChain0]
-    | cons b l => simp [decodeOrdVertexList]
-
-end FiniteChains.Comb
+    | cons b l => rfl

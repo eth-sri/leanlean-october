@@ -1,19 +1,15 @@
-module
+import RequestProject.ClassicalGraphRoseNaturality
+import RequestProject.ContinuousEdgeWords
+import RequestProject.TreePresentation
+import RequestProject.Tac
 
-public import RequestProject.ClassicalGraphRoseNaturality
-public import RequestProject.ContinuousEdgeWords
-public import RequestProject.TreePresentation
-
-@[expose] public section
 
 /-! The exact finite word read by collapsing a spanning tree. The word
 is obtained by deleting the tree letters; the corresponding continuous
 path homotopy removes precisely the resulting constant pauses. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment ContinuousEdgeWords
@@ -46,8 +42,8 @@ theorem treeLetters_revPath (l : List (J × Bool)) :
     rw [Comb.revPath_cons (X := graphCx r)]
     rw [treeLetters_append, ih]
     by_cases h : T.isTree g.1
-    · simp only [treeLetters, Comb.revGerm, h, dite_true, List.append_nil]
-    · simp only [treeLetters, Comb.revGerm, h, dite_false, Comb.revPath,
+    · simp [treeLetters, Comb.revGerm, h, dite_true, List.append_nil]
+    · simp [treeLetters, Comb.revGerm, h, dite_false, Comb.revPath,
         List.reverse_cons, List.map_cons]
 
 omit [TopologicalSpace V] [DiscreteTopology V] in
@@ -57,8 +53,8 @@ theorem treeLetters_mk (l : List (J × Bool)) :
   | nil => rfl
   | cons g l ih =>
     by_cases h : T.isTree g.1
-    · rw [treeLetters, dif_pos h, Comb.SpanningTree.pathWord_cons T g l,
-        Comb.SpanningTree.germWord_of_isTree T h, one_mul, ih]
+    · rw [treeLetters, dif_pos h, T.pathWord_cons g l,
+        T.germWord_of_isTree h, one_mul, ih]
     · rw [treeLetters, dif_neg h, Comb.SpanningTree.pathWord_cons]
       change FreeGroup.mk ([(⟨g.1, h⟩, g.2)] ++ treeLetters r T l) = _
       rw [← FreeGroup.mul_mk, ih]
@@ -66,33 +62,31 @@ theorem treeLetters_mk (l : List (J × Bool)) :
       cases g with
       | mk j o => cases o <;> simp only [Comb.SpanningTree.germWord, dif_neg h] <;> rfl
 
-theorem rose_word_isPath {A : Type} (l : List (A × Bool)) :
+theorem rose_word_isPath (l : List (A × Bool)) :
     Comb.IsPath (graphCx (roseAttaching A)).src (graphCx (roseAttaching A)).tgt l
       PUnit.unit PUnit.unit := by
-  induction l with
-  | nil => rfl
-  | cons g l ih => cases g with | mk e o => cases o <;> exact ⟨rfl, ih⟩
+  induction l <;> aesop
 
 def treeRoseWordPath (l : List (J × Bool)) :
     Path (roseVertex {j : J // ¬T.isTree j}) (roseVertex {j : J // ¬T.isTree j}) :=
-  realize _ _ (old (roseAttaching _) _) (graphEdgePath (roseAttaching _))
+  realize _ _ _ (graphEdgePath _)
     (treeLetters r T l) (rose_word_isPath _)
 
 def collapsedWordPath (l : List (J × Bool)) {a b : V}
     (hl : Comb.IsPath (graphSrc r) (graphTgt r) l a b) :
     Path (roseVertex {j : J // ¬T.isTree j}) (roseVertex {j : J // ¬T.isTree j}) :=
-  ((realize _ _ (old r _) (graphEdgePath r) l hl).map
+  ((realize _ _ _ (graphEdgePath r) l hl).map
     (graphRoseHomotopyEquiv r hr T).continuous).cast
-      (graphRoseHomotopyEquiv_old r hr T a).symm
-      (graphRoseHomotopyEquiv_old r hr T b).symm
+      (by simp)
+      (by simp)
 
 def collapsedGermPath (g : J × Bool) :
     Path (roseVertex {j : J // ¬T.isTree j}) (roseVertex {j : J // ¬T.isTree j}) :=
   ((graphGermPath r g).map (graphRoseHomotopyEquiv r hr T).continuous).cast
-    (graphRoseHomotopyEquiv_old r hr T _).symm
-    (graphRoseHomotopyEquiv_old r hr T _).symm
+    (by simp)
+    (by simp)
 
-theorem collapsedGermPath_tree (g : J × Bool) (h : T.isTree g.1) :
+theorem collapsedGermPath_tree g (h : T.isTree g.1) :
     collapsedGermPath r hr T g = Path.refl _ := by
   apply Path.ext
   funext t
@@ -100,7 +94,7 @@ theorem collapsedGermPath_tree (g : J × Bool) (h : T.isTree g.1) :
   | mk j o =>
     cases o <;> exact graphRoseHomotopyEquiv_treePath r hr T ⟨j, h⟩ _
 
-theorem collapsedGermPath_nonTree (g : J × Bool) (h : ¬T.isTree g.1) :
+theorem collapsedGermPath_nonTree g h :
     collapsedGermPath r hr T g =
       germPath (graphSrc (roseAttaching _)) (graphTgt (roseAttaching _))
         (old (roseAttaching _) _) (graphEdgePath (roseAttaching _)) (⟨g.1, h⟩, g.2) := by
@@ -110,39 +104,37 @@ theorem collapsedGermPath_nonTree (g : J × Bool) (h : ¬T.isTree g.1) :
   | mk j o =>
     cases o <;> exact graphRoseHomotopyEquiv_nonTreeCell r hr T ⟨⟨j, h⟩, graphDiskHomeomorph _⟩
 
-theorem collapsedWordPath_cons (g : J × Bool) (l : List (J × Bool)) {a b : V}
+theorem collapsedWordPath_cons g l {a b}
     (hl : Comb.IsPath (graphSrc r) (graphTgt r) (g :: l) a b) :
     collapsedWordPath r hr T (g :: l) hl =
       (collapsedGermPath r hr T g).trans (collapsedWordPath r hr T l hl.2) := by
   apply Path.ext
   funext t
-  simp only [collapsedWordPath, collapsedGermPath, realize, Path.cast_coe,
+  simp [collapsedWordPath, collapsedGermPath, realize, Path.cast_coe,
     Path.map_coe, Function.comp_apply, Path.trans_apply]
   split_ifs
   · cases g with | mk j o => cases o <;> rfl
   · rfl
 
-theorem collapsedWordPath_homotopic_treeWord (l : List (J × Bool)) {a b : V}
+theorem collapsedWordPath_homotopic_treeWord l {a b}
     (hl : Comb.IsPath (graphSrc r) (graphTgt r) l a b) :
     (collapsedWordPath r hr T l hl).Homotopic (treeRoseWordPath r T l) := by
   induction l generalizing a with
-  | nil => exact Path.Homotopic.refl _
+  | nil => rfl
   | cons g l ih =>
     rw [collapsedWordPath_cons]
     by_cases hg : T.isTree g.1
     · rw [collapsedGermPath_tree r hr T g hg]
       have ht : treeRoseWordPath r T (g :: l) = treeRoseWordPath r T l := by
-        simp only [treeRoseWordPath, treeLetters, dif_pos hg]
+        simp [treeRoseWordPath, treeLetters, dif_pos hg]
       rw [ht]
       exact ((Path.Homotopic.refl _).hcomp (ih hl.2)).trans (Path.Homotopic.refl_trans _)
     · rw [collapsedGermPath_nonTree r hr T g hg]
       have ht : treeRoseWordPath r T (g :: l) =
-          (germPath (graphSrc (roseAttaching _)) (graphTgt (roseAttaching _))
-            (old (roseAttaching _) _) (graphEdgePath (roseAttaching _))
+          (germPath _ _
+            _ (graphEdgePath _)
               (⟨g.1, hg⟩, g.2)).trans (treeRoseWordPath r T l) := by
         simp only [treeRoseWordPath, treeLetters, dif_neg hg, realize]
         rfl
       rw [ht]
       exact (Path.Homotopic.refl _).hcomp (ih hl.2)
-
-end FiniteChains.ClassicalGraphModel

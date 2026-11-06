@@ -1,3 +1,2 @@
-module
-public import RequestProject.PresentationDictionary
-public import RequestProject.ChainConsistency
+import RequestProject.PresentationDictionary
+import RequestProject.ChainConsistency

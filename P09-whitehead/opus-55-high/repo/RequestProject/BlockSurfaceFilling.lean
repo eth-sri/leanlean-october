@@ -1,8 +1,6 @@
-module
+import RequestProject.BlockSpineSubst
+import RequestProject.Tac
 
-public import RequestProject.BlockSpineSubst
-
-@[expose] public section
 
 /-!
 # From a surface filling to the hypothesis `hfill` of the substitution
@@ -36,12 +34,9 @@ its boundary being that product of commutators.
   attaching map and the filling of the surface relator.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb PresModel BlockFamily
 
@@ -50,38 +45,38 @@ universe u v
 /-! ### Products of commutators -/
 
 /-- The product of the commutators `[f x, f y]` over a list of pairs `(x, y)`. -/
-def commWord {ι : Type*} {G : Type*} [Group G] (f : ι → G) (ps : List (ι × ι)) : G :=
+def commWord {ι : Type*} {G} [Group G] (f : ι → G) (ps : List (ι × ι)) :=
   (ps.map fun p => f p.1 * f p.2 * (f p.1)⁻¹ * (f p.2)⁻¹).prod
 
-@[simp] theorem commWord_nil {ι : Type*} {G : Type*} [Group G] (f : ι → G) :
+@[simp] theorem commWord_nil {ι : Type*} {G} [Group G] (f : ι → G) :
     commWord f [] = 1 := rfl
 
-theorem commWord_cons {ι : Type*} {G : Type*} [Group G] (f : ι → G) (p : ι × ι)
-    (ps : List (ι × ι)) :
+theorem commWord_cons {ι : Type*} {G} [Group G] (f : ι → G) p
+    ps :
     commWord f (p :: ps) = (f p.1 * f p.2 * (f p.1)⁻¹ * (f p.2)⁻¹) * commWord f ps := by
-  simp [commWord]
+  rfl
 
 /-- A homomorphism carries the product of commutators to the product of commutators of the
 images. -/
-theorem map_commWord {ι : Type*} {G H : Type*} [Group G] [Group H] (φ : G →* H) (f : ι → G)
+theorem map_commWord {ι : Type*} {G H} [Group G] [Group H] (φ : G →* H) f
     (ps : List (ι × ι)) : φ (commWord f ps) = commWord (fun i => φ (f i)) ps := by
   induction ps with
   | nil => simp
-  | cons p ps ih => rw [commWord_cons, map_mul, ih, commWord_cons]; simp
+  | cons p ps ih => simp [commWord_cons, map_mul, ih]
 
-theorem commWord_congr {ι : Type*} {G : Type*} [Group G] {f g : ι → G} (h : ∀ i, f i = g i)
-    (ps : List (ι × ι)) : commWord f ps = commWord g ps := by
-  simp only [commWord, h]
+theorem commWord_congr {ι : Type*} {G} [Group G] {f g : ι → G} (h : ∀ i, f i = g i)
+    ps : commWord f ps = commWord g ps := by
+  simp [commWord, h]
 
 /-! ### Two general facts about normal closures -/
 
 /-- A homomorphism carries a normal closure into any normal closure containing the images of the
 generators. -/
-theorem map_mem_normalClosure {G H : Type*} [Group G] [Group H] (φ : G →* H) {S : Set G}
-    {N : Set H} (hS : ∀ g ∈ S, φ g ∈ Subgroup.normalClosure N) {x : G}
+theorem map_mem_normalClosure {G H} [Group G] [Group H] (φ : G →* H) {S}
+    {N} (hS : ∀ g ∈ S, φ g ∈ Subgroup.normalClosure N) {x}
     (hx : x ∈ Subgroup.normalClosure S) : φ x ∈ Subgroup.normalClosure N := by
   have hle : Subgroup.normalClosure S ≤ (Subgroup.normalClosure N).comap φ :=
-    Subgroup.normalClosure_le_normal (fun g hg => hS g hg)
+    Subgroup.normalClosure_le_normal hS
   exact hle hx
 
 /-! ### The surface word is a consequence of the block relators -/
@@ -91,6 +86,3 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 /-! ### The hypothesis (B1), derived -/
 
 /-! ### The application -/
-
-end Davis
-end FiniteChains

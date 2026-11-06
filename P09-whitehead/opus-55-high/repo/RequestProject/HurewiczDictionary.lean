@@ -1,10 +1,7 @@
-module
+import RequestProject.MagnusKernel
+import RequestProject.CoverHomologyOne
+import RequestProject.UniversalCoefficients
 
-public import RequestProject.MagnusKernel
-public import RequestProject.CoverHomologyOne
-public import RequestProject.UniversalCoefficients
-
-@[expose] public section
 
 /-!
 # The Hurewicz dictionary `H₁(K_N) = N/[N, N]`, proved
@@ -35,17 +32,3 @@ Up to the passage from `Ñ ◁ F` to `N = Ñ/R ◁ G = F/R`, this is exactly the
 Section 2 of the paper takes from the Hurewicz theorem and the universal coefficient
 theorem.
 -/
-
-namespace FiniteChains
-
-open MonoidAlgebra
-
-variable {α : Type*} [Fintype α] [DecidableEq α]
-variable (Nsub : Subgroup (FreeGroup α)) [Nsub.Normal]
-variable {J : Type*} [Fintype J] (ρ : J → FreeGroup α)
-
-/-- The subgroup `R·[Ñ, Ñ]` of `Ñ`; the quotient `Ñ/(R·[Ñ, Ñ])` is `N/[N, N]`. -/
-def relComm : Subgroup (FreeGroup α) :=
-  Subgroup.normalClosure (Set.range ρ) ⊔ ⁅Nsub, Nsub⁆
-
-end FiniteChains

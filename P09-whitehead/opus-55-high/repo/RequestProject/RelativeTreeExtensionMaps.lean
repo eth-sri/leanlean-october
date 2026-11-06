@@ -1,8 +1,5 @@
-module
+import RequestProject.RelativeTreeExtension
 
-public import RequestProject.RelativeTreeExtension
-
-@[expose] public section
 
 /-! Cell inclusions between relative tree extensions with the same
 extra generators. Pending final Lean verification. -/
@@ -28,5 +25,3 @@ def inclusion : Hom (complex T extra) (complex T extra') where
     cases s with
     | inl d => simp [complex]
     | inr s => simp [complex, hf]
-
-end FiniteChains.Comb.RelativeTreeExtension

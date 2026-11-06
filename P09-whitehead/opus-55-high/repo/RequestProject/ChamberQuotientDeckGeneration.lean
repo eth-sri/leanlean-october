@@ -1,2 +1,1 @@
-module
-public import RequestProject.ChamberQuotientEquivariantGeneration
+import RequestProject.ChamberQuotientEquivariantGeneration

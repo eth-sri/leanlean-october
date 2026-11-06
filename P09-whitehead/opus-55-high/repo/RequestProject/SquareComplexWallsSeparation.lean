@@ -1,9 +1,6 @@
-module
+import RequestProject.SquareComplexWallsExample
+import RequestProject.SquareComplexWallsSphere
 
-public import RequestProject.SquareComplexWallsExample
-public import RequestProject.SquareComplexWallsSphere
-
-@[expose] public section
 
 /-!
 # A criterion for the separation property
@@ -38,51 +35,3 @@ The criterion is sharp in the following sense: for the sphere of the previous fi
 smallest possible way — the shortest walk `a, x, b` crosses the unique wall twice
 (`FiniteChains.sphere_geodesic_crosses_twice`).
 -/
-
-namespace FiniteChains
-
-namespace SquareComplex
-
-universe u
-
-variable {Vx : Type u} {S : SquareComplex Vx}
-
-/-! ### Counting crossings in `ℕ` -/
-
-/-- The number of edges of the walk `l` crossing the wall `χ`. -/
-def crossCount (χ : Vx → Vx → ZMod 2) : List Vx → ℕ
-  | a :: b :: t => (if χ a b = 1 then 1 else 0) + crossCount χ (b :: t)
-  | _ => 0
-
-@[simp] theorem crossCount_nil (χ : Vx → Vx → ZMod 2) : crossCount χ ([] : List Vx) = 0 := rfl
-
-@[simp] theorem crossCount_singleton (χ : Vx → Vx → ZMod 2) (a : Vx) :
-    crossCount χ [a] = 0 := rfl
-
-@[simp] theorem crossCount_cons_cons (χ : Vx → Vx → ZMod 2) (a b : Vx) (t : List Vx) :
-    crossCount χ (a :: b :: t) = (if χ a b = 1 then 1 else 0) + crossCount χ (b :: t) := rfl
-
-/-! ### Crossing numbers and the two sides of a wall -/
-
-/-! ### Shortest walks -/
-
-/-! ### The criterion -/
-
-end SquareComplex
-
-/-! ### Sharpness: on the sphere a geodesic crosses the wall twice -/
-
-/-! ### Non-vacuity: the criterion holds for the four-cycle
-
-For the four-cycle with its square glued in the criterion can be checked by hand, and it yields the
-separation property — hence the median embedding — unconditionally. -/
-
-instance : DecidableRel cycleFour.adj := fun u v => inferInstanceAs (Decidable (cycleFourAdj u v))
-
-instance (l : List (ZMod 4)) : Decidable (cycleFour.IsWalk l) :=
-  inferInstanceAs (Decidable (List.IsChain cycleFourAdj l))
-
-instance (u v : ZMod 4) (l : List (ZMod 4)) : Decidable (cycleFour.IsWalkFrom u v l) :=
-  inferInstanceAs (Decidable (cycleFour.IsWalk l ∧ l.head? = some u ∧ l.getLast? = some v))
-
-end FiniteChains

@@ -1,8 +1,5 @@
-module
+import RequestProject.WedgeCockcroft
 
-public import RequestProject.WedgeCockcroft
-
-@[expose] public section
 
 /-!
 # An arbitrary wedge of Cockcroft complexes is Cockcroft
@@ -41,7 +38,7 @@ relators of all the factors, side by side. -/
 def sigmaWedgeRel : (Σ s, J s) → FreeGroup (Σ s, α s) :=
   fun p => FreeGroup.map (Sigma.mk p.1) (ρ p.1 p.2)
 
-@[simp] theorem sigmaWedgeRel_mk (s : S) (j : J s) :
+@[simp] theorem sigmaWedgeRel_mk s j :
     sigmaWedgeRel ρ ⟨s, j⟩ = FreeGroup.map (Sigma.mk s) (ρ s j) := rfl
 
 variable [DecidableEq S]
@@ -51,49 +48,39 @@ of all the other factors. -/
 def killOther (s : S) : FreeGroup (Σ t, α t) →* FreeGroup (α s) :=
   FreeGroup.lift fun p => if h : p.1 = s then FreeGroup.of (h ▸ p.2) else 1
 
-@[simp] theorem killOther_map_self (s : S) (w : FreeGroup (α s)) :
+@[simp] theorem killOther_map_self s w :
     killOther (α := α) s (FreeGroup.map (Sigma.mk s) w) = w := by
-  have h : ((killOther (α := α) s).comp (FreeGroup.map (Sigma.mk s))
-      : FreeGroup (α s) →* FreeGroup (α s)) = MonoidHom.id _ :=
+  have h : ((killOther (α := α) s).comp (FreeGroup.map (Sigma.mk s))) = MonoidHom.id _ :=
     FreeGroup.ext_hom _ _ fun a => by
       simp [killOther]
-  exact congrArg (fun F : FreeGroup (α s) →* FreeGroup (α s) => F w) h
+  exact congrArg (· w) h
 
-@[simp] theorem killOther_map_other {s t : S} (hst : t ≠ s) (w : FreeGroup (α t)) :
+@[simp] theorem killOther_map_other {s t} (hst : t ≠ s) w :
     killOther (α := α) s (FreeGroup.map (Sigma.mk t) w) = 1 := by
-  have h : ((killOther (α := α) s).comp (FreeGroup.map (Sigma.mk t))
-      : FreeGroup (α t) →* FreeGroup (α s)) = 1 :=
+  have h : ((killOther (α := α) s).comp (FreeGroup.map (Sigma.mk t))) = 1 :=
     FreeGroup.ext_hom _ _ fun a => by
       simp [killOther, hst]
-  exact congrArg (fun F : FreeGroup (α t) →* FreeGroup (α s) => F w) h
+  exact congrArg (· w) h
 
 variable [∀ s, DecidableEq (α s)]
 
 /-- **Every factor is a retract block of the wedge.** -/
-theorem isBlock_sigmaWedge (s : S) :
+theorem isBlock_sigmaWedge s :
     IsBlock (ρ s) (sigmaWedgeRel ρ) (Sigma.mk s) (Sigma.mk s) (killOther s) where
   gen_injective := sigma_mk_injective
   cell_injective := sigma_mk_injective
   rel_eq _ := rfl
   fox_outside i l hl := by
-    obtain ⟨t, j⟩ := l
-    have hts : t ≠ s := by
-      rintro rfl
-      exact hl ⟨j, rfl⟩
-    rw [sigmaWedgeRel_mk]
+    cases' l with t j
     refine fox_map_of_not_mem_range (Sigma.mk t) ?_ (ρ t j)
-    intro a hcontra
-    exact hts (congrArg Sigma.fst hcontra).symm
+    grind
   retract_map w := killOther_map_self s w
   retract_rel l := by
-    obtain ⟨t, j⟩ := l
+    cases' l with t j
     by_cases hts : t = s
     · subst hts
       rw [sigmaWedgeRel_mk, killOther_map_self]
       exact Subgroup.subset_normalClosure (Set.mem_range_self _)
-    · rw [sigmaWedgeRel_mk, killOther_map_other hts]
-      exact one_mem _
+    simp_all
 
 variable [Fintype S] [∀ s, Fintype (α s)] [∀ s, Fintype (J s)]
-
-end FiniteChains

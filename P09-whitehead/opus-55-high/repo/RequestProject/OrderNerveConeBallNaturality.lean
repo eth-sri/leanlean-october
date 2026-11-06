@@ -1,9 +1,6 @@
-module
+import RequestProject.OrderNerveLowerCone
+import Mathlib.Order.Hom.WithTopBot
 
-public import RequestProject.OrderNerveLowerCone
-public import Mathlib.Order.Hom.WithTopBot
-
-@[expose] public section
 
 /-! The actual radial cone/disk identification commutes with a relabelling
 of its boundary poset when the boundary parametrizations agree. -/
@@ -15,28 +12,25 @@ open scoped Classical unitInterval
 
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q] (e : P ≃o Q)
 
-theorem orderNerveRadialCone_natural (r : I) (x : orderNerveRealization P) :
+theorem orderNerveRadialCone_natural r x :
     orderNerveRealizationOrderIso e.withTopCongr (orderNerveRadialCone P (r, x)) =
       orderNerveRadialCone Q (r, orderNerveRealizationOrderIso e x) := by
-  apply orderNerveRealizationCoordinates_injective (WithTop Q)
+  apply orderNerveRealizationCoordinates_injective _
   funext q
   obtain ⟨p, rfl⟩ := e.withTopCongr.surjective q
-  change orderNerveRealizationCoordinates (WithTop Q)
+  change orderNerveRealizationCoordinates _
       (orderNerveRealizationMap e.withTopCongr e.withTopCongr.monotone
         (orderNerveRadialCone P (r, x))) (e.withTopCongr p) = _
   rw [orderNerveRealizationCoordinates_map_injective _ _ e.withTopCongr.injective]
   induction p using WithTop.recTopCoe with
   | top =>
-      change orderNerveRealizationCoordinates (WithTop P) (orderNerveRadialCone P (r, x)) ⊤ =
-        orderNerveRealizationCoordinates (WithTop Q)
-          (orderNerveRadialCone Q (r, orderNerveRealizationOrderIso e x)) ⊤
-      rw [orderNerveRadialCone_top, orderNerveRadialCone_top]
+      simp
   | coe p =>
-      change orderNerveRealizationCoordinates (WithTop P) (orderNerveRadialCone P (r, x)) p =
-        orderNerveRealizationCoordinates (WithTop Q)
+      change orderNerveRealizationCoordinates _ (orderNerveRadialCone P (r, x)) p =
+        orderNerveRealizationCoordinates _
           (orderNerveRadialCone Q (r, orderNerveRealizationOrderIso e x)) (e p)
       rw [orderNerveRadialCone_coordinate, orderNerveRadialCone_coordinate]
-      exact congrArg ((r : ℝ) * ·)
+      exact congrArg _
         (orderNerveRealizationCoordinates_map_injective e e.monotone e.injective x p).symm
 
 variable [Fintype P] [Nonempty P] [Fintype Q] [Nonempty Q]
@@ -52,5 +46,3 @@ theorem orderNerveWithTopBallHomeomorph_natural (x : orderNerveRealization (With
   obtain ⟨⟨r, y⟩, rfl⟩ := orderNerveRadialCone_surjective P x
   rw [orderNerveRadialCone_natural, orderNerveWithTopBallHomeomorph_radial,
     orderNerveWithTopBallHomeomorph_radial, hb]
-
-end FiniteChains.Comb

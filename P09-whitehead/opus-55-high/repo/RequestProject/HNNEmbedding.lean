@@ -1,8 +1,6 @@
-module
+import Mathlib
+noncomputable section
 
-public import Mathlib
-
-@[expose] public section
 
 /-!
 # The HNN input of Section 3.4 (rule 1)
@@ -24,7 +22,7 @@ Mathlib contains the construction of HNN extensions together with their normal f
 namespace FiniteChains
 
 /-- Infinite order is detected by any monoid homomorphism. -/
-theorem not_isOfFinOrder_of_map {M N : Type*} [Monoid M] [Monoid N] (f : M →* N) {x : M}
+theorem not_isOfFinOrder_of_map {M N} [Monoid M] [Monoid N] (f : M →* N) {x}
     (h : ¬ IsOfFinOrder (f x)) : ¬ IsOfFinOrder x := by
   intro hx
   obtain ⟨n, hn, hxn⟩ := isOfFinOrder_iff_pow_eq_one.1 hx
@@ -33,37 +31,25 @@ theorem not_isOfFinOrder_of_map {M N : Type*} [Monoid M] [Monoid N] (f : M →* 
 /-- A generator of `ℤ` has infinite order. -/
 theorem not_isOfFinOrder_ofAdd_one : ¬ IsOfFinOrder (Multiplicative.ofAdd (1 : ℤ)) := by
   rw [isOfFinOrder_iff_pow_eq_one]
-  push_neg
-  intro n hn h
-  have h2 : Multiplicative.toAdd ((Multiplicative.ofAdd (1 : ℤ)) ^ n) = 0 := by
-    rw [h]; rfl
-  simp [toAdd_pow] at h2
-  omega
+  simp
 
 section FreeProduct
 
 variable {G : Type*} [Group G]
 
 /-- The retraction of `G * ℤ` onto `ℤ` that kills `G`. -/
-noncomputable def killBase : Monoid.Coprod G (Multiplicative ℤ) →* Multiplicative ℤ :=
+def killBase : Monoid.Coprod G (Multiplicative ℤ) →* Multiplicative ℤ :=
   Monoid.Coprod.lift 1 (MonoidHom.id _)
 
-@[simp] theorem killBase_inl (g : G) :
-    killBase (Monoid.Coprod.inl g : Monoid.Coprod G (Multiplicative ℤ)) = 1 := by
-  simp [killBase]
 
-@[simp] theorem killBase_inr (n : Multiplicative ℤ) :
-    killBase (Monoid.Coprod.inr n : Monoid.Coprod G (Multiplicative ℤ)) = n := by
-  simp [killBase]
 
 /-- The adjoined free generator `b` of `G * ℤ`. -/
-noncomputable def freeGen : Monoid.Coprod G (Multiplicative ℤ) :=
+def freeGen : Monoid.Coprod G (Multiplicative ℤ) :=
   Monoid.Coprod.inr (Multiplicative.ofAdd (1 : ℤ))
 
 /-- **`b` has infinite order in `G * ℤ`.** -/
 theorem not_isOfFinOrder_freeGen : ¬ IsOfFinOrder (freeGen (G := G)) := by
   refine not_isOfFinOrder_of_map killBase ?_
-  rw [freeGen, killBase_inr]
   exact not_isOfFinOrder_ofAdd_one
 
 /-- **`z·b` has infinite order in `G * ℤ`**, for every `z` in the old group: kill the old
@@ -71,7 +57,6 @@ group, and what is left is a generator of `ℤ`. -/
 theorem not_isOfFinOrder_mul_freeGen (z : G) :
     ¬ IsOfFinOrder (Monoid.Coprod.inl z * freeGen : Monoid.Coprod G (Multiplicative ℤ)) := by
   refine not_isOfFinOrder_of_map killBase ?_
-  rw [map_mul, killBase_inl, freeGen, killBase_inr, one_mul]
   exact not_isOfFinOrder_ofAdd_one
 
 end FreeProduct
@@ -81,26 +66,25 @@ section HNN
 variable {G : Type*} [Group G]
 
 /-- An element of infinite order generates an infinite cyclic subgroup. -/
-noncomputable def zpowersEquivInt {x : G} (hx : ¬ IsOfFinOrder x) :
+def zpowersEquivInt {x : G} (hx : ¬ IsOfFinOrder x) :
     Multiplicative ℤ ≃* Subgroup.zpowers x := by
-  refine MulEquiv.ofBijective ((zpowersHom G x).codRestrict (Subgroup.zpowers x)
-    (fun n => Subgroup.zpow_mem_zpowers x _)) ⟨?_, ?_⟩
+  refine MulEquiv.ofBijective ((zpowersHom G x).codRestrict _
+    (by simp)) ⟨?_, ?_⟩
   · intro a b hab
-    have hval : x ^ (Multiplicative.toAdd a) = x ^ (Multiplicative.toAdd b) :=
+    have hval :=
       congrArg Subtype.val hab
     exact Multiplicative.toAdd.injective (injective_zpow_iff_not_isOfFinOrder.2 hx hval)
   · rintro ⟨g, n, rfl⟩
-    exact ⟨Multiplicative.ofAdd n, rfl⟩
+    tauto
 
 /-- Two infinite cyclic subgroups are isomorphic. -/
-noncomputable def zpowersEquivZpowers {x y : G} (hx : ¬ IsOfFinOrder x) (hy : ¬ IsOfFinOrder y) :
-    Subgroup.zpowers x ≃* Subgroup.zpowers y :=
+def zpowersEquivZpowers {x y : G} (hx : ¬ IsOfFinOrder x) (hy : ¬ IsOfFinOrder y) :=
   (zpowersEquivInt hx).symm.trans (zpowersEquivInt hy)
 
 /-- The form in which the paper uses it: an HNN extension identifying two infinite cyclic
 subgroups contains the old group. -/
-theorem hnn_infiniteCyclic_of_injective {x y : G} (hx : ¬ IsOfFinOrder x)
-    (hy : ¬ IsOfFinOrder y) :
+theorem hnn_infiniteCyclic_of_injective hx
+    hy :
     Function.Injective (HNNExtension.of :
       G →* HNNExtension G (Subgroup.zpowers x) (Subgroup.zpowers y)
         (zpowersEquivZpowers hx hy)) :=
@@ -117,10 +101,4 @@ theorem rule_one_embedding (z : G) :
             (Subgroup.zpowers (Monoid.Coprod.inl z * freeGen))
             (zpowersEquivZpowers not_isOfFinOrder_freeGen
               (not_isOfFinOrder_mul_freeGen z))).comp
-        (Monoid.Coprod.inl : G →* Monoid.Coprod G (Multiplicative ℤ))) := by
-  rw [MonoidHom.coe_comp]
-  exact (hnn_infiniteCyclic_of_injective _ _).comp Monoid.Coprod.inl_injective
-
-end HNN
-
-end FiniteChains
+        (Monoid.Coprod.inl : G →* Monoid.Coprod G (Multiplicative ℤ))) := (hnn_infiniteCyclic_of_injective _ _).comp Monoid.Coprod.inl_injective

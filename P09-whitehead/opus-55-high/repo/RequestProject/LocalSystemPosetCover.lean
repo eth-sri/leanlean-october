@@ -1,17 +1,13 @@
-module
+import RequestProject.OrderPosetCovering
+import RequestProject.Tac
 
-public import RequestProject.OrderPosetCovering
-
-@[expose] public section
 
 /-! An actual set-valued local system on a poset gives a poset covering.
 The construction retains the whole fibre; no choice of group coordinates
 or covering classification theorem is needed. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb.LocalSystem
 open CategoryTheory
@@ -24,44 +20,37 @@ instance coverPartialOrder : PartialOrder (Cover F) where
   le x y := ∃ h : x.1 ≤ y.1, F.map (homOfLE h) x.2 = y.2
   le_refl x := ⟨le_rfl, by simp⟩
   le_trans x y z hxy hyz := by
-    obtain ⟨hxy, hfx⟩ := hxy
-    obtain ⟨hyz, hfy⟩ := hyz
+    cases' hxy with hxy hfx
+    cases' hyz with hyz hfy
     refine ⟨hxy.trans hyz, ?_⟩
     have hh := ConcreteCategory.congr_hom (F.map_comp (homOfLE hxy) (homOfLE hyz)) x.2
-    change F.map (homOfLE (hxy.trans hyz)) x.2 =
-      F.map (homOfLE hyz) (F.map (homOfLE hxy) x.2) at hh
-    rw [hh, hfx, hfy]
+    simp_all
   le_antisymm x y hxy hyx := by
-    rcases x with ⟨p, x⟩
-    rcases y with ⟨q, y⟩
-    obtain ⟨hpq, hx⟩ := hxy
-    obtain ⟨hqp, _⟩ := hyx
+    cases' x with p x
+    cases' hxy with hpq hx
+    cases' hyx with hqp _
     obtain rfl := le_antisymm hpq hqp
-    have hxy : x = y := by simpa using hx
-    cases hxy
-    rfl
+    simp_all
 
 def projection : Cover F → P := Sigma.fst
 
 theorem projection_monotone : Monotone (projection F) := fun _ _ h => h.choose
 
 theorem projection_isPosetCover
-    (hF : ∀ {p q : P} (h : p ≤ q), Function.Bijective (F.map (homOfLE h)))
+    (hF : ∀ {p q} (h : p ≤ q), Function.Bijective (F.map (homOfLE h)))
     (hne : ∀ p, Nonempty (F.obj p)) : IsPosetCover (projection F) := by
   classical
   refine ⟨projection_monotone F, fun p => ⟨⟨p, Classical.choice (hne p)⟩, rfl⟩, ?_, ?_⟩
   · intro x q hxq
-    refine ⟨⟨q, F.map (homOfLE hxq) x.2⟩, ⟨⟨hxq, rfl⟩, rfl⟩, ?_⟩
+    refine ⟨⟨q, F.map (homOfLE hxq) x.2⟩, by tauto, ?_⟩
     rintro ⟨r, y⟩ ⟨⟨hxy, hy⟩, hr⟩
     change r = q at hr
     subst r
-    exact congrArg (Sigma.mk q) hy.symm
+    tauto
   · intro x q hqx
-    obtain ⟨v, hv⟩ := (hF hqx).2 x.2
-    refine ⟨⟨q, v⟩, ⟨⟨hqx, hv⟩, rfl⟩, ?_⟩
+    cases' (hF hqx).2 x.2 with v hv
+    refine ⟨⟨q, v⟩, by tauto, ?_⟩
     rintro ⟨r, y⟩ ⟨⟨hyx, hy⟩, hr⟩
     change r = q at hr
     subst r
-    exact congrArg (Sigma.mk q) ((hF hqx).1 (hy.trans hv.symm))
-
-end FiniteChains.Comb.LocalSystem
+    exact congrArg _ ((hF hqx).1 (hy.trans hv.symm))

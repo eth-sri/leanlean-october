@@ -1,3 +1,2 @@
-module
-public import RequestProject.TopologicalSingular.SingularPrism
-public import RequestProject.TopologicalSingular.RelativeSingularMaps
+import RequestProject.TopologicalSingular.SingularPrism
+import RequestProject.TopologicalSingular.RelativeSingularMaps

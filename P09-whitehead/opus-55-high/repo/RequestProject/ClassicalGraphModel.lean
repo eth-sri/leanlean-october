@@ -1,48 +1,42 @@
-module
+import RequestProject.ClassicalCellAttachmentMaps
+import RequestProject.SpanningTree
+import Mathlib.Topology.Path
+import RequestProject.Tac
 
-public import RequestProject.ClassicalCellAttachmentMaps
-public import RequestProject.SpanningTree
-public import Mathlib.Topology.Path
-
-@[expose] public section
 
 /-! The literal one-dimensional disk attachment and its oriented graph.
 The interval parametrization uses the original sup-norm characteristic disks. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
 open scoped unitInterval Topology Classical
 
 theorem finOne_norm (x : Fin 1 → ℝ) : ‖x‖ = |x 0| := by
-  have hx : x = fun _ => x 0 := funext fun i => congrArg x (Subsingleton.elim i 0)
+  have hx : x = fun _ => x 0 := funext (by simp)
   calc
-    ‖x‖ = ‖fun _ : Fin 1 => x 0‖ := congrArg norm hx
-    _ = |x 0| := by rw [pi_norm_const, Real.norm_eq_abs]
+    ‖x‖ = ‖fun _ => x 0‖ := congrArg norm hx
+    _ = |x 0| := by simp
 
 def graphBoundaryNeg : UnitBoundary (Fin 1 → ℝ) :=
-  ⟨fun _ => -1, by simp [pi_norm_const]⟩
+  ⟨fun _ => -1, by simp⟩
 
 def graphBoundaryPos : UnitBoundary (Fin 1 → ℝ) :=
-  ⟨fun _ => 1, by simp [pi_norm_const]⟩
+  ⟨fun _ => 1, by simp⟩
 
-theorem graphBoundary_cases (a : UnitBoundary (Fin 1 → ℝ)) :
+theorem graphBoundary_cases a :
     a = graphBoundaryNeg ∨ a = graphBoundaryPos := by
-  have ha : |a.val 0| = 1 := (finOne_norm a.val).symm.trans a.property
+  have ha := (finOne_norm a.val).symm.trans a.property
   by_cases h : 0 ≤ a.val 0
   · right
     apply Subtype.ext
     funext i
-    rw [show i = 0 from Subsingleton.elim _ _]
-    simpa [graphBoundaryNeg, graphBoundaryPos,abs_of_nonneg h] using ha
+    simp_all [show i = 0 from Subsingleton.elim _ _, graphBoundaryNeg, graphBoundaryPos, abs_of_nonneg h]
   · left
     have hn : a.val 0 = -1 := by
-      rw [abs_of_neg (lt_of_not_ge h)] at ha
-      linarith
+      grind
     apply Subtype.ext
     funext i
     rw [show i = 0 from Subsingleton.elim _ _]
@@ -51,35 +45,26 @@ theorem graphBoundary_cases (a : UnitBoundary (Fin 1 → ℝ)) :
 def graphDiskHomeomorph : I ≃ₜ ClosedUnitBall (Fin 1 → ℝ) where
   toFun s := ⟨fun _ => 2 * (s : ℝ) - 1, by
     rw [pi_norm_const, Real.norm_eq_abs]
-    exact abs_le.mpr ⟨by linarith [s.property.1], by linarith [s.property.2]⟩⟩
+    grind⟩
   invFun d := ⟨(d.val 0 + 1) / 2, by
-    have hd : |d.val 0| ≤ 1 := by simpa only [finOne_norm] using d.property
-    obtain ⟨hl, hu⟩ := abs_le.mp hd
-    constructor <;> linarith⟩
+    have hd : |d.val 0| ≤ 1 := by grind [finOne_norm]
+    grind⟩
   left_inv s := by
-    apply Subtype.ext
-    dsimp
-    ring
+    simp
   right_inv d := by
     apply Subtype.ext
     funext i
     have hi : i = 0 := Subsingleton.elim _ _
-    subst i
-    dsimp
-    ring
+    grind
   continuous_toFun := by
-    apply Continuous.subtype_mk
-    exact continuous_pi fun _ =>
-      (continuous_const.mul continuous_subtype_val).sub continuous_const
+    fun_prop
   continuous_invFun := by
     apply Continuous.subtype_mk
     exact (((continuous_apply 0).comp continuous_subtype_val).add continuous_const).div_const 2
 
 @[simp] theorem graphDiskHomeomorph_zero :
     graphDiskHomeomorph 0 = unitBoundaryInclusion (Fin 1 → ℝ) graphBoundaryNeg := by
-  apply Subtype.ext
-  funext i
-  norm_num [graphDiskHomeomorph, graphBoundaryNeg, unitBoundaryInclusion]
+  simp [graphDiskHomeomorph, graphBoundaryNeg, unitBoundaryInclusion]
 
 @[simp] theorem graphDiskHomeomorph_one :
     graphDiskHomeomorph 1 = unitBoundaryInclusion (Fin 1 → ℝ) graphBoundaryPos := by
@@ -98,8 +83,8 @@ def graphDiskHomeomorph : I ≃ₜ ClosedUnitBall (Fin 1 → ℝ) where
 variable {V J : Type} [TopologicalSpace V]
   (r : BoundaryFamily J (Fin 1 → ℝ) → V)
 
-def graphSrc (j : J) : V := r ⟨j, graphBoundaryNeg⟩
-def graphTgt (j : J) : V := r ⟨j, graphBoundaryPos⟩
+def graphSrc (j : J) := r ⟨j, graphBoundaryNeg⟩
+def graphTgt (j : J) := r ⟨j, graphBoundaryPos⟩
 
 def graphCx : Comb.Complex2 where
   V := V
@@ -111,7 +96,7 @@ def graphCx : Comb.Complex2 where
   att := Empty.elim
   att_isLoop f := Empty.elim f
 
-def graphEdgePath (j : J) :
+def graphEdgePath j :
     Path (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (graphSrc r j))
       (old r (boundaryFamilyInclusion J (Fin 1 → ℝ)) (graphTgt r j)) where
   toFun s := cell r (boundaryFamilyInclusion J (Fin 1 → ℝ)) ⟨j, graphDiskHomeomorph s⟩
@@ -131,9 +116,7 @@ def graphGermPath (g : J × Bool) :
       (Comb.germSrc (graphSrc r) (graphTgt r) g))
       (old r (boundaryFamilyInclusion J (Fin 1 → ℝ))
         (Comb.germTgt (graphSrc r) (graphTgt r) g)) := by
-  rcases g with ⟨j, b⟩
+  cases' g with j b
   cases b
   · exact (graphEdgePath r j).symm
   · exact graphEdgePath r j
-
-end FiniteChains.ClassicalGraphModel

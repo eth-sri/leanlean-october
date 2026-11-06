@@ -1,10 +1,7 @@
-module
+import RequestProject.CombPi1
+import RequestProject.CoverComplex
+import RequestProject.PresentationDictionary
 
-public import RequestProject.CombPi1
-public import RequestProject.CoverComplex
-public import RequestProject.PresentationDictionary
-
-@[expose] public section
 
 /-!
 # The fundamental group of a presentation complex
@@ -24,8 +21,7 @@ of attaching words (trivial modulo the normal closure of the relators), and conv
 free group maps to `π₁` by sending a generator to the corresponding edge loop.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -47,13 +43,12 @@ omit [DecidableEq α] in
 omit [DecidableEq α] in
 theorem presWord_append (l l' : List (α × Bool)) :
     presWord ρ (l ++ l') = presWord ρ l * presWord ρ l' := by
-  unfold presWord
-  rw [← FreeGroup.mul_mk, QuotientGroup.mk_mul]
+  rfl
 
 theorem presWord_att (j : J) : presWord ρ ((presComplex ρ).att j) = 1 := by
   have h : presWord ρ ((presComplex ρ).att j) = QuotientGroup.mk (ρ j) := by
     unfold presWord
-    rw [show (presComplex ρ).att j = (ρ j).toWord from rfl, FreeGroup.mk_toWord]
+    rw [FreeGroup.mk_toWord]
   rw [h, QuotientGroup.eq_one_iff]
   exact Subgroup.subset_normalClosure ⟨j, rfl⟩
 
@@ -61,15 +56,14 @@ theorem presWord_att (j : J) : presWord ρ ((presComplex ρ).att j) = 1 := by
 theorem presWord_cancels {l l' : List (α × Bool)} (h : Cancels (presComplex ρ) l l') :
     presWord ρ l = presWord ρ l' := by
   rcases h with ⟨p, q, eb, hl, hl'⟩ | ⟨p, q, j, hl, hl'⟩
-  · obtain ⟨x, b⟩ := eb
-    subst hl; subst hl'
+  · subst hl; subst hl'
     unfold presWord
     exact congrArg QuotientGroup.mk (Quot.sound FreeGroup.Red.Step.not)
   · subst hl; subst hl'
     rw [presWord_append, presWord_append, presWord_append, presWord_att, mul_one]
 
 /-- Homotopic edge paths spell the same element of `G`. -/
-theorem presWord_htpy {a b : (presComplex ρ).V} {l l' : List (α × Bool)}
+theorem presWord_htpy {l l' : List (α × Bool)}
     (h : Htpy (presComplex ρ) a b l l') : presWord ρ l = presWord ρ l' := by
   induction h with
   | refl => rfl
@@ -80,11 +74,11 @@ theorem presWord_htpy {a b : (presComplex ρ).V} {l l' : List (α × Bool)}
 
 /-- The homomorphism `π₁(K) → G` reading off the word spelled by an edge loop. -/
 def pi1ToPres : Pi1 (presComplex ρ) PUnit.unit →* PresGroup ρ where
-  toFun := Quotient.lift (fun p => presWord ρ p.1) (fun _ _ h => presWord_htpy ρ h)
+  toFun := Quotient.lift (presWord ρ ·.1) (fun _ _ h => presWord_htpy ρ h)
   map_one' := rfl
   map_mul' := by
     rintro ⟨p⟩ ⟨q⟩
-    exact presWord_append ρ p.1 q.1
+    rfl
 
 /-! ### From the presented group to edge loops -/
 
@@ -92,42 +86,38 @@ def pi1ToPres : Pi1 (presComplex ρ) PUnit.unit →* PresGroup ρ where
 def loopClass (l : List (α × Bool)) : Pi1 (presComplex ρ) PUnit.unit :=
   Pi1.mk ⟨l, isPath_of_subsingleton _ _ _ _ _⟩
 
-theorem loopClass_append (l l' : List (α × Bool)) :
+theorem loopClass_append l l' :
     loopClass ρ (l ++ l') = loopClass ρ l * loopClass ρ l' := rfl
 
-@[simp] theorem loopClass_nil : loopClass ρ [] = 1 := rfl
 
 /-- The edge loop of a generator. -/
-def genLoop (i : α) : Pi1 (presComplex ρ) PUnit.unit := loopClass ρ [(i, true)]
+def genLoop (i : α) := loopClass ρ [(i, true)]
 
-theorem loopClass_inv_gen (i : α) : loopClass ρ [(i, false)] = (genLoop ρ i)⁻¹ := rfl
 
 /-- Attaching words are null-homotopic, so they give the trivial loop class. -/
 theorem loopClass_att (j : J) : loopClass ρ ((presComplex ρ).att j) = 1 := by
   refine Quotient.sound ?_
-  refine Htpy.of_step ⟨isPath_of_subsingleton _ _ _ _ _, isPath_of_subsingleton _ _ _ _ _, ?_⟩
-  exact Or.inr ⟨[], [], j, by simp, rfl⟩
+  refine Htpy.of_step ⟨isPath_of_subsingleton _ _ _ _ _, by rfl, ?_⟩
+  exact Or.inr (by simp)
 
 /-- The homomorphism `F → π₁(K)` sending a generator to its edge loop. -/
-def freeToPi1 : FreeGroup α →* Pi1 (presComplex ρ) PUnit.unit := FreeGroup.lift (genLoop ρ)
+def freeToPi1 := FreeGroup.lift (genLoop ρ)
 
-theorem freeToPi1_mk (l : List (α × Bool)) :
+theorem freeToPi1_mk l :
     freeToPi1 ρ (FreeGroup.mk l) = loopClass ρ l := by
   induction l with
   | nil =>
-      simp only [freeToPi1, FreeGroup.lift_mk, List.map_nil, List.prod_nil]
       rfl
   | cons eb l ih =>
-      obtain ⟨i, b⟩ := eb
+      cases' eb with i b
       have hsplit : ((i, b) :: l) = [(i, b)] ++ l := rfl
       rw [hsplit, ← FreeGroup.mul_mk, map_mul, ih, loopClass_append]
       congr 1
       cases b
-      · rw [loopClass_inv_gen]
-        simp [freeToPi1]
-      · simp [freeToPi1, genLoop]
+      · rfl
+      rfl
 
-theorem freeToPi1_relator (j : J) : freeToPi1 ρ (ρ j) = 1 := by
+theorem freeToPi1_relator j : freeToPi1 ρ (ρ j) = 1 := by
   have h : freeToPi1 ρ (ρ j) = loopClass ρ ((presComplex ρ).att j) := by
     conv_lhs => rw [← FreeGroup.mk_toWord (x := ρ j)]
     rw [freeToPi1_mk]
@@ -142,27 +132,25 @@ theorem relSub_le_ker_freeToPi1 : relSub ρ ≤ (freeToPi1 ρ).ker := by
 def presToPi1 : PresGroup ρ →* Pi1 (presComplex ρ) PUnit.unit :=
   QuotientGroup.lift (relSub ρ) (freeToPi1 ρ) (fun _ hx => relSub_le_ker_freeToPi1 ρ hx)
 
-@[simp] theorem presToPi1_mk (w : FreeGroup α) :
+@[simp] theorem presToPi1_mk w :
     presToPi1 ρ (QuotientGroup.mk w) = freeToPi1 ρ w := rfl
 
 /-! ### The isomorphism -/
 
-theorem presToPi1_pi1ToPres (x : Pi1 (presComplex ρ) PUnit.unit) :
+theorem presToPi1_pi1ToPres x :
     presToPi1 ρ (pi1ToPres ρ x) = x := by
   induction x using Quotient.inductionOn with
   | h p =>
-      obtain ⟨l, hl⟩ := p
+      cases' p with l hl
       show presToPi1 ρ (presWord ρ l) = loopClass ρ l
       rw [show presWord ρ l = QuotientGroup.mk (FreeGroup.mk l) from rfl, presToPi1_mk,
         freeToPi1_mk]
 
-theorem pi1ToPres_presToPi1 (g : PresGroup ρ) : pi1ToPres ρ (presToPi1 ρ g) = g := by
+theorem pi1ToPres_presToPi1 g : pi1ToPres ρ (presToPi1 ρ g) = g := by
   induction g using QuotientGroup.induction_on with
   | H w =>
       rw [presToPi1_mk, ← FreeGroup.mk_toWord (x := w), freeToPi1_mk]
-      show presWord ρ w.toWord = _
-      rw [show presWord ρ w.toWord = QuotientGroup.mk (FreeGroup.mk w.toWord) from rfl,
-        FreeGroup.mk_toWord]
+      rfl
 
 /-- **The fundamental group of a presentation complex is the presented group**: the edge-path
 group of `presComplex ρ` at its unique vertex is `F/⟪r_j⟫`. -/
@@ -172,8 +160,3 @@ def pi1PresEquiv : Pi1 (presComplex ρ) PUnit.unit ≃* PresGroup ρ where
   left_inv := presToPi1_pi1ToPres ρ
   right_inv := pi1ToPres_presToPi1 ρ
   map_mul' := (pi1ToPres ρ).map_mul
-
-end
-
-end Comb
-end FiniteChains

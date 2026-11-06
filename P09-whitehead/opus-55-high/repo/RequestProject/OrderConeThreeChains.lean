@@ -1,3 +1,2 @@
-module
-public import RequestProject.OrderConeChains
-public import RequestProject.OrderNerveCellMaps
+import RequestProject.OrderConeChains
+import RequestProject.OrderNerveCellMaps

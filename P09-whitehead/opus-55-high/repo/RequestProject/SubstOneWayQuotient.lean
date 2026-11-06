@@ -1,4 +1,3 @@
-module
-public import RequestProject.SubstOneWay
-public import RequestProject.PresPosetReading
-public import RequestProject.ChamberQuotientCover
+import RequestProject.SubstOneWay
+import RequestProject.PresPosetReading
+import RequestProject.ChamberQuotientCover

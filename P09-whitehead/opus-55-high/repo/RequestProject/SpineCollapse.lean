@@ -1,10 +1,9 @@
-module
+import RequestProject.Collapse
+import RequestProject.BarycentricSurface
+import RequestProject.MomentAngleExample
+import RequestProject.Tac
+noncomputable section
 
-public import RequestProject.Collapse
-public import RequestProject.BarycentricSurface
-public import RequestProject.MomentAngleExample
-
-@[expose] public section
 
 /-!
 # Lemma 3.2 (ii) for the explicit model: the three-cubes of `C(L)` collapse away
@@ -37,9 +36,7 @@ surface used in the paper: every edge lies in at most two triangles, the dual gr
 connected, and every vertex lies in a triangle.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains
 
@@ -52,7 +49,7 @@ variable {V : Type} [Fintype V] [DecidableEq V]
 
 open scoped Classical in
 /-- The three-cubes of `C(L)`: the top cells of the complex. -/
-noncomputable def topCubes (L : ASC V) : Finset (Cube V) :=
+def topCubes (L : ASC V) : Finset (Cube V) :=
   univ.filter fun f => IsTri L (freeSet f)
 
 open scoped Classical in
@@ -64,7 +61,7 @@ open scoped Classical in
 /-- The codimension one faces used in the collapse of `M`, and the three-cubes containing
 each of them: a square `g` lies in its cofaces, and the cut face attached to the truncated
 corner cube over a triangle `σ` lies in that cube alone. -/
-noncomputable def spineInc (L : ASC V) : Cube V ⊕ Finset V → Finset (Cube V)
+def spineInc (L : ASC V) : Cube V ⊕ Finset V → Finset (Cube V)
   | Sum.inl g => if (freeSet g).card = 2 then cofaces L g else ∅
   | Sum.inr σ => if IsTri L σ then {posCube σ} else ∅
 
@@ -80,9 +77,9 @@ theorem spineInc_card_le_two {L : ASC V}
   cases f with
   | inl g =>
       by_cases hg : (freeSet g).card = 2
-      · simp only [spineInc, if_pos hg]
+      · simp [spineInc, if_pos hg]
         rw [card_cofaces]
-        exact hedge _ hg
+        tauto
       · simp [spineInc, hg]
   | inr σ =>
       by_cases hσ : IsTri L σ
@@ -91,7 +88,7 @@ theorem spineInc_card_le_two {L : ASC V}
 
 /-- A move keeps a cube among the three-cubes: it exchanges one free coordinate for
 another, so the dimension is unchanged. -/
-theorem mem_topCubes_of_move {L : ASC V} {f g : Cube V} (h : Move L f g)
+theorem mem_topCubes_of_move {f g : Cube V} (h : Move L f g)
     (hf : f ∈ topCubes L) : g ∈ topCubes L := by
   classical
   obtain ⟨c, c', hcc, hfc, hfc', hgc, hgc', hagree, -, hgL⟩ := h
@@ -99,52 +96,31 @@ theorem mem_topCubes_of_move {L : ASC V} {f g : Cube V} (h : Move L f g)
   refine ⟨hgL, ?_⟩
   -- `freeSet g = insert c' ((freeSet f).erase c)`
   have hset : freeSet g = insert c' ((freeSet f).erase c) := by
-    ext v
-    simp only [mem_freeSet, Finset.mem_insert, Finset.mem_erase]
-    constructor
-    · intro hv
-      by_cases hvc' : v = c'
-      · exact Or.inl hvc'
-      · have hvc : v ≠ c := by
-          rintro rfl
-          exact hgc hv
-        exact Or.inr ⟨hvc, by rw [hagree v hvc hvc']; exact hv⟩
-    · rintro (rfl | ⟨hvc, hv⟩)
-      · exact hgc'
-      · by_cases hvc' : v = c'
-        · subst hvc'
-          exact absurd hv hfc'
-        · rw [← hagree v hvc hvc']; exact hv
+    grind [mem_freeSet, Finset.mem_insert, Finset.mem_erase]
   have hc : c ∈ freeSet f := by simpa using hfc
   have hc' : c' ∉ (freeSet f).erase c := by
-    simp only [Finset.mem_erase, mem_freeSet, not_and]
-    intro _
-    exact hfc'
+    simp_all
   rw [hset, Finset.card_insert_of_notMem hc', Finset.card_erase_of_mem hc, hf.2]
 
 /-- **A move is an adjacency of the collapse**: the two cubes are distinct and share a
 square. -/
-theorem adj_of_move {L : ASC V} {f g : Cube V} (h : Move L f g)
+theorem adj_of_move {f g : Cube V} (h : Move L f g)
     (hf : f ∈ topCubes L) (hg : g ∈ topCubes L) :
     Collapse.Adj (spineInc L) f g := by
   classical
   obtain ⟨s, ⟨j, hsj, hfs⟩, ⟨k, hsk, hgs⟩⟩ := h.shares_square
   have hfree : freeSet f = insert j (freeSet s) := by
     rw [hfs, freeSet_update_free]
-  have hjs : j ∉ freeSet s := by simpa using hsj
   have hcard : (freeSet s).card = 2 := by
     have := (mem_topCubes.1 hf).2
-    rw [hfree, Finset.card_insert_of_notMem hjs] at this
-    omega
+    simp_all
   have hne : f ≠ g := by
     obtain ⟨c, c', hcc, hfc, hfc', hgc, hgc', -, -, -⟩ := h
-    intro hfg
-    rw [hfg] at hfc
-    exact hgc hfc
+    grind
   refine ⟨hne, Sum.inl s, ?_, ?_⟩
-  · simp only [spineInc, if_pos hcard]
+  · simp [spineInc, if_pos hcard]
     exact mem_cofaces.2 ⟨j, hsj, by rw [← hfree]; exact (mem_topCubes.1 hf).1, hfs⟩
-  · simp only [spineInc, if_pos hcard]
+  · simp [spineInc, if_pos hcard]
     refine mem_cofaces.2 ⟨k, hsk, ?_, hgs⟩
     have : freeSet g = insert k (freeSet s) := by rw [hgs, freeSet_update_free]
     rw [← this]
@@ -152,13 +128,13 @@ theorem adj_of_move {L : ASC V} {f g : Cube V} (h : Move L f g)
 
 /-- **The adjacency graph of the three-cubes of `C(L)` is connected**, in the form required
 by the collapse theorem. -/
-theorem connected_topCubes {L : ASC V}
+theorem connected_topCubes
     (hdual : ∀ σ σ', IsTri L σ → IsTri L σ' → Relation.ReflTransGen (TriAdj L) σ σ')
     (hcover : ∀ v : V, ∃ σ, IsTri L σ ∧ v ∈ σ) :
     Collapse.Connected (spineInc L) (topCubes L) := by
   classical
   intro f hf g hg
-  have hpath : Relation.ReflTransGen (Move L) f g :=
+  have hpath :=
     reflTransGen_move hdual hcover (mem_topCubes.1 hf) (mem_topCubes.1 hg)
   -- transport the path to the relation restricted to the three-cubes
   have key : ∀ {a b : Cube V}, Relation.ReflTransGen (Move L) a b → a ∈ topCubes L →
@@ -166,28 +142,20 @@ theorem connected_topCubes {L : ASC V}
         (fun x y => x ∈ topCubes L ∧ y ∈ topCubes L ∧ Collapse.Adj (spineInc L) x y) a b := by
     intro a b hab ha
     induction hab with
-    | refl => exact ⟨ha, Relation.ReflTransGen.refl⟩
+    | refl => tauto
     | tail hxy hyz ih =>
-        obtain ⟨hy, hpath'⟩ := ih
+        cases' ih with hy hpath'
         have hz := mem_topCubes_of_move hyz hy
         exact ⟨hz, hpath'.tail ⟨hy, hz, adj_of_move hyz hy hz⟩⟩
-  exact (key hpath hf).2
+  simp_all
 
 /-- The cut face of the truncated corner cube over a triangle `σ` is free: that cube is the
 only three-cube containing it. -/
-theorem hasFreeFace_posCube {L : ASC V} {σ : Finset V} (hσ : IsTri L σ) :
+theorem hasFreeFace_posCube {σ : Finset V} (hσ : IsTri L σ) :
     Collapse.HasFreeFace (spineInc L) (topCubes L) (posCube σ) := by
   classical
   refine ⟨Sum.inr σ, ?_⟩
-  have hmem : posCube σ ∈ topCubes L := by
-    rw [mem_topCubes, freeSet_posCube]
-    exact hσ
-  simp only [Collapse.IsFree, spineInc, if_pos hσ]
-  ext x
-  simp only [Finset.mem_inter, Finset.mem_singleton]
-  constructor
-  · rintro ⟨rfl, -⟩; rfl
-  · rintro rfl; exact ⟨rfl, hmem⟩
+  simp_all [Collapse.IsFree, spineInc]
 
 open scoped Classical in
 /-- **Lemma 3.2 (ii) in the explicit model.**  For a simplicial complex `L` each of whose
@@ -206,8 +174,7 @@ theorem exists_spine_collapse {L : ASC V}
   classical
   refine Collapse.exists_isCollapse_of_connected (spineInc_card_le_two hedge)
     (connected_topCubes hdual hcover) (t₀ := posCube σ₀) ?_ (hasFreeFace_posCube hσ₀)
-  rw [mem_topCubes, freeSet_posCube]
-  exact hσ₀
+  simp_all
 
 /-! ### The incidence hypothesis from the closed surface condition -/
 
@@ -222,16 +189,13 @@ theorem hedge_of_edgeInTwoTriangles {L : ASC V} (h : ASC.EdgeInTwoTriangles L)
   by_cases hef : e ∈ L.faces
   · obtain ⟨v₁, v₂, -, -, -, huniq⟩ := h e hef he
     refine le_trans (Finset.card_le_card (?_ : _ ⊆ ({v₁, v₂} : Finset V))) (by
-      simpa only [Finset.card_singleton] using Finset.card_insert_le v₁ {v₂})
-    intro j hj
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hj
-    rcases huniq j ⟨hj.1, hj.2⟩ with rfl | rfl <;> simp
+      grind)
+    grind
   · have : ((univ.filter fun j => j ∉ e).filter fun j => insert j e ∈ L.faces) = ∅ := by
       refine Finset.filter_eq_empty_iff.2 ?_
       intro j _ hcon
       exact hef (L.down_closed hcon (Finset.subset_insert _ _))
-    rw [this]
-    simp
+    grind
 
 open scoped Classical in
 /-- **The collapse of Lemma 3.2 (ii) for a closed surface `L`.**  This is
@@ -245,5 +209,3 @@ theorem exists_spine_collapse_of_surface {L : ASC V} (hsurf : ASC.EdgeInTwoTrian
   exists_spine_collapse (hedge_of_edgeInTwoTriangles hsurf) hdual hcover hσ₀
 
 /-! ### A nonempty instance: the boundary of the tetrahedron -/
-
-end FiniteChains

@@ -1,8 +1,5 @@
-module
+import RequestProject.OrderPosetCovering
 
-public import RequestProject.OrderPosetCovering
-
-@[expose] public section
 
 /-! Actual interval-covering maps remain covering maps after an order isomorphism. -/
 namespace FiniteChains.Comb.IsPosetCover
@@ -16,19 +13,17 @@ theorem postcompose_orderIso (hf : IsPosetCover f) (e : Q ≃o R) :
   surj := e.surjective.comp hf.surj
   up a r har := by
     have ha : f a ≤ e.symm r := by
-      simpa only [OrderIso.symm_apply_apply] using e.symm.monotone har
+      simpa [OrderIso.symm_apply_apply] using e.symm.monotone har
     obtain ⟨b, ⟨hab, hfb⟩, hu⟩ := hf.up a (e.symm r) ha
-    refine ⟨b, ⟨hab, by rw [hfb, e.apply_symm_apply]⟩, ?_⟩
+    refine ⟨b, ⟨hab, by simp_all⟩, ?_⟩
     rintro c ⟨hac, hec⟩
     apply hu c
-    exact ⟨hac, by simpa only [OrderIso.symm_apply_apply] using congrArg e.symm hec⟩
+    exact ⟨hac, by grind [OrderIso.symm_apply_apply]⟩
   down a r hra := by
     have ha : e.symm r ≤ f a := by
-      simpa only [OrderIso.symm_apply_apply] using e.symm.monotone hra
+      simpa [OrderIso.symm_apply_apply] using e.symm.monotone hra
     obtain ⟨b, ⟨hba, hfb⟩, hu⟩ := hf.down a (e.symm r) ha
-    refine ⟨b, ⟨hba, by rw [hfb, e.apply_symm_apply]⟩, ?_⟩
+    refine ⟨b, ⟨hba, by simp_all⟩, ?_⟩
     rintro c ⟨hca, hec⟩
     apply hu c
-    exact ⟨hca, by simpa only [OrderIso.symm_apply_apply] using congrArg e.symm hec⟩
-
-end FiniteChains.Comb.IsPosetCover
+    exact ⟨hca, by grind [OrderIso.symm_apply_apply]⟩

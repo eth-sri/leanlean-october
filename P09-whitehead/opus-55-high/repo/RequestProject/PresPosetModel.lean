@@ -1,10 +1,7 @@
-module
+import RequestProject.ConeAdjPoset
+import RequestProject.CylinderPoset
+import RequestProject.OrderCxNatHtpy
 
-public import RequestProject.ConeAdjPoset
-public import RequestProject.CylinderPoset
-public import RequestProject.OrderCxNatHtpy
-
-@[expose] public section
 
 /-!
 # The poset model of a presentation complex
@@ -34,8 +31,7 @@ comparison homomorphisms themselves are built in `RequestProject/PresPosetAlpha.
 `RequestProject/PresPosetReading.lean`.
 -/
 
-namespace FiniteChains
-namespace PresModel
+namespace FiniteChains.PresModel
 
 open Comb
 
@@ -45,13 +41,13 @@ variable {α J : Type u}
 
 /-! ### Two elementary congruences for edges of an order complex -/
 
-theorem ordPos_congr {P : Type u} [Preorder P] {a b a' b' : P} (ha : a = a') (hb : b = b')
+theorem ordPos_congr {P} [Preorder P] {a b a' b' : P} (ha : a = a') (hb : b = b')
     (h : a ≤ b) (h' : a' ≤ b') : ordPos h = ordPos h' := by
-  subst ha; subst hb; rfl
+  simp_all
 
-theorem ordNeg_congr {P : Type u} [Preorder P] {a b a' b' : P} (ha : a = a') (hb : b = b')
+theorem ordNeg_congr {P} [Preorder P] {a b a' b' : P} (ha : a = a') (hb : b = b')
     (h : a ≤ b) (h' : a' ≤ b') : ordNeg h = ordNeg h' := by
-  subst ha; subst hb; rfl
+  simp_all
 
 /-! ### The subdivided rose -/
 
@@ -79,13 +75,13 @@ instance : Preorder (Rose α) where
     cases x with
     | base => exact trivial
     | mid i => exact rfl
-    | edg i b => exact ⟨rfl, rfl⟩
+    | edg i b => tauto
   le_trans a b c hab hbc := by
     cases a <;> cases b <;> cases c <;> simp_all [Rose.le]
 
-@[simp] theorem base_le_edg (i : α) (b : Bool) : (base : Rose α) ≤ edg i b := trivial
+@[simp] theorem base_le_edg i b : (base : Rose α) ≤ edg i b := trivial
 
-@[simp] theorem mid_le_edg (i : α) (b : Bool) : (mid i : Rose α) ≤ edg i b := rfl
+@[simp] theorem mid_le_edg i b : (mid i : Rose α) ≤ edg i b := rfl
 
 end Rose
 
@@ -103,7 +99,7 @@ inductive CPos : Type
 /-- The disjoint union of the subdivided attaching circles of the relators with words `w`.  The
 element `(j, k, t)` belongs to the circle of the relator `j` at the position `k` of its word;
 positions beyond the length of the word carry no relation. -/
-def TCirc (_w : J → List (α × Bool)) : Type u := J × ℕ × CPos
+def TCirc (_w : J → List (α × Bool)) := J × ℕ × CPos
 
 namespace TCirc
 
@@ -112,14 +108,11 @@ variable (w : J → List (α × Bool))
 /-- An element of a circle. -/
 def pt (j : J) (k : ℕ) (t : CPos) : TCirc w := (j, k, t)
 
-@[simp] theorem pt_fst (j : J) (k : ℕ) (t : CPos) : (pt w j k t).1 = j := rfl
 
-@[simp] theorem pt_snd_snd (j : J) (k : ℕ) (t : CPos) : (pt w j k t).2.2 = t := rfl
 
-@[simp] theorem pt_eq (j : J) (k : ℕ) (t : CPos) : pt w j k t = (j, k, t) := rfl
 
 /-- The cyclic successor of a position of the word of the relator `j`. -/
-def csucc (j : J) (k : ℕ) : ℕ := (k + 1) % (w j).length
+def csucc (j : J) (k : ℕ) := (k + 1) % (w j).length
 
 /-- The strict relations of the circles: the corner and the midpoint of a letter lie under its
 two halves, and the corner in front of the next letter lies under the right half. -/
@@ -132,19 +125,17 @@ protected def lt : TCirc w → TCirc w → Prop
          (t = CPos.cor ∧ t' = CPos.cedgR ∧ k = csucc w j k'))
 
 /-- The face order of the circles. -/
-protected def le (x y : TCirc w) : Prop := x = y ∨ TCirc.lt w x y
+protected def le (x y : TCirc w) := x = y ∨ TCirc.lt w x y
 
-theorem lt_left_tag {x y : TCirc w} (h : TCirc.lt w x y) :
+theorem lt_left_tag (h : TCirc.lt w x y) :
     x.2.2 = CPos.cor ∨ x.2.2 = CPos.cmid := by
   obtain ⟨-, -, h⟩ := h
-  rcases h with ⟨h, -, -⟩ | ⟨h, -, -⟩ | ⟨h, -, -⟩ | ⟨h, -, -⟩
-  exacts [Or.inl h, Or.inr h, Or.inr h, Or.inl h]
+  tauto
 
-theorem lt_right_tag {x y : TCirc w} (h : TCirc.lt w x y) :
+theorem lt_right_tag (h : TCirc.lt w x y) :
     y.2.2 = CPos.cedgL ∨ y.2.2 = CPos.cedgR := by
   obtain ⟨-, -, h⟩ := h
-  rcases h with ⟨-, h, -⟩ | ⟨-, h, -⟩ | ⟨-, h, -⟩ | ⟨-, h, -⟩
-  exacts [Or.inl h, Or.inl h, Or.inr h, Or.inr h]
+  tauto
 
 instance : Preorder (TCirc w) where
   le := TCirc.le w
@@ -155,31 +146,31 @@ instance : Preorder (TCirc w) where
     rcases hbc with rfl | h2
     · exact Or.inr h1
     exact absurd ((lt_left_tag w h2).elim (fun h => (lt_right_tag w h1).elim
-      (fun h' => by rw [h'] at h; exact absurd h (by decide))
-      (fun h' => by rw [h'] at h; exact absurd h (by decide)))
+      (fun h' => by simp_all)
+      (fun h' => by simp_all))
       (fun h => (lt_right_tag w h1).elim
-      (fun h' => by rw [h'] at h; exact absurd h (by decide))
-      (fun h' => by rw [h'] at h; exact absurd h (by decide)))) not_false
+      (fun h' => by simp_all)
+      (fun h' => by simp_all))) not_false
 
 /-- The corner of a letter lies under its left half. -/
-theorem cor_le_cedgL {j : J} {k : ℕ} (hk : k < (w j).length) :
+theorem cor_le_cedgL {k} (hk : k < (w j).length) :
     pt w j k CPos.cor ≤ pt w j k CPos.cedgL :=
-  Or.inr ⟨rfl, hk, Or.inl ⟨rfl, rfl, rfl⟩⟩
+  Or.inr ⟨rfl, hk, by simp⟩
 
 /-- The midpoint of a letter lies under its left half. -/
-theorem cmid_le_cedgL {j : J} {k : ℕ} (hk : k < (w j).length) :
+theorem cmid_le_cedgL {k} (hk : k < (w j).length) :
     pt w j k CPos.cmid ≤ pt w j k CPos.cedgL :=
-  Or.inr ⟨rfl, hk, Or.inr (Or.inl ⟨rfl, rfl, rfl⟩)⟩
+  Or.inr ⟨rfl, hk, by simp⟩
 
 /-- The midpoint of a letter lies under its right half. -/
-theorem cmid_le_cedgR {j : J} {k : ℕ} (hk : k < (w j).length) :
+theorem cmid_le_cedgR {k} (hk : k < (w j).length) :
     pt w j k CPos.cmid ≤ pt w j k CPos.cedgR :=
-  Or.inr ⟨rfl, hk, Or.inr (Or.inr (Or.inl ⟨rfl, rfl, rfl⟩))⟩
+  Or.inr ⟨rfl, hk, by simp⟩
 
 /-- The corner in front of the next letter lies under the right half of a letter. -/
-theorem cor_csucc_le_cedgR {j : J} {k : ℕ} (hk : k < (w j).length) :
+theorem cor_csucc_le_cedgR {k} (hk : k < (w j).length) :
     pt w j (csucc w j k) CPos.cor ≤ pt w j k CPos.cedgR :=
-  Or.inr ⟨rfl, hk, Or.inr (Or.inr (Or.inr ⟨rfl, rfl, rfl⟩))⟩
+  Or.inr ⟨rfl, hk, by simp⟩
 
 end TCirc
 
@@ -205,62 +196,62 @@ def aFun : TCirc w → Rose α
       | some p => Rose.edg p.1 p.2
       | none => Rose.base
 
-@[simp] theorem aFun_cor (j : J) (k : ℕ) : aFun w (j, k, CPos.cor) = Rose.base := rfl
+@[simp] theorem aFun_cor j k : aFun w (j, k, CPos.cor) = Rose.base := rfl
 
-theorem aFun_cmid_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
+theorem aFun_cmid_of_get (h : (w j)[k]? = some p) :
     aFun w (j, k, CPos.cmid) = Rose.mid p.1 := by
   show (match (w j)[k]? with
     | some p => Rose.mid p.1
     | none => Rose.base) = _
-  rw [h]
+  simp_all
 
-theorem aFun_cedgL_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
+theorem aFun_cedgL_of_get (h : (w j)[k]? = some p) :
     aFun w (j, k, CPos.cedgL) = Rose.edg p.1 (!p.2) := by
   show (match (w j)[k]? with
     | some p => Rose.edg p.1 (!p.2)
     | none => Rose.base) = _
-  rw [h]
+  simp_all
 
-theorem aFun_cedgR_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
+theorem aFun_cedgR_of_get (h : (w j)[k]? = some p) :
     aFun w (j, k, CPos.cedgR) = Rose.edg p.1 p.2 := by
   show (match (w j)[k]? with
     | some p => Rose.edg p.1 p.2
     | none => Rose.base) = _
-  rw [h]
+  simp_all
 
-theorem aFun_pt_cmid_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
+theorem aFun_pt_cmid_of_get (h : (w j)[k]? = some p) :
     aFun w (TCirc.pt w j k CPos.cmid) = Rose.mid p.1 := aFun_cmid_of_get w h
 
-theorem aFun_pt_cedgL_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
+theorem aFun_pt_cedgL_of_get (h : (w j)[k]? = some p) :
     aFun w (TCirc.pt w j k CPos.cedgL) = Rose.edg p.1 (!p.2) := aFun_cedgL_of_get w h
 
-theorem aFun_pt_cedgR_of_get {j : J} {k : ℕ} {p : α × Bool} (h : (w j)[k]? = some p) :
+theorem aFun_pt_cedgR_of_get (h : (w j)[k]? = some p) :
     aFun w (TCirc.pt w j k CPos.cedgR) = Rose.edg p.1 p.2 := aFun_cedgR_of_get w h
 
-theorem aFun_pt_cor (j : J) (k : ℕ) : aFun w (TCirc.pt w j k CPos.cor) = Rose.base := rfl
+theorem aFun_pt_cor j k : aFun w (TCirc.pt w j k CPos.cor) = Rose.base := rfl
 
 /-- The letter at a valid position, as an element of the word. -/
-theorem exists_get_of_lt {j : J} {k : ℕ} (hk : k < (w j).length) :
-    ∃ p : α × Bool, (w j)[k]? = some p :=
-  ⟨(w j)[k], List.getElem?_eq_getElem hk⟩
+theorem exists_get_of_lt {k} (hk : k < (w j).length) :
+    ∃ p, (w j)[k]? = some p :=
+  by simp_all
 
 theorem aFun_monotone : Monotone (aFun w) := by
   rintro x y (rfl | h)
-  · exact le_refl _
+  · rfl
   obtain ⟨j, k, t⟩ := x
   obtain ⟨j', k', t'⟩ := y
   obtain ⟨hj, hk', hcase⟩ := h
   subst hj
-  obtain ⟨p, hp⟩ := exists_get_of_lt w hk'
+  cases' exists_get_of_lt w hk' with p hp
   rcases hcase with ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩
   · rw [aFun_cor, aFun_cedgL_of_get w hp]
-    exact Rose.base_le_edg _ _
+    simp
   · rw [aFun_cmid_of_get w hp, aFun_cedgL_of_get w hp]
-    exact Rose.mid_le_edg _ _
+    rfl
   · rw [aFun_cmid_of_get w hp, aFun_cedgR_of_get w hp]
-    exact Rose.mid_le_edg _ _
+    rfl
   · rw [aFun_cor, aFun_cedgR_of_get w hp]
-    exact Rose.base_le_edg _ _
+    simp
 
 /-- The attaching map as a monotone map. -/
 def aHom : TCirc w →o Rose α := ⟨aFun w, aFun_monotone w⟩
@@ -269,28 +260,28 @@ def aHom : TCirc w →o Rose α := ⟨aFun w, aFun_monotone w⟩
 
 /-- The mapping cylinder of the attaching map: the rose with the attaching circles sitting under
 their images. -/
-abbrev CylBase : Type u := CylP (aHom w)
+abbrev CylBase := CylP (aHom w)
 
 /-- The circle of the relator `j`, as a subset of the cylinder. -/
-def circSet (j : J) (x : CylBase w) : Prop :=
-  ∃ k t, k < (w j).length ∧ x = cylOuter (aHom w) (TCirc.pt w j k t)
+def circSet (j : J) (x : CylBase w) :=
+  ∃ k t, k < (w j).length ∧ x = cylOuter _ (TCirc.pt w j k t)
 
 /-- **The poset model of the presentation complex**: the mapping cylinder of the attaching
 circles with a cone point added over each circle. -/
-def PresPos : Type u := ConeAdj (circSet w)
+def PresPos := ConeAdj (circSet w)
 
 instance : Preorder (PresPos w) := inferInstanceAs (Preorder (ConeAdj (circSet w)))
 
 /-- The rose inside the model. -/
-def iRose (x : Rose α) : PresPos w := ConeAdj.inc (cylIn (aHom w) x)
+def iRose (x : Rose α) : PresPos w := ConeAdj.inc (cylIn _ x)
 
 /-- The attaching circles inside the model. -/
-def iCirc (x : TCirc w) : PresPos w := ConeAdj.inc (cylOuter (aHom w) x)
+def iCirc (x : TCirc w) : PresPos w := ConeAdj.inc (cylOuter _ x)
 
 /-- The two-cell of the relator `j`. -/
 def apexOf (j : J) : PresPos w := ConeAdj.apex j
 
-theorem iRose_monotone : Monotone (iRose w) := fun _ _ h => h
+theorem iRose_monotone : Monotone (iRose w) := by tauto
 
 theorem iCirc_monotone : Monotone (iCirc w) := fun _ _ h => h
 
@@ -298,80 +289,73 @@ theorem iRose_aFun_monotone : Monotone (fun x => iRose w (aFun w x)) :=
   (iRose_monotone w).comp (aFun_monotone w)
 
 /-- The defining relation of the cylinder: a point of a circle lies under its image. -/
-theorem iCirc_le_iRose_aFun (x : TCirc w) : iCirc w x ≤ iRose w (aFun w x) :=
+theorem iCirc_le_iRose_aFun x : iCirc w x ≤ iRose w (aFun w x) :=
   le_refl (aFun w x)
 
 /-- A point of the circle of `j` lies under the two-cell of `j`. -/
-theorem iCirc_le_apexOf {j : J} {k : ℕ} (t : CPos) (hk : k < (w j).length) :
+theorem iCirc_le_apexOf {k} t (hk : k < (w j).length) :
     iCirc w (TCirc.pt w j k t) ≤ apexOf w j :=
   ConeAdj.inc_le_apex_of_mem ⟨k, t, hk, rfl⟩
 
 /-- The base point of the model. -/
-def ptBase : PresPos w := iRose w Rose.base
+def ptBase := iRose w Rose.base
 
 /-! ### The loops of the generators -/
 
 /-- The loop of the generator `i`: the four-edge circuit of its subdivided loop. -/
-def genLoop (i : α) : List ((orderCx (PresPos w)).E × Bool) :=
+def genLoop (i : α) :=
   [ordPos ((iRose_monotone w) (Rose.base_le_edg i false)),
    ordNeg ((iRose_monotone w) (Rose.mid_le_edg i false)),
    ordPos ((iRose_monotone w) (Rose.mid_le_edg i true)),
    ordNeg ((iRose_monotone w) (Rose.base_le_edg i true))]
 
-theorem isPath_genLoop (i : α) :
-    IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt (genLoop w i)
+theorem isPath_genLoop i :
+    IsPathX (orderCx (PresPos w)) (genLoop w i)
       (ptBase w) (ptBase w) :=
-  ⟨rfl, rfl, rfl, rfl, rfl⟩
+  by trivial
 
 /-- The loop of a generator traversed backwards. -/
-def genLoopRev (i : α) : List ((orderCx (PresPos w)).E × Bool) :=
+def genLoopRev (i : α) :=
   [ordPos ((iRose_monotone w) (Rose.base_le_edg i true)),
    ordNeg ((iRose_monotone w) (Rose.mid_le_edg i true)),
    ordPos ((iRose_monotone w) (Rose.mid_le_edg i false)),
    ordNeg ((iRose_monotone w) (Rose.base_le_edg i false))]
 
-theorem isPath_genLoopRev (i : α) :
-    IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt (genLoopRev w i)
-      (ptBase w) (ptBase w) :=
-  ⟨rfl, rfl, rfl, rfl, rfl⟩
 
 /-- The loop of a letter: the loop of its generator, reversed for a negative letter. -/
-def letterLoop (p : α × Bool) : List ((orderCx (PresPos w)).E × Bool) :=
+def letterLoop (p : α × Bool) :=
   if p.2 then genLoop w p.1 else genLoopRev w p.1
 
 /-- The loop read off a word. -/
-def wordLoop (l : List (α × Bool)) : List ((orderCx (PresPos w)).E × Bool) :=
+def wordLoop (l : List (α × Bool)) :=
   l.flatMap (letterLoop w)
 
-@[simp] theorem wordLoop_nil : wordLoop w ([] : List (α × Bool)) = [] := rfl
 
-@[simp] theorem wordLoop_append (l l' : List (α × Bool)) :
+@[simp] theorem wordLoop_append l l' :
     wordLoop w (l ++ l') = wordLoop w l ++ wordLoop w l' := by
   simp [wordLoop]
 
-theorem isPath_letterLoop (p : α × Bool) :
-    IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt (letterLoop w p)
+theorem isPath_letterLoop p :
+    IsPathX (orderCx (PresPos w)) (letterLoop w p)
       (ptBase w) (ptBase w) := by
-  obtain ⟨i, b⟩ := p
+  cases' p with i b
   cases b with
-  | true => exact isPath_genLoop w i
-  | false => exact isPath_genLoopRev w i
+  | true => trivial
+  | false => trivial
 
-theorem isPath_wordLoop (l : List (α × Bool)) :
-    IsPath (orderCx (PresPos w)).src (orderCx (PresPos w)).tgt (wordLoop w l)
+theorem isPath_wordLoop l :
+    IsPathX (orderCx (PresPos w)) (wordLoop w l)
       (ptBase w) (ptBase w) := by
   induction l with
   | nil => rfl
   | cons p l ih =>
-      have hsplit : wordLoop w (p :: l) = letterLoop w p ++ wordLoop w l := rfl
-      rw [hsplit]
       exact isPath_append_iff.mpr ⟨ptBase w, isPath_letterLoop w p, ih⟩
 
 /-! ### The loops of the attaching circles -/
 
 /-- The four edges of the circle of `j` at the position `k`, as a path of the order complex of
 the circles. -/
-def segAt (j : J) (k : ℕ) : List ((orderCx (TCirc w)).E × Bool) :=
+def segAt (j : J) (k : ℕ) :=
   if hk : k < (w j).length then
     [ordPos (TCirc.cor_le_cedgL w hk), ordNeg (TCirc.cmid_le_cedgL w hk),
      ordPos (TCirc.cmid_le_cedgR w hk), ordNeg (TCirc.cor_csucc_le_cedgR w hk)]
@@ -383,7 +367,4 @@ def circPath (j : J) : ℕ → List ((orderCx (TCirc w)).E × Bool)
   | m + 1 => circPath j m ++ segAt w j m
 
 /-- The attaching loop of the relator `j`. -/
-def circLoop (j : J) : List ((orderCx (TCirc w)).E × Bool) := circPath w j (w j).length
-
-end PresModel
-end FiniteChains
+def circLoop (j : J) := circPath w j (w j).length

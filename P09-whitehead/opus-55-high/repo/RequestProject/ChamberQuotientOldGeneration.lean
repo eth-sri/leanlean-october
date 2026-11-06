@@ -1,4 +1,3 @@
-module
-public import RequestProject.ChamberQuotientOldStar
-public import RequestProject.ChamberQuotientNerveGeneration
-public import RequestProject.NerveIntersectionGeneration
+import RequestProject.ChamberQuotientOldStar
+import RequestProject.ChamberQuotientNerveGeneration
+import RequestProject.NerveIntersectionGeneration

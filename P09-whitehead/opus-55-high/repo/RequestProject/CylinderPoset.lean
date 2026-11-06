@@ -1,8 +1,5 @@
-module
+import RequestProject.NerveSupport
 
-public import RequestProject.NerveSupport
-
-@[expose] public section
 
 /-!
 # The combinatorial mapping cylinder of a map of posets, with its outer end
@@ -33,8 +30,7 @@ where the gluing to the rest of the object happens.  Nothing here constructs a c
 computes `π₁`.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -43,7 +39,7 @@ open Nerve
 variable {X Sg : Type u} [Preorder X] [Preorder Sg]
 
 /-- The poset underlying the mapping cylinder of a monotone map `a : Σ →o X`. -/
-def CylP (_a : Sg →o X) : Type u := X ⊕ Sg
+def CylP (_a : Sg →o X) := X ⊕ Sg
 
 namespace CylP
 
@@ -96,13 +92,11 @@ def cylOuter (s : Sg) : CylP a := Sum.inr s
 /-- The retraction of the cylinder onto its base. -/
 def cylRetr : CylP a → X := Sum.elim id a
 
-@[simp] theorem cylRetr_cylIn (x : X) : cylRetr a (cylIn a x) = x := rfl
 
-@[simp] theorem cylRetr_cylOuter (s : Sg) : cylRetr a (cylOuter a s) = a s := rfl
 
 theorem cylIn_injective : Function.Injective (cylIn a) := fun _ _ h => Sum.inl_injective h
 
-theorem cylIn_monotone : Monotone (cylIn a) := fun _ _ h => h
+theorem cylIn_monotone : Monotone (cylIn a) := by tauto
 
 theorem cylRetr_monotone : Monotone (cylRetr a) := by
   intro p q hpq
@@ -124,12 +118,9 @@ theorem cylCollapse_monotone : Monotone (cylCollapse a) :=
 
 /-- The identity lies below the collapse: this is what makes the prism operator a chain
 homotopy between them. -/
-theorem le_cylIn_cylRetr (p : CylP a) : p ≤ cylCollapse a p := by
+theorem le_cylIn_cylRetr p : p ≤ cylCollapse a p := by
   cases p with
-  | inl x => exact le_refl x
-  | inr s => exact le_refl (a s)
+  | inl x => rfl
+  | inr s => exact le_refl _
 
 /-! ### The chain homotopy -/
-
-end Comb
-end FiniteChains

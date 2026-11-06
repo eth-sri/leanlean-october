@@ -1,35 +1,30 @@
-module
+import RequestProject.UniversalTreeGauge
+import RequestProject.GenusFullCubeMarking
+import RequestProject.Tac
+noncomputable section
 
-public import RequestProject.UniversalTreeGauge
-public import RequestProject.GenusFullCubeMarking
-
-@[expose] public section
 
 /-! Exact lifted path translations for the genuine capped presentation group. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-noncomputable def rootedCappedFullVertex (g : PresGroup (cappedSpinePresentation q))
-    (a : (markedSpineCx q).V) :
-    UV (orderCx (QCube (cmpRel (GenusVertex q))))
-      ((markedSpineToFullCube q).onV (markedSpineTree q).root) :=
+def rootedCappedFullVertex (g : PresGroup (cappedSpinePresentation q))
+    (a : (markedSpineCx q).V) :=
   deckV (cappedPresentationToFullCube q g)
-    (SpanningTree.mappedTreeReference (markedSpineTree q) (markedSpineToFullCube q) a)
+    (SpanningTree.mappedTreeReference _ _ a)
 
-theorem rootedCappedFullVertex_end (g : PresGroup (cappedSpinePresentation q))
-    (a : (markedSpineCx q).V) :
+theorem rootedCappedFullVertex_end g
+    a :
     endV (rootedCappedFullVertex q g a) = (markedSpineToFullCube q).onV a := by
   rw [rootedCappedFullVertex, endV_deckV, SpanningTree.mappedTreeReference_end]
 
 /-- Traversing any genuine spine path updates the comparison vertex by its capped-group word. -/
-theorem rootedCappedFullVertex_path (g : PresGroup (cappedSpinePresentation q))
-    {a b : (markedSpineCx q).V} {p : List ((markedSpineCx q).E × Bool)}
-    (hp : IsPath (markedSpineCx q).src (markedSpineCx q).tgt p a b) :
+theorem rootedCappedFullVertex_path g
+    {a b} {p}
+    (hp : IsPathX (markedSpineCx q) p a b) :
     extendList (mapPath (markedSpineToFullCube q) p) (rootedCappedFullVertex q g a) =
       rootedCappedFullVertex q
         (g * QuotientGroup.mk (SpanningTree.pathWord (markedSpineTree q) p)) b := by
@@ -39,12 +34,10 @@ theorem rootedCappedFullVertex_path (g : PresGroup (cappedSpinePresentation q))
   rfl
 
 /-- Comparison edges are actual edges in the full path-class universal cover. -/
-noncomputable def rootedCappedFullEdge (g : PresGroup (cappedSpinePresentation q))
+def rootedCappedFullEdge (g : PresGroup (cappedSpinePresentation q))
     (e : (markedSpineCx q).E) :
     UE (orderCx (QCube (cmpRel (GenusVertex q))))
       ((markedSpineToFullCube q).onV (markedSpineTree q).root) :=
   ⟨(rootedCappedFullVertex q g ((markedSpineCx q).src e),
     (markedSpineToFullCube q).onE e), by
       rw [rootedCappedFullVertex_end, (markedSpineToFullCube q).src_onE]⟩
-
-end FiniteChains.Davis.Genus

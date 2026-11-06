@@ -1,10 +1,7 @@
-module
+import RequestProject.SlideMor
+import RequestProject.TietzeElimination
+import RequestProject.BlockSubstitutionMor
 
-public import RequestProject.SlideMor
-public import RequestProject.TietzeElimination
-public import RequestProject.BlockSubstitutionMor
-
-@[expose] public section
 
 /-!
 # Lemma 3.9: the structural operation `T`
@@ -64,23 +61,3 @@ structure PresPoint : Type (u + 1) where
 
 attribute [instance] PresPoint.fintypeGens PresPoint.decEqGens PresPoint.fintypeCells
   PresPoint.decEqCells
-
-namespace PresPoint
-
-/-- Adjoining one generator together with one relator. -/
-def ext (P : PresPoint.{u}) (w₀ : FreeGroup (Option P.gens)) : PresPoint.{u} where
-  gens := Option P.gens
-  cells := Option P.cells
-  rel := extRel P.rel w₀
-
-end PresPoint
-
-namespace TMove
-
-end TMove
-
-namespace TPath
-
-end TPath
-
-end FiniteChains

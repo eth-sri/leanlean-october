@@ -1,2 +1,1 @@
-module
-public import RequestProject.PresUniversalRelatorHomology
+import RequestProject.PresUniversalRelatorHomology

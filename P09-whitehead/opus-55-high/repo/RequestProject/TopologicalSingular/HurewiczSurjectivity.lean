@@ -1,37 +1,34 @@
-module
+import RequestProject.TopologicalSingular.NormalizedTwoCycles
+import RequestProject.TopologicalSingular.CycleClassModule
+noncomputable section
 
-public import RequestProject.TopologicalSingular.NormalizedTwoCycles
-public import RequestProject.TopologicalSingular.CycleClassModule
-
-@[expose] public section
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
 open scoped Topology
 variable {X : Type} [TopologicalSpace X]
 
-noncomputable def pi2CycleClassAddHom (x : X) :
+def pi2CycleClassAddHom x :
     Additive (HomotopyGroup (Fin 2) X x) →+ (complex X).homology 2 := {
     toFun := fun a => pi2CycleClass x a.toMul
     map_zero' := pi2CycleClass_one x
     map_add' := fun a b => pi2CycleClass_mul x a.toMul b.toMul }
 
-noncomputable def pi2CycleClassLinear (x : X) :
+def pi2CycleClassLinear x :
     Additive (HomotopyGroup (Fin 2) X x) →ₗ[ℤ] (complex X).homology 2 where
   toFun := pi2CycleClassAddHom x
   map_add' := (pi2CycleClassAddHom x).map_add
-  map_smul' r a := by
-    exact (map_zsmul (pi2CycleClassAddHom x) r a).trans
+  map_smul' r a := (map_zsmul (pi2CycleClassAddHom x) r a).trans
       (int_smul_eq_zsmul (inferInstance : Module ℤ ((complex X).homology 2)) r _).symm
 
 variable [SimplyConnectedSpace X]
 
 /-- A finite integral chain is sent to the sum of actual based squares
 representing its normalized triangles. -/
-noncomputable def normalizedPi2Chain (x : X) :
+def normalizedPi2Chain (x : X) :
     Chain X 2 →ₗ[ℤ] Additive (HomotopyGroup (Fin 2) X x) :=
   Finsupp.linearCombination ℤ (fun tau => Additive.ofMul
-    (Quotient.mk _ (basedTriangleSquare (normalizedTriangle x tau) (normalizedTriangle_face x tau))))
+    (Quotient.mk _ (basedTriangleSquare _ (normalizedTriangle_face x tau))))
 
 theorem normalizedPi2Chain_class_linear (x : X) :
     (pi2CycleClassLinear x).comp (normalizedPi2Chain x) =
@@ -41,19 +38,16 @@ theorem normalizedPi2Chain_class_linear (x : X) :
   simp only [LinearMap.comp_apply, normalizedPi2Chain, normalizedCycleMap,
     Finsupp.linearCombination_single]
   rw [(pi2CycleClassLinear x).map_smul, (singularCycleClassLinear 1).map_smul]
-  apply congrArg (fun b : (complex X).homology 2 =>
-    (inferInstance : Module ℤ ((complex X).homology 2)).smul r b)
+  apply congrArg _
   change pi2CycleClass x
-    (Quotient.mk _ (basedTriangleSquare (normalizedTriangle x tau) (normalizedTriangle_face x tau))) =
-      singularCycleClass 1 (basedTriangleCycle (normalizedTriangle x tau) x)
+    (Quotient.mk _ (basedTriangleSquare _ (normalizedTriangle_face x tau))) =
+      singularCycleClass 1 _
         (basedTriangleCycle_boundary _ (normalizedTriangle_face x tau))
-  simp only [pi2CycleClass_mk, squareCycle_basedTriangleSquare]
+  simp [pi2CycleClass_mk, squareCycle_basedTriangleSquare]
 
-theorem normalizedPi2Chain_class (x : X) (c : Chain X 2) (hc : boundary 1 c = 0) :
+theorem normalizedPi2Chain_class x (c : Chain X 2) hc :
     pi2CycleClass x (normalizedPi2Chain x c).toMul = singularCycleClass 1 c hc := by
   have he := DFunLike.congr_fun (normalizedPi2Chain_class_linear x) c
-  change pi2CycleClass x (normalizedPi2Chain x c).toMul =
-    singularCycleClass 1 (normalizedCycleMap x c).val (normalizedCycleMap x c).property at he
   exact he.trans (normalizedCycleMap_class x c hc)
 
 theorem pi2CycleClass_surjective (x : X) : Function.Surjective (pi2CycleClass x) := by
@@ -67,14 +61,5 @@ theorem singularHurewicz2_surjective (x : X) : Function.Surjective (singularHure
   intro q
   obtain ⟨h, hh⟩ := (ModuleCat.epi_iff_surjective (homologyMathlibIso (TopCat.of X) 2).hom).mp
     inferInstance q
-  obtain ⟨a, ha⟩ := pi2CycleClass_surjective x h
-  refine ⟨a, ?_⟩
-  change (homologyMathlibIso (TopCat.of X) 2).hom (pi2CycleClass x a) = q
-  rw [ha, hh]
-
-theorem singularHurewicz2Hom_surjective (x : X) : Function.Surjective (singularHurewicz2Hom x) := by
-  intro q
-  obtain ⟨a, ha⟩ := singularHurewicz2_surjective x q.toAdd
-  exact ⟨a, ha⟩
-
-end FiniteChains.TopologicalSingular
+  cases' pi2CycleClass_surjective x h with a ha
+  aesop

@@ -1,4 +1,3 @@
-module
-public import RequestProject.ChamberQuotientBaseSimplyConnected
-public import RequestProject.OrderComponentCover
-public import RequestProject.SimplyConnectedCoverEquiv
+import RequestProject.ChamberQuotientBaseSimplyConnected
+import RequestProject.OrderComponentCover
+import RequestProject.SimplyConnectedCoverEquiv

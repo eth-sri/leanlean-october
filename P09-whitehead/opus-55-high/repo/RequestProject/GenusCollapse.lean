@@ -1,9 +1,6 @@
-module
+import RequestProject.SurfaceDual
+import RequestProject.GenusSurface
 
-public import RequestProject.SurfaceDual
-public import RequestProject.GenusSurface
-
-@[expose] public section
 
 /-!
 # Lemma 3.2 (ii) for the block of genus `q`
@@ -24,9 +21,7 @@ This file puts them together for the block of the article:
   with no hypothesis left beyond `q ≠ 0`.
 -/
 
-namespace FiniteChains
-namespace Davis
-namespace Genus
+namespace FiniteChains.Davis.Genus
 
 open Cell ASC Relation
 
@@ -36,11 +31,7 @@ variable (q : ℕ) [NeZero q]
 over the triangulation of the closed surface of genus `q` are removed by elementary collapses,
 leaving a two-dimensional spine. -/
 theorem genus_spine_collapse :
-    ∃ l : List (Cube (SCell (gvc q) (gec q) (gc q))),
+    ∃ l,
       Collapse.IsCollapse (spineInc (orderComplex (SCell (gvc q) (gec q) (gc q)))) l
         (topCubes (orderComplex (SCell (gvc q) (gec q) (gc q)))) :=
-  exists_spine_collapse_SCell (gc q) (genus_polygonData q)
-
-end Genus
-end Davis
-end FiniteChains
+  exists_spine_collapse_SCell _ (genus_polygonData q)

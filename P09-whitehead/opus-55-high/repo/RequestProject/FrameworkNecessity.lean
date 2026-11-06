@@ -1,3 +1,2 @@
-module
-public import RequestProject.Framework
-public import RequestProject.NecessityAlgebraic
+import RequestProject.Framework
+import RequestProject.NecessityAlgebraic

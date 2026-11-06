@@ -1,2 +1,1 @@
-module
-public import Mathlib
+import Mathlib

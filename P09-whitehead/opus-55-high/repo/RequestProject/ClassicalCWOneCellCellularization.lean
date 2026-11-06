@@ -1,10 +1,7 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalCWVertexPaths
+import RequestProject.ClassicalCellAttachmentCW
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalCWVertexPaths
-public import RequestProject.ClassicalCellAttachmentCW
-
-@[expose] public section
 
 /-! Cellularization of the endpoints of any family of new one-cells in the
 literal original CW complex. Each endpoint is moved along an actual path to
@@ -18,21 +15,19 @@ open Set Topology
 namespace FiniteChains.RelativeAttachment
 
 theorem oneBoundary_finiteSet :
-    ({x : Fin 1 → ℝ | ‖x‖ = 1} : Set (Fin 1 → ℝ)).Finite := by
+    ({x : Fin 1 → ℝ | ‖x‖ = 1}).Finite := by
   apply ((Set.finite_singleton (fun _ : Fin 1 => (-1 : ℝ))).insert
     (fun _ : Fin 1 => (1 : ℝ))).subset
   intro x hx
-  have he : x = fun _ : Fin 1 => x 0 := by
+  have he : x = fun _ => x 0 := by
     funext i
     exact congrArg x (Subsingleton.elim i 0)
   have hx' : |x 0| = 1 := by
     calc
-      |x 0| = ‖fun _ : Fin 1 => x 0‖ := by rw [pi_norm_const, Real.norm_eq_abs]
+      |x 0| = ‖fun _ => x 0‖ := by simp
       _ = ‖x‖ := congrArg norm he.symm
       _ = 1 := hx
-  rcases (abs_eq zero_le_one).mp hx' with h | h
-  · exact Or.inl (he.trans (by simp only [h]))
-  · exact Or.inr (Set.mem_singleton_iff.mpr (he.trans (by simp only [h])))
+  grind
 
 instance oneBoundary_finite : Finite (UnitBoundary (Fin 1 → ℝ)) :=
   oneBoundary_finiteSet.to_subtype
@@ -55,8 +50,8 @@ def vertexBoundaryHomotopy (r : C(BoundaryFamily J (Fin 1 → ℝ), X)) :
       continuous_of_discreteTopology⟩
   exact {
     toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun a => (ClassicalCW.pointVertexPath (r a)).source
-    map_one_left := fun a => (ClassicalCW.pointVertexPath (r a)).target }
+    map_zero_left := by aesop
+    map_one_left := by aesop }
 
 theorem vertexBoundaryMap_finiteLowerBoundary
     (r : BoundaryFamily J (Fin 1 → ℝ) → X) :
@@ -64,17 +59,15 @@ theorem vertexBoundaryMap_finiteLowerBoundary
   classical
   letI := Fintype.ofFinite (UnitBoundary (Fin 1 → ℝ))
   intro j
-  let V : Finset (RelCWComplex.cell (Set.univ : Set X) 0) :=
-    Finset.univ.image (fun a : UnitBoundary (Fin 1 → ℝ) => ClassicalCW.pointVertex (r ⟨j, a⟩))
-  let cells : ∀ m, Finset (RelCWComplex.cell (Set.univ : Set X) m)
+  let V :=
+    Finset.univ.image (fun a => ClassicalCW.pointVertex (r ⟨j, a⟩))
+  let cells : ∀ m, Finset (RelCWComplex.cell Set.univ m)
     | 0 => V
     | _ + 1 => ∅
   refine ⟨cells, ?_⟩
   intro a
   simp only [Set.mem_iUnion]
   refine ⟨0, Nat.zero_lt_one, ClassicalCW.pointVertex (r ⟨j, a⟩), ?_, ?_⟩
-  · exact Finset.mem_image.mpr ⟨a, Finset.mem_univ a, rfl⟩
+  · grind
   · rw [RelCWComplex.closedCell_zero_eq_singleton]
     rfl
-
-end FiniteChains.RelativeAttachment

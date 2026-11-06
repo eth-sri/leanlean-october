@@ -1,9 +1,6 @@
-module
+import RequestProject.OrderCxMonodromy
+import RequestProject.OrderCxNatHtpy
 
-public import RequestProject.OrderCxMonodromy
-public import RequestProject.OrderCxNatHtpy
-
-@[expose] public section
 
 /-!
 # Loops dominated by a monotone map into a cone
@@ -22,8 +19,7 @@ and that is enough:
   and above a fixed element is null-homotopic in `orderCx P`.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -32,105 +28,81 @@ variable {P Q : Type u} [Preorder P] [Preorder Q]
 /-- The image of a path under a constant map is null-homotopic: all its edges lie in the
 subposet `{c}`, which has a largest element. -/
 theorem htpy_nil_mapPath_const (c : Q) {u : P} {p : List ((orderCx P).E × Bool)}
-    (hp : IsPath (orderCx P).src (orderCx P).tgt p u u) :
+    (hp : IsPathX (orderCx P) p u u) :
     Htpy (orderCx Q) c c
       (mapPath (orderCxMap (fun _ : P => c) monotone_const) p) [] := by
-  have hpath : IsPath (orderCx Q).src (orderCx Q).tgt
-      (mapPath (orderCxMap (fun _ : P => c) monotone_const) p) c c :=
-    isPath_mapPath (orderCxMap (fun _ : P => c) monotone_const) hp
-  refine htpy_nil_of_pathIn_le_top (A := fun x : Q => x = c) (d := c) rfl
-    (fun x hx => le_of_eq hx) rfl hpath ?_
+  have hpath :=
+    isPath_mapPath (orderCxMap (fun _ => c) monotone_const) hp
+  refine htpy_nil_of_pathIn_le_top (A := fun x => x = c) (d := c) rfl
+    (by simp) rfl hpath ?_
   intro e he
-  simp only [mapPath, List.mem_map] at he
-  obtain ⟨e', -, rfl⟩ := he
-  exact ⟨rfl, rfl⟩
+  simp [mapPath, List.mem_map] at he
+  aesop
 
 /-- **Loops dominated by a cone die.**  If the monotone map `g` lies above the monotone map `f`
 and above a constant, then the image under `f` of every loop is null-homotopic. -/
-theorem htpy_nil_mapPath_of_const_le {f g : P → Q} (hf : Monotone f) (hg : Monotone g)
+theorem htpy_nil_mapPath_of_const_le (hf : Monotone f) (hg : Monotone g)
     (hfg : ∀ x, f x ≤ g x) (c : Q) (hcg : ∀ x, c ≤ g x) {u : P}
-    {p : List ((orderCx P).E × Bool)}
-    (hp : IsPath (orderCx P).src (orderCx P).tgt p u u) :
+    {p}
+    (hp : IsPathX (orderCx P) p u u) :
     Htpy (orderCx Q) (f u) (f u) (mapPath (orderCxMap f hf) p) [] := by
-  have hfp : IsPath (orderCx Q).src (orderCx Q).tgt (mapPath (orderCxMap f hf) p) (f u) (f u) :=
+  have hfp :=
     isPath_mapPath (orderCxMap f hf) hp
-  have hcp : IsPath (orderCx Q).src (orderCx Q).tgt
-      (mapPath (orderCxMap (fun _ : P => c) monotone_const) p) c c :=
-    isPath_mapPath (orderCxMap (fun _ : P => c) monotone_const) hp
-  -- both images are conjugate to the image under `g`
   have h1 := htpy_loop_mapPath_le hf hg hfg hp
-  have h2 := htpy_loop_mapPath_le (monotone_const : Monotone (fun _ : P => c)) hg hcg hp
+  have h2 := htpy_loop_mapPath_le (by tauto) hg hcg hp
   -- the image under the constant map is trivial
-  have h3 : Htpy (orderCx Q) (g u) (g u)
-      ([ordNeg (hcg u)] ++ mapPath (orderCxMap (fun _ : P => c) monotone_const) p
-        ++ [ordPos (hcg u)])
-      ([ordNeg (hcg u)] ++ [] ++ [ordPos (hcg u)]) :=
+  have h3 :=
     (htpy_nil_mapPath_const c hp).congr_append (isPath_ordNeg (hcg u)) (isPath_ordPos (hcg u))
-  have h4 : Htpy (orderCx Q) (g u) (g u) [ordNeg (hcg u), ordPos (hcg u)] [] :=
+  have h4 :=
     htpy_ordNeg_ordPos (hcg u)
-  have hgnil : Htpy (orderCx Q) (g u) (g u) (mapPath (orderCxMap g hg) p) [] := by
+  have hgnil : Htpy _ (g u) (g u) (mapPath (orderCxMap g hg) p) [] := by
     refine h2.trans (h3.trans ?_)
     simpa using h4
   -- hence the conjugate of the image under `f` is trivial
-  have hconj : Htpy (orderCx Q) (g u) (g u)
-      ([ordNeg (hfg u)] ++ mapPath (orderCxMap f hf) p ++ [ordPos (hfg u)]) [] := h1.symm.trans hgnil
+  have hconj := h1.symm.trans hgnil
   -- peel the conjugation off
-  have hmid : IsPath (orderCx Q).src (orderCx Q).tgt
-      ([ordNeg (hfg u)] ++ mapPath (orderCxMap f hf) p ++ [ordPos (hfg u)]) (g u) (g u) :=
-    isPath_append_iff.mpr ⟨f u, isPath_append_iff.mpr ⟨f u, isPath_ordNeg (hfg u), hfp⟩,
-      isPath_ordPos (hfg u)⟩
-  have hstep : Htpy (orderCx Q) (f u) (f u)
-      ([ordPos (hfg u)] ++ ([ordNeg (hfg u)] ++ mapPath (orderCxMap f hf) p
-        ++ [ordPos (hfg u)]) ++ [ordNeg (hfg u)])
-      ([ordPos (hfg u)] ++ [] ++ [ordNeg (hfg u)]) :=
+  have hstep :=
     hconj.congr_append (isPath_ordPos (hfg u)) (isPath_ordNeg (hfg u))
-  have hcancel : Htpy (orderCx Q) (f u) (f u) [ordPos (hfg u), ordNeg (hfg u)] [] :=
+  have hcancel :=
     htpy_ordPos_ordNeg (hfg u)
-  have hleft : Htpy (orderCx Q) (f u) (f u)
+  have hleft : Htpy _ (f u) (f u)
       ([ordPos (hfg u)] ++ ([ordNeg (hfg u)] ++ mapPath (orderCxMap f hf) p
         ++ [ordPos (hfg u)]) ++ [ordNeg (hfg u)]) [] := by
     refine hstep.trans ?_
     simpa using hcancel
   -- the left hand side is homotopic to the image itself
-  have hid : Htpy (orderCx Q) (f u) (f u) (mapPath (orderCxMap f hf) p)
+  have hid : Htpy _ (f u) (f u) (mapPath (orderCxMap f hf) p)
       ([ordPos (hfg u)] ++ ([ordNeg (hfg u)] ++ mapPath (orderCxMap f hf) p
         ++ [ordPos (hfg u)]) ++ [ordNeg (hfg u)]) := by
-    have hA : Htpy (orderCx Q) (f u) (f u)
+    have hA : Htpy _ (f u) (f u)
         ([ordPos (hfg u), ordNeg (hfg u)] ++ (mapPath (orderCxMap f hf) p
           ++ [ordPos (hfg u), ordNeg (hfg u)]))
         ([] ++ (mapPath (orderCxMap f hf) p ++ [ordPos (hfg u), ordNeg (hfg u)])) :=
       hcancel.congr_append (isPath_nil' (f u))
-        (isPath_append_iff.mpr ⟨f u, hfp, ⟨rfl, rfl, rfl⟩⟩)
-    have hB : Htpy (orderCx Q) (f u) (f u)
-        (mapPath (orderCxMap f hf) p ++ [ordPos (hfg u), ordNeg (hfg u)])
-        (mapPath (orderCxMap f hf) p ++ []) :=
+        (isPath_append_iff.mpr (by tauto))
+    have hB :=
       Htpy.append_congr hfp
-        (show IsPath (orderCx Q).src (orderCx Q).tgt [ordPos (hfg u), ordNeg (hfg u)]
-          (f u) (f u) from ⟨rfl, rfl, rfl⟩)
+        (by tauto)
         (Htpy.refl _) hcancel
-    have : Htpy (orderCx Q) (f u) (f u)
+    have : Htpy _ (f u) (f u)
         ([ordPos (hfg u), ordNeg (hfg u)] ++ (mapPath (orderCxMap f hf) p
           ++ [ordPos (hfg u), ordNeg (hfg u)]))
         (mapPath (orderCxMap f hf) p) := by
       refine hA.trans ?_
       simpa using hB
-    simpa [List.append_assoc] using this.symm
+    simpa using this.symm
   exact hid.trans hleft
 
 /-- **A loop inside a subposet carrying a cone is null-homotopic.**  The subposet `A` need not
 have a largest element: it is enough to have a monotone map `g` on `A`, with values in the
 ambient poset, which lies above the inclusion and above one fixed element. -/
-theorem htpy_nil_of_pathIn_cone {A : P → Prop} (g : {x : P // A x} → P) (hg : Monotone g)
-    (hfg : ∀ x : {x : P // A x}, (x : P) ≤ g x) (d : P) (hdg : ∀ x : {x : P // A x}, d ≤ g x)
-    {v : P} (hv : A v) {l : List ((orderCx P).E × Bool)}
-    (hp : IsPath (orderCx P).src (orderCx P).tgt l v v) (hl : PathIn A l) :
+theorem htpy_nil_of_pathIn_cone g (hg : Monotone g)
+    (hfg : ∀ x : {x : P // A x}, (x : P) ≤ g x) d (hdg : ∀ x, d ≤ g x)
+    {v : P} (hv : A v) {l}
+    (hp : IsPathX (orderCx P) l v v) (hl : PathIn A l) :
     Htpy (orderCx P) v v l [] := by
   have hlift := isPath_liftPathIn l hl hv hv hp
   have h := htpy_nil_mapPath_of_const_le (f := fun x : {x : P // A x} => (x : P))
     monotone_subtypeVal hg hfg d hdg hlift
-  rw [show mapPath (orderCxMap (fun x : {x : P // A x} => (x : P)) monotone_subtypeVal)
-      (liftPathIn l hl) = l from mapPath_liftPathIn l hl] at h
-  exact h
-
-end Comb
-end FiniteChains
+  simp_all [show mapPath (orderCxMap _ monotone_subtypeVal)
+      (liftPathIn l hl) = l from mapPath_liftPathIn l hl]

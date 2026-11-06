@@ -1,9 +1,6 @@
-module
+import RequestProject.PushoutOldCoverCopies
+import RequestProject.EmbeddedAcyclicUnion
 
-public import RequestProject.PushoutOldCoverCopies
-public import RequestProject.EmbeddedAcyclicUnion
-
-@[expose] public section
 
 /-! Actual global homology of the inverse image of K in the universal
 cover of K ∪ D L.  This discharges the old-part H1/H2 exactness used in
@@ -37,25 +34,22 @@ theorem copy_ranges_eq_of_meet
   refine ⟨?_, ?_, ?_⟩
   · ext v
     constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulV q d, (hV d).symm⟩
+    · grind
     · rintro ⟨d, rfl⟩
       refine ⟨a.smulV q⁻¹ d, ?_⟩
-      simpa only [← a.mul_smulV, mul_inv_cancel, a.one_smulV] using hV (a.smulV q⁻¹ d)
+      simp_all [← a.mul_smulV, mul_inv_cancel, a.one_smulV]
   · ext e
     constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulE q d, (hE d).symm⟩
+    · grind
     · rintro ⟨d, rfl⟩
       refine ⟨a.smulE q⁻¹ d, ?_⟩
-      simpa only [← a.mul_smulE, mul_inv_cancel, a.one_smulE] using hE (a.smulE q⁻¹ d)
+      simp_all [← a.mul_smulE, mul_inv_cancel, a.one_smulE]
   · ext f
     constructor
-    · rintro ⟨d, rfl⟩
-      exact ⟨a.smulF q d, (hF d).symm⟩
+    · grind
     · rintro ⟨d, rfl⟩
       refine ⟨a.smulF q⁻¹ d, ?_⟩
-      simpa only [← a.mul_smulF, mul_inv_cancel, a.one_smulF] using hF (a.smulF q⁻¹ d)
+      simp_all [← a.mul_smulF, mul_inv_cancel, a.one_smulF]
 
 include hp hr he hf hiF hconn ht hEconn in
 theorem old_two_cycle_zero (hD : IsAcyclic D)
@@ -65,12 +59,10 @@ theorem old_two_cycle_zero (hD : IsAcyclic D)
   let φ := translatedOldLift p i hiV hiE hiF hconn d₀ ht
   have hs' : ∀ f ∈ z.support, AcyclicCopies.oldFace φ f := by
     intro f hf'
-    obtain ⟨k, hk⟩ := hs f hf'
+    cases' hs f hf' with k hk
     obtain ⟨g, d, hd⟩ := old_faces_covered p hp i hiV hiE hiF hconn d₀ ht f k hk
-    exact ⟨g, d, hd⟩
+    tauto
   exact AcyclicCopies.two_cycle_zero φ
     (translatedOldLift_injective_E p hp a hr he i hiV hiE hiF hconn d₀ ht)
     (translatedOldLift_injective_F p hp a hr he i hiV hiE hiF hconn d₀ ht)
     hD (copy_ranges_eq_of_meet p a hr he hf i hiV hiE hiF hconn d₀ ht hEconn) z hs' hz
-
-end FiniteChains.Comb.PushoutOldCover

@@ -1,8 +1,6 @@
-module
+import RequestProject.TreeMedian
+import RequestProject.Tac
 
-public import RequestProject.TreeMedian
-
-@[expose] public section
 
 /-!
 # Gromov's criterion in dimension one
@@ -29,27 +27,4 @@ a tree, and trees are median".  Both halves are proved:
   one-dimensional case of the criterion, proved unconditionally.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-namespace SquareComplex
-
-universe u
-
-variable {Vx : Type u} [DecidableEq Vx] {S : SquareComplex Vx}
-
-/-- The one-skeleton of a square complex, as a simple graph. -/
-def toSimpleGraph (S : SquareComplex Vx) : SimpleGraph Vx where
-  Adj := S.adj
-  symm := ⟨fun _ _ h => S.adj_symm h⟩
-  loopless := ⟨S.adj_irrefl⟩
-
-omit [DecidableEq Vx] in
-@[simp] theorem toSimpleGraph_adj (a b : Vx) : (toSimpleGraph S).Adj a b ↔ S.adj a b := Iff.rfl
-
-end SquareComplex
-
-end FiniteChains
+bwd

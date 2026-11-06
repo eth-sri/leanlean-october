@@ -1,10 +1,7 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalCellAttachmentTwoComplex
+import RequestProject.TopologicalPi2HomotopyTransport
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalCellAttachmentTwoComplex
-public import RequestProject.TopologicalPi2HomotopyTransport
-
-@[expose] public section
 
 /-! Closed embeddings retaining the actual open cells of classical CW
 complexes. Compatible embeddings into a final stage give the exact chain
@@ -27,7 +24,7 @@ namespace CWCellEmbedding
 
 variable {K L M : TwoComplex}
 
-def refl (K : TwoComplex) : CWCellEmbedding K K where
+def refl K : CWCellEmbedding K K where
   map := ContinuousMap.id K
   closedEmbedding := IsClosedEmbedding.id
   cellIndex _ := Function.Embedding.refl _
@@ -56,28 +53,26 @@ def imageSubcomplex (e : CWCellEmbedding K L) : CWComplex.Subcomplex (Set.univ :
       obtain ⟨m, ⟨j, hj⟩, hz⟩ := by simpa only [Set.mem_iUnion] using hz
       obtain ⟨j, rfl⟩ := hj
       rw [← e.openCell_image] at hz
-      exact Set.image_subset_range _ _ hz
+      grind
     · rintro ⟨x, rfl⟩
       have hx : x ∈ ⋃ m, ⋃ j : RelCWComplex.cell (Set.univ : Set K) m,
           CWComplex.openCell (C := (Set.univ : Set K)) m j := by
         rw [CWComplex.iUnion_openCell_eq_complex]
         trivial
-      obtain ⟨m, j, hj⟩ := by simpa only [Set.mem_iUnion] using hx
+      obtain ⟨m, j, hj⟩ := by simpa [Set.mem_iUnion] using hx
       apply Set.mem_iUnion.mpr
       refine ⟨m, Set.mem_iUnion.mpr ⟨⟨e.cellIndex m j, ⟨j, rfl⟩⟩, ?_⟩⟩
       rw [← e.openCell_image]
-      exact ⟨x, hj, rfl⟩
+      tauto
 
 def imageHomeomorph (e : CWCellEmbedding K L) : K ≃ₜ (e.imageSubcomplex : Set L) :=
   e.closedEmbedding.isEmbedding.toHomeomorph
 
-@[simp] theorem imageHomeomorph_val (e : CWCellEmbedding K L) (x : K) :
-    (e.imageHomeomorph x).val = e.map x := rfl
 
-def imageCellEquiv (e : CWCellEmbedding K L) (m : ℕ) :
+def imageCellEquiv (e : CWCellEmbedding K L) m :
     RelCWComplex.cell (Set.univ : Set K) m ≃
-      {j : RelCWComplex.cell (Set.univ : Set L) m // j ∈ e.imageSubcomplex.I m} :=
-  Equiv.ofInjective (e.cellIndex m) (e.cellIndex m).injective
+      {j : RelCWComplex.cell Set.univ m // j ∈ e.imageSubcomplex.I m} :=
+  Equiv.ofInjective _ (e.cellIndex m).injective
 
 theorem initialIdentification (e : CWCellEmbedding K L) :
     InitialIdentification e.imageSubcomplex e.imageHomeomorph := by
@@ -108,27 +103,26 @@ def diskAttachmentCellEmbedding (K : TwoComplex) {J : Type}
 
 /-- A finite compatible family of embeddings yields the original chain
 statement in the chosen common ambient two-complex. -/
-theorem hasChain_of_cellEmbeddings {n : ℕ} (K : Fin (n + 1) → TwoComplex) (L : TwoComplex)
+theorem hasChain_of_cellEmbeddings (K : Fin (n + 1) → TwoComplex) L
     (e : ∀ i, CWCellEmbedding (K i) L)
-    (f : ∀ i : Fin n, C(K i.castSucc, K i.succ))
-    (he : ∀ i : Fin n, (e i.succ).map.comp (f i) = (e i.castSucc).map)
-    (hp : ∀ i : Fin n, ∃ x : K i.succ, (e i.succ).map x ∉ Set.range (e i.castSucc).map)
+    (f : ∀ i, C(K i.castSucc, K i.succ))
+    (he : ∀ i, (e i.succ).map.comp (f i) = (e i.castSucc).map)
+    (hp : ∀ i : Fin n, ∃ x, (e i.succ).map x ∉ Set.range (e i.castSucc).map)
     (hk : ∀ i : Fin n, KillsPi2 (f i))
-    (finite : Bool) (hfin : finite = true → FiniteCells L) :
+    finite (hfin : finite = true → FiniteCells L) :
     HasChain (K 0) n finite := by
   refine ⟨L, fun i => (e i).imageSubcomplex, (e 0).imageHomeomorph,
     (e 0).initialIdentification, hfin, fun i => (e i).image_connectedSpace, ?_⟩
   intro i
   have hs : Set.range (e i.castSucc).map ⊆ Set.range (e i.succ).map := by
     rintro _ ⟨x, rfl⟩
-    exact ⟨f i x, congrArg (fun g : C(K i.castSucc, L) => g x) (he i)⟩
+    exact ⟨f i x, congrArg (· x) (he i)⟩
   refine ⟨hs, ?_, ?_⟩
-  · obtain ⟨x, hx⟩ := hp i
+  · cases' hp i with x hx
     intro heq
     apply hx
     change Set.range (e i.castSucc).map = Set.range (e i.succ).map at heq
-    rw [heq]
-    exact ⟨x, rfl⟩
+    simp_all
   · apply (killsPi2_homotopyEquiv_square_iff
       (e i.castSucc).imageHomeomorph.toHomotopyEquiv
       (e i.succ).imageHomeomorph.toHomotopyEquiv (f i)
@@ -142,7 +136,5 @@ theorem hasChain_of_cellEmbeddings {n : ℕ} (K : Fin (n + 1) → TwoComplex) (L
       apply ContinuousMap.ext
       intro x
       apply Subtype.ext
-      exact (congrArg (fun g : C(K i.castSucc, L) => g x) (he i)).symm
+      exact (congrArg (· x) (he i)).symm
     exact hsq ▸ ContinuousMap.Homotopic.refl _
-
-end Whitehead

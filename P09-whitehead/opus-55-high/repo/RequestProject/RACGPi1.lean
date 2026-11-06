@@ -1,10 +1,7 @@
-module
+import RequestProject.RACGSquareComplex
+import RequestProject.SquareComplexMonodromy
+import RequestProject.SquareComplexCoverExists
 
-public import RequestProject.RACGSquareComplex
-public import RequestProject.SquareComplexMonodromy
-public import RequestProject.SquareComplexCoverExists
-
-@[expose] public section
 
 /-!
 # The fundamental group of `C(L)` is the kernel of the parity map
@@ -26,32 +23,3 @@ The proof uses the combinatorial covering theory of
 `FiniteChains.RACG.isCovering_phi`), the simple connectivity of the Cayley complex and the
 monodromy bijection of `RequestProject/SquareComplexMonodromy.lean`.
 -/
-
-namespace FiniteChains
-namespace RACG
-
-open SquareComplex
-
-universe u
-
-variable {V : Type u} [DecidableEq V] (A : CommRel V)
-
-/-- The kernel of the parity homomorphism `W_L → (ℤ/2)^{L⁰}`, as a subgroup. -/
-noncomputable def kerPhi : Subgroup (CayGroup A) where
-  carrier := {x | phi A x = 0}
-  mul_mem' := by
-    intro a b ha hb
-    simp only [Set.mem_setOf_eq] at ha hb ⊢
-    rw [phi_mul, ha, hb, add_zero]
-  one_mem' := by simp [Set.mem_setOf_eq]
-  inv_mem' := by
-    intro a ha
-    simp only [Set.mem_setOf_eq] at ha ⊢
-    rw [phi_inv, ha]
-
-@[simp] theorem mem_kerPhi {x : CayGroup A} : x ∈ kerPhi A ↔ phi A x = 0 := Iff.rfl
-
-variable (hdim : ∀ t : Finset V, (∀ s ∈ t, ∀ r ∈ t, s ≠ r → A.rel s r) → t.card ≤ 3)
-
-end RACG
-end FiniteChains

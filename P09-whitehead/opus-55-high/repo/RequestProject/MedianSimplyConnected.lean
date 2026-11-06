@@ -1,3 +1,2 @@
-module
-public import RequestProject.MedianSquareComplexWalls
-public import RequestProject.SquareComplexWalkHomotopy
+import RequestProject.MedianSquareComplexWalls
+import RequestProject.SquareComplexWalkHomotopy

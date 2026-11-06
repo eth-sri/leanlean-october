@@ -1,8 +1,5 @@
-module
+import RequestProject.QCubeSquareSupport
 
-public import RequestProject.QCubeSquareSupport
-
-@[expose] public section
 
 /-! Faithful finite square-chain subdivision, separated by actual top cubes. -/
 open scoped Classical
@@ -15,12 +12,12 @@ variable {V C : Type} [DecidableEq V] {A : CommRel V}
 noncomputable def squareChainSubdivision : (C →₀ ℤ) →ₗ[ℤ]
     ((strictOrderCx (QCube A)).F →₀ ℤ) :=
   Finsupp.linearCombination ℤ
-    (fun i => cubeSquareSubdivision (cell i) (left i) (right i) (hne i) (hspx i))
+    (fun i => cubeSquareSubdivision _ _ _ (hne i) (hspx i))
 
 theorem squareChainSubdivision_filter_top (hcell : Function.Injective cell)
-    (z : C →₀ ℤ) (i : C) :
+    z i :
     (squareChainSubdivision cell left right hne hspx z).filter
-      (fun t : (strictOrderCx (QCube A)).F => t.1.2.2 = cell i) =
+      (·.1.2.2 = cell i) =
       z i • cubeSquareSubdivision (cell i) (left i) (right i) (hne i) (hspx i) := by
   classical
   induction z using Finsupp.induction_linear with
@@ -33,7 +30,5 @@ theorem squareChainSubdivision_filter_top (hcell : Function.Injective cell)
       by_cases hji : j = i
       · subst j
         simp
-      · have hci : cell j ≠ cell i := fun h => hji (hcell h)
-        simp [hci, hji]
-
-end FiniteChains.Davis
+      · have hci : cell j ≠ cell i := by tauto
+        simp_all

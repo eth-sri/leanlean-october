@@ -1,9 +1,6 @@
-module
+import RequestProject.InitialPairFinsupp
+import RequestProject.RelativeAmbientPresChain
 
-public import RequestProject.InitialPairFinsupp
-public import RequestProject.RelativeAmbientPresChain
-
-@[expose] public section
 
 /-! The acyclic-core sufficiency construction with its explicit initial
 pair, actual genus replacement, actual terminal extension, and actual
@@ -15,11 +12,10 @@ open scoped Classical
 namespace FiniteChains
 
 theorem FSIsCockcroft.redecide {A J : Type} [dA : DecidableEq A]
-    {ρ : J → FreeGroup A} (h : FSIsCockcroft ρ) (dA' : DecidableEq A) :
+    {ρ : J → FreeGroup A} (h : FSIsCockcroft ρ) dA' :
     @FSIsCockcroft A J dA' ρ := by
   have hd : dA' = dA := Subsingleton.elim _ _
-  subst dA'
-  exact h
+  grind
 
 end FiniteChains
 
@@ -32,10 +28,10 @@ def actualInitial : AmbientChain core 0 := by
     ?_ (InitialFS.core_trivial core hcore.2)
   exact @FSIsCockcroft.redecide _ _ _ _ (InitialFS.isCockcroft core hcore) _
 
-def actualAmbientChain (n : ℕ) : AmbientChain core n :=
+def actualAmbientChain (n : ℕ) :=
   ambientChains core hcore (actualInitial core hcore) n
 
-theorem actualAmbientChain_finite [Finite A] (n : ℕ) :
+theorem actualAmbientChain_finite [Finite A] n :
     Finite (actualAmbientChain core hcore n).extraGen ∧
       Finite (actualAmbientChain core hcore n).extraCell := by
   induction n with
@@ -51,5 +47,3 @@ theorem actualAmbientChain_finite [Finite A] (n : ℕ) :
       change Finite (NextExtraGen core hcore.2 (actualAmbientChain core hcore n).rel) ∧
         Finite (NextExtraCell core hcore.2 (actualAmbientChain core hcore n).rel)
       constructor <;> infer_instance
-
-end FiniteChains.RelativeNormalForm

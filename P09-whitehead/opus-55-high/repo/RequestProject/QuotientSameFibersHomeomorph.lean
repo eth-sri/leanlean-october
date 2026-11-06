@@ -1,9 +1,6 @@
-module
+import Mathlib.Topology.Homeomorph.Defs
+import Mathlib.Topology.Maps.Basic
 
-public import Mathlib.Topology.Homeomorph.Defs
-public import Mathlib.Topology.Maps.Basic
-
-@[expose] public section
 
 /-! Two quotient maps with exactly the same fibers identify their targets by
 an actual homeomorphism. Its value on every quotient representative is fixed. -/
@@ -16,13 +13,13 @@ variable {X Y Z : Type*} [TopologicalSpace X] [TopologicalSpace Y] [TopologicalS
     (f : X → Y) (g : X → Z) (hf : IsQuotientMap f) (hg : IsQuotientMap g)
     (hfg : ∀ a b, f a = f b ↔ g a = g b)
 
-def sameFiberForward (y : Y) : Z := g (hf.surjective y).choose
+def sameFiberForward (y : Y) := g (hf.surjective y).choose
 
 include hfg in
 omit [TopologicalSpace Z] in
 theorem sameFiberForward_apply (x : X) :
     sameFiberForward f g hf (f x) = g x :=
-  (hfg _ _).mp (hf.surjective (f x)).choose_spec
+  (hfg _ _).mp (by grind)
 
 def quotientSameFibersHomeomorph : Y ≃ₜ Z where
   toFun := sameFiberForward f g hf
@@ -44,12 +41,10 @@ def quotientSameFibersHomeomorph : Y ≃ₜ Z where
   continuous_invFun := by
     apply hg.continuous_iff.mpr
     have he : sameFiberForward g f hg ∘ g = f :=
-      funext (sameFiberForward_apply g f hg (fun a b => (hfg a b).symm))
+      funext (sameFiberForward_apply g f hg (by simp_all))
     rw [he]
     exact hf.continuous
 
-@[simp] theorem quotientSameFibersHomeomorph_apply (x : X) :
+@[simp] theorem quotientSameFibersHomeomorph_apply x :
     quotientSameFibersHomeomorph f g hf hg hfg (f x) = g x :=
   sameFiberForward_apply f g hf hfg x
-
-end FiniteChains

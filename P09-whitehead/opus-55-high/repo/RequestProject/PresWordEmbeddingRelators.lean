@@ -1,13 +1,9 @@
-module
+import RequestProject.PresWordEmbedding
+import RequestProject.PresCoverRelatorProjectionCoordinates
+import RequestProject.Tac
 
-public import RequestProject.PresWordEmbedding
-public import RequestProject.PresCoverRelatorProjectionCoordinates
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
@@ -17,18 +13,17 @@ variable {w : J → List (α × Bool)} {v : K → List (β × Bool)}
   (h : PresWordEmbedding w v) (hw : ∀ j, 0 < (w j).length) (hv : ∀ j, 0 < (v j).length)
 
 /-- Renaming a presentation preserves its distinguished relator triangle. -/
-theorem firstTriangle_map (j : J) :
+theorem firstTriangle_map j :
     (strictOrderCxMap h.posMap h.posMap.strictMono).onF (presRelatorFirstTriangle w hw j) =
       presRelatorFirstTriangle v hv (h.cell j) := by
-  apply Subtype.ext
   rfl
 
 /-- A triangle mapped to a distinguished relator triangle was already one,
 with the corresponding original relator label. -/
-theorem firstTriangle_preimage (t : StrictOrdTri (PresPos w)) (j : K)
+theorem firstTriangle_preimage (t : StrictOrdTri (PresPos w)) j
     (ht : (strictOrderCxMap h.posMap h.posMap.strictMono).onF t = presRelatorFirstTriangle v hv j) :
-    ∃ i : J, h.cell i = j ∧ t = presRelatorFirstTriangle w hw i := by
-  have he : h.posFun t.val.2.2 = apexOf v j := congrArg (fun s => s.val.2.2) ht
+    ∃ i, h.cell i = j ∧ t = presRelatorFirstTriangle w hw i := by
+  have he : h.posFun t.val.2.2 = apexOf v j := congrArg (·.val.2.2) ht
   have hj : ∃ i : J, h.cell i = j := by
     cases hp : t.val.2.2 with
     | inr i => exact ⟨i, Sum.inr.inj (by simpa only [hp, posFun, apexOf, ConeAdj.apex] using he)⟩
@@ -36,7 +31,7 @@ theorem firstTriangle_preimage (t : StrictOrdTri (PresPos w)) (j : K)
   obtain ⟨i, rfl⟩ := hj
   refine ⟨i, rfl, ?_⟩
   apply strictOrderCxMap_onF_injective h.posMap h.posMap.strictMono h.posMap.injective
-  exact ht.trans (h.firstTriangle_map hw hv i).symm
+  tauto
 
 variable (f : P → PresPos w) (hf : IsPosetCover f)
   (g : Q → PresPos v) (hg : IsPosetCover g)
@@ -52,15 +47,15 @@ theorem coverTriangle_projection (t : StrictOrdTri P) :
       (strictOrderCxMap h.posMap h.posMap.strictMono).onF
         ((strictOrderCxMap f hf.strictMono).onF t) := by
   apply Subtype.ext
-  exact Prod.ext (hc _) (Prod.ext (hc _) (hc _))
+  aesop
 
 /-- The lift respects the distinguished triangles even when the induced group
 map, and hence the map of universal-cover vertices, is not injective. -/
-theorem coverRelatorTriangle_map (p : PresCoverRelator w f) :
+theorem coverRelatorTriangle_map p :
     (strictOrderCxMap k hk).onF (presCoverRelatorTriangle w f hf hw p) =
       presCoverRelatorTriangle v g hg hv (h.coverRelatorMap f g k hc p) := by
   apply presCoverRelatorTriangle_unique v g hg hv
-  · rw (config := { transparency := .default }) [h.coverTriangle_projection f hf g hg k hk hc,
+  · rwd [h.coverTriangle_projection f hf g hg k hk hc,
       presCoverRelatorTriangle_projection, h.firstTriangle_map]
     rfl
   · rfl
@@ -78,22 +73,18 @@ theorem coverRelatorChain_map (c : StrictOrdTri P →₀ ℤ) :
   | single t n =>
     change presCoverRelatorChain v g hg hv
       (Finsupp.mapDomain (strictOrderCxMap k hk).onF (Finsupp.single t n)) = _
-    rw (config := { transparency := .default }) [Finsupp.mapDomain_single]
+    rwd [Finsupp.mapDomain_single]
     by_cases ht : ∃ j, (strictOrderCxMap f hf.strictMono).onF t = presRelatorFirstTriangle w hw j
-    · obtain ⟨j, hj⟩ := ht
+    · cases' ht with j hj
       let p : PresCoverRelator w f :=
-        ⟨(t.val.2.2, j), congrArg (fun s : StrictOrdTri (PresPos w) => s.val.2.2) hj⟩
-      have he : t = presCoverRelatorTriangle w f hf hw p :=
+        ⟨(t.val.2.2, j), congrArg (·.val.2.2) hj⟩
+      have he :=
         presCoverRelatorTriangle_unique w f hf hw p t hj rfl
-      rw (config := { transparency := .default }) [he, h.coverRelatorTriangle_map hw hv f hf g hg k hk hc,
-        presCoverRelatorChain_single_triangle, presCoverRelatorChain_single_triangle,
-        Finsupp.mapDomain_single]
-    · rw (config := { transparency := .default }) [presCoverRelatorChain_single_off_coordinates w f hf hw t n
-        (fun j hj => ht ⟨j, hj⟩), Finsupp.mapDomain_zero]
+      simp [he, h.coverRelatorTriangle_map hw hv f hf g hg k hk hc, presCoverRelatorChain_single_triangle, Finsupp.mapDomain_single]
+    · rwd [presCoverRelatorChain_single_off_coordinates w f hf hw t n
+        (by simp_all), Finsupp.mapDomain_zero]
       apply presCoverRelatorChain_single_off_coordinates
       intro j hj
-      rw (config := { transparency := .default }) [h.coverTriangle_projection f hf g hg k hk hc] at hj
+      rwd [h.coverTriangle_projection f hf g hg k hk hc] at hj
       obtain ⟨i, _, hi⟩ := h.firstTriangle_preimage hw hv _ j hj
-      exact ht ⟨i, hi⟩
-
-end FiniteChains.PresModel.PresWordEmbedding
+      simp_all

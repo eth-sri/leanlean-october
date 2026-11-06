@@ -1,8 +1,6 @@
-module
+import RequestProject.Pi2GenerationDescent
+import RequestProject.Tac
 
-public import RequestProject.Pi2GenerationDescent
-
-@[expose] public section
 
 /-!
 # The copies of `L̃` cover the universal cover of the pushout
@@ -33,19 +31,16 @@ lower degrees) in the combinatorial model, from scratch:
   pushout of Proposition 3.11.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
 /-! ### Maps out of a simply connected complex -/
 
 /-- A cellular map out of a simply connected complex kills `π₁`. -/
-theorem pi1Trivial_of_simplyConnected {X Y : Complex2.{u}} (hX : SimplyConnected X)
+theorem pi1Trivial_of_simplyConnected (hX : SimplyConnected X)
     (h : Hom X Y) : Pi1Trivial h := by
   intro a p hp
   simpa using mapPath_htpy h (hX a p hp)
@@ -61,7 +56,7 @@ vertex `l₀` of `L` and a vertex `c` of the universal cover of `E` lying over `
 a lift of `ι` to the universal covers taking the base vertex of `L̃(l₀)` to `c`.  (The
 universal cover of `L` is simply connected, so the composite `L̃ → L → E` lifts; a change of
 base vertex moves the image of the base point to `c`.) -/
-theorem exists_lift_univCover (ι : Hom L E) {x₀ : E.V} (l₀ : L.V) (c : UV E x₀)
+theorem exists_lift_univCover (ι : Hom L E) {x₀ : E.V} l₀ c
     (hc : endV c = ι.onV l₀) :
     ∃ φ : Hom (uCover L l₀) (uCover E x₀),
       (∀ v, endV (φ.onV v) = ι.onV (endV v)) ∧
@@ -70,31 +65,26 @@ theorem exists_lift_univCover (ι : Hom L E) {x₀ : E.V} (l₀ : L.V) (c : UV E
       φ.onV (UV.base L l₀) = c := by
   classical
   set f : Hom (uCover L l₀) E := ι.comp (univProj L l₀)
-  have htriv : Pi1Trivial f := pi1Trivial_of_simplyConnected simplyConnected_univCover f
+  have htriv := pi1Trivial_of_simplyConnected simplyConnected_univCover f
   set psi : Hom (uCover L l₀) (uCover E (ι.onV l₀)) :=
     liftHom (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv
   -- a path representing `c`
-  obtain ⟨tp, htp⟩ := Quotient.exists_rep c
-  have hend : endpt E x₀ tp.1 = ι.onV l₀ := by rw [← hc, ← htp]; rfl
-  have hq : IsPath E.src E.tgt tp.1 x₀ (ι.onV l₀) := by
-    have h := tp.2
-    rwa [hend] at h
+  cases' c.exists_rep with tp htp
+  have hend : endpt E x₀ tp.1 = ι.onV l₀ := by aesop
+  have hq : IsPathX E tp.1 x₀ (ι.onV l₀) := by
+    grind
   refine ⟨(shiftHom hq).comp psi, ?_, ?_, ?_, ?_⟩
   · intro v
     show endV (shiftV hq (psi.onV v)) = ι.onV (endV v)
     rw [endV_shiftV]
     exact univProj_liftHom_onV (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv v
-  · intro e
-    show ((shiftE hq (psi.onE e)).1).2 = ι.onE (e.1.2)
-    exact univProj_liftHom_onE (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv e
-  · intro g
-    show ((shiftF hq (psi.onF g)).1).2 = ι.onF (g.1.2)
-    exact univProj_liftHom_onF (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv g
+  · tauto
+  · tauto
   · show shiftV hq (psi.onV (UV.base L l₀)) = c
-    have h1 : psi.onV (UV.base L l₀) = UV.base E (ι.onV l₀) :=
+    have h1 : psi.onV (UV.base L l₀) = UV.base E _ :=
       liftHom_base (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv
     rw [h1, shiftV_base, ← htp]
-    exact congrArg UV.mk (Subtype.ext rfl)
+    rfl
 
 /-! ### The degree-two chains coming from the copies -/
 
@@ -115,8 +105,3 @@ section Pushout
 variable {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
   (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
   (hiF : Function.Injective i.onF)
-
-end Pushout
-
-end Comb
-end FiniteChains

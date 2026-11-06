@@ -1,3 +1,2 @@
-module
-public import RequestProject.CombPi2
-public import RequestProject.CombData
+import RequestProject.CombPi2
+import RequestProject.CombData

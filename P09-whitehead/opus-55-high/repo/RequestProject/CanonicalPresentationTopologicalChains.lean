@@ -1,11 +1,7 @@
-module
+import RequestProject.PresentationWordTopologicalChains
 
-public import RequestProject.PresentationWordTopologicalChains
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
-open Comb
 variable {α J : ℕ → Type}
 
 /-- Carry the chosen padding generator along the given generator inclusions. -/
@@ -23,7 +19,5 @@ derived from the labelled group presentations, simultaneously at every stage. -/
 def canonicalPresentationStep (i : ℕ) :
     PresWordEmbedding (presCanonicalWords (ρ i) (presentationMarkedGenerator f a i))
       (presCanonicalWords (ρ (i + 1)) (presentationMarkedGenerator f a (i + 1))) :=
-  canonicalPresWordEmbedding (ρ i) (ρ (i + 1)) (f i) (g i) (hr i)
-    (presentationMarkedGenerator f a i)
-
-end FiniteChains.PresModel
+  canonicalPresWordEmbedding _ _ _ _ (hr i)
+    _

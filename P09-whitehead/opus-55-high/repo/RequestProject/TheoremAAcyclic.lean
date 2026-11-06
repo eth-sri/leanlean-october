@@ -1,3 +1,2 @@
-module
-public import RequestProject.IsoGeneration
-public import RequestProject.IdentityCover
+import RequestProject.IsoGeneration
+import RequestProject.IdentityCover

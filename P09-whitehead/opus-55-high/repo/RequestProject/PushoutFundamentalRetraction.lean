@@ -1,9 +1,7 @@
-module
+import RequestProject.CombEdgeLabels
+import RequestProject.CombPushout
+import RequestProject.Tac
 
-public import RequestProject.CombEdgeLabels
-public import RequestProject.CombPushout
-
-@[expose] public section
 
 /-! The upstairs fundamental group embeds in the actual cellular pushout.
 The retraction is read from actual edge labels and path homotopies. Thus
@@ -13,9 +11,7 @@ No van Kampen or factor-injection hypothesis is introduced. Unverified. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 universe u
@@ -23,26 +19,26 @@ variable {D K L : Complex2.{u}}
 
 namespace RootPaths
 def relative (i : Hom D L) (hi : Function.Injective i.onV)
-    (hD : IsConnected D) (hL : IsConnected L) (d₀ : D.V) : RootPaths L (i.onV d₀) where
+    (hD : IsConnected D) (hL : IsConnected L) d₀ : RootPaths L (i.onV d₀) where
   path v := if h : ∃ d, i.onV d = v then
     mapPath i ((choose hD d₀).path h.choose) else (choose hL (i.onV d₀)).path v
   valid v := by
     split
     · rename_i h
-      simpa only [h.choose_spec] using isPath_mapPath i ((choose hD d₀).valid h.choose)
+      simpa [h.choose_spec] using isPath_mapPath i ((choose hD d₀).valid h.choose)
     · exact (choose hL (i.onV d₀)).valid v
   at_root := by
-    have h : ∃ d, i.onV d = i.onV d₀ := ⟨d₀, rfl⟩
+    have h : ∃ d, i.onV d = i.onV d₀ := by simp
     rw [dif_pos h, hi h.choose_spec, (choose hD d₀).at_root, mapPath_nil]
 
-theorem relative_path (i : Hom D L) (hi : Function.Injective i.onV)
-    (hD : IsConnected D) (hL : IsConnected L) (d₀ d : D.V) :
+theorem relative_path i hi
+    hD (hL : IsConnected L) (d₀ d : D.V) :
     (relative i hi hD hL d₀).path (i.onV d) = mapPath i ((choose hD d₀).path d) := by
-  have h : ∃ d', i.onV d' = i.onV d := ⟨d, rfl⟩
-  simp only [relative, dif_pos h, hi h.choose_spec]
+  have h : ∃ d', i.onV d' = i.onV d := by simp
+  simp [relative, dif_pos h, hi h.choose_spec]
 
-theorem relative_edge_core (i : Hom D L) (hi : Function.Injective i.onV)
-    (hD : IsConnected D) (hL : IsConnected L) (d₀ : D.V) (ht : Pi1Trivial i) (e : D.E) :
+theorem relative_edge_core i hi
+    hD (hL : IsConnected L) d₀ (ht : Pi1Trivial i) (e : D.E) :
     (relative i hi hD hL d₀).edge (i.onE e) = 1 := by
   apply Quotient.sound
   change Htpy L (i.onV d₀) (i.onV d₀)
@@ -50,7 +46,7 @@ theorem relative_edge_core (i : Hom D L) (hi : Function.Injective i.onV)
       revPath ((relative i hi hD hL d₀).path (L.tgt (i.onE e)))) []
   rw [i.src_onE, i.tgt_onE, relative_path, relative_path]
   have h := ht d₀ ((choose hD d₀).conjugate [(e, true)] (D.src e) (D.tgt e))
-    ((choose hD d₀).conjugate_valid (isPath_single (e, true)))
+    ((choose hD d₀).conjugate_valid (by simp))
   simpa [conjugate, mapPath, revPath, revGerm, List.map_map, Function.comp_def] using h
 end RootPaths
 
@@ -71,7 +67,7 @@ theorem labels_pushE (e : L.E) : labels p i hiV hiE hD hL d₀ (pushE p i e) =
   · obtain ⟨d, rfl⟩ := h
     rw [pushE_of_mem p hiE]
     exact (RootPaths.relative_edge_core i hiV hD hL d₀ ht d).symm
-  · rw [pushE_of_off p i ⟨e, fun d hd => h ⟨d, hd⟩⟩]
+  · rw [pushE_of_off p i ⟨e, by simp_all⟩]
     rfl
 
 include ht in
@@ -82,18 +78,13 @@ theorem read_pushPath (l : List (L.E × Bool)) :
   induction l with
   | nil => rfl
   | cons e l ih =>
-      simp only [List.map_cons, EdgeLabels.read_cons, ih]
-      congr 1
-      rcases e with ⟨e, b⟩
-      cases b <;> simp [EdgeLabels.germ, labels_pushE p i hiV hiE hD hL d₀ ht]
+      simp [List.map_cons, EdgeLabels.read_cons, ih, EdgeLabels.germ, labels_pushE p i hiV hiE hD hL d₀ ht]
 
 include ht in
 theorem labels_rel (f : (pushoutComplex p i hiV hiE).F) :
     EdgeLabels.read (labels p i hiV hiE hD hL d₀) ((pushoutComplex p i hiV hiE).att f) = 1 := by
   cases f with
   | inl f =>
-      change EdgeLabels.read (labels p i hiV hiE hD hL d₀)
-        ((K.att f).map (fun e => (Sum.inl e.1, e.2))) = 1
       have h : ∀ l : List (K.E × Bool), EdgeLabels.read (labels p i hiV hiE hD hL d₀)
           (l.map (fun e => (Sum.inl e.1, e.2))) = 1 := by
         intro l
@@ -111,7 +102,7 @@ theorem labels_rel (f : (pushoutComplex p i hiV hiE).F) :
 def retraction :
     Pi1 (pushoutComplex p i hiV hiE) ((pushoutMap p i hiV hiE hiF).onV (i.onV d₀)) →*
       Pi1 L (i.onV d₀) :=
-  EdgeLabels.monodromy (labels p i hiV hiE hD hL d₀)
+  EdgeLabels.monodromy _
     (labels_rel p i hiV hiE hD hL d₀ ht) _
 
 theorem retraction_leftInverse : Function.LeftInverse
@@ -130,6 +121,3 @@ include hD hL ht in
 theorem pi1_pushoutMap_injective : Function.Injective
     (pi1Map (pushoutMap p i hiV hiE hiF) (i.onV d₀)) :=
   (retraction_leftInverse p i hiV hiE hiF hD hL d₀ ht).injective
-
-end PushoutFundamental
-end FiniteChains.Comb

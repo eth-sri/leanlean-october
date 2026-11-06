@@ -1,17 +1,14 @@
-module
+import RequestProject.GenusOrdinaryPairCollapse
+import RequestProject.PositiveBoundaryCoordinates
 
-public import RequestProject.GenusOrdinaryPairCollapse
-public import RequestProject.PositiveBoundaryCoordinates
-
-@[expose] public section
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
 variable (q : ℕ) [NeZero q]
 
-theorem genusCollapseStage_cut_step_iff (left : List (GenusCollapsePair q))
-    (t : QOld (cmpRel (GenusVertex q))) (hne : t.1.spx.Nonempty)
-    (c : GenusTruncatedCell q) :
+theorem genusCollapseStage_cut_step_iff left
+    t hne
+    c :
     genusCollapseStage q (left ++ [(qCubeToCoordinate t.1, Sum.inr t.1.spx)]) c ↔
       (genusCollapseStage q left c ∧ c ≠ Sum.inr (fullCutCell t hne)) ∧ c ≠ Sum.inl t := by
   have hinj : Function.Injective
@@ -20,13 +17,13 @@ theorem genusCollapseStage_cut_step_iff (left : List (GenusCollapsePair q))
     exact Subtype.ext (qCubeCoordinateEquiv.injective (Subtype.ext h))
   cases c with
   | inl d =>
-    simp only [genusCollapseStage, truncatedFaceIndex, List.map_append, List.map_cons,
+    simp [genusCollapseStage, truncatedFaceIndex, List.map_append, List.map_cons,
       List.map_nil, List.mem_append, List.mem_cons, List.not_mem_nil, or_false,
       ne_eq, Sum.inl.injEq, Sum.inl_ne_inr, hinj.eq_iff]
     tauto
   | inr σ =>
     have he : σ.1 = t.1.spx ↔ σ = fullCutCell t hne :=
-      ⟨fun h => Subtype.ext h, fun h => congrArg Subtype.val h⟩
+      ⟨fun h => Subtype.ext h, by aesop⟩
     simp [genusCollapseStage, truncatedFaceIndex, he]
 
 theorem genus_cut_pair_stage_injIn
@@ -39,47 +36,39 @@ theorem genus_cut_pair_stage_injIn
       (genusCollapseStage q
         (left ++ [(qCubeToCoordinate t.1, Sum.inr t.1.spx)])) := by
   let p : GenusCollapsePair q := (qCubeToCoordinate t.1, Sum.inr t.1.spx)
-  have htail : qCubeToCoordinate t.1 ∈ (p :: right).map Prod.fst := by simp [p]
-  have hc := genusCollapseStage_suffix_certificate q left (p :: right) hsplit
+  have htail : qCubeToCoordinate t.1 ∈ (p :: right).map Prod.fst := by tauto
+  have hc := genusCollapseStage_suffix_certificate q left _ hsplit
   have hfree := hc.2.1
-  have hi : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex (GenusVertex q))
-      (Sum.inr t.1.spx) := by
-    have hm : qCubeToCoordinate t.1 ∈
-        spineInc (ASC.orderComplex (GenusVertex q)) (Sum.inr t.1.spx) ∩
-          Collapse.remainingTops (topCubes (ASC.orderComplex (GenusVertex q))) left := by
-      rw [hfree]
-      exact Finset.mem_singleton_self _
-    exact (Finset.mem_inter.mp hm).1
   have htC : genusCollapseStage q left (Sum.inl t) :=
-    ⟨genus_later_top_boundary_avoids_prefix_faces q left (p :: right) hsplit
-        (Sum.inl t) t htail (le_refl _),
+    ⟨genus_later_top_boundary_avoids_prefix_faces q left _ hsplit
+        _ t htail (le_refl _),
       ((Collapse.mem_remainingTops _ _ _).mp hc.1).2⟩
-  have hf : truncatedCellDimension (Sum.inr (fullCutCell t hne) : GenusTruncatedCell q) = 2 := by
+  have hf : truncatedCellDimension (Sum.inr (fullCutCell t hne)) = 2 := by
     change t.1.spx.card - 1 = 2
     omega
-  have hface := genus_free_face_deletion_injIn q (genusCollapseStage q left)
-    (Collapse.remainingTops (topCubes (ASC.orderComplex (GenusVertex q))) left)
-    (Sum.inr (fullCutCell t hne)) t hf ht htC
-    (fun d hd hdim => genusCollapseStage_active_top q left d hd hdim) hfree
+  have hface := genus_free_face_deletion_injIn q _
+    _
+    _ t hf ht htC
+    (genusCollapseStage_active_top q left) hfree
   have hJ (x : GenusTruncatedCell q) :
       x ≠ Sum.inr (fullCutCell t hne) ∧ x < Sum.inl t ↔
         (genusCollapseStage q left x ∧ x ≠ Sum.inr (fullCutCell t hne)) ∧ x < Sum.inl t := by
     constructor
     · rintro ⟨hne, hlt⟩
-      exact ⟨⟨genusCollapseStage_boundary_mem q left (p :: right) hsplit t htail x hlt, hne⟩, hlt⟩
-    · exact fun h => ⟨h.1.2, h.2⟩
+      exact ⟨⟨genusCollapseStage_boundary_mem q left _ hsplit t htail x hlt, hne⟩, hlt⟩
+    simp_all
   have htop : InjIn (fun x => genusCollapseStage q left x ∧ x ≠ Sum.inr (fullCutCell t hne))
       (fun x => (genusCollapseStage q left x ∧ x ≠ Sum.inr (fullCutCell t hne)) ∧ x ≠ Sum.inl t) := by
     apply injIn_delete_maximal
     · intro x _ htx
       exact genus_top_cell_maximal q t ht x htx
-    · obtain ⟨x, hxf, hxt⟩ := genus_top_boundary_nonempty q (Sum.inr (fullCutCell t hne)) hf t ht
-      exact ⟨x, (hJ x).mp ⟨hxf, hxt⟩⟩
+    · obtain ⟨x, hxf, hxt⟩ := genus_top_boundary_nonempty q _ hf t ht
+      grind
     · exact connectedIn_congr hJ (positiveCutPuncturedBoundary_connectedIn t hne hpositive ht)
     · intro v l hv hp hl
       have hnull := positiveCutPuncturedBoundary_simplyConnectedIn t hne hpositive ht v l
-        ((hJ v).mpr hv) hp (pathIn_mono (fun x hx => (hJ x).mpr hx) hl)
-      exact hnull.mono (fun x hx => (hJ x).mp hx)
+        ((hJ v).mpr hv) hp (by grind)
+      exact hnull.mono (by simp_all)
   have hpair := injIn_trans (fun _ h => h.1) hface htop
   intro v l hv hp hl hh
   have hnull := hpair v l
@@ -98,25 +87,21 @@ theorem genus_recorded_cut_pair_stage_injIn
       (genusCollapseStage q (left ++ [(qCubeToCoordinate t.1, Sum.inr σ.1)])) := by
   classical
   have hp : (qCubeToCoordinate t.1, Sum.inr σ.1) ∈ genusChainCollapse q := by
-    rw [hsplit]
-    exact List.mem_append.mpr (Or.inr List.mem_cons_self)
-  have ht : t.1.spx.card = 3 := (genus_oldCell_removed_iff_dimension_three q t).mp
-    (List.mem_map.mpr ⟨(qCubeToCoordinate t.1, Sum.inr σ.1), hp, rfl⟩)
+    simp_all
+  have ht := (genus_oldCell_removed_iff_dimension_three q t).mp
+    (by simp_all)
   have hc := genusCollapseStage_suffix_certificate q left
-    ((qCubeToCoordinate t.1, Sum.inr σ.1) :: right) hsplit
-  have hi : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex (GenusVertex q))
+    _ hsplit
+  have hi : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex _)
       (Sum.inr σ.1) := by
-    have hm : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex (GenusVertex q))
+    have hm : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex _)
         (Sum.inr σ.1) ∩
-        Collapse.remainingTops (topCubes (ASC.orderComplex (GenusVertex q))) left := by
+        Collapse.remainingTops (topCubes (ASC.orderComplex _)) left := by
       rw [hc.2.1]
       exact Finset.mem_singleton_self _
-    exact (Finset.mem_inter.mp hm).1
+    simp_all
   have he : qCubeToCoordinate t.1 = posCube σ.1 := by
-    simp only [spineInc] at hi
-    split at hi
-    · exact Finset.mem_singleton.mp hi
-    · simp at hi
+    grind [spineInc]
   have hs : t.1.spx = σ.1 := by
     have hh := congrArg freeSet he
     simpa using hh
@@ -127,9 +112,7 @@ theorem genus_recorded_cut_pair_stage_injIn
     by_cases hv : v ∈ σ.1
     · simpa [posCube, hv] using hh.symm
     · simpa [posCube, hv] using hh.symm
-  have hne : t.1.spx.Nonempty := hs.symm ▸ σ.2.1
+  have hne := hs.symm ▸ σ.2.1
   have hstep := genus_cut_pair_stage_injIn q left right t hne ht hpositive
-    (by simpa only [hs] using hsplit)
-  simpa only [hs] using hstep
-
-end FiniteChains.Davis.Genus
+    (by simp_all)
+  simp_all

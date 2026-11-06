@@ -1,11 +1,8 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.ClassicalCWGraphCoordinates
+import RequestProject.ClassicalGraphBoundaryWords
+import RequestProject.ClassicalGraphRose
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.ClassicalCWGraphCoordinates
-public import RequestProject.ClassicalGraphBoundaryWords
-public import RequestProject.ClassicalGraphRose
-
-@[expose] public section
 
 /-! A genuine homotopy equivalence from the given original two-dimensional
 CW complex to a rose with word disks. The disks retain the original two-cell
@@ -22,10 +19,10 @@ open ClassicalSkeletonAttachment RelativeAttachment ClassicalGraphModel
 
 variable (K : Whitehead.TwoComplex)
 
-def originalGraphRoot : SkeletonCarrier (Set.univ : Set K) 1 :=
+def originalGraphRoot :=
   zeroCellPoint (pointVertex (Classical.choice (inferInstance : Nonempty K)))
 
-def originalGraphTree : Comb.SpanningTree (originalGraph K) :=
+def originalGraphTree :=
   Classical.choose (originalGraph_exists_spanningTree K (originalGraphRoot K))
 
 abbrev OriginalRoseGen :=
@@ -35,9 +32,9 @@ abbrev OriginalRoseRel := RelCWComplex.cell (Set.univ : Set K) 2
 
 def originalOneSkeletonRoseEquiv : OneSkeleton K ≃ₕ Rose (OriginalRoseGen K) := by
   letI := zeroSkeleton_discrete (X := K)
-  exact (skeletonAsDiskAttachment (Set.univ : Set K) 1).toHomotopyEquiv.trans
-    (graphRoseHomotopyEquiv (originalGraphAttaching K)
-      (originalGraphAttaching K).continuous (originalGraphTree K))
+  exact (skeletonAsDiskAttachment _ 1).toHomotopyEquiv.trans
+    (graphRoseHomotopyEquiv _
+      (originalGraphAttaching K).continuous _)
 
 def originalTopSkeletonHomeomorph : K ≃ₜ SkeletonCarrier (Set.univ : Set K) 3 where
   toFun x := ⟨x, twoComplex_mem_skeleton_three K x⟩
@@ -48,37 +45,33 @@ def originalTopSkeletonHomeomorph : K ≃ₜ SkeletonCarrier (Set.univ : Set K) 
   continuous_invFun := continuous_subtype_val
 
 /-- Literal original characteristic disks, prior to any graph collapse. -/
-def originalAsDiskAttachment :
-    K ≃ₜ DiskAttachment (skeletonAttachingMap (Set.univ : Set K) 2) :=
+def originalAsDiskAttachment :=
   (originalTopSkeletonHomeomorph K).trans
-    (skeletonAsDiskAttachment (Set.univ : Set K) 2)
+    (skeletonAsDiskAttachment _ 2)
 
 def originalRoseAttaching :
     C(BoundaryFamily (OriginalRoseRel K) (Fin 2 → ℝ), Rose (OriginalRoseGen K)) :=
-  (originalOneSkeletonRoseEquiv K).toFun.comp (skeletonAttachingMap (Set.univ : Set K) 2)
+  (originalOneSkeletonRoseEquiv K).toFun.comp (skeletonAttachingMap _ 2)
 
 def originalRoseDiskEquiv : K ≃ₕ DiskAttachment (originalRoseAttaching K) :=
   (originalAsDiskAttachment K).toHomotopyEquiv.trans
-    (diskAttachmentBaseChangeHomotopyEquiv (skeletonAttachingMap (Set.univ : Set K) 2)
+    (diskAttachmentBaseChangeHomotopyEquiv (skeletonAttachingMap _ 2)
       (originalOneSkeletonRoseEquiv K))
 
 theorem originalRoseWords_exists (j : OriginalRoseRel K) :
     ∃ W : BoundaryWords (roseAttaching (OriginalRoseGen K)),
       ((originalRoseAttaching K).comp
-        (⟨fun a => ⟨j, a⟩, by
-          exact continuous_sigmaMk («σ» := fun _ : OriginalRoseRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ : C(UnitBoundary (Fin 2 → ℝ),
+        (⟨fun a => ⟨j, a⟩, continuous_sigmaMk («σ» := fun _ : OriginalRoseRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ : C(UnitBoundary (Fin 2 → ℝ),
           BoundaryFamily (OriginalRoseRel K) (Fin 2 → ℝ)))).Homotopic W.boundaryMap :=
-  boundaryMap_homotopic_boundaryWords (roseAttaching (OriginalRoseGen K))
-    (roseAttaching (OriginalRoseGen K)).continuous _
+  boundaryMap_homotopic_boundaryWords _
+    (by fun_prop) _
 
-def originalRoseWords (j : OriginalRoseRel K) :
-    BoundaryWords (roseAttaching (OriginalRoseGen K)) :=
+def originalRoseWords (j : OriginalRoseRel K) :=
   Classical.choose (originalRoseWords_exists K j)
 
 theorem originalRoseWords_spec (j : OriginalRoseRel K) :
     ((originalRoseAttaching K).comp
-      (⟨fun a => ⟨j, a⟩, by
-          exact continuous_sigmaMk («σ» := fun _ : OriginalRoseRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ : C(UnitBoundary (Fin 2 → ℝ),
+      (⟨fun a => ⟨j, a⟩, continuous_sigmaMk («σ» := fun _ : OriginalRoseRel K => UnitBoundary (Fin 2 → ℝ)) (i := j)⟩ : C(UnitBoundary (Fin 2 → ℝ),
         BoundaryFamily (OriginalRoseRel K) (Fin 2 → ℝ)))).Homotopic
       (originalRoseWords K j).boundaryMap :=
   Classical.choose_spec (originalRoseWords_exists K j)
@@ -99,8 +92,8 @@ def originalRoseAttachingHomotopy :
         ((H j).toContinuousMap.comp ⟨Prod.swap, continuous_swap⟩).curry.continuous)⟩
   exact {
     toContinuousMap := F.uncurry.comp ⟨Prod.swap, continuous_swap⟩
-    map_zero_left := fun a => (H a.1).apply_zero a.2
-    map_one_left := fun a => (H a.1).apply_one a.2 }
+    map_zero_left := by aesop
+    map_one_left := by aesop }
 
 abbrev OriginalWordDiskModel := DiskAttachment (originalRoseWordAttaching K)
 
@@ -108,23 +101,21 @@ abbrev OriginalWordDiskModel := DiskAttachment (originalRoseWordAttaching K)
 The endpoint is a rose plus one genuine normed disk per original two-cell. -/
 def originalWordDiskHomotopyEquiv : K ≃ₕ OriginalWordDiskModel K :=
   (originalRoseDiskEquiv K).trans
-    (diskAttachingHomotopyEquiv (originalRoseAttaching K) (originalRoseWordAttaching K)
+    (diskAttachingHomotopyEquiv _ _
       (originalRoseAttachingHomotopy K))
 
-def originalRelatorWords (j : OriginalRoseRel K) : List (OriginalRoseGen K × Bool) :=
+def originalRelatorWords (j : OriginalRoseRel K) :=
   (originalRoseWords K j).loopWord
 
-def originalRelators (j : OriginalRoseRel K) : FreeGroup (OriginalRoseGen K) :=
+def originalRelators (j : OriginalRoseRel K) :=
   FreeGroup.mk (originalRelatorWords K j)
 
 theorem originalRoseGen_finite (hK : Whitehead.FiniteCells K) : Finite (OriginalRoseGen K) := by
-  letI : Finite (Σ n, RelCWComplex.cell (Set.univ : Set K) n) := hK
+  letI : Finite (Σ n, RelCWComplex.cell Set.univ n) := hK
   letI : Finite (RelCWComplex.cell (Set.univ : Set K) 1) :=
-    Finite.of_injective (Sigma.mk 1) (fun _ _ h => eq_of_heq (Sigma.mk.inj_iff.mp h).2)
+    Finite.of_injective _ (fun _ _ h => eq_of_heq (Sigma.mk.inj_iff.mp h).2)
   infer_instance
 
 theorem originalRoseRel_finite (hK : Whitehead.FiniteCells K) : Finite (OriginalRoseRel K) := by
-  letI : Finite (Σ n, RelCWComplex.cell (Set.univ : Set K) n) := hK
+  letI : Finite (Σ n, RelCWComplex.cell Set.univ n) := hK
   exact Finite.of_injective (Sigma.mk 2) (fun _ _ h => eq_of_heq (Sigma.mk.inj_iff.mp h).2)
-
-end FiniteChains.ClassicalCW

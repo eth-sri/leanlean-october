@@ -1,28 +1,19 @@
-module
+import RequestProject.TopologicalSingular.SimplexPrismRetraction
+import RequestProject.TopologicalSingular.SingularChainH1
 
-public import RequestProject.TopologicalSingular.SimplexPrismRetraction
-public import RequestProject.TopologicalSingular.SingularChainH1
-
-@[expose] public section
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
 universe u
 variable {X : Type u} [TopologicalSpace X]
 
-theorem simplexOne_boundary_endpoints (z : Domain 1) (hz : z ∈ simplexBoundary 1) :
+theorem simplexOne_boundary_endpoints z (hz : z ∈ simplexBoundary 1) :
     stdSimplexHomeomorphUnitInterval z = 0 ∨ stdSimplexHomeomorphUnitInterval z = 1 := by
   have hs : z.val 0 + z.val 1 = 1 := (Fin.sum_univ_two z.val).symm.trans z.property.2
   obtain ⟨i, hi⟩ := hz
   fin_cases i
-  · right
-    apply Subtype.ext
-    change z.val 1 = 1
-    change z.val 0 = 0 at hi
-    linarith
-  · left
-    apply Subtype.ext
-    exact hi
+  · aesop
+  aesop
 
 /-- In a simply connected space, a singular edge whose two vertices are at
 the basepoint contracts to the constant edge while fixing both vertices. -/
@@ -36,7 +27,7 @@ theorem singularEdge_nullhomotopic [SimplyConnectedSpace X] (x : X) (tau : Simpl
       stdSimplexHomeomorphUnitInterval_zero.symm)).trans h0
     target' := (congrArg tau (stdSimplexHomeomorphUnitInterval.symm_apply_eq.mpr
       stdSimplexHomeomorphUnitInterval_one.symm)).trans h1 }
-  obtain ⟨G⟩ := SimplyConnectedSpace.paths_homotopic p (Path.refl x)
+  cases' SimplyConnectedSpace.paths_homotopic p (Path.refl x) with G
   refine ⟨{
     toFun := fun w => G (w.1, stdSimplexHomeomorphUnitInterval w.2)
     continuous_toFun := G.continuous.comp (continuous_fst.prodMk
@@ -44,20 +35,13 @@ theorem singularEdge_nullhomotopic [SimplyConnectedSpace X] (x : X) (tau : Simpl
     map_zero_left := ?_
     map_one_left := ?_
     prop' := ?_ }⟩
-  · intro z
-    rw [G.apply_zero]
-    change tau (stdSimplexHomeomorphUnitInterval.symm (stdSimplexHomeomorphUnitInterval z)) = tau z
-    rw [stdSimplexHomeomorphUnitInterval.symm_apply_apply]
-  · intro z
-    exact G.apply_one _
+  · aesop
+  · simp
   · intro t z hz
-    change G (t, stdSimplexHomeomorphUnitInterval z) = tau z
     rcases simplexOne_boundary_endpoints z hz with he | he
-    · have hv : z = stdSimplex.vertex 0 := stdSimplexHomeomorphUnitInterval.injective
+    · have hv := stdSimplexHomeomorphUnitInterval.injective
         (he.trans stdSimplexHomeomorphUnitInterval_zero.symm)
-      rw [he, G.source, hv, h0]
-    · have hv : z = stdSimplex.vertex 1 := stdSimplexHomeomorphUnitInterval.injective
+      simp_all
+    · have hv := stdSimplexHomeomorphUnitInterval.injective
         (he.trans stdSimplexHomeomorphUnitInterval_one.symm)
-      rw [he, G.target, hv, h1]
-
-end FiniteChains.TopologicalSingular
+      simp_all

@@ -1,3 +1,2 @@
-module
-public import RequestProject.TopologicalCockcroft
-public import Mathlib.Topology.Homotopy.Lifting
+import RequestProject.TopologicalCockcroft
+import Mathlib.Topology.Homotopy.Lifting

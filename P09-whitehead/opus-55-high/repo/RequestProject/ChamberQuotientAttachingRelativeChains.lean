@@ -1,9 +1,6 @@
-module
+import RequestProject.ChamberQuotientOldRelativeFillings
+import RequestProject.ChamberQuotientAttachingCover
 
-public import RequestProject.ChamberQuotientOldRelativeFillings
-public import RequestProject.ChamberQuotientAttachingCover
-
-@[expose] public section
 
 /-! Relative old-cell fillings with the prescribed boundary in the actual attaching cover. -/
 namespace FiniteChains.Davis
@@ -15,14 +12,14 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 /-- A relative old two-chain is replaced by a two-chain on the genuine
 attaching cover, with its prescribed boundary there. No zero-boundary input
 is imposed on the original chain. -/
-theorem qUniversal_old_relative_chain_from_attaching (x : X)
+theorem qUniversal_old_relative_chain_from_attaching x
     (hx : IsConnected (orderCx X)) (σ : NeSpx A)
-    (z : Ch (UOrder (Qpos A X att) (qNew x)))
+    z
     (hz : z ∈ IncOn (fun p => InQOld (uOrderEnd p)))
     (hd : lengthProjection 3 z = z)
     (b : Ch (QLiftedAttaching (qNew (A := A) (att := att) x))) (hb : b ∈ Inc _)
     (hbz : Nerve.bdry z = cmap Subtype.val b) :
-    ∃ c : Ch (QLiftedAttaching (qNew (A := A) (att := att) x)),
+    ∃ c,
       c ∈ Inc _ ∧ lengthProjection 3 c = c ∧ Nerve.bdry c = b ∧
       ∃ y ∈ IncOn (fun p => InQOld (uOrderEnd p)),
         lengthProjection 4 y = y ∧ z = cmap Subtype.val c + Nerve.bdry y := by
@@ -37,7 +34,7 @@ theorem qUniversal_old_relative_chain_from_attaching (x : X)
     refine ⟨p, ?_⟩
     change InQOld (uOrderEnd p) ∧ InQBaseStar (uOrderEnd p)
     rw [hp]
-    exact ⟨trivial, rfl⟩
+    tauto
   have hdz : Nerve.bdry z ∈ IncOn J := by
     rw [hbz]
     exact cmap_val_mem_incOn J hb
@@ -49,7 +46,4 @@ theorem qUniversal_old_relative_chain_from_attaching (x : X)
     rw [← lengthProjection_cmap, hct, htd]
   · apply cmap_val_injective J hnonempty
     rw [cmap_bdry, hct, hdt, hbz]
-  · rw [hct]
-    exact he
-
-end FiniteChains.Davis
+  aesop

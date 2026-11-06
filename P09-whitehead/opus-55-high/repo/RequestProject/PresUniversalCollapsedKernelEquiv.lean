@@ -1,3 +1,2 @@
-module
-public import RequestProject.PresCoverRelatorKernelEquiv
-public import RequestProject.PresUniversalRelatorKernel
+import RequestProject.PresCoverRelatorKernelEquiv
+import RequestProject.PresUniversalRelatorKernel

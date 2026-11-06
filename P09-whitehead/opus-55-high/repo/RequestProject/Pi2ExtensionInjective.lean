@@ -1,9 +1,7 @@
-module
+import RequestProject.Pi2Generation
+import RequestProject.HNNEmbedding
+import RequestProject.Tac
 
-public import RequestProject.Pi2Generation
-public import RequestProject.HNNEmbedding
-
-@[expose] public section
 
 /-!
 # The two extension steps of rule 1 really do contain the old group
@@ -28,52 +26,4 @@ Consequently the two generation statements
 hypothesis on the fundamental groups at all.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-open MonoidAlgebra
-
-universe u
-
-variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
-variable (ρ : J → FreeGroup α)
-
-/-! ### The Tietze step -/
-
-section Tietze
-
-variable (s : FreeGroup α)
-
-/-- The retraction of free groups sending the new generator to the word `s`. -/
-def tietzeLift : FreeGroup (Option α) →* FreeGroup α :=
-  FreeGroup.lift (fun o => o.elim s FreeGroup.of)
-
-omit [Fintype α] [DecidableEq α] in
-@[simp] theorem tietzeLift_of_none : tietzeLift s (FreeGroup.of none) = s := by
-  simp [tietzeLift]
-
-omit [Fintype α] [DecidableEq α] in
-@[simp] theorem tietzeLift_map_some (w : FreeGroup α) :
-    tietzeLift s (FreeGroup.map Option.some w) = w := by
-  have h : (tietzeLift s).comp (FreeGroup.map Option.some) = MonoidHom.id _ :=
-    FreeGroup.ext_hom _ _ fun a => by simp [tietzeLift]
-  exact congrArg (fun f : FreeGroup α →* FreeGroup α => f w) h
-
-end Tietze
-
-/-! ### The stable-letter step -/
-
-section HNN
-
-variable (u v : FreeGroup α)
-  (hu : ¬ IsOfFinOrder (QuotientGroup.mk u : PresGroup ρ))
-  (hv : ¬ IsOfFinOrder (QuotientGroup.mk v : PresGroup ρ))
-
-end HNN
-
-/-! ### The generation statements without hypotheses on the fundamental groups -/
-
-end FiniteChains
+bwd

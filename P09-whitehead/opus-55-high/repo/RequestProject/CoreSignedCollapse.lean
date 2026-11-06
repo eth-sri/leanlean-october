@@ -1,9 +1,7 @@
-module
+import RequestProject.CoreCollapse
+import RequestProject.FoxCoordinateSubstitution
+import RequestProject.Tac
 
-public import RequestProject.CoreCollapse
-public import RequestProject.FoxCoordinateSubstitution
-
-@[expose] public section
 
 /-! The actual core-collapse map, including reversed orientations of surviving cells.
 The only input describing the quotient is an equality of free-group words.  The
@@ -13,9 +11,7 @@ Written proof terms; not compiled in the current proof-first workflow. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.CoreSignedCollapse
 
@@ -27,11 +23,11 @@ def dropCore : FreeGroup (A ⊕ B) →* FreeGroup B :=
 
 @[simp] theorem dropCore_of_inl (a : A) :
     dropCore (B := B) (FreeGroup.of (Sum.inl a)) = 1 := by
-  simp [dropCore]
+  rfl
 
 @[simp] theorem dropCore_of_inr (b : B) :
     dropCore (A := A) (FreeGroup.of (Sum.inr b)) = FreeGroup.of b := by
-  simp [dropCore]
+  rfl
 
 @[simp] theorem dropCore_map_inl (w : FreeGroup A) :
     dropCore (B := B) (FreeGroup.map Sum.inl w) = 1 := by
@@ -41,14 +37,6 @@ def dropCore : FreeGroup (A ⊕ B) →* FreeGroup B :=
     simp
   exact DFunLike.congr_fun h w
 
-@[simp] theorem dropCore_map_inr (w : FreeGroup B) :
-    dropCore (A := A) (FreeGroup.map Sum.inr w) = w := by
-  have h : (dropCore (A := A) (B := B)).comp (FreeGroup.map Sum.inr) =
-      MonoidHom.id _ := by
-    apply FreeGroup.ext_hom
-    intro b
-    simp
-  exact DFunLike.congr_fun h w
 
 variable (core : M → FreeGroup A) (extra : J → FreeGroup (A ⊕ B))
   (target : J → FreeGroup B) (rev : J → Bool)
@@ -58,21 +46,19 @@ variable (core : M → FreeGroup A) (extra : J → FreeGroup (A ⊕ B))
 relator or its inverse. -/
 def groupMap : PresGroup (corePres core extra) →* PresGroup target :=
   QuotientGroup.lift _
-    ((QuotientGroup.mk' (relSub target)).comp dropCore) (by
+    ((QuotientGroup.mk' _).comp dropCore) (by
       refine Subgroup.normalClosure_le_normal ?_
       rintro _ ⟨m | j, rfl⟩
-      · change (QuotientGroup.mk' (relSub target))
+      · change (QuotientGroup.mk' _)
           (dropCore (FreeGroup.map Sum.inl (core m))) = 1
-        rw [dropCore_map_inl, map_one]
-      · change (QuotientGroup.mk' (relSub target)) (dropCore (extra j)) = 1
+        simp
+      · change (QuotientGroup.mk' _) (dropCore (extra j)) = 1
         have ht : (QuotientGroup.mk (target j) : PresGroup target) = 1 :=
           (QuotientGroup.eq_one_iff _).mpr
             (Subgroup.subset_normalClosure ⟨j, rfl⟩)
-        rw [hword j]
-        cases rev j <;> simp [ht])
+        aesop)
 
-def coefficientMap : MonoidAlgebra ℤ (PresGroup (corePres core extra)) →+*
-    MonoidAlgebra ℤ (PresGroup target) :=
+def coefficientMap :=
   MonoidAlgebra.mapDomainRingHom ℤ (groupMap core extra target rev hword)
 
 theorem coefficientMap_quot (x : FreeGroupRing (A ⊕ B)) :
@@ -82,16 +68,15 @@ theorem coefficientMap_quot (x : FreeGroupRing (A ⊕ B)) :
       (MonoidAlgebra.mapDomainRingHom ℤ dropCore x) := by
   induction x using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add x y hx hy => simp only [map_add, hx, hy]
+  | add x y hx hy => simp [map_add, hx, hy]
   | single g n =>
       change MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n)) =
         MonoidAlgebra.mapDomain _ (MonoidAlgebra.mapDomain _ (MonoidAlgebra.single g n))
-      simp only [MonoidAlgebra.mapDomain_single]
-      rfl
+      aesop
 
 variable [DecidableEq A] [DecidableEq B]
 
-theorem coefficientMap_fox (b : B) (w : FreeGroup (A ⊕ B)) :
+theorem coefficientMap_fox b w :
     coefficientMap core extra target rev hword
       (quotRingHom ℤ (relSub (corePres core extra)) (fox (Sum.inr b) w)) =
     quotRingHom ℤ (relSub target) (fox b (dropCore w)) := by
@@ -99,9 +84,9 @@ theorem coefficientMap_fox (b : B) (w : FreeGroup (A ⊕ B)) :
   congr 1
   symm
   apply fox_subst_coordinate
-  rintro (a | b') <;> simp [fox_of]
+  simp
 
-theorem quotientFox_inv_relator (b : B) (j : J) :
+theorem quotientFox_inv_relator b j :
     quotRingHom ℤ (relSub target) (fox b (target j)⁻¹) =
       -foxMatrixPres target b j := by
   have ht : (QuotientGroup.mk ((target j)⁻¹) : PresGroup target) = 1 := by
@@ -114,12 +99,12 @@ theorem quotientFox_inv_relator (b : B) (j : J) :
   rw [fox_inv, map_neg, map_mul, hg, one_mul]
   rfl
 
-theorem matrix_core (b : B) (m : M) :
+theorem matrix_core b m :
     foxMatrixPres (corePres core extra) (Sum.inr b) (Sum.inl m) = 0 := by
   change quotRingHom ℤ _ (fox (Sum.inr b) (FreeGroup.map Sum.inl (core m))) = 0
-  rw [fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl), map_zero]
+  rw [fox_map_of_not_mem_range Sum.inl (by simp), map_zero]
 
-theorem matrix_extra (b : B) (j : J) :
+theorem matrix_extra b j :
     coefficientMap core extra target rev hword
       (foxMatrixPres (corePres core extra) (Sum.inr b) (Sum.inr j)) =
       if rev j then -foxMatrixPres target b j else foxMatrixPres target b j := by
@@ -131,5 +116,3 @@ theorem matrix_extra (b : B) (j : J) :
   · exact quotientFox_inv_relator target b j
 
 variable [Fintype M] [Fintype J]
-
-end FiniteChains.CoreSignedCollapse

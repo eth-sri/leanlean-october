@@ -1,2 +1,1 @@
-module
-public import RequestProject.MomentAngleConnected
+import RequestProject.MomentAngleConnected

@@ -1,3 +1,2 @@
-module
-public import RequestProject.ComponentComplex
-public import RequestProject.TheoremAGeneral
+import RequestProject.ComponentComplex
+import RequestProject.TheoremAGeneral

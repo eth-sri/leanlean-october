@@ -1,8 +1,5 @@
-module
+import RequestProject.AttachingHomotopyEquiv
 
-public import RequestProject.AttachingHomotopyEquiv
-
-@[expose] public section
 
 /-! The attaching equivalence with specified extensions. This permits a
 natural explicit extension to replace unrelated choices of HEP witnesses.
@@ -21,27 +18,23 @@ variable {D P : Type u} [TopologicalSpace D] [TopologicalSpace P]
   (hs₀ : ∀ t a, L₀ (t, a.val) = old a₀ Subtype.val (H (t, a)))
   (hs₁ : ∀ t a, L₁ (t, a.val) = old a₁ Subtype.val (H.symm (t, a)))
 
-def chosenAttachingBackward : C(Space a₁ Subtype.val, Space a₀ Subtype.val) :=
+def chosenAttachingBackward :=
   desc a₁ Subtype.val ⟨old a₀ Subtype.val, old_continuous _ _⟩
     (L₀.comp ⟨fun d => (1, d), continuous_const.prodMk continuous_id⟩)
-    (fun a => by
-      change old a₀ Subtype.val (a₁ a) = L₀ (1, a.val)
-      rw [hs₀, H.apply_one])
+    (by simp_all)
 
-def chosenAttachingForward : C(Space a₀ Subtype.val, Space a₁ Subtype.val) :=
+def chosenAttachingForward :=
   desc a₀ Subtype.val ⟨old a₁ Subtype.val, old_continuous _ _⟩
     (L₁.comp ⟨fun d => (1, d), continuous_const.prodMk continuous_id⟩)
-    (fun a => by
-      change old a₁ Subtype.val (a₀ a) = L₁ (1, a.val)
-      rw [hs₁, H.symm.apply_one])
+    (by simp_all)
 
-@[simp] theorem chosenAttachingBackward_cell (d : D) :
+@[simp] theorem chosenAttachingBackward_cell d :
     chosenAttachingBackward S a₀ a₁ H L₀ hs₀ (cell a₁ Subtype.val d) = L₀ (1, d) := by
   unfold chosenAttachingBackward
   rw [desc_cell]
   rfl
 
-@[simp] theorem chosenAttachingForward_cell (d : D) :
+@[simp] theorem chosenAttachingForward_cell d :
     chosenAttachingForward S a₀ a₁ H L₁ hs₁ (cell a₀ Subtype.val d) = L₁ (1, d) := by
   unfold chosenAttachingForward
   rw [desc_cell]
@@ -61,7 +54,4 @@ def attachingHomotopyEquivOfExtensions (hS : IsClosed S)
       (fun _ => rfl) (fun _ => rfl) L₁ L₀ h₁ h₀ hs₁ _
       (chosenAttachingForward_cell S a₀ a₁ H L₁ hs₁)
       (chosenAttachingBackward_cell S a₀ a₁ H L₀ hs₀)
-    intro t a
-    simpa only [ContinuousMap.Homotopy.symm_symm] using hs₀ t a
-
-end FiniteChains.RelativeAttachment
+    simp_all

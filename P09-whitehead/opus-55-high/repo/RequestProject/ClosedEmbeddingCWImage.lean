@@ -1,10 +1,7 @@
-module
+import Mathlib.Topology.CWComplex.Classical.Subcomplex
+import Mathlib.Topology.ContinuousOn
+import RequestProject.ExplicitRelativeAttachment
 
-public import Mathlib.Topology.CWComplex.Classical.Subcomplex
-public import Mathlib.Topology.ContinuousOn
-public import RequestProject.ExplicitRelativeAttachment
-
-@[expose] public section
 
 /-! Transport an existing classical CW structure onto its actual closed
 embedded image. The cell indices and all characteristic maps are retained.
@@ -22,49 +19,46 @@ universe u
 variable {X Y : Type u} [TopologicalSpace X] [TopologicalSpace Y] [Nonempty X]
   [CWComplex (Set.univ : Set X)] (f : X → Y) (hf : IsClosedEmbedding f)
 
-def basePartial : PartialEquiv X Y :=
+def basePartial :=
   hf.injective.injOn.toPartialEquiv f Set.univ
 
-def imageCharacteristic (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set X) n) :
-    PartialEquiv (Fin n → ℝ) Y :=
+def imageCharacteristic (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set X) n) :=
   (RelCWComplex.map (C := (Set.univ : Set X)) n j).trans (basePartial f hf)
 
-theorem imageCharacteristic_image (n : ℕ)
-    (j : RelCWComplex.cell (Set.univ : Set X) n) (S : Set (Fin n → ℝ)) :
+theorem imageCharacteristic_image n
+    j S :
     imageCharacteristic f hf n j '' S =
-      f '' (RelCWComplex.map (C := (Set.univ : Set X)) n j '' S) := by
-  change (f ∘ RelCWComplex.map (C := (Set.univ : Set X)) n j) '' S = _
-  exact Set.image_comp _ _ _
+      f '' (RelCWComplex.map (C := Set.univ) n j '' S) := by
+  aesop
 
-theorem imageCharacteristic_source (n : ℕ)
-    (j : RelCWComplex.cell (Set.univ : Set X) n) :
+theorem imageCharacteristic_source n
+    j :
     (imageCharacteristic f hf n j).source = ball 0 1 := by
-  rw [imageCharacteristic, PartialEquiv.trans_source]
-  change (RelCWComplex.map (C := (Set.univ : Set X)) n j).source ∩
-    (RelCWComplex.map (C := (Set.univ : Set X)) n j) ⁻¹' Set.univ = _
-  simp only [Set.preimage_univ, Set.inter_univ, RelCWComplex.source_eq]
+  change (RelCWComplex.map (C := Set.univ) n j).source ∩
+    (RelCWComplex.map (C := Set.univ) n j) ⁻¹' Set.univ = _
+  simp [Set.preimage_univ, Set.inter_univ, RelCWComplex.source_eq]
 
-theorem imageCharacteristic_continuousOn (n : ℕ)
-    (j : RelCWComplex.cell (Set.univ : Set X) n) :
+theorem imageCharacteristic_continuousOn n
+    j :
     ContinuousOn (imageCharacteristic f hf n j) (closedBall 0 1) :=
   hf.continuous.comp_continuousOn (RelCWComplex.continuousOn n j)
 
-theorem imageCharacteristic_continuousOn_symm (n : ℕ)
-    (j : RelCWComplex.cell (Set.univ : Set X) n) :
+theorem imageCharacteristic_continuousOn_symm n
+    j :
     ContinuousOn (imageCharacteristic f hf n j).symm
       (imageCharacteristic f hf n j).target := by
   rw [imageCharacteristic, PartialEquiv.trans_target'']
   change ContinuousOn
-    ((RelCWComplex.map (C := (Set.univ : Set X)) n j).symm ∘ (basePartial f hf).symm)
-    (f '' (Set.univ ∩ (RelCWComplex.map (C := (Set.univ : Set X)) n j).target))
+    ((RelCWComplex.map (C := Set.univ) n j).symm ∘ (basePartial f hf).symm)
+    (f '' (Set.univ ∩ (RelCWComplex.map (C := Set.univ) n j).target))
   rw [Set.univ_inter]
   apply hf.isEmbedding.isInducing.continuousOn_image_iff.mpr
-  have he : ((RelCWComplex.map (C := (Set.univ : Set X)) n j).symm ∘
+  have he : ((RelCWComplex.map (C := Set.univ) n j).symm ∘
       (basePartial f hf).symm) ∘ f =
-      (RelCWComplex.map (C := (Set.univ : Set X)) n j).symm := by
+      (RelCWComplex.map (C := Set.univ) n j).symm := by
     funext x
-    exact congrArg (RelCWComplex.map (C := (Set.univ : Set X)) n j).symm
-      ((basePartial f hf).left_inv (show x ∈ (basePartial f hf).source from trivial))
+    exact congrArg _
+      ((basePartial f hf).left_inv (by tauto))
   rw [he]
   exact RelCWComplex.continuousOn_symm n j
 
@@ -77,5 +71,3 @@ namespace FiniteChains.RelativeAttachment
 universe u
 variable {A X D : Type u} [TopologicalSpace A] [TopologicalSpace X] [TopologicalSpace D]
   [T2Space X] [Nonempty X] [CWComplex (Set.univ : Set X)]
-
-end FiniteChains.RelativeAttachment

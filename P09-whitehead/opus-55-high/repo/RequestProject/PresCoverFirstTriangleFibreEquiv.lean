@@ -1,2 +1,1 @@
-module
-public import RequestProject.PresCoverRelatorNaturality
+import RequestProject.PresCoverRelatorNaturality

@@ -1,8 +1,5 @@
-module
+import RequestProject.PresentationChain
 
-public import RequestProject.PresentationChain
-
-@[expose] public section
 
 /-!
 # The stages of a chain of presentations are subcomplexes
@@ -31,13 +28,13 @@ variable {α β : Type*} [DecidableEq α] [DecidableEq β]
 
 /-- The reduced word of the image of `w` under an injective map of generating sets is the
 image of the reduced word of `w`. -/
-theorem toWord_map (f : α → β) (hf : Function.Injective f) (w : FreeGroup α) :
+theorem toWord_map (f : α → β) (hf : Function.Injective f) w :
     (FreeGroup.map f w).toWord = w.toWord.map (fun p => (f p.1, p.2)) := by
   have hmk : FreeGroup.map f w = FreeGroup.mk (w.toWord.map (fun p => (f p.1, p.2))) := by
     conv_lhs => rw [← FreeGroup.mk_toWord (x := w)]
     rfl
   have hred : FreeGroup.IsReduced (w.toWord.map (fun p => (f p.1, p.2))) :=
-    isChain_map_of_isChain _ (fun a b hab hfa => hab (hf hfa))
+    isChain_map_of_isChain _ (by grind)
       (FreeGroup.isReduced_toWord (x := w))
   rw [hmk, FreeGroup.toWord_mk, hred.reduce_eq]
 
@@ -60,26 +57,4 @@ def presInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGrou
   tgt_onE _ := rfl
   base_onF _ := rfl
   att_onF j := by
-    show FreeGroup.toWord (σ (g j)) = (FreeGroup.toWord (ρ j)).map (fun p => (f p.1, p.2))
-    rw [hg j, toWord_map f hf]
-
-@[simp] theorem presInclHom_onE (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGroup α)
-    (σ : K → FreeGroup β) (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
-    (presInclHom f hf ρ σ g hg).onE = f := rfl
-
-@[simp] theorem presInclHom_onF (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGroup α)
-    (σ : K → FreeGroup β) (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
-    (presInclHom f hf ρ σ g hg).onF = g := rfl
-
-end Comb
-
-namespace PresChain
-
-universe u
-
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
-
-variable [DecidableEq α]
-
-end PresChain
-end FiniteChains
+    simp [hg j, toWord_map f hf]

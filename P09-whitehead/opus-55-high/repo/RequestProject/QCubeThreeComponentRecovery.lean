@@ -1,31 +1,26 @@
-module
+import RequestProject.QCubeThreeOrientationSubdivision
+import RequestProject.QCubeThreeBaseCycles
+import RequestProject.Tac
 
-public import RequestProject.QCubeThreeOrientationSubdivision
-public import RequestProject.QCubeThreeBaseCycles
-
-@[expose] public section
 
 /-! Recovery of the actual cubical boundary of an isolated strict three-cube component. -/
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 variable {V : Type} [DecidableEq V] [LinearOrder V] {A : CommRel V}
 
-theorem qCube_three_component_boundary_scalar (c : QCube A) (u v w : V)
-    (huv : v < u) (hvw : w < v) (hs : c.spx = {u, v, w})
+theorem qCube_three_component_boundary_scalar c u v w
+    huv (hvw : w < v) hs
     (y : StrictOrdTet (QCube A) →₀ ℤ)
     (hy : ∀ t ∈ y.support, t.1.2.2.2.spx.card ≤ 3)
     (hb : ∀ s ∈ (strictOrdBoundary3 y).support, s.1.2.2.spx.card ≤ 2) :
-    ∃ k : ℤ, strictOrdBoundary3 (y.filter (fun t => t.1.2.2.2 = c)) =
+    ∃ k : ℤ, strictOrdBoundary3 (y.filter (·.1.2.2.2 = c)) =
       k • cubeThreeSquareBoundary c u v w (Ne.symm huv.ne)
         (Ne.symm (hvw.trans huv).ne) (Ne.symm hvw.ne) hs := by
   obtain ⟨r, hcycle, hsupport, he⟩ := qCube_three_component_facet_boundary c
-    (qCube_three_card c u v w (Ne.symm huv.ne) (Ne.symm (hvw.trans huv).ne)
-      (Ne.symm hvw.ne) hs) y hy hb
+    (by grind) y hy hb
   have hr : ∀ s ∈ r.support, s.1 < c := by
     intro s hmem
     obtain ⟨a, ha, h0 | h1⟩ := hsupport s hmem
@@ -36,7 +31,4 @@ theorem qCube_three_component_boundary_scalar (c : QCube A) (u v w : V)
   obtain ⟨k, hk⟩ := qThreeFacetCycle_subdivision c u v w huv hvw hs r hr
     ((qSquareCubicalBoundary_zero_iff r).mpr hcycle)
   refine ⟨-k, ?_⟩
-  have hn := congrArg Neg.neg (he.symm.trans hk)
-  simpa only [neg_neg, neg_smul] using hn
-
-end FiniteChains.Davis
+  simp_all

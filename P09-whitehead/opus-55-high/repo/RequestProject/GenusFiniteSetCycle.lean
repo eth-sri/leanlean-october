@@ -1,4 +1,3 @@
-module
-public import RequestProject.GenusCellularFundamental
-public import RequestProject.StrictSimplicialCoordinates
-public import RequestProject.GenusChainCollapse
+import RequestProject.GenusCellularFundamental
+import RequestProject.StrictSimplicialCoordinates
+import RequestProject.GenusChainCollapse

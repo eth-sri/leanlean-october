@@ -1,2 +1,1 @@
-module
-public import RequestProject.RuleOneMor
+import RequestProject.RuleOneMor

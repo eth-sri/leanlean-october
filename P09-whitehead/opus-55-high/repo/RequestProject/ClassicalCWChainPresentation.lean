@@ -1,10 +1,7 @@
-module
+import RequestProject.ClassicalCWChainCanonicalHomotopies
+import RequestProject.PresWordEmbeddingCombPi2
+import RequestProject.PresChainTopologicalFinsupp
 
-public import RequestProject.ClassicalCWChainCanonicalHomotopies
-public import RequestProject.PresWordEmbeddingCombPi2
-public import RequestProject.PresChainTopologicalFinsupp
-
-@[expose] public section
 
 /-! The actual topological pi2 hypotheses of an original CW filtration
 give a finite-support presentation chain. The initial presentation here
@@ -23,18 +20,17 @@ variable (K : Whitehead.TwoComplex) {n : ℕ}
   [Choices C]
   [TreeChoice K C]
 
-theorem canonicalInclusion_zeroPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) :
+theorem canonicalInclusion_zeroPi2_iff hik :
     Comb.ZeroPi2 (Comb.presInclHom (canonicalGenInclusion K C hC hconn hik)
       (canonicalGenInclusion K C hC hconn hik).injective
       (canonicalRelators K C hC hconn i) (canonicalRelators K C hC hconn k)
       (canonicalCellInclusion K C hC hik) (canonicalRelators_natural K C hC hconn hik)) ↔
-      Whitehead.KillsPi2 (⟨Set.inclusion (hC hik), continuous_inclusion (hC hik)⟩ :
-        C((C i : Set K), (C k : Set K))) := by
+      Whitehead.KillsPi2 ⟨Set.inclusion (hC hik), continuous_inclusion (hC hik)⟩ := by
   let e := canonicalWordEmbedding K C hC hconn hik
   have h₁ := e.killsPi2_iff_combPi2
     (fun j => List.length_pos_of_ne_nil (canonicalWords_ne_nil K C hC hconn i j))
     (fun j => List.length_pos_of_ne_nil (canonicalWords_ne_nil K C hC hconn k j))
-    (canonicalRelators K C hC hconn i) (canonicalRelators K C hC hconn k)
+    _ _
     (canonicalWords_mk K C hC hconn i) (canonicalWords_mk K C hC hconn k)
   have h₂ := e.classicalWordDiskMap_killsPi2_iff
     (canonicalWords_ne_nil K C hC hconn i) (canonicalWords_ne_nil K C hC hconn k)
@@ -65,23 +61,14 @@ def canonicalPresChainTopFS
     intro r hr
     let i : Fin n := ⟨r, hr⟩
     have H := (canonicalInclusion_zeroPi2_iff K C hC hconn
-      (show i.castSucc ≤ i.succ from Nat.le_succ r)).mpr (hkill i)
+      (by tauto)).mpr (hkill i)
     have hleft : boundedStage n r = i.castSucc := Fin.ext (Nat.min_eq_left (Nat.le_of_lt hr))
     have hright : boundedStage n (r + 1) = i.succ := Fin.ext (Nat.min_eq_left (Nat.succ_le_of_lt hr))
-    change Comb.ZeroPi2 (Comb.presInclHom
-      (canonicalGenInclusion K C hC hconn (boundedStage_monotone n (Nat.le_succ r))) _
-      (canonicalRelators K C hC hconn (boundedStage n r))
-      (canonicalRelators K C hC hconn (boundedStage n (r + 1)))
-      (canonicalCellInclusion K C hC (boundedStage_monotone n (Nat.le_succ r))) _)
     have hh (a b : Fin (n + 1)) (hab : a ≤ b)
         (ha : a = i.castSucc) (hb : b = i.succ) :
         Comb.ZeroPi2 (Comb.presInclHom (canonicalGenInclusion K C hC hconn hab)
           (canonicalGenInclusion K C hC hconn hab).injective
           (canonicalRelators K C hC hconn a) (canonicalRelators K C hC hconn b)
           (canonicalCellInclusion K C hC hab) (canonicalRelators_natural K C hC hconn hab)) := by
-      subst a
-      subst b
-      exact H
-    exact hh _ _ _ hleft hright
-
-end FiniteChains.ClassicalCW.ChainWords
+      aesop
+    simp_all

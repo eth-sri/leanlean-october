@@ -1,9 +1,7 @@
-module
+import RequestProject.SubstOneWayQuotient
+import RequestProject.PresPosetAlphaW
+import RequestProject.Tac
 
-public import RequestProject.SubstOneWayQuotient
-public import RequestProject.PresPosetAlphaW
-
-@[expose] public section
 
 /-!
 # The one-way comparison over a model built on prescribed relator words
@@ -17,12 +15,9 @@ quotient `Q = Z/Γ` is injective on fundamental groups
 (`FiniteChains.Davis.pi1Map_qNew_injective`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb PresModel
 
@@ -32,22 +27,19 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 /-- **The comparison of the source presentation with the quotient**, over the model built on the
 prescribed relator words. -/
-noncomputable def baseToQuotientW {α J : Type u} (ρ : J → FreeGroup α)
+noncomputable def baseToQuotientW {α J} ρ
     (w : J → List (α × Bool)) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
-    (att : NeSpx A →o PresPos w) :
+    att :
     PresGroup ρ →*
       Comb.Pi1 (orderCx (Qpos A (PresPos w) att)) (qNew (A := A) (att := att) (ptBase w)) :=
-  (Comb.pi1Map (orderCxMap (qNew (A := A) (X := PresPos w) (att := att)) qNew_monotone)
-      (ptBase w)).comp (alphaHomW ρ w hw)
+  (Comb.pi1Map (orderCxMap _ qNew_monotone)
+      _).comp (alphaHomW ρ w hw)
 
 /-- **The comparison is injective.** -/
-theorem baseToQuotientW_injective {α J : Type u} (ρ : J → FreeGroup α)
-    (w : J → List (α × Bool)) (hw : ∀ j, FreeGroup.mk (w j) = ρ j)
-    (att : NeSpx A →o PresPos w) :
+theorem baseToQuotientW_injective {α J} ρ
+    (w : J → List (α × Bool)) hw
+    att :
     Function.Injective (baseToQuotientW (A := A) ρ w hw att) := by
   intro x y h
   exact alphaHomW_injective ρ w hw
-    (pi1Map_qNew_injective (A := A) (att := att) (ptBase w) h)
-
-end Davis
-end FiniteChains
+    (pi1Map_qNew_injective (A := A) (att := att) _ h)

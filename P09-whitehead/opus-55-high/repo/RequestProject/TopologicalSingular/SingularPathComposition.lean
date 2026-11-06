@@ -1,2 +1,1 @@
-module
-public import RequestProject.TopologicalSingular.SingularPathHomotopy
+import RequestProject.TopologicalSingular.SingularPathHomotopy

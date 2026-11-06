@@ -1,2 +1,1 @@
-module
-public import RequestProject.CombData
+import RequestProject.CombData

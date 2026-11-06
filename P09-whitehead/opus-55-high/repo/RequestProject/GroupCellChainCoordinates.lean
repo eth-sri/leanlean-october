@@ -1,13 +1,9 @@
-module
+import Mathlib.LinearAlgebra.Finsupp.Defs
+import Mathlib.Algebra.MonoidAlgebra.Basic
+import RequestProject.Tac
 
-public import Mathlib.LinearAlgebra.Finsupp.Defs
-public import Mathlib.Algebra.MonoidAlgebra.Basic
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains
 universe u v
@@ -21,13 +17,9 @@ noncomputable def groupCellChainEquiv :
     (Finsupp.mapRange.linearEquiv (MonoidAlgebra.coeffLinearEquiv (S := ℤ) (M := G) ℤ).symm)
 
 /-- Actual individual incidences keep their group coefficient and cell label under reindexing. -/
-theorem groupCellChainEquiv_single (g : G) (i : I) (n : ℤ) :
+theorem groupCellChainEquiv_single (g : G) (i : I) n :
     groupCellChainEquiv (Finsupp.single (g, i) n) =
       Finsupp.single i (MonoidAlgebra.single g n) := by
   simp only [groupCellChainEquiv, LinearEquiv.trans_apply, Finsupp.domLCongr_single,
     Finsupp.mapRange.linearEquiv_apply]
-  change Finsupp.mapRange _ _ (Finsupp.single (i, g) n).curry = _
-  rw [Finsupp.curry_single (i, g) n]
-  simp [Finsupp.mapRange_single, MonoidAlgebra.coeffLinearEquiv_symm_apply]
-
-end FiniteChains
+  simp

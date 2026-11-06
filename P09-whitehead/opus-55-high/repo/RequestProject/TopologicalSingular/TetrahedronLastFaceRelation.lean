@@ -1,5 +1,3 @@
-module
-
 /-
 The explicit four-horn index shift is adapted from the simplicial index-shift
 argument of Vasily Ilin, homotopy-groups-lean commit
@@ -7,10 +5,9 @@ c66523531ff172d7f41913d94e56921e790a1b47, Hurewicz/SimplicialIndexShift.lean,
 released under Apache 2.0. Here it is specialized to actual singular triangles
 and to the previously checked cubical model of pi2.
 -/
-public import RequestProject.TopologicalSingular.SingularFourHorn
-public import RequestProject.TopologicalSingular.PointedSingularTriangle
+import RequestProject.TopologicalSingular.SingularFourHorn
+import RequestProject.TopologicalSingular.PointedSingularTriangle
 
-@[expose] public section
 
 namespace FiniteChains.TopologicalSingular.PointedSingularTriangle
 variable {X : Type} [TopologicalSpace X] {x : X}
@@ -37,6 +34,4 @@ theorem last_face_constant_relation (a b c : PointedSingularTriangle X x)
     fin_cases i <;> simp_all [degeneracy_two_faces, degeneracy_one_faces,
       degeneracy_zero_faces]
   have h := first_face_constant_relation c b a W hW
-  exact (add_comm a.pi2 c.pi2).trans h
-
-end FiniteChains.TopologicalSingular.PointedSingularTriangle
+  grind

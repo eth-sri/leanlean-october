@@ -1,19 +1,15 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.AttachmentBaseChange
+import RequestProject.BallHomotopyExtension
+import RequestProject.Tac
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.AttachmentBaseChange
-public import RequestProject.BallHomotopyExtension
-
-@[expose] public section
 
 /-! Attaching a contractible pointed space at one old point preserves
 the homotopy type by an explicit contraction. This is the geometric
 ingredient for adding a dummy generator together with its killing disk. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.RelativeAttachment
 open Topology
@@ -34,28 +30,23 @@ theorem attachmentCell_injective (r : A → X) (i : A → D) (hr : Function.Inje
   intro d e h
   by_cases hd : d ∈ Set.range i
   · by_cases he : e ∈ Set.range i
-    · simp only [cell, dif_pos hd, dif_pos he] at h
-      have ha := hr (Sum.inl.inj h)
-      exact (Classical.choose_spec hd).symm.trans ((congrArg i ha).trans (Classical.choose_spec he))
-    · simp only [cell, dif_pos hd, dif_neg he] at h
-      exact (Sum.inl_ne_inr h).elim
+    · grind [cell]
+    · simp_all [cell, dif_neg he]
   · by_cases he : e ∈ Set.range i
-    · simp only [cell, dif_neg hd, dif_pos he] at h
-      exact (Sum.inr_ne_inl h).elim
-    · simp only [cell, dif_neg hd, dif_neg he] at h
-      exact congrArg Subtype.val (Sum.inr.inj h)
+    · simp_all [cell, dif_pos he]
+    · grind [cell]
 
 omit [TopologicalSpace X] [TopologicalSpace D] in
 theorem attachmentCell_mem_old_iff (r : A → X) (i : A → D) (d : D) :
     cell r i d ∈ Set.range (old r i) ↔ d ∈ Set.range i := by
   by_cases hd : d ∈ Set.range i
-  · simp only [cell, dif_pos hd]
-    exact iff_of_true ⟨r (Classical.choose hd), rfl⟩ hd
+  · simp [cell]
+    aesop
   · constructor
     · rintro ⟨x, hx⟩
       rw [cell_of_not_mem r i d hd] at hx
-      exact (Sum.inl_ne_inr hx).elim
-    · exact fun h => (hd h).elim
+      tauto
+    simp_all
 
 abbrev PointAttachment (x : X) (d : D) :=
   Space (fun _ : PUnit => x) (fun _ : PUnit => d)
@@ -67,35 +58,29 @@ def pointCell (x : X) (d : D) : C(D, PointAttachment x d) :=
   ⟨cell (fun _ : PUnit => x) (fun _ : PUnit => d), cell_continuous _ _⟩
 
 theorem pointCell_injective (x : X) (d : D) : Function.Injective (pointCell x d) :=
-  attachmentCell_injective (fun _ : PUnit => x) (fun _ : PUnit => d)
-    (fun _ _ _ => Subsingleton.elim _ _)
+  attachmentCell_injective (fun _ => x) _
+    (by tauto)
 
 @[simp] theorem pointCell_mark (x : X) (d : D) : pointCell x d d = pointOld x d x :=
-  cell_boundary (fun _ : PUnit => x) (fun _ : PUnit => d)
+  cell_boundary (fun _ => x) _
     (fun _ _ _ => Subsingleton.elim _ _) PUnit.unit
 
 theorem pointCell_mem_old_iff (x : X) (d c : D) :
     pointCell x d c ∈ Set.range (pointOld x d) ↔ c = d := by
-  change cell (fun _ : PUnit => x) (fun _ : PUnit => d) c ∈
-    Set.range (old (fun _ : PUnit => x) (fun _ : PUnit => d)) ↔ c = d
+  change cell _ _ c ∈
+    Set.range (old _ _) ↔ c = d
   rw [attachmentCell_mem_old_iff]
-  constructor
-  · rintro ⟨a, ha⟩
-    exact ha.symm
-  · intro hc
-    exact ⟨PUnit.unit, hc.symm⟩
+  simp
 
 def pointProjection (x : X) (d : D) : C(PointAttachment x d, X) :=
   desc (fun _ : PUnit => x) (fun _ : PUnit => d)
-    (ContinuousMap.id X) (ContinuousMap.const D x) (fun _ => rfl)
+    (ContinuousMap.id X) (ContinuousMap.const D x) (by simp)
 
-@[simp] theorem pointProjection_old (x : X) (d : D) (y : X) :
-    pointProjection x d (pointOld x d y) = y := rfl
 
 @[simp] theorem pointProjection_cell (x : X) (d c : D) :
     pointProjection x d (pointCell x d c) = x := desc_cell ..
 
-def pointAttachmentContraction (x : X) (d : D)
+def pointAttachmentContraction (x : X) d
     (H : (ContinuousMap.const D d).Homotopy (ContinuousMap.id D))
     (hfix : ∀ t, H (t, d) = d) :
     ((pointOld x d).comp (pointProjection x d)).Homotopy (ContinuousMap.id (PointAttachment x d)) := by
@@ -114,20 +99,16 @@ def pointAttachmentContraction (x : X) (d : D)
     | inr c =>
         change attachmentHomotopyPasting _ _ F G hbd (0, cell _ _ c) =
           pointOld x d (pointProjection x d (pointCell x d c))
-        rw [attachmentHomotopyPasting_cell, pointProjection_cell]
-        change pointCell x d (H (0, c)) = pointOld x d x
-        exact (congrArg (pointCell x d) (H.apply_zero c)).trans (pointCell_mark x d)
+        aesop
   · intro z
     obtain ⟨z, rfl⟩ := quotientMap_surjective (fun _ : PUnit => x) (fun _ : PUnit => d) z
     cases z with
     | inl y => rfl
     | inr c =>
         change attachmentHomotopyPasting _ _ F G hbd (1, cell _ _ c) = pointCell x d c
-        rw [attachmentHomotopyPasting_cell]
-        change pointCell x d (H (1, c)) = pointCell x d c
-        exact congrArg (pointCell x d) (H.apply_one c)
+        aesop
 
-def pointAttachmentOldHomotopyEquiv (x : X) (d : D)
+def pointAttachmentOldHomotopyEquiv (x : X) d
     (H : (ContinuousMap.const D d).Homotopy (ContinuousMap.id D))
     (hfix : ∀ t, H (t, d) = d) : ContinuousMap.HomotopyEquiv X (PointAttachment x d) where
   toFun := pointOld x d
@@ -144,28 +125,22 @@ def closedBallFromPointHomotopy (d : ClosedUnitBall E) :
       ‖(1 - (tx.1 : ℝ)) • d.val + (tx.1 : ℝ) • tx.2.val‖ ≤
           ‖(1 - (tx.1 : ℝ)) • d.val‖ + ‖(tx.1 : ℝ) • tx.2.val‖ := norm_add_le _ _
       _ = (1 - (tx.1 : ℝ)) * ‖d.val‖ + (tx.1 : ℝ) * ‖tx.2.val‖ := by
-        rw [norm_smul, norm_smul, Real.norm_of_nonneg (sub_nonneg.mpr tx.1.property.2),
-          Real.norm_of_nonneg tx.1.property.1]
+        grind [norm_smul, Real.norm_of_nonneg (sub_nonneg.mpr tx.1.property.2), Real.norm_of_nonneg tx.1.property.1]
       _ ≤ (1 - (tx.1 : ℝ)) * 1 + (tx.1 : ℝ) * 1 :=
         add_le_add (mul_le_mul_of_nonneg_left d.property (sub_nonneg.mpr tx.1.property.2))
           (mul_le_mul_of_nonneg_left tx.2.property tx.1.property.1)
       _ = 1 := by ring⟩
   continuous_toFun := by
-    apply Continuous.subtype_mk
-    exact ((continuous_const.sub (continuous_subtype_val.comp continuous_fst)).smul continuous_const).add
-      ((continuous_subtype_val.comp continuous_fst).smul (continuous_subtype_val.comp continuous_snd))
+    fun_prop
   map_zero_left x := Subtype.ext (by simp)
   map_one_left x := Subtype.ext (by simp)
 
-theorem closedBallFromPointHomotopy_fixed (d : ClosedUnitBall E) (t : I) :
+theorem closedBallFromPointHomotopy_fixed (d : ClosedUnitBall E) t :
     closedBallFromPointHomotopy d (t, d) = d := by
   apply Subtype.ext
   change (1 - (t : ℝ)) • d.val + (t : ℝ) • d.val = d.val
   rw [← add_smul, sub_add_cancel, one_smul]
 
-def pointBallAttachmentHomotopyEquiv (x : X) (d : ClosedUnitBall E) :
-    ContinuousMap.HomotopyEquiv X (PointAttachment x d) :=
-  pointAttachmentOldHomotopyEquiv x d (closedBallFromPointHomotopy d)
+def pointBallAttachmentHomotopyEquiv (x : X) (d : ClosedUnitBall E) :=
+  pointAttachmentOldHomotopyEquiv x d _
     (closedBallFromPointHomotopy_fixed d)
-
-end FiniteChains.RelativeAttachment

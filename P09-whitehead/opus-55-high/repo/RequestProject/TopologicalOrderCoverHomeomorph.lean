@@ -1,10 +1,7 @@
-module
+import RequestProject.TopologicalOrderCoverComparison
+import RequestProject.CoveringFibreComparison
+import RequestProject.OrderNerveRealizationRegular
 
-public import RequestProject.TopologicalOrderCoverComparison
-public import RequestProject.CoveringFibreComparison
-public import RequestProject.OrderNerveRealizationRegular
-
-@[expose] public section
 
 /-! The reconstructed poset covering has exactly the original covering
 space as its actual geometric realization. No connectedness assumption
@@ -27,22 +24,20 @@ theorem realizedProjection_vertex_fibre (q : P)
     (hx : realizedProjection p hp x = orderNerveRealizationVertex q) :
     ∃ v : Cover p hp, v.1 = q ∧ x = orderNerveRealizationVertex v := by
   let hf := projection_isPosetCover p hp hs
-  obtain ⟨v, hxv⟩ := orderNerveRealizationOpenStar_cover (Cover p hp) x
+  cases' orderNerveRealizationOpenStar_cover _ x with v hxv
   have himg : realizedProjection p hp x ∈ orderNerveRealizationOpenStar P v.1 :=
-    (orderNerveRealizationMap_mem_openStar_iff (projection p hp)
-      (projection_monotone p hp) x v.1).mpr ⟨v, rfl, hxv⟩
+    (orderNerveRealizationMap_mem_openStar_iff _
+      _ x v.1).mpr (by tauto)
   have hvq : v.1 = q := by
     rw [hx] at himg
     by_contra h
-    have h' : q ≠ v.1 := Ne.symm h
-    simp only [orderNerveRealizationOpenStar, Set.mem_setOf_eq,
-      orderNerveRealizationCoordinates_vertex, if_neg h'] at himg
-    exact lt_irrefl _ himg
+    have h' := Ne.symm h
+    simp_all [orderNerveRealizationOpenStar, Set.mem_setOf_eq, orderNerveRealizationCoordinates_vertex, if_neg h']
   refine ⟨v, hvq, hf.realizationMap_injOn_openStar v hxv ?_ ?_⟩
   · simp [orderNerveRealizationOpenStar, orderNerveRealizationCoordinates_vertex]
   · change realizedProjection p hp x = orderNerveRealizationMap _ _ _
     rw [orderNerveRealizationMap_vertex, hx]
-    exact (congrArg (orderNerveRealizationVertex (P := P)) hvq).symm
+    tauto
 
 include hs in
 theorem comparison_vertex_fibre_bijective (q : P) :
@@ -57,20 +52,18 @@ theorem comparison_vertex_fibre_bijective (q : P) :
     have hpoint : point p hp v = point p hp w := by
       have h := congrArg Subtype.val hxy
       change realizationComparison p hp x.val = realizationComparison p hp y.val at h
-      simpa only [hx, hy, realizationComparison_vertex] using h
+      simp_all [hx, hy, realizationComparison_vertex]
     have hvw : v = w := by
       cases v with
       | mk a e =>
         cases w with
         | mk b e' =>
-          dsimp at hv hw
           have hab : a = b := hv.trans hw.symm
           clear hv hw
           subst b
           refine Sigma.ext rfl ?_
           exact heq_of_eq (Subtype.ext hpoint)
-    apply Subtype.ext
-    rw [hx, hy, hvw]
+    grind
   · intro e
     let v : Cover p hp := ⟨q, e⟩
     refine ⟨⟨orderNerveRealizationVertex v, ?_⟩, ?_⟩
@@ -86,14 +79,12 @@ theorem comparison_fibre_bijective (x : orderNerveRealization P) :
   obtain ⟨n, s, z, hz⟩ := orderNerveRealizationSimplex_jointly_surjective P x
   have hj := orderNerveRealizationSimplex_joined_vertex s z (0 : Fin (n.len + 1))
   rw [hz] at hj
-  exact CoveringComparison.fibreMap_bijective_of_joined (realizedProjection p hp) p
-    (realizedProjection_isCoveringMap p hp hs) hp (realizationComparison p hp)
-    (realizationComparison_projection p hp) hj
+  exact CoveringComparison.fibreMap_bijective_of_joined _ p
+    (realizedProjection_isCoveringMap p hp hs) hp _
+    _ hj
     (comparison_vertex_fibre_bijective p hp hs (s.obj 0))
 
-def realizationHomeomorph : orderNerveRealization (Cover p hp) ≃ₜ E :=
-  CoveringComparison.homeomorphOfFibrewise (realizedProjection p hp) p
-    (realizedProjection_isCoveringMap p hp hs) hp (realizationComparison p hp)
-    (realizationComparison_projection p hp) (comparison_fibre_bijective p hp hs)
-
-end FiniteChains.Comb.TopologicalOrderCover
+def realizationHomeomorph :=
+  CoveringComparison.homeomorphOfFibrewise _ p
+    (realizedProjection_isCoveringMap p hp hs) hp _
+    _ (comparison_fibre_bijective p hp hs)

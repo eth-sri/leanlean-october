@@ -1,9 +1,7 @@
-module
+import Mathlib
+import RequestProject.UniversalCoefficients
+import RequestProject.Tac
 
-public import Mathlib
-public import RequestProject.UniversalCoefficients
-
-@[expose] public section
 
 /-!
 # The requirements (2.2) modulo an integer
@@ -31,9 +29,7 @@ Two things are proved here.
   (`foxCokernel_torsionFree_of_foxSatMod`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains
 
@@ -47,34 +43,30 @@ open scoped Classical in
 /-- The reduction of `x ∈ ℤ[G]` to `ℤ[G/N]` is divisible by `m`: inside every coset of `N`
 the coefficients of `x` add up to a multiple of `m`.  For `m = 0` this is `VanishesMod`. -/
 def VanishesModN (m : ℕ) (N : Subgroup G) (x : G →₀ ℤ) : Prop :=
-  ∀ g : G, (m : ℤ) ∣ ∑ h ∈ x.support.filter (fun h => h * g⁻¹ ∈ N), x h
+  ∀ g, (m : ℤ) ∣ ∑ h ∈ x.support.filter (· * g⁻¹ ∈ N), x h
 
-@[simp] theorem vanishesModN_zero (m : ℕ) (N : Subgroup G) :
-    VanishesModN m N (0 : G →₀ ℤ) := by
-  classical
-  intro g; simp
 
-theorem vanishesModN_zero_iff (N : Subgroup G) (x : G →₀ ℤ) :
+theorem vanishesModN_zero_iff N (x : G →₀ ℤ) :
     VanishesModN 0 N x ↔ VanishesMod N x := by
   classical
-  simp only [VanishesModN, VanishesMod, Nat.cast_zero, zero_dvd_iff]
+  simp [VanishesModN, VanishesMod, Nat.cast_zero, zero_dvd_iff]
 
 /-- Whether the reduction of `x` vanishes modulo `m` only depends on the membership in `N`
 of the finitely many quotients `h h'⁻¹` of elements of the support of `x`. -/
-theorem vanishesModN_congr {m : ℕ} {x : G →₀ ℤ} {N N' : Subgroup G}
+theorem vanishesModN_congr {N N' : Subgroup G}
     (h : ∀ g ∈ x.support, ∀ g' ∈ x.support, (g * g'⁻¹ ∈ N ↔ g * g'⁻¹ ∈ N')) :
     VanishesModN m N x ↔ VanishesModN m N' x := by
   classical
-  have main : ∀ M M' : Subgroup G,
+  have main : ∀ M M',
       (∀ g ∈ x.support, ∀ g' ∈ x.support, (g * g'⁻¹ ∈ M ↔ g * g'⁻¹ ∈ M')) →
       VanishesModN m M x → VanishesModN m M' x := by
     intro M M' hMM' hM g
-    by_cases hempty : (x.support.filter (fun h => h * g⁻¹ ∈ M')).Nonempty
-    · obtain ⟨h₀, hh₀⟩ := hempty
+    by_cases hempty : (x.support.filter (· * g⁻¹ ∈ M')).Nonempty
+    · cases' hempty with h₀ hh₀
       rw [mem_filter] at hh₀
-      obtain ⟨hh₀supp, hh₀mem⟩ := hh₀
-      have hfilter : x.support.filter (fun h => h * g⁻¹ ∈ M')
-          = x.support.filter (fun h => h * h₀⁻¹ ∈ M) := by
+      cases' hh₀ with hh₀supp hh₀mem
+      have hfilter : x.support.filter (· * g⁻¹ ∈ M')
+          = x.support.filter (· * h₀⁻¹ ∈ M) := by
         refine filter_congr fun h hh => ?_
         constructor
         · intro hmem
@@ -82,36 +74,34 @@ theorem vanishesModN_congr {m : ℕ} {x : G →₀ ℤ} {N N' : Subgroup G}
             have : h * h₀⁻¹ = (h * g⁻¹) * (h₀ * g⁻¹)⁻¹ := by group
             rw [this]
             exact M'.mul_mem hmem (M'.inv_mem hh₀mem)
-          exact (hMM' h hh h₀ hh₀supp).mpr this
+          simp_all
         · intro hmem
-          have hM' : h * h₀⁻¹ ∈ M' := (hMM' h hh h₀ hh₀supp).mp hmem
+          have hM' : h * h₀⁻¹ ∈ M' := by simp_all
           have : h * g⁻¹ = (h * h₀⁻¹) * (h₀ * g⁻¹) := by group
           rw [this]
           exact M'.mul_mem hM' hh₀mem
-      rw [hfilter]
-      exact hM h₀
+      aesop
     · rw [Finset.not_nonempty_iff_eq_empty] at hempty
-      rw [hempty, Finset.sum_empty]
-      exact dvd_zero _
-  exact ⟨main N N' h, main N' N fun g hg g' hg' => (h g hg g' hg').symm⟩
+      simp [hempty, Finset.sum_empty]
+  grind
 
 variable {I J : Type*}
 
 /-- The requirement (2.2) modulo `m`, attached to the coefficient vector `v`: if the
 reduced boundary of `v` is divisible by `m`, then so is the reduced `v`. -/
 def FoxSatMod (m : ℕ) (b : I → J → MonoidAlgebra ℤ G) (v : J →₀ MonoidAlgebra ℤ G)
-    (N : Subgroup G) : Prop :=
-  (∀ i : I, VanishesModN m N (foxBoundary b v i).coeff) → ∀ j : J, VanishesModN m N (v j).coeff
+    (N : Subgroup G) :=
+  (∀ i, VanishesModN m N (foxBoundary b v i).coeff) → ∀ j, VanishesModN m N (v j).coeff
 
 /-- For `m = 0` the requirement modulo `m` is the integral requirement. -/
-theorem foxSatMod_zero_iff (b : I → J → MonoidAlgebra ℤ G) (v : J →₀ MonoidAlgebra ℤ G)
-    (N : Subgroup G) : FoxSatMod 0 b v N ↔ FoxSat b v N := by
-  simp only [FoxSatMod, FoxSat, vanishesModN_zero_iff]
+theorem foxSatMod_zero_iff (b : I → J → MonoidAlgebra ℤ G) v
+    N : FoxSatMod 0 b v N ↔ FoxSat b v N := by
+  simp [FoxSatMod, FoxSat, vanishesModN_zero_iff]
 
 /-- **Each requirement modulo `m` depends on finitely many membership decisions.** -/
-theorem foxSatMod_finitelyDetermined (m : ℕ) (b : I → J → MonoidAlgebra ℤ G)
+theorem foxSatMod_finitelyDetermined m b
     (v : J →₀ MonoidAlgebra ℤ G) (hfin : {i : I | foxBoundary b v i ≠ 0}.Finite) :
-    ∃ F : Finset G, ∀ N N' : Subgroup G,
+    ∃ F : Finset G, ∀ N N',
       (∀ g ∈ F, (g ∈ N ↔ g ∈ N')) → (FoxSatMod m b v N ↔ FoxSatMod m b v N') := by
   classical
   set S : Finset G :=
@@ -122,28 +112,28 @@ theorem foxSatMod_finitelyDetermined (m : ℕ) (b : I → J → MonoidAlgebra �
   have hpair : ∀ g ∈ S, ∀ g' ∈ S, (g * g'⁻¹ ∈ N ↔ g * g'⁻¹ ∈ N') := by
     intro g hg g' hg'
     exact hagree _ (Finset.mem_image.mpr ⟨(g, g'), Finset.mem_product.mpr ⟨hg, hg'⟩, rfl⟩)
-  have hvsupp : ∀ j : J, (v j).coeff.support ⊆ S := by
+  have hvsupp : ∀ j, (v j).coeff.support ⊆ S := by
     intro j g hg
     by_cases hj : j ∈ v.support
-    · exact Finset.mem_union_left _ (Finset.mem_biUnion.mpr ⟨j, hj, hg⟩)
+    · grind
     · rw [Finsupp.notMem_support_iff.mp hj] at hg
       simp at hg
-  have hbsupp : ∀ i : I, (foxBoundary b v i).coeff.support ⊆ S := by
+  have hbsupp : ∀ i, (foxBoundary b v i).coeff.support ⊆ S := by
     intro i g hg
     by_cases hi : foxBoundary b v i = 0
     · rw [hi] at hg; simp at hg
     · refine Finset.mem_union_right _ (Finset.mem_biUnion.mpr ⟨i, ?_, hg⟩)
-      simpa [Set.Finite.mem_toFinset] using hi
-  have hv : ∀ j : J, (VanishesModN m N (v j).coeff ↔ VanishesModN m N' (v j).coeff) := fun j =>
-    vanishesModN_congr fun g hg g' hg' => hpair g (hvsupp j hg) g' (hvsupp j hg')
-  have hb : ∀ i : I,
+      simpa using hi
+  have hv : ∀ j, (VanishesModN m N (v j).coeff ↔ VanishesModN m N' (v j).coeff) := fun j =>
+    vanishesModN_congr (by grind)
+  have hb : ∀ i,
       (VanishesModN m N (foxBoundary b v i).coeff ↔ VanishesModN m N' (foxBoundary b v i).coeff) :=
-    fun i => vanishesModN_congr fun g hg g' hg' => hpair g (hbsupp i hg) g' (hbsupp i hg')
+    fun i => vanishesModN_congr (by grind)
   constructor
   · intro hSat hbdry j
-    exact (hv j).mp (hSat (fun i => (hb i).mpr (hbdry i)) j)
+    exact (hv j).mp (hSat (by grind) j)
   · intro hSat hbdry j
-    exact (hv j).mpr (hSat (fun i => (hb i).mp (hbdry i)) j)
+    exact (hv j).mpr (hSat (by grind) j)
 
 /-! ### The requirement modulo `m` as a divisibility statement in `ℤ[G/N]` -/
 
@@ -151,64 +141,58 @@ open scoped Classical in
 /-- The coefficient of the reduction of `x` at the coset of `g` is the sum of the
 coefficients of `x` over that coset. -/
 theorem quotRingHom_apply_mk (M : Subgroup G) [M.Normal] (x : MonoidAlgebra ℤ G) (g : G) :
-    (quotRingHom ℤ M x).coeff ((g : G ⧸ M)) = ∑ h ∈ x.coeff.support.filter (fun h => h * g⁻¹ ∈ M), x.coeff h := by
+    (quotRingHom ℤ M x).coeff ((g : G ⧸ M)) = ∑ h ∈ x.coeff.support.filter (· * g⁻¹ ∈ M), x.coeff h := by
   classical
   show (Finsupp.mapDomain (QuotientGroup.mk' M) x.coeff) (g : G ⧸ M) = _
   rw [Finsupp.mapDomain, Finsupp.sum, Finsupp.finsetSum_apply, Finset.sum_filter]
   refine Finset.sum_congr rfl fun h _ => ?_
   rw [Finsupp.single_apply]
   congr 1
-  simp only [eq_iff_iff, QuotientGroup.mk'_apply]
+  simp [eq_iff_iff, QuotientGroup.mk'_apply]
   rw [QuotientGroup.eq]
   constructor
   · intro hh
     have h1 : g⁻¹ * h ∈ M := by simpa using M.inv_mem hh
     have h2 := Subgroup.Normal.conj_mem (by infer_instance) _ h1 h
     have hgr : h * (g⁻¹ * h) * h⁻¹ = h * g⁻¹ := by group
-    rwa [hgr] at h2
+    simp_all
   · intro hh
     have h1 : g * h⁻¹ ∈ M := by simpa using M.inv_mem hh
     have h2 := Subgroup.Normal.conj_mem (by infer_instance) _ h1 h⁻¹
     have hgr : h⁻¹ * (g * h⁻¹) * h⁻¹⁻¹ = h⁻¹ * g := by group
-    rwa [hgr] at h2
+    simp_all
 
 /-- Vanishing modulo `m` means that every coefficient of the reduction is divisible by
 `m`. -/
 theorem vanishesModN_iff_dvd_coeff (m : ℕ) (M : Subgroup G) [M.Normal]
     (x : MonoidAlgebra ℤ G) :
-    VanishesModN m M x.coeff ↔ ∀ q : G ⧸ M, (m : ℤ) ∣ (quotRingHom ℤ M x).coeff q := by
+    VanishesModN m M x.coeff ↔ ∀ q, (m : ℤ) ∣ (quotRingHom ℤ M x).coeff q := by
   classical
   constructor
   · intro h q
     induction q using QuotientGroup.induction_on with
     | H g => rw [quotRingHom_apply_mk]; exact h g
   · intro h g
-    rw [← quotRingHom_apply_mk M x g]
-    exact h _
+    simp_all [← quotRingHom_apply_mk M x g]
 
 /-- Coefficientwise division by `m`. -/
-noncomputable def divCoeff (m : ℕ) {H : Type*} (z : MonoidAlgebra ℤ H) : MonoidAlgebra ℤ H :=
-  MonoidAlgebra.ofCoeff (Finsupp.mapRange (fun a : ℤ => a / (m : ℤ)) (by simp) z.coeff)
+noncomputable def divCoeff (m : ℕ) {H} (z : MonoidAlgebra ℤ H) :=
+  MonoidAlgebra.ofCoeff (Finsupp.mapRange (· / (m : ℤ)) (by simp) z.coeff)
 
 /-- An element all of whose coefficients are divisible by `m` is `m` times an element. -/
-theorem nsmul_divCoeff (m : ℕ) {H : Type*} (z : MonoidAlgebra ℤ H)
+theorem nsmul_divCoeff (m : ℕ) {H} z
     (hz : ∀ q : H, (m : ℤ) ∣ z.coeff q) : m • divCoeff m z = z := by
   apply MonoidAlgebra.coeff_injective
   refine Finsupp.ext fun q => ?_
-  show m • (divCoeff m z).coeff q = z.coeff q
-  rw [divCoeff, MonoidAlgebra.coeff_ofCoeff, Finsupp.mapRange_apply, nsmul_eq_mul]
   exact Int.mul_ediv_cancel' (hz q)
 
 /-- Divisibility of all coefficients by `m` means being `m` times an element. -/
-theorem dvd_coeff_iff_nsmul (m : ℕ) {H : Type*} (z : MonoidAlgebra ℤ H) :
-    (∀ q : H, (m : ℤ) ∣ z.coeff q) ↔ ∃ y : MonoidAlgebra ℤ H, z = m • y := by
+theorem dvd_coeff_iff_nsmul (m : ℕ) {H} z :
+    (∀ q, (m : ℤ) ∣ z.coeff q) ↔ ∃ y : MonoidAlgebra ℤ H, z = m • y := by
   constructor
   · intro h
     exact ⟨divCoeff m z, (nsmul_divCoeff m z h).symm⟩
-  · rintro ⟨y, rfl⟩ q
-    refine ⟨y.coeff q, ?_⟩
-    show ((m • y : MonoidAlgebra ℤ H).coeff q : ℤ) = (m : ℤ) * y.coeff q
-    rw [MonoidAlgebra.coeff_smul_apply, nsmul_eq_mul]
+  simp_all
 
 /-- Vanishing modulo `m` in the form used in the chain argument: the reduction is `m` times
 an element. -/
@@ -225,31 +209,25 @@ argument.**  If all requirements modulo `m` hold at `N`, then the reduced Fox bo
 injective modulo `m`: whenever its value on a vector is divisible by `m`, the vector itself
 is. -/
 theorem liftsMod_of_foxSatMod (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (N : Subgroup G)
-    [N.Normal] (m : ℕ) (h : ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSatMod m b v N) :
+    [N.Normal] m (h : ∀ v, FoxSatMod m b v N) :
     LiftsMod (boundaryMap b hcol N).toAddMonoidHom m := by
   classical
   rintro u ⟨w, hw⟩
   obtain ⟨v, rfl⟩ := exists_lift N u
-  have hbd : ∀ i : I, VanishesModN m N (foxBoundary b v i).coeff := by
+  have hbd : ∀ i, VanishesModN m N (foxBoundary b v i).coeff := by
     intro i
     rw [vanishesModN_iff_dvd_coeff]
     intro q
     have hcoord : quotRingHom ℤ N (foxBoundary b v i) = m • w i := by
       rw [← boundaryMap_redVec b hcol N v i]
-      have := congrArg (fun z : I →₀ MonoidAlgebra ℤ (G ⧸ N) => z i) hw
-      simpa using this
+      simp_all
     rw [hcoord]
     exact ⟨(w i).coeff q, by
-      show ((m • w i : MonoidAlgebra ℤ (G ⧸ N)).coeff q : ℤ) = (m : ℤ) * (w i).coeff q
-      rw [MonoidAlgebra.coeff_smul_apply, nsmul_eq_mul]⟩
+      rfl⟩
   have hv := h v hbd
   refine ⟨Finsupp.mapRange (divCoeff m) (by simp [divCoeff]) (redVec N v), ?_⟩
   refine Finsupp.ext fun j => ?_
-  show redVec N v j = m • (Finsupp.mapRange (divCoeff m) _ (redVec N v)) j
-  rw [Finsupp.mapRange_apply]
   refine (nsmul_divCoeff m (redVec N v j) ?_).symm
   intro q
-  have := (vanishesModN_iff_dvd_coeff m N (v j)).1 (hv j) q
-  simpa [redVec_apply] using this
-
-end FiniteChains
+  have := (vanishesModN_iff_dvd_coeff m N _).1 (hv j) q
+  simp_all

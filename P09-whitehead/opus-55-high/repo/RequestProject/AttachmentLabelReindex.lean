@@ -1,10 +1,7 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.AttachmentDiagramHomeomorph
+import RequestProject.ClassicalCellAttachmentMaps
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.AttachmentDiagramHomeomorph
-public import RequestProject.ClassicalCellAttachmentMaps
-
-@[expose] public section
 
 /-! Relabel a family of actual disks without changing its parameters.
 The base points and individual characteristic-disk points are retained
@@ -22,8 +19,8 @@ def sigmaLabelHomeomorph {Y : Type u} [TopologicalSpace Y] (e : J ≃ K) :
     (Σ _ : J, Y) ≃ₜ (Σ _ : K, Y) where
   toFun z := ⟨e z.1, z.2⟩
   invFun z := ⟨e.symm z.1, z.2⟩
-  left_inv := by rintro ⟨j, x⟩; simp only [Equiv.symm_apply_apply]
-  right_inv := by rintro ⟨j, x⟩; simp only [Equiv.apply_symm_apply]
+  left_inv := by grind
+  right_inv := by grind
   continuous_toFun := continuous_sigma (fun j =>
     continuous_sigmaMk (σ := fun _ : K => Y) (i := e j))
   continuous_invFun := continuous_sigma (fun k =>
@@ -40,20 +37,18 @@ def diskAttachmentReindexHomeomorph (r : C(BoundaryFamily J E, X)) (e : J ≃ K)
     (Homeomorph.refl X) (sigmaLabelHomeomorph (Y := ClosedUnitBall E) e)
     (fun a => by
       change r a = r ((sigmaLabelHomeomorph e).symm (sigmaLabelHomeomorph e a))
-      rw [Homeomorph.symm_apply_apply])
-    (fun _ => rfl)
+      simp)
+    (by tauto)
     (boundaryFamilyInclusion_isClosedEmbedding K E).injective
     (boundaryFamilyInclusion_isClosedEmbedding J E).injective
 
 @[simp] theorem diskAttachmentReindexHomeomorph_old
-    (r : C(BoundaryFamily J E, X)) (e : J ≃ K) (x : X) :
+    r e (x : X) :
     diskAttachmentReindexHomeomorph r e (old r (boundaryFamilyInclusion J E) x) =
       old (reindexedDiskAttaching r e) (boundaryFamilyInclusion K E) x := rfl
 
 @[simp] theorem diskAttachmentReindexHomeomorph_cell
-    (r : C(BoundaryFamily J E, X)) (e : J ≃ K) (d : DiskFamily J E) :
+    (r : C(BoundaryFamily J E, X)) e d :
     diskAttachmentReindexHomeomorph r e (cell r (boundaryFamilyInclusion J E) d) =
       cell (reindexedDiskAttaching r e) (boundaryFamilyInclusion K E) ⟨e d.1, d.2⟩ :=
   attachmentDiagramHomeomorph_cell ..
-
-end FiniteChains.RelativeAttachment

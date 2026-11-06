@@ -1,9 +1,6 @@
-module
+import RequestProject.ChamberAttachingJ
+import RequestProject.CylinderPoset
 
-public import RequestProject.ChamberAttachingJ
-public import RequestProject.CylinderPoset
-
-@[expose] public section
 
 /-!
 # The complex `Z` of modified chambers, as an explicit poset
@@ -56,12 +53,10 @@ Proved here, for these actual subposets:
   `FiniteChains.Comb.CylP`.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
-open RACG Mirror Comb Nerve
+open RACG Mirror
 
-universe u
 
 variable {V : Type u} [DecidableEq V] {A : CommRel V} {X : Type u} [Preorder X]
 
@@ -75,28 +70,28 @@ an upper bound, namely their union), so an attaching map defined on it would be 
 on every loop of the boundary of a chamber and could never realise a nontrivial attaching word.
 This is `FiniteChains.Davis.pi1_trivial_of_directed_domain` in
 `RequestProject/ChamberAttachingTrivial.lean`. -/
-abbrev NeSpx (A : CommRel V) : Type u := {σ : Finset V // σ.Nonempty ∧ IsSimplex A σ}
+abbrev NeSpx (A : CommRel V) := {σ : Finset V // σ.Nonempty ∧ IsSimplex A σ}
 
 /-- A cell of the model is a **marked apex** if it is the apex `{w}` of a chamber that is to be
 modified. -/
-def IsMarkedApex (M : CayGroup A → Prop) (p : Sph A) : Prop := p.spx = ∅ ∧ M p.rep
+def IsMarkedApex (M : CayGroup A → Prop) (p : Sph A) := p.spx = ∅ ∧ M p.rep
 
 /-- The cells of the model that are retained: everything but the marked apexes. -/
-def Zold (A : CommRel V) (M : CayGroup A → Prop) : Type u := {p : Sph A // ¬ IsMarkedApex M p}
+def Zold (A : CommRel V) (M : CayGroup A → Prop) := {p : Sph A // ¬ IsMarkedApex M p}
 
 /-- The adjoined copies of the base poset, one for each marked chamber. -/
-def Znew (A : CommRel V) (M : CayGroup A → Prop) (X : Type u) : Type u :=
+def Znew (A : CommRel V) (M : CayGroup A → Prop) (X : Type u) :=
   {w : CayGroup A // M w} × X
 
 /-- **The poset `Z` of modified chambers.** -/
 def Zpos (A : CommRel V) (X : Type u) [Preorder X] (M : CayGroup A → Prop)
-    (_att : NeSpx A →o X) : Type u :=
+    (_att : NeSpx A →o X) :=
   Zold A M ⊕ Znew A M X
 
 variable {M : CayGroup A → Prop} {att : NeSpx A →o X}
 
 /-- The old cells of `Z`. -/
-def zOld (p : Sph A) (hp : ¬ IsMarkedApex M p) : Zpos A X M att := Sum.inl ⟨p, hp⟩
+def zOld p (hp : ¬ IsMarkedApex M p) : Zpos A X M att := Sum.inl ⟨p, hp⟩
 
 /-- The new cells of `Z`: the elements of the copy of `X` replacing the apex of the chamber
 `F_w`. -/
@@ -115,7 +110,7 @@ instance zposPreorder : Preorder (Zpos A X M att) where
   le_refl z := by
     cases z with
     | inl p => exact le_refl p.1
-    | inr wx => exact ⟨rfl, le_refl wx.2⟩
+    | inr wx => trivial
   le_trans z z' z'' hzz' hz'z'' := by
     cases z with
     | inl p =>
@@ -130,7 +125,7 @@ instance zposPreorder : Preorder (Zpos A X M att) where
         | inl q =>
             cases z'' with
             | inl r =>
-                obtain ⟨hne, hx⟩ := hzz'.2
+                cases' hzz'.2 with hne hx
                 refine ⟨inChamber_of_le hz'z'' hzz'.1,
                   Finset.Nonempty.mono hz'z''.1 hne, ?_⟩
                 exact le_trans hx (att.monotone (show (⟨q.1.spx, hne, q.1.isSimplex⟩ : NeSpx A) ≤
@@ -139,7 +134,7 @@ instance zposPreorder : Preorder (Zpos A X M att) where
         | inr wy =>
             cases z'' with
             | inl r =>
-                obtain ⟨hne, hy⟩ := hz'z''.2
+                cases' hz'z''.2 with hne hy
                 exact ⟨hzz'.1 ▸ hz'z''.1, hne, le_trans hzz'.2 hy⟩
             | inr wz =>
                 exact ⟨hzz'.1.trans hz'z''.1, le_trans hzz'.2 hz'z''.2⟩
@@ -157,19 +152,18 @@ def InZChamber (w : CayGroup A) : Zpos A X M att → Prop
   | Sum.inr vx => vx.1.1 = w
 
 /-- The old cells of the chamber of a marked `w` all have nonempty type: the apex was removed. -/
-theorem spx_nonempty_of_marked {w : CayGroup A} (hw : M w) {p : Sph A}
+theorem spx_nonempty_of_marked (hw : M w) {p}
     (hp : ¬ IsMarkedApex M p) (hpw : InChamber w p) : p.spx.Nonempty := by
   rcases Finset.eq_empty_or_nonempty p.spx with hemp | hne
   · refine absurd ?_ hp
     refine ⟨hemp, ?_⟩
-    have h1 : p.rep⁻¹ * w ∈ specialSub A (p.spx : Set V) := hpw
+    have h1 : p.rep⁻¹ * w ∈ specialSub A p.spx := hpw
     rw [hemp, Finset.coe_empty, specialSub_empty, Subgroup.mem_bot] at h1
-    rw [inv_mul_eq_one.1 h1]
-    exact hw
+    grind [inv_mul_eq_one.1 h1]
   · exact hne
 
 /-- **Every chamber of `Z` is upward closed.** -/
-theorem inZChamber_of_le {w : CayGroup A} {z z' : Zpos A X M att}
+theorem inZChamber_of_le {z z' : Zpos A X M att}
     (h : z ≤ z') (hz : InZChamber w z) : InZChamber w z' := by
   cases z with
   | inl p =>
@@ -179,7 +173,6 @@ theorem inZChamber_of_le {w : CayGroup A} {z z' : Zpos A X M att}
   | inr wx =>
       cases z' with
       | inl q =>
-          show InChamber w q.1
           rw [← hz]
           exact h.1
       | inr wy =>
@@ -187,15 +180,15 @@ theorem inZChamber_of_le {w : CayGroup A} {z z' : Zpos A X M att}
           rw [← hz, h.1]
 
 /-- Every element of `Z` lies in a chamber. -/
-theorem exists_inZChamber (z : Zpos A X M att) : ∃ w : CayGroup A, InZChamber w z := by
+theorem exists_inZChamber (z : Zpos A X M att) : ∃ w, InZChamber w z := by
   cases z with
   | inl p => exact ⟨p.1.rep, inChamber_rep p.1⟩
-  | inr wx => exact ⟨wx.1.1, rfl⟩
+  | inr wx => tauto
 
 /-! ### Intersections of chambers -/
 
 /-- **A new cell lies in only one chamber.** -/
-theorem eq_of_inZChamber_new {w v : CayGroup A} {u : {w : CayGroup A // M w}} {x : X}
+theorem eq_of_inZChamber_new {u : {w : CayGroup A // M w}} {x}
     (hw : InZChamber (att := att) w (zNew u x)) (hv : InZChamber (att := att) v (zNew u x)) :
     w = v := by
   rw [← hw, ← hv]
@@ -210,7 +203,7 @@ def ZJSet (w : CayGroup A) : Zpos A X M att → Prop
   | Sum.inl p => JSet w p.1
   | Sum.inr _ => False
 
-theorem zJSet_imp_inZChamber {w : CayGroup A} {z : Zpos A X M att} (h : ZJSet w z) :
+theorem zJSet_imp_inZChamber {z : Zpos A X M att} (h : ZJSet w z) :
     InZChamber w z := by
   cases z with
   | inl p => exact h.choose_spec.2.1
@@ -220,40 +213,38 @@ theorem zJSet_imp_inZChamber {w : CayGroup A} {z : Zpos A X M att} (h : ZJSet w 
 some other chamber of `Z` of length at most that of `w` exactly when it is an old cell of
 `J_w = ⋃_{s ∈ D(w)} (F_s)_w`.  In particular the new cells — the copy of `X` — are attached
 along nothing but `J_w`, and the intersection is the already-studied contractible subcomplex. -/
-theorem mem_earlier_zchamber_iff {w : CayGroup A} {z : Zpos A X M att} (hz : InZChamber w z) :
-    (∃ v : CayGroup A, v ≠ w ∧ RACG.clen A v ≤ RACG.clen A w ∧ InZChamber v z) ↔ ZJSet w z := by
+theorem mem_earlier_zchamber_iff {z : Zpos A X M att} (hz : InZChamber w z) :
+    (∃ v, v ≠ w ∧ RACG.clen A v ≤ RACG.clen A w ∧ InZChamber v z) ↔ ZJSet w z := by
   cases z with
   | inl p =>
       constructor
       · rintro ⟨v, hvw, hlen, hv⟩
-        exact (mem_earlier_chamber_iff_jSet hz).1 ⟨v, hvw, hlen, hv⟩
+        exact (mem_earlier_chamber_iff_jSet hz).1 (by tauto)
       · intro hJ
         exact (mem_earlier_chamber_iff_jSet hz).2 hJ
   | inr wx =>
       constructor
       · rintro ⟨v, hvw, -, hv⟩
         exact absurd (eq_of_inZChamber_new hv hz) hvw
-      · intro h
-        exact h.elim
+      tauto
 
 /-- The same intersection formula with strictly shorter chambers. -/
-theorem mem_shorter_zchamber_iff {w : CayGroup A} {z : Zpos A X M att} (hz : InZChamber w z) :
-    (∃ v : CayGroup A, RACG.clen A v < RACG.clen A w ∧ InZChamber v z) ↔ ZJSet w z := by
+theorem mem_shorter_zchamber_iff {z : Zpos A X M att} (hz : InZChamber w z) :
+    (∃ v, RACG.clen A v < RACG.clen A w ∧ InZChamber v z) ↔ ZJSet w z := by
   cases z with
   | inl p =>
       constructor
       · rintro ⟨v, hlen, hv⟩
-        exact (mem_shorter_chamber_iff_jSet hz).1 ⟨v, hlen, hv⟩
+        exact (mem_shorter_chamber_iff_jSet hz).1 (by tauto)
       · intro hJ
         exact (mem_shorter_chamber_iff_jSet hz).2 hJ
   | inr wx =>
       constructor
       · rintro ⟨v, hlen, hv⟩
-        have : v = w := eq_of_inZChamber_new hv hz
+        have := eq_of_inZChamber_new hv hz
         subst this
         omega
-      · intro h
-        exact h.elim
+      tauto
 
 end Fintype
 
@@ -266,7 +257,7 @@ section ModifiedChamber
 variable (M att) (w : CayGroup A)
 
 /-- The modified chamber of `w`, as a subposet of `Z`. -/
-abbrev ZChamber : Type u := {z : Zpos A X M att // InZChamber w z}
+abbrev ZChamber := {z : Zpos A X M att // InZChamber w z}
 
 variable {M att w}
 
@@ -279,21 +270,21 @@ def zChamberRetr (hw : M w) : ZChamber M att w → ZChamber M att w := fun z =>
   | ⟨Sum.inr wx, hwx⟩ => ⟨Sum.inr wx, hwx⟩
 
 /-- The retraction lands in the copy of `X`. -/
-theorem zChamberRetr_mem (hw : M w) (z : ZChamber M att w) :
-    ∃ x : X, (zChamberRetr hw z).1 = zNew (att := att) ⟨w, hw⟩ x := by
+theorem zChamberRetr_mem hw (z : ZChamber M att w) :
+    ∃ x, (zChamberRetr hw z).1 = zNew (att := att) ⟨w, hw⟩ x := by
   rcases z with ⟨p | ⟨u, x⟩, hz⟩
-  · exact ⟨att ⟨p.1.spx, spx_nonempty_of_marked hw p.2 hz, p.1.isSimplex⟩, rfl⟩
+  · tauto
   · refine ⟨x, ?_⟩
-    show Sum.inr (u, x) = Sum.inr ((⟨w, hw⟩ : {w : CayGroup A // M w}), x)
-    have hu : u = (⟨w, hw⟩ : {w : CayGroup A // M w}) := Subtype.ext hz
-    rw [hu]
+    show Sum.inr (u, x) = Sum.inr (⟨w, hw⟩, x)
+    have hu : u = ⟨w, hw⟩ := Subtype.ext hz
+    simp_all
 
 /-- **The retraction lies below the identity**: this is the mapping cylinder identity `i r ≤ id`
 of the chosen orientation, and it turns the prism operator into a chain homotopy. -/
-theorem zChamberRetr_le (hw : M w) (z : ZChamber M att w) : zChamberRetr hw z ≤ z := by
+theorem zChamberRetr_le hw (z : ZChamber M att w) : zChamberRetr hw z ≤ z := by
   rcases z with ⟨p | wx, hz⟩
   · exact ⟨hz, spx_nonempty_of_marked hw p.2 hz, le_refl _⟩
-  · exact ⟨rfl, le_refl _⟩
+  rfl
 
 /-- The retraction is monotone. -/
 theorem zChamberRetr_monotone (hw : M w) :
@@ -303,11 +294,6 @@ theorem zChamberRetr_monotone (hw : M w) :
       p.1.isSimplex⟩ : NeSpx A) ≤
       ⟨q.1.spx, spx_nonempty_of_marked hw q.2 hz', q.1.isSimplex⟩ from h.1)⟩
   · exact h.elim
-  · obtain ⟨hne, hx⟩ := h.2
+  · cases' h.2 with hne hx
     exact ⟨Subtype.ext hz, hx⟩
   · exact h
-
-end ModifiedChamber
-
-end Davis
-end FiniteChains

@@ -1,25 +1,21 @@
-module
+import RequestProject.TruncatedCubePoset
+import RequestProject.OrderCxNatHtpy
+import RequestProject.StrictOrderComplex
+noncomputable section
 
-public import RequestProject.TruncatedCubePoset
-public import RequestProject.OrderCxNatHtpy
-public import RequestProject.StrictOrderComplex
-
-@[expose] public section
 
 /-! Based path comparison for the actual truncated face poset, before collapse. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
-open RACG Mirror Comb
+open RACG Comb
 variable {V : Type} [DecidableEq V] {A : CommRel V}
 
-noncomputable def truncatedRetractionHom :
+def truncatedRetractionHom :
     Hom (orderCx (TruncatedCell A)) (orderCx (QOld A)) :=
   orderCxMap truncatedCellRetraction truncatedCellRetraction_monotone
 
-noncomputable def truncatedSectionHom :
+def truncatedSectionHom :
     Hom (orderCx (QOld A)) (orderCx (TruncatedCell A)) :=
   orderCxMap oldCellIncl oldCellIncl_monotone
 
@@ -33,15 +29,14 @@ theorem truncatedRetraction_pi1_injective_at (a : TruncatedCell A) :
   have hg : Monotone g := oldCellIncl_monotone.comp truncatedCellRetraction_monotone
   have hnat := htpy_loop_mapPath_le (f := id) monotone_id hg
     truncatedCell_le_retraction p.2
-  have hnull : Htpy (orderCx (QOld A)) (truncatedCellRetraction a)
-      (truncatedCellRetraction a) (mapPath truncatedRetractionHom p.1) [] :=
+  have hnull :=
     Quotient.exact hp
   have hsec := mapPath_htpy truncatedSectionHom hnull
-  have hgnil : Htpy (orderCx (TruncatedCell A)) (g a) (g a)
+  have hgnil : Htpy _ (g a) (g a)
       (mapPath (orderCxMap g hg) p.1) [] := by
     simpa [g, truncatedSectionHom, truncatedRetractionHom, mapPath, orderCxMap,
       List.map_map, Function.comp_def] using hsec
-  have hconj : Htpy (orderCx (TruncatedCell A)) (g a) (g a)
+  have hconj : Htpy _ (g a) (g a)
       ([ordNeg (truncatedCell_le_retraction a)] ++ p.1 ++
         [ordPos (truncatedCell_le_retraction a)]) [] := by
     simpa [mapPath, orderCxMap] using hnat.symm.trans hgnil
@@ -54,18 +49,13 @@ theorem truncatedRetraction_pi1_injective_at (a : TruncatedCell A) :
       [ordPos (truncatedCell_le_retraction a), ordNeg (truncatedCell_le_retraction a)]
       a a from ⟨rfl, rfl, rfl⟩))
   have hB := hc.congr_append p.2 (isPath_nil' a)
-  have hstrip : Htpy (orderCx (TruncatedCell A)) a a
+  have hstrip : Htpy _ a a
       ([ordPos (truncatedCell_le_retraction a)] ++
         ([ordNeg (truncatedCell_le_retraction a)] ++ p.1 ++
           [ordPos (truncatedCell_le_retraction a)]) ++
         [ordNeg (truncatedCell_le_retraction a)]) p.1 := by
-    simpa [List.append_assoc] using hA.trans (by simpa using hB)
-  have hkill : Htpy (orderCx (TruncatedCell A)) a a
-      ([ordPos (truncatedCell_le_retraction a)] ++
-        ([ordNeg (truncatedCell_le_retraction a)] ++ p.1 ++
-          [ordPos (truncatedCell_le_retraction a)]) ++
-        [ordNeg (truncatedCell_le_retraction a)]) [] := by
-    exact hstep.trans (by simpa using hc)
+    simpa using hA.trans (by simpa using hB)
+  have hkill := hstep.trans (by simpa using hc)
   exact Quotient.sound (hstrip.symm.trans hkill)
 
 theorem truncatedRetraction_pi1_surjective_at (a : TruncatedCell A) :
@@ -77,16 +67,14 @@ theorem truncatedRetraction_pi1_surjective_at (a : TruncatedCell A) :
       ((isPath_ordPos e).append (isPath_mapPath truncatedSectionHom p.2)).append
         (isPath_ordNeg e)⟩
   refine ⟨Pi1.mk lp, Quotient.sound ?_⟩
-  change Htpy (orderCx (QOld A)) (truncatedCellRetraction a) (truncatedCellRetraction a)
+  change Htpy _ (truncatedCellRetraction a) (truncatedCellRetraction a)
     (mapPath truncatedRetractionHom lp.val) p.val
   have hs := htpy_ordSelf_nil (truncatedCellRetraction a)
-  have hn := htpy_revPath (isPath_ordPos (le_refl (truncatedCellRetraction a))) hs
+  have hn := htpy_revPath (by aesop) hs
   have hA := hs.congr_append (isPath_nil' (truncatedCellRetraction a))
-    (p.2.append (isPath_ordNeg (le_refl (truncatedCellRetraction a))))
+    (p.2.append (isPath_ordNeg (by rfl)))
   have hB := hn.congr_append p.2 (isPath_nil' (truncatedCellRetraction a))
-  simp only [List.nil_append, List.append_nil, revPath_nil] at hA hB
+  simp [List.nil_append, List.append_nil, revPath_nil] at hA hB
   have hh := hA.trans hB
   simpa [loopSetoid, ordPos, ordNeg, lp, e, truncatedRetractionHom, truncatedSectionHom, mapPath, orderCxMap,
     List.map_map, Function.comp_def, revPath, revGerm] using hh
-
-end FiniteChains.Davis

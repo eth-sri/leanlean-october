@@ -1,8 +1,6 @@
-module
+import RequestProject.StrictTopConeThreeChains
+import RequestProject.Tac
 
-public import RequestProject.StrictTopConeThreeChains
-
-@[expose] public section
 
 /-! The genuine strict cone maps preserve all finite-chain coefficients. -/
 namespace FiniteChains.Comb
@@ -16,16 +14,14 @@ theorem strictTopConeEdgeTriangle_injective :
   intro e d h
   apply Subtype.ext
   apply Prod.ext
-  · exact hfi (congrArg (fun t : (strictOrderCx Q).F => t.1.1) h)
-  · exact hfi (congrArg (fun t : (strictOrderCx Q).F => t.1.2.1) h)
+  · exact hfi (congrArg (·.1.1) h)
+  · exact hfi (congrArg (·.1.2.1) h)
 
-theorem strictTopConeEdgeChain_eq_mapDomain (z : (strictOrderCx P).E →₀ ℤ) :
+theorem strictTopConeEdgeChain_eq_mapDomain z :
     strictTopConeEdgeChain f hf c hc z =
       Finsupp.mapDomain (strictTopConeEdgeTriangle f hf c hc) z := by
-  induction z using Finsupp.induction_linear with
-  | zero => simp
-  | add z w hz hw => rw [map_add, Finsupp.mapDomain_add, hz, hw]
-  | single e n => simp [strictTopConeEdgeChain]
+  lin_ind z with z w hz hw => rw [map_add, Finsupp.mapDomain_add, hz, hw]
+  | e n => simp [strictTopConeEdgeChain]
 
 include hfi in
 theorem strictTopConeEdgeChain_injective :
@@ -40,9 +36,7 @@ theorem strictTopConeTriangleTetrahedron_injective :
   intro s t h
   apply Subtype.ext
   apply Prod.ext
-  · exact hfi (congrArg (fun a : StrictOrdTet Q => a.1.1) h)
+  · exact hfi (congrArg (·.1.1) h)
   · apply Prod.ext
-    · exact hfi (congrArg (fun a : StrictOrdTet Q => a.1.2.1) h)
-    · exact hfi (congrArg (fun a : StrictOrdTet Q => a.1.2.2.1) h)
-
-end FiniteChains.Comb
+    · exact hfi (congrArg (·.1.2.1) h)
+    · exact hfi (congrArg (·.1.2.2.1) h)

@@ -1,8 +1,5 @@
-module
+import Mathlib
 
-public import Mathlib
-
-@[expose] public section
 
 /-!
 # Abstract simplicial complexes, flagness, and barycentric subdivisions
@@ -40,21 +37,12 @@ structure ASC (V : Type u) where
 namespace ASC
 
 /-- The order complex of a preorder: its faces are the finite chains. -/
-def orderComplex (P : Type u) [Preorder P] : ASC P where
+def orderComplex P [Preorder P] : ASC P where
   faces := {s : Finset P | IsChain (· ≤ ·) (s : Set P)}
-  empty_mem := by simp [IsChain, Set.Pairwise]
+  empty_mem := by simp
   down_closed := by
     intro s t hs hts
     exact hs.mono (by exact_mod_cast hts)
 
-@[simp] theorem mem_orderComplex {P : Type u} [Preorder P] {s : Finset P} :
+@[simp] theorem mem_orderComplex {P} [Preorder P] {s : Finset P} :
     s ∈ (orderComplex P).faces ↔ IsChain (· ≤ ·) (s : Set P) := Iff.rfl
-
-/-- The poset of nonempty faces of `K`, ordered by inclusion. -/
-def Face (K : ASC V) : Type u := {s : Finset V // s ∈ K.faces ∧ s.Nonempty}
-
-instance (K : ASC V) : Preorder K.Face := Subtype.preorder _
-
-end ASC
-
-end FiniteChains

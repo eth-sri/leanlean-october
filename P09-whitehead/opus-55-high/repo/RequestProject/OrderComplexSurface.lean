@@ -1,8 +1,5 @@
-module
+import RequestProject.BarycentricSurface
 
-public import RequestProject.BarycentricSurface
-
-@[expose] public section
 
 /-!
 # When is the order complex of a two-dimensional cell poset a closed surface?
@@ -67,24 +64,24 @@ namespace SurfaceRank
 
 variable (S : SurfaceRank P)
 
-theorem rk_eq_of_le_of_rk_le {x y : P} (S : SurfaceRank P) (h : x ≤ y) (hxy : S.rk y ≤ S.rk x) :
+theorem rk_eq_of_le_of_rk_le (S : SurfaceRank P) (h : x ≤ y) (hxy : S.rk y ≤ S.rk x) :
     x = y := by
   rcases h.lt_or_eq with hlt | rfl
   · exact absurd (S.rk_lt_of_lt hlt) (by omega)
   · rfl
 
 /-- A cell of rank two is maximal. -/
-theorem not_lt_of_rk_two {f x : P} (S : SurfaceRank P) (hf : S.rk f = 2) : ¬ f < x :=
+theorem not_lt_of_rk_two (S : SurfaceRank P) (hf : S.rk f = 2) : ¬ f < x :=
   fun h => absurd (S.rk_lt_of_lt h) (by have := S.rk_le_two x; omega)
 
 end SurfaceRank
 
 /-! ### Transfer of `ExactlyTwo` along an equivalence of predicates -/
 
-theorem ExactlyTwo.congr {α : Sort*} {P Q : α → Prop} (h : ExactlyTwo P)
+theorem ExactlyTwo.congr {P Q : α → Prop} (h : ExactlyTwo P)
     (hPQ : ∀ x, P x ↔ Q x) : ExactlyTwo Q := by
   obtain ⟨x, y, hxy, hx, hy, huniq⟩ := h
-  exact ⟨x, y, hxy, (hPQ x).1 hx, (hPQ y).1 hy, fun z hz => huniq z ((hPQ z).2 hz)⟩
+  exact ⟨x, y, hxy, (hPQ x).1 hx, (hPQ y).1 hy, by simp_all⟩
 
 /-! ### The order complex of a surface poset -/
 
@@ -92,25 +89,19 @@ section OrderComplex
 
 variable [DecidableEq P]
 
-theorem isChain_pair_iff {x y : P} :
+theorem isChain_pair_iff {x y} :
     IsChain (· ≤ ·) (({x, y} : Finset P) : Set P) ↔ (x ≤ y ∨ y ≤ x) := by
   constructor
   · intro h
     by_cases hxy : x = y
-    · exact Or.inl (le_of_eq hxy)
-    · exact h (by simp) (by simp) hxy
+    · simp_all
+    aesop
   · intro h
     rintro a ha b hb hab
-    simp only [Finset.coe_insert, Finset.coe_singleton, Set.mem_insert_iff,
-      Set.mem_singleton_iff] at ha hb
-    rcases ha with rfl | rfl <;> rcases hb with rfl | rfl
-    · exact absurd rfl hab
-    · exact h
-    · exact h.symm
-    · exact absurd rfl hab
+    grind
 
-theorem mem_orderComplex_triple {x y z : P} (hxy : x ≤ y) :
-    insert z ({x, y} : Finset P) ∈ (orderComplex P).faces ↔
+theorem mem_orderComplex_triple (hxy : x ≤ y) :
+    insert z ({x, y}) ∈ (orderComplex P).faces ↔
       ((z ≤ x ∨ x ≤ z) ∧ (z ≤ y ∨ y ≤ z)) := by
   rw [mem_orderComplex]
   constructor
@@ -127,16 +118,15 @@ theorem mem_orderComplex_triple {x y z : P} (hxy : x ≤ y) :
 namespace SurfaceRank
 
 /-- The neighbours of an edge of the order complex, described by the ranks of its two cells. -/
-theorem neighbours_iff (_S : SurfaceRank P) {x y z : P} (hxy : x < y) :
-    (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y} : Finset P) ∈ (orderComplex P).faces) ↔
+theorem neighbours_iff (_S : SurfaceRank P) {x y z} (hxy : x < y) :
+    (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y}) ∈ (orderComplex P).faces) ↔
       (z ≠ x ∧ z ≠ y ∧ (z ≤ x ∨ x ≤ z) ∧ (z ≤ y ∨ y ≤ z)) := by
   rw [mem_orderComplex_triple hxy.le]
-  simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
-  tauto
+  grind
 
-theorem neighbours_zero_one (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hx : S.rk x = 0)
+theorem neighbours_zero_one (S : SurfaceRank P) {x y z} (hxy : x < y) (hx : S.rk x = 0)
     (hy : S.rk y = 1) :
-    (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y} : Finset P) ∈ (orderComplex P).faces) ↔
+    (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y}) ∈ (orderComplex P).faces) ↔
       y < z := by
   rw [neighbours_iff S hxy]
   constructor
@@ -144,21 +134,19 @@ theorem neighbours_zero_one (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hx : 
     have hxz : x < z := by
       rcases hcx with h | h
       · exact absurd h (fun hh => hzx (S.rk_eq_of_le_of_rk_le hh (by omega)))
-      · exact lt_of_le_of_ne h (Ne.symm hzx)
+      · exact lt_of_le_of_ne h hzx.symm
     rcases hcy with h | h
     · -- `z < y` would force `rk z = 0`, contradicting `x < z`
-      have hzlt : z < y := lt_of_le_of_ne h hzy
+      have hzlt := lt_of_le_of_ne h hzy
       have h1 := S.rk_lt_of_lt hxz
       have h2 := S.rk_lt_of_lt hzlt
       omega
-    · exact lt_of_le_of_ne h (Ne.symm hzy)
-  · intro h
-    have hxz : x < z := lt_trans hxy h
-    exact ⟨Ne.symm hxz.ne, Ne.symm h.ne, Or.inr hxz.le, Or.inr h.le⟩
+    · exact lt_of_le_of_ne h hzy.symm
+  grind
 
-theorem neighbours_one_two (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hx : S.rk x = 1)
+theorem neighbours_one_two (S : SurfaceRank P) {x y z} (hxy : x < y) (hx : S.rk x = 1)
     (hy : S.rk y = 2) :
-    (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y} : Finset P) ∈ (orderComplex P).faces) ↔
+    (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y}) ∈ (orderComplex P).faces) ↔
       z < x := by
   rw [neighbours_iff S hxy]
   constructor
@@ -166,21 +154,19 @@ theorem neighbours_one_two (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hx : S
     rcases hcx with h | h
     · exact lt_of_le_of_ne h hzx
     · -- `x < z` forces `rk z = 2`, and then `z` and `y` are two comparable maximal cells
-      have hxz : x < z := lt_of_le_of_ne h (Ne.symm hzx)
+      have hxz := lt_of_le_of_ne h hzx.symm
       have hrz : S.rk z = 2 := by
         have := S.rk_lt_of_lt hxz
         have := S.rk_le_two z
         omega
       rcases hcy with h' | h'
       · exact absurd (S.rk_eq_of_le_of_rk_le h' (by omega)) hzy
-      · exact absurd (S.rk_eq_of_le_of_rk_le h' (by omega)) (Ne.symm hzy)
-  · intro h
-    have hzy : z < y := lt_trans h hxy
-    exact ⟨h.ne, hzy.ne, Or.inl h.le, Or.inl hzy.le⟩
+      · exact absurd (S.rk_eq_of_le_of_rk_le h' (by omega)) hzy.symm
+  grind
 
-theorem neighbours_zero_two (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hx : S.rk x = 0)
+theorem neighbours_zero_two (S : SurfaceRank P) {x y z} (hxy : x < y) (hx : S.rk x = 0)
     (hy : S.rk y = 2) :
-    (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y} : Finset P) ∈ (orderComplex P).faces) ↔
+    (z ∉ ({x, y} : Finset P) ∧ insert z ({x, y}) ∈ (orderComplex P).faces) ↔
       (x < z ∧ z < y) := by
   rw [neighbours_iff S hxy]
   constructor
@@ -188,13 +174,12 @@ theorem neighbours_zero_two (S : SurfaceRank P) {x y z : P} (hxy : x < y) (hx : 
     have hxz : x < z := by
       rcases hcx with h | h
       · exact absurd h (fun hh => hzx (S.rk_eq_of_le_of_rk_le hh (by omega)))
-      · exact lt_of_le_of_ne h (Ne.symm hzx)
+      · exact lt_of_le_of_ne h hzx.symm
     refine ⟨hxz, ?_⟩
     rcases hcy with h | h
     · exact lt_of_le_of_ne h hzy
-    · exact absurd (lt_of_le_of_ne h (Ne.symm hzy)) (S.not_lt_of_rk_two hy)
-  · rintro ⟨h1, h2⟩
-    exact ⟨Ne.symm h1.ne, h2.ne, Or.inr h1.le, Or.inl h2.le⟩
+    · exact absurd (lt_of_le_of_ne h hzy.symm) (S.not_lt_of_rk_two hy)
+  grind
 
 omit [DecidableEq P] in
 /-- The rank of the smaller cell of an edge of the order complex is `0` or `1`, and the possible
@@ -207,9 +192,9 @@ theorem rk_cases (S : SurfaceRank P) {x y : P} (hxy : x < y) :
 
 /-- **Every edge of the order complex lies in exactly two triangles.** -/
 theorem edgeInTwoTriangles (S : SurfaceRank P) : EdgeInTwoTriangles (orderComplex P) := by
-  have key : ∀ x y : P, x < y →
-      ExactlyTwo (fun z : P => z ∉ ({x, y} : Finset P) ∧
-        insert z ({x, y} : Finset P) ∈ (orderComplex P).faces) := by
+  have key : ∀ x y, x < y →
+      ExactlyTwo (fun z => z ∉ ({x, y} : Finset P) ∧
+        insert z ({x, y}) ∈ (orderComplex P).faces) := by
     intro x y hxy
     rcases S.rk_cases hxy with ⟨hx, hy⟩ | ⟨hx, hy⟩ | ⟨hx, hy⟩
     · exact (S.two_faces y hy).congr (fun z => (S.neighbours_zero_one hxy hx hy).symm)
@@ -217,12 +202,12 @@ theorem edgeInTwoTriangles (S : SurfaceRank P) : EdgeInTwoTriangles (orderComple
     · exact (S.two_edges x y hx hy hxy).congr (fun z => (S.neighbours_zero_two hxy hx hy).symm)
   intro s hs hcard
   obtain ⟨x, y, hxy, rfl⟩ := Finset.card_eq_two.1 hcard
-  have hcomp : x ≤ y ∨ y ≤ x := isChain_pair_iff.1 hs
+  have hcomp := isChain_pair_iff.1 hs
   rcases hcomp with h | h
   · exact key x y (lt_of_le_of_ne h hxy)
-  · have hpair : ({x, y} : Finset P) = {y, x} := Finset.pair_comm x y
+  · have hpair := Finset.pair_comm x y
     rw [hpair]
-    exact key y x (lt_of_le_of_ne h (Ne.symm hxy))
+    exact key y x (lt_of_le_of_ne h hxy.symm)
 
 omit [DecidableEq P] in
 /-- The order complex of a two-dimensional cell poset is two-dimensional. -/
@@ -238,36 +223,27 @@ theorem chain_card_le_three (S : SurfaceRank P) {s : Finset P}
     intro n hn
     obtain ⟨a, -, rfl⟩ := Finset.mem_image.1 hn
     have := S.rk_le_two a
-    interval_cases h : S.rk a <;> simp
+    grind
   have hcard : (s.image S.rk).card = s.card :=
-    Finset.card_image_of_injOn (by intro a ha b hb hab; exact hinj ha hb hab)
+    by grind
   calc s.card = (s.image S.rk).card := hcard.symm
     _ ≤ ({0, 1, 2} : Finset ℕ).card := Finset.card_le_card hsub
     _ = 3 := by decide
 
 /-- **Every cell is a vertex of a triangle of the order complex.** -/
-theorem vertexInTriangle (S : SurfaceRank P) (x : P) :
+theorem vertexInTriangle (S : SurfaceRank P) x :
     ∃ s ∈ (orderComplex P).faces, s.card = 3 ∧ x ∈ s := by
   classical
   -- a two-cell above `x`, a vertex of it and an edge between them
   obtain ⟨f, hf, hxf⟩ := S.exists_face x
   obtain ⟨v, hv, hvf⟩ := S.exists_vertex f hf
   obtain ⟨e, -, -, ⟨hve, hef⟩, -, -⟩ := S.two_edges v f hv hf hvf
-  have hchain : ({v, e, f} : Finset P) ∈ (orderComplex P).faces := by
-    rw [mem_orderComplex]
-    have : IsChain (· ≤ ·) ({v, e, f} : Set P) :=
-      isChain_triple (Or.inl hve.le) (Or.inl (hve.trans hef).le) (Or.inl hef.le)
-    simpa [Finset.coe_insert] using this
-  have hcard : ({v, e, f} : Finset P).card = 3 := by
-    have h1 : v ≠ e := hve.ne
-    have h2 : v ≠ f := (hve.trans hef).ne
-    have h3 : e ≠ f := hef.ne
-    rw [Finset.card_insert_of_notMem (by simp [h1, h2]),
-      Finset.card_insert_of_notMem (by simp [h3])]
-    simp
-  -- `x` is a face of `f`; it is `f` itself, or a vertex or an edge of `f`
+  have hchain : ({v, e, f}) ∈ (orderComplex P).faces := by
+    have :=
+      isChain_triple (Or.inl hve.le) (by grind) (Or.inl hef.le)
+    simp_all
   rcases eq_or_lt_of_le hxf with rfl | hlt
-  · exact ⟨{v, e, x}, hchain, hcard, by simp⟩
+  · grind
   · have hrx : S.rk x = 0 ∨ S.rk x = 1 := by
       have := S.rk_lt_of_lt hlt
       omega
@@ -275,29 +251,17 @@ theorem vertexInTriangle (S : SurfaceRank P) (x : P) :
     · -- `x` is a vertex of `f`
       obtain ⟨e', -, -, ⟨hxe, he'f⟩, -, -⟩ := S.two_edges x f hrx hf hlt
       refine ⟨{x, e', f}, ?_, ?_, by simp⟩
-      · rw [mem_orderComplex]
-        have : IsChain (· ≤ ·) ({x, e', f} : Set P) :=
-          isChain_triple (Or.inl hxe.le) (Or.inl (hxe.trans he'f).le) (Or.inl he'f.le)
-        simpa [Finset.coe_insert] using this
-      · have h1 : x ≠ e' := hxe.ne
-        have h2 : x ≠ f := (hxe.trans he'f).ne
-        have h3 : e' ≠ f := he'f.ne
-        rw [Finset.card_insert_of_notMem (by simp [h1, h2]),
-          Finset.card_insert_of_notMem (by simp [h3])]
-        simp
+      · have :=
+          isChain_triple (Or.inl hxe.le) (by simp_all) (Or.inl he'f.le)
+        simp_all
+      grind
     · -- `x` is an edge of `f`
       obtain ⟨w, -, -, hwx, -, -⟩ := S.two_vertices x hrx
       refine ⟨{w, x, f}, ?_, ?_, by simp⟩
-      · rw [mem_orderComplex]
-        have : IsChain (· ≤ ·) ({w, x, f} : Set P) :=
-          isChain_triple (Or.inl hwx.le) (Or.inl (hwx.trans hlt).le) (Or.inl hlt.le)
-        simpa [Finset.coe_insert] using this
-      · have h1 : w ≠ x := hwx.ne
-        have h2 : w ≠ f := (hwx.trans hlt).ne
-        have h3 : x ≠ f := hlt.ne
-        rw [Finset.card_insert_of_notMem (by simp [h1, h2]),
-          Finset.card_insert_of_notMem (by simp [h3])]
-        simp
+      · have :=
+          isChain_triple (Or.inl hwx.le) (by grind) (Or.inl hlt.le)
+        simp_all
+      grind
 
 end SurfaceRank
 
@@ -306,13 +270,13 @@ end OrderComplex
 /-! ### Connected links -/
 
 /-- The link graph of the cell `v`: the cells strictly above `v`, joined when comparable. -/
-def LinkAdj (v : P) (x y : P) : Prop := v < x ∧ v < y ∧ (x ≤ y ∨ y ≤ x)
+def LinkAdj (v : P) (x y : P) := v < x ∧ v < y ∧ (x ≤ y ∨ y ≤ x)
 
 /-- **The link of every vertex is connected.**  Together with the degree conditions of
 `FiniteChains.ASC.SurfaceRank` — which make every link a disjoint union of cycles — this is the
 condition which distinguishes a closed surface from a pinched one. -/
-def LinkConnected (S : SurfaceRank P) : Prop :=
-  ∀ v : P, S.rk v = 0 → ∀ x y : P, v < x → v < y → Relation.ReflTransGen (LinkAdj v) x y
+def LinkConnected (S : SurfaceRank P) :=
+  ∀ v, S.rk v = 0 → ∀ x y, v < x → v < y → Relation.ReflTransGen (LinkAdj v) x y
 
 /-- **A closed surface, as a cell poset**: the local conditions of a two-dimensional closed cell
 structure together with connectedness of all vertex links. -/
@@ -321,7 +285,3 @@ structure ClosedSurfacePoset (P : Type u) [PartialOrder P] where
   toSurfaceRank : SurfaceRank P
   /-- All vertex links are connected. -/
   link_connected : LinkConnected toSurfaceRank
-
-end ASC
-
-end FiniteChains

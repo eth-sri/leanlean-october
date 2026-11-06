@@ -1,10 +1,7 @@
-module
+import RequestProject.ClassicalCWBoundaryCellularization
+import RequestProject.ClassicalCWCellEmbedding
+import RequestProject.DiskFamilyHomotopyBaseChange
 
-public import RequestProject.ClassicalCWBoundaryCellularization
-public import RequestProject.ClassicalCWCellEmbedding
-public import RequestProject.DiskFamilyHomotopyBaseChange
-
-@[expose] public section
 
 /-! Transfer a genuine one- or two-dimensional disk extension of a model
 to an arbitrary original two-complex. The new attachment is cellularized
@@ -32,7 +29,7 @@ structure CellularDiskTransfer where
   proper : Nonempty J → ∃ z : target, z ∉ Set.range oldEmbedding.map
 
 def cellularDiskTransferOfRepresentative (hn : 0 < n) (hn₂ : n ≤ 2)
-    (q : C(BoundaryFamily J (Fin n → ℝ), K))
+    q
     (H : (e.toFun.comp r).Homotopy q) (hq : FiniteLowerBoundary n q) :
     CellularDiskTransfer K e n r := by
   let x₀ : K := Classical.choice inferInstance
@@ -47,19 +44,11 @@ def cellularDiskTransferOfRepresentative (hn : 0 < n) (hn₂ : n ≤ 2)
     square := ?_
     finite := ?_
     proper := ?_ }
-  · apply ContinuousMap.ext
-    intro p
-    change diskAttachingHomotopyEquiv (e.toFun.comp r) q H
-      (diskAttachmentBaseChangeHomotopyEquiv r e (old r _ p)) = old q _ (e p)
-    exact (congrArg (diskAttachingHomotopyEquiv (e.toFun.comp r) q H)
-      (diskAttachmentBaseChangeHomotopyEquiv_old r e p)).trans
-        (diskAttachingHomotopyEquiv_old (e.toFun.comp r) q H (e p))
+  · rfl
   · intro hK hJ
-    letI := hJ
     exact diskAttachment_finiteCells K n hn hn₂ q x₀ hq hK
   · intro hJ
-    letI := hJ
-    have hnrange : Set.range E.map ≠ Set.univ :=
+    have hnrange :=
       diskAttachment_old_ne_univ K n hn hn₂ q x₀ hq
     by_contra! hall
     exact hnrange (Set.eq_univ_of_forall hall)
@@ -78,12 +67,9 @@ def cellularDiskTransfer (hn : n = 1 ∨ n = 2) : CellularDiskTransfer K e n r :
     subst n
     let a := e.toFun.comp r
     let h := FiniteChains.ClassicalCW.boundaryFamily_into_oneSkeleton K a
-    let q := Classical.choose h
-    have hq := Classical.choose_spec h
+    let q := h.choose
+    have hq := h.choose_spec
     exact cellularDiskTransferOfRepresentative K e 2 r (by omega) le_rfl q
       (Classical.choice hq.1) hq.2
 
 namespace CellularDiskTransfer
-
-end CellularDiskTransfer
-end Whitehead

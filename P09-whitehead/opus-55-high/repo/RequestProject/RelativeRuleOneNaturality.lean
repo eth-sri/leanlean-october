@@ -1,9 +1,6 @@
-module
+import RequestProject.RelativeBlockNaturality
+import RequestProject.RelativeStructuralOperation
 
-public import RequestProject.RelativeBlockNaturality
-public import RequestProject.RelativeStructuralOperation
-
-@[expose] public section
 
 /-! Actual rule-1 squares for shared ambient generator labels. All stage
 inclusions are literal labelled presentation inclusions. Unverified source.
@@ -22,15 +19,13 @@ def restrictedExtra (p : S → Prop) (s : {s // p s}) := extra s.val
 
 def rawInclusion : PresMorFS (rawPresentation core (restrictedExtra extra p))
     (rawPresentation core (restrictedExtra extra t)) :=
-  PresInclusionFS.mor _ _ id (oldCellIncl hpt) Function.injective_id
-    (oldCellIncl_injective hpt) (by intro j; cases j <;> simp [rawPresentation, oldCellIncl,
-      restrictedExtra, labelIncl])
+  PresInclusionFS.mor _ _ id _ Function.injective_id
+    (oldCellIncl_injective hpt) (by aesop)
 
 def pairInclusion : PresMorFS (beforeCorrection core (restrictedExtra extra p))
     (beforeCorrection core (restrictedExtra extra t)) :=
-  PresInclusionFS.mor _ _ id (oldCellIncl hpt) Function.injective_id
-    (oldCellIncl_injective hpt) (by intro j; cases j <;> simp [beforeCorrection, oldCellIncl,
-      restrictedExtra, labelIncl])
+  PresInclusionFS.mor _ _ id _ Function.injective_id
+    (oldCellIncl_injective hpt) (by aesop)
 
 theorem ruleOne_group_square :
     (pairInclusion core extra hpt).hom.comp
@@ -41,15 +36,14 @@ theorem ruleOne_group_square :
   intro g
   induction g using QuotientGroup.induction_on with
   | H w =>
-      simp only [MonoidHom.comp_apply, relativeRuleOneMap_hom_mk]
+      simp [MonoidHom.comp_apply, relativeRuleOneMap_hom_mk]
       change QuotientGroup.mk (FreeGroup.map id (pairSubstitution w)) =
-        (relativeRuleOneMap core (restrictedExtra extra t)).hom
+        (relativeRuleOneMap core _).hom
           (QuotientGroup.mk (FreeGroup.map id w))
       simp
 
 theorem ruleOne_chain_square
-    (x : (C ⊕ {s // p s}) →₀ MonoidAlgebra ℤ
-      (PresGroup (rawPresentation core (restrictedExtra extra p)))) :
+    x :
     (pairInclusion core extra hpt).cells
       ((relativeRuleOneMap core (restrictedExtra extra p)).cells x) =
     (relativeRuleOneMap core (restrictedExtra extra t)).cells
@@ -57,8 +51,7 @@ theorem ruleOne_chain_square
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add x y hx hy =>
-      rw [PresMorFS.cells_add, PresMorFS.cells_add, PresMorFS.cells_add,
-        PresMorFS.cells_add, hx, hy]
+      simp [PresMorFS.cells_add, hx, hy]
   | single j a =>
       rw [relativeRuleOneMap_cells, Finsupp.mapRange_single]
       change Finsupp.mapDomain (oldCellIncl hpt)
@@ -71,11 +64,10 @@ theorem ruleOne_chain_square
       congr 1
       change MonoidAlgebra.mapDomainRingHom ℤ (pairInclusion core extra hpt).hom
           (MonoidAlgebra.mapDomainRingHom ℤ
-            (relativeRuleOneMap core (restrictedExtra extra p)).hom a) =
-        MonoidAlgebra.mapDomainRingHom ℤ (relativeRuleOneMap core (restrictedExtra extra t)).hom
+            (relativeRuleOneMap core _).hom a) =
+        MonoidAlgebra.mapDomainRingHom ℤ (relativeRuleOneMap core _).hom
           (MonoidAlgebra.mapDomainRingHom ℤ (rawInclusion core extra hpt).hom a)
-      rw [BlockMor.mapDomainRingHom_comp', BlockMor.mapDomainRingHom_comp',
-        ruleOne_group_square]
+      grind [BlockMor.mapDomainRingHom_comp', ruleOne_group_square]
 
 theorem ruleOne_preserves_zero
     (hzero : ∀ x, FSIsFoxCycle (rawPresentation core (restrictedExtra extra p)) x →
@@ -83,10 +75,8 @@ theorem ruleOne_preserves_zero
     {x} (hx : FSIsFoxCycle (beforeCorrection core (restrictedExtra extra p)) x) :
     (pairInclusion core extra hpt).cells x = 0 :=
   fsCells_eq_zero_of_generates
-    (relativeRuleOneMap core (restrictedExtra extra p))
-    (relativeRuleOneMap core (restrictedExtra extra t))
-    (rawInclusion core extra hpt) (pairInclusion core extra hpt)
+    _
+    _
+    _ _
     (ruleOne_chain_square core extra hpt) hzero
-    (relativeRuleOneMap_generates core (restrictedExtra extra p)) hx
-
-end FiniteChains.RelativeNormalForm
+    (relativeRuleOneMap_generates core _) hx

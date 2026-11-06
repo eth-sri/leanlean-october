@@ -1,3 +1,2 @@
-module
-public import RequestProject.BarycentricSurface
-public import RequestProject.MomentAngleConnected
+import RequestProject.BarycentricSurface
+import RequestProject.MomentAngleConnected

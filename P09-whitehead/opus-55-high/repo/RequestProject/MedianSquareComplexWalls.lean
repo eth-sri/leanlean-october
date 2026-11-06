@@ -1,3 +1,2 @@
-module
-public import RequestProject.MedianWallSpace
-public import RequestProject.SquareComplexWallsSeparation
+import RequestProject.MedianWallSpace
+import RequestProject.SquareComplexWallsSeparation

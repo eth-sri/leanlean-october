@@ -1,2 +1,1 @@
-module
-public import RequestProject.BlockFamilyChainModel
+import RequestProject.BlockFamilyChainModel

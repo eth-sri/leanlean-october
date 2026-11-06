@@ -1,8 +1,6 @@
-module
+import RequestProject.CombPresPi1
+import RequestProject.Tac
 
-public import RequestProject.CombPresPi1
-
-@[expose] public section
 
 /-!
 # Hurewicz in degree one for a presentation complex
@@ -28,8 +26,7 @@ This file proves the corresponding statement:
   `π₁(K) = F/R` lies in the commutator subgroup.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -41,10 +38,6 @@ variable {α : Type u} [DecidableEq α] {J : Type u}
 noncomputable def expVec : FreeGroup α →* Multiplicative (α →₀ ℤ) :=
   FreeGroup.lift fun a => Multiplicative.ofAdd (Finsupp.single a (1 : ℤ))
 
-omit [DecidableEq α] in
-@[simp] theorem expVec_of (a : α) :
-    expVec (FreeGroup.of a) = Multiplicative.ofAdd (Finsupp.single a (1 : ℤ)) := by
-  simp [expVec]
 
 omit [DecidableEq α] in
 theorem pathChain_append (l l' : List (α × Bool)) :
@@ -54,16 +47,10 @@ theorem pathChain_append (l l' : List (α × Bool)) :
 omit [DecidableEq α] in
 theorem expVec_single_germ (x : α × Bool) :
     expVec (FreeGroup.mk [x]) = Multiplicative.ofAdd (pathChain [x]) := by
-  obtain ⟨a, b⟩ := x
+  cases' x with a b
   cases b
-  · have h1 : FreeGroup.mk [(a, false)] = (FreeGroup.of a)⁻¹ := rfl
-    rw [h1, map_inv, expVec_of]
-    show Multiplicative.ofAdd (-Finsupp.single a (1 : ℤ)) = _
-    rw [pathChain_cons]
-    simp
-  · have h1 : FreeGroup.mk [(a, true)] = FreeGroup.of a := rfl
-    rw [h1, expVec_of, pathChain_cons]
-    simp
+  · rfl
+  rfl
 
 omit [DecidableEq α] in
 /-- The exponent-sum vector of a word is the one-chain carried by the edge path spelling
@@ -71,7 +58,7 @@ it. -/
 theorem expVec_pathChain (L : List (α × Bool)) :
     expVec (FreeGroup.mk L) = Multiplicative.ofAdd (pathChain L) := by
   induction L with
-  | nil => simp [expVec, pathChain]
+  | nil => rfl
   | cons x L ih =>
       rw [show (x :: L) = [x] ++ L from rfl, ← FreeGroup.mul_mk, map_mul, ih,
         pathChain_append, expVec_single_germ]
@@ -83,22 +70,15 @@ variable (ρ : J → FreeGroup α)
 
 @[simp] theorem bdry1_presComplex (c : α →₀ ℤ) : bdry1 (presComplex ρ) c = 0 := by
   classical
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c₁ c₂ h₁ h₂ => rw [map_add, h₁, h₂, add_zero]
-  | single a n => simp [bdry1]
+  lin_ind c with c₁ c₂ h₁ h₂ => rw [map_add, h₁, h₂, add_zero]
+  | a n => simp [bdry1]
 
 theorem bdry2_pres_single (j : J) :
-    bdry2 (presComplex ρ) (Finsupp.single j (1 : ℤ))
+    bdry2 (presComplex ρ) (Finsupp.single j 1)
       = Multiplicative.toAdd (expVec (ρ j)) := by
   rw [bdry2_single, one_smul]
-  have h : (presComplex ρ).att j = (ρ j).toWord := rfl
-  rw [h]
   conv_rhs => rw [← FreeGroup.mk_toWord (x := ρ j)]
   rw [expVec_pathChain]
   rfl
 
 /-! ### The Hurewicz isomorphism -/
-
-end Comb
-end FiniteChains

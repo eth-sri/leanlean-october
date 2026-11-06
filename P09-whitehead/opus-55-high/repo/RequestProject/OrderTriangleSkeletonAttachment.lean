@@ -1,15 +1,13 @@
-module
+import RequestProject.HomeomorphContinuousMap
+import RequestProject.OrderTriangleDiskCoordinates
+import RequestProject.StrictOrderNerveCellEquivalences
+import RequestProject.DiskAttachmentQuotientReparametrization
+import RequestProject.ClassicalCWSkeletonAttachment
+import RequestProject.OrderNerveRealizationCW
+import RequestProject.OrderNerveTwoComplex
+import RequestProject.ClassicalCWWordDiskModel
+import RequestProject.Tac
 
-public import RequestProject.HomeomorphContinuousMap
-public import RequestProject.OrderTriangleDiskCoordinates
-public import RequestProject.StrictOrderNerveCellEquivalences
-public import RequestProject.DiskAttachmentQuotientReparametrization
-public import RequestProject.ClassicalCWSkeletonAttachment
-public import RequestProject.OrderNerveRealizationCW
-public import RequestProject.OrderNerveTwoComplex
-public import RequestProject.ClassicalCWWordDiskModel
-
-@[expose] public section
 
 /-! The actual second skeleton of an order realization is obtained by
 attaching explicitly parametrized triangle disks to its actual first
@@ -19,39 +17,36 @@ Awaiting final Lean verification. -/
 
 noncomputable section
 open scoped Classical Topology
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb.OrderTriangleAttachment
 open RelativeAttachment ClassicalSkeletonAttachment CategoryTheory Topology
 
-def metricBallNormBallHomeomorph (n : ℕ) :
+def metricBallNormBallHomeomorph n :
     (Metric.closedBall 0 1 : Set (Fin n → ℝ)) ≃ₜ ClosedUnitBall (Fin n → ℝ) where
-  toFun x := ⟨x.val, by simpa only [Metric.mem_closedBall, dist_zero_right] using x.property⟩
-  invFun x := ⟨x.val, by simpa only [Metric.mem_closedBall, dist_zero_right] using x.property⟩
+  toFun x := ⟨x.val, by aesop⟩
+  invFun x := ⟨x.val, by aesop⟩
   left_inv _ := rfl
   right_inv _ := rfl
   continuous_toFun := continuous_subtype_val.subtype_mk _
   continuous_invFun := continuous_subtype_val.subtype_mk _
 
-def simplexNormDiskHomeomorph (n : ℕ) :
-    stdSimplex ℝ (Fin (n + 1)) ≃ₜ ClosedUnitBall (Fin n → ℝ) :=
+def simplexNormDiskHomeomorph n :=
   (standardSimplexClosedBallHomeomorph n).trans (metricBallNormBallHomeomorph n)
 
-theorem simplexNormDiskHomeomorph_positive_iff (n : ℕ)
-    (z : stdSimplex ℝ (Fin (n + 1))) :
+theorem simplexNormDiskHomeomorph_positive_iff n
+    z :
     (∀ i, 0 < z.val i) ↔ ‖(simplexNormDiskHomeomorph n z).val‖ < 1 := by
   change (∀ i, 0 < z.val i) ↔ ‖(standardSimplexClosedBallHomeomorph n z).val‖ < 1
-  simpa only [Metric.mem_ball, dist_zero_right] using
+  simpa [Metric.mem_ball, dist_zero_right] using
     standardSimplexClosedBallHomeomorph_positive_iff n z
 
-def diskReparametrization : C(ClosedUnitBall (Fin 2 → ℝ), ClosedUnitBall (Fin 2 → ℝ)) :=
+def diskReparametrization :=
   (simplexNormDiskHomeomorph 2).toContinuousMap.comp OrderTriangleDisk.disk
 
-theorem diskReparametrization_interior (x : ClosedUnitBall (Fin 2 → ℝ)) :
+theorem diskReparametrization_interior x :
     ‖(diskReparametrization x).val‖ < 1 ↔ ‖x.val‖ < 1 :=
-  (simplexNormDiskHomeomorph_positive_iff 2 (OrderTriangleDisk.disk x)).symm.trans
+  (simplexNormDiskHomeomorph_positive_iff 2 _).symm.trans
     (OrderTriangleDisk.disk_positive_iff x)
 
 theorem diskReparametrization_isQuotientMap : IsQuotientMap diskReparametrization :=
@@ -67,18 +62,12 @@ def boundaryReparametrization : C(UnitBoundary (Fin 2 → ℝ), UnitBoundary (Fi
     apply le_antisymm (diskReparametrization (unitBoundaryInclusion _ z)).property
     apply le_of_not_gt
     intro h
-    have h' := (diskReparametrization_interior (unitBoundaryInclusion _ z)).mp h
+    have h' := (diskReparametrization_interior _).mp h
     change ‖z.val‖ < 1 at h'
-    rw [z.property] at h'
-    exact (lt_irrefl _ h')⟩
+    grind⟩
   continuous_toFun := by
-    apply Continuous.subtype_mk
-    exact (continuous_subtype_val.comp diskReparametrization.continuous).comp
-      (unitBoundaryInclusion (Fin 2 → ℝ)).continuous
+    fun_prop
 
-theorem diskReparametrization_boundary (z : UnitBoundary (Fin 2 → ℝ)) :
-    diskReparametrization (unitBoundaryInclusion _ z) =
-      unitBoundaryInclusion _ (boundaryReparametrization z) := rfl
 
 variable (P : Type) [PartialOrder P]
 
@@ -93,26 +82,26 @@ def triangleDiskMap (t : StrictOrdTri P) :
     (continuous_uliftUp.comp
       ((TopologicalSingular.simplexCoordinates 2).symm.continuous.comp OrderTriangleDisk.disk.continuous))
 
-theorem characteristicDisk_simplex (n : ℕ) (s : (nerve P).nonDegenerate n)
-    (z : stdSimplex ℝ (Fin (n + 1))) :
-    Topology.CWComplex.map (C := (Set.univ : Set (orderNerveRealization P))) n s
+theorem characteristicDisk_simplex n (s : (nerve P).nonDegenerate n)
+    z :
+    Topology.CWComplex.map (C := Set.univ) n s
       (simplexNormDiskHomeomorph n z).val =
         orderNerveRealizationSimplex P s.val (ULift.up ((TopologicalSingular.simplexCoordinates n).symm z)) := by
-  rw [show Topology.CWComplex.map (C := (Set.univ : Set (orderNerveRealization P))) n s
+  rw [show Topology.CWComplex.map (C := Set.univ) n s
       (simplexNormDiskHomeomorph n z).val =
         orderNerveClosedBallChart s (standardSimplexClosedBallHomeomorph n z) from
-    orderNerveCharacteristicFunction_closedBall s (standardSimplexClosedBallHomeomorph n z)]
+    orderNerveCharacteristicFunction_closedBall s _]
   change orderNerveRealizationSimplex P s.val
     (ULift.up ((TopologicalSingular.simplexCoordinates n).symm
       ((standardSimplexClosedBallHomeomorph n).symm
       (standardSimplexClosedBallHomeomorph n z)))) = _
-  rw [Homeomorph.symm_apply_apply]
+  simp
 
-theorem triangleDiskMap_characteristic (t : StrictOrdTri P)
-    (x : ClosedUnitBall (Fin 2 → ℝ)) :
-    Topology.CWComplex.map (C := (Set.univ : Set (orderNerveRealization P))) 2
+theorem triangleDiskMap_characteristic t
+    x :
+    Topology.CWComplex.map (C := Set.univ) 2
       (strictTriNerveEquiv P t) (diskReparametrization x).val = triangleDiskMap P t x :=
-  characteristicDisk_simplex P 2 (strictTriNerveEquiv P t) (OrderTriangleDisk.disk x)
+  characteristicDisk_simplex P 2 _ _
 
 def triangleAttaching : C(BoundaryFamily (StrictOrdTri P) (Fin 2 → ℝ), OneSkeleton P) where
   toFun := reparametrizedAttaching
@@ -127,9 +116,9 @@ def triangleAttaching : C(BoundaryFamily (StrictOrdTri P) (Fin 2 → ℝ), OneSk
     exact (skeletonAttachingMap (Set.univ : Set (orderNerveRealization P)) 2).continuous.comp
       (hs.comp boundaryReparametrization.continuous)
 
-theorem triangleAttaching_val (t : StrictOrdTri P) (z : UnitBoundary (Fin 2 → ℝ)) :
+theorem triangleAttaching_val t z :
     (triangleAttaching P ⟨t, z⟩).val = triangleDiskMap P t (unitBoundaryInclusion _ z) :=
-  triangleDiskMap_characteristic P t (unitBoundaryInclusion _ z)
+  triangleDiskMap_characteristic P t _
 
 def triangleReparametrizationHomeomorph :
     DiskAttachment (triangleAttaching P) ≃ₜ
@@ -137,30 +126,16 @@ def triangleReparametrizationHomeomorph :
   diskAttachmentQuotientReparametrization
     (skeletonAttachingMap (Set.univ : Set (orderNerveRealization P)) 2)
     (strictTriNerveEquiv P) (fun _ => diskReparametrization)
-    (fun _ => boundaryReparametrization) (fun _ => diskReparametrization_boundary)
+    (fun _ => boundaryReparametrization) (by aesop)
     (fun _ => diskReparametrization_isQuotientMap)
     (fun _ => diskReparametrization_interior)
     (fun _ => diskReparametrization_injective_interior)
 
 def triangleAttachmentHomeomorph : DiskAttachment (triangleAttaching P) ≃ₜ TwoSkeleton P :=
   (triangleReparametrizationHomeomorph P).trans
-    (skeletonAttachmentHomeomorph (Set.univ : Set (orderNerveRealization P)) 2)
+    (skeletonAttachmentHomeomorph _ 2)
 
-@[simp] theorem triangleAttachmentHomeomorph_old (x : OneSkeleton P) :
-    (triangleAttachmentHomeomorph P
-      (old (triangleAttaching P) (boundaryFamilyInclusion (StrictOrdTri P) _) x)).val = x.val := rfl
 
-@[simp] theorem triangleAttachmentHomeomorph_cell (t : StrictOrdTri P)
-    (x : ClosedUnitBall (Fin 2 → ℝ)) :
-    (triangleAttachmentHomeomorph P
-      (cell (triangleAttaching P) (boundaryFamilyInclusion (StrictOrdTri P) _) ⟨t, x⟩)).val =
-        triangleDiskMap P t x := by
-  change (skeletonAttachmentHomeomorph (Set.univ : Set (orderNerveRealization P)) 2
-    (triangleReparametrizationHomeomorph P (cell _ _ ⟨t, x⟩))).val = _
-  rw [triangleReparametrizationHomeomorph]
-  erw [diskAttachmentQuotientReparametrization_cell]
-  rw [skeletonAttachmentHomeomorph_cell]
-  exact triangleDiskMap_characteristic P t x
 
 /-- When the nerve is two-dimensional, these are all the cells of the
 actual realization, not just an auxiliary finite or truncated space. -/
@@ -169,5 +144,3 @@ def triangleAttachmentRealizationHomeomorph [Nonempty P]
     DiskAttachment (triangleAttaching P) ≃ₜ orderNerveRealization P :=
   (triangleAttachmentHomeomorph P).trans
     (ClassicalCW.originalTopSkeletonHomeomorph (orderNerveTwoComplex P hP)).symm
-
-end FiniteChains.Comb.OrderTriangleAttachment

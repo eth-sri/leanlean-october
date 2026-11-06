@@ -1,19 +1,15 @@
-module
+import RequestProject.PresValidFinite
+import RequestProject.OrderNerveFiniteCoordinates
+import RequestProject.OrderNerveRealizationMapCoordinates
+import RequestProject.Tac
 
-public import RequestProject.PresValidFinite
-public import RequestProject.OrderNerveFiniteCoordinates
-public import RequestProject.OrderNerveRealizationMapCoordinates
-
-@[expose] public section
 
 /-! The weak topology and exact intersection rule of an arbitrary realized
 rose. Every simplex lies in one four-vertex circle or at the common vertex.
 There is no finiteness assumption on the set of generators. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.PresModel
 open Comb CategoryTheory Simplicial
@@ -28,107 +24,100 @@ def roseCopy (a : α) : Rose PUnit.{1} ↪o Rose α where
     | .edg _ b => .edg a b
   inj' := by
     intro p q h
-    cases p <;> cases q <;> simp_all
+    grind
   map_rel_iff' := by
     intro p q
     change Rose.le _ _ ↔ Rose.le p q
     cases p <;> cases q <;> simp [Rose.le, RelEmbedding.coe_mk]
 
-def roseCopyRealization (a : α) : C(orderNerveRealization (Rose PUnit),
-    orderNerveRealization (Rose α)) :=
-  (orderNerveRealizationMap (roseCopy a) (roseCopy a).monotone).hom
+def roseCopyRealization (a : α) :=
+  (orderNerveRealizationMap _ (roseCopy a).monotone).hom
 
-def orderRoseBase (α : Type) : orderNerveRealization (Rose α) :=
+def orderRoseBase α : orderNerveRealization (Rose α) :=
   orderNerveRealizationVertex Rose.base
 
-theorem realizedMap_vertex {P Q : Type} [PartialOrder P] [PartialOrder Q]
-    (f : P → Q) (hf : Monotone f) (p : P) :
+theorem realizedMap_vertex {P Q} [PartialOrder P] [PartialOrder Q]
+    (f : P → Q) hf p :
     orderNerveRealizationMap f hf (orderNerveRealizationVertex p) =
       orderNerveRealizationVertex (f p) := by
-  have h := congrArg (fun k : TopCat.of (SimplexCategory.toTop.obj ⦋0⦌) ⟶
-      orderNerveRealization Q => k default)
+  have h := congrArg (· default)
     (orderNerveRealizationSimplex_natural f hf (ComposableArrows.mk₀ p))
   exact h
 
-@[simp] theorem roseCopyRealization_base (a : α) :
+@[simp] theorem roseCopyRealization_base a :
     roseCopyRealization a (orderRoseBase PUnit) = orderRoseBase α :=
-  realizedMap_vertex (roseCopy a) (roseCopy a).monotone Rose.base
+  realizedMap_vertex _ _ Rose.base
 
 theorem roseCopyRealization_injective (a : α) : Function.Injective (roseCopyRealization a) :=
-  orderNerveRealizationMap_injective (roseCopy a) (roseCopy a).monotone (roseCopy a).injective
+  orderNerveRealizationMap_injective _ _ (roseCopy a).injective
 
 theorem rose_le_base (p : Rose α) (hp : p ≤ .base) : p = .base := by
-  cases p with
-  | base => rfl
-  | mid a => exact hp.elim
-  | edg a b => exact hp.elim
+  cases p <;> aesop
 
-theorem rose_le_mid_has_copy (a : α) (p : Rose α) (hp : p ≤ .mid a) :
+theorem rose_le_mid_has_copy a (p : Rose α) (hp : p ≤ .mid a) :
     ∃ q, roseCopy a q = p := by
   cases p with
   | base => exact hp.elim
   | mid b => exact ⟨.mid PUnit.unit, congrArg Rose.mid hp.symm⟩
   | edg b s => exact hp.elim
 
-theorem rose_le_edg_has_copy (a : α) (b : Bool) (p : Rose α)
+theorem rose_le_edg_has_copy a b (p : Rose α)
     (hp : p ≤ .edg a b) : ∃ q, roseCopy a q = p := by
   cases p with
-  | base => exact ⟨.base, rfl⟩
+  | base => tauto
   | mid c => exact ⟨.mid PUnit.unit, congrArg Rose.mid hp.symm⟩
   | edg c s =>
-      change c = a ∧ s = b at hp
-      exact ⟨.edg PUnit.unit s, congrArg (fun c => Rose.edg c s) hp.1.symm⟩
+      exact ⟨.edg PUnit.unit s, congrArg (Rose.edg · s) hp.1.symm⟩
 
-theorem roseSimplex_copy_lift {n : SimplexCategory}
-    (s : (nerve (Rose α)).obj (Opposite.op n)) (a : α)
+theorem roseSimplex_copy_lift
+    (s : (nerve (Rose α)).obj (Opposite.op n)) a
     (hs : ∀ i, ∃ p, roseCopy a p = s.obj i) :
     ∃ t : (nerve (Rose PUnit)).obj (Opposite.op n),
       (nerveMap (roseCopy a).monotone.functor).app _ t = s := by
   choose p hp using hs
-  let t : (nerve (Rose PUnit.{1})).obj (Opposite.op n) :=
+  let t :=
     (show Monotone p from fun i j hij =>
       (roseCopy a).le_iff_le.mp (by
         rw [hp i, hp j]
         exact leOfHom (s.map (homOfLE hij)))).functor
   exact ⟨t, CategoryTheory.Functor.ext hp⟩
 
-theorem roseSimplex_cases {n : SimplexCategory}
+theorem roseSimplex_cases
     (s : (nerve (Rose α)).obj (Opposite.op n)) :
     (∀ i, s.obj i = .base) ∨
       ∃ (a : α) (t : (nerve (Rose PUnit)).obj (Opposite.op n)),
         (nerveMap (roseCopy a).monotone.functor).app _ t = s := by
-  let last : Fin (n.len + 1) := Fin.last n.len
-  have hle (i : Fin (n.len + 1)) : s.obj i ≤ s.obj last :=
-    leOfHom (s.map (homOfLE (Fin.le_last i)))
+  let last := Fin.last n.len
+  have hle (i : Fin (n.len + 1)) :=
+    leOfHom (s.map (homOfLE i.le_last))
   cases he : s.obj last with
   | base => exact Or.inl (fun i => rose_le_base _ (he ▸ hle i))
   | mid a =>
       obtain ⟨t, ht⟩ := roseSimplex_copy_lift s a
         (fun i => rose_le_mid_has_copy a _ (he ▸ hle i))
-      exact Or.inr ⟨a, t, ht⟩
+      tauto
   | edg a b =>
       obtain ⟨t, ht⟩ := roseSimplex_copy_lift s a
         (fun i => rose_le_edg_has_copy a b _ (he ▸ hle i))
-      exact Or.inr ⟨a, t, ht⟩
+      tauto
 
-theorem constantSimplex_vertex {P : Type} [PartialOrder P]
-    {n : SimplexCategory} (s : (nerve P).obj (Opposite.op n)) (p : P)
+theorem constantSimplex_vertex {P} [PartialOrder P]
+    {n} s p
     (hs : ∀ i, s.obj i = p) (z : SimplexCategory.toTop.obj n) :
     orderNerveRealizationSimplex P s z = orderNerveRealizationVertex p := by
   apply orderNerveRealizationCoordinates_injective P
   funext q
   rw [orderNerveRealizationCoordinates_simplex, orderNerveRealizationCoordinates_vertex]
   change (∑ i, z.down.weights i * (if s.obj i = q then 1 else 0)) = _
-  simp only [hs, ← Finset.sum_mul, z.down.total_of_fintype, one_mul]
+  simp_all
 
-theorem orderRoseRealization_continuous_iff {X : Type*} [TopologicalSpace X]
+theorem orderRoseRealization_continuous_iff {X} [TopologicalSpace X]
     (f : orderNerveRealization (Rose α) → X) :
     Continuous f ↔ ∀ a, Continuous (f ∘ roseCopyRealization a) := by
   constructor
-  · intro hf a
-    exact hf.comp (roseCopyRealization a).continuous
+  · fun_prop
   · intro hf
-    apply (orderNerveRealization_continuous_iff (Rose α) f).mpr
+    apply (orderNerveRealization_continuous_iff _ f).mpr
     intro n s
     rcases roseSimplex_cases s with hs | ⟨a, t, ht⟩
     · have he : f ∘ orderNerveRealizationSimplex (Rose α) s =
@@ -137,50 +126,44 @@ theorem orderRoseRealization_continuous_iff {X : Type*} [TopologicalSpace X]
       rw [he]
       exact continuous_const
     · have he : roseCopyRealization a ∘ orderNerveRealizationSimplex (Rose PUnit) t =
-          orderNerveRealizationSimplex (Rose α) s := by
+          orderNerveRealizationSimplex _ s := by
         funext z
-        have h := congrArg (fun k => k z)
-          (orderNerveRealizationSimplex_natural (roseCopy a) (roseCopy a).monotone t)
-        simpa only [ht, roseCopyRealization, TopCat.comp_app, Function.comp_apply] using h
+        have h := congrArg (· z)
+          (orderNerveRealizationSimplex_natural _ (roseCopy a).monotone t)
+        aesop
       rw [← he]
-      exact (hf a).comp (orderNerveRealizationSimplex (Rose PUnit) t).hom.continuous
+      exact (hf a).comp (orderNerveRealizationSimplex _ t).hom.continuous
 
-theorem orderRoseRealization_cases (x : orderNerveRealization (Rose α)) :
+theorem orderRoseRealization_cases x :
     x = orderRoseBase α ∨ ∃ a u, roseCopyRealization a u = x := by
-  obtain ⟨n, s, z, rfl⟩ := orderNerveRealizationSimplex_jointly_surjective (Rose α) x
+  obtain ⟨n, s, z, rfl⟩ := orderNerveRealizationSimplex_jointly_surjective _ x
   rcases roseSimplex_cases s with hs | ⟨a, t, ht⟩
   · exact Or.inl (constantSimplex_vertex s .base hs z)
   · right
-    refine ⟨a, orderNerveRealizationSimplex (Rose PUnit) t z, ?_⟩
-    have h := congrArg (fun k => k z)
-      (orderNerveRealizationSimplex_natural (roseCopy a) (roseCopy a).monotone t)
-    simpa only [ht, roseCopyRealization, TopCat.comp_app, Function.comp_apply] using h
+    have h := congrArg (· z)
+      (orderNerveRealizationSimplex_natural _ (roseCopy a).monotone t)
+    aesop
 
-theorem roseCopy_outside {a b : α} (hab : a ≠ b) (q : Rose PUnit)
+theorem roseCopy_outside {a b : α} (hab : a ≠ b) q
     (hq : q ≠ .base) : roseCopy a q ∉ Set.range (roseCopy b) := by
   rintro ⟨p, hp⟩
   cases q <;> cases p <;> simp_all [roseCopy, RelEmbedding.coe_mk]
 
-theorem smallRose_eq_base (x : orderNerveRealization (Rose PUnit))
+theorem smallRose_eq_base x
     (hx : ∀ q, q ≠ .base → orderNerveRealizationCoordinates (Rose PUnit) x q = 0) :
     x = orderRoseBase PUnit := by
   letI : Fintype (Rose PUnit) := Fintype.ofFinite _
-  have hb : orderNerveRealizationCoordinates (Rose PUnit) x .base = 1 := by
+  have hb : orderNerveRealizationCoordinates _ x .base = 1 := by
     calc
-      orderNerveRealizationCoordinates (Rose PUnit) x .base =
-          ∑ q : Rose PUnit, orderNerveRealizationCoordinates (Rose PUnit) x q :=
+      orderNerveRealizationCoordinates _ x .base =
+          ∑ q : Rose PUnit, orderNerveRealizationCoordinates _ x q :=
         (Fintype.sum_eq_single Rose.base hx).symm
       _ = 1 := orderNerveRealizationCoordinates_sum x
-  apply orderNerveRealizationCoordinates_injective (Rose PUnit)
-  funext q
-  rw [orderRoseBase, orderNerveRealizationCoordinates_vertex]
-  by_cases hq : q = .base
-  · subst q
-    simpa using hb
-  · simp only [if_neg (Ne.symm hq), hx q hq]
+  apply orderNerveRealizationCoordinates_injective _
+  grind [orderRoseBase, orderNerveRealizationCoordinates_vertex]
 
 theorem roseCopyRealization_intersection {a b : α} (hab : a ≠ b)
-    (x y : orderNerveRealization (Rose PUnit))
+    x y
     (h : roseCopyRealization a x = roseCopyRealization b y) :
     x = orderRoseBase PUnit ∧ y = orderRoseBase PUnit := by
   have oneSide {a b : α} (hab : a ≠ b) (x y : orderNerveRealization (Rose PUnit))
@@ -188,12 +171,10 @@ theorem roseCopyRealization_intersection {a b : α} (hab : a ≠ b)
       x = orderRoseBase PUnit := by
     apply smallRose_eq_base
     intro q hq
-    have hc := congrArg (fun z => orderNerveRealizationCoordinates (Rose α) z (roseCopy a q)) h
-    dsimp only [roseCopyRealization] at hc
-    rw [orderNerveRealizationCoordinates_map_injective (roseCopy a)
-      (roseCopy a).monotone (roseCopy a).injective] at hc
+    have hc := congrArg (orderNerveRealizationCoordinates (Rose α) · (roseCopy a q)) h
+    dsimp [roseCopyRealization] at hc
+    rw [orderNerveRealizationCoordinates_map_injective _
+      _ (roseCopy a).injective] at hc
     exact hc.trans (orderNerveRealizationCoordinates_map_outside
-      (roseCopy b) (roseCopy b).monotone y (roseCopy a q) (roseCopy_outside hab q hq))
-  exact ⟨oneSide hab x y h, oneSide hab.symm y x h.symm⟩
-
-end FiniteChains.PresModel
+      _ _ y _ (roseCopy_outside hab q hq))
+  tauto

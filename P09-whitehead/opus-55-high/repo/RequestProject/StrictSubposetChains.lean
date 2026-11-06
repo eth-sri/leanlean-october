@@ -1,9 +1,6 @@
-module
+import RequestProject.StrictOrderChains
+import RequestProject.UnivCoverIncl
 
-public import RequestProject.StrictOrderChains
-public import RequestProject.UnivCoverIncl
-
-@[expose] public section
 
 /-! Finite chains and cycles on an actual induced subposet. -/
 namespace FiniteChains.Comb
@@ -11,15 +8,15 @@ universe u
 variable {P : Type u} [PartialOrder P] (S : Set P)
 
 def strictSubposetIncl : Hom (strictOrderCx S) (strictOrderCx P) :=
-  strictOrderCxMap Subtype.val (fun _ _ h => h)
+  strictOrderCxMap Subtype.val (by tauto)
 
 theorem strictSubposetIncl_onE_injective :
     Function.Injective (strictSubposetIncl S).onE := by
   intro a b h
   apply Subtype.ext
   apply Prod.ext <;> apply Subtype.ext
-  · exact congrArg (fun e : StrictOrdEdge P => e.1.1) h
-  · exact congrArg (fun e : StrictOrdEdge P => e.1.2) h
+  · exact congrArg (·.1.1) h
+  · exact congrArg (·.1.2) h
 
 theorem strictSubposetIncl_onF_injective :
     Function.Injective (strictSubposetIncl S).onF := by
@@ -27,10 +24,10 @@ theorem strictSubposetIncl_onF_injective :
   apply Subtype.ext
   apply Prod.ext
   · apply Subtype.ext
-    exact congrArg (fun t : StrictOrdTri P => t.1.1) h
+    exact congrArg (·.1.1) h
   · apply Prod.ext <;> apply Subtype.ext
-    · exact congrArg (fun t : StrictOrdTri P => t.1.2.1) h
-    · exact congrArg (fun t : StrictOrdTri P => t.1.2.2) h
+    · exact congrArg (·.1.2.1) h
+    · exact congrArg (·.1.2.2) h
 
 /-- A triangle is in the induced subcomplex exactly when its three vertices lie in it. -/
 theorem strictSubposetIncl_onF_range (t : StrictOrdTri P) :
@@ -50,15 +47,13 @@ theorem exists_strictSubposet_cycle (c : StrictOrdTri P →₀ ℤ)
     (hc : bdry2 (strictOrderCx P) c = 0) :
     ∃ d : StrictOrdTri S →₀ ℤ,
       chain2 (strictSubposetIncl S) d = c ∧ bdry2 (strictOrderCx S) d = 0 := by
-  let d := Finsupp.comapDomain (strictSubposetIncl S).onF c
+  let d := Finsupp.comapDomain _ c
     (strictSubposetIncl_onF_injective S).injOn
   have hd : chain2 (strictSubposetIncl S) d = c :=
     Finsupp.mapDomain_comapDomain _ (strictSubposetIncl_onF_injective S) c
       (fun t ht => (strictSubposetIncl_onF_range S t).mpr (hs t ht))
   refine ⟨d, hd, ?_⟩
   apply Finsupp.mapDomain_injective (strictSubposetIncl_onE_injective S)
-  change chain1 (strictSubposetIncl S) (bdry2 (strictOrderCx S) d) =
+  change chain1 (strictSubposetIncl S) (bdry2 _ d) =
     Finsupp.mapDomain _ 0
   rw [Finsupp.mapDomain_zero, ← bdry2_chain2, hd, hc]
-
-end FiniteChains.Comb

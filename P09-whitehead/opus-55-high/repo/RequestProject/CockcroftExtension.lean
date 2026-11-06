@@ -1,9 +1,7 @@
-module
+import RequestProject.Cockcroft
+import RequestProject.Pi2Dictionary
+import RequestProject.Tac
 
-public import RequestProject.Cockcroft
-public import RequestProject.Pi2Dictionary
-
-@[expose] public section
 
 /-!
 # Cockcroft complexes and two-dimensional extensions killing `π₂`
@@ -28,46 +26,4 @@ of `ρ` is Cockcroft if and only if it admits a two-dimensional extension which 
 each generator.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-open MonoidAlgebra
-
-universe u
-
-variable {α J : Type u} [Fintype α] [DecidableEq α] [Fintype J]
-
-/-! ### The condition "zero on `π₂`" in cellular form -/
-
-/-! ### The capped extension: adjoin a disk along every generator -/
-
-/-- The presentation obtained from `ρ` by attaching a disk along each generator. -/
-def capRel (ρ : J → FreeGroup α) : J ⊕ α → FreeGroup α :=
-  Sum.elim ρ fun i => FreeGroup.of i
-
-omit [Fintype α] [DecidableEq α] [Fintype J] in
-/-- The capped presentation presents the trivial group: its complex is simply connected. -/
-theorem capRel_relSub_top (ρ : J → FreeGroup α) : relSub (capRel ρ) = ⊤ := by
-  refine (Subgroup.eq_top_iff' _).2 fun w => ?_
-  induction w using FreeGroup.induction_on with
-  | one => exact one_mem _
-  | of i => exact Subgroup.subset_normalClosure ⟨Sum.inr i, rfl⟩
-  | inv_of i _ => exact inv_mem (Subgroup.subset_normalClosure ⟨Sum.inr i, rfl⟩)
-  | mul x y hx hy => exact mul_mem hx hy
-
-instance capPresGroup_subsingleton (ρ : J → FreeGroup α) :
-    Subsingleton (PresGroup (capRel ρ)) := by
-  constructor
-  intro x y
-  induction x using QuotientGroup.induction_on with
-  | H x =>
-    induction y using QuotientGroup.induction_on with
-    | H y =>
-      refine QuotientGroup.eq.2 ?_
-      rw [capRel_relSub_top]
-      trivial
-
-end FiniteChains
+bwd

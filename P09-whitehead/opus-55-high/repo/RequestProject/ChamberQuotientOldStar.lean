@@ -1,8 +1,5 @@
-module
+import RequestProject.ChamberQuotientCycleGeneration
 
-public import RequestProject.ChamberQuotientCycleGeneration
-
-@[expose] public section
 
 /-! The quotient is an unmixed union of its actual old cells and the inserted-base star. -/
 namespace FiniteChains.Davis
@@ -29,11 +26,9 @@ theorem qOld_baseStar_unmixed (p r : Qpos A X att) (h : p ≤ r) :
   cases p with
   | inl c =>
     cases r with
-    | inl d => exact Or.inl ⟨trivial, trivial⟩
-    | inr y => exact False.elim h
+    | inl d => tauto
+    | inr y => exact h.elim
   | inr x =>
     cases r with
     | inl d => exact Or.inr ⟨trivial, h.1⟩
-    | inr y => exact Or.inr ⟨trivial, trivial⟩
-
-end FiniteChains.Davis
+    | inr y => tauto

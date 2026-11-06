@@ -1,4 +1,3 @@
-module
-public import RequestProject.ChamberZCoverCellularGeneration
-public import RequestProject.OrderSubposetChains
-public import RequestProject.OrderNerveH2Maps
+import RequestProject.ChamberZCoverCellularGeneration
+import RequestProject.OrderSubposetChains
+import RequestProject.OrderNerveH2Maps

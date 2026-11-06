@@ -1,8 +1,5 @@
-module
+import RequestProject.CylinderCoverCollapsedCircle
 
-public import RequestProject.CylinderCoverCollapsedCircle
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
 open Comb
@@ -28,14 +25,12 @@ theorem cylinderCoverCollapsedCircle_coordinates :
             (cylinderCoverRoseEnd_isPosetCover w f hf)
             (cylinderCoverCollapsedLetterMidpoint w j f hf m hp k)) 1 := by
   classical
-  change roseCoverGeneratorCoordinates (cylinderCoverRoseEnd w f)
-    (cylinderCoverRoseEnd_isPosetCover w f hf)
+  change roseCoverGeneratorCoordinates _
+    _
       (cylinderCoverCollapsedRoseChain w f hf
         (chain1 (strictOrderCxMap m hm) (relatorCircleFundamentalChain w j))) = _
   rw [cylinderCoverCollapsedCircle_chain w j f hf m hm hp]
-  exact roseCoverFundamentalChain_coordinates w j (cylinderCoverRoseEnd w f)
-    (cylinderCoverRoseEnd_isPosetCover w f hf) (cylinderCoverCollapsedCircle w j f hf m)
-    (cylinderCoverCollapsedCircle_strictMono w j f hf m hm hp)
-    (cylinderCoverCollapsedCircle_projection w j f hf m hp)
-
-end FiniteChains.PresModel
+  exact roseCoverFundamentalChain_coordinates w j _
+    _ _
+    _
+    _

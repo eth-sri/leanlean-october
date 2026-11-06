@@ -1,10 +1,7 @@
-module
+import RequestProject.PosetCoverPullback
+import RequestProject.NerveUpperSectionReflection
+import RequestProject.TruncatedCubePoset
 
-public import RequestProject.PosetCoverPullback
-public import RequestProject.NerveUpperSectionReflection
-public import RequestProject.TruncatedCubePoset
-
-@[expose] public section
 
 /-! Pulling a genuine old-cell covering back to the actual truncated block. -/
 namespace FiniteChains.Davis
@@ -28,13 +25,10 @@ def truncatedCoverSection (p : P) : TruncatedCover f :=
   ⟨(p, oldCellIncl (f p)), rfl⟩
 
 theorem truncatedCoverSection_monotone (hf : Monotone f) :
-    Monotone (truncatedCoverSection f) := fun _ _ h => ⟨h, oldCellIncl_monotone (hf h)⟩
+    Monotone (truncatedCoverSection f) := by tauto
 
-omit [DecidableEq V] [PartialOrder P] in
-@[simp] theorem truncatedCoverRetraction_section (p : P) :
-    truncatedCoverRetraction f (truncatedCoverSection f p) = p := rfl
 
-theorem truncatedCover_le_section_retraction (p : TruncatedCover f) :
+theorem truncatedCover_le_section_retraction p :
     p ≤ truncatedCoverSection f (truncatedCoverRetraction f p) := by
   refine ⟨le_refl _, ?_⟩
   change p.1.2 ≤ oldCellIncl (f p.1.1)
@@ -43,12 +37,10 @@ theorem truncatedCover_le_section_retraction (p : TruncatedCover f) :
 
 /-- Actual filling reflection in every old-cell covering, without a homology hypothesis. -/
 theorem truncatedCoverRetraction_reflects_boundaries (hf : Monotone f)
-    (c : Ch (TruncatedCover f)) (hc : c ∈ Inc (TruncatedCover f))
+    c (hc : c ∈ Inc (TruncatedCover f))
     (hcyc : Nerve.bdry c = 0)
     (hbound : ∃ y ∈ Inc P, Nerve.bdry y = cmap (truncatedCoverRetraction f) c) :
     ∃ y ∈ Inc (TruncatedCover f), Nerve.bdry y = c :=
-  boundary_reflection_of_upper_section (truncatedCoverRetraction f) (truncatedCoverSection f)
+  boundary_reflection_of_upper_section _ _
     (posetPullbackOriginal_monotone f _) (truncatedCoverSection_monotone f hf)
     (truncatedCover_le_section_retraction f) c hc hcyc hbound
-
-end FiniteChains.Davis

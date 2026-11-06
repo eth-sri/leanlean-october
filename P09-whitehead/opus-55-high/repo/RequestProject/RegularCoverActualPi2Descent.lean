@@ -1,10 +1,7 @@
-module
+import RequestProject.PushoutActualCycleGeneration
+import RequestProject.Pi2GenerationBaseChange
+import RequestProject.MapChainDescent
 
-public import RequestProject.PushoutActualCycleGeneration
-public import RequestProject.Pi2GenerationBaseChange
-public import RequestProject.MapChainDescent
-
-@[expose] public section
 
 /-! The geometric generation input for regular-cover descent is now a
 theorem. The explicit edge/face compatibility records actual deck maps,
@@ -24,7 +21,7 @@ theorem isConnected_of_covering (hD : IsConnected D) : IsConnected K := by
   intro x y
   obtain ⟨d, rfl⟩ := hp.surjV x
   obtain ⟨e, rfl⟩ := hp.surjV y
-  obtain ⟨l, hl⟩ := hD d e
+  cases' hD d e with l hl
   exact ⟨mapPath p l, isPath_mapPath p hl⟩
 
 include hp hr he hf in
@@ -41,9 +38,7 @@ theorem regularCover_cycle_mem_pi2FromSub_span
     c ∈ Submodule.span ℤ (Pi2FromSub (pushoutMap p i hiV hiE hiF) x) := by
   have hT := isConnected_pushoutComplex p i hiV hiE
     (isConnected_of_covering p hp hDconn) hL d₀
-  obtain ⟨l, hl⟩ := hT x ((pushoutMap p i hiV hiE hiF).onV (i.onV d₀))
+  cases' hT x ((pushoutMap p i hiV hiE hiF).onV (i.onV d₀)) with l hl
   apply pi2Generated_changeBase (pushoutMap p i hiV hiE hiF) hl _ c hc
   exact PushoutRelativeCopies.cycle_mem_span_at_core p hp a hr he hf i hiV hiE hiF
     hDconn hL d₀ ht hD hT
-
-end FiniteChains.Comb

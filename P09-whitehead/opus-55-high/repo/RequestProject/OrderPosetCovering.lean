@@ -1,9 +1,6 @@
-module
+import RequestProject.OrderComplexGluing
+import RequestProject.CombCoveringLift
 
-public import RequestProject.OrderComplexGluing
-public import RequestProject.CombCoveringLift
-
-@[expose] public section
 
 /-!
 # A combinatorial criterion for a monotone map to induce a covering of order complexes
@@ -23,8 +20,7 @@ Both the germ condition and the two-cell condition of `Comb.IsCovering` are veri
 interval bijections; no finiteness, connectivity or freeness of a group action is used.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -49,14 +45,14 @@ variable {f : P → Q} (hf : IsPosetCover f)
 include hf
 
 /-- Two elements above `a` with the same image agree. -/
-theorem up_inj {a b b' : P} (hb : a ≤ b) (hb' : a ≤ b') (h : f b = f b') : b = b' := by
-  obtain ⟨c, -, huniq⟩ := hf.up a (f b) (hf.mono hb)
-  rw [huniq b ⟨hb, rfl⟩, huniq b' ⟨hb', h.symm⟩]
+theorem up_inj (hb : a ≤ b) (hb' : a ≤ b') (h : f b = f b') : b = b' := by
+  obtain ⟨c, -, huniq⟩ := hf.up a _ (hf.mono hb)
+  grind
 
 /-- Two elements below `a` with the same image agree. -/
-theorem down_inj {a b b' : P} (hb : b ≤ a) (hb' : b' ≤ a) (h : f b = f b') : b = b' := by
-  obtain ⟨c, -, huniq⟩ := hf.down a (f b) (hf.mono hb)
-  rw [huniq b ⟨hb, rfl⟩, huniq b' ⟨hb', h.symm⟩]
+theorem down_inj {a b b'} (hb : b ≤ a) (hb' : b' ≤ a) (h : f b = f b') : b = b' := by
+  obtain ⟨c, -, huniq⟩ := hf.down a _ (hf.mono hb)
+  grind
 
 end IsPosetCover
 
@@ -69,39 +65,39 @@ theorem isCovering_orderCxMap {f : P → Q} (hf : IsPosetCover f) :
     intro a
     constructor
     · rintro ⟨⟨e, b⟩, he⟩ ⟨⟨e', b'⟩, he'⟩ hEq
-      have hb : b = b' := congrArg (fun g : Germ (orderCx Q) _ => g.1.2) hEq
+      have hb := congrArg (·.1.2) hEq
       subst hb
-      have hE : ((f e.1.1, f e.1.2) : Q × Q) = (f e'.1.1, f e'.1.2) :=
-        congrArg (fun g : Germ (orderCx Q) _ => (g.1.1.1.1, g.1.1.1.2)) hEq
-      have h1 : f e.1.1 = f e'.1.1 := congrArg Prod.fst hE
-      have h2 : f e.1.2 = f e'.1.2 := congrArg Prod.snd hE
+      have hE :=
+        congrArg (fun g => (g.1.1.1.1, g.1.1.1.2)) hEq
+      have h1 := congrArg Prod.fst hE
+      have h2 := congrArg Prod.snd hE
       refine Subtype.ext (Prod.ext ?_ rfl)
       cases b with
       | false =>
           -- both edges end at `a`
           have hae : e.1.2 = a := he
           have hae' : e'.1.2 = a := he'
-          have hfst : e.1.1 = e'.1.1 :=
-            hf.down_inj (a := a) (by rw [← hae]; exact e.2) (by rw [← hae']; exact e'.2) h1
-          exact Subtype.ext (Prod.ext hfst (hae.trans hae'.symm))
+          have hfst :=
+            hf.down_inj (a := a) (by grind) (by grind) h1
+          exact Subtype.ext (by grind)
       | true =>
           have hae : e.1.1 = a := he
           have hae' : e'.1.1 = a := he'
-          have hsnd : e.1.2 = e'.1.2 :=
-            hf.up_inj (a := a) (by rw [← hae]; exact e.2) (by rw [← hae']; exact e'.2) h2
-          exact Subtype.ext (Prod.ext (hae.trans hae'.symm) hsnd)
+          have hsnd :=
+            hf.up_inj (a := a) (by grind) (by grind) h2
+          exact Subtype.ext (by grind)
     · rintro ⟨⟨d, b⟩, hd⟩
       cases b with
       | true =>
           have hfa : f a = d.1.1 := hd.symm
-          have hle : f a ≤ d.1.2 := by rw [hfa]; exact d.2
+          have hle : f a ≤ d.1.2 := by grind
           obtain ⟨c, ⟨hac, hfc⟩, -⟩ := hf.up a d.1.2 hle
           refine ⟨⟨(⟨(a, c), hac⟩, true), rfl⟩, ?_⟩
           refine Subtype.ext (Prod.ext ?_ rfl)
           exact Subtype.ext (Prod.ext hfa hfc)
       | false =>
           have hfa : f a = d.1.2 := hd.symm
-          have hle : d.1.1 ≤ f a := by rw [hfa]; exact d.2
+          have hle : d.1.1 ≤ f a := by grind
           obtain ⟨c, ⟨hca, hfc⟩, -⟩ := hf.down a d.1.1 hle
           refine ⟨⟨(⟨(c, a), hca⟩, false), rfl⟩, ?_⟩
           refine Subtype.ext (Prod.ext ?_ rfl)
@@ -110,26 +106,21 @@ theorem isCovering_orderCxMap {f : P → Q} (hf : IsPosetCover f) :
     constructor
     · rintro t t' hEq
       have hbase : t.1.1 = t'.1.1 :=
-        congrArg (fun g : {gv : (orderCx Q).F × (orderCx P).V //
-          (orderCx Q).base gv.1 = f gv.2} => g.1.2) hEq
-      have hT : ((f t.1.1, f t.1.2.1, f t.1.2.2) : Q × Q × Q)
+        congrArg (·.1.2) hEq
+      have hT : ((f t.1.1, f t.1.2.1, f t.1.2.2))
           = (f t'.1.1, f t'.1.2.1, f t'.1.2.2) :=
-        congrArg (fun g : {gv : (orderCx Q).F × (orderCx P).V //
-          (orderCx Q).base gv.1 = f gv.2} => g.1.1.1) hEq
-      have h2 : f t.1.2.1 = f t'.1.2.1 := congrArg (fun z : Q × Q × Q => z.2.1) hT
-      have h3 : f t.1.2.2 = f t'.1.2.2 := congrArg (fun z : Q × Q × Q => z.2.2) hT
-      have hmid : t.1.2.1 = t'.1.2.1 :=
-        hf.up_inj t.2.1 (by rw [hbase]; exact t'.2.1) h2
-      have htop : t.1.2.2 = t'.1.2.2 :=
-        hf.up_inj (t.2.1.trans t.2.2) (by rw [hbase]; exact t'.2.1.trans t'.2.2) h3
-      exact Subtype.ext (Prod.ext hbase (Prod.ext hmid htop))
+        congrArg (·.1.1.1) hEq
+      have h2 : f t.1.2.1 = f t'.1.2.1 := by simp_all
+      have h3 : f t.1.2.2 = f t'.1.2.2 := by simp_all
+      have hmid :=
+        hf.up_inj t.2.1 (by grind) h2
+      have htop :=
+        hf.up_inj (t.2.1.trans t.2.2) (by grind) h3
+      exact Subtype.ext (by grind)
     · rintro ⟨⟨s, a⟩, hs⟩
       have hfa : f a = s.1.1 := hs.symm
-      obtain ⟨b, ⟨hab, hfb⟩, -⟩ := hf.up a s.1.2.1 (by rw [hfa]; exact s.2.1)
-      obtain ⟨c, ⟨hbc, hfc⟩, -⟩ := hf.up b s.1.2.2 (by rw [hfb]; exact s.2.2)
+      obtain ⟨b, ⟨hab, hfb⟩, -⟩ := hf.up a s.1.2.1 (by grind)
+      obtain ⟨c, ⟨hbc, hfc⟩, -⟩ := hf.up b s.1.2.2 (by grind)
       refine ⟨⟨(a, b, c), hab, hbc⟩, ?_⟩
       refine Subtype.ext (Prod.ext ?_ rfl)
-      exact Subtype.ext (Prod.ext hfa (Prod.ext hfb hfc))
-
-end Comb
-end FiniteChains
+      exact Subtype.ext (by aesop)

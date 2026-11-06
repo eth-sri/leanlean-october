@@ -1,14 +1,13 @@
-module
-
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
-public import RequestProject.TopologicalSingular.SingularPrism
-public import Mathlib.Algebra.Homology.Homotopy
-public import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
-public import Mathlib.Topology.Homotopy.Equiv
-public import Mathlib.CategoryTheory.Whiskering
+import RequestProject.TopologicalSingular.SingularPrism
+import Mathlib.Algebra.Homology.Homotopy
+import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
+import Mathlib.Topology.Homotopy.Equiv
+import Mathlib.CategoryTheory.Whiskering
+import RequestProject.Tac
+noncomputable section
 
-@[expose] public section
 
 /-! # Continuous homotopies induce actual chain homotopies
 
@@ -17,9 +16,7 @@ complex already defined in this project. Consequently homotopic maps have
 equal maps on homology. No homology comparison or exactness is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.TopologicalSingular
 
@@ -28,14 +25,14 @@ open CategoryTheory AlgebraicTopology
 universe u
 variable {X Y Z : Type u} [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
 
-noncomputable def simplicesMap (f : C(X, Y)) : simplices X ⟶ simplices Y where
+def simplicesMap (f : C(X, Y)) : simplices X ⟶ simplices Y where
   app n := TypeCat.ofHom (simplexMap f n.unop.len)
   naturality _ _ _ := rfl
 
-noncomputable def chainMap (f : C(X, Y)) : complex X ⟶ complex Y :=
+def chainMap (f : C(X, Y)) : complex X ⟶ complex Y :=
   AlternatingFaceMapComplex.map (Functor.whiskerRight (simplicesMap f) freeZ)
 
-theorem chainMap_f (f : C(X, Y)) (n : ℕ) :
+theorem chainMap_f (f : C(X, Y)) n :
     (chainMap f).f n = ModuleCat.ofHom (map f n) := rfl
 
 theorem chainMap_id : chainMap (ContinuousMap.id X) = 𝟙 (complex X) := by
@@ -51,24 +48,21 @@ theorem chainMap_comp (f : C(X, Y)) (g : C(Y, Z)) :
   apply ModuleCat.hom_ext
   exact map_comp f g n
 
-noncomputable def prismComponent {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
+def prismComponent {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
     (i j : ℕ) : (complex X).X i ⟶ (complex Y).X j :=
   if h : j = i + 1 then h ▸ ModuleCat.ofHom (SingularPrism.prism H i) else 0
 
-theorem prismComponent_succ {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g) (i : ℕ) :
+theorem prismComponent_succ {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g) i :
     prismComponent H i (i + 1) = ModuleCat.ofHom (SingularPrism.prism H i) := by
   simp [prismComponent]
 
-noncomputable def chainHomotopy {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g) :
+def chainHomotopy {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g) :
     _root_.Homotopy (chainMap g) (chainMap f) where
   hom := prismComponent H
   zero i j hij := by
     have hne : j ≠ i + 1 := by
-      intro he
-      apply hij
-      subst j
-      exact rfl
-    simp only [prismComponent, dif_neg hne]
+      tauto
+    simp [prismComponent, dif_neg hne]
   comm i := by
     cases i with
     | zero =>
@@ -92,7 +86,7 @@ noncomputable def chainHomotopy {f g : C(X, Y)} (H : ContinuousMap.Homotopy f g)
       rw [add_comm (SingularPrism.prism H i (boundary i c)), hh]
       abel
 
-noncomputable def chainHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) :
+def chainHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) :
     _root_.HomotopyEquiv (complex X) (complex Y) where
   hom := chainMap e.toFun
   inv := chainMap e.invFun
@@ -103,8 +97,5 @@ noncomputable def chainHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) :
     rw [← chainMap_comp, ← chainMap_id]
     exact (chainHomotopy e.right_inv.some).symm
 
-noncomputable def homologyIsoOfHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) (n : ℕ) :
-    (complex X).homology n ≅ (complex Y).homology n :=
+def homologyIsoOfHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) n :=
   (chainHomotopyEquiv e).toHomologyIso n
-
-end FiniteChains.TopologicalSingular

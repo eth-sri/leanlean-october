@@ -1,8 +1,5 @@
-module
+import RequestProject.ChamberQuotientAttachingCover
 
-public import RequestProject.ChamberQuotientAttachingCover
-
-@[expose] public section
 
 /-! The whole base star retracts down onto the actual inserted base. -/
 namespace FiniteChains.Davis
@@ -23,7 +20,7 @@ theorem qBaseStarToBase_monotone : Monotone (qBaseStarToBase (att := att)) := by
   | inl c =>
     cases r with
     | inl d => exact att.monotone h.1
-    | inr y => exact False.elim h
+    | inr y => exact h.elim
   | inr x =>
     cases r with
     | inl d =>
@@ -39,18 +36,12 @@ theorem qBaseStarRetraction_monotone : Monotone (qBaseStarRetraction (att := att
 
 theorem qBaseStarRetraction_le (p : QBaseStar (att := att)) :
     qBaseStarRetraction p ≤ p.1 := by
-  rcases p with ⟨p, hp⟩
+  cases' p with p hp
   cases p with
   | inl c =>
     exact ⟨hp, Finset.nonempty_iff_ne_empty.mpr (fun h => c.2 ⟨h, hp⟩), le_refl _⟩
-  | inr x => exact le_refl _
+  | inr x => rfl
 
 omit [DecidableEq V] in
 theorem qBaseStarRetraction_mem_base (p : QBaseStar (att := att)) :
     InQBase (qBaseStarRetraction p) := ⟨qBaseStarToBase p, rfl⟩
-
-omit [DecidableEq V] in
-@[simp] theorem qBaseStarRetraction_new (x : X) :
-    qBaseStarRetraction (att := att) ⟨qNew x, trivial⟩ = qNew x := rfl
-
-end FiniteChains.Davis

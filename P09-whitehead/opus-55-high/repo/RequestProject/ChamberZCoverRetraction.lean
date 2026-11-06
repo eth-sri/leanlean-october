@@ -1,11 +1,8 @@
-module
+import RequestProject.ChamberZCellular
+import RequestProject.PosetCoverDownTransform
+import RequestProject.PosetCoverRestriction
+import RequestProject.OrderUniversalPosetCover
 
-public import RequestProject.ChamberZCellular
-public import RequestProject.PosetCoverDownTransform
-public import RequestProject.PosetCoverRestriction
-public import RequestProject.OrderUniversalPosetCover
-
-@[expose] public section
 
 /-! The actual marked-chamber retraction on covering posets. -/
 namespace FiniteChains.Davis
@@ -19,33 +16,28 @@ variable {V : Type u} [DecidableEq V] {A : CommRel V}
 to the actual preimage of the inserted base. The retraction is constructed by unique
 downward interval lifts of the geometric chamber retraction. -/
 theorem acyclicRelIn_cover_marked_chamber [Nonempty X] (hf : IsPosetCover f)
-    (w : CayGroup A) (hw : M w) :
+    w (hw : M w) :
     AcyclicRelIn (fun p => InZChamber w (f p)) (fun p => InZBase (f p)) := by
   let S : Set (Zpos A X M att) := {z | InZChamber w z}
   let fc := posetCoverRestriction f S
-  have hfc : IsPosetCover fc := IsPosetCover.restriction f S hf
-  let g : S → S := zChamberRetr (att := att) hw
+  have hfc := IsPosetCover.restriction f S hf
+  let g := zChamberRetr (att := att) hw
   have hgle : ∀ q, g q ≤ q := zChamberRetr_le hw
   let ρ := hfc.downTransform g hgle
-  have hmono : Monotone ρ := hfc.downTransform_monotone g (zChamberRetr_monotone hw) hgle
-  have hρle : ∀ q, ρ q ≤ q := hfc.downTransform_le g hgle
+  have hmono := hfc.downTransform_monotone g (zChamberRetr_monotone hw) hgle
+  have hρle := hfc.downTransform_le g hgle
   have hbase : ∀ q, InZBase (f (ρ q).1) := by
     intro q
     have he := congrArg Subtype.val (hfc.downTransform_spec g hgle q).2
-    obtain ⟨x, hx⟩ := zChamberRetr_mem hw (fc q)
+    cases' zChamberRetr_mem hw (fc q) with x hx
     have hb : InZBase (g (fc q)).1 := by
-      change InZBase (zChamberRetr (att := att) hw (fc q)).1
       rw [hx]
       trivial
     change f (ρ q).1 = (g (fc q)).1 at he
-    rw [he]
-    exact hb
+    simp_all
   have hne : ∃ p : P, InZChamber w (f p) := by
     let x : X := Classical.choice inferInstance
-    obtain ⟨p, hp⟩ := hf.surj (zNew (att := att) ⟨w, hw⟩ x)
+    cases' hf.surj (zNew (att := att) ⟨w, hw⟩ x) with p hp
     refine ⟨p, ?_⟩
-    rw [hp]
-    rfl
+    aesop
   exact acyclicRelIn_of_retraction hne ρ hmono hρle hbase
-
-end FiniteChains.Davis

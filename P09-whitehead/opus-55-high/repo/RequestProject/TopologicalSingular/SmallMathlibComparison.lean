@@ -1,3 +1,2 @@
-module
-public import RequestProject.TopologicalSingular.SmallChainQuasiIso
-public import RequestProject.TopologicalSingular.MathlibComparison
+import RequestProject.TopologicalSingular.SmallChainQuasiIso
+import RequestProject.TopologicalSingular.MathlibComparison

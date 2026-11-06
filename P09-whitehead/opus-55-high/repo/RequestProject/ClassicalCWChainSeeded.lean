@@ -1,18 +1,14 @@
-module
+import RequestProject.ClassicalCWChainPresentation
+import RequestProject.ClassicalChartedGraphComparison
+import RequestProject.Tac
 
-public import RequestProject.ClassicalCWChainPresentation
-public import RequestProject.ClassicalChartedGraphComparison
-
-@[expose] public section
 
 /-! Prescribed original graph words are retained at stage zero. The
 remaining cells still obtain actual words and homotopies from the graph
 approximation theorem. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment PresModel
@@ -23,44 +19,41 @@ variable (K : Whitehead.TwoComplex) {n : ℕ}
   (hC : Monotone C)
 
 def seededChoices
-    (W : ∀ _j : RelCWComplex.cell (C 0 : Set K) 2,
+    (W : ∀ _j,
       BoundaryWords (skeletonAttachingMap (C 0 : Set K) 1))
     (hW : ∀ j, (subcomplexCellBoundary (C 0) j).Homotopic (W j).boundaryMap) : Choices C where
   cellWord i j := if hi : i = 0 then by subst i; exact W j
     else Classical.choose (subcomplexCellBoundary_word_exists (C i) j)
   cellWord_spec i j := by
     split_ifs with hi
-    · subst i
-      exact hW j
-    · exact Classical.choose_spec (subcomplexCellBoundary_word_exists (C i) j)
+    · aesop
+    grind
 
 theorem seededChoices_zero
-    (W : ∀ _j : RelCWComplex.cell (C 0 : Set K) 2,
-      BoundaryWords (skeletonAttachingMap (C 0 : Set K) 1))
-    (hW : ∀ j, (subcomplexCellBoundary (C 0) j).Homotopic (W j).boundaryMap)
-    (j : RelCWComplex.cell (C 0 : Set K) 2) :
+    W
+    hW
+    j :
     Choices.cellWord (self := seededChoices K C W hW) 0 j = W j := by
   rfl
 
-theorem word_zero [Choices C] (j : RelCWComplex.cell (C 0 : Set K) 2) :
+theorem word_zero [Choices C] j :
     word C hC 0 j = Choices.cellWord 0 j := by
   have hh (a : Fin (n + 1)) (ha : a ≤ 0) (hj : j.val ∈ (C a).I 2) :
       (Choices.cellWord a ⟨j.val, hj⟩).map (subcomplexGraphInclusion (hC ha)) =
         Choices.cellWord 0 j := by
-    have hz : a = 0 := le_antisymm ha (Fin.zero_le _)
+    have hz : a = 0 := by simp_all
     subst a
-    have he : subcomplexGraphInclusion (hC ha) = Comb.Hom.id (subcomplexGraph (C 0)) := by
+    have he : subcomplexGraphInclusion (hC ha) = Comb.Hom.id _ := by
       apply Comb.Hom.ext'
       · rfl
       · rfl
       · funext f
-        exact Empty.elim f
+        exact f.elim
     rw [he]
-    change (Choices.cellWord 0 j).map (Comb.Hom.id (subcomplexGraph (C 0))) = Choices.cellWord 0 j
     cases Choices.cellWord 0 j
     simp [BoundaryWords.map, Comb.Hom.id, Comb.mapPath]
-  exact hh (birth C (topCell C hC 0 j))
-    (birth_le C (topCell C hC 0 j) 0 j.property) (birth_mem C (topCell C hC 0 j))
+  exact hh _
+    (birth_le C _ 0 j.property) _
 
 def seededTreeChoice (T : Comb.SpanningTree (subcomplexGraph (C 0))) : TreeChoice K C := ⟨some T⟩
 
@@ -71,11 +64,9 @@ open ClassicalGraphModel Comb Topology
 open scoped Classical
 variable (K : Whitehead.TwoComplex) (T : SpanningTree (originalGraph K))
 
-abbrev FixedGen := SpanningTree.NonTree T ⊕ PUnit.{1}
+abbrev FixedGen := T.NonTree ⊕ PUnit.{1}
 abbrev FixedRel := RelCWComplex.cell (Set.univ : Set K) 2 ⊕ PUnit.{1}
 
 def fixedRelators : FixedRel K → FreeGroup (FixedGen K T)
   | .inl j => FreeGroup.map Sum.inl (SpanningTree.pathWord T (fixedGraphWord K j).loopWord)
   | .inr _ => FreeGroup.of (Sum.inr PUnit.unit)
-
-end FiniteChains.ClassicalCW

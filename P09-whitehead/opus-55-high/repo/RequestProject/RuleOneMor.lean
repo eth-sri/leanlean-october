@@ -1,3 +1,2 @@
-module
-public import RequestProject.GenerationIterate
-public import RequestProject.Pi2FreeGenerator
+import RequestProject.GenerationIterate
+import RequestProject.Pi2FreeGenerator

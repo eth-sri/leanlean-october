@@ -1,16 +1,13 @@
-module
+import RequestProject.FoxWordPrefixSum
+import RequestProject.CoverChainComplex
 
-public import RequestProject.FoxWordPrefixSum
-public import RequestProject.CoverChainComplex
-
-@[expose] public section
 
 namespace FiniteChains
 variable {α : Type*} [DecidableEq α]
   (N : Subgroup (FreeGroup α)) [N.Normal]
 
 /-- Projected Fox coefficients are the signed group-ring incidences at actual word prefixes. -/
-theorem coverFox_mk_prefix_sum (i : α) (l : List (α × Bool)) :
+theorem coverFox_mk_prefix_sum i (l : List (α × Bool)) :
     proj N (fox i (FreeGroup.mk l)) =
       ∑ k : Fin l.length,
         if i = l[k.val].1 then
@@ -30,5 +27,3 @@ theorem coverFox_mk_prefix_sum (i : α) (l : List (α × Bool)) :
         MonoidAlgebra.single_mul_single, grp_eq_single, proj_single,
         QuotientGroup.mk_inv]
   · simp [foxWordIncidence, hi]
-
-end FiniteChains

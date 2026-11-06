@@ -1,4 +1,3 @@
-module
-public import RequestProject.NecessityAlgebraic
-public import RequestProject.TorsionFreeGroupRing
-public import RequestProject.ChainFormulaMod
+import RequestProject.NecessityAlgebraic
+import RequestProject.TorsionFreeGroupRing
+import RequestProject.ChainFormulaMod

@@ -1,3 +1,2 @@
-module
-public import RequestProject.ChamberQuotientCanonicalGeneration
-public import RequestProject.ChamberZConnected
+import RequestProject.ChamberQuotientCanonicalGeneration
+import RequestProject.ChamberZConnected

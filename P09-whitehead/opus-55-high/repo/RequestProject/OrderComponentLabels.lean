@@ -1,9 +1,6 @@
-module
+import RequestProject.ComponentComplex
+import RequestProject.OrderComplexGluing
 
-public import RequestProject.ComponentComplex
-public import RequestProject.OrderComplexGluing
-
-@[expose] public section
 
 /-! Actual path components of an order complex, as labels of its vertices. -/
 namespace FiniteChains.Comb
@@ -21,12 +18,10 @@ def orderComponentLabel (p : P) : OrderComponent P := Quotient.mk _ p
 
 variable {P}
 
-theorem orderComponentLabel_eq_iff (a b : P) :
+theorem orderComponentLabel_eq_iff a b :
     orderComponentLabel P a = orderComponentLabel P b ↔ Reach (orderCx P) a b :=
   Quotient.eq_iff_equiv
 
-theorem orderComponentLabel_eq_of_le {a b : P} (h : a ≤ b) :
+theorem orderComponentLabel_eq_of_le (h : a ≤ b) :
     orderComponentLabel P a = orderComponentLabel P b :=
   Quotient.sound ⟨[ordPos h], isPath_ordPos h⟩
-
-end FiniteChains.Comb

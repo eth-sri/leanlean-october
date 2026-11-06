@@ -1,8 +1,5 @@
-module
+import RequestProject.CoverChainComplex
 
-public import RequestProject.CoverChainComplex
-
-@[expose] public section
 
 /-!
 # The boundaries of the cover are the Fox vectors of the relator subgroup
@@ -38,15 +35,15 @@ theorem exists_mem_smul_foxVec {P : Subgroup (FreeGroup α)} [P.Normal] (hP : P 
     ∃ w ∈ P, x • foxVec Nsub r = foxVec Nsub w := by
   classical
   induction x using MonoidAlgebra.induction_linear with
-  | zero => exact ⟨1, Subgroup.one_mem _, by simp⟩
+  | zero => aesop
   | add x₁ x₂ h₁ h₂ =>
       obtain ⟨w₁, hw₁, e₁⟩ := h₁
       obtain ⟨w₂, hw₂, e₂⟩ := h₂
       exact ⟨w₁ * w₂, Subgroup.mul_mem _ hw₁ hw₂, by
         rw [foxVec_mul (hP hw₁), ← e₁, ← e₂, add_smul]⟩
   | single q n =>
-      obtain ⟨f, rfl⟩ := Quotient.exists_rep q
-      have hconj : f * r * f⁻¹ ∈ P := Subgroup.Normal.conj_mem ‹P.Normal› r hr f
+      obtain ⟨f, rfl⟩ := q.exists_rep
+      have hconj := Subgroup.Normal.conj_mem ‹P.Normal› r hr f
       refine ⟨(f * r * f⁻¹) ^ n, Subgroup.zpow_mem _ hconj n, ?_⟩
       have hsingle : (single (QuotientGroup.mk f : FreeGroup α ⧸ Nsub) n : CoverRing Nsub)
           = n • proj Nsub (grp f) := by
@@ -55,5 +52,3 @@ theorem exists_mem_smul_foxVec {P : Subgroup (FreeGroup α)} [P.Normal] (hP : P 
         hsingle, smul_assoc]
 
 variable (Nsub ρ)
-
-end FiniteChains

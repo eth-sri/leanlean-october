@@ -1,2 +1,1 @@
-module
-public import RequestProject.OrderNerveRealizationStarIntersections
+import RequestProject.OrderNerveRealizationStarIntersections

@@ -1,5 +1,4 @@
-module
-public import RequestProject.ZeroPi2Descent
-public import RequestProject.OrderUniversalRealizationSimplyConnected
-public import RequestProject.OrderNerveRealizationNestedSubcomplex
-public import RequestProject.TopologicalCockcroft
+import RequestProject.ZeroPi2Descent
+import RequestProject.OrderUniversalRealizationSimplyConnected
+import RequestProject.OrderNerveRealizationNestedSubcomplex
+import RequestProject.TopologicalCockcroft

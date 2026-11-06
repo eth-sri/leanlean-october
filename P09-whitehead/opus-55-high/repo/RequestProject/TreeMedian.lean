@@ -1,2 +1,1 @@
-module
-public import RequestProject.MedianSimplyConnected
+import RequestProject.MedianSimplyConnected

@@ -1,8 +1,5 @@
-module
+import RequestProject.RegularCoverActualPi2Descent
 
-public import RequestProject.RegularCoverActualPi2Descent
-
-@[expose] public section
 
 /-! Regular-cover descent for arbitrary cell sets, carrying the actual
 inclusions. No finite-complement hypothesis is needed for the chain or
@@ -10,33 +7,22 @@ its spherical vanishing. Finiteness can be supplied only where wanted.
 Unverified source. -/
 
 noncomputable section
-open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
-universe u v
 
-theorem pushE_eq_inr_imp {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
-    (hi : Function.Injective i.onE) (e : L.E) (w : OffE i)
+theorem pushE_eq_inr_imp (p : Hom D K) (i : Hom D L)
+    (hi : Function.Injective i.onE) e w
     (h : pushE p i e = Sum.inr w) : e = w.val := by
   by_cases he : ∃ d, i.onE d = e
-  · obtain ⟨d, rfl⟩ := he
-    rw [pushE_of_mem p hi] at h
-    exact (Sum.inl_ne_inr h).elim
-  · rw [pushE_of_off p i ⟨e, fun d hd => he ⟨d, hd⟩⟩] at h
-    exact congrArg (fun x : OffE i => x.val) (Sum.inr.inj h)
+  · grind [pushE_of_mem p hi]
+  · grind [pushE_of_off p i ⟨e, by simp_all⟩]
 
-theorem pushF_eq_inr_imp {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
-    (hi : Function.Injective i.onF) (e : L.F) (w : OffF i)
+theorem pushF_eq_inr_imp (p : Hom D K) (i : Hom D L)
+    (hi : Function.Injective i.onF) e w
     (h : pushF p i e = Sum.inr w) : e = w.val := by
   by_cases he : ∃ d, i.onF d = e
-  · obtain ⟨d, rfl⟩ := he
-    rw [pushF_of_mem p hi] at h
-    exact (Sum.inl_ne_inr h).elim
-  · rw [pushF_of_off p i ⟨e, fun d hd => he ⟨d, hd⟩⟩] at h
-    exact congrArg (fun x : OffF i => x.val) (Sum.inr.inj h)
+  · grind [pushF_of_mem p hi]
+  · grind [pushF_of_off p i ⟨e, by simp_all⟩]
 
 section Proper
 variable {D K L L' : Complex2.{u}} (p : Hom D K) (j : Hom D L) (j' : Hom D L')
@@ -61,15 +47,15 @@ structure RelativeCellChain (c : ℕ → Complex2.{u}) (n : ℕ) where
 namespace RelativeCellChain
 variable {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelativeCellChain c n)
 
-theorem inclV (i : ℕ) : Function.Injective (inclFrom c R.inc i).onV := by
+theorem inclV i : Function.Injective (inclFrom c R.inc i).onV := by
   induction i with
   | zero => exact Function.injective_id
   | succ i hi => exact (R.incV i).comp hi
-theorem inclE (i : ℕ) : Function.Injective (inclFrom c R.inc i).onE := by
+theorem inclE i : Function.Injective (inclFrom c R.inc i).onE := by
   induction i with
   | zero => exact Function.injective_id
   | succ i hi => exact (R.incE i).comp hi
-theorem inclF (i : ℕ) : Function.Injective (inclFrom c R.inc i).onF := by
+theorem inclF i : Function.Injective (inclFrom c R.inc i).onF := by
   induction i with
   | zero => exact Function.injective_id
   | succ i hi => exact (R.incF i).comp hi
@@ -102,7 +88,7 @@ theorem desc_connected (hp : IsCovering p) (d₀ : (c 0).V) : ∀ i, IsConnected
       (R.inclV (i + 1)) (R.inclE (i + 1))
       (isConnected_of_covering p hp (R.conn 0)) (R.conn (i + 1)) d₀
 
-theorem descInc_zeroPi2 (hp : IsCovering p) {Q : Type v} [Group Q]
+theorem descInc_zeroPi2 (hp : IsCovering p) {Q} [Group Q]
     (a : DeckAction (c 0) Q) (hr : IsRegular p a)
     (he : ∀ q e, p.onE (a.smulE q e) = p.onE e)
     (hf : ∀ q f, p.onF (a.smulF q f) = p.onF f)
@@ -118,6 +104,3 @@ theorem descInc_zeroPi2 (hp : IsCovering p) {Q : Type v} [Group Q]
         (inclFrom c R.inc (i + 1)) (R.inclV (i + 1)) (R.inclE (i + 1))
         (R.inclF (i + 1)) (R.conn (i + 1))
         (R.pi1 (i + 1) (by omega) (by omega)) x z hz
-
-end RelativeCellChain
-end FiniteChains.Comb

@@ -1,9 +1,6 @@
-module
+import RequestProject.OrderRoseWedgeTopology
+import RequestProject.ClassicalGraphRose
 
-public import RequestProject.OrderRoseWedgeTopology
-public import RequestProject.ClassicalGraphRose
-
-@[expose] public section
 
 /-! A once-traversed four-vertex order circle gives the exact disk-graph
 realization of an arbitrary rose. Continuity of the inverse uses the genuine
@@ -27,29 +24,27 @@ def roseDiskLoopMap : C(DiskFamily α (Fin 1 → ℝ),
     (roseCopyRealization a).continuous.comp (L.continuous.comp graphDiskHomeomorph.symm.continuous))
 
 def diskRoseToOrderRose : C(ClassicalGraphModel.Rose α, orderNerveRealization (Rose α)) :=
-  desc (roseAttaching α) (boundaryFamilyInclusion α (Fin 1 → ℝ))
+  desc (roseAttaching α) (boundaryFamilyInclusion α _)
     (ContinuousMap.const _ (orderRoseBase α)) (roseDiskLoopMap α L) (by
       rintro ⟨a, b⟩
       rcases graphBoundary_cases b with rfl | rfl
       · change orderRoseBase α = roseCopyRealization a
           (L (graphDiskHomeomorph.symm (unitBoundaryInclusion _ graphBoundaryNeg)))
-        rw [graphDiskHomeomorph_symm_neg, L.source, roseCopyRealization_base]
+        simp
       · change orderRoseBase α = roseCopyRealization a
           (L (graphDiskHomeomorph.symm (unitBoundaryInclusion _ graphBoundaryPos)))
-        rw [graphDiskHomeomorph_symm_pos, L.target, roseCopyRealization_base])
+        simp)
 
-@[simp] theorem diskRoseToOrderRose_vertex :
-    diskRoseToOrderRose α L (roseVertex α) = orderRoseBase α := rfl
 
-@[simp] theorem diskRoseToOrderRose_cell (a : α) (d : ClosedUnitBall (Fin 1 → ℝ)) :
+@[simp] theorem diskRoseToOrderRose_cell a d :
     diskRoseToOrderRose α L (cell (roseAttaching α) (boundaryFamilyInclusion α _) ⟨a, d⟩) =
       roseCopyRealization a (L (graphDiskHomeomorph.symm d)) := desc_cell ..
 
-theorem diskRoseToOrderRose_interval (a : α) (t : I) :
+theorem diskRoseToOrderRose_interval a t :
     diskRoseToOrderRose α L
       (cell (roseAttaching α) (boundaryFamilyInclusion α _) ⟨a, graphDiskHomeomorph t⟩) =
       roseCopyRealization a (L t) := by
-  rw [diskRoseToOrderRose_cell, Homeomorph.symm_apply_apply]
+  simp
 
 theorem freshParameter_ne_endpoints
     (d : {d : DiskFamily α (Fin 1 → ℝ) // d ∉ Set.range (boundaryFamilyInclusion α _)}) :
@@ -58,12 +53,10 @@ theorem freshParameter_ne_endpoints
   · intro ht
     apply d.property
     refine ⟨⟨d.val.1, graphBoundaryNeg⟩, ?_⟩
-    change Sigma.mk d.val.1 (unitBoundaryInclusion _ graphBoundaryNeg) = d.val
     cases d with
     | mk d hd =>
       cases d with
       | mk a x =>
-        dsimp at ht ⊢
         apply congrArg (Sigma.mk a)
         rw [← graphDiskHomeomorph_zero, ← ht, Homeomorph.apply_symm_apply]
   · intro ht
@@ -74,16 +67,11 @@ theorem freshParameter_ne_endpoints
     | mk d hd =>
       cases d with
       | mk a x =>
-        dsimp at ht ⊢
-        apply congrArg (Sigma.mk a)
-        rw [← graphDiskHomeomorph_one, ← ht, Homeomorph.apply_symm_apply]
+        simp [← graphDiskHomeomorph_one, ← ht, Homeomorph.apply_symm_apply]
 
 include hfiber in
 theorem traversal_eq_base {t : I} (h : L t = orderRoseBase PUnit) : t = 0 ∨ t = 1 := by
-  rcases hfiber t 0 (h.trans L.source.symm) with ht | ht | ht
-  · exact Or.inl ht
-  · exact Or.inl ht.1
-  · exact Or.inr ht.1
+  rcases hfiber t 0 (h.trans L.source.symm) with ht | ht | ht <;> simp_all
 
 include hfiber in
 theorem freshImage_ne_base
@@ -91,16 +79,15 @@ theorem freshImage_ne_base
     roseCopyRealization d.val.1 (L (graphDiskHomeomorph.symm d.val.2)) ≠ orderRoseBase α := by
   intro h
   have he : L (graphDiskHomeomorph.symm d.val.2) = orderRoseBase PUnit :=
-    roseCopyRealization_injective d.val.1 (h.trans (roseCopyRealization_base d.val.1).symm)
+    roseCopyRealization_injective d.val.1 (by simp_all)
   exact (traversal_eq_base L hfiber he).elim
     (freshParameter_ne_endpoints α d).1 (freshParameter_ne_endpoints α d).2
 
 theorem diskRoseToOrderRose_fresh
-    (d : {d : DiskFamily α (Fin 1 → ℝ) // d ∉ Set.range (boundaryFamilyInclusion α _)}) :
+    d :
     diskRoseToOrderRose α L (Sum.inr d) =
       roseCopyRealization d.val.1 (L (graphDiskHomeomorph.symm d.val.2)) := by
-  rw [← cell_of_not_mem (roseAttaching α) _ d.val d.property]
-  exact diskRoseToOrderRose_cell α L d.val.1 d.val.2
+  rfl
 
 include hsur hfiber in
 theorem diskRoseToOrderRose_bijective : Function.Bijective (diskRoseToOrderRose α L) := by
@@ -109,16 +96,12 @@ theorem diskRoseToOrderRose_bijective : Function.Bijective (diskRoseToOrderRose 
     cases x with
     | inl x =>
       cases y with
-      | inl y => exact congrArg Sum.inl (Subsingleton.elim x y)
+      | inl y => rfl
       | inr y =>
-        have hy : diskRoseToOrderRose α L (Sum.inl x) = orderRoseBase α := rfl
-        rw [hy, diskRoseToOrderRose_fresh] at h
         exact (freshImage_ne_base α L hfiber y h.symm).elim
     | inr x =>
       cases y with
       | inl y =>
-        have hy : diskRoseToOrderRose α L (Sum.inl y) = orderRoseBase α := rfl
-        rw [hy, diskRoseToOrderRose_fresh] at h
         exact (freshImage_ne_base α L hfiber x h).elim
       | inr y =>
         rw [diskRoseToOrderRose_fresh, diskRoseToOrderRose_fresh] at h
@@ -126,9 +109,7 @@ theorem diskRoseToOrderRose_bijective : Function.Bijective (diskRoseToOrderRose 
         · rw [← ha] at h
           have ht := roseCopyRealization_injective x.val.1 h
           rcases hfiber _ _ ht with ht | ht | ht
-          · apply congrArg Sum.inr
-            apply Subtype.ext
-            exact Sigma.ext ha (heq_of_eq (graphDiskHomeomorph.symm.injective ht))
+          · aesop
           · exact ((freshParameter_ne_endpoints α x).1 ht.1).elim
           · exact ((freshParameter_ne_endpoints α x).2 ht.1).elim
         · have hx := (roseCopyRealization_intersection ha _ _ h).1
@@ -136,40 +117,33 @@ theorem diskRoseToOrderRose_bijective : Function.Bijective (diskRoseToOrderRose 
             (freshParameter_ne_endpoints α x).1 (freshParameter_ne_endpoints α x).2).elim
   · intro x
     rcases orderRoseRealization_cases x with rfl | ⟨a, u, rfl⟩
-    · exact ⟨roseVertex α, diskRoseToOrderRose_vertex α L⟩
+    · tauto
     · obtain ⟨t, rfl⟩ := hsur u
-      exact ⟨cell (roseAttaching α) (boundaryFamilyInclusion α _) ⟨a, graphDiskHomeomorph t⟩,
+      exact ⟨cell _ _ ⟨a, graphDiskHomeomorph t⟩,
         diskRoseToOrderRose_interval α L a t⟩
 
 def diskRoseOrderHomeomorphOfTraversal :
     ClassicalGraphModel.Rose α ≃ₜ orderNerveRealization (Rose α) := by
-  let e := Equiv.ofBijective (diskRoseToOrderRose α L)
+  let e := Equiv.ofBijective _
     (diskRoseToOrderRose_bijective α L hsur hfiber)
   refine { toEquiv := e
            continuous_toFun := (diskRoseToOrderRose α L).continuous
            continuous_invFun := ?_ }
   apply (orderRoseRealization_continuous_iff e.symm).mpr
   intro a
-  have hq : IsQuotientMap L := L.continuous.isClosedMap.isQuotientMap L.continuous hsur
+  have hq := L.continuous.isClosedMap.isQuotientMap L.continuous hsur
   apply hq.continuous_iff.mpr
   have he : (e.symm ∘ roseCopyRealization a) ∘ L =
-      fun t => cell (roseAttaching α) (boundaryFamilyInclusion α _) ⟨a, graphDiskHomeomorph t⟩ := by
+      fun t => cell _ _ ⟨a, graphDiskHomeomorph t⟩ := by
     funext t
     apply e.injective
-    dsimp only [Function.comp_apply]
-    rw [e.apply_symm_apply]
-    exact (diskRoseToOrderRose_interval α L a t).symm
+    aesop
   rw [he]
-  exact (cell_continuous (roseAttaching α) _).comp
+  exact (cell_continuous _ _).comp
     ((continuous_sigmaMk («σ» := fun _ : α => ClosedUnitBall (Fin 1 → ℝ)) (i := a)).comp
       graphDiskHomeomorph.continuous)
 
-theorem diskRoseOrderHomeomorphOfTraversal_interval (a : α) (t : I) :
+theorem diskRoseOrderHomeomorphOfTraversal_interval a t :
     diskRoseOrderHomeomorphOfTraversal α L hsur hfiber
       (cell (roseAttaching α) (boundaryFamilyInclusion α _) ⟨a, graphDiskHomeomorph t⟩) =
       roseCopyRealization a (L t) := diskRoseToOrderRose_interval α L a t
-
-@[simp] theorem diskRoseOrderHomeomorphOfTraversal_vertex :
-    diskRoseOrderHomeomorphOfTraversal α L hsur hfiber (roseVertex α) = orderRoseBase α := rfl
-
-end FiniteChains.PresModel

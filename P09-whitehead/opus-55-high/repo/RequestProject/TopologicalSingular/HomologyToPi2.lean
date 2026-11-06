@@ -1,2 +1,1 @@
-module
-public import RequestProject.TopologicalSingular.NormalizedPi2Boundaries
+import RequestProject.TopologicalSingular.NormalizedPi2Boundaries

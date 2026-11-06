@@ -1,2 +1,1 @@
-module
-public import RequestProject.MedianGraphMetric
+import RequestProject.MedianGraphMetric

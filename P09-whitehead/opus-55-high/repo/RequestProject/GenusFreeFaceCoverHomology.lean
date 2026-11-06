@@ -1,9 +1,6 @@
-module
+import RequestProject.PosetCoverFreeFaceHomology
+import RequestProject.GenusCollapseStages
 
-public import RequestProject.PosetCoverFreeFaceHomology
-public import RequestProject.GenusCollapseStages
-
-@[expose] public section
 
 /-! The recorded genus-collapse pairs supply actual covered free-face retractions. -/
 namespace FiniteChains.Davis.Genus
@@ -24,27 +21,26 @@ theorem genus_recorded_free_face_cover_homology (hf : IsPosetCover f)
         (fun p => genusCollapseStage q left (f p) ∧ f p ≠ s) n := by
   let pair : GenusCollapsePair q := (qCubeToCoordinate t.1, truncatedFaceIndex s)
   have hpair : pair ∈ genusChainCollapse q := by
-    rw [hsplit]
-    exact List.mem_append.mpr (Or.inr List.mem_cons_self)
-  have hs : truncatedCellDimension s = 2 := genus_removedFace_dimension q s
-    (List.mem_map.mpr ⟨pair, hpair, rfl⟩)
+    grind
+  have hs := genus_removedFace_dimension q s
+    (by simp_all)
   have ht : t.1.spx.card = 3 := (genus_oldCell_removed_iff_dimension_three q t).mp
-    (List.mem_map.mpr ⟨pair, hpair, rfl⟩)
-  have htail : qCubeToCoordinate t.1 ∈ (pair :: right).map Prod.fst := by simp [pair]
-  have hcert := genusCollapseStage_suffix_certificate q left (pair :: right) hsplit
-  have hi : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex (GenusVertex q))
+    (by simp_all)
+  have htail : qCubeToCoordinate t.1 ∈ (pair :: right).map Prod.fst := by tauto
+  have hcert := genusCollapseStage_suffix_certificate q left _ hsplit
+  have hi : qCubeToCoordinate t.1 ∈ spineInc (ASC.orderComplex _)
       (truncatedFaceIndex s) := by
     have hm : qCubeToCoordinate t.1 ∈
-        spineInc (ASC.orderComplex (GenusVertex q)) (truncatedFaceIndex s) ∩
-        Collapse.remainingTops (topCubes (ASC.orderComplex (GenusVertex q))) left := by
+        spineInc (ASC.orderComplex _) (truncatedFaceIndex s) ∩
+        Collapse.remainingTops (topCubes (ASC.orderComplex _)) left := by
       rw [hcert.2.1]
       exact Finset.mem_singleton_self _
-    exact (Finset.mem_inter.mp hm).1
+    simp_all
   have htC : genusCollapseStage q left (Sum.inl t) :=
-    ⟨genus_later_top_boundary_avoids_prefix_faces q left (pair :: right) hsplit
-      (Sum.inl t) t htail (le_refl _),
+    ⟨genus_later_top_boundary_avoids_prefix_faces q left _ hsplit
+      _ t htail (le_refl _),
       ((Collapse.mem_remainingTops _ _ _).mp hcert.1).2⟩
-  have hne : (Sum.inl t : GenusTruncatedCell q) ≠ s := by
+  have hne : (Sum.inl t) ≠ s := by
     intro he
     have hd := congrArg truncatedCellDimension he
     change t.1.spx.card = truncatedCellDimension s at hd
@@ -60,12 +56,10 @@ theorem genus_recorded_free_face_cover_homology (hf : IsPosetCover f)
       have hmax := genus_cutCell_dimension_le_two q σ
       omega
   | inl d =>
-      have hd : d.1.spx.card = 3 := hdim
+      have hd := hdim
       have hinc := truncatedCell_inc_of_le s d hsx hs hd
         (genus_simplex_mem_faces q d.1.isSimplex)
       have hm := Finset.mem_inter.mpr ⟨hinc, genusCollapseStage_active_top q left d hx hd⟩
       rw [hcert.2.1] at hm
-      have he : qCubeToCoordinate d.1 = qCubeToCoordinate t.1 := Finset.mem_singleton.mp hm
+      have he := Finset.mem_singleton.mp hm
       exact congrArg Sum.inl (Subtype.ext (qCubeCoordinateEquiv.injective (Subtype.ext he)))
-
-end FiniteChains.Davis.Genus

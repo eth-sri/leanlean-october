@@ -1,14 +1,10 @@
-module
+import RequestProject.ChamberZCoverCellularGeneration
+import RequestProject.OrderUniversalPosetThree
+import RequestProject.Tac
 
-public import RequestProject.ChamberZCoverCellularGeneration
-public import RequestProject.OrderUniversalPosetThree
-
-@[expose] public section
 
 /-! Base-cycle generation in the genuine path-class universal-cover cells. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -27,7 +23,7 @@ theorem exists_uCover_base_cellular_cycle (a : Zpos A X M att)
       (∀ t ∈ c.support, InZBase t.1.2.1.1 ∧ InZBase t.1.2.1.2.1 ∧
         InZBase t.1.2.1.2.2) ∧
       Comb.bdry2 (uCover (orderCx (Zpos A X M att)) a) c = 0 ∧
-      ∃ y : UOrdTet (Zpos A X M att) a →₀ ℤ, z = c + uOrdBoundary3 y := by
+      ∃ y, z = c + uOrdBoundary3 y := by
   classical
   obtain ⟨d, ⟨hd, hdc⟩, _⟩ := exists_unique_uOrder_cycle z hz
   obtain ⟨c, hc, hcc, y, he⟩ := exists_cover_base_cellular_cycle
@@ -39,7 +35,5 @@ theorem exists_uCover_base_cellular_cycle (a : Zpos A X M att)
     exact hb
   · exact (uOrderHom_cycle_iff c).mpr hcc
   · have h := congrArg (chain2 uOrderHom) he
-    rw (config := { transparency := .default }) [hd, map_add, uOrderHom_ordBoundary3] at h
+    rwd [hd, map_add, uOrderHom_ordBoundary3] at h
     exact h
-
-end FiniteChains.Davis

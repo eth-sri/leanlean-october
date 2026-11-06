@@ -1,9 +1,6 @@
-module
+import RequestProject.CylinderCoverCollapsedLetterCoefficients
+import RequestProject.PresCoverRelatorGeneratorBoundary
 
-public import RequestProject.CylinderCoverCollapsedLetterCoefficients
-public import RequestProject.PresCoverRelatorGeneratorBoundary
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
 open Comb
@@ -12,8 +9,8 @@ variable {α J P : Type u} [PartialOrder P] (w : J → List (α × Bool))
   (f : P → PresPos w) (hf : IsPosetCover f)
 
 /-- The genuine cylinder projection of a lifted attaching circle is the actual outer circle. -/
-theorem presCoverCircleCylinderInclusion_projection (p : PresCoverRelator w f)
-    (x : RelatorCircle w p.val.2) :
+theorem presCoverCircleCylinderInclusion_projection p
+    x :
     coneAdjCoverBaseEnd f (presCoverCircleCylinderInclusion w f hf p x) =
       cylOuter (aHom w) x.val := by
   apply Sum.inl.inj
@@ -23,8 +20,8 @@ theorem presCoverCircleCylinderInclusion_projection (p : PresCoverRelator w f)
 /-- Actual collapsed lifted-letter midpoints for a genuine lifted relator. -/
 noncomputable def presCoverRelatorLetterMidpoint (p : PresCoverRelator w f)
     (k : Fin (w p.val.2).length) :=
-  cylinderCoverCollapsedLetterMidpoint w p.val.2 (coneAdjCoverBaseEnd f)
-    (coneAdjCoverBaseEnd_isPosetCover f hf) (presCoverCircleCylinderInclusion w f hf p)
+  cylinderCoverCollapsedLetterMidpoint w p.val.2 _
+    (coneAdjCoverBaseEnd_isPosetCover f hf) _
       (presCoverCircleCylinderInclusion_projection w f hf p) k
 
 /-- The actual relator generator-boundary column is its signed actual lifted-letter sum. -/
@@ -38,13 +35,11 @@ theorem presCoverRelatorGeneratorBoundary_single (p : PresCoverRelator w f) :
               (coneAdjCoverBaseEnd_isPosetCover f hf))
             (presCoverRelatorLetterMidpoint w f hf p k)) 1 := by
   classical
-  change cylinderCoverCollapsedGeneratorCoordinates w (coneAdjCoverBaseEnd f)
+  change cylinderCoverCollapsedGeneratorCoordinates w _
     (coneAdjCoverBaseEnd_isPosetCover f hf)
       (presCoverCylinderRelatorBoundaryChain w f hf (Finsupp.single p 1)) = _
   rw [presCoverCylinderRelatorBoundaryChain, Finsupp.linearCombination_single, one_smul]
-  exact cylinderCoverCollapsedCircle_coordinates w p.val.2 (coneAdjCoverBaseEnd f)
-    (coneAdjCoverBaseEnd_isPosetCover f hf) (presCoverCircleCylinderInclusion w f hf p)
-    (presCoverCircleCylinderInclusion_strictMono w f hf p)
-    (presCoverCircleCylinderInclusion_projection w f hf p)
-
-end FiniteChains.PresModel
+  exact cylinderCoverCollapsedCircle_coordinates w p.val.2 _
+    _ _
+    _
+    _

@@ -1,9 +1,6 @@
-module
+import RequestProject.QCubeFacets
+import RequestProject.CutSurfaceSpine
 
-public import RequestProject.QCubeFacets
-public import RequestProject.CutSurfaceSpine
-
-@[expose] public section
 
 /-! Fixed coordinate facets and the actual quotient-cube coefficient boundary. -/
 namespace FiniteChains.Davis
@@ -28,7 +25,7 @@ theorem qCubeFacet_coordinate_free (c : QCube A) (v : V) (hv : v ∈ c.spx)
   · simp [qCubeToCoordinate, qCubeFacet, hx]
 
 /-- A nonfree coordinate that frees to a given cube lies in that cube's free set. -/
-theorem coordinate_update_free_mem (g : Cube V) (c : QCube A) (v : V)
+theorem coordinate_update_free_mem (g : Cube V) (c : QCube A) v
     (he : Function.update g v CubeCoord.free = qCubeToCoordinate c) : v ∈ c.spx := by
   have hval := congrFun he v
   have hfree : qCubeToCoordinate c v = CubeCoord.free := by simpa using hval.symm
@@ -42,52 +39,43 @@ theorem coordinate_update_free_facet (g : Cube V) (c : QCube A) (v : V)
     ∃ s : ZMod 2, g = qCubeToCoordinate (qCubeFacet c v s) := by
   have hother (x : V) (hx : x ≠ v) : g x = qCubeToCoordinate c x := by
     have h := congrFun he x
-    simpa [Function.update_of_ne hx] using h
+    simp_all
   cases hgv : g v with
-  | free => exact False.elim (hv hgv)
+  | free => simp_all
   | pos =>
       refine ⟨0, ?_⟩
       rw [qCubeFacet_coordinate_zero]
-      funext x
-      by_cases hx : x = v
-      · subst x
-        simp [hgv]
-      · simp [Function.update_of_ne hx, hother x hx]
+      grind
   | neg =>
       refine ⟨1, ?_⟩
       rw [qCubeFacet_coordinate_one]
-      funext x
-      by_cases hx : x = v
-      · subst x
-        simp [hgv]
-      · simp [Function.update_of_ne hx, hother x hx]
+      grind
 
 variable [LinearOrder V]
 
 /-- The coefficient of any actual fixed facet in the collapse's cubical boundary is
 exactly its coordinate incidence. -/
-theorem cubeBdry_actual_facet (c : QCube A) (v : V) (hv : v ∈ c.spx) (s : ZMod 2) :
+theorem cubeBdry_actual_facet (c : QCube A) v (hv : v ∈ c.spx) s :
     cubeBdry (qCubeToCoordinate c) (Sum.inl (qCubeToCoordinate (qCubeFacet c v s))) =
       incid (qCubeToCoordinate (qCubeFacet c v s)) v := by
   classical
   let g := qCubeToCoordinate (qCubeFacet c v s)
   have hfixed : g v ≠ CubeCoord.free := by
     by_cases hs : s = 0 <;> simp [g, qCubeToCoordinate, qCubeFacet, hs]
-  have hmem : v ∈ Finset.univ.filter (fun x => g x ≠ CubeCoord.free) := by simp [hfixed]
+  have hmem : v ∈ Finset.univ.filter (g · ≠ CubeCoord.free) := by simp_all
   have he := qCubeFacet_coordinate_free c v hv s
   rw [cubeBdry_inl, Finset.sum_eq_single v]
-  · rw [he, if_pos rfl, mul_one]
+  · simp_all
   · intro k hk hkv
-    have hkfixed : g k ≠ CubeCoord.free := (Finset.mem_filter.mp hk).2
+    have hkfixed : g k ≠ CubeCoord.free := by grind
     rw [if_neg, mul_zero]
     intro hkfree
     exact hkv (update_free_injective hkfixed (hkfree.trans he.symm))
-  · intro hnot
-    exact False.elim (hnot hmem)
+  tauto
 
 /-- The collapse's ordinary cubical boundary has no coefficient outside actual facets. -/
-theorem cubeBdry_zero_off_actual_facets (c : QCube A) (g : Cube V)
-    (hg : ∀ v ∈ c.spx, ∀ s : ZMod 2, g ≠ qCubeToCoordinate (qCubeFacet c v s)) :
+theorem cubeBdry_zero_off_actual_facets (c : QCube A) g
+    (hg : ∀ v ∈ c.spx, ∀ s, g ≠ qCubeToCoordinate (qCubeFacet c v s)) :
     cubeBdry (qCubeToCoordinate c) (Sum.inl g) = 0 := by
   classical
   rw [cubeBdry_inl]
@@ -95,7 +83,5 @@ theorem cubeBdry_zero_off_actual_facets (c : QCube A) (g : Cube V)
   intro v hv
   rw [if_neg, mul_zero]
   intro he
-  obtain ⟨s, hs⟩ := coordinate_update_free_facet g c v (Finset.mem_filter.mp hv).2 he
+  cases' coordinate_update_free_facet g c v (Finset.mem_filter.mp hv).2 he with s hs
   exact hg v (coordinate_update_free_mem g c v he) s hs
-
-end FiniteChains.Davis

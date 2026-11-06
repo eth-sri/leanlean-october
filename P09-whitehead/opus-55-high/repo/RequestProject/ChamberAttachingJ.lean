@@ -1,8 +1,5 @@
-module
+import RequestProject.DavisSimplyConnected
 
-public import RequestProject.DavisSimplyConnected
-
-@[expose] public section
 
 /-!
 # The attaching intersection of a chamber is `J_w`, not the whole outer boundary
@@ -32,8 +29,7 @@ Write `D(w) = {s | ℓ(w s) < ℓ(w)}` for the descent set of `w` (`FiniteChains
   `FiniteChains.Davis.chamberInter_exists_bdry_eq_of_cycle`).
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror
 
@@ -43,29 +39,29 @@ variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
 
 /-- **The marked mirror `(F_s)_w`** of the chamber `F_w`: the cells of `F_w` whose mirror type
 contains the generator `s`. -/
-def MarkedMirror (w : CayGroup A) (s : V) (p : Sph A) : Prop :=
+def MarkedMirror (w : CayGroup A) (s : V) (p : Sph A) :=
   InChamber w p ∧ s ∈ p.spx
 
 /-- **`J_w = ⋃_{s ∈ D(w)} (F_s)_w`**: the union of the *descending* marked mirrors of the
 chamber `F_w`. -/
-def JSet (w : CayGroup A) (p : Sph A) : Prop :=
+def JSet (w : CayGroup A) (p : Sph A) :=
   ∃ s ∈ rdescFinset A w, MarkedMirror w s p
 
-theorem jSet_iff {w : CayGroup A} {p : Sph A} :
+theorem jSet_iff :
     JSet w p ↔ (InChamber w p ∧ (p.spx ∩ rdescFinset A w).Nonempty) := by
   constructor
   · rintro ⟨s, hs, hp, hsp⟩
     exact ⟨hp, ⟨s, Finset.mem_inter.2 ⟨hsp, hs⟩⟩⟩
   · rintro ⟨hp, s, hs⟩
-    obtain ⟨hsp, hsd⟩ := Finset.mem_inter.1 hs
+    cases' Finset.mem_inter.1 hs with hsp hsd
     exact ⟨s, hsd, hp, hsp⟩
 
 /-- **The corrected intersection formula.**  For a cell of the chamber `F_w`, lying in some
 other chamber `F_v` with `ℓ(v) ≤ ℓ(w)` — ties included — is equivalent to lying in
 `J_w = ⋃_{s ∈ D(w)} (F_s)_w`.  So
 `F_w ∩ ⋃_{v earlier} F_v = J_w`, *not* the whole outer boundary. -/
-theorem mem_earlier_chamber_iff_jSet {w : CayGroup A} {p : Sph A} (hp : InChamber w p) :
-    (∃ v : CayGroup A, v ≠ w ∧ RACG.clen A v ≤ RACG.clen A w ∧ InChamber v p) ↔ JSet w p := by
+theorem mem_earlier_chamber_iff_jSet (hp : InChamber w p) :
+    (∃ v, v ≠ w ∧ RACG.clen A v ≤ RACG.clen A w ∧ InChamber v p) ↔ JSet w p := by
   rw [jSet_iff]
   constructor
   · intro h
@@ -74,8 +70,8 @@ theorem mem_earlier_chamber_iff_jSet {w : CayGroup A} {p : Sph A} (hp : InChambe
     exact (mem_earlier_chamber_iff hp).2 h
 
 /-- The same formula with strictly shorter chambers. -/
-theorem mem_shorter_chamber_iff_jSet {w : CayGroup A} {p : Sph A} (hp : InChamber w p) :
-    (∃ v : CayGroup A, RACG.clen A v < RACG.clen A w ∧ InChamber v p) ↔ JSet w p := by
+theorem mem_shorter_chamber_iff_jSet (hp : InChamber w p) :
+    (∃ v, RACG.clen A v < RACG.clen A w ∧ InChamber v p) ↔ JSet w p := by
   rw [jSet_iff]
   constructor
   · intro h
@@ -104,8 +100,4 @@ theorem chamberPt_empty_rep (g : CayGroup A) :
 omit [DecidableEq V] [Fintype V] in
 theorem isSimplex_singleton (s : V) : IsSimplex A {s} := by
   intro a ha b hb hab
-  rw [Finset.mem_singleton] at ha hb
-  exact absurd (ha.trans hb.symm) hab
-
-end Davis
-end FiniteChains
+  simp_all

@@ -1,14 +1,10 @@
-module
+import RequestProject.TopologicalSingular.SingularSimplicialHelpers
+import RequestProject.TopologicalSingular.TetrahedronStickShell
+import RequestProject.TopologicalSingular.BasedTriangleHomotopy
+import RequestProject.Tac
 
-public import RequestProject.TopologicalSingular.SingularSimplicialHelpers
-public import RequestProject.TopologicalSingular.TetrahedronStickShell
-public import RequestProject.TopologicalSingular.BasedTriangleHomotopy
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X] {x : X}
@@ -24,20 +20,16 @@ noncomputable def pi2 (a : PointedSingularTriangle X x) :
     Additive (HomotopyGroup (Fin 2) X x) :=
   Additive.ofMul (Quotient.mk _ (basedTriangleSquare a.map a.based))
 
-def constant (x : X) : PointedSingularTriangle X x :=
-  ⟨ContinuousMap.const (Domain 2) x, fun _ => rfl⟩
+def constant x : PointedSingularTriangle X x :=
+  ⟨ContinuousMap.const _ x, fun _ => rfl⟩
 
 @[simp] theorem constant_pi2 (x : X) : (constant x).pi2 = 0 := by
-  unfold pi2 constant
-  rw [basedTriangleSquare_const, ← HomotopyGroup.one_def]
   rfl
 
 theorem pi2_congr (a b : PointedSingularTriangle X x) (h : a.map = b.map) :
     a.pi2 = b.pi2 := by
   cases a
-  cases b
-  cases h
-  rfl
+  simp_all
 
 theorem degeneracy_zero_faces (a : PointedSingularTriangle X x) (i : Fin 4) :
     face i (singularDegeneracy 0 a.map) =
@@ -73,12 +65,11 @@ theorem degeneracy_two_faces (a : PointedSingularTriangle X x) (i : Fin 4) :
   · exact singular_face_degeneracy_succ 2 a.map
 
 theorem tetrahedron_face_pi2 (tau : Simplex X 3)
-    (hedge : ∀ (i : Fin 4) (j : Fin 3),
-      face j (face i tau) = ContinuousMap.const (Domain 1) x)
+    hedge
     (i : Fin 4) (a : PointedSingularTriangle X x) (ha : face i tau = a.map) :
     tetrahedronFacePi2Class tau hedge i = a.pi2 := by
-  change (PointedSingularTriangle.mk (face i tau) (hedge i)).pi2 = a.pi2
-  exact pi2_congr _ _ ha
+  change (PointedSingularTriangle.mk _ (hedge i)).pi2 = a.pi2
+  simp_all
 
 /-- Multiplication obtained from the cubical shell when the first face is constant. -/
 theorem first_face_constant_relation (a b c : PointedSingularTriangle X x)
@@ -87,15 +78,9 @@ theorem first_face_constant_relation (a b c : PointedSingularTriangle X x)
       face i tau = ![(constant x).map, a.map, b.map, c.map] i) :
     a.pi2 + c.pi2 = b.pi2 := by
   have hedge : ∀ (i : Fin 4) (j : Fin 3),
-      face j (face i tau) = ContinuousMap.const (Domain 1) x := by
+      face j (face i tau) = ContinuousMap.const _ x := by
     intro i j
     rw [hfaces]
     fin_cases i <;> simp [a.based, b.based, c.based, constant]
   have h := tetrahedronStickShell_face_relation tau hedge (hfaces 0)
-  rw [tetrahedron_face_pi2 tau hedge 1 a (hfaces 1),
-    tetrahedron_face_pi2 tau hedge 3 c (hfaces 3),
-    tetrahedron_face_pi2 tau hedge 2 b (hfaces 2)] at h
-  exact h
-
-end PointedSingularTriangle
-end FiniteChains.TopologicalSingular
+  simp_all [tetrahedron_face_pi2 tau hedge 1 a (hfaces 1), tetrahedron_face_pi2 tau hedge 3 c (hfaces 3), tetrahedron_face_pi2 tau hedge 2 b (hfaces 2)]

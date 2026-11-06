@@ -1,15 +1,11 @@
-module
+import RequestProject.RoseStrictEdges
+import RequestProject.RootedPathClasses
+import RequestProject.OrderReflexiveConjugation
+import RequestProject.CombLoopWord
+import RequestProject.Tac
 
-public import RequestProject.RoseStrictEdges
-public import RequestProject.RootedPathClasses
-public import RequestProject.OrderReflexiveConjugation
-public import RequestProject.CombLoopWord
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.PresModel
 open Comb
@@ -22,25 +18,25 @@ def roseRootPath : Rose α → List ((orderCx (Rose α)).E × Bool)
   | .mid i => [ordPos (Rose.base_le_edg i false), ordNeg (Rose.mid_le_edg i false)]
   | .edg i b => [ordPos (Rose.base_le_edg i b)]
 
-theorem roseRootPath_isPath (v : Rose α) :
-    IsPath (orderCx (Rose α)).src (orderCx (Rose α)).tgt (roseRootPath v) Rose.base v := by
+theorem roseRootPath_isPath v :
+    IsPathX (orderCx (Rose α)) (roseRootPath v) Rose.base v := by
   cases v with
   | base => rfl
-  | mid i => exact ⟨rfl, rfl, rfl⟩
-  | edg i b => exact ⟨rfl, rfl⟩
+  | mid i => tauto
+  | edg i b => tauto
 
 /-- The actual four-edge generator loop in the rose. -/
 def roseGeneratorLoop (i : α) : Loop (orderCx (Rose α)) Rose.base :=
   ⟨[ordPos (Rose.base_le_edg i false), ordNeg (Rose.mid_le_edg i false),
     ordPos (Rose.mid_le_edg i true), ordNeg (Rose.base_le_edg i true)],
-    ⟨rfl, rfl, rfl, rfl, rfl⟩⟩
+    by aesop⟩
 
 /-- Every rooted base incidence is a tree loop and has trivial actual class. -/
-theorem roseRooted_base (i : α) (b : Bool) :
+theorem roseRooted_base (i : α) b :
     Pi1.mk (rootedGermLoop roseRootPath roseRootPath_isPath
       (ordPos (Rose.base_le_edg i b))) = 1 := by
   apply Quotient.sound
-  exact htpy_append_revPath (isPath_ordPos (Rose.base_le_edg i b))
+  exact htpy_append_revPath (by tauto)
 
 /-- The remaining tree incidence at the midpoint has trivial actual class. -/
 theorem roseRooted_mid_false (i : α) :
@@ -50,19 +46,13 @@ theorem roseRooted_mid_false (i : α) :
   have h := (htpy_revPath_append (isPath_ordPos (Rose.mid_le_edg i false))).congr_append
     (isPath_ordPos (Rose.base_le_edg i false))
     (isPath_revPath (isPath_ordPos (Rose.base_le_edg i false)))
-  have h' : Htpy (orderCx (Rose α)) Rose.base Rose.base
+  have h' : Htpy _ Rose.base Rose.base
       [ordPos (Rose.base_le_edg i false), ordNeg (Rose.mid_le_edg i false),
         ordPos (Rose.mid_le_edg i false), ordNeg (Rose.base_le_edg i false)]
       [ordPos (Rose.base_le_edg i false), ordNeg (Rose.base_le_edg i false)] := by
-    simpa only [revPath, List.reverse_cons, List.reverse_nil, List.nil_append,
-      List.map_cons, List.map_nil, revGerm, Bool.not, ordPos, ordNeg,
-      List.cons_append, List.nil_append] using h
-  exact h'.trans (htpy_append_revPath (isPath_ordPos (Rose.base_le_edg i false)))
+    simp_all
+  exact h'.trans (htpy_append_revPath (isPath_ordPos _))
 
-/-- The non-tree midpoint incidence closes to the concrete generator loop. -/
-theorem roseRooted_mid_true (i : α) :
-    Pi1.mk (rootedGermLoop roseRootPath roseRootPath_isPath
-      (ordPos (Rose.mid_le_edg i true))) = Pi1.mk (roseGeneratorLoop i) := rfl
 
 /-- Reflexive actual rose edges contribute no rooted loop class. -/
 theorem roseRooted_self (v : Rose α) :
@@ -71,10 +61,10 @@ theorem roseRooted_self (v : Rose α) :
   apply Quotient.sound
   have h := (htpy_ordSelf_nil v).congr_append (roseRootPath_isPath v)
     (isPath_revPath (roseRootPath_isPath v))
-  have h' : Htpy (orderCx (Rose α)) Rose.base Rose.base
+  have h' : Htpy _ Rose.base Rose.base
       (roseRootPath v ++ [ordPos (le_refl v)] ++ revPath (roseRootPath v))
       (roseRootPath v ++ revPath (roseRootPath v)) := by
-    simpa only [List.append_nil] using h
+    simp_all
   exact h'.trans (htpy_append_revPath (roseRootPath_isPath v))
 
 /-- Every positive actual rose germ class is in the image of the concrete generator map. -/
@@ -87,39 +77,31 @@ theorem roseRooted_positive_mem_range (e : OrdEdge (Rose α)) :
   · subst b
     change Pi1.mk (rootedGermLoop roseRootPath roseRootPath_isPath
       (ordPos (le_refl a))) ∈ _
-    rw [roseRooted_self]
-    exact Subgroup.one_mem _
+    simp [roseRooted_self]
   · let d : StrictOrdEdge (Rose α) := ⟨(a, b), lt_of_le_of_ne h hab⟩
     obtain ⟨i, c, hd | hd⟩ := rose_strict_edge_cases d
-    · have he : (⟨(a, b), h⟩ : OrdEdge (Rose α)) =
+    · have he : ⟨(a, b), h⟩ =
           (ordPos (Rose.base_le_edg i c)).1 :=
-        Subtype.ext (congrArg (fun z : StrictOrdEdge (Rose α) => z.val) hd)
-      change Pi1.mk (rootedGermLoop (X := orderCx (Rose α)) roseRootPath roseRootPath_isPath
-        ((⟨(a, b), h⟩ : OrdEdge (Rose α)), true)) ∈ _
+        Subtype.ext (congrArg (·.val) hd)
       rw [he]
       change Pi1.mk (rootedGermLoop roseRootPath roseRootPath_isPath
         (ordPos (Rose.base_le_edg i c))) ∈ _
-      rw [roseRooted_base]
-      exact Subgroup.one_mem _
-    · have he : (⟨(a, b), h⟩ : OrdEdge (Rose α)) =
+      simp [roseRooted_base]
+    · have he : ⟨(a, b), h⟩ =
           (ordPos (Rose.mid_le_edg i c)).1 :=
-        Subtype.ext (congrArg (fun z : StrictOrdEdge (Rose α) => z.val) hd)
-      change Pi1.mk (rootedGermLoop (X := orderCx (Rose α)) roseRootPath roseRootPath_isPath
-        ((⟨(a, b), h⟩ : OrdEdge (Rose α)), true)) ∈ _
+        Subtype.ext (congrArg (·.val) hd)
       rw [he]
       change Pi1.mk (rootedGermLoop roseRootPath roseRootPath_isPath
         (ordPos (Rose.mid_le_edg i c))) ∈ _
       cases c
-      · rw [roseRooted_mid_false]
-        exact Subgroup.one_mem _
-      · rw [roseRooted_mid_true]
-        exact ⟨FreeGroup.of i, loopHom_of _ _⟩
+      · simp [roseRooted_mid_false]
+      · exact ⟨FreeGroup.of i, loopHom_of _ _⟩
 
 /-- Every oriented actual rose germ class lies in the image of its generator map. -/
-theorem roseRooted_mem_range (e : (orderCx (Rose α)).E × Bool) :
+theorem roseRooted_mem_range e :
     Pi1.mk (rootedGermLoop roseRootPath roseRootPath_isPath e) ∈
       (loopHom (roseGeneratorLoop (α := α))).range := by
-  rcases e with ⟨e, b⟩
+  cases' e with e b
   cases b
   · have h := rootedGermLoop_rev roseRootPath roseRootPath_isPath (e, true)
     change Pi1.mk (rootedGermLoop roseRootPath roseRootPath_isPath (e, false)) = _ at h
@@ -135,7 +117,7 @@ theorem roseLoopHom_surjective :
   | h p =>
     have h := rootedPathLoop_eq_prod roseRootPath roseRootPath_isPath p.val
       Rose.base Rose.base p.property
-    simp only [rootedPathLoop, roseRootPath, revPath_nil (X := orderCx (Rose α)), List.nil_append,
+    simp [rootedPathLoop, roseRootPath, revPath_nil (X := orderCx (Rose α)), List.nil_append,
       List.append_nil] at h
     have hm : (p.val.map (fun e =>
         Pi1.mk (rootedGermLoop roseRootPath roseRootPath_isPath e))).prod ∈
@@ -144,7 +126,4 @@ theorem roseLoopHom_surjective :
       | nil => exact Subgroup.one_mem _
       | cons e l ih =>
         exact Subgroup.mul_mem _ (roseRooted_mem_range e) ih
-    rw [← h] at hm
-    exact hm
-
-end FiniteChains.PresModel
+    rwa [← h] at hm

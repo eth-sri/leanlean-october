@@ -1,9 +1,6 @@
-module
+import RequestProject.MathlibOrderNerveCells
+import RequestProject.StrictOrderComplex
 
-public import RequestProject.MathlibOrderNerveCells
-public import RequestProject.StrictOrderComplex
-
-@[expose] public section
 
 /-! Literal identification of strict combinatorial vertices, edges and
 triangles with the nondegenerate cells of the actual poset nerve. Pending
@@ -36,7 +33,7 @@ def strictEdgeNerveEquiv : StrictOrdEdge P ≃ (nerve P).nonDegenerate 1 where
   right_inv s := by
     apply Subtype.ext
     change ordEdgeNerveEquiv P ((ordEdgeNerveEquiv P).symm s.val) = s.val
-    exact (ordEdgeNerveEquiv P).apply_symm_apply s.val
+    grind
 
 def strictTriNerveEquiv : StrictOrdTri P ≃ (nerve P).nonDegenerate 2 where
   toFun t := ⟨ordTriNerveEquiv P ⟨t.val, t.property.1.le, t.property.2.le⟩, by
@@ -52,6 +49,4 @@ def strictTriNerveEquiv : StrictOrdTri P ≃ (nerve P).nonDegenerate 2 where
   right_inv s := by
     apply Subtype.ext
     change ordTriNerveEquiv P ((ordTriNerveEquiv P).symm s.val) = s.val
-    exact (ordTriNerveEquiv P).apply_symm_apply s.val
-
-end FiniteChains.Comb
+    grind

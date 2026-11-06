@@ -1,9 +1,6 @@
-module
+import RequestProject.NervePrism
+import RequestProject.ChamberDescent
 
-public import RequestProject.NervePrism
-public import RequestProject.ChamberDescent
-
-@[expose] public section
 
 /-!
 # The union of the descending mirrors is contractible
@@ -30,23 +27,14 @@ The final section instantiates this for the right-angled Coxeter group of
 chamber `F_w` is contractible.
 -/
 
-namespace FiniteChains
-namespace Mirror
+namespace FiniteChains.Mirror
 
 universe u
 
 variable {V : Type u} [DecidableEq V]
 
-/-- The simplices of `L` that meet `D`: the poset `𝒫_D` whose order complex is the union of the
-mirrors `F_s`, `s ∈ D`. -/
-def MeetPoset (L : Finset V → Prop) (D : Finset V) : Type u :=
-  {σ : Finset V // L σ ∧ (σ ∩ D).Nonempty}
 
-instance (L : Finset V → Prop) (D : Finset V) : PartialOrder (MeetPoset L D) :=
-  Subtype.partialOrder _
 
-@[simp] theorem MeetPoset.le_def {L : Finset V → Prop} {D : Finset V} (σ τ : MeetPoset L D) :
-    σ ≤ τ ↔ σ.1 ⊆ τ.1 := Iff.rfl
 
 /-! ### The union of mirrors is the order complex of `𝒫_D` -/
 
@@ -54,9 +42,6 @@ instance (L : Finset V → Prop) (D : Finset V) : PartialOrder (MeetPoset L D) :
 
 variable {L : Finset V → Prop} {D : Finset V}
 
-/-- The vertex `D` of the poset `𝒫_D`. -/
-def top (hLD : L D) (hD : D.Nonempty) : MeetPoset L D :=
-  ⟨D, hLD, by simpa using hD⟩
 
 /-! ### The descent set of an element of a right-angled Coxeter group -/
 
@@ -69,31 +54,26 @@ variable [Fintype V] (A : CommRel V)
 /-- The descent set `D(x) = {s : ℓ(xs) < ℓ(x)}` as a finite set of generators. -/
 noncomputable def rdescFinset (x : CayGroup A) : Finset V := by
   classical
-  exact Finset.univ.filter fun s => IsRDesc A x s
+  exact Finset.univ.filter (IsRDesc A x)
 
-theorem mem_rdescFinset {x : CayGroup A} {s : V} :
+theorem mem_rdescFinset :
     s ∈ rdescFinset A x ↔ IsRDesc A x s := by
   classical
   simp [rdescFinset]
 
 /-- The simplices of `L`: the cliques of the commutation graph. -/
-def IsSimplex (σ : Finset V) : Prop := ∀ s ∈ σ, ∀ r ∈ σ, s ≠ r → A.rel s r
+def IsSimplex (σ : Finset V) := ∀ s ∈ σ, ∀ r ∈ σ, s ≠ r → A.rel s r
 
 omit [DecidableEq V] [Fintype V] in
 theorem isSimplex_subset {σ τ : Finset V} (hστ : σ ⊆ τ) (hτ : IsSimplex A τ) :
-    IsSimplex A σ := fun s hs r hr hsr => hτ s (hστ hs) r (hστ hr) hsr
+    IsSimplex A σ := fun s hs r hr hsr => by aesop
 
 /-- **The descent set is a simplex of `L`**, in the form needed by the chamber argument. -/
-theorem isSimplex_rdescFinset (x : CayGroup A) : IsSimplex A (rdescFinset A x) := by
+theorem isSimplex_rdescFinset x : IsSimplex A (rdescFinset A x) := by
   intro s hs r hr hsr
   exact rdesc_rel A hsr ((mem_rdescFinset A).1 hs) ((mem_rdescFinset A).1 hr)
 
 /-- **The descent set is nonempty** for `x ≠ 1`. -/
-theorem rdescFinset_nonempty {x : CayGroup A} (hx : x ≠ 1) : (rdescFinset A x).Nonempty := by
-  obtain ⟨s, hs⟩ := exists_rdesc A hx
+theorem rdescFinset_nonempty (hx : x ≠ 1) : (rdescFinset A x).Nonempty := by
+  cases' exists_rdesc A hx with s hs
   exact ⟨s, (mem_rdescFinset A).2 hs⟩
-
-end RACG
-
-end Mirror
-end FiniteChains

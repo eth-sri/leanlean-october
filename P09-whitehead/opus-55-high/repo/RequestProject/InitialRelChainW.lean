@@ -1,12 +1,9 @@
-module
+import RequestProject.InitialChain
+import RequestProject.PresCockcroftDictionary
+import RequestProject.PresentationComplexAcyclic
+import RequestProject.CombHurewicz1Pres
+import RequestProject.TheoremAAcyclic
 
-public import RequestProject.InitialChain
-public import RequestProject.PresCockcroftDictionary
-public import RequestProject.PresentationComplexAcyclic
-public import RequestProject.CombHurewicz1Pres
-public import RequestProject.TheoremAAcyclic
-
-@[expose] public section
 
 /-!
 # The initial pair of Lemma 3.1 as a map-carrying relative chain
@@ -38,8 +35,7 @@ into exactly that shape, giving **the base case, of length one, of the extension
   least one generator.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -52,12 +48,9 @@ omit [LinearOrder I] [Fintype I] [Fintype J] [DecidableEq J] in
 theorem bdry2_presComplex_eq_expCol :
     bdry2 (presComplex r) = Finsupp.linearCombination ℤ (expCol r) := by
   refine Finsupp.lhom_ext' fun j => LinearMap.ext_ring ?_
-  show bdry2 (presComplex r) (Finsupp.single j (1 : ℤ))
+  show bdry2 _ (Finsupp.single j (1 : ℤ))
     = Finsupp.linearCombination ℤ (expCol r) (Finsupp.single j (1 : ℤ))
   rw [bdry2_pres_single, Finsupp.linearCombination_single, one_smul, expCol_eq_expVec]
   rfl
 
 /-! ### The hypotheses are satisfiable -/
-
-end Comb
-end FiniteChains

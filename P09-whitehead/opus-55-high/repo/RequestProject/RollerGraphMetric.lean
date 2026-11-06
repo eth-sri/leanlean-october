@@ -1,10 +1,8 @@
-module
+import RequestProject.CubeRollerMedian
+import RequestProject.MedianGraphMetric
+import RequestProject.RollerConnected
+import RequestProject.Tac
 
-public import RequestProject.CubeRollerMedian
-public import RequestProject.MedianGraphMetric
-public import RequestProject.RollerConnected
-
-@[expose] public section
 
 /-!
 # The Roller model as an actual graph
@@ -31,42 +29,4 @@ and is one step closer to `B` (a *gate* step towards `B`).  Then:
   chains, with all the cells being genuine cubes of that graph.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-open RollerBridge
-
-universe u
-
-variable {ι : Type u} [DecidableEq ι]
-
-/-- A **gated Roller model**: a median-closed Roller model in which one can always move one
-step towards another vertex by changing a single coordinate.  This is what makes the counting
-distance `dsym` the edge metric of a connected graph. -/
-structure GatedRollerModel (ι : Type u) [DecidableEq ι] extends RollerModel ι where
-  /-- From any vertex one can step towards any other vertex, changing one coordinate. -/
-  step : ∀ {A B : Finset ι}, A ∈ toRollerModel.W → B ∈ toRollerModel.W → A ≠ B →
-    ∃ C ∈ toRollerModel.W, dsym A C = 1 ∧ dsym C B + 1 = dsym A B
-
-namespace GatedRollerModel
-
-variable (M : GatedRollerModel ι)
-
-/-- The graph of the model: two vertices are adjacent when they differ in exactly one
-hyperplane. -/
-def graph : SimpleGraph M.Vtx where
-  Adj u v := dsym u.1 v.1 = 1
-  symm := ⟨fun u v h => by rwa [dsym_comm]⟩
-  loopless := ⟨fun u h => by
-    have h' : dsym u.1 u.1 = 1 := h
-    rw [dsym_self] at h'
-    exact Nat.zero_ne_one h'⟩
-
-@[simp] theorem graph_adj {u v : M.Vtx} : (M.graph).Adj u v ↔ dsym u.1 v.1 = 1 := Iff.rfl
-
-end GatedRollerModel
-
-end FiniteChains
+bwd

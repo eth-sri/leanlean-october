@@ -1,20 +1,17 @@
-module
+import RequestProject.GenusQuotientRelativeSupport
+import RequestProject.GenusOldCoverSpineFaithfulness
+import RequestProject.ChamberQuotientOldCover
+import RequestProject.StrictOrderPullbackHom
+import RequestProject.OrderCxRestriction
+import RequestProject.UniversalCoverPi1Injection
+import RequestProject.Tac
+noncomputable section
 
-public import RequestProject.GenusQuotientRelativeSupport
-public import RequestProject.GenusOldCoverSpineFaithfulness
-public import RequestProject.ChamberQuotientOldCover
-public import RequestProject.StrictOrderPullbackHom
-public import RequestProject.OrderCxRestriction
-public import RequestProject.UniversalCoverPi1Injection
-
-@[expose] public section
 
 /-! The received spine is mapped into the genuine pulled-back old-cover spine.
 
 -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 variable {K Y Z : Complex2}
@@ -25,30 +22,30 @@ theorem Hom.comp_left_cancel_of_injective (f : Hom Y Z)
     (h : f.comp r = f.comp s) : r = s := by
   apply Hom.ext'
   · funext a
-    exact hv (congrArg (fun k : Hom K Z => k.onV a) h)
+    exact hv (congrArg (·.onV a) h)
   · funext e
-    exact he (congrArg (fun k : Hom K Z => k.onE e) h)
+    exact he (congrArg (·.onE e) h)
   · funext t
-    exact hf (congrArg (fun k : Hom K Z => k.onF t) h)
+    exact hf (congrArg (·.onF t) h)
 
-theorem uOrderHomInv_projection_square {P : Type} [PartialOrder P] (a : P) :
+theorem uOrderHomInv_projection_square {P : Type} [PartialOrder P] a :
     (orderCxMap uOrderEnd (uOrderEnd_monotone (P := P) (a := a))).comp uOrderHomInv =
       univProj (orderCx P) a := by
   apply Hom.ext'
   · funext x
     change uOrderEnd (uOrderHomInv.onV x) = endV x
-    rw (config := { transparency := .default }) [uOrderHomInv_vertex]
+    rwd [uOrderHomInv_vertex]
     rfl
   · funext e
     exact uOrderHomInv_edge_projection e
   · funext t
     exact uOrderHomInv_face_projection t
 
-theorem deckV_injective_in_group {X : Complex2} (a : X.V) (v : UV X a) :
+theorem deckV_injective_in_group a v :
     Function.Injective (fun g : Pi1 X a => deckV g v) := by
   intro g h he
   obtain ⟨d, _, hu⟩ := (isRegular_univProj (X := X) (x₀ := a)).simply_transitive
-    v (deckV g v) (endV_deckV g v).symm
+    v _ (endV_deckV g v).symm
   exact (hu g rfl).trans (hu h he.symm).symm
 
 end FiniteChains.Comb
@@ -85,14 +82,14 @@ variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
-noncomputable abbrev namedOldCover := QLiftedOld (namedQuotientBase ρ q u)
+abbrev namedOldCover := QLiftedOld (namedQuotientBase ρ q u)
 
-noncomputable def namedOldCoverProjection :
+def namedOldCoverProjection :
     namedOldCover q ρ u → QOld (cmpRel (GenusVertex q)) :=
-  qOldCoverEnd (namedQuotientBase ρ q u)
+  qOldCoverEnd _
 
 theorem namedOldCoverProjection_isPosetCover : IsPosetCover (namedOldCoverProjection q ρ u) :=
-  qOldCoverEnd_isPosetCover (namedAtt ρ q u (gBase q)) (namedBasePos_isConnected ρ q u)
+  qOldCoverEnd_isPosetCover _ (namedBasePos_isConnected ρ q u)
 
 variable {P : Type} [PartialOrder P] (f : P → QOld (cmpRel (GenusVertex q)))
 
@@ -115,13 +112,11 @@ variable (q : ℕ) [NeZero q] {α Jr : Type}
   (ρ : Jr ⊕ PUnit.{1} → FreeGroup α) (u : Fin q × Bool → FreeGroup α)
   (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
 
-noncomputable def coveredSpineToStrictSpine :
+def coveredSpineToStrictSpine :
     Hom (strictOrderCx (OldCoveredSpine q (namedOldCoverProjection q ρ u)))
       (strictOrderCx (GenusSpineCell q)) :=
-  (strictPullbackProjection (namedOldCoverProjection q ρ u)
-    (namedOldCoverProjection_isPosetCover q ρ u) (genusSpineCellToOld q)
+  (strictPullbackProjection _
+    (namedOldCoverProjection_isPosetCover q ρ u) _
     (genusSpineCellToOld_monotone q)).comp
-      (strictOrderCxMap (spinePullbackOldCoverOrderIso q (namedOldCoverProjection q ρ u)).symm
-        (spinePullbackOldCoverOrderIso q (namedOldCoverProjection q ρ u)).symm.strictMono)
-
-end FiniteChains.Davis.Genus
+      (strictOrderCxMap (spinePullbackOldCoverOrderIso q _).symm
+        (by tauto))

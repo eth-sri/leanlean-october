@@ -1,4 +1,3 @@
-module
-public import RequestProject.SpineCollapse
-public import RequestProject.BarycentricConnected
-public import RequestProject.BarycentricSurfaceExample
+import RequestProject.SpineCollapse
+import RequestProject.BarycentricConnected
+import RequestProject.BarycentricSurfaceExample

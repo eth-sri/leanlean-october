@@ -1,8 +1,5 @@
-module
+import RequestProject.ClassicalCWCellularDiskTransfer
 
-public import RequestProject.ClassicalCWCellularDiskTransfer
-
-@[expose] public section
 
 /-! Transfer a whole relative presentation extension: first its new
 one-cells, then its new two-cells. The zero-on-pi2 condition is required
@@ -18,10 +15,10 @@ variable (K : TwoComplex) {P J₁ J₂ : Type} [TopologicalSpace P]
   (r₁ : C(BoundaryFamily J₁ (Fin 1 → ℝ), P))
   (r₂ : C(BoundaryFamily J₂ (Fin 2 → ℝ), DiskAttachment r₁))
 
-def oneTwoAttachmentMap : C(P, DiskAttachment r₂) :=
-  (⟨old r₂ (boundaryFamilyInclusion J₂ (Fin 2 → ℝ)), old_continuous _ _⟩ :
+def oneTwoAttachmentMap :=
+  (⟨old r₂ _, old_continuous _ _⟩ :
     C(DiskAttachment r₁, DiskAttachment r₂)).comp
-      ⟨old r₁ (boundaryFamilyInclusion J₁ (Fin 1 → ℝ)), old_continuous _ _⟩
+      ⟨old r₁ _, old_continuous _ _⟩
 
 structure OneTwoDiskTransfer where
   target : TwoComplex
@@ -42,22 +39,17 @@ def oneTwoDiskTransfer : OneTwoDiskTransfer K e r₁ r₂ := by
     square := ?_
     finite := fun hK hJ₁ hJ₂ => T₂.finite (T₁.finite hK hJ₁) hJ₂
     proper := ?_ }
-  · apply ContinuousMap.ext
-    intro p
-    have h₂ := congrArg (fun f : C(DiskAttachment r₁, T₂.target) =>
-      f (old r₁ (boundaryFamilyInclusion J₁ (Fin 1 → ℝ)) p)) T₂.square
-    have h₁ := congrArg (fun f : C(P, T₁.target) => f p) T₁.square
-    exact h₂.trans (congrArg T₂.oldEmbedding.map h₁)
+  · rfl
   · intro hJ
     rcases hJ with hJ | hJ
-    · obtain ⟨z, hz⟩ := T₁.proper hJ
+    · cases' T₁.proper hJ with z hz
       refine ⟨T₂.oldEmbedding.map z, ?_⟩
       rintro ⟨x, hx⟩
       exact hz ⟨x, T₂.oldEmbedding.closedEmbedding.injective hx⟩
-    · obtain ⟨z, hz⟩ := T₂.proper hJ
+    · cases' T₂.proper hJ with z hz
       refine ⟨z, ?_⟩
       rintro ⟨x, hx⟩
-      exact hz ⟨T₁.oldEmbedding.map x, hx⟩
+      tauto
 
 namespace OneTwoDiskTransfer
 
@@ -65,6 +57,3 @@ theorem killsPi2_iff (T : OneTwoDiskTransfer K e r₁ r₂) :
     KillsPi2 T.oldEmbedding.map ↔ KillsPi2 (oneTwoAttachmentMap r₁ r₂) := by
   apply killsPi2_homotopyEquiv_square_iff e T.comparison
   rw [T.square]
-
-end OneTwoDiskTransfer
-end Whitehead

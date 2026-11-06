@@ -1,4 +1,3 @@
-module
-public import RequestProject.GenusFullCubeMarking
-public import RequestProject.GenusCappedSpine
-public import RequestProject.UnivCoverIncl
+import RequestProject.GenusFullCubeMarking
+import RequestProject.GenusCappedSpine
+import RequestProject.UnivCoverIncl

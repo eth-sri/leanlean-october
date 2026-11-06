@@ -1,10 +1,7 @@
-module
+import RequestProject.ClassicalCWLoopCellularization
+import RequestProject.ClassicalGraphPathStraightening
+import Mathlib.Topology.Connected.Clopen
 
-public import RequestProject.ClassicalCWLoopCellularization
-public import RequestProject.ClassicalGraphPathStraightening
-public import Mathlib.Topology.Connected.Clopen
-
-@[expose] public section
 
 /-! The actual graph underlying the original CW one-skeleton. Its vertices
 are the literal zero-skeleton points and its edges the original one-cell
@@ -20,19 +17,18 @@ open ClassicalSkeletonAttachment RelativeAttachment ClassicalGraphModel Continuo
 
 variable {X : Type} [TopologicalSpace X] [T2Space X] [CWComplex (Set.univ : Set X)]
 
-theorem isClosed_of_closedCell_constant (S : Set X)
+theorem isClosed_of_closedCell_constant S
     (hS : ∀ n (j : RelCWComplex.cell (Set.univ : Set X) n),
       CWComplex.closedCell n j ⊆ S ∨ Disjoint (CWComplex.closedCell n j) S) : IsClosed S := by
-  apply (CWComplex.closed (Set.univ : Set X) S (Set.subset_univ _)).mpr
+  apply (CWComplex.closed _ S (Set.subset_univ _)).mpr
   intro n j
   rcases hS n j with h | h
   · rw [Set.inter_eq_right.mpr h]
     exact CWComplex.isClosed_closedCell
-  · rw [Set.disjoint_iff_inter_eq_empty.mp h.symm]
-    exact isClosed_empty
+  · grind [Set.disjoint_iff_inter_eq_empty.mp h.symm]
 
 theorem cw_pathComponent_isClopen (x : X) : IsClopen (pathComponent x) := by
-  have hcell (n : ℕ) (j : RelCWComplex.cell (Set.univ : Set X) n) :
+  have hcell (n : ℕ) (j : RelCWComplex.cell Set.univ n) :
       CWComplex.closedCell n j ⊆ pathComponent x ∨
         Disjoint (CWComplex.closedCell n j) (pathComponent x) := by
     by_cases h : (CWComplex.closedCell n j ∩ pathComponent x).Nonempty
@@ -41,35 +37,28 @@ theorem cw_pathComponent_isClopen (x : X) : IsClopen (pathComponent x) := by
       intro z hz
       exact hxy.trans ((closedCell_joined n j hy hz).joined)
     · exact Or.inr (Set.disjoint_iff_inter_eq_empty.mpr (Set.not_nonempty_iff_eq_empty.mp h))
-  refine ⟨isClosed_of_closedCell_constant (pathComponent x) hcell, ?_⟩
+  refine ⟨isClosed_of_closedCell_constant _ hcell, ?_⟩
   apply isClosed_compl_iff.mp
   apply isClosed_of_closedCell_constant
-  intro n j
-  rcases hcell n j with h | h
-  · right
-    exact Set.disjoint_left.mpr (fun _ hy hz => hz (h hy))
-  · left
-    intro y hy hz
-    exact Set.disjoint_left.mp h hy hz
+  grind
 
 /-- Connected classical CW complexes are actually path connected. -/
 theorem cw_pathConnectedSpace [ConnectedSpace X] : PathConnectedSpace X where
   nonempty := inferInstance
   joined x y := by
     have h := (cw_pathComponent_isClopen x).eq_univ (pathComponent.nonempty x)
-    exact (show y ∈ pathComponent x from by rw [h]; trivial)
+    exact (show y ∈ pathComponent x from by simp_all)
 
 theorem zeroSkeleton_cellSeparated :
-    CellSeparated (CWComplex.skeletonLT (Set.univ : Set X) (1 : ℕ∞) : Set X) := by
+    CellSeparated (CWComplex.skeletonLT (Set.univ : Set X) 1 : Set X) := by
   intro n j
   by_cases hn : n = 0
   · subst n
     exact (Set.subsingleton_singleton (a := RelCWComplex.map 0 j ![])).anti (by
-      intro x hx
-      simpa only [CWComplex.openCell_zero_eq_singleton] using hx.2)
+      simp [CWComplex.openCell_zero_eq_singleton])
   · intro x hx y hy
     exact False.elim (Set.disjoint_left.mp
-      (CWComplex.disjoint_skeletonLT_openCell (C := (Set.univ : Set X)) (j := j)
+      (CWComplex.disjoint_skeletonLT_openCell (C := Set.univ) (j := j)
         (by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn)) hx.1 hx.2)
 
 theorem zeroSkeleton_discrete :
@@ -92,8 +81,8 @@ theorem zeroCellPoint_bijective : Function.Bijective (zeroCellPoint (X := X)) :=
       rw [hv, CWComplex.openCell_zero_eq_singleton]
       rfl
     have hlabel := RelCWComplex.eq_of_not_disjoint_openCell
-      (fun hd => Set.disjoint_left.mp hd hi hj)
-    exact eq_of_heq (Sigma.mk.inj_iff.mp hlabel).2
+      (Set.disjoint_left.mp · hi hj)
+    simp_all
   · intro x
     have hx := x.property
     change x.val ∈ (CWComplex.skeletonLT (Set.univ : Set X) (1 : ℕ∞) : Set X) at hx
@@ -104,7 +93,7 @@ theorem zeroCellPoint_bijective : Function.Bijective (zeroCellPoint (X := X)) :=
     subst n
     refine ⟨j, Subtype.ext ?_⟩
     exact (show x.val = vertexPoint j from by
-      simpa only [CWComplex.openCell_zero_eq_singleton, Set.mem_singleton_iff, vertexPoint] using hj).symm
+      simp_all [CWComplex.openCell_zero_eq_singleton, Set.mem_singleton_iff, vertexPoint]).symm
 
 /-- The literal original zero-cells label the vertices bijectively. -/
 def zeroCellEquiv : RelCWComplex.cell (Set.univ : Set X) 0 ≃
@@ -116,19 +105,19 @@ variable (K : Whitehead.TwoComplex)
 theorem oneSkeleton_nonempty : Nonempty (OneSkeleton K) := by
   let x : K := Classical.choice inferInstance
   let j := pointVertex x
-  exact ⟨skeletonInclusion (Set.univ : Set K) 1 (zeroCellPoint j)⟩
+  exact ⟨skeletonInclusion _ 1 (zeroCellPoint j)⟩
 
 theorem oneSkeleton_pathConnectedSpace : PathConnectedSpace (OneSkeleton K) where
   nonempty := oneSkeleton_nonempty K
   joined x y := by
     letI := cw_pathConnectedSpace (X := K)
-    obtain ⟨p⟩ := PathConnectedSpace.joined x.val y.val
-    obtain ⟨q, _⟩ := path_into_oneSkeleton K x y p
-    exact ⟨q⟩
+    cases' PathConnectedSpace.joined x.val y.val with p
+    cases' path_into_oneSkeleton K x y p with q _
+    tauto
 
 abbrev originalGraphAttaching := skeletonAttachingMap (Set.univ : Set K) 1
 
-def originalGraph : Comb.Complex2 := graphCx (originalGraphAttaching K)
+def originalGraph := graphCx (originalGraphAttaching K)
 
 theorem originalGraph_isConnected : Comb.IsConnected (originalGraph K) := by
   letI := zeroSkeleton_discrete (X := K)
@@ -137,12 +126,10 @@ theorem originalGraph_isConnected : Comb.IsConnected (originalGraph K) := by
   let e := skeletonAsDiskAttachment (Set.univ : Set K) 1
   letI : PathConnectedSpace (DiskAttachment (originalGraphAttaching K)) :=
     e.surjective.pathConnectedSpace e.continuous
-  exact graphCx_isConnected (originalGraphAttaching K) (originalGraphAttaching K).continuous
+  exact graphCx_isConnected _ (originalGraphAttaching K).continuous
 
 /-- The original graph admits a spanning tree, including for arbitrary
 infinite cell families. Its existence uses actual continuous connectedness. -/
-theorem originalGraph_exists_spanningTree (v : SkeletonCarrier (Set.univ : Set K) 1) :
+theorem originalGraph_exists_spanningTree (v : SkeletonCarrier Set.univ 1) :
     ∃ T : Comb.SpanningTree (originalGraph K), T.root = v :=
   Comb.SpanningTree.exists_of_isConnected (originalGraph_isConnected K) v
-
-end FiniteChains.ClassicalCW

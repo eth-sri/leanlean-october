@@ -1,17 +1,10 @@
-module
+import RequestProject.PresPosetDimension
+import RequestProject.OrderComparableCycleHomotopy
 
-public import RequestProject.PresPosetDimension
-public import RequestProject.OrderComparableCycleHomotopy
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
-universe u
 variable {α J : Type u}
 
 theorem rose_strict_triangles_empty : IsEmpty (StrictOrdTri (Rose α)) := by
@@ -31,5 +24,3 @@ theorem cylinder_strict_three_flags_empty (w : J → List (α × Bool)) :
   have hb := presPosDimension_le_two w (ConeAdj.inc (S := circSet w) t.1.2.2.2)
   change cylinderDimension w t.1.2.2.2 ≤ 2 at hb
   omega
-
-end FiniteChains.PresModel

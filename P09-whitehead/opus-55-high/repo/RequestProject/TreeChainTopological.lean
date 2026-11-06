@@ -1,9 +1,7 @@
-module
+import RequestProject.TreeUnivCoverIso
+import RequestProject.TreeChain
+import RequestProject.Tac
 
-public import RequestProject.TreeUnivCoverIso
-public import RequestProject.TreeChain
-
-@[expose] public section
 
 /-!
 # `(1) ⇒ (2)` of Theorem A for chains of arbitrary two-complexes, topologically
@@ -28,12 +26,9 @@ hypothesis:
   `π₂`, has a connected acyclic regular cover.**
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 namespace SpanningTree
 
 universe u
@@ -57,7 +52,6 @@ theorem uvQ_univLiftV {x₀ : X.V} (c : UV X x₀) :
           (treeRel_onF hiff) (uvQ (T := TX) c) := by
   induction c using UV.ind with
   | h p =>
-      show wordQ TY (relTree TY) (mapPath h p.1) = _
       show QuotientGroup.mk (pathWord TY (mapPath h p.1)) = _
       rw [pathWord_mapPath hiff]
       rfl
@@ -87,10 +81,10 @@ theorem chain2_treeUnivHom_square (hE : Function.Injective h.onE) {x₀ : X.V}
           (treeRel TX) (treeRel TY) h.onF (treeRel_onF hiff)) (chain2 (treeUnivHom TX x₀) u) := by
   classical
   show Finsupp.mapDomain (uvFace TY) (Finsupp.mapDomain (univLiftF x₀ h) u)
-    = Finsupp.mapDomain (univCoverInclHom (nonTreeIncl hiff) (nonTreeIncl_injective hiff hE)
-        (treeRel TX) (treeRel TY) h.onF (treeRel_onF hiff)).onF (Finsupp.mapDomain (uvFace TX) u)
+    = Finsupp.mapDomain (univCoverInclHom _ (nonTreeIncl_injective hiff hE)
+        _ _ h.onF (treeRel_onF hiff)).onF (Finsupp.mapDomain (uvFace TX) u)
   rw [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
-  refine congrArg (fun k => Finsupp.mapDomain k u) ?_
+  refine congrArg (Finsupp.mapDomain · u) ?_
   funext F
   exact uvFace_univLiftF hiff hE F
 
@@ -101,22 +95,17 @@ presentation complexes.**  This is the dictionary that turns the topological for
 theorem zeroPi2_presInclHom_of_zeroPi2 (hE : Function.Injective h.onE) (hzero : ZeroPi2 h) :
     ZeroPi2 (presInclHom (nonTreeIncl hiff) (nonTreeIncl_injective hiff hE) (treeRel TX)
       (treeRel TY) h.onF (treeRel_onF hiff)) := by
-  refine (Comb.zeroPi2_presInclHom_iff (ρ := treeRel TX) (σ := treeRel TY) (nonTreeIncl hiff)
-    (nonTreeIncl_injective hiff hE) h.onF (treeRel_onF hiff)).2 ?_
+  refine (Comb.zeroPi2_presInclHom_iff (ρ := treeRel TX) (σ := treeRel TY) _
+    _ h.onF _).2 ?_
   intro v hv
   obtain ⟨u, rfl⟩ := chain2_treeUnivHom_surjective TX (x₀ := TX.root) v
-  have hu : u ∈ Pi2 X TX.root := (mem_pi2_iff_bdry2_univCover TX u).2 hv
+  have hu := (mem_pi2_iff_bdry2_univCover TX u).2 hv
   rw [← chain2_treeUnivHom_square hiff hE u, hzero TX.root u hu, map_zero]
 
 end Naturality
 
 /-! ### Chains of two-complexes with the topological hypothesis -/
 
-namespace ComplexChainTop
-
-variable {K : Complex2.{u}} {T₀ : SpanningTree K} {n : ℕ}
-
-end ComplexChainTop
 
 variable {K : Complex2.{u}} (T₀ : SpanningTree K)
 variable [Fintype (NonTree T₀)] [DecidableEq (NonTree T₀)] [Fintype K.F] [DecidableEq K.F]
@@ -125,37 +114,6 @@ end SpanningTree
 
 /-! ### The statement without spanning trees -/
 
-/-- A chain `K ⊂ X₀ ⊂ X₁ ⊂ ⋯ ⊂ Xₙ` of finite connected two-complexes over `K`, every inclusion
-being an inclusion of subcomplexes and every inclusion `X r ⊂ X (r + 1)` being zero on `π₂`.
-This is condition (1) of Theorem A for a general two-complex. -/
-structure TopChain (K : Complex2.{u}) (n : ℕ) where
-  /-- The stages of the chain. -/
-  X : ℕ → Complex2.{u}
-  /-- The inclusion of `X r` in `X (r + 1)`. -/
-  inc : ∀ r, Hom (X r) (X (r + 1))
-  incV : ∀ r, Function.Injective (inc r).onV
-  incE : ∀ r, Function.Injective (inc r).onE
-  incF : ∀ r, Function.Injective (inc r).onF
-  /-- Every stage is connected. -/
-  conn : ∀ r, IsConnected (X r)
-  /-- Every stage is finite. -/
-  finE : ∀ r, Finite (X r).E
-  finF : ∀ r, Finite (X r).F
-  /-- The inclusion of `K` in the first stage. -/
-  base : Hom K (X 0)
-  baseV : Function.Injective base.onV
-  baseE : Function.Injective base.onE
-  baseF : Function.Injective base.onF
-  /-- **The inclusion `X r ⊂ X (r + 1)` is zero on `π₂`.** -/
-  zero_pi2 : ∀ r, r < n → ZeroPi2 (inc r)
 
-namespace TopChain
-
-variable {K : Complex2.{u}} {n : ℕ} (c : TopChain K n) (T₀ : SpanningTree K)
-
-end TopChain
 
 /-! ### Non-vacuity -/
-
-end Comb
-end FiniteChains

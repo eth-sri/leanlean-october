@@ -1,9 +1,7 @@
-module
+import RequestProject.GenusNormalizedReferenceTransport
+import RequestProject.GenusPolygonCoefficientGeneration
+import RequestProject.Tac
 
-public import RequestProject.GenusNormalizedReferenceTransport
-public import RequestProject.GenusPolygonCoefficientGeneration
-
-@[expose] public section
 
 /-! B2 for the actual finite genus spine, and its arbitrary-family
 finite-support consequence. All geometric reference hypotheses are discharged
@@ -13,9 +11,7 @@ This file does not assert the original topological MainClaim.
 -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily Nerve
@@ -38,11 +34,11 @@ theorem finiteSpineActualB2
       ∀ m, β m = a * singleFiniteSpineReference ρ q u m := by
   obtain ⟨y, hy, hreference⟩ := singleFiniteSpineReference_corrected_geometry ρ q u hrho
   exact finiteSpine_polygon_reference_generates q ρ u hrho
-    (singleFiniteSpineReference ρ q u) (singleFiniteSpineReference_internal ρ q u hrho)
-    (transportedUniversalPolygonAttachingChain ρ q u)
+    _ (singleFiniteSpineReference_internal ρ q u hrho)
+    _
     (transportedUniversalPolygonAttachingChain_mem_inc ρ q u)
     (transportedUniversalPolygonAttachingChain_degree ρ q u)
-    y hy hreference (transportedUniversalPolygonPole ρ q u)
+    y hy hreference _
     (transportedUniversalPolygonAttachingChain_normalized ρ q u) β hβ
 
 variable {S : Type} (σ : Jr ⊕ S → FreeGroup α)
@@ -55,9 +51,8 @@ include hσ in
 arbitrary-family base-change theorem, now with every geometric input proved. -/
 theorem finiteSpineIndividualB2_actual : FiniteSpineIndividualB2 σ qs us := by
   intro s β hβ
-  have h := finiteSpineActualB2 (oneRel σ s) (qs s) (us s) (hσ s) β hβ
-  simp only [singleFiniteSpineReference_oneRel] at h
-  convert h using 1 <;> rfl
+  have h := finiteSpineActualB2 _ _ _ (hσ s) β hβ
+  tauto
 
 /-- Actual finite-support cycle generation for simultaneous substitution.
 The former individual-B2 assumption is discharged by the genus geometry. -/
@@ -74,5 +69,3 @@ theorem finiteSpineFamily_fsGenerates_actual
           (familyFiniteSpineWordBlock_filled σ qs us hσ)
           (finiteSpineFamilyFilling σ qs us) y} :=
   finiteSpineFamily_fsGenerates σ qs us hσ (finiteSpineIndividualB2_actual σ qs us hσ) x hx
-
-end FiniteChains.Davis.Genus

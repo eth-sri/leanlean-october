@@ -1,10 +1,7 @@
-module
+import RequestProject.PresUniversalGeneratorGroupCoordinates
+import RequestProject.PresCoverRelatorLetterCoefficients
+import RequestProject.PresUniversalCylinderCollapseReading
 
-public import RequestProject.PresUniversalGeneratorGroupCoordinates
-public import RequestProject.PresCoverRelatorLetterCoefficients
-public import RequestProject.PresUniversalCylinderCollapseReading
-
-@[expose] public section
 
 namespace FiniteChains.PresModel
 open Comb
@@ -27,23 +24,18 @@ theorem presUniversalLetter_midpoint_coordinates
         ((w p.val.2)[k.val]).1) := by
   apply Prod.ext
   · exact presUniversalRelator_collapsed_midpoint_reading w hpos
-      (fun i => (QuotientGroup.mk (FreeGroup.of i) : PresGroup ρ))
-      (presGroup_wordVal_eq_one ρ w hw) p k
+      _
+      _ p k
   · rfl
 
 /-- The selected incidence of an actual midpoint has that midpoint's group coordinates. -/
 theorem presUniversalGeneratorGroupEquiv_midpoint
-    (m : roseCoverMidpoints (cylinderCoverRoseEnd w
-      (coneAdjCoverBaseEnd (uOrderEnd (P := PresPos w) (a := ptBase w))))) :
+    m :
     presUniversalGeneratorGroupEquiv ρ w hw hpos
       (roseCoverMidpointEdge _ (cylinderCoverRoseEnd_isPosetCover w _
         (coneAdjCoverBaseEnd_isPosetCover _ (presUniversalEnd_isPosetCover w hpos))) m) =
       presUniversalMidpointGroupEquiv ρ w hw hpos m := by
   change presUniversalMidpointGroupEquiv ρ w hw hpos
-    ((roseCoverMidpointEdgeEquiv _ (cylinderCoverRoseEnd_isPosetCover w _
-      (coneAdjCoverBaseEnd_isPosetCover _ (presUniversalEnd_isPosetCover w hpos)))).symm
-      ((roseCoverMidpointEdgeEquiv _ (cylinderCoverRoseEnd_isPosetCover w _
-        (coneAdjCoverBaseEnd_isPosetCover _ (presUniversalEnd_isPosetCover w hpos)))) m)) = _
-  rw [Equiv.symm_apply_apply]
-
-end FiniteChains.PresModel
+    ((roseCoverMidpointEdgeEquiv _ _).symm
+      ((roseCoverMidpointEdgeEquiv _ _) m)) = _
+  simp

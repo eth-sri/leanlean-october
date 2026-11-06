@@ -1,10 +1,8 @@
-module
+import RequestProject.RelativeNormalizedWords
+import RequestProject.HNNEmbedding
+import Mathlib.GroupTheory.PushoutI
+import RequestProject.Tac
 
-public import RequestProject.RelativeNormalizedWords
-public import RequestProject.HNNEmbedding
-public import Mathlib.GroupTheory.PushoutI
-
-@[expose] public section
 
 /-! Simultaneous rule 1 is injective for arbitrary presentations. Independent
 HNN receivers share the old group through a wide amalgam; no finite ordering
@@ -14,9 +12,7 @@ of the set of extra generators is needed. Awaiting final Lean verification.
 noncomputable section
 open scoped Classical commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.RelativeNormalForm
 
@@ -24,9 +20,9 @@ section Receiver
 variable {G : Type} [Group G]
 
 abbrev PairReceiver (z : G) :=
-  HNNExtension (Monoid.Coprod G (Multiplicative ℤ))
-    (Subgroup.zpowers (freeGen (G := G)))
-    (Subgroup.zpowers (Monoid.Coprod.inl z * freeGen))
+  HNNExtension _
+    _
+    _
     (zpowersEquivZpowers not_isOfFinOrder_freeGen (not_isOfFinOrder_mul_freeGen z))
 
 def pairReceiverBase (z : G) : G →* PairReceiver z :=
@@ -43,19 +39,16 @@ theorem pairReceiver_commutator (z : G) :
         ⟨freeGen (G := G), Subgroup.mem_zpowers _⟩ =
       ⟨Monoid.Coprod.inl z * freeGen, Subgroup.mem_zpowers _⟩ := by
     have hsymm : (zpowersEquivInt (not_isOfFinOrder_freeGen (G := G))).symm
-        ⟨freeGen, Subgroup.mem_zpowers _⟩ = Multiplicative.ofAdd (1 : ℤ) := by
+        ⟨freeGen, Subgroup.mem_zpowers _⟩ = Multiplicative.ofAdd (1) := by
       rw [MulEquiv.symm_apply_eq]
-      exact Subtype.ext (by simp [zpowersEquivInt])
+      rfl
     change (zpowersEquivInt (not_isOfFinOrder_mul_freeGen z))
       ((zpowersEquivInt not_isOfFinOrder_freeGen).symm _) = _
-    rw [hsymm]
-    exact Subtype.ext (by simp [zpowersEquivInt])
+    aesop
   have hconj := HNNExtension.equiv_eq_conj
     (φ := zpowersEquivZpowers not_isOfFinOrder_freeGen (not_isOfFinOrder_mul_freeGen z))
     ⟨freeGen (G := G), Subgroup.mem_zpowers _⟩
   rw [hgen] at hconj
-  change HNNExtension.of (Monoid.Coprod.inl z * freeGen) =
-    pairReceiverA z * pairReceiverB z * (pairReceiverA z)⁻¹ at hconj
   rw [map_mul] at hconj
   change pairReceiverBase z z * pairReceiverB z =
     pairReceiverA z * pairReceiverB z * (pairReceiverA z)⁻¹ at hconj
@@ -78,7 +71,7 @@ def pairSubGroupHom : PresGroup ρ →* PresGroup (pairRel ρ) :=
     exact (QuotientGroup.eq_one_iff _).mpr
       (Subgroup.subset_normalClosure ⟨j, rfl⟩))
 
-def familyPairBase (z : Z) : PresGroup ρ →*
+def familyPairBase z : PresGroup ρ →*
     PairReceiver (QuotientGroup.mk (FreeGroup.of (Sum.inr z)) : PresGroup ρ) :=
   pairReceiverBase _
 
@@ -102,22 +95,21 @@ theorem pairReceiverLift_comp :
   apply FreeGroup.ext_hom
   intro x
   cases x with
-  | inl a => simp [pairReceiverLift]
+  | inl a => rfl
   | inr z =>
-      simp only [MonoidHom.comp_apply, pairSubstitution_extra, map_commutatorElement]
       change ⁅Monoid.PushoutI.of (φ := familyPairBase ρ) z
-          (pairReceiverA (QuotientGroup.mk (FreeGroup.of (Sum.inr z)) : PresGroup ρ)),
+          (pairReceiverA _),
         Monoid.PushoutI.of (φ := familyPairBase ρ) z
-          (pairReceiverB (QuotientGroup.mk (FreeGroup.of (Sum.inr z)) : PresGroup ρ))⁆ = _
+          (pairReceiverB _)⁆ = _
       rw [← map_commutatorElement, pairReceiver_commutator]
-      exact Monoid.PushoutI.of_apply_eq_base (familyPairBase ρ) z _
+      exact Monoid.PushoutI.of_apply_eq_base _ z _
 
 def pairComparison : PresGroup (pairRel ρ) →* PairAmalgam ρ :=
   QuotientGroup.lift _ (pairReceiverLift ρ) (by
     refine Subgroup.normalClosure_le_normal ?_
     rintro _ ⟨j, rfl⟩
     change pairReceiverLift ρ (pairSubstitution (ρ j)) = 1
-    have h := congrArg (fun f : FreeGroup (A ⊕ Z) →* PairAmalgam ρ => f (ρ j))
+    have h := congrArg (· (ρ j))
       (pairReceiverLift_comp ρ)
     rw [MonoidHom.comp_apply, MonoidHom.comp_apply] at h
     rw [h]
@@ -131,7 +123,7 @@ theorem pairComparison_comp : (pairComparison ρ).comp (pairSubGroupHom ρ) =
   intro g
   induction g using QuotientGroup.induction_on with
   | H w =>
-      exact congrArg (fun f : FreeGroup (A ⊕ Z) →* PairAmalgam ρ => f w)
+      exact congrArg (· w)
         (pairReceiverLift_comp ρ)
 
 /-- Actual simultaneous generator substitution is injective, including for
@@ -143,6 +135,4 @@ theorem pairSubGroupHom_injective : Function.Injective (pairSubGroupHom ρ) := b
   have hc := congrArg (pairComparison ρ) he
   change ((pairComparison ρ).comp (pairSubGroupHom ρ)) g =
     ((pairComparison ρ).comp (pairSubGroupHom ρ)) h at hc
-  simpa only [pairComparison_comp] using hc
-
-end FiniteChains.RelativeNormalForm
+  simp_all [pairComparison_comp]

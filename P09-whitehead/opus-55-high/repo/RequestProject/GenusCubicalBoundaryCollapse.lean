@@ -1,9 +1,6 @@
-module
+import RequestProject.QCubeTruncatedBoundaryCollapse
+import RequestProject.GenusSpineCells
 
-public import RequestProject.QCubeTruncatedBoundaryCollapse
-public import RequestProject.GenusSpineCells
-
-@[expose] public section
 
 /-! Actual genus cube boundaries vanish under the chosen geometric collapse. -/
 namespace FiniteChains.Davis.Genus
@@ -27,8 +24,8 @@ theorem genus_truncated_three_boundary_collapse_zero
   exact genus_threeCube_occurs_in_collapse q c
 
 /-- Every cut cell surviving the actual genus collapse has at most two vertices. -/
-theorem genusSpine_cut_card_le_two (σ : CutCell (cmpRel (GenusVertex q)))
-    (hσ : (Sum.inr σ : GenusTruncatedCell q) ∈ genusSpineCellSet q) : σ.1.card ≤ 2 := by
+theorem genusSpine_cut_card_le_two σ
+    (hσ : (Sum.inr σ) ∈ genusSpineCellSet q) : σ.1.card ≤ 2 := by
   have hmax := genus_chain_card_le_three q (genus_simplex_mem_faces q σ.2.2)
   by_contra hnot
   have hthree : σ.1.card = 3 := by omega
@@ -38,17 +35,14 @@ theorem genusSpine_cut_card_le_two (σ : CutCell (cmpRel (GenusVertex q)))
 
 /-- The actual surviving-spine comparison lands entirely in quotient cube dimension
 at most two, including its retained cut cells. -/
-theorem genusSpineCellToOld_dimension_le_two (c : GenusSpineCell q) :
+theorem genusSpineCellToOld_dimension_le_two c :
     (genusSpineCellToOld q c).1.spx.card ≤ 2 := by
   cases hc : c.1 with
   | inl d =>
       have hd := c.2.1
-      rw [hc] at hd
-      simpa [genusSpineCellToOld, truncatedCellRetraction, hc, truncatedCellDimension] using hd
+      simp_all [hc, genusSpineCellToOld, truncatedCellRetraction, truncatedCellDimension]
   | inr σ =>
       have hσ := c.2
       rw [hc] at hσ
       have hcard := genusSpine_cut_card_le_two q σ hσ
       simpa [genusSpineCellToOld, truncatedCellRetraction, hc, posQCube] using hcard
-
-end FiniteChains.Davis.Genus

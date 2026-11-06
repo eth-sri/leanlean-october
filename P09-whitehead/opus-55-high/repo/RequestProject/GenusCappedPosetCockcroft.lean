@@ -1,3 +1,2 @@
-module
-public import RequestProject.GenusCappedCockcroft
-public import RequestProject.PresUniversalCockcroftCoordinates
+import RequestProject.GenusCappedCockcroft
+import RequestProject.PresUniversalCockcroftCoordinates

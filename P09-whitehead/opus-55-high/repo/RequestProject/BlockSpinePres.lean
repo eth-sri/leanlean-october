@@ -1,10 +1,8 @@
-module
+import RequestProject.SubstOneWayBlockLoops
+import RequestProject.TreePresentation
+import RequestProject.CombPi1Conj
+import RequestProject.Tac
 
-public import RequestProject.SubstOneWayBlockLoops
-public import RequestProject.TreePresentation
-public import RequestProject.CombPi1Conj
-
-@[expose] public section
 
 /-!
 # The block of the article: its spine, its marked presentation, its loops and its fillings
@@ -46,12 +44,9 @@ two-dimensional order complex of that poset:
   prescribed old word `u_h` along the chosen loop of the cut surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb PresModel BlockFamily
 
@@ -67,10 +62,10 @@ instance : PartialOrder (QOld A) := Subtype.partialOrder _
 /-- The cube `(σ, 0)` of a nonempty simplex `σ`: a cell of the cut surface, that is, of the part
 of the block which is glued to the copy of the base. -/
 def posQCube (σ : NeSpx A) : QOld A :=
-  ⟨⟨σ.1, 0, σ.2.2, fun _ _ => rfl⟩, fun h => (Finset.nonempty_iff_ne_empty.mp σ.2.1) h.1⟩
+  ⟨⟨σ.1, 0, σ.2.2, fun _ _ => rfl⟩, by grind⟩
 
 omit [Fintype V] in
-theorem posQCube_monotone : Monotone (posQCube (A := A)) := fun _ _ h => ⟨h, fun _ _ => rfl⟩
+theorem posQCube_monotone : Monotone (posQCube (A := A)) := by tauto
 
 /-- The cut surface as a cellular map into the block. -/
 def surfCx (A : CommRel V) : Hom (orderCx (NeSpx A)) (orderCx (QOld A)) :=
@@ -84,10 +79,10 @@ variable {X : Type u} [Preorder X] {att : NeSpx A →o X}
 def qOldIncl (c : QOld A) : Qpos A X att := qOld c.1 c.2
 
 omit [Fintype V] in
-theorem qOldIncl_monotone : Monotone (qOldIncl (X := X) (att := att)) := fun _ _ h => h
+theorem qOldIncl_monotone : Monotone (qOldIncl (X := X) (att := att)) := by tauto
 
 /-- The block as a cellular map into the quotient. -/
-def blockCx (A : CommRel V) (X : Type u) [Preorder X] (att : NeSpx A →o X) :
+def blockCx (A : CommRel V) X [Preorder X] att :
     Hom (orderCx (QOld A)) (orderCx (Qpos A X att)) :=
   orderCxMap qOldIncl qOldIncl_monotone
 
@@ -102,30 +97,5 @@ end Block
 
 /-! ### The block inside the quotient, based at the base point of the copy of the base -/
 
-section Spine
-
-variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModelPos ρ) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
-
-end Spine
 
 /-! ### The marked presentation of the block and the application -/
-
-/-- **The internal generators `Z` of the block**: the edges of the two-dimensional order complex
-of the block outside the chosen spanning tree of its one-skeleton. -/
-abbrev spineGens (T : SpanningTree (orderCx (QOld A))) : Type u := SpanningTree.NonTree T
-
-/-- **The relators of the marked block presentation** `B_q = ⟨s_h, t_h, Z ∣ β_m⟩`: the two-cells
-of the block, and one marking relator per distinguished generator. -/
-abbrev spineRels (Su : Type u) : Type u := (orderCx (QOld A)).F ⊕ Su
-
-section Application
-
-variable {α J : Type u} (ρ : J → FreeGroup α) (att : NeSpx A →o presModelPos ρ) (σ₀ : NeSpx A)
-  (cb : List ((orderCx (presModelPos ρ)).E × Bool)) (T : SpanningTree (orderCx (QOld A)))
-  {Su : Type u}
-
-end Application
-
-end Davis
-end FiniteChains

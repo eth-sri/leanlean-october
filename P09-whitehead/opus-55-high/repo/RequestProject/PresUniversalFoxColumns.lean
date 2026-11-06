@@ -1,14 +1,10 @@
-module
+import RequestProject.PresUniversalGroupRingBoundary
+import RequestProject.CoverFoxTranslatedPrefixSum
+import RequestProject.FoxFinsupp
+import RequestProject.Tac
 
-public import RequestProject.PresUniversalGroupRingBoundary
-public import RequestProject.CoverFoxTranslatedPrefixSum
-public import RequestProject.FoxFinsupp
 
-@[expose] public section
-
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.PresModel
 open Comb
@@ -18,7 +14,7 @@ variable {α J : Type u} [DecidableEq α] (ρ : J → FreeGroup α) (w : J → L
 
 /-- The genuine geometric boundary coefficient is the actual translated projected Fox derivative. -/
 theorem presUniversalGroupRingBoundary_actual_fox
-    (p : PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w))) (i : α) :
+    (p : PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w))) i :
     presUniversalGroupRingBoundary ρ w hw hpos
       (Finsupp.single p.val.2 (MonoidAlgebra.single
         ((presGroupCocycle ρ w hw).readVertex (ptBase w) p.val.1) 1)) i =
@@ -29,26 +25,19 @@ theorem presUniversalGroupRingBoundary_actual_fox
     coverFox_translated_prefix_sum]
   rw [Finsupp.finset_sum_apply]
   apply Finset.sum_congr rfl
-  intro k _
-  rw [Finsupp.smul_apply]
-  by_cases hi : i = ((w p.val.2)[k.val]).1
-  · subst i
-    simp only [Finsupp.single_eq_same]
-    cases hb : ((w p.val.2)[k.val]).2 <;>
-      simp
-  · simp [hi]
+  aesop
 
 /-- Every group-translated geometric basis column is the corresponding Fox column. -/
-theorem presUniversalGroupRingBoundary_fox_single (g : PresGroup ρ) (j : J) (i : α) :
+theorem presUniversalGroupRingBoundary_fox_single g j i :
     presUniversalGroupRingBoundary ρ w hw hpos
       (Finsupp.single j (MonoidAlgebra.single g 1)) i =
       MonoidAlgebra.single g 1 * proj (relSub ρ) (fox i (ρ j)) := by
   let p := (presUniversalRelatorGroupEquiv ρ w hw hpos).symm (g, j)
   have he := (presUniversalRelatorGroupEquiv ρ w hw hpos).apply_symm_apply (g, j)
-  have hg : (presGroupCocycle ρ w hw).readVertex (ptBase w) p.val.1 = g :=
+  have hg : (presGroupCocycle ρ w hw).readVertex _ p.val.1 = g :=
     congrArg Prod.fst he
   have hj : p.val.2 = j := congrArg Prod.snd he
-  simpa only [hg, hj] using presUniversalGroupRingBoundary_actual_fox ρ w hw hpos p i
+  simpa [hg, hj] using presUniversalGroupRingBoundary_actual_fox ρ w hw hpos p i
 
 /-- The genuine universal geometric boundary equals the actual algebraic Fox boundary. -/
 theorem presUniversalGroupRingBoundary_eq_fox :
@@ -58,19 +47,13 @@ theorem presUniversalGroupRingBoundary_eq_fox :
   intro j r
   induction r using MonoidAlgebra.induction_linear with
   | zero => simp
-  | add r s hr hs => simp only [Finsupp.single_add, map_add, hr, hs]
+  | add r s hr hs => simp_all
   | single g n =>
-    have hn : MonoidAlgebra.single g n = n • MonoidAlgebra.single g (1 : ℤ) := by
-      simp [MonoidAlgebra.smul_single]
-    change presUniversalGroupRingBoundary ρ w hw hpos
-      (Finsupp.single j (MonoidAlgebra.single g n)) =
-      (coverSecondBoundary (relSub ρ) ρ).restrictScalars ℤ
-        (Finsupp.single j (MonoidAlgebra.single g n))
+    have hn : MonoidAlgebra.single g n = n • MonoidAlgebra.single g (1) := by
+      simp
     rw [hn, ← Finsupp.smul_single, map_smul, map_smul]
     congr 1
     ext i
     rw [presUniversalGroupRingBoundary_fox_single]
     simp [coverSecondBoundary, coverFoxGradient, foxGradient_apply,
       Finsupp.linearCombination_single, Finsupp.smul_apply, smul_eq_mul]
-
-end FiniteChains.PresModel

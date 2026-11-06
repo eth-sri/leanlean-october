@@ -1,9 +1,7 @@
-module
+import RequestProject.SlideGeneration
+import RequestProject.RuleOneMor
+import RequestProject.Tac
 
-public import RequestProject.SlideGeneration
-public import RequestProject.RuleOneMor
-
-@[expose] public section
 
 /-!
 # Rule 2 as a structural map with the generation property
@@ -26,45 +24,4 @@ satisfies `FiniteChains.Generates`, so that rule 2 composes with rules 1 and 3.
   beyond the defining property of the correcting word and its coefficient vector.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
-
-namespace FiniteChains
-
-open MonoidAlgebra
-
-universe u
-
-variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
-variable (ρ : J → FreeGroup α) (j₀ : J) (u : FreeGroup α)
-  (hu : u ∈ Subgroup.normalClosure (Set.range (coreRel ρ j₀)))
-
-/-! ### The identification of the two fundamental groups -/
-
-omit [Fintype α] [DecidableEq α] [Fintype J] in
-/-- The slide does not change the normal closure of the relators, so the identity of the free
-group descends to the two presented groups. -/
-def slideGroupHom : PresGroup ρ →* PresGroup (slideRel ρ j₀ u) :=
-  QuotientGroup.map _ _ (MonoidHom.id _) (by
-    rw [Subgroup.comap_id, relSub_slideRel ρ j₀ u hu])
-
-omit [Fintype α] [DecidableEq α] [Fintype J] in
-/-- The inverse identification. -/
-def slideGroupHomInv : PresGroup (slideRel ρ j₀ u) →* PresGroup ρ :=
-  QuotientGroup.map _ _ (MonoidHom.id _) (by
-    rw [Subgroup.comap_id, relSub_slideRel ρ j₀ u hu])
-
-omit [Fintype α] [DecidableEq α] [Fintype J] in
-@[simp] theorem slideGroupHom_mk (w : FreeGroup α) :
-    slideGroupHom ρ j₀ u hu (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
-
-omit [Fintype α] [DecidableEq α] [Fintype J] in
-@[simp] theorem slideGroupHomInv_mk (w : FreeGroup α) :
-    slideGroupHomInv ρ j₀ u hu (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
-
-/-! ### Rule 2 as a structural map -/
-
-variable (lam : J → MonoidAlgebra ℤ (PresGroup ρ))
-
-end FiniteChains
+bwd

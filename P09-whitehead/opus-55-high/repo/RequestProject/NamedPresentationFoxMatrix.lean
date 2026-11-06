@@ -1,15 +1,11 @@
-module
+import RequestProject.NamedPresentation
+import RequestProject.FoxNaturality
+import RequestProject.PresentationDictionary
+import RequestProject.Tac
 
-public import RequestProject.NamedPresentation
-public import RequestProject.FoxNaturality
-public import RequestProject.PresentationDictionary
-
-@[expose] public section
 
 /-! The actual Fox matrix after adjoining names for the marked words. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.NamedPresentation
 variable {α J I : Type} [DecidableEq α] [DecidableEq I]
@@ -17,21 +13,21 @@ variable {α J I : Type} [DecidableEq α] [DecidableEq I]
 
 noncomputable def wordCoefficientMap :
     FreeGroupRing α →+* MonoidAlgebra ℤ (PresGroup (rel ρ w)) :=
-  (quotRingHom ℤ (relSub (rel ρ w))).comp (freeRingMap Sum.inl)
+  (quotRingHom ℤ _).comp (freeRingMap Sum.inl)
 
-theorem matrix_internal_relator (a : α) (j : J) :
+theorem matrix_internal_relator a j :
     foxMatrixPres (rel ρ w) (Sum.inl a) (Sum.inl j) =
       wordCoefficientMap ρ w (fox a (ρ j)) := by
   change quotRingHom ℤ _ (fox (Sum.inl a) (FreeGroup.map Sum.inl (ρ j))) = _
   rw [fox_map Sum.inl Sum.inl_injective]
   rfl
 
-theorem matrix_marked_relator (i : I) (j : J) :
+theorem matrix_marked_relator i j :
     foxMatrixPres (rel ρ w) (Sum.inr i) (Sum.inl j) = 0 := by
   change quotRingHom ℤ _ (fox (Sum.inr i) (FreeGroup.map Sum.inl (ρ j))) = 0
-  rw [fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl), map_zero]
+  rw [fox_map_of_not_mem_range Sum.inl (by simp), map_zero]
 
-theorem matrix_internal_name (a : α) (i : I) :
+theorem matrix_internal_name a i :
     foxMatrixPres (rel ρ w) (Sum.inl a) (Sum.inr i) =
       -wordCoefficientMap ρ w (fox a (w i)) := by
   have hf : fox (Sum.inl a) (rel ρ w (Sum.inr i)) =
@@ -49,13 +45,11 @@ theorem matrix_internal_name (a : α) (i : I) :
   rw [foxMatrixPres, hf, map_neg, map_mul, hg, one_mul]
   rfl
 
-theorem matrix_marked_name (i k : I) :
+theorem matrix_marked_name i k :
     foxMatrixPres (rel ρ w) (Sum.inr i) (Sum.inr k) = if i = k then 1 else 0 := by
   have hz : fox (Sum.inr i) (FreeGroup.map Sum.inl (w k)) = 0 :=
-    fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl) _
+    fox_map_of_not_mem_range Sum.inl (by simp) _
   by_cases h : i = k
   · subst k
     simp [foxMatrixPres, rel, fox_mul, fox_inv, hz]
   · simp [foxMatrixPres, rel, fox_mul, fox_inv, hz, h]
-
-end FiniteChains.NamedPresentation

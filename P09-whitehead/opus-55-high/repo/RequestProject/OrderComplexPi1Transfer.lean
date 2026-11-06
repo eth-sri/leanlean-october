@@ -1,8 +1,6 @@
-module
+import RequestProject.OrderComplexRetraction
+import RequestProject.Tac
 
-public import RequestProject.OrderComplexRetraction
-
-@[expose] public section
 
 /-!
 # Transferring path statements along monotone maps and order isomorphisms
@@ -22,26 +20,23 @@ complex — into statements about the map of fundamental groups induced by a mon
   classes inside the whole poset, then the induced map of fundamental groups is injective.
 -/
 
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
 variable {P Q R : Type u} [Preorder P] [Preorder Q] [Preorder R]
 
 /-- A homotopy inside the whole poset is an ordinary homotopy. -/
-theorem htpyIn_true_iff {a b : P} {p q : List ((orderCx P).E × Bool)} :
+theorem htpyIn_true_iff {a b} {p q : List ((orderCx P).E × Bool)} :
     HtpyIn (fun _ : P => True) a b p q ↔ Htpy (orderCx P) a b p q := by
   constructor
   · exact HtpyIn.htpy
   · intro h
     refine Relation.ReflTransGen.mono (fun x y hs => ?_) _ _ h
-    exact hs.imp (fun h => ⟨h, fun _ _ => ⟨trivial, trivial⟩, fun _ _ => ⟨trivial, trivial⟩⟩)
-      (fun h => ⟨h, fun _ _ => ⟨trivial, trivial⟩, fun _ _ => ⟨trivial, trivial⟩⟩)
+    exact hs.imp (fun h => ⟨h, by tauto, by tauto⟩)
+      (fun h => ⟨h, by tauto, by tauto⟩)
 
 /-- A monotone map followed by a monotone left inverse returns an edge path unchanged. -/
 theorem mapPath_comp_eq_self {f : Q → P} (hf : Monotone f) {g : P → Q} (hg : Monotone g)
@@ -50,35 +45,34 @@ theorem mapPath_comp_eq_self {f : Q → P} (hf : Monotone f) {g : P → Q} (hg :
       mapPath (orderCxMap g hg) (mapPath (orderCxMap f hf) l) = l
   | [] => rfl
   | e :: t => by
-      simp only [mapPath, List.map_cons, List.cons.injEq]
+      simp [mapPath, List.map_cons, List.cons.injEq]
       refine ⟨?_, ?_⟩
       · refine Prod.ext ?_ rfl
         refine Subtype.ext (Prod.ext ?_ ?_)
         · exact hgf e.1.1.1
-        · exact hgf e.1.1.2
+        tauto
       · simpa [mapPath] using mapPath_comp_eq_self hf hg hgf t
 
 /-- Simple connectedness transfers along an order isomorphism. -/
 theorem simplyConnected_orderCx_of_orderIso (e : P ≃o Q) (h : SimplyConnected (orderCx Q)) :
     SimplyConnected (orderCx P) := by
   intro a p hp
-  have hmono : Monotone (e : P → Q) := fun _ _ hxy => e.monotone hxy
-  have hmono' : Monotone (e.symm : Q → P) := fun _ _ hxy => e.symm.monotone hxy
-  have himg := h (e a) (mapPath (orderCxMap (e : P → Q) hmono) p)
+  have hmono : Monotone e := fun _ _ hxy => e.monotone hxy
+  have hmono' : Monotone e.symm := fun _ _ hxy => e.symm.monotone hxy
+  have himg := h _ _
     (isPath_mapPath (orderCxMap (e : P → Q) hmono) hp)
   have hpush := mapPath_htpy (orderCxMap (e.symm : Q → P) hmono') himg
-  rw [mapPath_comp_eq_self hmono hmono' (fun y => e.symm_apply_apply y) p] at hpush
-  simpa [mapPath] using hpush
+  simp_all [mapPath_comp_eq_self hmono hmono' e.symm_apply_apply p]
 
 /-- Connectivity transfers along an order isomorphism. -/
 theorem isConnected_orderCx_of_orderIso (e : P ≃o Q) (h : IsConnected (orderCx Q)) :
     IsConnected (orderCx P) := by
   intro a b
-  have hmono' : Monotone (e.symm : Q → P) := fun _ _ hxy => e.symm.monotone hxy
-  obtain ⟨l, hl⟩ := h (e a) (e b)
-  refine ⟨mapPath (orderCxMap (e.symm : Q → P) hmono') l, ?_⟩
+  have hmono' : Monotone e.symm := fun _ _ hxy => e.symm.monotone hxy
+  cases' h (e a) (e b) with l hl
+  refine ⟨mapPath (orderCxMap _ hmono') l, ?_⟩
   have := isPath_mapPath (orderCxMap (e.symm : Q → P) hmono') hl
-  simpa [e.symm_apply_apply] using this
+  simp_all
 
 /-- The lift of the image of an edge path, pushed back by a monotone retraction, is the original
 path. -/
@@ -90,60 +84,52 @@ theorem mapPath_liftPathIn_mapPath {Bp : P → Prop} {f : Q → P} (hf : Monoton
   | [], _ => rfl
   | e :: t, hl => by
       have hrest := mapPath_liftPathIn_mapPath hf hfB hg hgf t (pathIn_of_cons hl).2
-      simp only [mapPath, List.map_cons, liftPathIn, List.cons.injEq]
+      simp [mapPath, List.map_cons, liftPathIn, List.cons.injEq]
       refine ⟨?_, ?_⟩
       · refine Prod.ext ?_ rfl
         refine Subtype.ext (Prod.ext ?_ ?_)
         · exact hgf e.1.1.1
-        · exact hgf e.1.1.2
-      · simpa [mapPath] using hrest
+        tauto
+      tauto
 
 /-- The image of an edge path under a monotone map with values in `Bp` lies inside `Bp`. -/
-theorem pathIn_mapPath_of_image {Bp : P → Prop} {f : Q → P} (hf : Monotone f)
-    (hfB : ∀ y, Bp (f y)) (l : List ((orderCx Q).E × Bool)) :
+theorem pathIn_mapPath_of_image {f : Q → P} hf
+    (hfB : ∀ y, Bp (f y)) l :
     PathIn Bp (mapPath (orderCxMap f hf) l) := by
   intro e he
-  simp only [mapPath, List.mem_map] at he
-  obtain ⟨x, -, rfl⟩ := he
-  exact ⟨hfB _, hfB _⟩
+  simp [mapPath, List.mem_map] at he
+  aesop
 
 /-- **From injectivity on path classes to injectivity on loops.**  If the image of a monotone map
 `f` with a monotone retraction `g` is injective on path classes inside the whole poset, then a
 loop of the source which becomes null-homotopic in the target is null-homotopic. -/
 theorem htpy_nil_of_injIn {Bp : P → Prop} (hinj : InjIn (fun _ : P => True) Bp)
-    {f : Q → P} (hf : Monotone f) (hfB : ∀ y, Bp (f y))
+    {f} hf (hfB : ∀ y, Bp (f y))
     {g : {z : P // Bp z} → Q} (hg : Monotone g) (hgf : ∀ y, g ⟨f y, hfB y⟩ = y)
-    {y : Q} {p : List ((orderCx Q).E × Bool)}
-    (hp : IsPath (orderCx Q).src (orderCx Q).tgt p y y)
+    {y : Q} {p}
+    (hp : IsPathX (orderCx Q) p y y)
     (h : Htpy (orderCx P) (f y) (f y) (mapPath (orderCxMap f hf) p) []) :
     Htpy (orderCx Q) y y p [] := by
-  have hpB : PathIn Bp (mapPath (orderCxMap f hf) p) := pathIn_mapPath_of_image hf hfB p
-  have hloop : IsPath (orderCx P).src (orderCx P).tgt (mapPath (orderCxMap f hf) p) (f y) (f y) :=
+  have hpB := pathIn_mapPath_of_image hf hfB p
+  have hloop :=
     isPath_mapPath (orderCxMap f hf) hp
-  have hIn : HtpyIn Bp (f y) (f y) (mapPath (orderCxMap f hf) p) [] :=
-    hinj (f y) _ (hfB y) hloop hpB (htpyIn_true_iff.mpr h)
-  have hlift : Htpy (orderCx {z : P // Bp z}) ⟨f y, hfB y⟩ ⟨f y, hfB y⟩
-      (liftPathIn (mapPath (orderCxMap f hf) p) hpB)
-      (liftPathIn ([] : List ((orderCx P).E × Bool)) (pathIn_nil Bp)) :=
+  have hIn :=
+    hinj _ _ (hfB y) hloop hpB (htpyIn_true_iff.mpr h)
+  have hlift :=
     htpy_lift_of_htpyIn hIn (hfB y) (hfB y) hpB (pathIn_nil Bp)
   have hpush := mapPath_htpy (orderCxMap g hg) hlift
   rw [mapPath_liftPathIn_mapPath hf hfB hg hgf p hpB] at hpush
-  simp only [orderCxMap_onV] at hpush
-  rw [hgf y] at hpush
-  simpa [mapPath, liftPathIn] using hpush
+  aesop
 
 /-- **Injectivity of the induced map of fundamental groups.** -/
 theorem pi1Map_injective_of_injIn {Bp : P → Prop} (hinj : InjIn (fun _ : P => True) Bp)
-    {f : Q → P} (hf : Monotone f) (hfB : ∀ y, Bp (f y))
+    {f} hf (hfB : ∀ y, Bp (f y))
     {g : {z : P // Bp z} → Q} (hg : Monotone g) (hgf : ∀ y, g ⟨f y, hfB y⟩ = y) (y : Q) :
     Function.Injective (Comb.pi1Map (orderCxMap f hf) y) := by
   refine (injective_iff_map_eq_one _).mpr ?_
   intro c hc
   induction c using Quotient.inductionOn with
   | h p =>
-      have h : Htpy (orderCx P) (f y) (f y) (mapPath (orderCxMap f hf) p.1) [] :=
+      have h :=
         Quotient.exact hc
       exact Quotient.sound (htpy_nil_of_injIn hinj hf hfB hg hgf p.2 h)
-
-end Comb
-end FiniteChains

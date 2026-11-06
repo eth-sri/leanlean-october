@@ -1,15 +1,12 @@
-module
+import RequestProject.NerveDegreeGluing
 
-public import RequestProject.NerveDegreeGluing
-
-@[expose] public section
 
 /-! Compose positive-degree generation while retaining finite homogeneous fillings. -/
 namespace FiniteChains.Nerve
 universe u
 variable {P : Type u} [Preorder P]
 
-theorem generatesDegreeIn_trans {U B C : P → Prop} {n : ℕ}
+theorem generatesDegreeIn_trans {U B C : P → Prop} {n}
     (hBU : ∀ p, B p → U p) (hUB : GeneratesDegreeIn U B (n + 1))
     (hBC : GeneratesDegreeIn B C (n + 1)) : GeneratesDegreeIn U C (n + 1) := by
   intro z hz hd hcyc
@@ -25,7 +22,4 @@ theorem generatesDegreeIn_trans {U B C : P → Prop} {n : ℕ}
     hBC c' hc' (lengthProjection_idempotent _ _) hdc'
   refine ⟨d, hdC, y' + w, AddSubgroup.add_mem _ (lengthProjection_mem_incOn _ hy)
     (incOn_mono hBU hw), hdd, ?_⟩
-  rw [he', hec, map_add]
-  abel
-
-end FiniteChains.Nerve
+  grind

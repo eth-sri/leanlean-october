@@ -1,9 +1,6 @@
-module
+import RequestProject.ClassicalCWCanonicalPresentation
+import RequestProject.AcyclicPresentationOriginalChains
 
-public import RequestProject.ClassicalCWCanonicalPresentation
-public import RequestProject.AcyclicPresentationOriginalChains
-
-@[expose] public section
 
 /-! Original-cell-preserving chains for every acyclic connected CW
 two-complex. The finite theorem is precisely the finite acyclic clause
@@ -17,14 +14,12 @@ open scoped Classical
 namespace Whitehead
 open FiniteChains FiniteChains.ClassicalCW FiniteChains.RelativeNormalForm
 
-theorem hasFiniteChain_of_acyclic (K : TwoComplex) (hfinite : FiniteCells K)
-    (hK : Acyclic K) (n : ℕ) (hn : 1 ≤ n) : HasChain K n true := by
+theorem hasFiniteChain_of_acyclic K (hfinite : FiniteCells K)
+    (hK : Acyclic K) n (hn : 1 ≤ n) : HasChain K n true := by
   letI := canonicalGen_finite K hfinite
   letI := canonicalRel_finite K hfinite
   cases n with
   | zero => omega
   | succ n =>
-      exact actual_hasOriginalFiniteChain_of_acyclic (canonicalRelators K) K hfinite hK
-        (canonicalDummy K) (originalClassicalPresWordDiskEquiv K).symm n
-
-end Whitehead
+      exact actual_hasOriginalFiniteChain_of_acyclic _ K hfinite hK
+        _ (originalClassicalPresWordDiskEquiv K).symm n

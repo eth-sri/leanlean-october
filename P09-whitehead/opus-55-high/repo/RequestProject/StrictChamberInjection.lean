@@ -1,9 +1,6 @@
-module
+import RequestProject.StrictOrderComplex
+import RequestProject.ChamberQuotientCover
 
-public import RequestProject.StrictOrderComplex
-public import RequestProject.ChamberQuotientCover
-
-@[expose] public section
 
 /-! The chamber group injection in the genuine, nondegenerate simplicial model. -/
 
@@ -25,5 +22,3 @@ instance qposPartialOrder : PartialOrder (Qpos A X att) where
       cases t with
       | inl d => exact hts.elim
       | inr y => exact congrArg Sum.inr (le_antisymm hst hts)
-
-end FiniteChains.Davis

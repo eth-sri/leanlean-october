@@ -1,14 +1,10 @@
-module
+import RequestProject.OrderUniversalPosetHom
+import RequestProject.OrderUniversalThree
+import RequestProject.Tac
 
-public import RequestProject.OrderUniversalPosetHom
-public import RequestProject.OrderUniversalThree
-
-@[expose] public section
 
 /-! The actual lifted three-boundary under the universal-cover order identification. -/
-set_option backward.defeqAttrib.useBackward true
-set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
+bwd
 
 namespace FiniteChains.Comb
 universe u
@@ -37,21 +33,16 @@ theorem uOrderTet_boundary (t : OrdTet (UOrder P a)) :
       Finsupp.mapDomain uOrderFace (x - y) =
         Finsupp.mapDomain uOrderFace x - Finsupp.mapDomain uOrderFace y :=
     (Finsupp.lmapDomain ℤ ℤ uOrderFace).map_sub x y
-  change Finsupp.mapDomain uOrderFace (ordTetBoundary t) = uOrdTetBoundary (uOrderTet t)
-  simp only [ordTetBoundary, hsub, Finsupp.mapDomain_add, Finsupp.mapDomain_single,
+  simp [ordTetBoundary, hsub, Finsupp.mapDomain_add, Finsupp.mapDomain_single,
     uOrdTetBoundary]
-  rw [h0, h1, h2, h3]
+  grind
 
 /-- The cellular comparison commutes with the full actual universal-cover three-boundary. -/
 theorem uOrderHom_ordBoundary3 (c : OrdTet (UOrder P a) →₀ ℤ) :
     chain2 uOrderHom (ordBoundary3 c) = uOrdBoundary3 (Finsupp.mapDomain uOrderTet c) := by
-  induction c using Finsupp.induction_linear with
-  | zero => simp
-  | add c d hc hd => rw [map_add, map_add, hc, hd, Finsupp.mapDomain_add, map_add]
-  | single t n =>
+  lin_ind c with c d hc hd => simp [map_add, hc, hd, Finsupp.mapDomain_add]
+  | t n =>
     rw [ordBoundary3, Finsupp.linearCombination_single, map_smul]
     change n • Finsupp.mapDomain uOrderFace (ordTetBoundary t) = _
     rw [uOrderTet_boundary, Finsupp.mapDomain_single, uOrdBoundary3,
       Finsupp.linearCombination_single]
-
-end FiniteChains.Comb
