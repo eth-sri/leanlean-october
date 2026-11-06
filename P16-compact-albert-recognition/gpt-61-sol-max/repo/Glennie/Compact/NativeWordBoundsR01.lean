@@ -1,4 +1,0 @@
-module
-public import Glennie.NativeQuadraticPositiveR01
-public import Glennie.Theorems.Frames
-public import Glennie.Compact.PositiveFilterAlgebraR01

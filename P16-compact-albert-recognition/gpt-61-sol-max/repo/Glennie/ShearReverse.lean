@@ -11,7 +11,7 @@ public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 namespace Glennie
-noncomputable section
+section
 
 theorem reverse_shear_of_cubic {E : Type*} [AddCommGroup E] [Module ℝ E]
     (F : E → E → ℝ)
@@ -20,29 +20,15 @@ theorem reverse_shear_of_cubic {E : Type*} [AddCommGroup E] [Module ℝ E]
     (hhom : ∀ x z (t : ℝ), F x (t • z) = t^3 * F x z)
     (hforward : ∀ x z (t : ℝ), F x (z + t • x) = F x z)
     (x z : E) (t : ℝ) : F (x + t • z) z = F x z := by
-  have hzero (u : E) : F u 0 = 0 := by
-    simpa using hhom u 0 0
-  have hdiag (u : E) : F u u = 0 := by
-    simpa [hzero] using hforward u 0 1
-  have hbalance (r : ℝ) : r^3 * F (x + r • z) z = -F (x + r • z) x := by
-    by_cases hr : r = 0
-    · simp [hr, hdiag]
-    have hv : z + (-r⁻¹) • (x + r • z) = (-r⁻¹) • x := by
-      simp only [smul_add, smul_smul, neg_mul, inv_mul_cancel₀ hr,
-        neg_one_smul]
-      abel
-    calc
-      r^3 * F (x + r • z) z =
-          r^3 * F (x + r • z) (z + (-r⁻¹) • (x + r • z)) := by
-            rw [hforward]
-      _ = r^3 * ((-r⁻¹)^3 * F (x + r • z) x) := by rw [hv, hhom]
-      _ = -F (x + r • z) x := by field_simp
   obtain ⟨a, b, c, d, hp⟩ := hline x z z
   obtain ⟨a', b', c', d', hq⟩ := hline x z x
   have heq (r : ℝ) : r^3 * (a + b*r + c*r^2 + d*r^3) =
       -(a' + b'*r + c'*r^2 + d'*r^3) := by
-    simpa only [hp r, hq r] using hbalance r
-  have ha' : a' = 0 := by simpa [hdiag] using (hq 0).symm
+    have h := hforward (x + r • z) x (-1)
+    rw [show x + (-1 : ℝ) • (x + r • z) = (-r) • z by module,
+      hhom, hp, hq] at h
+    nlinarith only [h]
+  have ha' : a' = 0 := by simpa using heq 0
   have h1 := heq 1
   have hm1 := heq (-1)
   have h2 := heq 2

@@ -10,9 +10,7 @@ public import Glennie.SectorModel
 namespace Glennie
 noncomputable section
 
-theorem diagonalAlbert_eq (x : Albert) (hx : IsDiagonal x) :
-    diagonalAlbert x.d0 x.d1 x.d2 = x := by
-  apply Albert.ext <;> simp [diagonalAlbert, hx.1, hx.2.1, hx.2.2]
+
 
 theorem complexAlbert_eq (x : Albert) (hx : InComplexSector x) :
     complexAlbert x.d0 x.d1 x.d2 (complexPart x.o01)

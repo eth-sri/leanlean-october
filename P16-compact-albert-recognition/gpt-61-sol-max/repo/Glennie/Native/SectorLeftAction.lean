@@ -1,4 +1,15 @@
 module
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Bound
+public import Mathlib.Tactic.GRewrite
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.GCongr
+public import Aesop
 
 public import Glennie.Theorems.SectorTransport
 public import Glennie.Theorems.ProjectorFrame
@@ -8,23 +19,10 @@ public import Glennie.Theorems.ProjectorFrame
 namespace Glennie
 noncomputable section
 
-set_option autoImplicit false
-
 /-- Real left multiplication by an actual unitary matrix, with its explicit inverse.
 Exposed because it is data in the exported automorphism constructor. -/
-def leftMulEquiv (s : SectorUnitary) : SectorMatrix ≃ₗ[ℝ] SectorMatrix where
-  toFun M := (s : SectorMatrix) * M
-  invFun M := (s : SectorMatrix).conjTranspose * M
-  left_inv M := by
-    change (s : SectorMatrix).conjTranspose * ((s : SectorMatrix) * M) = M
-    have h : (s : SectorMatrix).conjTranspose * (s : SectorMatrix) = 1 := s.property.1
-    rw [← Matrix.mul_assoc, h, Matrix.one_mul]
-  right_inv M := by
-    change (s : SectorMatrix) * ((s : SectorMatrix).conjTranspose * M) = M
-    have h : (s : SectorMatrix) * (s : SectorMatrix).conjTranspose = 1 := s.property.2
-    rw [← Matrix.mul_assoc, h, Matrix.one_mul]
-  map_add' M N := Matrix.mul_add _ _ _
-  map_smul' r M := by simp only [Matrix.mul_smul, RingHom.id_apply]
+def leftMulEquiv (s : SectorUnitary) : SectorMatrix ≃ₗ[ℝ] SectorMatrix :=
+  Units.mulLeftLinearEquiv ℝ _ (Unitary.toUnits s)
 
 /-- Conjugate that real equivalence through the actual native sector coordinates. -/
 def sectorLeftEquiv (s : SectorUnitary) : Albert ≃ₗ[ℝ] Albert :=
@@ -34,10 +32,7 @@ def sectorLeftEquiv (s : SectorUnitary) : Albert ≃ₗ[ℝ] Albert :=
 
 private theorem sectorLeftEquiv_apply (s : SectorUnitary) (x : Albert) :
     sectorLeftEquiv s x =
-      sectorDecode (sectorComplexMatrix x) ((s : SectorMatrix) * hiddenMatrix x) := by
-  change complexAlbertLinear (complexCoordinatesLinear x) +
-      hiddenAlbert ((s : SectorMatrix) * hiddenMatrix x) = _
-  simp only [sectorDecode, sectorComplexMatrix, matrixComplexCoordinates_inverse]
+      sectorDecode (sectorComplexMatrix x) ((s : SectorMatrix) * hiddenMatrix x) := rfl
 
 private theorem sectorLeftEquiv_complex (s : SectorUnitary) (x : Albert) :
     sectorComplexMatrix (sectorLeftEquiv s x) = sectorComplexMatrix x := by
@@ -58,8 +53,11 @@ private theorem left_gram (s : SectorUnitary) (M N : SectorMatrix) :
       have h : (s : SectorMatrix).conjTranspose * (s : SectorMatrix) = 1 := s.property.1
       rw [h, Matrix.one_mul]
 
-private theorem adjointAdjugate_left_unitary (s : SectorUnitary)
-    (hs : (s : SectorMatrix).det = 1) : sectorAdjointAdjugate (s : SectorMatrix) = s := by
+variable (s : SectorUnitary)
+    (hs : (s : SectorMatrix).det = 1)
+
+include s hs in
+private theorem adjointAdjugate_left_unitary  : sectorAdjointAdjugate (s : SectorMatrix) = s := by
   have hds : ((star s : SectorUnitary) : SectorMatrix).det = 1 := by
     change (s : SectorMatrix).conjTranspose.det = 1
     rw [Matrix.det_conjTranspose, hs]
@@ -69,8 +67,8 @@ private theorem adjointAdjugate_left_unitary (s : SectorUnitary)
     (s : SectorMatrix).conjTranspose.conjTranspose at h
   simpa only [Matrix.conjTranspose_conjTranspose] using h
 
-private theorem polarAdjugate_left (s : SectorUnitary)
-    (hs : (s : SectorMatrix).det = 1) (M N : SectorMatrix) :
+include s hs in
+private theorem polarAdjugate_left  (M N : SectorMatrix) :
     sectorPolarAdjugate ((s : SectorMatrix) * M) ((s : SectorMatrix) * N) =
       (s : SectorMatrix) * sectorPolarAdjugate M N := by
   rw [sectorPolarAdjugate, ← Matrix.mul_add]
@@ -82,8 +80,8 @@ private theorem productComplex_left (s : SectorUnitary) (H M K N : SectorMatrix)
       sectorProductComplex H M K N := by
   simp only [sectorProductComplex, left_gram]
 
-private theorem productHidden_left (s : SectorUnitary)
-    (hs : (s : SectorMatrix).det = 1) (H M K N : SectorMatrix) :
+include s hs in
+private theorem productHidden_left  (H M K N : SectorMatrix) :
     sectorProductHidden H ((s : SectorMatrix) * M) K ((s : SectorMatrix) * N) =
       (s : SectorMatrix) * sectorProductHidden H M K N := by
   simp only [sectorProductHidden, polarAdjugate_left s hs,
@@ -97,8 +95,8 @@ private theorem native_sector_ext (x y : Albert)
     _ = sectorDecode (sectorComplexMatrix y) (hiddenMatrix y) := by rw [hH, hM]
     _ = y := sectorDecode_encode y
 
-theorem sectorLeftEquiv_jordan (s : SectorUnitary)
-    (hs : (s : SectorMatrix).det = 1) (x y : Albert) :
+include s hs in
+theorem sectorLeftEquiv_jordan  (x y : Albert) :
     sectorLeftEquiv s (jordan x y) = jordan (sectorLeftEquiv s x) (sectorLeftEquiv s y) := by
   apply native_sector_ext
   · simp only [sectorLeftEquiv_complex, sectorComplexMatrix_jordan,
@@ -122,17 +120,17 @@ def sectorLeftSU3Automorphism (s : SectorUnitary)
   map_jordan := sectorLeftEquiv_jordan s hs
   map_trace := sectorLeftEquiv_trace s
 
-theorem sectorLeftSU3_complex (s : SectorUnitary) (hs : (s : SectorMatrix).det = 1)
+theorem sectorLeftSU3_complex
     (x : Albert) :
     sectorComplexMatrix ((sectorLeftSU3Automorphism s hs).equiv x) = sectorComplexMatrix x :=
   sectorLeftEquiv_complex s x
 
-theorem sectorLeftSU3_hidden (s : SectorUnitary) (hs : (s : SectorMatrix).det = 1)
+theorem sectorLeftSU3_hidden
     (x : Albert) :
     hiddenMatrix ((sectorLeftSU3Automorphism s hs).equiv x) = (s : SectorMatrix) * hiddenMatrix x :=
   sectorLeftEquiv_hidden s x
 
-theorem sectorLeftSU3_fixes_complex (s : SectorUnitary) (hs : (s : SectorMatrix).det = 1)
+theorem sectorLeftSU3_fixes_complex
     (x : Albert) (hx : InComplexSector x) : (sectorLeftSU3Automorphism s hs).equiv x = x := by
   apply native_sector_ext
   · exact sectorLeftSU3_complex s hs x

@@ -11,9 +11,7 @@ public import Glennie.Theorems.OctonionAutomorphisms
 @[expose] public section
 
 namespace Glennie
-noncomputable section
-
-set_option maxHeartbeats 2000000
+section
 
 @[simp] theorem octInComplex_scalar (r : ℝ) : OctInComplex (octScalar r) := by
   simp [OctInComplex, octScalar]

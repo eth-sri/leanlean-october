@@ -34,13 +34,6 @@ theorem octComplexLine_normSq (I : Octonion) (hi : octRe I = 0)
     Complex.normSq_apply, smul_eq_mul, hi] at h ⊢
   nlinarith [h]
 
-theorem octComplexLine_conj (I : Octonion) (hi : octRe I = 0) (z : ℂ) :
-    octConj (octComplexLine I z) = octComplexLine I (star z) := by
-  have hI : octConj I = -I := by
-    apply Prod.ext <;> apply Quaternion.ext <;> simp_all [octConj, octRe]
-  simp only [octComplexLine, octConj_add, octConj_smul, octConj_scalar, hI]
-  simp [octComplexLine, smul_neg]
-
 /-- Every native octonion lies in an explicitly constructed compact complex line,
 including real elements and zero. -/
 theorem exists_octComplexLine (x : Octonion) :
@@ -51,7 +44,7 @@ theorem exists_octComplexLine (x : Octonion) :
   by_cases hz : b = 0
   · refine ⟨octI, rfl, ?_, ⟨octRe x,0⟩, ?_⟩
     · norm_num [octI, quatI, octNormSq, Quaternion.normSq_def']
-    · have hx : x = octScalar (octRe x) := sub_eq_zero.mp hz
+    · have hx                           := sub_eq_zero.mp hz
       simpa [octComplexLine, octScalar_smul] using hx.symm
   · obtain ⟨I, r, hr, hn, hdecomp⟩ := octUnit_decomposition b hz
     have hi : octRe I = 0 := by
@@ -70,7 +63,6 @@ theorem exists_octComplexLine (x : Octonion) :
 unit-stabilizer cancellation required by triality normalization. -/
 theorem octUnit_normalizing_cube (r : Octonion) (hr : octNormSq r = 1) :
     ∃ a : Octonion, octNormSq a = 1 ∧
-      octMul a (octMul a a) = octConj r ∧
       octMul a (octMul r (octMul a a)) = octScalar 1 := by
   obtain ⟨I, hi, hn, z, hz⟩ := exists_octComplexLine r
   have hzn : Complex.normSq z = 1 := by
@@ -89,11 +81,8 @@ theorem octUnit_normalizing_cube (r : Octonion) (hr : octNormSq r = 1) :
       _ = 1 := by
         change z * (starRingEnd ℂ) z = 1
         rw [Complex.mul_conj, hzn, Complex.ofReal_one]
-  refine ⟨octComplexLine I w, ?_, ?_, ?_⟩
+  refine ⟨octComplexLine I w, ?_, ?_⟩
   · rw [octComplexLine_normSq I hi hn, hwn]
-  · rw [← octComplexLine_mul I hi hn, ← octComplexLine_mul I hi hn]
-    have hp : w*(w*w) = w^3 := by ring
-    rw [hp, hw, ← octComplexLine_conj I hi, hz]
   · rw [← hz, ← octComplexLine_mul I hi hn, ← octComplexLine_mul I hi hn,
       ← octComplexLine_mul I hi hn, hc, octComplexLine_one]
 

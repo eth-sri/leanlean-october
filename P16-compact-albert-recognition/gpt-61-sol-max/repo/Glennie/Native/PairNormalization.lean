@@ -8,9 +8,7 @@ public import Glennie.ComplexLine
 @[expose] public section
 
 namespace Glennie
-noncomputable section
-
-set_option maxHeartbeats 2000000
+section
 
 /-- Two arbitrary unit octonions can be sent to the unit by an actual related triple. -/
 theorem octTwoUnitSlots (p q : Octonion) (hp : octNormSq p = 1)
@@ -19,7 +17,7 @@ theorem octTwoUnitSlots (p q : Octonion) (hp : octNormSq p = 1)
   let r := octMul q (octConj p)
   have hr : octNormSq r = 1 := by
     simp [r, octNormSq_mul, hp, hq]
-  obtain ⟨a, ha, _, hcancel⟩ := octUnit_normalizing_cube r hr
+  obtain ⟨a, ha, hcancel⟩ := octUnit_normalizing_cube r hr
   let m := octMiddleTriple (octConj p) (by simpa using hp)
   let t := OctRelatedTriple.unitStabilizerTriple a ha
   refine ⟨t.comp m, ?_, ?_⟩

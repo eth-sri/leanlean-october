@@ -30,9 +30,6 @@ def symm (g : CompactAutomorphism) : CompactAutomorphism where
   map_trace x := by
     simpa only [LinearEquiv.apply_symm_apply] using (g.map_trace (g.equiv.symm x)).symm
 
-@[simp] theorem symm_apply (g : CompactAutomorphism) (x : Albert) :
-    g.symm.equiv x = g.equiv.symm x := rfl
-
 theorem map_unit (g : CompactAutomorphism) : g.equiv (1 : Albert) = 1 := by
   have h := g.map_jordan 1 (g.equiv.symm 1)
   simpa using h.symm

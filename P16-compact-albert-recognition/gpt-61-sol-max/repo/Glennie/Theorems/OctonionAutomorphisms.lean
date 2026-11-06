@@ -1,4 +1,15 @@
 module
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Bound
+public import Mathlib.Tactic.GRewrite
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.GCongr
+public import Aesop
 
 public import Glennie.Native.Triality
 public import Glennie.Native.Statements
@@ -11,14 +22,12 @@ The sixth-root conjugation principle is classical (Dixon, hep-th/9604116 Eq.8).
 public section
 namespace Glennie
 noncomputable section
-set_option maxHeartbeats 2000000
-
 private theorem g2_re_add (x y : Octonion) : octRe (x+y) = octRe x+octRe y := by
   simp [octRe]
-private theorem g2_re_smul (r : ℝ) (x : Octonion) : octRe (r • x) = r*octRe x := by
-  simp [octRe, smul_eq_mul]
-private theorem g2_re_sub (x y : Octonion) : octRe (x-y) = octRe x-octRe y := by
-  simp [octRe]
+                                                                                   
+                           
+                                                                                
+              
 private theorem g2_dot_unit_left (x : Octonion) : octDot (octScalar 1) x = octRe x := by
   simp [octDot_coordinates, octScalar, octRe]
 private theorem g2_dot_unit_right (x : Octonion) : octDot x (octScalar 1) = octRe x := by
@@ -47,22 +56,13 @@ private theorem g2_norm_unit : octNormSq (octScalar 1) = 1 := by
   norm_num [octNormSq, octScalar, Quaternion.normSq_def']
 private theorem g2_conj_formula (x : Octonion) :
     octConj x = (2*octRe x) • octScalar 1-x := by
-  have h := octAdd_conj x
-  rw [octScalar_smul] at h
-  have h' : octConj x = octScalar (2*octRe x)-x := by
-    apply eq_sub_iff_add_eq.mpr
-    simpa only [add_comm] using h
-  simpa only [octScalar_smul, mul_one] using h'
+  apply eq_sub_iff_add_eq.mpr
+  simpa only [octScalar_smul, mul_one, add_comm] using octAdd_conj x
 private theorem g2_conj_pure (x : Octonion) (hx : octRe x = 0) : octConj x = -x := by
   rw [g2_conj_formula, hx]
   simp
 private theorem g2_pure_mul_re (x y : Octonion) (hx : octRe x = 0)
-    (hy : octRe y = 0) : octRe (octMul x y) = -octDot x y := by
-  have h : octRe (octMul x y)+octDot x y = 2*octRe x*octRe y := by
-    simp [octRe, octMul, octDot_coordinates, Quaternion.re_mul]
-    ring
-  rw [hx, hy] at h
-  linarith
+    (hy : octRe y = 0) : octRe (octMul x y) = -octDot x y := by simp_all [octRe, octMul, octDot_coordinates] <;> ring
 
 /-- These equalities make the actual related triple an octonion automorphism. -/
 @[expose] def DiagonalOctTriple (g : OctRelatedTriple) : Prop :=
@@ -110,11 +110,11 @@ theorem exists_orderThree_map (x y : Octonion) (hx : octRe x = 0)
   let a := Real.sqrt (1+2*t)/(2*(1+t))
   let b := 1/(2*(1+t))
   let q := (-1/2 : ℝ) • octScalar 1+a • w-b • z
-  have ht' : -(1 / 2 : ℝ) ≤ t := ht
+  
   have ht0 : 1+t ≠ 0 := by linarith
   have hden : 2*(1+t) ≠ 0 := by linarith
   have hsqrt : Real.sqrt (1+2*t)^2 = 1+2*t := Real.sq_sqrt (by linarith)
-  have hb : b*(1+t) = 1/2 := by dsimp [b]; field_simp [ht0] <;> ring
+  have hb : b*(1+t) = 1/2 := by dsimp [b]; field_simp [ht0]
   have hx2 : octMul x x = (-1 : ℝ) • octScalar 1 := by
     simpa only [octScalar_smul, mul_one] using octMul_pure_unit_self x hx hxn
   have hy2 : octMul y y = (-1 : ℝ) • octScalar 1 := by
@@ -126,14 +126,9 @@ theorem exists_orderThree_map (x y : Octonion) (hx : octRe x = 0)
         rw [octConj_mul, g2_conj_pure x hx, g2_conj_pure y hy,
           g2_mul_neg_left, g2_mul_neg_right, neg_neg]
       _ = _ := by
-        rw [g2_conj_formula, hxyre]
-        have hc : 2*(-t) = -2*t := by ring
-        rw [hc]
-  have hwre : octRe w = 0 := by dsimp only [w]; rw [g2_re_add, hx, hy]; ring
-  have hzre : octRe z = 0 := by
-    dsimp only [z]
-    rw [g2_re_add, hxyre, g2_re_smul]
-    norm_num [octRe, octScalar]
+        simp only [g2_conj_formula, hxyre, mul_neg, neg_mul]
+  have hwre : octRe w = 0 := by simp [w, g2_re_add, hx, hy]
+  have hzre : octRe z = 0 := by simp_all [z, octRe, octScalar]
   have hwn : octNormSq w = 2+2*t := by
     dsimp only [w]
     rw [octNormSq_add, hxn, hyn]
@@ -169,29 +164,18 @@ theorem exists_orderThree_map (x y : Octonion) (hx : octRe x = 0)
     dsimp only [w]
     rw [octMul_add_left, octMul_add_right, hx2, hy2]
     module
-  have hqre : octRe q = -1/2 := by
-    dsimp only [q]
-    rw [g2_re_sub, g2_re_add, g2_re_smul, g2_re_smul, g2_re_smul, hwre, hzre]
-    norm_num [octRe, octScalar]
+  have hqre : octRe q = -1/2 := by simp_all [q, octRe, octScalar]
   have hqn : octNormSq q = 1 := by
-    have hQ : octNormSq q = 1/4+a^2*(2+2*t)+b^2*(1-t^2) := by
-      simp only [q, g2_norm_sub, octNormSq_add, octNormSq_smul, g2_norm_unit,
-        octDot_add_left, octDot_smul_left, g2_dot_smul_right,
-        g2_dot_unit_left, hwre, hzre, hwz, hwn, hzn]
-      ring
-    rw [hQ]
+    simp only [q, g2_norm_sub, octNormSq_add, octNormSq_smul, g2_norm_unit,
+      octDot_add_left, octDot_smul_left, g2_dot_smul_right,
+      g2_dot_unit_left, hwre, hzre, hwz, hwn, hzn]
     simp only [a, b, div_pow, hsqrt, one_pow]
     field_simp [hden, ht0] <;> ring
   have hqx : octMul q x = octMul y q := by
-    have hdiff : octMul q x-octMul y q =
-        ((-1/2 : ℝ)+b*t+b) • (x-y) := by
-      simp only [q, g2_mul_sub_left, g2_mul_sub_right, octMul_add_left,
-        octMul_add_right, octMul_smul_left, octMul_smul_right,
-        octMul_scalar_left, octMul_scalar_right, hwx, hzx, hyz]
-      module
-    have hcoef : (-1/2 : ℝ)+b*t+b = 0 := by linarith [hb]
-    apply sub_eq_zero.mp
-    rw [hdiff, hcoef, zero_smul]
+    simp only [q, g2_mul_sub_left, g2_mul_sub_right, octMul_add_left,
+      octMul_add_right, octMul_smul_left, octMul_smul_right,
+      octMul_scalar_left, octMul_scalar_right, hwx, hzx, hyz]
+    match_scalars <;> nlinarith only [hb]
   refine ⟨OctRelatedTriple.unitStabilizerTriple q hqn,
     orderThree_diagonalTriple q hqn hqre, ?_⟩
   rw [OctRelatedTriple.unitStabilizer_A, g2_assoc_conj_right, hqx,
@@ -205,50 +189,21 @@ theorem exists_octAutomorphism_to_i (I : Octonion) (hi : octRe I = 0)
   have hire : octRe octI = 0 := rfl
   have hin : octNormSq octI = 1 := by
     norm_num [octI, quatI, octNormSq, Quaternion.normSq_def']
-  by_cases hz : I+octI = 0
-  · have hI : I = -octI := eq_neg_iff_add_eq_zero.mpr hz
-    have hjre : octRe octJ = 0 := rfl
-    have hjn : octNormSq octJ = 1 := by
-      norm_num [octJ, quatJ, octNormSq, Quaternion.normSq_def']
-    have hd1 : -(1 / 2 : ℝ) ≤ octDot I octJ := by
-      norm_num [hI, octDot_coordinates, octI, octJ, quatI, quatJ]
-    have hd2 : -(1 / 2 : ℝ) ≤ octDot octJ octI := by
-      norm_num [octDot_coordinates, octI, octJ, quatI, quatJ]
-    obtain ⟨g1, hg1, h1⟩ := exists_orderThree_map I octJ hi hjre hn hjn hd1
-    obtain ⟨g2, hg2, h2⟩ := exists_orderThree_map octJ octI hjre hire hjn hin hd2
-    refine ⟨g2.comp g1, diagonalOctTriple_comp g2 g1 hg2 hg1, ?_⟩
-    change g2.A (g1.A I) = octI
-    rw [h1, h2]
-  · obtain ⟨K,r,hr,hkn,hdecomp⟩ := octUnit_decomposition (I+octI) hz
-    have hre : octRe K = 0 := by
-      have h := congrArg octRe hdecomp
-      rw [g2_re_add, hi, hire, g2_re_smul] at h
-      simp only [zero_add] at h
-      exact (mul_eq_zero.mp h.symm).resolve_left (ne_of_gt hr)
-    have hwpos : 0 < octNormSq (I+octI) := lt_of_le_of_ne
-      (octNormSq_nonneg _) (Ne.symm (fun h => hz ((octNormSq_eq_zero _).mp h)))
-    have ht : 0 < 1+octDot I octI := by
-      rw [octNormSq_add, hn, hin] at hwpos
+  have hk : ∃ K : Octonion, octRe K = 0 ∧ octNormSq K = 1 ∧
+      -(1 / 2 : ℝ) ≤ octDot I K ∧ -(1 / 2 : ℝ) ≤ octDot K octI := by
+    by_cases h : 0 ≤ octDot I octJ
+    · refine ⟨octJ, rfl, ?_, by linarith, ?_⟩ <;>
+        norm_num [octJ, octI, quatI, quatJ, octNormSq, octDot_coordinates, Quaternion.normSq_def']
+    · refine ⟨-octJ, ?_, ?_, ?_, ?_⟩
+      all_goals simp_all [octRe, octJ, octI, quatI, quatJ, octNormSq,
+        octDot_coordinates, Quaternion.normSq_def']
       linarith
-    have hdot1 : 0 < octDot I K := by
-      have h := congrArg (fun w => octDot I w) hdecomp
-      rw [g2_dot_add_right, octDot_self, hn, g2_dot_smul_right] at h
-      have hp : 0 < r*octDot I K := by linarith
-      rcases mul_pos_iff.mp hp with hpos | hneg
-      · exact hpos.2
-      · linarith [hneg.1]
-    have hdot2 : 0 < octDot K octI := by
-      have h := congrArg (fun w => octDot w octI) hdecomp
-      rw [octDot_add_left, octDot_self, hin, octDot_smul_left] at h
-      have hp : 0 < r*octDot K octI := by linarith
-      rcases mul_pos_iff.mp hp with hpos | hneg
-      · exact hpos.2
-      · linarith [hneg.1]
-    obtain ⟨g1,hg1,h1⟩ := exists_orderThree_map I K hi hre hn hkn (by linarith)
-    obtain ⟨g2,hg2,h2⟩ := exists_orderThree_map K octI hre hire hkn hin (by linarith)
-    refine ⟨g2.comp g1, diagonalOctTriple_comp g2 g1 hg2 hg1, ?_⟩
+  obtain ⟨K, hk, hkn, hd1, hd2⟩ := hk
+  obtain ⟨g1, hg1, h1⟩ := exists_orderThree_map I K hi hk hn hkn hd1
+  obtain ⟨g2, hg2, h2⟩ := exists_orderThree_map K octI hk hire hkn hin hd2
+  exact ⟨g2.comp g1, diagonalOctTriple_comp g2 g1 hg2 hg1, by
     change g2.A (g1.A I) = octI
-    rw [h1, h2]
+    rw [h1, h2]⟩
 
 end
 end Glennie

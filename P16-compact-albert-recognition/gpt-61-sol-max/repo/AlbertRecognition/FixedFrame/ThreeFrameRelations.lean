@@ -15,26 +15,19 @@ open Glennie
 /-- Intermediate coarse action data on the three actual native frames.
 No full operator proportionality, Jordan identity, or unknown invariance is a
 field.  Existence from A(q referenceCubic)B=0 remains a separate obligation. -/
-structure ThreeFrameScalarData (B : SymmetricCubic) where
-  a : Fin 3 → ℝ
-  b : Fin 3 → ℝ
-  c : Fin 3 → ℝ
-  on_h_self : ∀ i, KB B (h i) (h i) = a i • h i
-  on_complementary_diagonal : ∀ (i j : Fin 3), i ≠ j →
-    KB B (h i) (h j + (1/2 : ℝ) • h i) =
-      b i • (h j + (1/2 : ℝ) • h i)
-  on_X01 : ∀ u : Octonion,
-    KB B (h 0) (X01 u) = c 0 • X01 u ∧
-    KB B (h 1) (X01 u) = c 1 • X01 u ∧
-    KB B (h 2) (X01 u) = b 2 • X01 u
-  on_X02 : ∀ u : Octonion,
-    KB B (h 0) (X02 u) = c 0 • X02 u ∧
-    KB B (h 1) (X02 u) = b 1 • X02 u ∧
-    KB B (h 2) (X02 u) = c 2 • X02 u
-  on_X12 : ∀ u : Octonion,
-    KB B (h 0) (X12 u) = b 0 • X12 u ∧
-    KB B (h 1) (X12 u) = c 1 • X12 u ∧
-    KB B (h 2) (X12 u) = c 2 • X12 u
+def X (k : Fin 3) (u : Octonion) : V := ![X12 u, X02 u, X01 u] k
+
+structure FrameScalarData (G : Module.End ℝ V) (i : Fin 3) where
+  a : ℝ
+  b : ℝ
+  c : ℝ
+  on_h_self : G (h i) = a • h i
+  on_complementary_diagonal : ∀ j : Fin 3, i ≠ j →
+    G (h j + (1/2 : ℝ) • h i) = b • (h j + (1/2 : ℝ) • h i)
+  on_X : ∀ k u, G (X k u) = (if i = k then b else c) • X k u
+
+abbrev ThreeFrameScalarData (B : SymmetricCubic) :=
+  (i : Fin 3) → FrameScalarData (KB B (h i)) i
 
 /-- Distinct actual h_i are independent, proved by their native diagonal values. -/
 theorem h_pair_coefficients (i j : Fin 3) (hij : i ≠ j)
@@ -52,35 +45,27 @@ theorem h_pair_coefficients (i j : Fin 3) (hij : i ≠ j)
 theorem ThreeFrameScalarData.cross_h {B : SymmetricCubic}
     (data : ThreeFrameScalarData B) (i j : Fin 3) (hij : i ≠ j) :
     KB B (h i) (h j) =
-      data.b i • h j + ((data.b i - data.a i)/2) • h i := by
+      (data i).b • h j + (((data i).b - (data i).a)/2) • h i := by
   calc
     KB B (h i) (h j) =
         KB B (h i) (h j + (1/2 : ℝ) • h i) -
           (1/2 : ℝ) • KB B (h i) (h i) := by
       rw [map_add, map_smul]
       module
-    _ = data.b i • (h j + (1/2 : ℝ) • h i) -
-        (1/2 : ℝ) • (data.a i • h i) := by
-      rw [data.on_complementary_diagonal i j hij, data.on_h_self]
+    _ = (data i).b • (h j + (1/2 : ℝ) • h i) -
+        (1/2 : ℝ) • ((data i).a • h i) := by
+      rw [(data i).on_complementary_diagonal j hij, (data i).on_h_self]
     _ = _ := by module
 
 /-- Actual cubic symmetry forces the two diagonal coefficients to agree. -/
 theorem ThreeFrameScalarData.a_eq_b_sub_two_b {B : SymmetricCubic}
     (data : ThreeFrameScalarData B) (i j : Fin 3) (hij : i ≠ j) :
-    data.a i = data.b i - 2 * data.b j := by
-  have hcross :
-      ((data.b i - data.a i)/2) • h i + data.b i • h j =
-        data.b j • h i + ((data.b j - data.a j)/2) • h j := by
-    calc
-      ((data.b i - data.a i)/2) • h i + data.b i • h j =
-          KB B (h i) (h j) := by
-        rw [data.cross_h i j hij]
-        module
-      _ = KB B (h j) (h i) := KB_comm B (h i) (h j)
-      _ = _ := data.cross_h j i hij.symm
+    (data i).a = (data i).b - 2 * (data j).b := by
+  have hcross := KB_comm B (h i) (h j)
+  rw [data.cross_h i j hij, data.cross_h j i hij.symm, add_comm] at hcross
   have hc := (h_pair_coefficients i j hij
-    ((data.b i - data.a i)/2) (data.b i) (data.b j)
-    ((data.b j - data.a j)/2) hcross).1
+    (((data i).b - (data i).a)/2) ((data i).b) ((data j).b)
+    (((data j).b - (data j).a)/2) hcross).1
   linarith
 
 /-- h0+h1+h2=0 gives a sum of actual unknown multiplication operators. -/
@@ -93,72 +78,34 @@ theorem KB_h_sum_zero (B : SymmetricCubic) (v : V) :
 inherited unit on a pair of quaternions. -/
 theorem ThreeFrameScalarData.slot_relations {B : SymmetricCubic}
     (data : ThreeFrameScalarData B) :
-    data.c 0 + data.c 1 + data.b 2 = 0 ∧
-      data.c 0 + data.b 1 + data.c 2 = 0 ∧
-      data.b 0 + data.c 1 + data.c 2 = 0 := by
-  have h01 := KB_h_sum_zero B (X01 (octScalar 1))
-  obtain ⟨hx0,hx1,hx2⟩ := data.on_X01 (octScalar 1)
-  rw [hx0,hx1,hx2] at h01
-  have r01 := congrArg (fun x : V => (x : Albert).o01.1.re) h01
-  have h02 := KB_h_sum_zero B (X02 (octScalar 1))
-  obtain ⟨hy0,hy1,hy2⟩ := data.on_X02 (octScalar 1)
-  rw [hy0,hy1,hy2] at h02
-  have r02 := congrArg (fun x : V => (x : Albert).o02.1.re) h02
-  have h12 := KB_h_sum_zero B (X12 (octScalar 1))
-  obtain ⟨hz0,hz1,hz2⟩ := data.on_X12 (octScalar 1)
-  rw [hz0,hz1,hz2] at h12
-  have r12 := congrArg (fun x : V => (x : Albert).o12.1.re) h12
-  norm_num [X01, X02, X12, octScalar] at r01 r02 r12
-  exact ⟨r01,r02,r12⟩
+    (data 0).c + (data 1).c + (data 2).b = 0 ∧
+      (data 0).c + (data 1).b + (data 2).c = 0 ∧
+      (data 0).b + (data 1).c + (data 2).c = 0 := by
+  have hs (k : Fin 3) :
+      (if 0 = k then (data 0).b else (data 0).c) +
+      (if 1 = k then (data 1).b else (data 1).c) +
+      (if 2 = k then (data 2).b else (data 2).c) = 0 := by
+    have hh := KB_h_sum_zero B (X k (octScalar 1))
+    simp only [(data 0).on_X, (data 1).on_X, (data 2).on_X,
+      ← add_smul] at hh
+    apply (smul_eq_zero.mp hh).resolve_right
+    fin_cases k <;> intro hz <;>
+      have hx := congrArg (fun x : V => (x : Albert)) hz
+    all_goals simp [X, X01, X02, X12, octScalar, Albert.ext_iff, Prod.ext_iff] at hx
+  exact ⟨hs 2, hs 1, hs 0⟩
 
 /-- The actual three-frame equations force one common coefficient and the
 reference ratio (-1,1,-1/2). This is an intermediate data theorem; the data
 must still be derived from the Jacobi kernel, not assumed as a final endpoint. -/
 theorem ThreeFrameScalarData.common_coefficients {B : SymmetricCubic}
     (data : ThreeFrameScalarData B) :
-    ∃ b : ℝ, (∀ i, data.a i = -b) ∧ (∀ i, data.b i = b) ∧
-      (∀ i, data.c i = -b/2) := by
-  have h01 := data.a_eq_b_sub_two_b 0 1 (by decide)
-  have h02 := data.a_eq_b_sub_two_b 0 2 (by decide)
-  have h10 := data.a_eq_b_sub_two_b 1 0 (by decide)
-  have h12 := data.a_eq_b_sub_two_b 1 2 (by decide)
-  have h20 := data.a_eq_b_sub_two_b 2 0 (by decide)
-  have hb12 : data.b 1 = data.b 2 := by linarith
-  have hb02 : data.b 0 = data.b 2 := by linarith
-  have hb : ∀ i : Fin 3, data.b i = data.b 0 := by
-    intro i
-    fin_cases i
-    · change data.b (0 : Fin 3) = data.b 0
-      rfl
-    · change data.b (1 : Fin 3) = data.b 0
-      exact hb12.trans hb02.symm
-    · change data.b (2 : Fin 3) = data.b 0
-      exact hb02.symm
-  have ha : ∀ i : Fin 3, data.a i = -data.b 0 := by
-    intro i
-    fin_cases i
-    · change data.a (0 : Fin 3) = -data.b 0
-      rw [hb 1] at h01
-      linarith only [h01]
-    · change data.a (1 : Fin 3) = -data.b 0
-      rw [hb 1] at h10
-      linarith only [h10]
-    · change data.a (2 : Fin 3) = -data.b 0
-      rw [hb 2] at h20
-      linarith only [h20]
-  obtain ⟨hc01,hc02,hc12⟩ := data.slot_relations
-  rw [hb 2] at hc01
-  rw [hb 1] at hc02
-  have hc : ∀ i : Fin 3, data.c i = -data.b 0/2 := by
-    intro i
-    fin_cases i
-    · change data.c (0 : Fin 3) = -data.b 0/2
-      linarith only [hc01, hc02, hc12]
-    · change data.c (1 : Fin 3) = -data.b 0/2
-      linarith only [hc01, hc02, hc12]
-    · change data.c (2 : Fin 3) = -data.b 0/2
-      linarith only [hc01, hc02, hc12]
-  exact ⟨data.b 0,ha,hb,hc⟩
+    ∃ b : ℝ, (∀ i, (data i).a = -b) ∧ (∀ i, (data i).b = b) ∧
+      (∀ i, (data i).c = -b/2) := by
+  have hab := data.a_eq_b_sub_two_b
+  norm_num [Fin.forall_fin_succ] at hab
+  obtain ⟨hc01, hc02, hc12⟩ := data.slot_relations
+  refine ⟨(data 0).b, ?_, ?_, ?_⟩ <;>
+    intro i <;> fin_cases i <;> linarith!
 
 end
 end AlbertRecognition.FixedFrame

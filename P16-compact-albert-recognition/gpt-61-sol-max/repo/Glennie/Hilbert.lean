@@ -2,6 +2,7 @@
 Diagonalizing a multiplication operator is not yet a Jordan-frame theorem. -/
 module
 public import Glennie.Native.CubicIdentity
+public import Glennie.Automorphism
 public import Mathlib.Analysis.InnerProductSpace.Spectrum
 public import Mathlib.Analysis.InnerProductSpace.GramMatrix
 public import Mathlib.Analysis.Matrix.PosDef
@@ -42,11 +43,14 @@ instance : NormedAddCommGroup Albert := nativeInnerCore.toNormedAddCommGroup
 instance : InnerProductSpace ℝ Albert :=
   InnerProductSpace.ofCore nativeInnerCore.toCore
 
-theorem hilbert_inner_eq_native (x y : Albert) :
-    Inner.inner ℝ x y = Glennie.inner x y := rfl
 
-theorem native_norm_sq (x : Albert) : ‖x‖ ^ 2 = inner x x := by
-  exact real_inner_self_eq_norm_sq x |>.symm
+
+
+theorem native_norm_sq (x : Albert) : ‖x‖ ^ 2 = inner x x := real_inner_self_eq_norm_sq x |>.symm
+
+/-- Native algebra automorphisms preserve the Hilbert norm. -/
+theorem CompactAutomorphism.norm_map (g : CompactAutomorphism) (x : Albert) :
+    ‖g.equiv x‖ = ‖x‖ := (g.equiv.isometryOfInner g.inner_map).norm_map x
 
 end
 end Glennie

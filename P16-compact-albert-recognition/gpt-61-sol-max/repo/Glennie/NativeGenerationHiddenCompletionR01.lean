@@ -4,28 +4,18 @@ public import Glennie.NativeGenerationHiddenSpanR01
 
 @[expose] public section
 namespace Glennie.NativeGenerationHiddenCompletionR01
-noncomputable section
+section
 open Glennie.NativeGenerationCoordinatesR01
 open Glennie.NativeGenerationPeirceTriangleR01
 open Glennie.NativeGenerationHiddenActionsR01
 open Glennie.NativeGenerationHiddenSpanR01
 
-private theorem complexOct_one_completion : complexOct 1 = octScalar 1 := by
-  apply Prod.ext <;> apply Quaternion.ext <;> simp [complexOct, octScalar]
 
-theorem hiddenOct_hiddenMatrix0 (z : Albert) :
-    hiddenOct (fun i => hiddenMatrix z i 0) = -residual z.o12 := by
-  apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [hiddenOct, hiddenMatrix, hiddenColumn, NativeGenerationHiddenActionsR01.residual, complexOct, complexPart]
 
-theorem hiddenOct_hiddenMatrix1 (z : Albert) :
-    hiddenOct (fun i => hiddenMatrix z i 1) = residual z.o02 := by
-  apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [hiddenOct, hiddenMatrix, hiddenColumn, NativeGenerationHiddenActionsR01.residual, complexOct, complexPart]
-
-theorem hiddenOct_hiddenMatrix2 (z : Albert) :
-    hiddenOct (fun i => hiddenMatrix z i 2) = -residual z.o01 := by
-  apply Prod.ext <;> apply Quaternion.ext <;>
+theorem hiddenOct_hiddenMatrix (z : Albert) (j : Fin 3) :
+    hiddenOct (fun i => hiddenMatrix z i j) =
+      ![-residual z.o12, residual z.o02, -residual z.o01] j := by
+  fin_cases j <;> apply Prod.ext <;> apply Quaternion.ext <;>
     simp [hiddenOct, hiddenMatrix, hiddenColumn, NativeGenerationHiddenActionsR01.residual, complexOct, complexPart]
 
 theorem raw_decomposition (z : Albert) :
@@ -40,24 +30,20 @@ theorem eq_top_of_complexSector_le_hidden_det
     (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K)
     (hC : complexSector ≤ K)
     (z : Albert) (hz : z ∈ K) (hdet : (hiddenMatrix z).det ≠ 0) : K = ⊤ := by
-  have he0 : diagonalAlbert 1 0 0 ∈ K := complexAlbert_mem K hC 1 0 0 0 0 0
-  have he1 : diagonalAlbert 0 1 0 ∈ K := complexAlbert_mem K hC 0 1 0 0 0 0
-  have he2 : diagonalAlbert 0 0 1 ∈ K := complexAlbert_mem K hC 0 0 1 0 0 0
-  have hz01 : E01 z.o01 ∈ K := peirce01_mem K hJ he0 he1 z hz
-  have hz02 : E02 z.o02 ∈ K := peirce02_mem K hJ he0 he2 z hz
-  have hz12 : E12 z.o12 ∈ K := peirce12_mem K hJ he1 he2 z hz
+  have he0                            := complexAlbert_mem K hC 1 0 0 0 0 0
+  have he1                            := complexAlbert_mem K hC 0 1 0 0 0 0
+  have he2                            := complexAlbert_mem K hC 0 0 1 0 0 0
+  have hz01                 := peirce01_mem K hJ he0 he1 z hz
+  have hz02                 := peirce02_mem K hJ he0 he2 z hz
+  have hz12                 := peirce12_mem K hJ he1 he2 z hz
   have hw : ∀ j : Fin 3, E02 (hiddenOct (fun i => hiddenMatrix z i j)) ∈ K := by
     intro j
     fin_cases j
-    · change E02 (hiddenOct (fun i => hiddenMatrix z i 0)) ∈ K
-      rw [hiddenOct_hiddenMatrix0, map_neg]
-      exact K.neg_mem (transfer12_to02_mem K hJ hC _ (residual_slot12_mem K hC _ hz12))
-    · change E02 (hiddenOct (fun i => hiddenMatrix z i 1)) ∈ K
-      rw [hiddenOct_hiddenMatrix1]
-      exact residual_slot02_mem K hC _ hz02
-    · change E02 (hiddenOct (fun i => hiddenMatrix z i 2)) ∈ K
-      rw [hiddenOct_hiddenMatrix2, map_neg]
-      exact K.neg_mem (transfer01_to02_mem K hJ hC _ (residual_slot01_mem K hC _ hz01))
+    · simpa [hiddenOct_hiddenMatrix] using
+        K.neg_mem (transfer12_to02_mem K hJ hC _ (residual_slot12_mem K hC _ hz12))
+    · simpa [hiddenOct_hiddenMatrix] using residual_slot02_mem K hC _ hz02
+    · simpa [hiddenOct_hiddenMatrix] using
+        K.neg_mem (transfer01_to02_mem K hJ hC _ (residual_slot01_mem K hC _ hz01))
   have hi : ∀ j : Fin 3, E02 (octMul (complexOct Complex.I)
       (hiddenOct (fun i => hiddenMatrix z i j))) ∈ K :=
     fun j => common02_left_i_mem K hJ hC _ (hw j)
@@ -72,25 +58,19 @@ theorem eq_top_of_complexSector_le_hidden_det
     simp only [octConj_scalar, octMul_scalar_right, one_smul] at he
     rw [← he]
     exact K.smul_mem 2 (hJ _ (hall02 q) _
-      (by simpa only [complexOct_one_completion] using complex_slot12_mem K hC 1))
+      (complex_slot12_mem K hC 1))
   have hall12 : ∀ q : Octonion, E12 q ∈ K := by
     intro q
     have he := cross01_02 (octScalar 1) q
     simp only [octConj_scalar, octMul_scalar_left, one_smul] at he
     rw [← he]
     exact K.smul_mem 2 (hJ _
-      (by simpa only [complexOct_one_completion] using complex_slot01_mem K hC 1) _ (hall02 q))
+      (complex_slot01_mem K hC 1) _ (hall02 q))
   apply top_unique
   intro t ht
   rw [raw_decomposition t]
-  exact K.add_mem
-    (K.add_mem
-      (K.add_mem
-        (K.add_mem (K.add_mem (K.smul_mem _ he0) (K.smul_mem _ he1))
-          (K.smul_mem _ he2))
-        (hall01 _))
-      (hall02 _))
-    (hall12 _)
+  aesop
+
 
 end
 end Glennie.NativeGenerationHiddenCompletionR01

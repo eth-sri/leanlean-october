@@ -3,6 +3,7 @@ Geometric foundation. No geometric recognition or arbitrary-polynomial represent
 correspondence is claimed here.
 -/
 module
+public import Mathlib.Tactic.Simps.Basic
 
 public import Mathlib.Analysis.Calculus.ContDiff.CPolynomial
 public import Mathlib.Analysis.Calculus.ContDiff.Basic
@@ -26,14 +27,23 @@ noncomputable section
 abbrev TrilinearForm (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] :=
   ContinuousMultilinearMap ℝ (fun _ : Fin 3 => E) ℝ
 
+theorem eval_const_hasFDerivAt
+    {X Y Z : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
+    [NormedAddCommGroup Y] [NormedSpace ℝ Y]
+    [NormedAddCommGroup Z] [NormedSpace ℝ Z]
+    {f : X → Y →L[ℝ] Z} {f' : X →L[ℝ] Y →L[ℝ] Z} {x : X}
+    (hf : HasFDerivAt f f' x) (u : Y) :
+    HasFDerivAt (fun y => f y u) (f'.flip u) x :=
+  (ContinuousLinearMap.apply ℝ Z u).hasFDerivAt.comp x hf
+
+
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 /-- The continuous linear diagonal embedding into the three slots. -/
-def diagonalEmbedding : E →L[ℝ] (Fin 3 → E) :=
+@[simps!] def diagonalEmbedding : E →L[ℝ] (Fin 3 → E) :=
   ContinuousLinearMap.pi (fun _ : Fin 3 => ContinuousLinearMap.id ℝ E)
 
-@[simp] theorem diagonalEmbedding_apply (x : E) (i : Fin 3) :
-    diagonalEmbedding (E := E) x i = x := rfl
+
 
 /-- The literal diagonal degree-three polynomial attached to the form. -/
 def diagonalCubic (P : TrilinearForm E) (x : E) : ℝ :=
@@ -42,16 +52,12 @@ def diagonalCubic (P : TrilinearForm E) (x : E) : ℝ :=
 /-- The explicit slot-sum candidate, subsequently certified by HasFDerivAt.
 The derivative itself is never defined by an assumed Euler/gradient identity. -/
 def diagonalDerivative (P : TrilinearForm E) (x : E) : E →L[ℝ] ℝ :=
-  (P.linearDeriv (fun _ : Fin 3 => x)).comp (diagonalEmbedding (E := E))
+  (P.linearDeriv (fun _ : Fin 3 => x)).comp (diagonalEmbedding         )
 
 /-- The actual derivative follows by the chain rule for the diagonal embedding. -/
 theorem hasFDerivAt_diagonalCubic (P : TrilinearForm E) (x : E) :
     HasFDerivAt (diagonalCubic P) (diagonalDerivative P x) x := by
-  change HasFDerivAt
-    (fun z : E => P (diagonalEmbedding (E := E) z))
-    ((P.linearDeriv (diagonalEmbedding (E := E) x)).comp
-      (diagonalEmbedding (E := E))) x
-  exact (P.hasFDerivAt (diagonalEmbedding (E := E) x)).comp x
+  exact (P.hasFDerivAt (diagonalEmbedding          x)).comp x
     (diagonalEmbedding (E := E)).hasFDerivAt
 
 /-- This uses proved differentiability, never the total fderiv fallback. -/
@@ -66,7 +72,6 @@ theorem differentiable_diagonalCubic (P : TrilinearForm E) :
 /-- Smoothness comes from a continuous polynomial and a continuous linear map. -/
 theorem contDiff_diagonalCubic (P : TrilinearForm E) (n : ℕ∞ω) :
     ContDiff ℝ n (diagonalCubic P) := by
-  change ContDiff ℝ n (fun z : E => P (diagonalEmbedding (E := E) z))
   exact P.contDiff.comp (diagonalEmbedding (E := E)).contDiff
 
 /-- The three replacements are the differentiated slots of the true form. -/
@@ -79,14 +84,7 @@ theorem diagonalDerivative_apply (P : TrilinearForm E) (x y : E) :
 /-- Euler's radial identity requires no symmetry premise. -/
 theorem diagonalDerivative_radial (P : TrilinearForm E) (x : E) :
     diagonalDerivative P x x = 3 * diagonalCubic P x := by
-  have hu (i : Fin 3) :
-      Function.update (fun _ : Fin 3 => x) i x = (fun _ : Fin 3 => x) :=
-    Function.update_eq_self i (fun _ : Fin 3 => x)
-  rw [diagonalDerivative_apply]
-  simp only [hu, Fin.sum_univ_three]
-  change P (fun _ : Fin 3 => x) + P (fun _ : Fin 3 => x) +
-    P (fun _ : Fin 3 => x) = 3 * P (fun _ : Fin 3 => x)
-  ring
+  simp [diagonalDerivative_apply, diagonalCubic, Function.update_eq_self]
 
 /-- Euler is stated for the genuine Fréchet derivative. -/
 theorem fderiv_diagonalCubic_radial (P : TrilinearForm E) (x : E) :

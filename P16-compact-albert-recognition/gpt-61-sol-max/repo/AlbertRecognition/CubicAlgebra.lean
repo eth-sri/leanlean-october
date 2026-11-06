@@ -9,13 +9,6 @@ public import Mathlib.Tactic.NoncommRing
 namespace AlbertRecognition
 noncomputable section
 
-theorem symmetricCubic_eq_of_form_eq {B C : SymmetricCubic}
-    (hform : B.form = C.form) : B = C := by
-  cases B
-  cases C
-  cases hform
-  rfl
-
 /-- Literal real scaling of a genuine symmetric trilinear form. -/
 def scalarCubic (r : ℝ) (B : SymmetricCubic) : SymmetricCubic where
   form := r • B.form
@@ -26,7 +19,7 @@ def scalarCubic (r : ℝ) (B : SymmetricCubic) : SymmetricCubic where
     (scalarCubic r B).form x y z = r * B.form x y z := rfl
 
 theorem scalarCubic_one (B : SymmetricCubic) : scalarCubic 1 B = B := by
-  apply symmetricCubic_eq_of_form_eq
+  apply SymmetricCubic.ext
   exact one_smul ℝ B.form
 
 /-- Raising the index with the same trace/3 metric commutes with real scaling. -/
@@ -73,34 +66,10 @@ theorem q_scalarCubic (r : ℝ) (B : SymmetricCubic) :
   funext x y
   apply LinearMap.ext
   intro z
-  change operatorComm (KB (scalarCubic r B) x) (KB (scalarCubic r B) y) z =
-    r^2 • operatorComm (KB B x) (KB B y) z
-  rw [KB_scalarCubic]
-  change (r • KB B x) ((r • KB B y) z) -
-    (r • KB B y) ((r • KB B x) z) =
-      r^2 • ((KB B x) ((KB B y) z) - (KB B y) ((KB B x) z))
-  simp only [LinearMap.smul_apply, map_smul, smul_smul, pow_two]
+  simp only [q, KB_scalarCubic, operatorComm_apply, Pi.smul_apply,
+    LinearMap.smul_apply, map_smul, smul_smul]
   module
 
-/-- The Jacobi constraint is linear in the unrestricted unknown cubic. -/
-theorem A_scalarCubic (T : V → V → Module.End ℝ V) (r : ℝ)
-    (B : SymmetricCubic) : A T (scalarCubic r B) = r • A T B := by
-  funext x y z
-  apply LinearMap.ext
-  intro w
-  rw [A, KB_scalarCubic]
-  change (r • KB B x) (T y z w) - T y z ((r • KB B x) w) +
-    ((r • KB B y) (T z x w) - T z x ((r • KB B y) w)) +
-    ((r • KB B z) (T x y w) - T x y ((r • KB B z) w)) =
-      r • (((KB B x) (T y z w) - T y z (KB B x w)) +
-        ((KB B y) (T z x w) - T z x (KB B y w)) +
-        ((KB B z) (T x y w) - T x y (KB B z w)))
-  simp only [LinearMap.smul_apply, map_smul]
-  module
-
-/-- The actual kernel-line property, expressed in native trilinear forms. -/
-def NativeKernelLine (C : SymmetricCubic) : Prop :=
-  ∀ B : SymmetricCubic, A (q C) B = 0 ↔ ∃ r : ℝ, B = scalarCubic r C
 
 end
 end AlbertRecognition

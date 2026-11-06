@@ -1,7 +1,6 @@
 module
 
 public import Glennie.Native.AlgebraLaws
-public import Glennie.Theorems.ScalarEstimates
 public import Mathlib.Tactic.Module
 
 /- Native frame encoder and marginal identities, without spectral assumptions. -/
@@ -11,16 +10,25 @@ public section
 namespace Glennie
 noncomputable section
 
-theorem frame_encoder_trace (p : Fin 3 → Albert) (hp : Frame p) :
+@[expose] def projectorFrame (x : Albert) : Fin 3 → Albert :=
+  ![(1 / 2 : ℝ) • (jordan x x - x), 1 - jordan x x,
+    (1 / 2 : ℝ) • (jordan x x + x)]
+
+variable (p : Fin 3 → Albert) (hp : Frame p)
+
+include p hp in
+theorem frame_encoder_trace  :
     trace (encoder p) = 0 := by
   simp [encoder, hp.trace_one]
 
-theorem frame_encoder_square (p : Fin 3 → Albert) (hp : Frame p) :
+include p hp in
+theorem frame_encoder_square  :
     jordan (encoder p) (encoder p) = p 2 + p 0 := by
   simp [encoder, jordan_sub_left, jordan_sub_right, hp.idempotent,
     hp.orthogonal 2 0 (by decide), hp.orthogonal 0 2 (by decide)]
 
-theorem frame_encoder_cube (p : Fin 3 → Albert) (hp : Frame p) :
+include p hp in
+theorem frame_encoder_cube  :
     jordan (encoder p) (jordan (encoder p) (encoder p)) = encoder p := by
   rw [frame_encoder_square p hp]
   simp only [encoder, jordan_sub_left, jordan_add_right, hp.idempotent,
@@ -28,27 +36,19 @@ theorem frame_encoder_cube (p : Fin 3 → Albert) (hp : Frame p) :
     sub_zero, zero_sub]
   abel
 
-theorem frame_encoder_norm (p : Fin 3 → Albert) (hp : Frame p) :
+include p hp in
+theorem frame_encoder_norm  :
     inner (encoder p) (encoder p) = 2 := by
   rw [inner, frame_encoder_square p hp, trace_add, hp.trace_one, hp.trace_one]
   norm_num
 
-theorem frame_projector_first (p : Fin 3 → Albert) (hp : Frame p) :
-    (1 / 2 : ℝ) • (jordan (encoder p) (encoder p) - encoder p) = p 0 := by
-  rw [frame_encoder_square p hp]
-  unfold encoder
-  module
+include p hp in
+/-- Every labelled frame is recovered by the same encoder polynomials. -/
+theorem frame_as_projector : p = projectorFrame (encoder p) := by
+  funext i
+  fin_cases i <;> simp [projectorFrame, frame_encoder_square p hp, ← hp.sum_unit]
+  all_goals (try unfold encoder) <;> module
 
-theorem frame_projector_middle (p : Fin 3 → Albert) (hp : Frame p) :
-    1 - jordan (encoder p) (encoder p) = p 1 := by
-  rw [frame_encoder_square p hp, ← hp.sum_unit]
-  abel
-
-theorem frame_projector_last (p : Fin 3 → Albert) (hp : Frame p) :
-    (1 / 2 : ℝ) • (jordan (encoder p) (encoder p) + encoder p) = p 2 := by
-  rw [frame_encoder_square p hp]
-  unfold encoder
-  module
 
 theorem ledger_cyclic (p q r : Fin 3 → Albert) (i j k : Fin 3) :
     ledger p q r i j k = ledger q r p j k i := by
@@ -67,7 +67,7 @@ theorem uniformLedger_pair_overlap (p q r : Fin 3 → Albert)
     inner (p i) (q j) = 1 / 3 := by
   rw [← ledger_last_marginal p q r hr i j]
   simp only [UniformLedger] at hu
-  simp [hu, Fin.sum_univ_three]
+  simp [hu]
   norm_num
 
 theorem uniformLedger_cyclic (p q r : Fin 3 → Albert)

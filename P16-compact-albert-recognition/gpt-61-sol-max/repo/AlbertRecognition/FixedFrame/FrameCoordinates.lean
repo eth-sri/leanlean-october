@@ -1,6 +1,7 @@
 /- Rational 1+9+16 fixed-frame coordinates on the actual compact trace kernel.
 The scaled metric is explicit; no inner-product instance is installed. -/
 module
+public import Mathlib.Tactic.Simps.Basic
 
 public import AlbertRecognition.Reference
 public import AlbertRecognition.FixedFrame.SpinCommutant
@@ -18,12 +19,11 @@ def frameD : V := ⟨⟨0, 1, -1, 0, 0, 0⟩, by
   norm_num⟩
 
 /-- The ordered spin pair is the actual upper-slot pair (01,02). -/
-def frameSpin : Spin →ₗ[ℝ] V :=
+@[simps! apply] def frameSpin : Spin →ₗ[ℝ] V :=
   X01.comp (LinearMap.fst ℝ Octonion Octonion) +
     X02.comp (LinearMap.snd ℝ Octonion Octonion)
 
-@[simp] theorem frameSpin_apply (u v : Octonion) :
-    frameSpin (u, v) = X01 u + X02 v := rfl
+
 
 /-- Exact rational coordinates (alpha,beta,slot12,(slot01,slot02)). -/
 def frameCoordinates : V ≃ₗ[ℝ] FrameCoordinates where
@@ -39,51 +39,10 @@ def frameCoordinates : V ≃ₗ[ℝ] FrameCoordinates where
     have ht := trace_V x
     change (x : Albert).d0 + (x : Albert).d1 + (x : Albert).d2 = 0 at ht
     apply Subtype.ext
-    apply Albert.ext
-    · change -2 * (-(x : Albert).d0 / 2) = (x : Albert).d0
-      ring
-    · change -(x : Albert).d0 / 2 +
-        ((x : Albert).d1 - (x : Albert).d2) / 2 = (x : Albert).d1
-      linarith
-    · change -(x : Albert).d0 / 2 -
-        ((x : Albert).d1 - (x : Albert).d2) / 2 = (x : Albert).d2
-      linarith
-    · rfl
-    · rfl
-    · rfl
-  right_inv c := by
-    rcases c with ⟨a, b, z, u, v⟩
-    change (-(-2*a)/2, ((a+b)-(a-b))/2, z, (u,v)) = (a,b,z,(u,v))
-    have ha : -(-2*a)/2 = a := by ring
-    have hb : ((a+b)-(a-b))/2 = b := by ring
-    rw [ha, hb]
-  map_add' x y := by
-    change (-((x : Albert).d0+(y : Albert).d0)/2,
-      ((x : Albert).d1+(y : Albert).d1-((x : Albert).d2+(y : Albert).d2))/2,
-      (x : Albert).o12+(y : Albert).o12,
-      ((x : Albert).o01+(y : Albert).o01,(x : Albert).o02+(y : Albert).o02)) =
-      (-(x : Albert).d0/2 + -(y : Albert).d0/2,
-      ((x : Albert).d1-(x : Albert).d2)/2 + ((y : Albert).d1-(y : Albert).d2)/2,
-      (x : Albert).o12+(y : Albert).o12,
-      ((x : Albert).o01+(y : Albert).o01,(x : Albert).o02+(y : Albert).o02))
-    have ha : -((x : Albert).d0+(y : Albert).d0)/2 =
-        -(x : Albert).d0/2 + -(y : Albert).d0/2 := by ring
-    have hb : ((x : Albert).d1+(y : Albert).d1-
-        ((x : Albert).d2+(y : Albert).d2))/2 =
-        ((x : Albert).d1-(x : Albert).d2)/2 +
-          ((y : Albert).d1-(y : Albert).d2)/2 := by ring
-    rw [ha, hb]
-  map_smul' r x := by
-    simp only [RingHom.id_apply]
-    change (-(r*(x : Albert).d0)/2,
-      (r*(x : Albert).d1-r*(x : Albert).d2)/2,
-      r • (x : Albert).o12,(r • (x : Albert).o01,r • (x : Albert).o02)) =
-      (r*(-(x : Albert).d0/2),r*(((x : Albert).d1-(x : Albert).d2)/2),
-      r • (x : Albert).o12,(r • (x : Albert).o01,r • (x : Albert).o02))
-    have ha : -(r*(x : Albert).d0)/2 = r*(-(x : Albert).d0/2) := by ring
-    have hb : (r*(x : Albert).d1-r*(x : Albert).d2)/2 =
-        r*(((x : Albert).d1-(x : Albert).d2)/2) := by ring
-    rw [ha, hb]
+    ext <;> dsimp <;> linarith
+  right_inv c := by ext <;> dsimp <;> ring
+  map_add' x y := by ext <;> simp <;> ring
+  map_smul' r x := by ext <;> simp [smul_eq_mul] <;> ring
 
 def frameEmbed : FrameCoordinates →ₗ[ℝ] V := frameCoordinates.symm.toLinearMap
 
@@ -93,7 +52,7 @@ theorem frameEmbed_eq (a b : ℝ) (z : Octonion) (s : Spin) :
   rcases s with ⟨u,v⟩
   apply Subtype.ext
   apply Albert.ext <;>
-    simp [frameEmbed, frameCoordinates, h, e, unit, frameD, frameSpin,
+    simp [frameEmbed, frameCoordinates, h, e, frameD, frameSpin,
       X01, X02, X12] <;> ring
 
 theorem frame_decompose (x : V) :

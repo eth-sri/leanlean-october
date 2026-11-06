@@ -10,12 +10,9 @@ public import Glennie.Automorphism
 namespace AlbertRecognition.Transporter
 noncomputable section
 open Glennie
-open scoped BigOperators
-
 def halfRoot : ℝ := Real.sqrt (1 / 2)
 
-theorem halfRoot_sq : halfRoot ^ 2 = (1 / 2 : ℝ) := by
-  exact Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 1 / 2)
+theorem halfRoot_sq : halfRoot ^ 2 = (1 / 2 : ℝ) := Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 1 / 2)
 
 theorem rotation_condition : halfRoot ^ 2 + (-halfRoot) ^ 2 = 1 := by
   nlinarith [halfRoot_sq]
@@ -40,7 +37,7 @@ theorem rotation_e1_coordinates (c s : ℝ) :
   ext <;>
     simp [realConjugateAlbert, fromMatrix, matrixConjugateReal,
       matrixRowMix, matrixColMix, realRotation12, toMatrix,
-      Fin.sum_univ_three, e, octRe, octScalar, octConj, smul_eq_mul] <;> ring
+      Fin.sum_univ_three, e, octRe, octScalar, octConj, smul_eq_mul]
 
 def realHalfRotation : CompactAutomorphism :=
   realRotation12Automorphism halfRoot (-halfRoot) rotation_condition
@@ -59,8 +56,8 @@ theorem middle_image (a : Octonion) (ha : octNormSq a = 1) :
   rw [p12Plus_coordinates, p12Plus_coordinates]
   change (octMiddleTriple a ha).albertEquiv _ = _
   apply Albert.ext <;>
-    simp [OctRelatedTriple.albertEquiv, OctRelatedTriple.middle_B,
-      octMul_smul_left, octMul_scalar_left] <;> simp [octMul]
+    simp [OctRelatedTriple.albertEquiv, octMiddleTriple, octRightUnitEquiv, octLeftUnitEquiv,
+      octMul_smul_left, octMul_scalar_left]
 
 end
 end AlbertRecognition.Transporter

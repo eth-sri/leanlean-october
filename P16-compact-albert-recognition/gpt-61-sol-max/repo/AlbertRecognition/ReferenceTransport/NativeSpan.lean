@@ -28,10 +28,9 @@ theorem slot_basis_mem_familySpan (slot : Fin 3) (t : Fin 8) :
 theorem slot_mem_familySpan (slot : Fin 3) (a : Octonion) :
     slotVector slot a ∈ familySpan := by
   rw [oct_decompose a]
-  simp only [map_add, map_smul]
-  repeat' apply familySpan.add_mem
-  all_goals apply familySpan.smul_mem
-  all_goals exact slot_basis_mem_familySpan slot _
+  simp only [map_sum, map_smul]
+  exact familySpan.sum_mem fun t _ =>
+    familySpan.smul_mem _ (slot_basis_mem_familySpan slot t)
 
 theorem frameD_eq_directions :
     frameD = (1/3 : ℝ) • (h 2 - h 1) := by

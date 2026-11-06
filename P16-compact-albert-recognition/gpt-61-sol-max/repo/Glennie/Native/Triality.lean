@@ -2,6 +2,7 @@
 This file does not assume or prove universal existence of a related triple.
 -/
 module
+public import Glennie.Native.CoordinateSimp
 
 public import Glennie.Native.AlgebraLaws
 public import Glennie.Obligations
@@ -11,9 +12,6 @@ public import Mathlib.Data.Real.Sqrt
 
 namespace Glennie
 noncomputable section
-
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 theorem octNormSq_add (x y : Octonion) :
     octNormSq (x+y) = octNormSq x+octNormSq y+2*octDot x y := by
@@ -27,14 +25,12 @@ theorem octDot_sub_left (x y z : Octonion) :
 
 theorem octDot_mul_right (x y z : Octonion) :
     octDot (octMul x y) z = octDot x (octMul z (octConj y)) := by
-  simp [octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+  simp [albert_coords]
   ring
 
 theorem octDot_mul_left (x y z : Octonion) :
     octDot (octMul x y) z = octDot y (octMul (octConj x) z) := by
-  simp [octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+  simp [albert_coords]
   ring
 
 theorem octDot_ext (x y : Octonion) (h : ∀ z, octDot x z = octDot y z) : x = y := by
@@ -65,10 +61,10 @@ theorem octMul_pure_unit_self (x : Octonion) (hre : octRe x = 0)
 /-- Every nonzero native octonion is a positive real multiple of a unit. -/
 theorem octUnit_decomposition (x : Octonion) (hx : x ≠ 0) :
     ∃ a : Octonion, ∃ r : ℝ, 0 < r ∧ octNormSq a = 1 ∧ x = r • a := by
-  have hn : 0 < octNormSq x := lt_of_le_of_ne (octNormSq_nonneg x)
+  have hn                   := lt_of_le_of_ne (octNormSq_nonneg x)
     (Ne.symm (fun h => hx ((octNormSq_eq_zero x).mp h)))
   let r := Real.sqrt (octNormSq x)
-  have hr : 0 < r := Real.sqrt_pos.2 hn
+  have hr         := Real.sqrt_pos.2 hn
   have hr0 : r ≠ 0 := ne_of_gt hr
   have hrsq : r^2 = octNormSq x := Real.sq_sqrt hn.le
   refine ⟨r⁻¹ • x, r, hr, ?_, ?_⟩
@@ -79,9 +75,7 @@ theorem octUnit_decomposition (x : Octonion) (hx : x ≠ 0) :
 /-- The inverse property is proved for the declared native multiplication. -/
 theorem octMul_conj_left_cancel (a x : Octonion) :
     octMul (octConj a) (octMul a x) = octNormSq a • x := by
-  ext <;> simp [octMul, octConj, octNormSq, Quaternion.normSq_def',
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul] <;> ring
+  ext <;> simp [albert_coords] <;> ring
 
 theorem octMul_left_conj_cancel (a x : Octonion) :
     octMul a (octMul (octConj a) x) = octNormSq a • x := by
@@ -90,9 +84,7 @@ theorem octMul_left_conj_cancel (a x : Octonion) :
 
 theorem octMul_conj_right_cancel (a x : Octonion) :
     octMul (octMul x a) (octConj a) = octNormSq a • x := by
-  ext <;> simp [octMul, octConj, octNormSq, Quaternion.normSq_def',
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul] <;> ring
+  ext <;> simp [albert_coords] <;> ring
 
 theorem octMul_right_conj_cancel (a x : Octonion) :
     octMul (octMul x (octConj a)) a = octNormSq a • x := by
@@ -160,15 +152,6 @@ theorem octDot_of_norm_preserving (A : Octonion ≃ₗ[ℝ] Octonion)
 
 namespace OctRelatedTriple
 
-@[simp] theorem middle_A (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (octMiddleTriple a ha).A x = octMul a x := rfl
-
-@[simp] theorem middle_B (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (octMiddleTriple a ha).B x = octMul x a := rfl
-
-@[simp] theorem middle_C (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (octMiddleTriple a ha).C x = octMul (octMul a x) a := rfl
-
 theorem dot_A (g : OctRelatedTriple) (x y : Octonion) :
     octDot (g.A x) (g.A y) = octDot x y := octDot_of_norm_preserving g.A g.norm_A x y
 
@@ -226,32 +209,34 @@ Its second and third maps are x ↦ a ((x a) a), without an associativity assump
 def unitStabilizerTriple (a : Octonion) (ha : octNormSq a = 1) : OctRelatedTriple :=
   (octMiddleTriple a ha).comp (octMiddleTriple a ha).swap12
 
-theorem unitStabilizer_A (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
+variable (a : Octonion) (ha : octNormSq a = 1)
+
+theorem unitStabilizer_A  (x : Octonion) :
     (unitStabilizerTriple a ha).A x = octMul a (octMul x (octConj a)) := by
   change octMul a (octConj (octMul a (octConj x))) = _
   rw [octConj_mul, octConj_conj]
 
-theorem unitStabilizer_B (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
+theorem unitStabilizer_B  (x : Octonion) :
     (unitStabilizerTriple a ha).B x = octMul a (octMul (octMul x a) a) := by
   change octMul (octMul (octMul a x) a) a = _
   rw [octMul_flexible, octMul_flexible]
 
-theorem unitStabilizer_C (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
+theorem unitStabilizer_C  (x : Octonion) :
     (unitStabilizerTriple a ha).C x = octMul a (octMul (octMul x a) a) := by
   change octMul (octMul a (octMul x a)) a = _
   rw [octMul_flexible]
 
-theorem unitStabilizer_fix_unit (a : Octonion) (ha : octNormSq a = 1) :
+theorem unitStabilizer_fix_unit  :
     (unitStabilizerTriple a ha).A (octScalar 1) = octScalar 1 := by
   rw [unitStabilizer_A, octMul_scalar_left, one_smul, octMul_self_conj, ha]
 
 /-- Order-three units give a genuine octonion automorphism in all three slots. -/
-theorem unitStabilizer_B_eq_A (a : Octonion) (ha : octNormSq a = 1)
+theorem unitStabilizer_B_eq_A 
     (hsq : octMul a a = octConj a) (x : Octonion) :
     (unitStabilizerTriple a ha).B x = (unitStabilizerTriple a ha).A x := by
   rw [unitStabilizer_B, unitStabilizer_A, octMul_right_alternative, hsq]
 
-theorem unitStabilizer_C_eq_A (a : Octonion) (ha : octNormSq a = 1)
+theorem unitStabilizer_C_eq_A 
     (hsq : octMul a a = octConj a) (x : Octonion) :
     (unitStabilizerTriple a ha).C x = (unitStabilizerTriple a ha).A x := by
   rw [unitStabilizer_C, unitStabilizer_A, octMul_right_alternative, hsq]

@@ -6,7 +6,7 @@ public import AlbertRecognition.ReferenceTransport.FamilyDefinitions
 
 @[expose] public section
 namespace AlbertRecognition.ReferenceTransport
-noncomputable section
+section
 open Glennie AlbertRecognition.FixedFrame
 
 theorem transport12_image (a : Octonion) (ha : octNormSq a = 1) :
@@ -24,7 +24,7 @@ theorem slotTransporter_image (slot : Fin 3) (a : Octonion)
     change realConjugateAlbert realSwap01
       (realConjugateAlbert realSwap02 _) = _
     rw [realSwap02_coordinates, realSwap01_coordinates]
-    apply Albert.ext <;> simp [slotIdempotent, octConj_smul, octConj_conj, octConj]
+    apply Albert.ext <;> simp [slotIdempotent, octConj]
     all_goals apply Prod.ext <;> rfl
   · change realSwap01Automorphism.equiv ((transport12 a ha).equiv (e 0)) = _
     rw [transport12_image, Transporter.p12Plus_coordinates]
@@ -62,27 +62,14 @@ theorem direction_diagonal (i : Fin 3) : direction (Sum.inl i) = h i := by
 theorem direction_difference (slot : Fin 3) (t : Fin 8) :
     direction (Sum.inr (slot,t,true)) - direction (Sum.inr (slot,t,false)) =
       (-3 : ℝ) • slotVector slot (octBasis t) := by
-  have hp (a : Octonion) :
-      slotIdempotent slot a - slotIdempotent slot (-a) = (slotVector slot a : Albert) := by
-    fin_cases slot
-    · change (⟨1/2,1/2,0,(1/2 : ℝ) • a,0,0⟩ : Albert) -
-        ⟨1/2,1/2,0,(1/2 : ℝ) • (-a),0,0⟩ = ⟨0,0,0,a,0,0⟩
-      apply Albert.ext <;> simp [smul_neg] <;> module
-    · change (⟨1/2,0,1/2,0,(1/2 : ℝ) • a,0⟩ : Albert) -
-        ⟨1/2,0,1/2,0,(1/2 : ℝ) • (-a),0⟩ = ⟨0,0,0,0,a,0⟩
-      apply Albert.ext <;> simp [smul_neg] <;> module
-    · change (⟨0,1/2,1/2,0,0,(1/2 : ℝ) • a⟩ : Albert) -
-        ⟨0,1/2,1/2,0,0,(1/2 : ℝ) • (-a)⟩ = ⟨0,0,0,0,0,a⟩
-      apply Albert.ext <;> simp [smul_neg] <;> module
   apply Subtype.ext
   change (direction (Sum.inr (slot,t,true)) : Albert) -
       (direction (Sum.inr (slot,t,false)) : Albert) = _
   rw [direction_coe, direction_coe]
-  change ((1 : Albert) - (3 : ℝ) • slotIdempotent slot (octBasis t)) -
-      ((1 : Albert) - (3 : ℝ) • slotIdempotent slot (-octBasis t)) =
-    (-3 : ℝ) • (slotVector slot (octBasis t) : Albert)
-  rw [← hp (octBasis t)]
-  module
+  fin_cases slot <;> apply Albert.ext <;>
+    norm_num [familyIdempotent, signedBasis, slotIdempotent, slotVector, X01, X02, X12] <;>
+    module
+
 
 end
 end AlbertRecognition.ReferenceTransport

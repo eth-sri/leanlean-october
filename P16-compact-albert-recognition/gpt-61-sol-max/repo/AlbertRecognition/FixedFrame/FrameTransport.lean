@@ -4,40 +4,25 @@ module
 
 public import AlbertRecognition.FixedFrame.FixedFrameGate
 public import Mathlib.Algebra.Module.Torsion.Free
+public import Mathlib.Tactic
 
 @[expose] public section
 namespace AlbertRecognition.FixedFrame
-noncomputable section
+section
 open Glennie
 
-/-- Native projected multiplication on the complementary diagonal direction. -/
-theorem KA_h0_frameD : KA (h 0) frameD = frameD := by
-  rw [frameD_eq_h01, map_add, map_smul, map_smul, KA_h_self,
-    KA_h_cross 0 1 (by decide)]
-  module
-
-/-- A literal inverse polynomial, checked on the actual 1+1+8+16 decomposition.
-The three eigenvalues -1,1,-1/2 are nonzero; no invertibility is assumed. -/
-theorem KA_h0_inverse_polynomial (x : V) :
-    (2 : ℝ) • KA (h 0) (KA (h 0) (KA (h 0) x)) +
-      KA (h 0) (KA (h 0) x) - (2 : ℝ) • KA (h 0) x = x := by
-  have h01 (u : Octonion) : KA (h 0) (X01 u) = -(1/2 : ℝ) • X01 u := by
-    simpa using KA_h_X01 0 u
-  have h02 (u : Octonion) : KA (h 0) (X02 u) = -(1/2 : ℝ) • X02 u := by
-    simpa using KA_h_X02 0 u
-  have h12 (u : Octonion) : KA (h 0) (X12 u) = X12 u := by
-    simpa using KA_h_X12 0 u
-  rcases hs : (frameCoordinates x).2.2.2 with ⟨u,v⟩
-  rw [frame_decompose x, hs, frameSpin_apply]
-  simp only [map_add, map_smul, KA_h_self, KA_h0_frameD, h01, h02, h12]
-  module
-
+/-- The native diagonal coefficient has no kernel on the trace-zero subspace. -/
 theorem KA_h0_injective : Function.Injective (KA (h 0)) := by
   intro x y hxy
-  have hz : KA (h 0) (x-y) = 0 := by rw [map_sub, hxy, sub_self]
-  have hinv := KA_h0_inverse_polynomial (x-y)
-  simp only [hz, map_zero, smul_zero, add_zero, sub_zero] at hinv
-  exact sub_eq_zero.mp hinv.symm
+  have hx := trace_V x
+  have hy := trace_V y
+  have hh := congrArg (fun u : V => (u : Albert)) hxy
+  simp only [KA_apply_apply, project_apply_coe] at hh
+  clear hxy
+  norm_num [Albert.ext_iff, Prod.ext_iff, Quaternion.ext_iff,
+    traceless, albert_coords, trace, h, e] at hh hx hy
+  apply Subtype.ext
+  ext <;> grind
 
 theorem h0_ne_zero : h 0 ≠ 0 := by
   intro hz
@@ -61,8 +46,7 @@ theorem transported_frame_constraint (B : SymmetricCubic)
     KB B (automorphismV g (h i)) (automorphismV g w) =
         automorphismV g (KB (pullbackCubic (automorphismV g) B) (h i) w) :=
       (automorphismV_KB_pullback g B (h i) w).symm
-    _ = automorphismV g (c • KA (h i) w) := by
-      exact congrArg (automorphismV g) (LinearMap.congr_fun (hc i) w)
+    _ = automorphismV g (c • KA (h i) w) := congrArg (automorphismV g) (LinearMap.congr_fun (hc i) w)
     _ = c • KA (automorphismV g (h i)) (automorphismV g w) := by
       rw [map_smul, automorphismV_KA]
 
@@ -72,16 +56,9 @@ theorem transported_scalar_eq (B : SymmetricCubic) (g : CompactAutomorphism)
     (b c : ℝ) (hb : KB B (h 0) = b • KA (h 0))
     (hc : KB B (automorphismV g (h 0)) = c • KA (automorphismV g (h 0))) :
     b = c := by
-  have hu : automorphismV g (h 0) ≠ 0 := by
-    intro hz
-    apply h0_ne_zero
-    apply (automorphismV g).injective
-    simpa only [map_zero] using hz
   have hv : KA (h 0) (automorphismV g (h 0)) ≠ 0 := by
-    intro hz
-    apply hu
-    apply KA_h0_injective
-    simpa only [map_zero] using hz
+    simpa only [map_zero] using
+      KA_h0_injective.ne ((automorphismV g).injective.ne h0_ne_zero)
   have heq : b • KA (h 0) (automorphismV g (h 0)) =
       c • KA (h 0) (automorphismV g (h 0)) := by
     calc
@@ -102,7 +79,7 @@ theorem common_scalar_on_reference_frames (B : SymmetricCubic)
   refine ⟨b, ?_⟩
   intro g
   obtain ⟨c,hc⟩ := transported_frame_constraint B hB g
-  have hbc : b = c := transported_scalar_eq B g b c (hb 0) (hc 0)
+  have hbc         := transported_scalar_eq B g b c (hb 0) (hc 0)
   rw [← hbc] at hc
   exact hc
 

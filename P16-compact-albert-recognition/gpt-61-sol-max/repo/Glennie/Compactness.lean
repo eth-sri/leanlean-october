@@ -2,6 +2,7 @@
 The maximum theorem does not assert diagonalization; explicit rotations are
 needed to show that a maximizing point has vanishing off-diagonal entries. -/
 module
+public import Mathlib.Tactic.Simps.Basic
 public import Glennie.Hilbert
 public import Glennie.Automorphism
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
@@ -14,13 +15,15 @@ noncomputable section
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
-def jordanContinuous : Albert →L[ℝ] Albert →L[ℝ] Albert :=
+@[simps! apply_apply] def jordanContinuous : Albert →L[ℝ] Albert →L[ℝ] Albert :=
   LinearMap.toContinuousLinearMap
     ((LinearMap.toContinuousLinearMap :
       (Albert →ₗ[ℝ] Albert) ≃ₗ[ℝ] (Albert →L[ℝ] Albert)).toLinearMap.comp jordanLinear)
 
-@[simp] theorem jordanContinuous_apply (x y : Albert) :
-    jordanContinuous x y = jordan x y := rfl
+                                                       
+                                            
+
+
 
 theorem continuous_jordan : Continuous (fun p : Albert × Albert => jordan p.1 p.2) :=
   (jordanContinuous.continuous.comp continuous_fst).clm_apply continuous_snd
@@ -101,38 +104,15 @@ def automorphismMaps : Set AutomorphismColumns :=
     (∀ x y, columnMap v (jordan x y) = jordan (columnMap v x) (columnMap v y)) ∧
     ∀ x y, inner (columnMap v x) (columnMap v y) = inner x y}
 
+attribute [local fun_prop] continuous_columnMap_apply continuous_jordan continuous_native_inner
+
 theorem automorphismMaps_closed : IsClosed automorphismMaps := by
-  have heval (x : Albert) :
-      Continuous (fun v : AutomorphismColumns => columnMap v x) :=
-    continuous_columnMap_apply x
-  have hj (x y : Albert) :
-      IsClosed {v : AutomorphismColumns |
-        columnMap v (jordan x y) = jordan (columnMap v x) (columnMap v y)} := by
-    have hprod : Continuous (fun v : AutomorphismColumns =>
-        (columnMap v x, columnMap v y)) := (heval x).prodMk (heval y)
-    have hright : Continuous (fun v : AutomorphismColumns =>
-        jordan (columnMap v x) (columnMap v y)) := by
-      simpa only [Function.comp_def] using continuous_jordan.comp hprod
-    exact isClosed_eq (heval (jordan x y)) hright
-  have hi (x y : Albert) :
-      IsClosed {v : AutomorphismColumns |
-        inner (columnMap v x) (columnMap v y) = inner x y} := by
-    have hprod : Continuous (fun v : AutomorphismColumns =>
-        (columnMap v x, columnMap v y)) := (heval x).prodMk (heval y)
-    have hleft : Continuous (fun v : AutomorphismColumns =>
-        inner (columnMap v x) (columnMap v y)) := by
-      simpa only [Function.comp_def] using continuous_native_inner.comp hprod
-    exact isClosed_eq hleft
-      (continuous_const : Continuous (fun _ : AutomorphismColumns => inner x y))
-  have hunit : IsClosed {v : AutomorphismColumns | columnMap v 1 = 1} :=
-    isClosed_eq (heval 1)
-      (continuous_const : Continuous (fun _ : AutomorphismColumns => (1 : Albert)))
-  have hc := hunit.inter
-    ((isClosed_iInter fun x => isClosed_iInter fun y => hj x y).inter
-      (isClosed_iInter fun x => isClosed_iInter fun y => hi x y))
-  convert hc using 1
-  ext v
-  simp [automorphismMaps]
+  simp only [automorphismMaps, Set.setOf_and, Set.setOf_forall]
+  refine (isClosed_eq (continuous_columnMap_apply 1) continuous_const).inter
+    ((isClosed_iInter fun x => isClosed_iInter fun y => ?_).inter
+      (isClosed_iInter fun x => isClosed_iInter fun y => ?_))
+  · exact isClosed_eq (continuous_columnMap_apply _) (by fun_prop)
+  · exact isClosed_eq (by fun_prop) continuous_const
 
 theorem automorphismMaps_norm (v : AutomorphismColumns) (hv : v ∈ automorphismMaps)
     (x : Albert) : ‖columnMap v x‖ = ‖x‖ := by
@@ -143,8 +123,8 @@ theorem automorphismMaps_norm (v : AutomorphismColumns) (hv : v ∈ automorphism
 /-- Each basis image lies in its native compact closed ball. A finite product
 of these balls bounds the actual automorphism columns. -/
 theorem automorphismMaps_compact : IsCompact automorphismMaps := by
-  have hb : IsCompact {v : AutomorphismColumns |
-      ∀ i, v i ∈ Metric.closedBall (0 : Albert) ‖automorphismBasis i‖} :=
+  have hb
+                                                                       :=
     isCompact_pi_infinite fun i => isCompact_closedBall (0 : Albert) ‖automorphismBasis i‖
   apply hb.of_isClosed_subset automorphismMaps_closed
   intro v hv i
@@ -154,7 +134,7 @@ theorem automorphismMaps_compact : IsCompact automorphismMaps := by
 
 theorem automorphismMaps_nonempty : automorphismMaps.Nonempty := by
   have hm : columnMap (fun i => automorphismBasis i) = (LinearMap.id : Albert →ₗ[ℝ] Albert) := by
-    simpa only [LinearMap.id_apply] using columnMap_linearImage
+    exact columnMap_linearImage
       (LinearMap.id : Albert →ₗ[ℝ] Albert)
   refine ⟨(fun i => automorphismBasis i), ?_⟩
   change columnMap _ 1 = 1 ∧ _
@@ -223,9 +203,7 @@ conclusion; that conclusion still requires the explicit rotation argument. -/
 theorem exists_diagonalEnergy_maximum (x : Albert) :
     ∃ g : CompactAutomorphism, ∀ h : CompactAutomorphism,
       diagonalEnergy (h.equiv x) ≤ diagonalEnergy (g.equiv x) := by
-  have hc : Continuous (fun v : AutomorphismColumns => diagonalEnergy (columnMap v x)) := by
-    simpa only [Function.comp_def] using
-      continuous_diagonalEnergy.comp (continuous_columnMap_apply x)
+  have hc : Continuous (fun v : AutomorphismColumns => diagonalEnergy (columnMap v x)) := continuous_diagonalEnergy.comp (continuous_columnMap_apply x)
   obtain ⟨v, hv, hmax⟩ := automorphismMaps_compact.exists_isMaxOn
     automorphismMaps_nonempty hc.continuousOn
   refine ⟨compactAutomorphismOfMap v hv, fun h => ?_⟩

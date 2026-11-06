@@ -4,7 +4,7 @@ public import Glennie.NativeGenerationHiddenActionsR01
 
 @[expose] public section
 namespace Glennie.NativeGenerationHiddenSpanR01
-noncomputable section
+section
 open Glennie.NativeGenerationCoordinatesR01
 open Glennie.NativeGenerationHiddenActionsR01
 
@@ -17,8 +17,7 @@ theorem hiddenOct_mulVec_real (M : Matrix (Fin 3) (Fin 3) ℂ)
           (c j).im • octMul (complexOct Complex.I) (hiddenOct (fun i => M i j))) := by
   apply Prod.ext <;> apply Quaternion.ext <;>
     simp [hiddenOct, Matrix.mulVec, dotProduct, Fin.sum_univ_three,
-      complexOct, octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul,
+      complexOct, octMul,
       Complex.mul_re, Complex.mul_im, smul_eq_mul]
   all_goals ring
 

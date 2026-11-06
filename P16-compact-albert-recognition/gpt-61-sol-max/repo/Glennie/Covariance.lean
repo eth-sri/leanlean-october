@@ -7,7 +7,7 @@ public import Glennie.ShearReverse
 
 @[expose] public section
 namespace Glennie
-noncomputable section
+section
 
 theorem phi_third_add_first (x y z : Albert) (t : ℝ) :
     phi x y (z+t • x) = phi x y z := by
@@ -31,7 +31,8 @@ theorem phi_first_add_third (x y z : Albert) (t : ℝ) :
       inner (U b (U y c)-U y (U b c)) (U c (jordan a y))+
         inner (crossU a b (U y c)-U y (crossU a b c)) (U c (jordan b y)),
       phi b y c, fun s => ?_⟩
-    rw [phi_line_first]
+    simp only [phi, U_line, jordan_add_left, jordan_smul_left, U_add_argument,
+      U_smul_argument, inner_add_left, inner_add_right, inner_sub_left, inner_smul_left, inner_smul_right]
     ring
   · exact fun a b s => phi_smul_third s a y b
   · exact fun a b s => phi_third_add_first a y b s

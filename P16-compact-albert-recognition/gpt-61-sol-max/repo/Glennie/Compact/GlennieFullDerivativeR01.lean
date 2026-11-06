@@ -18,12 +18,7 @@ open Glennie.Compact.GlennieDerivativeR01
 open Glennie.Compact.GlennieDerivativeGenerationR01
 
 noncomputable section
-set_option autoImplicit false
-set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSimpArgs false
-
-/-- The ordinary native product space, with its existing product topology. -/
 abbrev NativeTriple := Albert × (Albert × Albert)
 
 /-- The literal native scalar on three independently variable Albert inputs. -/
@@ -35,71 +30,37 @@ theorem phi_cyclic (x y z : Albert) : phi y z x = phi x y z := by
 theorem hasFDerivAt_phi_first (x y z : Albert) :
     HasFDerivAt (fun w : Albert => phi w y z)
       (nativeInnerContinuous (glennieVector y z x)) x := by
-  have hfun : (fun w : Albert => phi w y z) = (fun w => phi y z w) := by
-    funext w
-    exact (phi_cyclic w y z).symm
-  rw [hfun]
-  exact hasFDerivAt_phi_third y z x
+  convert hasFDerivAt_phi_third y z x using 1
+  ext w
+  exact (phi_cyclic w y z).symm
 
 theorem hasFDerivAt_phi_second (x y z : Albert) :
     HasFDerivAt (fun w : Albert => phi x w z)
       (nativeInnerContinuous (glennieVector z x y)) y := by
-  have hfun : (fun w : Albert => phi x w z) = (fun w => phi z x w) := by
-    funext w
-    exact phi_cyclic z x w
-  rw [hfun]
-  exact hasFDerivAt_phi_third z x y
+  convert hasFDerivAt_phi_third z x y using 1
+  ext w
+  exact phi_cyclic z x w
 
 /-! Joint differentiability is proved independently of the partial formulas. -/
 
-theorem differentiable_jordan_triple {f g : NativeTriple → Albert}
+@[fun_prop] theorem differentiable_jordan_triple {f g : NativeTriple → Albert}
     (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) :
     Differentiable ℝ (fun p => jordan (f p) (g p)) := by
-  have hd := jordanContinuous.isBoundedBilinearMap.differentiable.comp (hf.prodMk hg)
-  have hfun : ((fun q : Albert × Albert => jordanContinuous q.1 q.2) ∘
-      (fun p : NativeTriple => (f p, g p))) =
-      (fun p => jordan (f p) (g p)) := by
-    funext p
-    simp only [Function.comp_def, jordanContinuous_apply]
-  rw [hfun] at hd
-  exact hd
+  simpa only [Function.comp_def, jordanContinuous_apply_apply] using
+    jordanContinuous.isBoundedBilinearMap.differentiable.comp (hf.prodMk hg)
 
-theorem differentiable_U_triple {f g : NativeTriple → Albert}
+@[fun_prop] theorem differentiable_U_triple {f g : NativeTriple → Albert}
     (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) :
     Differentiable ℝ (fun p => U (f p) (g p)) := by
-  have hfirst := differentiable_jordan_triple hf (differentiable_jordan_triple hf hg)
-  have hsecond := differentiable_jordan_triple (differentiable_jordan_triple hf hf) hg
-  have hd := (hfirst.const_smul (2 : ℝ)).sub hsecond
-  have hfun :
-      ((2 : ℝ) • (fun p : NativeTriple => jordan (f p) (jordan (f p) (g p))) -
-        (fun p => jordan (jordan (f p) (f p)) (g p))) =
-      (fun p => U (f p) (g p)) := by
-    funext p
-    simp only [Pi.sub_apply, Pi.smul_apply, U]
-  rw [hfun] at hd
-  exact hd
+  unfold U
+  fun_prop
 
 /-- Genuine joint differentiability of the original polynomial on all triples. -/
 theorem differentiable_phiTriple : Differentiable ℝ phiTriple := by
-  have hx : Differentiable ℝ (fun p : NativeTriple => p.1) := differentiable_fst
-  have hyz : Differentiable ℝ (fun p : NativeTriple => p.2) := differentiable_snd
-  have hy : Differentiable ℝ (fun p : NativeTriple => p.2.1) := hyz.fst
-  have hz : Differentiable ℝ (fun p : NativeTriple => p.2.2) := hyz.snd
-  have hleft := (differentiable_U_triple hx (differentiable_U_triple hy hz)).sub
-    (differentiable_U_triple hy (differentiable_U_triple hx hz))
-  have hright := differentiable_U_triple hz (differentiable_jordan_triple hx hy)
-  have hd := nativeInnerContinuous.isBoundedBilinearMap.differentiable.comp
-    (hleft.prodMk hright)
-  have hfun :
-      ((fun q : Albert × Albert => nativeInnerContinuous q.1 q.2) ∘
-        (fun p : NativeTriple =>
-          (U p.1 (U p.2.1 p.2.2) - U p.2.1 (U p.1 p.2.2),
-            U p.2.2 (jordan p.1 p.2.1)))) = phiTriple := by
-    funext p
-    simp only [Function.comp_def, pairingContinuous_apply, phiTriple, phi]
-  simp only [Pi.sub_apply] at hd
-  rw [hfun] at hd
-  exact hd
+  change Differentiable ℝ (fun p : NativeTriple =>
+    nativeInnerContinuous (U p.1 (U p.2.1 p.2.2) - U p.2.1 (U p.1 p.2.2))
+      (U p.2.2 (jordan p.1 p.2.1)))
+  fun_prop
 
 section StableFullDerivative
 set_option backward.isDefEq.respectTransparency false
@@ -119,68 +80,30 @@ theorem fullDerivative_apply (x y z a b c : Albert) :
     inner_comm (glennieVector y z x) a, inner_comm (glennieVector z x y) b,
     inner_comm (glennieVector x y z) c, add_assoc]
 
-/-- Identify the actual joint derivative by its three coordinate restrictions.
-Joint differentiability above supplies existence; it is not inferred from
-separate partial derivatives alone. -/
+private theorem derivative_of_partials
+    {E F G : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [NormedAddCommGroup F] [NormedSpace ℝ F]
+    [NormedAddCommGroup G] [NormedSpace ℝ G]
+    {f : E × F → G} {x : E} {y : F} {A : E →L[ℝ] G} {B : F →L[ℝ] G}
+    (hf : DifferentiableAt ℝ f (x, y))
+    (hA : HasFDerivAt (fun t => f (t, y)) A x)
+    (hB : HasFDerivAt (fun t => f (x, t)) B y) :
+    HasFDerivAt f (A.coprod B) (x, y) := by
+  apply hf.hasFDerivAt.congr_fderiv
+  rw [← ContinuousLinearMap.coprod_comp_inl_inr (fderiv ℝ f (x, y))]
+  congr 1
+  · exact (hf.hasFDerivAt.comp x (hasFDerivAt_prodMk_left (𝕜 := ℝ) x y)).unique hA
+  · exact (hf.hasFDerivAt.comp y (hasFDerivAt_prodMk_right (𝕜 := ℝ) x y)).unique hB
+
+/-- The joint derivative is determined by its coordinate restrictions. -/
 theorem hasFDerivAt_phiTriple (x y z : Albert) :
     HasFDerivAt phiTriple (fullDerivative x y z) (x, y, z) := by
-  let D : NativeTriple →L[ℝ] ℝ := fderiv ℝ phiTriple (x, y, z)
-  have hd : HasFDerivAt phiTriple D (x, y, z) :=
-    (differentiable_phiTriple (x, y, z)).hasFDerivAt
-  have hix : HasFDerivAt (fun w : Albert => (w, y, z))
-      (ContinuousLinearMap.inl ℝ Albert (Albert × Albert)) x :=
-    hasFDerivAt_prodMk_left (𝕜 := ℝ) x (y, z)
-  have hx : HasFDerivAt (fun w : Albert => phi w y z)
-      (D.comp (ContinuousLinearMap.inl ℝ Albert (Albert × Albert))) x := by
-    simpa only [Function.comp_def, phiTriple] using
-      (HasFDerivAt.comp (𝕜 := ℝ) (f := fun w : Albert => (w, y, z))
-        (g := phiTriple) x hd hix)
-  have hiyz : HasFDerivAt (fun q : Albert × Albert => (x, q))
-      (ContinuousLinearMap.inr ℝ Albert (Albert × Albert)) (y, z) :=
-    hasFDerivAt_prodMk_right (𝕜 := ℝ) x (y, z)
-  have hyz : HasFDerivAt (fun q : Albert × Albert => phi x q.1 q.2)
-      (D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))) (y, z) := by
-    simpa only [Function.comp_def, phiTriple] using
-      (HasFDerivAt.comp (𝕜 := ℝ) (f := fun q : Albert × Albert => (x, q))
-        (g := phiTriple) (y, z) hd hiyz)
-  have hiy : HasFDerivAt (fun w : Albert => (w, z))
-      (ContinuousLinearMap.inl ℝ Albert Albert) y :=
-    hasFDerivAt_prodMk_left (𝕜 := ℝ) y z
-  have hy : HasFDerivAt (fun w : Albert => phi x w z)
-      ((D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))).comp
-        (ContinuousLinearMap.inl ℝ Albert Albert)) y := by
-    simpa only [Function.comp_def] using
-      (HasFDerivAt.comp (𝕜 := ℝ) (f := fun w : Albert => (w, z))
-        (g := fun q : Albert × Albert => phi x q.1 q.2) y hyz hiy)
-  have hiz : HasFDerivAt (fun w : Albert => (y, w))
-      (ContinuousLinearMap.inr ℝ Albert Albert) z :=
-    hasFDerivAt_prodMk_right (𝕜 := ℝ) y z
-  have hz : HasFDerivAt (fun w : Albert => phi x y w)
-      ((D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))).comp
-        (ContinuousLinearMap.inr ℝ Albert Albert)) z := by
-    simpa only [Function.comp_def] using
-      (HasFDerivAt.comp (𝕜 := ℝ) (f := fun w : Albert => (y, w))
-        (g := fun q : Albert × Albert => phi x q.1 q.2) z hyz hiz)
-  have h1 := hx.unique (hasFDerivAt_phi_first x y z)
-  have h2 := hy.unique (hasFDerivAt_phi_second x y z)
-  have h3 := hz.unique (hasFDerivAt_phi_third x y z)
-  have h23 : D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert)) =
-      (nativeInnerContinuous (glennieVector z x y)).coprod
-        (nativeInnerContinuous (glennieVector x y z)) := by
-    calc
-      _ = ((D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))).comp
-            (ContinuousLinearMap.inl ℝ Albert Albert)).coprod
-          ((D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))).comp
-            (ContinuousLinearMap.inr ℝ Albert Albert)) :=
-        (ContinuousLinearMap.coprod_comp_inl_inr _).symm
-      _ = _ := by rw [h2, h3]
-  have hfull : D = fullDerivative x y z := by
-    calc
-      _ = (D.comp (ContinuousLinearMap.inl ℝ Albert (Albert × Albert))).coprod
-          (D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))) :=
-        (ContinuousLinearMap.coprod_comp_inl_inr D).symm
-      _ = _ := by simp only [h1, h23, fullDerivative]
-  exact hd.congr_fderiv hfull
+  have hd : DifferentiableAt ℝ (fun q : Albert × Albert => phiTriple (x, q)) (y, z) :=
+    (differentiable_phiTriple (x, y, z)).comp (y, z)
+      (hasFDerivAt_prodMk_right (𝕜 := ℝ) x (y, z)).differentiableAt
+  exact derivative_of_partials (differentiable_phiTriple (x, y, z))
+    (hasFDerivAt_phi_first x y z)
+    (derivative_of_partials hd (hasFDerivAt_phi_second x y z) (hasFDerivAt_phi_third x y z))
 
 theorem fderiv_phiTriple (x y z : Albert) :
     fderiv ℝ phiTriple (x, y, z) = fullDerivative x y z :=
@@ -201,17 +124,14 @@ theorem fderiv_phiTriple_eq_zero_iff (x y z : Albert) :
         glennieVector x y z = 0 := by
   constructor
   · intro hd
-    have h1 : inner (glennieVector y z x) (glennieVector y z x) = 0 := by
-      have h := fderiv_phiTriple_apply x y z (glennieVector y z x) 0 0
-      simpa only [hd, zero_apply, inner_zero_left, add_zero] using h.symm
-    have h2 : inner (glennieVector z x y) (glennieVector z x y) = 0 := by
-      have h := fderiv_phiTriple_apply x y z 0 (glennieVector z x y) 0
-      simpa only [hd, zero_apply, inner_zero_left, zero_add, add_zero] using h.symm
-    have h3 : inner (glennieVector x y z) (glennieVector x y z) = 0 := by
-      have h := fderiv_phiTriple_apply x y z 0 0 (glennieVector x y z)
-      simpa only [hd, zero_apply, inner_zero_left, zero_add] using h.symm
-    exact ⟨(inner_self_eq_zero _).mp h1, (inner_self_eq_zero _).mp h2,
-      (inner_self_eq_zero _).mp h3⟩
+    have h := fderiv_phiTriple_apply x y z
+      (glennieVector y z x) (glennieVector z x y) (glennieVector x y z)
+    rw [hd, zero_apply] at h
+    have h1 := inner_self_nonneg (glennieVector y z x)
+    have h2 := inner_self_nonneg (glennieVector z x y)
+    have h3 := inner_self_nonneg (glennieVector x y z)
+    exact ⟨(inner_self_eq_zero _).mp (by linarith),
+      (inner_self_eq_zero _).mp (by linarith), (inner_self_eq_zero _).mp (by linarith)⟩
   · rintro ⟨h1, h2, h3⟩
     apply ContinuousLinearMap.ext
     rintro ⟨a, b, c⟩

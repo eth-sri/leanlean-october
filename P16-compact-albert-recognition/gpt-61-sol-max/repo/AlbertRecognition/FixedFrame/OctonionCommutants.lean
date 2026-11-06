@@ -1,6 +1,18 @@
 /- Native right-multiplication commutants in the compact quaternion-pair model.
 All octonion products retain their displayed parentheses. -/
 module
+public import Glennie.Native.Triality
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Bound
+public import Mathlib.Tactic.GRewrite
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.GCongr
+public import Aesop
 
 public import AlbertRecognition.FixedFrame.QuaternionFacts
 public import Mathlib.LinearAlgebra.Prod
@@ -11,100 +23,70 @@ namespace AlbertRecognition.FixedFrame
 noncomputable section
 
 open Glennie
+open scoped BigOperators
 open scoped Quaternion
 
 /-- The actual real coordinate basis of compact native octonions. -/
 def octBasis : Fin 8 → Octonion :=
   ![octScalar 1, (qi, 0), (qj, 0), (qk, 0), (0, 1), (0, qi), (0, qj), (0, qk)]
 
-@[simp] theorem octBasis_zero : octBasis 0 = octScalar 1 := rfl
-
 theorem octBasis_conj_imag (t : Fin 8) (ht : t ≠ 0) :
     octConj (octBasis t) = -octBasis t := by
-  fin_cases t <;> simp_all [octBasis, octConj]
+  fin_cases t <;> simp_all [octBasis, octConj, qi, qj, qk]
 
 /-- Literal eight-coordinate reconstruction; no spanning hypothesis is assumed. -/
 theorem oct_decompose (x : Octonion) :
-    x = x.1.re • octBasis 0 + x.1.imI • octBasis 1 +
-      x.1.imJ • octBasis 2 + x.1.imK • octBasis 3 +
-      x.2.re • octBasis 4 + x.2.imI • octBasis 5 +
-      x.2.imJ • octBasis 6 + x.2.imK • octBasis 7 := by
+    x = ∑ t : Fin 8, octDot (octBasis t) x • octBasis t := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octBasis, octScalar, qi, qj, qk, smul_eq_mul]
+    simp [Fin.sum_univ_succ, octBasis, octDot_coordinates, octScalar, qi, qj, qk, smul_eq_mul]
 
-theorem oct_linear_ext (f g : Octonion →ₗ[ℝ] Octonion)
+theorem oct_linear_ext {M : Type*} [AddCommMonoid M] [Module ℝ M]
+    (f g : Octonion →ₗ[ℝ] M)
     (h : ∀ t : Fin 8, f (octBasis t) = g (octBasis t)) : f = g := by
   apply LinearMap.ext
   intro x
   rw [oct_decompose x]
-  simp only [map_add, map_smul, h]
+  simp only [map_sum, map_smul, h]
 
 /-- Right multiplication, with the native nonassociative product. -/
 def octRight (a : Octonion) : Module.End ℝ Octonion where
   toFun x := octMul x a
   map_add' x y := octMul_add_left x y a
   map_smul' r x := by
-    simpa only [RingHom.id_apply] using octMul_smul_left r x a
+    exact octMul_smul_left r x a
 
 /-- Left multiplication, used only as a real-linear map. -/
 def octLeft (a : Octonion) : Module.End ℝ Octonion where
   toFun x := octMul a x
   map_add' x y := octMul_add_right a x y
   map_smul' r x := by
-    simpa only [RingHom.id_apply] using octMul_smul_right r a x
+    exact octMul_smul_right r a x
 
-def octConjLinear : Module.End ℝ Octonion where
-  toFun := octConj
-  map_add' := octConj_add
-  map_smul' r x := by
-    simpa only [RingHom.id_apply] using octConj_smul r x
-
-@[simp] theorem octMul_zero_left (a : Octonion) : octMul 0 a = 0 := by
-  simp [octMul]
-@[simp] theorem octMul_zero_right (a : Octonion) : octMul a 0 = 0 := by
-  simp [octMul]
-
-@[simp] theorem octRight_apply (a x : Octonion) : octRight a x = octMul x a := rfl
-@[simp] theorem octLeft_apply (a x : Octonion) : octLeft a x = octMul a x := rfl
-@[simp] theorem octConjLinear_apply (x : Octonion) : octConjLinear x = octConj x := rfl
+def octConjLinear : Module.End ℝ Octonion := octConjEquiv.toLinearMap
 
 /-- The native left nucleus is the real line, via two quaternion-pair tests. -/
 theorem oct_left_nucleus_scalar (c : Octonion)
     (hc : ∀ x a : Octonion, octMul c (octMul x a) = octMul (octMul c x) a) :
     ∃ b : ℝ, c = octScalar b := by
-  rcases c with ⟨p, q⟩
-  have hq := congrArg Prod.snd (hc (qi, 0) (qj, 0))
-  have hqk : -(q * qk) = q * qk := by
-    simpa [octMul, mul_assoc] using hq
-  have hq0 : q = 0 := quat_right_k_zero q (quat_neg_eq_self_zero (q * qk) hqk)
-  have hpi := congrArg Prod.snd (hc (0, 1) (qi, 0))
-  have hpj := congrArg Prod.snd (hc (0, 1) (qj, 0))
-  have hi : qi * p = p * qi := by
-    simpa [octMul, neg_mul, mul_neg] using congrArg Neg.neg hpi
-  have hj : qj * p = p * qj := by
-    simpa [octMul, neg_mul, mul_neg] using congrArg Neg.neg hpj
-  refine ⟨p.re, ?_⟩
-  exact Prod.ext (quat_comm_i_j_real p hi hj) hq0
+  have h1 := hc (qi, 0) (qj, 0)
+  have h2 := hc (0, 1) (qi, 0)
+  have h3 := hc (0, 1) (qj, 0)
+  clear hc
+  norm_num [octMul, qi, qj, qk, Prod.ext_iff, Quaternion.ext_iff] at h1 h2 h3
+  refine ⟨c.1.re, ?_⟩
+  ext <;> simp [octScalar] <;> linarith
 
 /-- The reverse associator identity needed for the imaginary anticommutant. -/
 theorem oct_reverse_identity_zero (d : Octonion)
     (hd : ∀ a x : Octonion, octMul d (octMul a x) = octMul (octMul d x) a) :
     d = 0 := by
-  rcases d with ⟨p, q⟩
-  have hp := congrArg Prod.fst (hd (qi, 0) (qj, 0))
-  have hpk : -(p * qk) = p * qk := by
-    simpa [octMul, mul_assoc] using hp.symm
-  have hp0 : p = 0 := quat_right_k_zero p (quat_neg_eq_self_zero (p * qk) hpk)
-  have hqi := congrArg Prod.fst (hd (0, 1) (qi, 0))
-  have hqj := congrArg Prod.fst (hd (0, 1) (qj, 0))
-  have hqk := congrArg Prod.fst (hd (0, 1) (qk, 0))
-  have hi : qi * q = -(q * qi) := by
-    simpa [octMul, neg_mul, mul_neg] using congrArg Neg.neg hqi
-  have hj : qj * q = -(q * qj) := by
-    simpa [octMul, neg_mul, mul_neg] using congrArg Neg.neg hqj
-  have hk : qk * q = -(q * qk) := by
-    simpa [octMul, neg_mul, mul_neg] using congrArg Neg.neg hqk
-  exact Prod.ext hp0 (quat_anticomm_i_j_k_zero q hi hj hk)
+  have h1 := hd (qi, 0) (qj, 0)
+  have h2 := hd (0, 1) (qi, 0)
+  have h3 := hd (0, 1) (qj, 0)
+  have h4 := hd (0, 1) (qk, 0)
+  clear hd
+  norm_num [octMul, qi, qj, qk, Prod.ext_iff, Quaternion.ext_iff] at h1 h2 h3 h4
+  ext <;> simp <;> linarith
 
 /-- Commutation with the literal eight right multiplications forces a scalar. -/
 theorem oct_right_commutant_scalar (P : Module.End ℝ Octonion)
@@ -118,12 +100,7 @@ theorem oct_right_commutant_scalar (P : Module.End ℝ Octonion)
   let c := P (octScalar 1)
   have hx (x : Octonion) : P x = octMul c x := by
     simpa [c] using hall (octScalar 1) x
-  have hn : ∀ x a : Octonion, octMul c (octMul x a) = octMul (octMul c x) a := by
-    intro x a
-    calc
-      octMul c (octMul x a) = P (octMul x a) := (hx _).symm
-      _ = octMul (P x) a := hall x a
-      _ = octMul (octMul c x) a := by rw [hx x]
+  have hn : ∀ x a : Octonion, octMul c (octMul x a) = octMul (octMul c x) a := by simp_all
   obtain ⟨b, hb⟩ := oct_left_nucleus_scalar c hn
   refine ⟨b, ?_⟩
   apply LinearMap.ext
@@ -154,7 +131,7 @@ theorem oct_imaginary_right_anticommutant_zero (Q : Module.End ℝ Octonion)
     have h := hall (octConj x) (octConj a)
     rw [hx (octMul (octConj x) (octConj a)), hx (octConj x)] at h
     simpa only [octConj_mul, octConj_conj] using h
-  have hd0 : d = 0 := oct_reverse_identity_zero d hd
+  have hd0         := oct_reverse_identity_zero d hd
   apply LinearMap.ext
   intro x
   change Q x = (0 : Octonion)

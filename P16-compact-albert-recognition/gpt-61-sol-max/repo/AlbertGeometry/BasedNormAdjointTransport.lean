@@ -7,6 +7,17 @@ assumed as a replacement for the endpoint. Full geometry and native binding
 remain separately required. No product or adjoint preservation field is stored.
 -/
 module
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Bound
+public import Mathlib.Tactic.GRewrite
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.GCongr
+public import Aesop
 
 public import AlbertGeometry.BasedNormDerivativeTransport
 public import Mathlib.LinearAlgebra.BilinearForm.Properties
@@ -27,19 +38,8 @@ pairing is substituted for its derivative-defined values. -/
 def rawBilinearForm (P : SymmetricTrilinearForm E) (e : E) :
     LinearMap.BilinForm ℝ E where
   toFun := fun x => (rawTraceForm P e x).toLinearMap
-  map_add' := by
-    intro x y
-    ext z
-    change rawTraceForm P e (x + y) z = rawTraceForm P e x z + rawTraceForm P e y z
-    simp only [map_add, ContinuousLinearMap.add_apply]
-  map_smul' := by
-    intro t x
-    ext z
-    change rawTraceForm P e (t • x) z = t * rawTraceForm P e x z
-    simp only [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
-
-@[simp] theorem rawBilinearForm_apply (P : SymmetricTrilinearForm E) (e x y : E) :
-    rawBilinearForm P e x y = rawTraceForm P e x y := rfl
+  map_add' := by norm_num
+  map_smul' := by norm_num
 
 /-- Both left and right separation follow by testing the same vector. The
 normalization and positivity are the actual endpoint's base hypotheses. -/
@@ -47,15 +47,8 @@ theorem rawBilinearForm_nondegenerate (P : SymmetricTrilinearForm E) (e : E)
     (he : diagonalCubic P.form e = 1)
     (hpos : ∀ x : E, x ≠ 0 → 0 < logHessianForm P e x x) :
     (rawBilinearForm P e).Nondegenerate := by
-  constructor
-  · intro x hx
-    by_contra hne
-    have hp := hpos x hne
-    have hz : rawTraceForm P e x x = 0 := hx x
-    rw [rawTraceForm_eq_three_logMetric P e he x x] at hz
-    linarith
-  · intro x hx
-    by_contra hne
+  constructor <;> intro x hx <;> by_contra hne
+  all_goals
     have hp := hpos x hne
     have hz : rawTraceForm P e x x = 0 := hx x
     rw [rawTraceForm_eq_three_logMetric P e he x x] at hz
@@ -104,18 +97,18 @@ def intrinsicProduct (P : SymmetricTrilinearForm E) (e : E)
 variable {P : SymmetricTrilinearForm E} {e : E}
   {Q : SymmetricTrilinearForm G} {f : G}
 
-theorem intrinsicAdjoint_pull (I : BasedNormIso P e Q f)
+variable (I : BasedNormIso P e Q f)
     (hB : (rawBilinearForm P e).Nondegenerate)
-    (hC : (rawBilinearForm Q f).Nondegenerate) (x : E) :
+    (hC : (rawBilinearForm Q f).Nondegenerate)
+
+theorem intrinsicAdjoint_pull  (x : E) :
     I.equiv (intrinsicAdjoint P e hB x) = intrinsicAdjoint Q f hC (I.equiv x) := by
   apply intrinsicAdjoint_unique Q f hC
   intro y
   obtain ⟨v, rfl⟩ := I.equiv.surjective y
   rw [← I.rawTraceForm_pull, intrinsicAdjoint_pairing, I.fderiv_norm_pull_apply]
 
-theorem intrinsicCross_pull (I : BasedNormIso P e Q f)
-    (hB : (rawBilinearForm P e).Nondegenerate)
-    (hC : (rawBilinearForm Q f).Nondegenerate) (x y : E) :
+theorem intrinsicCross_pull  (x y : E) :
     I.equiv (intrinsicCross P e hB x y) = intrinsicCross Q f hC (I.equiv x) (I.equiv y) := by
   simp only [intrinsicCross, map_sub, map_add, intrinsicAdjoint_pull I hB hC]
 
@@ -124,9 +117,7 @@ theorem intrinsicS_pull (I : BasedNormIso P e Q f) (x y : E) :
   simp only [intrinsicS, I.normTrace_pull, I.rawTraceForm_pull]
 
 /-- Product preservation is a derived theorem, not a based-map premise. -/
-theorem intrinsicProduct_pull (I : BasedNormIso P e Q f)
-    (hB : (rawBilinearForm P e).Nondegenerate)
-    (hC : (rawBilinearForm Q f).Nondegenerate) (x y : E) :
+theorem intrinsicProduct_pull  (x y : E) :
     I.equiv (intrinsicProduct P e hB x y) =
       intrinsicProduct Q f hC (I.equiv x) (I.equiv y) := by
   simp only [intrinsicProduct, map_smul, map_add, map_sub,

@@ -1,6 +1,17 @@
 /- Consequences of native unital generation.
 No generation/span premise. -/
 module
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Bound
+public import Mathlib.Tactic.GRewrite
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.GCongr
+public import Aesop
 public import Glennie.NativeGenerationEndpointR01
 public import Glennie.Compact.InnerDerivation
 public import Glennie.Compact.LocalReconstruction
@@ -23,10 +34,7 @@ theorem automorphism_ext {g h : CompactAutomorphism} (he : g.equiv = h.equiv) : 
 def fixedSubmodule (g : CompactAutomorphism) : Submodule ℝ Albert where
   carrier := {t | g.equiv t = t}
   zero_mem' := by simp
-  add_mem' := by
-    intro p q hp hq
-    simp only [Set.mem_setOf_eq] at hp hq ⊢
-    rw [map_add, hp, hq]
+  add_mem' := by simp_all
   smul_mem' := by
     intro r p hp
     simp only [Set.mem_setOf_eq] at hp ⊢
@@ -37,7 +45,7 @@ theorem automorphism_fixes_all_of_phi_ne_zero
     (hphi : phi x y z ≠ 0)
     (hx : g.equiv x = x) (hy : g.equiv y = y) (hz : g.equiv z = z) :
     ∀ t : Albert, g.equiv t = t := by
-  have hK : fixedSubmodule g = ⊤ := eq_top_of_phi_ne_zero (fixedSubmodule g)
+  have hK                        := eq_top_of_phi_ne_zero (fixedSubmodule g)
     g.map_unit
     (by
       intro p hp q hq
@@ -64,7 +72,7 @@ theorem derivation_eq_zero_of_phi_ne_zero
     (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
     (x y z : Albert) (hphi : phi x y z ≠ 0)
     (hx : D x = 0) (hy : D y = 0) (hz : D z = 0) : D = 0 := by
-  have hK : LinearMap.ker D = ⊤ := eq_top_of_phi_ne_zero (LinearMap.ker D)
+  have hK                       := eq_top_of_phi_ne_zero (LinearMap.ker D)
     hD.map_one
     (by
       intro p hp q hq

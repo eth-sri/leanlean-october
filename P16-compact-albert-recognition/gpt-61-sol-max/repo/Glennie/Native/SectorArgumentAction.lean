@@ -26,7 +26,7 @@ theorem gamma_eq_polarAdjugate (G B : Mat) :
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [gamma, Matrix.adjugate_fin_three, Matrix.mul_apply, Matrix.trace,
-      Matrix.diag, Matrix.one_apply, Fin.sum_univ_three, smul_eq_mul] <;> ring
+      Matrix.diag, Fin.sum_univ_three, smul_eq_mul] <;> ring
 
 /-- Use bilinearity before substituting the degree-two inner Jordan hidden
 block. This removes artificial quartic terms introduced by expanding cofactors
@@ -69,9 +69,8 @@ theorem complex_U_argument (z b : Albert) (hb : hiddenMatrix b = 0) :
     productComplex_complex_right, productHidden_complex_right]
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
-  all_goals simp [sectorProductComplex, sectorProductHidden,
-    polarAdjugate_eq_gamma_conjTranspose, sectorAdjointAdjugate, gamma, sectorComplexMatrix, complexHermitianMatrix,
-    complexCoordinatesLinear, complexPart, Matrix.adjugate_fin_three,
+  all_goals simp [sectorProductComplex, gamma, sectorComplexMatrix, complexHermitianMatrix,
+    complexCoordinatesLinear, complexPart,
     Matrix.mul_apply, Matrix.vecMul_apply_eq_sum, Matrix.conjTranspose_apply, Matrix.trace, Matrix.diag,
     Matrix.one_apply, Fin.sum_univ_three, smul_eq_mul,
     Complex.mul_re, Complex.mul_im]
@@ -95,7 +94,7 @@ theorem hidden_U_argument (z b : Albert) (hb : hiddenMatrix b = 0) :
     productHidden_complex_right, productComplex_complex_right]
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
-  all_goals simp [sectorProductComplex, sectorProductHidden,
+  all_goals simp [ sectorProductHidden,
     polarAdjugate_eq_gamma_conjTranspose, sectorAdjointAdjugate, gamma,
     sectorComplexMatrix, complexHermitianMatrix,
     complexCoordinatesLinear, complexPart, Matrix.adjugate_fin_three,

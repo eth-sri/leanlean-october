@@ -2,8 +2,21 @@
 The dual equivalence is derived from the actual positive metric and dimension.
 No Jordan or reference-invariance hypothesis is imposed on the unknown cubic. -/
 module
+public import Mathlib.Tactic.Simps.Basic
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Bound
+public import Mathlib.Tactic.GRewrite
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.GCongr
+public import Aesop
 
-public import AlbertRecognition.ReferenceCoordinates
+public import AlbertRecognition.Reference
+public import Glennie.Hilbert
 public import Mathlib.LinearAlgebra.BilinearForm.Properties
 
 @[expose] public section
@@ -11,24 +24,8 @@ namespace AlbertRecognition
 noncomputable section
 
 /-- The explicit trace/3 metric as a curried bilinear map. -/
-def metricBilin : LinearMap.BilinForm ℝ V where
-  toFun x :=
-    { toFun := gA x
-      map_add' y z := gA_add_right x y z
-      map_smul' r y := by
-        simpa only [RingHom.id_apply, smul_eq_mul] using gA_smul_right r x y }
-  map_add' x y := by
-    apply LinearMap.ext
-    intro z
-    exact gA_add_left x y z
-  map_smul' r x := by
-    simp only [RingHom.id_apply]
-    apply LinearMap.ext
-    intro y
-    change gA (r • x) y = r * gA x y
-    exact gA_smul_left r x y
-
-@[simp] theorem metricBilin_apply (x y : V) : metricBilin x y = gA x y := rfl
+def metricBilin : LinearMap.BilinForm ℝ V :=
+  (innerₛₗ ℝ : V →ₗ[ℝ] V →ₗ[ℝ] ℝ).compr₂ (LinearMap.mulRight ℝ (3⁻¹ : ℝ))
 
 theorem metric_nondegenerate : metricBilin.Nondegenerate :=
   ⟨fun x hx => (gA_self_eq_zero x).mp (hx x),
@@ -37,27 +34,10 @@ theorem metric_nondegenerate : metricBilin.Nondegenerate :=
 /-- The metric-dual isomorphism uses the actual scaled form, not unscaled Riesz. -/
 def metricDual : V ≃ₗ[ℝ] Module.Dual ℝ V := metricBilin.toDual metric_nondegenerate
 
-@[simp] theorem metricDual_apply (x y : V) : metricDual x y = gA x y := rfl
-
 /-- Every arbitrary symmetric trilinear form has its unique actual multiplication
 operators obtained by raising one index with the specified scaled metric. -/
-def KB (B : SymmetricCubic) : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
-  toFun x := metricDual.symm.toLinearMap.comp (B.form x)
-  map_add' x y := by
-    apply LinearMap.ext
-    intro z
-    change metricDual.symm (B.form (x + y) z) =
-      metricDual.symm (B.form x z) + metricDual.symm (B.form y z)
-    rw [map_add, LinearMap.add_apply, map_add]
-  map_smul' r x := by
-    simp only [RingHom.id_apply]
-    apply LinearMap.ext
-    intro y
-    change metricDual.symm (B.form (r • x) y) = r • metricDual.symm (B.form x y)
-    rw [map_smul, LinearMap.smul_apply, map_smul]
-
-@[simp] theorem KB_apply (B : SymmetricCubic) (x y : V) :
-    KB B x y = metricDual.symm (B.form x y) := rfl
+def KB (B : SymmetricCubic) : V →ₗ[ℝ] V →ₗ[ℝ] V :=
+  B.form.compr₂ metricDual.symm.toLinearMap
 
 theorem KB_pairing (B : SymmetricCubic) (x y z : V) :
     gA (KB B x y) z = B.form x y z := by
@@ -77,25 +57,8 @@ theorem KB_selfadjoint (B : SymmetricCubic) (x y z : V) :
   rw [gA_comm y (KB B x z), KB_pairing, KB_pairing, B.swap23]
 
 /-- Native CA packaged as a genuine symmetric trilinear form. -/
-def referenceForm : V →ₗ[ℝ] (V →ₗ[ℝ] (V →ₗ[ℝ] ℝ)) where
-  toFun x := LinearMap.comp metricBilin (KA x)
-  map_add' x y := by
-    apply LinearMap.ext
-    intro z
-    apply LinearMap.ext
-    intro w
-    change gA (KA (x + y) z) w = gA (KA x z) w + gA (KA y z) w
-    rw [map_add, LinearMap.add_apply, gA_add_left]
-  map_smul' r x := by
-    simp only [RingHom.id_apply]
-    apply LinearMap.ext
-    intro y
-    apply LinearMap.ext
-    intro z
-    change gA (KA (r • x) y) z = r * gA (KA x y) z
-    rw [map_smul, LinearMap.smul_apply, gA_smul_left]
-
-@[simp] theorem referenceForm_apply (x y z : V) : referenceForm x y z = CA x y z := rfl
+def referenceForm : V →ₗ[ℝ] V →ₗ[ℝ] V →ₗ[ℝ] ℝ :=
+  KA.compr₂ metricBilin
 
 def referenceCubic : SymmetricCubic where
   form := referenceForm
@@ -124,13 +87,10 @@ theorem KB_injective : Function.Injective KB := by
     apply LinearMap.ext
     intro z
     rw [← KB_pairing B x y z, ← KB_pairing C x y z, h]
-  cases B
-  cases C
-  cases hform
-  rfl
+  exact SymmetricCubic.ext hform
 
 /-- Native linear-operator commutator, independent of any geometric connection. -/
-def operatorComm (P Q : V →ₗ[ℝ] V) : V →ₗ[ℝ] V := P.comp Q - Q.comp P
+@[simps! apply] def operatorComm (P Q : V →ₗ[ℝ] V) : V →ₗ[ℝ] V := P.comp Q - Q.comp P
 
 def q (B : SymmetricCubic) (x y : V) : V →ₗ[ℝ] V :=
   operatorComm (KB B x) (KB B y)

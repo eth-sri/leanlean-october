@@ -8,6 +8,14 @@ cubic argument for an abstract commutative real bilinear product; the Leibniz
 law is then the difference of two instances of the polarized identity:
   polar(x, a, z; b) - polar(x, b, z; a) = x o Dz - D(z o x) + z o Dx. -/
 module
+public import Mathlib.Tactic.Simps.Basic
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Bound
+public import Mathlib.Tactic.NormNum
+public import Aesop
 
 public import Glennie.Native.CubicIdentity
 public import Mathlib.Tactic.LinearCombination
@@ -17,10 +25,6 @@ public import Mathlib.Tactic.LinearCombination
 namespace Glennie.Compact.InnerDerivation
 
 noncomputable section
-
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
@@ -38,8 +42,11 @@ def polar (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (x₁ x₂ x₃ y : V) : V :=
 def der (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (a b z : V) : V :=
   mul a (mul b z) - mul b (mul a z)
 
+variable (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
+
+include mul comm in
 /-- Polarization: the cyclic polar form is half the seven-term alternating sum. -/
-theorem polar_eq_half (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
+theorem polar_eq_half
     (x₁ x₂ x₃ y : V) :
     polar mul x₁ x₂ x₃ y = (1 / 2 : ℝ) •
       (defect mul (x₁ + x₂ + x₃) y - defect mul (x₁ + x₂) y - defect mul (x₁ + x₃) y -
@@ -48,23 +55,22 @@ theorem polar_eq_half (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul
   simp only [comm x₂ x₁, comm x₃ x₁, comm x₃ x₂]
   module
 
-theorem polar_eq_zero (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
+include mul comm in
+theorem polar_eq_zero
     (hJ : ∀ x y, defect mul x y = 0) (x₁ x₂ x₃ y : V) :
     polar mul x₁ x₂ x₃ y = 0 := by
   rw [polar_eq_half mul comm]
   simp [hJ]
 
+include mul comm in
 /-- Leibniz law for D_{a,b}: the difference of two polarized Jordan identities. -/
-theorem der_leibniz (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
+theorem der_leibniz
     (hJ : ∀ x y, defect mul x y = 0) (a b z x : V) :
     der mul a b (mul z x) = mul (der mul a b z) x + mul z (der mul a b x) := by
   have E1 := polar_eq_zero mul comm hJ x a z b
   have E2 := polar_eq_zero mul comm hJ x b z a
   simp only [polar, der, map_sub, LinearMap.sub_apply] at E1 E2 ⊢
-  simp only [comm x a, comm x b, comm z a, comm z b, comm b a,
-    comm (mul b z) (mul a x), comm (mul a z) (mul b x),
-    comm (mul a (mul b z)) x, comm (mul b (mul a z)) x] at E1 E2 ⊢
-  linear_combination (norm := module) E2 - E1
+  all_goals grind
 
 end
 end Glennie.Compact.InnerDerivation
@@ -73,15 +79,10 @@ namespace Glennie.Compact
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
-
-theorem jordanLinear_comm (x y : Albert) : jordanLinear x y = jordanLinear y x := by
-  simpa only [jordanLinear_apply] using jordan_comm x y
+theorem jordanLinear_comm (x y : Albert) : jordanLinear x y = jordanLinear y x := jordan_comm x y
 
 theorem defect_jordanLinear (x y : Albert) : InnerDerivation.defect jordanLinear x y = 0 := by
-  simp only [InnerDerivation.defect, jordanLinear_apply]
+  simp only [InnerDerivation.defect, jordanLinear_apply_apply]
   rw [jordan_identity, sub_self]
 
 /-- The native inner operator D_{a,b} = [L_a, L_b]. -/
@@ -92,7 +93,7 @@ theorem innerDer_jordan (a b z x : Albert) :
     innerDer a b (jordan z x) = jordan (innerDer a b z) x + jordan z (innerDer a b x) := by
   have h := InnerDerivation.der_leibniz jordanLinear jordanLinear_comm defect_jordanLinear
     a b z x
-  simpa only [InnerDerivation.der, jordanLinear_apply, innerDer] using h
+  simpa only [InnerDerivation.der, jordanLinear_apply_apply, innerDer] using h
 
 /-- D_{a,b} is trace-free: derived from trace associativity, not assumed. -/
 theorem trace_innerDer (a b z : Albert) : trace (innerDer a b z) = 0 := by
@@ -102,11 +103,10 @@ theorem trace_innerDer (a b z : Albert) : trace (innerDer a b z) = 0 := by
   rw [innerDer, trace_sub, ← h1, ← h2, jordan_comm b a, sub_self]
 
 /-- D_{a,b} as a real-linear map. -/
-def innerDerLinear (a b : Albert) : Albert →ₗ[ℝ] Albert :=
+@[simps! apply] def innerDerLinear (a b : Albert) : Albert →ₗ[ℝ] Albert :=
   (jordanLinear a).comp (jordanLinear b) - (jordanLinear b).comp (jordanLinear a)
 
-@[simp] theorem innerDerLinear_apply (a b z : Albert) :
-    innerDerLinear a b z = innerDer a b z := rfl
+
 
 /-- A real-linear map obeying the Leibniz law for the native product. -/
 def IsJordanDerivation (D : Albert →ₗ[ℝ] Albert) : Prop :=

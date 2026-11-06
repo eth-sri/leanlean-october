@@ -8,12 +8,9 @@ public import Glennie.Native
 namespace Glennie
 noncomputable section
 
-def FrameBound : Prop := ∀ (p q r : Fin 3 → Albert),
-  Frame p → Frame q → Frame r → |phi (encoder p) (encoder q) (encoder r)| ≤ 4/27
-
-def FrameEquality : Prop := ∀ (p q r : Fin 3 → Albert),
-  Frame p → Frame q → Frame r →
-  (|phi (encoder p) (encoder q) (encoder r)| = 4/27 ↔ UniformLedger p q r)
+                                                       
+                               
+                                                                          
 
 def quatI : Quaternion ℝ := ⟨0,1,0,0⟩
 def quatJ : Quaternion ℝ := ⟨0,0,1,0⟩

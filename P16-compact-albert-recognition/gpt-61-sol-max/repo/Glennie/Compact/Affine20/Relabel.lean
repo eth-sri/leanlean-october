@@ -16,6 +16,13 @@ values only through rfl lemmas on variables (`ledger54_C/P/Q/R`, `ledgerAct_C/P/
 `pairExt_xy`) used by rw/simp only; no rfl, exact or show compares two different
 Albert-valued structures. -/
 module
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.FinCases
+public import Aesop
 
 public import Glennie.Automorphism
 public import Glennie.Native.AlgebraLaws
@@ -33,9 +40,6 @@ public import Mathlib.Tactic.NormNum
 namespace Glennie.Compact.Affine20
 
 noncomputable section
-
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-! ## Triples and the 54-entry ledger -/
 
@@ -56,63 +60,7 @@ def ledger54 (T : Triple) : Ledger54 :=
 
 /-- Fin 3 has exactly the elements 0, 1, 2 (kernel-checked Boolean list check). -/
 theorem fin3_cases (i : Fin 3) : i = 0 ∨ i = 1 ∨ i = 2 := by
-  have hb : (List.finRange 3).all (fun i => decide (i = 0 ∨ i = 1 ∨ i = 2)) = true := by
-    decide +kernel
-  exact of_decide_eq_true (List.all_eq_true.mp hb i (List.mem_finRange i))
-
-/-! ## The relabelling group (S3)^3 ⋊ S3 -/
-
-/-- A relabelling: a frame order and one outcome permutation per frame slot. -/
-@[ext] structure Relabel where
-  order : Equiv.Perm (Fin 3)
-  labels : Fin 3 → Equiv.Perm (Fin 3)
-
-namespace Relabel
-
-instance : Mul Relabel :=
-  ⟨fun γ δ => ⟨γ.order * δ.order, fun a => γ.labels (δ.order a) * δ.labels a⟩⟩
-
-instance : One Relabel := ⟨⟨1, fun _ => 1⟩⟩
-
-instance : Inv Relabel := ⟨fun γ => ⟨γ.order⁻¹, fun a => (γ.labels (γ.order⁻¹ a))⁻¹⟩⟩
-
-@[simp] theorem mul_order (γ δ : Relabel) : (γ * δ).order = γ.order * δ.order := rfl
-
-@[simp] theorem mul_labels (γ δ : Relabel) (a : Fin 3) :
-    (γ * δ).labels a = γ.labels (δ.order a) * δ.labels a := rfl
-
-@[simp] theorem one_order : (1 : Relabel).order = 1 := rfl
-
-@[simp] theorem one_labels (a : Fin 3) : (1 : Relabel).labels a = 1 := rfl
-
-@[simp] theorem inv_order (γ : Relabel) : γ⁻¹.order = γ.order⁻¹ := rfl
-
-@[simp] theorem inv_labels (γ : Relabel) (a : Fin 3) :
-    γ⁻¹.labels a = (γ.labels (γ.order⁻¹ a))⁻¹ := rfl
-
-/-- The group structure; `Mul`, `One` and `Inv` are the instances above (the pattern of
-Mathlib's `Equiv.Perm.permGroup`). -/
-instance : Group Relabel where
-  mul_assoc γ δ ε := Relabel.ext (by simp [mul_assoc]) (by funext a; simp [mul_assoc])
-  one_mul γ := Relabel.ext (by simp) (by funext a; simp)
-  mul_one γ := Relabel.ext (by simp) (by funext a; simp)
-  inv_mul_cancel γ := Relabel.ext (by simp) (by funext a; simp)
-
-/-- Relabellings as four permutations (order, labels 0, labels 1, labels 2). -/
-def equivProd : Relabel ≃
-    Equiv.Perm (Fin 3) × Equiv.Perm (Fin 3) × Equiv.Perm (Fin 3) × Equiv.Perm (Fin 3) where
-  toFun γ := (γ.order, γ.labels 0, γ.labels 1, γ.labels 2)
-  invFun p := ⟨p.1, ![p.2.1, p.2.2.1, p.2.2.2]⟩
-  left_inv γ := by
-    apply Relabel.ext
-    · rfl
-    · funext a
-      rcases fin3_cases a with rfl | rfl | rfl <;> rfl
-  right_inv _ := rfl
-
-instance : Fintype Relabel := Fintype.ofEquiv _ equivProd.symm
-
-end Relabel
+  omega
 
 /-- Pointwise transport by a compact automorphism. -/
 def mapAtoms (g : CompactAutomorphism) (T : Triple) : Triple :=
