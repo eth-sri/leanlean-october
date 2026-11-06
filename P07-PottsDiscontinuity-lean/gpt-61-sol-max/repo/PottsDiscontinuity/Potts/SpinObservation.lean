@@ -18,12 +18,11 @@ def spinObservationEvent (q : ℕ) (v : A → ℤ × ℤ) (ξ : A → Set.Icc 1 
   {σ | ∀ a, σ (v a) = ξ a}
 
 theorem spinObservationEvent_isClopen (q : ℕ) (v : A → ℤ × ℤ) (ξ : A → Set.Icc 1 q) :
-    IsClopen (spinObservationEvent q v ξ) := by
-  exact (isClopen_discrete {η : A → Set.Icc 1 q | ∀ a, η a = ξ a}).preimage
-    (continuous_pi (fun a => continuous_apply (v a)))
+    IsClopen (spinObservationEvent q v ξ) := (isClopen_discrete {η : A → Set.Icc 1 q | ∀ a, η a = ξ a}).preimage
+                                         (continuous_pi  fun a => continuous_apply (v a) )
 
-local instance spinObservationFiniteMeasurable (q : ℕ) (n : ℕ) : MeasurableSpace (SpinConfiguration q (box n)) := ⊤
-local instance spinObservationFiniteDiscrete (q : ℕ) (n : ℕ) : DiscreteMeasurableSpace (SpinConfiguration q (box n)) :=
+local instance spinObservationFiniteMeasurable (q n : ℕ) : MeasurableSpace (SpinConfiguration q (box n)) := ⊤
+local instance spinObservationFiniteDiscrete (q n : ℕ) : DiscreteMeasurableSpace (SpinConfiguration q (box n)) :=
   ⟨fun _ => trivial⟩
 
 /-- The finite observation formula is independent of which finite enumeration
@@ -39,18 +38,17 @@ theorem pottsBoxProbabilityMeasure_observed
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top (spinObservationEvent_isClopen q v ξ).isOpen.measurableSet]
   rw [← Measure.real, finite_pmf_measureReal_sum]
   apply Finset.sum_congr
-  · ext σ; simp
+  ·  simp
   · intro σ _
     rw [pottsFiniteLaw_apply, ENNReal.toReal_ofReal (pottsProb_nonneg q hq (box n) β hβ i σ)]
-    have he : spinExtension q hq (box n) σ ∈ spinObservationEvent q v ξ ↔
-        ∀ a, σ ⟨v a, hv a⟩ = ξ a := by
-      change (∀ a, spinExtension q hq (box n) σ (v a) = ξ a) ↔ _
-      simp only [spinExtension, hv, dite_true]
-    exact ite_congr (propext he) (fun _ => rfl) (fun _ => rfl)
+    
+    exact ite_congr (propext (by
+                                change (∀ a, spinExtension q hq (box n) σ (v a) = ξ a) ↔ _
+                                simp only [spinExtension, hv, dite_true])) (fun _ => rfl)  fun _ => rfl 
 
 theorem spinObservationEvent_subtype (q : ℕ) (B : Finset (ℤ × ℤ)) (ξ : SpinSpace q) :
     spinObservationEvent q (fun a : ↥B => a.val) (fun a => ξ a.val) = spinCylinder q B ξ := by
-  ext σ
+  
   simp [spinObservationEvent, spinCylinder]
 
 end

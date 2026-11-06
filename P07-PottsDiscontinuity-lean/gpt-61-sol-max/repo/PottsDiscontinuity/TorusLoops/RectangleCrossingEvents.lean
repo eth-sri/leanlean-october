@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusLoops.RectangleCrossings
 
@@ -35,28 +36,20 @@ theorem rectangleOpenGraph_toggleEdge_seam (hN : Even N) (hM : Even M)
     (hseam : v.1.val = 0 ∨ v.2.val = 0) :
     rectangleOpenGraph hN hM (toggleEdge A v) = rectangleOpenGraph hN hM A := by
   ext u w
-  rw [rectangleOpenGraph, SimpleGraph.fromEdgeSet_adj]
+  
   constructor
   · rintro ⟨⟨e, he, hx, hy, hp⟩, hne⟩
-    have hev : e ≠ v := by
-      intro heq
-      subst e
-      rcases hseam with hzero | hzero
-      · exact hx hzero
-      · exact hy hzero
-    have hA : A e = true := by
-      rw [toggleEdge_away A hev] at he
-      exact he
-    exact ⟨⟨e, hA, hx, hy, hp⟩, hne⟩
+    
+    
+    exact ⟨⟨e,  by
+                  rw [toggleEdge_away A (by
+                                           grind)] at he
+                  exact he , hx, hy, hp⟩, hne⟩
   · rintro ⟨⟨e, he, hx, hy, hp⟩, hne⟩
-    have hev : e ≠ v := by
-      intro heq
-      subst e
-      rcases hseam with hzero | hzero
-      · exact hx hzero
-      · exact hy hzero
+    
     have htoggle : toggleEdge A v e = A e := by
-      rw [toggleEdge_away A hev]
+      rw [toggleEdge_away A (by
+                               grind)]
     exact ⟨⟨e, by simpa [htoggle] using he, hx, hy, hp⟩, hne⟩
 
 /-- The cut graphs before and after a seam toggle are canonically isomorphic. -/
@@ -66,9 +59,7 @@ def rectangleOpenGraph_toggleEdge_iso (hN : Even N) (hM : Even M)
     rectangleOpenGraph hN hM (toggleEdge A v) ≃g rectangleOpenGraph hN hM A where
   toEquiv := Equiv.refl _
   map_rel_iff' := by
-    intro x y
-    rw [rectangleOpenGraph_toggleEdge_seam hN hM A v hseam]
-    simp
+    simp_all [rectangleOpenGraph_toggleEdge_seam]
 
 /-- The number of cut-rectangle crossing components is seam-invariant. -/
 theorem rectangleCrossingComponents_card_toggleEdge_seam
@@ -78,8 +69,8 @@ theorem rectangleCrossingComponents_card_toggleEdge_seam
     (rectangleCrossingComponents hN hM (toggleEdge A v)).card =
       (rectangleCrossingComponents hN hM A).card := by
   classical
-  let φ := rectangleOpenGraph_toggleEdge_iso hN hM A v hseam
-  let e := φ.connectedComponentEquiv
+  
+  let e := (rectangleOpenGraph_toggleEdge_iso hN hM A v hseam).connectedComponentEquiv
   let : Fintype (rectangleOpenGraph hN hM (toggleEdge A v)).ConnectedComponent :=
     Fintype.ofFinite _
   let : Fintype (rectangleOpenGraph hN hM A).ConnectedComponent := Fintype.ofFinite _
@@ -91,48 +82,26 @@ theorem rectangleCrossingComponents_card_toggleEdge_seam
     · intro hc
       rcases Finset.mem_map.mp hc with ⟨d, hd, hdc⟩
       rcases Finset.mem_filter.mp hd with ⟨_, u, w, hu, hw, hdu, hreach⟩
-      subst c
+      
       refine Finset.mem_filter.mpr ⟨Finset.mem_univ _, u, w, hu, hw, ?_, ?_⟩
-      · calc
-          (rectangleOpenGraph hN hM A).connectedComponentMk u =
-              (rectangleOpenGraph hN hM A).connectedComponentMk (φ u) :=
-                congrArg _ (by rfl)
-          _ = e ((rectangleOpenGraph hN hM (toggleEdge A v)).connectedComponentMk u) := by
-                symm
-                simp [e]
-          _ = e d := congrArg e hdu
-      · have hreachA : (rectangleOpenGraph hN hM A).Reachable u w := by
-          rw [← rectangleOpenGraph_toggleEdge_seam hN hM A v hseam]
-          exact hreach
-        exact hreachA
+      · aesop
+      · grind [rectangleOpenGraph_toggleEdge_seam]
     · intro hc
       rcases Finset.mem_filter.mp hc with ⟨_, u, w, hu, hw, hcu, hreach⟩
       let d := e.symm c
-      have hreach' :
-          (rectangleOpenGraph hN hM (toggleEdge A v)).Reachable u w :=
-        by
-          rw [rectangleOpenGraph_toggleEdge_seam hN hM A v hseam]
-          exact hreach
-      have hdu :
-          (rectangleOpenGraph hN hM (toggleEdge A v)).connectedComponentMk u = d := by
-        calc
-          (rectangleOpenGraph hN hM (toggleEdge A v)).connectedComponentMk u =
-              (rectangleOpenGraph hN hM (toggleEdge A v)).connectedComponentMk (φ.symm u) :=
-                congrArg _ (by rfl)
-          _ = e.symm ((rectangleOpenGraph hN hM A).connectedComponentMk u) := by
-                symm
-                simp [e]
-          _ = e.symm c := congrArg e.symm hcu
+      
+      
       refine Finset.mem_map.mpr ⟨d,
-        Finset.mem_filter.mpr ⟨Finset.mem_univ _, u, w, hu, hw, hdu, hreach'⟩, ?_⟩
+        Finset.mem_filter.mpr ⟨Finset.mem_univ _, u, w, hu, hw,  by
+                                                                   aesop ,  by
+                                                                          simp_all [rectangleOpenGraph_toggleEdge_seam] ⟩, ?_⟩
       simp [d]
-  have hcard := congrArg Finset.card hmap
-  simpa [Finset.card_map] using hcard
+  
+  simpa [Finset.card_map] using (congrArg Finset.card hmap)
 
 /-- The event that at least `k` distinct cut-rectangle components cross
 horizontally. -/
-def hasAtLeastRectangleCrossings (hN : Even N) (hM : Even M) (k : ℕ) :
-    Set (RCConfig N M) :=
+def hasAtLeastRectangleCrossings (hN : Even N) (hM : Even M) (k : ℕ)  :=
   {A | k ≤ (rectangleCrossingComponents hN hM A).card}
 
 /-- The crossing-count event is invariant under toggling any seam edge. -/
@@ -142,7 +111,6 @@ theorem hasAtLeastRectangleCrossings_toggleEdge_seam
     (hseam : v.1.val = 0 ∨ v.2.val = 0) :
     A ∈ hasAtLeastRectangleCrossings hN hM k ↔
       toggleEdge A v ∈ hasAtLeastRectangleCrossings hN hM k := by
-  simp only [hasAtLeastRectangleCrossings, Set.mem_ofPred_eq]
-  rw [rectangleCrossingComponents_card_toggleEdge_seam hN hM A v hseam]
+  simp_all [hasAtLeastRectangleCrossings, rectangleCrossingComponents_card_toggleEdge_seam]
 
 end PottsDiscontinuity.TorusLoops

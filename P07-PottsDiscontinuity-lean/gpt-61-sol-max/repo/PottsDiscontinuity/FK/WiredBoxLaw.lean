@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 The exterior extension is open and the finite boundary is wired. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.BoxCylinders
 public import PottsDiscontinuity.Frozen.Defs.VertexBoundary
@@ -24,35 +25,31 @@ def wiredBoxConfiguration (c : LatticeVertex) (r : ℕ)
   classical
   exact fun e => decide (∀ f, boxEdgeEmbedding c r f = e → f ∈ A)
 
-theorem wiredBoxConfiguration_open_iff (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : squareLattice.edgeSet) :
+section
+
+variable (c : LatticeVertex) (r : ℕ) (A : Configuration (boxGraph c r))
+include A
+
+theorem wiredBoxConfiguration_open_iff  (e : squareLattice.edgeSet) :
     wiredBoxConfiguration c r A e = true ↔
       ∀ f, boxEdgeEmbedding c r f = e → f ∈ A := by
-  classical
-  simp only [wiredBoxConfiguration, decide_eq_true_eq]
+  grind +locals
 
 /-- Open extension preserves every edge state sampled in the finite graph. -/
-@[simp] theorem wiredBoxConfiguration_at (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : (boxGraph c r).edgeSet) :
+@[simp] theorem wiredBoxConfiguration_at  (e : (boxGraph c r).edgeSet) :
     wiredBoxConfiguration c r A (boxEdgeEmbedding c r e) = decide (e ∈ A) := by
-  classical
-  have h : (∀ f, boxEdgeEmbedding c r f = boxEdgeEmbedding c r e → f ∈ A) ↔ e ∈ A := by
-    constructor
-    · exact fun h => h e rfl
-    · intro he f hf
-      exact (boxEdgeEmbedding c r).injective hf ▸ he
-  simp only [wiredBoxConfiguration, h]
+  grind +locals
 
-theorem wiredBoxConfiguration_outside (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : squareLattice.edgeSet)
+theorem wiredBoxConfiguration_outside  (e : squareLattice.edgeSet)
     (he : e ∉ Set.range (boxEdgeEmbedding c r)) :
     wiredBoxConfiguration c r A e = true := by
   rw [wiredBoxConfiguration_open_iff]
-  intro f hf
-  exact (he ⟨f, hf⟩).elim
+  aesop
+
+end
 
 /-- The exact finite wired law, followed by the open exterior extension. -/
-def wiredBoxLaw (θ : Parameters) (c : LatticeVertex) (r : ℕ) : PMF LatticeConfiguration :=
+def wiredBoxLaw (θ : Parameters) (c : LatticeVertex) (r : ℕ)  :=
   (law (boxGraph c r) θ (BoundaryCondition.wired (boxVertexBoundary c r))).map
     (wiredBoxConfiguration c r)
 
@@ -69,7 +66,7 @@ def wiredBoxCylinderEvent (c : LatticeVertex) (r : ℕ)
 theorem wiredBoxCylinderEvent_upper (c : LatticeVertex) (r : ℕ)
     (F : Finset squareLattice.edgeSet) : IsUpperSet (wiredBoxCylinderEvent c r F) := by
   intro A B hAB hA e he f hf
-  exact hAB (hA e he f hf)
+  aesop
 
 theorem wiredBoxConfiguration_mem_allOpen (c : LatticeVertex) (r : ℕ)
     (A : Configuration (boxGraph c r)) (F : Finset squareLattice.edgeSet) :

@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusRC.CPrimeEstimate
 public import PottsDiscontinuity.TorusRC.CylinderFiniteEnergy
@@ -26,9 +27,9 @@ theorem torusRCU_one_probability_ge_chain (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hNp : 0 < N) (hMp : 0 < M)
     (hNdiv : 8 ∣ N) (q : Set.Ici (1 : ℝ)) (n : ℕ)
     (hn : 0 < n) (h8n : 8 * n ≤ N) (hNM : N / 2 < M) :
-    (fkOpenEnergy (torusRCBridgeParameters q) ^ (2 * (N / 4 + 2 * n)) *
+     fkOpenEnergy (torusRCBridgeParameters q) ^ (2 * (N / 4 + 2 * n)) *
       liftedBoxFreeConnectionProbability (torusRCBridgeParameters q) rotatedLatticeOrigin
-        (N / 4) rotatedLatticeOrigin (rotatedDiagonalSite n) ^ (M / (2 * n))) *
+        (N / 4) rotatedLatticeOrigin (rotatedDiagonalSite n) ^ (M / (2 * n))  *
       torusRCProbability hN hM q (torusRCBarrier hNp hMp n) ≤
       torusRCProbability hN hM q {A | rcVerticalWinding hN hM ⟨0,hMp⟩ A = 1} := by
   apply (torusCPrime_mul_barrier_lower_bound hN hM hN4 hM4 hNp hMp hNdiv q n
@@ -49,7 +50,7 @@ theorem torusRCVerticalTail_close_seam_le_unconditional
           (torusRCVerticalTail hN hM ⟨0,hMp⟩ r) ≤
       torusRCProbability hN hM q
         (torusRCSeamClosedCrossingEvent hN hM r ∩ torusRCSeamRowClosed hMp) :=
-  torusRCVerticalTail_close_seam_le hN hM hMp q r
-    (TorusTopology.hUr_proved hN hM hMp r)
+  by
+    solve_by_elim [_root_.PottsDiscontinuity.TorusRC.torusRCVerticalTail_close_seam_le, _root_.PottsDiscontinuity.TorusTopology.hUr_proved]
 
 end PottsDiscontinuity.TorusRC

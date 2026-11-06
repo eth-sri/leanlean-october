@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Algebra.Order.Floor.Ring
 public import PottsDiscontinuity.Torus.DiamondSeamWinding
@@ -13,7 +14,7 @@ variable {N M : ℕ}
 
 /-- The integer horizontal-seam crossing coefficient. -/
 def integerSeamCrossX (e : Fin N × Fin M) : ℤ :=
-  if e.1.val=0 then (if checker e then -1 else 1) else 0
+  if e.1.val=0 then  if checker e then -1 else 1  else 0
 
 lemma integerSeamCrossX_cast (e : Fin N × Fin M) :
     (integerSeamCrossX e : ℚ)=diamondSeamCrossX e := by
@@ -36,10 +37,7 @@ theorem exists_int_horizontalPotential (hN : Even N) (hM : Even M)
     G (faceEndpoint hN hM true e.val false) = diamondSeamCrossX e.val at he
   rw [← integerSeamCrossX_cast] at he
   have he' : G (faceEndpoint hN hM true e.val true) =
-      G (faceEndpoint hN hM true e.val false) + (integerSeamCrossX e.val : ℚ) := by linarith
-  change ⌊G (faceEndpoint hN hM true e.val true)⌋ -
-    ⌊G (faceEndpoint hN hM true e.val false)⌋ = integerSeamCrossX e.val
-  rw [he',Int.floor_add_intCast]
-  omega
+      G (faceEndpoint hN hM true e.val false) +  integerSeamCrossX e.val  := by linarith
+  simp_all
 
 end PottsDiscontinuity.TorusExploration

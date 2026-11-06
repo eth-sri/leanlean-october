@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Adaptation: Namespace and import relocation only. -/
 module
+public import Mathlib
 
 public import Mathlib.Tactic
 public import Mathlib.Combinatorics.SimpleGraph.Acyclic
@@ -21,44 +22,27 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFiniteFac
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
-open PottsDiscontinuity.TorusTopology.Planar
+
 
 theorem parafermionicCoverFaceBaseCorner_injective :
-    Function.Injective (fun f : ParafermionicCoverVertex => f) := by
-  intro f g h
-  exact h
+    Function.Injective  fun f : ParafermionicCoverVertex => f  := fun f g h => h
 
 theorem parafermionicCoverFaceRightCorner_injective :
-    Function.Injective (fun f : ParafermionicCoverVertex =>
-      parafermionicCoverFaceRightLift f.1.1 f.1.2 f.2) := by
+    Function.Injective  fun f : ParafermionicCoverVertex =>
+      parafermionicCoverFaceRightLift f.1.1 f.1.2 f.2  := by
   intro f g h
-  rcases f with ⟨⟨x,y⟩,k⟩
-  rcases g with ⟨⟨x',y'⟩,k'⟩
-  simp only [parafermionicCoverFaceRightLift_formula, Prod.mk.injEq] at h
-  rcases h with ⟨⟨hx,hy⟩,hk⟩
-  simp only [Prod.mk.injEq]
-  exact ⟨⟨by omega, by omega⟩, by omega⟩
+  aesop
 
 theorem parafermionicCoverFaceRightUpCorner_injective :
-    Function.Injective (fun f : ParafermionicCoverVertex =>
-      parafermionicCoverFaceRightUpLift f.1.1 f.1.2 f.2) := by
+    Function.Injective  fun f : ParafermionicCoverVertex =>
+      parafermionicCoverFaceRightUpLift f.1.1 f.1.2 f.2  := by
   intro f g h
-  rcases f with ⟨⟨x,y⟩,k⟩
-  rcases g with ⟨⟨x',y'⟩,k'⟩
-  simp only [parafermionicCoverFaceRightUpLift_formula, Prod.mk.injEq] at h
-  rcases h with ⟨⟨hx,hy⟩,hk⟩
-  simp only [Prod.mk.injEq]
-  exact ⟨⟨by omega, by omega⟩, by omega⟩
+  aesop
 
 theorem parafermionicCoverFaceRightUpLeftCorner_injective :
-    Function.Injective (fun f : ParafermionicCoverVertex =>
-      parafermionicCoverFaceRightUpLeftLift f.1.1 f.1.2 f.2) := by
+    Function.Injective  fun f : ParafermionicCoverVertex =>
+      parafermionicCoverFaceRightUpLeftLift f.1.1 f.1.2 f.2  := by
   intro f g h
-  rcases f with ⟨⟨x,y⟩,k⟩
-  rcases g with ⟨⟨x',y'⟩,k'⟩
-  simp only [parafermionicCoverFaceRightUpLeftLift_formula, Prod.mk.injEq] at h
-  rcases h with ⟨⟨hx,hy⟩,hk⟩
-  simp only [Prod.mk.injEq]
-  exact ⟨⟨by omega, by omega⟩, by omega⟩
+  aesop
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

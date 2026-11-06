@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Combinatorics.SimpleGraph.Paths
 public import PottsDiscontinuity.TorusTopology.LoopMidpoints
@@ -33,15 +34,18 @@ noncomputable def loopMidpointWalk (ω : ArrowConfig N M) (s : Smoothing N M)
   | 0 => .nil
   | n+1 => (loopMidpointWalk ω s h d n).concat (loopMidpointPosition_adj ω s h d n)
 
-lemma loopMidpointWalk_length (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) (n : ℕ) :
+section
+
+variable (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s) (d : DirectedDart ω) (n : ℕ)
+
+
+lemma loopMidpointWalk_length  :
     (loopMidpointWalk ω s h d n).length = n := by
   induction n with
   | zero => rfl
   | succ n ih => simp [loopMidpointWalk,ih]
 
-lemma loopMidpointWalk_support (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) (n : ℕ) :
+lemma loopMidpointWalk_support  :
     (loopMidpointWalk ω s h d n).support =
       (List.range (n+1)).map (loopMidpointPosition ω s h d) := by
   induction n with
@@ -49,5 +53,7 @@ lemma loopMidpointWalk_support (ω : ArrowConfig N M) (s : Smoothing N M)
   | succ n ih =>
     simp only [loopMidpointWalk,SimpleGraph.Walk.support_concat,ih,List.range_succ,
       List.map_append,List.map_singleton]
+
+end
 
 end PottsDiscontinuity.TorusTopology

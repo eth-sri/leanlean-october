@@ -29,13 +29,13 @@ theorem tendsto_rectangleFreeOneArmProbability_of_boundaryConnection_zero
       atTop (𝓝 0)) :
     Tendsto (fun n => rectangleFreeOneArmProbability q (n / 2 - 1))
       atTop (𝓝 0) := by
-  have hrad : Tendsto (fun n : ℕ => n / 2 - 1) atTop atTop := by
+  have hrad : Tendsto (fun n  => n / 2 - 1) atTop atTop := by
     apply tendsto_atTop.2
     intro k
     filter_upwards [eventually_ge_atTop (2 * (k + 1))] with n hn
     omega
-  have hcomp := hzero.comp hrad
-  refine hcomp.congr' ?_
+  
+  refine (hzero.comp hrad).congr' ?_
   filter_upwards with n
   simp [Function.comp_apply, rectangleFreeOneArmProbability,
     boundaryConnectionEvent_eq_oneArmEvent]

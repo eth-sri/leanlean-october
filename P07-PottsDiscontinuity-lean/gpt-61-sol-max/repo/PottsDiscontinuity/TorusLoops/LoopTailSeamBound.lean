@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusLoops.RectangleCrossingCount
 public import PottsDiscontinuity.TorusLoops.RectangleFK
@@ -21,7 +22,7 @@ variable {N M : ℕ}
 
 /-- Configurations with at least `m` homologically winding loops. -/
 def windingLoopTailEvent (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (m : ℕ) : Set (RCConfig N M) :=
+    (m : ℕ)  :=
   {A | m ≤ windingLoopCount hN hM ⟨0, hNp⟩ ⟨0, hMp⟩ A}
 
 /-- The source finite-energy reduction, with the factor-two-corrected number
@@ -35,43 +36,29 @@ theorem torusRCProbability_windingTail_le_seamClosedCrossings
       phi_T_probability hN hM q
         (hasAtLeastRectangleCrossings hN hM ((m - 3 * N + 1) / 2) ∩
           {A | ∀ v ∈ rectangleSeamIndices (N := N) (M := M), A v = false}) := by
-  classical
+  
   let S := rectangleSeamIndices (N := N) (M := M)
   let k := (m - 3 * N + 1) / 2
   let C := hasAtLeastRectangleCrossings hN hM k
-  have hsub : windingLoopTailEvent hN hM hNp hMp m ⊆ C := by
-    intro A hA
-    have hcross := windingLoopCount_ge_implies_rectangleCrossings
-      hN hM hNp hMp m A hA
-    exact hcross
-  have hstable : ∀ v ∈ S, ∀ A,
-      A ∈ C ↔ toggleEdge A v ∈ C := by
-    intro v hv A
-    have hseam : v.1.val = 0 ∨ v.2.val = 0 := by
-      exact (Finset.mem_filter.mp hv).2
-    exact hasAtLeastRectangleCrossings_toggleEdge_seam hN hM k A v hseam
-  have hclosed := torusRCProbability_close_finite_set hN hM q S C hstable
-  have hmono := torusRCProbability_mono hN hM q hsub
-  have hfactor : 0 ≤ (1 - (rcCriticalParameter q).val) ^ S.card :=
-    pow_nonneg (sub_nonneg.mpr (criticalParameter_lt_one q).le) _
+  
+  
+  
+  
+  
   have hclosed' :
       (1 - (rcCriticalParameter q).val) ^ S.card *
           phi_T_probability hN hM q C ≤
-        phi_T_probability hN hM q (C ∩ {A | ∀ v ∈ S, A v = false}) := by
-    change (1 - (rcCriticalParameter q).val) ^ S.card *
-        phi_T_probability hN hM q C ≤
-      phi_T_probability hN hM q (C ∩ {A | ∀ v ∈ S, A v = false}) at hclosed
-    exact hclosed
+        phi_T_probability hN hM q (C ∩ {A | ∀ v ∈ S, A v = false}) := (torusRCProbability_close_finite_set hN hM q S C (by
+                                                                                                                                                                            exact fun v hv A => hasAtLeastRectangleCrossings_toggleEdge_seam hN hM k A v (Finset.mem_filter.mp hv).right))
   calc
     (1 - (rcCriticalParameter q).val) ^ S.card *
         phi_T_probability hN hM q (windingLoopTailEvent hN hM hNp hMp m) ≤
       (1 - (rcCriticalParameter q).val) ^ S.card *
-        phi_T_probability hN hM q C := mul_le_mul_of_nonneg_left hmono hfactor
+        phi_T_probability hN hM q C := mul_le_mul_of_nonneg_left (torusRCProbability_mono hN hM q (windingLoopCount_ge_implies_rectangleCrossings hN hM hNp hMp m)) (pow_nonneg (sub_nonneg.mpr (criticalParameter_lt_one q).le) _)
     _ ≤ phi_T_probability hN hM q (C ∩ {A | ∀ v ∈ S, A v = false}) := by
       simpa [S, C] using hclosed'
     _ = phi_T_probability hN hM q
         (hasAtLeastRectangleCrossings hN hM k ∩
-          {A | ∀ v ∈ rectangleSeamIndices (N := N) (M := M), A v = false}) := by
-      rfl
+          {A | ∀ v ∈ rectangleSeamIndices (N := N) (M := M), A v = false}) := rfl
 
 end PottsDiscontinuity.TorusLoops

@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusExploration.UnexploredCylinder
 public import PottsDiscontinuity.TorusExploration.PlanarLiftEdges
@@ -24,7 +25,7 @@ theorem potentialLift_adj (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (hseam : ∀ e : OpenDiamondEdge A, e.val.2.val ≠ 0)
     {u v : FaceVertex N M true} (huv : (diamondOpenGraph hN hM true A).Adj u v) :
     rotatedLattice.Adj (potentialLift hN F u) (potentialLift hN F v) := by
-  rw [diamondOpenGraph,SimpleGraph.fromEdgeSet_adj] at huv
+  
   obtain ⟨⟨e,he,hep⟩,_⟩ := huv
   have h := potentialLift_edge_adj hN hM A F hF ⟨e,he⟩ (hseam ⟨e,he⟩)
   rcases Sym2.eq_iff.1 hep with ⟨rfl,rfl⟩ | ⟨rfl,rfl⟩
@@ -41,13 +42,12 @@ theorem exists_unexploredCylinder_embedding (hN : Even N) (hM : Even M)
       (∀ w, (f w).val.2 = (w.val.2.val : ℤ)) ∧
       ∀ a b, (diamondOpenGraph hN hM true (unexploredCylinderConfig hN hM A u)).Adj a b →
         rotatedLattice.Adj (f a) (f b) := by
-  obtain ⟨F,hF⟩ := unexploredCylinder_integerPotential hN hM hNp hMlarge hu hv hp
-  refine ⟨potentialLiftEmbedding hN F,fun _ => rfl,?_⟩
-  intro a b hab
-  apply potentialLift_adj hN hM _ F hF _ hab
-  intro e
-  have hh := e.property
-  simp only [unexploredCylinderConfig,decide_eq_true_eq] at hh
-  exact hh.1
+  classical
+  exact Exists.casesOn (unexploredCylinder_integerPotential hN hM hNp hMlarge hu hv hp) fun F hF =>
+    Exists.intro (potentialLiftEmbedding hN F)
+      ⟨fun x => rfl,
+        @potentialLift_adj N M hN hM (unexploredCylinderConfig hN hM A u) F hF fun e =>
+          have hh := e.property;
+          (Eq.mp decide_eq_true_eq hh).left⟩
 
 end PottsDiscontinuity.TorusExploration

@@ -35,9 +35,7 @@ def latticeEmbed (δ : PositiveMesh) (v : LatticeVertex) : ℂ :=
 @[simp] theorem latticeEmbed_im (δ : PositiveMesh) (v : LatticeVertex) :
     (latticeEmbed δ v).im = δ.val * (v.2 : ℝ) := rfl
 
-@[simp] theorem latticeEmbed_zero (δ : PositiveMesh) : latticeEmbed δ 0 = 0 := by
-  apply Complex.ext <;> simp only [latticeEmbed_re, latticeEmbed_im, Prod.fst_zero, Prod.snd_zero,
-    Int.cast_zero, mul_zero, Complex.zero_re, Complex.zero_im]
+
 
 end
 

@@ -20,9 +20,7 @@ noncomputable def cor34BetheLambda (N n : ℕ) (c : ℝ) (p : Fin n → ℝ) : �
   else
     let q : ℕ := n / 2 + 1
     let l : Fin n := ⟨q - 1, by
-      have ho : Odd n := Nat.not_even_iff_odd.mp he
-      obtain ⟨k, hk⟩ := ho
-      omega
+      grind
     ⟩
     (2 + c ^ 2 * ((N : ℝ) - 1) + c ^ 2 *
       ∑ j ∈ Finset.univ.erase l,
@@ -81,44 +79,25 @@ theorem cor34_final_exists_family_at_endpoint (r : ℕ) {d₀ : ℝ} (hd₀ : d�
   obtain ⟨K, hK, N₀, hN₀, d₁, hd₀₁, hd₁, hfamily⟩ := Bethe.theorem23 r hd₀
   refine ⟨K, hK, N₀, hN₀, ?_⟩
   intro N hlarge hEvenN
-  let n : ℕ := N / 2 - r
+  let n  := N / 2 - r
   obtain ⟨hn, hs, p, hp, hBE, hpAnalytic, hP, hDensity⟩ := hfamily N hlarge hEvenN
   obtain ⟨P, hPanalytic, hP0, hformula⟩ := hP
-  let p₀ : Fin n → ℝ := p d₀
-  have hp₀ : p₀ ∈ Bethe.S_n n := by
-    exact hp d₀ le_rfl
-  have hBE₀ : Bethe.DiscreteBetheEquation d₀ N n p₀ := hBE d₀ le_rfl
-  have hDensity₀ :
-      Bethe.densityNorm d₀ hd₀
-        (fun x => Bethe.rootStepDensity N n p₀ hp₀ hn hs x - Bethe.rho d₀ x)
-        (Bethe.rootStepDensity_error_bddAbove hd₀ _ hp₀ hn hs) ≤ K / N := by
-    simpa [p₀] using hDensity d₀ le_rfl
-  have hNindex : N / 2 - r = n := by rfl
+  let p₀  := p d₀
+  have hp₀ : p₀ ∈ Bethe.S_n n := hp d₀ le_rfl
+  have hBE₀  := hBE d₀ le_rfl
+  
+  have hNindex : N / 2 - r = n := rfl
   obtain ⟨m, hm⟩ := hEvenN
-  have hNhalf : N = 2 * (N / 2) := by
-    rw [hm]
-    omega
-  have hNform : N = 2 * (n + r) := by
-    calc
-      N = 2 * (N / 2) := hNhalf
-      _ = 2 * ((N / 2 - r) + r) := by omega
-      _ = 2 * (n + r) := by simp [n]
-  have hNpos : 0 < N := by omega
+  
+  
+  
   rcases Nat.even_or_odd n with hnEven | hnOdd
-  · have hCor := cor34_final_even_at_endpoint (N := N) (n := n) (r := r)
-      (d₀ := d₀) (d₁ := d₁) (p := p) (P := P)
-      hd₀ hd₀₁ hd₁ hpAnalytic hp hBE hformula hPanalytic hP0 hNpos hs hn
-      hnEven hNform (Nat.zero_le r)
+  · 
     have hc : 2 < Real.sqrt (2 - 2 * d₀) := by
-      rw [Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
-      nlinarith [hd₀]
-    have hratio := Bethe.ratio_eigenvalueRegular hc hp₀
-    have hroot : pfRoot (transferBlock N (Real.sqrt (2 - 2 * d₀)) n) =
-        2 * ∏ j : Fin n,
-          ‖BetheAnsatz.M (Real.sqrt (2 - 2 * d₀))
-            (BetheAnsatz.z (p₀ j))‖ := by
-      have h := congrArg Complex.re (hCor.trans hratio)
-      simpa only [Complex.ofReal_re] using h
+      rw [Real.lt_sqrt (by norm_num )]
+      nlinarith 
+    
+    
     have hindex : Lambda (Real.sqrt (2 - 2 * d₀)) N r =
         pfRoot (transferBlock N (Real.sqrt (2 - 2 * d₀)) n) := by
       unfold Lambda
@@ -127,51 +106,45 @@ theorem cor34_final_exists_family_at_endpoint (r : ℕ) {d₀ : ℝ} (hd₀ : d�
         2 * ∏ j : Fin n,
           ‖BetheAnsatz.M (Real.sqrt (2 - 2 * d₀))
             (BetheAnsatz.z (p₀ j))‖ := by
-      simp [cor34BetheLambda, hnEven, p₀]
-    refine ⟨hn, hs, p₀, hp₀, hBE₀, hDensity₀, ?_⟩
-    exact hvalue.trans (hroot.symm.trans hindex.symm)
-  · let q : ℕ := n / 2 + 1
-    have hnotEven : ¬ Even n := Nat.not_even_iff_odd.mpr hnOdd
+      simp [cor34BetheLambda, hnEven]
+    refine ⟨hn, hs, p₀, hp₀, hBE₀,  hDensity d₀ le_rfl , ?_⟩
+    exact hvalue.trans ((congrArg Complex.re (Eq.trans (cor34_final_even_at_endpoint (N := N) (n := n) (r := r)
+                                                          (d₀ := d₀) (d₁ := d₁) (p := p) (P := P)
+                                                          hd₀ hd₀₁ hd₁ hpAnalytic hp hBE hformula hPanalytic hP0 (by omega) hs hn
+                                                          hnEven (by
+                                                                    omega) (Nat.zero_le r)) (Bethe.ratio_eigenvalueRegular hc hp₀))).symm.trans hindex.symm)
+  · let q  := n / 2 + 1
+    have hnotEven  := Nat.not_even_iff_odd.mpr hnOdd
     obtain ⟨k, hk⟩ := hnOdd
-    have hnq : n + 1 = 2 * q := by dsimp [q]; omega
+    have hnq : n + 1 = 2 * q := by  omega
     let l : Fin n := ⟨q - 1, by omega⟩
-    have hCor := cor34_final_odd_at_endpoint (N := N) (n := n) (q := q) (r := r)
-      (d₀ := d₀) (d₁ := d₁) (p := p) (P := P)
-      hd₀ hd₀₁ hd₁ hpAnalytic hp hBE hformula hPanalytic hP0 hNpos hs hn
-      hnq hNform (Nat.zero_le r)
+    
     have hc : 2 < Real.sqrt (2 - 2 * d₀) := by
-      rw [Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
-      nlinarith [hd₀]
-    have hcenter : p₀ l = 0 :=
-      cor34_odd_S_n_center_zero hp₀ hnq
-    have hratio := Bethe.ratio_eigenvalueZero (N := N) (n := n)
-      hc hp₀ l hcenter
-    have hroot : pfRoot (transferBlock N (Real.sqrt (2 - 2 * d₀)) n) =
-        (2 + (Real.sqrt (2 - 2 * d₀)) ^ 2 * ((N : ℝ) - 1) +
-          (Real.sqrt (2 - 2 * d₀)) ^ 2 *
-            ∑ j ∈ Finset.univ.erase l,
-              deriv (fun t => Bethe.theta
-                (BetheAnsatz.anisotropy (Real.sqrt (2 - 2 * d₀))) t (p₀ j)) 0) *
-          ∏ j ∈ Finset.univ.erase l,
-            ‖BetheAnsatz.M (Real.sqrt (2 - 2 * d₀))
-              (BetheAnsatz.z (p₀ j))‖ := by
-      have h := congrArg Complex.re (hCor.trans hratio)
-      simpa only [Complex.ofReal_re] using h
+      rw [Real.lt_sqrt (by norm_num )]
+      nlinarith 
+    
+    
+    
     have hindex : Lambda (Real.sqrt (2 - 2 * d₀)) N r =
         pfRoot (transferBlock N (Real.sqrt (2 - 2 * d₀)) n) := by
       unfold Lambda
       rw [hNindex]
     have hvalue : cor34BetheLambda N n (Real.sqrt (2 - 2 * d₀)) p₀ =
-        (2 + (Real.sqrt (2 - 2 * d₀)) ^ 2 * ((N : ℝ) - 1) +
-          (Real.sqrt (2 - 2 * d₀)) ^ 2 *
+        (2 +  Real.sqrt (2 - 2 * d₀)  ^ 2 * ( N  - 1) +
+           Real.sqrt (2 - 2 * d₀)  ^ 2 *
             ∑ j ∈ Finset.univ.erase l,
               deriv (fun t => Bethe.theta
                 (BetheAnsatz.anisotropy (Real.sqrt (2 - 2 * d₀))) t (p₀ j)) 0) *
           ∏ j ∈ Finset.univ.erase l,
             ‖BetheAnsatz.M (Real.sqrt (2 - 2 * d₀))
               (BetheAnsatz.z (p₀ j))‖ := by
-      simp [cor34BetheLambda, hnotEven, q, l, p₀]
-    refine ⟨hn, hs, p₀, hp₀, hBE₀, hDensity₀, ?_⟩
-    exact hvalue.trans (hroot.symm.trans hindex.symm)
+      simp [cor34BetheLambda, hnotEven, q, l]
+    refine ⟨hn, hs, p₀, hp₀, hBE₀,  hDensity d₀ le_rfl , ?_⟩
+    exact hvalue.trans ((congrArg Complex.re (Eq.trans (cor34_final_odd_at_endpoint (N := N) (n := n) (q := q) (r := r)
+                                                          (d₀ := d₀) (d₁ := d₁) (p := p) (P := P)
+                                                          hd₀ hd₀₁ hd₁ hpAnalytic hp hBE hformula hPanalytic hP0 (by omega) hs hn
+                                                          hnq (by
+                                                                 omega) (Nat.zero_le r)) (Bethe.ratio_eigenvalueZero (N := N) (n := n)
+                                                               hc hp₀ l (cor34_odd_S_n_center_zero hp₀ hnq)))).symm.trans hindex.symm)
 
 end PottsDiscontinuity.SixVertex

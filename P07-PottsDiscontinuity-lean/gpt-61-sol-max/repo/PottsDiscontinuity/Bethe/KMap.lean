@@ -32,7 +32,7 @@ open Complex Filter Topology Set
 namespace PottsDiscontinuity.Bethe
 
 /-- `Ξ_μ(α) = sinh μ / (cosh μ - cos α)` (source: `prop:rhoProp`, definition of `Ξ_μ`). -/
-noncomputable def Xi (μ α : ℝ) : ℝ := Real.sinh μ / (Real.cosh μ - Real.cos α)
+noncomputable def Xi (μ α : ℝ)  := Real.sinh μ / (Real.cosh μ - Real.cos α)
 
 /-- The map `k = k_λ` of the source: `k_λ(α) = α + 2 arctan (sin α / (e^λ - cos α))`. -/
 noncomputable def kMap (lam α : ℝ) : ℝ :=
@@ -44,13 +44,12 @@ theorem exp_sub_cos_pos {lam : ℝ} (hlam : 0 < lam) (α : ℝ) : 0 < Real.exp l
   linarith
 
 theorem Xi_pos {μ : ℝ} (hμ : 0 < μ) (α : ℝ) : 0 < Xi μ α := by
-  unfold Xi
-  have h1 := Real.sinh_pos_iff.mpr hμ
+  
+  
   have h2 : 1 < Real.cosh μ := by
-    have := Real.one_lt_cosh.mpr hμ.ne'
-    exact this
+    aesop
   have := Real.cos_le_one α
-  exact div_pos h1 (by linarith)
+  exact div_pos (Real.sinh_pos_iff.mpr hμ) (by linarith)
 
 /-! ### Basic symmetries -/
 
@@ -75,7 +74,7 @@ theorem kMap_neg_pi (lam : ℝ) : kMap lam (-Real.pi) = -Real.pi := by
 /-! ### The parameter `λ` and analyticity -/
 
 /-- `λ(Δ) = arcosh(-Δ)`: for `Δ < -1` the unique `λ > 0` with `cosh λ = -Δ`. -/
-noncomputable def lamOf (Δ : ℝ) : ℝ := Real.arcosh (-Δ)
+noncomputable def lamOf (Δ : ℝ)  := Real.arcosh (-Δ)
 
 theorem lamOf_pos {Δ : ℝ} (hΔ : Δ < -1) : 0 < lamOf Δ :=
   Real.arcosh_pos (by linarith)
@@ -91,21 +90,28 @@ theorem eq_lamOf {Δ lam : ℝ} (hlam : 0 < lam) (hcosh : Real.cosh lam = -Δ) :
 theorem norm_exp_I_mul' (α : ℝ) : ‖Complex.exp (I * (α : ℂ))‖ = 1 :=
   Complex.norm_exp_I_mul_ofReal α
 
-theorem ofReal_sub_ne_zero {E : ℝ} (hE : 1 < E) {w : ℂ} (hw : ‖w‖ = 1) : (E : ℂ) - w ≠ 0 := by
+section
+
+variable {E : ℝ} (hE : 1 < E) {w : ℂ} (hw : ‖w‖ = 1)
+include hE hw
+
+theorem ofReal_sub_ne_zero  : (E : ℂ) - w ≠ 0 := by
   intro h
-  have : (E : ℂ) = w := sub_eq_zero.mp h
-  have h2 : ‖(E : ℂ)‖ = ‖w‖ := by rw [this]
-  rw [hw, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h2
+  
+  have h2 : ‖(E : ℂ)‖ = ‖w‖ := by rw [ sub_eq_zero.mp h ]
+  rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h2
   linarith
 
-theorem ofReal_mul_sub_one_ne_zero {E : ℝ} (hE : 1 < E) {w : ℂ} (hw : ‖w‖ = 1) :
+theorem ofReal_mul_sub_one_ne_zero  :
     (E : ℂ) * w - 1 ≠ 0 := by
   intro h
-  have : (E : ℂ) * w = 1 := sub_eq_zero.mp h
-  have h2 : ‖(E : ℂ) * w‖ = ‖(1 : ℂ)‖ := by rw [this]
+  
+  have h2 : ‖ E  * w‖ = ‖(1 : ℂ)‖ := by rw [ sub_eq_zero.mp h ]
   rw [norm_mul, hw, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h2
   simp at h2
   linarith
+
+end
 
 /-- The exponential identity of `k` in unit-circle form with `w = e^{iα}` and `E = e^λ`:
 `e^{ik(α)} = w (E - w⁻¹) / (E - w)`. -/
@@ -115,16 +121,15 @@ theorem exp_I_mul_kMap_aux {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
         ((Real.exp lam : ℂ) - Complex.exp (I * α)) := by
   set a : ℝ := Real.exp lam - Real.cos α with ha
   set b : ℝ := Real.sin α with hb
-  have ha0 : 0 < a := exp_sub_cos_pos hlam α
-  have ha' : (a : ℂ) ≠ 0 := by exact_mod_cast ha0.ne'
-  have hD1 : (Real.exp lam : ℂ) - Complex.exp (I * α) = (a : ℂ) - (b : ℂ) * I := by
+  
+  have ha' : (a : ℂ) ≠ 0 := by exact_mod_cast (exp_sub_cos_pos hlam α).ne'
+  have hD1 :  Real.exp lam  - Complex.exp (I * α) =  a  -  b  * I := by
     rw [exp_I_mul_ofReal, ha, hb]; push_cast; ring
-  have hD2 : (Real.exp lam : ℂ) - Complex.exp (-(I * α)) = (a : ℂ) + (b : ℂ) * I := by
+  have hD2 :  Real.exp lam  - Complex.exp (-(I * α)) =  a  +  b  * I := by
     rw [exp_neg_I_mul_ofReal, ha, hb]; push_cast; ring
-  have hne : (a : ℂ) - (b : ℂ) * I ≠ 0 := by
-    intro h; have := congrArg Complex.re h; simp at this; exact ha0.ne' this
+  
   have hth : kMap lam α = α + 2 * Real.arctan (b / a) := rfl
-  have h1 : I * (kMap lam α : ℂ) = I * α + (((2 * Real.arctan (b / a) : ℝ) : ℂ)) * I := by
+  have h1 : I *  kMap lam α  = I * α +   (2 * Real.arctan (b / a) : ℝ)   * I := by
     rw [hth]; push_cast; ring
   rw [h1, Complex.exp_add, exp_two_arctan_mul_I, hD1, hD2]
   push_cast
@@ -132,61 +137,54 @@ theorem exp_I_mul_kMap_aux {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
 
 /-! ### Derivative `k' = Ξ_λ`, monotonicity -/
 
+section
+
+variable {lam : ℝ} (hlam : 0 < lam)
+include hlam
+
 /-- Footnote 5: `k'(α) = Ξ_λ(α) = sinh λ / (cosh λ - cos α)`. -/
-theorem hasDerivAt_kMap {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
+theorem hasDerivAt_kMap  (α : ℝ) :
     HasDerivAt (kMap lam) (Xi lam α) α := by
   have ha := (exp_sub_cos_pos hlam α).ne'
   have h1 : HasDerivAt (fun x => Real.sin x / (Real.exp lam - Real.cos x))
       ((Real.cos α * (Real.exp lam - Real.cos α) - Real.sin α * (0 - -Real.sin α)) /
         (Real.exp lam - Real.cos α) ^ 2) α :=
     (Real.hasDerivAt_sin α).div ((hasDerivAt_const α (Real.exp lam)).sub (Real.hasDerivAt_cos α)) ha
-  have h2 := (h1.arctan.const_mul 2)
-  have h3 := (hasDerivAt_id' α).add h2
-  refine h3.congr_deriv ?_
-  have hE : Real.exp lam ≠ 0 := (Real.exp_pos lam).ne'
-  have hs : Real.sin α ^ 2 + Real.cos α ^ 2 = 1 := Real.sin_sq_add_cos_sq α
+   
+  
+  refine ((hasDerivAt_id' α).add (h1.arctan.const_mul 2)).congr_deriv ?_
+  
+  have hs  := Real.sin_sq_add_cos_sq α
   simp only [Xi, Real.sinh_eq, Real.cosh_eq, Real.exp_neg]
-  have hpos : 0 < (Real.exp lam - Real.cos α)^2 + Real.sin α ^2 := by
-    have := exp_sub_cos_pos hlam α
-    positivity
-  have hden : (Real.exp lam + (Real.exp lam)⁻¹) / 2 - Real.cos α ≠ 0 := by
-    have : (Real.exp lam + (Real.exp lam)⁻¹) / 2 - Real.cos α =
-        ((Real.exp lam - Real.cos α)^2 + Real.sin α ^2) / (2 * Real.exp lam) := by
-      field_simp
-      linear_combination (-1) * hs
-    rw [this]
-    positivity
-  have h1' : (Real.exp lam - Real.cos α)^2 + Real.sin α ^2 ≠ 0 := hpos.ne'
+  
+  
+  
   have h2' : Real.exp lam ^ 2 + 1 - 2 * Real.exp lam * Real.cos α =
-      (Real.exp lam - Real.cos α)^2 + Real.sin α ^2 := by linear_combination (-1) * hs
+      (Real.exp lam - Real.cos α)^2 + Real.sin α ^2 := by linear_combination  -1  * hs
   field_simp
   rw [h2']
   field_simp
-  linear_combination (-1) * hs
+  linear_combination  -1  * hs
 
-theorem deriv_kMap {lam : ℝ} (hlam : 0 < lam) (α : ℝ) : deriv (kMap lam) α = Xi lam α :=
+theorem deriv_kMap  (α : ℝ) : deriv (kMap lam) α = Xi lam α :=
   (hasDerivAt_kMap hlam α).deriv
 
-theorem continuous_kMap {lam : ℝ} (hlam : 0 < lam) : Continuous (kMap lam) :=
+theorem continuous_kMap  : Continuous (kMap lam) :=
   continuous_iff_continuousAt.mpr fun α => (hasDerivAt_kMap hlam α).continuousAt
 
 /-- `k` is strictly increasing on all of `ℝ`. -/
-theorem strictMono_kMap {lam : ℝ} (hlam : 0 < lam) : StrictMono (kMap lam) :=
-  strictMono_of_hasDerivAt_pos (hasDerivAt_kMap hlam) (fun α => Xi_pos hlam α)
+theorem strictMono_kMap  : StrictMono (kMap lam) :=
+  by
+    solve_by_elim [_root_.strictMono_of_hasDerivAt_pos, _root_.PottsDiscontinuity.Bethe.hasDerivAt_kMap, _root_.PottsDiscontinuity.Bethe.Xi_pos] 
 
 /-- `k` maps `[-π, π]` into itself. -/
-theorem mapsTo_kMap {lam : ℝ} (hlam : 0 < lam) :
-    MapsTo (kMap lam) (Icc (-Real.pi) Real.pi) (Icc (-Real.pi) Real.pi) := by
-  intro α hα
-  have hm := (strictMono_kMap hlam).monotone
-  constructor
-  · calc -Real.pi = kMap lam (-Real.pi) := (kMap_neg_pi lam).symm
-      _ ≤ kMap lam α := hm hα.1
-  · calc kMap lam α ≤ kMap lam Real.pi := hm hα.2
-      _ = Real.pi := kMap_pi lam
+theorem mapsTo_kMap  :
+    MapsTo (kMap lam) (Icc (-Real.pi) Real.pi) (Icc (-Real.pi) Real.pi) := fun ⦃α⦄ hα =>
+                                                                             have hm := StrictMono.monotone (strictMono_kMap hlam);
+                                                                             ⟨Trans.trans (Eq.symm (kMap_neg_pi lam)) (hm hα.left), Trans.trans (hm hα.right) (kMap_pi lam)⟩
 
 /-- `k : [-π, π] → [-π, π]` is a bijection (footnote 3: "`k` is invertible"). -/
-theorem bijOn_kMap {lam : ℝ} (hlam : 0 < lam) :
+theorem bijOn_kMap  :
     BijOn (kMap lam) (Icc (-Real.pi) Real.pi) (Icc (-Real.pi) Real.pi) := by
   refine ⟨mapsTo_kMap hlam, (strictMono_kMap hlam).injective.injOn, ?_⟩
   have hpi : -Real.pi ≤ Real.pi := by linarith [Real.pi_pos]
@@ -194,18 +192,20 @@ theorem bijOn_kMap {lam : ℝ} (hlam : 0 < lam) :
   rw [kMap_neg_pi, kMap_pi] at this
   exact this
 
+end
+
 /-- The derivative of `k` is bounded away from `0` and `∞`: it lies between the explicit positive
 constants `sinh λ / (cosh λ + 1)` and `sinh λ / (cosh λ - 1)`. -/
 theorem Xi_bounds {μ : ℝ} (hμ : 0 < μ) (α : ℝ) :
     Real.sinh μ / (Real.cosh μ + 1) ≤ Xi μ α ∧ Xi μ α ≤ Real.sinh μ / (Real.cosh μ - 1) := by
   have h1 := Real.sinh_pos_iff.mpr hμ
-  have h2 : 1 < Real.cosh μ := Real.one_lt_cosh.mpr hμ.ne'
+  have h2  := Real.one_lt_cosh.mpr hμ.ne'
   have hc1 := Real.cos_le_one α
   have hc2 := Real.neg_one_le_cos α
   unfold Xi
   constructor
-  · exact div_le_div_of_nonneg_left h1.le (by linarith) (by linarith)
-  · exact div_le_div_of_nonneg_left h1.le (by linarith) (by linarith)
+  · bound
+  · bound
 
 /-! ### Uniqueness (footnote 3) -/
 

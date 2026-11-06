@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.GhostBoxGeometry
 public import PottsDiscontinuity.Potts.FiniteEnergyBounds
@@ -11,33 +12,40 @@ namespace PottsDiscontinuity.Potts
 
 noncomputable section
 
-def cornerPoint (n : ℕ) (b : Bool × Bool) : ℤ × ℤ :=
+def cornerPoint (n : ℕ) (b : Bool × Bool)  :=
   (if b.1 then (n : ℤ) else -(n : ℤ), if b.2 then (n : ℤ) else -(n : ℤ))
 
 def cornerOutwardPoint (n : ℕ) (b : Bool × Bool) : ℤ × ℤ :=
   ((cornerPoint n b).1, if b.2 then (n : ℤ) + 1 else -(n : ℤ) - 1)
 
-theorem cornerPoint_mem (n : ℕ) (b : Bool × Bool) : cornerPoint n b ∈ box n := by
+section
+
+variable (n : ℕ) (b : Bool × Bool)
+
+
+theorem cornerPoint_mem  : cornerPoint n b ∈ box n := by
   rcases b with ⟨b, c⟩
   cases b <;> cases c <;> rw [mem_box_iff] <;> dsimp [cornerPoint] <;> omega
 
-theorem cornerOutwardPoint_mem (n : ℕ) (b : Bool × Bool) :
+theorem cornerOutwardPoint_mem  :
     cornerOutwardPoint n b ∈ box (n + 1) := by
   rcases b with ⟨b, c⟩
   cases b <;> cases c <;> rw [mem_box_iff] <;>
     dsimp [cornerOutwardPoint, cornerPoint] <;> omega
 
-theorem cornerOutwardPoint_not_mem (n : ℕ) (b : Bool × Bool) :
+theorem cornerOutwardPoint_not_mem  :
     cornerOutwardPoint n b ∉ box n := by
   rcases b with ⟨b, c⟩
   cases b <;> cases c <;> rw [mem_box_iff] <;>
-    dsimp [cornerOutwardPoint, cornerPoint] <;> omega
+    dsimp [cornerOutwardPoint] <;> omega
 
-theorem cornerPoint_adj_outward (n : ℕ) (b : Bool × Bool) :
+theorem cornerPoint_adj_outward  :
     squareLattice.Adj (cornerPoint n b) (cornerOutwardPoint n b) := by
   rcases b with ⟨b, c⟩
   cases b <;> cases c <;> rw [FK.squareLattice_adj_iff] <;>
     dsimp [cornerOutwardPoint, cornerPoint] <;> omega
+
+end
 
 /-- The vertical outward edge at a corner; the horizontal one is retained. -/
 def cornerCutEdge (n : ℕ) (b : Bool × Bool) : OuterBoxEdge n :=
@@ -47,8 +55,8 @@ def cornerCutEdge (n : ℕ) (b : Bool × Bool) : OuterBoxEdge n :=
 
 theorem cornerPoint_injective (n : ℕ) (hn : 0 < n) : Function.Injective (cornerPoint n) := by
   rintro ⟨a, b⟩ ⟨c, d⟩ h
-  have h1 := congrArg Prod.fst h
-  have h2 := congrArg Prod.snd h
+  
+  
   cases a <;> cases b <;> cases c <;> cases d <;>
     simp_all [cornerPoint]
 
@@ -66,7 +74,7 @@ def cornerCutEdges (n : ℕ) : Finset (OuterBoxEdge n) := by
   exact Finset.univ.image (cornerCutEdge n)
 
 theorem card_cornerCutEdges (n : ℕ) (hn : 0 < n) : (cornerCutEdges n).card = 4 := by
-  classical
+  
   rw [cornerCutEdges, Finset.card_image_of_injective _ (cornerCutEdge_injective n hn)]
   decide
 
@@ -77,19 +85,11 @@ theorem cornerCutEdge_ne_ghostOutwardEdge (n : ℕ) (b : Bool × Bool)
       s(x.val.val, ghostOutwardNeighbor n x) :=
     congrArg (fun e : OuterBoxEdge n => Sym2.map Subtype.val e.val) h
   rcases Sym2.eq_iff.mp he with ⟨h1, h2⟩ | ⟨h1, _⟩
-  · have hfst := congrArg Prod.fst h2
-    have hx := congrArg Prod.fst h1
-    rcases b with ⟨b, c⟩
-    cases b <;> cases c <;>
-      dsimp [cornerOutwardPoint, cornerPoint] at hx hfst
-    all_goals
-      unfold ghostOutwardNeighbor at hfst
-      split_ifs at hfst <;> dsimp at hfst <;> omega
+  · grind [cornerOutwardPoint, cornerPoint, ghostOutwardNeighbor]
   · exact (ghostOutwardNeighbor_not_mem n x (h1 ▸ cornerPoint_mem n b)).elim
 
 /-- The event used in the outer wired conditioning, for positive inner radius. -/
-def cornerClosureEvent (n : ℕ) : Set (FK.Configuration
-    (squareLattice.induce (box (n + 1) : Set (ℤ × ℤ)))) :=
+def cornerClosureEvent (n : ℕ)  :=
   allClosedEdges (cornerCutEdges n)
 
 /-- The exact four-corner event has the uniform finite-energy lower bound. -/

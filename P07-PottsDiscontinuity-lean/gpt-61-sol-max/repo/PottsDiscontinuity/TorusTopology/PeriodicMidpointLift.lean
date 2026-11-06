@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusTopology.LoopMidpoints
 
@@ -20,7 +21,7 @@ lemma loopOrbit_add_period (ω : ArrowConfig N M) (s : Smoothing N M)
 
 /-- The two integer seam displacements of the chosen loop. -/
 noncomputable def loopDeckDisplacement (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) (i : Fin N) (j : Fin M) : ℤ × ℤ :=
+    (h : CompatibleConfig ω s) (d : DirectedDart ω) (i : Fin N) (j : Fin M)  :=
   ((N : ℤ) * loopSum ω s h (horizontalCross i) (directedLoopOf ω s h d),
    (M : ℤ) * loopVertical ω s h j (directedLoopOf ω s h d))
 
@@ -30,8 +31,8 @@ theorem loopLiftPosition_add_period (ω : ArrowConfig N M) (s : Smoothing N M)
     loopLiftPosition ω s h d (n + loopPeriod ω s h d) =
       loopLiftPosition ω s h d n + loopDeckDisplacement ω s h d i j := by
   have hsum (f : Dart N M → ℤ) :
-      (∑ k ∈ range (n + loopPeriod ω s h d), f ((directedStep ω s h)^[k] d).val) =
-      (∑ k ∈ range (loopPeriod ω s h d), f ((directedStep ω s h)^[k] d).val) +
+       ∑ k ∈ range (n + loopPeriod ω s h d), f ((directedStep ω s h)^[k] d).val  =
+       ∑ k ∈ range (loopPeriod ω s h d), f ((directedStep ω s h)^[k] d).val  +
       ∑ k ∈ range n, f ((directedStep ω s h)^[k] d).val := by
     rw [Nat.add_comm n,Finset.sum_range_add]
     congr 1
@@ -49,10 +50,14 @@ lemma rotatedMidpoint_translate (z v : ℤ × ℤ) (p : Port) :
     rotatedMidpoint (z+v) p = rotatedMidpoint z p + (v.1+v.2,v.2-v.1) := by
   cases p <;> ext <;> simp [rotatedMidpoint] <;> ring
 
+section
+
+variable (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s) (d : DirectedDart ω) (i : Fin N) (j : Fin M)
+
+
 /-- The square-lattice midpoint polygon is periodic with the corresponding
 rotated deck displacement, on the same actual ordered orbit. -/
-theorem loopMidpointPosition_add_period (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) (i : Fin N) (j : Fin M) (n : ℕ) :
+theorem loopMidpointPosition_add_period  (n : ℕ) :
     loopMidpointPosition ω s h d (n + loopPeriod ω s h d) =
       loopMidpointPosition ω s h d n +
         ((loopDeckDisplacement ω s h d i j).1 + (loopDeckDisplacement ω s h d i j).2,
@@ -62,8 +67,7 @@ theorem loopMidpointPosition_add_period (ω : ArrowConfig N M) (s : Smoothing N 
 
 /-- Nonzero winding is precisely nonzero translation of the midpoint lift. -/
 theorem rotated_loopDeckDisplacement_ne_zero_iff
-    (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s)
-    (d : DirectedDart ω) (i : Fin N) (j : Fin M) :
+     :
     ((loopDeckDisplacement ω s h d i j).1 + (loopDeckDisplacement ω s h d i j).2,
      (loopDeckDisplacement ω s h d i j).2 - (loopDeckDisplacement ω s h d i j).1) ≠ (0,0) ↔
       loopVertical ω s h j (directedLoopOf ω s h d) ≠ 0 ∨
@@ -76,5 +80,7 @@ theorem rotated_loopDeckDisplacement_ne_zero_iff
   simp only [ne_eq,hrot]
   simp only [loopDeckDisplacement,mul_eq_zero,hN0,hM0,false_or,not_and_or]
   exact or_comm
+
+end
 
 end PottsDiscontinuity.TorusTopology

@@ -1,6 +1,7 @@
 /- Original bridge proofs for the frozen random-cluster cylinder definition.
 The graph-edge embedding follows the same source. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.BoxLaw
 public import PottsDiscontinuity.FK.EndpointLimits
@@ -15,8 +16,7 @@ namespace PottsDiscontinuity.FK
 noncomputable section
 
 /-- The original whole-lattice edge represented by an edge of a finite induced domain. -/
-def frozenEdgeEmbedding (S : Finset (ℤ × ℤ)) :
-    (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet ↪ squareLattice.edgeSet :=
+def frozenEdgeEmbedding (S : Finset (ℤ × ℤ))  :=
   (show squareLattice.induce (S : Set (ℤ × ℤ)) ↪g squareLattice from
     { toFun := Subtype.val, inj' := Subtype.val_injective, map_rel_iff' := Iff.rfl }).mapEdgeSet
 
@@ -28,7 +28,7 @@ def patternCylinder (A : Finset squareLattice.edgeSet)
 /-- Every finite edge pattern is clopen in the product topology. -/
 theorem patternCylinder_isClopen (A : Finset squareLattice.edgeSet)
     (ξ : squareLattice.edgeSet → Bool) : IsClopen (patternCylinder A ξ) := by
-  classical
+  
   induction A using Finset.induction_on with
   | empty => simpa [patternCylinder] using isClopen_univ (X := LatticeConfiguration)
   | insert e A he ih =>
@@ -37,7 +37,7 @@ theorem patternCylinder_isClopen (A : Finset squareLattice.edgeSet)
         ext ω
         simp [patternCylinder]
       rw [h]
-      exact ((isClopen_discrete ({ξ e} : Set Bool)).preimage (continuous_apply e)).inter ih
+      exact ((isClopen_discrete  {ξ e} ).preimage (continuous_apply e)).inter ih
 
 /-- The exact frozen finite law, mapped by any chosen whole-lattice extension. -/
 def frozenExtendedProbabilityMeasure (θ : Parameters) (S : Finset (ℤ × ℤ)) (i : Fin 2)
@@ -68,9 +68,7 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
           Sym2.map Subtype.val f.1 = e.1 ∧ ω f = ξ e := by
     have hvalue (f : (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet) :
         ext (boolConfigurationEquiv _ ω) (frozenEdgeEmbedding S f) = ω f := by
-      rw [hExt]
-      simp only [mem_boolConfigurationEquiv]
-      cases ω f <;> rfl
+      aesop
     constructor
     · intro h e he
       obtain ⟨f, hf⟩ := hA e he
@@ -92,8 +90,7 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
   refine Finset.sum_bij (fun ω _ => boolConfigurationEquiv _ ω) ?_ ?_ ?_ ?_
   · intro ω _
     simp only [Finset.mem_univ]
-  · intro ω _ η _ h
-    exact (boolConfigurationEquiv _).injective h
+  · simp_all
   · intro C _
     exact ⟨(boolConfigurationEquiv _).symm C, Finset.mem_univ _,
       (boolConfigurationEquiv _).apply_symm_apply C⟩
@@ -111,7 +108,7 @@ theorem isRCInfiniteVolumeLimit_of_extended_tendsto (θ : Parameters) (i : Fin 2
     (μ : ProbabilityMeasure LatticeConfiguration)
     (hμ : Tendsto (fun n => frozenExtendedProbabilityMeasure θ (S n) i (ext n))
       atTop (𝓝 μ)) : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ.toMeasure := by
-  have hS' : S = box := funext hS
+  have hS'  := funext hS
   subst S
   constructor
   · exact μ.prop
@@ -121,21 +118,14 @@ theorem isRCInfiniteVolumeLimit_of_extended_tendsto (θ : Parameters) (i : Fin 2
     have hreal : Tendsto
         (fun n => (frozenExtendedProbabilityMeasure θ (box n) i (ext n)).toMeasure.real
           (patternCylinder A ξ)) atTop (𝓝 (μ.toMeasure.real (patternCylinder A ξ))) := by
-      simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn, Function.comp_def] using
-        NNReal.continuous_coe.continuousAt.tendsto.comp hconv
+      simp_all
     refine hreal.congr' ?_
-    have hsupp : ∀ᶠ n : ℕ in atTop, ∀ e ∈ A,
-        ∃ f : (squareLattice.induce (box n : Set (ℤ × ℤ))).edgeSet,
-          Sym2.map Subtype.val f.1 = e.1 :=
-      (eventually_all_finset A).2 fun e _ => eventually_edge_lift_box e
-    filter_upwards [hsupp] with n hn
-    have hA : ∀ e ∈ A, ∃ f, frozenEdgeEmbedding (box n) f = e := by
-      intro e he
-      obtain ⟨f, hf⟩ := hn e he
-      exact ⟨f, Subtype.ext hf⟩
-    have h := frozenExtendedProbabilityMeasure_pattern θ (box n) i (ext n)
-      (hExt n) A ξ hA
-    rw [h]
+    
+    filter_upwards [ (eventually_all_finset A).2 fun e _ => eventually_edge_lift_box e ] with n hn
+    
+    
+    rw [ frozenExtendedProbabilityMeasure_pattern θ (box n) i (ext n)
+           (hExt n) A ξ  fun e he => Exists.casesOn (hn e he) fun f hf => Exists.intro f (Subtype.ext hf)  ]
     refine Finset.sum_congr ?_ ?_
     · ext ω
       simp only [Finset.mem_univ]

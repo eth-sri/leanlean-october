@@ -15,14 +15,14 @@ existence theorem supplies the simplices used in the fixed-point argument.
 
 open Classical
 
-section completeness
+section
 
 lemma complete_simplex_iff {SC} m I(hs : simplex SC m I) :
     complete_simplex SC m I ↔ ∀ c, c ≤ m → ∃ i, SC.RL (I i) = c := by {
   apply Iff.intro
   {
     intro h1 c hc
-    rwa [← Set.mem_range, h1.2, Set.mem_ofPred_eq]
+    rwa [← Set.mem_range, h1.2]
   }
   {
     intro c1
@@ -35,14 +35,13 @@ lemma complete_simplex_iff {SC} m I(hs : simplex SC m I) :
       intro c hc
       simp only [Set.mem_range, c1 c hc]
     }
-    let f1 := fun (j : ℕ ) ↦ SC.RL (I (Fin.ofNat _ j))
+    let f1 := fun j ↦ SC.RL (I (Fin.ofNat _ j))
     apply Finset.card_le_card_of_surjOn f1
     intro j h1
-    simp only [Set.toFinset_range, Finset.coe_image, Finset.coe_univ, Set.image_univ,
-      Set.mem_range] at h1
+    simp only [Set.toFinset_range, Finset.coe_image, Finset.coe_univ, Set.image_univ] at h1
     obtain ⟨ i, hi⟩ := h1
     use i
-    simp only [Set.coe_toFinset, Set.mem_ofPred_eq]
+    simp only [Set.coe_toFinset]
     apply And.intro (Fin.is_le i)
     unfold f1
     rw [← hi]
@@ -53,13 +52,8 @@ lemma complete_simplex_iff {SC} m I(hs : simplex SC m I) :
 lemma rl_inj_of_complete {SC} m I (hcs : complete_simplex SC m I):
     ∀ i1 i2, SC.RL (I i1) = SC.RL (I i2) → i1 = i2 := by {
   let f1 : Fin (m+1) → Fin (m+1) := fun j ↦ Fin.ofNat _ (SC.RL (I j))
-  suffices h1 : Function.Injective f1 by {
-    intro i1 i2 h2
-    apply h1
-    unfold f1
-    rw [h2]
-  }
-  have h2 := hcs.2
+  suffices h1 : Function.Injective f1 by aesop
+  
   apply Function.Surjective.injective_of_finite
   rfl
   rw [complete_simplex_iff _ _ hcs.1] at hcs
@@ -83,8 +77,8 @@ lemma char_complete_face {SC n1 hn1} I J (hs : simplex SC SC.n J) :
     use i
     apply And.intro hi1
     intro c hc
-    have h2 := (complete_simplex_iff n1 I h1.1.1).mp h1.1 c hc
-    obtain ⟨j, hj⟩ := h2
+    
+    obtain ⟨j, hj⟩ :=  (complete_simplex_iff n1 I h1.1.1).mp h1.1 c hc 
     rw [← hj, hi1]
     unfold delete_vertex
     use @insert_index SC n1 hn1 i j
@@ -106,8 +100,8 @@ lemma char_complete_face {SC n1 hn1} I J (hs : simplex SC SC.n J) :
     rw [complete_simplex_iff n1 I hface.1]
     intro c hc
     obtain ⟨i2, hi2⟩ := hi1.2 c hc
-    have h3 := @almost_surjective_of_insert_index SC n1 hn1 i i2 hi2.1
-    obtain ⟨j, hj⟩ := h3
+    
+    obtain ⟨j, hj⟩ :=  @almost_surjective_of_insert_index SC n1 hn1 i i2 hi2.1 
     use j
     rw [hi1.1, ← hi2.2, hj]
     rfl
@@ -121,42 +115,39 @@ lemma complete_child_uniq {SC n1} {hn1 : n1 + 1 = SC.n} J (hcs : complete_simple
     simp only [Set.mem_ofPred_eq, le_refl]
   }
   obtain ⟨ i, hi⟩ := h4
-  let I := @delete_vertex SC n1 hn1 i J
-  have hs2 : simplex SC n1 I := by {
-    apply delete_vertex_simplex
-    exact hcs.1
-  }
-  use I
-  have h1 : complete_simplex SC n1 I ∧ is_face SC I J := by
-  {
-    rw [@char_complete_face SC n1 hn1 _ _ hcs.1]
-    use i
-    apply And.intro rfl
-    rw [complete_simplex_iff] at hcs
-    {
-      intro c hc
-      have h3 : c ≤ SC.n := by omega
-      obtain ⟨i2, hi2 ⟩ := hcs c h3
-      use i2
-      apply And.intro _ hi2
-      intro h4
-      rw [h4, hi, ← hn1] at hi2
-      rw [← hi2] at hc
-      revert hc
-      simp only [add_le_iff_nonpos_right, nonpos_iff_eq_zero, one_ne_zero, imp_self]
-    }
-    {
-      exact hcs.1
-    }
-  }
+  
+  
+  use  @delete_vertex SC n1 hn1 i J 
+  
   simp only
-  apply And.intro h1
+  apply And.intro (by
+                   {
+                     rw [@char_complete_face SC n1 hn1 _ _ hcs.1]
+                     use i
+                     apply And.intro rfl
+                     rw [complete_simplex_iff] at hcs
+                     {
+                       intro c hc
+                       
+                       obtain ⟨i2, hi2 ⟩ := hcs c (by omega)
+                       use i2
+                       apply And.intro _ hi2
+                       intro h4
+                       rw [h4, hi, ← hn1] at hi2
+                       rw [← hi2] at hc
+                       revert hc
+                       simp only [add_le_iff_nonpos_right, nonpos_iff_eq_zero, one_ne_zero, imp_self]
+                     }
+                     {
+                       exact hcs.1
+                     }
+                   })
   intro I2 h2
   rw [@char_complete_face SC n1 hn1 _ _ hcs.1] at h2
   obtain ⟨ i2, hi2 ⟩ := h2
   have h2 : SC.RL (J i2) = SC.n := by {
     let c2 := SC.RL (J i2)
-    suffices h3 : ¬ (c2 ≤ n1) by {
+    suffices h3 : ¬  c2 ≤ n1  by {
       apply le_antisymm (SC.rl_proper (J i2)).1
       omega
     }
@@ -171,7 +162,7 @@ lemma complete_child_uniq {SC n1} {hn1 : n1 + 1 = SC.n} J (hcs : complete_simple
   }
   apply rl_inj_of_complete SC.n J hcs
   rw [h2]
-  exact (Eq.symm hi)
+  exact  Eq.symm hi 
 }
 
 lemma incomplete_childs {SC n1} {hn1 : n1 + 1 = SC.n} J (hs : simplex SC SC.n J)
@@ -179,14 +170,7 @@ lemma incomplete_childs {SC n1} {hn1 : n1 + 1 = SC.n} J (hs : simplex SC SC.n J)
     Even (Finset.card { I : Fin (n1 + 1) → SC.G | complete_simplex SC n1 I ∧ is_face SC I J}) := by {
   let S : Finset _:= { I : Fin (n1 + 1) → SC.G | complete_simplex SC n1 I ∧ is_face SC I J}
   let c := S.card
-  suffices h1 : c > 0 → c = 2 by {
-    suffices h2 : Even c by {exact h2}
-    by_cases h3 : c > 0
-    rw [h1 h3]
-    exact even_two
-    use 0
-    omega
-  }
+  suffices h1 : c > 0 → c = 2 by grind
   intro cpos
   have h1 : Finset.Nonempty S := by {
     apply Finset.card_ne_zero.mp
@@ -198,26 +182,26 @@ lemma incomplete_childs {SC n1} {hn1 : n1 + 1 = SC.n} J (hs : simplex SC SC.n J)
   simp only [Finset.mem_filter, Finset.mem_univ, true_and] at h1
   obtain ⟨i1, hi1 ⟩ := (@char_complete_face SC n1 hn1 I1 J hs).mp h1
   apply Finset.card_eq_two.mpr
-  have h2 : SC.RL (J i1) ≤ n1 := by {
-    by_contra h3
-    apply hnc
-    rw [complete_simplex_iff _ _ hs]
-    intro c hc
-    by_cases h4 : c ≤ n1
-    {
-      obtain ⟨i2, hi2 ⟩ := hi1.2 c h4
-      use i2
-      exact hi2.2
-    }
-    {
-      use i1
-      have h6 : c = SC.n := le_antisymm hc (le_of_eq_of_le hn1.symm (not_le.mp h4))
-      rw [h6]
-      apply le_antisymm (SC.rl_proper (J i1)).1
-      exact le_of_eq_of_le hn1.symm (not_le.mp h3)
-    }
-  }
-  obtain ⟨i2, hi2⟩ := hi1.2 (SC.RL (J i1)) h2
+  
+  obtain ⟨i2, hi2⟩ := hi1.2 (SC.RL (J i1)) (by {
+                                              by_contra h3
+                                              apply hnc
+                                              rw [complete_simplex_iff _ _ hs]
+                                              intro c hc
+                                              by_cases h4 : c ≤ n1
+                                              {
+                                                obtain ⟨i2, hi2 ⟩ := hi1.2 c h4
+                                                use i2
+                                                exact hi2.2
+                                              }
+                                              {
+                                                use i1
+                                                
+                                                rw [ le_antisymm hc (le_of_eq_of_le hn1.symm (not_le.mp h4)) ]
+                                                apply le_antisymm (SC.rl_proper (J i1)).1
+                                                exact le_of_eq_of_le hn1.symm (not_le.mp h3)
+                                              }
+                                            })
   let I2 := @delete_vertex SC n1 hn1 i2 J
   have hI2S : I2 ∈ S := by {
     unfold S
@@ -259,18 +243,12 @@ lemma incomplete_childs {SC n1} {hn1 : n1 + 1 = SC.n} J (hs : simplex SC SC.n J)
     by_contra h4
     simp only [not_or] at h4
     rw [hi1.1] at h4
-    have h7 : ∀ i4, ¬ (I3 = @delete_vertex SC n1 hn1 i4 J) → i4 ≠ i3 := by {
-      intro i4 h8 h9
-      apply h8
-      rw [hi3.1, h9]
-    }
+    have h7 : ∀ i4, ¬  I3 = @delete_vertex SC n1 hn1 i4 J  → i4 ≠ i3 := by aesop
     have h5 := @almost_surjective_of_insert_index SC n1 hn1 i3
     obtain ⟨ k1, hk1 ⟩ := h5 i1 (h7 i1 h4.1)
     obtain ⟨ k2, hk2 ⟩ := h5 i2 (h7 i2 h4.2)
     apply hi2.1
-    suffices h7 : k1 = k2 by {
-      rw [hk1, hk2, h7]
-    }
+    suffices h7 : k1 = k2 by simp_all
     apply rl_inj_of_complete n1 I3 h31.1
     rw [hi3.1]
     unfold delete_vertex
@@ -312,14 +290,8 @@ lemma complete_boundary_face_last {SC n1} {hn1 : n1 + 1 = SC.n} (I : Fin (n1 + 1
   {
     rename_i h1
     obtain ⟨ j2, hj2⟩ := h1
-    have hj3 i : (I i j2).1 = SC.p := by {
-      rw [hj2 i]
-      exact Fin.val_last SC.p
-    }
-    suffices h3 : j = j2 by {
-      intro i
-      rw [h3, hj3 i]
-    }
+    have hj3 i : (I i j2).1 = SC.p := by simp_all
+    suffices h3 : j = j2 by simp_all
     have h3 := SC.rl_proper
     obtain ⟨i, hi⟩ := h4 n1 (Nat.le_refl n1)
     have h5 := ((SC.rl_proper (I i)).2 j2).2 (hj3 i)
@@ -330,14 +302,19 @@ lemma complete_boundary_face_last {SC n1} {hn1 : n1 + 1 = SC.n} (I : Fin (n1 + 1
   }
 }
 
-end completeness
+end
 
-section handshake
+section
 
 variable {A B : Type*}
 variable [Fintype A] [Fintype B]
 
-lemma handshake_3 (r : A → B → Prop) (c : A → Prop)
+section
+
+variable (r : A → B → Prop)
+include r
+
+lemma handshake_3  (c : A → Prop)
     (h1 : ∀ a, c a ↔ Odd (Finset.card {b | r a b}))
     : Odd (Finset.card {a | c a}) ↔ Odd (∑ a, Finset.card {b | r a b}) := by {
   rw [Finset.odd_sum_iff_odd_card_odd]
@@ -347,21 +324,19 @@ lemma handshake_3 (r : A → B → Prop) (c : A → Prop)
   exact h1 a
 }
 
-lemma handshake_2 (r : A → B → Prop)
+lemma handshake_2 
     (c : A → Prop) (d : B → Prop)
     (h1 : ∀ a, c a ↔ Odd (Finset.card {b | r a b}))
     (h2 : ∀ b, d b ↔ Odd (Finset.card {a | r a b})) :
     Odd (Finset.card {a | c a}) → Odd (Finset.card {b | d b}) := by {
   intro h3
-  have h5 : ∑ a, Finset.card {b | r a b} = ∑ b, Finset.card {a | r a b} := by {
-    apply Finset.sum_card_bipartiteAbove_eq_sum_card_bipartiteBelow
-  }
+  have h5 : ∑ a, Finset.card {b | r a b} = ∑ b, Finset.card {a | r a b} := Finset.sum_card_bipartiteAbove_eq_sum_card_bipartiteBelow r
   let r2 b a := r a b
   rw [handshake_3 r2 d h2, ←h5]
   rwa [←handshake_3 r c h1]
 }
 
-lemma handshake_1 (r : A → B → Prop)
+lemma handshake_1 
     (c1 c2 c3: A → Prop) (d1 d2: B → Prop)
     (h1 : ∀ b, d1 b → ∃! a, c2 a ∧ r a b)
     (h2 : ∀ b, d2 b → ¬ d1 b → Even (Finset.card { a | c2 a ∧ r a b}))
@@ -382,7 +357,7 @@ lemma handshake_1 (r : A → B → Prop)
     {
       intro p2
       use 0
-      rwa [mul_zero, zero_add]
+      rwa [mul_zero]
     }
     {
       intro p2
@@ -425,21 +400,18 @@ lemma handshake_1 (r : A → B → Prop)
         rw [p4]
         simp only [Nat.not_odd_zero, imp_self]
       }
-      have p3 : d2 b := by {
-        obtain ⟨a, p6⟩ := p5
-        apply h7 b a
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at p6
-        exact p6.2
-      }
+      
       revert p2
-      have p4 := h2 b p3 p1
+      have p4 := h2 b (by grind) p1
       simp only [imp_false, Nat.not_odd_iff_even]
       convert! p4
     }
   }
 }
 
-end handshake
+end
+
+end
 
 lemma odd_of_boundary_faces SC {n1} {hn1 : n1 + 1 = SC.n}:
     Odd (Finset.card { I : Fin (n1 + 1) → SC.G | complete_boundary_face SC I})
@@ -456,7 +428,7 @@ lemma odd_of_boundary_faces SC {n1} {hn1 : n1 + 1 = SC.n}:
   exact fun _ _ h1 ↦ h1.2.1
 }
 
-section induction_step
+section
 
 variable (SC : SpernerCube)
 variable {n1 : ℕ}
@@ -481,12 +453,12 @@ lemma child_map_applied [NeZero SC.n] {hn1 : n1 + 1 = SC.n} (v : Fin n1 → Fin 
   dsimp only [child_map]
   cases n1
   exact Fin.elim0 i
-  rename_i n2
-  simp only [Nat.succ_eq_add_one]
-  have h5 : i.1 + 1 < SC.n := by omega
+  
+  
+  
   have h2 : i.1 < SC.n := by omega
-  have h3 := Fin.val_cast_of_lt h2
-  rw [Fin.ofNat_eq_cast, h3]
+  
+  rw [Fin.ofNat_eq_cast,  Fin.val_cast_of_lt h2 ]
   have h6 : i.1 + 1 ≠ SC.n := by omega
   simp only [h6, ↓reduceIte, Fin.ofNat_eq_cast, Fin.cast_val_eq_self]
 }
@@ -520,26 +492,21 @@ lemma child_map_surj_on {hn1 : n1 + 1 = SC.n} w
   {
     simp only
     have h2 := h1 0
-    simp only [Fin.val_zero, zero_add] at h2 hn1
-    have h3 : i = 0 := by {
-      have h4 := i.2
-      simp only [← hn1] at h4
-      ext
-      simp only [Fin.val_zero]
-      exact Nat.lt_one_iff.mp h4
-    }
+    simp only [Fin.val_zero] at h2 hn1
+    have h3 : i = 0 := by
+                         omega
     rw [h3]
-    exact Fin.eq_of_val_eq (id (Eq.symm (h2 hn1)))
+    exact Fin.eq_of_val_eq  (Eq.symm (h2 hn1)) 
   }
   {
     rename_i n2
     have h2 := h1 i
     by_cases h3 : i.1 +1 = SC.n
     {
-      simp only [h3, ↓reduceIte]
+      simp only [h3]
       exact Eq.symm (Fin.eq_of_val_eq (h1 i h3))
     }
-    simp only [h3, ↓reduceIte, Nat.succ_eq_add_one]
+    simp only [h3, ↓reduceIte]
     unfold v2
     congr
     simp only [Fin.ofNat_eq_cast]
@@ -561,7 +528,7 @@ def child_cube {hn1 : n1 + 1 = SC.n}: SpernerCube where
       rw [← hn1]
       exact instNeZeroNatHAdd_1
     }
-    have h1 := child_map_last SC v
+    
     have h2 := SC.rl_proper (child_map SC v)
     apply And.intro
     {
@@ -585,24 +552,18 @@ def child_cube {hn1 : n1 + 1 = SC.n}: SpernerCube where
     exact hn1
   }
 
-end induction_step
+end
 
 lemma induction_start (SC : SpernerCube) (h0 : 0 = SC.n)
     : Odd (Finset.card { I | complete_simplex SC SC.n I}) := by {
   use 0
   simp only [mul_zero, zero_add]
   rw [←Fintype.existsUnique_iff_card_one]
-  let b : SC.G := fun _ ↦ 0
-  let a : Fin (SC.n + 1) → SC.G := fun _ ↦ b
+  
+  let a : Fin (SC.n + 1) → SC.G := fun _ ↦  fun _ ↦ 0 
   use a
-  simp only
-  have h1 (x : Fin (SC.n+1)) : x = 0 := by {
-    ext
-    simp only [Fin.val_zero]
-    rw [← Nat.lt_one_iff]
-    apply Fin.val_lt_of_le x
-    rw [←h0]
-  }
+  
+  have h1 (x : Fin (SC.n+1)) : x = 0 := by grind
   have hf (j : Fin SC.n) : False := by {
     apply Fin.elim0
     rwa [h0]
@@ -621,11 +582,11 @@ lemma induction_start (SC : SpernerCube) (h0 : 0 = SC.n)
   {
     ext i
     simp only [← h0]
-    simp only [Set.mem_range, nonpos_iff_eq_zero, Set.ofPred_eq_eq_singleton, Set.mem_singleton_iff]
+    simp only [Set.mem_range, nonpos_iff_eq_zero]
     have h3 : ∀ c, SC.RL (a c) = 0 := by {
       intro c
       have h2 := (SC.rl_proper (a c)).1
-      simp only [← h0] at h2
+      
       omega
     }
     apply Iff.intro
@@ -634,7 +595,7 @@ lemma induction_start (SC : SpernerCube) (h0 : 0 = SC.n)
       cases h2
       rename_i c hc
       rw [h3 c] at hc
-      exact (Eq.symm hc)
+      exact  Eq.symm hc 
     }
     {
       intro hi0
@@ -667,11 +628,11 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
       rw [← hk1]
       exact instNeZeroNatHAdd_1
     }
-    have h2 := hind SC2 rfl
-    apply Eq.mpr _ h2
+    
+    apply Eq.mpr _ (hind SC2 rfl)
     apply congrArg
     let f1 : SC2.G → SC1.G := child_map SC1
-    let f2 : (Fin (k+1)→ SC2.G) → (Fin (k+1)→ SC1.G) := fun a ↦ fun b ↦ f1 (a b)
+    let f2 : (Fin (k+1)→ SC2.G) →  Fin (k+1)→ SC1.G  := fun a ↦ fun b ↦ f1 (a b)
     have hf1inj : Function.Injective f1 := by {
       apply child_map_inj SC1
       rw [← hk1]
@@ -688,7 +649,7 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
         intro hs
         apply @case_B_boundary SC1 k hk1
         exact hs
-        use (Fin.ofNat _ k)
+        use  Fin.ofNat _ k 
         intro i
         ext
         apply h_last
@@ -717,8 +678,8 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
         apply Iff.intro
         {
           intro h4 j
-          have h6 k : (f2 I k (Fin.ofNat _ j.1)) = (I k j) := by {
-            unfold f2
+          have h6 k :  f2 I k (Fin.ofNat _ j.1)  =  I k j  := by {
+            
             apply child_map_applied
             rw [← hk1]
             rfl
@@ -739,25 +700,18 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
             repeat' exact h5
           }
           {
-            have h7 : j.1 < SC2.n := by {
-              rw [h3]
-              have h6 := j.2
-              simp only [← hk1] at h5 h6
-              omega
-            }
-            have hn02 : NeZero SC2.n := by {
-              exact NeZero.of_gt hi1
-            }
-            let j2 : Fin SC2.n := (Fin.ofNat _ j.1)
-            have h8 : j = (Fin.ofNat _ j2.1) := by {
+            have h7 : j.1 < SC2.n := by grind
+            have hn02 : NeZero SC2.n := NeZero.of_gt hi1
+            let j2 : Fin SC2.n :=  Fin.ofNat _ j.1 
+            have h8 : j =  Fin.ofNat _ j2.1  := by {
               unfold j2
               simp only [Fin.ofNat_eq_cast,]
               rw [Fin.val_cast_of_lt]
               exact Eq.symm (Fin.cast_val_eq_self j)
               exact h7
             }
-            have h6 k : (f2 I k j) = (I k j2) := by {
-              unfold f2
+            have h6 k :  f2 I k j  =  I k j2  := by {
+              
               rw [h8]
               apply child_map_applied
               exact hk1
@@ -775,10 +729,10 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
     apply Finset.card_nbij f2
     {
       intro I hI
-      have hI' : complete_simplex SC2 k I := by
-        simpa only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] using hI
+      
       simpa only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and]
-        using (hcomp I).mpr hI'
+        using (hcomp I).mpr (by
+                               simp_all)
     }
     {
       intro I1 h41 I2 h42 h5
@@ -799,8 +753,8 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
           exact h5 i
         }
         intro i
-        have h5 := @child_map_surj_on SC1 k hk1
-        apply h5
+        
+        apply  @child_map_surj_on SC1 k hk1 
         exact @complete_boundary_face_last SC1 k hk1 J h3 i
       }
       obtain ⟨I, h4⟩ := h4
@@ -814,8 +768,8 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
 }
 
 theorem weaker_cubical_sperner SC : ∃ I, complete_simplex SC SC.n I := by {
-  have h1 := strong_cubical_sperner SC.n SC rfl
-  obtain ⟨k1, hk1⟩ := h1
+  
+  obtain ⟨k1, hk1⟩ :=  strong_cubical_sperner SC.n SC rfl 
   have h2 : 0 < 2 * k1 + 1 := by omega
   rw [←hk1, Finset.card_pos] at h2
   obtain ⟨I, hI1⟩ := h2

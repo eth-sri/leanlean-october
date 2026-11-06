@@ -20,9 +20,9 @@ theorem cor34_final_eventually_normalizedBlockWave_ne_zero {N n : ℕ}
     ∀ᶠ ε in 𝓝[<] (0 : ℝ),
       cor34_normalizedBlockWave (N := N) ε (p ε) ≠ 0 := by
   have hsource := cor34_eventually_normalizedCoordinate_ne_zero hp hp0 hN hn
-  have hsourceLeft := hsource.filter_mono
-    (nhdsWithin_le_nhds (s := Set.Iio (0 : ℝ)))
-  filter_upwards [hsourceLeft, self_mem_nhdsWithin] with ε hsource hε
+  
+  filter_upwards [ hsource.filter_mono
+                     (nhdsWithin_le_nhds (s := Set.Iio  0 )) , self_mem_nhdsWithin] with ε hsource hε
   have hpos : cor34_sourceEvenPositions =
       fun k => BetheAnsatz.positions (cor34_evenCoordinateState hn) k + 1 := by
     funext k
@@ -31,10 +31,10 @@ theorem cor34_final_eventually_normalizedBlockWave_ne_zero {N n : ℕ}
     omega
   have hcoordinate :
       cor34_normalizedCoordinate ε (p ε) cor34_sourceEvenPositions =
-        Complex.exp (Complex.I * ((∑ j, p ε j : ℝ) : ℂ)) *
+        Complex.exp (Complex.I *   ∑ j, p ε j  ) *
           cor34_normalizedCoordinate ε (p ε)
             (BetheAnsatz.positions (cor34_evenCoordinateState hn)) := by
-    have hεne : ε ≠ 0 := ne_of_lt hε
+    have hεne  := ne_of_lt hε
     rw [cor34_normalizedCoordinate_eq_scaled_coordinateWave ε (p ε)
       cor34_sourceEvenPositions hεne,
       cor34_normalizedCoordinate_eq_scaled_coordinateWave ε (p ε)
@@ -43,16 +43,13 @@ theorem cor34_final_eventually_normalizedBlockWave_ne_zero {N n : ℕ}
     ring
   have hblock :
       cor34_normalizedCoordinate ε (p ε) cor34_sourceEvenPositions =
-        Complex.exp (Complex.I * ((∑ j, p ε j : ℝ) : ℂ)) *
+        Complex.exp (Complex.I *  (∑ j, p ε j ) ) *
           cor34_normalizedBlockWave (N := N) ε (p ε) (cor34_evenCoordinateState hn) := by
-    simpa [cor34_normalizedBlockWave] using hcoordinate
-  have hphase : Complex.exp (Complex.I * ((∑ j, p ε j : ℝ) : ℂ)) ≠ 0 :=
-    BetheAnsatz.coordinate_shift_phase_ne_zero (p ε)
+    assumption
+  
   have hvalue :
       cor34_normalizedBlockWave (N := N) ε (p ε) (cor34_evenCoordinateState hn) ≠ 0 := by
-    intro hz
-    apply hsource
-    rw [hblock, hz, mul_zero]
+    grind
   intro hwave
   exact hvalue (congrFun hwave (cor34_evenCoordinateState hn))
 

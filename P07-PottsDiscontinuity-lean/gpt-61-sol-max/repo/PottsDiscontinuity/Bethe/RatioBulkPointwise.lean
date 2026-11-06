@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.RatioInteriorQuadrature
 public import PottsDiscontinuity.Bethe.RatioPredecessor
@@ -37,40 +38,39 @@ theorem ratio_log_step_tendsto {ι : Type*} {l : Filter ι} {c : ℝ} (hc : 2 < 
     Tendsto (fun i => ratioInteriorTest (N i) (q i) (hq i)
       (fun j => (N i : ℝ) * (ratioEll c (q i j) - ratioEll c (a i j))) x) l
       (𝓝 (ratioEllPrime c x * E x * w x)) := by
-  let u : ι → ℝ := fun i => q i (ratioRootIndex (by omega) (q i) x)
-  let v : ι → ℝ := fun i => a i (ratioRootIndex (by omega) (q i) x)
-  have hu : Tendsto u l (𝓝 x) :=
-    ratio_rootIndex_tendsto (fun i => k i + 1) (fun i => by omega) q hq d hd hdnonneg hmesh hx
-  have hdiv : Tendsto (fun i => ((N i : ℝ) * (u i - v i)) / N i) l (𝓝 0) :=
-    he.div_atTop hNlim
-  have hv : Tendsto v l (𝓝 x) := by
-    have ht := hu.sub hdiv
-    rw [sub_zero] at ht
-    apply ht.congr
-    intro i
-    have hn : (N i : ℝ) ≠ 0 := by exact_mod_cast (hN i).ne'
-    field_simp
-    ring
-  have hlog := ratio_scaled_ell_tendsto hc hx hx0 u v (fun i => (N i : ℝ)) hu hv he
-  have hprod := hlog.mul hρ
+  
+  
+  have hu  :=
+    ratio_rootIndex_tendsto (fun i => k i + 1)  fun i => by omega  q hq d hd hdnonneg hmesh hx
+  
+  
+  
+  
   have hfirst := ratio_tendsto_root_left_of_eventual_mesh (fun i => k i + 1)
-    (fun i => by omega) q hq d hd hdnonneg hmesh (fun i => 0) 0 (fun i => le_rfl)
+     fun i => by omega  q hq d hd hdnonneg hmesh (fun i => 0) 0  fun i => le_rfl 
   have hlast : Tendsto (fun i => q i (Fin.last (k i))) l (𝓝 Real.pi) := by
-    have heq (i : ι) : q i (Fin.last (k i)) = -q i 0 := by
-      simpa only [Fin.rev_zero] using (hq i).2.2 0
-    simpa only [heq, neg_neg] using hfirst.neg
-  apply hprod.congr'
+    
+    simpa only [(fun (i : ι) => by
+                   simpa only [Fin.rev_zero] using (hq i).2.2 0), neg_neg] using hfirst.neg
+  apply ((ratio_scaled_ell_tendsto hc hx hx0 (fun i => q i (ratioRootIndex (by omega) (q i) x)) (fun i => a i (ratioRootIndex (by omega) (q i) x)) (fun i =>  N i ) hu (by
+                                                                                      have ht := hu.sub (he.div_atTop hNlim)
+                                                                                      rw [sub_zero] at ht
+                                                                                      apply ht.congr
+                                                                                      intro i
+                                                                                      have hn : (N i ) ≠ 0 := by exact_mod_cast (hN i).ne'
+                                                                                      field_simp
+                                                                                      ring) he).mul hρ).congr'
   filter_upwards [hfirst.eventually (gt_mem_nhds hx.1), hlast.eventually (lt_mem_nhds hx.2)]
     with i hleft hright
-  obtain ⟨hj, hcell⟩ := ratio_rootIndex_cell (show 0 < k i + 1 by omega) (q i) (hq i).2.1
-    (show q i ⟨0, by omega⟩ ≤ x from hleft.le)
-    (show x < q i ⟨k i + 1 - 1, by omega⟩ from hright)
+  obtain ⟨hj, hcell⟩ := ratio_rootIndex_cell (by omega) (q i) (hq i).2.1
+     hleft.le 
+     hright 
   let j : Fin (k i) := ⟨(ratioRootIndex (by omega) (q i) x).val, by omega⟩
   have hjcast : j.castSucc = ratioRootIndex (by omega) (q i) x := Fin.ext rfl
   have hjsucc : j.succ = ⟨(ratioRootIndex (by omega) (q i) x).val + 1, hj⟩ := Fin.ext rfl
-  have hcell' : q i j.castSucc ≤ x ∧ x < q i j.succ := by
-    rw [hjcast, hjsucc]
-    exact hcell
-  rw [ratio_interiorTest_eq_density (hq i) (hs i) _ j hcell', hjcast]
+  
+  rw [ratio_interiorTest_eq_density (hq i) (hs i) _ j (by
+                                                         rw [hjcast, hjsucc]
+                                                         exact hcell), hjcast]
 
 end PottsDiscontinuity.Bethe

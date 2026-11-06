@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.AsymptoticOffsetControl
 
@@ -16,43 +17,44 @@ open Set
 namespace PottsDiscontinuity.Bethe
 
 noncomputable def rootOffsetExtension {n : ℕ} (hn : 0 < n)
-    (q u : Fin n → ℝ) (K : NNReal) (x : ℝ) : ℝ :=
+    (q u : Fin n → ℝ) (K : NNReal) (x : ℝ)  :=
   Finset.univ.inf' (show (Finset.univ : Finset (Fin n)).Nonempty from
-    ⟨⟨0, hn⟩, Finset.mem_univ _⟩) (fun j => u j + K * |x - q j|)
+    ⟨⟨0, hn⟩, Finset.mem_univ _⟩)  fun j => u j + K * |x - q j| 
 
-theorem rootOffsetExtension_lipschitz {n : ℕ} (hn : 0 < n)
-    (q u : Fin n → ℝ) (K : NNReal) :
+section
+
+variable {n : ℕ} (hn : 0 < n) (q u : Fin n → ℝ) (K : NNReal)
+include hn q u K
+
+theorem rootOffsetExtension_lipschitz  :
     LipschitzWith K (rootOffsetExtension hn q u K) := by
-  classical
+  
   apply LipschitzWith.of_le_add_mul K
   intro x y
   obtain ⟨j, hj, he⟩ := Finset.exists_mem_eq_inf'
-    (show (Finset.univ : Finset (Fin n)).Nonempty from ⟨⟨0, hn⟩, Finset.mem_univ _⟩)
-    (fun j => u j + K * |y - q j|)
+     ⟨⟨0, hn⟩, Finset.mem_univ _⟩ 
+     fun j => u j + K * |y - q j| 
   have hupper : rootOffsetExtension hn q u K x ≤ u j + K * |x - q j| :=
     Finset.inf'_le _ hj
   change rootOffsetExtension hn q u K y = u j + K * |y - q j| at he
-  rw [he, Real.dist_eq]
+  rw [Real.dist_eq]
   have htri : |x - q j| ≤ |y - q j| + |x - y| := by
-    have := abs_add_le (x - y) (y - q j)
-    rw [sub_add_sub_cancel] at this
-    linarith
+    grind
   have := mul_le_mul_of_nonneg_left htri K.coe_nonneg
   linarith
 
-theorem rootOffsetExtension_at_root {n : ℕ} (hn : 0 < n)
-    (q u : Fin n → ℝ) (K : NNReal)
+theorem rootOffsetExtension_at_root 
     (hpair : ∀ i j, |u i - u j| ≤ (K : ℝ) * |q i - q j|) (j : Fin n) :
     rootOffsetExtension hn q u K (q j) = u j := by
-  classical
+  
   apply le_antisymm
   · have hi : rootOffsetExtension hn q u K (q j) ≤ u j + K * |q j - q j| :=
       Finset.inf'_le _ (Finset.mem_univ j)
-    simpa only [sub_self, abs_zero, mul_zero, add_zero] using hi
+    simp_all
   · apply Finset.le_inf'
-    intro i _
-    have := (abs_le.mp (hpair j i)).2
-    linarith
+    grind
+
+end
 
 /-- The continuous envelope and the source step function differ by at most
 the Lipschitz constant times the largest root gap. -/

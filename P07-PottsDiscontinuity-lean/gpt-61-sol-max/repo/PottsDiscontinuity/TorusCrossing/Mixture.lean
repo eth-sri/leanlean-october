@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.EmbeddedMarginalLaw
 public import PottsDiscontinuity.TorusCrossing.Fiber
@@ -18,16 +19,14 @@ therefore transfers to the ambient measure.
 
 namespace PottsDiscontinuity.TorusCrossing
 
-open PottsDiscontinuity
+
 open scoped Classical
 
 theorem bind_toMeasure_real {α β : Type*} [Fintype α] [MeasurableSpace β] (p : PMF α)
     (f : α → PMF β) (S : Set β) (hS : MeasurableSet S) :
     ((p.bind f).toMeasure S).toReal = ∑ a, (p a).toReal * ((f a).toMeasure S).toReal := by
   rw [PMF.toMeasure_bind_apply _ _ _ hS, tsum_fintype, ENNReal.toReal_sum]
-  · apply Finset.sum_congr rfl
-    intro a _
-    rw [ENNReal.toReal_mul]
+  · simp_all
   · intro a _
     exact ENNReal.mul_ne_top (PMF.apply_ne_top p a) (MeasureTheory.measure_ne_top _ _)
 
@@ -41,21 +40,20 @@ theorem embedded_mixture_lower {V W : Type*} [Finite V] [Finite W] (G : SimpleGr
     κ * (FK.measure H θ ξ {C | FK.embeddedConfigurationRestriction G H f hGH C ∈ S}).toReal ≤
       (FK.measure H θ ξ {C | FK.embeddedConfigurationRestriction G H f hGH C ∈ T}).toReal := by
   let : Fintype H.edgeSet := Fintype.ofFinite _
-  let : Fintype G.edgeSet := Fintype.ofFinite _
-  let : DecidableEq H.edgeSet := Classical.decEq _
-  let : Fintype (FK.RemovedConfiguration H (FK.subgraphRemovedEdges (G.map f) H)) :=
-    Fintype.ofFinite _
-  have hmix := FK.law_embeddedConfigurationRestriction_eq_bind_frozenMarginal G H f hGH θ ξ
-  have key : ∀ U : Set (FK.Configuration G),
+  
+  
+  
+  
+  have key : ∀ U ,
       (FK.measure H θ ξ {C | FK.embeddedConfigurationRestriction G H f hGH C ∈ U}).toReal =
         ∑ K, ((FK.frozenMarginalLaw θ ξ (FK.subgraphRemovedEdges (G.map f) H)) K).toReal *
           (FK.measure G θ (FK.isolatedExtensionPullbackBoundary f (FK.frozenBoundary ξ K.val)) U).toReal := by
     intro U
     have h1 : FK.measure H θ ξ {C | FK.embeddedConfigurationRestriction G H f hGH C ∈ U} =
-        ((PMF.map (FK.embeddedConfigurationRestriction G H f hGH) (FK.law H θ ξ)).toMeasure U) := by
+         (PMF.map (FK.embeddedConfigurationRestriction G H f hGH) (FK.law H θ ξ)).toMeasure U  := by
       rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top MeasurableSpace.measurableSet_top]
       rfl
-    rw [h1, hmix, bind_toMeasure_real _ _ _ MeasurableSpace.measurableSet_top]
+    rw [h1,  FK.law_embeddedConfigurationRestriction_eq_bind_frozenMarginal G H f hGH θ ξ , bind_toMeasure_real _ _ _ MeasurableSpace.measurableSet_top]
     rfl
   rw [key S, key T, Finset.mul_sum]
   apply Finset.sum_le_sum
@@ -72,7 +70,7 @@ theorem torus_event_image {N M : ℕ} (hN : Even N) (hM : Even M) (hNp : 0 < N) 
       {C | P (openMedials Q.pData (FK.embeddedConfigurationRestriction Q.pG (fullDiamondGraph hN hM)
         (iota Q hN hM hNp hMp hQN hQM) (iota_le Q hN hM hNp hMp hQN hQM) C))} := by
   ext C
-  simp only [Set.mem_image, Set.mem_ofPred_eq]
+  simp only [Set.mem_ofPred_eq]
   constructor
   · rintro ⟨A, hA, rfl⟩
     rwa [openMedials_restr_torus Q hN hM hNp hMp hN4 hM4 hQN hQM A]
@@ -93,11 +91,11 @@ theorem torus_bl {N M : ℕ} (q : Set.Ici (1 : ℝ)) (hN : Even N) (hM : Even M)
     torusRCProbability_eq_fk_image hN hM hN4 hM4 q,
     torus_event_image hN hM hNp hMp hN4 hM4 Q hQN hQM,
     torus_event_image hN hM hNp hMp hN4 hM4 Q hQN hQM]
-  have := embedded_mixture_lower Q.pG (fullDiamondGraph hN hM) (iota Q hN hM hNp hMp hQN hQM)
-    (iota_le Q hN hM hNp hMp hQN hQM) (torusRCBridgeParameters q) (FK.BoundaryCondition.free ∅)
-    {C' | Q.barAll bB bT (openMedials Q.pData C')} {C' | Q.crossEv bB bT (openMedials Q.pData C')}
-    (FK.measure Q.pG (critParams q) Q.sepBC Q.crossP).toReal
-    (fun η => Rect.board_bl q hg η)
-  exact this
+   
+  exact (embedded_mixture_lower Q.pG (fullDiamondGraph hN hM) (iota Q hN hM hNp hMp hQN hQM)
+           (iota_le Q hN hM hNp hMp hQN hQM) (torusRCBridgeParameters q) (FK.BoundaryCondition.free ∅)
+           {C' | Q.barAll bB bT (openMedials Q.pData C')} {C' | Q.crossEv bB bT (openMedials Q.pData C')}
+           (FK.measure Q.pG (critParams q) Q.sepBC Q.crossP).toReal
+            (Rect.board_bl q hg))
 
 end PottsDiscontinuity.TorusCrossing

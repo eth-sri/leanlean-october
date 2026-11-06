@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.SmoothingSum
 
@@ -55,8 +56,7 @@ def edgeReverse : Dart N M → Dart N M
 
 @[simp] theorem edgeReverse_involutive : Function.Involutive (@edgeReverse N M) := by
   rintro ⟨⟨i, j⟩, p⟩
-  cases p <;> simp only [edgeReverse, prv, nxt,
-    Equiv.apply_symm_apply, Equiv.symm_apply_apply]
+  cases p <;> simp only [edgeReverse, Equiv.apply_symm_apply, Equiv.symm_apply_apply]
 
 /-- The edge-reversal permutation. -/
 def edgePerm (N M : ℕ) : Equiv.Perm (Dart N M) :=
@@ -80,16 +80,23 @@ def strandPerm (s : Smoothing N M) : Equiv.Perm (Dart N M) :=
 def stepPerm (s : Smoothing N M) : Equiv.Perm (Dart N M) :=
   (edgePerm N M).trans (strandPerm s)
 
-@[simp] theorem stepPerm_apply (s : Smoothing N M) (d : Dart N M) :
+section
+
+variable (s : Smoothing N M) (d : Dart N M)
+
+
+@[simp] theorem stepPerm_apply  :
     stepPerm s d = strandReverse s (edgeReverse d) := rfl
 
-@[simp] theorem stepPerm_symm_apply (s : Smoothing N M) (d : Dart N M) :
+@[simp] theorem stepPerm_symm_apply  :
     (stepPerm s).symm d = edgeReverse (strandReverse s d) := rfl
 
 /-- Edge reversal conjugates a path step into its inverse. -/
-theorem edgeReverse_step (s : Smoothing N M) (d : Dart N M) :
+theorem edgeReverse_step  :
     edgeReverse (stepPerm s d) = (stepPerm s).symm (edgeReverse d) := by
   simp
+
+end
 
 /-- Whether a local edge slot points out of its vertex. -/
 def localOut (l r d u : Bool) : Port → Bool
@@ -105,25 +112,29 @@ def dartOut (ω : ArrowConfig N M) (d : Dart N M) : Bool :=
 @[simp] theorem dartOut_edgeReverse (ω : ArrowConfig N M) (d : Dart N M) :
     dartOut ω (edgeReverse d) = !dartOut ω d := by
   rcases d with ⟨⟨i, j⟩, p⟩
-  cases p <;> simp only [dartOut, localOut, edgeReverse, ArrowConfig.left,
-    ArrowConfig.right, ArrowConfig.below, ArrowConfig.above, prv, nxt,
-    Equiv.symm_apply_apply, Bool.not_not]
+  cases p <;> simp only [dartOut, localOut, edgeReverse, ArrowConfig.left, ArrowConfig.right, ArrowConfig.below, ArrowConfig.above, Equiv.symm_apply_apply, Bool.not_not]
 
 theorem localOut_pairedPort (s l r d u : Bool) (h : Compatible s l r d u) (p : Port) :
     localOut l r d u (pairedPort s p) = !localOut l r d u p := by
   revert s l r d u p
   decide
 
-theorem dartOut_strandReverse {ω : ArrowConfig N M} {s : Smoothing N M}
-    (h : CompatibleConfig ω s) (d : Dart N M) :
+section
+
+variable {ω : ArrowConfig N M} {s : Smoothing N M} (h : CompatibleConfig ω s) (d : Dart N M)
+include h
+
+theorem dartOut_strandReverse  :
     dartOut ω (strandReverse s d) = !dartOut ω d :=
-  localOut_pairedPort _ _ _ _ _ (h d.1) d.2
+  by
+    solve_by_elim [_root_.PottsDiscontinuity.Torus.localOut_pairedPort]
 
 /-- Compatible arrows are preserved when following a full smoothed-path step. -/
-theorem dartOut_step {ω : ArrowConfig N M} {s : Smoothing N M}
-    (h : CompatibleConfig ω s) (d : Dart N M) :
+theorem dartOut_step  :
     dartOut ω (stepPerm s d) = dartOut ω d := by
-  rw [stepPerm_apply, dartOut_strandReverse h, dartOut_edgeReverse, Bool.not_not]
+  grind [stepPerm_apply, dartOut_strandReverse, dartOut_edgeReverse]
+
+end
 
 /-- One directed representative of every edge, selected by its arrow. -/
 abbrev DirectedDart (ω : ArrowConfig N M) := {d : Dart N M // dartOut ω d = true}
@@ -131,7 +142,7 @@ abbrev DirectedDart (ω : ArrowConfig N M) := {d : Dart N M // dartOut ω d = tr
 /-- Following the arrows and smoothing gives a permutation of directed edges. -/
 def directedStep (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) : Equiv.Perm (DirectedDart ω) :=
-  (stepPerm s).subtypeEquiv (fun d => by rw [dartOut_step h])
+  (stepPerm s).subtypeEquiv  fun d => by rw [dartOut_step h] 
 
 @[simp] theorem directedStep_val (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) (d : DirectedDart ω) :
@@ -155,7 +166,6 @@ def directedLoopOf (ω : ArrowConfig N M) (s : Smoothing N M)
 theorem directedLoopOf_step (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) (d : DirectedDart ω) :
     directedLoopOf ω s h (directedStep ω s h d) = directedLoopOf ω s h d := by
-  apply Quotient.sound
-  exact (Equiv.Perm.SameCycle.refl (directedStep ω s h) d).apply_left
+                                                                              solve_by_elim [_root_.Quotient.sound, _root_.Equiv.Perm.SameCycle.apply_left, _root_.Equiv.Perm.SameCycle.refl]
 
 end PottsDiscontinuity.Torus

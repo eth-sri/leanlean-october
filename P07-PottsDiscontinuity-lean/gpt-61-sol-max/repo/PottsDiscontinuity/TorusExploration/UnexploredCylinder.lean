@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusExploration.ExteriorWinding
 public import PottsDiscontinuity.TorusExploration.HorizontalPotential

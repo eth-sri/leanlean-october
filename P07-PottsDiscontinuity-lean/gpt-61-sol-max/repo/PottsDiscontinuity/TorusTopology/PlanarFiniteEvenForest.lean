@@ -18,10 +18,7 @@ private theorem walk_support_reachable_from {V : Type*} (G : SimpleGraph V)
     ∀ x ∈ p.support, G.Reachable s x := by
   induction p with
   | nil =>
-      intro x hx
-      simp only [Walk.support_nil, List.mem_singleton] at hx
-      subst x
-      exact hus
+      simp_all
   | @cons a b c hab p ih =>
       intro x hx
       simp only [Walk.support_cons, List.mem_cons] at hx
@@ -37,12 +34,12 @@ theorem eq_bot_of_isAcyclic_even_degree
   classical
   rw [eq_bot_iff_forall_not_adj]
   intro u v huv
-  let C : Type _ := {x : V // G.Reachable u x}
-  let H : SimpleGraph C := G.induce (fun x : V => G.Reachable u x)
+  let C  := {x : V // G.Reachable u x}
+  let H : SimpleGraph C := G.induce  (G.Reachable u) 
   let root : C := ⟨u, Reachable.refl u⟩
   have hclosed (x : C) : G.neighborSet x.1 ⊆ {y : V | G.Reachable u y} := by
     intro y hy
-    rw [mem_neighborSet] at hy
+    
     exact x.2.trans hy.reachable
   have hdegree (x : C) : H.degree x = G.degree x.1 := by
     dsimp [H, C]
@@ -52,22 +49,20 @@ theorem eq_bot_of_isAcyclic_even_degree
     refine ⟨root, ?_⟩
     intro x
     rcases x.2 with ⟨p⟩
-    have hsupport : ∀ y ∈ p.support, G.Reachable u y :=
-      walk_support_reachable_from G (Reachable.refl u) p
-    exact ⟨p.induce (fun y : V => G.Reachable u y) (fun y hy => hsupport y hy)⟩
-  have hacyclicH : H.IsAcyclic := by
-    dsimp [H, C]
-    exact hacyclic.induce _
-  have htree : H.IsTree := ⟨hconn, hacyclicH⟩
+    
+    exact ⟨p.induce  (G.Reachable u)    (walk_support_reachable_from G (Reachable.refl u) p)  ⟩
+  
+  have htree : H.IsTree := by
+                             solve_by_elim [_root_.SimpleGraph.IsTree.mk, _root_.SimpleGraph.IsAcyclic.induce]
   have hne : v ≠ u := by
     intro h
     subst v
     exact huv.ne rfl
   let rv : C := ⟨v, huv.reachable⟩
   have hrootNe : root ≠ rv := by
-    intro h
-    exact hne (congrArg Subtype.val h).symm
-  let : Nontrivial C := ⟨⟨root, rv, hrootNe⟩⟩
+    aesop
+  let : Nontrivial C := by
+                          solve_by_elim [_root_.Nontrivial.mk, _root_.Exists.intro]
   obtain ⟨x, hx⟩ := htree.exists_vert_degree_one_of_nontrivial
   rw [hdegree] at hx
   obtain ⟨k, hk⟩ := heven x.1

@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Adaptation: Namespace and import relocation only. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverGraph
 public import Mathlib.Tactic
@@ -22,28 +23,35 @@ def parafermionicCoverFaceRightUpLeftLift (x y k : ℤ) : ParafermionicCoverVert
   parafermionicCoverNeighborLift (parafermionicCoverFaceRightUpLift x y k) (x,y+1)
 
 /-- The endpoint after the four actual lifts around a unit square. -/
-def parafermionicCoverFaceLiftEndpoint (x y k : ℤ) : ParafermionicCoverVertex :=
+def parafermionicCoverFaceLiftEndpoint (x y k : ℤ)  :=
   parafermionicCoverNeighborLift (parafermionicCoverFaceRightUpLeftLift x y k) (x,y)
 
-private theorem coverFace_base_right (x y : ℤ) :
+section
+
+variable (x y : ℤ)
+
+
+private theorem coverFace_base_right  :
     squareLattice.Adj (x,y) (x+1,y) := by
   rw [squareLattice_adj_iff]
-  exact Or.inl ⟨Or.inl (by omega), rfl⟩
+  simp_all
 
-private theorem coverFace_base_up (x y : ℤ) :
+private theorem coverFace_base_up  :
     squareLattice.Adj (x+1,y) (x+1,y+1) := by
   rw [squareLattice_adj_iff]
-  exact Or.inr ⟨rfl, Or.inl (by omega)⟩
+  simp_all
 
-private theorem coverFace_base_left (x y : ℤ) :
+private theorem coverFace_base_left  :
     squareLattice.Adj (x+1,y+1) (x,y+1) := by
   rw [squareLattice_adj_iff]
-  exact Or.inl ⟨Or.inr (by omega), rfl⟩
+  simp_all
 
-private theorem coverFace_base_down (x y : ℤ) :
+private theorem coverFace_base_down  :
     squareLattice.Adj (x,y+1) (x,y) := by
   rw [squareLattice_adj_iff]
-  exact Or.inr ⟨rfl, Or.inr (by omega)⟩
+  simp_all
+
+end
 
 /-- The four successive lifts are actual edges of the cover graph in the stated
 right/up/left/down order. -/
@@ -54,19 +62,11 @@ theorem parafermionicCoverFaceLift_steps_adj (x y k : ℤ) :
     parafermionicCoverGraph.Adj (parafermionicCoverFaceRightUpLift x y k)
       (parafermionicCoverFaceRightUpLeftLift x y k) ∧
     parafermionicCoverGraph.Adj (parafermionicCoverFaceRightUpLeftLift x y k)
-      (parafermionicCoverFaceLiftEndpoint x y k) := by
-  refine ⟨?_, ?_, ?_, ?_⟩
-  · exact parafermionicCoverNeighborLift_adj ((x,y),k) (x+1,y)
-      (coverFace_base_right x y)
-  · exact parafermionicCoverNeighborLift_adj
-      (parafermionicCoverFaceRightLift x y k) (x+1,y+1)
-      (coverFace_base_up x y)
-  · exact parafermionicCoverNeighborLift_adj
-      (parafermionicCoverFaceRightUpLift x y k) (x,y+1)
-      (coverFace_base_left x y)
-  · exact parafermionicCoverNeighborLift_adj
-      (parafermionicCoverFaceRightUpLeftLift x y k) (x,y)
-      (coverFace_base_down x y)
+      (parafermionicCoverFaceLiftEndpoint x y k) := ⟨parafermionicCoverNeighborLift_adj ((x, y), k) (x + 1, y) (coverFace_base_right x y),
+                                                      ⟨parafermionicCoverNeighborLift_adj (parafermionicCoverFaceRightLift x y k) (x + 1, y + 1) (coverFace_base_up x y),
+                                                        ⟨parafermionicCoverNeighborLift_adj (parafermionicCoverFaceRightUpLift x y k) (x, y + 1) (coverFace_base_left x y),
+                                                          parafermionicCoverNeighborLift_adj (parafermionicCoverFaceRightUpLeftLift x y k) (x, y)
+                                                            (coverFace_base_down x y)⟩⟩⟩
 
 theorem parafermionicCoverFaceLiftEndpoint_formula (x y k : ℤ) :
     parafermionicCoverFaceLiftEndpoint x y k =

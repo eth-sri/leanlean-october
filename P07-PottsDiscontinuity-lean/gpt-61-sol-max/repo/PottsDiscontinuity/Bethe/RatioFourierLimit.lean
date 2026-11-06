@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.RatioEvenLimit
 public import PottsDiscontinuity.Bethe.RatioOddLimit
@@ -39,7 +40,7 @@ variable {Δ : ℝ} (hΔ : Δ < -1) (r : ℕ) (N : ℕ → ℕ) (h4 : ∀ i, 4 �
         (hn i) (two_mul_half_sub_le N r i) x - rho Δ x) (hbq i) ≤ K / N i)
 
 
-include hΔ h4 hr hN hp hq hpBE hqBE hNlim hbp hbq hK hrate
+include h4 hr hN hpBE hqBE hNlim hK hrate
 
 /-- The even-branch quotient limit in the explicit Section 4 Fourier form.
 The same alternating-series limit `S` gives the exponent `-r(λ+2S)`. -/
@@ -49,23 +50,22 @@ theorem ratio_even_eigenvalue_limit_fourier (heven : r % 2 = 0)
       Tendsto (PottsDiscontinuity.altTanhPartial (lamOf Δ)) atTop (𝓝 S) ∧
       Tendsto (fun i => eigenvalueRegular c (q i) / eigenvalueRegular c (p i)) atTop
         (𝓝 ((Real.exp (-(r : ℝ) * (lamOf Δ + 2 * S)) : ℝ) : ℂ)) := by
-  have hlam : 0 < lamOf Δ := lamOf_pos hΔ
-  have hrnat : 0 < r := by omega
+  
+  
   obtain ⟨S, hS, hW15⟩ := PottsDiscontinuity.fourierRatioExponent
-    (lam := lamOf Δ) (r := (r : ℝ)) hlam
+    (lam := lamOf Δ) (r := r) (lamOf_pos hΔ)
   have hparam : -Real.cosh (lamOf Δ) = Δ := by rw [cosh_lamOf hΔ]; ring
   have hlog : Real.log |Δ| = Real.log |-(Real.cosh (lamOf Δ))| := by rw [hparam]
-  have hIntegral := ratio_integral_eq_fourier hΔ hc hcΔ
-  have hExponent : -(r : ℝ) * Real.log |Δ| +
-      (r : ℝ) * ∫ x in (-Real.pi)..Real.pi, ratioEllPrime c x * tauCont Δ x =
-      -(r : ℝ) * (lamOf Δ + 2 * S) := by
-    simpa only [hlog, hIntegral] using hW15
-  have hlimit := ratio_even_eigenvalue_limit hΔ r N h4 hr hN hn p q hp hq
-    hpBE hqBE hNlim hbp hbq hK hrate heven hc hcΔ
-  have hcomposed : Tendsto (fun i => eigenvalueRegular c (q i) / eigenvalueRegular c (p i)) atTop
-      (𝓝 ((Real.exp (-(r : ℝ) * (lamOf Δ + 2 * S)) : ℝ) : ℂ)) := by
-    simpa only [hExponent] using hlimit
-  exact ⟨S, hS, hcomposed⟩
+  
+  have hExponent : - r  * Real.log |Δ| +
+       r  * ∫ x in (-Real.pi)..Real.pi, ratioEllPrime c x * tauCont Δ x =
+      - r  * (lamOf Δ + 2 * S) := by
+    simpa only [hlog,  ratio_integral_eq_fourier hΔ hc hcΔ ] using hW15
+  
+  
+  exact ⟨S, hS,  by
+                   simpa only [hExponent] using  ratio_even_eigenvalue_limit hΔ r N h4 hr hN hn p q hp hq
+                                                   hpBE hqBE hNlim hbp hbq hK hrate heven hc hcΔ  ⟩
 
 end
 

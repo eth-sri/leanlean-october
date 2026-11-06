@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.AsymptoticSpacing
 
@@ -22,11 +23,14 @@ theorem offsetDisplacement_eq_alignedRoot (N r : ℕ) (hN : 4 ∣ N)
     (hr : r ≤ N / 2) (p : Fin (N / 2) → ℝ) (q : Fin (N / 2 - r) → ℝ)
     (j : Fin (N / 2 - r)) :
     offsetDisplacement N r hN hr p q j = (N : ℝ) * (q j - alignedRoot N r hr p j) := by
-  simp only [offsetDisplacement, alignedRoot]
-  split <;> rfl
+  grind [offsetDisplacement, alignedRoot]
 
-theorem alignedRoot_mem_Icc {N r : ℕ} (hr : r ≤ N / 2)
-    {p : Fin (N / 2) → ℝ} (hp : p ∈ S_n (N / 2)) (j : Fin (N / 2 - r)) :
+section
+
+variable {N r : ℕ} (hr : r ≤ N / 2) {p : Fin (N / 2) → ℝ} (hp : p ∈ S_n (N / 2)) (j : Fin (N / 2 - r))
+include hp
+
+theorem alignedRoot_mem_Icc  :
     alignedRoot N r hr p j ∈ Icc (-Real.pi) Real.pi := by
   unfold alignedRoot
   split
@@ -36,32 +40,17 @@ theorem alignedRoot_mem_Icc {N r : ℕ} (hr : r ≤ N / 2)
       (hp.1 ⟨j.val + (r + 1) / 2, by omega⟩).1,
       (hp.1 ⟨j.val + (r + 1) / 2, by omega⟩).2]
 
-theorem alignedRoot_rev {N r : ℕ} (hr : r ≤ N / 2)
-    {p : Fin (N / 2) → ℝ} (hp : p ∈ S_n (N / 2)) (j : Fin (N / 2 - r)) :
+theorem alignedRoot_rev  :
     alignedRoot N r hr p (Fin.rev j) = -alignedRoot N r hr p j := by
   have hsym : ∀ i, p (Fin.rev i) = -p i := hp.2.2
   unfold alignedRoot
   split
   next he =>
-    have hi : (⟨(Fin.rev j).val + r / 2, by omega⟩ : Fin (N / 2)) =
-        Fin.rev ⟨j.val + r / 2, by omega⟩ := by
-      apply Fin.ext
-      simp only [Fin.val_rev]
-      omega
-    rw [hi, hsym]
+    grind
   next ho =>
-    have hi : (⟨(Fin.rev j).val + (r - 1) / 2, by omega⟩ : Fin (N / 2)) =
-        Fin.rev ⟨j.val + (r + 1) / 2, by omega⟩ := by
-      apply Fin.ext
-      simp only [Fin.val_rev]
-      omega
-    have hi' : (⟨(Fin.rev j).val + (r + 1) / 2, by omega⟩ : Fin (N / 2)) =
-        Fin.rev ⟨j.val + (r - 1) / 2, by omega⟩ := by
-      apply Fin.ext
-      simp only [Fin.val_rev]
-      omega
-    rw [hi, hi', hsym, hsym]
-    ring
+    grind
+
+end
 
 theorem offsetDisplacement_rev {N r : ℕ} (hN : 4 ∣ N) (hr : r ≤ N / 2)
     {p : Fin (N / 2) → ℝ} {q : Fin (N / 2 - r) → ℝ}
@@ -70,7 +59,7 @@ theorem offsetDisplacement_rev {N r : ℕ} (hN : 4 ∣ N) (hr : r ≤ N / 2)
     offsetDisplacement N r hN hr p q (Fin.rev j) =
       -offsetDisplacement N r hN hr p q j := by
   rw [offsetDisplacement_eq_alignedRoot, offsetDisplacement_eq_alignedRoot,
-    alignedRoot_rev hr hp, show q (Fin.rev j) = -q j from hq.2.2 j]
+    alignedRoot_rev hr hp, hq.2.2 j]
   ring
 
 /-- The density-to-spacing estimate with arbitrary positive root count. -/

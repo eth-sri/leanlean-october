@@ -17,7 +17,7 @@ with the source's interior step values.
 @[expose] public section
 
 open Set MeasureTheory
-open scoped BigOperators
+
 
 namespace PottsDiscontinuity.Bethe
 
@@ -25,13 +25,13 @@ namespace PottsDiscontinuity.Bethe
 `k'(α) = Xi (lamOf Δ) α`. -/
 noncomputable def densityNorm (Δ : ℝ) (_hΔ : Δ < -1) (f : ℝ → ℝ)
     (_hbounded : BddAbove (Set.range fun α : Icc (-Real.pi) Real.pi =>
-      |Xi (lamOf Δ) α * f (kMap (lamOf Δ) α)|)) : ℝ :=
+      |Xi (lamOf Δ) α * f (kMap (lamOf Δ) α)|))  :=
   sSup (Set.range fun α : Icc (-Real.pi) Real.pi =>
     |Xi (lamOf Δ) α * f (kMap (lamOf Δ) α)|)
 
 /-- The empirical measure `μ_N = (1/N) Σ δ_{p_i}`. -/
 noncomputable def empiricalMeasure (N : ℕ) (_hN : 0 < N) (n : ℕ)
-    (p : Fin n → ℝ) : Measure ℝ :=
+    (p : Fin n → ℝ)  :=
   (↑N : ENNReal)⁻¹ • ∑ j : Fin n, Measure.dirac (p j)
 
 /-- Cyclic extension of an ordered root vector, with the two extra endpoints
@@ -55,7 +55,7 @@ def rootGapMultiplicity (N n : ℕ) (_hsize : 2 * n ≤ N) (j : Fin (n + 1)) : �
 configuration and size hypotheses ensure positive gaps and a nonnegative
 boundary multiplicity. -/
 noncomputable def rootStepDensity (N n : ℕ) (p : Fin n → ℝ)
-    (_hp : p ∈ S_n n) (hn : 0 < n) (_hsize : 2 * n ≤ N) (x : ℝ) : ℝ :=
+    (_hp : p ∈ S_n n) (hn : 0 < n) (_hsize : 2 * n ≤ N) (x : ℝ)  :=
   ∑ j : Fin (n + 1),
     if rootPartitionPoint n p hn j.castSucc ≤ x ∧ x < rootPartitionPoint n p hn j.succ then
       rootGapMultiplicity N n _hsize j /
@@ -83,7 +83,7 @@ noncomputable def offsetFunction (N r : ℕ) (hN : 4 ∣ N) (hr : r ≤ N / 2)
     (hn : 0 < N / 2 - r) (x : ℝ) : ℝ := by
   let n := N / 2 - r
   let eps := offsetDisplacement N r hN hr p ptilde
-  let first : Fin n := ⟨0, by dsimp [n]; exact hn⟩
+  let first : Fin n := ⟨0, hn⟩
   let last : Fin n := ⟨n - 1, by dsimp [n]; omega⟩
   exact if x < ptilde first then eps first else if ptilde last ≤ x then eps last else
     ∑ j : Fin n, if hnext : j.val + 1 < n then

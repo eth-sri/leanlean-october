@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.RibbonCorners
 public import PottsDiscontinuity.Torus.LoopStatistics
@@ -20,12 +21,12 @@ namespace PottsDiscontinuity.Torus
 variable {N M : ℕ}
 
 /-- Switching from closed to open ribbons at their indexed medial midpoints. -/
-def ribbonSwitch (A : RCConfig N M) (d : Dart N M) : Dart N M :=
-  strandReverse (rcSmoothing A) (strandReverse (fun v => checker v) d)
+def ribbonSwitch (A : RCConfig N M) (d : Dart N M)  :=
+  strandReverse (rcSmoothing A) (strandReverse  checker  d)
 
 theorem ribbonSwitch_involutive (A : RCConfig N M) :
     Function.Involutive (ribbonSwitch A) := by
-  have ht : ∀ (c a : Bool) (p : Port),
+  have ht : ∀ c a p,
       pairedPort (Bool.xor c a) (pairedPort c
         (pairedPort (Bool.xor c a) (pairedPort c p))) = p := by decide
   rintro ⟨v, p⟩
@@ -33,7 +34,7 @@ theorem ribbonSwitch_involutive (A : RCConfig N M) :
 
 theorem ribbonSwitch_eq_self_iff (A : RCConfig N M) (d : Dart N M) :
     ribbonSwitch A d = d ↔ A d.1 = false := by
-  have ht : ∀ (c a : Bool) (p : Port),
+  have ht : ∀ c a p,
       pairedPort (Bool.xor c a) (pairedPort c p) = p ↔ a = false := by decide
   rcases d with ⟨v, p⟩
   simpa only [ribbonSwitch, strandReverse, rcSmoothing, Prod.mk.injEq,
@@ -53,24 +54,26 @@ def ribbonEdgePairing (hN : Even N) (hM : Even M) (A : RCConfig N M) :
   let e : Equiv.Perm (Dart N M) :=
     ⟨ribbonSwitch A, ribbonSwitch A,
       ribbonSwitch_involutive A, ribbonSwitch_involutive A⟩
-  e.subtypeEquiv (fun d => by
+  e.subtypeEquiv  fun d => by
     change dartOut (checkerArrows N M) d = true ↔
       dartOut (checkerArrows N M) (ribbonSwitch A d) = true
-    rw [dartOut_ribbonSwitch hN hM])
+    rw [dartOut_ribbonSwitch hN hM] 
 
-@[simp] theorem ribbonEdgePairing_val (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (d : DirectedDart (checkerArrows N M)) :
+section
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+
+
+@[simp] theorem ribbonEdgePairing_val  (d : DirectedDart (checkerArrows N M)) :
     (ribbonEdgePairing hN hM A d).val = ribbonSwitch A d.val := rfl
 
-theorem ribbonEdgePairing_involutive (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) : Function.Involutive (ribbonEdgePairing hN hM A) := by
-  intro d
-  exact Subtype.ext (ribbonSwitch_involutive A d.val)
+theorem ribbonEdgePairing_involutive  : Function.Involutive (ribbonEdgePairing hN hM A) := fun d => Subtype.ext (ribbonSwitch_involutive A d.val)
 
-theorem ribbonEdgePairing_eq_self_iff (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (d : DirectedDart (checkerArrows N M)) :
+theorem ribbonEdgePairing_eq_self_iff  (d : DirectedDart (checkerArrows N M)) :
     ribbonEdgePairing hN hM A d = d ↔ A d.val.1 = false := by
-  rw [Subtype.ext_iff, ribbonEdgePairing_val, ribbonSwitch_eq_self_iff]
+  grind [ribbonEdgePairing_val, ribbonSwitch_eq_self_iff]
+
+end
 
 /-- Boundary traversal of the primal vertex discs with their open ribbons attached. -/
 def ribbonBoundary (hN : Even N) (hM : Even M) (A : RCConfig N M) :
@@ -86,8 +89,8 @@ theorem ribbonBoundary_eq_directedStep (hN : Even N) (hM : Even M)
   intro d
   apply Subtype.ext
   change strandReverse (rcSmoothing A)
-      (strandReverse (fun v => checker v)
-        (strandReverse (fun v => checker v) (edgeReverse d.val))) =
+      (strandReverse  checker 
+        (strandReverse  checker  (edgeReverse d.val))) =
     strandReverse (rcSmoothing A) (edgeReverse d.val)
   rw [strandReverse_involutive]
 

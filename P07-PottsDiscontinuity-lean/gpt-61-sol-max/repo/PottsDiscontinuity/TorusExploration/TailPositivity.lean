@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.WindingReorientation
 public import PottsDiscontinuity.TorusRC.ElementaryTail
@@ -20,30 +21,36 @@ lemma negativeArrows_ice : (negativeArrows N M).IceRule := by
   rfl
 
 lemma negativeArrows_absUp : (negativeArrows N M).absUp=0 := by
-  unfold ArrowConfig.absUp
-  split_ifs <;> simp [ArrowConfig.rowUp,negativeArrows]
+  simp_all [ArrowConfig.absUp, ArrowConfig.rowUp, negativeArrows]
+
+section
+
+variable (hN : Even N) (hM : Even M) (j : Fin M)
+
 
 /-- Every winding tail below half the width has an actual indexed configuration. -/
-theorem windingTail_nonempty (hN : Even N) (hM : Even M) (j : Fin M)
+theorem windingTail_nonempty 
     (r : ℕ) (hr : r ≤ N/2) :
     (torusRCVerticalTail hN hM j r).Nonempty := by
   obtain ⟨s,hs⟩ := (exists_compatibleConfig_iff (negativeArrows N M)).2 negativeArrows_ice
   let A := smoothingRC s
-  have hA : CompatibleConfig (negativeArrows N M) (rcSmoothing A) := by
-    simpa only [A,rcSmoothing_smoothingRC] using hs
-  have hU := sector_le_rcVerticalWinding hN hM j A (negativeArrows N M) hA
-    (r := N/2) (by rw [negativeArrows_absUp,zero_add])
-  exact ⟨A,hr.trans hU⟩
+  
+  
+  exact ⟨A,hr.trans (sector_le_rcVerticalWinding hN hM j A (negativeArrows N M) (by
+                                                                                              simpa only [A,rcSmoothing_smoothingRC] using hs)
+                       (r := N/2) (by rw [negativeArrows_absUp,zero_add]))⟩
 
 /-- The real logarithm in the winding-tail rate is taken at a positive number
 once the width is at least twice the requested winding. -/
-theorem windingTail_probability_pos (hN : Even N) (hM : Even M) (j : Fin M)
+theorem windingTail_probability_pos 
     (q : Set.Ici (1 : ℝ)) (r : ℕ) (hr : r ≤ N/2) :
     0 < torusRCProbability hN hM q (torusRCVerticalTail hN hM j r) := by
   obtain ⟨A,hA⟩ := windingTail_nonempty hN hM j r hr
   have hm := torusRCProbability_mono hN hM q
-    (show {A} ⊆ torusRCVerticalTail hN hM j r from Set.singleton_subset_iff.2 hA)
+    (Set.singleton_subset_iff.2 hA)
   rw [torusRCProbability_singleton] at hm
   exact (torusRCMass_pos hN hM q A).trans_le hm
+
+end
 
 end PottsDiscontinuity.TorusExploration

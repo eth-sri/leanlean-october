@@ -13,8 +13,8 @@ agree.
 
 @[expose] public section
 
-open MeasureTheory Filter Topology Real
-open scoped ENNReal
+
+
 
 namespace PottsDiscontinuity
 
@@ -22,6 +22,6 @@ namespace PottsDiscontinuity
 noncomputable def rcWeight (V : Finset (ℤ × ℤ)) (p q : ℝ) (i : Fin 2)
     (ω : (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet → Bool) : ℝ :=
   p ^ Nat.card {e // ω e = true} * (1 - p) ^ Nat.card {e // ω e = false} *
-    q ^ (if i = 0 then rcFreeClusterCount V ω else rcWiredClusterCount V ω)
+    q ^  if i = 0 then rcFreeClusterCount V ω else rcWiredClusterCount V ω 
 
 end PottsDiscontinuity

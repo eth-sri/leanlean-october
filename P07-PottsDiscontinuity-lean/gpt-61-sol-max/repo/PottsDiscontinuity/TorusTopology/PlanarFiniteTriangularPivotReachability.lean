@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Adaptation: Namespace and import relocation only. -/
 module
+public import Mathlib
 
 public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 public import Mathlib.Combinatorics.SimpleGraph.DeleteEdges
@@ -39,7 +40,7 @@ theorem finiteTriangularPivotReachability
     (halt : ∀ i,
       ((F i).deleteEdges {p i}).Reachable (p i).out.1 (p i).out.2) :
     (G.deleteEdges (Set.range p)).Reachable = G.Reachable := by
-  classical
+  
   let R := G.deleteEdges (Set.range p)
   have hpiv : ∀ i, R.Reachable (p i).out.1 (p i).out.2 := by
     intro i
@@ -52,45 +53,31 @@ theorem finiteTriangularPivotReachability
         intro w
         apply reachable_of_walk_steps w
         intro x y hxy
-        have hdel := (SimpleGraph.deleteEdges_adj.mp hxy)
-        have hF : (F j).Adj x y := hdel.1
-        have hG : G.Adj x y := hsub j hF
+        have hdel :=  SimpleGraph.deleteEdges_adj.mp hxy 
+        have hF  := hdel.1
+        have hG  := hsub j hF
         by_cases he : s(x,y) ∈ Set.range p
         · rcases he with ⟨l, hl⟩
-          have hnot : s(x,y) ≠ p j := by
-            intro heq
-            apply hdel.2
-            simp [heq]
+          
           have hne : l ≠ j := by
-            intro hlj
-            apply hnot
-            simpa [hlj] using hl.symm
+            grind
           have hpl : p l ∈ (F j).edgeSet := by
-            rw [hl]
-            exact (SimpleGraph.mem_edgeSet (F j)).2 hF
+            simp_all
           have horder := htri j l hpl
           have hlt : rank l < k := by
-            rcases horder with hsame | hlt
-            · exact (hne hsame).elim
-            · simpa [hj] using hlt
+            simp_all
           have hroute := ih (rank l) hlt l rfl
           exact reachable_of_sym2_pair R hl hroute
         · exact (SimpleGraph.deleteEdges_adj).2 ⟨hG, he⟩ |>.reachable
     exact hbyRank (rank i) i rfl
-  have hstep : ∀ x y, G.Adj x y → R.Reachable x y := by
-    intro x y hxy
-    by_cases he : s(x,y) ∈ Set.range p
-    · rcases he with ⟨i, hi⟩
-      exact reachable_of_sym2_pair R hi (hpiv i)
-    · exact (SimpleGraph.deleteEdges_adj).2 ⟨hxy, he⟩ |>.reachable
-  have hGR : ∀ x y, G.Reachable x y → R.Reachable x y := by
-    intro x y hxy
-    rcases hxy with ⟨w⟩
-    exact reachable_of_walk_steps w hstep
-  have hRG : ∀ x y, R.Reachable x y → G.Reachable x y := by
-    intro x y hxy
-    exact Reachable.mono (SimpleGraph.deleteEdges_le (G := G) _) hxy
+  
+  have hGR : ∀ x y, G.Reachable x y → R.Reachable x y := fun x y hxy => Nonempty.casesOn hxy fun w => reachable_of_walk_steps w (by
+                                                                                                                                   intro x y hxy
+                                                                                                                                   by_cases he : s(x,y) ∈ Set.range p
+                                                                                                                                   · grind [reachable_of_sym2_pair]
+                                                                                                                                   · exact (SimpleGraph.deleteEdges_adj).2 ⟨hxy, he⟩ |>.reachable)
+  
   ext x y
-  exact ⟨hRG x y, hGR x y⟩
+  exact ⟨(fun x y => Reachable.mono (deleteEdges_le (Set.range p))) x y, hGR x y⟩
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

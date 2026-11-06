@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.DiamondGraph
 
@@ -23,9 +24,9 @@ def shiftRCConfig (A : RCConfig N M) : RCConfig N M := fun v => A (prv v.1, v.2)
 
 @[simp] theorem shiftRCConfig_nxt (A : RCConfig N M) (v : Fin N × Fin M) :
     shiftRCConfig A (nxt v.1, v.2) = A v := by
-  simp only [shiftRCConfig, nxt, prv, Equiv.symm_apply_apply]
+  grind +locals
 
 /-- The complementary dual configuration, represented on the primal-colour carrier. -/
-def translatedDualConfig (A : RCConfig N M) : RCConfig N M := shiftRCConfig (dualConfig A)
+def translatedDualConfig (A : RCConfig N M)  := shiftRCConfig (dualConfig A)
 
 end PottsDiscontinuity.Torus

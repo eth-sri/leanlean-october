@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.Parameters
 public import PottsDiscontinuity.FK.Graph
@@ -40,16 +41,17 @@ theorem weight_pos (q : Parameters) (ξ : BoundaryCondition V) (A : Configuratio
     (pow_pos (clusterWeight_pos q) _)
 
 /-- The finite partition function from equation (1.2). -/
-def partitionFunction (q : Parameters) (ξ : BoundaryCondition V) : ℝ :=
+def partitionFunction (q : Parameters) (ξ : BoundaryCondition V)  :=
   FiniteProbability.partition (weight G q ξ)
 
 theorem partitionFunction_pos (q : Parameters) (ξ : BoundaryCondition V) :
     0 < partitionFunction G q ξ :=
-  FiniteProbability.partition_pos (weight G q ξ) (weight_pos G q ξ)
+  by
+    solve_by_elim [_root_.PottsDiscontinuity.FK.FiniteProbability.partition_pos, _root_.instNonemptyOfInhabited, _root_.PottsDiscontinuity.FK.weight_pos]
 
 /-- The real probability of a single edge configuration in the finite FK law. -/
 def configurationProbability (q : Parameters) (ξ : BoundaryCondition V)
-    (A : Configuration G) : ℝ :=
+    (A : Configuration G)  :=
   weight G q ξ A / partitionFunction G q ξ
 
 theorem configurationProbability_pos (q : Parameters) (ξ : BoundaryCondition V)
@@ -61,15 +63,23 @@ theorem sum_configurationProbability (q : Parameters) (ξ : BoundaryCondition V)
   FiniteProbability.sum_probability (weight G q ξ) (weight_pos G q ξ)
 
 /-- The finite FK law as a genuine probability mass function. -/
-def law (q : Parameters) (ξ : BoundaryCondition V) : PMF (Configuration G) :=
+def law (q : Parameters) (ξ : BoundaryCondition V)  :=
   FiniteProbability.pmf (weight G q ξ) (weight_pos G q ξ)
 
-theorem law_apply (q : Parameters) (ξ : BoundaryCondition V) (A : Configuration G) :
+section
+
+variable (q : Parameters) (ξ : BoundaryCondition V) (A : Configuration G)
+
+
+theorem law_apply  :
     law G q ξ A = ENNReal.ofReal (configurationProbability G q ξ A) := rfl
 
-theorem law_pos (q : Parameters) (ξ : BoundaryCondition V) (A : Configuration G) :
+theorem law_pos  :
     0 < law G q ξ A :=
-  FiniteProbability.pmf_pos (weight G q ξ) (weight_pos G q ξ) A
+  by
+    solve_by_elim [_root_.PottsDiscontinuity.FK.FiniteProbability.pmf_pos]
+
+end
 
 /-- Every subset of the finite configuration space is measurable. -/
 abbrev configurationMeasurableSpace : MeasurableSpace (Configuration G) := ⊤
@@ -80,8 +90,7 @@ local instance modelConfigurationDiscreteMeasurable : DiscreteMeasurableSpace (C
   ⟨fun _ => MeasurableSpace.measurableSet_top⟩
 
 /-- The measure on the full power-set sigma algebra of finite configurations. -/
-def measure (q : Parameters) (ξ : BoundaryCondition V) :
-    MeasureTheory.Measure (Configuration G) :=
+def measure (q : Parameters) (ξ : BoundaryCondition V)  :=
   (law G q ξ).toMeasure
 
 instance measure_isProbabilityMeasure (q : Parameters) (ξ : BoundaryCondition V) :

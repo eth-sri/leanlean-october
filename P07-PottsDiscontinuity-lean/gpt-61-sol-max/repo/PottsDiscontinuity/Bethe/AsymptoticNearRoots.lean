@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.AsymptoticBoundary
 
@@ -17,19 +18,16 @@ theorem offsetLowerUpper_gap {N r : ℕ} (hr : r ≤ N / 2)
       offsetUpperRoot N r hr p j - offsetLowerRoot N r hr p j ≤ D / N := by
   constructor
   · apply hp.2.1.monotone
-    change j.val + r / 2 ≤ j.val + (r - r / 2)
-    omega
-  · rcases (show r - r / 2 = r / 2 ∨ r - r / 2 = r / 2 + 1 by omega) with he | ho
+    grind
+  · rcases  show r - r / 2 = r / 2 ∨ r - r / 2 = r / 2 + 1 by omega  with he | ho
     · have hi : (⟨j.val + (r - r / 2), by omega⟩ : Fin (N / 2)) =
           ⟨j.val + r / 2, by omega⟩ := Fin.ext (by
-            change j.val + (r - r / 2) = j.val + r / 2
-            omega)
+            simp_all)
       simp only [offsetLowerRoot, offsetUpperRoot, hi, sub_self]
       exact div_nonneg hD (Nat.cast_nonneg N)
     · have hi : (⟨j.val + (r - r / 2), by omega⟩ : Fin (N / 2)) =
           ⟨j.val + r / 2 + 1, by omega⟩ := Fin.ext (by
-            change j.val + (r - r / 2) = j.val + r / 2 + 1
-            omega)
+            grind)
       simpa only [offsetLowerRoot, offsetUpperRoot, hi] using hgap (j.val + r / 2) (by omega)
 
 theorem offset_shifted_roots_near {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)
@@ -44,10 +42,11 @@ theorem offset_shifted_roots_near {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)
   have hg := offsetLowerUpper_gap hr hp hD hgap j
   have he := hbound j
   rw [offsetDisplacement_eq_alignedRoot, abs_mul, abs_of_pos (Nat.cast_pos.mpr hN)] at he
-  have hm : |q j - alignedRoot N r hr p j| ≤ B / (N : ℝ) :=
+  have hm : |q j - alignedRoot N r hr p j| ≤ B / (N ) :=
     (le_div_iff₀ (Nat.cast_pos.mpr hN)).mpr (by simpa only [mul_comm] using he)
   rw [alignedRoot_eq_mean hr] at hm
   rcases abs_le.mp hm with ⟨hm₁, hm₂⟩
+  dsimp only [offsetLowerRoot, offsetUpperRoot] at *
   rw [add_div]
   constructor <;> apply abs_le.mpr <;> constructor <;> linarith [hg.1, hg.2]
 

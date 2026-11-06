@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -22,18 +23,23 @@ local instance embeddedCylinderEdgeFintype : Fintype G.edgeSet := Fintype.ofFini
 using exactly their original embedded lattice edges. -/
 def embeddedCylinderEvent (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice)
     (E : Set (Configuration G)) : Set LatticeConfiguration :=
-  ⋃ A ∈ (Finset.univ.filter fun A : Configuration G => A ∈ E),
+  ⋃ A ∈  Finset.univ.filter fun A : Configuration G => A ∈ E ,
     LatticeConfiguration.allOpen (A.map (embeddedEdgeEmbedding G squareLattice f hG))
 
-lemma embeddedCylinderEvent_isClopen (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice)
-    (E : Set (Configuration G)) : IsClopen (embeddedCylinderEvent G f hG E) :=
+section
+
+variable (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice) (E : Set (Configuration G))
+
+
+lemma embeddedCylinderEvent_isClopen  : IsClopen (embeddedCylinderEvent G f hG E) :=
   isClopen_biUnion_finset fun _A _ => LatticeConfiguration.allOpen_isClopen _
 
-lemma mem_embeddedCylinderEvent (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice)
-    (E : Set (Configuration G)) (ω : LatticeConfiguration) :
+lemma mem_embeddedCylinderEvent  (ω : LatticeConfiguration) :
     ω ∈ embeddedCylinderEvent G f hG E ↔ ∃ A : Configuration G, A ∈ E ∧
       ω ∈ LatticeConfiguration.allOpen (A.map (embeddedEdgeEmbedding G squareLattice f hG)) := by
   simp [embeddedCylinderEvent]
+
+end
 
 omit [Finite V] in
 lemma actualConnected_embeddedEdges (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice)

@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.LocalFreeConnections
 public import PottsDiscontinuity.Potts.WiredConnectionEvents
@@ -13,20 +14,20 @@ open Classical MeasureTheory Filter Topology
 noncomputable section
 
 /-- The finite free partition, with isolated exterior vertices retained. -/
-def freeDataFiniteEvent (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+def freeDataFiniteEvent (n : ℕ) (F : Finset ((ℤ × ℤ) ×  ℤ × ℤ )) :
     Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :=
   {C | ∀ z ∈ F, z.1 = z.2 ∨ ∃ (hx : z.1 ∈ box n) (hy : z.2 ∈ box n),
       (FK.openGraph _ C).Reachable ⟨z.1, hx⟩ ⟨z.2, hy⟩}
 
-def freeDataEvent (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) : Set FK.LatticeConfiguration :=
+def freeDataEvent (n : ℕ) (F : Finset ((ℤ × ℤ) ×  ℤ × ℤ )) : Set FK.LatticeConfiguration :=
   {ω | ∀ z ∈ F, (localFreeGraph (rcInfiniteOpenGraph ω) n).Reachable z.1 z.2}
 
-def infiniteFreeDataEvent (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) : Set FK.LatticeConfiguration :=
+def infiniteFreeDataEvent (F : Finset ((ℤ × ℤ) ×  ℤ × ℤ )) : Set FK.LatticeConfiguration :=
   {ω | ∀ z ∈ F, (rcInfiniteOpenGraph ω).Reachable z.1 z.2}
 
 private theorem localFreeGraph_eq_map (n : ℕ) (ω : FK.LatticeConfiguration) :
     localFreeGraph (rcInfiniteOpenGraph ω) n =
-      (FK.openGraph _ (boxObservation n ω)).map (show ↥(box n : Set (ℤ × ℤ)) ↪ (ℤ × ℤ) from
+      (FK.openGraph _ (boxObservation n ω)).map (show ↥(box n : Set (ℤ × ℤ)) ↪  ℤ × ℤ  from
         ⟨Subtype.val, Subtype.val_injective⟩) := by
   ext x y
   rw [SimpleGraph.map_adj]
@@ -44,7 +45,12 @@ private theorem localFreeGraph_eq_map (n : ℕ) (ω : FK.LatticeConfiguration) :
     obtain ⟨h, he⟩ := hab
     exact (infiniteOpenGraph_adj_iff ω a.val b.val).mpr ⟨h, he⟩
 
-theorem freeDataEvent_eq_observation (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+section
+
+variable (n : ℕ) (F : Finset ((ℤ × ℤ) ×  ℤ × ℤ ))
+
+
+theorem freeDataEvent_eq_observation  :
     freeDataEvent n F = boxObservationEvent n (freeDataFiniteEvent n F) := by
   ext ω
   change (∀ z ∈ F, (localFreeGraph (rcInfiniteOpenGraph ω) n).Reachable z.1 z.2) ↔ _
@@ -53,29 +59,30 @@ theorem freeDataEvent_eq_observation (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ
   · intro h z hz
     rcases z with ⟨x, y⟩
     rcases (FK.reachable_isolatedExtension _ _ _ _).mp (h (x, y) hz) with heq | ⟨a, b, hab, ha, hb⟩
-    · exact Or.inl heq
-    · change a.val = x at ha
-      change b.val = y at hb
-      subst x y
-      exact Or.inr ⟨a.property, b.property, hab⟩
+    all_goals aesop
   · intro h z hz
     apply (FK.reachable_isolatedExtension _ _ _ _).mpr
     rcases h z hz with heq | ⟨hx, hy, hxy⟩
     · exact Or.inl heq
-    · exact Or.inr ⟨⟨z.1, hx⟩, ⟨z.2, hy⟩, hxy, rfl, rfl⟩
+    · simp_all
 
-theorem freeDataEvent_isClopen (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+theorem freeDataEvent_isClopen  :
     IsClopen (freeDataEvent n F) := by
   rw [freeDataEvent_eq_observation]
   exact boxObservationEvent_isClopen _ _
 
-theorem freeDataEvent_monotone (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
-    Monotone (fun n => freeDataEvent n F) := by
-  intro m n hmn ω hω z hz
-  exact localFreeGraph_reachable_mono _ _ _ hmn (hω z hz)
+end
 
-theorem iUnion_freeDataEvent (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
-    (⋃ n, freeDataEvent n F) = infiniteFreeDataEvent F := by
+section
+
+variable (F : Finset ((ℤ × ℤ) ×  ℤ × ℤ ))
+include F
+
+theorem freeDataEvent_monotone  :
+    Monotone  fun n => freeDataEvent n F  := fun m n hmn ω hω z hz => localFreeGraph_reachable_mono _ _ _ hmn (hω z hz)
+
+theorem iUnion_freeDataEvent  :
+     ⋃ n, freeDataEvent n F  = infiniteFreeDataEvent F := by
   ext ω
   constructor
   · intro h
@@ -86,7 +93,9 @@ theorem iUnion_freeDataEvent (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
     obtain ⟨n, hn⟩ := (finite_free_connections_eventually (rcInfiniteOpenGraph ω) F).exists
     exact Set.mem_iUnion.mpr ⟨n, fun z hz => (hn z hz).mpr (h z hz)⟩
 
-theorem freeDataFiniteEvent_upper (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+end
+
+theorem freeDataFiniteEvent_upper (n : ℕ) (F : Finset ((ℤ × ℤ) ×  ℤ × ℤ )) :
     IsUpperSet (freeDataFiniteEvent n F) := by
   intro C D hCD hC z hz
   rcases hC z hz with heq | ⟨hx, hy, hxy⟩

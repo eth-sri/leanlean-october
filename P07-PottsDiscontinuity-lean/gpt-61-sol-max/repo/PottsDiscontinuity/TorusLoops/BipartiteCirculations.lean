@@ -12,7 +12,7 @@ circulation to have degree at most two on its support.
 
 @[expose] public section
 
-open scoped BigOperators
+
 
 namespace PottsDiscontinuity.TorusLoops.Bipartite
 
@@ -23,30 +23,28 @@ noncomputable section
 def incidence (p : E → P) (d : E → D) : Matrix (P ⊕ D) E ℚ := by
   classical
   exact fun v e => (if v = Sum.inl (p e) then 1 else 0) -
-    (if v = Sum.inr (d e) then 1 else 0)
+     if v = Sum.inr (d e) then 1 else 0 
 
-def boundary (p : E → P) (d : E → D) : (E → ℚ) →ₗ[ℚ] (P ⊕ D → ℚ) := by
+def boundary (p : E → P) (d : E → D) : (E → ℚ) →ₗ[ℚ]  P ⊕ D → ℚ  := by
   classical
   exact Matrix.toLin' (incidence p d)
 
-def coboundary (p : E → P) (d : E → D) : (P ⊕ D → ℚ) →ₗ[ℚ] (E → ℚ) where
+def coboundary (p : E → P) (d : E → D) : (P ⊕ D → ℚ) →ₗ[ℚ]  E → ℚ  where
   toFun a e := a (.inl (p e)) - a (.inr (d e))
   map_add' _ _ := by ext; simp only [Pi.add_apply]; ring
-  map_smul' _ _ := by ext; simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply]; ring
+  map_smul' _ _ := by ext; simp only [Pi.smul_apply, RingHom.id_apply]; ring
 
 omit [Fintype P] [Fintype D] in
 open scoped Classical in
 theorem boundary_inl (p : E → P) (d : E → D) (f : E → ℚ) (v : P) :
     boundary p d f (.inl v) = ∑ e with p e = v, f e := by
-  simp [boundary, incidence, Matrix.toLin'_apply, Matrix.mulVec, eq_comm,
-    Finset.sum_filter, dotProduct]
+  simp [boundary, incidence, Matrix.mulVec, eq_comm, Finset.sum_filter, dotProduct]
 
 omit [Fintype P] [Fintype D] in
 open scoped Classical in
 theorem boundary_inr (p : E → P) (d : E → D) (f : E → ℚ) (v : D) :
-    boundary p d f (.inr v) = -(∑ e with d e = v, f e) := by
-  simp [boundary, incidence, Matrix.toLin'_apply, Matrix.mulVec, eq_comm,
-    Finset.sum_filter, ← Finset.sum_neg_distrib, dotProduct]
+    boundary p d f (.inr v) = - ∑ e with d e = v, f e  := by
+  simp [boundary, incidence, Matrix.mulVec, eq_comm, Finset.sum_filter, dotProduct]
 
 omit [Fintype E] in
 open scoped Classical in
@@ -62,9 +60,9 @@ theorem coboundary_eq_transpose (p : E → P) (d : E → D) :
 theorem rank_boundary_eq_coboundary (p : E → P) (d : E → D) :
     Module.finrank ℚ (LinearMap.range (boundary p d)) =
       Module.finrank ℚ (LinearMap.range (coboundary p d)) := by
-  classical
+  
   rw [coboundary_eq_transpose]
-  change (incidence p d).rank = (incidence p d).transpose.rank
+  
   exact (Matrix.rank_transpose _).symm
 
 def constantKernel (p : E → P) (d : E → D) : ℚ →ₗ[ℚ] LinearMap.ker (coboundary p d) where
@@ -75,9 +73,7 @@ def constantKernel (p : E → P) (d : E → D) : ℚ →ₗ[ℚ] LinearMap.ker (
 theorem card_edges_le_vertices (p : E → P) (d : E → D) (v₀ : P)
     (hker : Module.finrank ℚ (LinearMap.ker (boundary p d)) ≤ 1) :
     Fintype.card E ≤ Fintype.card P + Fintype.card D := by
-  have hinj : Function.Injective (constantKernel p d) := by
-    intro a b hab
-    exact congrFun (congrArg Subtype.val hab) (.inl v₀)
+  have hinj : Function.Injective (constantKernel p d) := fun a b hab => congrFun (congrArg Subtype.val hab) (.inl v₀)
   have hk := LinearMap.finrank_le_finrank_of_injective hinj
   rw [Module.finrank_self] at hk
   have hb := LinearMap.finrank_range_add_finrank_ker (boundary p d)
@@ -102,12 +98,12 @@ def supportPrimalEndpoint (p : E → P) (f : E → ℚ) (e : SupportEdge f) : Su
 def supportDualEndpoint (d : E → D) (f : E → ℚ) (e : SupportEdge f) : SupportDual d f :=
   ⟨d e.val, e.val, e.property, rfl⟩
 
-def supportExtension (f : E → ℚ) : (SupportEdge f → ℚ) →ₗ[ℚ] (E → ℚ) := by
+def supportExtension (f : E → ℚ) : (SupportEdge f → ℚ) →ₗ[ℚ]  E → ℚ  := by
   classical
   exact
     { toFun := fun a e => if he : f e ≠ 0 then a ⟨e, he⟩ else 0
-      map_add' := by intro a b; ext e; by_cases he : f e = 0 <;> simp [he]
-      map_smul' := by intro c a; ext e; by_cases he : f e = 0 <;> simp [he] }
+      map_add' := by aesop
+      map_smul' := by aesop }
 
 omit [Fintype E] in
 @[simp] theorem supportExtension_apply (f : E → ℚ) (a : SupportEdge f → ℚ)
@@ -118,17 +114,17 @@ omit [Fintype E] in
 theorem supportExtension_injective (f : E → ℚ) : Function.Injective (supportExtension f) := by
   intro a b hab
   funext e
-  have he := congrFun hab e.val
-  simpa using he
+  
+  simpa using  congrFun hab e.val 
 
 theorem sum_supportExtension (f : E → ℚ) (a : SupportEdge f → ℚ) (k : E → ℚ) :
-    (∑ e : E, k e * supportExtension f a e) =
+     ∑ e : E, k e * supportExtension f a e  =
       ∑ e : SupportEdge f, k e.val * a e := by
-  classical
-  have he : (∑ e : SupportEdge f, k e.val * a e) =
+  
+  have he :  ∑ e : SupportEdge f, k e.val * a e  =
       ∑ e : SupportEdge f, k e.val * supportExtension f a e.val := by simp
   rw [he, ← Finset.sum_subtype (Finset.univ.filter fun e => f e ≠ 0)
-    (by intro e; simp) (fun e => k e * supportExtension f a e), Finset.sum_filter]
+    (by  simp)  fun e => k e * supportExtension f a e , Finset.sum_filter]
   apply Finset.sum_congr rfl
   intro e _
   by_cases hf : f e = 0 <;> simp [supportExtension, hf]
@@ -139,10 +135,10 @@ theorem boundary_supportExtension_active (p : E → P) (d : E → D) (f : E → 
     boundary p d (supportExtension f a) (Sum.map Subtype.val Subtype.val v) =
       boundary (supportPrimalEndpoint p f) (supportDualEndpoint d f) a v := by
   classical
-  change (∑ e, incidence p d (Sum.map Subtype.val Subtype.val v) e * supportExtension f a e) = _
+  change  ∑ e, incidence p d (Sum.map Subtype.val Subtype.val v) e * supportExtension f a e  = _
   rw [sum_supportExtension]
-  change (∑ e : SupportEdge f,
-    incidence p d (Sum.map Subtype.val Subtype.val v) e.val * a e) =
+  change  ∑ e : SupportEdge f,
+    incidence p d (Sum.map Subtype.val Subtype.val v) e.val * a e  =
     ∑ e : SupportEdge f,
       incidence (supportPrimalEndpoint p f) (supportDualEndpoint d f) v e * a e
   apply Finset.sum_congr rfl
@@ -160,21 +156,23 @@ theorem supportExtension_mem_kernel (p : E → P) (d : E → D) (f : E → ℚ)
     by_cases hv : ∃ e, f e ≠ 0 ∧ p e = v
     · exact (boundary_supportExtension_active p d f a.val (.inl ⟨v, hv⟩)).trans
         (congrFun a.property (.inl ⟨v, hv⟩))
-    · change (∑ e, incidence p d (.inl v) e * supportExtension f a.val e) = 0
+    · change  ∑ e, incidence p d (.inl v) e * supportExtension f a.val e  = 0
       rw [sum_supportExtension]
       apply Finset.sum_eq_zero
       intro e _
-      have hp : v ≠ p e.val := fun he => hv ⟨e.val, e.property, he.symm⟩
+      have hp : v ≠ p e.val := by
+                                 bound
       simp [incidence, hp]
   | inr v =>
     by_cases hv : ∃ e, f e ≠ 0 ∧ d e = v
     · exact (boundary_supportExtension_active p d f a.val (.inr ⟨v, hv⟩)).trans
         (congrFun a.property (.inr ⟨v, hv⟩))
-    · change (∑ e, incidence p d (.inr v) e * supportExtension f a.val e) = 0
+    · change  ∑ e, incidence p d (.inr v) e * supportExtension f a.val e  = 0
       rw [sum_supportExtension]
       apply Finset.sum_eq_zero
       intro e _
-      have hd : v ≠ d e.val := fun he => hv ⟨e.val, e.property, he.symm⟩
+      have hd : v ≠ d e.val := by
+                                 bound
       simp [incidence, hd]
 
 def supportKernelExtension (p : E → P) (d : E → D) (f : E → ℚ) :
@@ -193,9 +191,9 @@ theorem support_card_le_active_vertices (p : E → P) (d : E → D) (f : E → �
     intro a b hab
     apply Subtype.ext
     exact supportExtension_injective f (congrArg Subtype.val hab)
-  have hk := LinearMap.finrank_le_finrank_of_injective hi
+  
   exact card_edges_le_vertices (supportPrimalEndpoint p f) (supportDualEndpoint d f)
-    ⟨p e₀, e₀, he₀, rfl⟩ (hk.trans hker)
+    ⟨p e₀, e₀, he₀, rfl⟩ ((LinearMap.finrank_le_finrank_of_injective hi).trans hker)
 
 omit [Fintype P] [Fintype D] in
 theorem supportRestriction_mem_kernel (p : E → P) (d : E → D) (f : E → ℚ)
@@ -214,15 +212,15 @@ private theorem two_le_card_zero_sum {X : Type*} (s : Finset X) (a : X → ℚ)
   by_contra hn
   have hc : s.card = 1 := by have := Finset.card_pos.mpr hs; omega
   obtain ⟨x, rfl⟩ := Finset.card_eq_one.mp hc
-  exact ha x (by simp) (by simpa using hz)
+  simp_all
 
 omit [Fintype P] [Fintype D] in
 open scoped Classical in
 theorem support_primal_degree_pos (p : E → P) (d : E → D) (f : E → ℚ)
     (hf : f ∈ LinearMap.ker (boundary p d)) (v : SupportPrimal p f) :
     2 ≤ (Finset.univ.filter fun e : SupportEdge f => supportPrimalEndpoint p f e = v).card := by
-  have hs := supportRestriction_mem_kernel p d f hf
-  have hz := congrFun hs (.inl v)
+  
+  have hz := congrFun (supportRestriction_mem_kernel p d f hf) (.inl v)
   rw [boundary_inl] at hz
   simp only [Pi.zero_apply] at hz
   refine two_le_card_zero_sum
@@ -233,15 +231,15 @@ theorem support_primal_degree_pos (p : E → P) (d : E → D) (f : E → ℚ)
     exact Subtype.ext hp
   · intro e _
     exact e.property
-  · convert hz using 1; congr 1; ext x; simp
+  · aesop
 
 omit [Fintype P] [Fintype D] in
 open scoped Classical in
 theorem support_dual_degree_pos (p : E → P) (d : E → D) (f : E → ℚ)
     (hf : f ∈ LinearMap.ker (boundary p d)) (v : SupportDual d f) :
     2 ≤ (Finset.univ.filter fun e : SupportEdge f => supportDualEndpoint d f e = v).card := by
-  have hs := supportRestriction_mem_kernel p d f hf
-  have hz := congrFun hs (.inr v)
+  
+  have hz := congrFun (supportRestriction_mem_kernel p d f hf) (.inr v)
   rw [boundary_inr] at hz
   simp only [Pi.zero_apply, neg_eq_zero] at hz
   refine two_le_card_zero_sum
@@ -252,7 +250,7 @@ theorem support_dual_degree_pos (p : E → P) (d : E → D) (f : E → ℚ)
     exact Subtype.ext hp
   · intro e _
     exact e.property
-  · convert hz using 1; congr 1; ext x; simp
+  · aesop
 
 open scoped Classical in
 theorem support_primal_degree_le_two (p : E → P) (d : E → D) (f : E → ℚ)
@@ -263,23 +261,17 @@ theorem support_primal_degree_le_two (p : E → P) (d : E → D) (f : E → ℚ)
   classical
   obtain ⟨e₀, he₀, _⟩ := v.property
   have hc := support_card_le_active_vertices p d f hker e₀ he₀
-  have hp : (∑ u : SupportPrimal p f,
-      (Finset.univ.filter fun e : SupportEdge f => supportPrimalEndpoint p f e = u).card) =
-      Fintype.card (SupportEdge f) :=
-    (Finset.card_eq_sum_card_fiberwise (s := Finset.univ) (t := Finset.univ)
-      (f := supportPrimalEndpoint p f) (by simp)).symm
-  have hd : (∑ u : SupportDual d f,
-      (Finset.univ.filter fun e : SupportEdge f => supportDualEndpoint d f e = u).card) =
-      Fintype.card (SupportEdge f) :=
-    (Finset.card_eq_sum_card_fiberwise (s := Finset.univ) (t := Finset.univ)
-      (f := supportDualEndpoint d f) (by simp)).symm
+  
+  
   by_contra hn
   have hsp := Finset.sum_lt_sum (s := Finset.univ)
     (fun u _ => support_primal_degree_pos p d f hf u) ⟨v, Finset.mem_univ _, by omega⟩
   have hsd := Finset.sum_le_sum (s := Finset.univ)
-    (fun u _ => support_dual_degree_pos p d f hf u)
-  rw [hp] at hsp
-  rw [hd] at hsd
+     fun u _ => support_dual_degree_pos p d f hf u 
+  rw [ (Finset.card_eq_sum_card_fiberwise (s := Finset.univ) (t := Finset.univ)
+           (f := supportPrimalEndpoint p f) (by simp)).symm ] at hsp
+  rw [ (Finset.card_eq_sum_card_fiberwise (s := Finset.univ) (t := Finset.univ)
+           (f := supportDualEndpoint d f) (by simp)).symm ] at hsd
   simp only [Finset.sum_const, Finset.card_univ, smul_eq_mul] at hsp hsd
   omega
 
@@ -296,20 +288,13 @@ theorem primal_support_degree_le_two (p : E → P) (d : E → D) (f : E → ℚ)
     have he : (Finset.univ.filter fun e => f e ≠ 0 ∧ p e = v).card =
         (Finset.univ.filter fun e : SupportEdge f =>
           supportPrimalEndpoint p f e = ⟨v, hv⟩).card := by
-      apply Finset.card_bij (fun e he => (⟨e, (Finset.mem_filter.mp he).2.1⟩ : SupportEdge f))
-      · intro e he
-        exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,
-          Subtype.ext (Finset.mem_filter.mp he).2.2⟩
-      · intro e he e' he' hh
-        exact congrArg Subtype.val hh
-      · intro e he
-        have hp : p e.val = v := congrArg Subtype.val (Finset.mem_filter.mp he).2
-        exact ⟨e.val, Finset.mem_filter.mpr ⟨Finset.mem_univ _, e.property, hp⟩, rfl⟩
+      apply Finset.card_bij  fun e he => (⟨e, (Finset.mem_filter.mp he).2.1⟩ : SupportEdge f) 
+      · grind +locals
+      · grind
+      · grind +locals
     rwa [he]
-  · have he : (Finset.univ.filter fun e => f e ≠ 0 ∧ p e = v) = ∅ := by
-      apply Finset.eq_empty_iff_forall_notMem.mpr
-      intro e he
-      exact hv ⟨e, (Finset.mem_filter.mp he).2⟩
+  · have he :  Finset.univ.filter fun e => f e ≠ 0 ∧ p e = v  = ∅ := by
+      grind
     simp [he]
 
 end

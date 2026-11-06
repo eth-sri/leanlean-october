@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.CylinderColoring
 
@@ -12,13 +13,15 @@ noncomputable section
 
 variable {A V C : Type*}
 
-/-- The free colouring kernel depends only on the observed partition. -/
-theorem clusterCylinderProbability_factor (R : Setoid V) (v : A → V) (ξ : A → C) :
-    clusterCylinderProbability R v ξ = clusterCylinderProbability (R.comap v) id ξ := by
-  rfl
+
+
+
+
+
+
 
 /-- The pinned colouring kernel depends only on the observed marked partition. -/
-theorem pinnedClusterCylinderProbability_factor (R : Setoid V) (v : A → V) (ξ : A → C)
+theorem pinnedClusterCylinderProbability_factor (R : Setoid V) (v : A → V) (ξ : A → C) 
     (g : V) (i : C) :
     pinnedClusterCylinderProbability R v ξ g i =
       pinnedClusterCylinderProbability (R.comap (markedMap v g)) some ξ none i := by
@@ -26,8 +29,10 @@ theorem pinnedClusterCylinderProbability_factor (R : Setoid V) (v : A → V) (ξ
     apply Setoid.ext
     intro a b
     cases a <;> cases b <;> rfl
-  simp only [pinnedClusterCylinderProbability, observedClassCount, h]
+  simp only [pinnedClusterCylinderProbability, observedClassCount]
   rw [h]
+
+
 
 end
 end PottsDiscontinuity.Potts

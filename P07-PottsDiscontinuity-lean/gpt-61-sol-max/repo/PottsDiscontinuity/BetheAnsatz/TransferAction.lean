@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.SixVertex.RowTransfer
 
@@ -34,20 +35,20 @@ theorem interlacedLE_antisymm {N : ℕ} {x y : Finset (Fin N)}
 theorem transferMatrix_eq_two_orientations {N : ℕ} (c : ℝ) (x y : Finset (Fin N)) :
     transferMatrix N c x y =
       (if InterlacedLE y x then c ^ (univ.filter fun i => Psi x i ≠ Psi y i).card else 0) +
-      (if InterlacedLE x y then c ^ (univ.filter fun i => Psi x i ≠ Psi y i).card else 0) := by
-  classical
+       if InterlacedLE x y then c ^ (univ.filter fun i => Psi x i ≠ Psi y i).card else 0  := by
+  
   by_cases he : x = y
   · subst y
-    have hi : InterlacedLE x x := (interlacedLE_iff x x).mpr
-      ⟨rfl, fun _ => ⟨le_rfl, Nat.le_succ _⟩⟩
-    norm_num [transferMatrix_apply_self, hi]
+    
+    norm_num [transferMatrix_apply_self,  (interlacedLE_iff x x).mpr
+                                            ⟨rfl, fun _ => ⟨le_rfl, Nat.le_succ _⟩⟩ ]
   · have hn : ¬ (InterlacedLE x y ∧ InterlacedLE y x) :=
       fun h => he (interlacedLE_antisymm h.1 h.2)
     rw [transferMatrix_apply]
     by_cases hxy : InterlacedLE x y <;> by_cases hyx : InterlacedLE y x
-    · exact (hn ⟨hxy, hyx⟩).elim
-    · simp [he, Interlaced, hxy, hyx]
-    · simp [he, Interlaced, hxy, hyx]
-    · simp [he, Interlaced, hxy, hyx]
+    · simp_all
+    · simp [he, Interlaced, hyx]
+    · simp [he, Interlaced, hxy]
+    · simp [he, Interlaced, hxy]
 
 end PottsDiscontinuity.BetheAnsatz

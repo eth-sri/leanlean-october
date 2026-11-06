@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.Asymptotic26
 
@@ -36,26 +37,24 @@ theorem theorem26_sums_of_pos {ι : Type*} {l : Filter ι} {Δ : ℝ} (hΔ : Δ 
     (g : ℝ → ℝ) (hg : Continuous g) :
     Tendsto (fun i => (∑ j, g (p i j)) / (N i : ℝ)) l
       (𝓝 (∫ x in (-Real.pi)..Real.pi, g x * rho Δ x)) := by
-  let k : ι → ℕ := fun i => n i - 1
-  have hc (i : ι) : k i + 1 = n i := by dsimp [k]; have := hn i; omega
-  let q : ∀ i, Fin (k i + 1) → ℝ := fun i j => p i (Fin.cast (hc i) j)
-  have hq (i : ι) : q i ∈ S_n (k i + 1) := mem_S_n_cast (hc i) (hp i)
+  let k  := fun i => n i - 1
+  have hc (i : ι) : k i + 1 = n i := by grind
+  let q  := fun i j => p i (Fin.cast (hc i) j)
+  have hq (i : ι) : q i ∈ S_n (k i + 1) := by
+                                             solve_by_elim [_root_.PottsDiscontinuity.Bethe.mem_S_n_cast]
   have hqs (i : ι) : 2 * (k i + 1) ≤ N i := by rw [hc]; exact hs i
-  have hqc (i : ι) : N i = 2 * (k i + 1 + r) := by rw [hc]; exact hcount i
+  
   have hρ (i : ι) : rootStepDensity (N i) (k i + 1) (q i) (hq i) (by omega) (hqs i) =
       rootStepDensity (N i) (n i) (p i) (hp i) (hn i) (hs i) :=
-    rootStepDensity_cast (hc i) (p i) (hp i) (by omega) (hn i) (hqs i) (hs i)
-  have hqb (i : ι) : BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
-      |Xi (lamOf Δ) α * (rootStepDensity (N i) (k i + 1) (q i) (hq i) (by omega) (hqs i)
-        (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|) := by
-    simpa only [hρ i] using hb i
-  have hql : Tendsto (fun i => densityNorm Δ hΔ
-      (fun x => rootStepDensity (N i) (k i + 1) (q i) (hq i) (by omega) (hqs i) x - rho Δ x)
-      (hqb i)) l (𝓝 0) := by
-    simpa only [hρ] using hlim
-  have ht := theorem26_integrals hΔ r N k q hq hqs hqc hNlim hqb hql g hg
-  have hsum (i : ι) : (∑ j, g (q i j)) = ∑ j, g (p i j) :=
-    Equiv.sum_comp (finCongr (hc i)) (fun j => g (p i j))
-  simpa only [integral_empiricalMeasure, hsum] using ht
+    by
+      solve_by_elim [_root_.PottsDiscontinuity.Bethe.rootStepDensity_cast]
+  
+  
+  
+  have hsum (i : ι) :  ∑ j, g (q i j)  = ∑ j, g (p i j) :=
+    Equiv.sum_comp (finCongr (hc i))  fun j => g (p i j) 
+  simpa only [integral_empiricalMeasure, hsum] using (theorem26_integrals hΔ r N k q hq hqs (fun i => by rw [hc]; exact hcount i) hNlim (fun (i : ι) => by
+                                                                                                                                                            simpa only [hρ i] using hb i) (by
+                                                                                                                        simpa only [hρ] using hlim) g hg)
 
 end PottsDiscontinuity.Bethe

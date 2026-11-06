@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Namespaces/imports adapted to the shared FK library. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Duality.LatticeEmbedding
 public import Mathlib.Topology.Path
@@ -10,7 +11,7 @@ public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 
 namespace PottsDiscontinuity.FK.Curves
 
-open Set
+
 
 noncomputable section
 
@@ -33,11 +34,8 @@ theorem latticeWalkPath_range_subset_segments (δ : PositiveMesh)
         z ∈ Set.range (Path.segment (latticeEmbed δ x) (latticeEmbed δ y))} := by
   induction p with
   | @nil u0 =>
-      intro z hz
-      rcases hz with ⟨t, rfl⟩
-      refine ⟨u0, u0, by simp, by simp, Or.inl rfl, ?_⟩
-      rw [Path.range_segment]
-      exact left_mem_segment ℝ _ _
+      
+      aesop
   | @cons u v w h p ih =>
       intro z hz
       change z ∈ Set.range
@@ -45,9 +43,7 @@ theorem latticeWalkPath_range_subset_segments (δ : PositiveMesh)
           (latticeWalkPath δ p)) at hz
       rw [Path.trans_range] at hz
       rcases hz with hfirst | htail
-      · exact ⟨u, v, by simp, by
-          exact List.mem_cons.mpr (Or.inr (SimpleGraph.Walk.start_mem_support p)),
-          Or.inr h, hfirst⟩
+      · aesop
       · obtain ⟨x, y, hx, hy, hxy, hseg⟩ := ih htail
         exact ⟨x, y, by simp [hx], by simp [hy], hxy, hseg⟩
 

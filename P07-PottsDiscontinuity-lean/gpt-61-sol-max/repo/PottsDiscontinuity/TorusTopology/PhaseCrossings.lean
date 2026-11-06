@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusTopology.CylinderCrossing
 public import PottsDiscontinuity.TorusTopology.LiftedPotentials
@@ -15,19 +16,24 @@ open Torus TorusRC
 variable {N M b : ℕ}
 noncomputable section
 
+section
+
+variable (hN : Even N) (hM : Even M)
+include hN hM
+
 /-- The seam-closed cylinder is a subgraph of the original primal graph. -/
-theorem seamClosed_graph_le (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem seamClosed_graph_le  (A : RCConfig N M) :
     diamondOpenGraph hN hM true (torusRCSeamClosed A) ≤ diamondOpenGraph hN hM true A := by
   intro u v huv
-  rw [diamondOpenGraph,SimpleGraph.fromEdgeSet_adj] at huv ⊢
+  
   obtain ⟨⟨e,he,hep⟩,hne⟩ := huv
   have hy : e.2.val ≠ 0 := by intro hy; simp [torusRCSeamClosed,hy] at he
-  have hAe : A e=true := by simpa only [torusRCSeamClosed,hy,ite_false] using he
-  exact ⟨⟨e,hAe,hep⟩,hne⟩
+  
+  exact ⟨⟨e, by aesop ,hep⟩,hne⟩
 
 /-- A winding phase is constant along an actual seam-closed component. -/
 theorem winding_phase_eq_of_cylinder_reachable
-    (hN : Even N) (hM : Even M) (A : RCConfig N M)
+     (A : RCConfig N M)
     (c : (diamondOpenGraph hN hM true A).ConnectedComponent)
     (g : FaceVertex N M true → ZMod b)
     (hg : ∀ e : OpenDiamondEdge A, diamondEdgeCluster hN hM A e=c →
@@ -39,33 +45,30 @@ theorem winding_phase_eq_of_cylinder_reachable
   have hadj {w z : FaceVertex N M true}
       (hw : (diamondOpenGraph hN hM true A).connectedComponentMk w=c)
       (h : (diamondOpenGraph hN hM true (torusRCSeamClosed A)).Adj w z) : g w=g z := by
-    rw [diamondOpenGraph,SimpleGraph.fromEdgeSet_adj] at h
+    
     obtain ⟨⟨e,he,hep⟩,_⟩ := h
     have hy : e.2.val ≠ 0 := by intro hy; simp [torusRCSeamClosed,hy] at he
-    have hAe : A e=true := by simpa only [torusRCSeamClosed,hy,ite_false] using he
+    have hAe : A e=true := by simp_all [torusRCSeamClosed]
     rcases Sym2.eq_iff.1 hep with ⟨rfl,rfl⟩ | ⟨rfl,rfl⟩
     · have hv := hg ⟨e,hAe⟩ hw
-      simp only [hy,ite_false] at hv
-      exact (sub_eq_zero.1 hv).symm
+      grind
     · have hc : diamondEdgeCluster hN hM A ⟨e,hAe⟩=c :=
-        (SimpleGraph.ConnectedComponent.sound (diamond_endpoints_reachable hN hM A e hAe)).trans hw
-      have hv := hg ⟨e,hAe⟩ hc
-      simp only [hy,ite_false] at hv
-      exact sub_eq_zero.1 hv
+        by
+          solve_by_elim [_root_.Eq.trans, _root_.SimpleGraph.ConnectedComponent.sound, _root_.PottsDiscontinuity.Torus.diamond_endpoints_reachable]
+      grind
   rw [SimpleGraph.reachable_iff_reflTransGen] at hr
   induction hr with
   | refl => rfl
   | @tail w z hr hwz ih =>
-    have hreach : (diamondOpenGraph hN hM true A).Reachable u w :=
-      ((SimpleGraph.reachable_iff_reflTransGen u w).2 hr).mono (seamClosed_graph_le hN hM A)
-    have hw : (diamondOpenGraph hN hM true A).connectedComponentMk w=c :=
-      (SimpleGraph.ConnectedComponent.sound hreach).symm.trans hu
-    exact ih.trans (hadj hw hwz)
+    
+    have hw  :=
+      (SimpleGraph.ConnectedComponent.sound (((SimpleGraph.reachable_iff_reflTransGen u w).2 hr).mono (seamClosed_graph_le hN hM A))).symm.trans hu
+    grind
 
 /-- Every phase of a chain with winding b has a bottom-to-top cylinder cluster
 inside its original primal component. -/
 theorem exists_cylinder_crossing_at_each_phase
-    (hN : Even N) (hM : Even M) (hMp : 0 < M) (A : RCConfig N M) (hb : 0 < b)
+     (hMp : 0 < M) (A : RCConfig N M) (hb : 0 < b)
     (c : (diamondOpenGraph hN hM true A).ConnectedComponent)
     (g : FaceVertex N M true → ZMod b)
     (hg : ∀ e : OpenDiamondEdge A, diamondEdgeCluster hN hM A e=c →
@@ -90,48 +93,47 @@ theorem exists_cylinder_crossing_at_each_phase
     · have he := hg e hc
       by_cases hy : e.val.2.val=0
       · simp only [hy,ite_true] at he
-        have hfy : (faceEndpoint hN hM true e.val false).val.2.val=0 := by
-          rw [faceEndpoint_false_y]; exact hy
-        have hty : (faceEndpoint hN hM true e.val true).val.2.val+1=M := by
-          obtain ⟨m,rfl⟩ := Nat.exists_eq_succ_of_ne_zero hMp.ne'
-          have hz : e.val.2=0 := Fin.ext hy
-          have hep : (faceEndpoint hN hM true e.val true).val.2=prv e.val.2 := by
-            cases hcheck : checker e.val <;> simp [faceEndpoint,faceEndpointRaw,hcheck]
-          rw [hep,hz,prv_zero]
-          simp
+        
+        
         have ht : cylinderReachesTop hN hM A (faceEndpoint hN hM true e.val true) :=
-          ⟨_,hty,SimpleGraph.Reachable.refl _⟩
+          ⟨_, by
+                obtain ⟨m,rfl⟩ := Nat.exists_eq_succ_of_ne_zero hMp.ne'
+                have hz : e.val.2=0 := Fin.ext hy
+                have hep : (faceEndpoint hN hM true e.val true).val.2=prv e.val.2 := by
+                  cases hcheck : checker e.val <;> simp [faceEndpoint,faceEndpointRaw,hcheck]
+                rw [hep, hz]
+                simp ,SimpleGraph.Reachable.refl _⟩
         have hfalse : P (faceEndpoint hN hM true e.val false)=0 := by
           dsimp [P]
           split_ifs with h
-          · exact (hn ⟨_,hfy,hc,h.1,h.2⟩).elim
+          · exact (hn ⟨_, by
+                            rw [faceEndpoint_false_y]; exact hy ,hc,h.1,h.2⟩).elim
           · rfl
         have heq : g (faceEndpoint hN hM true e.val true)=k ↔
             g (faceEndpoint hN hM true e.val false)=k+1 := by
-          constructor
-          · intro h; rw [h] at he; linear_combination -he
-          · intro h; rw [h] at he; linear_combination he
+          grind
         rw [diamondCoboundary_apply,hfalse]
         simp only [P,ht,and_true,heq,sub_zero,ite_mul,one_mul,zero_mul,hy,true_and]
-      · simp only [hy,ite_false] at he
-        have hg0 := sub_eq_zero.1 he
-        have hopen : torusRCSeamClosed A e.val=true := by simp [torusRCSeamClosed,hy,e.property]
-        have hr := diamond_endpoints_reachable hN hM (torusRCSeamClosed A) e.val hopen
+      · simp only [hy] at he
+        
+        
+        have hr := diamond_endpoints_reachable hN hM (torusRCSeamClosed A) e.val (by simp [torusRCSeamClosed,hy,e.property])
         have htop : cylinderReachesTop hN hM A (faceEndpoint hN hM true e.val true) ↔
             cylinderReachesTop hN hM A (faceEndpoint hN hM true e.val false) := by
           constructor
           · rintro ⟨v,hv,hvR⟩; exact ⟨v,hv,hr.trans hvR⟩
           · rintro ⟨v,hv,hvR⟩; exact ⟨v,hv,hr.symm.trans hvR⟩
-        simp [diamondCoboundary_apply,P,hg0,propext htop,hy]
+        simp [P,  sub_eq_zero.1 he , propext htop, hy]
     · rw [hs e hc]
       simp
   have hz : phaseFlux hN hM A g (k+1) f.val=0 := by
     unfold phaseFlux
     rw [Finset.sum_filter]
-    simp_rw [← hterm]
-    exact hp.symm
+    grind
   rw [phaseFlux_eq_neg_one hN hM A hb c g hg f hs hw] at hz
   norm_num at hz
+
+end
 
 end
 end PottsDiscontinuity.TorusTopology

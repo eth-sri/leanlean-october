@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.Corollary313
 public import PottsDiscontinuity.TorusTopology.NonzeroWindingTurning
@@ -22,51 +23,53 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+section
+
+variable (hN : Even N) (hM : Even M)
+include hN hM
+
 private theorem turnPremises_of_turning_classification
-    (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M)
+     (i : Fin N) (j : Fin M)
     (A : RCConfig N M) :
     ZeroWindingTurnPremise hN hM i j A ∧ NonzeroWindingTurnPremise hN hM i j A := by
-  constructor
-  · intro q hv hh
-    exact PottsDiscontinuity.TorusTopology.loopRotationNumber_eq_pm_one_of_zero_winding
-      hN hM i j A q hv hh
-  · intro q hw
-    exact PottsDiscontinuity.TorusTopology.loopRotationNumber_eq_zero_of_nonzero_winding
-      hN hM i j A q hw
+                                                                                    solve_by_elim [_root_.And.intro, _root_.PottsDiscontinuity.TorusTopology.loopRotationNumber_eq_pm_one_of_zero_winding, _root_.PottsDiscontinuity.TorusTopology.loopRotationNumber_eq_zero_of_nonzero_winding]
+
+section
+
+variable (q : Set.Ici (1 : ℝ)) (hq : 4 < q.val) (i : Fin N) (j : Fin M)
+include hq
 
 /-- Corollary 3.13(i): the corrected random-cluster partition sum equals the
 six-vertex partition function at `c = sqrt (2 + sqrt q)`. -/
 theorem corollary_313_i_final
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ)) (hq : 4 < q.val)
-    (i : Fin N) (j : Fin M) :
-    (∑ A : RCConfig N M, torusCorrectedRCWeight hN hM i j q A) =
+      :
+     ∑ A : RCConfig N M, torusCorrectedRCWeight hN hM i j q A  =
       torusNormalization q N M *
         Z6V (Real.sqrt (2 + Real.sqrt q.val)) N M := by
-  exact corollary_313_i hN hM q hq i j
-    (fun A => turnPremises_of_turning_classification hN hM i j A)
+                                                       solve_by_elim [_root_.PottsDiscontinuity.Torus.corollary_313_i, _root_.PottsDiscontinuity.Torus.turnPremises_of_turning_classification]
 
 /-- Corollary 3.13(ii): the `U = 1` corrected random-cluster sector is bounded
 by four times the one-defect six-vertex sector. -/
 theorem corollary_313_ii_final
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ)) (hq : 4 < q.val)
-    (i : Fin N) (j : Fin M) :
-    (∑ A : {A : RCConfig N M // rcVerticalWinding hN hM j A = 1},
-      torusCorrectedRCWeight hN hM i j q A.val) ≤
+      :
+     ∑ A : {A : RCConfig N M // rcVerticalWinding hN hM j A = 1},
+      torusCorrectedRCWeight hN hM i j q A.val  ≤
       4 * torusNormalization q N M *
         Z6Vr (Real.sqrt (2 + Real.sqrt q.val)) N M 1 := by
-  exact corollary_313_ii hN hM q hq i j
-    (fun A => turnPremises_of_turning_classification hN hM i j A)
+                                                          solve_by_elim [_root_.PottsDiscontinuity.Torus.corollary_313_ii, _root_.PottsDiscontinuity.Torus.turnPremises_of_turning_classification]
 
 /-- Corollary 3.13(iii): every `r`-defect six-vertex sector is bounded by the
 corrected random-cluster sector with vertical winding at least `r`. -/
 theorem corollary_313_iii_final
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ)) (hq : 4 < q.val)
-    (i : Fin N) (j : Fin M) (r : ℕ) :
+      (r : ℕ) :
     torusNormalization q N M *
         Z6Vr (Real.sqrt (2 + Real.sqrt q.val)) N M r ≤
       ∑ A : {A : RCConfig N M // r ≤ rcVerticalWinding hN hM j A},
         torusCorrectedRCWeight hN hM i j q A.val := by
-  exact corollary_313_iii hN hM q hq i j r
-    (fun A => turnPremises_of_turning_classification hN hM i j A)
+                                                      solve_by_elim [_root_.PottsDiscontinuity.Torus.corollary_313_iii, _root_.PottsDiscontinuity.Torus.turnPremises_of_turning_classification]
+
+end
+
+end
 
 end PottsDiscontinuity.Torus

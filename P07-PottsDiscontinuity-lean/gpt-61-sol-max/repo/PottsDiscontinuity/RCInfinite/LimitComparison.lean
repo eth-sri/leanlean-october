@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.RCInfinite.SpatialComparison
 
@@ -39,22 +40,21 @@ theorem free_limit_joint_ge (θ : Parameters) (μ : Measure LatticeConfiguration
   simpa only [boxMeasure_free] using
     free_box_joint_ge θ (latticeBox_mono (0, 0) hn) F hF B hB.measurableSet hout
 
-section Arithmetic
+section
 variable {X : Type*} [MeasurableSpace X] (μ : Measure X) [IsProbabilityMeasure μ]
 
 theorem abs_covariance_le_of_upper (A B : Set X) (hB : MeasurableSet B) (u : ℝ)
     (h : μ.real (A ∩ B) ≤ u * μ.real B)
     (hc : μ.real (A ∩ Bᶜ) ≤ u * μ.real Bᶜ) :
     |μ.real (A ∩ B) - μ.real A * μ.real B| ≤ u - μ.real A := by
-  have hsumB : μ.real B + μ.real Bᶜ = 1 := by
-    simpa using measureReal_add_measureReal_compl (μ := μ) hB
+  have hsumB : μ.real B + μ.real Bᶜ = 1 := probReal_add_probReal_compl hB
   have hsumA : μ.real (A ∩ B) + μ.real (A ∩ Bᶜ) = μ.real A := by
     have ht := measureReal_inter_add_sdiff (μ := μ) (s := A) (t := B) hB
-    simpa only [sdiff_eq_compl_inter, inter_comm] using ht
+    aesop
   have hbc : μ.real Bᶜ = 1 - μ.real B := by linarith
   have hjc : μ.real (A ∩ Bᶜ) = μ.real A - μ.real (A ∩ B) := by linarith
   rw [hbc, hjc] at hc
-  have hδ : 0 ≤ u - μ.real A := by nlinarith [h, hc]
+  have hδ : 0 ≤ u - μ.real A := by nlinarith 
   apply abs_le.mpr
   constructor
   · nlinarith [mul_nonneg hδ (measureReal_nonneg (μ := μ) (s := B))]
@@ -64,21 +64,20 @@ theorem abs_covariance_le_of_lower (A B : Set X) (hB : MeasurableSet B) (l : ℝ
     (h : l * μ.real B ≤ μ.real (A ∩ B))
     (hc : l * μ.real Bᶜ ≤ μ.real (A ∩ Bᶜ)) :
     |μ.real (A ∩ B) - μ.real A * μ.real B| ≤ μ.real A - l := by
-  have hsumB : μ.real B + μ.real Bᶜ = 1 := by
-    simpa using measureReal_add_measureReal_compl (μ := μ) hB
+  have hsumB : μ.real B + μ.real Bᶜ = 1 := probReal_add_probReal_compl hB
   have hsumA : μ.real (A ∩ B) + μ.real (A ∩ Bᶜ) = μ.real A := by
     have ht := measureReal_inter_add_sdiff (μ := μ) (s := A) (t := B) hB
-    simpa only [sdiff_eq_compl_inter, inter_comm] using ht
+    aesop
   have hbc : μ.real Bᶜ = 1 - μ.real B := by linarith
-  have hjc : μ.real (A ∩ Bᶜ) = μ.real A - μ.real (A ∩ B) := by linarith
-  rw [hbc, hjc] at hc
-  have hδ : 0 ≤ μ.real A - l := by nlinarith [h, hc]
+  
+  rw [hbc] at hc
+  have hδ : 0 ≤ μ.real A - l := by nlinarith 
   apply abs_le.mpr
   constructor
   · nlinarith [mul_nonneg hδ (sub_nonneg.mpr (measureReal_le_one (μ := μ) (s := B)))]
   · nlinarith [mul_nonneg hδ (measureReal_nonneg (μ := μ) (s := B))]
 
-end Arithmetic
+end
 
 /-- Uniform decorrelation from the exterior of a box. The right side is the
 single-cylinder box-limit error and is independent of the exterior event. -/
@@ -93,15 +92,15 @@ theorem cylinder_exterior_covariance_bound (θ : Parameters) (i : Fin 2)
         (LatticeConfiguration.allOpen F) - μ.real (LatticeConfiguration.allOpen F)| := by
   have : IsProbabilityMeasure μ := hμ.1
   fin_cases i
-  · have h := abs_covariance_le_of_lower μ _ B hB.measurableSet _
-      (free_limit_joint_ge θ μ hμ m F hF B hB hout)
-      (free_limit_joint_ge θ μ hμ m F hF Bᶜ hB.compl hout.compl)
+  · 
     have hh := neg_le_abs
       ((boxProbabilityMeasure θ (0, 0) m : Measure LatticeConfiguration).real
         (LatticeConfiguration.allOpen F) - μ.real (LatticeConfiguration.allOpen F))
     simp only [neg_sub] at hh
-    simpa [boxMeasure] using h.trans hh
-  · simpa [boxMeasure] using (abs_covariance_le_of_upper μ _ B hB.measurableSet _
+    simpa  using (abs_covariance_le_of_lower μ _ B hB.measurableSet _
+                                (free_limit_joint_ge θ μ hμ m F hF B hB hout)
+                                (free_limit_joint_ge θ μ hμ m F hF Bᶜ hB.compl hout.compl)).trans hh
+  · simpa  using (abs_covariance_le_of_upper μ _ B hB.measurableSet _
       (wired_limit_joint_le θ μ hμ m F hF B hB hout)
       (wired_limit_joint_le θ μ hμ m F hF Bᶜ hB.compl hout.compl)).trans
         (le_abs_self _)

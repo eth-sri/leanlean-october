@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -26,9 +27,7 @@ def wholePlaneOpenGraphIso (e : squareLattice ≃g squareLattice) (ω : LatticeC
     have hidx (h : squareLattice.Adj (e.toEquiv u) (e.toEquiv v)) :
         SimpleGraph.Iso.mapEdgeSet e.symm ⟨s(e.toEquiv u, e.toEquiv v), squareLattice.mem_edgeSet.mpr h⟩ =
           ⟨s(u, v), squareLattice.mem_edgeSet.mpr (e.map_rel_iff'.1 h)⟩ := by
-      apply Subtype.ext
-      change Sym2.map e.symm s(e.toEquiv u, e.toEquiv v) = s(u, v)
-      simp
+      aesop
     constructor
     · rintro ⟨hadj, hopen⟩
       refine ⟨e.map_rel_iff'.1 hadj, ?_⟩
@@ -40,7 +39,7 @@ def wholePlaneOpenGraphIso (e : squareLattice ≃g squareLattice) (ω : LatticeC
       exact hopen
 
 lemma connectionEvent_preimage_iso (e : squareLattice ≃g squareLattice) (u v : LatticeVertex) :
-    (latticeConfigurationIsoHomeomorph e) ⁻¹' connectionEvent (e u) (e v) =
+     latticeConfigurationIsoHomeomorph e  ⁻¹' connectionEvent (e u) (e v) =
       connectionEvent u v := by
   ext ω
   change (rcInfiniteOpenGraph (latticeConfigurationIsoHomeomorph e ω)).Reachable (e u) (e v) ↔
@@ -56,44 +55,45 @@ theorem free_connection_symmetry (θ : Parameters) (μ : Measure LatticeConfigur
     (hbox : ∀ c v r, e v ∈ latticeBox (e c) r ↔ v ∈ latticeBox c r)
     (u v : LatticeVertex) :
     μ (connectionEvent (e u) (e v)) = μ (connectionEvent u v) := by
-  have h := congrArg (fun ν : Measure LatticeConfiguration => ν (connectionEvent (e u) (e v)))
+  have h := congrArg (fun ν  => ν (connectionEvent (e u) (e v)))
     (free_limit_map_latticeIso θ μ hμ e hbox)
   rw [Measure.map_apply (latticeConfigurationIsoHomeomorph_measurable e)
     (connectionEvent_measurableSet _ _), connectionEvent_preimage_iso] at h
   exact h.symm
 
 /-- The actual free two-point probability with one endpoint at the origin. -/
-def twoPoint (μ : Measure LatticeConfiguration) (x : LatticeVertex) : ℝ :=
+def twoPoint (μ : Measure LatticeConfiguration) (x : LatticeVertex)  :=
   μ.real (connectionEvent 0 x)
 
 lemma connectionEvent_symm (u v : LatticeVertex) : connectionEvent u v = connectionEvent v u := by
-  ext ω
-  exact ⟨fun h => h.symm, fun h => h.symm⟩
+                                                                                                  solve_by_elim [_root_.Set.ext, _root_.Iff.intro, _root_.SimpleGraph.Reachable.symm]
 
-lemma free_connection_translate (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (a u v : LatticeVertex) :
-    μ (connectionEvent (u + a) (v + a)) = μ (connectionEvent u v) := by
-  exact free_connection_symmetry θ μ hμ (latticeTranslationIso a)
-      (fun c v r => mem_latticeBox_translate_iff a c v r) u v
+section
+
+variable (θ : Parameters) (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
+include hμ
+
+lemma free_connection_translate  (a u v : LatticeVertex) :
+    μ (connectionEvent (u + a) (v + a)) = μ (connectionEvent u v) := free_connection_symmetry θ μ hμ (latticeTranslationIso a) (mem_latticeBox_translate_iff a) u v
 
 /-- Infinite-volume FKG and translation invariance yield supermultiplicativity. -/
-theorem twoPoint_mul_le (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x y : LatticeVertex) :
+theorem twoPoint_mul_le  (x y : LatticeVertex) :
     twoPoint μ x * twoPoint μ y ≤ twoPoint μ (x + y) := by
   have := hμ.1
   have h := free_connection_mul_le θ μ hμ 0 x (x + y)
   have ht := free_connection_translate θ μ hμ x 0 y
   simp only [zero_add, add_comm y x] at ht
   rw [ht] at h
-  have hr := ENNReal.toReal_mono (measure_ne_top μ (connectionEvent 0 (x + y))) h
-  simpa only [twoPoint, Measure.real_def, ENNReal.toReal_mul] using hr
+  
+  simpa only [twoPoint, Measure.real_def, ENNReal.toReal_mul] using  ENNReal.toReal_mono (measure_ne_top μ (connectionEvent 0 (x + y))) h 
 
-lemma twoPoint_neg (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
+lemma twoPoint_neg  (x : LatticeVertex) :
     twoPoint μ (-x) = twoPoint μ x := by
   have ht := free_connection_translate θ μ hμ x 0 (-x)
   rw [zero_add, neg_add_cancel, connectionEvent_symm x 0] at ht
   exact congrArg ENNReal.toReal ht.symm
+
+end
 
 /-- Reflection in the horizontal axis. -/
 def latticeFlipYIso : squareLattice ≃g squareLattice where
@@ -113,18 +113,18 @@ lemma mem_latticeBox_flipY_iff (c v : LatticeVertex) (r : ℕ) :
   simp only [mem_latticeBox]
   omega
 
-lemma twoPoint_flipY (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
-    twoPoint μ (x.1, -x.2) = twoPoint μ x := by
-  have h := free_connection_symmetry θ μ hμ latticeFlipYIso mem_latticeBox_flipY_iff 0 x
-  exact congrArg ENNReal.toReal h
+section
 
-lemma twoPoint_quarterTurn (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
-    twoPoint μ (-x.2, x.1) = twoPoint μ x := by
-  have h := free_connection_symmetry θ μ hμ latticeQuarterTurnIso
-    (fun c v r => mem_latticeBox_quarterTurn_iff c v r) 0 x
-  exact congrArg ENNReal.toReal h
+variable (θ : Parameters) (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex)
+include hμ
+
+lemma twoPoint_flipY  :
+    twoPoint μ (x.1, -x.2) = twoPoint μ x := congrArg ENNReal.toReal (free_connection_symmetry θ μ hμ latticeFlipYIso mem_latticeBox_flipY_iff 0 x)
+
+lemma twoPoint_quarterTurn  :
+    twoPoint μ (-x.2, x.1) = twoPoint μ x := congrArg ENNReal.toReal (free_connection_symmetry θ μ hμ latticeQuarterTurnIso mem_latticeBox_quarterTurn_iff 0 x)
+
+end
 
 end
 end PottsDiscontinuity.Duality

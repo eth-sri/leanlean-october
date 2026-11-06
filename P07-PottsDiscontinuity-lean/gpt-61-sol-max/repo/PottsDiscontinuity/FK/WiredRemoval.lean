@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import PottsDiscontinuity.FK.PositiveAssociation
@@ -19,7 +20,7 @@ remaining sampled edges and an ordinary Bernoulli weight on `R`.
 
 namespace PottsDiscontinuity.FK
 
-open scoped BigOperators
+
 
 variable {V : Type*} (G : SimpleGraph V)
 
@@ -38,14 +39,10 @@ instance removedConfiguration_nonempty (R : Configuration G) :
     Nonempty (RemovedConfiguration G R) := ⟨⟨∅, Finset.empty_subset R⟩⟩
 
 instance remainingConfiguration_finite [Finite V] (R : Configuration G) :
-    Finite (RemainingConfiguration G R) := by
-  let : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
-  infer_instance
+    Finite (RemainingConfiguration G R) := inferInstance
 
 instance removedConfiguration_finite [Finite V] (R : Configuration G) :
-    Finite (RemovedConfiguration G R) := by
-  let : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
-  infer_instance
+    Finite (RemovedConfiguration G R) := inferInstance
 
 variable [DecidableEq G.edgeSet]
 
@@ -95,7 +92,7 @@ theorem componentSetoid_union_removed (ξ : BoundaryCondition V) (R : Configurat
       (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∈ R → ξ.partition.r u v)
     (A : Configuration G) (B : RemovedConfiguration G R) :
     componentSetoid G ξ (A ∪ B.val) = componentSetoid G ξ A := by
-  have haux : ∀ (S : Configuration G), S ⊆ R →
+  have haux : ∀ S, S ⊆ R →
       componentSetoid G ξ (A ∪ S) = componentSetoid G ξ A := by
     intro S
     induction S using Finset.induction_on with
@@ -104,17 +101,17 @@ theorem componentSetoid_union_removed (ξ : BoundaryCondition V) (R : Configurat
       rw [Finset.union_empty]
     | @insert e S _ ih =>
       intro hS
-      have heR : e ∈ R := hS (Finset.mem_insert_self e S)
-      have hSR : S ⊆ R := fun _ h => hS (Finset.mem_insert_of_mem h)
+      have heR  := hS (Finset.mem_insert_self e S)
+      
       have hendpoints : ∃ (u v : V) (huv : G.Adj u v),
           e = ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ := by
         rcases e with ⟨e, heG⟩
         induction e using Sym2.inductionOn with
-        | _ u v => exact ⟨u, v, G.mem_edgeSet.mp heG, rfl⟩
+        | _ u v => aesop
       rcases hendpoints with ⟨u, v, huv, rfl⟩
       rw [Finset.union_insert, componentSetoid_insert_eq_of_boundary ξ (A ∪ S) huv
         (hR u v huv heR)]
-      exact ih hSR
+      exact ih  fun _ h => hS (Finset.mem_insert_of_mem h) 
   exact haux B.val B.property
 
 theorem componentCount_union_removed [Finite V] (ξ : BoundaryCondition V)
@@ -123,7 +120,7 @@ theorem componentCount_union_removed [Finite V] (ξ : BoundaryCondition V)
       (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∈ R → ξ.partition.r u v)
     (A : Configuration G) (B : RemovedConfiguration G R) :
     componentCount G ξ (A ∪ B.val) = componentCount G ξ A := by
-  rw [componentCount, componentCount, componentSetoid_union_removed G ξ R hR A B]
+  simp_all [componentCount, componentSetoid_union_removed]
 
 /-- The FK weight with only edges outside `R` sampled. The component count is
 still taken on all original vertices with the same boundary partition. -/
@@ -155,7 +152,7 @@ theorem removedWeight_pos (q : Parameters) (R : Configuration G)
 theorem closed_edge_count_split [Finite V] (R : Configuration G)
     (A : RemainingConfiguration G R) (B : RemovedConfiguration G R) :
     Nat.card G.edgeSet - (A.val.card + B.val.card) =
-      (Nat.card G.edgeSet - R.card - A.val.card) + (R.card - B.val.card) := by
+       Nat.card G.edgeSet - R.card - A.val.card  + (R.card - B.val.card) := by
   have hA := remaining_card_add_removedSet_card_le G R A
   have hB := removed_card_le G R B
   omega
@@ -168,10 +165,7 @@ theorem weight_union_factorization [Finite V] (q : Parameters)
       (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∈ R → ξ.partition.r u v)
     (A : RemainingConfiguration G R) (B : RemovedConfiguration G R) :
     weight G q ξ (A.val ∪ B.val) = remainingWeight G q ξ R A * removedWeight G q R B := by
-  rw [weight, remainingWeight, removedWeight,
-    Finset.card_union_of_disjoint (remaining_disjoint_removed G R A B),
-    componentCount_union_removed G ξ R hR A.val B,
-    closed_edge_count_split G R A B, pow_add, pow_add]
+  rw [weight, remainingWeight, removedWeight, Finset.card_union_of_disjoint (remaining_disjoint_removed G R A B), componentCount_union_removed G ξ R hR A.val B, closed_edge_count_split G R A B]
   ring
 
 end PottsDiscontinuity.FK

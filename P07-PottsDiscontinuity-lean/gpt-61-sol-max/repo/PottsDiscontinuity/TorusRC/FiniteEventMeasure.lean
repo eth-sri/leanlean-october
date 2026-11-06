@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusRC.FiniteConnectionTransport
 public import PottsDiscontinuity.TorusRC.CylinderFiberComparison
@@ -20,14 +21,14 @@ noncomputable section
 theorem torusRCFiberEventProbability_eq_measureReal {α : Type*} [Fintype α]
     [MeasurableSpace α] [MeasurableSingletonClass α] (p : PMF α) (E : Set α) :
     torusRCFiberEventProbability p E = p.toMeasure.real E := by
-  classical
+  
   unfold torusRCFiberEventProbability FiniteProbability.expectation Measure.real
   rw [PMF.toMeasure_apply_fintype,ENNReal.toReal_sum]
   · apply Finset.sum_congr rfl
     intro a _
-    by_cases ha : a ∈ E <;> simp [Set.indicator,ha]
+    by_cases ha : a ∈ E <;> simp [ha]
   · intro a _
-    by_cases ha : a ∈ E <;> simp [Set.indicator,ha,p.apply_ne_top a]
+    by_cases ha : a ∈ E <;> simp [ha, p.apply_ne_top a]
 
 attribute [local instance] configurationMeasurableSpace
 
@@ -42,7 +43,7 @@ theorem boxProbabilityMeasure_connection_eq (θ : Parameters) (c : LatticeVertex
       torusRCFiberEventProbability (law (boxGraph c r) θ (BoundaryCondition.free ∅))
         {A | ActualConnected (boxGraph c r) A u v} := by
   rw [torusRCFiberEventProbability_eq_measureReal]
-  unfold Measure.real
+  
   change (((law (boxGraph c r) θ (BoundaryCondition.free ∅)).map
     (boxConfiguration c r)).toMeasure (connectionEvent u.val v.val)).toReal = _
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top (connectionEvent_isMeasurableSet _ _)]
@@ -64,11 +65,10 @@ theorem open_probability_eventually_gt {Ω : Type*} [MeasurableSpace Ω]
     (hweak : Tendsto μs atTop (𝓝 μ)) (E : Set Ω) (hE : IsOpen E)
     (t : ℝ) (ht : 0 ≤ t) (htμ : t < μ.toMeasure.real E) :
     ∀ᶠ k in atTop, t < (μs k).toMeasure.real E := by
-  have hlt : ENNReal.ofReal t < μ.toMeasure E :=
-    (ENNReal.ofReal_lt_iff_lt_toReal ht (measure_ne_top _ _)).mpr htμ
-  have hlower := ProbabilityMeasure.le_liminf_measure_open_of_tendsto hweak hE
-  have h := eventually_lt_of_lt_liminf (hlt.trans_le hlower)
-  filter_upwards [h] with k hk
+  
+  
+  
+  filter_upwards [ eventually_lt_of_lt_liminf (((ENNReal.ofReal_lt_iff_lt_toReal ht (measure_ne_top _ _)).mpr htμ).trans_le (ProbabilityMeasure.le_liminf_measure_open_of_tendsto hweak hE)) ] with k hk
   exact (ENNReal.ofReal_lt_iff_lt_toReal ht (measure_ne_top _ _)).mp hk
 
 end

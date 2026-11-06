@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.FreeCylinderPartition
 public import PottsDiscontinuity.Potts.ESCylinderLaw
@@ -18,33 +19,37 @@ local instance freeLimitVertexDecidableEq (V : Finset (ℤ × ℤ)) :
     DecidableEq ↥(V : Set (ℤ × ℤ)) := fun _ _ => Classical.propDecidable _
 local instance freeLimitVertexFintype (V : Finset (ℤ × ℤ)) :
     Fintype ↥(V : Set (ℤ × ℤ)) := Fintype.ofFinite _
-local instance freeLimitEdgeDecidableEq (V : Finset (ℤ × ℤ)) :
-    DecidableEq (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := fun _ _ => Classical.propDecidable _
-local instance freeLimitEdgeFintype (V : Finset (ℤ × ℤ)) :
-    Fintype (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := Fintype.ofFinite _
 
-theorem free_potts_cylinder_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
+
+
+section
+
+variable (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
+include hq hβ
+
+theorem free_potts_cylinder_tendsto 
     (φ : ProbabilityMeasure FK.LatticeConfiguration)
-    (hφ : Tendsto (fun n => FK.boxProbabilityMeasure (fkParameters q hq β hβ) (0, 0) n) atTop (𝓝 φ))
+    (hφ : Tendsto  (FK.boxProbabilityMeasure (fkParameters q hq β hβ) (0, 0))  atTop (𝓝 φ))
     (A : Finset (ℤ × ℤ)) (ξ : SpinSpace q) :
     Tendsto (fun n => (pottsBoxProbabilityMeasure q hq β hβ 0 n).toMeasure.real (spinCylinder q A ξ))
       atTop (𝓝 (freeESCylinder q φ.toMeasure A ξ)) := by
   have ht := free_partitionExpectation_tendsto (fkParameters q hq β hβ) φ hφ
-    (fun a : ↥A => a.val) (fun R => clusterCylinderProbability R id (fun a : ↥A => ξ a.val))
-  change Tendsto _ atTop (𝓝 (freeESCylinder q φ.toMeasure A ξ)) at ht
+    (fun a  => a.val)  fun R => clusterCylinderProbability R id  fun a : ↥A => ξ a.val  
+  
   apply ht.congr'
   have hs : ∀ᶠ n : ℕ in atTop, A ⊆ box n :=
-    (eventually_all_finset A).mpr (fun x _ => FK.eventually_mem_box x)
+    by
+      solve_by_elim [_root_.Iff.mpr, _root_.Filter.eventually_all_finset, _root_.PottsDiscontinuity.FK.eventually_mem_box] 
   filter_upwards [hs] with n hn
   rw [← spinObservationEvent_subtype q A ξ]
   exact ((pottsBoxProbabilityMeasure_observed q hq β hβ 0 n (fun a : ↥A => a.val)
-    (fun a => hn a.property) (fun a : ↥A => ξ a.val)).trans
-    (potts_free_cylinder_eq_partitionExpectation q hq β hβ n (fun a : ↥A => a.val)
-      (fun a => hn a.property) (fun a : ↥A => ξ a.val))).symm
+    (fun a => hn a.property)  fun a  => ξ a.val ).trans
+    (potts_free_cylinder_eq_partitionExpectation q hq β hβ n (fun a  => a.val)
+      (fun a => hn a.property)  fun a : ↥A => ξ a.val )).symm
 
 /-- An actual free RC box limit and an actual free Potts box limit, with the
 law of every Potts cylinder given by independent uniform cluster colouring. -/
-theorem exists_free_potts_limit_with_colouring (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) :
+theorem exists_free_potts_limit_with_colouring  :
     ∃ (φ : ProbabilityMeasure FK.LatticeConfiguration) (μ : ProbabilityMeasure (SpinSpace q)),
       IsRCInfiniteVolumeLimit (fkParameters q hq β hβ).toP (fkParameters q hq β hβ).toQ 0 φ.toMeasure ∧
       IsPottsInfiniteVolumeLimit q β 0 μ.toMeasure ∧
@@ -55,6 +60,8 @@ theorem exists_free_potts_limit_with_colouring (q : ℕ) (hq : 2 ≤ q) (β : �
   obtain ⟨μ, hμ, hcyl⟩ := potts_limit_of_cylinder_limits q hq β hβ 0
     (freeESCylinder q φ.toMeasure) (free_potts_cylinder_tendsto q hq β hβ φ hw)
   exact ⟨φ, μ, FK.isRCInfiniteVolumeLimit_of_freeBox_tendsto _ φ hw, hμ, μ.prop, hcyl⟩
+
+end
 
 end
 end PottsDiscontinuity.Potts

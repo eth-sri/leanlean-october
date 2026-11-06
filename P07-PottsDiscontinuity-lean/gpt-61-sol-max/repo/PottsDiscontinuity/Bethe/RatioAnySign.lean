@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.RatioFourierLimit
 
@@ -14,30 +15,30 @@ namespace PottsDiscontinuity.Bethe
 open BetheAnsatz
 
 /-- The Bethe factors depend on `c` only through `c²`. -/
-theorem ratio_L_abs (c : ℝ) (w : ℂ) : L (|c|) w = L c w := by
-  have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
-    exact_mod_cast (sq_abs c)
+theorem ratio_L_abs (c : ℝ) (w : ℂ) : L  |c|  w = L c w := by
+  have hsquare :    |c|   ^ 2  = (c : ℂ) ^ 2 := by
+    exact_mod_cast  sq_abs c 
   unfold L
   rw [hsquare]
 
-theorem ratio_M_abs (c : ℝ) (w : ℂ) : M (|c|) w = M c w := by
-  have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
-    exact_mod_cast (sq_abs c)
+theorem ratio_M_abs (c : ℝ) (w : ℂ) : M  |c|  w = M c w := by
+  have hsquare :    |c|   ^ 2  = (c : ℂ) ^ 2 := by
+    exact_mod_cast  sq_abs c 
   unfold M
   rw [hsquare]
 
 theorem ratio_eigenvalueRegular_abs {n : ℕ} (c : ℝ) (p : Fin n → ℝ) :
-    eigenvalueRegular (|c|) p = eigenvalueRegular c p := by
+    eigenvalueRegular  |c|  p = eigenvalueRegular c p := by
   simp only [eigenvalueRegular, ratio_L_abs, ratio_M_abs]
 
 theorem ratio_eigenvalueZero_abs {n : ℕ} (N : ℕ) (c : ℝ)
     (p : Fin n → ℝ) (l : Fin n) :
-    eigenvalueZero N (|c|) p l = eigenvalueZero N c p l := by
-  have hani : anisotropy (|c|) = anisotropy c := by
+    eigenvalueZero N  |c|  p l = eigenvalueZero N c p l := by
+  have hani : anisotropy  |c|  = anisotropy c := by
     unfold anisotropy
     rw [sq_abs]
-  have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
-    exact_mod_cast (sq_abs c)
+  have hsquare :    |c|   ^ 2  = (c : ℂ) ^ 2 := by
+    exact_mod_cast  sq_abs c 
   unfold eigenvalueZero
   rw [hsquare, hani]
   simp only [ratio_M_abs]
@@ -51,11 +52,8 @@ theorem ratio_abs_gt_two {Δ c : ℝ} (hΔ : Δ < -1) (hcΔ : anisotropy c = Δ)
   nlinarith [sq_abs c, abs_nonneg c]
 
 theorem ratio_anisotropy_abs {Δ c : ℝ} (hcΔ : anisotropy c = Δ) :
-    anisotropy (|c|) = Δ := by
-  have h := hcΔ
-  unfold anisotropy at h ⊢
-  rw [sq_abs]
-  exact h
+    anisotropy  |c|  = Δ := by
+  simp_all [anisotropy]
 
 section
 
@@ -81,7 +79,7 @@ variable {Δ : ℝ} (hΔ : Δ < -1) (r : ℕ) (N : ℕ → ℕ) (h4 : ∀ i, 4 �
       densityNorm Δ hΔ (fun x => rootStepDensity (N i) (N i / 2 - r) (q i) (hq i)
         (hn i) (two_mul_half_sub_le N r i) x - rho Δ x) (hbq i) ≤ K / N i)
 
-include hΔ h4 hr hN hp hq hpBE hqBE hNlim hbp hbq hK hrate
+include h4 hr hN hpBE hqBE hNlim hK hrate
 
 /-- Both Fourier-composed parity limits for either sign of `c`. -/
 theorem ratio_even_eigenvalue_limit_fourier_any_sign (heven : r % 2 = 0)

@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusTopology.LoopOrbitLift
 public import PottsDiscontinuity.TorusTopology.LiftedEdgeCover
@@ -17,9 +18,7 @@ variable {N M : ℕ}
 lemma periodicCoordinate_add_one (hN : 0 < N) (z : ℤ) :
     periodicCoordinate hN (z+1) = nxt (periodicCoordinate hN z) := by
   have hh := periodicCoordinate_sub_one hN (z+1)
-  rw [add_sub_cancel_right] at hh
-  apply (finRotate N).symm.injective
-  simpa only [prv,nxt,Equiv.symm_apply_apply] using hh.symm
+  grind
 
 /-- Integer nearest-neighbor steps project to precisely the medial step's vertex. -/
 lemma loopLiftPosition_step_projection
@@ -35,9 +34,13 @@ lemma loopLiftPosition_step_projection
       periodicCoordinate_sub_one,periodicCoordinate_add_one,hx,hy,
       stepPerm_apply,strandReverse,edgeReverse]
 
+section
+
+variable (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s) (d : DirectedDart ω)
+include h d
+
 /-- At every time, the lift lies above the vertex of the actual torus dart. -/
-theorem loopLiftPosition_projection (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) (n : ℕ) :
+theorem loopLiftPosition_projection  (n : ℕ) :
     (periodicCoordinate (Fin.pos d.val.1.1) (loopLiftPosition ω s h d n).1,
      periodicCoordinate (Fin.pos d.val.1.2) (loopLiftPosition ω s h d n).2) =
       ((directedStep ω s h)^[n] d).val.1 := by
@@ -45,34 +48,34 @@ theorem loopLiftPosition_projection (ω : ArrowConfig N M) (s : Smoothing N M)
   | zero => simp [loopLiftPosition_zero,periodicCoordinate_nat]
   | succ n ih =>
     rw [loopLiftPosition_succ]
-    have hx := congrArg Prod.fst ih
-    have hy := congrArg Prod.snd ih
-    have hh := loopLiftPosition_step_projection (Fin.pos d.val.1.1) (Fin.pos d.val.1.2)
-      s (((directedStep ω s h)^[n] d).val) (loopLiftPosition ω s h d n) hx hy
-    simpa only [Prod.fst_add,Prod.snd_add,Function.iterate_succ_apply',directedStep_val] using hh
+    
+    
+    
+    simpa only [Prod.fst_add,Prod.snd_add,Function.iterate_succ_apply',directedStep_val] using  loopLiftPosition_step_projection (Fin.pos d.val.1.1) (Fin.pos d.val.1.2)
+                                                                                                  s  ((directedStep ω s h)^[n] d).val  (loopLiftPosition ω s h d n) (congrArg Prod.fst ih) (congrArg Prod.snd ih) 
 
 /-- Distinct times before the least period represent distinct actual directed darts. -/
-theorem loopOrbit_dart_injective (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) :
-    Function.Injective (fun k : Fin (loopPeriod ω s h d) =>
-      ((directedStep ω s h)^[k.val] d).val) := by
+theorem loopOrbit_dart_injective  :
+    Function.Injective  fun k : Fin (loopPeriod ω s h d) =>
+      ((directedStep ω s h)^[k.val] d).val  := by
   intro k l hh
   apply Fin.ext
   exact (Function.iterate_eq_iterate_iff_of_lt_minimalPeriod k.isLt l.isLt).mp
     (Subtype.ext hh)
 
 /-- Keeping direction resolves a torus vertex visited by both smoothed strands. -/
-theorem loopLiftPosition_port_injective (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) :
-    Function.Injective (fun k : Fin (loopPeriod ω s h d) =>
-      (loopLiftPosition ω s h d k.val,((directedStep ω s h)^[k.val] d).val.2)) := by
+theorem loopLiftPosition_port_injective  :
+    Function.Injective  fun k : Fin (loopPeriod ω s h d) =>
+      (loopLiftPosition ω s h d k.val,((directedStep ω s h)^[k.val] d).val.2)  := by
   intro k l hh
-  have hz := congrArg Prod.fst hh
-  change loopLiftPosition ω s h d k.val = loopLiftPosition ω s h d l.val at hz
+  
+  
   have hp := congrArg Prod.snd hh
   apply loopOrbit_dart_injective ω s h d
   apply Prod.ext
-  · rw [← loopLiftPosition_projection,← loopLiftPosition_projection,hz]
+  · grind [loopLiftPosition_projection]
   · exact hp
+
+end
 
 end PottsDiscontinuity.TorusTopology

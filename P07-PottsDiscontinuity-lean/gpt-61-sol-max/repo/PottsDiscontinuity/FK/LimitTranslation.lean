@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.BoxLimits
 public import PottsDiscontinuity.FK.FreeBoxTranslation
@@ -22,8 +23,8 @@ namespace PottsDiscontinuity.FK
 noncomputable section
 
 theorem dirac_constant_translation_invariant (b : Bool) (a : LatticeVertex) :
-    (Measure.dirac (fun _ : squareLattice.edgeSet => b)).map
-      (latticeConfigurationTranslate a) = Measure.dirac (fun _ => b) := by
+    (Measure.dirac  fun _ : squareLattice.edgeSet => b ).map
+      (latticeConfigurationTranslate a) = Measure.dirac  fun _ => b  := by
   rw [Measure.map_dirac]
   congr 1
   funext e
@@ -36,21 +37,21 @@ theorem isRCInfiniteVolumeLimit_interior_translation_invariant
     μ.map (latticeConfigurationTranslate a) = μ := by
   fin_cases i
   · let ν := Classical.choose (freeBoxLimit_existsUnique θ)
-    have hν := (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
-      (fun _ => (0, 0)) (fun n => n)
-      origin_latticeBox_nested origin_latticeBox_exhaustive
-    have heq : μ = ν.toMeasure := rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ
-      (isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hν)
-    rw [heq]
+    
+    
+    rw [ rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ
+           (isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν ((Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
+                                                              (fun _ => (0, 0)) (fun n => n)
+                                                              origin_latticeBox_nested origin_latticeBox_exhaustive)) ]
     exact congrArg ProbabilityMeasure.toMeasure
       (Internal.freeBoxLimit_translation_invariant θ a)
   · let ν := Classical.choose (wiredBoxLimit_existsUnique θ)
-    have hν := (Classical.choose_spec (wiredBoxLimit_existsUnique θ)).1
-      (fun _ => (0, 0)) (fun n => n)
-      origin_latticeBox_nested origin_latticeBox_exhaustive
-    have heq : μ = ν.toMeasure := rc_limit_unique θ.toP θ.toQ 1 μ ν.toMeasure hμ
-      (isRCInfiniteVolumeLimit_of_wiredBox_tendsto θ ν hν)
-    rw [heq]
+    
+    
+    rw [ rc_limit_unique θ.toP θ.toQ 1 μ ν.toMeasure hμ
+           (isRCInfiniteVolumeLimit_of_wiredBox_tendsto θ ν ((Classical.choose_spec (wiredBoxLimit_existsUnique θ)).1
+                                                               (fun _ => (0, 0)) (fun n => n)
+                                                               origin_latticeBox_nested origin_latticeBox_exhaustive)) ]
     exact congrArg ProbabilityMeasure.toMeasure (wiredBoxLimit_translation_invariant θ a)
 
 /-- Translation invariance of every frozen box limit, including both endpoint parameters. -/
@@ -62,16 +63,16 @@ theorem isRCInfiniteVolumeLimit_translation_invariant
   by_cases hp0 : (p : ℝ) = 0
   · have hp : p = endpointParameter false := Subtype.ext hp0
     subst p
-    have heq := rc_limit_unique (endpointParameter false) q i μ
-      (Measure.dirac (fun _ => false)) hμ (isRCInfiniteVolumeLimit_endpoint q i false)
-    rw [heq]
+    
+    rw [ rc_limit_unique (endpointParameter false) q i μ
+           (Measure.dirac  fun _ => false ) hμ (isRCInfiniteVolumeLimit_endpoint q i false) ]
     exact dirac_constant_translation_invariant false a
   by_cases hp1 : (p : ℝ) = 1
   · have hp : p = endpointParameter true := Subtype.ext hp1
     subst p
-    have heq := rc_limit_unique (endpointParameter true) q i μ
-      (Measure.dirac (fun _ => true)) hμ (isRCInfiniteVolumeLimit_endpoint q i true)
-    rw [heq]
+    
+    rw [ rc_limit_unique (endpointParameter true) q i μ
+           (Measure.dirac  fun _ => true ) hμ (isRCInfiniteVolumeLimit_endpoint q i true) ]
     exact dirac_constant_translation_invariant true a
   let θ : Parameters :=
     { val := q

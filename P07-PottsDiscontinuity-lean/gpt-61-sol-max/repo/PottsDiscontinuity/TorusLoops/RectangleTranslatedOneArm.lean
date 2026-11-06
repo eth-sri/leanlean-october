@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusLoops.RectangleInfiniteComparison
 public import PottsDiscontinuity.TorusLoops.RectangleOneArmComparison
@@ -25,43 +26,45 @@ noncomputable section
 
 /-- The coordinate one-arm event rooted at `a`, represented by translating the
 configuration so that `a` becomes the origin. -/
-def translatedOneArmEvent (a : LatticeVertex) (k : ℕ) : Set LatticeConfiguration :=
-  (latticeConfigurationTranslationHomeomorph (-a)) ⁻¹' oneArmEvent k
+def translatedOneArmEvent (a : LatticeVertex) (k : ℕ)  :=
+   latticeConfigurationTranslationHomeomorph (-a)  ⁻¹' oneArmEvent k
 
 /-- Translated finite-witness approximations to a rooted one-arm event. -/
-def translatedFreeOneArmApprox (a : LatticeVertex) (k n : ℕ) :
-    Set LatticeConfiguration :=
-  (latticeConfigurationTranslationHomeomorph (-a)) ⁻¹' freeOneArmApprox k n
+def translatedFreeOneArmApprox (a : LatticeVertex) (k n : ℕ)  :=
+   latticeConfigurationTranslationHomeomorph (-a)  ⁻¹' freeOneArmApprox k n
 
-theorem translatedFreeOneArmApprox_mono (a : LatticeVertex) (k : ℕ) :
-    Monotone (translatedFreeOneArmApprox a k) := by
-  intro n m hnm ω hω
-  exact freeOneArmApprox_mono k hnm hω
+section
 
-theorem translatedFreeOneArmApprox_isClopen (a : LatticeVertex) (k n : ℕ) :
+variable (a : LatticeVertex)
+
+
+theorem translatedFreeOneArmApprox_mono  (k : ℕ) :
+    Monotone (translatedFreeOneArmApprox a k) := fun n m hnm ω hω => freeOneArmApprox_mono k hnm hω
+
+theorem translatedFreeOneArmApprox_isClopen  (k n : ℕ) :
     IsClopen (translatedFreeOneArmApprox a k n) :=
-  (freeOneArmApprox_isClopen k n).preimage
-    (latticeConfigurationTranslationHomeomorph (-a)).continuous
+  by
+    solve_by_elim [_root_.IsClopen.preimage, _root_.PottsDiscontinuity.TorusLoops.freeOneArmApprox_isClopen, _root_.Homeomorph.continuous]
 
-theorem translatedFreeOneArmApprox_isUpperSet (a : LatticeVertex) (k n : ℕ) :
+theorem translatedFreeOneArmApprox_isUpperSet  (k n : ℕ) :
     IsUpperSet (translatedFreeOneArmApprox a k n) := by
   intro ω η hωη hω
   change latticeConfigurationTranslate (-a) ω ∈ freeOneArmApprox k n at hω
-  have htranslated : latticeConfigurationTranslate (-a) ω ≤
-      latticeConfigurationTranslate (-a) η := by
-    intro e
-    rw [latticeConfigurationTranslate_apply, latticeConfigurationTranslate_apply]
-    exact hωη _
+  
   change latticeConfigurationTranslate (-a) η ∈ freeOneArmApprox k n
-  exact freeOneArmApprox_isUpperSet k n htranslated hω
+  exact freeOneArmApprox_isUpperSet k n (by
+                                           intro e
+                                           aesop) hω
 
-theorem iUnion_translatedFreeOneArmApprox (a : LatticeVertex) (k : ℕ) :
-    (⋃ n, translatedFreeOneArmApprox a k n) = translatedOneArmEvent a k := by
+theorem iUnion_translatedFreeOneArmApprox  (k : ℕ) :
+     ⋃ n, translatedFreeOneArmApprox a k n  = translatedOneArmEvent a k := by
   ext ω
   simp only [translatedFreeOneArmApprox, translatedOneArmEvent,
     Set.mem_iUnion, Set.mem_preimage]
   rw [← iUnion_freeOneArmApprox k]
   simp only [Set.mem_iUnion]
+
+end
 
 private theorem tendsto_translatedFreeOneArmApprox_probability
     (ν : ProbabilityMeasure LatticeConfiguration) (a : LatticeVertex) (k : ℕ) :
@@ -75,17 +78,14 @@ private theorem tendsto_translatedFreeOneArmApprox_probability
     constructor
     · rintro ⟨m, hmn, hm⟩
       exact translatedFreeOneArmApprox_mono a k hmn hm
-    · intro hn
-      exact ⟨n, le_rfl, hn⟩
+    · aesop
   have h := ν.toFiniteMeasure.tendsto_measure_iUnion_accumulate
     (f := translatedFreeOneArmApprox a k)
   have h' : Tendsto
       (fun n => ν.toFiniteMeasure (translatedFreeOneArmApprox a k n)) atTop
       (𝓝 (ν.toFiniteMeasure (⋃ n, translatedFreeOneArmApprox a k n))) := by
-    refine h.congr' ?_
-    filter_upwards with n
-    rw [← hacc n]
-  simpa [ProbabilityMeasure.toFiniteMeasure_apply, iUnion_translatedFreeOneArmApprox] using h'
+    simp_all
+  simpa [iUnion_translatedFreeOneArmApprox] using h'
 
 /-- Every free origin-box probability of a rooted one-arm event is bounded by
 its probability in the canonical free limit. -/
@@ -94,20 +94,17 @@ theorem boxProbabilityMeasure_translatedOneArm_le_freeBoxLimit
     boxProbabilityMeasure q (0, 0) r (translatedOneArmEvent a k) ≤
       (Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q))
         (translatedOneArmEvent a k) := by
-  let μ : ProbabilityMeasure LatticeConfiguration :=
+  let μ  :=
     Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)
-  let ν : ProbabilityMeasure LatticeConfiguration := boxProbabilityMeasure q (0, 0) r
-  have hbox := tendsto_translatedFreeOneArmApprox_probability ν a k
-  have hlim := tendsto_translatedFreeOneArmApprox_probability μ a k
-  have hle (n : ℕ) :
-      ν (translatedFreeOneArmApprox a k n) ≤ μ (translatedFreeOneArmApprox a k n) :=
+  let ν  := boxProbabilityMeasure q (0, 0) r
+  
+  
+  have hle (n : ℕ)  :=
     freeBoxLimit_clopen_upper_ge_box q r (translatedFreeOneArmApprox a k n)
       (translatedFreeOneArmApprox_isClopen a k n)
       (translatedFreeOneArmApprox_isUpperSet a k n)
-  have h := le_of_tendsto_of_tendsto' hbox hlim hle
-  simpa only [Prod.forall, ge_iff_le, FiniteMeasure.self_eq_mass_mul_normalize,
-      ProbabilityMeasure.mass_toFiniteMeasure, ProbabilityMeasure.toFiniteMeasure_normalize_eq_self,
-      one_mul, ν, μ] using h
+  
+  simpa only [FiniteMeasure.self_eq_mass_mul_normalize, ProbabilityMeasure.mass_toFiniteMeasure, ProbabilityMeasure.toFiniteMeasure_normalize_eq_self, one_mul, μ] using  le_of_tendsto_of_tendsto' (tendsto_translatedFreeOneArmApprox_probability ν a k) (tendsto_translatedFreeOneArmApprox_probability μ a k) hle 
 
 /-- Translation invariance identifies a rooted one-arm probability in the
 canonical free limit with the probability rooted at the origin. -/
@@ -117,21 +114,19 @@ theorem freeBoxLimit_translatedOneArm_probability_eq (q : Parameters)
         (translatedOneArmEvent a k) =
       (Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q))
         (oneArmEvent k) := by
-  let μ : ProbabilityMeasure LatticeConfiguration :=
+  let μ  :=
     Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)
   have hinv := freeBoxLimit_translation_invariant q (-a)
   have hinv' : ProbabilityMeasure.map μ
       (latticeConfigurationTranslationHomeomorph (-a)).toFun = μ := by
-    simpa only [Prod.forall, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv,
-        latticeConfigurationTranslate, μ] using hinv
-  have hmap := ProbabilityMeasure.map_apply μ
-    ((latticeConfigurationTranslationHomeomorph (-a)).continuous_toFun.measurable.aemeasurable)
-    (measurableSet_oneArmEvent k)
+    assumption
+  
   have hEval := congrArg
-    (fun ν : ProbabilityMeasure LatticeConfiguration => ν (oneArmEvent k)) hinv'
-  rw [hmap] at hEval
-  simpa only [Prod.forall, translatedOneArmEvent, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv,
-      μ] using hEval
+    (fun ν  => ν (oneArmEvent k)) hinv'
+  rw [ ProbabilityMeasure.map_apply μ
+          (latticeConfigurationTranslationHomeomorph (-a)).continuous_toFun.measurable.aemeasurable 
+         (measurableSet_oneArmEvent k) ] at hEval
+  simpa only [translatedOneArmEvent, Equiv.toFun_as_coe, Homeomorph.coe_toEquiv, μ] using hEval
 
 end
 end PottsDiscontinuity.TorusLoops

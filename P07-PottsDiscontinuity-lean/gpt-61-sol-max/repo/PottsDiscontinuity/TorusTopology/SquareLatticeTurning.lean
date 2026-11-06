@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.Lattice
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverCycleCompassTurn
@@ -20,11 +21,10 @@ def squareDartCompass (d : FK.squareLattice.Dart) : Fin 4 :=
   else if d.snd.1 < d.fst.1 then 2 else 3
 
 /-- The ordered geometric directions of every edge of a lattice walk. -/
-def squareWalkCompassDirections {u v : ℤ × ℤ} (p : FK.squareLattice.Walk u v) :
-    List (Fin 4) := p.darts.map squareDartCompass
+def squareWalkCompassDirections {u v : ℤ × ℤ} (p : FK.squareLattice.Walk u v)  := p.darts.map squareDartCompass
 
 /-- The signed quarter-turn sum, including the last-to-first edge pair. -/
-def squareWalkCyclicTurn {u : ℤ × ℤ} (p : FK.squareLattice.Walk u u) : ℤ :=
+def squareWalkCyclicTurn {u : ℤ × ℤ} (p : FK.squareLattice.Walk u u)  :=
   ((squareWalkCompassDirections p).zipWith primalCompassQuarterTurn
     ((squareWalkCompassDirections p).rotate 1)).sum
 
@@ -38,20 +38,14 @@ def upperCoverHom (k : ℤ) :
       have hh := (FK.squareLattice_adj_iff _ _).mp h
       dsimp at hh ⊢
       omega
-    · change (0 : ℤ) = 0 + Planar.parafermionicCoverSheetShift _ _
-      simp only [Planar.parafermionicCoverSheetShift]
-      have hu := u.property
-      dsimp at hu ⊢
-      simp [show ¬ u.val.2+k < 0 by omega]
+    · grind [Planar.parafermionicCoverSheetShift]
 
 private lemma upperCoverHom_injective (k : ℤ) : Function.Injective (upperCoverHom k) := by
   intro u v h
-  apply Subtype.ext
+  
   have hh := congrArg Prod.fst h
   change (u.val.1,u.val.2+k) = (v.val.1,v.val.2+k) at hh
-  have hx := congrArg Prod.fst hh
-  have hy := congrArg Prod.snd hh
-  exact Prod.ext hx (by dsimp at hy; omega)
+  aesop
 
 private lemma upperCoverHom_direction (k : ℤ)
     (u v : {v : ℤ × ℤ | 0 ≤ v.2+k}) (h : FK.squareLattice.Adj u.val v.val) :
@@ -64,14 +58,12 @@ private lemma upperCoverHom_direction (k : ℤ)
      else if v.val.1 < u.val.1 then 2 else 3) = ((v.val.1,v.val.2+k),0)
   unfold parafermionicCoverCompassNeighbor Planar.parafermionicCoverNeighborLift
   apply Prod.ext
-  · have hh := (FK.squareLattice_adj_iff u.val v.val).mp h
-    rcases hh with ⟨hx|hx,hy⟩ | ⟨hx,hy|hy⟩
+  · 
+    rcases  (FK.squareLattice_adj_iff u.val v.val).mp h  with ⟨hx|hx,hy⟩ | ⟨hx,hy|hy⟩
     all_goals
       simp only [parafermionicCoverCompassBaseNeighbor]
-      split_ifs <;> apply Prod.ext <;> dsimp only at * <;> omega
-  · have hu : 0 ≤ u.val.2+k := u.property
-    change 0 + Planar.parafermionicCoverSheetShift (u.val.1,u.val.2+k) _ = 0
-    simp [Planar.parafermionicCoverSheetShift,show ¬u.val.2+k < 0 by omega]
+      grind
+  · grind [Planar.parafermionicCoverSheetShift]
 
 private lemma upperCoverHom_walkDirections (k : ℤ)
     {u v : {v : ℤ × ℤ | 0 ≤ v.2+k}}
@@ -92,10 +84,7 @@ private lemma exists_upper_height (l : List (ℤ × ℤ)) :
   | cons a l ih =>
     obtain ⟨k,hk⟩ := ih
     refine ⟨max k (-a.2),?_⟩
-    intro v hv
-    rcases List.mem_cons.mp hv with rfl | hv
-    · have := le_max_right k (-v.2); omega
-    · have := hk v hv; have := le_max_left k (-a.2); omega
+    grind
 
 /-- Every simple square-lattice cycle has total signed turn +4 or -4. -/
 theorem squareWalkCyclicTurn_eq_four_or_neg_four {u : ℤ × ℤ}
@@ -107,10 +96,10 @@ theorem squareWalkCyclicTurn_eq_four_or_neg_four {u : ℤ × ℤ}
     apply (Walk.isCycle_map_iff_of_injective
       (f := (Embedding.induce (G := FK.squareLattice) {v : ℤ × ℤ | 0 ≤ v.2+k}).toHom)
       (Embedding.induce (G := FK.squareLattice) {v : ℤ × ℤ | 0 ≤ v.2+k}).injective).mp
-    simpa [q] using hp
-  have hr := (Walk.isCycle_map_iff_of_injective (upperCoverHom_injective k)).mpr hq
+    aesop
+  
   have ht := parafermionicCoverWalkCyclicCompassTurn_eq_four_or_neg_four
-    (q.map (upperCoverHom k)) hr
+    (q.map (upperCoverHom k)) ((Walk.isCycle_map_iff_of_injective (upperCoverHom_injective k)).mpr hq)
   have hd := upperCoverHom_walkDirections k q
   simp only [q,Walk.map_induce] at hd
   unfold parafermionicCoverWalkCyclicCompassTurn at ht

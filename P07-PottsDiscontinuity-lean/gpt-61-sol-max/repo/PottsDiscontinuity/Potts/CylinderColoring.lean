@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.ClusterColoring
 
@@ -25,29 +26,28 @@ variable {A B V C : Type*}
 range of the observation map. -/
 def functionExtensionsEquiv (f : A → B) (ξ : A → C) (hξ : ξ.FactorsThrough f) :
     {F : B → C // ∀ a, F (f a) = ξ a} ≃ ({b : B // b ∉ Set.range f} → C) := by
-  let η : Set.range f → C := ξ ∘ Set.rangeSplitting f
-  have hη (a : A) : η (Set.rangeFactorization f a) = ξ a :=
-    hξ (Set.apply_rangeSplitting f (Set.rangeFactorization f a))
-  refine (Equiv.subtypeEquivRight (fun F => ?_)).trans
-    (Equiv.subtypePreimage (fun b => b ∈ Set.range f) η)
+  
+  
+  refine (Equiv.subtypeEquivRight  fun F => ?_ ).trans
+    (Equiv.subtypePreimage (fun b => b ∈ Set.range f) (ξ ∘ Set.rangeSplitting f))
   constructor
   · intro h
     funext b
     exact (congrArg F (Set.apply_rangeSplitting f b).symm).trans (h _)
   · intro h a
-    exact (congrFun h (Set.rangeFactorization f a)).trans (hη a)
+    exact (congrFun h (Set.rangeFactorization f a)).trans ((fun (a : A) => hξ (Set.apply_rangeSplitting f (Set.rangeFactorization f a))) a)
 
 theorem card_function_extensions [Finite B] (f : A → B) (ξ : A → C)
     (hξ : ξ.FactorsThrough f) :
     Nat.card {F : B → C // ∀ a, F (f a) = ξ a} =
       Nat.card C ^ (Nat.card B - Nat.card (Set.range f)) := by
   rw [Nat.card_congr (functionExtensionsEquiv f ξ hξ), Nat.card_fun]
-  congr 1
+  
   let : Fintype B := Fintype.ofFinite _
   simp only [Nat.card_eq_fintype_card, Fintype.card_subtype_compl]
 
 /-- The number of component classes met by the observations. -/
-def observedClassCount (R : Setoid V) (v : A → V) : ℕ :=
+def observedClassCount (R : Setoid V) (v : A → V)  :=
   Nat.card (Quotient (R.comap v))
 
 theorem observedClassCount_eq_range (R : Setoid V) (v : A → V) :
@@ -65,15 +65,15 @@ theorem card_clusterColoring_cylinder_of_compatible [Finite V]
     (R : Setoid V) (v : A → V) (ξ : A → C) (hξ : R.comap v ≤ Setoid.ker ξ) :
     Nat.card {σ : ClusterColoring R C // ∀ a, σ.val (v a) = ξ a} =
       Nat.card C ^ (Nat.card (Quotient R) - observedClassCount R v) := by
-  let f : A → Quotient R := Quotient.mk R ∘ v
-  have hf : ξ.FactorsThrough f := by
-    intro a b h
-    have hr : R.r (v a) (v b) := Quotient.exact h
-    exact hξ hr
-  let e := (clusterColoringEquiv R (C := C)).subtypeEquiv
-    (p := fun σ => ∀ a, σ.val (v a) = ξ a)
-    (q := fun F => ∀ a, F (f a) = ξ a) (fun _ => Iff.rfl)
-  rw [Nat.card_congr e, card_function_extensions f ξ hf, observedClassCount_eq_range]
+  let f  := Quotient.mk R ∘ v
+  
+  
+  rw [Nat.card_congr ((clusterColoringEquiv R (C := C)).subtypeEquiv
+                        (p := fun σ => ∀ a, σ.val (v a) = ξ a)
+                        (q := fun F => ∀ a, F (f a) = ξ a)  fun _ => Iff.rfl ), card_function_extensions f ξ (by
+                                                        intro a b h
+                                                        have hr  := Quotient.exact h
+                                                        exact hξ hr), observedClassCount_eq_range]
 
 /-- Exact extension count, including inconsistent patterns. -/
 theorem card_clusterColoring_cylinder [Finite V]
@@ -82,11 +82,11 @@ theorem card_clusterColoring_cylinder [Finite V]
       if R.comap v ≤ Setoid.ker ξ then
         Nat.card C ^ (Nat.card (Quotient R) - observedClassCount R v) else 0 := by
   by_cases hξ : R.comap v ≤ Setoid.ker ξ
-  · rw [ite_eq_left hξ, card_clusterColoring_cylinder_of_compatible R v ξ hξ]
+  · grind [card_clusterColoring_cylinder_of_compatible]
   · rw [ite_eq_right hξ]
     let : IsEmpty {σ : ClusterColoring R C // ∀ a, σ.val (v a) = ξ a} :=
-      ⟨fun σ => hξ (fun a b hab =>
-        (σ.property a).symm.trans ((σ.val.property hab).trans (σ.property b)))⟩
+      ⟨fun σ => hξ  fun a b hab =>
+        (σ.property a).symm.trans ((σ.val.property hab).trans (σ.property b)) ⟩
     exact Nat.card_of_isEmpty
 
 theorem card_compatible_cylinder [Finite V]
@@ -96,11 +96,11 @@ theorem card_compatible_cylinder [Finite V]
         Nat.card C ^ (Nat.card (Quotient R) - observedClassCount R v) else 0 := by
   rw [← card_clusterColoring_cylinder R v ξ]
   exact (Nat.card_congr (Equiv.subtypeSubtypeEquivSubtypeInter
-    (fun σ : V → C => R ≤ Setoid.ker σ) (fun σ => ∀ a, σ (v a) = ξ a))).symm
+    (fun σ  => R ≤ Setoid.ker σ)  fun σ => ∀ a, σ (v a) = ξ a )).symm
 
 /-- The finite-pattern kernel determined solely by the observed connection
 partition and its prescribed colours. -/
-def clusterCylinderProbability (R : Setoid V) (v : A → V) (ξ : A → C) : ℝ :=
+def clusterCylinderProbability (R : Setoid V) (v : A → V) (ξ : A → C)  :=
   if R.comap v ≤ Setoid.ker ξ then
     ((Nat.card C : ℝ) ^ observedClassCount R v)⁻¹ else 0
 
@@ -109,14 +109,12 @@ theorem clusterColoringProbability_cylinder [Fintype V] [Fintype C] [Nonempty C]
     (R : Setoid V) (v : A → V) (ξ : A → C) :
     (∑ σ : V → C, if ∀ a, σ (v a) = ξ a then clusterColoringProbability R σ else 0) =
       clusterCylinderProbability R v ξ := by
-  have hc : (Nat.card C : ℝ) ≠ 0 := by exact_mod_cast (Nat.card_pos (α := C)).ne'
+  have hc : (Nat.card C : ℝ) ≠ 0 := by simp_all
   have ht (σ : V → C) :
       (if ∀ a, σ (v a) = ξ a then clusterColoringProbability R σ else 0) =
       if R ≤ Setoid.ker σ ∧ ∀ a, σ (v a) = ξ a then
         ((Nat.card C : ℝ) ^ Nat.card (Quotient R))⁻¹ else 0 := by
-    unfold clusterColoringProbability
-    by_cases hR : R ≤ Setoid.ker σ <;>
-      by_cases hσ : ∀ a, σ (v a) = ξ a <;> simp [hR, hσ]
+    grind [clusterColoringProbability]
   simp only [ht, Finset.sum_ite, Finset.sum_const_zero, add_zero, Finset.sum_const,
     nsmul_eq_mul, ← Fintype.card_subtype, ← Nat.card_eq_fintype_card,
     card_compatible_cylinder, clusterCylinderProbability]
@@ -124,10 +122,10 @@ theorem clusterColoringProbability_cylinder [Fintype V] [Fintype C] [Nonempty C]
   · simp only [hξ, ↓reduceIte, Nat.cast_pow]
     rw [pow_sub₀ _ hc (observedClassCount_le R v), mul_right_comm,
       mul_inv_cancel₀ (pow_ne_zero _ hc), one_mul]
-  · simp only [hξ, ↓reduceIte, Nat.cast_zero, zero_mul]
+  · simp_all
 
 /-- Add one distinguished observation or one distinguished prescribed colour. -/
-def markedMap (f : A → B) (b : B) (a : Option A) : B := a.elim b f
+def markedMap (f : A → B) (b : B) (a : Option A)  := a.elim b f
 
 theorem markedMap_agreement_iff (v : A → V) (g : V) (ξ : A → C) (i : C) (σ : V → C) :
     (∀ a, σ (markedMap v g a) = markedMap ξ i a) ↔
@@ -135,11 +133,7 @@ theorem markedMap_agreement_iff (v : A → V) (g : V) (ξ : A → C) (i : C) (σ
   simp only [Option.forall, markedMap, Option.elim_none, Option.elim_some]
 
 theorem observedClassCount_marked_pos [Finite V] (R : Setoid V) (v : A → V) (g : V) :
-    0 < observedClassCount R (markedMap v g) := by
-  rw [observedClassCount_eq_range]
-  let : Nonempty (Set.range (Quotient.mk R ∘ markedMap v g)) :=
-    ⟨⟨Quotient.mk R g, none, rfl⟩⟩
-  exact Nat.card_pos
+    0 < observedClassCount R (markedMap v g) := Eq.mpr (congrArg (LT.lt 0) (observedClassCount_eq_range R (markedMap v g))) Nat.card_pos
 
 /-- Pinning and observing are a single pattern on the marked observation set. -/
 def pinnedCylinderEquiv (R : Setoid V) (v : A → V) (ξ : A → C) (g : V) (i : C) :
@@ -163,7 +157,7 @@ theorem card_pinnedClusterColoring_cylinder [Finite V]
 /-- The pinned cylinder kernel counts only observed classes other than the
 distinguished class, and enforces the colour prescribed on that class. -/
 def pinnedClusterCylinderProbability (R : Setoid V) (v : A → V) (ξ : A → C)
-    (g : V) (i : C) : ℝ :=
+    (g : V) (i : C)  :=
   if R.comap (markedMap v g) ≤ Setoid.ker (markedMap ξ i) then
     ((Nat.card C : ℝ) ^ (observedClassCount R (markedMap v g) - 1))⁻¹ else 0
 

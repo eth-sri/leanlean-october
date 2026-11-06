@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Namespaces/imports adapted to the shared FK library. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Duality.WiredPotentialSpace
 public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
@@ -20,8 +21,7 @@ def componentPotentialEvaluation :
   map_smul' _c _f := rfl
 
 /-- Potentials normalized to vanish at `v₀`. -/
-def normalizedComponentPotentials :
-    Submodule ℝ (componentConstantFunctions G ξ A) :=
+def normalizedComponentPotentials  :=
   LinearMap.ker (componentPotentialEvaluation G ξ A v₀)
 
 omit [Fintype V] in

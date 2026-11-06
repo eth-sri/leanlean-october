@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import FixedPointTheorems.brouwer
 public import PottsDiscontinuity.Torus.DiamondDualTranslation
@@ -19,46 +20,45 @@ variable {N M : ℕ}
 def dualShiftCell (u : RotatedVertex) : ℤ × ℤ := (u.val.1+1,u.val.2)
 
 theorem primal_ne_dualShift (u v : RotatedVertex) : u.val ≠ dualShiftCell v := by
-  intro h
-  obtain ⟨k,hk⟩ := u.property
-  obtain ⟨l,hl⟩ := v.property
-  rw [h] at hk
-  dsimp [dualShiftCell] at hk
-  omega
+  grind +locals
 
 theorem periodicCoordinate_add_one (hp : 0 < N) (z : ℤ) :
     periodicCoordinate hp (z+1) = nxt (periodicCoordinate hp z) := by
   have h := congrArg nxt (TorusTopology.periodicCoordinate_sub_one hp (z+1))
-  simpa only [add_sub_cancel_right,nxt,prv,Equiv.apply_symm_apply] using h.symm
+  grind
 
 noncomputable section
 
+section
+
+variable (hNp : 0 < N) (hMp : 0 < M) (A : RCConfig N M)
+include hNp hMp A
+
 /-- Every open primal edge is geometrically disjoint from every open dual
 edge, including degenerate segments at visited vertices. -/
-theorem opposite_open_diagonals_disjoint (hNp : 0 < N) (hMp : 0 < M)
-    (A : RCConfig N M) (u v x y : RotatedVertex)
-    (hp : u = v ∨ (rotatedLattice.Adj u v ∧
-      translatedDualConfig A (liftedEdgeIndex hNp hMp u v) = true))
-    (hq : x = y ∨ (rotatedLattice.Adj x y ∧
-      A (liftedEdgeIndex hNp hMp x y) = true)) :
+theorem opposite_open_diagonals_disjoint  (u v x y : RotatedVertex)
+    (hp : u = v ∨  rotatedLattice.Adj u v ∧
+      translatedDualConfig A (liftedEdgeIndex hNp hMp u v) = true )
+    (hq : x = y ∨  rotatedLattice.Adj x y ∧
+      A (liftedEdgeIndex hNp hMp x y) = true ) :
     Disjoint (segment ℝ (cellEmbed u.val) (cellEmbed v.val))
       (segment ℝ (cellEmbed (dualShiftCell x)) (cellEmbed (dualShiftCell y))) := by
   apply Set.disjoint_left.mpr
   intro z hzP hzQ
   rcases hp with rfl | ⟨huv,hopenP⟩
-  · rw [segment_same,Set.mem_singleton_iff] at hzP
+  · rw [segment_same] at hzP
     rcases hq with rfl | ⟨hxy,_⟩
-    · rw [segment_same,Set.mem_singleton_iff] at hzQ
+    · rw [segment_same] at hzQ
       exact primal_ne_dualShift u x (cellEmbed_injective (hzP.symm.trans hzQ))
     · have hX : |(dualShiftCell x).1-(dualShiftCell y).1| = 1 := by
         simpa only [dualShiftCell,add_sub_add_right_eq_sub] using hxy.1
-      have hY : |(dualShiftCell x).2-(dualShiftCell y).2| = 1 := hxy.2
+      have hY  := hxy.2
       rw [hzP] at hzQ
       rcases integer_mem_diagonal_segment hX hY hzQ with h | h
       · exact primal_ne_dualShift u x h
       · exact primal_ne_dualShift u y h
   · rcases hq with rfl | ⟨hxy,hopenQ⟩
-    · rw [segment_same,Set.mem_singleton_iff] at hzQ
+    · rw [segment_same] at hzQ
       rw [hzQ] at hzP
       rcases integer_mem_diagonal_segment huv.1 huv.2 hzP with h | h
       · exact primal_ne_dualShift u x h.symm
@@ -92,8 +92,7 @@ theorem opposite_open_diagonals_disjoint (hNp : 0 < N) (hMp : 0 < M)
 
 /-- The complete polygonal traces of simultaneously open primal and dual
 lifted walks are disjoint. No simplicity assumption is needed. -/
-theorem opposite_open_walks_disjoint (hNp : 0 < N) (hMp : 0 < M)
-    (A : RCConfig N M) (a b c d : ℤ) {u v x y : RotatedVertex}
+theorem opposite_open_walks_disjoint  (a b c d : ℤ) {u v x y : RotatedVertex}
     (p : (liftedStripGraph hNp hMp (translatedDualConfig A) a b).Walk u v)
     (q : (liftedStripGraph hNp hMp A c d).Walk x y) :
     Disjoint (Set.range (polygonWalkPath (fun z : RotatedVertex => cellEmbed z.val) p))
@@ -103,8 +102,10 @@ theorem opposite_open_walks_disjoint (hNp : 0 < N) (hMp : 0 < M)
   obtain ⟨u',v',_,_,hP,hzP⟩ := polygonWalkPath_range _ p hzP
   obtain ⟨x',y',_,_,hQ,hzQ⟩ := polygonWalkPath_range _ q hzQ
   exact Set.disjoint_left.mp (opposite_open_diagonals_disjoint hNp hMp A u' v' x' y'
-    (hP.imp id (fun h => ⟨h.1,h.2.1⟩))
-    (hQ.imp id (fun h => ⟨h.1,h.2.1⟩))) hzP hzQ
+    (hP.imp id  fun h => ⟨h.1,h.2.1⟩ )
+    (hQ.imp id  fun h => ⟨h.1,h.2.1⟩ )) hzP hzQ
+
+end
 
 end
 

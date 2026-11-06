@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.CylinderDetermination
 public import Mathlib.Topology.Order.MonotoneConvergence
@@ -38,44 +39,40 @@ then the sequence converges weakly to a unique probability measure. -/
 theorem probabilityMeasures_tendsto_of_monotone_allOpen
     {μs : ℕ → ProbabilityMeasure LatticeConfiguration}
     (hmono : ∀ F : Finset squareLattice.edgeSet,
-      Monotone (fun n => μs n (LatticeConfiguration.allOpen F))) :
+      Monotone  fun n => μs n (LatticeConfiguration.allOpen F) ) :
     ∃! μ : ProbabilityMeasure LatticeConfiguration, Tendsto μs atTop (𝓝 μ) := by
   obtain ⟨μ, φ, hφ, hweak⟩ := CompactSpace.tendsto_subseq μs
   have hlimit (F : Finset squareLattice.edgeSet) :
       μ (LatticeConfiguration.allOpen F) =
         ⨆ n, μs n (LatticeConfiguration.allOpen F) := by
-    let f : ℕ → NNReal := fun n => μs n (LatticeConfiguration.allOpen F)
-    have hf : Monotone f := hmono F
-    have hbounded : BddAbove (Set.range f) := by
-      refine ⟨1, ?_⟩
-      rintro x ⟨n, rfl⟩
-      exact ProbabilityMeasure.apply_le_one (μs n) (LatticeConfiguration.allOpen F)
-    have ht := tendsto_atTop_ciSup hf hbounded
-    have hsub := ht.comp hφ.tendsto_atTop
-    have hweakF := LatticeConfiguration.tendsto_allOpen_of_weak hweak F
-    exact tendsto_nhds_unique hweakF hsub
-  let κ := cylinderProbabilityCoordinates
-  have hκcont : Continuous κ := continuous_cylinderProbabilityCoordinates
-  have hκinj : Function.Injective κ := by
-    intro μ₁ μ₂ h
-    apply LatticeConfiguration.probabilityMeasure_eq_of_allOpen
-    intro F
-    exact congrFun h F
-  have hκembed : IsClosedEmbedding κ := hκcont.isClosedEmbedding hκinj
-  have hκtendsto : Tendsto (fun n => κ (μs n)) atTop (𝓝 (κ μ)) := by
-    apply tendsto_pi_nhds.2
-    intro F
-    let f : ℕ → NNReal := fun n => μs n (LatticeConfiguration.allOpen F)
-    have hf : Monotone f := hmono F
-    have hbounded : BddAbove (Set.range f) := by
-      refine ⟨1, ?_⟩
-      rintro x ⟨n, rfl⟩
-      exact ProbabilityMeasure.apply_le_one (μs n) (LatticeConfiguration.allOpen F)
-    have ht := tendsto_atTop_ciSup hf hbounded
-    change Tendsto f atTop (𝓝 (μ (LatticeConfiguration.allOpen F)))
-    rw [hlimit F]
-    exact ht
-  have hfull : Tendsto μs atTop (𝓝 μ) := hκembed.tendsto_nhds_iff.mpr hκtendsto
+    
+    
+    
+    have ht := tendsto_atTop_ciSup (hmono F) (by
+                                         refine ⟨1, ?_⟩
+                                         rintro x ⟨n, rfl⟩
+                                         aesop)
+    
+    
+    exact tendsto_nhds_unique (LatticeConfiguration.tendsto_allOpen_of_weak hweak F) (ht.comp hφ.tendsto_atTop)
+  
+  
+  
+  
+  
+  have hfull  := ((continuous_cylinderProbabilityCoordinates).isClosedEmbedding  fun ⦃μ₁ μ₂⦄ h => LatticeConfiguration.probabilityMeasure_eq_of_allOpen (congrFun h) ).tendsto_nhds_iff.mpr (by
+                                                 apply tendsto_pi_nhds.2
+                                                 intro F
+                                                 
+                                                 
+                                                 
+                                                 
+                                                 change Tendsto (fun n => μs n (LatticeConfiguration.allOpen F)) atTop (𝓝 (μ (LatticeConfiguration.allOpen F)))
+                                                 rw [hlimit F]
+                                                 exact (tendsto_atTop_ciSup (hmono F) (by
+                                                                                             refine ⟨1, ?_⟩
+                                                                                             rintro x ⟨n, rfl⟩
+                                                                                             all_goals aesop)))
   refine ⟨μ, hfull, ?_⟩
   intro ν hν
   exact tendsto_nhds_unique hν hfull

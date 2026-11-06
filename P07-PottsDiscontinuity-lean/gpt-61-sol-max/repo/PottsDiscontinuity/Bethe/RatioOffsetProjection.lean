@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.RatioPredecessor
 
@@ -10,43 +11,52 @@ open Set Finset
 
 namespace PottsDiscontinuity.Bethe
 
-theorem ratio_rootIndex_before_first {n : ℕ} (hn : 0 < n) (q : Fin n → ℝ)
+section
+
+variable {n : ℕ} (hn : 0 < n) (q : Fin n → ℝ)
+
+
+theorem ratio_rootIndex_before_first 
     (hq : Monotone q) {x : ℝ} (hx : x < q ⟨0, hn⟩) :
     ratioRootIndex hn q x = ⟨0, hn⟩ := by
-  classical
-  have hs : (univ.filter (fun j => q j ≤ x)) = ∅ := by
+  
+  have hs :  univ.filter  fun j => q j ≤ x   = ∅ := by
     apply Finset.eq_empty_iff_forall_notMem.mpr
     intro j hj
     have hqj := (mem_filter.mp hj).2
-    have hl := hq (show (⟨0, hn⟩ : Fin n) ≤ j by change 0 ≤ j.val; omega)
+    have hl := hq (show (⟨0, hn⟩ ) ≤ j by change 0 ≤ j.val; omega)
     linarith
   simp [ratioRootIndex, hs]
 
-theorem ratio_rootIndex_after_last {n : ℕ} (hn : 0 < n) (q : Fin n → ℝ)
+theorem ratio_rootIndex_after_last 
     (_hq : Monotone q) {x : ℝ} (hx : q ⟨n - 1, by omega⟩ ≤ x) :
     ratioRootIndex hn q x = ⟨n - 1, by omega⟩ := by
-  classical
-  let s := univ.filter (fun j => q j ≤ x)
+  
+  let s := univ.filter  fun j => q j ≤ x 
   let j : Fin n := ⟨n - 1, by omega⟩
-  have hj : j ∈ s := mem_filter.mpr ⟨mem_univ _, hx⟩
-  have hs : s.Nonempty := ⟨j, hj⟩
+  have hj : j ∈ s := by
+                       aesop
+  
   change (if h : s.Nonempty then s.max' h else ⟨0, hn⟩) = j
-  rw [dite_eq_left hs]
+  rw [dite_eq_left  ⟨j, hj⟩ ]
   apply le_antisymm
-  · change (s.max' hs).val ≤ n - 1
-    have := (s.max' hs).isLt
-    omega
+  · grind
   · exact Finset.le_max' s j hj
 
+end
+
+section
+
+variable {n m : ℕ} (h : n = m) (hn : 0 < n) (hm : 0 < m) (q : Fin m → ℝ)
+include h hn hm q
+
 /-- An equality of root counts commutes with the canonical projection. -/
-theorem ratio_rootIndex_cast {n m : ℕ} (h : n = m) (hn : 0 < n) (hm : 0 < m)
-    (q : Fin m → ℝ) (x : ℝ) :
+theorem ratio_rootIndex_cast  (x : ℝ) :
     Fin.cast h (ratioRootIndex hn (fun j => q (Fin.cast h j)) x) = ratioRootIndex hm q x := by
   subst m
   rfl
 
-theorem ratio_root_mesh_cast {n m : ℕ} (h : n = m) (hn : 0 < n) (hm : 0 < m)
-    (q : Fin m → ℝ) {d : ℝ}
+theorem ratio_root_mesh_cast  {d : ℝ}
     (hmesh : ∀ j : Fin (m + 1),
       rootPartitionPoint m q hm j.succ - rootPartitionPoint m q hm j.castSucc ≤ d) :
     ∀ j : Fin (n + 1),
@@ -54,6 +64,8 @@ theorem ratio_root_mesh_cast {n m : ℕ} (h : n = m) (hn : 0 < n) (hm : 0 < m)
         rootPartitionPoint n (fun i => q (Fin.cast h i)) hn j.castSucc ≤ d := by
   subst m
   exact hmesh
+
+end
 
 /-- The finite source offset function is precisely the displacement of the
 canonical predecessor, including both boundary half-cells. -/

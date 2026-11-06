@@ -24,25 +24,24 @@ by parts; `T̂` from the splitting `T = -α + U_λ` with `U_λ` an absolutely co
 
 @[expose] public section
 
-open Complex Real MeasureTheory Filter Topology Set intervalIntegral
+
 
 namespace PottsDiscontinuity.Bethe
 
 /-- `Ξ_μ(α) = 1 + ∑ 2 e^{-μ(n+1)} cos((n+1)α)` as a trigonometric series. -/
 theorem Xi_eq_trigSeries {μ : ℝ} (hμ : 0 < μ) :
-    Xi μ = trigSeries 1 (fun n => 2 * Real.exp (-μ) ^ (n + 1)) (fun _ => 0) := by
+    Xi μ = trigSeries 1 (fun n => 2 * Real.exp (-μ) ^ (n + 1))  fun _ => 0  := by
   funext α
   have h := (hasSum_Xi_cos hμ α).tsum_eq
   unfold trigSeries
-  simp only [zero_mul, add_zero]
-  linarith
+  simp_all
 
 theorem summable_two_mul_exp_pow {μ : ℝ} (hμ : 0 < μ) :
-    Summable (fun n : ℕ => 2 * Real.exp (-μ) ^ (n + 1)) := by
-  have hr : 0 < Real.exp (-μ) := Real.exp_pos _
+    Summable  fun n : ℕ => 2 * Real.exp (-μ) ^ (n + 1)  := by
+  
   have hr1 : Real.exp (-μ) < 1 := by rw [Real.exp_lt_one_iff]; linarith
-  have := (summable_geometric_of_lt_one hr.le hr1).mul_left (2 * Real.exp (-μ))
-  exact this.congr fun n => by ring
+  
+  exact ((summable_geometric_of_lt_one (Real.exp_pos _).le hr1).mul_left (2 * Real.exp (-μ))).congr fun n => by ring
 
 /-! ### The Fourier form (2.2) of (cBE') and (cOE') -/
 

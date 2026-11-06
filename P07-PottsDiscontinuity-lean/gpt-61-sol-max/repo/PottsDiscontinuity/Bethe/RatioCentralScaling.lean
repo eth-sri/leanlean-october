@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.RatioCentralGeometry
 public import PottsDiscontinuity.Bethe.RatioDensityMoving
@@ -46,27 +47,23 @@ variable {ι : Type*} {l : Filter ι} {Δ : ℝ} (hΔ : Δ < -1)
       rootPartitionPoint (2 * m i) (p i) (by have := hm i; omega) j.succ -
         rootPartitionPoint (2 * m i) (p i) (by have := hm i; omega) j.castSucc ≤ d i)
 
-include hΔ hp hs hb hlim hd hmesh
+include hlim hd hmesh
 
 /-- The central half-gap constant, with the source's positive density normalization. -/
 theorem ratio_central_root_scaling :
     Tendsto (fun i => (N i : ℝ) * p i ⟨m i, by have := hm i; omega⟩) l
       (𝓝 (1 / (2 * rho Δ 0))) := by
-  have hzero := ratio_central_root_tendsto_zero m hm p hp d hd hmesh
-  have hpair (i : ι) : p i ⟨m i - 1, by have := hm i; omega⟩ =
-      -p i ⟨m i, by have := hm i; omega⟩ := ratio_central_pair (hm i) (hp i)
-  have hneg : Tendsto (fun i => p i ⟨m i - 1, by have := hm i; omega⟩) l (𝓝 0) := by
-    simpa only [hpair, neg_zero] using hzero.neg
+  
+  have hpair (i : ι)  := ratio_central_pair (hm i) (hp i)
+  
   have hgap := ratio_gap_tendsto_at_zero hΔ N (fun i => 2 * m i) p hp
-    (fun i => by have := hm i; omega) hs hb hlim
+     fun i => by have := hm i; omega  hs hb hlim
     (fun i => ⟨m i - 1, by have := hm i; omega⟩)
-    (fun i => by change m i - 1 + 1 < 2 * m i; have := hm i; omega) hneg
+     fun i => by grind  (by
+                                                                       simpa only [hpair, neg_zero] using (ratio_central_root_tendsto_zero m hm p hp d hd hmesh).neg)
   have hidx (i : ι) :
       (⟨m i - 1 + 1, by have := hm i; omega⟩ : Fin (2 * m i)) = ⟨m i, by have := hm i; omega⟩ := by
-    apply Fin.ext
-    change m i - 1 + 1 = m i
-    have := hm i
-    omega
+    grind
   simp_rw [hidx, hpair] at hgap
   have ht := hgap.div_const 2
   have hvalue : (rho Δ 0)⁻¹ / 2 = 1 / (2 * rho Δ 0) := by ring
@@ -92,27 +89,19 @@ theorem ratio_positive_rank_scaling (hNlim : Tendsto (fun i => (N i : ℝ)) l at
     intro hk
     have hklow (i : ι) : k < m i := by have := hk i; omega
     have hprev := ih hklow
-    have hzero : Tendsto (fun i => p i ⟨m i + k, by have := hklow i; omega⟩) l (𝓝 0) := by
-      have ht := hprev.div_atTop hNlim
-      apply ht.congr
-      intro i
-      have hNi : (N i : ℝ) ≠ 0 := by
-        exact_mod_cast (show N i ≠ 0 by have := hs i; have := hm i; omega)
-      field_simp
+    
     have hgap := ratio_gap_tendsto_at_zero hΔ N (fun i => 2 * m i) p hp
-      (fun i => by have := hm i; omega) hs hb hlim
+       fun i => by have := hm i; omega  hs hb hlim
       (fun i => ⟨m i + k, by have := hklow i; omega⟩)
-      (fun i => by change m i + k + 1 < 2 * m i; have := hk i; omega) hzero
+       fun i => by grind  (by
+                                                                         
+                                                                         apply (hprev.div_atTop hNlim).congr
+                                                                         intro i
+                                                                         have hNi :  N i  ≠ 0 := by
+                                                                           simp_all <;> grind
+                                                                         field_simp)
     have ht := hprev.add hgap
-    have hvalue : ((k : ℝ) + 1 / 2) / rho Δ 0 + (rho Δ 0)⁻¹ =
-        (((k + 1 : ℕ) : ℝ) + 1 / 2) / rho Δ 0 := by push_cast; ring
-    rw [hvalue] at ht
-    apply ht.congr
-    intro i
-    have hidx : (⟨m i + k + 1, by have := hk i; omega⟩ : Fin (2 * m i)) =
-        ⟨m i + (k + 1), by have := hk i; omega⟩ := Fin.ext rfl
-    rw [hidx]
-    ring
+    grind
 
 end
 

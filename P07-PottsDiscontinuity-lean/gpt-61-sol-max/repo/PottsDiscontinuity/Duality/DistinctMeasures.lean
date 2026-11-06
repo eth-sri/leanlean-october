@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -28,52 +29,49 @@ theorem free_not_dual_invariant_of_exponential_decay (θ : Parameters)
     μ.map wholePlaneDualConfigurationHomeomorph ≠ μ := by
   have := hμ.1
   intro hmap
-  have hsmall := (tendsto_square_longConnection_bound C c hc).eventually
-    (eventually_lt_nhds (show (0 : ℝ) < 1 / 2 by norm_num))
-  obtain ⟨n, hn⟩ := hsmall.exists
+  
+  obtain ⟨n, hn⟩ := ((tendsto_square_longConnection_bound C c hc).eventually
+                       (eventually_lt_nhds (show  0  < 1 / 2 by norm_num))).exists
   let S := latticeRectangle (0, 0) n n
   let T := rectangleDualExpanded (0, 0) n n
-  let B : ℝ := ((n : ℝ) + 2) ^ 4 * (C * Real.exp (-c * (n : ℝ)))
+  let B  := ( n  + 2) ^ 4 * (C * Real.exp (-c *  n ))
   have hb (U : Finset LatticeVertex)
-      (hcard : (U.card : ℝ) ≤ ((n : ℝ) + 2) ^ 2) :
+      (hcard :  U.card  ≤ ((n : ℝ) + 2) ^ 2) :
       μ.real (longConnectionEvent U n) ≤ B := by
     calc
       μ.real (longConnectionEvent U n) ≤
-          (U.card : ℝ) ^ 2 * (C * Real.exp (-c * (n : ℝ))) :=
+           U.card  ^ 2 * (C * Real.exp (-c *  n )) :=
         free_longConnectionEvent_bound θ μ hμ C c hC hc hdecay U n
-      _ ≤ (((n : ℝ) + 2) ^ 2) ^ 2 * (C * Real.exp (-c * (n : ℝ))) :=
+      _ ≤ (( n  + 2) ^ 2) ^ 2 * (C * Real.exp (-c *  n )) :=
         mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) hcard 2)
           (mul_nonneg hC (Real.exp_nonneg _))
-      _ = B := by dsimp [B]; ring
-  have hS : μ.real (longConnectionEvent S n) ≤ B := hb S (by
-    dsimp [S]
-    rw [card_latticeRectangle]
-    push_cast
-    nlinarith only [Nat.cast_nonneg (α := ℝ) n])
-  have hT : μ.real (longConnectionEvent T n) ≤ B := hb T (by
-    dsimp [T]
-    rw [rectangleDualExpanded_card]
-    push_cast
-    ring_nf
-    exact le_rfl)
-  have hcover : longConnectionEvent S n ∪
-      wholePlaneDualConfigurationHomeomorph ⁻¹' longConnectionEvent T n = Set.univ := by
-    apply Set.eq_univ_iff_forall.2
-    intro ω
-    exact planar_long_connection_alternative ω (0, 0) n
-  have hpre : μ.real (wholePlaneDualConfigurationHomeomorph ⁻¹' longConnectionEvent T n) =
-      μ.real (longConnectionEvent T n) := by
-    have hm := congrArg (fun ν : Measure LatticeConfiguration => ν (longConnectionEvent T n)) hmap
-    rw [Measure.map_apply wholePlaneDualConfigurationHomeomorph_measurable
-      (longConnectionEvent_measurableSet T n)] at hm
-    exact congrArg ENNReal.toReal hm
+      _ = B := by  ring
+  
+  
+  
+  
   have hu := measureReal_union_le (μ := μ) (longConnectionEvent S n)
     (wholePlaneDualConfigurationHomeomorph ⁻¹' longConnectionEvent T n)
-  rw [hcover, hpre] at hu
-  simp only [measureReal_def, measure_univ, ENNReal.toReal_one] at hu
+  rw [(by
+                                                                                             solve_by_elim [_root_.Iff.mpr, _root_.Set.eq_univ_iff_forall, _root_.PottsDiscontinuity.Duality.planar_long_connection_alternative] : longConnectionEvent S n ∪
+      wholePlaneDualConfigurationHomeomorph ⁻¹' longConnectionEvent T n = Set.univ), (by
+                 have hm := congrArg (fun ν  => ν (longConnectionEvent T n)) hmap
+                 rw [Measure.map_apply wholePlaneDualConfigurationHomeomorph_measurable
+                   (longConnectionEvent_measurableSet T n)] at hm
+                 exact congrArg ENNReal.toReal hm : μ.real (wholePlaneDualConfigurationHomeomorph ⁻¹' longConnectionEvent T n) =
+      μ.real (longConnectionEvent T n))] at hu
+  simp only [measureReal_def, measure_univ] at hu
   change 1 ≤ μ.real (longConnectionEvent S n) + μ.real (longConnectionEvent T n) at hu
-  change B < 1 / 2 at hn
-  linarith only [hu, hS, hT, hn]
+  
+  linarith only [hu,  hb S (by
+                        
+                        rw [card_latticeRectangle]
+                        grind) ,  hb T (by
+                            
+                            rw [rectangleDualExpanded_card]
+                            push_cast
+                            ring_nf
+                            exact le_rfl) , hn]
 
 /-- Exponential free decay at the exact frozen critical parameter implies
 that the actual free and wired infinite-volume measures are different. -/

@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.AsymptoticBoundary
 public import PottsDiscontinuity.Bethe.AsymptoticEndpoint
@@ -26,12 +27,12 @@ theorem tendsto_offsetBoundarySum {ι : Type*} {l : Filter ι} {Δ : ℝ}
   have hleft (s : ℕ) (hs : s ≤ r) (k : Fin s) :
       Tendsto (fun i => p i ⟨k.val, by have := hr i; omega⟩) l (𝓝 (-Real.pi)) :=
     tendsto_root_at_left_of_mesh (fun i => N i / 2) hn p hp d hd hdnonneg hmesh _ r
-      (fun i => by change k.val ≤ r; omega)
+       fun i => by change k.val ≤ r; omega 
   have hright (s t : ℕ) (hst : s + t = r) (k : Fin t) :
       Tendsto (fun i => p i ⟨s + (N i / 2 - r) + k.val, by have := hr i; omega⟩) l
         (𝓝 Real.pi) :=
     tendsto_root_at_right_of_mesh (fun i => N i / 2) hn p hp d hd hdnonneg hmesh _ r
-      (fun i => by change N i / 2 - 1 - (s + (N i / 2 - r) + k.val) ≤ r; have := hr i; omega)
+       fun i => by grind 
   have hθleft (s : ℕ) (hs : s ≤ r) (k : Fin s) :
       Tendsto (fun i => theta Δ (x i) (p i ⟨k.val, by have := hr i; omega⟩)) l
         (𝓝 (theta Δ a (-Real.pi))) := by
@@ -42,20 +43,18 @@ theorem tendsto_offsetBoundarySum {ι : Type*} {l : Filter ι} {Δ : ℝ}
         (𝓝 (theta Δ a Real.pi)) := by
     simpa only [Function.comp_def] using
       (continuous_theta hΔ).continuousAt.tendsto.comp (hx.prodMk_nhds (hright s t hst k))
-  have hL₀ := tendsto_finsetSum Finset.univ (fun k _ => hθleft (r / 2) (by omega) k)
-  have hR₀ := tendsto_finsetSum Finset.univ
-    (fun k _ => hθright (r / 2) (r - r / 2) (by omega) k)
-  have hL₁ := tendsto_finsetSum Finset.univ (fun k _ => hθleft (r - r / 2) (by omega) k)
+  
+  
+  
   have hR₁ := tendsto_finsetSum Finset.univ
-    (fun k _ => hθright (r - r / 2) (r / 2) (by omega) k)
-  have ht := (((hL₀.add hR₀).add hL₁).add hR₁).div_const 2
-  have hr' : ((r / 2 : ℕ) : ℝ) + ((r - r / 2 : ℕ) : ℝ) = (r : ℝ) := by
-    exact_mod_cast (show r / 2 + (r - r / 2) = r by omega)
+     fun k _ => hθright (r - r / 2) (r / 2) (by omega) k 
+  have ht := ((((tendsto_finsetSum Finset.univ  fun k _ => hθleft (r / 2) (by omega) k ).add (tendsto_finsetSum Finset.univ
+                            fun k _ => hθright (r / 2) (r - r / 2) (by omega) k )).add (tendsto_finsetSum Finset.univ  fun k _ => hθleft (r - r / 2) (by omega) k )).add hR₁).div_const 2
+  have hr' :  (r / 2 : ℕ)  +  (r - r / 2 : ℕ)  = (r : ℝ) := by
+    exact_mod_cast  by omega 
   convert ht using 1
   · rfl
-  · simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    congr 1
-    rw [← hr']
-    ring
+  · simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin]
+    grind
 
 end PottsDiscontinuity.Bethe

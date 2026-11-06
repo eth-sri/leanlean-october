@@ -17,7 +17,7 @@ open scoped ENNReal
 namespace PottsDiscontinuity
 
 /-- The box `Λₙ = [-n, n]² ∩ ℤ²`. -/
-def box (n : ℕ) : Finset (ℤ × ℤ) :=
+def box (n : ℕ)  :=
   Finset.Icc (-(n : ℤ)) n ×ˢ Finset.Icc (-(n : ℤ)) n
 
 end PottsDiscontinuity

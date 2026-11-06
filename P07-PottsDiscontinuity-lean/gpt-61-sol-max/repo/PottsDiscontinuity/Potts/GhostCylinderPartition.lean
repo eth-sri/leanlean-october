@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.ObservedPartitionLimits
 public import PottsDiscontinuity.Potts.ColourKernelPartitions
@@ -11,15 +12,13 @@ public import PottsDiscontinuity.Potts.GhostCylinder
 
 namespace PottsDiscontinuity.Potts
 
-open Classical MeasureTheory
+
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
-local instance ghostCylinderPartitionLiteralDecidable (n : ℕ) : DecidableEq (LiteralBond (box n)) :=
-  fun _ _ => Classical.propDecidable _
-local instance ghostCylinderPartitionBoundary (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
-local instance ghostCylinderPartitionShell (n : ℕ) : Fintype (OuterShellEdge n) := Fintype.ofFinite _
-local instance ghostCylinderPartitionDiscrete {V : Type*} (G : SimpleGraph V) :
-    DiscreteMeasurableSpace (FK.Configuration G) := ⟨fun _ => trivial⟩
+
+
+
+
 
 variable {A : Type*} [Fintype A]
 
@@ -58,21 +57,18 @@ theorem potts_ghost_cylinder_eq_partitionExpectation
       if ∀ a, σ ⟨v a, hv a⟩ = ξ a then pottsProb q (box n) β i σ else 0) =
     partitionExpectation (conditionedOuterBoxProbabilityMeasure (fkParameters q hq β hβ) n).toMeasure
       (observedWiredPartition (Option.map v) n)
-      (fun R => pinnedClusterCylinderProbability R some ξ none (boundaryColor q i hi)) := by
+       fun R => pinnedClusterCylinderProbability R some ξ none (boundaryColor q i hi)  := by
   let vf : A → ↥(box n : Set (ℤ × ℤ)) := fun a => ⟨v a, hv a⟩
   refine Eq.trans ?_ ((pottsProb_ghost_cylinder q hq (box n) β i hi vf ξ).trans ?_)
-  · apply Finset.sum_congr
-    · ext σ; simp
-    · intro σ _
-      split_ifs <;> rfl
+  · grind
   symm
-  change partitionExpectation (((conditionedOuterLaw (fkParameters q hq β hβ) n).map
-    (openExtension (box (n + 1)))).toMeasure) (observedWiredPartition (Option.map v) n) _ = _
+  change partitionExpectation  ((conditionedOuterLaw (fkParameters q hq β hβ) n).map
+    (openExtension (box (n + 1)))).toMeasure  (observedWiredPartition (Option.map v) n) _ = _
   rw [partitionExpectation_map _ _ measurable_from_top _ _ (by
     intro a b
     have he : {ω | observedWiredPartition (Option.map v) n ω a b} =
         wiredDataEvent (n + 1) {(Option.map v a, Option.map v b)} := by
-      ext ω; simp [wiredDataEvent]; rfl
+       simp [wiredDataEvent]; rfl
     rw [he]
     exact (wiredDataEvent_isClopen _ _).isOpen.measurableSet)]
   rw [conditionedOuterLaw_partitionExpectation q hq β hβ n hn _
@@ -81,7 +77,7 @@ theorem potts_ghost_cylinder_eq_partitionExpectation
   apply Finset.sum_congr
   · ext ω; simp
   · intro ω _
-    exact congrArg (fun c : ℝ => ghostRCProbability q (box n) β ω * c)
+    exact congrArg (fun c  => ghostRCProbability q (box n) β ω * c)
       (pinnedClusterCylinderProbability_factor (ghostOpenGraph (box n) ω).reachableSetoid
         (some ∘ vf) ξ none (boundaryColor q i hi)).symm
 

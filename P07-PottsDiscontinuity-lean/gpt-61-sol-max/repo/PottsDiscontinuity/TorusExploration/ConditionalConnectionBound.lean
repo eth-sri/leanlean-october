@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -17,7 +18,7 @@ namespace PottsDiscontinuity.TorusExploration
 open FK FK.FiniteProbability
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
-open scoped Classical
+
 local instance conditionalConnectionEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance conditionalConnectionEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
@@ -26,7 +27,7 @@ lemma expectation_le_on_support {α : Type*} [Fintype α] (p : PMF α) (F H : α
   apply Finset.sum_le_sum
   intro a _
   by_cases ha : p a=0
-  · simp only [ha,ENNReal.toReal_zero,zero_mul,le_refl]
+  · simp_all
   · exact mul_le_mul_of_nonneg_left (h a ha) ENNReal.toReal_nonneg
 
 lemma fkLaw_full_support (θ : Parameters) (ξ : BoundaryCondition V) (A : Configuration G) :
@@ -42,11 +43,7 @@ lemma clusterRecordConditional_eq (θ : Parameters) (S : Finset V) (A : Configur
           (actualMultiClusterReveal_consistent S) A]
         exact frozenStateEvent_support θ (BoundaryCondition.free ∅)
           (actualMultiClusterReveal G S A) (revealRecordConfiguration G (actualMultiClusterReveal G S) A)) := by
-  have he : {B | clusterRecord G S B=clusterRecord G S A} =
-      revealRecordEvent G (actualMultiClusterReveal G S) A :=
-    Set.ext (fun B => clusterRecord_eq_iff G S A B)
-  unfold recordConditional
-  congr 1
+  grind [clusterRecord, revealRecordEvent, recordConditional]
 
 /-- Conditioning on the full preceding cluster records bounds the next
 *distinct* prescribed connection by its free-law probability on the induced
@@ -64,24 +61,23 @@ theorem nextDistinct_conditional_le (θ : Parameters) (x y : ℕ → V) (j : ℕ
   let T := actualMultiClusterComplementSet G S A
   let P := recordConditional (law G θ (BoundaryCondition.free ∅))
     (fkLaw_full_support G θ _) (clusterRecord G S) A
-  have hrec (B : Configuration G) (hB : B ∈ P.support) :
-      clusterRecord G S B=clusterRecord G S A := (PMF.mem_support_filter_iff _).1 hB |>.1
+  
   have hout (B : Configuration G) (hB : B ∈ P.support) (v : V) :
       v ∈ actualMultiClusterComplementSet G S B ↔ v ∈ T := by
-    have hh := ((clusterRecord_eq_iff G S A B).1 (hrec B hB)).2
-    exact not_congr (actualMultiClusterConnected_iff_of_reveal_agreement S A B hh v)
+                                                             exact not_congr
+                                                                     (actualMultiClusterConnected_iff_of_reveal_agreement S A B ((clusterRecord_eq_iff G S A B).mp ((fun B (hB : B ∈ P.support) => (PMF.mem_support_filter_iff _).1 hB |>.1) B hB)).right v)
   by_cases hx : x j ∈ T
   · by_cases hy : y j ∈ T
     · let u : T := ⟨x j,hx⟩
       let v : T := ⟨y j,hy⟩
       let H := G.induce T
       let R := embeddedConfigurationRestriction H G (inducedVertexEmbedding T) (inducedVertexGraph_le G T)
-      let : Fintype H.edgeSet := Fintype.ofFinite _
+      
       have hm : P.map R=law H θ (BoundaryCondition.free ∅) := by
         rw [show P = _ from clusterRecordConditional_eq G θ S A]
         exact law_filter_actualMultiClusterRecord_map_complement_free θ S A
-      have hstep : expectation P ((nextDistinctConnection G x y j).indicator fun _ => (1 : ℝ)) ≤
-          expectation P (fun B => (connectivityEvent H u v).indicator (fun _ => (1 : ℝ)) (R B)) := by
+      have hstep : expectation P ((nextDistinctConnection G x y j).indicator fun _ => 1) ≤
+          expectation P  fun B => (connectivityEvent H u v).indicator (fun _ => 1) (R B)  := by
         apply expectation_le_on_support
         intro B hB
         by_cases hnext : B ∈ nextDistinctConnection G x y j
@@ -101,22 +97,18 @@ theorem nextDistinct_conditional_le (θ : Parameters) (x y : ℕ → V) (j : ℕ
       refine hstep.trans ?_
       rw [← expectation_map,hm,← fk_measureReal_eq_expectation]
       exact hc hx hy
-    · have hz : expectation P ((nextDistinctConnection G x y j).indicator fun _ => (1 : ℝ))=0 := by
+    · have hz : expectation P ((nextDistinctConnection G x y j).indicator fun _ => 1)=0 := by
         rw [← expectation_const P 0]
         apply expectation_congr_on_support
         intro B hB
-        have hn : B ∉ nextDistinctConnection G x y j := by
-          intro hh
-          exact hy ((hout B hB (y j)).1 (nextDistinctConnection_outside G x y j B hh).2)
+        have hn : B ∉ nextDistinctConnection G x y j := fun hh => hy ((hout B hB (y j)).mp (nextDistinctConnection_outside G x y j B hh).right)
         simp [hn]
       exact hz ▸ hc0
-  · have hz : expectation P ((nextDistinctConnection G x y j).indicator fun _ => (1 : ℝ))=0 := by
+  · have hz : expectation P ((nextDistinctConnection G x y j).indicator fun _ => 1)=0 := by
       rw [← expectation_const P 0]
       apply expectation_congr_on_support
       intro B hB
-      have hn : B ∉ nextDistinctConnection G x y j := by
-        intro hh
-        exact hx ((hout B hB (x j)).1 (nextDistinctConnection_outside G x y j B hh).1)
+      have hn : B ∉ nextDistinctConnection G x y j := fun hh => hx ((hout B hB (x j)).mp (nextDistinctConnection_outside G x y j B hh).left)
       simp [hn]
     exact hz ▸ hc0
 

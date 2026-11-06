@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusExploration.CylinderIntersection
 
@@ -14,7 +15,7 @@ variable {N M : ℕ}
 
 /-- The explicit vertex correction supported on the cylinder's bottom row. -/
 def bottomSeamPotential (f : OpenDiamondEdge (openRCConfig N M) → ℚ)
-    (v : FaceVertex N M true) : ℚ :=
+    (v : FaceVertex N M true)  :=
   if v.val.2.val=0 then fullFlowAt f v.val else 0
 
 lemma full_eastFlow_eq_bottomPotential
@@ -24,10 +25,15 @@ lemma full_eastFlow_eq_bottomPotential
     fullFlowAt f v.val=bottomSeamPotential f v := by
   by_cases hy : v.val.2.val=0
   · simp [bottomSeamPotential,hy]
-  · have hh := hf .east hy
-    simpa [bottomSeamPotential,hy,faceCorner] using hh
+  · 
+    simpa [bottomSeamPotential,hy,faceCorner] using  hf .east hy 
 
-lemma full_northFlow_eq_neg_bottomPotential (hN : Even N) (hM : Even M)
+section
+
+variable (hN : Even N) (hM : Even M)
+include hN hM
+
+lemma full_northFlow_eq_neg_bottomPotential 
     (f : diamondCycleSpace hN hM (openRCConfig N M)) (v : FaceVertex N M true)
     (hf : ∀ p : Port, (faceCorner v.val p).1.2.val ≠ 0 →
       fullFlowAt f.val (faceCorner v.val p).1=0)
@@ -41,7 +47,7 @@ lemma full_northFlow_eq_neg_bottomPotential (hN : Even N) (hM : Even M)
     simp only [full_halfFlow_corner] at hc
     change fullFlowAt f.val (nxt v.val.1,nxt v.val.2)=0 at hw
     change fullFlowAt f.val (v.val.1,nxt v.val.2)=0 at hs
-    rw [hw,hs] at hc
+    
     simp only [bottomSeamPotential,hy,ite_true]
     linarith
   · have hh := hf .north hy
@@ -49,7 +55,7 @@ lemma full_northFlow_eq_neg_bottomPotential (hN : Even N) (hM : Even M)
     simp only [bottomSeamPotential,hy,ite_false,hh,neg_zero]
 
 lemma full_intersectionCoefficient_eq_bottomCoboundary
-    (hN : Even N) (hM : Even M)
+    
     (f : diamondCycleSpace hN hM (openRCConfig N M))
     (e : OpenDiamondEdge (openRCConfig N M)) (he : e.val.2.val ≠ 0)
     (hf : ∀ b : Bool, ∀ p : Port,
@@ -58,28 +64,24 @@ lemma full_intersectionCoefficient_eq_bottomCoboundary
     ribbonIntersectionCoefficient hN hM (openRCConfig N M) f e =
       diamondCoboundary hN hM (openRCConfig N M) (bottomSeamPotential f.val) e := by
   have hyf : (faceEndpoint hN hM true e.val false).val.2.val ≠ 0 := by
-    cases hc : checker e.val <;>
-      simpa only [faceEndpoint,faceEndpointRaw,hc,Bool.false_eq_true,ite_true,ite_false] using he
+    grind [faceEndpoint, faceEndpointRaw]
   have hyt : nxt (faceEndpoint hN hM true e.val true).val.2=e.val.2 := by
     cases hc : checker e.val <;>
-      simp only [faceEndpoint,faceEndpointRaw,hc,Bool.false_eq_true,ite_true,ite_false,
-        nxt,prv,Equiv.apply_symm_apply]
-  have hn := full_northFlow_eq_neg_bottomPotential hN hM f
-    (faceEndpoint hN hM true e.val true) (hf true) (by simpa only [hyt] using he)
+      simp only [faceEndpoint, faceEndpointRaw, hc, Bool.false_eq_true, ite_true, ite_false, Equiv.apply_symm_apply]
+  
   have hx := full_eastFlow_eq_bottomPotential f.val
     (faceEndpoint hN hM true e.val true) (hf true)
   rw [full_intersectionCoefficient_eq_below,diamondCoboundary_apply]
   simp only [bottomSeamPotential,hyf,ite_false,sub_zero]
   cases hc : checker e.val
-  · simpa only [bottomSeamPotential,hc,ite_false,one_mul,faceEndpoint,faceEndpointRaw,hc,
-      Bool.false_eq_true,ite_true,ite_false] using hx
-  · simpa only [bottomSeamPotential,hc,ite_true,neg_one_mul,faceEndpoint,faceEndpointRaw,hc,
-      Bool.false_eq_true,ite_true,ite_false,nxt,prv,Equiv.apply_symm_apply] using hn
+  · grind [bottomSeamPotential, faceEndpoint, faceEndpointRaw]
+  · simpa only [bottomSeamPotential, hc, ite_true, neg_one_mul, faceEndpoint, faceEndpointRaw, Equiv.apply_symm_apply] using  full_northFlow_eq_neg_bottomPotential hN hM f
+                                                                                     (faceEndpoint hN hM true e.val true) (hf true) (by simpa only [hyt] using he) 
 
 /-- A conserved cylinder cycle outside the nonseam support of f has zero
 intersection with f, even if the seam return touches boundary vertices. -/
 theorem cylinder_exterior_intersection_zero
-    (hN : Even N) (hM : Even M)
+    
     (f g : diamondCycleSpace hN hM (openRCConfig N M))
     (hg : ∀ e : OpenDiamondEdge (openRCConfig N M), g.val e ≠ 0 →
       e.val.2.val ≠ 0 ∧ ∀ b : Bool, ∀ p : Port,
@@ -92,10 +94,12 @@ theorem cylinder_exterior_intersection_zero
     intro e he
     by_cases hz : g.val e=0
     · simp [hz]
-    · rw [full_intersectionCoefficient_eq_bottomCoboundary hN hM f e (hg e hz).1 (hg e hz).2]
+    · grind [full_intersectionCoefficient_eq_bottomCoboundary]
   rw [heq]
   have hp := diamondBoundary_pairing hN hM (openRCConfig N M) (bottomSeamPotential f.val) g.val
   rw [g.property] at hp
   simpa only [Pi.zero_apply,mul_zero,Finset.sum_const_zero] using hp.symm
+
+end
 
 end PottsDiscontinuity.TorusExploration

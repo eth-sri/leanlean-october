@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Adaptation: Namespace and import relocation only. -/
 module
+public import Mathlib
 
 public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 public import Mathlib.Tactic
@@ -15,8 +16,8 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFacePivot
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
-open PottsDiscontinuity.TorusTopology.Planar
-open SimpleGraph
+
+
 
 /-- Two retained actual faces are adjacent when their actual box-carrier
 boundary graphs share an edge. -/
@@ -27,9 +28,7 @@ def parafermionicCoverFiniteFaceAdjacencyGraph (n : ℕ) :
     e ∈ (parafermionicCoverFiniteFaceBoundaryGraph j.1 j.2).edgeSet
   symm := by
     constructor
-    intro i j h
-    rcases h with ⟨hne, e, hi, hj⟩
-    exact ⟨hne.symm, e, hj, hi⟩
+    all_goals grind
   loopless := by
     constructor
     intro i h
@@ -61,21 +60,15 @@ def parafermionicCoverFiniteFaceAdjacencyWithBoundaryGraph (n : ℕ) :
     intro x y h
     cases x with
     | none =>
-      cases y with
-      | none => exact h.elim
-      | some j => exact h
+      grind
     | some i =>
       cases y with
       | none => exact h
       | some j =>
-        rcases h with ⟨hne, e, hi, hj⟩
-        exact ⟨hne.symm, e, hj, hi⟩
+        grind +locals
   loopless := by
     constructor
-    intro x h
-    cases x with
-    | none => exact h
-    | some i => exact (parafermionicCoverFiniteFaceAdjacencyGraph n).loopless.irrefl i h
+    all_goals grind
 
 theorem parafermionicCoverFiniteFaceAdjacencyWithBoundaryGraph_adj_none_some_iff
     {n : ℕ} (i : ParafermionicCoverFiniteFaceTopIndex n) :

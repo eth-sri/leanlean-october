@@ -10,7 +10,7 @@ public import PottsDiscontinuity.TorusRC.LiftedInterpolation
 
 namespace PottsDiscontinuity.TorusRC
 
-open Set
+
 
 noncomputable section
 
@@ -33,10 +33,10 @@ private theorem unit_affine_between (a b : ℤ) (hab : |a-b| = 1)
 private theorem unit_intervals_unique (a b : ℤ) (z : ℝ)
     (ha : (a:ℝ)-1 < z ∧ z < a) (hb : (b:ℝ)-1 < z ∧ z < b) : a = b := by
   have hab : a < b+1 := by
-    have h : (a:ℝ) < (b:ℝ)+1 := by linarith
+    have h :  a  < (b:ℝ)+1 := by linarith
     exact_mod_cast h
   have hba : b < a+1 := by
-    have h : (b:ℝ) < (a:ℝ)+1 := by linarith
+    have h :  b  < (a:ℝ)+1 := by linarith
     exact_mod_cast h
   omega
 
@@ -50,41 +50,31 @@ theorem diagonal_segments_intersection_index {p p' q q' : ℤ × ℤ} {z : ℝ �
     (hzP : z ∈ segment ℝ (cellEmbed p) (cellEmbed p'))
     (hzQ : z ∈ segment ℝ (cellEmbed q) (cellEmbed q')) :
     (max p.1 p'.1,max p.2 p'.2) = (max q.1 q'.1,max q.2 q'.2) := by
-  have hnotP (a : ℤ × ℤ) (ha0 : a ≠ q) (ha1 : a ≠ q') : z ≠ cellEmbed a := by
-    intro heq
-    have ha : cellEmbed a ∈ segment ℝ (cellEmbed q) (cellEmbed q') := by rwa [heq] at hzQ
-    rcases integer_mem_diagonal_segment hqX hqY ha with h | h
-    · exact ha0 h
-    · exact ha1 h
-  have hnotQ (a : ℤ × ℤ) (ha0 : a ≠ p) (ha1 : a ≠ p') : z ≠ cellEmbed a := by
-    intro heq
-    have ha : cellEmbed a ∈ segment ℝ (cellEmbed p) (cellEmbed p') := by rwa [heq] at hzP
-    rcases integer_mem_diagonal_segment hpX hpY ha with h | h
-    · exact ha0 h
-    · exact ha1 h
+  have hnotP (a : ℤ × ℤ) (ha0 : a ≠ q) (ha1 : a ≠ q') : z ≠ cellEmbed a := fun heq =>
+                                                                             Or.casesOn
+                                                                               (integer_mem_diagonal_segment hqX hqY
+                                                                                 (Eq.mp (congrArg (Membership.mem (segment ℝ (cellEmbed q) (cellEmbed q'))) heq) hzQ))
+                                                                               ha0 ha1
+  have hnotQ (a : ℤ × ℤ) (ha0 : a ≠ p) (ha1 : a ≠ p') : z ≠ cellEmbed a := fun heq =>
+                                                                             Or.casesOn
+                                                                               (integer_mem_diagonal_segment hpX hpY
+                                                                                 (Eq.mp (congrArg (Membership.mem (segment ℝ (cellEmbed p) (cellEmbed p'))) heq) hzP))
+                                                                               ha0 ha1
   rw [segment_eq_image] at hzP hzQ
   obtain ⟨s,⟨hs0,hs1⟩,hsz⟩ := hzP
   obtain ⟨t,⟨ht0,ht1⟩,htz⟩ := hzQ
-  have hs0' : 0 < s := by
-    have hne : s ≠ 0 := by
-      intro heq
-      exact hnotP p h00 h01 (by simpa [heq] using hsz.symm)
-    exact lt_of_le_of_ne hs0 (Ne.symm hne)
-  have hs1' : s < 1 := by
-    have hne : s ≠ 1 := by
-      intro heq
-      exact hnotP p' h10 h11 (by simpa [heq] using hsz.symm)
-    exact lt_of_le_of_ne hs1 hne
-  have ht0' : 0 < t := by
-    have hne : t ≠ 0 := by
-      intro heq
-      exact hnotQ q h00.symm h10.symm (by simpa [heq] using htz.symm)
-    exact lt_of_le_of_ne ht0 (Ne.symm hne)
-  have ht1' : t < 1 := by
-    have hne : t ≠ 1 := by
-      intro heq
-      exact hnotQ q' h01.symm h11.symm (by simpa [heq] using htz.symm)
-    exact lt_of_le_of_ne ht1 hne
+  have hs0' : 0 < s := lt_of_le_of_ne hs0 (Ne.symm (by
+                                                      intro heq
+                                                      exact hnotP p h00 h01 (by simpa [heq] using hsz.symm)))
+  have hs1' : s < 1 := lt_of_le_of_ne hs1 (by
+                                             intro heq
+                                             exact hnotP p' h10 h11 (by simpa [heq] using hsz.symm))
+  have ht0' : 0 < t := lt_of_le_of_ne ht0 (Ne.symm (by
+                                                      intro heq
+                                                      exact hnotQ q h00.symm h10.symm (by simpa [heq] using htz.symm)))
+  have ht1' : t < 1 := lt_of_le_of_ne ht1 (by
+                                             intro heq
+                                             exact hnotQ q' h01.symm h11.symm (by simpa [heq] using htz.symm))
   have hpx := unit_affine_between p.1 p'.1 hpX s hs0' hs1'
   have hpy := unit_affine_between p.2 p'.2 hpY s hs0' hs1'
   have hqx := unit_affine_between q.1 q'.1 hqX t ht0' ht1'
@@ -93,10 +83,10 @@ theorem diagonal_segments_intersection_index {p p' q q' : ℤ × ℤ} {z : ℝ �
   have hpyz := congrArg Prod.snd hsz
   have hqxz := congrArg Prod.fst htz
   have hqyz := congrArg Prod.snd htz
-  change (1-s)*(p.1:ℝ)+s*(p'.1:ℝ) = z.1 at hpxz
-  change (1-s)*(p.2:ℝ)+s*(p'.2:ℝ) = z.2 at hpyz
-  change (1-t)*(q.1:ℝ)+t*(q'.1:ℝ) = z.1 at hqxz
-  change (1-t)*(q.2:ℝ)+t*(q'.2:ℝ) = z.2 at hqyz
+  change (1-s)* p.1 +s* p'.1  = z.1 at hpxz
+  change (1-s)* p.2 +s* p'.2  = z.2 at hpyz
+  change (1-t)* q.1 +t* q'.1  = z.1 at hqxz
+  change (1-t)* q.2 +t*(q'.2) = z.2 at hqyz
   rw [hpxz] at hpx
   rw [hpyz] at hpy
   rw [hqxz] at hqx

@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Topology.MetricSpace.Bounded
 public import Mathlib.Analysis.LocallyConvex.WithSeminorms
@@ -20,10 +21,9 @@ open FK FK.Medial
 theorem wholePlaneOpenPrimalGraph_eq_rcInfiniteOpenGraph (ω : LatticeConfiguration) :
     wholePlaneOpenPrimalGraph ω = rcInfiniteOpenGraph ω := by
   ext u v
-  rw [rcInfiniteOpenGraph, SimpleGraph.fromEdgeSet_adj]
+  rw [rcInfiniteOpenGraph]
   constructor
-  · rintro ⟨hadj, hopen⟩
-    exact ⟨⟨squareLattice.mem_edgeSet.mpr hadj, hopen⟩, hadj.ne⟩
+  · aesop
   · rintro ⟨⟨he, hopen⟩, _⟩
     exact ⟨squareLattice.mem_edgeSet.mp he, hopen⟩
 

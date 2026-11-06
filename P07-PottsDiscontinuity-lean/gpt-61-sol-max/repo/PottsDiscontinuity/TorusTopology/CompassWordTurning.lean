@@ -17,7 +17,7 @@ def compassWordTurn : List (Fin 4) → ℤ
   | a::b::l => primalCompassQuarterTurn a b + compassWordTurn (b::l)
 
 /-- The cyclic signed turn, with the last direction joined to the first. -/
-def compassWordCyclicTurn (l : List (Fin 4)) : ℤ :=
+def compassWordCyclicTurn (l : List (Fin 4))  :=
   (l.zipWith primalCompassQuarterTurn (l.rotate 1)).sum
 
 lemma compassQuarterTurn_abs_le_two (a b : Fin 4) :
@@ -42,30 +42,20 @@ private lemma compassWord_zip_close (a b : Fin 4) (l : List (Fin 4)) :
   induction l generalizing a with
   | nil => simp [compassWordTurn]
   | cons c l ih =>
-    simp only [List.cons_append,List.zipWith_cons_cons,List.sum_cons,compassWordTurn]
-    rw [ih]
-    have hlast : (a::c::l).getLast (by simp) = (c::l).getLast (by simp) := rfl
-    rw [hlast]
-    omega
+    simp only [List.cons_append, List.zipWith_cons_cons, compassWordTurn]
+    grind
 
 lemma compassWordCyclicTurn_cons (a : Fin 4) (l : List (Fin 4)) :
     compassWordCyclicTurn (a::l) = compassWordTurn (a::l) +
       primalCompassQuarterTurn ((a::l).getLast (by simp)) a := by
-  unfold compassWordCyclicTurn
-  rw [List.rotate_cons_succ,List.rotate_zero]
-  exact compassWord_zip_close a a l
+  simp_all [compassWordCyclicTurn, compassWord_zip_close]
 
 lemma compassWordTurn_append_nonempty (a b : Fin 4) (l r : List (Fin 4)) :
-    compassWordTurn ((a::l)++b::r) = compassWordTurn (a::l) +
+    compassWordTurn ( a::l ++b::r) = compassWordTurn (a::l) +
       primalCompassQuarterTurn ((a::l).getLast (by simp)) b + compassWordTurn (b::r) := by
   induction l generalizing a with
   | nil => simp [compassWordTurn]
   | cons c l ih =>
-    simp only [List.cons_append,compassWordTurn]
-    simp only [List.cons_append] at ih
-    rw [ih]
-    have hlast : (a::c::l).getLast (by simp) = (c::l).getLast (by simp) := rfl
-    rw [hlast]
-    omega
+    grind +locals
 
 end PottsDiscontinuity.TorusTopology

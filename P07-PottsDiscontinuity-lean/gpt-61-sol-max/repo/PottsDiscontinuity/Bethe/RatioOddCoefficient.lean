@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.Asymptotic26Cast
 public import PottsDiscontinuity.Bethe.AsymptoticLimitTools
@@ -28,15 +29,14 @@ theorem ratio_eigenvalueZero_eq_coefficient {N n : ℕ} {q : Fin n → ℝ}
     {c : ℝ} (hc : 2 < c) (hq : q ∈ S_n n) (l : Fin n) (hl : q l = 0) :
     BetheAnsatz.eigenvalueZero N c q l =
       ((ratioZeroCoefficient (BetheAnsatz.anisotropy c) c N q l *
-        ∏ j ∈ univ.erase l, ‖BetheAnsatz.M c (BetheAnsatz.z (q j))‖ : ℝ) : ℂ) := by
-  exact ratio_eigenvalueZero hc hq l hl
+        ∏ j ∈ univ.erase l, ‖BetheAnsatz.M c (BetheAnsatz.z (q j))‖ : ℝ) : ℂ) := ratio_eigenvalueZero hc hq l hl
 
 /-- Exact source `(A)(B)` factorization, before any asymptotics. -/
 theorem ratio_odd_eigenvalue_quotient {N m n : ℕ}
     {p : Fin m → ℝ} {q : Fin n → ℝ} {c : ℝ} (hc : 2 < c)
     (hp : p ∈ S_n m) (hq : q ∈ S_n n) (l : Fin n) (hl : q l = 0) :
     BetheAnsatz.eigenvalueZero N c q l / BetheAnsatz.eigenvalueRegular c p =
-      (((ratioZeroCoefficient (BetheAnsatz.anisotropy c) c N q l / 2) *
+      (( ratioZeroCoefficient (BetheAnsatz.anisotropy c) c N q l / 2  *
         ((∏ j ∈ univ.erase l, ‖BetheAnsatz.M c (BetheAnsatz.z (q j))‖) /
           ∏ j, ‖BetheAnsatz.M c (BetheAnsatz.z (p j))‖) : ℝ) : ℂ) := by
   rw [ratio_eigenvalueZero_eq_coefficient hc hq l hl, ratio_eigenvalueRegular hc hp]
@@ -59,33 +59,31 @@ theorem ratio_odd_A_tendsto {ι : Type*} {f : Filter ι} {Δ : ℝ} (hΔ : Δ < 
     (l : ∀ i, Fin (n i)) (hl : ∀ i, q i (l i) = 0) :
     Tendsto (fun i => ratioZeroCoefficient Δ c (N i) (q i) (l i) / (2 * N i)) f
       (𝓝 (c ^ 2 * Real.pi * rho Δ 0)) := by
-  have hg : Continuous (d1Theta Δ 0) :=
-    (continuous_d1Theta_pair hΔ).comp (continuous_const.prodMk continuous_id)
-  have hweak := theorem26_sums_of_pos hΔ r N n q hq hn hs hcount hNlim (hb) hlim
-    (d1Theta Δ 0) hg
+  
+  
   have hinv : Tendsto (fun i => (N i : ℝ)⁻¹) f (𝓝 0) :=
     tendsto_inv_atTop_zero.comp hNlim
   have hcb := rho_isCBESolution hΔ 0
-    (show (0 : ℝ) ∈ Icc (-Real.pi) Real.pi from
-      ⟨by linarith [Real.pi_pos], Real.pi_pos.le⟩)
+     ⟨by linarith [Real.pi_pos], Real.pi_pos.le⟩ 
   change 2 * Real.pi * rho Δ 0 = 1 +
     ∫ x in (-Real.pi)..Real.pi, d1Theta Δ 0 x * rho Δ x at hcb
-  have ht := (((tendsto_const_nhds (x := (1 : ℝ))).add hweak).const_mul (c ^ 2 / 2)).add
+  have ht := (((tendsto_const_nhds (x :=  1 )).add (theorem26_sums_of_pos hΔ r N n q hq hn hs hcount hNlim  hb  hlim
+                                                          (d1Theta Δ 0) ((continuous_d1Theta_pair hΔ).comp (continuous_const.prodMk continuous_id)))).const_mul (c ^ 2 / 2)).add
     (hinv.const_mul ((2 - c ^ 2 - c ^ 2 * d1Theta Δ 0 0) / 2))
-  have htarget : c ^ 2 / 2 * (1 +
+  
+  rw [(by
+         rw [← hcb]
+         ring : c ^ 2 / 2 * (1 +
       ∫ x in (-Real.pi)..Real.pi, d1Theta Δ 0 x * rho Δ x) +
-      ((2 - c ^ 2 - c ^ 2 * d1Theta Δ 0 0) / 2) * 0 = c ^ 2 * Real.pi * rho Δ 0 := by
-    rw [← hcb]
-    ring
-  rw [htarget] at ht
+       (2 - c ^ 2 - c ^ 2 * d1Theta Δ 0 0) / 2  * 0 = c ^ 2 * Real.pi * rho Δ 0)] at ht
   apply ht.congr'
-  exact Eventually.of_forall (fun i => by
-    have hN : (N i : ℝ) ≠ 0 := by exact_mod_cast (show N i ≠ 0 by have := hn i; have := hs i; omega)
-    have he := sum_erase_add (s := (univ : Finset (Fin (n i))))
+  exact Eventually.of_forall  fun i => by
+    have hN :  N i  ≠ 0 := by exact_mod_cast  by grind 
+    have he := sum_erase_add (s :=  univ )
       (fun j => d1Theta Δ 0 (q i j)) (mem_univ (l i))
     rw [hl i] at he
     unfold ratioZeroCoefficient
     field_simp
-    nlinarith only [he])
+    nlinarith only [he] 
 
 end PottsDiscontinuity.Bethe

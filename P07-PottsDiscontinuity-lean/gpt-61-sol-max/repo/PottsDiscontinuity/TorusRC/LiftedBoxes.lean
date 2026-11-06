@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusRC.CylinderFiberComparison
 public import PottsDiscontinuity.TorusRC.LiftedPaths
@@ -30,9 +31,7 @@ instance liftedBoxVertex_finite (c : RotatedVertex) (R : ℕ) :
       constructor <;> omega⟩)
   apply Finite.of_injective f
   intro u v huv
-  apply Subtype.ext
-  apply Subtype.ext
-  exact Prod.ext (congrArg (fun z => z.1.val) huv) (congrArg (fun z => z.2.val) huv)
+  all_goals grind
 
 /-- The native induced graph in the lifted square, with no periodic edges. -/
 def liftedBoxGraph (c : RotatedVertex) (R : ℕ) : SimpleGraph (LiftedBoxVertex c R) :=
@@ -46,12 +45,12 @@ noncomputable section
 /-- Free-box connection means an actual sampled-edge connection inside the
 native box. If an endpoint is outside the box, the event is empty. -/
 def liftedBoxFreeConnectionEvent (c : RotatedVertex) (R : ℕ)
-    (u v : RotatedVertex) : Set (FK.Configuration (liftedBoxGraph c R)) :=
+    (u v : RotatedVertex)  :=
   {A | ∃ hu : inLiftedBox R c u, ∃ hv : inLiftedBox R c v,
     FK.ActualConnected (liftedBoxGraph c R) A ⟨u, hu⟩ ⟨v, hv⟩}
 
 def liftedBoxFreeConnectionProbability (θ : FK.Parameters) (c : RotatedVertex)
-    (R : ℕ) (u v : RotatedVertex) : ℝ :=
+    (R : ℕ) (u v : RotatedVertex)  :=
   torusRCFiberEventProbability (FK.law (liftedBoxGraph c R) θ (FK.BoundaryCondition.free ∅))
     (liftedBoxFreeConnectionEvent c R u v)
 
@@ -65,10 +64,10 @@ period's length. This permits boxes with negative lifted coordinates. -/
 theorem periodicCoordinate_eq_of_interval (hp : 0 < N) (L a b : ℤ)
     (ha : L ≤ a ∧ a < L + (N : ℤ)) (hb : L ≤ b ∧ b < L + (N : ℤ))
     (hab : periodicCoordinate hp a = periodicCoordinate hp b) : a = b := by
-  have hmod := congrArg (fun z : Fin N => (z.val : ℤ)) hab
+  have hmod := congrArg (fun z  => (z.val : ℤ)) hab
   simp only [periodicCoordinate_val] at hmod
-  have hshift := (show Int.ModEq (N : ℤ) a b from hmod).sub_right L
-  change (a - L) % (N : ℤ) = (b - L) % (N : ℤ) at hshift
+  have hshift := (show Int.ModEq N a b from hmod).sub_right L
+  change (a - L) %  N  = (b - L) %  N  at hshift
   rw [Int.emod_eq_of_lt (by omega) (by omega),
     Int.emod_eq_of_lt (by omega) (by omega)] at hshift
   omega
@@ -81,19 +80,17 @@ def liftedBoxProjection (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
   toFun z := liftedFaceVertex hN hM hNp hMp z.val
   inj' := by
     intro u v huv
-    have hx := congrArg (fun z : FaceVertex N M true => z.val.1) huv
-    have hy := congrArg (fun z : FaceVertex N M true => z.val.2) huv
+    
+    
     have hux := abs_le.mp u.property.1
     have hvx := abs_le.mp v.property.1
     have huy := abs_le.mp u.property.2
     have hvy := abs_le.mp v.property.2
-    have hxeq : u.val.val.1 = v.val.val.1 :=
-      periodicCoordinate_eq_of_interval hNp (c.val.1 - R) _ _
-        ⟨by omega, by omega⟩ ⟨by omega, by omega⟩ hx
-    have hyeq : u.val.val.2 = v.val.val.2 :=
-      periodicCoordinate_eq_of_interval hMp (c.val.2 - R) _ _
-        ⟨by omega, by omega⟩ ⟨by omega, by omega⟩ hy
-    exact Subtype.ext (Subtype.ext (Prod.ext hxeq hyeq))
+    
+    
+    exact Subtype.ext (Subtype.ext (Prod.ext (periodicCoordinate_eq_of_interval hNp (c.val.1 - R) _ _
+                                                  ⟨by omega, by omega⟩ ⟨by omega, by omega⟩ (congrArg (fun z : FaceVertex N M true => z.val.1) huv)) (periodicCoordinate_eq_of_interval hMp (c.val.2 - R) _ _
+                                                       ⟨by omega, by omega⟩ ⟨by omega, by omega⟩ (congrArg (fun z : FaceVertex N M true => z.val.2) huv))))
 
 /-- Every native box edge projects to its actual indexed diamond edge. -/
 theorem liftedBoxGraph_map_projection_le (hN : Even N) (hM : Even M)
@@ -104,12 +101,12 @@ theorem liftedBoxGraph_map_projection_le (hN : Even N) (hM : Even M)
   intro x y hxy
   rw [SimpleGraph.map_adj] at hxy
   rcases hxy with ⟨u, v, huv, rfl, rfl⟩
-  have hlat : rotatedLattice.Adj u.val v.val := huv
-  have hne := (liftedBoxProjection hN hM hNp hMp c R hRN hRM).injective.ne huv.ne
-  change (diamondOpenGraph hN hM true (fun _ => true)).Adj _ _
-  rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj]
+  have hlat  := huv
+  
+  
+  
   exact ⟨⟨liftedEdgeIndex hNp hMp u.val v.val, rfl,
-    liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val hlat⟩, hne⟩
+    liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val hlat⟩,  (liftedBoxProjection hN hM hNp hMp c R hRN hRM).injective.ne huv.ne ⟩
 
 end
 

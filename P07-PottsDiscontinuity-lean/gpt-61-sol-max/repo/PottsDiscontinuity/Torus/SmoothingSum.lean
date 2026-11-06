@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.LocalSmoothing
 
@@ -24,7 +25,7 @@ abbrev Smoothing (N M : ℕ) := Fin N × Fin M → Bool
 variable {N M : ℕ}
 
 /-- Each strand of the smoothing follows the prescribed arrows. -/
-def CompatibleConfig (ω : ArrowConfig N M) (s : Smoothing N M) : Prop :=
+def CompatibleConfig (ω : ArrowConfig N M) (s : Smoothing N M)  :=
   ∀ v, Compatible (s v) (ω.left v) (ω.right v) (ω.below v) (ω.above v)
 
 instance (ω : ArrowConfig N M) (s : Smoothing N M) : Decidable (CompatibleConfig ω s) := by
@@ -43,7 +44,8 @@ noncomputable def smoothingWeight (lam : ℝ) (ω : ArrowConfig N M)
 
 theorem CompatibleConfig.iceRule {ω : ArrowConfig N M} {s : Smoothing N M}
     (h : CompatibleConfig ω s) : ω.IceRule :=
-  fun v => (h v).iceRule
+  by
+    solve_by_elim [_root_.PottsDiscontinuity.Torus.Compatible.iceRule]
 
 /-- The compatible global smoothing data exist precisely for ice-rule configurations.
 The explicit choice is the left/above pairing whenever it is compatible. -/
@@ -59,9 +61,7 @@ theorem exists_compatibleConfig_iff (ω : ArrowConfig N M) :
     by_cases hf : Compatible false (ω.left v) (ω.right v) (ω.below v) (ω.above v)
     · simp only [hf, decide_true, Bool.not_true]
     · cases b
-      · exact (hf hb).elim
-      · simp only [hf, decide_false, Bool.not_false]
-        exact hb
+      all_goals simp_all
 
 theorem smoothingWeight_nonneg (lam : ℝ) (ω : ArrowConfig N M) (s : Smoothing N M) :
     0 ≤ smoothingWeight lam ω s :=
@@ -76,7 +76,7 @@ theorem smoothingWeight_eq_exp {ω : ArrowConfig N M} {s : Smoothing N M}
   unfold CompatibleConfig at h
   simp only [turnWeight, h, ↓reduceIte]
   rw [← Real.exp_sum]
-  congr 1
+  
   simp only [Int.cast_sum, Finset.mul_sum]
 
 /-- The product of the local sums equals the sum over all independent smoothings.
@@ -85,9 +85,9 @@ theorem sum_smoothingWeight (lam : ℝ) (ω : ArrowConfig N M) :
     ∑ s : Smoothing N M, smoothingWeight lam ω s =
       w6V1 (Real.exp (lam / 2) + Real.exp (-lam / 2)) ω := by
   unfold smoothingWeight
-  have hp := Finset.sum_prod_piFinset (univ : Finset Bool)
-    (fun v : Fin N × Fin M => fun b =>
-      turnWeight lam b (ω.left v) (ω.right v) (ω.below v) (ω.above v))
+  have hp := Finset.sum_prod_piFinset (univ )
+     fun v  => fun b =>
+      turnWeight lam b (ω.left v) (ω.right v) (ω.below v) (ω.above v) 
   rw [Fintype.piFinset_univ] at hp
   rw [hp, w6V1_eq_prod]
   exact Finset.prod_congr rfl fun v _ => sum_turnWeight lam _ _ _ _
@@ -95,14 +95,14 @@ theorem sum_smoothingWeight (lam : ℝ) (ω : ArrowConfig N M) :
 /-- Summing the local smoothing expansion gives exactly `SixVertex.Z6V`.
 No FK partition function or global loop statistic occurs in this intermediate identity. -/
 theorem sum_smoothingWeight_eq_Z6V (lam : ℝ) :
-    (∑ ω : ArrowConfig N M, ∑ s : Smoothing N M, smoothingWeight lam ω s) =
+     ∑ ω : ArrowConfig N M, ∑ s : Smoothing N M, smoothingWeight lam ω s  =
       Z6V (Real.exp (lam / 2) + Real.exp (-lam / 2)) N M := by
   simp only [sum_smoothingWeight, Z6V]
 
 /-- The same expansion preserves the existing row sector, with no truncated subtraction. -/
 theorem sum_smoothingWeight_eq_Z6Vr (lam : ℝ) (r : ℕ) :
-    (∑ ω : ArrowConfig N M with ω.absUp + r = N / 2,
-      ∑ s : Smoothing N M, smoothingWeight lam ω s) =
+     ∑ ω : ArrowConfig N M with ω.absUp + r = N / 2,
+      ∑ s : Smoothing N M, smoothingWeight lam ω s  =
       Z6Vr (Real.exp (lam / 2) + Real.exp (-lam / 2)) N M r := by
   simp only [sum_smoothingWeight, Z6Vr]
 

@@ -18,7 +18,7 @@ open scoped ENNReal
 namespace PottsDiscontinuity
 
 /-- The open subgraph of `ℤ²` of an infinite-volume configuration `ω ∈ {0,1}^{E(ℤ²)}`. -/
-def rcInfiniteOpenGraph (ω : squareLattice.edgeSet → Bool) : SimpleGraph (ℤ × ℤ) :=
+def rcInfiniteOpenGraph (ω : squareLattice.edgeSet → Bool)  :=
   SimpleGraph.fromEdgeSet {e | ∃ h : e ∈ squareLattice.edgeSet, ω ⟨e, h⟩ = true}
 
 end PottsDiscontinuity

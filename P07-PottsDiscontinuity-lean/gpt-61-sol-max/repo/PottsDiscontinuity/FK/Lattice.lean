@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Frozen.Defs.SquareLattice
 public import Mathlib.Combinatorics.SimpleGraph.Maps
@@ -33,18 +34,16 @@ instance : DecidableRel squareLattice.Adj := by
 
 lemma squareLattice_adj_iff (u v : LatticeVertex) :
     squareLattice.Adj u v ↔
-      ((u.1 + 1 = v.1 ∨ v.1 + 1 = u.1) ∧ u.2 = v.2) ∨
-      (u.1 = v.1 ∧ (u.2 + 1 = v.2 ∨ v.2 + 1 = u.2)) := by
+       (u.1 + 1 = v.1 ∨ v.1 + 1 = u.1) ∧ u.2 = v.2  ∨
+       u.1 = v.1 ∧ (u.2 + 1 = v.2 ∨ v.2 + 1 = u.2)  := by
   change |u.1 - v.1| + |u.2 - v.2| = 1 ↔ _
-  simp only [abs_eq_max_neg]
-  omega
+  grind
 
 /-- Translation by an integer lattice vector. -/
 def latticeTranslate (a v : LatticeVertex) : LatticeVertex :=
   (v.1 + a.1, v.2 + a.2)
 
-lemma latticeTranslate_zero (v : LatticeVertex) : latticeTranslate 0 v = v := by
-  simp only [latticeTranslate, Prod.fst_zero, Prod.snd_zero, add_zero]
+
 
 lemma latticeTranslate_neg_cancel (a v : LatticeVertex) :
     latticeTranslate (-a) (latticeTranslate a v) = v := by
@@ -53,8 +52,7 @@ lemma latticeTranslate_neg_cancel (a v : LatticeVertex) :
 lemma squareLattice_adj_translate_iff (a u v : LatticeVertex) :
     squareLattice.Adj (latticeTranslate a u) (latticeTranslate a v) ↔
       squareLattice.Adj u v := by
-  simp only [squareLattice_adj_iff, latticeTranslate]
-  omega
+  grind [latticeTranslate, squareLattice_adj_iff]
 
 /-- Every integer translation is a graph automorphism of the square lattice. -/
 def latticeTranslationIso (a : LatticeVertex) : squareLattice ≃g squareLattice where
@@ -66,14 +64,14 @@ def latticeTranslationIso (a : LatticeVertex) : squareLattice ≃g squareLattice
 
 /-- The closed integer box with center `c` and coordinate radius `r`. -/
 def latticeBox (c : LatticeVertex) (r : ℕ) : Finset LatticeVertex :=
-  (Finset.Icc (c.1 - (r : ℤ)) (c.1 + (r : ℤ))) ×ˢ
-    (Finset.Icc (c.2 - (r : ℤ)) (c.2 + (r : ℤ)))
+   Finset.Icc (c.1 - (r : ℤ)) (c.1 + (r : ℤ))  ×ˢ
+     Finset.Icc (c.2 - (r : ℤ)) (c.2 + (r : ℤ)) 
 
 lemma mem_latticeBox (c v : LatticeVertex) (r : ℕ) :
     v ∈ latticeBox c r ↔
       (c.1 - (r : ℤ) ≤ v.1 ∧ v.1 ≤ c.1 + (r : ℤ)) ∧
-      (c.2 - (r : ℤ) ≤ v.2 ∧ v.2 ≤ c.2 + (r : ℤ)) := by
-  simp only [latticeBox, Finset.mem_product, Finset.mem_Icc]
+       c.2 - (r : ℤ) ≤ v.2 ∧ v.2 ≤ c.2 + (r : ℤ)  := by
+  grind +locals
 
 lemma center_mem_latticeBox (c : LatticeVertex) (r : ℕ) : c ∈ latticeBox c r := by
   rw [mem_latticeBox]
@@ -81,15 +79,12 @@ lemma center_mem_latticeBox (c : LatticeVertex) (r : ℕ) : c ∈ latticeBox c r
 
 lemma latticeBox_mono (c : LatticeVertex) {r s : ℕ} (hrs : r ≤ s) :
     latticeBox c r ⊆ latticeBox c s := by
-  intro v hv
-  rw [mem_latticeBox] at hv ⊢
-  omega
+  grind +locals
 
 lemma mem_latticeBox_translate_iff (a c v : LatticeVertex) (r : ℕ) :
     latticeTranslate a v ∈ latticeBox (latticeTranslate a c) r ↔
       v ∈ latticeBox c r := by
-  simp only [mem_latticeBox, latticeTranslate]
-  omega
+  grind +locals
 
 /-- All vertices of a finite box, regardless of whether they meet an open edge. -/
 abbrev BoxVertex (c : LatticeVertex) (r : ℕ) := {v : LatticeVertex // v ∈ latticeBox c r}
@@ -102,7 +97,6 @@ instance (c : LatticeVertex) (r : ℕ) : DecidableRel (boxGraph c r).Adj := by
   unfold boxGraph
   infer_instance
 
-lemma boxGraph_adj_iff (c : LatticeVertex) (r : ℕ) (u v : BoxVertex c r) :
-    (boxGraph c r).Adj u v ↔ squareLattice.Adj u.val v.val := Iff.rfl
+
 
 end PottsDiscontinuity.FK

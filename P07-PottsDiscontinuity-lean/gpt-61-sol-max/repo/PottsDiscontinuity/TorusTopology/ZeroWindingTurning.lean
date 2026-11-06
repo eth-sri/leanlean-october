@@ -28,12 +28,12 @@ theorem loopRotationNumber_eq_pm_one_of_zero_winding
   let ω := checkerArrows N M
   let s := rcSmoothing A
   let h := checkerArrows_compatible hN hM s
-  have hp := closedLoopMidpointWalk_isCycle ω s h d i j hv hh
-  have ht := squareWalkCyclicTurn_eq_four_or_neg_four _ hp
+  
+  have ht := squareWalkCyclicTurn_eq_four_or_neg_four _ (closedLoopMidpointWalk_isCycle ω s h d i j hv hh)
   rw [closedLoopMidpointWalk_cyclicTurn ω s h d i j hv hh] at ht
-  dsimp [ω,s,h,directedLoopOf] at ht
+  dsimp [ω, s, directedLoopOf] at ht
   rcases ht with ht | ht
-  · left; omega
-  · right; omega
+  ·  omega
+  ·  omega
 
 end PottsDiscontinuity.TorusTopology

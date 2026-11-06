@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.AsymptoticNearRoots
 public import PottsDiscontinuity.Bethe.AsymptoticSpatial
@@ -36,12 +37,12 @@ theorem root_mesh_le_of_density_lower {N n r : ℕ} {p : Fin n → ℝ}
     (hlower : ∀ x ∈ Icc (-Real.pi) Real.pi, m / 2 ≤ rootStepDensity N n p hp hn hs x)
     (j : Fin (n + 1)) :
     rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc ≤
-      (2 * (2 * r + 1 : ℝ) / m) / N := by
-  have hN : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
+       2 * (2 * r + 1 : ℝ) / m  / N := by
+  
   apply (rootPartition_gap_le_of_density_lower hp hn hs hm hlower j).trans
-  have he : (2 * (2 * r + 1 : ℝ) / m) / N = 2 * (2 * r + 1 : ℝ) / (m * N) := by ring
-  rw [he]
-  apply (div_le_div_iff_of_pos_right (mul_pos hm hN)).mpr
+  
+  rw [(by ring :  2 * (2 * r + 1 ) / m  / N = 2 * (2 * r + 1 ) / (m * N))]
+  apply (div_le_div_iff_of_pos_right (mul_pos hm (by exact_mod_cast  by omega ))).mpr
   have := rootGapMultiplicity_le_offset hs hcount j
   linarith
 
@@ -70,65 +71,60 @@ theorem eventually_offset_estimates_of_density_rate {ι : Type*} {l : Filter ι}
     ∃ B R DP DQ : ℝ, 0 ≤ B ∧ 0 ≤ R ∧ 0 ≤ DP ∧ 0 ≤ DQ ∧ ∃ K : NNReal,
       ∀ᶠ i in l, OffsetEstimatesAt (N i) r (h4 i) (hr i) (hn i) (p i) (q i) B R DP DQ K := by
   obtain ⟨m, hm, hmρ⟩ := rho_uniform_lower_bound hΔ
-  have hlower : ∀ x ∈ Icc (-Real.pi) Real.pi, m ≤ rho Δ x := hmρ Δ le_rfl
+  have hlower  := hmρ Δ le_rfl
   obtain ⟨C, hC, halign⟩ := offset_alignment_of_density_error hΔ hm hE hlower
   obtain ⟨M₀, hM₀⟩ := isCompact_Icc.exists_bound_of_continuousOn (continuous_rho hΔ).continuousOn
   let M := max M₀ 1 + 1
-  have hM : 0 ≤ M := by dsimp [M]; linarith [le_max_right M₀ 1]
+  
   let B := 2 * Real.exp C
   let H := C * (B + 1)
   let DP := 2 / m
-  let DQ := 2 * (2 * r + 1 : ℝ) / m
-  have hB : 0 ≤ B := by dsimp [B]; positivity
-  have hH : 0 ≤ H := by dsimp [H]; positivity
-  have hDP : 0 ≤ DP := by dsimp [DP]; positivity
-  have hDQ : 0 ≤ DQ := by dsimp [DQ]; positivity
-  let K : NNReal := ⟨H * M, mul_nonneg hH hM⟩
-  refine ⟨B, B + DP, DP, DQ, hB, add_nonneg hB hDP, hDP, hDQ, K, ?_⟩
-  have hElim : Tendsto (fun i => E / (N i : ℝ)) l (𝓝 0) := by
+  
+  have hB : 0 ≤ B := by  positivity
+  have hH : 0 ≤ H := by  positivity
+  have hDP : 0 ≤ DP := by  positivity
+  
+  
+  refine ⟨B, B + DP, DP, (2 * (2 * r + 1 ) / m), hB, add_nonneg hB hDP, hDP,  by  positivity , (⟨H * M, mul_nonneg hH (by grind)⟩), ?_⟩
+  have hElim : Tendsto (fun i => E /  N i ) l (𝓝 0) := by
     simpa only [div_eq_mul_inv, mul_zero, Function.comp_def] using
       (tendsto_inv_atTop_zero.comp hNlim).const_mul E
   filter_upwards [herror, hNlim.eventually (eventually_ge_atTop C),
-    hElim.eventually (gt_mem_nhds (show (0 : ℝ) < m / 2 by positivity)),
-    hElim.eventually (gt_mem_nhds (show (0 : ℝ) < 1 by norm_num))]
+    hElim.eventually (gt_mem_nhds (show  0  < m / 2 by positivity)),
+    hElim.eventually (gt_mem_nhds (show  0  < 1 by norm_num))]
     with i hi hlarge hsmall hsmall1
   have hep := fun x hx => (hi x hx).1
   have heq := fun x hx => (hi x hx).2
   have hb := halign (N i) r (h4 i) (hr i) (hN i) (hn i) (p i) (q i) (hp i) (hq i)
     hlarge hsmall.le hep heq
-  have hlowp : ∀ x ∈ Icc (-Real.pi) Real.pi,
-      m / 2 ≤ rootStepDensity (N i) (N i / 2) (p i) (hp i) (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i) x := by
-    intro x hx
-    have := (abs_le.mp (hep x hx)).1
-    have := hlower x hx
-    linarith
-  have hlowq : ∀ x ∈ Icc (-Real.pi) Real.pi,
-      m / 2 ≤ rootStepDensity (N i) (N i / 2 - r) (q i) (hq i) (hn i) (two_mul_half_sub_le N r i) x := by
-    intro x hx
-    have := (abs_le.mp (heq x hx)).1
-    have := hlower x hx
-    linarith
-  have hcountp : N i = 2 * (N i / 2 + 0) := by obtain ⟨z, hz⟩ := h4 i; omega
-  have hcountq : N i = 2 * (N i / 2 - r + r) := by
-    obtain ⟨z, hz⟩ := h4 i
-    have := hr i
-    omega
+  
+  
+  have hcountp : N i = 2 * (N i / 2 + 0) := by grind
+  
   have hmeshp : ∀ j : Fin (N i / 2 + 1),
       rootPartitionPoint (N i / 2) (p i) (by have := hn i; omega) j.succ -
         rootPartitionPoint (N i / 2) (p i) (by have := hn i; omega) j.castSucc ≤ DP / N i := by
     intro j
     simpa only [Nat.cast_zero, mul_zero, zero_add, mul_one] using
-      root_mesh_le_of_density_lower (hp i) (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i) hcountp hm hlowp j
-  have hmeshq := root_mesh_le_of_density_lower (hq i) (hn i) (two_mul_half_sub_le N r i) hcountq hm hlowq
-  have hupper : ∀ x ∈ Icc (-Real.pi) Real.pi,
-      rootStepDensity (N i) (N i / 2 - r) (q i) (hq i) (hn i) (two_mul_half_sub_le N r i) x ≤ M := by
-    intro x hx
-    have he := (abs_le.mp (heq x hx)).2
-    have hρ : rho Δ x ≤ M₀ := (le_abs_self _).trans (by simpa using hM₀ x hx)
-    dsimp [M]
-    linarith [le_max_left M₀ 1]
-  refine ⟨hb.1, ?_, ?_, hmeshp, hmeshq⟩
-  · exact offset_root_lipschitz (h4 i) (hr i) (hN i) (hn i) (hq i) hH hupper hb.2
+      root_mesh_le_of_density_lower (hp i) (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i) hcountp hm (by
+                                                                                                                   intro x hx
+                                                                                                                   have := (abs_le.mp (hep x hx)).1
+                                                                                                                   have := hlower x hx
+                                                                                                                   linarith) j
+  
+  
+  refine ⟨hb.1, ?_, ?_, hmeshp,  root_mesh_le_of_density_lower (hq i) (hn i) (two_mul_half_sub_le N r i) (by
+                                                                                                            grind) hm (by
+                                                                                                                                      intro x hx
+                                                                                                                                      have := (abs_le.mp (heq x hx)).1
+                                                                                                                                      have := hlower x hx
+                                                                                                                                      linarith) ⟩
+  · exact offset_root_lipschitz (h4 i) (hr i) (hN i) (hn i) (hq i) hH (by
+                                                                         intro x hx
+                                                                         have he := (abs_le.mp (heq x hx)).2
+                                                                         have hρ  := (le_abs_self _).trans (hM₀ x hx)
+                                                                         
+                                                                         linarith [le_max_left M₀ 1]) hb.2
   · exact offset_shifted_roots_near (h4 i) (hr i) (hN i) (hp i) hDP hb.1
       (root_interior_gap_of_mesh (p i) (by have := hn i; omega) hmeshp)
 

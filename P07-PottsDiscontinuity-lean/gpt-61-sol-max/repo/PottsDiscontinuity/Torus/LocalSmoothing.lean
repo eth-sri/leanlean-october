@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.SixVertex.LocalWeight
 
@@ -21,7 +22,7 @@ open Finset PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.Torus
 
 /-- Orientation compatibility of a turning smoothing with the four incident arrows. -/
-def Compatible (s l r d u : Bool) : Prop :=
+def Compatible (s l r d u : Bool)  :=
   if s then l ≠ d ∧ r ≠ u else l = u ∧ r = d
 
 instance (s l r d u : Bool) : Decidable (Compatible s l r d u) := by
@@ -31,8 +32,8 @@ instance (s l r d u : Bool) : Decidable (Compatible s l r d u) := by
 /-- Total signed quarter turns of the two strands. For compatible arrows these are
 the actual turns, with the incoming directions determined by `l` and `r`. -/
 def quarterTurn (s l r : Bool) : ℤ :=
-  if s then (if l then -1 else 1) + (if r then 1 else -1)
-  else (if l then 1 else -1) + (if r then -1 else 1)
+  if s then (if l then -1 else 1) +  if r then 1 else -1 
+  else (if l then 1 else -1) +  if r then -1 else 1 
 
 /-- A compatible smoothing exists exactly for the six ice-rule patterns. -/
 theorem exists_compatible_iff (l r d u : Bool) :
@@ -43,7 +44,8 @@ theorem exists_compatible_iff (l r d u : Bool) :
 /-- Every compatible local smoothing obeys the ice rule. -/
 theorem Compatible.iceRule {s l r d u : Bool} (h : Compatible s l r d u) :
     inDegree l r d u = 2 :=
-  (exists_compatible_iff l r d u).1 ⟨s, h⟩
+  by
+    solve_by_elim [_root_.Iff.mp, _root_.PottsDiscontinuity.Torus.exists_compatible_iff, _root_.Exists.intro]
 
 /-- The local exponential turn factor, with zero weight for incompatible smoothings. -/
 noncomputable def turnWeight (lam : ℝ) (s l r d u : Bool) : ℝ :=
@@ -61,8 +63,8 @@ This is the local algebra behind Lemma 3.12, without any global turning-number i
 theorem sum_turnWeight (lam : ℝ) (l r d u : Bool) :
     ∑ s : Bool, turnWeight lam s l r d u =
       localWeight 1 1 (Real.exp (lam / 2) + Real.exp (-lam / 2)) l r d u := by
-  have hp : lam / 4 * (2 : ℝ) = lam / 2 := by ring
-  have hn : lam / 4 * (-2 : ℝ) = -lam / 2 := by ring
+  have hp : lam / 4 *  2  = lam / 2 := by ring
+  have hn : lam / 4 *  -2  = -lam / 2 := by ring
   cases l <;> cases r <;> cases d <;> cases u <;>
     simp [turnWeight, Compatible, quarterTurn,
       localWeight, vertexType?, vertexWeight, hp, hn, add_comm]

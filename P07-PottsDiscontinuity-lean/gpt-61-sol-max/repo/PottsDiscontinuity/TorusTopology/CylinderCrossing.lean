@@ -8,7 +8,7 @@ actual seam-closed cylinder of `TorusRC/CylinderEvents.lean` and its bottom/top 
 
 @[expose] public section
 
-open Finset PottsDiscontinuity.SixVertex
+
 namespace PottsDiscontinuity.TorusTopology
 open Torus TorusRC
 variable {N M : ℕ}

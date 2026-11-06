@@ -25,7 +25,7 @@ theorem critical_rotated_rate_existsUnique (q : Set.Ici (1 : ℝ)) :
 
 /-- The source ξ(q)⁻¹: the unique limit of -log φ⁰_L(0↔(0,2n))/(2n).
 The existence and uniqueness proof holds for every q in the whole carrier. -/
-noncomputable def inverseCorrelationLength (q : Set.Ici (1 : ℝ)) : ℝ :=
+noncomputable def inverseCorrelationLength (q : Set.Ici (1 : ℝ))  :=
   Classical.choose (critical_rotated_rate_existsUnique q)
 
 theorem tendsto_inverseCorrelationLength (q : Set.Ici (1 : ℝ)) :

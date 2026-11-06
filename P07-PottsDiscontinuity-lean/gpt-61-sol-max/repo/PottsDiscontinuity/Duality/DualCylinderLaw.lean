@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Duality.DualConfigurationBridge
 public import PottsDiscontinuity.Duality.RectangleDualAmbientMarginal
@@ -19,35 +20,33 @@ lemma rectangleDualBoundary_eq_vertexBoundary (a : LatticeVertex) (w h : ℕ)
     (x : LatticeVertex) :
     x ∈ rectangleDualBoundary a w h ↔ x ∈ vertexBoundary (rectangleDualExpanded a w h) := by
   have hcoords (z : LatticeVertex) : z ∈ rectangleDualExpanded a w h ↔
-      (a.1 - 1 ≤ z.1 ∧ z.1 ≤ a.1 + (w : ℤ)) ∧
-      (a.2 - 1 ≤ z.2 ∧ z.2 ≤ a.2 + (h : ℤ)) := by
-    simp only [rectangleDualExpanded, mem_latticeRectangle, Nat.cast_add, Nat.cast_one]
+      (a.1 - 1 ≤ z.1 ∧ z.1 ≤ a.1 +  w ) ∧
+       a.2 - 1 ≤ z.2 ∧ z.2 ≤ a.2 +  h   := by
+    simp only [rectangleDualExpanded, mem_latticeRectangle]
     omega
   constructor
   · intro hx
     obtain ⟨hxS, hxI⟩ := Finset.mem_filter.1 hx
     have hxcoord := (hcoords x).1 hxS
-    have hside : x.1 = a.1 - 1 ∨ x.1 = a.1 + (w : ℤ) ∨
-        x.2 = a.2 - 1 ∨ x.2 = a.2 + (h : ℤ) := by
+    have hside : x.1 = a.1 - 1 ∨ x.1 = a.1 +  w  ∨
+        x.2 = a.2 - 1 ∨ x.2 = a.2 + (h ) := by
       have hi : ¬ (a.1 ≤ x.1 ∧ x.1 < a.1 + (w : ℤ) ∧
-          a.2 ≤ x.2 ∧ x.2 < a.2 + (h : ℤ)) := by
-        intro hc
-        exact hxI (Finset.mem_filter.mpr ⟨hxS, hc⟩)
+          a.2 ≤ x.2 ∧ x.2 < a.2 + (h : ℤ)) := fun hc => hxI (Finset.mem_filter.mpr ⟨hxS, hc⟩)
       omega
     refine ⟨hxS, ?_⟩
     rcases hside with hx | hx | hx | hx
     · refine ⟨(x.1 - 1, x.2), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
+      · rw [squareLattice_adj_iff];  omega
+      simp_all
     · refine ⟨(x.1 + 1, x.2), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
+      · rw [squareLattice_adj_iff];  omega
+      simp_all
     · refine ⟨(x.1, x.2 - 1), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
+      · rw [squareLattice_adj_iff];  omega
+      simp_all
     · refine ⟨(x.1, x.2 + 1), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
+      · rw [squareLattice_adj_iff];  omega
+      simp_all
   · rintro ⟨hxS, y, hxy, hyS⟩
     apply Finset.mem_filter.2
     refine ⟨hxS, ?_⟩
@@ -70,12 +69,11 @@ lemma rectangleDualBoundaryCondition_eq_frozen (a : LatticeVertex) (w h : ℕ) :
 def freeDomainProbabilityMeasure (θ : Parameters) (S : Finset LatticeVertex) :
     ProbabilityMeasure LatticeConfiguration :=
   ⟨((law (domainGraph S) θ (BoundaryCondition.free ∅)).map
-    (fun A e => decide (e ∈ A.map (frozenEdgeEmbedding S)))).toMeasure,
+     fun A e => decide (e ∈ A.map (frozenEdgeEmbedding S)) ).toMeasure,
       PMF.toMeasure.isProbabilityMeasure _⟩
 
 /-- The actual free rectangle law with closed exterior extension. -/
-def freeRectangleProbabilityMeasure (θ : Parameters) (a : LatticeVertex) (w h : ℕ) :
-    ProbabilityMeasure LatticeConfiguration :=
+def freeRectangleProbabilityMeasure (θ : Parameters) (a : LatticeVertex) (w h : ℕ)  :=
   freeDomainProbabilityMeasure θ (latticeRectangle a w h)
 
 lemma freeRectangleProbabilityMeasure_box (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
@@ -101,28 +99,11 @@ theorem freeRectangle_dual_allOpen (θ : Parameters) (a : LatticeVertex) (w h : 
       Measure LatticeConfiguration) (LatticeConfiguration.allOpen F) =
     (wiredDomainProbabilityMeasure (dualParameters θ) (rectangleDualExpanded a w h) :
       Measure LatticeConfiguration) (LatticeConfiguration.allOpen F) := by
-  classical
+  
   let E := trueDualCylinderEvent a w h F
-  have hprimal : (fun A : Configuration (rectangleGraph a w h) =>
-      wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A)) ⁻¹'
-        LatticeConfiguration.allOpen F =
-      (rectanglePrimalDualConfigurationEquiv a w h) ⁻¹' E := by
-    ext A
-    constructor
-    · intro hA e he g hg
-      have ht := hA e he
-      change wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A) e = true at ht
-      rw [← hg] at ht
-      rw [dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq] at ht
-      exact ht
-    · intro hA e he
-      obtain ⟨g, hg⟩ := hF e he
-      change wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A) e = true
-      rw [← hg]
-      rw [dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq]
-      exact hA e he g hg
+  
   have hambient : wiredDomainCylinderEvent (rectangleDualExpanded a w h) F =
-      (subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h)) ⁻¹' E := by
+       subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h)  ⁻¹' E := by
     ext A
     constructor
     · intro hA e he g hg
@@ -130,10 +111,10 @@ theorem freeRectangle_dual_allOpen (θ : Parameters) (a : LatticeVertex) (w h : 
       exact hA e he (subgraphEdgeEmbedding (rectangleDualGraph_le_ambient a w h) g) hg
     · intro hA e he f hf
       obtain ⟨g, hg⟩ := hF e he
-      have hgf : subgraphEdgeEmbedding (rectangleDualGraph_le_ambient a w h) g = f := by
-        apply (frozenEdgeEmbedding (rectangleDualExpanded a w h)).injective
-        exact hg.trans hf.symm
-      rw [← hgf]
+      
+      rw [← (by
+               apply (frozenEdgeEmbedding (rectangleDualExpanded a w h)).injective
+               exact hg.trans hf.symm : subgraphEdgeEmbedding (rectangleDualGraph_le_ambient a w h) g = f)]
       exact (mem_subgraphConfigurationRestriction _ _ _).1 (hA e he g hg)
   rw [ProbabilityMeasure.toMeasure_map,
     Measure.map_apply wholePlaneDualConfigurationHomeomorph_measurable
@@ -146,7 +127,24 @@ theorem freeRectangle_dual_allOpen (θ : Parameters) (a : LatticeVertex) (w h : 
   change (law _ θ (BoundaryCondition.free ∅)).toMeasure
     ((fun A => wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A)) ⁻¹'
       LatticeConfiguration.allOpen F) = _
-  rw [hprimal, ← PMF.toMeasure_map_apply _ _ _ measurable_from_top (show MeasurableSet E from MeasurableSet.of_discrete),
+  rw [(by
+         ext A
+         constructor
+         · intro hA e he g hg
+           have ht := hA e he
+           change wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A) e = true at ht
+           rw [← hg] at ht
+           rw [dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq] at ht
+           exact ht
+         · intro hA e he
+           obtain ⟨g, hg⟩ := hF e he
+           change wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A) e = true
+           rw [← hg]
+           rw [dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq]
+           exact hA e he g hg : (fun A  =>
+      wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A)) ⁻¹'
+        LatticeConfiguration.allOpen F =
+       rectanglePrimalDualConfigurationEquiv a w h  ⁻¹' E), ← PMF.toMeasure_map_apply _ _ _ measurable_from_top  MeasurableSet.of_discrete ,
     rectangleFKLaw_map_primalDualConfigurationEquiv,
     wiredDomainProbabilityMeasure_allOpen, hambient,
     ← rectangleDualBoundaryCondition_eq_frozen]
@@ -154,8 +152,8 @@ theorem freeRectangle_dual_allOpen (θ : Parameters) (a : LatticeVertex) (w h : 
     (rectangleDualBoundaryCondition a w h)).toMeasure E =
       (law (rectangleDualAmbientGraph a w h) (dualParameters θ)
         (rectangleDualBoundaryCondition a w h)).toMeasure
-          ((subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h)) ⁻¹' E)
-  rw [← PMF.toMeasure_map_apply _ _ _ measurable_from_top (show MeasurableSet E from MeasurableSet.of_discrete),
+          ( subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h)  ⁻¹' E)
+  rw [← PMF.toMeasure_map_apply _ _ _ measurable_from_top  MeasurableSet.of_discrete ,
     rectangleDualAmbient_law_restrict_to_dual]
 
 end

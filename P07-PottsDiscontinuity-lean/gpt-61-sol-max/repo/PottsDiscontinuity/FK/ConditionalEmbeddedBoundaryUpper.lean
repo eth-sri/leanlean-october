@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.ConditionalEmbeddedLaw
 public import PottsDiscontinuity.FK.IncreasingEvents
@@ -15,8 +16,7 @@ variable {V W : Type*} [Finite V] [Finite W]
   (G : SimpleGraph V) (H : SimpleGraph W) (f : V ↪ W)
   (hGH : G.map f ≤ H)
 
-local instance innerConfigurationMeasurableSpace :
-    MeasurableSpace (Configuration G) := ⊤
+
 local instance outerConfigurationMeasurableSpace :
     MeasurableSpace (Configuration H) := ⊤
 
@@ -45,8 +45,7 @@ theorem filteredConditionalEmbeddedEvent_measure_le_boundary
           (embeddedConfigurationRestriction G H f hGH)) S).toReal =
         (measure G q
           (isolatedExtensionPullbackBoundary f (frozenBoundary ξ K.val)) S).toReal := by
-    simpa [measure] using congrArg
-      (fun μ : PMF (Configuration G) => (μ.toMeasure S).toReal) hconditional
+    aesop
   rw [hmeasure]
   exact measure_boundary_comparison q
     (isolatedExtensionPullbackBoundary f (frozenBoundary ξ K.val)) η hpart S hS

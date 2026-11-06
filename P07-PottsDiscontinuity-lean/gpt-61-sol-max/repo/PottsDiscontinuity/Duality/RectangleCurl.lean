@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Namespaces/imports adapted to the shared FK library. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Duality.RectangleDualCarrier
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -18,20 +19,22 @@ abbrev RectangleExteriorPotential (a : LatticeVertex) (w h : ℕ) :=
     ∀ z, z.1 ∈ rectangleDualBoundary a w h → φ z = 0}
 
 def rectangleExtendedPotential (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (z : LatticeVertex) : ℝ :=
+    (φ : RectangleExteriorPotential a w h) (z : LatticeVertex)  :=
   if hz : z ∈ rectangleDualExpanded a w h then φ.1 ⟨z, hz⟩ else 0
 
-@[simp] theorem rectangleExtendedPotential_of_mem (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (z : LatticeVertex)
+
+
+
+
+
+@[simp] theorem rectangleExtendedPotential_of_mem (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h) (z : LatticeVertex) 
     (hz : z ∈ rectangleDualExpanded a w h) :
     rectangleExtendedPotential a w h φ z = φ.1 ⟨z, hz⟩ := by
   simp [rectangleExtendedPotential, hz]
 
-@[simp] theorem rectangleExtendedPotential_of_not_mem (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (z : LatticeVertex)
-    (hz : z ∉ rectangleDualExpanded a w h) :
-    rectangleExtendedPotential a w h φ z = 0 := by
-  simp [rectangleExtendedPotential, hz]
+
+
+
 
 /-- Primal curl of a dual potential: above-minus-below horizontally and
 left-minus-right vertically. -/
@@ -51,7 +54,7 @@ def rectangleCurlIncidentCandidate (v : LatticeVertex) : Fin 4 → LatticeBond
   | 3 => ⟨(v.1, v.2 - 1), .vertical⟩
 
 def rectangleCurlCandidateInside (a : LatticeVertex) (w h : ℕ)
-    (v : LatticeVertex) (i : Fin 4) : Prop :=
+    (v : LatticeVertex) (i : Fin 4)  :=
   (rectangleCurlIncidentCandidate v i).source ∈ latticeRectangle a w h ∧
     (rectangleCurlIncidentCandidate v i).target ∈ latticeRectangle a w h
 
@@ -59,13 +62,7 @@ private theorem rectangleCurlIncidentCandidate_injective (v : LatticeVertex) :
     Function.Injective (rectangleCurlIncidentCandidate v) := by
   intro i j hij
   fin_cases i <;> fin_cases j
-  all_goals solve
-    | rfl
-    | (simp [rectangleCurlIncidentCandidate, LatticeBond.mk.injEq] at hij)
-    | (simp [rectangleCurlIncidentCandidate, LatticeBond.mk.injEq] at hij
-       ; have hx := congrArg Prod.fst hij
-       ; have hy := congrArg Prod.snd hij
-       ; omega)
+  all_goals grind +locals
 
  theorem rectangleCurlIncidentBond_exists_unique (v : LatticeVertex)
     (b : LatticeBond) (h : b.source = v ∨ b.target = v) :
@@ -78,8 +75,8 @@ private theorem rectangleCurlIncidentCandidate_injective (v : LatticeVertex) :
     · subst v
       refine ⟨0, rfl, ?_⟩
       intro i hi
-      have h₀ : rectangleCurlIncidentCandidate v0 0 = ⟨(x,y), .horizontal⟩ := rfl
-      exact rectangleCurlIncidentCandidate_injective v0 (hi.trans h₀.symm)
+      
+      exact rectangleCurlIncidentCandidate_injective v0 (hi.trans (rfl).symm)
     · subst v
       refine ⟨1, ?_, ?_⟩
       · simp [rectangleCurlIncidentCandidate]
@@ -92,8 +89,8 @@ private theorem rectangleCurlIncidentCandidate_injective (v : LatticeVertex) :
     · subst v
       refine ⟨2, rfl, ?_⟩
       intro i hi
-      have h₂ : rectangleCurlIncidentCandidate v0 2 = ⟨(x,y), .vertical⟩ := rfl
-      exact rectangleCurlIncidentCandidate_injective v0 (hi.trans h₂.symm)
+      
+      exact rectangleCurlIncidentCandidate_injective v0 (hi.trans (rfl).symm)
     · subst v
       refine ⟨3, ?_, ?_⟩
       · simp [rectangleCurlIncidentCandidate]
@@ -122,18 +119,14 @@ private theorem rectangleCurlCandidate_flow_zero_of_not_inside
     rectangleCurlFlow a w h φ (rectangleCurlIncidentCandidate v i) = 0 := by
   obtain ⟨hfalse, htrue⟩ :=
     rectangleCurlCandidate_faces_boundary a w h v i hv hout
-  have hexpFalse : LatticeBond.faceBase (rectangleCurlIncidentCandidate v i) false ∈
-      rectangleDualExpanded a w h := (Finset.mem_filter.mp hfalse).1
-  have hexpTrue : LatticeBond.faceBase (rectangleCurlIncidentCandidate v i) true ∈
-      rectangleDualExpanded a w h := (Finset.mem_filter.mp htrue).1
+  have hexpFalse  := (Finset.mem_filter.mp hfalse).1
+  have hexpTrue  := (Finset.mem_filter.mp htrue).1
   have hzeroFalse : rectangleExtendedPotential a w h φ
       (LatticeBond.faceBase (rectangleCurlIncidentCandidate v i) false) = 0 := by
-    rw [rectangleExtendedPotential_of_mem _ _ _ _ _ hexpFalse]
-    exact φ.2 _ hfalse
+    aesop
   have hzeroTrue : rectangleExtendedPotential a w h φ
       (LatticeBond.faceBase (rectangleCurlIncidentCandidate v i) true) = 0 := by
-    rw [rectangleExtendedPotential_of_mem _ _ _ _ _ hexpTrue]
-    exact φ.2 _ htrue
+    aesop
   cases hi : (rectangleCurlIncidentCandidate v i).axis <;>
     simp [rectangleCurlFlow, hi, hzeroFalse, hzeroTrue]
 
@@ -149,12 +142,12 @@ noncomputable def rectangleActualIncidentCandidateEquiv
   toFun b := by
     let i := Classical.choose
       (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)
-    have hi := (Classical.choose_spec
-      (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)).1
+    
     refine ⟨i, ?_⟩
     change (rectangleCurlIncidentCandidate v i).source ∈ latticeRectangle a w h ∧
       (rectangleCurlIncidentCandidate v i).target ∈ latticeRectangle a w h
-    rw [hi]
+    rw [ (Classical.choose_spec
+           (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)).1 ]
     exact b.1.2
   invFun i := by
     rcases i with ⟨ix, hix⟩
@@ -163,38 +156,19 @@ noncomputable def rectangleActualIncidentCandidateEquiv
       LatticeBond.target]
   left_inv b := by
     apply Subtype.ext
-    apply Subtype.ext
-    let i := Classical.choose
-      (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)
-    exact (Classical.choose_spec
-      (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)).1
+    all_goals grind
   right_inv i := by
-    rcases i with ⟨ix, hix⟩
-    apply Subtype.ext
-    apply rectangleCurlIncidentCandidate_injective v
-    let j := Classical.choose
-      (rectangleCurlIncidentBond_exists_unique v
-        (rectangleCurlIncidentCandidate v ix)
-        (by fin_cases ix <;> simp [rectangleCurlIncidentCandidate,
-          LatticeBond.source, LatticeBond.target]))
-    have hj := (Classical.choose_spec
-      (rectangleCurlIncidentBond_exists_unique v
-        (rectangleCurlIncidentCandidate v ix)
-        (by fin_cases ix <;> simp [rectangleCurlIncidentCandidate,
-          LatticeBond.source, LatticeBond.target]))).1
-    exact hj
+    grind
 
 private theorem rectangleActualIncidentCandidateEquiv_apply
     (a : LatticeVertex) (w h : ℕ) (v : LatticeVertex)
     (b : rectangleActualIncidentBonds a w h v) :
     rectangleCurlIncidentCandidate v
       (rectangleActualIncidentCandidateEquiv a w h v b).1 = b.1.1 := by
-  let i := Classical.choose
-    (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)
+  
   have hi := (Classical.choose_spec
     (rectangleCurlIncidentBond_exists_unique v b.1.1 b.2)).1
-  change rectangleCurlIncidentCandidate v i = b.1.1
-  exact hi
+  aesop
 
 noncomputable instance rectangleActualIncidentBondsFintype
     (a : LatticeVertex) (w h : ℕ) (v : LatticeVertex) :
@@ -211,7 +185,7 @@ noncomputable instance rectangleCurlCandidateFintype
 /-- Actual incidence divergence over all and only rectangle edges incident to
 `v`, with the normalized bond orientation source-to-target. -/
 noncomputable def rectanglePrimalCurlDivergence (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex) : ℝ :=
+    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex)  :=
   ∑ b : rectangleActualIncidentBonds a w h v,
     if b.1.1.source = v then rectangleCurlFlow a w h φ b.1.1
     else -rectangleCurlFlow a w h φ b.1.1
@@ -219,7 +193,7 @@ noncomputable def rectanglePrimalCurlDivergence (a : LatticeVertex) (w h : ℕ)
 /-- Four-neighbor discrete divergence stencil, for comparison with actual
 finite-edge incidence. -/
 def rectangleCurlStencil (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex) : ℝ :=
+    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex)  :=
   rectangleCurlFlow a w h φ ⟨(v.1, v.2), LatticeAxis.horizontal⟩ -
     rectangleCurlFlow a w h φ ⟨(v.1 - 1, v.2), LatticeAxis.horizontal⟩ +
     rectangleCurlFlow a w h φ ⟨(v.1, v.2), LatticeAxis.vertical⟩ -
@@ -232,14 +206,18 @@ theorem rectangleCurlStencil_eq_zero (a : LatticeVertex) (w h : ℕ)
   ring
 
 def rectangleCurlSignedCandidate (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex) (i : Fin 4) : ℝ :=
+    (φ : RectangleExteriorPotential a w h) (v : LatticeVertex) (i : Fin 4)  :=
   if (rectangleCurlIncidentCandidate v i).source = v then
     rectangleCurlFlow a w h φ (rectangleCurlIncidentCandidate v i)
   else -rectangleCurlFlow a w h φ (rectangleCurlIncidentCandidate v i)
 
+section
+
+variable (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h) (v : LatticeVertex)
+include φ v
+
 private theorem rectangleCurlSignedCandidate_eq_term
-    (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
-    (v : LatticeVertex) (i : Fin 4)
+     (i : Fin 4)
     (hi : rectangleCurlCandidateInside a w h v i) :
     rectangleCurlSignedCandidate a w h φ v i =
       match i.val with
@@ -251,38 +229,32 @@ private theorem rectangleCurlSignedCandidate_eq_term
   fin_cases i
   · simp [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
       LatticeBond.source]
-  · have hn : (x - 1, y) ≠ (x, y) := by
-      intro hh
-      have hx := congrArg Prod.fst hh
-      omega
-    simp [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-      LatticeBond.source, hn]
+  · simp_all [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate, LatticeBond.source]
   · simp [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
       LatticeBond.source]
-  · have hn : (x, y - 1) ≠ (x, y) := by
-      intro hh
-      have hy := congrArg Prod.snd hh
-      omega
-    simp [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-      LatticeBond.source, hn]
+  · simp_all [rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate, LatticeBond.source]
+
+section
+
+variable (hv : v ∈ latticeRectangle a w h)
+include hv
 
 private theorem rectangleCurlFilteredSum_eq_stencil
-    (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
-    (v : LatticeVertex) (hv : v ∈ latticeRectangle a w h) :
-    (∑ i : {i : Fin 4 // rectangleCurlCandidateInside a w h v i},
-      rectangleCurlSignedCandidate a w h φ v i.1) = rectangleCurlStencil a w h φ v := by
+      :
+     ∑ i : {i : Fin 4 // rectangleCurlCandidateInside a w h v i},
+      rectangleCurlSignedCandidate a w h φ v i.1  = rectangleCurlStencil a w h φ v := by
   classical
-  let p : Fin 4 → Prop := rectangleCurlCandidateInside a w h v
-  let : DecidablePred p := Classical.decPred p
-  have hsub :
-      (∑ i ∈ Finset.univ.filter p,
-        rectangleCurlSignedCandidate a w h φ v i) =
-      (∑ i : {i : Fin 4 // p i},
-        rectangleCurlSignedCandidate a w h φ v i.1) := by
-    exact Finset.sum_subtype (p := p) (Finset.univ.filter p)
-      (by intro i; simp [p])
-      (fun i => rectangleCurlSignedCandidate a w h φ v i)
-  rw [← hsub]
+  let p  := rectangleCurlCandidateInside a w h v
+  
+   
+  rw [← (by
+           exact Finset.sum_subtype (p := p) (Finset.univ.filter p)
+             (by  simp [p])
+              (rectangleCurlSignedCandidate a w h φ v) :
+       ∑ i ∈ Finset.univ.filter p,
+        rectangleCurlSignedCandidate a w h φ v i  =
+       ∑ i : {i : Fin 4 // p i},
+        rectangleCurlSignedCandidate a w h φ v i.1)]
   have hterm (i : Fin 4) :
       (if p i then rectangleCurlSignedCandidate a w h φ v i else 0) =
         match i.val with
@@ -292,28 +264,24 @@ private theorem rectangleCurlFilteredSum_eq_stencil
         | _ => -rectangleCurlFlow a w h φ ⟨(v.1, v.2 - 1), .vertical⟩ := by
     fin_cases i
     · by_cases hp : p 0
-      · have ht := rectangleCurlSignedCandidate_eq_term a w h φ v 0 hp
-        simpa [hp] using ht
-      · have hz := rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 0 hv hp
+      · grind [rectangleCurlSignedCandidate_eq_term]
+      · 
         simpa [hp, rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-          LatticeBond.source] using hz.symm
+          LatticeBond.source] using (rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 0 hv hp).symm
     · by_cases hp : p 1
-      · have ht := rectangleCurlSignedCandidate_eq_term a w h φ v 1 hp
-        simpa [hp] using ht
-      · have hz := rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 1 hv hp
+      · grind [rectangleCurlSignedCandidate_eq_term]
+      · 
         simpa [hp, rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-          LatticeBond.source] using hz
+          LatticeBond.source] using (rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 1 hv hp)
     · by_cases hp : p 2
-      · have ht := rectangleCurlSignedCandidate_eq_term a w h φ v 2 hp
-        simpa [hp] using ht
-      · have hz := rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 2 hv hp
+      · grind [rectangleCurlSignedCandidate_eq_term]
+      · 
         simpa [hp, rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
-          LatticeBond.source] using hz.symm
+          LatticeBond.source] using (rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 2 hv hp).symm
     · by_cases hp : p 3
-      · have ht := rectangleCurlSignedCandidate_eq_term a w h φ v 3 hp
-        simpa [hp] using ht
-      · have hz := rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 3 hv hp
-        have hn := congrArg Neg.neg hz
+      · grind [rectangleCurlSignedCandidate_eq_term]
+      · 
+        have hn := congrArg Neg.neg (rectangleCurlCandidate_flow_zero_of_not_inside a w h φ v 3 hv hp)
         simpa [hp, rectangleCurlSignedCandidate, rectangleCurlIncidentCandidate,
           LatticeBond.source] using hn
   rw [Finset.sum_filter]
@@ -323,18 +291,15 @@ private theorem rectangleCurlFilteredSum_eq_stencil
   ring
 
 theorem rectanglePrimalCurlDivergence_eq_stencil
-    (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
-    (v : LatticeVertex) (hv : v ∈ latticeRectangle a w h) :
+      :
     rectanglePrimalCurlDivergence a w h φ v = rectangleCurlStencil a w h φ v := by
-  classical
+  
   let e := rectangleActualIncidentCandidateEquiv a w h v
   calc
     rectanglePrimalCurlDivergence a w h φ v =
         ∑ b : rectangleActualIncidentBonds a w h v,
           rectangleCurlSignedCandidate a w h φ v (e b).1 := by
-      change (∑ b : rectangleActualIncidentBonds a w h v,
-        if b.1.1.source = v then rectangleCurlFlow a w h φ b.1.1
-        else -rectangleCurlFlow a w h φ b.1.1) = _
+      
       apply Finset.sum_congr rfl
       intro b hb
       have hmap := rectangleActualIncidentCandidateEquiv_apply a w h v b
@@ -342,15 +307,17 @@ theorem rectanglePrimalCurlDivergence_eq_stencil
       simp [rectangleCurlSignedCandidate, hmap]
     _ = ∑ i : {i : Fin 4 // rectangleCurlCandidateInside a w h v i},
           rectangleCurlSignedCandidate a w h φ v i.1 :=
-            Equiv.sum_comp e (fun i => rectangleCurlSignedCandidate a w h φ v i.1)
+            Equiv.sum_comp e  fun i => rectangleCurlSignedCandidate a w h φ v i.1 
     _ = rectangleCurlStencil a w h φ v :=
       rectangleCurlFilteredSum_eq_stencil a w h φ v hv
 
 theorem rectanglePrimalCurlDivergence_eq_zero
-    (a : LatticeVertex) (w h : ℕ) (φ : RectangleExteriorPotential a w h)
-    (v : LatticeVertex) (hv : v ∈ latticeRectangle a w h) :
+      :
     rectanglePrimalCurlDivergence a w h φ v = 0 := by
-  rw [rectanglePrimalCurlDivergence_eq_stencil a w h φ v hv]
-  exact rectangleCurlStencil_eq_zero a w h φ v
+  simp_all [rectanglePrimalCurlDivergence_eq_stencil, rectangleCurlStencil_eq_zero]
+
+end
+
+end
 
 end PottsDiscontinuity.FK

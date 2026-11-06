@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.Graph
 
@@ -44,15 +45,8 @@ theorem componentSetoid_mono (ξ : BoundaryCondition V) {A B : Configuration G}
 /-- Adding open edges cannot increase the number of wired components. -/
 theorem componentCount_antitone [Finite V] (ξ : BoundaryCondition V)
     {A B : Configuration G} (hAB : A ⊆ B) :
-    componentCount G ξ B ≤ componentCount G ξ A := by
-  let f : Quotient (componentSetoid G ξ A) → Quotient (componentSetoid G ξ B) :=
-    Setoid.map_of_le (componentSetoid_mono ξ hAB)
-  have hf : Function.Surjective f := by
-    intro q
-    refine Quotient.inductionOn q ?_
-    intro v
-    exact ⟨Quotient.mk _ v, rfl⟩
-  exact Nat.card_le_card_of_surjective f hf
+    componentCount G ξ B ≤ componentCount G ξ A := let f := Setoid.map_of_le (componentSetoid_mono ξ hAB);
+                                                   Nat.card_le_card_of_surjective f fun q => Quotient.inductionOn q fun v => Exists.intro ⟦v⟧ rfl
 
 /-- A vertex equivalence containing every graph edge contains every open walk. -/
 theorem reachableSetoid_le_of_adj (H : SimpleGraph V) (s : Setoid V)
@@ -63,7 +57,7 @@ theorem reachableSetoid_le_of_adj (H : SimpleGraph V) (s : Setoid V)
   | nil => exact s.refl _
   | cons h _ ih => exact s.trans (hadj h) ih
 
-section Insertion
+section
 
 variable [DecidableEq G.edgeSet]
 
@@ -90,14 +84,14 @@ theorem componentSetoid_insert_eq_of_related (ξ : BoundaryCondition V)
         exact ⟨e, he, hexy⟩
     · intro x y hxy
       exact boundary_component G ξ A hxy
-  · exact componentSetoid_mono ξ (Finset.subset_insert _ _)
+  · simp_all [componentSetoid_mono]
 
 theorem componentCount_insert_eq_of_related [Finite V] (ξ : BoundaryCondition V)
     (A : Configuration G) {u v : V} (huv : G.Adj u v)
     (hrelated : (componentSetoid G ξ A).r u v) :
     componentCount G ξ (insert ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ A) =
       componentCount G ξ A := by
-  rw [componentCount, componentCount, componentSetoid_insert_eq_of_related ξ A huv hrelated]
+  simp_all [componentCount, componentSetoid_insert_eq_of_related]
 
 /-- Boundary identification alone suffices for insertion invariance. -/
 theorem componentSetoid_insert_eq_of_boundary (ξ : BoundaryCondition V)
@@ -105,8 +99,9 @@ theorem componentSetoid_insert_eq_of_boundary (ξ : BoundaryCondition V)
     (hboundary : ξ.partition.r u v) :
     componentSetoid G ξ (insert ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ A) =
       componentSetoid G ξ A :=
-  componentSetoid_insert_eq_of_related ξ A huv (boundary_component G ξ A hboundary)
+  by
+    solve_by_elim [_root_.PottsDiscontinuity.FK.componentSetoid_insert_eq_of_related, _root_.PottsDiscontinuity.FK.boundary_component]
 
-end Insertion
+end
 
 end PottsDiscontinuity.FK

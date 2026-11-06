@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusTopology.IndexedWalk
 
@@ -10,18 +11,18 @@ namespace PottsDiscontinuity.TorusExploration
 open Torus TorusTopology
 variable {N M : ℕ}
 noncomputable section
-open scoped Classical
+
 
 lemma corner_edgeCluster (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (v : FaceVertex N M true) (p : Port)
     (he : A (faceCorner v.val p).1 = true) :
     diamondEdgeCluster hN hM A ⟨(faceCorner v.val p).1,he⟩ =
       (diamondOpenGraph hN hM true A).connectedComponentMk v := by
-  let d := ribbonCornerEquiv hN hM (v,p)
-  obtain ⟨⟨w,b⟩,hd⟩ := (ribbonEndEquiv hN hM).surjective d
+  
+  obtain ⟨⟨w,b⟩,hd⟩ := (ribbonEndEquiv hN hM).surjective (ribbonCornerEquiv hN hM (v,p))
   have hw : w = (faceCorner v.val p).1 := by
-    have hh := congrArg (fun x : DirectedDart (checkerArrows N M) => x.val.1) hd
-    simpa only [d,ribbonEndEquiv_val,ribbonEnd,ribbonCornerEquiv_val] using hh
+    have hh := congrArg (fun x  => x.val.1) hd
+    aesop
   subst w
   have hh := ribbonCornerCluster_end hN hM A ⟨(faceCorner v.val p).1,he⟩ b
   rw [hd] at hh

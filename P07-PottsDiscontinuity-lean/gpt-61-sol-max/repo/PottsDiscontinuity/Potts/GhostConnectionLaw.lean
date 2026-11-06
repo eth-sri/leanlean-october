@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.WiredGhostRelation
 public import PottsDiscontinuity.Potts.ConditionedOuterLaw
@@ -14,18 +15,13 @@ noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
 local instance connectionBoundaryFintype (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
 local instance connectionOuterEdgeFintype (n : ℕ) : Fintype (OuterBoxEdge n) := Fintype.ofFinite _
-local instance connectionShellFintype (n : ℕ) : Fintype (OuterShellEdge n) := Fintype.ofFinite _
+
 
 /-- Every state in the conditioning event has a unique literal/shell decomposition. -/
 theorem outerClosed_eq_restore (n : ℕ) (hn : 0 < n) (Ω : OuterBoxEdge n → Bool)
     (hΩ : outerCornerClosed n Ω) :
-    restoreGhostBonds n hn (readLiteralBonds n Ω) (fun e : OuterShellEdge n => Ω e.val) = Ω := by
-  have h := (outerBondEquiv n hn).left_inv Ω
-  change restoreOuterBonds n hn (readLiteralBonds n Ω) (fun b => Ω (cornerCutEdge n b))
-    (fun e => Ω e.val) = Ω at h
-  have hc : (fun b => Ω (cornerCutEdge n b)) = fun _ => false := funext hΩ
-  rw [hc] at h
-  exact h
+    restoreGhostBonds n hn (readLiteralBonds n Ω) (fun e : OuterShellEdge n => Ω e.val) = Ω := Eq.mp (congrArg (fun _a => (restoreOuterBonds n hn (readLiteralBonds n Ω) _a fun e => Ω ↑e) = Ω) (funext hΩ))
+                                                                                                 ((outerBondEquiv n hn).left_inv Ω)
 
 /-- Every event whose restored value is determined by the literal bonds has
 its exact ghost-law probability under the conditioned outer law. -/
@@ -35,17 +31,17 @@ theorem conditionedOuterLaw_event_eq_ghost
     (T : Set (LiteralBond (box n) → Bool))
     (hST : ∀ ω η, FK.boolConfigurationEquiv _ (restoreGhostBonds n hn ω η) ∈ S ↔ ω ∈ T) :
     (conditionedOuterLaw (fkParameters q hq β hβ) n).toMeasure.real S =
-      ∑ ω, ghostRCProbability q (box n) β ω * (if ω ∈ T then 1 else 0) := by
+      ∑ ω, ghostRCProbability q (box n) β ω *  if ω ∈ T then 1 else 0  := by
   change ((FK.law _ (fkParameters q hq β hβ) (outerBoxWiring n)).filter _ _).toMeasure.real S = _
   rw [finite_filter_measureReal]
-  have hid := ghost_expectation_eq_conditioned_wired_box q hq β hβ n hn
-    (fun ω => if ω ∈ T then (1 : ℝ) else 0)
-  rw [← hid]
+  
+  rw [←  ghost_expectation_eq_conditioned_wired_box q hq β hβ n hn
+            fun ω => if ω ∈ T then (1 ) else 0  ]
   change (FK.measure _ (fkParameters q hq β hβ) (outerBoxWiring n)
       (S ∩ cornerClosureEvent n)).toReal /
     (FK.measure _ (fkParameters q hq β hβ) (outerBoxWiring n) (cornerClosureEvent n)).toReal = _
   rw [fk_measureReal_eq_bool_sum, fk_measureReal_eq_bool_sum]
-  apply congrArg₂ (fun (a : ℝ) (b : ℝ) => a / b)
+  apply congrArg₂  fun a b => a / b 
   · apply Finset.sum_congr
     · ext Ω; simp
     · intro Ω _
@@ -59,10 +55,10 @@ theorem conditionedOuterLaw_event_eq_ghost
           rw [readLiteralBonds_restore]
           exact hST _ _
         by_cases ht : readLiteralBonds n Ω ∈ T
-        · simp [hb, hB, hst.mpr ht, ht]
-        · simp [hb, hB, mt hst.mp ht, ht]
-      · have hb := mt (outerCornerClosed_iff_mem n Ω).mpr hB
-        simp [hb, hB]
+        · simp_all
+        · simp_all
+      · 
+        simp [ mt (outerCornerClosed_iff_mem n Ω).mpr hB , hB]
   · apply Finset.sum_congr
     · ext Ω; simp
     · intro Ω _
@@ -78,11 +74,7 @@ theorem collapseOuterGhost_projection (n : ℕ) (a : Option (ℤ × ℤ)) :
   cases a with
   | none => rfl
   | some x =>
-    by_cases hx : x ∈ box n
-    · have hxo := box_subset_box_succ n hx
-      simp [boxGhostProjection, collapseOuterGhost, collapseOuterBox, hx, hxo]
-    · by_cases hxo : x ∈ box (n + 1) <;>
-        simp [boxGhostProjection, collapseOuterGhost, collapseOuterBox, hx, hxo]
+    grind [box, boxGhostProjection, collapseOuterGhost, collapseOuterBox]
 
 end
 end PottsDiscontinuity.Potts

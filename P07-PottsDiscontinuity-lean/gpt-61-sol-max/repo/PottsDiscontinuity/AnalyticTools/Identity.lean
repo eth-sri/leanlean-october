@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.Analytic.Uniqueness
 
@@ -13,7 +14,7 @@ public section
 
 open Filter
 open Set
-open scoped Topology
+
 
 namespace PottsDiscontinuity.AnalyticTools
 
@@ -24,11 +25,7 @@ theorem analytic_eqOn_of_eqOn_open_preconnected
     (hf : AnalyticOnNhd ℝ f U) (hg : AnalyticOnNhd ℝ g U)
     (hU : IsPreconnected U)
     (hV : IsOpen V) (hVne : V.Nonempty) (hVU : V ⊆ U)
-    (hfg : EqOn f g V) : EqOn f g U := by
-  obtain ⟨x, hx⟩ := hVne
-  have hlocal : f =ᶠ[𝓝 x] g := by
-    filter_upwards [hV.mem_nhds hx] with y hy
-    exact hfg hy
-  exact AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq hf hg hU (hVU hx) hlocal
+    (hfg : EqOn f g V) : EqOn f g U := Exists.casesOn hVne fun x hx =>
+                                         AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq hf hg hU (hVU hx) (mp_mem (IsOpen.mem_nhds hV hx) (univ_mem' hfg))
 
 end PottsDiscontinuity.AnalyticTools

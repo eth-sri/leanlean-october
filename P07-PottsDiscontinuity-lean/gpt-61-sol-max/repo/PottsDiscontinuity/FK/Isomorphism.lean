@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import Mathlib.Combinatorics.SimpleGraph.Maps
 public import PottsDiscontinuity.FK.PositiveAssociation
@@ -17,27 +18,29 @@ def boundaryConditionIso (e : G ≃g H) (ξ : BoundaryCondition V) : BoundaryCon
  supported := by
   intro x y h
   rcases ξ.supported h with hEq | ⟨hx,hy⟩
-  · exact Or.inl (by simpa using congrArg e hEq)
-  · exact Or.inr ⟨⟨e.symm x,hx,e.apply_symm_apply x⟩,⟨e.symm y,hy,e.apply_symm_apply y⟩⟩
-def configurationIsoEdgeEquiv (e : G ≃g H) : G.edgeSet ≃ H.edgeSet := SimpleGraph.Iso.mapEdgeSet e
+  · simp_all
+  · aesop
+def configurationIsoEdgeEquiv (e : G ≃g H)  := SimpleGraph.Iso.mapEdgeSet e
 def configurationIso (e : G ≃g H) : Configuration G ≃ Configuration H := (configurationIsoEdgeEquiv e).finsetCongr
-@[simp] theorem configurationIso_val (e : G ≃g H) (A : Configuration G) :
- (configurationIso e A).val = A.val.map (configurationIsoEdgeEquiv e).toEmbedding := rfl
+section
 
-@[simp] theorem card_configurationIso (e : G ≃g H) (A : Configuration G) :
-    (configurationIso e A).card = A.card := by
-  exact Finset.card_map _
+variable (e : G ≃g H) (A : Configuration G)
 
-theorem openEdges_configurationIso (e : G ≃g H) (A : Configuration G) :
+
+
+
+@[simp] theorem card_configurationIso  :
+    (configurationIso e A).card = A.card := Finset.card_map _
+
+theorem openEdges_configurationIso  :
  openEdges H (configurationIso e A) = Sym2.map e '' openEdges G A := by
  ext z
- change (∃ b : H.edgeSet, b ∈ (configurationIso e A).val ∧ (b : Sym2 W) = z) ↔
-   ∃ z₀ : Sym2 V, z₀ ∈ openEdges G A ∧ Sym2.map e z₀ = z
+ 
  constructor
  · rintro ⟨b, hb, rfl⟩
-   change b ∈ A.val.map (configurationIsoEdgeEquiv e).toEmbedding at hb
+   
    obtain ⟨a, ha, hab⟩ := Finset.mem_map.mp hb
-   have hv : (configurationIsoEdgeEquiv e a : H.edgeSet) = b := hab
+   have hv  := hab
    refine ⟨a.val, ⟨a, ha, rfl⟩, ?_⟩
    simpa [configurationIsoEdgeEquiv] using congrArg Subtype.val hv
  · rintro ⟨z₀, ⟨a, ha, hval⟩, hmap⟩
@@ -45,6 +48,8 @@ theorem openEdges_configurationIso (e : G ≃g H) (A : Configuration G) :
    refine ⟨configurationIsoEdgeEquiv e a, ?_, ?_⟩
    · exact Finset.mem_map.mpr ⟨a, ha, rfl⟩
    · simpa [configurationIsoEdgeEquiv] using hmap
+
+end
 /-- The open graphs are isomorphic under the vertex relabeling. -/
 def openGraphIso (e : G ≃g H) (A : Configuration G) :
     openGraph G A ≃g openGraph H (configurationIso e A) where
@@ -52,28 +57,25 @@ def openGraphIso (e : G ≃g H) (A : Configuration G) :
   map_rel_iff' := by
     intro u v
     rw [openGraph_adj, openGraph_adj, openEdges_configurationIso]
-    change (s(e u, e v) ∈ Sym2.map e '' openEdges G A) ↔ s(u, v) ∈ openEdges G A
+    change  s(e u, e v) ∈ Sym2.map e '' openEdges G A  ↔ s(u, v) ∈ openEdges G A
     simp only [Set.mem_image]
     constructor
     · rintro ⟨z, hz, hzEq⟩
-      have hz' : z = s(u, v) := by
-        apply Sym2.map.injective e.injective
-        simpa using hzEq
+      have hz' : z = s(u, v) := Sym2.map.injective (RelIso.injective e) hzEq
       simpa [hz'] using hz
-    · intro h
-      exact ⟨s(u, v), h, by simp⟩
+    · aesop
 
 theorem actualConnected_configurationIso (e : G ≃g H) (A : Configuration G) (x y : V) :
     ActualConnected H (configurationIso e A) (e x) (e y) ↔ ActualConnected G A x y := by
   simpa [ActualConnected, openGraphIso] using
-    (SimpleGraph.Iso.reachable_iff (φ := openGraphIso e A) (u := x) (v := y))
+     SimpleGraph.Iso.reachable_iff (φ := openGraphIso e A) (u := x) (v := y) 
 
 theorem componentSetoid_configurationIso (e : G ≃g H) (ξ : BoundaryCondition V)
     (A : Configuration G) (x y : V) :
     (componentSetoid H (boundaryConditionIso e ξ) (configurationIso e A)).r (e x) (e y) ↔
       (componentSetoid G ξ A).r x y := by
   rw [componentSetoid_rel_iff, componentSetoid_rel_iff]
-  have hmap : ∀ {a b : V},
+  have hmap : ∀ {a b },
       Relation.EqvGen (fun a b => ActualConnected G A a b ∨ ξ.partition.r a b) a b →
       Relation.EqvGen (fun a b =>
         ActualConnected H (configurationIso e A) a b ∨
@@ -88,7 +90,7 @@ theorem componentSetoid_configurationIso (e : G ≃g H) (ξ : BoundaryCondition 
     | refl a => exact Relation.EqvGen.refl _
     | symm a b hab ih => exact Relation.EqvGen.symm _ _ ih
     | trans a b c hab hbc ih₁ ih₂ => exact Relation.EqvGen.trans _ _ _ ih₁ ih₂
-  have hback : ∀ {a b : W},
+  have hback : ∀ {a b },
       Relation.EqvGen (fun a b =>
         ActualConnected H (configurationIso e A) a b ∨
           (boundaryConditionIso e ξ).partition.r a b) a b →
@@ -98,11 +100,11 @@ theorem componentSetoid_configurationIso (e : G ≃g H) (ξ : BoundaryCondition 
     induction hab with
     | rel a b hab =>
         rcases hab with hac | hab
-        · have hreach : ActualConnected G A (e.symm a) (e.symm b) :=
+        · have hreach  :=
             (actualConnected_configurationIso e A (e.symm a) (e.symm b)).mp
               (by simpa using hac)
           exact Relation.EqvGen.rel _ _ (Or.inl hreach)
-        · exact Relation.EqvGen.rel _ _ (Or.inr (by change ξ.partition.r (e.symm a) (e.symm b) at hab; exact hab))
+        · exact Relation.EqvGen.rel _ _ (Or.inr  hab )
     | refl a => exact Relation.EqvGen.refl _
     | symm a b hab ih => exact Relation.EqvGen.symm _ _ ih
     | trans a b c hab hbc ih₁ ih₂ => exact Relation.EqvGen.trans _ _ _ ih₁ ih₂
@@ -119,14 +121,8 @@ def componentQuotientIso (e : G ≃g H) (ξ : BoundaryCondition V) (A : Configur
     Quotient (componentSetoid G ξ A) ≃
       Quotient (componentSetoid H (boundaryConditionIso e ξ) (configurationIso e A)) where
   toFun := Quotient.map e (by
-    intro x y h
-    exact (componentSetoid_configurationIso e ξ A x y).mpr h)
-  invFun := Quotient.map e.symm (by
-    intro x y h
-    have hxy :
-        (componentSetoid H (boundaryConditionIso e ξ) (configurationIso e A)).r
-          (e (e.symm x)) (e (e.symm y)) := by simpa using h
-    exact (componentSetoid_configurationIso e ξ A (e.symm x) (e.symm y)).mp hxy)
+    simp_all [componentSetoid_configurationIso])
+  invFun := Quotient.map e.symm (fun x y h => (componentSetoid_configurationIso e ξ A (e.symm x) (e.symm y)).mp (by simpa using h))
   left_inv := by
     intro c
     induction c using Quotient.inductionOn with
@@ -140,7 +136,7 @@ def componentQuotientIso (e : G ≃g H) (ξ : BoundaryCondition V) (A : Configur
       apply Quotient.sound
       simp
 
-section Finite
+section
 variable [Finite V] [Finite W]
 local instance isomorphismOriginalEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance isomorphismTargetEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
@@ -148,39 +144,39 @@ local instance isomorphismTargetEdgeFintype : Fintype H.edgeSet := Fintype.ofFin
 theorem componentCount_configurationIso (e : G ≃g H) (ξ : BoundaryCondition V)
     (A : Configuration G) :
     componentCount H (boundaryConditionIso e ξ) (configurationIso e A) =
-      componentCount G ξ A := by
-  unfold componentCount
-  exact Nat.card_congr (componentQuotientIso e ξ A).symm
+      componentCount G ξ A := Nat.card_congr (componentQuotientIso e ξ A).symm
 
-theorem weight_configurationIso (q : Parameters) (e : G ≃g H)
-    (ξ : BoundaryCondition V) (A : Configuration G) :
+section
+
+variable (q : Parameters) (e : G ≃g H) (ξ : BoundaryCondition V)
+
+
+theorem weight_configurationIso  (A : Configuration G) :
     weight H q (boundaryConditionIso e ξ) (configurationIso e A) = weight G q ξ A := by
   rw [weight, weight, card_configurationIso, componentCount_configurationIso]
-  have he : Nat.card H.edgeSet = Nat.card G.edgeSet := Nat.card_congr (configurationIsoEdgeEquiv e).symm
-  rw [he]
+  
+  rw [ Nat.card_congr (configurationIsoEdgeEquiv e).symm ]
 
-theorem partitionFunction_configurationIso (q : Parameters) (e : G ≃g H)
-    (ξ : BoundaryCondition V) :
+theorem partitionFunction_configurationIso  :
     partitionFunction H q (boundaryConditionIso e ξ) = partitionFunction G q ξ := by
   unfold partitionFunction FiniteProbability.partition
   rw [← (configurationIso e).sum_comp]
   simp_rw [weight_configurationIso]
 
-theorem configurationProbability_configurationIso (q : Parameters) (e : G ≃g H)
-    (ξ : BoundaryCondition V) (A : Configuration G) :
+theorem configurationProbability_configurationIso  (A : Configuration G) :
     configurationProbability H q (boundaryConditionIso e ξ) (configurationIso e A) =
       configurationProbability G q ξ A := by
-  rw [configurationProbability, configurationProbability,
-    weight_configurationIso, partitionFunction_configurationIso]
+  simp_all [configurationProbability, weight_configurationIso, partitionFunction_configurationIso]
 
-theorem law_configurationIso_map (q : Parameters) (e : G ≃g H)
-    (ξ : BoundaryCondition V) :
+theorem law_configurationIso_map  :
     (law G q ξ).map (configurationIso e) = law H q (boundaryConditionIso e ξ) := by
   ext A
   obtain ⟨A, rfl⟩ := (configurationIso e).surjective A
   rw [FiniteProbability.map_equiv_apply, Equiv.symm_apply_apply, law_apply, law_apply,
     configurationProbability_configurationIso]
-end Finite
+
+end
+end
 
 end
 end PottsDiscontinuity.FK

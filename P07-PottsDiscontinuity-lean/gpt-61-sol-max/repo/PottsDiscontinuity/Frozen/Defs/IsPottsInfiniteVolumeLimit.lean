@@ -14,7 +14,7 @@ agree.
 @[expose] public section
 
 open MeasureTheory Filter Topology Real
-open scoped ENNReal
+
 
 namespace PottsDiscontinuity
 

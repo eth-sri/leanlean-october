@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.RibbonAttachment
 public import PottsDiscontinuity.Torus.RibbonInvariantSpace
@@ -12,11 +13,11 @@ functions. Rank-nullity then gives the exact cluster-count change.
 
 @[expose] public section
 
-open PottsDiscontinuity.SixVertex
+
 
 namespace PottsDiscontinuity.Torus
 
-open Module
+
 
 variable {N M : ℕ}
 
@@ -40,9 +41,7 @@ theorem ribbonFunctions_toggle_iff (hN : Even N) (hM : Even M)
       exact hf.2
     have hab : f a = f b := by
       have he := hfq a
-      change f (Equiv.swap a b (ribbonEdgePairing hN hM A a)) = f a at he
-      rw [hpa, Equiv.swap_apply_left] at he
-      exact he.symm
+      simp_all
     exact ⟨⟨hf.1, (cycleFunctions_swap_mul_iff _ a b f hab).mp hfq⟩, hab⟩
   · rintro ⟨hf, hab⟩
     refine ⟨hf.1, ?_⟩
@@ -63,8 +62,12 @@ def ribbonAttachmentKernelEquiv (hN : Even N) (hM : Even M)
   map_add' _ _ := Subtype.ext (Subtype.ext rfl)
   map_smul' _ _ := Subtype.ext (Subtype.ext rfl)
 
-theorem clusterCount_toggle_of_connected (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
+section
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
+include hv
+
+theorem clusterCount_toggle_of_connected 
     (h : RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
       (ribbonEndEquiv hN hM (v, true))) :
     clusterCount hN hM true (toggleEdge A v) = clusterCount hN hM true A := by
@@ -72,8 +75,7 @@ theorem clusterCount_toggle_of_connected (hN : Even N) (hM : Even M)
     ribbonDifference_eq_zero_of_connected hN hM A v h, LinearMap.ker_zero,
     finrank_top, finrank_ribbonFunctions]
 
-theorem clusterCount_toggle_of_not_connected (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
+theorem clusterCount_toggle_of_not_connected 
     (h : ¬RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
       (ribbonEndEquiv hN hM (v, true))) :
     clusterCount hN hM true (toggleEdge A v) + 1 = clusterCount hN hM true A := by
@@ -83,17 +85,15 @@ theorem clusterCount_toggle_of_not_connected (hN : Even N) (hM : Even M)
     finrank_ribbonFunctions, finrank_ribbonFunctions] at hd
   exact hd
 
-theorem clusterCount_toggle_of_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
+theorem clusterCount_toggle_of_reachable 
     (h : (diamondOpenGraph hN hM true A).Reachable
       (faceEndpoint hN hM true v false) (faceEndpoint hN hM true v true)) :
     clusterCount hN hM true (toggleEdge A v) = clusterCount hN hM true A := by
   apply clusterCount_toggle_of_connected hN hM A v hv
   apply (ribbonConnected_iff_reachable hN hM A _ _).mpr
-  simpa only [ribbonFace_end] using h
+  simp_all
 
-theorem clusterCount_toggle_of_not_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
+theorem clusterCount_toggle_of_not_reachable 
     (h : ¬(diamondOpenGraph hN hM true A).Reachable
       (faceEndpoint hN hM true v false) (faceEndpoint hN hM true v true)) :
     clusterCount hN hM true (toggleEdge A v) + 1 = clusterCount hN hM true A := by
@@ -101,5 +101,7 @@ theorem clusterCount_toggle_of_not_reachable (hN : Even N) (hM : Even M)
   intro he
   apply h
   simpa only [ribbonFace_end] using ribbonConnected_reachable hN hM A he
+
+end
 
 end PottsDiscontinuity.Torus

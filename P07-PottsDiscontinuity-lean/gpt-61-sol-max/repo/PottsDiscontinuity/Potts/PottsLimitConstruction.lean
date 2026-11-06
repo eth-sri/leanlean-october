@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.PottsBoxLaws
 
@@ -17,22 +18,20 @@ theorem potts_limit_of_cylinder_limits (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ 
       (spinCylinder q A ξ)) atTop (𝓝 (L A ξ))) :
     ∃ μ : ProbabilityMeasure (SpinSpace q), IsPottsInfiniteVolumeLimit q β i μ.toMeasure ∧
       ∀ A ξ, μ.toMeasure.real (spinCylinder q A ξ) = L A ξ := by
-  have hnonneg (A : Finset (ℤ × ℤ)) (ξ : SpinSpace q) : 0 ≤ L A ξ :=
-    ge_of_tendsto (hL A ξ) (Filter.Eventually.of_forall (fun _ => measureReal_nonneg))
-  let cyl : SpinCylinderIndex q → NNReal := fun z => ⟨L z.1 z.2, hnonneg z.1 z.2⟩
-  have hc (A : Finset (ℤ × ℤ)) (ξ : SpinSpace q) :
-      Tendsto (fun n => pottsBoxProbabilityMeasure q hq β hβ i n (spinCylinder q A ξ))
-        atTop (𝓝 (cyl (A, ξ))) := by
-    apply NNReal.tendsto_coe.mp
-    change Tendsto (fun n => ((pottsBoxProbabilityMeasure q hq β hβ i n (spinCylinder q A ξ) : NNReal) : ℝ))
-      atTop (𝓝 (L A ξ))
-    simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn] using hL A ξ
+  have hnonneg (A : Finset (ℤ × ℤ)) (ξ : SpinSpace q)  :=
+    ge_of_tendsto (hL A ξ) (Filter.Eventually.of_forall  fun _ => measureReal_nonneg )
+  
+  
   obtain ⟨μ, ⟨hweak, hcoords⟩, _⟩ :=
-    probabilityMeasures_tendsto_of_spinCylinder_tendsto q hq (pottsBoxProbabilityMeasure q hq β hβ i) cyl hc
+    probabilityMeasures_tendsto_of_spinCylinder_tendsto q hq (pottsBoxProbabilityMeasure q hq β hβ i) (fun z => ⟨L z.1 z.2, hnonneg z.1 z.2⟩)  fun A ξ => by
+                                                                                                             apply NNReal.tendsto_coe.mp
+                                                                                                             change Tendsto (fun n => ( pottsBoxProbabilityMeasure q hq β hβ i n (spinCylinder q A ξ)  : ℝ))
+                                                                                                               atTop (𝓝 (L A ξ))
+                                                                                                             simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn] using hL A ξ 
   refine ⟨μ, isPottsInfiniteVolumeLimit_of_box_tendsto q hq β hβ i μ hweak, ?_⟩
   intro A ξ
   have h := congrArg (fun x : NNReal => (x : ℝ)) (hcoords A ξ)
-  change (μ (spinCylinder q A ξ) : ℝ) = L A ξ at h
+  change (μ (spinCylinder q A ξ) ) = L A ξ at h
   simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn] using h
 
 end

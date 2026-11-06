@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.Model
 public import PottsDiscontinuity.FK.ConfigurationBridge
@@ -31,8 +32,7 @@ def frozenVertexBoundary (S : Finset (ℤ × ℤ)) : Set (S : Set (ℤ × ℤ)) 
   {x | x.val ∈ vertexBoundary S}
 
 /-- Free or wired boundary conditions, with exactly the frozen boundary vertices. -/
-def frozenBoundaryCondition (S : Finset (ℤ × ℤ)) (i : Fin 2) :
-    BoundaryCondition (S : Set (ℤ × ℤ)) :=
+def frozenBoundaryCondition (S : Finset (ℤ × ℤ)) (i : Fin 2)  :=
   if i = 0 then BoundaryCondition.free (frozenVertexBoundary S)
   else BoundaryCondition.wired (frozenVertexBoundary S)
 
@@ -43,7 +43,7 @@ theorem componentCount_wired_eq_rcWiredClusterCount (S : Finset (ℤ × ℤ))
       (boolConfigurationEquiv _ ω) = rcWiredClusterCount S ω := by
   classical
   rw [componentCount_wired_eq_boundary_avoiding, rcOpenGraph_eq]
-  unfold rcWiredClusterCount
+  
   congr 1
   exact @ite_cond_congr ℕ _ _ _ _ 1 0 rfl
 
@@ -79,14 +79,12 @@ theorem partitionFunction_eq_rcPartition (θ : Parameters) (S : Finset (ℤ × �
   refine Finset.sum_bij (fun ω _ => boolConfigurationEquiv _ ω) ?_ ?_ ?_ ?_
   · intro ω _
     simp only [Finset.mem_univ]
-  · intro ω _ η _ h
-    exact (boolConfigurationEquiv _).injective h
+  · simp_all
   · intro A _
     refine ⟨(boolConfigurationEquiv _).symm A, ?_,
       (boolConfigurationEquiv _).apply_symm_apply A⟩
     simp only [Finset.mem_univ]
-  · intro ω _
-    exact (weight_eq_rcWeight θ S i ω).symm
+  · grind [weight_eq_rcWeight]
 
 /-- Exact normalized probability bridge for arbitrary finite induced domains. -/
 theorem configurationProbability_eq_rcProb (θ : Parameters) (S : Finset (ℤ × ℤ))

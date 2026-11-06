@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -23,14 +24,17 @@ def rectangleRestriction (a : LatticeVertex) (w h : ℕ) (ω : LatticeConfigurat
   classical
   exact Finset.univ.filter fun e => ω (rectanglePrimalEdgeToSquareEdge a w h e) = true
 
-@[simp] lemma mem_rectangleRestriction (a : LatticeVertex) (w h : ℕ)
-    (ω : LatticeConfiguration) (e : (rectangleGraph a w h).edgeSet) :
+section
+
+variable (a : LatticeVertex) (w h : ℕ) (ω : LatticeConfiguration)
+
+
+@[simp] lemma mem_rectangleRestriction  (e : (rectangleGraph a w h).edgeSet) :
     e ∈ rectangleRestriction a w h ω ↔
       ω (rectanglePrimalEdgeToSquareEdge a w h e) = true := by
   simp [rectangleRestriction]
 
-lemma dual_rectangleRestriction_at (a : LatticeVertex) (w h : ℕ)
-    (ω : LatticeConfiguration) (g : (rectangleDualGraph a w h).edgeSet) :
+lemma dual_rectangleRestriction_at  (g : (rectangleDualGraph a w h).edgeSet) :
     wholePlaneDualConfigurationHomeomorph ω (rectangleDualEdgeToSquareEdge a w h g) =
       decide (g ∈ rectanglePrimalDualConfigurationEquiv a w h (rectangleRestriction a w h ω)) := by
   classical
@@ -43,15 +47,17 @@ lemma dual_rectangleRestriction_at (a : LatticeVertex) (w h : ℕ)
   simp only [mem_rectanglePrimalDualConfigurationEquiv]
   have hm := mem_rectangleRestriction a w h ω e.primalEdge
   by_cases he : e.primalEdge ∈ rectangleRestriction a w h ω
-  · have hop := hm.1 he
-    simp only [hop, Bool.not_true]
-    exact (decide_eq_false (by exact not_not.2 he)).symm
+  · 
+    simp only [ hm.1 he , Bool.not_true]
+    exact (decide_eq_false (not_not.2 he)).symm
   · have hop : ω (rectanglePrimalEdgeToSquareEdge a w h e.primalEdge) = false := by
       cases hs : ω (rectanglePrimalEdgeToSquareEdge a w h e.primalEdge)
       · rfl
       · exact (he (hm.2 hs)).elim
     simp only [hop, Bool.not_false]
-    exact (decide_eq_true (by exact he)).symm
+    exact (decide_eq_true  he ).symm
+
+end
 
 /-- Open finite graph paths remain open paths on the original lattice when
 every original sampled edge has the same state. -/
@@ -67,8 +73,7 @@ def sampledOpenGraphHom {S : Finset LatticeVertex}
     have hjv : (j e).val = s(u.val, v.val) := by rw [hj, heuv]; rfl
     have hadj : squareLattice.Adj u.val v.val := by
       apply squareLattice.mem_edgeSet.1
-      rw [← hjv]
-      exact (j e).property
+      all_goals grind
     rw [← wholePlaneOpenPrimalGraph_eq_rcInfiniteOpenGraph]
     change ∃ hadj : squareLattice.Adj u.val v.val,
       ω ⟨s(u.val, v.val), squareLattice.mem_edgeSet.2 hadj⟩ = true
@@ -79,17 +84,17 @@ def sampledOpenGraphHom {S : Finset LatticeVertex}
     exact hω e he
 
 /-- Long connections with endpoints in a specified finite vertex set. -/
-def longConnectionEvent (S : Finset LatticeVertex) (n : ℕ) : Set LatticeConfiguration :=
+def longConnectionEvent (S : Finset LatticeVertex) (n : ℕ)  :=
   {ω | ∃ u ∈ S, ∃ v ∈ S,
     (n : ℤ) ≤ |v.1 - u.1| + |v.2 - u.2| ∧ ω ∈ connectionEvent u v}
 
 lemma longConnectionEvent_measurableSet (S : Finset LatticeVertex) (n : ℕ) :
     MeasurableSet (longConnectionEvent S n) := by
-  have heq : longConnectionEvent S n = ⋃ u ∈ S, ⋃ v ∈ S,
-      if (n : ℤ) ≤ |v.1 - u.1| + |v.2 - u.2| then connectionEvent u v else ∅ := by
-    ext ω
-    simp [longConnectionEvent, and_left_comm]
-  rw [heq]
+  
+  rw [(by
+         ext ω
+         simp [longConnectionEvent, and_left_comm] : longConnectionEvent S n = ⋃ u ∈ S, ⋃ v ∈ S,
+      if (n ) ≤ |v.1 - u.1| + |v.2 - u.2| then connectionEvent u v else ∅)]
   apply MeasurableSet.iUnion
   intro u
   apply MeasurableSet.iUnion
@@ -109,7 +114,7 @@ theorem planar_long_connection_alternative (ω : LatticeConfiguration)
     ω ∈ longConnectionEvent (latticeRectangle a n n) n ∨
       wholePlaneDualConfigurationHomeomorph ω ∈
         longConnectionEvent (rectangleDualExpanded a n n) n := by
-  classical
+  
   let A := rectangleRestriction a n n ω
   by_cases hc : A ∈ rectangleHorizontalCrossingEvent a n n
   · left
@@ -117,35 +122,27 @@ theorem planar_long_connection_alternative (ω : LatticeConfiguration)
     refine ⟨u.val, u.property, v.val, v.property, ?_, ?_⟩
     · have hux := (Finset.mem_filter.1 hu).2
       have hvx := (Finset.mem_filter.1 hv).2
-      change u.val.1 = a.1 at hux
-      change v.val.1 = a.1 + (n : ℤ) at hvx
-      rw [hux, hvx, add_sub_cancel_left, abs_of_nonneg (Nat.cast_nonneg _)]
-      exact le_add_of_nonneg_right (abs_nonneg _)
-    · let j : (rectangleGraph a n n).edgeSet ↪ squareLattice.edgeSet :=
-        frozenEdgeEmbedding (latticeRectangle a n n)
-      let f := sampledOpenGraphHom (rectangleGraph a n n) j (fun _ => rfl) A ω
-        (fun e he => (mem_rectangleRestriction a n n ω e).1 he)
-      exact hconn.map f
+      simp_all
+    · 
+       
+      exact hconn.map (sampledOpenGraphHom (rectangleGraph a n n) (frozenEdgeEmbedding (latticeRectangle a n n)) (fun _ => rfl) A ω
+                          fun e he => (mem_rectangleRestriction a n n ω e).1 he)
   · right
     obtain ⟨b, hb, t, ht, hconn⟩ := (rectangle_crossing_duality a n n A).1 hc
     refine ⟨b.val, b.property, t.val, t.property, ?_, ?_⟩
     · obtain ⟨i, hi, rfl⟩ := Finset.mem_image.1 hb
       obtain ⟨j, hj, rfl⟩ := Finset.mem_image.1 ht
-      change (n : ℤ) ≤ |(a.1 + ((min j n : ℕ) : ℤ)) -
-        (a.1 + ((min i n : ℕ) : ℤ))| + |(a.2 + (n : ℤ)) - (a.2 - 1)|
-      have heq : (a.2 + (n : ℤ)) - (a.2 - 1) = (n : ℤ) + 1 := by ring
-      rw [heq, abs_of_nonneg (by omega : 0 ≤ (n : ℤ) + 1)]
-      have := abs_nonneg ((a.1 + ((min j n : ℕ) : ℤ)) -
-        (a.1 + ((min i n : ℕ) : ℤ)))
-      omega
-    · let B := rectanglePrimalDualConfigurationEquiv a n n A
-      let f := sampledOpenGraphHom (rectangleDualGraph a n n)
-        (rectangleDualEdgeToSquareEdge a n n) (fun _ => rfl) B
-        (wholePlaneDualConfigurationHomeomorph ω) (by
-          intro e he
-          rw [dual_rectangleRestriction_at a n n ω e, decide_eq_true_eq]
-          exact he)
-      exact hconn.map f
+      change  n  ≤ |(a.1 +   min j n  ) -
+        (a.1 +   min i n  )| + |(a.2 +  n ) - (a.2 - 1)|
+      grind
+    · 
+      
+      exact hconn.map (sampledOpenGraphHom (rectangleDualGraph a n n)
+                         (rectangleDualEdgeToSquareEdge a n n) (fun _ => rfl) (rectanglePrimalDualConfigurationEquiv a n n A)
+                         (wholePlaneDualConfigurationHomeomorph ω) (by
+                           intro e he
+                           rw [dual_rectangleRestriction_at a n n ω e, decide_eq_true_eq]
+                           exact he))
 
 end
 end PottsDiscontinuity.Duality

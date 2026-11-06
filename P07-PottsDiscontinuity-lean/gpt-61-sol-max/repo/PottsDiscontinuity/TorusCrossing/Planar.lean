@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusCrossing.EndGraph
 
@@ -37,33 +38,33 @@ def cells : Finset Cell := Finset.Icc R.x0 (R.x0 + R.w) ×ˢ Finset.Icc R.y0 (R.
 def inner : Finset Cell := Finset.Icc (R.x0 + 1) (R.x0 + R.w) ×ˢ Finset.Icc (R.y0 + 1) (R.y0 + R.h)
 
 /-- Primal cells of the board. -/
-def pcells : Finset Cell := R.cells.filter (fun c => IsPrimal c)
+def pcells  := R.cells.filter  IsPrimal 
 
 /-- Odd (dual) cells of the board. -/
-def dcells : Finset Cell := R.cells.filter (fun c => ¬ IsPrimal c)
+def dcells  := R.cells.filter  fun c => ¬ IsPrimal c 
 
 variable {R}
 
 theorem mem_cells {c : Cell} :
     c ∈ R.cells ↔ R.x0 ≤ c.1 ∧ c.1 ≤ R.x0 + R.w ∧ R.y0 ≤ c.2 ∧ c.2 ≤ R.y0 + R.h := by
-  unfold cells; simp only [Finset.mem_product, Finset.mem_Icc]; tauto
+  grind +locals
 
 theorem mem_inner {m : Cell} :
     m ∈ R.inner ↔ R.x0 + 1 ≤ m.1 ∧ m.1 ≤ R.x0 + R.w ∧ R.y0 + 1 ≤ m.2 ∧ m.2 ≤ R.y0 + R.h := by
-  unfold inner; simp only [Finset.mem_product, Finset.mem_Icc]; tauto
+  grind +locals
 
 theorem mem_pcells {c : Cell} : c ∈ R.pcells ↔ c ∈ R.cells ∧ IsPrimal c := by
-  unfold pcells; simp [Finset.mem_filter]
+  unfold pcells; simp 
 
 theorem mem_dcells {c : Cell} : c ∈ R.dcells ↔ c ∈ R.cells ∧ ¬ IsPrimal c := by
-  unfold dcells; simp [Finset.mem_filter]
+  unfold dcells; simp 
 
 theorem pData (R : Rect) : EndData primalEnds R.pcells R.inner where
   mem m hm := by
     rw [mem_inner] at hm
     refine ⟨mem_pcells.2 ⟨mem_cells.2 ?_, primalEnds_fst_primal m⟩,
       mem_pcells.2 ⟨mem_cells.2 ?_, primalEnds_snd_primal m⟩⟩ <;>
-    · unfold primalEnds; split_ifs <;> dsimp only <;> omega
+    · grind [primalEnds]
   ne := primalEnds_ne
   inj _ _ h := primalEnds_inj h
 
@@ -72,21 +73,21 @@ theorem dData (R : Rect) : EndData dualEnds R.dcells R.inner where
     rw [mem_inner] at hm
     refine ⟨mem_dcells.2 ⟨mem_cells.2 ?_, dualEnds_fst_not_primal m⟩,
       mem_dcells.2 ⟨mem_cells.2 ?_, dualEnds_snd_not_primal m⟩⟩ <;>
-    · unfold dualEnds; split_ifs <;> dsimp only <;> omega
+    · grind [dualEnds]
   ne := dualEnds_ne
   inj _ _ h := dualEnds_inj h
 
 variable (R)
 
 /-- The primal board graph. -/
-abbrev pG : SimpleGraph R.pcells := endGraph primalEnds R.pcells R.inner
+abbrev pG  := endGraph primalEnds R.pcells R.inner
 
 /-- The dual board graph. -/
-abbrev dG : SimpleGraph R.dcells := endGraph dualEnds R.dcells R.inner
+abbrev dG  := endGraph dualEnds R.dcells R.inner
 
 /-- Wiring of the bottom row of primal cells and, separately, of the top row. -/
-def sepRel (a b : R.pcells) : Prop :=
-  a = b ∨ (a.1.2 = R.y0 ∧ b.1.2 = R.y0) ∨ (a.1.2 = R.y0 + R.h ∧ b.1.2 = R.y0 + R.h)
+def sepRel (a b : R.pcells)  :=
+  a = b ∨  a.1.2 = R.y0 ∧ b.1.2 = R.y0  ∨  a.1.2 = R.y0 + R.h ∧ b.1.2 = R.y0 + R.h 
 
 /-- Boundary condition with the bottom row and top row wired separately. -/
 def sepBC : FK.BoundaryCondition R.pcells where
@@ -96,27 +97,11 @@ def sepBC : FK.BoundaryCondition R.pcells where
       iseqv :=
         { refl := fun a => Or.inl rfl
           symm := by
-            rintro a b (h | h | h)
-            · exact Or.inl h.symm
-            · exact Or.inr (Or.inl ⟨h.2, h.1⟩)
-            · exact Or.inr (Or.inr ⟨h.2, h.1⟩)
+            grind +locals
           trans := by
-            rintro a b c (h | h | h) (h' | h' | h')
-            · exact Or.inl (h.trans h')
-            · subst h; exact Or.inr (Or.inl h')
-            · subst h; exact Or.inr (Or.inr h')
-            · subst h'; exact Or.inr (Or.inl h)
-            · exact Or.inr (Or.inl ⟨h.1, h'.2⟩)
-            · exact Or.inr (Or.inr ⟨by omega, h'.2⟩)
-            · subst h'; exact Or.inr (Or.inr h)
-            · exact Or.inr (Or.inl ⟨by omega, h'.2⟩)
-            · exact Or.inr (Or.inr ⟨h.1, h'.2⟩) }}
+            grind +locals }}
   supported := by
-    intro a b h
-    rcases h with h | h | h
-    · exact Or.inl h
-    · exact Or.inr ⟨Or.inl h.1, Or.inl h.2⟩
-    · exact Or.inr ⟨Or.inr h.1, Or.inr h.2⟩
+    grind +locals
 
 end Rect
 

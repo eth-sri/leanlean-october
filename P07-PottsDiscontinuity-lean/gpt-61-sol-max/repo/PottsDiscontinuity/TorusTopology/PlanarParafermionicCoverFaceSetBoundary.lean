@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Adaptation: Namespace and import relocation only. -/
 module
+public import Mathlib
 
 public import Mathlib.Tactic
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceChainUniqueness
@@ -25,10 +26,7 @@ private theorem faceSymmDiffList_even_degree {V I : Type*} [Fintype V]
   intro L
   induction L with
   | nil =>
-    intro v
-    let : LocallyFinite (faceSymmDiffList F []) :=
-      coverFaceSetLocallyFinite (faceSymmDiffList F [])
-    simp [faceSymmDiffList]
+    simp_all [faceSymmDiffList]
   | cons i L ih =>
     intro v
     let : LocallyFinite (F i) := coverFaceSetLocallyFinite (F i)
@@ -36,15 +34,14 @@ private theorem faceSymmDiffList_even_degree {V I : Type*} [Fintype V]
       coverFaceSetLocallyFinite (faceSymmDiffList F L)
     let : LocallyFinite (F i ∆ faceSymmDiffList F L) :=
       coverFaceSetLocallyFinite (F i ∆ faceSymmDiffList F L)
-    have hFi : ∀ v, Even ((F i).degree v) := by
-      intro w
-      simpa only [SimpleGraph.ncard_neighborSet] using hF i w
-    have htail : ∀ v, Even ((faceSymmDiffList F L).degree v) := by
-      intro w
-      simpa only [SimpleGraph.ncard_neighborSet] using ih w
-    have hdegree := degree_even_symmDiff (F i) (faceSymmDiffList F L) hFi htail v
+    
+    
+    
     change Even ((F i ∆ faceSymmDiffList F L).neighborSet v).ncard
-    simpa only [SimpleGraph.ncard_neighborSet] using hdegree
+    simpa only [SimpleGraph.ncard_neighborSet] using  degree_even_symmDiff (F i) (faceSymmDiffList F L) (by
+                                                                                                                           intro w
+                                                                                                                           simpa only [SimpleGraph.ncard_neighborSet] using hF i w) (by
+                                                                                                                               simp_all) v 
 
 noncomputable def parafermionicCoverFiniteFaceSetBoundaryGraph {n : ℕ}
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
@@ -52,65 +49,52 @@ noncomputable def parafermionicCoverFiniteFaceSetBoundaryGraph {n : ℕ}
   faceSymmDiffList
     (fun i => parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2) S.toList
 
-theorem parafermionicCoverFiniteFaceSetBoundaryGraph_even_degree {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
+section
+
+variable {n : ℕ} (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
+include S
+
+theorem parafermionicCoverFiniteFaceSetBoundaryGraph_even_degree  :
     ∀ v : ParafermionicCoverBoxVertex n,
       Even ((parafermionicCoverFiniteFaceSetBoundaryGraph S).neighborSet v).ncard := by
-  classical
+  
   intro v
   let F : ParafermionicCoverFiniteFaceTopIndex n →
       SimpleGraph (ParafermionicCoverBoxVertex n) :=
     fun i => parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2
-  have hF : ∀ i v, Even ((F i).neighborSet v).ncard := by
-    intro i v
-    have he := parafermionicCoverFiniteFaceBoundaryGraph_even_degree i.1 i.2 v
-    simpa only [F, parafermionicCoverFiniteFaceBoundaryDegree,
-      SimpleGraph.ncard_neighborSet] using he
-  have h := faceSymmDiffList_even_degree F hF S.toList v
-  simpa only [parafermionicCoverFiniteFaceSetBoundaryGraph, F] using h
+  
+  have h := faceSymmDiffList_even_degree F (by
+                                              intro i v
+                                              
+                                              simpa only [parafermionicCoverFiniteFaceBoundaryDegree] using (parafermionicCoverFiniteFaceBoundaryGraph_even_degree i.1 i.2 v)) S.toList v
+  simpa only [parafermionicCoverFiniteFaceSetBoundaryGraph] using h
 
-theorem parafermionicCoverFiniteFaceSetBoundaryGraph_eq_bot_iff {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
+theorem parafermionicCoverFiniteFaceSetBoundaryGraph_eq_bot_iff  :
     parafermionicCoverFiniteFaceSetBoundaryGraph S = ⊥ ↔ S = ∅ := by
-  classical
+  
   constructor
   · intro h
-    have hEq : faceSymmDiffList
-        (fun i : ParafermionicCoverFiniteFaceTopIndex n =>
-          parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2) S.toList =
-        faceSymmDiffList
-          (fun i : ParafermionicCoverFiniteFaceTopIndex n =>
-            parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2) [] := by
-      simpa [parafermionicCoverFiniteFaceSetBoundaryGraph, faceSymmDiffList] using h
-    have hsets := parafermionicCoverFiniteFaceChain_toFinset_unique
-      S.toList [] S.nodup_toList List.nodup_nil hEq
+    
+    
     rw [← Finset.toList_toFinset S]
-    exact hsets
-  · rintro rfl
-    simp [parafermionicCoverFiniteFaceSetBoundaryGraph, faceSymmDiffList]
+    exact  parafermionicCoverFiniteFaceChain_toFinset_unique
+             S.toList [] S.nodup_toList List.nodup_nil (h) 
+  · simp_all [parafermionicCoverFiniteFaceSetBoundaryGraph, faceSymmDiffList]
 
-theorem parafermionicCoverFiniteFaceSetBoundaryGraph_ne_bot_iff {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
+theorem parafermionicCoverFiniteFaceSetBoundaryGraph_ne_bot_iff  :
     parafermionicCoverFiniteFaceSetBoundaryGraph S ≠ ⊥ ↔ S.Nonempty := by
-  constructor
-  · intro hne
-    have hsne : S ≠ ∅ := by
-      intro hS
-      apply hne
-      exact (parafermionicCoverFiniteFaceSetBoundaryGraph_eq_bot_iff S).mpr hS
-    exact Finset.nonempty_iff_ne_empty.mpr hsne
-  · intro hS hbot
-    have hEq := (parafermionicCoverFiniteFaceSetBoundaryGraph_eq_bot_iff S).mp hbot
-    exact (Finset.nonempty_iff_ne_empty.mp hS) hEq
+  grind [parafermionicCoverFiniteFaceSetBoundaryGraph_eq_bot_iff]
 
 theorem parafermionicCoverFiniteFaceSetBoundaryGraph_coefficient_ne_zero_iff
-    {n : ℕ} (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
+    
     (u v : ParafermionicCoverBoxVertex n) :
     parafermionicCoverFaceBoundaryCoefficient S u v ≠ 0 ↔
       s(u,v) ∈ (parafermionicCoverFiniteFaceSetBoundaryGraph S).edgeSet := by
-  classical
-  unfold parafermionicCoverFiniteFaceSetBoundaryGraph
+  
+  
   exact parafermionicCoverFaceBoundaryCoefficient_ne_zero_iff
     S S.toList S.nodup_toList (by simp) u v
+
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

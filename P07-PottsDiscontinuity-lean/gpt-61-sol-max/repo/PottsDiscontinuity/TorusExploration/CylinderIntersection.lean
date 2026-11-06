@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.RibbonIntersection
 public import PottsDiscontinuity.Torus.DiamondFullFlows
@@ -13,10 +14,15 @@ open PottsDiscontinuity.SixVertex
 variable {N M : ℕ}
 
 /-- Read an actual full-torus indexed chain coefficient. -/
-def fullFlowAt (f : OpenDiamondEdge (openRCConfig N M) → ℚ) (v : Fin N × Fin M) : ℚ :=
+def fullFlowAt (f : OpenDiamondEdge (openRCConfig N M) → ℚ) (v : Fin N × Fin M)  :=
   f ⟨v,rfl⟩
 
-lemma full_halfFlow_corner (hN : Even N) (hM : Even M)
+section
+
+variable (hN : Even N) (hM : Even M)
+
+
+lemma full_halfFlow_corner 
     (f : OpenDiamondEdge (openRCConfig N M) → ℚ)
     (v : FaceVertex N M true) (p : Port) :
     ribbonHalfFlow hN hM (openRCConfig N M) f (ribbonCornerEquiv hN hM (v,p)) =
@@ -25,11 +31,9 @@ lemma full_halfFlow_corner (hN : Even N) (hM : Even M)
       | .north => fullFlowAt f (nxt v.val.1,v.val.2)
       | .west => -fullFlowAt f (nxt v.val.1,nxt v.val.2)
       | .south => -fullFlowAt f (v.val.1,nxt v.val.2) := by
-  cases p <;> simp only [ribbonHalfFlow_raw,ribbonCornerEquiv_val,faceCorner,
-    ribbonEndSide,extendDiamondChain,openRCConfig,fullFlowAt,
-    Bool.false_eq_true,ite_true,ite_false] <;> rfl
+  bound
 
-lemma full_primitive_raw (hN : Even N) (hM : Even M)
+lemma full_primitive_raw 
     (f : diamondCycleSpace hN hM (openRCConfig N M))
     (d : DirectedDart (checkerArrows N M)) :
     ribbonCornerPrimitive hN hM (openRCConfig N M) f d =
@@ -42,11 +46,10 @@ lemma full_primitive_raw (hN : Even N) (hM : Even M)
   obtain ⟨⟨v,p⟩,rfl⟩ := (ribbonCornerEquiv hN hM).surjective d
   rw [ribbonCornerPrimitive_corner]
   simp_rw [full_halfFlow_corner]
-  cases p <;> simp only [cornerPrimitiveValue,ribbonCornerEquiv_val,faceCorner,leftFace,
-    nxt,prv,Equiv.symm_apply_apply,sub_neg_eq_add]
+  cases p <;> simp only [cornerPrimitiveValue, ribbonCornerEquiv_val, faceCorner, leftFace, Equiv.symm_apply_apply, sub_neg_eq_add]
 
 /-- The coefficient only samples the indexed edge immediately below e. -/
-theorem full_intersectionCoefficient_eq_below (hN : Even N) (hM : Even M)
+theorem full_intersectionCoefficient_eq_below 
     (f : diamondCycleSpace hN hM (openRCConfig N M))
     (e : OpenDiamondEdge (openRCConfig N M)) :
     ribbonIntersectionCoefficient hN hM (openRCConfig N M) f e =
@@ -54,8 +57,8 @@ theorem full_intersectionCoefficient_eq_below (hN : Even N) (hM : Even M)
   unfold ribbonIntersectionCoefficient
   rw [full_primitive_raw,full_primitive_raw]
   cases hc : checker e.val <;>
-    simp only [ribbonEndEquiv_val,ribbonEnd,hc,Bool.false_eq_true,ite_false,ite_true,
-      leftFace,fullFlowAt,nxt,prv,Equiv.apply_symm_apply,
-      neg_one_mul,one_mul] <;> ring
+    simp only [ribbonEndEquiv_val, ribbonEnd, hc, Bool.false_eq_true, ite_false, ite_true, leftFace, fullFlowAt, Equiv.apply_symm_apply] <;> ring
+
+end
 
 end PottsDiscontinuity.TorusExploration

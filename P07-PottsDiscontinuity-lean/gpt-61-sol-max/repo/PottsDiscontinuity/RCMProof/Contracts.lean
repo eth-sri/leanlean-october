@@ -31,17 +31,17 @@ open Torus
 
 noncomputable def torusLoopWeightFactor {N M : ℕ} (hN : Even N) (hM : Even M)
     (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N) (hMpos : 0 < M)
-    (A : Torus.RCConfig N M) : ℝ :=
+    (A : Torus.RCConfig N M)  :=
   Real.rpow (2 / Real.sqrt q.val)
       (TorusLoops.windingLoopCount hN hM ⟨0, hNpos⟩ ⟨0, hMpos⟩ A : ℝ) *
     Real.rpow q.val (-(Torus.rcNetIndicator hN hM A : ℝ))
 
 noncomputable def torusWeightedRCMass {N M : ℕ} (hN : Even N) (hM : Even M)
     (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N) (hMpos : 0 < M)
-    (A : Torus.RCConfig N M) : ℝ :=
+    (A : Torus.RCConfig N M)  :=
   Torus.torusRCWeight hN hM q A * torusLoopWeightFactor hN hM q hNpos hMpos A
 
-noncomputable def torusCorrespondenceScale (q : Set.Ici (1 : ℝ)) (N M : ℕ) : ℝ :=
+noncomputable def torusCorrespondenceScale (q : Set.Ici (1 : ℝ)) (N M : ℕ)  :=
   Real.rpow q.val ((N * M : ℝ) / 4) *
     Real.rpow (1 + Real.sqrt q.val) (-(N * M : ℝ))
 
@@ -50,42 +50,42 @@ noncomputable def criticalSixVertexParameter (q : Set.Ici (1 : ℝ)) : ℝ :=
 
 /- Provider statement for Corollary 3.13(i) of the torus correspondence (`Torus/`), with the
 project's fixed homological ell₀ and net indicator. Proved as `contract_cor313_i_proved`. -/
-def contract_cor313_i : Prop :=
+def contract_cor313_i  :=
   ∀ (q : Set.Ici (1 : ℝ)) (_hq : 4 < q.val) (N M : ℕ)
     (hN : Even N) (hM : Even M) (hNpos : 0 < N) (hMpos : 0 < M),
-      (∑ A : Torus.RCConfig N M, torusWeightedRCMass hN hM q hNpos hMpos A) =
+       ∑ A : Torus.RCConfig N M, torusWeightedRCMass hN hM q hNpos hMpos A  =
         torusCorrespondenceScale q N M *
           SixVertex.Z6V (criticalSixVertexParameter q) N M
 
 /- Provider statement for Corollary 3.13(ii) of the torus correspondence (`Torus/`).
 Proved as `contract_cor313_ii_proved`. -/
-def contract_cor313_ii : Prop :=
+def contract_cor313_ii  :=
   ∀ (q : Set.Ici (1 : ℝ)) (_hq : 4 < q.val) (N M : ℕ)
     (hN : Even N) (hM : Even M) (hNpos : 0 < N) (hMpos : 0 < M),
-      (∑ A ∈ Finset.univ.filter
-        (fun A : Torus.RCConfig N M =>
-          Torus.rcVerticalWinding hN hM ⟨0, hMpos⟩ A = 1),
-        torusWeightedRCMass hN hM q hNpos hMpos A) ≤
+       ∑ A ∈ Finset.univ.filter
+         fun A : Torus.RCConfig N M =>
+          Torus.rcVerticalWinding hN hM ⟨0, hMpos⟩ A = 1 ,
+        torusWeightedRCMass hN hM q hNpos hMpos A  ≤
         4 * torusCorrespondenceScale q N M *
           SixVertex.Z6Vr (criticalSixVertexParameter q) N M 1
 
 /- Provider statement for Corollary 3.13(iii) of the torus correspondence (`Torus/`).
 Proved as `contract_cor313_iii_proved`. -/
-def contract_cor313_iii : Prop :=
+def contract_cor313_iii  :=
   ∀ (q : Set.Ici (1 : ℝ)) (_hq : 4 < q.val) (r N M : ℕ)
     (_hr : 1 ≤ r) (hN : Even N) (hM : Even M)
     (hNpos : 0 < N) (hMpos : 0 < M),
       torusCorrespondenceScale q N M *
         SixVertex.Z6Vr (criticalSixVertexParameter q) N M r ≤
       ∑ A ∈ Finset.univ.filter
-        (fun A : Torus.RCConfig N M =>
-          r ≤ Torus.rcVerticalWinding hN hM ⟨0, hMpos⟩ A),
+         fun A : Torus.RCConfig N M =>
+          r ≤ Torus.rcVerticalWinding hN hM ⟨0, hMpos⟩ A ,
         torusWeightedRCMass hN hM q hNpos hMpos A
 
 /- Provider statement for (3.15), copied from `TorusRC.Eq315.eq315`. Its
 explicit input is equation (3.19), `h319`; its rate is the canonical unique
 rotated-free-limit rate, and its width sequence is divisible by eight. -/
-def contract_eq315 : Prop :=
+def contract_eq315  :=
   ∀ (q : Set.Ici (1 : ℝ)), TorusRC.h319 q →
       ((-TorusRC.inverseCorrelationLength q : ℝ) : EReal) ≤
         TorusRC.torusRCUOneIteratedLiminf q
@@ -94,12 +94,12 @@ def contract_eq315 : Prop :=
 (3.19) in `TorusRC/CrossingContracts.lean`. It is proved by `TorusCrossing.h319_proved`
 (`TorusCrossing/Final.lean`); it is kept separate from the implication-shaped exact eq315
 statement above. -/
-def contract_h319 : Prop :=
+def contract_h319  :=
   ∀ (q : Set.Ici (1 : ℝ)), TorusRC.h319 q
 
 /- Provider statement for (3.16), proved as `TorusExploration.contract_eq316` in
 `TorusExploration/Contract.lean`, with the same free-limit rate convention as (3.15). -/
-def contract_eq316 : Prop :=
+def contract_eq316  :=
   ∀ (q : Set.Ici (1 : ℝ))
     (μ : MeasureTheory.Measure PottsDiscontinuity.FK.LatticeConfiguration)
     (_hμ : PottsDiscontinuity.IsRCInfiniteVolumeLimit
@@ -112,7 +112,7 @@ def contract_eq316 : Prop :=
     (r : ℕ) (_hr : 1 ≤ r),
       Filter.limsup
         (fun n : ℕ => Filter.limsup
-          (fun m : ℕ => TorusRC.positiveEvenVerticalTailRateE q r n m) Filter.atTop)
+          ((TorusRC.positiveEvenVerticalTailRateE q r n)) Filter.atTop)
         Filter.atTop ≤ (-((r - 1 : ℕ) : ℝ) * ξinv : ℝ)
 
 /- Corrected provider statement for Lemma 3.14, copied from

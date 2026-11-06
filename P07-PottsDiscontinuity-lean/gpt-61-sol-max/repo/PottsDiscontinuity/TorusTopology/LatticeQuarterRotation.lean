@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusTopology.LatticeSequenceWalk
 
@@ -10,7 +11,7 @@ namespace PottsDiscontinuity.TorusTopology
 open Planar.Medial
 
 /-- Positive quarter rotation of the integer plane. -/
-def latticeQuarterRotation (z : ℤ × ℤ) : ℤ × ℤ := (-z.2,z.1)
+def latticeQuarterRotation (z : ℤ × ℤ)  := (-z.2,z.1)
 
 lemma latticeQuarterRotation_injective : Function.Injective latticeQuarterRotation := by
   intro u v h
@@ -33,36 +34,35 @@ lemma latticeQuarterRotation_adj (u v : ℤ × ℤ) :
 lemma squareDartCompass_quarterRotation {u v : ℤ × ℤ} (h : FK.squareLattice.Adj u v) :
     squareDartCompass ⟨⟨latticeQuarterRotation u,latticeQuarterRotation v⟩,
       (latticeQuarterRotation_adj u v).mpr h⟩ = squareDartCompass ⟨⟨u,v⟩,h⟩+1 := by
-  have hh := (FK.squareLattice_adj_iff u v).mp h
-  rcases hh with ⟨hx|hx,hy⟩ | ⟨hx,hy|hy⟩
+  
+  rcases  (FK.squareLattice_adj_iff u v).mp h  with ⟨hx|hx,hy⟩ | ⟨hx,hy|hy⟩
   all_goals
-    dsimp only [squareDartCompass,latticeQuarterRotation]
-    simp only [neg_lt_neg_iff]
-    split_ifs <;> norm_num <;> omega
+    grind [squareDartCompass, latticeQuarterRotation]
 
 lemma primalCompassQuarterTurn_add_one (a b : Fin 4) :
     primalCompassQuarterTurn (a+1) (b+1) = primalCompassQuarterTurn a b := by
   fin_cases a <;> fin_cases b <;> decide
 
-lemma sequenceCompass_quarterRotation (f : ℕ → ℤ × ℤ)
-    (h : ∀ n, FK.squareLattice.Adj (f n) (f (n+1))) (n : ℕ) :
+section
+
+variable (f : ℕ → ℤ × ℤ) (h : ∀ n, FK.squareLattice.Adj (f n) (f (n+1)))
+include h
+
+lemma sequenceCompass_quarterRotation  (n : ℕ) :
     sequenceCompass (fun n => latticeQuarterRotation (f n))
       (fun n => (latticeQuarterRotation_adj _ _).mpr (h n)) n =
-      sequenceCompass f h n+1 := by
-  exact squareDartCompass_quarterRotation (h n)
+      sequenceCompass f h n+1 := squareDartCompass_quarterRotation (h n)
 
-lemma sum_sequenceTurn_quarterRotation (f : ℕ → ℤ × ℤ)
-    (h : ∀ n, FK.squareLattice.Adj (f n) (f (n+1))) (L : ℕ) :
-    (∑ n ∈ Finset.range L, primalCompassQuarterTurn
+lemma sum_sequenceTurn_quarterRotation  (L : ℕ) :
+     ∑ n ∈ Finset.range L, primalCompassQuarterTurn
       (sequenceCompass (fun n => latticeQuarterRotation (f n))
         (fun n => (latticeQuarterRotation_adj _ _).mpr (h n)) n)
       (sequenceCompass (fun n => latticeQuarterRotation (f n))
-        (fun n => (latticeQuarterRotation_adj _ _).mpr (h n)) (n+1))) =
+        (fun n => (latticeQuarterRotation_adj _ _).mpr (h n)) (n+1))  =
     ∑ n ∈ Finset.range L, primalCompassQuarterTurn (sequenceCompass f h n)
       (sequenceCompass f h (n+1)) := by
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [sequenceCompass_quarterRotation,sequenceCompass_quarterRotation,
-    primalCompassQuarterTurn_add_one]
+  simp_all [sequenceCompass_quarterRotation, primalCompassQuarterTurn_add_one]
+
+end
 
 end PottsDiscontinuity.TorusTopology

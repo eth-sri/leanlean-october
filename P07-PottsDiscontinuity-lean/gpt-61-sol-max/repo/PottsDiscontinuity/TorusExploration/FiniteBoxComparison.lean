@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -14,15 +15,15 @@ namespace PottsDiscontinuity.TorusExploration
 open FK FK.FiniteProbability MeasureTheory
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
-open scoped Classical
+
 local instance finiteBoxComparisonEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-attribute [local instance] configurationMeasurableSpace
+
 
 lemma fk_measureReal_eq_expectation (θ : Parameters) (ξ : BoundaryCondition V)
     (E : Set (Configuration G)) :
     (measure G θ ξ E).toReal = expectation (law G θ ξ) (E.indicator fun _ => (1 : ℝ)) := by
   rw [measure_toReal_eq_indicator_sum]
-  unfold expectation
+  
   apply Finset.sum_congr rfl
   intro A _
   rw [law_apply,ENNReal.toReal_ofReal (configurationProbability_pos G θ ξ A).le]
@@ -75,36 +76,36 @@ theorem finiteFree_event_le_box (θ : Parameters) (f : V ↪ LatticeVertex)
     (measure G θ (BoundaryCondition.free ∅) E).toReal ≤
       (boxProbabilityMeasure θ (0,0) n : Measure LatticeConfiguration).real
         (embeddedCylinderEvent G f hG E) := by
-  let I := E.indicator (fun _ => (1 : ℝ))
+  let I := E.indicator  fun _ => (1 : ℝ) 
   have hI0 (A) : 0 ≤ I A := by by_cases ha : A ∈ E <;> simp [I,ha]
-  have hI : Monotone I := by
-    intro A B hAB
-    by_cases ha : A ∈ E
-    · have hb := hE hAB ha
-      simp [I,ha,hb]
-    · simpa [I,ha] using hI0 B
-  have hc := embedded_free_expectation_le G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
-    (embeddedBox_graph_le G f hG n h) θ ∅ ∅ I hI0 hI
+  
+  
   rw [fk_measureReal_eq_expectation] 
-  refine hc.trans ?_
-  have hm := expectation_mono (law (boxGraph (0,0) n) θ (BoundaryCondition.free ∅))
-    (fun A => I (embeddedConfigurationRestriction G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
-      (embeddedBox_graph_le G f hG n h) A))
-    (fun A => (embeddedCylinderEvent G f hG E).indicator (fun _ => (1 : ℝ))
-      (boxConfiguration (0,0) n A)) (by
-        intro A
-        by_cases ha : embeddedConfigurationRestriction G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
-          (embeddedBox_graph_le G f hG n h) A ∈ E
-        · have hb := embeddedBox_mem_cylinder G f hG n h E A ha
-          simp [I,ha,hb]
-        · simp only [I,Set.indicator_of_notMem ha]
-          by_cases hb : boxConfiguration (0,0) n A ∈ embeddedCylinderEvent G f hG E <;>
-            simp [hb])
-  refine hm.trans_eq ?_
+  refine (embedded_free_expectation_le G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
+            (embeddedBox_graph_le G f hG n h) θ ∅ ∅ I hI0 (by
+                                                             intro A B hAB
+                                                             by_cases ha : A ∈ E
+                                                             · 
+                                                               simp [I,ha,(hE hAB ha)]
+                                                             · simpa [I,ha] using hI0 B)).trans ?_
+  
+  refine (expectation_mono (law (boxGraph (0,0) n) θ (BoundaryCondition.free ∅))
+            (fun A => I (embeddedConfigurationRestriction G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
+              (embeddedBox_graph_le G f hG n h) A))
+            (fun A => (embeddedCylinderEvent G f hG E).indicator (fun _ => 1)
+              (boxConfiguration (0,0) n A)) (by
+                intro A
+                by_cases ha : embeddedConfigurationRestriction G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
+                  (embeddedBox_graph_le G f hG n h) A ∈ E
+                · 
+                  simp [I,ha,(embeddedBox_mem_cylinder G f hG n h E A ha)]
+                · simp only [I,Set.indicator_of_notMem ha]
+                  by_cases hb : boxConfiguration (0,0) n A ∈ embeddedCylinderEvent G f hG E <;>
+                    simp [hb])).trans_eq ?_
   have hb : (boxProbabilityMeasure θ (0,0) n : Measure LatticeConfiguration)
       (embeddedCylinderEvent G f hG E) =
       measure (boxGraph (0,0) n) θ (BoundaryCondition.free ∅)
-        ((boxConfiguration (0,0) n) ⁻¹' embeddedCylinderEvent G f hG E) := by
+        ( boxConfiguration (0,0) n  ⁻¹' embeddedCylinderEvent G f hG E) := by
     change ((law (boxGraph (0,0) n) θ (BoundaryCondition.free ∅)).map _).toMeasure _ = _
     rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top
       (embeddedCylinderEvent_isClopen G f hG E).isOpen.measurableSet]

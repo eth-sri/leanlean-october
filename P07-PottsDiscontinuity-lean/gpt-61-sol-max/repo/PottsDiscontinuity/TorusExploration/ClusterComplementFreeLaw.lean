@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusExploration.MultiSeedClusterExploration
 public import PottsDiscontinuity.FK.BoundaryPartitionLaw
@@ -12,23 +13,23 @@ namespace PottsDiscontinuity.FK
 noncomputable section
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 local instance complementFreeEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
-local instance complementFreeEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
+
 
 lemma no_revealed_open_edge_at_cluster_complement (S : Finset V) (A : Configuration G)
     (u : actualMultiClusterComplementSet G S A) (w : V) :
     ¬ (openGraph G (A ∩ actualMultiClusterReveal G S A)).Adj u.val w := by
   intro hadj
-  have hadjA := openGraph_mono (Finset.inter_subset_left (s₂ := actualMultiClusterReveal G S A)) hadj
+  
   obtain ⟨e,he,hep⟩ := (openGraph_adj G (A ∩ actualMultiClusterReveal G S A) u.val w).mp hadj
-  have heR := (Finset.mem_inter.mp he).2
-  obtain ⟨z,hze,s,hs,hsz⟩ := (actualMultiClusterReveal_mem_iff S A e).mp heR
+  
+  obtain ⟨z,hze,s,hs,hsz⟩ := (actualMultiClusterReveal_mem_iff S A e).mp  (Finset.mem_inter.mp he).2 
   rw [hep] at hze
   rcases Sym2.mem_iff'.mp hze with hzu | hzw
   · exact u.property ⟨s,hs,hzu ▸ hsz⟩
   · apply u.property
     refine ⟨s,hs,?_⟩
     subst z
-    exact hsz.trans hadjA.symm.reachable
+    exact hsz.trans (openGraph_mono (Finset.inter_subset_left (s₂ := actualMultiClusterReveal G S A)) hadj).symm.reachable
 
 /-- The frozen record of complete clusters is free on their genuine complement. -/
 theorem actualMultiClusterComplement_frozen_partition_free
@@ -42,7 +43,7 @@ theorem actualMultiClusterComplement_frozen_partition_free
   change (componentSetoid G (BoundaryCondition.free ∅)
     (A ∩ actualMultiClusterReveal G S A)).r u.val v.val ↔ u=v
   rw [componentSetoid_free]
-  change (openGraph G (A ∩ actualMultiClusterReveal G S A)).Reachable u.val v.val ↔ u=v
+  
   constructor
   · rintro ⟨p⟩
     by_cases hp : p.Nil

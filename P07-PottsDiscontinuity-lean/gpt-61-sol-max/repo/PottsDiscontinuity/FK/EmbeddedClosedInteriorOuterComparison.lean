@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.EmbeddedBoundaryUpper
 public import PottsDiscontinuity.FK.EmbeddedClosedInteriorOuterBoundary
@@ -27,12 +28,8 @@ theorem embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInte
     (S : Set (Configuration G)) (hS : IsUpperSet S) :
     (measure H q ξ
       {A | embeddedConfigurationRestriction G H f hGH A ∈ S}).toReal ≤
-      (measure G q (BoundaryCondition.wired B) S).toReal := by
-  exact embeddedConfigurationRestriction_preimage_measure_le_of_frozen_partition
-    G H f hGH q ξ (BoundaryCondition.wired B) S hS (by
-      intro K
-      exact isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInterior
-        f hGH B hclosed ξ hξavoid K)
+      (measure G q (BoundaryCondition.wired B) S).toReal := embeddedConfigurationRestriction_preimage_measure_le_of_frozen_partition G H f hGH q ξ (BoundaryCondition.wired B) S hS
+                                                              (isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInterior f hGH B hclosed ξ hξavoid)
 
 end
 end PottsDiscontinuity.FK

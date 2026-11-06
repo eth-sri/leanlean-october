@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.AsymptoticSumSplit
 
@@ -29,25 +30,25 @@ blocks. For even deficit both blocks coincide. For odd deficit the outer
 root on each side has weight one half. -/
 noncomputable def offsetBoundarySum (Δ : ℝ) (N r : ℕ) (hr : r ≤ N / 2)
     (p : Fin (N / 2) → ℝ) (x : ℝ) : ℝ :=
-  ((∑ k : Fin (r / 2), theta Δ x (p ⟨k.val, by omega⟩)) +
-    (∑ k : Fin (r - r / 2), theta Δ x (p ⟨r / 2 + (N / 2 - r) + k.val, by omega⟩)) +
-    (∑ k : Fin (r - r / 2), theta Δ x (p ⟨k.val, by omega⟩)) +
-    (∑ k : Fin (r / 2), theta Δ x (p ⟨(r - r / 2) + (N / 2 - r) + k.val, by omega⟩))) / 2
+  ( ∑ k : Fin (r / 2), theta Δ x (p ⟨k.val, by omega⟩)  +
+     ∑ k : Fin (r - r / 2), theta Δ x (p ⟨r / 2 + (N / 2 - r) + k.val, by omega⟩)  +
+     ∑ k : Fin (r - r / 2), theta Δ x (p ⟨k.val, by omega⟩)  +
+     ∑ k : Fin (r / 2), theta Δ x (p ⟨ r - r / 2  + (N / 2 - r) + k.val, by omega⟩) ) / 2
 
 theorem sum_theta_eq_bulk_add_boundary {Δ : ℝ} {N r : ℕ} (hr : r ≤ N / 2)
     (p : Fin (N / 2) → ℝ) (x : ℝ) :
-    (∑ k, theta Δ x (p k)) =
-      ((∑ k, theta Δ x (offsetLowerRoot N r hr p k)) +
-        (∑ k, theta Δ x (offsetUpperRoot N r hr p k))) / 2 +
+     ∑ k, theta Δ x (p k)  =
+      ( ∑ k, theta Δ x (offsetLowerRoot N r hr p k)  +
+         ∑ k, theta Δ x (offsetUpperRoot N r hr p k) ) / 2 +
         offsetBoundarySum Δ N r hr p x := by
-  have ha := sum_fin_split_block
-    (show r / 2 + (N / 2 - r) + (r - r / 2) = N / 2 by omega)
-    (fun k => theta Δ x (p k))
-  have hb := sum_fin_split_block
-    (show (r - r / 2) + (N / 2 - r) + r / 2 = N / 2 by omega)
-    (fun k => theta Δ x (p k))
+  
+  
   dsimp only [offsetBoundarySum, offsetLowerRoot, offsetUpperRoot]
-  linarith only [ha, hb]
+  linarith only [ sum_fin_split_block
+                    (show r / 2 + (N / 2 - r) + (r - r / 2) = N / 2 by omega)
+                     fun k => theta Δ x (p k)  ,  sum_fin_split_block
+                        (show  r - r / 2  + (N / 2 - r) + r / 2 = N / 2 by omega)
+                         fun k => theta Δ x (p k)  ]
 
 theorem offsetDisplacement_bethe_bulk_boundary {Δ : ℝ} {N r : ℕ} (h4 : 4 ∣ N)
     (hr : r ≤ N / 2) {p : Fin (N / 2) → ℝ} {q : Fin (N / 2 - r) → ℝ}
@@ -63,7 +64,7 @@ theorem offsetDisplacement_bethe_bulk_boundary {Δ : ℝ} {N r : ℕ} (h4 : 4 �
         theta Δ (q j) (q k)) := by
   have he := offsetDisplacement_bethe_average h4 hr hp hq j
   change offsetDisplacement N r h4 hr p q j =
-    ((∑ k, theta Δ (offsetLowerRoot N r hr p j) (p k)) +
+    ( ∑ k, theta Δ (offsetLowerRoot N r hr p j) (p k)  +
       ∑ k, theta Δ (offsetUpperRoot N r hr p j) (p k)) / 2 - ∑ k, theta Δ (q j) (q k) at he
   rw [sum_theta_eq_bulk_add_boundary hr, sum_theta_eq_bulk_add_boundary hr] at he
   simp only [Finset.sum_sub_distrib, ← Finset.sum_div, Finset.sum_add_distrib]

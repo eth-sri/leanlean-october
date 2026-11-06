@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.DiamondCycleExtension
 public import PottsDiscontinuity.Torus.DiamondIntersectionDeterminant
@@ -24,14 +25,13 @@ theorem ribbonIntersection_mul_area_subgraph (hN : Even N) (hM : Even M)
     (N * M : ℚ) * ribbonIntersection hN hM A f g =
       diamondHorizontalDisplacement A f.val * diamondVerticalDisplacement A g.val -
         diamondVerticalDisplacement A f.val * diamondHorizontalDisplacement A g.val := by
-  have he := ribbonIntersection_mul_area hN hM hNp hMp
-    (fullDiamondCycleExtension hN hM A f) (fullDiamondCycleExtension hN hM A g)
+  
   simpa only [ribbonIntersection_fullExtension, diamondHorizontalDisplacement_fullExtension,
-    diamondVerticalDisplacement_fullExtension] using he
+    diamondVerticalDisplacement_fullExtension] using  ribbonIntersection_mul_area hN hM hNp hMp
+                                                        (fullDiamondCycleExtension hN hM A f) (fullDiamondCycleExtension hN hM A g) 
 
 /-- The actual open cluster carrying an indexed open edge. -/
-def diamondEdgeCluster (hN : Even N) (hM : Even M) (A : RCConfig N M) (e : OpenDiamondEdge A) :
-    (diamondOpenGraph hN hM true A).ConnectedComponent :=
+def diamondEdgeCluster (hN : Even N) (hM : Even M) (A : RCConfig N M) (e : OpenDiamondEdge A)  :=
   (diamondOpenGraph hN hM true A).connectedComponentMk (faceEndpoint hN hM true e.val false)
 
 /-- The open primal cluster incident to a ribbon corner. -/
@@ -40,7 +40,12 @@ def ribbonCornerCluster (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (diamondOpenGraph hN hM true A).ConnectedComponent :=
   (diamondOpenGraph hN hM true A).connectedComponentMk (ribbonFace hN hM d)
 
-theorem ribbonCornerCluster_end (hN : Even N) (hM : Even M) (A : RCConfig N M)
+section
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+
+
+theorem ribbonCornerCluster_end 
     (e : OpenDiamondEdge A) (b : Bool) :
     ribbonCornerCluster hN hM A (ribbonEndEquiv hN hM (e.val, b)) = diamondEdgeCluster hN hM A e := by
   unfold ribbonCornerCluster
@@ -50,13 +55,15 @@ theorem ribbonCornerCluster_end (hN : Even N) (hM : Even M) (A : RCConfig N M)
   · exact (SimpleGraph.ConnectedComponent.sound
       (diamond_endpoints_reachable hN hM A e.val e.property)).symm
 
-theorem ribbonCornerCluster_corner (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem ribbonCornerCluster_corner 
     (v : FaceVertex N M true) (p : Port) :
     ribbonCornerCluster hN hM A (ribbonCornerEquiv hN hM (v, p)) =
       (diamondOpenGraph hN hM true A).connectedComponentMk v := by
   unfold ribbonCornerCluster
   congr 1
   exact Subtype.ext (leftFace_faceCorner v.val p)
+
+end
 
 /-- Restrict an indexed chain to the edges of one actual open cluster. -/
 noncomputable def diamondClusterChain (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -80,11 +87,9 @@ theorem ribbonHalfFlow_clusterChain (hN : Even N) (hM : Even M) (A : RCConfig N 
   obtain ⟨⟨v, b⟩, rfl⟩ := (ribbonEndEquiv hN hM).surjective d
   rw [ribbonHalfFlow_end, ribbonHalfFlow_end]
   cases ha : A v
-  · simp only [extendDiamondChain_closed A _ v ha, neg_zero, ite_self]
-  · rw [extendDiamondChain_open A _ v ha, extendDiamondChain_open A _ v ha,
-      diamondClusterChain_apply, ribbonCornerCluster_end hN hM A ⟨v, ha⟩ b]
-    cases b <;> by_cases hc : diamondEdgeCluster hN hM A ⟨v, ha⟩ = c <;>
-      simp only [hc, Bool.false_eq_true, ite_false, ite_true, neg_zero]
+  · simp_all
+  · rw [extendDiamondChain_open A _ v ha, diamondClusterChain_apply, ribbonCornerCluster_end hN hM A ⟨v, ha⟩ b]
+    all_goals aesop
 
 theorem diamondClusterChain_mem (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (c : (diamondOpenGraph hN hM true A).ConnectedComponent) (f : diamondCycleSpace hN hM A) :

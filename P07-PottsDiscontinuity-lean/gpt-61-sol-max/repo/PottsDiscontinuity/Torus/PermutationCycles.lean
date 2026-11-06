@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.GroupTheory.Perm.Cycle.Type
 
@@ -21,7 +22,7 @@ variable {α : Type*} [Fintype α] [DecidableEq α]
 abbrev PermutationCycle (p : Perm α) := Quotient (SameCycle.setoid p)
 
 /-- The actual number of cyclic orbits. -/
-noncomputable def permutationCycleCount (p : Perm α) : ℕ := Nat.card (PermutationCycle p)
+noncomputable def permutationCycleCount (p : Perm α)  := Nat.card (PermutationCycle p)
 
 /-- A point records either its singleton orbit or its nontrivial cycle factor. -/
 def permutationCycleTag (p : Perm α) (x : α) :
@@ -35,16 +36,10 @@ theorem permutationCycleTag_eq_iff (p : Perm α) (x y : α) :
   · have hs : p.SameCycle x y ↔ x = y :=
       ⟨fun h => h.eq_of_left hx, fun h => h.sameCycle p⟩
     by_cases hy : p y = y
-    · simpa only [permutationCycleTag, hx, hy, dite_true, Sum.inl.injEq,
-        Subtype.ext_iff] using hs.symm
-    · simp only [permutationCycleTag, hx, hy, dite_true, dite_false, Sum.inl_ne_inr,
-        false_iff, hs]
-      intro he
-      exact hy (he ▸ hx)
+    · grind +locals
+    · grind +locals
   · by_cases hy : p y = y
-    · have hs : ¬p.SameCycle x y := by
-        intro h
-        exact hx ((h.apply_eq_self_iff).mpr hy)
+    · have hs : ¬p.SameCycle x y := fun h => hx ((h.apply_eq_self_iff).mpr hy)
       simp only [permutationCycleTag, hx, hy, dite_true, dite_false,
         Sum.inr_ne_inl, hs]
     · simpa only [permutationCycleTag, hx, hy, dite_false, Sum.inr.injEq,
@@ -59,9 +54,9 @@ theorem permutationCycleTag_surjective (p : Perm α) :
   · have hx : p x.val = x.val := x.property
     exact ⟨x.val, by simp only [permutationCycleTag, hx, dite_true]⟩
   · obtain ⟨x, hx⟩ := (mem_cycleFactorsFinset_iff.mp hc).1.nonempty_support
-    have hpx : p x ≠ x := mem_support.mp (mem_cycleFactorsFinset_support_le hc hx)
+    
     refine ⟨x, ?_⟩
-    simp only [permutationCycleTag, hpx, dite_false, Sum.inr.injEq, Subtype.mk.injEq]
+    simp only [permutationCycleTag,  mem_support.mp (mem_cycleFactorsFinset_support_le hc hx) , dite_false, Sum.inr.injEq, Subtype.mk.injEq]
     exact (cycle_is_cycleOf hx hc).symm
 
 /-- The inverse is unique at the level of cyclic orbits; no cycle representative is selected. -/
@@ -69,15 +64,13 @@ noncomputable def permutationCycleEquiv (p : Perm α) :
     PermutationCycle p ≃ Function.fixedPoints p ⊕ {c // c ∈ p.cycleFactorsFinset} :=
   Equiv.ofBijective
     (Quotient.lift (permutationCycleTag p)
-      (fun x y h => (permutationCycleTag_eq_iff p x y).mpr h)) (by
+       fun x y h => (permutationCycleTag_eq_iff p x y).mpr h ) (by
     constructor
     · intro x y h
       induction x using Quotient.inductionOn
       induction y using Quotient.inductionOn
       exact Quotient.sound ((permutationCycleTag_eq_iff p _ _).mp h)
-    · intro z
-      obtain ⟨x, hx⟩ := permutationCycleTag_surjective p z
-      exact ⟨Quotient.mk _ x, hx⟩)
+    · simp_all [permutationCycleTag_surjective])
 
 theorem permutationCycleCount_eq (p : Perm α) :
     permutationCycleCount p = Fintype.card (Function.fixedPoints p) +
@@ -95,7 +88,7 @@ theorem sign_eq_pow_permutationCycleCount (p : Perm α) :
   rw [permutationCycleCount_eq]
   have he : Fintype.card α +
       (Fintype.card (Function.fixedPoints p) + p.cycleFactorsFinset.card) =
-      (p.cycleType.sum + p.cycleType.card) +
+       p.cycleType.sum + p.cycleType.card  +
         2 * Fintype.card (Function.fixedPoints p) := by omega
   rw [he, pow_add, pow_mul]
   norm_num only [neg_one_sq, one_pow, mul_one]

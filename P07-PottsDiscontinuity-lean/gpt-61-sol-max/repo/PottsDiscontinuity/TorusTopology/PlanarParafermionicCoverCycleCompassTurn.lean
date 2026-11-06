@@ -2,6 +2,7 @@
 Adaptation: namespace/import relocation; generic walk API only.
 Generic compass definitions are copied from the same source. -/
 module
+public import Mathlib
 
 public import Mathlib.Combinatorics.SimpleGraph.Walk.Operations
 public import Mathlib.Tactic
@@ -21,9 +22,7 @@ noncomputable def parafermionicCoverWalkCompassDirections {u v : ParafermionicCo
     (p : parafermionicCoverGraph.Walk u v) : List (Fin 4) :=
   p.darts.map fun d => parafermionicCoverCompassDirection d.fst d.snd d.adj
 
-@[simp] theorem parafermionicCoverWalkCompassDirections_nil (u : ParafermionicCoverVertex) :
-    parafermionicCoverWalkCompassDirections (Walk.nil : parafermionicCoverGraph.Walk u u) = [] := by
-  simp [parafermionicCoverWalkCompassDirections]
+
 
 @[simp] theorem parafermionicCoverWalkCompassDirections_cons
     {u v w : ParafermionicCoverVertex}
@@ -31,44 +30,27 @@ noncomputable def parafermionicCoverWalkCompassDirections {u v : ParafermionicCo
     (p : parafermionicCoverGraph.Walk v w) :
     parafermionicCoverWalkCompassDirections (Walk.cons h p) =
       parafermionicCoverCompassDirection u v h ::
-        parafermionicCoverWalkCompassDirections p := by
-  simp [parafermionicCoverWalkCompassDirections]
+        parafermionicCoverWalkCompassDirections p := rfl
 
-@[simp] theorem parafermionicCoverWalkCompassDirections_append
-    {u v w : ParafermionicCoverVertex}
-    (p : parafermionicCoverGraph.Walk u v)
-    (q : parafermionicCoverGraph.Walk v w) :
-    parafermionicCoverWalkCompassDirections (p.append q) =
-      parafermionicCoverWalkCompassDirections p ++
-        parafermionicCoverWalkCompassDirections q := by
-  simp [parafermionicCoverWalkCompassDirections]
+
 
 theorem parafermionicCoverCompassDirection_eq_of_neighbor
     {u v : ParafermionicCoverVertex}
     (h : parafermionicCoverGraph.Adj u v) (d : Fin 4)
     (hd : parafermionicCoverCompassNeighbor u d = v) :
-    parafermionicCoverCompassDirection u v h = d := by
-  apply parafermionicCoverCompassNeighbor_injective u
-  calc
-    parafermionicCoverCompassNeighbor u
-        (parafermionicCoverCompassDirection u v h) = v :=
-      parafermionicCoverCompassDirection_neighbor u v h
-    _ = parafermionicCoverCompassNeighbor u d := hd.symm
+    parafermionicCoverCompassDirection u v h = d := parafermionicCoverCompassNeighbor_injective u
+                                                      (Trans.trans (parafermionicCoverCompassDirection_neighbor u v h) (Eq.symm hd))
 
 /-- The cyclic compass turn of an actual full-cover closed walk, including the
 last-to-first dart pair. -/
 noncomputable def parafermionicCoverWalkCyclicCompassTurn
     {u : ParafermionicCoverVertex}
-    (p : parafermionicCoverGraph.Walk u u) : ℤ :=
+    (p : parafermionicCoverGraph.Walk u u)  :=
   ((parafermionicCoverWalkCompassDirections p).zipWith
     primalCompassQuarterTurn
     ((parafermionicCoverWalkCompassDirections p).rotate 1)).sum
 
-@[simp] theorem parafermionicCoverWalkCyclicCompassTurn_nil
-    (u : ParafermionicCoverVertex) :
-    parafermionicCoverWalkCyclicCompassTurn
-      (Walk.nil : parafermionicCoverGraph.Walk u u) = 0 := by
-  simp [parafermionicCoverWalkCyclicCompassTurn]
+
 
 /-- Mapping an actual finite-box walk into the full cover preserves the exact
 ordered compass label of every dart. -/
@@ -83,9 +65,9 @@ private theorem parafermionicCoverWalk_rotate_dart_fst_eq_snd
       simp only [Walk.darts_cons, List.map_cons]
       rw [List.rotate_cons_succ]
       simp only [List.rotate_zero]
-      have hfst := Walk.map_fst_darts_append q
-      have hsnd := Walk.cons_map_snd_darts q
-      rw [hfst, hsnd]
+      
+      
+      rw [ Walk.map_fst_darts_append q ,  Walk.cons_map_snd_darts q ]
 
 private theorem parafermionicCover_mem_zip_endpoint_eq
     {α β : Type*} (L R : List α) (fst snd : α → β)
@@ -97,36 +79,29 @@ private theorem parafermionicCover_mem_zip_endpoint_eq
       cases R with
       | nil => simp at hmem
       | cons b R =>
-          simp only [List.map_cons, List.cons.injEq] at hrot
-          simp only [List.zip_cons_cons, List.mem_cons] at hmem
-          rcases hmem with hhead | htail
-          · rcases hhead with ⟨rfl, rfl⟩
-            exact hrot.1.symm
-          · exact ih R hrot.2 htail
+          grind
+
+section
+
+variable {V : Type*} {G : SimpleGraph V} {u : V} (p : G.Walk u u) (hp : p.IsCycle) {d e : G.Dart} (hd : d ∈ p.darts) (he : e ∈ p.darts)
+include hp hd he
 
 private theorem parafermionicCoverDart_snd_injective_of_isCycle
-    {V : Type*} {G : SimpleGraph V} {u : V}
-    (p : G.Walk u u) (hp : p.IsCycle)
-    {d e : G.Dart} (hd : d ∈ p.darts) (he : e ∈ p.darts)
-    (h : d.snd = e.snd) : d = e := by
-  have hmap : (p.darts.map fun x => x.snd).Nodup := by
-    rw [Walk.map_snd_darts]
-    exact hp.support_nodup
-  have hnodup : p.darts.Nodup := List.Nodup.of_map (fun x => x.snd) hmap
-  have hinj := (List.nodup_map_iff_inj_on hnodup).mp hmap
-  exact hinj d hd e he h
+    
+    (h : d.snd = e.snd) : d = e := have hmap := Eq.mpr (congrArg List.Nodup (Walk.map_snd_darts p)) hp.support_nodup;
+                                   (List.nodup_map_iff_inj_on (List.Nodup.of_map (fun x => x.toProd.2) hmap)).mp hmap d hd e he h
 
 private theorem parafermionicCoverDart_fst_injective_of_isCycle
-    {V : Type*} {G : SimpleGraph V} {u : V}
-    (p : G.Walk u u) (hp : p.IsCycle)
-    {d e : G.Dart} (hd : d ∈ p.darts) (he : e ∈ p.darts)
+    
     (h : d.fst = e.fst) : d = e := by
-  have hrev : p.reverse.IsCycle := hp.reverse
+  
   have hd' : d.symm ∈ p.reverse.darts := by simpa using hd
   have he' : e.symm ∈ p.reverse.darts := by simpa using he
-  have h' : d.symm.snd = e.symm.snd := h
-  have := parafermionicCoverDart_snd_injective_of_isCycle p.reverse hrev hd' he' h'
+  have h'  := h
+  have := parafermionicCoverDart_snd_injective_of_isCycle p.reverse  hp.reverse  hd' he' h'
   simpa using congrArg Dart.symm this
+
+end
 
 private theorem parafermionicCoverPrimalCycle_pair_turn_eq_local
     {n : ℕ} {u : ParafermionicCoverBoxVertex n}
@@ -139,137 +114,121 @@ private theorem parafermionicCoverPrimalCycle_pair_turn_eq_local
       parafermionicCoverPrimalCycleQuarterTurn p hp d.snd
         (Walk.dart_snd_mem_support_of_mem_darts p hd) := by
   let v := d.snd
-  have hv : v ∈ p.support := Walk.dart_snd_mem_support_of_mem_darts p hd
+  have hv  := Walk.dart_snd_mem_support_of_mem_darts p hd
   let q := p.rotate v hv
   have hqcycle : q.IsCycle := by
     simpa [q] using hp.rotate hv
-  have hqnotnil : ¬ q.Nil := hqcycle.not_nil
-  have hqfirstMem : q.firstDart hqnotnil ∈ p.darts := by
-    apply (p.rotate_darts v hv).mem_iff.mp
-    exact Walk.firstDart_mem_darts hqnotnil
-  have hqlastMem : q.lastDart hqnotnil ∈ p.darts := by
-    apply (p.rotate_darts v hv).mem_iff.mp
-    exact Walk.lastDart_mem_darts hqnotnil
+  have hqnotnil  := hqcycle.not_nil
+  
+  
   have hlast : q.lastDart hqnotnil = d := by
-    apply parafermionicCoverDart_snd_injective_of_isCycle p hp hqlastMem hd
+    apply parafermionicCoverDart_snd_injective_of_isCycle p hp (by
+                                                                  apply (p.rotate_darts v hv).mem_iff.mp
+                                                                  exact Walk.lastDart_mem_darts hqnotnil) hd
     rfl
-  have hfirst : q.firstDart hqnotnil = e := by
-    apply parafermionicCoverDart_fst_injective_of_isCycle p hp hqfirstMem he
-    change d.snd = e.fst
-    exact hde
-  have hin := parafermionicCoverPrimalCycleIncomingDirection_neighbor p hp v hv
+  have hfirst  := parafermionicCoverDart_fst_injective_of_isCycle p hp (by
+                                                                                                    apply (p.rotate_darts v hv).mem_iff.mp
+                                                                                                    exact Walk.firstDart_mem_darts hqnotnil) he hde
+  
   have hout := parafermionicCoverPrimalCycleOutgoingDirection_neighbor p hp v hv
-  have hqpen : q.penultimate = d.toProd.1 := by
-    have h := congrArg (fun z : (parafermionicCoverBoxGraph n).Dart => z.toProd.1) hlast
-    simpa [Walk.lastDart] using h
-  have hqnext : q.snd = e.toProd.2 := by
-    have h := congrArg (fun z : (parafermionicCoverBoxGraph n).Dart => z.toProd.2) hfirst
-    simpa [Walk.firstDart] using h
-  have hsource : e.toProd.1 = v := by
-    have h := congrArg (fun z : (parafermionicCoverBoxGraph n).Dart => z.toProd.1) hfirst
-    simpa [Walk.firstDart, q, v] using h.symm
+  
+  have hqnext : q.snd = e.toProd.2 := congrArg (fun z => z.toProd.2) hfirst
+  
   have hinQ : parafermionicCoverCompassNeighbor q.penultimate.1
-      (parafermionicCoverPrimalCycleIncomingDirection p hp v hv) = v.1 := by
-    simpa [q, parafermionicCoverPrimalCycleRotate] using hin
-  have hin' : parafermionicCoverCompassNeighbor d.fst.1
-      (parafermionicCoverPrimalCycleIncomingDirection p hp v hv) = d.snd.1 := by
-    rw [← hqpen]
-    simpa [v] using hinQ
+      (parafermionicCoverPrimalCycleIncomingDirection p hp v hv) = v.1 :=  parafermionicCoverPrimalCycleIncomingDirection_neighbor p hp v hv 
+  
   have houtQ : parafermionicCoverCompassNeighbor v.1
-      (parafermionicCoverPrimalCycleOutgoingDirection p hp v hv) = q.snd.1 := by
-    simpa [q, parafermionicCoverPrimalCycleRotate] using hout
+      (parafermionicCoverPrimalCycleOutgoingDirection p hp v hv) = q.snd.1 := hout
   have hout' : parafermionicCoverCompassNeighbor e.fst.1
       (parafermionicCoverPrimalCycleOutgoingDirection p hp v hv) = e.snd.1 := by
-    simpa [v, hsource, hqnext] using houtQ
-  have hdin := parafermionicCoverCompassDirection_eq_of_neighbor
-    (show parafermionicCoverGraph.Adj d.fst.1 d.snd.1 from d.adj)
-    (parafermionicCoverPrimalCycleIncomingDirection p hp v hv) hin'
-  have hdout := parafermionicCoverCompassDirection_eq_of_neighbor
-    (show parafermionicCoverGraph.Adj e.fst.1 e.snd.1 from e.adj)
-    (parafermionicCoverPrimalCycleOutgoingDirection p hp v hv) hout'
-  simp [parafermionicCoverPrimalCycleQuarterTurn, v, hdin, hdout]
+    grind
+  
+  
+  simp [parafermionicCoverPrimalCycleQuarterTurn, v,  parafermionicCoverCompassDirection_eq_of_neighbor
+                                                        (show parafermionicCoverGraph.Adj d.fst.1 d.snd.1 from d.adj)
+                                                        (parafermionicCoverPrimalCycleIncomingDirection p hp v hv) (by
+                                                                                                                      rw [← (congrArg (fun z => z.toProd.1) hlast)]
+                                                                                                                      simpa [v] using hinQ) ,  parafermionicCoverCompassDirection_eq_of_neighbor
+                                                              (show parafermionicCoverGraph.Adj e.fst.1 e.snd.1 from e.adj)
+                                                              (parafermionicCoverPrimalCycleOutgoingDirection p hp v hv) hout' ]
 
 theorem parafermionicCoverWalkCompassDirections_map_induce
     {S : Set ParafermionicCoverVertex} {u v : S}
     (p : (parafermionicCoverGraph.induce S).Walk u v) :
     parafermionicCoverWalkCompassDirections
       (p.map (SimpleGraph.Embedding.induce S).toHom) =
-    p.darts.map (fun d => parafermionicCoverCompassDirection
-      d.fst.1 d.snd.1 d.adj) := by
-  classical
+    p.darts.map  fun d => parafermionicCoverCompassDirection
+      d.fst.1 d.snd.1 d.adj  := by
+  
   induction p with
-  | nil => simp [parafermionicCoverWalkCompassDirections, Walk.map]
+  | nil => rfl
   | @cons a b c h q ih =>
-      simp only [parafermionicCoverWalkCompassDirections_cons, Walk.map_cons,
-        Walk.darts_cons, List.map_cons]
+      simp only [parafermionicCoverWalkCompassDirections_cons, Walk.map_cons]
       rw [ih]
       rfl
 
+section
+
+variable {n : ℕ} {u : ParafermionicCoverBoxVertex n} (p : (parafermionicCoverBoxGraph n).Walk u u) (hp : p.IsCycle)
+include hp
+
 private theorem parafermionicCoverPrimalCycle_cyclicCompassTurn_eq_tail_sum
-    {n : ℕ} {u : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk u u) (hp : p.IsCycle) :
+     :
     parafermionicCoverWalkCyclicCompassTurn
       (p.map (SimpleGraph.Embedding.induce
         (parafermionicCoverBoxVertices n)).toHom) =
       (p.support.tail.map fun v =>
         if hv : v ∈ p.support then
           parafermionicCoverPrimalCycleQuarterTurn p hp v hv else 0).sum := by
-  classical
+  
   let dir : (parafermionicCoverBoxGraph n).Dart → Fin 4 := fun d =>
-    parafermionicCoverCompassDirection d.fst.1 d.snd.1 (by exact d.adj)
-  have hdir : parafermionicCoverWalkCompassDirections
-      (p.map (SimpleGraph.Embedding.induce
-        (parafermionicCoverBoxVertices n)).toHom) = p.darts.map dir := by
-    simpa [dir, parafermionicCoverBoxGraph] using
-      (parafermionicCoverWalkCompassDirections_map_induce
-        (S := parafermionicCoverBoxVertices n) p)
-  let f : ParafermionicCoverBoxVertex n → ℤ := fun v =>
+    parafermionicCoverCompassDirection d.fst.1 d.snd.1  d.adj 
+  
+  let f  := fun v =>
     if hv : v ∈ p.support then parafermionicCoverPrimalCycleQuarterTurn p hp v hv else 0
   unfold parafermionicCoverWalkCyclicCompassTurn
-  rw [hdir, ← List.map_rotate]
+  rw [ parafermionicCoverWalkCompassDirections_map_induce p , ← List.map_rotate]
   rw [List.zipWith_map]
   rw [← List.map_uncurry_zip_eq_zipWith]
   have hrot : (p.darts.rotate 1).map (fun d => d.toProd.1) =
-      p.darts.map (fun d => d.toProd.2) :=
+      p.darts.map  fun d => d.toProd.2  :=
     by
-      rw [List.map_rotate]
-      exact parafermionicCoverWalk_rotate_dart_fst_eq_snd p
+      simp_all [parafermionicCoverWalk_rotate_dart_fst_eq_snd]
   have hmapfst : (p.darts.zip (p.darts.rotate 1)).map
-      Prod.fst = p.darts := by
-    exact List.map_fst_zip (by simp)
+      Prod.fst = p.darts := List.map_fst_zip (by simp)
   have hlist : (p.darts.zip (p.darts.rotate 1)).map
       (fun z => primalCompassQuarterTurn (dir z.1) (dir z.2)) =
-      (p.darts.zip (p.darts.rotate 1)).map (fun z => f z.1.snd) := by
+      (p.darts.zip (p.darts.rotate 1)).map  fun z => f z.1.snd  := by
     apply List.map_congr_left
     intro z hz
-    obtain ⟨d, e⟩ := z
+    
     have hmem := List.of_mem_zip hz
     have hadj := parafermionicCover_mem_zip_endpoint_eq
       p.darts (p.darts.rotate 1) (fun d => d.toProd.1)
       (fun d => d.toProd.2) hrot hz
-    have he : e ∈ p.darts := List.mem_rotate.mp hmem.2
+    have he  := List.mem_rotate.mp hmem.2
     have hturn := parafermionicCoverPrimalCycle_pair_turn_eq_local
       p hp hmem.1 he hadj
     simpa [f, Walk.dart_snd_mem_support_of_mem_darts p hmem.1] using hturn
   have hzipmap : (p.darts.zip (p.darts.rotate 1)).map
-      (fun z => f z.1.snd) = p.darts.map (fun d => f d.snd) := by
+      (fun z => f z.1.snd) = p.darts.map  fun d => f d.snd  := by
     calc
       (p.darts.zip (p.darts.rotate 1)).map (fun z => f z.1.snd) =
           ((p.darts.zip (p.darts.rotate 1)).map Prod.fst).map
-            (fun d => f d.snd) := by simp [List.map_map]
-      _ = p.darts.map (fun d => f d.snd) := by rw [hmapfst]
+             fun d => f d.snd  := by simp 
+      _ = p.darts.map  fun d => f d.snd  := by rw [hmapfst]
   have htail : p.darts.map (fun d => f d.snd) = p.support.tail.map f := by
     calc
       p.darts.map (fun d => f d.snd) =
-          (p.darts.map (fun d => d.snd)).map f := by
-        simp [List.map_map]
+          (p.darts.map  fun d => d.snd ).map f := by
+        simp 
       _ = p.support.tail.map f := by rw [Walk.map_snd_darts]
   calc
     (List.map (fun z => primalCompassQuarterTurn (dir z.1) (dir z.2))
         (p.darts.zip (p.darts.rotate 1))).sum =
-      ((p.darts.zip (p.darts.rotate 1)).map (fun z => f z.1.snd)).sum := by
+      ((p.darts.zip (p.darts.rotate 1)).map  fun z => f z.1.snd ).sum := by
         rw [hlist]
-    _ = (p.darts.map (fun d => f d.snd)).sum := by
+    _ = (p.darts.map  fun d => f d.snd ).sum := by
       rw [hzipmap]
     _ = (p.support.tail.map f).sum := by rw [htail]
     _ = (p.support.tail.map fun v =>
@@ -281,28 +240,28 @@ private theorem parafermionicCoverPrimalCycle_cyclicCompassTurn_eq_tail_sum
 walk is exactly the already defined primal cycle turn sum. The zip includes the
 last-to-first dart pair. -/
 theorem parafermionicCoverWalkCyclicCompassTurn_map_boxCycle_eq_primalTurnSum
-    {n : ℕ} {u : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk u u) (hp : p.IsCycle) :
+     :
     parafermionicCoverWalkCyclicCompassTurn
       (p.map (SimpleGraph.Embedding.induce
         (parafermionicCoverBoxVertices n)).toHom) =
       parafermionicCoverPrimalCycleTurnSum p hp := by
-  classical
-  let f : ParafermionicCoverBoxVertex n → ℤ := fun v =>
+  
+  let f  := fun v =>
     if hv : v ∈ p.support then parafermionicCoverPrimalCycleQuarterTurn p hp v hv else 0
   calc
     parafermionicCoverWalkCyclicCompassTurn
         (p.map (SimpleGraph.Embedding.induce
           (parafermionicCoverBoxVertices n)).toHom) =
       (p.support.tail.map f).sum := by
-        simpa [f] using parafermionicCoverPrimalCycle_cyclicCompassTurn_eq_tail_sum p hp
+        grind [parafermionicCoverPrimalCycle_cyclicCompassTurn_eq_tail_sum]
     _ = Finset.sum p.support.toFinset f :=
       (parafermionicCoverPrimalCycle_support_sum_eq_tail_map_sum p hp f).symm
     _ = parafermionicCoverPrimalCycleTurnSum p hp := by
       symm
       apply parafermionicCoverPrimalCycleTurnSum_eq_support_sum_of_local_eq p hp f
-      intro v hv
-      simp [f, hv]
+      grind
+
+end
 
 /-- The discrete Umlaufsatz for every actual simple cycle in the full cover. -/
 theorem parafermionicCoverWalkCyclicCompassTurn_eq_four_or_neg_four

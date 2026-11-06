@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.PermutationInvariantSpace
 public import PottsDiscontinuity.Torus.RibbonConnectivity
@@ -21,8 +22,7 @@ open Module
 variable {N M : ℕ}
 
 /-- Rational functions on corners, invariant under both generating permutations. -/
-def ribbonFunctions (hN : Even N) (hM : Even M) (A : RCConfig N M) :
-    Submodule ℚ (DirectedDart (checkerArrows N M) → ℚ) :=
+def ribbonFunctions (hN : Even N) (hM : Even M) (A : RCConfig N M)  :=
   cycleFunctions (faceRotation hN hM) ⊓ cycleFunctions (ribbonEdgePairing hN hM A)
 
 theorem ribbonFunctions_invariant (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -44,14 +44,12 @@ def ribbonFunctionEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
     constructor
     · intro d
       exact congrArg f (Quotient.sound (Relation.EqvGen.rel _ _
-        (Or.inl (Equiv.Perm.SameCycle.rfl.apply_left))))
+        (Or.inl  Equiv.Perm.SameCycle.rfl.apply_left )))
     · intro d
       exact congrArg f (Quotient.sound (Relation.EqvGen.symm _ _
         (Relation.EqvGen.rel _ _ (Or.inr rfl))))⟩
-  invFun f := Quotient.lift f.val (fun _ _ h => ribbonFunctions_invariant hN hM A f h)
-  left_inv f := by
-    funext q
-    exact Quotient.inductionOn q (fun _ => rfl)
+  invFun f := Quotient.lift f.val  fun _ _ h => ribbonFunctions_invariant hN hM A f h 
+  left_inv f := funext fun q => Quotient.inductionOn q fun x => rfl
   right_inv _ := Subtype.ext rfl
   map_add' _ _ := Subtype.ext rfl
   map_smul' _ _ := Subtype.ext rfl
@@ -71,33 +69,34 @@ def ribbonDifference (hN : Even N) (hM : Even M) (A : RCConfig N M)
     LinearMap.proj (ribbonEndEquiv hN hM (v, true))).comp
       (ribbonFunctions hN hM A).subtype
 
-@[simp] theorem ribbonDifference_apply (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (v : Fin N × Fin M) (f : ribbonFunctions hN hM A) :
-    ribbonDifference hN hM A v f =
-      f.val (ribbonEndEquiv hN hM (v, false)) -
-        f.val (ribbonEndEquiv hN hM (v, true)) := rfl
+section
 
-theorem ribbonDifference_eq_zero_of_connected (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M)
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (v : Fin N × Fin M)
+
+
+
+
+theorem ribbonDifference_eq_zero_of_connected 
     (h : RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
       (ribbonEndEquiv hN hM (v, true))) : ribbonDifference hN hM A v = 0 := by
   apply LinearMap.ext
   intro f
   exact sub_eq_zero.mpr (ribbonFunctions_invariant hN hM A f h)
 
-theorem ribbonDifference_ne_zero_of_not_connected (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M)
+theorem ribbonDifference_ne_zero_of_not_connected 
     (h : ¬RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
       (ribbonEndEquiv hN hM (v, true))) : ribbonDifference hN hM A v ≠ 0 := by
   classical
   let q : RibbonComponent hN hM A := Quotient.mk _ (ribbonEndEquiv hN hM (v, false))
-  let f := ribbonFunctionEquiv hN hM A (fun z => if q = z then 1 else 0)
+  
   intro hz
-  have he := LinearMap.congr_fun hz f
+  have he := LinearMap.congr_fun hz (ribbonFunctionEquiv hN hM A  fun z => if q = z then 1 else 0 )
   change (if q = q then (1 : ℚ) else 0) -
     (if q = Quotient.mk _ (ribbonEndEquiv hN hM (v, true)) then 1 else 0) = 0 at he
   have hq : q ≠ Quotient.mk _ (ribbonEndEquiv hN hM (v, true)) :=
     fun he => h (Quotient.exact he)
   simp only [hq, ite_true, ite_false, sub_zero, one_ne_zero] at he
+
+end
 
 end PottsDiscontinuity.Torus

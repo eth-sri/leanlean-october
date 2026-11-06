@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.BetheAnsatz.GapGeometric
 public import PottsDiscontinuity.BetheAnsatz.Perturbation
@@ -23,30 +24,23 @@ theorem planeWave_perturbed_zero {n : ℕ} (p : Fin (n + 1) → ℝ) (l : Fin (n
     planeWave (perturbedMomenta p l t) σ x =
       positionPhase t (x (σ.symm l)) * planeWave p σ x := by
   let k := σ.symm l
-  let f : Fin (n + 1) → ℂ := fun j => Complex.exp (I * (p (σ j) : ℂ) * (x j : ℂ))
-  let g : Fin (n + 1) → ℂ := fun j =>
-    Complex.exp (I * (perturbedMomenta p l t (σ j) : ℂ) * (x j : ℂ))
+  let f  := fun j => Complex.exp (I *  p (σ j)  *  x j )
+  let g  := fun j =>
+    Complex.exp (I *  perturbedMomenta p l t (σ j)  *  x j )
   have hgk : g k = positionPhase t (x k) := by
-    dsimp [g, k]
-    rw [Equiv.apply_symm_apply, perturbedMomenta_at, hpl]
-    simp only [positionPhase, zero_add]
+    aesop
   have hfk : f k = 1 := by
-    dsimp [f, k]
-    rw [Equiv.apply_symm_apply, hpl]
-    simp
+    aesop
   have hrest : ∏ j ∈ univ.erase k, g j = ∏ j ∈ univ.erase k, f j := by
     apply Finset.prod_congr rfl
     intro j hj
-    have hjk : j ≠ k := (mem_erase.mp hj).1
-    have hσ : σ j ≠ l := by
-      intro h
-      apply hjk
-      apply σ.injective
-      simpa [k] using h
-    have hq := perturbedMomenta_of_ne p l (σ j) t hσ
-    dsimp [g, f]
+    
+    
+    have hq := perturbedMomenta_of_ne p l (σ j) t (by
+                                                     grind)
+    dsimp [g]
     rw [hq]
-  unfold planeWave
+  
   change ∏ j, g j = positionPhase t (x k) * ∏ j, f j
   rw [← Finset.mul_prod_erase univ g (mem_univ k),
     ← Finset.mul_prod_erase univ f (mem_univ k), hgk, hfk, hrest]

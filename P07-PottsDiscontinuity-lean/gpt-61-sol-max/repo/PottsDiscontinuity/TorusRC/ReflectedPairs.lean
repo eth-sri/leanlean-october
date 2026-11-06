@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusRC.Association
 public import PottsDiscontinuity.TorusRC.ReflectionLaw
@@ -37,24 +38,22 @@ def rectangleDoubleConnection (hNp : 0 < N) (hMp : 0 < M) (n : ℕ)
 theorem rectanglePair_reflected_inter_subset (hNp : 0 < N) (hMp : 0 < M)
     (n : ℕ) (i j : Fin (3 * n + 1)) :
     rectanglePairConnection hNp hMp n i j ∩
-      (reflectRCConfig hMp (2 * (n : ℤ)) ⁻¹' rectanglePairConnection hNp hMp n i j) ⊆
+       reflectRCConfig hMp (2 * (n : ℤ)) ⁻¹' rectanglePairConnection hNp hMp n i j  ⊆
       rectangleDoubleConnection hNp hMp n i := by
   rintro A ⟨⟨u,v,hu,hv,w,hw⟩,⟨u',v',hu',hv',w',hw'⟩⟩
   let ht : Even (2 * (n : ℤ)) := ⟨n,by ring⟩
-  let F := liftedReflectionStripHom hNp hMp (2 * (n : ℤ)) ht A 0 (3 * (n : ℤ))
-  have hmatch : liftedHorizontalReflect (2 * (n : ℤ)) ht v' = v := by
+  
+  have hmatch : liftedHorizontalReflect (2 *  n ) ht v' = v := by
     apply Subtype.ext
     rw [hv]
-    change (v'.val.1, 2 * (n : ℤ) - v'.val.2) = _
+    change (v'.val.1, 2 *  n  - v'.val.2) = _
     rw [hv']
-    simp
+    
     ring
   subst v
-  refine ⟨u,liftedHorizontalReflect (2 * (n : ℤ)) ht u',hu,?_,
-    w.append (w'.map F).reverse,?_⟩
-  · change (u'.val.1, 2 * (n : ℤ) - u'.val.2) = _
-    rw [hu']
-    simp
+  refine ⟨u,liftedHorizontalReflect (2 *  n ) ht u',hu,?_,
+    w.append (w'.map (liftedReflectionStripHom hNp hMp (2 *  n ) ht A 0 (3 *  n ))).reverse,?_⟩
+  · aesop
   · intro z hz
     rw [SimpleGraph.Walk.support_append] at hz
     rcases List.mem_append.mp hz with hz | hz
@@ -66,7 +65,7 @@ theorem rectanglePair_reflected_inter_subset (hNp : 0 < N) (hMp : 0 < M)
       obtain ⟨z',hzmem,heq⟩ := List.mem_map.mp hz'
       subst z
       have h := hw' z' hzmem
-      change 0 ≤ 2 * (n : ℤ) - z'.val.2 ∧ 2 * (n : ℤ) - z'.val.2 ≤ 2 * (n : ℤ)
+      change 0 ≤ 2 *  n  - z'.val.2 ∧ 2 *  n  - z'.val.2 ≤ 2 *  n 
       constructor <;> omega
 
 private theorem rectanglePair_walk_mono {V : Type*} {G H : SimpleGraph V}
@@ -84,7 +83,7 @@ theorem rectanglePairConnection_mono (hNp : 0 < N) (hMp : 0 < M)
     B ∈ rectanglePairConnection hNp hMp n i j := by
   obtain ⟨u,v,hu,hv,w,hw⟩ := hA
   obtain ⟨w',hs⟩ := rectanglePair_walk_mono
-    (liftedStripGraph_mono hNp hMp 0 (3 * (n : ℤ)) hAB) w
+    (liftedStripGraph_mono hNp hMp 0 (3 *  n ) hAB) w
   exact ⟨u,v,hu,hv,w',by simpa only [hs] using hw⟩
 
 /-- The reflected-pair FKG step in the source, with the exact torus-law
@@ -95,17 +94,18 @@ theorem rectangleDouble_probability_ge_pair_sq (hN : Even N) (hM : Even M)
     torusRCProbability hN hM q (rectanglePairConnection hNp hMp n i j) ^ 2 ≤
       torusRCProbability hN hM q (rectangleDoubleConnection hNp hMp n i) := by
   let E := rectanglePairConnection hNp hMp n i j
-  let T : RCConfig N M → RCConfig N M := reflectRCConfig hMp (2 * (n : ℤ))
+  let T : RCConfig N M → RCConfig N M := reflectRCConfig hMp (2 *  n )
   have hE : ∀ ⦃A B⦄, A ≤ B → A ∈ E → B ∈ E :=
-    fun {_ _} hAB hA => rectanglePairConnection_mono hNp hMp n i j hAB hA
+    by
+      solve_by_elim [_root_.PottsDiscontinuity.TorusRC.rectanglePairConnection_mono]
   have hT : ∀ ⦃A B : RCConfig N M⦄, A ≤ B → T A ≤ T B := by
     intro A B hAB e
     exact hAB _
   have h := torusRCProbability_inter_ge_mul hN hM q E (T ⁻¹' E)
-    hE (fun {_ _} hAB hA => hE (hT hAB) hA)
-  have heq := torusRCProbability_reflect hN hM hNp hMp (2 * (n : ℤ))
-    (show Even (2 * (n : ℤ)) from ⟨n,by ring⟩) q E
-  rw [← heq] at h
+    hE  fun {_ _} hAB hA => hE (hT hAB) hA 
+  
+  rw [←  torusRCProbability_reflect hN hM hNp hMp (2 *  n )
+            ⟨n,by ring⟩  q E ] at h
   rw [pow_two]
   exact h.trans (torusRCProbability_mono hN hM q
     (rectanglePair_reflected_inter_subset hNp hMp n i j))

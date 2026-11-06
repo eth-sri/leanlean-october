@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.CorrLength.ConnectionEvents
 
@@ -27,7 +28,7 @@ theorem boxConfiguration_connection_iff (c : LatticeVertex) (r : ℕ)
     (A : Configuration (boxGraph c r)) (u v : BoxVertex c r) :
     boxConfiguration c r A ∈ connectionEvent u.val v.val ↔
       ActualConnected (boxGraph c r) A u v := by
-  classical
+  
   have hw : boxConfiguration c r A ∈ connectionEvent u.val v.val ↔
       ActualConnected squareLattice (A.map (boxEdgeEmbedding c r)) u.val v.val := by
     constructor
@@ -49,17 +50,12 @@ theorem actualConnected_embeddedRestriction {V W : Type*} {G : SimpleGraph V}
     {H : SimpleGraph W} (f : V ↪ W) (hGH : G.map f ≤ H)
     (A : Configuration H) (u v : V)
     (h : ActualConnected G (embeddedConfigurationRestriction G H f hGH A) u v) :
-    ActualConnected H A (f u) (f v) := by
-  let B := embeddedConfigurationRestriction G H f hGH A
-  have hm : ActualConnected (G.map f) (isolatedExtensionConfigurationEquiv G f B) (f u) (f v) :=
-    (actualConnected_isolatedExtension G f B u v).mpr h
-  have he : ActualConnected H (embeddedConfigurationEmbedding G H f hGH B) (f u) (f v) := by
-    change (openGraph H (subgraphConfigurationEmbedding hGH
-      (isolatedExtensionConfigurationEquiv G f B))).Reachable _ _
-    rw [openGraph_subgraphConfigurationEmbedding]
-    exact hm
-  exact actualConnected_mono
-    (embeddedConfigurationEmbedding_restriction_subset G H f hGH A) he
+    ActualConnected H A (f u) (f v) := let B := embeddedConfigurationRestriction G H f hGH A;
+                                       actualConnected_mono (embeddedConfigurationEmbedding_restriction_subset G H f hGH A)
+                                         (Eq.mpr
+                                           (congrArg (fun _a => _a.Reachable (f u) (f v))
+                                             (openGraph_subgraphConfigurationEmbedding hGH ((isolatedExtensionConfigurationEquiv G f) B)))
+                                           ((actualConnected_isolatedExtension G f B u v).mpr h))
 
 end
 end PottsDiscontinuity.TorusRC

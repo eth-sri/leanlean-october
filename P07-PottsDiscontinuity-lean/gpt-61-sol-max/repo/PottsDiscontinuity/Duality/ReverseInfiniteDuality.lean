@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -30,9 +31,7 @@ lemma dualConfiguration_twice (ω : LatticeConfiguration) :
   apply Subtype.ext
   rcases b with ⟨⟨x,y⟩, ax⟩
   cases ax <;>
-    simp [primalBondOfDual, wholePlaneBondEdgeEquiv, latticeBondEdge, LatticeBond.toSym2, LatticeBond.source,
-      LatticeBond.target, SimpleGraph.Iso.mapEdgeSet_apply, SimpleGraph.Hom.mapEdgeSet_coe,
-      latticeTranslationIso, latticeTranslate]
+    simp [primalBondOfDual, wholePlaneBondEdgeEquiv, latticeBondEdge, LatticeBond.toSym2, LatticeBond.source, LatticeBond.target, latticeTranslationIso, latticeTranslate]
 
 /-- The wired measure at p* maps to the free measure at p under the actual dual
 transform. Its square is the harmless lattice translation (-1,-1). -/
@@ -44,12 +43,12 @@ theorem wired_map_dual_eq_free (θ : Parameters)
   rw [← free_map_dual_eq_wired θ μ₀ μ₁ hμ₀ hμ₁,
     Measure.map_map wholePlaneDualConfigurationHomeomorph_measurable
       wholePlaneDualConfigurationHomeomorph_measurable]
-  have heq : (wholePlaneDualConfigurationHomeomorph ∘ wholePlaneDualConfigurationHomeomorph) =
+  have heq :  wholePlaneDualConfigurationHomeomorph ∘ wholePlaneDualConfigurationHomeomorph  =
       latticeConfigurationIsoHomeomorph (latticeTranslationIso (-1,-1)) :=
     funext dualConfiguration_twice
   rw [heq]
   exact free_limit_map_latticeIso θ μ₀ hμ₀ (latticeTranslationIso (-1,-1))
-    (fun c v r => mem_latticeBox_translate_iff (-1,-1) c v r)
+     (mem_latticeBox_translate_iff (-1,-1)) 
 
 end
 end PottsDiscontinuity.Duality

@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.EdgeIndex
 
@@ -35,13 +36,11 @@ theorem sameCycle_invariant {α β : Type*} [Finite α] (P : Equiv.Perm α) (f :
 variable (ω₀ : ArrowConfig N M) (s : Smoothing N M) (h₀ : CompatibleConfig ω₀ s)
 
 /-- Canonical loop class of an arbitrary dart, aligning its edge with the reference arrows. -/
-def loopOfDart (d : Dart N M) : DirectedLoop ω₀ s h₀ :=
+def loopOfDart (d : Dart N M)  :=
   directedLoopOf ω₀ s h₀ (edgeDirectedEquiv ω₀ (dartEdge d))
 
 theorem loopOfDart_of_out (d : Dart N M) (hd : dartOut ω₀ d = true) :
-    loopOfDart ω₀ s h₀ d = directedLoopOf ω₀ s h₀ ⟨d, hd⟩ := by
-  apply congrArg (directedLoopOf ω₀ s h₀)
-  exact Subtype.ext (arrowDart_dartEdge ω₀ ⟨d, hd⟩)
+    loopOfDart ω₀ s h₀ d = directedLoopOf ω₀ s h₀ ⟨d, hd⟩ := congrArg (directedLoopOf ω₀ s h₀) (Subtype.ext (arrowDart_dartEdge ω₀ ⟨d, hd⟩))
 
 @[simp] theorem loopOfDart_edgeReverse (d : Dart N M) :
     loopOfDart ω₀ s h₀ (edgeReverse d) = loopOfDart ω₀ s h₀ d := by
@@ -52,7 +51,7 @@ theorem directedLoopOf_symm_step (d : DirectedDart ω₀) :
     directedLoopOf ω₀ s h₀ ((directedStep ω₀ s h₀).symm d) =
       directedLoopOf ω₀ s h₀ d := by
   have h := directedLoopOf_step ω₀ s h₀ ((directedStep ω₀ s h₀).symm d)
-  simpa only [Equiv.apply_symm_apply] using h.symm
+  simp_all
 
 /-- The two edge slots of a strand belong to the same canonical loop. -/
 theorem loopOfDart_strandReverse (d : Dart N M) :
@@ -66,14 +65,13 @@ theorem loopOfDart_strandReverse (d : Dart N M) :
           loopOfDart ω₀ s h₀ (edgeReverse (strandReverse s d)) :=
         (loopOfDart_edgeReverse ω₀ s h₀ _).symm
       _ = directedLoopOf ω₀ s h₀ y := by
-        rw [← hy]
+        
         exact loopOfDart_of_out ω₀ s h₀ y.val y.property
       _ = directedLoopOf ω₀ s h₀ x := directedLoopOf_symm_step ω₀ s h₀ x
       _ = loopOfDart ω₀ s h₀ d := (loopOfDart_of_out ω₀ s h₀ d hd).symm
-  · have hd' : dartOut ω₀ (edgeReverse d) = true := by
-      rw [dartOut_edgeReverse, Bool.eq_false_iff.mpr hd]
-      rfl
-    let x : DirectedDart ω₀ := ⟨edgeReverse d, hd'⟩
+  · 
+    let x : DirectedDart ω₀ := ⟨edgeReverse d,  by
+                                                  simp_all ⟩
     let y := directedStep ω₀ s h₀ x
     have hy : y.val = strandReverse s d := by
       change strandReverse s (edgeReverse (edgeReverse d)) = strandReverse s d
@@ -84,7 +82,8 @@ theorem loopOfDart_strandReverse (d : Dart N M) :
         exact loopOfDart_of_out ω₀ s h₀ y.val y.property
       _ = directedLoopOf ω₀ s h₀ x := directedLoopOf_step ω₀ s h₀ x
       _ = loopOfDart ω₀ s h₀ (edgeReverse d) :=
-        (loopOfDart_of_out ω₀ s h₀ _ hd').symm
+        (loopOfDart_of_out ω₀ s h₀ _ (by
+                                        simp_all)).symm
       _ = loopOfDart ω₀ s h₀ d := loopOfDart_edgeReverse ω₀ s h₀ d
 
 @[simp] theorem loopOfDart_step (d : Dart N M) :
@@ -94,29 +93,32 @@ theorem loopOfDart_strandReverse (d : Dart N M) :
 /-- The orientation of another compatible arrow field on each reference-oriented loop. -/
 def loopOrientation (ω : ArrowConfig N M) (h : CompatibleConfig ω s) :
     DirectedLoop ω₀ s h₀ → Bool :=
-  Quotient.lift (fun d : DirectedDart ω₀ => dartOut ω d.val) (by
-    intro d e hde
-    exact sameCycle_invariant (directedStep ω₀ s h₀) (fun x => dartOut ω x.val)
-      (fun x => dartOut_step h x.val) hde)
+  Quotient.lift (fun d : DirectedDart ω₀ => dartOut ω d.val) (fun d e hde => sameCycle_invariant (directedStep ω₀ s h₀) (fun x => dartOut ω x.val)
+                                                          (fun x => dartOut_step h x.val) hde)
 
-@[simp] theorem loopOrientation_apply (ω : ArrowConfig N M) (h : CompatibleConfig ω s)
+section
+
+variable (ω : ArrowConfig N M) (h : CompatibleConfig ω s)
+
+
+@[simp] theorem loopOrientation_apply 
     (d : DirectedDart ω₀) :
     loopOrientation ω₀ s h₀ ω h (directedLoopOf ω₀ s h₀ d) = dartOut ω d.val := rfl
 
 /-- The Boolean orientation on the loop recovers the arrow on every dart. -/
-theorem dartOut_eq_loopOrientation (ω : ArrowConfig N M) (h : CompatibleConfig ω s)
+theorem dartOut_eq_loopOrientation 
     (d : Dart N M) :
     dartOut ω d = if dartOut ω₀ d then loopOrientation ω₀ s h₀ ω h (loopOfDart ω₀ s h₀ d)
       else !loopOrientation ω₀ s h₀ ω h (loopOfDart ω₀ s h₀ d) := by
   by_cases hd : dartOut ω₀ d = true
-  · simp only [hd, ite_true]
-    rw [loopOfDart_of_out ω₀ s h₀ d hd, loopOrientation_apply]
-  · have hd' : dartOut ω₀ (edgeReverse d) = true := by
-      rw [dartOut_edgeReverse, Bool.eq_false_iff.mpr hd]
-      rfl
+  · simp_all [loopOfDart_of_out]
+  · 
     simp only [Bool.eq_false_iff.mpr hd, Bool.false_eq_true, ite_false]
     rw [← loopOfDart_edgeReverse ω₀ s h₀ d,
-      loopOfDart_of_out ω₀ s h₀ _ hd', loopOrientation_apply,
+      loopOfDart_of_out ω₀ s h₀ _ (by
+                                     simp_all), loopOrientation_apply,
       dartOut_edgeReverse, Bool.not_not]
+
+end
 
 end PottsDiscontinuity.Torus

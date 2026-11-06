@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1RunPermutation
 
@@ -24,38 +25,30 @@ structure T1OutputIndex (n : ℕ) (l : Fin (n + 1)) where
 noncomputable instance t1OutputIndexFintype {n : ℕ} {l : Fin (n + 1)} :
     Fintype (T1OutputIndex n l) := by
   classical
-  apply Fintype.ofInjective (fun i => (i.σ, i.edge))
+  apply Fintype.ofInjective  fun i => (i.σ, i.edge) 
   intro i j hij
   cases i with
   | mk σ edge hleft =>
-    cases j with
-    | mk σ' edge' hleft' =>
-      simp only [Prod.mk.injEq] at hij
-      rcases hij with ⟨rfl, rfl⟩
-      rfl
+    simp_all
 
 /-- Reindex a canonical T₁ pair by its post-zipper permutation and original
 ML edge. -/
 noncomputable def t1PairOutputIndex {n : ℕ} {l : Fin (n + 1)}
     (i : T1PairIndex n l) : T1OutputIndex n l := by
   let σout := (zeroRootZipperRun (t1PairZipperPath i) (i.σ, i.w)).1
-  have hroot : σout (t1PairRunEnd i) = l := by
-    simpa [σout] using t1PairZipperRun_root i
-  have hleftEnd : t1EdgeLeft i.edge ≠ t1PairRunEnd i := by
-    intro he
-    have hfalse := i.hleft
-    have htrue := (t1PairRunEnd_spec i).1
-    rw [← he] at htrue
-    rw [hfalse] at htrue
-    contradiction
+  have hroot : σout (t1PairRunEnd i) = l := t1PairZipperRun_root i
+  
   have hpre : σout.symm l = t1PairRunEnd i := by
     apply σout.injective
     simp [hroot]
-  exact ⟨σout, i.edge, by simpa [hpre] using hleftEnd⟩
+  exact ⟨σout, i.edge, by simpa  using  by
+                                                intro he
+                                                have hfalse := i.hleft
+                                                have htrue := (t1PairRunEnd_spec i).1
+                                                all_goals simp_all ⟩
 
 theorem t1PairOutputIndex_left {n : ℕ} {l : Fin (n + 1)}
     (i : T1PairIndex n l) :
-    (t1PairOutputIndex i).σ (t1EdgeLeft i.edge) = i.σ (t1EdgeLeft i.edge) := by
-  exact t1PairZipperRun_left i
+    (t1PairOutputIndex i).σ (t1EdgeLeft i.edge) = i.σ (t1EdgeLeft i.edge) := t1PairZipperRun_left i
 
 end PottsDiscontinuity.BetheAnsatz

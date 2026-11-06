@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.LoopHomology
 public import PottsDiscontinuity.Torus.LoopTurning
@@ -50,38 +51,34 @@ theorem loopTurn_mod_four (ω : ArrowConfig N M) (s : Smoothing N M)
   classical
   have hstep := loopSum_step ω s h (fun d => strandTurn (s d.1) d.2) q
   have hcast :
-      (loopTurn ω s h q : ZMod 4) =
-        (loopSum ω s h (fun d => strandTurn (s (stepPerm s d).1)
-          (stepPerm s d).2) q : ZMod 4) := by
-    change (loopSum ω s h (fun d => strandTurn (s d.1) d.2) q : ZMod 4) =
-      (loopSum ω s h (fun d => strandTurn (s (stepPerm s d).1)
-        (stepPerm s d).2) q : ZMod 4)
-    exact congrArg (fun z : ℤ => (z : ZMod 4)) hstep.symm
+       loopTurn ω s h q  =
+         loopSum ω s h (fun d => strandTurn (s (stepPerm s d).1)
+          (stepPerm s d).2) q  := by
+    aesop
   have hlocal :
       (loopSum ω s h (fun d => strandTurn (s (stepPerm s d).1)
-        (stepPerm s d).2) q : ZMod 4) =
+        (stepPerm s d).2) q ) =
         ∑ d : DirectedDart ω,
           if directedLoopOf ω s h d = q then
             portAngle (stepPerm s d.val).2 - portAngle d.val.2 else 0 := by
     unfold loopSum
-    simp only [Finset.sum_filter, Int.cast_sum, Int.cast_ite, Int.cast_zero]
+    simp only [Finset.sum_filter, Int.cast_sum]
     apply Finset.sum_congr rfl
     intro d _
     by_cases hd : directedLoopOf ω s h d = q
-    · simp [hd]
-      exact strandTurn_step_angle s d.val
+    · grind [strandTurn_step_angle]
     · simp [hd]
   have hangle :
       (∑ d : DirectedDart ω,
         if directedLoopOf ω s h d = q then portAngle (stepPerm s d.val).2 else 0) =
       ∑ d : DirectedDart ω,
         if directedLoopOf ω s h d = q then portAngle d.val.2 else 0 := by
-    let g : DirectedDart ω → ZMod 4 := fun d =>
+    let g  := fun d =>
       if directedLoopOf ω s h d = q then portAngle d.val.2 else 0
     calc
       _ = ∑ d : DirectedDart ω, g (directedStep ω s h d) := by
-        apply Finset.sum_congr rfl
-        intro d _
+        
+        
         simp [g, directedLoopOf_step]
       _ = ∑ d : DirectedDart ω, g d := Equiv.sum_comp (directedStep ω s h) g
       _ = _ := by simp [g]
@@ -94,12 +91,11 @@ theorem loopTurn_mod_four (ω : ArrowConfig N M) (s : Smoothing N M)
           portAngle (stepPerm s d.val).2 - portAngle d.val.2 else 0) =
       (∑ d : DirectedDart ω,
         if directedLoopOf ω s h d = q then portAngle (stepPerm s d.val).2 else 0) -
-      (∑ d : DirectedDart ω,
-        if directedLoopOf ω s h d = q then portAngle d.val.2 else 0) := by
+       ∑ d : DirectedDart ω,
+        if directedLoopOf ω s h d = q then portAngle d.val.2 else 0  := by
       rw [← Finset.sum_sub_distrib]
-      apply Finset.sum_congr rfl
-      intro d _
-      by_cases hd : directedLoopOf ω s h d = q <;> simp [hd]
+      
+      all_goals grind
     rw [hsplit, hangle, sub_self]
   rw [hcast, hlocal, hdiff]
 

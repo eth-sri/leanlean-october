@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.LoopCrossings
 
@@ -32,19 +33,19 @@ theorem sum_outgoing_strandTurn (s l r d u : Bool) (h : Compatible s l r d u) :
 
 /-- Integer turn sum of a single directed loop, measured in quarter turns. -/
 noncomputable def loopTurn (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (q : DirectedLoop ω s h) : ℤ :=
+    (h : CompatibleConfig ω s) (q : DirectedLoop ω s h)  :=
   loopSum ω s h (fun d => strandTurn (s d.1) d.2) q
 
 /-- Total turning of the actual loop cycles equals the sum of the local vertex contributions. -/
 theorem sum_loopTurn (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) :
     ∑ q : DirectedLoop ω s h, loopTurn ω s h q = totalQuarterTurn ω s := by
-  classical
-  change (∑ q : DirectedLoop ω s h,
-    loopSum ω s h (fun d => strandTurn (s d.1) d.2) q) = _
+  
+  change  ∑ q : DirectedLoop ω s h,
+    loopSum ω s h (fun d => strandTurn (s d.1) d.2) q  = _
   rw [sum_loopSum]
   rw [← Finset.sum_subtype (univ.filter fun d => dartOut ω d = true)
-    (by intro d; simp) (fun d => strandTurn (s d.1) d.2), Finset.sum_filter]
+    (by  simp)  fun d => strandTurn (s d.1) d.2 , Finset.sum_filter]
   rw [Fintype.sum_prod_type]
   exact Finset.sum_congr rfl fun v _ => sum_outgoing_strandTurn _ _ _ _ _ (h v)
 

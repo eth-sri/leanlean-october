@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1ZipperStep
 
@@ -28,25 +29,25 @@ theorem zeroRootRegularizedWordTerm_flipRoot {N n : ℕ} {c : ℝ}
   have hroot : σ.symm l = a := by
     apply σ.injective
     simpa using hσ.symm
-  have hprod : zeroRootRegularizedProduct c p l σ (Function.update w a false) =
-      zeroRootRegularizedProduct c p l σ w := by
-    unfold zeroRootRegularizedProduct
-    rw [hroot]
-    apply Finset.prod_congr rfl
-    intro k hk
-    have hka : k ≠ a := (mem_erase.mp hk).1
-    simp [zeroRootLetterWeight, Function.update_of_ne hka]
+  
   have hpzero : p (σ a) = 0 := by rw [hσ, hpl]
-  have hphase : wordPhase (N := N) x p σ (Function.update w a false) =
-      wordPhase (N := N) x p σ w := by
-    unfold wordPhase
-    apply Finset.prod_congr rfl
-    intro k _
-    by_cases hka : k = a
-    · subst k
-      simp [hpzero, positionPhase]
-    · simp [Function.update_of_ne hka]
+  
   unfold zeroRootRegularizedWordTerm
-  rw [hprod, hphase]
+  rw [(by
+         unfold zeroRootRegularizedProduct
+         rw [hroot]
+         apply Finset.prod_congr rfl
+         intro k hk
+         
+         simp [zeroRootLetterWeight, Function.update_of_ne ((mem_erase.mp hk).1)] : zeroRootRegularizedProduct c p l σ (Function.update w a false) =
+      zeroRootRegularizedProduct c p l σ w), (by
+                
+                apply Finset.prod_congr rfl
+                intro k _
+                by_cases hka : k = a
+                · subst k
+                  simp [hpzero, positionPhase]
+                · simp [Function.update_of_ne hka] : wordPhase (N := N) x p σ (Function.update w a false) =
+      wordPhase (N := N) x p σ w)]
 
 end PottsDiscontinuity.BetheAnsatz

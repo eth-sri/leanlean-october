@@ -24,11 +24,11 @@ noncomputable def wordPhase {N n : ℕ} (x : Fin (n + 1) → ℤ)
 /-- Local coefficient with the two endpoint constraints recorded explicitly. -/
 noncomputable def restrictedLetterCoefficient {n : ℕ} (c : ℝ)
     (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1)))
-    (S : Finset (Fin (n + 1))) (k : Fin (n + 1)) (b : Bool) : ℂ :=
-  if b then (if k ∈ S then 0 else
-    if (finRotate (n + 1)).symm k ∈ S then 1 else L c (z (p (σ k))))
-  else (if (finRotate (n + 1)).symm k ∈ S then 0 else
-    if k ∈ S then 1 else M c (z (p (σ k))))
+    (S : Finset (Fin (n + 1))) (k : Fin (n + 1)) (b : Bool)  :=
+  if b then  if k ∈ S then 0 else
+    if (finRotate (n + 1)).symm k ∈ S then 1 else L c (z (p (σ k))) 
+  else  if (finRotate (n + 1)).symm k ∈ S then 0 else
+    if k ∈ S then 1 else M c (z (p (σ k))) 
 
 /-- Coefficient of a word before the sum over collision sets. -/
 noncomputable def restrictedWordCoefficient {n : ℕ} (c : ℝ)
@@ -47,18 +47,17 @@ theorem restrictedGapSum_eq_sum_words {N n : ℕ} (c : ℝ) (x : Fin (n + 1) →
   rw [restrictedGapSum_eq_product c x p σ S hx hspan hp]
   unfold restrictedWordCoefficient wordPhase
   simp_rw [← Finset.prod_mul_distrib]
-  rw [← Fintype.prod_sum (fun k (b : Bool) => restrictedLetterCoefficient c p σ S k b *
-    positionPhase (p (σ k)) (if b then cyclicPredecessorPositions N x k else x k))]
+  rw [← Fintype.prod_sum  fun k b => restrictedLetterCoefficient c p σ S k b *
+    positionPhase (p (σ k)) (if b then cyclicPredecessorPositions N x k else x k) ]
   apply Finset.prod_congr rfl
   intro k _
-  simp only [Fintype.sum_bool, restrictedLetterCoefficient, Bool.false_eq_true,
-    ↓reduceIte]
+  simp only [Fintype.sum_bool, restrictedLetterCoefficient, Bool.false_eq_true]
   by_cases hk : k ∈ S <;> by_cases hl : (finRotate (n + 1)).symm k ∈ S <;>
     simp only [hk, hl, ↓reduceIte, zero_mul, one_mul, zero_add, add_zero]
 
 /-- Exact inclusion-exclusion coefficient, prior to collecting the ML factors. -/
 noncomputable def inclusionWordCoefficient {n : ℕ} (c : ℝ)
-    (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) (w : Fin (n + 1) → Bool) : ℂ :=
+    (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) (w : Fin (n + 1) → Bool)  :=
   ∑ S ∈ (univ : Finset (Fin (n + 1))).powerset,
     (-1 : ℂ) ^ S.card * restrictedWordCoefficient c p σ S w
 

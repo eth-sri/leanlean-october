@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusRC.InnerLowerLimit
 public import PottsDiscontinuity.TorusRC.BoxLimitLower
@@ -28,7 +29,7 @@ theorem eightfoldPeriod_dvd (k : ℕ) : 8 ∣ eightfoldPeriod k := ⟨k+1,rfl⟩
 
 /-- The two iterated lower limits in (3.15), with the explicit parity
 restriction N∈8ℕ and all positive even heights. -/
-noncomputable def torusRCUOneIteratedLiminf (q : Set.Ici (1 : ℝ)) : EReal :=
+noncomputable def torusRCUOneIteratedLiminf (q : Set.Ici (1 : ℝ))  :=
   liminf (fun k => liminf (torusRCUOneRateE (eightfoldPeriod_even k) q) atTop) atTop
 
 /-- The outer N→∞ passage uses the exact rotated free law and connection event of
@@ -45,25 +46,23 @@ theorem torusRCU_one_outer_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 
   apply log_probability_lower_closed _ (rotatedDiagonalProbability_pos _ n)
     _ _
   intro t ht htp
-  have hnative := liftedBoxFreeDiagonalProbability_eventually_gt
-    (torusRCBridgeParameters q) n t ht.le htp
+  
   have hR : Tendsto (fun k => eightfoldPeriod k/4) atTop atTop := by
     apply tendsto_atTop.2
     intro r
     filter_upwards [eventually_ge_atTop r] with k hk
     dsimp [eightfoldPeriod]
     omega
-  have hbound : ∀ᶠ k in atTop,
-      ((Real.log (c/(9*(n:ℝ)^2))/(n:ℝ) + Real.log t/((2*n:ℕ):ℝ):ℝ):EReal) ≤
-        liminf (torusRCUOneRateE (eightfoldPeriod_even k) q) atTop := by
-    filter_upwards [hR.eventually hnative,eventually_ge_atTop n] with k hkt hkn
-    have h8n : 8*n ≤ eightfoldPeriod k := by dsimp [eightfoldPeriod]; omega
-    have h := hinner (eightfoldPeriod k) n (eightfoldPeriod_even k)
-      (eightfoldPeriod_four_le k) (eightfoldPeriod_dvd k) hn h8n
-    apply le_trans _ h
-    apply EReal.coe_le_coe_iff.mpr
-    exact add_le_add le_rfl
-      (div_le_div_of_nonneg_right (Real.log_le_log ht hkt.le) (by positivity))
-  exact le_liminf_of_le (by isBoundedDefault) hbound
+  
+  exact le_liminf_of_le  isCobounded_ge_of_top  (by
+                                                   filter_upwards [hR.eventually (liftedBoxFreeDiagonalProbability_eventually_gt
+                                                                                    (torusRCBridgeParameters q) n t ht.le htp),eventually_ge_atTop n] with k hkt hkn
+                                                   
+                                                   have h := hinner (eightfoldPeriod k) n (eightfoldPeriod_even k)
+                                                     (eightfoldPeriod_four_le k) (eightfoldPeriod_dvd k) hn (by dsimp [eightfoldPeriod]; omega)
+                                                   apply le_trans _ h
+                                                   apply EReal.coe_le_coe_iff.mpr
+                                                   exact add_le_add le_rfl
+                                                     (div_le_div_of_nonneg_right (Real.log_le_log ht hkt.le) (by positivity)))
 
 end PottsDiscontinuity.TorusRC

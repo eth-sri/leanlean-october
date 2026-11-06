@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.BoxCompactness
 public import Mathlib.MeasureTheory.Measure.Portmanteau
@@ -28,23 +29,19 @@ def allOpen (F : Finset squareLattice.edgeSet) : Set LatticeConfiguration :=
   {ω | ∀ e ∈ F, ω e = true}
 
 @[simp] theorem allOpen_empty : allOpen ∅ = Set.univ := by
-  ext ω
+  
   simp [allOpen]
 
 @[simp] theorem allOpen_insert (e : squareLattice.edgeSet) (F : Finset squareLattice.edgeSet) :
     allOpen (insert e F) = {ω | ω e = true} ∩ allOpen F := by
-  classical
+  
   ext ω
   simp [allOpen]
 
 /-- These actual finite-edge events are simultaneously open and closed. -/
-theorem allOpen_isClopen (F : Finset squareLattice.edgeSet) : IsClopen (allOpen F) := by
-  classical
-  induction F using Finset.induction_on with
-  | empty => rw [allOpen_empty]; exact isClopen_univ
-  | insert e F he ih =>
-    rw [allOpen_insert]
-    exact ((isClopen_discrete ({true} : Set Bool)).preimage (continuous_apply e)).inter ih
+theorem allOpen_isClopen (F : Finset squareLattice.edgeSet) : IsClopen (allOpen F) := Finset.induction_on F (Eq.mpr (congrArg IsClopen allOpen_empty) isClopen_univ) fun e F he ih =>
+                                                                                        Eq.mpr (congrArg IsClopen (allOpen_insert e F))
+                                                                                          (IsClopen.inter (IsClopen.preimage (isClopen_discrete {true}) (continuous_apply e)) ih)
 
 /-- A weakly convergent family has convergent probabilities for each genuine
 finite all-open cylinder, since its boundary is empty. -/
@@ -58,7 +55,7 @@ theorem tendsto_allOpen_of_weak {ι : Type*} {l : Filter ι}
 end LatticeConfiguration
 
 
-attribute [local instance] configurationMeasurableSpace
+
 
 /-- Restricting a finite all-open cylinder to a box configuration tests literal
 inclusion of the selected original edges in its embedded open-edge set. -/

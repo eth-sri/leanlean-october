@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.DiamondClusterProjection
 
@@ -46,12 +47,8 @@ theorem ribbonIntersectionCoefficient_clusterCycle (hN : Even N) (hM : Even M)
     ribbonIntersectionCoefficient hN hM A (diamondClusterCycle hN hM A c f) e =
       if diamondEdgeCluster hN hM A e = c then ribbonIntersectionCoefficient hN hM A f e else 0 := by
   unfold ribbonIntersectionCoefficient
-  rw [ribbonCornerPrimitive_clusterCycle, ribbonCornerPrimitive_clusterCycle,
-    ribbonCornerCluster_end hN hM A e true, ribbonCornerCluster_end hN hM A e false,
-    diamondClusterCycle_apply]
-  by_cases hc : diamondEdgeCluster hN hM A e = c
-  · simp only [hc, ite_true]
-  · simp only [hc, ite_false, sub_zero]
+  rw [ribbonCornerPrimitive_clusterCycle, ribbonCornerPrimitive_clusterCycle, ribbonCornerCluster_end hN hM A e true, ribbonCornerCluster_end hN hM A e false]
+  all_goals aesop
 
 open scoped Classical in
 theorem ribbonIntersection_clusterCycles (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -59,13 +56,7 @@ theorem ribbonIntersection_clusterCycles (hN : Even N) (hM : Even M) (A : RCConf
     ribbonIntersection hN hM A (diamondClusterCycle hN hM A c f) (diamondClusterCycle hN hM A c g) =
       ∑ e : OpenDiamondEdge A, if diamondEdgeCluster hN hM A e = c then
         ribbonIntersectionCoefficient hN hM A f e * g.val e else 0 := by
-  unfold ribbonIntersection
-  apply Finset.sum_congr rfl
-  intro e _
-  rw [ribbonIntersectionCoefficient_clusterCycle, diamondClusterCycle_apply]
-  by_cases hc : diamondEdgeCluster hN hM A e = c
-  · simp only [hc, ite_true]
-  · simp only [hc, ite_false, zero_mul]
+  grind [ribbonIntersection, ribbonIntersectionCoefficient_clusterCycle, diamondClusterCycle_apply]
 
 /-- A nonzero intersection is witnessed by two conserved flows within a single actual cluster. -/
 theorem exists_cluster_intersection_nonzero (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -73,9 +64,9 @@ theorem exists_cluster_intersection_nonzero (hN : Even N) (hM : Even M) (A : RCC
     ∃ c : (diamondOpenGraph hN hM true A).ConnectedComponent,
       ribbonIntersection hN hM A (diamondClusterCycle hN hM A c f) (diamondClusterCycle hN hM A c g) ≠ 0 := by
   classical
-  let : Fintype (diamondOpenGraph hN hM true A).ConnectedComponent := Fintype.ofFinite _
-  have hs : (∑ c : (diamondOpenGraph hN hM true A).ConnectedComponent,
-      ribbonIntersection hN hM A (diamondClusterCycle hN hM A c f) (diamondClusterCycle hN hM A c g)) =
+  
+  have hs :  ∑ c : (diamondOpenGraph hN hM true A).ConnectedComponent,
+      ribbonIntersection hN hM A (diamondClusterCycle hN hM A c f) (diamondClusterCycle hN hM A c g)  =
         ribbonIntersection hN hM A f g := by
     simp_rw [ribbonIntersection_clusterCycles]
     rw [Finset.sum_comm]
@@ -84,19 +75,18 @@ theorem exists_cluster_intersection_nonzero (hN : Even N) (hM : Even M) (A : RCC
   push Not at hn
   apply hfg
   rw [← hs]
-  exact Finset.sum_eq_zero (fun c _ => hn c)
+  exact Finset.sum_eq_zero  fun c _ => hn c 
 
 /-- A conserved flow is carried entirely by the specified actual open cluster. -/
 def SupportedOnDiamondCluster (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (c : (diamondOpenGraph hN hM true A).ConnectedComponent) (f : diamondCycleSpace hN hM A) : Prop :=
+    (c : (diamondOpenGraph hN hM true A).ConnectedComponent) (f : diamondCycleSpace hN hM A)  :=
   ∀ e : OpenDiamondEdge A, diamondEdgeCluster hN hM A e ≠ c → f.val e = 0
 
 theorem diamondClusterCycle_supported (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (c : (diamondOpenGraph hN hM true A).ConnectedComponent) (f : diamondCycleSpace hN hM A) :
     SupportedOnDiamondCluster hN hM A c (diamondClusterCycle hN hM A c f) := by
-  classical
+  
   intro e he
-  rw [diamondClusterCycle_apply]
-  simp only [he, ite_false]
+  simp_all
 
 end PottsDiscontinuity.Torus

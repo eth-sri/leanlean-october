@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.AsymptoticOffset
 public import PottsDiscontinuity.Bethe.AsymptoticOffsetControl
@@ -17,7 +18,7 @@ theorem abs_sub_le_mul_root_dist_of_pos {n : ℕ} (hn : 0 < n)
       K * (q ⟨j + 1, hj⟩ - q ⟨j, by omega⟩)) :
     ∀ i j, |u i - u j| ≤ K * |q i - q j| := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
-  exact abs_sub_le_mul_root_dist q u hq (fun j => hstep j.val (by omega))
+  exact abs_sub_le_mul_root_dist q u hq  fun j => hstep j.val (by omega) 
 
 theorem root_spacing_lower_at {N n : ℕ} {p : Fin n → ℝ}
     (hp : p ∈ S_n n) (hn : 0 < n) (hs : 2 * n ≤ N) {M : ℝ}
@@ -25,12 +26,11 @@ theorem root_spacing_lower_at {N n : ℕ} {p : Fin n → ℝ}
     (j : ℕ) (hj : j + 1 < n) :
     1 ≤ M * ((N : ℝ) * (p ⟨j + 1, hj⟩ - p ⟨j, by omega⟩)) := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
-  have hg : p (⟨j, by omega⟩ : Fin k).castSucc < p (⟨j, by omega⟩ : Fin k).succ :=
-    hp.2.1 (by change j < j + 1; omega)
+  
   have he := hupper (p (⟨j, by omega⟩ : Fin k).castSucc)
     ⟨(hp.1 _).1.le, (hp.1 _).2.le⟩
-  rw [rootStepDensity_interior hp hs ⟨j, by omega⟩ ⟨le_rfl, hg⟩] at he
-  exact (div_le_iff₀ (mul_pos (by exact_mod_cast (show 0 < N by omega)) (sub_pos.mpr hg))).mp he
+  rw [rootStepDensity_interior hp hs ⟨j, by omega⟩ ⟨le_rfl,  hp.2.1 (by change j < j + 1; omega) ⟩] at he
+  exact (div_le_iff₀ (mul_pos (by exact_mod_cast  by omega ) (sub_pos.mpr (hp.2.1 (by change j < j + 1; omega))))).mp he
 
 theorem offset_root_lipschitz {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)
     (hN : 0 < N) (hn : 0 < N / 2 - r)
@@ -42,16 +42,11 @@ theorem offset_root_lipschitz {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)
       |offsetDisplacement N r h4 hr p q ⟨j + 1, hj⟩ -
         offsetDisplacement N r h4 hr p q ⟨j, by omega⟩| ≤ H / N) :
     ∀ i j, |offsetDisplacement N r h4 hr p q i - offsetDisplacement N r h4 hr p q j| ≤
-      H * M * |q i - q j| := by
-  have hlocal (j : ℕ) (hj : j + 1 < N / 2 - r) :
-      |offsetDisplacement N r h4 hr p q ⟨j + 1, hj⟩ -
-        offsetDisplacement N r h4 hr p q ⟨j, by omega⟩| ≤
-        (H * M) * (q ⟨j + 1, hj⟩ - q ⟨j, by omega⟩) := by
-    apply (hinc j hj).trans
-    apply (div_le_iff₀ (Nat.cast_pos.mpr hN : (0 : ℝ) < N)).mpr
-    have hb := mul_le_mul_of_nonneg_left (root_spacing_lower_at hq hn (by omega) hupper j hj) hH
-    nlinarith only [hb]
-  exact abs_sub_le_mul_root_dist_of_pos hn q (offsetDisplacement N r h4 hr p q)
-    hq.2.1.monotone hlocal
+      H * M * |q i - q j| := abs_sub_le_mul_root_dist_of_pos hn q (offsetDisplacement N r h4 hr p q)
+                         hq.2.1.monotone  fun j hj => by
+                                            apply (hinc j hj).trans
+                                            apply (div_le_iff₀ (Nat.cast_pos.mpr hN )).mpr
+                                            
+                                            nlinarith only [(mul_le_mul_of_nonneg_left (root_spacing_lower_at hq hn (by omega) hupper j hj) hH)] 
 
 end PottsDiscontinuity.Bethe

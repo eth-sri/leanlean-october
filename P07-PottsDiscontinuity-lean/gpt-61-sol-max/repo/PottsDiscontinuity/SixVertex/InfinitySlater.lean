@@ -22,7 +22,7 @@ noncomputable def planeWaveMatrix {k : ℕ} (z : Fin k → ℂ) (x : Fin k → �
   fun b a => z a ^ x b
 
 /-- A Slater determinant evaluated on integer lifts. -/
-noncomputable def slater {k : ℕ} (z : Fin k → ℂ) (x : Fin k → ℤ) : ℂ := (planeWaveMatrix z x).det
+noncomputable def slater {k : ℕ} (z : Fin k → ℂ) (x : Fin k → ℤ)  := (planeWaveMatrix z x).det
 
 /-- One simultaneous choice of a left or right unit step for every labelled particle. -/
 def stepLift {k : ℕ} (x : Fin k → ℤ) (d : Fin k → Bool) : Fin k → ℤ :=
@@ -32,19 +32,19 @@ def stepLift {k : ℕ} (x : Fin k → ℤ) (d : Fin k → Bool) : Fin k → ℤ 
 one-particle eigenvalues. This identity includes collision terms, which vanish. -/
 theorem sum_slater_stepLift {k : ℕ} (z : Fin k → ℂ) (hz : ∀ a, z a ≠ 0)
     (x : Fin k → ℤ) :
-    (∑ d : Fin k → Bool, slater z (stepLift x d)) =
+     ∑ d : Fin k → Bool, slater z (stepLift x d)  =
       (∏ a, (z a + (z a)⁻¹)) * slater z x := by
-  let g : Fin k → Bool → (Fin k → ℂ) :=
+  let g : Fin k → Bool →  Fin k → ℂ  :=
     fun b d a => z a ^ (x b + if d then 1 else -1)
   have hm := (Matrix.detRowAlternating (R := ℂ) (n := Fin k)).toMultilinearMap.map_sum g
   have he : (fun b => ∑ d : Bool, g b d) =
-      (fun b a => (z a + (z a)⁻¹) * planeWaveMatrix z x b a) := by
+       fun b a => (z a + (z a)⁻¹) * planeWaveMatrix z x b a  := by
     funext b a
     simp only [Finset.sum_apply, Fintype.sum_bool, g, Bool.false_eq_true, ↓reduceIte,
       zpow_add₀ (hz a), zpow_one, _root_.zpow_neg_one]
     unfold planeWaveMatrix
     ring
-  change (Matrix.det (fun b => ∑ d : Bool, g b d)) =
+  change  Matrix.det (fun b => ∑ d : Bool, g b d)  =
     ∑ d : Fin k → Bool, slater z (stepLift x d) at hm
   rw [← hm, he]
   exact Matrix.det_mul_row (fun a => z a + (z a)⁻¹) (planeWaveMatrix z x)

@@ -19,7 +19,7 @@ namespace PottsDiscontinuity
 
 /-- `k₀(ω)`: the number of clusters (connected components, isolated vertices included). -/
 noncomputable def rcFreeClusterCount (V : Finset (ℤ × ℤ))
-    (ω : (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet → Bool) : ℕ :=
+    (ω : (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet → Bool)  :=
   Nat.card (rcOpenGraph V ω).ConnectedComponent
 
 end PottsDiscontinuity

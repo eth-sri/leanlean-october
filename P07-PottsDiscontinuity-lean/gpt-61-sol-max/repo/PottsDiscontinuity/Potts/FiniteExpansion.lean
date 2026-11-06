@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Potts.Parameters
 
@@ -22,58 +23,69 @@ open Classical
 variable {E S : Type*} [Fintype E]
 
 /-- A single Edwards–Sokal bond factor. -/
-def bondFactor (β : ℝ) (P : Prop) (b : Bool) : ℝ :=
-  if b then (if P then bondProbability β else 0) else Real.exp (-β)
+def bondFactor (β : ℝ) (P : Prop) (b : Bool)  :=
+  if b then  if P then bondProbability β else 0  else Real.exp (-β)
 
 /-- The joint unnormalized weight of spins and bonds. -/
 def constraintJointWeight (β : ℝ) (sat : S → E → Prop) (σ : S) (ω : E → Bool) : ℝ :=
   ∏ e, bondFactor β (sat σ e) (ω e)
 
 /-- The Gibbs weight for the supplied agreement constraints. -/
-def constraintGibbsWeight (β : ℝ) (sat : S → E → Prop) (σ : S) : ℝ :=
+def constraintGibbsWeight (β : ℝ) (sat : S → E → Prop) (σ : S)  :=
   Real.exp (β * ∑ e, if sat σ e then (1 : ℝ) else 0)
 
 /-- The Bernoulli part of the bond weight, before the cluster-colouring count. -/
-def bernoulliBondWeight (β : ℝ) (ω : E → Bool) : ℝ :=
+def bernoulliBondWeight (β : ℝ) (ω : E → Bool)  :=
   ∏ e, if ω e then bondProbability β else Real.exp (-β)
 
-theorem sum_bondFactor (β : ℝ) (P : Prop) :
+section
+
+variable (β : ℝ)
+include β
+
+theorem sum_bondFactor  (P : Prop) :
     ∑ b : Bool, bondFactor β P b =
       Real.exp (-β) * Real.exp (β * if P then 1 else 0) := by
   by_cases h : P
-  · simp only [Fintype.sum_bool, bondFactor, Bool.false_eq_true, ↓reduceIte, h,
-      mul_one, bondProbability]
+  · simp only [bondFactor, h, bondProbability]
     rw [← Real.exp_add]
     simp
   · simp [bondFactor, h]
 
-theorem sum_constraintJointWeight_bonds (β : ℝ) (sat : S → E → Prop) (σ : S) :
+section
+
+variable (sat : S → E → Prop) (σ : S)
+include sat σ
+
+theorem sum_constraintJointWeight_bonds   :
     ∑ ω : E → Bool, constraintJointWeight β sat σ ω =
       Real.exp (-β) ^ Fintype.card E * constraintGibbsWeight β sat σ := by
   unfold constraintJointWeight
   rw [← Fintype.prod_sum]
   simp_rw [sum_bondFactor]
-  rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ,
-    ← Real.exp_sum, ← Finset.mul_sum]
+  rw [Finset.prod_mul_distrib, Finset.prod_const, ← Real.exp_sum, ← Finset.mul_sum]
   rfl
 
-theorem constraintJointWeight_eq (β : ℝ) (sat : S → E → Prop)
-    (σ : S) (ω : E → Bool) :
+theorem constraintJointWeight_eq   (ω : E → Bool) :
     constraintJointWeight β sat σ ω = bernoulliBondWeight β ω *
-      (if ∀ e, ω e = true → sat σ e then 1 else 0) := by
+       if ∀ e, ω e = true → sat σ e then 1 else 0  := by
   have h (e : E) : bondFactor β (sat σ e) (ω e) =
       (if ω e then bondProbability β else Real.exp (-β)) *
-        (if ω e = true → sat σ e then 1 else 0) := by
-    cases ω e <;> by_cases hs : sat σ e <;> simp [bondFactor, hs]
+         if ω e = true → sat σ e then 1 else 0  := by
+    cases ω e <;> by_cases hs : sat σ e <;> simp [bondFactor]
   simp only [constraintJointWeight, h, Finset.prod_mul_distrib,
     Fintype.prod_boole, bernoulliBondWeight]
 
-theorem bernoulliBondWeight_eq (β : ℝ) (ω : E → Bool) :
+end
+
+theorem bernoulliBondWeight_eq  (ω : E → Bool) :
     bernoulliBondWeight β ω = bondProbability β ^ Nat.card {e // ω e = true} *
       (1 - bondProbability β) ^ Nat.card {e // ω e = false} := by
   simp only [bernoulliBondWeight, Finset.prod_ite, Finset.prod_const,
     Nat.card_eq_fintype_card, Fintype.card_subtype, one_sub_bondProbability,
     Bool.not_eq_true]
+
+end
 
 variable [Fintype S]
 
@@ -86,7 +98,7 @@ theorem sum_constraintJointWeight_spins (β : ℝ) (sat : S → E → Prop) (ω 
     Nat.card_eq_fintype_card, Fintype.card_subtype]
 
 /-- The partition function of the joint spin-bond weight. -/
-def constraintJointPartition (β : ℝ) (sat : S → E → Prop) : ℝ :=
+def constraintJointPartition (β : ℝ) (sat : S → E → Prop)  :=
   ∑ σ : S, ∑ ω : E → Bool, constraintJointWeight β sat σ ω
 
 theorem constraintJointPartition_eq (β : ℝ) (sat : S → E → Prop) :
@@ -102,7 +114,7 @@ theorem constraintJointPartition_pos [Nonempty S] (β : ℝ) (sat : S → E → 
 
 /-- The normalized joint spin-bond probability mass. -/
 def constraintJointProbability (β : ℝ) (sat : S → E → Prop)
-    (σ : S) (ω : E → Bool) : ℝ :=
+    (σ : S) (ω : E → Bool)  :=
   constraintJointWeight β sat σ ω / constraintJointPartition β sat
 
 theorem constraintJointProbability_nonneg [Nonempty S] {β : ℝ} (hβ : 0 < β)

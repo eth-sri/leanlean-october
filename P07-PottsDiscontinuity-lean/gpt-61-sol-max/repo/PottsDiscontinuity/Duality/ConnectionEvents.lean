@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -49,10 +50,7 @@ theorem mem_connectionEvent_iff_finite_witness
         exact ⟨e, Finset.mem_insert_self _ _, rfl⟩
       refine ⟨insert e F, hadj.reachable.trans
         (actualConnected_mono (Finset.subset_insert _ _) hconn), ?_⟩
-      intro d hd
-      rcases Finset.mem_insert.1 hd with rfl | hd
-      · exact hopen
-      · exact hF d hd
+      aesop
   · rintro ⟨F, hconn, hF⟩
     exact hconn.mono (finite_openGraph_le ω F hF)
 
@@ -61,39 +59,38 @@ abbrev ConnectionWitness (u v : LatticeVertex) :=
   {F : Finset squareLattice.edgeSet // ActualConnected squareLattice F u v}
 
 /-- A finite union of finite path cylinders. -/
-def finiteConnectionUnion (u v : LatticeVertex) (S : Finset (ConnectionWitness u v)) :
-    Set LatticeConfiguration :=
+def finiteConnectionUnion (u v : LatticeVertex) (S : Finset (ConnectionWitness u v))  :=
   ⋃ F ∈ S, LatticeConfiguration.allOpen F.val
 
 lemma finiteConnectionUnion_isClopen (u v : LatticeVertex)
     (S : Finset (ConnectionWitness u v)) : IsClopen (finiteConnectionUnion u v S) :=
-  isClopen_biUnion_finset (fun F _ => LatticeConfiguration.allOpen_isClopen F.val)
+  isClopen_biUnion_finset  fun F _ => LatticeConfiguration.allOpen_isClopen F.val 
 
 lemma allOpen_isUpperSet (F : Finset squareLattice.edgeSet) :
     IsUpperSet (LatticeConfiguration.allOpen F) := by
   intro ω η hle hω e he
-  have h := hle e
-  rw [hω e he] at h
-  cases hη : η e
-  · rw [hη] at h
-    exact Bool.le_iff_imp.1 h rfl
-  · rfl
+  aesop
 
-lemma finiteConnectionUnion_isUpperSet (u v : LatticeVertex)
+section
+
+variable (u v : LatticeVertex)
+
+
+lemma finiteConnectionUnion_isUpperSet 
     (S : Finset (ConnectionWitness u v)) : IsUpperSet (finiteConnectionUnion u v S) := by
   intro ω η hle hω
   obtain ⟨F, hF, hω⟩ := Set.mem_iUnion₂.1 hω
   exact Set.mem_iUnion₂.2 ⟨F, hF, allOpen_isUpperSet F.val hle hω⟩
 
-lemma finiteConnectionUnion_mono (u v : LatticeVertex) :
+lemma finiteConnectionUnion_mono  :
     Monotone (finiteConnectionUnion u v) := by
   intro S T hST ω hω
   obtain ⟨F, hF, hω⟩ := Set.mem_iUnion₂.1 hω
   exact Set.mem_iUnion₂.2 ⟨F, hST hF, hω⟩
 
-lemma connectionEvent_eq_iUnion (u v : LatticeVertex) :
+lemma connectionEvent_eq_iUnion  :
     connectionEvent u v = ⋃ S : Finset (ConnectionWitness u v), finiteConnectionUnion u v S := by
-  classical
+  
   ext ω
   rw [mem_connectionEvent_iff_finite_witness]
   constructor
@@ -103,14 +100,16 @@ lemma connectionEvent_eq_iUnion (u v : LatticeVertex) :
   · intro h
     obtain ⟨S, hS⟩ := Set.mem_iUnion.1 h
     obtain ⟨F, _, hF⟩ := Set.mem_iUnion₂.1 hS
-    exact ⟨F.val, F.property, hF⟩
+    aesop
 
-lemma connectionEvent_isOpen (u v : LatticeVertex) : IsOpen (connectionEvent u v) := by
+lemma connectionEvent_isOpen  : IsOpen (connectionEvent u v) := by
   rw [connectionEvent_eq_iUnion]
-  exact isOpen_iUnion (fun S => (finiteConnectionUnion_isClopen u v S).isOpen)
+  exact isOpen_iUnion  fun S => (finiteConnectionUnion_isClopen u v S).isOpen 
 
-lemma connectionEvent_measurableSet (u v : LatticeVertex) :
+lemma connectionEvent_measurableSet  :
     MeasurableSet (connectionEvent u v) := (connectionEvent_isOpen u v).measurableSet
+
+end
 
 lemma measure_connectionEvent_eq_iSup (μ : Measure LatticeConfiguration) (u v : LatticeVertex) :
     μ (connectionEvent u v) =

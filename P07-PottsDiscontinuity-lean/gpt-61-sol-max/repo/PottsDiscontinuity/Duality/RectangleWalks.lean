@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Only rectangle walk maps, coordinate bounds, and support preimages retained. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Duality.LatticeWalkInterpolation
 public import PottsDiscontinuity.Duality.Rectangle
@@ -51,19 +52,18 @@ theorem latticeWalkPath_coordinate_bounds {u v : LatticeVertex}
       d ≤ (latticeWalkPath unitMesh p t).im ∧
       (latticeWalkPath unitMesh p t).im ≤ top := by
   intro t
-  have hmem : latticeWalkPath unitMesh p t ∈ Set.range (latticeWalkPath unitMesh p) :=
-    ⟨t, rfl⟩
-  obtain ⟨x, y, hx, hy, _, hseg⟩ := latticeWalkPath_range_subset_segments unitMesh p hmem
+  
+  obtain ⟨x, y, hx, hy, _, hseg⟩ := latticeWalkPath_range_subset_segments unitMesh p  ⟨t, rfl⟩ 
   rw [Path.range_segment] at hseg
   have hx' := hpoints x hx
   have hy' := hpoints y hy
-  have hcoords := complex_segment_coordinate_bounds
-    (latticeEmbed unitMesh x) (latticeEmbed unitMesh y) hseg
-    (by simpa [unitMesh] using hx'.1) (by simpa [unitMesh] using hy'.1)
-    (by simpa [unitMesh] using hx'.2.1) (by simpa [unitMesh] using hy'.2.1)
-    (by simpa [unitMesh] using hx'.2.2.1) (by simpa [unitMesh] using hy'.2.2.1)
-    (by simpa [unitMesh] using hx'.2.2.2) (by simpa [unitMesh] using hy'.2.2.2)
-  simpa [unitMesh] using hcoords
+  
+  simpa  using  complex_segment_coordinate_bounds
+                            (latticeEmbed unitMesh x) (latticeEmbed unitMesh y) hseg
+                            (by simpa [unitMesh] using hx'.1) (by simpa [unitMesh] using hy'.1)
+                            (by simpa [unitMesh] using hx'.2.1) (by simpa [unitMesh] using hy'.2.1)
+                            (by simpa [unitMesh] using hx'.2.2.1) (by simpa [unitMesh] using hy'.2.2.1)
+                            (by simpa [unitMesh] using hx'.2.2.2) (by simpa [unitMesh] using hy'.2.2.2) 
 
 theorem rectangleOpenWalk_mapped_support_preimage (a : LatticeVertex) (w h : ℕ)
     (A : Configuration (rectangleGraph a w h)) {u v : RectangleVertex a w h}

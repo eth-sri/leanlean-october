@@ -43,10 +43,10 @@ namespace PottsDiscontinuity.SixVertex
 /-! ### The torus and arrow configurations -/
 
 /-- Cyclic successor on `Fin n` (`i + 1 mod n`). -/
-abbrev nxt {n : ℕ} (i : Fin n) : Fin n := finRotate n i
+abbrev nxt {n : ℕ} (i : Fin n)  := finRotate n i
 
 /-- Cyclic predecessor on `Fin n` (`i - 1 mod n`). -/
-abbrev prv {n : ℕ} (i : Fin n) : Fin n := (finRotate n).symm i
+abbrev prv {n : ℕ} (i : Fin n)  := (finRotate n).symm i
 
 /-- An arrow configuration on the torus `ℤ/N × ℤ/M`: one orientation per edge.
 `horiz v = true` iff the edge `{v, v + (1,0)}` points right; `vert v = true` iff the edge
@@ -67,25 +67,23 @@ def ArrowConfig.equivProd (N M : ℕ) :
 instance (N M : ℕ) : Fintype (ArrowConfig N M) :=
   Fintype.ofEquiv _ (ArrowConfig.equivProd N M).symm
 
-instance (N M : ℕ) : DecidableEq (ArrowConfig N M) := fun ω ω' =>
-  decidable_of_iff (ω.horiz = ω'.horiz ∧ ω.vert = ω'.vert)
-    ⟨fun h => ArrowConfig.ext h.1 h.2, fun h => h ▸ ⟨rfl, rfl⟩⟩
+
 
 variable {N M : ℕ}
 
 namespace ArrowConfig
 
 /-- The edge to the left of `v` (from `v - (1,0)` to `v`); `true` iff it points towards `v`. -/
-def left (ω : ArrowConfig N M) (v : Fin N × Fin M) : Bool := ω.horiz (prv v.1, v.2)
+def left (ω : ArrowConfig N M) (v : Fin N × Fin M)  := ω.horiz (prv v.1, v.2)
 
 /-- The edge to the right of `v` (from `v` to `v + (1,0)`); `true` iff it points away from `v`. -/
-def right (ω : ArrowConfig N M) (v : Fin N × Fin M) : Bool := ω.horiz v
+def right (ω : ArrowConfig N M) (v : Fin N × Fin M)  := ω.horiz v
 
 /-- The edge below `v` (from `v - (0,1)` to `v`); `true` iff it points towards `v` (up arrow). -/
-def below (ω : ArrowConfig N M) (v : Fin N × Fin M) : Bool := ω.vert (v.1, prv v.2)
+def below (ω : ArrowConfig N M) (v : Fin N × Fin M)  := ω.vert (v.1, prv v.2)
 
 /-- The edge above `v` (from `v` to `v + (0,1)`); `true` iff it points away from `v` (up arrow). -/
-def above (ω : ArrowConfig N M) (v : Fin N × Fin M) : Bool := ω.vert v
+def above (ω : ArrowConfig N M) (v : Fin N × Fin M)  := ω.vert v
 
 end ArrowConfig
 
@@ -95,10 +93,10 @@ end ArrowConfig
 `l` (left edge, `true` = pointing right), `r` (right edge, `true` = pointing right),
 `d` (lower edge, `true` = pointing up), `u` (upper edge, `true` = pointing up). -/
 def inDegree (l r d u : Bool) : ℕ :=
-  (if l then 1 else 0) + (if r then 0 else 1) + (if d then 1 else 0) + (if u then 0 else 1)
+  (if l then 1 else 0) + (if r then 0 else 1) + (if d then 1 else 0) +  if u then 0 else 1 
 
 /-- The ice rule: every vertex of the torus has exactly two incident edges pointing towards it. -/
-def ArrowConfig.IceRule (ω : ArrowConfig N M) : Prop :=
+def ArrowConfig.IceRule (ω : ArrowConfig N M)  :=
   ∀ v : Fin N × Fin M, inDegree (ω.left v) (ω.right v) (ω.below v) (ω.above v) = 2
 
 instance (ω : ArrowConfig N M) : Decidable ω.IceRule := by
@@ -130,14 +128,14 @@ def ArrowConfig.numType (ω : ArrowConfig N M) (t : VertexType) : ℕ :=
 
 /-- The weight (1.4): `w(ω) = a^{n₁+n₂} b^{n₃+n₄} c^{n₅+n₆}` if `ω` satisfies the ice rule and
 `0` otherwise. -/
-def w6V (a b c : ℝ) (ω : ArrowConfig N M) : ℝ :=
+def w6V (a b c : ℝ) (ω : ArrowConfig N M)  :=
   if ω.IceRule then
     a ^ (ω.numType .t1 + ω.numType .t2) * b ^ (ω.numType .t3 + ω.numType .t4) *
       c ^ (ω.numType .t5 + ω.numType .t6)
   else 0
 
 /-- The weight with `a = b = 1` and `c` arbitrary (the case used throughout the paper). -/
-def w6V1 (c : ℝ) (ω : ArrowConfig N M) : ℝ := w6V 1 1 c ω
+def w6V1 (c : ℝ) (ω : ArrowConfig N M)  := w6V 1 1 c ω
 
 /-! ### The row statistic and the partition functions -/
 
@@ -147,12 +145,12 @@ def ArrowConfig.rowUp (ω : ArrowConfig N M) (j : Fin M) : ℕ :=
 
 /-- `|ω|`: the number of up arrows on each row (the value on row `0`; it is the same on every row
 for configurations satisfying the ice rule, see `rowUp_eq_absUp`). -/
-def ArrowConfig.absUp (ω : ArrowConfig N M) : ℕ :=
+def ArrowConfig.absUp (ω : ArrowConfig N M)  :=
   if h : 0 < M then ω.rowUp ⟨0, h⟩ else 0
 
 /-- `Z_6V(N, M) = ∑_ω w(ω)` over all arrow configurations of the torus `T_{N,M}` (weights
 `a = b = 1`, `c`). -/
-def Z6V (c : ℝ) (N M : ℕ) : ℝ := ∑ ω : ArrowConfig N M, w6V1 c ω
+def Z6V (c : ℝ) (N M : ℕ)  := ∑ ω : ArrowConfig N M, w6V1 c ω
 
 /-- The part of `Z_6V(N,M)` with `n` up arrows per row: `∑_{ω : |ω| = n} w(ω)`. -/
 def Z6Vn (c : ℝ) (N M n : ℕ) : ℝ := ∑ ω : ArrowConfig N M with ω.absUp = n, w6V1 c ω
@@ -168,14 +166,14 @@ def Psi (x : Finset (Fin N)) (i : Fin N) : ℤ := if i ∈ x then 1 else -1
 
 /-- `x_1 ≤ y_1 ≤ x_2 ≤ ⋯ ≤ x_n ≤ y_n` for the increasing enumerations of `x` and `y`
 (this includes `|x| = |y| = n`). -/
-def InterlacedLE (x y : Finset (Fin N)) : Prop :=
+def InterlacedLE (x y : Finset (Fin N))  :=
   ∃ h : x.card = y.card,
     (∀ k : Fin x.card, x.orderEmbOfFin rfl k ≤ y.orderEmbOfFin h.symm k) ∧
     ∀ k l : Fin x.card, k.val + 1 = l.val → y.orderEmbOfFin h.symm k ≤ x.orderEmbOfFin rfl l
 
 /-- `x` and `y` are interlaced: `|x| = |y| = n` and `x_1 ≤ y_1 ≤ x_2 ≤ ⋯ ≤ x_n ≤ y_n` or
 `y_1 ≤ x_1 ≤ y_2 ≤ ⋯ ≤ y_n ≤ x_n`. -/
-def Interlaced (x y : Finset (Fin N)) : Prop := InterlacedLE x y ∨ InterlacedLE y x
+def Interlaced (x y : Finset (Fin N))  := InterlacedLE x y ∨ InterlacedLE y x
 
 open Classical in
 noncomputable instance (x y : Finset (Fin N)) : Decidable (Interlaced x y) :=
@@ -192,7 +190,7 @@ noncomputable def transferMatrix (N : ℕ) (c : ℝ) :
     else 0
 
 /-- The index set of the block `V^{[n]}`: the basis vectors `Ψ_x` with `x` having `n` entries. -/
-abbrev State (N n : ℕ) : Type := {x : Finset (Fin N) // x.card = n}
+abbrev State (N n : ℕ)  := {x : Finset (Fin N) // x.card = n}
 
 /-- The block `V^{[n]}` of the transfer matrix: the action of `V` on `Ω_n = Vect(Ψ_x : |x| = n)`. -/
 noncomputable def transferBlock (N : ℕ) (c : ℝ) (n : ℕ) : Matrix (State N n) (State N n) ℝ :=

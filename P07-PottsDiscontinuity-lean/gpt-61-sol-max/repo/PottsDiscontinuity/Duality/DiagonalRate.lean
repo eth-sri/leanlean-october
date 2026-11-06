@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Duality.Decay
 public import PottsDiscontinuity.Frozen.Defs.DiagonalSite
@@ -22,29 +23,27 @@ theorem exponential_bound_of_pos_logarithmic_rate
     (f : ℕ → ℝ) (hf : ∀ n, f n ≤ 1) (L c : ℝ) (hc : 0 < c) (hcL : c < L)
     (hrate : Tendsto (fun n : ℕ => -(1 / (n : ℝ)) * Real.log (f n)) atTop (𝓝 L)) :
     ∃ C : ℝ, 0 < C ∧ ∀ n : ℕ, f n ≤ C * Real.exp (-c * (n : ℝ)) := by
-  have hevent := hrate.eventually (eventually_gt_nhds hcL)
-  obtain ⟨N, hN⟩ := eventually_atTop.1 (hevent.and (eventually_ge_atTop 1))
-  refine ⟨Real.exp (c * (N : ℝ)), Real.exp_pos _, ?_⟩
+  
+  obtain ⟨N, hN⟩ := eventually_atTop.1 ((hrate.eventually (eventually_gt_nhds hcL)).and (eventually_ge_atTop 1))
+  refine ⟨Real.exp (c *  N ), Real.exp_pos _, ?_⟩
   intro n
   by_cases hn : N ≤ n
-  · have hnpos : 0 < (n : ℝ) := by exact_mod_cast (hN n hn).2
-    have hdiv : c < -Real.log (f n) / (n : ℝ) := by
-      convert (hN n hn).1 using 1; ring
-    have hlog : Real.log (f n) ≤ -c * (n : ℝ) := by
-      have hmul := (lt_div_iff₀ hnpos).1 hdiv
+  · 
+    have hdiv : c < -Real.log (f n) / (n ) := by
+      grind
+    have hlog : Real.log (f n) ≤ -c *  n  := by
+      have hmul := (lt_div_iff₀ (by exact_mod_cast (hN n hn).2)).1 hdiv
       linarith only [hmul]
-    have hC : 1 ≤ Real.exp (c * (N : ℝ)) :=
-      Real.one_le_exp_iff.2 (mul_nonneg hc.le (Nat.cast_nonneg _))
+    
     calc
-      f n ≤ Real.exp (-c * (n : ℝ)) := Real.le_exp_of_log_le hlog
-      _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := by
-        exact le_mul_of_one_le_left (Real.exp_nonneg _) hC
-  · have hnN : (n : ℝ) ≤ (N : ℝ) := by exact_mod_cast (Nat.le_of_lt (lt_of_not_ge hn))
+      f n ≤ Real.exp (-c *  n ) := Real.le_exp_of_log_le hlog
+      _ ≤ Real.exp (c *  N ) * Real.exp (-c *  n ) := le_mul_of_one_le_left (Real.exp_nonneg _) (Real.one_le_exp_iff.2 (mul_nonneg hc.le (Nat.cast_nonneg _)))
+  · have hnN :  n  ≤  N  := by exact_mod_cast  Nat.le_of_lt (lt_of_not_ge hn) 
     calc
       f n ≤ 1 := hf n
-      _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := by
-        rw [← Real.exp_add, Real.one_le_exp_iff]
-        nlinarith only [mul_nonneg hc.le (sub_nonneg.2 hnN)]
+      _ ≤ Real.exp (c *  N ) * Real.exp (-c *  n ) := by
+        rw [← Real.exp_add]
+        simp_all
 
 /-- Apply the quantitative rate lemma to the exact frozen diagonal two-point
 probabilities of any probability measure on lattice configurations. -/

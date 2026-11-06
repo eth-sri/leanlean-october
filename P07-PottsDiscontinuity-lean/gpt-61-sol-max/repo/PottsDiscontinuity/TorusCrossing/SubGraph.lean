@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.IncreasingEvents
 public import PottsDiscontinuity.TorusCrossing.Markov
@@ -24,27 +25,18 @@ namespace Rect
 variable (Q : Rect) (Ex : Finset Cell)
 
 /-- The unexplored medial vertices. -/
-def unx : Finset Cell := Q.inner \ Ex
+def unx  := Q.inner \ Ex
 
 /-- Cells touched by an unexplored edge. -/
-noncomputable def vrx : Finset Cell :=
-  (Q.unx Ex).image (fun m => (primalEnds m).1) ∪ (Q.unx Ex).image (fun m => (primalEnds m).2)
+noncomputable def vrx  :=
+  (Q.unx Ex).image (fun m => (primalEnds m).1) ∪ (Q.unx Ex).image  fun m => (primalEnds m).2 
 
 variable {Q Ex}
 
-theorem mem_unx {m : Cell} : m ∈ Q.unx Ex ↔ m ∈ Q.inner ∧ m ∉ Ex := by
-  unfold unx; exact Finset.mem_sdiff
+theorem mem_unx {m : Cell} : m ∈ Q.unx Ex ↔ m ∈ Q.inner ∧ m ∉ Ex := Finset.mem_sdiff
 
 theorem mem_vrx {c : Cell} : c ∈ Q.vrx Ex ↔ Vtx (Q.unx Ex) c := by
-  unfold vrx Vtx
-  simp only [Finset.mem_union, Finset.mem_image]
-  constructor
-  · rintro (⟨m, hm, rfl⟩ | ⟨m, hm, rfl⟩)
-    · exact ⟨m, hm, Or.inl rfl⟩
-    · exact ⟨m, hm, Or.inr rfl⟩
-  · rintro ⟨m, hm, rfl | rfl⟩
-    · exact Or.inl ⟨m, hm, rfl⟩
-    · exact Or.inr ⟨m, hm, rfl⟩
+  grind [vrx, Vtx]
 
 variable (Q Ex)
 
@@ -59,27 +51,27 @@ theorem vrx_subset_pcells : Q.vrx Ex ⊆ Q.pcells := fun _c hc =>
   Vtx_mem_pcells (unx_subset_inner Q Ex) (mem_vrx.1 hc)
 
 /-- The graph of unexplored edges. -/
-noncomputable abbrev subG : SimpleGraph (Q.vrx Ex) := endGraph primalEnds (Q.vrx Ex) (Q.unx Ex)
+noncomputable abbrev subG  := endGraph primalEnds (Q.vrx Ex) (Q.unx Ex)
 
 /-- The embedding of the vertices of the unexplored graph into those of the board graph. -/
-noncomputable def subEmb : (Q.vrx Ex) ↪ Q.pcells where
+noncomputable def subEmb :  Q.vrx Ex  ↪ Q.pcells where
   toFun v := ⟨v.1, vrx_subset_pcells Q Ex v.2⟩
   inj' := by
     intro a b h
-    exact Subtype.ext (by simpa using congrArg Subtype.val h)
+    all_goals simp_all
 
 theorem subLe : (Q.subG Ex).map (subEmb Q Ex) ≤ Q.pG := by
   intro x y hxy
   rw [SimpleGraph.map_adj] at hxy
   obtain ⟨a, b, hab, rfl, rfl⟩ := hxy
-  rw [endGraph_adj] at hab ⊢
+  
   refine ⟨fun h => hab.1 ((subEmb Q Ex).injective h), ?_⟩
   rcases hab.2 with ⟨m, hm, h⟩ | ⟨m, hm, h⟩
   · exact Or.inl ⟨m, unx_subset_inner Q Ex hm, h⟩
   · exact Or.inr ⟨m, unx_subset_inner Q Ex hm, h⟩
 
 /-- The edges of the board graph that are not edges of the unexplored graph. -/
-noncomputable def remG : FK.Configuration Q.pG :=
+noncomputable def remG  :=
   FK.subgraphRemovedEdges ((Q.subG Ex).map (Q.subEmb Ex)) Q.pG
 
 theorem endEdge_mem_remG {m : Cell} (hm : m ∈ Q.inner) :
@@ -91,27 +83,24 @@ theorem endEdge_mem_remG {m : Cell} (hm : m ∈ Q.inner) :
     apply h
     refine ⟨⟨(primalEnds m).1, mem_vrx.2 ⟨m, hmU, Or.inl rfl⟩⟩,
       ⟨(primalEnds m).2, mem_vrx.2 ⟨m, hmU, Or.inr rfl⟩⟩, ?_, rfl, rfl⟩
-    rw [endGraph_adj]
+    
     exact ⟨fun h => primalEnds_ne m (congrArg Subtype.val h), Or.inl ⟨m, hmU, rfl⟩⟩
   · intro h hadj
     obtain ⟨a, b, hab, ha, hb⟩ := hadj
-    apply h
-    rw [endGraph_adj] at hab
+    
+    
     have ha' : a.1 = (primalEnds m).1 := congrArg Subtype.val ha
     have hb' : b.1 = (primalEnds m).2 := congrArg Subtype.val hb
     rcases hab.2 with ⟨m', hm', he⟩ | ⟨m', hm', he⟩
     · have : m' = m := primalEnds_inj (Or.inl (by rw [he, ha', hb']))
-      rw [← this]; exact hm'
-    · have : m' = m := primalEnds_inj (Or.inr (by rw [he, ha', hb']; rfl))
-      rw [← this]; exact hm'
+      simp_all
+    · have : m' = m := primalEnds_inj (Or.inr (by aesop))
+      simp_all
 
 theorem embeddedEdge_endEdge {m : Cell} (hm : m ∈ Q.unx Ex) :
     FK.embeddedEdgeEmbedding (Q.subG Ex) Q.pG (Q.subEmb Ex) (Q.subLe Ex)
       (endEdgeEquiv (Q.subData Ex) ⟨m, hm⟩) =
-        endEdgeEquiv Q.pData ⟨m, unx_subset_inner Q Ex hm⟩ := by
-  apply Subtype.ext
-  rw [FK.embeddedEdgeEmbedding_coe, endEdgeEquiv_val, endEdgeEquiv_val]
-  rfl
+        endEdgeEquiv Q.pData ⟨m, unx_subset_inner Q Ex hm⟩ := rfl
 
 theorem openMedials_restr (C : FK.Configuration Q.pG) :
     openMedials (Q.subData Ex)
@@ -124,10 +113,7 @@ theorem openMedials_restr (C : FK.Configuration Q.pG) :
     rw [FK.mem_embeddedConfigurationRestriction] at h
     refine ⟨⟨unx_subset_inner Q Ex hm, ?_⟩, hm⟩
     rwa [embeddedEdge_endEdge] at h
-  · rintro ⟨⟨hm, h⟩, hmU⟩
-    refine ⟨hmU, ?_⟩
-    rw [FK.mem_embeddedConfigurationRestriction, embeddedEdge_endEdge]
-    exact h
+  · aesop
 
 variable {Q Ex}
 
@@ -136,7 +122,7 @@ theorem cfgOf_subset_remG {H₀ : Finset Cell} (hH : H₀ ⊆ Ex) :
   intro e he
   obtain ⟨m, rfl⟩ := (endEdgeEquiv Q.pData).surjective e
   rw [mem_cfgOf] at he
-  exact (endEdge_mem_remG Q Ex m.2).2 (fun hU => (mem_unx.1 hU).2 (hH he))
+  exact (endEdge_mem_remG Q Ex m.2).2  fun hU => (mem_unx.1 hU).2 (hH he) 
 
 /-- The frozen configuration of the explored edges. -/
 noncomputable def froz {H₀ : Finset Cell} (hH : H₀ ⊆ Ex) :
@@ -145,16 +131,12 @@ noncomputable def froz {H₀ : Finset Cell} (hH : H₀ ⊆ Ex) :
 
 theorem mem_inter_remG (C : FK.Configuration Q.pG) {m : Cell}
     (hm : m ∈ Q.inner) :
-    (endEdgeEquiv Q.pData ⟨m, hm⟩ ∈ C ∧ endEdgeEquiv Q.pData ⟨m, hm⟩ ∈ Q.remG Ex) ↔
-      (m ∈ openMedials Q.pData C ∧ m ∈ Ex) := by
+     endEdgeEquiv Q.pData ⟨m, hm⟩ ∈ C ∧ endEdgeEquiv Q.pData ⟨m, hm⟩ ∈ Q.remG Ex  ↔
+       m ∈ openMedials Q.pData C ∧ m ∈ Ex  := by
   rw [endEdge_mem_remG Q Ex hm, mem_openMedials]
   constructor
-  · rintro ⟨h1, h2⟩
-    refine ⟨⟨hm, h1⟩, ?_⟩
-    by_contra hnE
-    exact h2 (mem_unx.2 ⟨hm, hnE⟩)
-  · rintro ⟨⟨_, h1⟩, h2⟩
-    exact ⟨h1, fun hU => (mem_unx.1 hU).2 h2⟩
+  · grind +locals
+  · grind +locals
 
 theorem frozen_iff (hEx : Ex ⊆ Q.inner) {H₀ : Finset Cell} (hH : H₀ ⊆ Ex)
     (C : FK.Configuration Q.pG) :
@@ -169,13 +151,12 @@ theorem frozen_iff (hEx : Ex ⊆ Q.inner) {H₀ : Finset Cell} (hH : H₀ ⊆ Ex
     constructor
     · intro hm
       have hmI := hEx hm.2
-      have h1 := (mem_inter_remG C hmI).2 hm
-      exact (mem_cfgOf Q.pData H₀ ⟨m, hmI⟩).1 ((h _).1 h1)
+      
+      exact (mem_cfgOf Q.pData H₀ ⟨m, hmI⟩).1 ((h _).1 ((mem_inter_remG C hmI).2 hm))
     · intro hm
       have hmI := hEx (hH hm)
-      have h1 : endEdgeEquiv Q.pData ⟨m, hmI⟩ ∈ cfgOf Q.pData H₀ :=
-        (mem_cfgOf Q.pData H₀ ⟨m, hmI⟩).2 hm
-      exact (mem_inter_remG C hmI).1 ((h _).2 h1)
+      
+      exact (mem_inter_remG C hmI).1 ((h _).2 ((mem_cfgOf Q.pData H₀ ⟨m, hmI⟩).2 hm))
   · intro h e
     obtain ⟨m, rfl⟩ := (endEdgeEquiv Q.pData).surjective e
     rw [mem_inter_remG C m.2]
@@ -192,8 +173,7 @@ variable (Q Ex)
 
 /-- Probability of a cell-level event of the unexplored edges, under the FK model of the unexplored
 graph with boundary condition given by the pullback of a setoid on the board vertices. -/
-noncomputable def nuMeasure (θ : FK.Parameters) (P : Setoid Q.pcells) (𝒮 : Set (Finset Cell)) :
-    ENNReal :=
+noncomputable def nuMeasure (θ : FK.Parameters) (P : Setoid Q.pcells) (𝒮 : Set (Finset Cell))  :=
   FK.measure (Q.subG Ex) θ (bcOfSetoid (Setoid.comap (Q.subEmb Ex) P))
     {C' | openMedials (Q.subData Ex) C' ∈ 𝒮}
 
@@ -219,11 +199,9 @@ theorem markov_cell (θ : FK.Parameters) (ξ : FK.BoundaryCondition Q.pcells) (h
     have := frozen_iff hEx hH C
     constructor
     · rintro ⟨h1, h2⟩; exact ⟨this.1 h2, h1⟩
-    · rintro ⟨h1, h2⟩; exact ⟨h2, this.2 h1⟩
+    · aesop
   have hset2 : FK.frozenStateEvent (FK.subgraphRemovedEdges ((Q.subG Ex).map (Q.subEmb Ex)) Q.pG)
-      (froz hH) = {C | openMedials Q.pData C ∩ Ex = H₀} := by
-    ext C
-    exact frozen_iff hEx hH C
+      (froz hH) = {C | openMedials Q.pData C ∩ Ex = H₀} := Set.ext (frozen_iff hEx hH)
   rw [hset1, hset2] at h
   rw [h]
   unfold nuMeasure

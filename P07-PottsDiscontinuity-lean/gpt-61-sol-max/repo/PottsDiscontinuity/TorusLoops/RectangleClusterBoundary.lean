@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.IsolatedBoundaryComponents
 public import PottsDiscontinuity.FK.SubgraphComparison
@@ -32,22 +33,15 @@ theorem isolatedExtensionPullbackFrozenFree_of_openEdges_inside
   intro x y hxy
   change (Setoid.comap f
       (componentSetoid H (BoundaryCondition.free ∅) K.val)).r x y at hxy
-  have hrel : (componentSetoid H (BoundaryCondition.free ∅) K.val).r
-      (f x) (f y) := (Setoid.comap_rel f _ x y).mp hxy
+  have hrel  := (Setoid.comap_rel f _ x y).mp hxy
   rw [componentSetoid_free] at hrel
-  change ActualConnected H K.val (f x) (f y) at hrel
-  have hreachable_eq : ∀ {a b : W}, (openGraph H K.val).Reachable a b →
+  
+  have hreachable_eq : ∀ {a b }, (openGraph H K.val).Reachable a b →
       a ∉ U → a = b := by
     intro a b hab ha
     rw [SimpleGraph.reachable_iff_reflTransGen] at hab
-    induction hab with
-    | refl => rfl
-    | @tail z w hpath hadj ih =>
-      have haz : a = z := ih
-      subst z
-      rcases hK hadj with ⟨hau, _⟩
-      exact (ha hau).elim
-  have hxy' : f x = f y := hreachable_eq hrel (hf x)
-  exact (BoundaryCondition.free_rel ∅ x y).2 (f.injective hxy')
+    grind
+  
+  exact (BoundaryCondition.free_rel ∅ x y).2 (f.injective (hreachable_eq hrel (hf x)))
 
 end PottsDiscontinuity.TorusLoops

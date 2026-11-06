@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Bethe.RatioProfile
 
@@ -18,15 +19,10 @@ theorem ratio_scaled_increment_tendsto {ι : Type*} {l : Filter ι}
     (u v a : ι → ℝ) (hu : Tendsto u l (𝓝 x)) (hv : Tendsto v l (𝓝 x))
     (hd : Tendsto (fun i => a i * (u i - v i)) l (𝓝 d)) :
     Tendsto (fun i => a i * (f (u i) - f (v i))) l (𝓝 (f' * d)) := by
-  have hrem : (fun i => f (u i) - f (v i) - (u i - v i) * f') =o[l]
-      (fun i => u i - v i) := by
-    have h := (hasStrictDerivAt_iff_hasStrictFDerivAt.mp hf).isLittleO.comp_tendsto
-      (hu.prodMk_nhds hv)
-    simpa only [Function.comp_def, ContinuousLinearMap.toSpanSingleton_apply, smul_eq_mul] using h
-  have hmul := (isBigO_refl a l).smul_isLittleO hrem
-  have hz : Tendsto (fun i => a i * (f (u i) - f (v i) - (u i - v i) * f')) l (𝓝 0) := by
-    apply hmul.tendsto_zero_of_tendsto
-    simpa only [Pi.smul_apply, smul_eq_mul] using hd
+  
+  
+  have hz : Tendsto (fun i => a i * (f (u i) - f (v i) - (u i - v i) * f')) l (𝓝 0) := IsLittleO.tendsto_zero_of_tendsto ((isBigO_refl a l).smul_isLittleO (IsLittleO.comp_tendsto (HasStrictFDerivAt.isLittleO (hasStrictDerivAt_iff_hasStrictFDerivAt.mp hf))
+                                                                                                                                                                                                       (Tendsto.prodMk_nhds hu hv))) hd
   have ht := hz.add (hd.const_mul f')
   rw [zero_add] at ht
   apply ht.congr

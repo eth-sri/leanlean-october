@@ -20,8 +20,8 @@ theorem brouwer_fixed_point {V : Type*}
     ∀ (f : C(s, s)), ∃ x, f x = x := by {
   intro s hcvx hcmpct hne f
   obtain ⟨k, ⟨e⟩ ⟩ := homeo_unit_cube_of_convex_compact s hcvx hcmpct hne
-  let g := (toContinuousMap e).comp (f.comp (toContinuousMap e.symm))
-  obtain ⟨y, hy⟩ := @fixed_point_unit_cube k g
+  
+  obtain ⟨y, hy⟩ := @fixed_point_unit_cube k ((toContinuousMap e).comp (f.comp (toContinuousMap e.symm)))
   use (toContinuousMap e.symm) y
   have h1 : e.symm (e (f (e.symm y))) = e.symm y := congrArg e.symm hy
   rwa [e.symm_apply_apply] at h1

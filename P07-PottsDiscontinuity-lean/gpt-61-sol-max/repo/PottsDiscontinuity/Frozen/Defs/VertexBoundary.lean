@@ -18,7 +18,7 @@ open scoped ENNReal
 namespace PottsDiscontinuity
 
 /-- `∂V`: the vertices of `V` having at least one neighbour in `ℤ²` outside of `V`. -/
-def vertexBoundary (V : Finset (ℤ × ℤ)) : Set (ℤ × ℤ) :=
+def vertexBoundary (V : Finset (ℤ × ℤ))  :=
   {x | x ∈ V ∧ ∃ y, squareLattice.Adj x y ∧ y ∉ V}
 
 end PottsDiscontinuity

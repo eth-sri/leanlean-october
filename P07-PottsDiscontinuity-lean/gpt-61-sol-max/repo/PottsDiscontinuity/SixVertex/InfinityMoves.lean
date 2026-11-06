@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.SixVertex.InfinitySupport
 public import PottsDiscontinuity.SixVertex.Irreducible
@@ -31,16 +32,11 @@ noncomputable def infinityRestriction (N n : ℕ) :
   (infinityBlock N n).submatrix Subtype.val Subtype.val
 
 /-- Rotate all up arrows one site to the right. -/
-def rotateUp (x : Finset (Fin N)) : Finset (Fin N) := x.image nxt
+def rotateUp (x : Finset (Fin N))  := x.image nxt
 
 @[simp] theorem mem_rotateUp (x : Finset (Fin N)) (i : Fin N) :
     i ∈ rotateUp x ↔ prv i ∈ x := by
-  constructor
-  · intro hi
-    obtain ⟨j, hj, rfl⟩ := mem_image.mp hi
-    simpa only [prv, nxt, Equiv.symm_apply_apply] using hj
-  · intro hi
-    exact mem_image.mpr ⟨prv i, hi, (finRotate N).apply_symm_apply i⟩
+  grind +locals
 
 @[simp] theorem card_rotateUp (x : Finset (Fin N)) : (rotateUp x).card = x.card :=
   card_image_of_injective _ (finRotate N).injective
@@ -49,8 +45,8 @@ theorem NoConsecutiveUp.rotateUp {x : Finset (Fin N)} (hx : NoConsecutiveUp x) :
     NoConsecutiveUp (rotateUp x) := by
   intro i hi hni
   rw [mem_rotateUp] at hi hni
-  simp only [nxt, prv, Equiv.symm_apply_apply] at hni
-  exact hx (prv i) hi (by simpa only [nxt, prv, Equiv.apply_symm_apply] using hni)
+  
+  exact hx (prv i) hi (by grind)
 
 /-- Rotation of an independent state. -/
 def rotateIndependent (x : IndependentState N n) : IndependentState N n :=
@@ -68,15 +64,13 @@ theorem interlaced_of_flux {x y : Finset (Fin N)} {h : Fin N → Bool}
     have hs := validS_of_flux hf
     apply (interlaced_iff_validS _ _).mpr
     cases he : h (Fin.last k)
-    · exact Or.inl (he ▸ hs)
-    · exact Or.inr (he ▸ hs)
+    all_goals simp_all
 
 /-- A row and its one-site rotation interlace, regardless of adjacent up arrows. -/
 theorem interlaced_rotateUp (x : Finset (Fin N)) : Interlaced x (rotateUp x) := by
   apply interlaced_of_flux (h := fun i => decide (i ∈ x))
   intro i
-  simp only [toInt_decide_mem, mem_rotateUp]
-  omega
+  simp_all
 
 /-- Every independent state has a positive rotation edge. -/
 theorem infinityRestriction_rotate (hn : 0 < n) (x : IndependentState N n) :
@@ -91,14 +85,14 @@ theorem infinityRestriction_symm (x y : IndependentState N n) :
     infinityRestriction N n x y = infinityRestriction N n y x := infinityBlock_symm _ _
 
 theorem infinityRestriction_isHermitian : (infinityRestriction N n).IsHermitian := by
-  rw [Matrix.isHermitian_iff_isSymm]
+  
   ext x y
   exact infinityRestriction_symm y x
 
 /-- A length-two positive return is available at every independent state. -/
 theorem infinityRestriction_square_self_pos (hn : 0 < n) (x : IndependentState N n) :
     0 < (infinityRestriction N n ^ 2) x x := by
-  rw [pow_two, Matrix.mul_apply]
+  rw [pow_two]
   refine sum_pos' (fun y _ => mul_nonneg (infinityRestriction_nonneg x y)
     (infinityRestriction_nonneg y x)) ⟨rotateIndependent x, mem_univ _, ?_⟩
   rw [infinityRestriction_symm (rotateIndependent x) x, infinityRestriction_rotate hn]
@@ -108,19 +102,13 @@ theorem infinityRestriction_square_self_pos (hn : 0 < n) (x : IndependentState N
 theorem noConsecutiveUp_jump_left {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
     {i j : Fin N} (hi : i ∈ x) (hj : j ∉ x) (hp : prv j ∉ x) (hji : nxt j = i) :
     NoConsecutiveUp (jump x i j) := by
-  have hij : i ≠ j := fun he => hj (he ▸ hi)
+  
   intro k hk hnk
   simp only [jump, mem_insert, mem_erase] at hk hnk
   rcases hk with rfl | ⟨hki, hk⟩
-  · rw [hji] at hnk
-    rcases hnk with he | ⟨he, _⟩
-    · exact hij he
-    · exact he rfl
+  · simp_all
   · rcases hnk with hnj | ⟨_, hnx⟩
-    · have hkprev : k = prv j := by
-        rw [← hnj]
-        exact ((finRotate N).symm_apply_apply k).symm
-      exact hp (hkprev ▸ hk)
+    · grind
     · exact hx k hk hnx
 
 /-- The row after one left slide interlaces the right rotation of the original row. -/
@@ -129,23 +117,15 @@ theorem interlaced_jump_left_rotate {x : Finset (Fin N)} {i j : Fin N}
     Interlaced (jump x i j) (rotateUp x) := by
   apply interlaced_of_flux (h := fun k => decide (k ∈ insert j x))
   intro k
-  have hpi : prv i = j := by rw [← hji]; exact (finRotate N).symm_apply_apply j
+  have hpi : prv i = j := by grind
   have hpk : prv k = j ↔ k = i := by
-    constructor
-    · intro he
-      rw [← hji, ← he]
-      exact ((finRotate N).apply_symm_apply k).symm
-    · rintro rfl
-      exact hpi
+    grind
   simp only [toInt_decide_mem, mem_rotateUp, jump, mem_insert, mem_erase, hpk]
-  have hij : i ≠ j := fun he => hj (he ▸ hi)
+  have hij : i ≠ j := by
+                        aesop
   by_cases hki : k = i
-  · subst k
-    simp [hpi, hi, hj, hij, toInt]
-  · by_cases hkj : k = j
-    · subst k
-      simp [hj, hki, toInt]
-    · simp [hki, hkj, toInt]
+  · aesop
+  · simp_all
 
 /-- A single left slide is simulated by two genuine edges of the limit matrix. -/
 theorem infinityRestriction_slide_left_reachable (hn : 0 < n) (x : IndependentState N n)
@@ -165,7 +145,7 @@ theorem infinityRestriction_slide_left_reachable (hn : 0 < n) (x : IndependentSt
       intro k hk hr
       simp only [jump, mem_insert, mem_erase] at hk
       rcases hk with rfl | ⟨_, hk⟩
-      · exact hp ((mem_rotateUp _ _).mp hr)
+      · aesop
       · exact x.2.disjoint_image.notMem_of_mem_left_finset hk hr
     have he : infinityRestriction N n (rotateIndependent x) y = 1 :=
       (infinityBlock_eq_one_iff hn _ _).mpr

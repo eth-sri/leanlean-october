@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.SixVertex.InfinityEndpointOrder
 public import PottsDiscontinuity.SixVertex.InfinitySorting
@@ -7,7 +8,7 @@ public import PottsDiscontinuity.SixVertex.InfinitySorting
 
 @[expose] public section
 
-open Finset
+
 
 namespace PottsDiscontinuity.SixVertex
 
@@ -21,31 +22,25 @@ private theorem sineLiftWeight_canonical_cyclic (hN : 0 < N)
     (hlo : ∀ a, -1 ≤ u a) (hhi : ∀ a, u a ≤ N)
     (hspan : ∀ a b, u b - u a < N) :
     sineLiftWeight ((N : ℝ) + k) (orderedSiteLift s hs) =
-      sineLiftWeight ((N : ℝ) + k) (fun a => u a + a.val) := by
+      sineLiftWeight ((N : ℝ) + k)  fun a => u a + a.val  := by
   cases k with
   | zero => simp [sineLiftWeight]
   | succ k =>
     by_cases hleft : u 0 < 0
     · have h0 : u 0 = -1 := by have := hlo 0; omega
-      have hb : ∀ a : Fin k, u a.succ < (N : ℤ) - 1 := by
+      have hb : ∀ a : Fin k, u a.succ <  N  - 1 := by
         intro a
         have hh := hspan 0 a.succ
         omega
       have hlow : ∀ a : Fin k, 0 ≤ u a.succ := by
         intro a
-        have hh := hu (show (0 : Fin (k + 1)) < a.succ by simp)
+        have hh := hu (show  0  < a.succ by simp)
         omega
       apply sineLiftWeight_canonical_left_wrap hN s hs u hu h0 f hmem
-      · have hh := hf 0
-        rw [h0] at hh
-        split_ifs at hh <;> omega
-      · intro a
-        have hh := hf a.succ
-        have h1 := hlow a
-        have h2 := hb a
-        split_ifs at hh <;> omega
+      · grind
+      · grind
       · exact hb
-    · by_cases hright : (N : ℤ) ≤ u (Fin.last k)
+    · by_cases hright : (N ) ≤ u (Fin.last k)
       · have hl : u (Fin.last k) = N := by have := hhi (Fin.last k); omega
         have hb : ∀ a : Fin k, 0 < u a.castSucc := by
           intro a
@@ -56,21 +51,14 @@ private theorem sineLiftWeight_canonical_cyclic (hN : 0 < N)
           have hh := hu (Fin.castSucc_lt_last a)
           omega
         apply sineLiftWeight_canonical_right_wrap hN s hs u hu hl f hmem
-        · have hh := hf (Fin.last k)
-          rw [hl] at hh
-          split_ifs at hh <;> omega
-        · intro a
-          have hh := hf a.castSucc
-          have h1 := hb a
-          have h2 := hup a
-          split_ifs at hh <;> omega
+        · simp_all
+        · grind +locals
         · exact hb
       · apply sineLiftWeight_canonical_no_wrap s hs u hu f hmem
         intro a
-        have hlow := hu.monotone (show (0 : Fin (k + 1)) ≤ a from Fin.zero_le a)
+        have hlow := hu.monotone (Fin.zero_le a)
         have hupp := hu.monotone (Fin.le_last a)
-        have hh := hf a
-        split_ifs at hh <;> omega
+        grind
 
 /-- Exact equality of the actual upper state's canonical weight and the labelled
 step weight. This includes both possible seam crossings. -/
@@ -89,7 +77,6 @@ theorem defectGroundWeight_upper_eq_lift (hN : 0 < N) {x : Finset (Fin N)}
 
 /-- The original candidate agrees with the sine product on its canonical integer lift. -/
 theorem defectGroundWeight_eq_lift (x : Finset (Fin N)) :
-    defectGroundWeight x = sineLiftWeight ((N : ℝ) + (defects x).card) (orderedDefectLift x) := by
-  simp only [defectGroundWeight, sineLiftWeight, orderedDefectLift, Int.cast_natCast]
+    defectGroundWeight x = sineLiftWeight ((N : ℝ) + (defects x).card) (orderedDefectLift x) := rfl
 
 end PottsDiscontinuity.SixVertex

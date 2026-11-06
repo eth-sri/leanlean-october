@@ -38,57 +38,54 @@ theorem offset_uniform_convergence_of_geometry {Δ : ℝ} (hΔ : Δ < -1)
         (𝓝 (∫ y in (-Real.pi)..Real.pi, g y * rho Δ y))) :
     TendstoUniformlyOn (fun i x => rho Δ x * offsetFunction (N i) r (h4 i) (hr i) (p i) (q i) (hn i) x)
       (fun x => (r : ℝ) * tauCont Δ x) atTop (Icc (-Real.pi) Real.pi) := by
-  let X := Icc (-Real.pi) Real.pi
-  let U : ℕ → X →ᵤ ℝ := fun i => UniformFun.ofFun
-    (fun x => rho Δ x * offsetFunction (N i) r (h4 i) (hr i) (p i) (q i) (hn i) x)
-  let V : X →ᵤ ℝ := UniformFun.ofFun (fun x => (r : ℝ) * tauCont Δ x)
+  
+   
+  
   apply tendstoUniformlyOn_iff_tendstoUniformly_comp_coe.mpr
-  change TendstoUniformly (UniformFun.toFun ∘ U) (UniformFun.toFun V) atTop
+  
   apply UniformFun.tendsto_iff_tendstoUniformly.mp
   apply Filter.tendsto_of_subseq_tendsto
   intro ns hns
-  have hNns : Tendsto (fun i => (N (ns i) : ℝ)) atTop atTop := hNlim.comp hns
-  have hinv : Tendsto (fun i => (N (ns i) : ℝ)⁻¹) atTop (𝓝 0) := tendsto_inv_atTop_zero.comp hNns
-  have hdQ : Tendsto (fun i => DQ / (N (ns i) : ℝ)) atTop (𝓝 0) := by
-    simpa only [div_eq_mul_inv, mul_zero] using hinv.const_mul DQ
+  
+  have hinv : Tendsto (fun i => (N (ns i) : ℝ)⁻¹) atTop (𝓝 0) := tendsto_inv_atTop_zero.comp (hNlim.comp hns)
+  
   obtain ⟨f, hf, φ, hφ, hF⟩ := exists_offset_subseq_of_geometry r (fun i => N (ns i))
     (fun i => h4 (ns i)) (fun i => hr (ns i)) (fun i => hn (ns i))
     (fun i => p (ns i)) (fun i => q (ns i)) (fun i => hq (ns i)) K B
     (fun i => hbound (ns i)) (fun i => hpair (ns i))
-    (fun i => DQ / (N (ns i) : ℝ)) hdQ (fun i => hmeshQ (ns i))
-  let t : ℕ → ℕ := ns ∘ φ
+    (fun i => DQ /  N (ns i) ) (by
+                                      simpa only [div_eq_mul_inv, mul_zero] using hinv.const_mul DQ)  fun i => hmeshQ (ns i) 
+  let t  := ns ∘ φ
   have ht : Tendsto t atTop atTop := hns.comp hφ.tendsto_atTop
-  have hNt : Tendsto (fun i => (N (t i) : ℝ)) atTop atTop := hNlim.comp ht
+  have hNt  := hNlim.comp ht
   have hinvt : Tendsto (fun i => (N (t i) : ℝ)⁻¹) atTop (𝓝 0) := tendsto_inv_atTop_zero.comp hNt
-  have hdPt : Tendsto (fun i => DP / (N (t i) : ℝ)) atTop (𝓝 0) := by
-    simpa only [div_eq_mul_inv, mul_zero] using hinvt.const_mul DP
-  have hdQt : Tendsto (fun i => DQ / (N (t i) : ℝ)) atTop (𝓝 0) := by
-    simpa only [div_eq_mul_inv, mul_zero] using hinvt.const_mul DQ
-  have hweakt (g : ℝ → ℝ) (hg : Continuous g) :
-      Tendsto (fun i => (∑ j, g (q (t i) j)) / (N (t i) : ℝ)) atTop
-        (𝓝 (∫ y in (-Real.pi)..Real.pi, g y * rho Δ y)) := (hweak g hg).comp ht
+  
+  
+  
   have hid := offset_uniform_limit_identification hΔ r (fun i => N (t i))
     (fun i => h4 (t i)) (fun i => hr (t i)) (fun i => hN (t i)) (fun i => hn (t i))
     (fun i => p (t i)) (fun i => q (t i)) (fun i => hp (t i)) (fun i => hq (t i))
     (fun i => hpBE (t i)) (fun i => hqBE (t i)) hNt B R hR
     (fun i => hbound (t i)) (fun i => hnear (t i))
-    (fun i => DP / (N (t i) : ℝ)) (fun i => DQ / (N (t i) : ℝ)) hdPt hdQt
+    (fun i => DP /  N (t i) ) (fun i => DQ /  N (t i) ) (by
+                                                                   simpa only [div_eq_mul_inv, mul_zero] using hinvt.const_mul DP) (by
+                                                                        simpa only [div_eq_mul_inv, mul_zero] using hinvt.const_mul DQ)
     (fun i => div_nonneg hDP (Nat.cast_nonneg _))
-    (fun i => hmeshP (t i)) (fun i => hmeshQ (t i)) hweakt hf hF
+    (fun i => hmeshP (t i)) (fun i => hmeshQ (t i)) (fun g hg => (hweak g hg).comp ht) hf hF
   obtain ⟨M₀, hM₀⟩ := isCompact_Icc.exists_bound_of_continuousOn (continuous_rho hΔ).continuousOn
   obtain ⟨C₀, hC₀⟩ := isCompact_Icc.exists_bound_of_continuousOn hf.continuousOn
-  have hρ : TendstoUniformlyOn (fun _i : ℕ => rho Δ) (rho Δ) atTop X := by
+  have hρ : TendstoUniformlyOn (fun _i : ℕ => rho Δ) (rho Δ) atTop (Icc (-Real.pi) Real.pi) := by
     apply Metric.tendstoUniformlyOn_iff.mpr
     intro ε hε
-    exact Eventually.of_forall (fun i x hx => by simpa using hε)
-  have hprod := tendstoUniformlyOn_mul_of_bounds hρ hF
-    (show 0 ≤ max M₀ 1 by linarith [le_max_right M₀ 1])
-    (show 0 ≤ max C₀ 1 by linarith [le_max_right C₀ 1])
-    (fun i x hx => (show |rho Δ x| ≤ M₀ by simpa only [Real.norm_eq_abs] using hM₀ x hx).trans (le_max_left _ _))
-    (fun x hx => (show |f x| ≤ C₀ by simpa only [Real.norm_eq_abs] using hC₀ x hx).trans (le_max_left _ _))
-  have hfinal := hprod.congr_right hid
+    exact Eventually.of_forall  fun i x hx => by simpa using hε 
+   
+  
   refine ⟨φ, ?_⟩
   apply UniformFun.tendsto_iff_tendstoUniformly.mpr
-  exact tendstoUniformlyOn_iff_tendstoUniformly_comp_coe.mp hfinal
+  exact tendstoUniformlyOn_iff_tendstoUniformly_comp_coe.mp ((tendstoUniformlyOn_mul_of_bounds hρ hF
+                                                                (by linarith [le_max_right M₀ 1])
+                                                                (by linarith [le_max_right C₀ 1])
+                                                                (fun i x hx => (show |rho Δ x| ≤ M₀ by simpa only [Real.norm_eq_abs] using hM₀ x hx).trans (le_max_left _ _))
+                                                                 fun x hx => (show |f x| ≤ C₀ by simpa only [Real.norm_eq_abs] using hC₀ x hx).trans (le_max_left _ _)).congr_right hid)
 
 end PottsDiscontinuity.Bethe

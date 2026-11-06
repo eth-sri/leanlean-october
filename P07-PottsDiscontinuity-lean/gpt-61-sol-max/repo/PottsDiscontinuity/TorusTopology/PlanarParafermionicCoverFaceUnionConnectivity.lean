@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Adaptation: Namespace and import relocation only. -/
 module
+public import Mathlib
 
 public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 public import Mathlib.Tactic
@@ -26,14 +27,11 @@ def parafermionicCoverFiniteFaceUnionGraph {n : ℕ}
     exact ⟨i, hi, hadj.symm⟩
   loopless := by
     constructor
-    intro v h
-    rcases h with ⟨i, hi, hadj⟩
-    exact (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).loopless.irrefl v hadj
+    all_goals grind
 
 /-- The vertices incident to an actual edge of the selected-face union. -/
 def parafermionicCoverFiniteFaceUnionCarrier {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
-    Set (ParafermionicCoverBoxVertex n) :=
+    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))  :=
   {v | ∃ w, (parafermionicCoverFiniteFaceUnionGraph S).Adj v w}
 
 theorem parafermionicCoverFiniteFaceUnionGraph_le_boxGraph {n : ℕ}
@@ -66,8 +64,12 @@ def coverUnionFaceVertex3 {n : ℕ}
   ⟨parafermionicCoverFaceRightUpLeftLift i.1.1.1 i.1.1.2 i.1.2,
     (parafermionicCoverFiniteFaceTopEdge_endpoints_mem n i.1 i.2).2⟩
 
-private theorem coverUnionFace_edge01 {n : ℕ}
-    (i : ParafermionicCoverFiniteFaceTopIndex n) :
+section
+
+variable {n : ℕ} (i : ParafermionicCoverFiniteFaceTopIndex n)
+
+
+private theorem coverUnionFace_edge01  :
     s(coverUnionFaceVertex0 i, coverUnionFaceVertex1 i) ∈
       (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet := by
   rw [parafermionicCoverFiniteFaceBoundaryGraph_edgeSet]
@@ -78,8 +80,7 @@ private theorem coverUnionFace_edge01 {n : ℕ}
      s(coverUnionFaceVertex3 i, coverUnionFaceVertex0 i)}
   simp
 
-private theorem coverUnionFace_edge12 {n : ℕ}
-    (i : ParafermionicCoverFiniteFaceTopIndex n) :
+private theorem coverUnionFace_edge12  :
     s(coverUnionFaceVertex1 i, coverUnionFaceVertex2 i) ∈
       (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet := by
   rw [parafermionicCoverFiniteFaceBoundaryGraph_edgeSet]
@@ -90,20 +91,9 @@ private theorem coverUnionFace_edge12 {n : ℕ}
      s(coverUnionFaceVertex3 i, coverUnionFaceVertex0 i)}
   simp
 
-private theorem coverUnionFace_edge23 {n : ℕ}
-    (i : ParafermionicCoverFiniteFaceTopIndex n) :
-    s(coverUnionFaceVertex2 i, coverUnionFaceVertex3 i) ∈
-      (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet := by
-  rw [parafermionicCoverFiniteFaceBoundaryGraph_edgeSet]
-  change s(coverUnionFaceVertex2 i, coverUnionFaceVertex3 i) ∈
-    {s(coverUnionFaceVertex0 i, coverUnionFaceVertex1 i),
-     s(coverUnionFaceVertex1 i, coverUnionFaceVertex2 i),
-     s(coverUnionFaceVertex2 i, coverUnionFaceVertex3 i),
-     s(coverUnionFaceVertex3 i, coverUnionFaceVertex0 i)}
-  simp
 
-private theorem coverUnionFace_edge30 {n : ℕ}
-    (i : ParafermionicCoverFiniteFaceTopIndex n) :
+
+private theorem coverUnionFace_edge30  :
     s(coverUnionFaceVertex3 i, coverUnionFaceVertex0 i) ∈
       (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet := by
   rw [parafermionicCoverFiniteFaceBoundaryGraph_edgeSet]
@@ -114,40 +104,41 @@ private theorem coverUnionFace_edge30 {n : ℕ}
      s(coverUnionFaceVertex3 i, coverUnionFaceVertex0 i)}
   simp
 
+end
+
 def coverUnionFaceCarrier {n : ℕ}
-    (i : ParafermionicCoverFiniteFaceTopIndex n) :
-    Set (ParafermionicCoverBoxVertex n) :=
+    (i : ParafermionicCoverFiniteFaceTopIndex n)  :=
   {v | ∃ w, (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).Adj v w}
 
-private theorem coverUnionFaceCarrier_eq_four {n : ℕ}
+section
+
+variable {n : ℕ}
+include n
+
+private theorem coverUnionFaceCarrier_eq_four 
     (i : ParafermionicCoverFiniteFaceTopIndex n) :
     coverUnionFaceCarrier i =
       {coverUnionFaceVertex0 i, coverUnionFaceVertex1 i,
        coverUnionFaceVertex2 i, coverUnionFaceVertex3 i} := by
-  classical
+  
   ext v
   constructor
   · rintro ⟨w, hvw⟩
-    have he : s(v,w) ∈
-        (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet :=
+    have he  :=
       (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mpr hvw
     rw [parafermionicCoverFiniteFaceBoundaryGraph_edgeSet] at he
-    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at he
+    
     rcases he with he | he | he | he
+    · aesop
     · rcases Sym2.eq_iff.mp he with ⟨hv, _⟩ | ⟨hv, _⟩
-      · subst v; exact Or.inl (by apply Subtype.ext; rfl)
-      · subst v; exact Or.inr (Or.inl (by apply Subtype.ext; rfl))
+      · aesop
+      · aesop
     · rcases Sym2.eq_iff.mp he with ⟨hv, _⟩ | ⟨hv, _⟩
-      · subst v; exact Or.inr (Or.inl (by apply Subtype.ext; rfl))
-      · subst v; exact Or.inr (Or.inr (Or.inl (by apply Subtype.ext; rfl)))
-    · rcases Sym2.eq_iff.mp he with ⟨hv, _⟩ | ⟨hv, _⟩
-      · subst v; exact Or.inr (Or.inr (Or.inl (by apply Subtype.ext; rfl)))
-      · subst v; exact Or.inr (Or.inr (Or.inr (by apply Subtype.ext; rfl)))
-    · rcases Sym2.eq_iff.mp he with ⟨hv, _⟩ | ⟨hv, _⟩
-      · subst v; exact Or.inr (Or.inr (Or.inr (by apply Subtype.ext; rfl)))
-      · subst v; exact Or.inl (by apply Subtype.ext; rfl)
+      · aesop
+      · aesop
+    · aesop
   · intro hv
-    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hv
+    
     rcases hv with hv | hv | hv | hv
     · subst v
       refine ⟨coverUnionFaceVertex1 i, ?_⟩
@@ -156,27 +147,30 @@ private theorem coverUnionFaceCarrier_eq_four {n : ℕ}
     · subst v
       refine ⟨coverUnionFaceVertex0 i, ?_⟩
       exact (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
-        ((coverUnionFace_edge01 i).symm)
+         (coverUnionFace_edge01 i).symm 
     · subst v
       refine ⟨coverUnionFaceVertex1 i, ?_⟩
       exact (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
-        ((coverUnionFace_edge12 i).symm)
+         (coverUnionFace_edge12 i).symm 
     · subst v
       refine ⟨coverUnionFaceVertex0 i, ?_⟩
       exact (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
         (coverUnionFace_edge30 i)
 
-private theorem coverUnionFaceCarrier_subset_unionCarrier {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
-    {i : ParafermionicCoverFiniteFaceTopIndex n} (hi : i ∈ S) :
+section
+
+variable (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) {i : ParafermionicCoverFiniteFaceTopIndex n} (hi : i ∈ S)
+include hi
+
+private theorem coverUnionFaceCarrier_subset_unionCarrier 
+     :
     coverUnionFaceCarrier i ⊆ parafermionicCoverFiniteFaceUnionCarrier S := by
   intro v hv
   rcases hv with ⟨w, hvw⟩
   exact ⟨w, i, hi, hvw⟩
 
-private theorem coverUnionFace_localReach {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
-    {i : ParafermionicCoverFiniteFaceTopIndex n} (hi : i ∈ S)
+private theorem coverUnionFace_localReach 
+    
     {v w : ParafermionicCoverBoxVertex n}
     (hv : v ∈ coverUnionFaceCarrier i)
     (hw : w ∈ coverUnionFaceCarrier i) :
@@ -184,7 +178,7 @@ private theorem coverUnionFace_localReach {n : ℕ}
       (parafermionicCoverFiniteFaceUnionCarrier S)).Reachable
       ⟨v, coverUnionFaceCarrier_subset_unionCarrier S hi hv⟩
       ⟨w, coverUnionFaceCarrier_subset_unionCarrier S hi hw⟩ := by
-  classical
+  
   let H := (parafermionicCoverFiniteFaceUnionGraph S).induce
     (parafermionicCoverFiniteFaceUnionCarrier S)
   let b0 := coverUnionFaceVertex0 i
@@ -205,51 +199,43 @@ private theorem coverUnionFace_localReach {n : ℕ}
     simp [b3]
   have hb0c := coverUnionFaceCarrier_subset_unionCarrier S hi hb0
   have hb1c := coverUnionFaceCarrier_subset_unionCarrier S hi hb1
-  have hb2c := coverUnionFaceCarrier_subset_unionCarrier S hi hb2
-  have hb3c := coverUnionFaceCarrier_subset_unionCarrier S hi hb3
+  
+  
   have h01 : H.Adj ⟨b0, hb0c⟩ ⟨b1, hb1c⟩ := by
-    change (parafermionicCoverFiniteFaceUnionGraph S).Adj b0 b1
-    exact ⟨i, hi,
-      (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
-        (by simpa [b0, b1] using coverUnionFace_edge01 i)⟩
-  have h12 : H.Adj ⟨b1, hb1c⟩ ⟨b2, hb2c⟩ := by
-    change (parafermionicCoverFiniteFaceUnionGraph S).Adj b1 b2
-    exact ⟨i, hi,
-      (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
-        (by simpa [b1, b2] using coverUnionFace_edge12 i)⟩
-  have h23 : H.Adj ⟨b2, hb2c⟩ ⟨b3, hb3c⟩ := by
-    change (parafermionicCoverFiniteFaceUnionGraph S).Adj b2 b3
-    exact ⟨i, hi,
-      (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
-        (by simpa [b2, b3] using coverUnionFace_edge23 i)⟩
-  have h30 : H.Adj ⟨b3, hb3c⟩ ⟨b0, hb0c⟩ := by
-    change (parafermionicCoverFiniteFaceUnionGraph S).Adj b3 b0
-    exact ⟨i, hi,
-      (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
-        (by simpa [b3, b0] using coverUnionFace_edge30 i)⟩
+    solve_by_elim [_root_.PottsDiscontinuity.TorusTopology.Planar.Medial.parafermionicCoverFiniteFaceUnionGraph._proof_6,
+      _root_.PottsDiscontinuity.TorusTopology.Planar.Medial.coverUnionFace_edge01, _root_.Exists.intro, _root_.And.intro]
+  have h12 : H.Adj ⟨b1, hb1c⟩ ⟨b2,  coverUnionFaceCarrier_subset_unionCarrier S hi hb2 ⟩ := by
+    solve_by_elim [_root_.PottsDiscontinuity.TorusTopology.Planar.Medial.parafermionicCoverFiniteFaceUnionGraph._proof_6,
+      _root_.PottsDiscontinuity.TorusTopology.Planar.Medial.coverUnionFace_edge12, _root_.Exists.intro, _root_.And.intro]
+  
+  have h30 : H.Adj ⟨b3,  coverUnionFaceCarrier_subset_unionCarrier S hi hb3 ⟩ ⟨b0, hb0c⟩ := by
+    solve_by_elim [_root_.PottsDiscontinuity.TorusTopology.Planar.Medial.parafermionicCoverFiniteFaceUnionGraph._proof_6,
+      _root_.PottsDiscontinuity.TorusTopology.Planar.Medial.coverUnionFace_edge30, _root_.Exists.intro, _root_.And.intro]
   have hvfour : v = b0 ∨ v = b1 ∨ v = b2 ∨ v = b3 := by
     have h := hv
     rw [coverUnionFaceCarrier_eq_four] at h
-    simpa [Set.mem_insert_iff, Set.mem_singleton_iff] using h
+    aesop
   have hwfour : w = b0 ∨ w = b1 ∨ w = b2 ∨ w = b3 := by
     have h := hw
     rw [coverUnionFaceCarrier_eq_four] at h
-    simpa [Set.mem_insert_iff, Set.mem_singleton_iff] using h
+    aesop
   have hbasev : H.Reachable ⟨b0, hb0c⟩ ⟨v, coverUnionFaceCarrier_subset_unionCarrier S hi hv⟩ := by
     rcases hvfour with hv0 | hv1 | hv2 | hv3
     · subst v; exact Reachable.refl _
     · subst v; exact ⟨Walk.cons h01 Walk.nil⟩
     · subst v; exact ⟨Walk.cons h01 (Walk.cons h12 Walk.nil)⟩
     · subst v; exact ⟨Walk.cons h30.symm Walk.nil⟩
-  have hbasew : H.Reachable ⟨b0, hb0c⟩ ⟨w, coverUnionFaceCarrier_subset_unionCarrier S hi hw⟩ := by
-    rcases hwfour with hw0 | hw1 | hw2 | hw3
-    · subst w; exact Reachable.refl _
-    · subst w; exact ⟨Walk.cons h01 Walk.nil⟩
-    · subst w; exact ⟨Walk.cons h01 (Walk.cons h12 Walk.nil)⟩
-    · subst w; exact ⟨Walk.cons h30.symm Walk.nil⟩
-  exact hbasev.symm.trans hbasew
+  
+  exact hbasev.symm.trans (by
+                             rcases hwfour with hw0 | hw1 | hw2 | hw3
+                             · subst w; exact Reachable.refl _
+                             · subst w; exact ⟨Walk.cons h01 Walk.nil⟩
+                             · subst w; exact ⟨Walk.cons h01 (Walk.cons h12 Walk.nil)⟩
+                             · subst w; exact ⟨Walk.cons h30.symm Walk.nil⟩)
 
-private theorem coverUnionFaceCarriers_shareVertex_of_edge {n : ℕ}
+end
+
+private theorem coverUnionFaceCarriers_shareVertex_of_edge 
     (i j : ParafermionicCoverFiniteFaceTopIndex n)
     {e : Sym2 (ParafermionicCoverBoxVertex n)}
     (hei : e ∈ (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet)
@@ -258,12 +244,9 @@ private theorem coverUnionFaceCarriers_shareVertex_of_edge {n : ℕ}
   induction e using Sym2.inductionOn with
   | hf x y =>
       refine ⟨x, ⟨y, ?_⟩, ⟨y, ?_⟩⟩
-      · exact (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
-          (by simpa using hei)
-      · exact (parafermionicCoverFiniteFaceBoundaryGraph j.1 j.2).mem_edgeSet.mp
-          (by simpa using hej)
+      all_goals simp_all
 
-private theorem coverUnionFaceRel_reachable {n : ℕ}
+private theorem coverUnionFaceRel_reachable 
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     {i j : {f : ParafermionicCoverFiniteFaceTopIndex n // f ∈ S}}
     (hpath : Relation.ReflTransGen
@@ -276,7 +259,7 @@ private theorem coverUnionFaceRel_reachable {n : ℕ}
       (parafermionicCoverFiniteFaceUnionCarrier S)).Reachable
       ⟨v, coverUnionFaceCarrier_subset_unionCarrier S i.2 hv⟩
       ⟨w, coverUnionFaceCarrier_subset_unionCarrier S j.2 hw⟩ := by
-  classical
+  
   revert v w
   induction hpath with
   | refl =>
@@ -284,51 +267,50 @@ private theorem coverUnionFaceRel_reachable {n : ℕ}
       exact coverUnionFace_localReach S i.2 hv hw
   | @tail b c hab hbc ih =>
       intro v w hv hw
-      have hbc' : (parafermionicCoverFiniteFaceAdjacencyGraph n).Adj b.1 c.1 :=
-        (induce_adj).mp hbc
-      rcases (parafermionicCoverFiniteFaceAdjacencyGraph_adj_iff b.1 c.1).mp hbc' with
+      
+      rcases (parafermionicCoverFiniteFaceAdjacencyGraph_adj_iff b.1 c.1).mp ((induce_adj).mp hbc) with
         ⟨_, e, hbe, hce⟩
       obtain ⟨x, hxb, hxc⟩ := coverUnionFaceCarriers_shareVertex_of_edge b.1 c.1 hbe hce
-      have hleft := ih hv hxb
-      have hright := coverUnionFace_localReach S c.2 hxc hw
-      exact hleft.trans hright
+      
+      
+      exact (ih hv hxb).trans (coverUnionFace_localReach S c.2 hxc hw)
 
 theorem parafermionicCoverSimpleCycleFaceUnionCarrier_connected
-    {n : ℕ} (hn : 1 ≤ n) {u : ParafermionicCoverBoxVertex n}
+     (hn : 1 ≤ n) {u : ParafermionicCoverBoxVertex n}
     (p : (parafermionicCoverBoxGraph n).Walk u u) (hp : p.IsCycle) :
     ((parafermionicCoverFiniteFaceUnionGraph
         (parafermionicCoverSimpleCycleFillingSet hn p hp)).induce
       (parafermionicCoverFiniteFaceUnionCarrier
         (parafermionicCoverSimpleCycleFillingSet hn p hp))).Connected := by
-  classical
+  
   let S := parafermionicCoverSimpleCycleFillingSet hn p hp
-  let F := parafermionicCoverFiniteFaceAdjacencyGraph n
-  let H := F.induce (↑S : Set (ParafermionicCoverFiniteFaceTopIndex n))
-  let U := parafermionicCoverFiniteFaceUnionGraph S
-  let C := parafermionicCoverFiniteFaceUnionCarrier S
-  have hfaces : H.Connected := by
-    exact parafermionicCoverSimpleCycleFillingSet_induce_faceAdjacency_connected hn p hp
-  have hanchor : ∃ a, ∀ w, H.Reachable a w := by
-    rw [connected_iff_exists_forall_reachable] at hfaces
-    exact hfaces
-  obtain ⟨a, ha⟩ := hanchor
+  
+  let H := (parafermionicCoverFiniteFaceAdjacencyGraph n).induce  ↑S 
+  
+  
+  have hfaces : H.Connected := parafermionicCoverSimpleCycleFillingSet_induce_faceAdjacency_connected hn p hp
+  
+  obtain ⟨a, ha⟩ :=  by
+                       rw [connected_iff_exists_forall_reachable] at hfaces
+                       exact hfaces 
   let b := coverUnionFaceVertex0 a.1
   have hbLocal : b ∈ coverUnionFaceCarrier a.1 := by
     rw [coverUnionFaceCarrier_eq_four]
     simp [b, coverUnionFaceVertex0, coverUnionFaceVertex1,
       coverUnionFaceVertex2, coverUnionFaceVertex3]
-  have hbC : b ∈ C := coverUnionFaceCarrier_subset_unionCarrier S a.2 hbLocal
+  
   rw [connected_iff_exists_forall_reachable]
-  refine ⟨⟨b, hbC⟩, ?_⟩
+  refine ⟨⟨b,  coverUnionFaceCarrier_subset_unionCarrier S a.2 hbLocal ⟩, ?_⟩
   intro z
   rcases z with ⟨z, hz⟩
   rcases hz with ⟨w, i, hi, hiz⟩
-  have hzLocal : z ∈ coverUnionFaceCarrier i := ⟨w, hiz⟩
-  have hfacePath : H.Reachable a ⟨i, hi⟩ := ha ⟨i, hi⟩
-  rcases hfacePath with ⟨q⟩
-  have hrt : Relation.ReflTransGen H.Adj a ⟨i, hi⟩ :=
-    (reachable_iff_reflTransGen a ⟨i, hi⟩).mp ⟨q⟩
-  have hreach := coverUnionFaceRel_reachable S hrt hbLocal hzLocal
-  exact hreach
+  
+  
+  rcases  ha ⟨i, hi⟩  with ⟨q⟩
+  
+  
+  exact  coverUnionFaceRel_reachable S ((reachable_iff_reflTransGen a ⟨i, hi⟩).mp ⟨q⟩) hbLocal (⟨w, hiz⟩) 
+
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusRC.ReflectedPairs
 
@@ -23,14 +24,12 @@ theorem rectangleDoubleConnection_mono (hNp : 0 < N) (hMp : 0 < M)
     (hA : A ∈ rectangleDoubleConnection hNp hMp n i) :
     B ∈ rectangleDoubleConnection hNp hMp n i := by
   obtain ⟨u,v,hu,hv,w,hw⟩ := hA
-  let F : liftedStripGraph hNp hMp A 0 (3 * (n : ℤ)) →g
-      liftedStripGraph hNp hMp B 0 (3 * (n : ℤ)) :=
-    ⟨id,fun h => liftedStripGraph_mono hNp hMp 0 (3 * (n : ℤ)) hAB h⟩
-  refine ⟨u,v,hu,hv,w.map F,?_⟩
+  
+  refine ⟨u,v,hu,hv,w.map  ⟨id,fun h => liftedStripGraph_mono hNp hMp 0 (3 *  n ) hAB h⟩ ,?_⟩
   intro z hz
   rw [SimpleGraph.Walk.support_map] at hz
   obtain ⟨z',hz',heq⟩ := List.mem_map.mp hz
-  change z' = z at heq
+  
   subst z
   exact hw z' hz'
 
@@ -40,19 +39,17 @@ theorem rectangleBlocks_probability_ge_power (hN : Even N) (hM : Even M)
     (n : ℕ) (i : Fin (3 * n + 1)) (k : ℕ) :
     torusRCProbability hN hM q (rectangleDoubleConnection hNp hMp n i) ^ k ≤
       torusRCProbability hN hM q {A | ∀ j < k, A ∈ rectangleBlockEvent hNp hMp n i j} := by
-  classical
+  
   let E : Fin k → Set (RCConfig N M) := fun j => rectangleBlockEvent hNp hMp n i j.val
-  have hE : ∀ j ⦃A B⦄, A ≤ B → A ∈ E j → B ∈ E j := by
-    intro j A B hAB hA
-    exact rectangleDoubleConnection_mono hNp hMp n i (fun e => hAB _) hA
-  have h := torusRCProbability_finset_inter_ge_prod hN hM q Finset.univ E hE
+  
+  have h := torusRCProbability_finset_inter_ge_prod hN hM q Finset.univ E  fun j A B hAB hA => rectangleDoubleConnection_mono hNp hMp n i (fun e => hAB _) hA 
   have heq (j : Fin k) : torusRCProbability hN hM q (E j) =
       torusRCProbability hN hM q (rectangleDoubleConnection hNp hMp n i) :=
-    (torusRCProbability_reflect hN hM hNp hMp (2 * (n : ℤ) * ((j.val : ℤ) + 1))
-      ⟨(n : ℤ) * (j.val + 1),by ring⟩ q _).symm
+    (torusRCProbability_reflect hN hM hNp hMp (2 *  n  * ( j.val  + 1))
+      ⟨ n  * (j.val + 1),by ring⟩ q _).symm
   simp_rw [heq] at h
   simp only [Finset.prod_const, Finset.card_univ, Fintype.card_fin] at h
-  have hset : {A | ∀ j ∈ (Finset.univ : Finset (Fin k)), A ∈ E j} =
+  have hset : {A | ∀ j ∈  Finset.univ , A ∈ E j} =
       {A | ∀ j < k, A ∈ rectangleBlockEvent hNp hMp n i j} := by
     ext A
     simp only [Finset.mem_univ, true_implies]

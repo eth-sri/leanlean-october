@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Duality.FiniteDuality
 public import PottsDiscontinuity.Duality.RectangleDualAmbient
@@ -24,9 +25,8 @@ def closedRectangleConfiguration (a : LatticeVertex) (w h : ℕ)
     (A : Configuration (rectangleGraph a w h)) (f : (rectangleGraph a w h).edgeSet) :
     closedRectangleConfiguration a w h A
       (rectanglePrimalEdgeToSquareEdge a w h f) = decide (f ∈ A) := by
-  have he : rectanglePrimalEdgeToSquareEdge a w h f =
-      frozenEdgeEmbedding (latticeRectangle a w h) f := by apply Subtype.ext; rfl
-  rw [he]
+  
+  
   unfold closedRectangleConfiguration
   congr 1
   apply propext
@@ -46,9 +46,7 @@ def rectangleDualEdgeToSquareEdge (a : LatticeVertex) (w h : ℕ) :
 lemma rectangleDualEdgeToSquareEdge_carrier (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
     rectangleDualEdgeToSquareEdge a w h (rectangleDualGraphEdgeEquiv a w h e) =
-      latticeBondEdge e.crossingBond := by
-  apply Subtype.ext
-  rfl
+      latticeBondEdge e.crossingBond := rfl
 
 /-- Each sampled dual edge has the complement of its original crossing primal state. -/
 theorem dual_closedRectangleConfiguration_at (a : LatticeVertex) (w h : ℕ)
@@ -56,9 +54,9 @@ theorem dual_closedRectangleConfiguration_at (a : LatticeVertex) (w h : ℕ)
     wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A)
       (rectangleDualEdgeToSquareEdge a w h g) =
         decide (g ∈ rectanglePrimalDualConfigurationEquiv a w h A) := by
-  classical
+  
   obtain ⟨e, rfl⟩ := (rectangleDualGraphEdgeEquiv a w h).surjective g
-  rw [rectangleDualEdgeToSquareEdge_carrier]
+  
   change latticeConfigurationBondState
     (wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A))
       e.crossingBond = _
@@ -67,8 +65,7 @@ theorem dual_closedRectangleConfiguration_at (a : LatticeVertex) (w h : ℕ)
     (latticeBondEdge (primalBondOfDual e.crossingBond))) = _
   rw [rectangleDualEdge_crossing_originalEdge]
   rw [closedRectangleConfiguration_at a w h A e.primalEdge]
-  simp only [mem_rectanglePrimalDualConfigurationEquiv]
-  by_cases he : e.primalEdge ∈ A <;> simp [he] <;> exact he
+  aesop
 
 end
 end PottsDiscontinuity.Duality

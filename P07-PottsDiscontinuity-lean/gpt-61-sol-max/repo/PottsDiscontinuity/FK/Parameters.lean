@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Order.Interval.Set.Basic
@@ -20,18 +21,25 @@ structure Parameters where
   edgeProbability : Set.Ioo (0 : ℝ) 1
 
 /-- The edge probability stored independently of the cluster weight. -/
-def edgeParameter (q : Parameters) : ℝ := q.edgeProbability.val
+def edgeParameter (q : Parameters)  := q.edgeProbability.val
 
-lemma clusterWeight_pos (q : Parameters) : 0 < q.val :=
+section
+
+variable (q : Parameters)
+
+
+lemma clusterWeight_pos  : 0 < q.val :=
   lt_of_lt_of_le zero_lt_one q.property
 
-lemma edgeParameter_pos (q : Parameters) : 0 < edgeParameter q :=
+lemma edgeParameter_pos  : 0 < edgeParameter q :=
   q.edgeProbability.property.1
 
-lemma edgeParameter_lt_one (q : Parameters) : edgeParameter q < 1 :=
+lemma edgeParameter_lt_one  : edgeParameter q < 1 :=
   q.edgeProbability.property.2
 
-lemma one_sub_edgeParameter_pos (q : Parameters) : 0 < 1 - edgeParameter q :=
+lemma one_sub_edgeParameter_pos  : 0 < 1 - edgeParameter q :=
   sub_pos.mpr (edgeParameter_lt_one q)
+
+end
 
 end PottsDiscontinuity.FK

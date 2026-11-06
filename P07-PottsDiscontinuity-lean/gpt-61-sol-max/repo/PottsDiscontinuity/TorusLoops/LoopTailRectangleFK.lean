@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.TorusLoops.LoopTailSeamBound
 public import PottsDiscontinuity.TorusLoops.RectangleLaw
@@ -23,7 +24,7 @@ variable {N M : ℕ}
 /-- The event that the seam-closed extension of a rectangle configuration has
 at least `k` distinct horizontal cut-rectangle crossing components. -/
 noncomputable def rectangleFKCrossingEvent (hN : Even N) (hM : Even M)
-    (k : ℕ) : Set (Configuration (rectangleBaseGraph hN hM)) :=
+    (k : ℕ)  :=
   {C | k ≤ (rectangleCrossingComponents hN hM
     (rectangleRCConfigOfConfiguration hN hM C)).card}
 
@@ -44,39 +45,26 @@ theorem rectangleCrossings_closedEvent_eq_lift
     (hN : Even N) (hM : Even M) (k : ℕ) :
     hasAtLeastRectangleCrossings hN hM k ∩
         {A | ∀ v ∈ rectangleSeamIndices (N := N) (M := M), A v = false} =
-      rectangleClosedLiftEvent hN hM (rectangleFKCrossingEvent hN hM k) := by
-  classical
-  ext A
-  constructor
-  · rintro ⟨hcross, hclosed⟩
-    have hseam : rectangleSeamsClosed A :=
-      (rectangleSeamsClosed_iff_finset A).2 hclosed
-    refine ⟨hseam, ?_⟩
-    change k ≤ (rectangleCrossingComponents hN hM
-      (rectangleRCConfigOfConfiguration hN hM
-        (rectangleConfigurationOfRC hN hM A))).card
-    have hA := rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
-      hN hM A (by
-        intro v hv
-        exact hseam v hv)
-    have hcard := congrArg
-      (fun B : RCConfig N M => (rectangleCrossingComponents hN hM B).card) hA
-    rw [hcard]
-    exact hcross
-  · rintro ⟨hseam, hcross⟩
-    refine ⟨?_, (rectangleSeamsClosed_iff_finset A).1 hseam⟩
-    change k ≤ (rectangleCrossingComponents hN hM A).card
-    change k ≤ (rectangleCrossingComponents hN hM
-      (rectangleRCConfigOfConfiguration hN hM
-        (rectangleConfigurationOfRC hN hM A))).card at hcross
-    have hA := rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
-      hN hM A (by
-        intro v hv
-        exact hseam v hv)
-    have hcard := congrArg
-      (fun B : RCConfig N M => (rectangleCrossingComponents hN hM B).card) hA
-    rw [← hcard]
-    exact hcross
+      rectangleClosedLiftEvent hN hM (rectangleFKCrossingEvent hN hM k) := Set.ext fun A =>
+                                                                             {
+                                                                               mp := fun a =>
+                                                                                 And.casesOn a fun hcross hclosed =>
+                                                                                   have hseam := (rectangleSeamsClosed_iff_finset A).mpr hclosed;
+                                                                                   ⟨hseam,
+                                                                                     Eq.mpr
+                                                                                       (congrArg (LE.le k)
+                                                                                         (congrArg (fun B => (rectangleCrossingComponents hN hM B).card)
+                                                                                           (rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC hN hM A hseam)))
+                                                                                       hcross⟩,
+                                                                               mpr := fun a =>
+                                                                                 And.casesOn a fun hseam hcross =>
+                                                                                   ⟨Eq.mpr
+                                                                                       (congrArg (LE.le k)
+                                                                                         (Eq.symm
+                                                                                           (congrArg (fun B => (rectangleCrossingComponents hN hM B).card)
+                                                                                             (rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC hN hM A hseam))))
+                                                                                       hcross,
+                                                                                     (rectangleSeamsClosed_iff_finset A).mp hseam⟩ }
 
 /-- Corrected (3.17): a large winding-loop tail is bounded by a free-rectangle
 FK event, with the exact seam finite-energy factor and rounded factor-two

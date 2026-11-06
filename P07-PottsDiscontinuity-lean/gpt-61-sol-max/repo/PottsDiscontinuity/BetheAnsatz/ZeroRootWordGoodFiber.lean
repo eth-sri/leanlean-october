@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootWordPartition
 
@@ -11,17 +12,17 @@ is exactly the good fiber represented by one root-incident term index.
 
 @[expose] public section
 
-open Finset Complex Classical
+
 
 namespace PottsDiscontinuity.BetheAnsatz
 
 /-- Raw data for a permutation, word, and root slot. -/
 abbrev RootFiberRawData (n : ℕ) :=
-  Fin (n + 1) × (Equiv.Perm (Fin (n + 1)) × (Fin (n + 1) → Bool))
+  Fin (n + 1) ×  Equiv.Perm (Fin (n + 1)) × (Fin (n + 1) → Bool) 
 
 /-- A nonconstant word fiber for which every ML edge touches the root slot. -/
 def RootIncidentFiberPredicate {n : ℕ} (l : Fin (n + 1))
-    (d : RootFiberRawData n) : Prop :=
+    (d : RootFiberRawData n)  :=
   d.2.1 d.1 = l ∧
     d.2.2 ≠ (fun _ => true) ∧ d.2.2 ≠ (fun _ => false) ∧
       ∀ a, d.2.2 a = false → d.2.2 (finRotate (n + 1) a) = true →
@@ -56,38 +57,34 @@ noncomputable def rootIncidentFiberUnderlying {n : ℕ} {l : Fin (n + 1)}
         _ = finRotate (n + 1) (t1EdgeLeft i.edge) :=
           (t1EdgeLeft_rotate i.edge).symm
         _ = finRotate (n + 1) a := by rw [← hEdge]
-    · left
-      calc
-        r = t1EdgeLeft i.edge := by simp [r, hs]
-        _ = a := hEdge.symm
+    · grind
   exact ⟨(r, (i.σ.1, i.w)), ⟨i.σ.2, htrue, hfalse, hAll⟩⟩
 
+section
+
+variable {n : ℕ} {l : Fin (n + 1)}
+
+
 /-- The forgotten raw data are injective on root-incident indices. -/
-theorem rootIncidentFiberUnderlying_injective {n : ℕ} {l : Fin (n + 1)}
+theorem rootIncidentFiberUnderlying_injective 
     (hn : 0 < n) :
-    Function.Injective (rootIncidentFiberUnderlying (n := n) (l := l)) := by
-  intro i j hij
-  apply rootIncidentUnderlying_injective hn
-  have hraw := congrArg Subtype.val hij
-  apply Prod.ext
-  · exact congrArg (fun d : RootFiberRawData n => d.2.1) hraw
-  · exact congrArg (fun d : RootFiberRawData n => d.2.2) hraw
+    Function.Injective (rootIncidentFiberUnderlying (n := n) (l := l)) := fun ⦃i j⦄ hij =>
+                                                                            rootIncidentUnderlying_injective hn
+                                                                              (have hraw := congrArg Subtype.val hij;
+                                                                              Prod.ext (congrArg (fun d => d.2.1) hraw) (congrArg (fun d => d.2.2) hraw))
 
 /-- Every good root-slot fiber determines its unique marked ML edge and its
 root endpoint orientation. -/
-theorem rootIncidentFiberUnderlying_surjective {n : ℕ} {l : Fin (n + 1)} :
+theorem rootIncidentFiberUnderlying_surjective  :
     Function.Surjective (rootIncidentFiberUnderlying (n := n) (l := l)) := by
   intro q
   rcases q with ⟨⟨r, σ, w⟩, ⟨hσ, hL, hM, hAll⟩⟩
-  let σ' : RootSlotPerm l r := ⟨σ, hσ⟩
+  
   obtain ⟨i, hiσ, hiw⟩ :=
-    exists_rootIncidentTerm_of_allMLIncident r σ' w hL hM hAll
+    exists_rootIncidentTerm_of_allMLIncident r  ⟨σ, hσ⟩  w hL hM hAll
   have hslot : (if i.side then t1EdgeLeft i.edge else t1EdgeRight i.edge) = r := by
     apply σ.injective
-    calc
-      σ (if i.side then t1EdgeLeft i.edge else t1EdgeRight i.edge) = l := by
-        simpa [hiσ] using i.σ.2
-      _ = σ r := hσ.symm
+    grind
   refine ⟨i, ?_⟩
   apply Subtype.ext
   apply Prod.ext
@@ -96,10 +93,12 @@ theorem rootIncidentFiberUnderlying_surjective {n : ℕ} {l : Fin (n + 1)} :
     · exact hiσ
     · exact hiw
 
+end
+
 /-- Good nonconstant root-slot fibers are in bijection with the root-incident
 T₁ term indices. -/
 noncomputable def rootIncidentFiberEquiv {n : ℕ} {l : Fin (n + 1)}
-    (hn : 0 < n) : RootIncidentTermIndex n l ≃ RootIncidentFiberTermIndex n l :=
+    (hn : 0 < n)  :=
   Equiv.ofBijective (rootIncidentFiberUnderlying (n := n) (l := l))
     ⟨rootIncidentFiberUnderlying_injective hn,
       rootIncidentFiberUnderlying_surjective⟩

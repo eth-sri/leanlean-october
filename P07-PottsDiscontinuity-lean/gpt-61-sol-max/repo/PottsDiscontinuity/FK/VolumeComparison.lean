@@ -1,6 +1,7 @@
 /- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
+public import Mathlib
 
 public import PottsDiscontinuity.FK.Disintegration
 public import PottsDiscontinuity.FK.Expectation
@@ -35,13 +36,16 @@ omit [Finite V] in
 theorem boundary_le_frozenBoundary (ξ : BoundaryCondition V) (H : Configuration G) :
     ξ.partition ≤ (frozenBoundary ξ H).partition := le_sup_right
 
+section
+
+variable (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G) (f : RemainingConfiguration G R → ℝ) (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f)
+include q ξ hf0 hf
+
 /-- Deleting edges while keeping the original partition decreases every
 nonnegative increasing observable of the edges that remain. -/
-theorem remainingLaw_le_original_marginal (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (f : RemainingConfiguration G R → ℝ)
-    (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f) :
+theorem remainingLaw_le_original_marginal  :
     expectation (remainingLaw G q ξ R) f ≤
-      expectation ((law G q ξ).map (fun C => (configurationSplitEquiv G R C).1)) f := by
+      expectation ((law G q ξ).map  fun C => (configurationSplitEquiv G R C).1 ) f := by
   rw [law_map_remaining_eq_bind_frozen]
   apply le_expectation_bind
   intro H
@@ -50,12 +54,12 @@ theorem remainingLaw_le_original_marginal (q : Parameters) (ξ : BoundaryConditi
 
 /-- The comparison expressed directly as an observable of the full original
 configuration, without replacing the genuine marginal by a new model. -/
-theorem remainingLaw_le_original_expectation (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (f : RemainingConfiguration G R → ℝ)
-    (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f) :
+theorem remainingLaw_le_original_expectation  :
     expectation (remainingLaw G q ξ R) f ≤
-      expectation (law G q ξ) (fun C => f (configurationSplitEquiv G R C).1) := by
+      expectation (law G q ξ)  fun C => f (configurationSplitEquiv G R C).1  := by
   simpa only [expectation_map] using remainingLaw_le_original_marginal q ξ R f hf0 hf
+
+end
 
 end
 end PottsDiscontinuity.FK

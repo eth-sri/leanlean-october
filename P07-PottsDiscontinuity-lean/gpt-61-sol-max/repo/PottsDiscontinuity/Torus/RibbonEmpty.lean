@@ -1,4 +1,5 @@
 module
+public import Mathlib
 
 public import PottsDiscontinuity.Torus.RibbonSurgery
 
@@ -11,7 +12,7 @@ identifications provide the base case for the cellular attachment argument.
 
 @[expose] public section
 
-open PottsDiscontinuity.SixVertex
+
 
 namespace PottsDiscontinuity.Torus
 
@@ -30,11 +31,10 @@ theorem diamondOpenGraph_closed (hN : Even N) (hM : Even M) (c : Bool) :
 def closedClusterEquiv (hN : Even N) (hM : Even M) (c : Bool) :
     (diamondOpenGraph hN hM c (closedRCConfig N M)).ConnectedComponent ≃
       FaceVertex N M c where
-  toFun := Quot.lift id (fun u v h => by
-    rw [diamondOpenGraph_closed, SimpleGraph.reachable_bot] at h
-    exact h)
+  toFun := Quot.lift id  fun u v h => by
+    simp_all [diamondOpenGraph_closed] 
   invFun := (diamondOpenGraph hN hM c (closedRCConfig N M)).connectedComponentMk
-  left_inv x := Quot.inductionOn x (fun _ => rfl)
+  left_inv x := Quot.inductionOn x  fun _ => rfl 
   right_inv _ := rfl
 
 theorem clusterCount_closed (hN : Even N) (hM : Even M) (c : Bool) :
@@ -53,15 +53,15 @@ theorem ribbonBoundary_closed (hN : Even N) (hM : Even M) :
 /-- Empty-subgraph boundary cycles correspond individually to primal vertex discs. -/
 def faceRotationCycleEquiv (hN : Even N) (hM : Even M) :
     PermutationCycle (faceRotation hN hM) ≃ FaceVertex N M true where
-  toFun := Quotient.lift (ribbonFace hN hM) (fun d e h =>
-    Subtype.ext ((sameCycle_faceRotation hN hM d e).mp h))
+  toFun := Quotient.lift (ribbonFace hN hM)  fun d e h =>
+    Subtype.ext ((sameCycle_faceRotation hN hM d e).mp h) 
   invFun v := Quotient.mk _ (ribbonVertexDart hN hM v)
   left_inv x := by
     refine Quotient.inductionOn x ?_
     intro d
     apply Quotient.sound
     apply (sameCycle_faceRotation hN hM _ _).mpr
-    exact congrArg Subtype.val (ribbonFace_vertexDart hN hM (ribbonFace hN hM d))
+    all_goals aesop
   right_inv v := ribbonFace_vertexDart hN hM v
 
 theorem rcLoopCount_closed (hN : Even N) (hM : Even M) :
@@ -71,7 +71,6 @@ theorem rcLoopCount_closed (hN : Even N) (hM : Even M) :
     Nat.card_eq_fintype_card]
 
 @[simp] theorem openCount_closed : openCount (closedRCConfig N M) = 0 := by
-  simp only [openCount, closedRCConfig, Bool.false_eq_true, Finset.filter_false,
-    Finset.card_empty]
+  simp_all [openCount, closedRCConfig]
 
 end PottsDiscontinuity.Torus
