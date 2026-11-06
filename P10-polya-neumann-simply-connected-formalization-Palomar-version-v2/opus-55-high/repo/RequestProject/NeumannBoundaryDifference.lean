@@ -26,36 +26,10 @@ namespace PolyaNeumann
 open Set
 open scoped InnerProductSpace
 
-/-- At the coercive reference energy `-1`, the genuine weak form is exactly
-the shifted H¹ inner product. -/
-private theorem shifted_form_neg_one
-    {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X] (M : X →L[ℂ] X) :
-    1 - (((-1 : ℝ) + 1 : ℝ) : ℂ) • M = 1 := by
-  simp
 
-@[simp] theorem h1HelmholtzForm_neg_one (Ω : Set ℂ) :
-    h1HelmholtzForm Ω (-1) = 1 :=
-  shifted_form_neg_one (h1MassOperator Ω)
 
-@[simp] theorem h1HelmholtzResolvent_neg_one (Ω : Set ℂ) :
-    h1HelmholtzResolvent Ω (-1) = 1 := by
-  rw [h1HelmholtzResolvent, h1HelmholtzForm_neg_one, Ring.inverse_one]
 
-@[simp] theorem neumannBoundaryPoisson_neg_one {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) :
-    neumannBoundaryPoisson hb hL hγ (-1) = h1BoundaryLoad hb hL hγ := by
-  apply ContinuousLinearMap.ext
-  intro g
-  simp only [neumannBoundaryPoisson, h1HelmholtzResolvent_neg_one,
-    ContinuousLinearMap.comp_apply, ContinuousLinearMap.one_apply]
 
-@[simp] theorem neumannToDirichletL2_neg_one {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) :
-    neumannToDirichletL2 hb hL hγ (-1) =
-      (h1BoundaryTrace hb hL hγ).comp (h1BoundaryLoad hb hL hγ) := by
-  rw [neumannToDirichletL2, neumannBoundaryPoisson_neg_one]
 
 end PolyaNeumann
 

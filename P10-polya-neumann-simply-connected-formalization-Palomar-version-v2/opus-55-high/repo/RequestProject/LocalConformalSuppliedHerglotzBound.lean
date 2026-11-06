@@ -34,9 +34,11 @@ variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
 local notation "ΩF" => F '' ball (0 : ℂ) 1
 local notation "ΓF" => physicalCircleTrace F
 
+variable {L : NNReal}
+
 include hR hFs hb hL hhol hinj hC hK e he hsource hes hγ hτ hcoord in
 theorem exists_localConformal_original_herglotz_boundary_bound
-    {L : NNReal} (hΓLip : LipschitzWith L ΓF)
+    (hΓLip : LipschitzWith L ΓF)
     (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) (hWs : ∀ E, IsTransport ΓF E (Ws E))
     {E₀ : ℝ} (hE₀ : 0 < E₀)
     (hcut : cutC (Ws E₀ (2 * Real.pi)) (basisVec 0) ≠ 0) :
@@ -46,15 +48,14 @@ theorem exists_localConformal_original_herglotz_boundary_bound
         ∃ ℓ : (ℝ → ℂ) →ₗ[ℂ] (Fin (originalNeumannMultiplicity ΩF E₀) → ℂ),
           ∀ a, IsDirDensity a → ℓ a = 0 →
             -(A * ‖observationAdj W (herglotzConormal (Real.sqrt E) a γ)‖ ^ 2) ≤
-              herglotzForm W γ E a := by
-  exact exists_uniform_originalHerglotz_bound_of_normalized hR F hFs hb hL hhol hinj hC
+              herglotzForm W γ E a := exists_uniform_originalHerglotz_bound_of_normalized hR F hFs hb hL hhol hinj hC
     hγ hτ hcoord hΓLip Ws hWs E₀ hcut
     (exists_localConformal_normalized_reduced_boundary_bound hR F hFs hb hL hhol hinj hC hK
       e he hsource hes hγ hτ hcoord hΓLip Ws hWs hE₀ hcut)
 
 include hR hFs hb hL hhol hinj hC hK e he hsource hes hγ hτ hcoord in
 theorem exists_localConformal_original_herglotz_boundary_bound_of_multiplicity
-    {L : NNReal} (hΓLip : LipschitzWith L ΓF)
+    (hΓLip : LipschitzWith L ΓF)
     (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) (hWs : ∀ E, IsTransport ΓF E (Ws E))
     {E₀ : ℝ} (hE₀ : 0 < E₀)
     (hcut : cutC (Ws E₀ (2 * Real.pi)) (basisVec 0) ≠ 0)
@@ -67,12 +68,11 @@ theorem exists_localConformal_original_herglotz_boundary_bound_of_multiplicity
             herglotzForm W γ E a := by
   have hmult : originalNeumannMultiplicity ΩF E₀ = m := by
     unfold originalNeumannMultiplicity
-    rw [hm]
-    exact ENat.toNat_coe m
+    simp_all
   have hbase := exists_localConformal_original_herglotz_boundary_bound hR F hFs hb hL
     hhol hinj hC hK e he hsource hes hγ hτ hcoord hΓLip Ws hWs hE₀ hcut
   subst m
-  exact hbase
+  assumption
 
 end Coordinates
 end PolyaNeumann

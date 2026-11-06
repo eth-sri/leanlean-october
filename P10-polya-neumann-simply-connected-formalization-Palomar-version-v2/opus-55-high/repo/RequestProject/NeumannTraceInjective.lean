@@ -32,26 +32,21 @@ open scoped Real InnerProductSpace ComplexConjugate
 lemma smoothConormalTest_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
     MemLp (fun θ => conj (fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ)))) 2
-      (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
+      (volume.restrict (Ioc 0 (2 * π))) := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨Kφ, hKφ⟩ := ContDiff.lipschitzWith_of_hasCompactSupport hφ.2.1 hφ.1 (by simp)
-  have hc : Continuous (fun θ => fderiv ℝ φ (γ θ)) :=
-    (hφ.1.continuous_fderiv (by simp)).comp hKγ.continuous
-  have hm : AEStronglyMeasurable
-      (fun θ => fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ))) volume :=
-    isBoundedBilinearMap_apply.continuous.comp_aestronglyMeasurable
-      (hc.aestronglyMeasurable.prodMk
-        ((measurable_deriv γ).const_mul _).neg.aestronglyMeasurable)
   apply MemLp.of_bound
-    (Complex.continuous_conj.comp_aestronglyMeasurable hm).restrict
-    ((Kφ : ℝ) * Kγ)
+    (Complex.continuous_conj.comp_aestronglyMeasurable (isBoundedBilinearMap_apply.continuous.comp_aestronglyMeasurable
+      (((hφ.1.continuous_fderiv (by simp)).comp hKγ.continuous).aestronglyMeasurable.prodMk
+        ((measurable_deriv γ).const_mul _).neg.aestronglyMeasurable))).restrict
+    (Kφ * Kγ)
   apply Eventually.of_forall
   intro θ
   rw [Complex.norm_conj]
   calc
     _ ≤ ‖fderiv ℝ φ (γ θ)‖ * ‖-(Complex.I * deriv γ θ)‖ :=
       ContinuousLinearMap.le_opNorm _ _
-    _ ≤ (Kφ : ℝ) * Kγ := by
+    _ ≤ Kφ * Kγ := by
       rw [norm_neg, norm_mul, Complex.norm_I, one_mul]
       exact mul_le_mul (norm_fderiv_le_of_lipschitz ℝ hKφ)
         (norm_deriv_le_of_lipschitz hKγ) (norm_nonneg _) Kφ.coe_nonneg
@@ -86,7 +81,7 @@ private lemma inner_conj_test_toLp {Ω : Set ℂ} {φ : ℂ → ℂ}
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [(hφ.conj.memLp' 2 (μ := volume.restrict Ω)).coeFn_toLp] with z hz
-  simp only [RCLike.inner_apply, hz, Complex.conj_conj]
+  simp_all
 
 theorem h1DoubleLayerInteriorTest_apply (Ω : Set ℂ) {φ : ℂ → ℂ}
     (hφ : TestFunction univ φ) (u : NeumannH1 Ω) :
@@ -94,9 +89,8 @@ theorem h1DoubleLayerInteriorTest_apply (Ω : Set ℂ) {φ : ℂ → ℂ}
       (∫ z in Ω, h1Value Ω u z * lap φ z) +
         ∑ i : Fin 2, ∫ z in Ω, h1Gradient Ω i u z * dirD φ (coordDir i) z := by
   simp only [h1DoubleLayerInteriorTest, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.comp_apply, ContinuousLinearMap.sum_apply,
-    innerSL_apply_apply]
-  exact congrArg₂ (fun x y : ℂ => x + y)
+    ContinuousLinearMap.sum_apply]
+  exact congrArg₂ (fun x y  => x + y)
     (inner_conj_test_toLp hφ.lap (h1Value Ω u))
     (Finset.sum_congr rfl fun i _ =>
       inner_conj_test_toLp (hφ.dirD (coordDir i)) (h1Gradient Ω i u))
@@ -105,13 +99,11 @@ theorem h1DoubleLayerBoundaryTest_apply {Ω : Set ℂ} (hb : Bornology.IsBounded
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (u : NeumannH1 Ω) :
     h1DoubleLayerBoundaryTest hb hL hγ hφ u =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+      ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
         fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ)) := by
-  change ⟪smoothConormalTestL2 hγ hφ, h1BoundaryTrace hb hL hγ u⟫_ℂ = _
-  rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [(smoothConormalTest_memLp hγ hφ).coeFn_toLp] with θ hθ
-  simp only [smoothConormalTestL2, RCLike.inner_apply, hθ, Complex.conj_conj]
+  simp_all [smoothConormalTestL2]
 
 private lemma h1DoubleLayerBoundaryTest_smooth {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
@@ -122,7 +114,7 @@ private lemma h1DoubleLayerBoundaryTest_smooth {Ω : Set ℂ} (hb : Bornology.Is
     intervalIntegral.integral_of_le (by positivity)]
   apply integral_congr_ae
   filter_upwards [h1BoundaryTrace_smooth_ae hb hL hγ f] with θ hθ
-  rw [hθ]
+  simp_all
 
 private lemma h1DoubleLayerInteriorTest_smooth (Ω : Set ℂ)
     {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (f : smoothTraceTests) :
@@ -134,7 +126,7 @@ private lemma h1DoubleLayerInteriorTest_smooth (Ω : Set ℂ)
       ∫ z in Ω, f z * lap φ z := by
     apply integral_congr_ae
     filter_upwards [(f.property.memLp' 2 (μ := volume.restrict Ω)).coeFn_toLp] with z hz
-    rw [h1Value_smoothTraceH1, hz]
+    simp_all
   have hi : ∀ i : Fin 2,
       (∫ z in Ω, h1Gradient Ω i (smoothTraceH1 Ω f) z * dirD φ (coordDir i) z) =
         ∫ z in Ω, dirD (f : ℂ → ℂ) (coordDir i) z * dirD φ (coordDir i) z := by
@@ -181,7 +173,7 @@ theorem h1_doubleLayer_green {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (u : NeumannH1 Ω) :
     (∫ z in Ω, h1Value Ω u z * lap φ z) +
       (∑ i : Fin 2, ∫ z in Ω, h1Gradient Ω i u z * dirD φ (coordDir i) z) =
-        ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+        ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
           fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ)) := by
   rw [← h1DoubleLayerInteriorTest_apply Ω hφ u,
     ← h1DoubleLayerBoundaryTest_eq_interior hb hL hγ hφ,

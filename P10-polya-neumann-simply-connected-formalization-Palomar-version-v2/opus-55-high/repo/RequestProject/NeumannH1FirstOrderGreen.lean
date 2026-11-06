@@ -40,7 +40,7 @@ private theorem firstOrderL2TestPair_apply (Ω : Set ℂ) {φ : ℂ → ℂ}
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [(hφ.conj.memLp' 2 (μ := volume.restrict Ω)).coeFn_toLp] with z hz
-  simp only [RCLike.inner_apply, hz, Complex.conj_conj]
+  simp_all
 
 private theorem firstOrder_boundary_coefficient_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ)
@@ -62,7 +62,7 @@ private theorem firstOrder_boundary_coefficient_memLp {Ω : Set ℂ} {γ : ℝ �
 theorem firstOrder_velocity_coefficient_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
     MemLp (fun θ => φ (γ θ) * deriv γ θ) 2
-      (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
+      (volume.restrict (Ioc 0 (2 * π))) := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
   exact firstOrder_boundary_coefficient_memLp hγ hφ (deriv γ)
     (measurable_deriv γ).aestronglyMeasurable (fun _ => norm_deriv_le_of_lipschitz hK)
@@ -113,17 +113,13 @@ theorem h1FirstOrderBoundaryTest_apply {Ω : Set ℂ}
     (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ)
     (u : NeumannH1 Ω) :
     h1FirstOrderBoundaryTest hb hL hγ hφ u =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+      ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
         (φ (γ θ) * deriv γ θ) := by
-  change ⟪firstOrderVelocityTestL2 hγ hφ, h1BoundaryTrace hb hL hγ u⟫_ℂ = _
-  rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [((firstOrder_velocity_coefficient_memLp hγ hφ).star).coeFn_toLp]
     with θ hθ
   change firstOrderVelocityTestL2 hγ hφ θ = conj (φ (γ θ) * deriv γ θ) at hθ
-  simp only [RCLike.inner_apply]
-  change h1BoundaryTrace hb hL hγ u θ * conj (firstOrderVelocityTestL2 hγ hφ θ) = _
-  rw [hθ, Complex.conj_conj]
+  simp_all
 
 private theorem smooth_firstOrder_green {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
@@ -148,7 +144,7 @@ private theorem smooth_firstOrder_green {Ω : Set ℂ}
       intro z
       dsimp only [dbar, dirD]
       ring_nf; simp only [Complex.I_sq]; ring
-    _ = _ := by rw [integral_sub (hdx.const_mul _) hdy, integral_const_mul]
+    _ = _ := by simp [integral_sub (hdx.const_mul _) hdy, integral_const_mul]
 
 private theorem firstOrderL2TestPair_smooth_value (Ω : Set ℂ) {φ : ℂ → ℂ}
     (hφ : TestFunction univ φ) (f : smoothTraceTests) :
@@ -156,7 +152,7 @@ private theorem firstOrderL2TestPair_smooth_value (Ω : Set ℂ) {φ : ℂ → �
   rw [firstOrderL2TestPair_apply]
   apply integral_congr_ae
   filter_upwards [(smoothTraceTests_memLp Ω f).coeFn_toLp] with z hz
-  rw [h1Value_smoothTraceH1, hz]
+  simp_all
 
 private theorem firstOrderL2TestPair_smooth_gradient (Ω : Set ℂ) {φ : ℂ → ℂ}
     (hφ : TestFunction univ φ) (f : smoothTraceTests) (i : Fin 2) :
@@ -165,8 +161,7 @@ private theorem firstOrderL2TestPair_smooth_gradient (Ω : Set ℂ) {φ : ℂ �
   rw [firstOrderL2TestPair_apply]
   apply integral_congr_ae
   filter_upwards [(smoothTraceTests_memLp_deriv Ω f i).coeFn_toLp] with z hz
-  simpa only [h1Gradient_smoothTraceH1, dirD] using
-    congrArg (fun w : ℂ => w * φ z) hz
+  simp_all [h1Gradient_smoothTraceH1, dirD]
 
 private theorem h1FirstOrder_green_smooth {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
@@ -182,9 +177,7 @@ private theorem h1FirstOrder_green_smooth {Ω : Set ℂ}
     rw [h1FirstOrderBoundaryTest_apply]
     apply integral_congr_ae
     filter_upwards [h1BoundaryTrace_smooth_ae hb hL hγ f] with θ hθ
-    rw [hθ]
-    dsimp [p]
-    ring
+    grind
   have hproduct (v z : ℂ) :
       dirD p v z = dirD (f : ℂ → ℂ) v z * φ z + f z * dirD φ v z := by
     rw [dirD, fderiv_fun_mul (f.property.1.differentiable (by simp) z)
@@ -216,7 +209,6 @@ theorem h1FirstOrderBoundaryTest_eq_interior {Ω : Set ℂ}
     (h1FirstOrderBoundaryTest hb hL hγ hφ).continuous
     (h1FirstOrderInteriorTest Ω hφ).continuous
   funext f
-  rw [Function.comp_apply, Function.comp_apply, smoothTraceH1Lin_apply]
   exact h1FirstOrder_green_smooth hb hL hγ hφ f
 
 /-- The genuine nonconjugate first-order Green identity on every H¹ input. -/
@@ -228,7 +220,7 @@ theorem h1_firstOrder_green {Ω : Set ℂ}
       ∫ z in Ω, h1Value Ω u z * dirD φ 1 z) -
       ((∫ z in Ω, h1Gradient Ω 1 u z * φ z) +
         ∫ z in Ω, h1Value Ω u z * dirD φ Complex.I z) =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+      ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
         (φ (γ θ) * deriv γ θ) := by
   rw [← h1FirstOrderInteriorTest_apply Ω hφ u,
     ← h1FirstOrderBoundaryTest_eq_interior hb hL hγ hφ,
@@ -238,7 +230,7 @@ private theorem firstOrder_normal_x (z : ℂ) :
     (z.im : ℂ) = (-Complex.I / 2) * (z - conj z) := by
   rw [Complex.sub_conj]
   push_cast
-  ring_nf; simp only [Complex.I_sq]; ring
+  ring_nf; norm_num
 
 private theorem firstOrder_normal_y (z : ℂ) :
     -(z.re : ℂ) = (-1 / 2 : ℂ) * (z + conj z) := by
@@ -253,38 +245,34 @@ theorem h1_coordinate_divergence_x {Ω : Set ℂ}
     (u : NeumannH1 Ω) :
     (∫ z in Ω, h1Gradient Ω 0 u z * φ z) +
         (∫ z in Ω, h1Value Ω u z * dirD φ 1 z) =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
-        (φ (γ θ) * ((deriv γ θ).im : ℂ)) := by
-  have hp := h1_firstOrder_green hb hL hγ hφ u
-  have hm := h1_firstOrder_conjugate_green hb hL hγ hφ u
-  have hip := (Lp.memLp (h1BoundaryTrace hb hL hγ u)).integrable_mul
-    (firstOrder_velocity_coefficient_memLp hγ hφ)
-  have him := (Lp.memLp (h1BoundaryTrace hb hL hγ u)).integrable_mul
-    (firstOrder_conjugate_velocity_coefficient_memLp hγ hφ)
+      ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
+        (φ (γ θ) * (deriv γ θ).im) := by
   symm
   calc
-    _ = ∫ θ in Ioc (0 : ℝ) (2 * π), (-Complex.I / 2) *
+    _ = ∫ θ in Ioc 0 (2 * π), (-Complex.I / 2) *
         (h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * deriv γ θ) -
           h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * conj (deriv γ θ))) := by
       apply integral_congr_ae
       apply Eventually.of_forall
       intro θ
-      change h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * ((deriv γ θ).im : ℂ)) =
+      change h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * (deriv γ θ).im) =
         (-Complex.I / 2) *
           (h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * deriv γ θ) -
             h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * conj (deriv γ θ)))
       rw [firstOrder_normal_x]
       ring
     _ = (-Complex.I / 2) *
-        ((∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+        ((∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
           (φ (γ θ) * deriv γ θ)) -
-        ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+        ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
           (φ (γ θ) * conj (deriv γ θ))) := by
       rw [integral_const_mul]
-      exact congrArg (fun z : ℂ => (-Complex.I / 2) * z) (integral_sub hip him)
+      exact congrArg (fun z  => (-Complex.I / 2) * z) (integral_sub ((Lp.memLp (h1BoundaryTrace hb hL hγ u)).integrable_mul
+    (firstOrder_velocity_coefficient_memLp hγ hφ)) ((Lp.memLp (h1BoundaryTrace hb hL hγ u)).integrable_mul
+    (firstOrder_conjugate_velocity_coefficient_memLp hγ hφ)))
     _ = _ := by
-      rw [← hp, ← hm]
-      ring_nf; simp only [Complex.I_sq]; ring
+      rw [← h1_firstOrder_green hb hL hγ hφ u, ← h1_firstOrder_conjugate_green hb hL hγ hφ u]
+      ring_nf; norm_num
 
 /-- Divergence in the real y direction, with density `-Re γ′`. -/
 theorem h1_coordinate_divergence_y {Ω : Set ℂ}
@@ -293,37 +281,34 @@ theorem h1_coordinate_divergence_y {Ω : Set ℂ}
     (u : NeumannH1 Ω) :
     (∫ z in Ω, h1Gradient Ω 1 u z * φ z) +
         (∫ z in Ω, h1Value Ω u z * dirD φ Complex.I z) =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
-        (φ (γ θ) * (-(deriv γ θ).re : ℂ)) := by
+      ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
+        (φ (γ θ) * -(deriv γ θ).re) := by
   have hp := h1_firstOrder_green hb hL hγ hφ u
   have hm := h1_firstOrder_conjugate_green hb hL hγ hφ u
-  have hip := (Lp.memLp (h1BoundaryTrace hb hL hγ u)).integrable_mul
-    (firstOrder_velocity_coefficient_memLp hγ hφ)
-  have him := (Lp.memLp (h1BoundaryTrace hb hL hγ u)).integrable_mul
-    (firstOrder_conjugate_velocity_coefficient_memLp hγ hφ)
   symm
   calc
-    _ = ∫ θ in Ioc (0 : ℝ) (2 * π), (-1 / 2 : ℂ) *
+    _ = ∫ θ in Ioc 0 (2 * π), -1 / 2 *
         (h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * deriv γ θ) +
           h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * conj (deriv γ θ))) := by
       apply integral_congr_ae
       apply Eventually.of_forall
       intro θ
-      change h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * (-(deriv γ θ).re : ℂ)) =
-        (-1 / 2 : ℂ) *
+      change h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * -(deriv γ θ).re) =
+        -1 / 2 *
           (h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * deriv γ θ) +
             h1BoundaryTrace hb hL hγ u θ * (φ (γ θ) * conj (deriv γ θ)))
-      rw [show (-(deriv γ θ).re : ℂ) = -((deriv γ θ).re : ℂ) from by simp,
-        firstOrder_normal_y]
+      rw [firstOrder_normal_y]
       ring
-    _ = (-1 / 2 : ℂ) *
-        ((∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+    _ = -1 / 2 *
+        ((∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
           (φ (γ θ) * deriv γ θ)) +
-        ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+        ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
           (φ (γ θ) * conj (deriv γ θ))) := by
       rw [integral_const_mul]
-      exact congrArg (fun z : ℂ => (-1 / 2 : ℂ) * z) (integral_add hip him)
-    _ = _ := by rw [← hp, ← hm]; ring
+      exact congrArg (fun z  => -1 / 2 * z) (integral_add ((Lp.memLp (h1BoundaryTrace hb hL hγ u)).integrable_mul
+    (firstOrder_velocity_coefficient_memLp hγ hφ)) ((Lp.memLp (h1BoundaryTrace hb hL hγ u)).integrable_mul
+    (firstOrder_conjugate_velocity_coefficient_memLp hγ hφ)))
+    _ = _ := by grind
 
 def firstOrderBoundarySpeedBound {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) : NNReal := Classical.choose hγ.lipschitz
@@ -338,22 +323,21 @@ theorem firstOrder_normalX_measurable (γ : ℝ → ℂ) :
     (Complex.imCLM.continuous.comp_aestronglyMeasurable (measurable_deriv γ).aestronglyMeasurable)
 
 theorem firstOrder_normalY_measurable (γ : ℝ → ℂ) :
-    AEStronglyMeasurable (fun θ => (-(deriv γ θ).re : ℂ)) volume := by
-  exact (Complex.continuous_ofReal.comp_aestronglyMeasurable
+    AEStronglyMeasurable (fun θ => (-(deriv γ θ).re : ℂ)) volume := (Complex.continuous_ofReal.comp_aestronglyMeasurable
       (Complex.continuous_re.comp_aestronglyMeasurable
         (measurable_deriv γ).aestronglyMeasurable)).neg
 
 theorem firstOrder_normalX_bound {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (θ : ℝ) :
     ‖((deriv γ θ).im : ℂ)‖ ≤ firstOrderBoundarySpeedBound hγ := by
-  rw [Complex.norm_real, Real.norm_eq_abs]
+  rw [Complex.norm_real]
   exact (Complex.abs_im_le_norm _).trans
     (norm_deriv_le_of_lipschitz (firstOrderBoundarySpeedBound_spec hγ))
 
 theorem firstOrder_normalY_bound {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (θ : ℝ) :
     ‖(-(deriv γ θ).re : ℂ)‖ ≤ firstOrderBoundarySpeedBound hγ := by
-  simp only [norm_neg, Complex.norm_real, Real.norm_eq_abs]
+  simp 
   exact (Complex.abs_re_le_norm _).trans
     (norm_deriv_le_of_lipschitz (firstOrderBoundarySpeedBound_spec hγ))
 
@@ -373,16 +357,16 @@ def h1BoundaryNormalYMultiplier {Ω : Set ℂ} {γ : ℝ → ℂ}
 
 theorem h1BoundaryNormalXMultiplier_ae {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (g : BoundaryL2) :
-    (h1BoundaryNormalXMultiplier hγ g : ℝ → ℂ) =ᵐ[
-      volume.restrict (Ioc (0 : ℝ) (2 * π))]
-      fun θ => ((deriv γ θ).im : ℂ) * g θ :=
+    h1BoundaryNormalXMultiplier hγ g =ᵐ[
+      volume.restrict (Ioc 0 (2 * π))]
+      fun θ => (deriv γ θ).im * g θ :=
   lpBoundedMultiplier_ae _ _ _ g
 
 theorem h1BoundaryNormalYMultiplier_ae {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (g : BoundaryL2) :
-    (h1BoundaryNormalYMultiplier hγ g : ℝ → ℂ) =ᵐ[
-      volume.restrict (Ioc (0 : ℝ) (2 * π))]
-      fun θ => (-(deriv γ θ).re : ℂ) * g θ :=
+    h1BoundaryNormalYMultiplier hγ g =ᵐ[
+      volume.restrict (Ioc 0 (2 * π))]
+      fun θ => -(deriv γ θ).re * g θ :=
   lpBoundedMultiplier_ae _ _ _ g
 
 /-- The actual L² conormal density for two H¹ gradient representatives. -/
@@ -395,18 +379,17 @@ def h1GradientConormalDensity {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 theorem h1GradientConormalDensity_ae {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     (g0 g1 : NeumannH1 Ω) :
-    (h1GradientConormalDensity hb hL hγ g0 g1 : ℝ → ℂ) =ᵐ[
-      volume.restrict (Ioc (0 : ℝ) (2 * π))]
-      fun θ => ((deriv γ θ).im : ℂ) * h1BoundaryTrace hb hL hγ g0 θ +
-        (-(deriv γ θ).re : ℂ) * h1BoundaryTrace hb hL hγ g1 θ := by
+    h1GradientConormalDensity hb hL hγ g0 g1 =ᵐ[
+      volume.restrict (Ioc 0 (2 * π))]
+      fun θ => (deriv γ θ).im * h1BoundaryTrace hb hL hγ g0 θ +
+        -(deriv γ θ).re * h1BoundaryTrace hb hL hγ g1 θ := by
   filter_upwards [Lp.coeFn_add
       (h1BoundaryNormalXMultiplier hγ (h1BoundaryTrace hb hL hγ g0))
       (h1BoundaryNormalYMultiplier hγ (h1BoundaryTrace hb hL hγ g1)),
     h1BoundaryNormalXMultiplier_ae hγ (h1BoundaryTrace hb hL hγ g0),
     h1BoundaryNormalYMultiplier_ae hγ (h1BoundaryTrace hb hL hγ g1)] with θ ha hx hy
   change (_ + _ : BoundaryL2) θ = _
-  rw [ha]
-  simp only [Pi.add_apply, hx, hy]
+  simp_all
 
 /-- The divergence is the sum of actual weak derivative components. -/
 def h1GradientDivergence (Ω : Set ℂ) (g0 g1 : NeumannH1 Ω) : L2 Ω :=
@@ -423,41 +406,36 @@ theorem h1_conormal_green_compact_test {Ω : Set ℂ}
     {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
     (∑ i : Fin 2, ∫ z in Ω, h1Gradient Ω i u z * dirD φ (coordDir i) z) +
         (∫ z in Ω, h1GradientDivergence Ω g0 g1 z * φ z) =
-      ∫ θ in Ioc (0 : ℝ) (2 * π),
+      ∫ θ in Ioc 0 (2 * π),
         h1GradientConormalDensity hb hL hγ g0 g1 θ * φ (γ θ) := by
-  have hx := h1_coordinate_divergence_x hb hL hγ hφ g0
-  have hy := h1_coordinate_divergence_y hb hL hγ hφ g1
   have hdiv : (∫ z in Ω, h1GradientDivergence Ω g0 g1 z * φ z) =
       (∫ z in Ω, h1Gradient Ω 0 g0 z * φ z) +
         ∫ z in Ω, h1Gradient Ω 1 g1 z * φ z := by
     rw [← firstOrderL2TestPair_apply Ω hφ]
     change firstOrderL2TestPair Ω hφ (_ + _) = _
-    rw [map_add, firstOrderL2TestPair_apply, firstOrderL2TestPair_apply]
-  have hix := (Lp.memLp (h1BoundaryTrace hb hL hγ g0)).integrable_mul
-    (firstOrder_boundary_coefficient_memLp hγ hφ _ (firstOrder_normalX_measurable γ)
-      (firstOrder_normalX_bound hγ))
-  have hiy := (Lp.memLp (h1BoundaryTrace hb hL hγ g1)).integrable_mul
-    (firstOrder_boundary_coefficient_memLp hγ hφ _ (firstOrder_normalY_measurable γ)
-      (firstOrder_normalY_bound hγ))
-  have hbd : (∫ θ in Ioc (0 : ℝ) (2 * π),
+    simp [map_add, firstOrderL2TestPair_apply]
+  have hbd : (∫ θ in Ioc 0 (2 * π),
       h1GradientConormalDensity hb hL hγ g0 g1 θ * φ (γ θ)) =
-      (∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ g0 θ *
-        (φ (γ θ) * ((deriv γ θ).im : ℂ))) +
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ g1 θ *
-        (φ (γ θ) * (-(deriv γ θ).re : ℂ)) := by
+      (∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ g0 θ *
+        (φ (γ θ) * (deriv γ θ).im)) +
+      ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ g1 θ *
+        (φ (γ θ) * -(deriv γ θ).re) := by
     calc
-      _ = ∫ θ in Ioc (0 : ℝ) (2 * π),
-          h1BoundaryTrace hb hL hγ g0 θ * (φ (γ θ) * ((deriv γ θ).im : ℂ)) +
-          h1BoundaryTrace hb hL hγ g1 θ * (φ (γ θ) * (-(deriv γ θ).re : ℂ)) := by
+      _ = ∫ θ in Ioc 0 (2 * π),
+          h1BoundaryTrace hb hL hγ g0 θ * (φ (γ θ) * (deriv γ θ).im) +
+          h1BoundaryTrace hb hL hγ g1 θ * (φ (γ θ) * -(deriv γ θ).re) := by
         apply integral_congr_ae
         filter_upwards [h1GradientConormalDensity_ae hb hL hγ g0 g1] with θ hθ
-        rw [hθ]
-        ring
-      _ = _ := integral_add hix hiy
+        grind
+      _ = _ := integral_add ((Lp.memLp (h1BoundaryTrace hb hL hγ g0)).integrable_mul
+    (firstOrder_boundary_coefficient_memLp hγ hφ _ (firstOrder_normalX_measurable γ)
+      (firstOrder_normalX_bound hγ))) ((Lp.memLp (h1BoundaryTrace hb hL hγ g1)).integrable_mul
+    (firstOrder_boundary_coefficient_memLp hγ hφ _ (firstOrder_normalY_measurable γ)
+      (firstOrder_normalY_bound hγ)))
   rw [Fin.sum_univ_two]
   change (∫ z in Ω, h1Gradient Ω 0 u z * dirD φ 1 z) +
       (∫ z in Ω, h1Gradient Ω 1 u z * dirD φ Complex.I z) + _ = _
-  rw [hg0, hg1, hdiv, hbd, ← hx, ← hy]
+  rw [hg0, hg1, hdiv, hbd, ← h1_coordinate_divergence_x hb hL hγ hφ g0, ← h1_coordinate_divergence_y hb hL hγ hφ g1]
   ring
 
 private theorem firstOrder_inner_toLp {α : Type*} [MeasurableSpace α]
@@ -467,13 +445,12 @@ private theorem firstOrder_inner_toLp {α : Type*} [MeasurableSpace α]
   apply integral_congr_ae
   filter_upwards [hφ.coeFn_toLp] with z hz
   simp only [RCLike.inner_apply, hz, map_mul, Complex.conj_conj]
-  exact mul_comm _ _
+  ring
 
 private theorem firstOrder_inner_conjugate_integral {α : Type*} [MeasurableSpace α]
     {μ : Measure α} (u v : Lp ℂ 2 μ) :
     ⟪u, v⟫_ℂ = conj (∫ z, u z * conj (v z) ∂μ) := by
-  rw [L2.inner_def, ← integral_conj]
-  simp only [RCLike.inner_apply, map_mul, Complex.conj_conj, mul_comm]
+  simp [L2.inner_def, ← integral_conj, RCLike.inner_apply, map_mul, mul_comm]
 
 /-- A bounded functional in the H¹ test input; its first argument is fixed. -/
 def h1ConormalGreenInteriorFunctional (Ω : Set ℂ) (u g0 g1 : NeumannH1 Ω) :
@@ -491,8 +468,7 @@ theorem h1ConormalGreenInteriorFunctional_apply (Ω : Set ℂ)
     h1ConormalGreenInteriorFunctional Ω u g0 g1 w =
       (∑ i : Fin 2, ⟪h1Gradient Ω i u, h1Gradient Ω i w⟫_ℂ) +
         ⟪h1GradientDivergence Ω g0 g1, h1Value Ω w⟫_ℂ := by
-  simp only [h1ConormalGreenInteriorFunctional, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.sum_apply, ContinuousLinearMap.comp_apply, innerSL_apply_apply]
+  rfl
 
 theorem h1ConormalGreenBoundaryFunctional_apply {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
@@ -516,26 +492,24 @@ private theorem h1ConormalGreen_smooth {Ω : Set ℂ}
     apply integral_congr_ae
     apply Eventually.of_forall
     intro z
-    change h1Gradient Ω i u z * conj (dirD (f : ℂ → ℂ) (coordDir i) z) =
+    change h1Gradient Ω i u z * conj (dirD f (coordDir i) z) =
       h1Gradient Ω i u z * dirD (fun w => conj (f w)) (coordDir i) z
-    rw [dirD_conj (f.property.1.of_le (by simp))]
+    simp [dirD_conj (f.property.1.of_le (by simp))]
   have hv : ⟪h1GradientDivergence Ω g0 g1, h1Value Ω (smoothTraceH1 Ω f)⟫_ℂ =
       conj (∫ z in Ω, h1GradientDivergence Ω g0 g1 z * conj (f z)) := by
     rw [h1Value_smoothTraceH1, firstOrder_inner_toLp]
   have hbnd : ⟪h1GradientConormalDensity hb hL hγ g0 g1,
       h1BoundaryTrace hb hL hγ (smoothTraceH1 Ω f)⟫_ℂ =
-      conj (∫ θ in Ioc (0 : ℝ) (2 * π),
+      conj (∫ θ in Ioc 0 (2 * π),
         h1GradientConormalDensity hb hL hγ g0 g1 θ * conj (f (γ θ))) := by
     rw [firstOrder_inner_conjugate_integral]
     apply congrArg conj
     apply integral_congr_ae
     filter_upwards [h1BoundaryTrace_smooth_ae hb hL hγ f] with θ hθ
-    rw [hθ]
+    simp_all
   have h := congrArg conj
     (h1_conormal_green_compact_test hb hL hγ u g0 g1 hg0 hg1 f.property.conj)
-  simp only [map_add, map_sum] at h
-  simpa only [h1ConormalGreenInteriorFunctional_apply,
-    h1ConormalGreenBoundaryFunctional_apply, hi, hv, hbnd] using h
+  simp_all [h1ConormalGreenInteriorFunctional_apply, h1ConormalGreenBoundaryFunctional_apply]
 
 /-- Both sides are genuinely bounded functionals in the test input, so
 the compact-smooth identity extends to every actual H¹ test vector. -/
@@ -551,7 +525,6 @@ theorem h1ConormalGreenInteriorFunctional_eq_boundary {Ω : Set ℂ}
     (h1ConormalGreenInteriorFunctional Ω u g0 g1).continuous
     (h1ConormalGreenBoundaryFunctional hb hL hγ g0 g1).continuous
   funext f
-  rw [Function.comp_apply, Function.comp_apply, smoothTraceH1Lin_apply]
   exact h1ConormalGreen_smooth hb hL hγ u g0 g1 hg0 hg1 f
 
 /-- The true conormal Green formula against arbitrary H¹ tests, with the
@@ -564,10 +537,8 @@ theorem h1_conormal_green {Ω : Set ℂ}
     (∑ i : Fin 2, ⟪h1Gradient Ω i w, h1Gradient Ω i u⟫_ℂ) +
         ⟪h1Value Ω w, h1GradientDivergence Ω g0 g1⟫_ℂ =
       ⟪h1BoundaryTrace hb hL hγ w, h1GradientConormalDensity hb hL hγ g0 g1⟫_ℂ := by
-  have h := congrArg (fun T : NeumannH1 Ω →L[ℂ] ℂ => T w)
+  have h := congrArg (fun T  => T w)
     (h1ConormalGreenInteriorFunctional_eq_boundary hb hL hγ u g0 g1 hg0 hg1)
-  change h1ConormalGreenInteriorFunctional Ω u g0 g1 w =
-    h1ConormalGreenBoundaryFunctional hb hL hγ g0 g1 w at h
   rw [h1ConormalGreenInteriorFunctional_apply,
     h1ConormalGreenBoundaryFunctional_apply] at h
   simpa only [map_add, map_sum, inner_conj_symm] using congrArg conj h

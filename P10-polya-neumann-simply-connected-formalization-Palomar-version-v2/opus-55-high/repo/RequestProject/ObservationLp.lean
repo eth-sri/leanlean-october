@@ -22,7 +22,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Topology Real
 open scoped Real ComplexConjugate InnerProductSpace
 
-local instance factTwoPiPosOLp : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
 private lemma smoothing_half_apply (f : L2Z) (n : ℤ) :
     sobolevSmoothing (1 / 2 : ℝ) (by norm_num) f n =
@@ -37,14 +36,13 @@ section Physical
 variable {γ : ℝ → ℂ} {K : NNReal} {E : ℝ}
   {W : ℝ → Ell2 →L[ℂ] Ell2}
 
+variable (hK : LipschitzWith K γ) (hW : IsTransport γ E W) (v : Ell2)
+
 theorem memLp_projectedObservation (hK : LipschitzWith K γ)
     (hW : IsTransport γ E W) (v : Ell2) :
     MemLp (fun θ => ⟪projObsRow W θ, v⟫_ℂ) 2
-      (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
-  have hc : ContinuousOn (fun θ => ⟪projObsRow W θ, v⟫_ℂ)
-      (Ioc (0 : ℝ) (2 * π)) :=
-    ((continuousOn_projObsRow hK hW).mono Ioc_subset_Icc_self).inner continuousOn_const
-  refine MemLp.of_bound (hc.aestronglyMeasurable measurableSet_Ioc) ‖v‖ ?_
+      (volume.restrict (Ioc 0 (2 * π))) := by
+  refine MemLp.of_bound ((((continuousOn_projObsRow hK hW).mono Ioc_subset_Icc_self).inner continuousOn_const).aestronglyMeasurable measurableSet_Ioc) ‖v‖ ?_
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
   calc
     ‖⟪projObsRow W θ, v⟫_ℂ‖ ≤ ‖projObsRow W θ‖ * ‖v‖ := norm_inner_le_norm _ _
@@ -58,17 +56,15 @@ def projectedObservationBoundary (hK : LipschitzWith K γ)
     (hW : IsTransport γ E W) (v : Ell2) : BoundaryL2 :=
   (memLp_projectedObservation hK hW v).toLp (fun θ => ⟪projObsRow W θ, v⟫_ℂ)
 
-theorem projectedObservationBoundary_coe (hK : LipschitzWith K γ)
-    (hW : IsTransport γ E W) (v : Ell2) :
-    (projectedObservationBoundary hK hW v : ℝ → ℂ) =ᵐ[
-      volume.restrict (Ioc (0 : ℝ) (2 * π))]
+theorem projectedObservationBoundary_coe :
+    projectedObservationBoundary hK hW v =ᵐ[
+      volume.restrict (Ioc 0 (2 * π))]
         (fun θ => ⟪projObsRow W θ, v⟫_ℂ) :=
   (memLp_projectedObservation hK hW v).coeFn_toLp
 
-theorem boundaryFourier_projectedObservation (hK : LipschitzWith K γ)
-    (hW : IsTransport γ E W) (v : Ell2) (n : ℤ) :
+theorem boundaryFourier_projectedObservation (n : ℤ) :
     boundaryFourier (projectedObservationBoundary hK hW v) n =
-      (√(2 * π) : ℂ) * ⟪projObsCoeffVec W n, v⟫_ℂ := by
+      √(2 * π) * ⟪projObsCoeffVec W n, v⟫_ℂ := by
   rw [boundaryFourier_apply]
   congr 1
   rw [inner_projObsCoeffVec hK hW]
@@ -81,33 +77,31 @@ theorem boundaryFourier_projectedObservation (hK : LipschitzWith K γ)
 theorem projObsDual_boundary_inner (hK : LipschitzWith K γ)
     (hW : IsTransport γ E W) (g : BoundaryL2) (v : Ell2) :
     ⟪v, projObsDual W ((√(2 * π) : ℂ) •
-      sobolevSmoothing (1 / 2 : ℝ) (by norm_num) (boundaryFourier g))⟫_ℂ =
+      sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g))⟫_ℂ =
         ⟪projectedObservationBoundary hK hW v, g⟫_ℂ := by
   rw [projObsDual_eq hK hW, inner_rowSynth]
   have hterm (n : ℤ) :
       ⟪v, normProjObsRow W n⟫_ℂ *
-          (((√(2 * π) : ℂ) • sobolevSmoothing (1 / 2 : ℝ)
-            (by norm_num) (boundaryFourier g)) : L2Z) n =
+          ((√(2 * π) : ℂ) • sobolevSmoothing (1 / 2)
+            (by norm_num) (boundaryFourier g)) n =
         ⟪boundaryFourier (projectedObservationBoundary hK hW v) n,
           boundaryFourier g n⟫_ℂ := by
     have hn : (Real.sqrt (1 + |(n : ℝ)|) : ℂ) ≠ 0 := by
-      exact_mod_cast (Real.sqrt_pos.mpr (by positivity :
-        (0 : ℝ) < 1 + |(n : ℝ)|)).ne'
+      exact_mod_cast (Real.sqrt_pos.mpr (by positivity)).ne'
     rw [normProjObsRow, inner_smul_right, lp.coeFn_smul, Pi.smul_apply,
       smul_eq_mul, smoothing_half_apply, boundaryFourier_projectedObservation,
       RCLike.inner_apply', map_mul, Complex.conj_ofReal,
       ← inner_conj_symm]
-    field_simp [hn]
+    field_simp 
   simp_rw [hterm]
-  rw [← lp.inner_eq_tsum]
   exact boundaryFourier.inner_map_map _ _
 
 theorem projObsDual_boundary_integral (hK : LipschitzWith K γ)
     (hW : IsTransport γ E W) (g : BoundaryL2) (v : Ell2) :
     ⟪v, projObsDual W ((√(2 * π) : ℂ) •
-      sobolevSmoothing (1 / 2 : ℝ) (by norm_num) (boundaryFourier g))⟫_ℂ =
-        ∫ θ in Ioc (0 : ℝ) (2 * π), conj (⟪projObsRow W θ, v⟫_ℂ) * g θ := by
-  rw [projObsDual_boundary_inner hK hW, L2.inner_def]
+      sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g))⟫_ℂ =
+        ∫ θ in Ioc 0 (2 * π), conj (⟪projObsRow W θ, v⟫_ℂ) * g θ := by
+  rw [projObsDual_boundary_inner hK hW]
   apply integral_congr_ae
   filter_upwards [projectedObservationBoundary_coe hK hW v] with θ hθ
   simp only [RCLike.inner_apply', hθ]
@@ -115,14 +109,8 @@ theorem projObsDual_boundary_integral (hK : LipschitzWith K γ)
 theorem integrable_boundary_observation_load (hK : LipschitzWith K γ)
     (hW : IsTransport γ E W) (g : BoundaryL2) :
     Integrable (fun θ => g θ • ContinuousLinearMap.adjoint (W θ) (basisVec 0))
-      (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
-  have hc : ContinuousOn (fun θ => ContinuousLinearMap.adjoint (W θ) (basisVec 0))
-      (Ioc (0 : ℝ) (2 * π)) :=
-    (continuousOn_adjoint_apply hW.1 (basisVec 0)).mono Ioc_subset_Icc_self
-  have hg : Integrable (g : ℝ → ℂ)
-      (volume.restrict (Ioc (0 : ℝ) (2 * π))) :=
-    (Lp.memLp g).integrable one_le_two
-  refine hg.smul_bdd 1 (hc.aestronglyMeasurable measurableSet_Ioc) ?_
+      (volume.restrict (Ioc 0 (2 * π))) := by
+  refine ((Lp.memLp g).integrable one_le_two).smul_bdd 1 (((continuousOn_adjoint_apply hW.1 (basisVec 0)).mono Ioc_subset_Icc_self).aestronglyMeasurable measurableSet_Ioc) ?_
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
   refine ((ContinuousLinearMap.adjoint (W θ)).le_opNorm (basisVec 0)).trans ?_
   rw [LinearIsometryEquiv.norm_map, show ‖basisVec 0‖ = 1 by simp [basisVec], mul_one]
@@ -133,19 +121,15 @@ No continuity or pointwise bound on the input representative is required. -/
 theorem projObsDual_boundary_normalized (hK : LipschitzWith K γ)
     (hW : IsTransport γ E W) (g : BoundaryL2) :
     projObsDual W ((√(2 * π) : ℂ) •
-      sobolevSmoothing (1 / 2 : ℝ) (by norm_num) (boundaryFourier g)) =
+      sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g)) =
         cutProj (cutC (W (2 * π)) (basisVec 0))
-          (observationAdj W (g : ℝ → ℂ)) := by
+          (observationAdj W g) := by
   apply ext_inner_left ℂ
   intro v
   rw [projObsDual_boundary_integral hK hW, ← inner_cutProj_left, observationAdj]
-  have hi : IntervalIntegrable
-      (fun θ => g θ • ContinuousLinearMap.adjoint (W θ) (basisVec 0))
-      volume 0 (2 * π) :=
-    (intervalIntegrable_iff_integrableOn_Ioc_of_le two_pi_pos.le).mpr
-      (integrable_boundary_observation_load hK hW g)
   have h := ContinuousLinearMap.intervalIntegral_comp_comm
-    (innerSL ℂ (cutProj (cutC (W (2 * π)) (basisVec 0)) v)) hi
+    (innerSL ℂ (cutProj (cutC (W (2 * π)) (basisVec 0)) v)) ((intervalIntegrable_iff_integrableOn_Ioc_of_le two_pi_pos.le).mpr
+      (integrable_boundary_observation_load hK hW g))
   simp only [innerSL_apply_apply] at h
   rw [← h, intervalIntegral.integral_of_le two_pi_pos.le]
   apply integral_congr_ae
@@ -153,8 +137,8 @@ theorem projObsDual_boundary_normalized (hK : LipschitzWith K γ)
     change conj (⟪projObsRow W θ, v⟫_ℂ) * g θ =
       ⟪cutProj (cutC (W (2 * π)) (basisVec 0)) v,
         g θ • ContinuousLinearMap.adjoint (W θ) (basisVec 0)⟫_ℂ
-    rw [inner_smul_right, inner_cutProj_left, ← inner_conj_symm]
-    simp only [Complex.conj_conj, projObsRow]
+    rw [inner_smul_right, inner_cutProj_left]
+    simp 
     exact mul_comm _ _
 
 end Physical

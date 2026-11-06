@@ -23,7 +23,6 @@ theorem inner_lpBoundedMultiplier_real
     (v w : Lp ℂ 2 μ) :
     ⟪lpBoundedMultiplier a ha hbound v, w⟫_ℂ =
       ⟪v, lpBoundedMultiplier a ha hbound w⟫_ℂ := by
-  rw [L2.inner_def, L2.inner_def]
   apply integral_congr_ae
   filter_upwards [lpBoundedMultiplier_ae a ha hbound v,
     lpBoundedMultiplier_ae a ha hbound w, hreal] with x hv hw hr

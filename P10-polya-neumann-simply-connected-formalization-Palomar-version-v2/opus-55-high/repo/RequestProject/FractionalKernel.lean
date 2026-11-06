@@ -45,16 +45,13 @@ lemma norm_secondDiff_kernelRow_le {h θ D : ℝ} (hD : 0 ≤ D)
   unfold secondDiff kernelRow
   rw [← MemLp.toLp_sub, ← MemLp.toLp_sub, ← MemLp.toLp_sub]
   set hm := fun θ => memLp_liftIco_two_pi (hmeas θ) (hbd θ)
-  have h := Lp.norm_le_of_ae_bound (μ := (@AddCircle.haarAddCircle (2 * π) _)) (p := 2)
+  have h := Lp.norm_le_of_ae_bound  
     (f := MemLp.toLp _ (((hm (θ + 2 * h)).sub (hm (θ + h))).sub ((hm (θ + h)).sub (hm θ))))
-    (C := D) hD ?_
-  · have h1 : measureUnivNNReal (@AddCircle.haarAddCircle (2 * π) _) = 1 := by
-      simp [measureUnivNNReal]
-    simpa [h1] using h
+     hD ?_
+  · simp_all [measureUnivNNReal]
   · filter_upwards [MemLp.coeFn_toLp
       (((hm (θ + 2 * h)).sub (hm (θ + h))).sub ((hm (θ + h)).sub (hm θ)))] with x hx
     rw [hx]
-    simp only [Pi.sub_apply, liftIco_eq_comp]
     exact hpt _ (circRep_mem x)
 
 include hmeas hbd in
@@ -73,7 +70,7 @@ theorem summable_kernelCoeff_three_halves {K : NNReal} {A : ℝ} (hA : 0 ≤ A)
       ‖fourierCoeffOn two_pi_pos (fun θ => fourierCoeffOn two_pi_pos (k θ) p.1) p.2‖ ^ 2 := by
   have hL : LipschitzWith K (kernelRow hmeas hbd) := by
     refine LipschitzWith.of_dist_le_mul fun θ θ' => ?_
-    rw [dist_eq_norm, Real.dist_eq]
+    rw [dist_eq_norm]
     exact norm_kernelRow_sub_le hmeas hbd hlip θ θ'
   have hbad : ∀ h : ℝ, 0 < h → h ≤ π / 2 → ∀ θ,
       ‖secondDiff (kernelRow hmeas hbd) h θ‖ ≤ (2 * K) * h := by
@@ -82,18 +79,15 @@ theorem summable_kernelCoeff_three_halves {K : NNReal} {A : ℝ} (hA : 0 ≤ A)
     have e2 := norm_kernelRow_sub_le hmeas hbd hlip (θ + h) θ
     rw [show θ + 2 * h - (θ + h) = h by ring, abs_of_pos hh] at e1
     rw [show θ + h - θ = h by ring, abs_of_pos hh] at e2
-    unfold secondDiff
     refine (norm_sub_le _ _).trans ?_
     linarith
-  have hgood : ∀ h : ℝ, 0 < h → h ≤ π / 2 → ∀ θ ∈ Set.Icc 0 (2 * π - 2 * h),
-      ‖secondDiff (kernelRow hmeas hbd) h θ‖ ≤ A * h ^ 2 := fun h h0 h1 θ hθ =>
-    norm_secondDiff_kernelRow_le hmeas hbd (by positivity) (hsecond h h0 h1 θ hθ)
-  have h := summable_fourierCoeff_rows_three_halves (fourierBasis (T := 2 * π)).orthonormal
-    hL.continuous (kernelRow_periodic hmeas hbd hper) hgood hbad hδ hδ'
+  have h := summable_fourierCoeff_rows_three_halves (fourierBasis ).orthonormal
+    hL.continuous (kernelRow_periodic hmeas hbd hper) (fun h h0 h1 θ hθ =>
+    norm_secondDiff_kernelRow_le hmeas hbd (by positivity) (hsecond h h0 h1 θ hθ)) hbad hδ hδ'
   simp_rw [inner_kernelRow_fourierBasis, fourierCoeffOn_conj, Complex.norm_conj] at h
-  have e : (fun p : ℤ × ℤ => |(p.2 : ℝ)| ^ (2 + 2 * δ) *
+  have e : (fun p  => |p.2| ^ (2 + 2 * δ) *
       ‖fourierCoeffOn two_pi_pos (fun θ => fourierCoeffOn two_pi_pos (k θ) p.1) p.2‖ ^ 2) =
-      (fun p : ℤ × ℤ => |(p.2 : ℝ)| ^ (2 + 2 * δ) *
+      (fun p  => |p.2| ^ (2 + 2 * δ) *
       ‖fourierCoeffOn two_pi_pos (fun θ => fourierCoeffOn two_pi_pos (k θ) p.1) (-p.2)‖ ^ 2) ∘
         (Equiv.prodCongr (Equiv.refl ℤ) (Equiv.neg ℤ)) := by
     funext p

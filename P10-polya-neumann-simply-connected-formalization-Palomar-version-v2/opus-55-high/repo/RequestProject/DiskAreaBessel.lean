@@ -32,7 +32,9 @@ def diskAntiholomorphicArea (m : ℕ) : L2 (ball (0 : ℂ) 1) :=
     2 (μ := volume.restrict (ball (0 : ℂ) 1))).toLp
       (diskHarmonicCutoff (diskAntiholomorphicMode m))
 
-theorem diskHolomorphicArea_ae (m : ℕ) :
+variable (m : ℕ) (m n : ℕ) (v : ℕ → L2 (ball (0 : ℂ) 1))
+
+theorem diskHolomorphicArea_ae :
     (diskHolomorphicArea m : ℂ → ℂ) =ᵐ[volume.restrict (ball (0 : ℂ) 1)]
       fun z => z ^ m := by
   filter_upwards [((diskHarmonicCutoff_testFunction
@@ -43,7 +45,7 @@ theorem diskHolomorphicArea_ae (m : ℕ) :
   rw [hz, diskHarmonicCutoff_eq_closedDisk _ (ball_subset_closedBall hzD)]
   rfl
 
-theorem diskAntiholomorphicArea_ae (m : ℕ) :
+theorem diskAntiholomorphicArea_ae :
     (diskAntiholomorphicArea m : ℂ → ℂ) =ᵐ[volume.restrict (ball (0 : ℂ) 1)]
       fun z => conj z ^ m := by
   filter_upwards [((diskHarmonicCutoff_testFunction
@@ -54,7 +56,7 @@ theorem diskAntiholomorphicArea_ae (m : ℕ) :
   rw [hz, diskHarmonicCutoff_eq_closedDisk _ (ball_subset_closedBall hzD)]
   rfl
 
-theorem inner_diskHolomorphicArea (m n : ℕ) :
+theorem inner_diskHolomorphicArea :
     ⟪diskHolomorphicArea m, diskHolomorphicArea n⟫_ℂ =
       if m = n then (π : ℂ) / ((m + 1 : ℕ) : ℂ) else 0 := by
   rw [L2.inner_def]
@@ -62,15 +64,12 @@ theorem inner_diskHolomorphicArea (m n : ℕ) :
     _ = ∫ z in ball (0 : ℂ) 1, z ^ n * conj z ^ m := by
       apply integral_congr_ae
       filter_upwards [diskHolomorphicArea_ae m, diskHolomorphicArea_ae n] with z hm hn
-      simp only [RCLike.inner_apply', hm, hn, map_pow]
-      ring
+      simp_all
     _ = _ := by
       rw [integral_disk_area_monomials]
-      by_cases hmn : m = n
-      · subst n; simp
-      · simp [hmn, Ne.symm hmn]
+      grind
 
-theorem inner_diskAntiholomorphicArea (m n : ℕ) :
+theorem inner_diskAntiholomorphicArea :
     ⟪diskAntiholomorphicArea m, diskAntiholomorphicArea n⟫_ℂ =
       if m = n then (π : ℂ) / ((m + 1 : ℕ) : ℂ) else 0 := by
   rw [L2.inner_def]
@@ -82,23 +81,21 @@ theorem inner_diskAntiholomorphicArea (m n : ℕ) :
       simp only [RCLike.inner_apply', hm, hn, map_pow, Complex.conj_conj]
     _ = _ := integral_disk_area_monomials m n
 
-theorem inner_diskHolomorphicArea_eq_integral (m : ℕ) (v : L2 (ball (0 : ℂ) 1)) :
+theorem inner_diskHolomorphicArea_eq_integral (v : L2 (ball (0 : ℂ) 1)) :
     ⟪diskHolomorphicArea m, v⟫_ℂ =
       ∫ z in ball (0 : ℂ) 1, (v : ℂ → ℂ) z * conj z ^ m := by
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [diskHolomorphicArea_ae m] with z hz
-  simp only [RCLike.inner_apply', hz, map_pow]
-  ring
+  simp_all
 
-theorem inner_diskAntiholomorphicArea_eq_integral (m : ℕ) (v : L2 (ball (0 : ℂ) 1)) :
+theorem inner_diskAntiholomorphicArea_eq_integral (v : L2 (ball (0 : ℂ) 1)) :
     ⟪diskAntiholomorphicArea m, v⟫_ℂ =
       ∫ z in ball (0 : ℂ) 1, (v : ℂ → ℂ) z * z ^ m := by
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [diskAntiholomorphicArea_ae m] with z hz
-  simp only [RCLike.inner_apply', hz, map_pow, Complex.conj_conj]
-  ring
+  simp_all
 
 def diskAreaScale (m : ℕ) : ℂ := (Real.sqrt (((m + 1 : ℕ) : ℝ) / π) : ℝ)
 
@@ -108,14 +105,12 @@ private theorem diskAreaScale_normalizes (m : ℕ) :
   have hm : ((m + 1 : ℕ) : ℝ) ≠ 0 := by positivity
   have hsq := Real.sq_sqrt
     (show 0 ≤ ((m + 1 : ℕ) : ℝ) / π by positivity)
-  have hr : Real.sqrt (((m + 1 : ℕ) : ℝ) / π) *
-      (Real.sqrt (((m + 1 : ℕ) : ℝ) / π) * (π / ((m + 1 : ℕ) : ℝ))) = 1 := by
+  simp only [diskAreaScale, Complex.conj_ofReal]
+  exact_mod_cast by
     calc
       _ = (Real.sqrt (((m + 1 : ℕ) : ℝ) / π) ^ 2 * π) /
           ((m + 1 : ℕ) : ℝ) := by ring
-      _ = 1 := by rw [(eq_div_iff Real.pi_ne_zero).mp hsq, div_self hm]
-  simp only [diskAreaScale, Complex.conj_ofReal]
-  exact_mod_cast hr
+      _ = 1 := by simp_all
 
 def diskNormalizedHolomorphicArea (m : ℕ) : L2 (ball (0 : ℂ) 1) :=
   diskAreaScale m • diskHolomorphicArea m
@@ -124,7 +119,6 @@ def diskNormalizedAntiholomorphicArea (m : ℕ) : L2 (ball (0 : ℂ) 1) :=
   diskAreaScale m • diskAntiholomorphicArea m
 
 private theorem orthonormal_of_diskAreaGram
-    (v : ℕ → L2 (ball (0 : ℂ) 1))
     (hv : ∀ m n, ⟪v m, v n⟫_ℂ =
       if m = n then (π : ℂ) / ((m + 1 : ℕ) : ℂ) else 0) :
     Orthonormal ℂ (fun m => diskAreaScale m • v m) := by
@@ -137,7 +131,7 @@ private theorem orthonormal_of_diskAreaGram
       _ = conj (diskAreaScale m) *
         (diskAreaScale m * ((π : ℂ) / ((m + 1 : ℕ) : ℂ))) := by ring
       _ = 1 := diskAreaScale_normalizes m
-  · simp [inner_smul_left, inner_smul_right, hv, hmn]
+  simp [inner_smul_left, inner_smul_right, hv, hmn]
 
 theorem orthonormal_diskNormalizedHolomorphicArea :
     Orthonormal ℂ diskNormalizedHolomorphicArea :=
@@ -147,17 +141,15 @@ theorem orthonormal_diskNormalizedAntiholomorphicArea :
     Orthonormal ℂ diskNormalizedAntiholomorphicArea :=
   orthonormal_of_diskAreaGram diskAntiholomorphicArea inner_diskAntiholomorphicArea
 
-private theorem norm_sq_diskArea_scaled_inner (m : ℕ)
-    (v w : L2 (ball (0 : ℂ) 1)) :
+private theorem norm_sq_diskArea_scaled_inner (v w : L2 (ball (0 : ℂ) 1)) :
     π * ‖⟪diskAreaScale m • v, w⟫_ℂ‖ ^ 2 =
       ((m + 1 : ℕ) : ℝ) * ‖⟪v, w⟫_ℂ‖ ^ 2 := by
   rw [inner_smul_left, norm_mul, Complex.norm_conj]
   simp only [diskAreaScale, Complex.norm_of_nonneg (Real.sqrt_nonneg _), mul_pow,
     Real.sq_sqrt (show 0 ≤ ((m + 1 : ℕ) : ℝ) / π by positivity)]
-  field_simp [Real.pi_ne_zero]
+  field_simp
 
 private theorem diskArea_bessel
-    (v : ℕ → L2 (ball (0 : ℂ) 1))
     (hv : Orthonormal ℂ (fun m => diskAreaScale m • v m))
     (w : L2 (ball (0 : ℂ) 1)) :
     Summable (fun m => ((m + 1 : ℕ) : ℝ) * ‖⟪v m, w⟫_ℂ‖ ^ 2) ∧
@@ -167,8 +159,7 @@ private theorem diskArea_bessel
   refine ⟨(hs.mul_left π).congr he, ?_⟩
   calc
     _ = π * ∑' m : ℕ, ‖⟪diskAreaScale m • v m, w⟫_ℂ‖ ^ 2 := by
-      rw [← tsum_mul_left]
-      exact tsum_congr (fun m => (he m).symm)
+      simp_all [← tsum_mul_left]
     _ ≤ _ := mul_le_mul_of_nonneg_left (hv.tsum_inner_products_le w) Real.pi_pos.le
 
 theorem disk_area_holomorphic_bessel (v : L2 (ball (0 : ℂ) 1)) :

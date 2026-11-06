@@ -50,6 +50,8 @@ def regularHerglotzObservationVector {γ : ℝ → ℂ} (E : ℝ)
           (herglotzVec ha (Real.sqrt E) (γ 0))) +
     cutBE W (observationAdj W (herglotzConormal (Real.sqrt E) a γ))
 
+variable {γ : ℝ → ℂ} {K : NNReal} {f : ℝ → ℂ}
+
 /-- The corrected expression of a genuine wave is its actual corrected
 observation, before the genuine resonant trace is removed. -/
 theorem periodicP_herglotz_eq_regularObservation {γ : ℝ → ℂ} {K : NNReal}
@@ -59,9 +61,7 @@ theorem periodicP_herglotz_eq_regularObservation {γ : ℝ → ℂ} {K : NNReal}
     periodicP W (fun s => herglotzWave (Real.sqrt E) a (γ s))
         (herglotzConormal (Real.sqrt E) a γ) θ =
       observation W (regularHerglotzObservationVector (γ := γ) E W ha) θ := by
-  rw [periodicP, periodicA_herglotz_eq_observation hK hclosed hW ha hθ]
-  simp only [regularHerglotzObservationVector, cutBE, observation,
-    map_add, inner_add_right]
+  simp [periodicP, periodicA_herglotz_eq_observation hK hclosed hW ha hθ, regularHerglotzObservationVector, cutBE, observation, inner_add_right]
 
 /-- The true endpoint cancellation places the corrected Herglotz vector
 in the orthogonal complement of the actual cut direction. -/
@@ -74,22 +74,13 @@ theorem regularHerglotzObservationVector_inner_cut_eq_zero
     ⟪cutC (W (2 * π)) (basisVec 0),
       regularHerglotzObservationVector (γ := γ) E W ha⟫_ℂ = 0 := by
   obtain ⟨hgm, B, hgB⟩ := herglotzConormal_bounded ha.intervalIntegrable (Real.sqrt E) hK
-  have hn : (fun s => herglotzWave (Real.sqrt E) a (γ s)) (2 * π) =
-      (fun s => herglotzWave (Real.sqrt E) a (γ s)) 0 := by
-    change herglotzWave (Real.sqrt E) a (γ (2 * π)) =
-      herglotzWave (Real.sqrt E) a (γ 0)
-    rw [hclosed]
   have hp := periodicP_periodic (n := fun s => herglotzWave (Real.sqrt E) a (γ s))
-    hK hW hc hn hgm hgB
-  rw [periodicP_herglotz_eq_regularObservation hK hclosed hW ha
-        ⟨two_pi_pos.le, le_rfl⟩,
-    periodicP_herglotz_eq_regularObservation hK hclosed hW ha
-        ⟨le_rfl, two_pi_pos.le⟩] at hp
-  rw [← observation_jump hW]
-  exact sub_eq_zero.mpr hp
+    hK hW hc (by
+    simp_all) hgm hgB
+  simp_all [periodicP_herglotz_eq_regularObservation hK hclosed hW ha         ⟨two_pi_pos.le, le_rfl⟩, periodicP_herglotz_eq_regularObservation hK hclosed hW ha         ⟨le_rfl, two_pi_pos.le⟩, ← observation_jump hW]
 
 theorem regularHerglotzObservationVector_cutProj
-    {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
+    (hK : LipschitzWith K γ)
     (hclosed : γ (2 * π) = γ 0) {E : ℝ}
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
     (hc : cutC (W (2 * π)) (basisVec 0) ≠ 0)
@@ -106,10 +97,9 @@ private theorem regular_boundary_sub_ae (u v : BoundaryL2) {f : ℝ → ℂ}
     ((u - v : BoundaryL2) : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * π))]
       fun θ => f θ - v θ := by
   filter_upwards [Lp.coeFn_sub u v, hf] with θ hs hw
-  rw [hs, Pi.sub_apply, hw]
+  simp_all
 
-private theorem regular_observation_sub_ae {γ : ℝ → ℂ} {K : NNReal}
-    (hK : LipschitzWith K γ) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
+private theorem regular_observation_sub_ae (hK : LipschitzWith K γ) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
     (hW : IsTransport γ E W) (z : Ell2) (r : BoundaryL2)
     (hz : cutProj (cutC (W (2 * π)) (basisVec 0)) z = z) :
     ((projectedObservationBoundary hK hW z - (2 : ℂ) • r : BoundaryL2) : ℝ → ℂ)
@@ -121,24 +111,12 @@ private theorem regular_observation_sub_ae {γ : ℝ → ℂ} {K : NNReal}
   rw [hs, Pi.sub_apply, h2, Pi.smul_apply, smul_eq_mul, ho,
     ← observation_cutProj_eq, hz]
 
-private theorem regular_boundary_toLp_eq {f : ℝ → ℂ}
-    (hf : MemLp f 2 (volume.restrict (Ioc 0 (2 * π)))) (u : BoundaryL2)
+private theorem regular_boundary_toLp_eq (hf : MemLp f 2 (volume.restrict (Ioc 0 (2 * π)))) (u : BoundaryL2)
     (hu : (u : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) :
     hf.toLp f = u := by
   apply Lp.ext
   exact hf.coeFn_toLp.trans hu.symm
 
-/-- The periodic expression uses the actual pole-subtracted Neumann
-trace, not an independently supplied solution trace. Its forcing is the
-actual Herglotz conormal function. -/
-def neumannRegularPeriodicHerglotzExpression {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E₀ : ℝ)
-    (W : ℝ → Ell2 →L[ℂ] Ell2) {a : ℝ → ℂ} (ha : IsDirDensity a) : ℝ → ℂ :=
-  periodicP W
-    (neumannBoundaryRegular hb hL hγ E₀ E₀
-      (herglotzConormalL2 hγ ha (Real.sqrt E₀)) : ℝ → ℂ)
-    (herglotzConormal (Real.sqrt E₀) a γ)
 
 section OrdinaryBoundary
 
@@ -170,46 +148,34 @@ theorem isC1TraceReparam_ae_comp {τ : ℝ → ℝ} {c : ℝ}
   let q : ℝ → ℝ := fun s => if p s then 0 else 1
   have hqzero : q =ᵐ[volume.restrict (Ioc 0 (2 * π))] 0 := by
     filter_upwards [hp] with s hs
-    simp only [q, if_pos hs, Pi.zero_apply]
-  have hq : IntegrableOn q (Ioc 0 (2 * π)) :=
-    (MeasureTheory.integrable_zero ℝ ℝ (volume.restrict (Ioc 0 (2 * π)))).congr hqzero.symm
-  have himage : τ '' Icc (0 : ℝ) (2 * π) = Icc (0 : ℝ) (2 * π) := by
+    continuity
+  have himage : τ '' Icc 0 (2 * π) = Icc 0 (2 * π) := by
     simpa only [hτ.zero, hτ.endpoint] using
       hτ.continuous.continuousOn.image_Icc_of_monotoneOn two_pi_pos.le
         (hτ.monotone.monotoneOn _)
-  have hq' : IntegrableOn q (Icc 0 (2 * π)) :=
-    (integrableOn_Icc_iff_integrableOn_Ioc (f := q) (by finiteness)).mpr hq
-  have hj : IntegrableOn (fun θ => deriv τ θ • q (τ θ)) (Icc 0 (2 * π)) :=
-    (integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn
-      measurableSet_Icc
-      (fun θ _ => (hτ.contDiff.differentiable_one θ).hasDerivAt.hasDerivWithinAt)
-      (hτ.monotone.monotoneOn (Icc 0 (2 * π))) q).mp
-        (by simpa only [himage] using hq')
+  have hq'  :=
+    (integrableOn_Icc_iff_integrableOn_Ioc  (by finiteness)).mpr ((MeasureTheory.integrable_zero ℝ ℝ (volume.restrict (Ioc 0 (2 * π)))).congr hqzero.symm)
   have hj' : IntegrableOn (fun θ => deriv τ θ * q (τ θ)) (Ioc 0 (2 * π)) := by
     simpa only [smul_eq_mul] using
       (integrableOn_Icc_iff_integrableOn_Ioc
-        (f := fun θ => deriv τ θ • q (τ θ)) (by finiteness)).mp hj
+         (by finiteness)).mp ((integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn
+      measurableSet_Icc
+      (fun θ _ => (hτ.contDiff.differentiable_one θ).hasDerivAt.hasDerivWithinAt)
+      (hτ.monotone.monotoneOn (Icc 0 (2 * π))) q).mp
+        (by simp_all))
   have hchange := integral_image_eq_integral_deriv_smul_of_monotoneOn
     measurableSet_Icc
     (fun θ _ => (hτ.contDiff.differentiable_one θ).hasDerivAt.hasDerivWithinAt)
     (hτ.monotone.monotoneOn (Icc 0 (2 * π))) q
-  have hz : (∫ θ in Ioc 0 (2 * π), deriv τ θ * q (τ θ)) = 0 := by
+  filter_upwards [(integral_eq_zero_iff_of_nonneg_ae (Eventually.of_forall fun θ =>
+    mul_nonneg hτ.monotone.deriv_nonneg (by positivity)) hj').mp (by
     have heq : (∫ θ in Ioc 0 (2 * π), deriv τ θ * q (τ θ)) =
         ∫ s in Ioc 0 (2 * π), q s := by
-      simpa only [himage, integral_Icc_eq_integral_Ioc, smul_eq_mul] using hchange.symm
-    rw [heq, integral_congr_ae hqzero]
-    simp only [Pi.zero_apply, integral_zero]
-  have hnonneg : 0 ≤ᵐ[volume.restrict (Ioc 0 (2 * π))]
-      (fun θ => deriv τ θ * q (τ θ)) := Eventually.of_forall fun θ =>
-    mul_nonneg hτ.monotone.deriv_nonneg (by simp only [q]; split_ifs <;> norm_num)
-  have hae := (integral_eq_zero_iff_of_nonneg_ae hnonneg hj').mp hz
-  have hlo := ae_restrict_of_ae_restrict_of_subset Ioc_subset_Icc_self hτ.lower_ae
-  filter_upwards [hae, hlo] with θ hzero hlower
+      simp_all [integral_Icc_eq_integral_Ioc]
+    simp [heq, integral_congr_ae hqzero]), ae_restrict_of_ae_restrict_of_subset Ioc_subset_Icc_self hτ.lower_ae] with θ hzero hlower
   by_contra hbad
-  have hd : 0 < deriv τ θ := hτ.lower_pos.trans_le hlower
-  have hz' : deriv τ θ = 0 := by
-    simpa only [q, if_neg hbad, mul_one, Pi.zero_apply] using hzero
-  exact hd.ne' hz'
+  have hd  := hτ.lower_pos.trans_le hlower
+  continuity
 
 /-- The actual conormal derivative obeys the Jacobian law a.e. for the
 supplied C1 change of parameter. The original boundary curve only needs
@@ -221,14 +187,11 @@ theorem herglotzConormal_traceReparam_ae {γ : ℝ → ℂ} {K : NNReal}
     herglotzConormal k a (γ ∘ τ)
       =ᵐ[volume.restrict (Ioc 0 (2 * π))]
         (fun θ => deriv τ θ • herglotzConormal k a γ (τ θ)) := by
-  have hdiff := isC1TraceReparam_ae_comp hτ
-    (ae_restrict_of_ae (hK.ae_differentiableAt (μ := volume)))
-  filter_upwards [hdiff] with θ hγdiff
-  have hd := hγdiff.hasDerivAt.scomp θ (hτ.contDiff.differentiable_one θ).hasDerivAt
-  rw [herglotzConormal_eq ha.intervalIntegrable, hd.deriv,
+  filter_upwards [isC1TraceReparam_ae_comp hτ
+    (ae_restrict_of_ae (hK.ae_differentiableAt ))] with θ hγdiff
+  rw [herglotzConormal_eq ha.intervalIntegrable, (hγdiff.hasDerivAt.scomp θ (hτ.contDiff.differentiable_one θ).hasDerivAt).deriv,
     herglotzConormal_eq ha.intervalIntegrable]
-  simp only [Function.comp_apply, Complex.real_smul,
-    map_mul, Complex.conj_ofReal]
+  simp 
   ring
 
 /-- Actual variable-speed coordinate conormal, as an ordinary L2 class. -/
@@ -241,7 +204,7 @@ def localConformalHerglotzCoordinateLoad (F : ℂ → ℂ) {L : NNReal}
 theorem localConformalHerglotzCoordinateLoad_ae (F : ℂ → ℂ) {L : NNReal}
     (hΓLip : LipschitzWith L (physicalCircleTrace F))
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
-    (localConformalHerglotzCoordinateLoad F hΓLip ha k : ℝ → ℂ)
+    localConformalHerglotzCoordinateLoad F hΓLip ha k
       =ᵐ[volume.restrict (Ioc 0 (2 * π))]
         herglotzConormal k a (physicalCircleTrace F) :=
   (memLp_herglotzConormal ha k hΓLip).coeFn_toLp
@@ -265,25 +228,26 @@ local notation "TF" => localConformalDiskH1Trace hR F hFs hL
 
 include hhol hinj hC hcoord
 
+variable {E₀ : ℝ} {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) {L : NNReal} (hΓLip : LipschitzWith L (physicalCircleTrace F))
+
 /-- The actual H1 regular solution itself is the wave minus its true
 resonant component. This is stronger than a Fourier trace equality. -/
 theorem localConformal_regularHerglotzH1_eq_sub_resonant
-    {E₀ : ℝ} (hE₀ : 0 ≤ E₀) {a : ℝ → ℂ} (ha : IsDirDensity a) :
+    (hE₀ : 0 ≤ E₀) {a : ℝ → ℂ} (ha : IsDirDensity a) :
     h1RegularResolvent ΩF E₀ E₀
         (ContinuousLinearMap.adjoint QF
           (localConformalBoundaryLoad hτ (herglotzConormalL2 hγ ha (Real.sqrt E₀)))) =
       herglotzWaveH1 hb ha (Real.sqrt E₀) -
         (h1ResonantSpace ΩF E₀).starProjection (herglotzWaveH1 hb ha (Real.sqrt E₀)) := by
-  have hu := (isNormalizedNeumannSolution_iff QF E₀ _ _).mp
+  rw [← (isNormalizedNeumannSolution_iff QF E₀ _ _).mp
     (localConformalHerglotz_isNormalizedNeumannSolution hR F hFs hb hL hhol hinj
-      hC hγ hτ hcoord hE₀ ha)
-  rw [← hu, h1RegularResolvent_form_at_reference hb hL hE₀,
+      hC hγ hτ hcoord hE₀ ha), h1RegularResolvent_form_at_reference hb hL hE₀,
     Submodule.starProjection_orthogonal_val]
 
 /-- The ordinary conformal trace retains the same exact removed
 resonant component, with no extra square-root Fourier scale. -/
 theorem localConformal_regularHerglotz_coordinate_trace_eq
-    {E₀ : ℝ} (hE₀ : 0 ≤ E₀) {a : ℝ → ℂ} (ha : IsDirDensity a) :
+    (hE₀ : 0 ≤ E₀) {a : ℝ → ℂ} (ha : IsDirDensity a) :
     TF (h1RegularResolvent ΩF E₀ E₀
       (ContinuousLinearMap.adjoint QF
         (localConformalBoundaryLoad hτ (herglotzConormalL2 hγ ha (Real.sqrt E₀))))) =
@@ -296,8 +260,8 @@ include hγ hτ in
 /-- The genuine Herglotz H1 vector has its actual variable-speed circle
 trace. A true smooth cutoff and the proved trace identity establish it. -/
 theorem localConformalHerglotz_coordinate_trace_ae
-    {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
-    (TF (herglotzWaveH1 hb ha k) : ℝ → ℂ)
+    :
+    TF (herglotzWaveH1 hb ha k)
       =ᵐ[volume.restrict (Ioc 0 (2 * π))]
         (fun θ => herglotzWave k a (physicalCircleTrace F θ)) := by
   obtain ⟨f, hfu, hfγ⟩ := exists_smoothTraceTest_herglotz hb hL hγ ha k
@@ -318,25 +282,20 @@ theorem localConformalHerglotz_traceReparamConormal_eq_coordinateLoad
       localConformalHerglotzCoordinateLoad F hΓLip ha k := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   have hΓ : physicalCircleTrace F = γ ∘ τ := by
-    funext θ
-    exact hcoord θ
-  have hrep := isC1TraceReparam_ae_comp hτ (herglotzConormalL2_ae hγ ha k)
+    continuity
   have hc := herglotzConormal_traceReparam_ae hKγ hτ ha k
-  rw [← hΓ] at hc
   apply Lp.ext
-  filter_upwards [traceReparamConormalL2_ae hτ (herglotzConormalL2 hγ ha k), hrep, hc,
+  filter_upwards [traceReparamConormalL2_ae hτ (herglotzConormalL2 hγ ha k), isC1TraceReparam_ae_comp hτ (herglotzConormalL2_ae hγ ha k), hc,
     localConformalHerglotzCoordinateLoad_ae F hΓLip ha k] with θ ht hr hc hg
-  rw [ht, hr, hg]
-  exact hc.symm
+  simp_all
 
 omit hhol hinj hC in
 /-- In particular the normalized weak load is exactly half smoothing of
 the actual coordinate conormal's unitary Fourier coefficients. -/
 theorem localConformalHerglotzBoundaryLoad_eq_coordinateLoad
-    {L : NNReal} (hΓLip : LipschitzWith L (physicalCircleTrace F))
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
     localConformalBoundaryLoad hτ (herglotzConormalL2 hγ ha k) =
-      sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
+      sobolevSmoothing (1 / 2) (by norm_num)
         (boundaryFourier (localConformalHerglotzCoordinateLoad F hΓLip ha k)) := by
   unfold localConformalBoundaryLoad
   rw [localConformalHerglotz_traceReparamConormal_eq_coordinateLoad F hγ hτ hcoord hΓLip ha k]
@@ -366,9 +325,9 @@ theorem localConformalRegularPeriodicHerglotzExpression_ae
           2 * TF ((h1ResonantSpace ΩF E₀).starProjection
             (herglotzWaveH1 hb ha (Real.sqrt E₀))) θ) := by
   have hn :
-      (TF (h1RegularResolvent ΩF E₀ E₀
+      TF (h1RegularResolvent ΩF E₀ E₀
         (ContinuousLinearMap.adjoint QF
-          (localConformalBoundaryLoad hτ (herglotzConormalL2 hγ ha (Real.sqrt E₀))))) : ℝ → ℂ)
+          (localConformalBoundaryLoad hτ (herglotzConormalL2 hγ ha (Real.sqrt E₀)))))
         =ᵐ[volume.restrict (Ioc 0 (2 * π))]
           (fun θ => herglotzWave (Real.sqrt E₀) a (physicalCircleTrace F θ) -
             TF ((h1ResonantSpace ΩF E₀).starProjection
@@ -378,28 +337,26 @@ theorem localConformalRegularPeriodicHerglotzExpression_ae
     exact regular_boundary_sub_ae _ _
       (localConformalHerglotz_coordinate_trace_ae hR F hFs hb hL hhol hinj hC hγ hτ
         hcoord ha (Real.sqrt E₀))
-  have hclosed : physicalCircleTrace F (2 * π) = physicalCircleTrace F 0 := by
-    simpa only [zero_add] using physicalCircleTrace_periodic F 0
   filter_upwards [hn, ae_restrict_mem measurableSet_Ioc] with θ hn hθ
-  have hp := periodicP_herglotz_eq_regularObservation hΓLip hclosed hW ha
+  have hp := periodicP_herglotz_eq_regularObservation hΓLip (by
+    simpa only [zero_add] using physicalCircleTrace_periodic F 0) hW ha
     (Ioc_subset_Icc_self hθ)
-  simp only [localConformalRegularPeriodicHerglotzExpression, periodicP, periodicA, hn]
+  simp only [localConformalRegularPeriodicHerglotzExpression, periodicP, periodicA]
     at hp ⊢
-  linear_combination hp
+  grind
 
 omit hhol hinj hC hcoord in
 /-- The corrected observation vector in the conformal identity is
 orthogonal to its true boundary-origin cut. -/
 theorem localConformalRegularHerglotzObservationVector_cutProj
-    {L : NNReal} (hΓLip : LipschitzWith L (physicalCircleTrace F))
+    (hΓLip : LipschitzWith L (physicalCircleTrace F))
     {E₀ : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
     (hW : IsTransport (physicalCircleTrace F) E₀ W)
     (hc : cutC (W (2 * π)) (basisVec 0) ≠ 0)
     {a : ℝ → ℂ} (ha : IsDirDensity a) :
     cutProj (cutC (W (2 * π)) (basisVec 0))
         (regularHerglotzObservationVector (γ := physicalCircleTrace F) E₀ W ha) =
-      regularHerglotzObservationVector (γ := physicalCircleTrace F) E₀ W ha := by
-  exact regularHerglotzObservationVector_cutProj hΓLip
+      regularHerglotzObservationVector (γ := physicalCircleTrace F) E₀ W ha := regularHerglotzObservationVector_cutProj hΓLip
     (by simpa only [zero_add] using physicalCircleTrace_periodic F 0) hW hc ha
 
 section CoordinatePairing
@@ -417,11 +374,8 @@ local notation "rΓ" => TF (Submodule.starProjection (h1ResonantSpace ΩF E₀)
 include hb hΓLip hE₀ hW hc in
 theorem localConformalRegularPeriodicHerglotzExpression_memLp :
     MemLp (localConformalRegularPeriodicHerglotzExpression hR F hFs hL hγ hτ E₀ W ha)
-      2 (volume.restrict (Ioc 0 (2 * π))) := by
-  have hz := localConformalRegularHerglotzObservationVector_cutProj F hΓLip hW hc ha
-  have heq := regular_observation_sub_ae hΓLip hW zΓ rΓ hz
-  exact (Lp.memLp (projectedObservationBoundary hΓLip hW zΓ - (2 : ℂ) • rΓ)).ae_eq
-    (heq.trans (localConformalRegularPeriodicHerglotzExpression_ae hR F hFs hb hL hhol
+      2 (volume.restrict (Ioc 0 (2 * π))) := (Lp.memLp (projectedObservationBoundary hΓLip hW zΓ - 2 • rΓ)).ae_eq
+    ((regular_observation_sub_ae hΓLip hW zΓ rΓ (localConformalRegularHerglotzObservationVector_cutProj F hΓLip hW hc ha)).trans (localConformalRegularPeriodicHerglotzExpression_ae hR F hFs hb hL hhol
       hinj hC hγ hτ hcoord hΓLip hE₀ hW ha).symm)
 
 /-- The ordinary-coordinate L2 class of the actual regular periodic
@@ -434,11 +388,8 @@ def localConformalRegularPeriodicHerglotzBoundary : BoundaryL2 :=
 theorem localConformalRegularPeriodicHerglotzBoundary_eq :
     localConformalRegularPeriodicHerglotzBoundary hR F hFs hb hL hhol hinj hC
       hγ hτ hcoord hΓLip hE₀ hW hc ha =
-        projectedObservationBoundary hΓLip hW zΓ - (2 : ℂ) • rΓ := by
-  unfold localConformalRegularPeriodicHerglotzBoundary
-  have hz := localConformalRegularHerglotzObservationVector_cutProj F hΓLip hW hc ha
-  exact regular_boundary_toLp_eq _ _
-    ((regular_observation_sub_ae hΓLip hW zΓ rΓ hz).trans
+        projectedObservationBoundary hΓLip hW zΓ - (2 : ℂ) • rΓ := regular_boundary_toLp_eq _ _
+    ((regular_observation_sub_ae hΓLip hW zΓ rΓ (localConformalRegularHerglotzObservationVector_cutProj F hΓLip hW hc ha)).trans
       (localConformalRegularPeriodicHerglotzExpression_ae hR F hFs hb hL hhol hinj hC
         hγ hτ hcoord hΓLip hE₀ hW ha).symm)
 
@@ -462,8 +413,8 @@ private theorem regular_sawtooth_measurable :
 private theorem regular_sawtooth_norm_le {θ s : ℝ}
     (hθ : θ ∈ Icc 0 (2 * π)) (hs : s ∈ Icc 0 (2 * π)) :
     ‖sawtoothKernel θ s‖ ≤ 3 := by
-  have hd : |θ - s| ≤ 2 * π := abs_le.mpr ⟨by linarith [hθ.1, hs.2],
-    by linarith [hθ.2, hs.1]⟩
+  have hd : |θ - s| ≤ 2 * π := abs_le.mpr ⟨by grind,
+    by grind⟩
   have hdiv : |(θ - s) / π| ≤ 2 := by
     rw [abs_div, abs_of_pos pi_pos]
     exact (div_le_iff₀ pi_pos).mpr (by linarith)
@@ -493,8 +444,8 @@ private theorem regular_kernel_mode_norm (n : ℤ) (θ : ℝ) :
 
 private theorem regular_sawtooth_outer_mode (n : ℤ) {s : ℝ}
     (hs : s ∈ Icc 0 (2 * π)) :
-    (∫ θ in (0 : ℝ)..(2 * π), kernelFourierMode (-n) θ * sawtoothKernel θ s) =
-      (2 / (n : ℂ)) * kernelFourierMode (-n) s := by
+    (∫ θ in 0..(2 * π), kernelFourierMode (-n) θ * sawtoothKernel θ s) =
+      (2 / n) * kernelFourierMode (-n) s := by
   have heq : (fun θ => kernelFourierMode (-n) θ * sawtoothKernel θ s) =
       fun θ => -(sawtoothKernel s θ * kernelFourierMode (-n) θ) := by
     funext θ
@@ -502,15 +453,12 @@ private theorem regular_sawtooth_outer_mode (n : ℤ) {s : ℝ}
     ring
   rw [heq, intervalIntegral.integral_neg]
   by_cases hn : n = 0
-  · subst n
-    simp only [neg_zero, kernelFourierMode, Int.cast_zero, zero_mul,
-      Complex.exp_zero, mul_one, div_zero, zero_mul]
-    rw [integral_sawtoothKernel hs, neg_zero]
-  · rw [show (∫ θ in (0 : ℝ)..(2 * π),
+  · simp_all [kernelFourierMode, integral_sawtoothKernel hs]
+  · rw [show (∫ θ in 0..(2 * π),
         sawtoothKernel s θ * kernelFourierMode (-n) θ) =
-        2 / ((-n : ℤ) : ℂ) * kernelFourierMode (-n) s from
+        2 / (-n : ℤ) * kernelFourierMode (-n) s from
         integral_sawtoothKernel_mul_exp hs (neg_ne_zero.mpr hn)]
-    simp only [Int.cast_neg, div_neg, neg_mul, neg_neg]
+    grind
 
 /-- The genuine sawtooth integral has multiplier `2/n` on every
 Fourier coefficient of an arbitrary L1 input. At `n=0` the result is
@@ -518,60 +466,46 @@ exactly zero; the normalization remains `1/(2π)`. -/
 theorem fourierCoeffOn_sawtoothAction {f : ℝ → ℂ}
     (hf : Integrable f (volume.restrict (Ioc 0 (2 * π)))) (n : ℤ) :
     fourierCoeffOn two_pi_pos
-      (fun θ => ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s * f s) n =
-        (2 / (n : ℂ)) * fourierCoeffOn two_pi_pos f n := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2 * π))
-  have hm : AEStronglyMeasurable (fun p : ℝ × ℝ =>
+      (fun θ => ∫ s in 0..(2 * π), sawtoothKernel θ s * f s) n =
+        (2 / n) * fourierCoeffOn two_pi_pos f n := by
+  let μ  := volume.restrict (Ioc 0 (2 * π))
+  have hint : Integrable (fun p  =>
       kernelFourierMode (-n) p.1 * sawtoothKernel p.1 p.2 * f p.2) (μ.prod μ) := by
-    exact (((show Continuous (fun p : ℝ × ℝ => kernelFourierMode (-n) p.1) by
+    refine ((hf.norm.comp_snd μ).const_mul 3).mono' (((show Continuous (fun p  => kernelFourierMode (-n) p.1) by
       unfold kernelFourierMode; fun_prop).measurable.aestronglyMeasurable.mul
       regular_sawtooth_measurable.aestronglyMeasurable).mul
-      hf.aestronglyMeasurable.comp_snd)
-  have hint : Integrable (fun p : ℝ × ℝ =>
-      kernelFourierMode (-n) p.1 * sawtoothKernel p.1 p.2 * f p.2) (μ.prod μ) := by
-    refine ((hf.norm.comp_snd μ).const_mul 3).mono' hm ?_
-    have hae : ∀ᵐ p ∂μ.prod μ,
-        p ∈ Ioc 0 (2 * π) ×ˢ Ioc 0 (2 * π) := by
-      dsimp [μ]
+      hf.aestronglyMeasurable.comp_snd) ?_
+    filter_upwards [by
       rw [Measure.prod_restrict]
-      exact ae_restrict_mem (measurableSet_Ioc.prod measurableSet_Ioc)
-    filter_upwards [hae] with p hp
+      exact ae_restrict_mem (measurableSet_Ioc.prod measurableSet_Ioc)] with p hp
     simp only [norm_mul, regular_kernel_mode_norm, one_mul]
     exact mul_le_mul_of_nonneg_right
       (regular_sawtooth_norm_le (Ioc_subset_Icc_self hp.1)
         (Ioc_subset_Icc_self hp.2)) (norm_nonneg _)
   have hmode (θ : ℝ) :
-      Complex.exp (2 * π * Complex.I * (-n : ℤ) * θ / ((2 * π : ℝ) : ℂ)) =
+      Complex.exp (2 * π * Complex.I * (-n : ℤ) * θ / (2 * π : ℝ)) =
         kernelFourierMode (-n) θ := by
     simpa only [fourier_coe_apply] using fourier_two_pi_eq_kernelFourierMode (-n) θ
   rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
   simp_rw [fourier_coe_apply]
   simp only [sub_zero, Complex.real_smul, smul_eq_mul]
   simp_rw [hmode]
-  push_cast
   simp_rw [intervalIntegral.integral_of_le two_pi_pos.le]
-  change (1 / (2 * π) : ℂ) *
-      (∫ θ, kernelFourierMode (-n) θ *
-        (∫ s, sawtoothKernel θ s * f s ∂μ) ∂μ) = _
   have hsplit : (fun θ => kernelFourierMode (-n) θ *
       (∫ s, sawtoothKernel θ s * f s ∂μ)) =
       fun θ => ∫ s, kernelFourierMode (-n) θ * sawtoothKernel θ s * f s ∂μ := by
     funext θ
     rw [← integral_const_mul]
-    congr 1
-    funext s
     ring
   rw [hsplit, integral_integral_swap hint]
   have heq : (fun s => ∫ θ,
       kernelFourierMode (-n) θ * sawtoothKernel θ s * f s ∂μ) =ᵐ[μ]
-      fun s => (2 / (n : ℂ)) * (kernelFourierMode (-n) s * f s) := by
+      fun s => (2 / n) * (kernelFourierMode (-n) s * f s) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with s hs
     rw [integral_mul_const]
     have hmode := regular_sawtooth_outer_mode n (Ioc_subset_Icc_self hs)
     rw [intervalIntegral.integral_of_le two_pi_pos.le] at hmode
-    change (∫ θ, kernelFourierMode (-n) θ * sawtoothKernel θ s ∂μ) * f s = _
-    rw [hmode]
-    ring
+    grind
   rw [integral_congr_ae heq, integral_const_mul]
   ring
 
@@ -579,15 +513,12 @@ theorem fourierCoeffOn_sawtoothAction {f : ℝ → ℂ}
 parameter interval. This follows from its actual integral bound. -/
 theorem memLp_sawtoothAction {f : ℝ → ℂ}
     (hf : Integrable f (volume.restrict (Ioc 0 (2 * π)))) :
-    MemLp (fun θ => ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s * f s) 2
+    MemLp (fun θ => ∫ s in 0..(2 * π), sawtoothKernel θ s * f s) 2
       (volume.restrict (Ioc 0 (2 * π))) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2 * π))
-  have hmeas : AEStronglyMeasurable
-      (fun θ => ∫ s, sawtoothKernel θ s * f s ∂μ) μ :=
-    (regular_sawtooth_measurable.aestronglyMeasurable.mul
-      hf.aestronglyMeasurable.comp_snd).integral_prod_right'
+  let μ  := volume.restrict (Ioc 0 (2 * π))
   simp_rw [intervalIntegral.integral_of_le two_pi_pos.le]
-  refine MemLp.of_bound hmeas (3 * ∫ s, ‖f s‖ ∂μ) ?_
+  refine MemLp.of_bound (regular_sawtooth_measurable.aestronglyMeasurable.mul
+      hf.aestronglyMeasurable.comp_snd).integral_prod_right' (3 * ∫ s, ‖f s‖ ∂μ) ?_
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
   calc
     ‖∫ s, sawtoothKernel θ s * f s ∂μ‖ ≤ ∫ s, 3 * ‖f s‖ ∂μ := by
@@ -607,11 +538,10 @@ theorem sawtoothBoundaryAction_fourier (f : BoundaryL2) (n : ℤ) :
     boundaryFourier (sawtoothBoundaryAction f) n =
       (2 / (n : ℂ)) * boundaryFourier f n := by
   rw [boundaryFourier_apply, boundaryFourier_apply]
-  have hf := (Lp.memLp f).integrable (by norm_num : (1 : ENNReal) ≤ 2)
-  have hact : (sawtoothBoundaryAction f : ℝ → ℂ) =ᵐ[
+  have hf := (Lp.memLp f).integrable (by norm_num)
+  have hact : sawtoothBoundaryAction f =ᵐ[
       volume.restrict (Ioc 0 (2 * π))]
-      (fun θ => ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s * f s) := by
-    exact MemLp.coeFn_toLp (memLp_sawtoothAction hf)
+      (fun θ => ∫ s in 0..(2 * π), sawtoothKernel θ s * f s) := MemLp.coeFn_toLp (memLp_sawtoothAction hf)
   rw [fourierCoeffOn_congr_ae two_pi_pos hact]
   rw [fourierCoeffOn_sawtoothAction hf]
   ring
@@ -621,9 +551,7 @@ private theorem regular_half_weight_square (n : ℤ) :
         ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) * (sobWeight n : ℂ) = 1 := by
   rw [← Complex.ofReal_mul, ← Complex.ofReal_mul,
     ← Real.rpow_add (sobWeight_pos n)]
-  norm_num
-  rw [Real.rpow_neg_one, ← Complex.ofReal_mul,
-    inv_mul_cancel₀ (sobWeight_pos n).ne', Complex.ofReal_one]
+  norm_num [Real.rpow_neg_one, ← Complex.ofReal_mul, inv_mul_cancel₀ (sobWeight_pos n).ne', Complex.ofReal_one]
 
 /-- This actual bounded composition is the raw inverse derivative.
 Its equality with the sawtooth integral is proved below, on all L2. -/
@@ -636,31 +564,27 @@ theorem regularRawInverseDerivative_apply (f : L2Z) (n : ℤ) :
     regularRawInverseDerivative f n = (2 / (n : ℂ)) * f n := by
   simp only [regularRawInverseDerivative, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
-    lp.coeFn_sub, Pi.sub_apply, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul,
-    principalNormalized, normalizedInverseAbsOperator_apply, sobolevSmoothing, diagOp_apply]
+    lp.coeFn_sub, Pi.sub_apply, lp.coeFn_smul, Pi.smul_apply, principalNormalized, normalizedInverseAbsOperator_apply, sobolevSmoothing, diagOp_apply]
   by_cases hn : n = 0
-  · subst n
-    simp [principalSymbol, normalizedInverseAbsSymbol]
+  · simp_all [principalSymbol, normalizedInverseAbsSymbol]
   · have hsymbol : principalSymbol n - 2 * normalizedInverseAbsSymbol n =
-        (sobWeight n : ℂ) * (2 / (n : ℂ)) := by
+        sobWeight n * (2 / n) := by
       simp only [principalSymbol, normalizedInverseAbsSymbol, if_neg hn]
       push_cast
       ring
     calc
-      _ = (((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
-          ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ)) *
+      _ = ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) *
+          (sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ)) *
           (principalSymbol n - 2 * normalizedInverseAbsSymbol n) * f n := by ring
-      _ = (((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
-          ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) * (sobWeight n : ℂ)) *
-          (2 / (n : ℂ)) * f n := by rw [hsymbol]; ring
+      _ = ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) *
+          (sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) * sobWeight n) *
+          (2 / n) * f n := by grind
       _ = _ := by rw [regular_half_weight_square, one_mul]
 
 private theorem regular_half_sqrt_cancel (n : ℤ) :
     ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
       (Real.sqrt (sobWeight n) : ℂ) = 1 := by
-  rw [← Complex.ofReal_mul, Real.sqrt_eq_rpow,
-    ← Real.rpow_add (sobWeight_pos n)]
-  norm_num
+  simp [← Complex.ofReal_mul, Real.sqrt_eq_rpow, ← Real.rpow_add (sobWeight_pos n)]
 
 private theorem regular_halfSmoothing_injective :
     Function.Injective (sobolevSmoothing (1 / 2) (by norm_num) : L2Z →L[ℂ] L2Z) := by
@@ -671,7 +595,7 @@ private theorem regular_halfSmoothing_injective :
   simp only [sobolevSmoothing, diagOp_apply] at hn
   have hw : (((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ)) ≠ 0 := by
     exact_mod_cast (Real.rpow_pos_of_pos (sobWeight_pos n) _).ne'
-  exact mul_left_cancel₀ hw hn
+  simp_all
 
 /-- Half smoothing of the actual normalized projected-observation
 adjoint is exactly the ordinary unitary Fourier observation trace. -/
@@ -685,14 +609,14 @@ theorem halfSmoothing_adjoint_projObsDual
   apply lp.ext
   funext n
   simp only [sobolevSmoothing, diagOp_apply, lp.coeFn_smul, Pi.smul_apply,
-    smul_eq_mul, rowAnalysis_apply, normProjObsRow, inner_smul_left,
+    rowAnalysis_apply, normProjObsRow, inner_smul_left,
     Complex.conj_ofReal, boundaryFourier_projectedObservation]
-  change ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
-    ((√(2 * π) : ℂ) * ((Real.sqrt (sobWeight n) : ℂ) * ⟪projObsCoeffVec W n, z⟫_ℂ)) = _
+  change (sobWeight n ^ (-(1 / 2)) : ℝ) *
+    (√(2 * π) * (Real.sqrt (sobWeight n) * ⟪projObsCoeffVec W n, z⟫_ℂ)) = _
   calc
-    _ = (((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
-      (Real.sqrt (sobWeight n) : ℂ)) *
-      ((√(2 * π) : ℂ) * ⟪projObsCoeffVec W n, z⟫_ℂ) := by ring
+    _ = ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) *
+      Real.sqrt (sobWeight n)) *
+      (√(2 * π) * ⟪projObsCoeffVec W n, z⟫_ℂ) := by ring
     _ = _ := by rw [regular_half_sqrt_cancel, one_mul]
 
 /-- The bounded boundary operator obtained from the genuine raw Fourier
@@ -728,8 +652,8 @@ theorem regularCorrectedBoundaryOperator_fourier
     (hr : Summable fun p => ‖kernelIntegralMatrix (r := correctedKernel W) p‖ ^ 2)
     (f : BoundaryL2) :
     boundaryFourier (regularCorrectedBoundaryOperator hK hW hc f) =
-      hsMatrixOp (kernelIntegralMatrix (r := correctedKernel W)) hr (boundaryFourier f) := by
-  change (fourierBasis (T := 2 * π)).repr
+      hsMatrixOp (kernelIntegralMatrix ) hr (boundaryFourier f) := by
+  change (fourierBasis ).repr
     (boundaryCircleUnitary (boundaryCircleUnitary.symm
       (correctedKernelL2Op hK hW hc (boundaryCircleUnitary f)))) = _
   rw [LinearIsometryEquiv.apply_symm_apply,
@@ -746,33 +670,28 @@ theorem summable_regularKernelIntegralMatrix (W : ℝ → Ell2 →L[ℂ] Ell2)
     Real.one_le_rpow (one_le_sobWeight p.1) (by norm_num)
   have hn : 1 ≤ (sobWeight p.2) ^ (1 / 2 : ℝ) :=
     Real.one_le_rpow (one_le_sobWeight p.2) (by norm_num)
-  have hweight := one_le_mul_of_one_le_of_one_le hm hn
   have heq : correctedRemainderMatrix W 0 0 p =
-      (((sobWeight p.1) ^ (1 / 2 : ℝ) *
-        (sobWeight p.2) ^ (1 / 2 : ℝ) : ℝ) : ℂ) *
+      ((sobWeight p.1) ^ (1 / 2 : ℝ) *
+        (sobWeight p.2) ^ (1 / 2 : ℝ) : ℝ) *
         kernelIntegralMatrix (r := correctedKernel W) p := by
-    simp only [correctedRemainderMatrix, kernelIntegralMatrix, sobWeight,
-      mul_zero, add_zero, sub_zero, Complex.ofReal_mul]
+    simp only [correctedRemainderMatrix, kernelIntegralMatrix, sobWeight]
     push_cast
     ring
   apply pow_le_pow_left₀ (norm_nonneg _) _ 2
   rw [heq, norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (by positivity)]
-  simpa only [one_mul] using mul_le_mul_of_nonneg_right hweight (norm_nonneg _)
+  simpa only [one_mul] using mul_le_mul_of_nonneg_right (one_le_mul_of_one_le_of_one_le hm hn) (norm_nonneg _)
 
 theorem memLp_regularCorrectedAction
     {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
     (hK : LipschitzWith K γ) (hW : IsTransport γ E W) {f : ℝ → ℂ}
     (hf : Integrable f (volume.restrict (Ioc 0 (2 * π)))) :
-    MemLp (fun θ => ∫ s in (0 : ℝ)..(2 * π), correctedKernel W θ s * f s) 2
+    MemLp (fun θ => ∫ s in 0..(2 * π), correctedKernel W θ s * f s) 2
       (volume.restrict (Ioc 0 (2 * π))) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2 * π))
-  have hmeas : AEStronglyMeasurable
-      (fun θ => ∫ s, correctedKernel W θ s * f s ∂μ) μ :=
-    ((aestronglyMeasurable_correctedKernel hW).mul
-      hf.aestronglyMeasurable.comp_snd).integral_prod_right'
+  let μ  := volume.restrict (Ioc 0 (2 * π))
   simp_rw [intervalIntegral.integral_of_le two_pi_pos.le]
-  refine MemLp.of_bound hmeas ((4 + ‖cutBE W‖) * ∫ s, ‖f s‖ ∂μ) ?_
+  refine MemLp.of_bound ((aestronglyMeasurable_correctedKernel hW).mul
+      hf.aestronglyMeasurable.comp_snd).integral_prod_right' ((4 + ‖cutBE W‖) * ∫ s, ‖f s‖ ∂μ) ?_
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
   calc
     ‖∫ s, correctedKernel W θ s * f s ∂μ‖ ≤
@@ -794,39 +713,38 @@ theorem regularCorrectedBoundaryOperator_toLp_fourier
     (hc : cutC (W (2 * π)) (basisVec 0) ≠ 0)
     (g : BoundaryL2) {f : ℝ → ℂ} (hf : Measurable f) {B : ℝ}
     (hfB : ∀ s, ‖f s‖ ≤ B)
-    (hgf : (g : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) (n : ℤ) :
+    (hgf : g =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) (n : ℤ) :
     boundaryFourier (regularCorrectedBoundaryOperator hK hW hc g) n =
-      (√(2 * π) : ℂ) * fourierCoeffOn two_pi_pos
-        (fun θ => ∫ s in (0 : ℝ)..(2 * π), correctedKernel W θ s * f s) n := by
-  let fC : L2Circ := (memLp_liftIco_two_pi hf hfB).toLp _
+      √(2 * π) * fourierCoeffOn two_pi_pos
+        (fun θ => ∫ s in 0..(2 * π), correctedKernel W θ s * f s) n := by
+  let fC  := (memLp_liftIco_two_pi hf hfB).toLp _
   have hcircle : boundaryCircleLift g = fC := by
     apply Lp.ext
     exact (boundaryCircleLift_coe g).trans
       (((boundary_liftIoc_congr_ae hgf).trans
         (boundary_liftIoc_eq_liftIco_ae f)).trans
           (MemLp.coeFn_toLp (memLp_liftIco_two_pi hf hfB)).symm)
-  change (fourierBasis (T := 2 * π)).repr
+  change (fourierBasis ).repr
     (boundaryCircleUnitary (boundaryCircleUnitary.symm
       (correctedKernelL2Op hK hW hc (boundaryCircleUnitary g)))) n = _
   rw [LinearIsometryEquiv.apply_symm_apply]
-  change (fourierBasis (T := 2 * π)).repr
+  change (fourierBasis ).repr
     (correctedKernelL2Op hK hW hc ((√(2 * π) : ℂ) • boundaryCircleLift g)) n = _
   rw [hcircle, map_smul, map_smul]
-  change (√(2 * π) : ℂ) *
-    (fourierBasis (T := 2 * π)).repr (correctedKernelL2Op hK hW hc fC) n = _
+  change √(2 * π) *
+    (fourierBasis ).repr (correctedKernelL2Op hK hW hc fC) n = _
   rw [correctedKernelL2Op_toLp_fourier hK hW hc hf hfB]
 
 private theorem regular_boundary_operator_sum_apply
     (T A B : BoundaryL2 →L[ℂ] BoundaryL2) (g : BoundaryL2) :
     ((2 : ℂ) • T + A + B) g = (2 : ℂ) • T g + A g + B g := by
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
+  rfl
 
 private theorem regular_boundary_ae_of_eq (u v : BoundaryL2) {f : ℝ → ℂ}
     (huv : u = v)
     (hv : (v : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) :
     (u : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * π))] f := by
-  subst u
-  exact hv
+  simp_all
 
 private theorem regular_boundary_eq_of_periodic_load_eq
     (T : L2Z →L[ℂ] BoundaryL2) (W : ℝ → Ell2 →L[ℂ] Ell2)
@@ -842,7 +760,7 @@ private theorem regular_boundary_smoothing_difference
     (S : L2Z →L[ℂ] L2Z) (x q : L2Z) (p r : BoundaryL2)
     (hx : S x = boundaryFourier p) (hq : S q = boundaryFourier r) :
     S (x - (2 : ℂ) • q) = boundaryFourier (p - (2 : ℂ) • r) := by
-  rw [map_sub, map_smul, map_sub, map_smul, hx, hq]
+  simp_all
 
 private theorem regular_boundary_periodic_sum_ae
     {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
@@ -850,13 +768,12 @@ private theorem regular_boundary_periodic_sum_ae
     (hc : cutC (W (2 * π)) (basisVec 0) ≠ 0)
     (t g : BoundaryL2) {f : ℝ → ℂ} (hf : Continuous f) {B : ℝ}
     (hfB : ∀ s, ‖f s‖ ≤ B)
-    (hgf : (g : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) :
-    (((2 : ℂ) • t + sawtoothBoundaryOperator g +
-      regularCorrectedBoundaryOperator hK hW hc g : BoundaryL2) : ℝ → ℂ) =ᵐ[
-        volume.restrict (Ioc 0 (2 * π))] periodicP W (t : ℝ → ℂ) f := by
-  have hfLp : MemLp f 2 (volume.restrict (Ioc 0 (2 * π))) := (Lp.memLp g).ae_eq hgf
-  have hfI := hfLp.integrable (by norm_num : (1 : ENNReal) ≤ 2)
-  let k : BoundaryL2 := (memLp_regularCorrectedAction hK hW hfI).toLp _
+    (hgf : g =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) :
+    (2 : ℂ) • t + sawtoothBoundaryOperator g +
+      regularCorrectedBoundaryOperator hK hW hc g =ᵐ[
+        volume.restrict (Ioc 0 (2 * π))] periodicP W t f := by
+  have hfI := ((Lp.memLp g).ae_eq hgf).integrable (by norm_num)
+  let k  := (memLp_regularCorrectedAction hK hW hfI).toLp _
   have hk : regularCorrectedBoundaryOperator hK hW hc g = k := by
     apply boundaryFourier.injective
     apply lp.ext
@@ -867,23 +784,23 @@ private theorem regular_boundary_periodic_sum_ae
     exact (congrFun (fourierCoeffOn_congr_ae two_pi_pos
       (MemLp.coeFn_toLp (memLp_regularCorrectedAction hK hW hfI))) n).symm
   have hsaw (θ : ℝ) :
-      (∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s * g s) =
-        ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s * f s := by
+      (∫ s in 0..(2 * π), sawtoothKernel θ s * g s) =
+        ∫ s in 0..(2 * π), sawtoothKernel θ s * f s := by
     simp_rw [intervalIntegral.integral_of_le two_pi_pos.le]
     apply integral_congr_ae
     filter_upwards [hgf] with s hs
-    rw [hs]
+    simp_all
   rw [sawtoothBoundaryOperator_eq_action, hk]
   filter_upwards [Lp.coeFn_add ((2 : ℂ) • t + sawtoothBoundaryAction g) k,
     Lp.coeFn_add ((2 : ℂ) • t) (sawtoothBoundaryAction g), Lp.coeFn_smul (2 : ℂ) t,
     MemLp.coeFn_toLp (memLp_sawtoothAction
-      ((Lp.memLp g).integrable (by norm_num : (1 : ENNReal) ≤ 2))),
+      ((Lp.memLp g).integrable (by norm_num))),
     MemLp.coeFn_toLp (memLp_regularCorrectedAction hK hW hfI),
     ae_restrict_mem measurableSet_Ioc] with θ ha hb hc' hs hk' hθ
-  rw [ha, Pi.add_apply, hb, Pi.add_apply, hc', Pi.smul_apply, smul_eq_mul]
-  dsimp only [sawtoothBoundaryAction, k]
+  rw [ha, Pi.add_apply, hb, Pi.add_apply, hc']
+  dsimp only [sawtoothBoundaryAction]
   rw [hs, hk', hsaw]
-  exact (periodicP_eq_doubleTrace_add_kernel_integrals hW.1 (t : ℝ → ℂ)
+  exact (periodicP_eq_doubleTrace_add_kernel_integrals hW.1 t
     hf hfB (Ioc_subset_Icc_self hθ)).symm
 
 section ActualPeriodicOperator
@@ -900,11 +817,10 @@ theorem localConformal_halfSmoothing_halfTrace (u : NeumannH1 ΩP) :
     sobolevSmoothing (1 / 2) (by norm_num) (QP u) = boundaryFourier (TP u) := by
   apply lp.ext
   funext n
-  simp only [sobolevSmoothing, diagOp_apply, localConformalDiskHalfTrace_apply]
   have hw : sobWeight n ^ (-(1 / 2 : ℝ)) * Real.sqrt (sobWeight n) = 1 := by
     rw [Real.sqrt_eq_rpow, mul_comm, sobWeight_rpow_mul_neg]
-  change ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
-    ((Real.sqrt (sobWeight n) : ℂ) * boundaryFourier (TP u) n) = _
+  change (sobWeight n ^ (-(1 / 2)) : ℝ) *
+    (Real.sqrt (sobWeight n) * boundaryFourier (TP u) n) = _
   rw [← mul_assoc, ← Complex.ofReal_mul, hw, Complex.ofReal_one, one_mul]
 
 /-- The genuine regular trace, the original sawtooth integral, and the
@@ -933,31 +849,26 @@ theorem localConformalRegularPeriodicOperator_fourier (E₀ E : ℝ)
       sobolevSmoothing (1 / 2) (by norm_num)
         (normalizedPeriodicRegularOperator QP E₀ E W hbase
           (sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier f))) := by
-  let S : L2Z →L[ℂ] L2Z := sobolevSmoothing (1 / 2) (by norm_num)
-  let b : L2Z := S (boundaryFourier f)
-  let u : NeumannH1 ΩP :=
+  let S  := sobolevSmoothing (1 / 2) (by norm_num)
+  let b  := S (boundaryFourier f)
+  let u  :=
     h1RegularResolvent ΩP E₀ E (ContinuousLinearMap.adjoint QP b)
   let hr := summable_regularKernelIntegralMatrix W hbase
-  have hN : S (normalizedNeumannRegular QP E₀ E b) = boundaryFourier (TP u) := by
-    exact localConformal_halfSmoothing_halfTrace hR F hFs hL u
+  have hN : S (normalizedNeumannRegular QP E₀ E b) = boundaryFourier (TP u) := localConformal_halfSmoothing_halfTrace hR F hFs hL u
   have hS : boundaryFourier (sawtoothBoundaryOperator f) =
-      regularRawInverseDerivative (boundaryFourier f) := by
-    change boundaryFourier (boundaryFourier.symm
-      (regularRawInverseDerivative (boundaryFourier f))) = _
-    exact LinearIsometryEquiv.apply_symm_apply _ _
-  have hKern := regularCorrectedBoundaryOperator_fourier hK hW hc hr f
+      regularRawInverseDerivative (boundaryFourier f) := LinearIsometryEquiv.apply_symm_apply _ _
   have hraw : regularRawInverseDerivative (boundaryFourier f) =
       S (principalNormalized b) - (2 : ℂ) • S (normalizedInverseAbsOperator b) := by
     simp only [regularRawInverseDerivative, ContinuousLinearMap.comp_apply,
       ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, map_sub, map_smul]
     rfl
   have hHS : S (hsMatrixOp (correctedRemainderMatrix W 0 0) hbase b) =
-      hsMatrixOp (kernelIntegralMatrix (r := correctedKernel W)) hr (boundaryFourier f) :=
+      hsMatrixOp (kernelIntegralMatrix ) hr (boundaryFourier f) :=
     correctedRemainderOp_half_smoothing W hbase hr (boundaryFourier f)
   change boundaryFourier ((2 : ℂ) • TP u + sawtoothBoundaryOperator f +
     regularCorrectedBoundaryOperator hK hW hc f) =
     S (normalizedPeriodicRegularOperator QP E₀ E W hbase b)
-  rw [map_add, map_add, map_smul, hS, hKern, hraw]
+  rw [map_add, map_add, hS, regularCorrectedBoundaryOperator_fourier hK hW hc hr f, hraw]
   simp only [normalizedPeriodicRegularOperator, ContinuousLinearMap.add_apply,
     ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply,
     map_add, map_smul, map_sub, smul_sub, hN, hHS]
@@ -972,27 +883,16 @@ theorem localConformalRegularPeriodicOperator_apply_ae (E₀ E : ℝ)
     (hc : cutC (W (2 * π)) (basisVec 0) ≠ 0)
     (g : BoundaryL2) {f : ℝ → ℂ} (hf : Continuous f) {B : ℝ}
     (hfB : ∀ s, ‖f s‖ ≤ B)
-    (hgf : (g : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) :
-    (localConformalRegularPeriodicOperator hR F hFs hL E₀ E hK hW hc g : ℝ → ℂ)
+    (hgf : g =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) :
+    localConformalRegularPeriodicOperator hR F hFs hL E₀ E hK hW hc g
       =ᵐ[volume.restrict (Ioc 0 (2 * π))]
         periodicP W
           (TP (h1RegularResolvent ΩP E₀ E (ContinuousLinearMap.adjoint QP
-            (sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g)))) : ℝ → ℂ) f := by
-  let t : BoundaryL2 := TP (h1RegularResolvent ΩP E₀ E (ContinuousLinearMap.adjoint QP
+            (sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g))))) f := by
+  let t  := TP (h1RegularResolvent ΩP E₀ E (ContinuousLinearMap.adjoint QP
     (sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier g))))
-  have hop : localConformalRegularPeriodicOperator hR F hFs hL E₀ E hK hW hc g =
-      (2 : ℂ) • t + sawtoothBoundaryOperator g +
-        regularCorrectedBoundaryOperator hK hW hc g := by
-    have h_simpa := regular_boundary_operator_sum_apply
-      ((localConformalDiskH1Trace hR F hFs hL).comp
-      ((h1RegularResolvent ΩP E₀ E).comp
-      ((ContinuousLinearMap.adjoint QP).comp
-      ((sobolevSmoothing (1 / 2) (by norm_num)).comp
-      boundaryFourier.toLinearIsometry.toContinuousLinearMap))))
-      sawtoothBoundaryOperator (regularCorrectedBoundaryOperator hK hW hc) g
-    simp only [localConformalRegularPeriodicOperator, ContinuousLinearMap.comp_apply] at h_simpa ⊢
-    exact h_simpa
-  exact regular_boundary_ae_of_eq _ _ hop
+  exact regular_boundary_ae_of_eq _ _ (by
+    rfl)
     (regular_boundary_periodic_sum_ae hK hW hc t g hf hfB hgf)
 
 end ActualPeriodicOperator
@@ -1046,38 +946,18 @@ theorem localConformalRegularPeriodicOperator_herglotz :
     (localConformalHerglotzCoordinateLoad F hΓLip ha (Real.sqrt E₀))
     (regular_continuous_coordinateConormal hR F hFs ha (Real.sqrt E₀)) hfB
     (localConformalHerglotzCoordinateLoad_ae F hΓLip ha (Real.sqrt E₀))
-  have hload := localConformalHerglotzBoundaryLoad_eq_coordinateLoad F hγ hτ hcoord
-    hΓLip ha (Real.sqrt E₀)
-  let T : L2Z →L[ℂ] BoundaryL2 :=
+  let T  :=
     (localConformalDiskH1Trace hR F hFs hL).comp
-      ((h1RegularResolvent (F '' ball (0 : ℂ) 1) E₀ E₀).comp
+      ((h1RegularResolvent (F '' ball 0 1) E₀ E₀).comp
         (ContinuousLinearMap.adjoint (localConformalDiskHalfTrace hR F hFs hL)))
-  have hbdy : (localConformalRegularPeriodicHerglotzBoundary
-      hR F hFs hb hL hhol hinj hC hγ hτ hcoord hΓLip hE₀ hW hc ha : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc 0 (2 * π))]
-        localConformalRegularPeriodicHerglotzExpression hR F hFs hL hγ hτ E₀ W ha :=
+  have hbdy  :=
     MemLp.coeFn_toLp (localConformalRegularPeriodicHerglotzExpression_memLp
       hR F hFs hb hL hhol hinj hC hγ hτ hcoord hΓLip hE₀ hW hc ha)
-  have hopT : (localConformalRegularPeriodicOperator hR F hFs hL E₀ E₀
-      hΓLip hW hc (localConformalHerglotzCoordinateLoad F hΓLip ha (Real.sqrt E₀)) : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc 0 (2 * π))]
-        periodicP W
-          (T (sobolevSmoothing (1 / 2) (by norm_num)
-            (boundaryFourier (localConformalHerglotzCoordinateLoad F hΓLip ha
-              (Real.sqrt E₀)))) : ℝ → ℂ)
-          (herglotzConormal (Real.sqrt E₀) a (physicalCircleTrace F)) := by
-    simpa only [T, ContinuousLinearMap.comp_apply] using hop
-  have hbdyT : (localConformalRegularPeriodicHerglotzBoundary
-      hR F hFs hb hL hhol hinj hC hγ hτ hcoord hΓLip hE₀ hW hc ha : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc 0 (2 * π))]
-        periodicP W
-          (T (localConformalBoundaryLoad hτ
-            (herglotzConormalL2 hγ ha (Real.sqrt E₀))) : ℝ → ℂ)
-          (herglotzConormal (Real.sqrt E₀) a (physicalCircleTrace F)) := by
-    simpa only [localConformalRegularPeriodicHerglotzExpression, T,
-      ContinuousLinearMap.comp_apply] using hbdy
-  exact regular_boundary_eq_of_periodic_load_eq T W _ _ hload.symm
-    (herglotzConormal (Real.sqrt E₀) a (physicalCircleTrace F)) _ _ hopT hbdyT
+  exact regular_boundary_eq_of_periodic_load_eq T W _ _ (localConformalHerglotzBoundaryLoad_eq_coordinateLoad F hγ hτ hcoord
+    hΓLip ha (Real.sqrt E₀)).symm
+    (herglotzConormal (Real.sqrt E₀) a (physicalCircleTrace F)) _ _ (by
+    assumption) (by
+    assumption)
 
 include hb hhol hinj hC hcoord hΓLip hE₀ hW hc in
 /-- The assembled normalized operator is now matched to the actual
@@ -1091,10 +971,7 @@ theorem normalizedPeriodicRegularOperator_herglotz_fourier
           (herglotzConormalL2 hγ ha (Real.sqrt E₀)))) =
       boundaryFourier (localConformalRegularPeriodicHerglotzBoundary
         hR F hFs hb hL hhol hinj hC hγ hτ hcoord hΓLip hE₀ hW hc ha) := by
-  rw [localConformalHerglotzBoundaryLoad_eq_coordinateLoad F hγ hτ hcoord hΓLip ha]
-  rw [← localConformalRegularPeriodicOperator_fourier hR F hFs hL E₀ E₀ hΓLip hW hc hbase,
-    localConformalRegularPeriodicOperator_herglotz hR F hFs hb hL hhol hinj hC
-      hγ hτ hcoord hΓLip hE₀ hW hc ha]
+  norm_num [localConformalHerglotzBoundaryLoad_eq_coordinateLoad F hγ hτ hcoord hΓLip ha, ← localConformalRegularPeriodicOperator_fourier hR F hFs hL E₀ E₀ hΓLip hW hc hbase, localConformalRegularPeriodicOperator_herglotz hR F hFs hb hL hhol hinj hC       hγ hτ hcoord hΓLip hE₀ hW hc ha]
 
 include hhol hinj hC hcoord hΓLip hE₀ hW hc in
 /-- The full normalized regular expression on genuine Herglotz data is
@@ -1108,7 +985,7 @@ theorem normalizedPeriodicRegularOperator_herglotz_eq
       (√(2 * π) : ℂ) • ContinuousLinearMap.adjoint (projObsDual W)
         (regularHerglotzObservationVector (γ := physicalCircleTrace F) E₀ W ha) -
       (2 : ℂ) • localConformalDiskHalfTrace hR F hFs hL
-        ((h1ResonantSpace (F '' ball (0 : ℂ) 1) E₀).starProjection
+        ((h1ResonantSpace (F '' ball 0 1) E₀).starProjection
           (herglotzWaveH1 hb ha (Real.sqrt E₀))) := by
   apply regular_halfSmoothing_injective
   have hfour := normalizedPeriodicRegularOperator_herglotz_fourier
@@ -1120,9 +997,9 @@ theorem normalizedPeriodicRegularOperator_herglotz_eq
     (halfSmoothing_adjoint_projObsDual hΓLip hW
       (regularHerglotzObservationVector (γ := physicalCircleTrace F) E₀ W ha))
     (localConformal_halfSmoothing_halfTrace hR F hFs hL
-      ((h1ResonantSpace (F '' ball (0 : ℂ) 1) E₀).starProjection
+      ((h1ResonantSpace (F '' ball 0 1) E₀).starProjection
         (herglotzWaveH1 hb ha (Real.sqrt E₀))))
-  exact hfour.trans ((congrArg (fun f : BoundaryL2 => boundaryFourier f) hbdy).trans hsm.symm)
+  simp_all
 
 end ActualHerglotzMatching
 

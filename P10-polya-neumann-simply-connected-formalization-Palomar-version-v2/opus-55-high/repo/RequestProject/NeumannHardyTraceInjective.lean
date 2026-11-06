@@ -36,34 +36,31 @@ def hardyL2TestPair (Ω : Set ℂ) {φ : ℂ → ℂ}
     (hφ : TestFunction univ φ) : L2 Ω →L[ℂ] ℂ :=
   innerSL ℂ ((hφ.conj.memLp' 2).toLp (fun z => conj (φ z)))
 
-private theorem hardyL2TestPair_apply (Ω : Set ℂ) {φ : ℂ → ℂ}
-    (hφ : TestFunction univ φ) (u : L2 Ω) :
+variable (Ω : Set ℂ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (u : NeumannH1 Ω) (f : smoothTraceTests) (i : Fin 2)
+
+private theorem hardyL2TestPair_apply (u : L2 Ω) :
     hardyL2TestPair Ω hφ u = ∫ z in Ω, u z * φ z := by
   change ⟪(hφ.conj.memLp' 2).toLp (fun z => conj (φ z)), u⟫_ℂ = _
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [(hφ.conj.memLp' 2 (μ := volume.restrict Ω)).coeFn_toLp] with z hz
-  simp only [RCLike.inner_apply, hz, Complex.conj_conj]
+  simp_all
 
 theorem hardyConjugateVelocityTest_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
     MemLp (fun θ => conj (φ (γ θ) * conj (deriv γ θ))) 2
-      (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
+      (volume.restrict (Ioc 0 (2 * π))) := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨C, hC⟩ := hφ.2.1.exists_bound_of_continuous hφ.1.continuous
-  have hC0 : 0 ≤ C := (norm_nonneg (φ 0)).trans (hC 0)
-  have hm : AEStronglyMeasurable
-      (fun θ => φ (γ θ) * conj (deriv γ θ)) volume :=
-    (hφ.1.continuous.comp hKγ.continuous).aestronglyMeasurable.mul
-      (Complex.continuous_conj.comp_aestronglyMeasurable
-        (measurable_deriv γ).aestronglyMeasurable)
   apply MemLp.of_bound
-    (Complex.continuous_conj.comp_aestronglyMeasurable hm).restrict (C * Kγ)
+    (Complex.continuous_conj.comp_aestronglyMeasurable ((hφ.1.continuous.comp hKγ.continuous).aestronglyMeasurable.mul
+      (Complex.continuous_conj.comp_aestronglyMeasurable
+        (measurable_deriv γ).aestronglyMeasurable))).restrict (C * Kγ)
   apply Eventually.of_forall
   intro θ
-  simp only [Complex.norm_conj, norm_mul]
+  simp 
   exact mul_le_mul (hC (γ θ)) (norm_deriv_le_of_lipschitz hKγ)
-    (norm_nonneg _) hC0
+    (norm_nonneg _) ((norm_nonneg (φ 0)).trans (hC 0))
 
 /-- The actual conjugate-velocity boundary test is an L² class. -/
 def hardyConjugateVelocityTestL2 {Ω : Set ℂ} {γ : ℝ → ℂ}
@@ -102,13 +99,11 @@ theorem h1FirstOrderConjugateBoundaryTest_apply {Ω : Set ℂ}
     (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ)
     (u : NeumannH1 Ω) :
     h1FirstOrderConjugateBoundaryTest hb hL hγ hφ u =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+      ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
         (φ (γ θ) * conj (deriv γ θ)) := by
-  change ⟪hardyConjugateVelocityTestL2 hγ hφ, h1BoundaryTrace hb hL hγ u⟫_ℂ = _
-  rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [(hardyConjugateVelocityTest_memLp hγ hφ).coeFn_toLp] with θ hθ
-  simp only [hardyConjugateVelocityTestL2, RCLike.inner_apply, hθ, Complex.conj_conj]
+  simp_all [hardyConjugateVelocityTestL2]
 
 private theorem smooth_conjugate_firstOrder_green {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
@@ -134,13 +129,10 @@ private theorem smooth_conjugate_firstOrder_green {Ω : Set ℂ}
     ring
   calc
     _ = conj (∫ θ in Ioc (0 : ℝ) (2 * π), conj (p (γ θ)) * deriv γ θ) := by
-      rw [← integral_conj]
-      simp only [map_mul, Complex.conj_conj]
+      simp [← integral_conj]
     _ = conj (2 * Complex.I * ∫ z in Ω, dbar (fun w => conj (p w)) z) := congrArg conj hg
     _ = -2 * Complex.I * ∫ z in Ω, conj (dbar (fun w => conj (p w)) z) := by
-      rw [map_mul, ← integral_conj]
-      simp only [map_mul, map_ofNat, Complex.conj_I]
-      ring
+      simp [map_mul, ← integral_conj, map_ofNat, Complex.conj_I]
     _ = ∫ z in Ω, (-Complex.I * dirD p 1 z - dirD p Complex.I z) := by
       rw [← integral_const_mul]
       apply integral_congr_ae
@@ -152,23 +144,20 @@ private theorem smooth_conjugate_firstOrder_green {Ω : Set ℂ}
       ring_nf; simp only [Complex.I_sq]; ring
     _ = _ := by rw [integral_sub (hdx.const_mul _) hdy, integral_const_mul]
 
-private theorem hardyL2TestPair_smooth_value (Ω : Set ℂ) {φ : ℂ → ℂ}
-    (hφ : TestFunction univ φ) (f : smoothTraceTests) :
+private theorem hardyL2TestPair_smooth_value :
     hardyL2TestPair Ω hφ (h1Value Ω (smoothTraceH1 Ω f)) = ∫ z in Ω, f z * φ z := by
   rw [hardyL2TestPair_apply]
   apply integral_congr_ae
   filter_upwards [(smoothTraceTests_memLp Ω f).coeFn_toLp] with z hz
-  rw [h1Value_smoothTraceH1, hz]
+  simp_all
 
-private theorem hardyL2TestPair_smooth_gradient (Ω : Set ℂ) {φ : ℂ → ℂ}
-    (hφ : TestFunction univ φ) (f : smoothTraceTests) (i : Fin 2) :
+private theorem hardyL2TestPair_smooth_gradient :
     hardyL2TestPair Ω hφ (h1Gradient Ω i (smoothTraceH1 Ω f)) =
       ∫ z in Ω, dirD (f : ℂ → ℂ) (coordDir i) z * φ z := by
   rw [hardyL2TestPair_apply]
   apply integral_congr_ae
   filter_upwards [(smoothTraceTests_memLp_deriv Ω f i).coeFn_toLp] with z hz
-  simpa only [h1Gradient_smoothTraceH1, dirD] using
-    congrArg (fun w : ℂ => w * φ z) hz
+  simp_all [h1Gradient_smoothTraceH1, dirD]
 
 private theorem h1FirstOrderConjugate_green_smooth {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
@@ -184,9 +173,7 @@ private theorem h1FirstOrderConjugate_green_smooth {Ω : Set ℂ}
     rw [h1FirstOrderConjugateBoundaryTest_apply]
     apply integral_congr_ae
     filter_upwards [h1BoundaryTrace_smooth_ae hb hL hγ f] with θ hθ
-    rw [hθ]
-    dsimp [p]
-    ring
+    grind
   have hproduct (v z : ℂ) :
       dirD p v z = dirD (f : ℂ → ℂ) v z * φ z + f z * dirD φ v z := by
     rw [dirD, fderiv_fun_mul (f.property.1.differentiable (by simp) z)
@@ -220,7 +207,6 @@ theorem h1FirstOrderConjugateBoundaryTest_eq_interior {Ω : Set ℂ}
     (h1FirstOrderConjugateBoundaryTest hb hL hγ hφ).continuous
     (h1FirstOrderConjugateInteriorTest Ω hφ).continuous
   funext f
-  rw [Function.comp_apply, Function.comp_apply, smoothTraceH1Lin_apply]
   exact h1FirstOrderConjugate_green_smooth hb hL hγ hφ f
 
 /-- The raw first-order formula uses the genuine value, weak gradients,
@@ -233,7 +219,7 @@ theorem h1_firstOrder_conjugate_green {Ω : Set ℂ}
       ∫ z in Ω, h1Value Ω u z * dirD φ 1 z) -
       ((∫ z in Ω, h1Gradient Ω 1 u z * φ z) +
         ∫ z in Ω, h1Value Ω u z * dirD φ Complex.I z) =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+      ∫ θ in Ioc 0 (2 * π), h1BoundaryTrace hb hL hγ u θ *
         (φ (γ θ) * conj (deriv γ θ)) := by
   rw [← h1FirstOrderConjugateInteriorTest_apply Ω hφ u,
     ← h1FirstOrderConjugateBoundaryTest_eq_interior hb hL hγ hφ,
@@ -247,7 +233,7 @@ private theorem hardy_zeroTrace_boundary_test {Ω : Set ℂ}
   apply integral_eq_zero_of_ae
   rw [ht]
   filter_upwards [Lp.coeFn_zero ℂ 2 (volume.restrict (Ioc (0 : ℝ) (2 * π)))] with θ hθ
-  simp only [hθ, Pi.zero_apply, zero_mul]
+  simp_all
 
 private theorem hardy_gradient_test_factor {Ω : Set ℂ} (u : NeumannH1 Ω)
     (hCR : h1Gradient Ω 0 u = Complex.I • h1Gradient Ω 1 u) (ψ : ℂ → ℂ) :
@@ -261,19 +247,19 @@ private theorem hardy_gradient_test_factor {Ω : Set ℂ} (u : NeumannH1 Ω)
       rw [hz]
       change (Complex.I * h1Gradient Ω 1 u z) * ψ z =
         Complex.I * (h1Gradient Ω 1 u z * ψ z)
-      exact mul_assoc _ _ _
+      ring
     _ = _ := integral_const_mul _ _
 
 private theorem hardy_firstOrder_algebra (A B G : ℂ)
     (h : -Complex.I * (Complex.I * G + A) - (G + B) = 0) : A = Complex.I * B := by
   have he : -Complex.I * (Complex.I * G + A) - (G + B) = -Complex.I * A - B := by
-    ring_nf; simp only [Complex.I_sq]; ring
+    ring_nf; norm_num
   rw [he] at h
   apply sub_eq_zero.mp
   calc
     A - Complex.I * B = Complex.I * (-Complex.I * A - B) := by
-      ring_nf; simp only [Complex.I_sq]; ring
-    _ = 0 := by rw [h, mul_zero]
+      ring_nf; norm_num
+    _ = 0 := by simp_all
 
 /-- CR and zero physical trace give the first-order distribution identity
 against global compact tests, rather than only tests supported inside Ω. -/
@@ -290,25 +276,20 @@ theorem h1_antiholomorphic_global_test_of_zero_trace {Ω : Set ℂ}
     hardy_gradient_test_factor u hCR] at h
   exact hardy_firstOrder_algebra _ _ _ h
 
-private theorem hardy_trace_dirD_comm {φ : ℂ → ℂ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (v w z : ℂ) :
+private theorem hardy_trace_dirD_comm (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (v w z : ℂ) :
     dirD (dirD φ v) w z = dirD (dirD φ w) v z := by
   have hd : DifferentiableAt ℝ (fderiv ℝ φ) z :=
     (hφ.fderiv_right (m := (⊤ : ℕ∞)) le_rfl).differentiable (by simp) z
   have hv : fderiv ℝ (dirD φ v) z w = fderiv ℝ (fderiv ℝ φ) z w v := by
     change fderiv ℝ (fun x => fderiv ℝ φ x v) z w = _
-    rw [fderiv_clm_apply hd (differentiableAt_const _)]
-    simp
+    simp [fderiv_clm_apply hd (differentiableAt_const _)]
   have hw : fderiv ℝ (dirD φ w) z v = fderiv ℝ (fderiv ℝ φ) z v w := by
     change fderiv ℝ (fun x => fderiv ℝ φ x w) z v = _
-    rw [fderiv_clm_apply hd (differentiableAt_const _)]
-    simp
+    simp [fderiv_clm_apply hd (differentiableAt_const _)]
   change fderiv ℝ (dirD φ v) z w = fderiv ℝ (dirD φ w) z v
   rw [hv, hw]
   exact (hφ.contDiffAt.isSymmSndFDerivAt (by
-    simpa only [minSmoothness_of_isRCLikeNormedField] using
-      (show (2 : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞) from
-        WithTop.coe_le_coe.mpr le_top))).eq w v
+    norm_num)).eq w v
 
 /-- The zero extension has zero distributional Laplacian, expressed using
 its domain integral and arbitrary global compact smooth tests. -/
@@ -324,24 +305,18 @@ theorem h1_antiholomorphic_global_lap_test_of_zero_trace {Ω : Set ℂ}
     (hφ.dirD Complex.I)
   have hc : (∫ z in Ω, h1Value Ω u z * dirD (dirD φ 1) Complex.I z) =
       ∫ z in Ω, h1Value Ω u z * dirD (dirD φ Complex.I) 1 z := by
-    apply integral_congr_ae
-    exact Eventually.of_forall (fun z => by
-      change h1Value Ω u z * dirD (dirD φ 1) Complex.I z =
-        h1Value Ω u z * dirD (dirD φ Complex.I) 1 z
-      rw [hardy_trace_dirD_comm hφ.1])
-  have hix := integrable_mul_test (Lp.memLp (h1Value Ω u)) ((hφ.dirD 1).dirD 1)
-  have hiy := integrable_mul_test (Lp.memLp (h1Value Ω u))
-    ((hφ.dirD Complex.I).dirD Complex.I)
+    simp [hardy_trace_dirD_comm hφ.1]
   calc
     _ = (∫ z in Ω, h1Value Ω u z * dirD (dirD φ 1) 1 z) +
         ∫ z in Ω, h1Value Ω u z * dirD (dirD φ Complex.I) Complex.I z := by
       simp only [lap, mul_add]
-      exact integral_add hix hiy
+      exact integral_add (integrable_mul_test (Lp.memLp (h1Value Ω u)) ((hφ.dirD 1).dirD 1)) (integrable_mul_test (Lp.memLp (h1Value Ω u))
+    ((hφ.dirD Complex.I).dirD Complex.I))
     _ = Complex.I * (Complex.I * ∫ z in Ω,
         h1Value Ω u z * dirD (dirD φ Complex.I) Complex.I z) +
         ∫ z in Ω, h1Value Ω u z * dirD (dirD φ Complex.I) Complex.I z := by
-      rw [hx, hc, hy]
-    _ = 0 := by rw [← mul_assoc, Complex.I_mul_I]; ring
+      simp_all
+    _ = 0 := by simp [← mul_assoc]
 
 private theorem hardy_zeroTrace_gradient_test {Ω : Set ℂ}
     (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
@@ -351,12 +326,10 @@ private theorem hardy_zeroTrace_gradient_test {Ω : Set ℂ}
     {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
     (∑ i : Fin 2, ∫ z in Ω, h1Gradient Ω i u z * dirD φ (coordDir i) z) = 0 := by
   have hg := h1_doubleLayer_green hb hL hγ hφ u
-  rw [h1_antiholomorphic_global_lap_test_of_zero_trace hb hL hγ u hCR ht hφ,
+  rwa [h1_antiholomorphic_global_lap_test_of_zero_trace hb hL hγ u hCR ht hφ,
     zero_add, hardy_zeroTrace_boundary_test hb hL hγ u ht] at hg
-  exact hg
 
-private theorem hardy_gradient_inner_smooth (Ω : Set ℂ) (u : NeumannH1 Ω)
-    (f : smoothTraceTests) (i : Fin 2) :
+private theorem hardy_gradient_inner_smooth :
     ⟪h1Gradient Ω i (smoothTraceH1 Ω f), h1Gradient Ω i u⟫_ℂ =
       ∫ z in Ω, h1Gradient Ω i u z * dirD (fun w => conj (f w)) (coordDir i) z := by
   rw [h1Gradient_smoothTraceH1, L2.inner_def]
@@ -373,8 +346,8 @@ theorem h1HelmholtzForm_zero_of_antiholomorphic_zero_trace {Ω : Set ℂ}
     (hγ : IsBoundaryParam Ω γ) (u : NeumannH1 Ω)
     (hCR : h1Gradient Ω 0 u = Complex.I • h1Gradient Ω 1 u)
     (ht : h1BoundaryTrace hb hL hγ u = 0) : h1HelmholtzForm Ω 0 u = 0 := by
-  have heq : (fun v : NeumannH1 Ω => ⟪v, h1HelmholtzForm Ω 0 u⟫_ℂ) =
-      (fun _ => (0 : ℂ)) := by
+  have heq : (fun v  => ⟪v, h1HelmholtzForm Ω 0 u⟫_ℂ) =
+      (fun _ => 0) := by
     apply (denseRange_smoothTraceH1Lin hb hL).equalizer
       (continuous_id.inner continuous_const) continuous_const
     funext f
@@ -395,16 +368,14 @@ theorem neumannH1_eq_zero_of_antiholomorphic_zero_trace {Ω : Set ℂ}
     (hγ : IsBoundaryParam Ω γ) (u : NeumannH1 Ω)
     (hCR : h1Gradient Ω 0 u = Complex.I • h1Gradient Ω 1 u)
     (ht : h1BoundaryTrace hb hL hγ u = 0) : u = 0 := by
-  have hu := h1HelmholtzForm_zero_of_antiholomorphic_zero_trace hb hL hγ u hCR ht
   haveI : IsFiniteMeasure (volume.restrict Ω) :=
     isFiniteMeasure_restrict.mpr hb.measure_lt_top.ne
-  obtain ⟨c, hcu⟩ := (h1HelmholtzForm_zero_eq_zero_iff_constant hb hL.1 u).mp hu
+  obtain ⟨c, hcu⟩ := (h1HelmholtzForm_zero_eq_zero_iff_constant hb hL.1 u).mp (h1HelmholtzForm_zero_of_antiholomorphic_zero_trace hb hL hγ u hCR ht)
   have hc : c = 0 := by
     apply (boundaryLpConst_eq_zero_iff c).mp
-    rw [← h1BoundaryTrace_h1Constant hb hL hγ c, ← hcu]
-    exact ht
+    rwa [← h1BoundaryTrace_h1Constant hb hL hγ c, ← hcu]
   apply h1Value_injective hL.1.1
-  simp only [hcu, h1Value_h1Constant, hc, map_zero]
+  simp_all
 
 /-- Equal actual traces identify actual weak antiholomorphic H¹ vectors. -/
 theorem neumannH1_eq_of_antiholomorphic_same_trace {Ω : Set ℂ}
@@ -415,8 +386,7 @@ theorem neumannH1_eq_of_antiholomorphic_same_trace {Ω : Set ℂ}
     (ht : h1BoundaryTrace hb hL hγ u = h1BoundaryTrace hb hL hγ v) : u = v := by
   apply sub_eq_zero.mp
   apply neumannH1_eq_zero_of_antiholomorphic_zero_trace hb hL hγ (u - v)
-  · rw [map_sub, map_sub, hu, hv, smul_sub]
-  · rw [map_sub, ht, sub_self]
+  all_goals simp_all [smul_sub]
 
 end PolyaNeumann
 

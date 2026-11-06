@@ -38,34 +38,33 @@ def halfRegularCoordinateLoad (y : L2Z)
     (hy : IsSobolevSeq (1 / 2 : ℝ) (y : ℤ → ℂ)) : BoundaryL2 :=
   boundaryFourier.symm (sobVec (1 / 2 : ℝ) (y : ℤ → ℂ) hy)
 
+variable {γ : ℝ → ℂ} {L : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
+
 /-- The unitary Fourier normalization is exact, including frequency zero. -/
 theorem halfRegularCoordinateLoad_normalized (y : L2Z)
-    (hy : IsSobolevSeq (1 / 2 : ℝ) (y : ℤ → ℂ)) :
-    sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
+    (hy : IsSobolevSeq (1 / 2) y) :
+    sobolevSmoothing (1 / 2) (by norm_num)
       (boundaryFourier (halfRegularCoordinateLoad y hy)) = y := by
   rw [halfRegularCoordinateLoad, boundaryFourier.apply_symm_apply]
   apply lp.ext
   funext n
-  change fromL2 (1 / 2 : ℝ) (sobVec (1 / 2 : ℝ) (y : ℤ → ℂ) hy) n = y n
+  change fromL2 (1 / 2) (sobVec (1 / 2) y hy) n = y n
   rw [fromL2_sobVec]
 
 /-- The normalized projected observation agrees with the actual ordinary
 L2 observation. The factor sqrt(2 pi) is retained explicitly. -/
 theorem projObsDual_halfRegularCoordinateLoad
-    {γ : ℝ → ℂ} {L : NNReal} {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hγLip : LipschitzWith L γ)
+    (hγLip : LipschitzWith L γ)
     (hW : IsTransport γ E W) (y : L2Z)
-    (hy : IsSobolevSeq (1 / 2 : ℝ) (y : ℤ → ℂ)) :
+    (hy : IsSobolevSeq (1 / 2) y) :
     (Real.sqrt (2 * Real.pi) : ℂ) • projObsDual W y =
       cutProj (cutC (W (2 * Real.pi)) (basisVec 0))
-        (observationAdj W (halfRegularCoordinateLoad y hy : ℝ → ℂ)) := by
+        (observationAdj W (halfRegularCoordinateLoad y hy)) := by
   have h := projObsDual_boundary_normalized hγLip hW (halfRegularCoordinateLoad y hy)
-  rw [halfRegularCoordinateLoad_normalized, map_smul] at h
-  exact h
+  rwa [halfRegularCoordinateLoad_normalized, map_smul] at h
 
 private theorem reduced_observationAdj_sub_smul
-    {γ : ℝ → ℂ} {L : NNReal} {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hγLip : LipschitzWith L γ)
+    (hγLip : LipschitzWith L γ)
     (hW : IsTransport γ E W) (g r : BoundaryL2) (t : ℂ) :
     observationAdj W ((g - t • r : BoundaryL2) : ℝ → ℂ) =
       observationAdj W (g : ℝ → ℂ) - t • observationAdj W (r : ℝ → ℂ) := by
@@ -81,20 +80,17 @@ private theorem reduced_observationAdj_sub_smul
           t • (r θ • ContinuousLinearMap.adjoint (W θ) (basisVec 0)) := by
       apply integral_congr_ae
       filter_upwards [Lp.coeFn_sub g (t • r), Lp.coeFn_smul t r] with θ hs ht
-      simp only [hs, ht, Pi.sub_apply, Pi.smul_apply, sub_smul, smul_smul,
-        smul_eq_mul]
+      simp_all [Pi.sub_apply, Pi.smul_apply, sub_smul, smul_smul, smul_eq_mul]
     _ = _ := by
       have hsplit := integral_sub hg (hr.smul t)
-      simp only [Pi.smul_apply] at hsplit
-      rw [integral_smul] at hsplit
-      simpa only [smul_smul] using hsplit
+      simp_all [Pi.smul_apply, integral_smul]
 
 private theorem reduced_eq_smul_of_cutProj_eq_zero
     (c x : Ell2) (h : cutProj c x = 0) :
     x = (((‖c‖ ^ 2 : ℝ) : ℂ)⁻¹ * ⟪c, x⟫_ℂ) • c := by
   simp only [cutProj, ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
     ContinuousLinearMap.smul_apply, InnerProductSpace.rankOne_apply, smul_smul] at h
-  exact sub_eq_zero.mp h
+  grind
 
 private theorem reduced_injective_of_isUnit
     (B : L2Z →L[ℂ] L2Z) (hB : IsUnit B) : Function.Injective B := by
@@ -127,6 +123,8 @@ local notation "ΓF" => physicalCircleTrace F
 local notation "hΓF" => contDiff_physicalCircleTrace_of_neighborhood hR F
   (hFs.of_le (WithTop.coe_le_coe.mpr le_top))
 
+variable {L : NNReal}
+
 include hb hL hhol hinj hC hK e he hsource hes in
 /-- For a genuine ordinary coordinate L2 load, zero projected observation
 places its normalized load in the actual full nonpositive conormal range.
@@ -136,51 +134,45 @@ theorem localConformal_projectedObservation_L2_kernel_mem_conormal_range
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport ΓF E W)
     (g : BoundaryL2)
     (hproj : cutProj (cutC (W (2 * Real.pi)) (basisVec 0))
-      (observationAdj W (g : ℝ → ℂ)) = 0) :
+      (observationAdj W g) = 0) :
     ∃ b : L2Z, IsNonpositiveFourierSupport b ∧
-      NF (E : ℂ) b = sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
+      NF E b = sobolevSmoothing (1 / 2) (by norm_num)
         (boundaryFourier g) := by
-  let c : Ell2 := cutC (W (2 * Real.pi)) (basisVec 0)
-  let α : ℂ := (((‖c‖ ^ 2 : ℝ) : ℂ)⁻¹ * ⟪c, observationAdj W (g : ℝ → ℂ)⟫_ℂ)
-  let t : ℂ := -Complex.I * α
-  let r : BoundaryL2 := localConformalRadialCoordinateLoad F hΓLip E 1
-  have hspan : observationAdj W (g : ℝ → ℂ) = α • c :=
-    reduced_eq_smul_of_cutProj_eq_zero c _ hproj
-  have hrad : observationAdj W (r : ℝ → ℂ) = Complex.I • c := by
-    simpa only [r, c, mul_one] using
-      localConformalRadialCoordinateLoad_observationAdj F hΓLip hW (1 : ℂ)
+  let c  := cutC (W (2 * Real.pi)) (basisVec 0)
+  let α  := (((‖c‖ ^ 2 : ℝ) : ℂ)⁻¹ * ⟪c, observationAdj W g⟫_ℂ)
+  let t  := -Complex.I * α
+  let r  := localConformalRadialCoordinateLoad F hΓLip E 1
+  have hrad : observationAdj W r = Complex.I • c := by
+    simpa only [mul_one] using
+      localConformalRadialCoordinateLoad_observationAdj F hΓLip hW 1
   have hti : t * Complex.I = α := by
-    dsimp only [t]
     calc
       (-Complex.I * α) * Complex.I = -(Complex.I * Complex.I) * α := by ring
-      _ = α := by rw [Complex.I_mul_I]; ring
-  let g₀ : BoundaryL2 := g - t • r
-  have hO : observationAdj W (g₀ : ℝ → ℂ) = 0 := by
-    dsimp only [g₀]
-    rw [reduced_observationAdj_sub_smul hΓLip hW, hspan, hrad,
+      _ = α := by norm_num
+  let g₀  := g - t • r
+  have hO : observationAdj W g₀ = 0 := by
+    rw [reduced_observationAdj_sub_smul hΓLip hW, reduced_eq_smul_of_cutProj_eq_zero c _ hproj, hrad,
       smul_smul, hti, sub_self]
-  let b₀ : L2Z := physicalDrivenKernelInput hΓLip hΓF hW
-    (g₀ : ℝ → ℂ) (Lp.memLp g₀) hO
+  let b₀  := physicalDrivenKernelInput hΓLip hΓF hW
+    g₀ (Lp.memLp g₀) hO
   have hb₀ : IsNonpositiveFourierSupport b₀ :=
     physicalDrivenKernelInput_nonpositive hR F hFs hb hL hhol hC e he hsource
-      hΓLip hE hW (g₀ : ℝ → ℂ) (Lp.memLp g₀) hO
-  have hNC₀ : NF (E : ℂ) b₀ = sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
+      hΓLip hE hW g₀ (Lp.memLp g₀) hO
+  have hNC₀ : NF E b₀ = sobolevSmoothing (1 / 2) (by norm_num)
       (boundaryFourier g₀) := by
-    have h := physicalDrivenKernelH1_normalizedConormal_eq_coordinateLoad hR F hFs hb hL
+    simpa only [physicalDrivenKernelCoordinateLoad, Lp.toLp_coeFn] using physicalDrivenKernelH1_normalizedConormal_eq_coordinateLoad hR F hFs hb hL
       hhol hinj hC hK e he hsource hes hΓLip hE hW
-        (g₀ : ℝ → ℂ) (Lp.memLp g₀) hO
-    simpa only [b₀, physicalDrivenKernelCoordinateLoad, Lp.toLp_coeFn] using h
-  have hNCr : NF (E : ℂ) radialVekuaInput =
-      sobolevSmoothing (1 / 2 : ℝ) (by norm_num) (boundaryFourier r) := by
-    simpa only [one_smul, r] using
+        g₀ (Lp.memLp g₀) hO
+  have hNCr : NF E radialVekuaInput =
+      sobolevSmoothing (1 / 2) (by norm_num) (boundaryFourier r) := by
+    simpa only [one_smul] using
       localConformalRadial_normalizedConormal_eq_coordinateLoad hR F hFs hb hL hhol hinj
-        hC hK e he hsource hes hΓLip hE (1 : ℂ)
+        hC hK e he hsource hes hΓLip hE 1
   refine ⟨b₀ + t • radialVekuaInput, ?_, ?_⟩
   · intro n hn
     simp only [lp.coeFn_add, Pi.add_apply, lp.coeFn_smul, Pi.smul_apply,
       hb₀ n hn, radialVekuaInput_nonpositive n hn, smul_zero, add_zero]
   · rw [map_add, map_smul, hNC₀, hNCr]
-    dsimp only [g₀]
     rw [map_sub, map_smul, map_sub, map_smul]
     abel
 
@@ -189,11 +181,11 @@ include hb hL hhol hinj hC hK e he hsource hes in
 the actual conormal range. Regularity is used only to construct their true
 ordinary L2 load, not as a substitute for the range identity. -/
 theorem localConformal_projectedObservation_half_regular_kernel_mem_conormal_range
-    {L : NNReal} (hΓLip : LipschitzWith L ΓF) {E : ℝ} (hE : 0 < E)
+    (hΓLip : LipschitzWith L ΓF) {E : ℝ} (hE : 0 < E)
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport ΓF E W)
-    (y : L2Z) (hy : IsSobolevSeq (1 / 2 : ℝ) (y : ℤ → ℂ))
+    (y : L2Z) (hy : IsSobolevSeq (1 / 2) y)
     (hobs : projObsDual W y = 0) :
-    ∃ b : L2Z, IsNonpositiveFourierSupport b ∧ NF (E : ℂ) b = y := by
+    ∃ b : L2Z, IsNonpositiveFourierSupport b ∧ NF E b = y := by
   have hproj := projObsDual_halfRegularCoordinateLoad hΓLip hW y hy
   rw [hobs, smul_zero] at hproj
   obtain ⟨b, hbn, hb'⟩ :=
@@ -207,20 +199,19 @@ include hb hL hhol hinj hC hK e he hsource hes in
 of an actual fixed complement chart. The chart hypothesis is an actual
 unit, rather than the desired reduced injectivity conclusion. -/
 theorem localConformal_fixed_complement_half_regular_kernel_eq_zero
-    {L : NNReal} (hΓLip : LipschitzWith L ΓF) {E : ℝ} (hE : 0 < E)
+    (hΓLip : LipschitzWith L ΓF) {E : ℝ} (hE : 0 < E)
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport ΓF E W)
     (T : H₀ᗮ →L[ℂ] L2Z)
-    (hunit : IsUnit ((NF (E : ℂ)).comp (H₀).subtypeL ∘L (H₀).orthogonalProjection +
+    (hunit : IsUnit ((NF E).comp (H₀).subtypeL ∘L (H₀).orthogonalProjection +
       T ∘L H₀ᗮ.orthogonalProjection))
-    (z : H₀ᗮ) (hz : IsSobolevSeq (1 / 2 : ℝ) (T z : ℤ → ℂ))
+    (z : H₀ᗮ) (hz : IsSobolevSeq (1 / 2) (T z))
     (hobs : projObsDual W (T z) = 0) : z = 0 := by
   obtain ⟨b, hbn, hb'⟩ :=
     localConformal_projectedObservation_half_regular_kernel_mem_conormal_range hR F hFs hb hL
       hhol hinj hC hK e he hsource hes hΓLip hE hW (T z) hz hobs
   let a : H₀ := ⟨b, hbn⟩
-  have heq : T z = ((NF (E : ℂ)).comp (H₀).subtypeL) a := hb'.symm
-  exact (chart_range_inter_eq_zero H₀ ((NF (E : ℂ)).comp (H₀).subtypeL) T
-    (reduced_injective_of_isUnit _ hunit) a z heq).1
+  exact (chart_range_inter_eq_zero H₀ ((NF E).comp (H₀).subtypeL) T
+    (reduced_injective_of_isUnit _ hunit) a z hb'.symm).1
 
 end PhysicalCoordinates
 

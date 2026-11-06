@@ -25,7 +25,7 @@ theorem principalNormalized_isSelfAdjoint : IsSelfAdjoint principalNormalized :=
   intro n
   unfold principalSymbol
   split_ifs
-  · exact map_zero _
+  · norm_num
   · exact Complex.conj_ofReal _
 
 theorem correctedRemainderMatrix_zero_hermitian
@@ -33,13 +33,9 @@ theorem correctedRemainderMatrix_zero_hermitian
     (hK : LipschitzWith K γ) (hW : IsTransport γ E W) (m n : ℤ) :
     correctedRemainderMatrix W 0 0 (m,n) =
       conj (correctedRemainderMatrix W 0 0 (n,m)) := by
-  have hc := correctedKernelCoeff_conj_symm hK hW (-n) m
-  simp only [neg_neg] at hc
   simp only [correctedRemainderMatrix]
-  rw [hc]
+  rw [correctedKernelCoeff_conj_symm hK hW (-n) m]
   simp only [map_mul, Complex.conj_ofReal]
-  congr 1
-  norm_num
   ring
 
 end PolyaNeumann

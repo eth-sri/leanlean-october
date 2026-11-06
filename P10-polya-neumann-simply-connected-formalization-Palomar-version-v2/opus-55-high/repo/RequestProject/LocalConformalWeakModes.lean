@@ -25,15 +25,17 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Real
 open scoped ComplexConjugate InnerProductSpace
 
-theorem h1Value_diskHolomorphicH1Test (m : ℕ) :
-    h1Value (ball (0 : ℂ) 1) (diskHolomorphicH1Test m) = diskHolomorphicArea m :=
-  h1Value_smoothTraceH1 (ball (0 : ℂ) 1)
+variable (m : ℕ)
+
+theorem h1Value_diskHolomorphicH1Test :
+    h1Value (ball 0 1) (diskHolomorphicH1Test m) = diskHolomorphicArea m :=
+  h1Value_smoothTraceH1 (ball 0 1)
     ⟨diskHarmonicCutoff (diskHolomorphicMode m),
       diskHarmonicCutoff_testFunction (contDiff_diskHolomorphicMode m)⟩
 
-theorem h1Value_diskAntiholomorphicH1Test (m : ℕ) :
-    h1Value (ball (0 : ℂ) 1) (diskAntiholomorphicH1Test m) = diskAntiholomorphicArea m :=
-  h1Value_smoothTraceH1 (ball (0 : ℂ) 1)
+theorem h1Value_diskAntiholomorphicH1Test :
+    h1Value (ball 0 1) (diskAntiholomorphicH1Test m) = diskAntiholomorphicArea m :=
+  h1Value_smoothTraceH1 (ball 0 1)
     ⟨diskHarmonicCutoff (diskAntiholomorphicMode m),
       diskHarmonicCutoff_testFunction (contDiff_diskAntiholomorphicMode m)⟩
 

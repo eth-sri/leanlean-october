@@ -29,31 +29,32 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Real InnerProductSpace ComplexConjugate
 
+variable (n : ℤ)
+
 private theorem regular_sobolevSmoothing_one_apply (b : L2Z) (n : ℤ) :
     sobolevSmoothing 1 (by norm_num) b n = (sobWeight n : ℂ)⁻¹ * b n := by
-  simp only [sobolevSmoothing, diagOp_apply, Real.rpow_neg_one, Complex.ofReal_inv]
+  simp [sobolevSmoothing, diagOp_apply, Real.rpow_neg_one, Complex.ofReal_inv]
 
 private theorem forced_remainder_scalar {s k : ℝ}
     (hk : k ≠ 0) (hs : s ≠ 0) (hsk : s = k + 1)
     {t b d : ℂ} (h : t - ((s / k : ℝ) : ℂ) * b = d) :
     t - b = (s : ℂ)⁻¹ *
       (((s / k : ℝ) : ℂ) * b + (s : ℂ) * d) := by
-  have hkc : (k : ℂ) ≠ 0 := by exact_mod_cast hk
+  have hkc : (k : ℂ) ≠ 0 := by simp_all
   have hsc : (s : ℂ) ≠ 0 := by exact_mod_cast hs
-  have hskc : (s : ℂ) = (k : ℂ) + 1 := by exact_mod_cast hsk
-  have hsc' : (k : ℂ) + 1 ≠ 0 := by rwa [hskc] at hsc
+  have hskc : (s : ℂ) = (k : ℂ) + 1 := by simp_all
+  have hsc' : (k : ℂ) + 1 ≠ 0 := by simp_all
   calc
     t - b = ((s / k : ℝ) : ℂ) * b - b + d := by linear_combination h
     _ = _ := by
       simp only [Complex.ofReal_div, hskc]
-      field_simp [hkc, hsc']
-      ring
+      grind
 
-private theorem forced_remainder_mode (n : ℤ) (hn : n ≠ 0)
+private theorem forced_remainder_mode (hn : n ≠ 0)
     {t b d : ℂ} (h : t - normalizedInverseAbsSymbol n * b = d) :
     t - b = (sobWeight n : ℂ)⁻¹ *
       (normalizedInverseAbsSymbol n * b + (sobWeight n : ℂ) * d) := by
-  have hk : |(n : ℝ)| ≠ 0 := abs_ne_zero.mpr (by exact_mod_cast hn)
+  have hk : |(n : ℝ)| ≠ 0 := abs_ne_zero.mpr (by positivity)
   have hs : sobWeight n ≠ 0 := (sobWeight_pos n).ne'
   have hsk : sobWeight n = |(n : ℝ)| + 1 := by unfold sobWeight; ring
   simp only [normalizedInverseAbsSymbol, if_neg hn] at h ⊢
@@ -70,14 +71,11 @@ private theorem forced_principal_factorization_of_modes
   intro b
   apply lp.ext
   funext n
-  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-    ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply,
-    regular_sobolevSmoothing_one_apply, normalizedInverseAbsOperator_apply,
-    zeroModeProjection_apply, lp.coeFn_sub, lp.coeFn_add,
-    Pi.sub_apply, Pi.add_apply, hM]
+  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply,
+    regular_sobolevSmoothing_one_apply, zeroModeProjection_apply, lp.coeFn_add,
+    Pi.add_apply, hM]
   by_cases hn : n = 0
-  · subst n
-    simp [normalizedInverseAbsSymbol, hz]
+  · simp_all [normalizedInverseAbsSymbol]
   · rw [if_neg hn, zero_mul, add_zero]
     exact forced_remainder_mode n hn (hm b n hn)
 
@@ -102,6 +100,8 @@ def localConformalRegularMassInput (E₀ E : ℝ) :
     ((E₀ + 1 : ℝ) : ℂ) • (h1ResonantSpace (F '' ball (0 : ℂ) 1) E₀).starProjection).comp
       (ContinuousLinearMap.adjoint (localConformalDiskHalfTrace hR F hFs hL))
 
+variable {E₀ E : ℝ}
+
 /-- The actual regular interior solution satisfies the general forced
 weak equation with the genuine projected mass input above. -/
 theorem localConformalRegular_isForcedSolution {E₀ E : ℝ} (hE₀ : 0 ≤ E₀)
@@ -111,12 +111,11 @@ theorem localConformalRegular_isForcedSolution {E₀ E : ℝ} (hE₀ : 0 ≤ E�
         (ContinuousLinearMap.adjoint (localConformalDiskHalfTrace hR F hFs hL) b))
       (localConformalRegularMassInput hR F hFs hL E₀ E b) := by
   intro v
-  have h := h1RegularResolvent_adjoint_weak_pairing
-    (localConformalDiskHalfTrace hR F hFs hL) hE₀ hunit b v
   simp only [localConformalRegularMassInput, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
     map_sub, map_smul, inner_sub_right, inner_smul_right]
-  linear_combination h
+  linear_combination h1RegularResolvent_adjoint_weak_pairing
+    (localConformalDiskHalfTrace hR F hFs hL) hE₀ hunit b v
 
 /-- The bounded factor before the compact one-derivative smoothing in
 the actual regular normalized NtD remainder. -/
@@ -138,23 +137,21 @@ theorem localConformal_regular_principal_factorization {E₀ E : ℝ} (hE₀ : 0
       (localConformalRegularMassInput hR F hFs hL E₀ E))
     (fun b n => diskMassForcingCoeff (localConformalMassForcing hR F hFs hL hK
       (localConformalRegularMassInput hR F hFs hL E₀ E b)) n) ?_ ?_ ?_
-  · intro b n
-    simp only [ContinuousLinearMap.comp_apply, localConformalMassFourierH1_apply]
+  · norm_num
   · intro b
-    simp only [diskMassForcingCoeff]
+    rfl
   · intro b n hn
     have hforced := localConformalRegular_isForcedSolution hR F hFs hL hE₀ hunit b
-    have hm := localConformal_forced_principal_mode_ne_zero hR F hFs hb hL hhol hinj hC hK
+    simpa only [normalizedNeumannRegular, ContinuousLinearMap.comp_apply,
+      normalizedInverseAbsSymbol, if_neg hn] using localConformal_forced_principal_mode_ne_zero hR F hFs hb hL hhol hinj hC hK
       e he hsource hes b
       (h1RegularResolvent (F '' ball (0 : ℂ) 1) E₀ E
         (ContinuousLinearMap.adjoint (localConformalDiskHalfTrace hR F hFs hL) b))
       (localConformalRegularMassInput hR F hFs hL E₀ E b) hforced n hn
-    simpa only [normalizedNeumannRegular, ContinuousLinearMap.comp_apply,
-      normalizedInverseAbsSymbol, if_neg hn] using hm
 
 include hb hhol hinj hC e he hsource hes in
 theorem isCompactOperator_localConformal_normalizedNeumannRegular_sub_one
-    {E₀ E : ℝ} (hE₀ : 0 ≤ E₀)
+    (hE₀ : 0 ≤ E₀)
     (hunit : IsUnit (h1ComplementForm (F '' ball (0 : ℂ) 1) E₀ E)) :
     IsCompactOperator
       (normalizedNeumannRegular (localConformalDiskHalfTrace hR F hFs hL) E₀ E -

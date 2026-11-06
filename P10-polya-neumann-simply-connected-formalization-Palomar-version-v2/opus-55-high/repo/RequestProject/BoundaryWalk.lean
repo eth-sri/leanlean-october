@@ -34,54 +34,45 @@ lemma lipschitzWith_of_pieces {f : ℝ → ℂ} {K : NNReal} {p : ℝ} (hp : 0 <
     induction k with
     | zero =>
       intro x y hxy hfl
-      have hx := Int.floor_le (x / p)
-      have hx' := Int.lt_floor_add_one (x / p)
       have hy := Int.floor_le (y / p)
       have hy' := Int.lt_floor_add_one (y / p)
-      simp only [Nat.cast_zero, add_zero] at hfl
+      simp  at hfl
       rw [hfl] at hy hy'
       set n := ⌊x / p⌋
-      have hmem : ∀ z, (n : ℝ) ≤ z / p → z / p < n + 1 → z ∈ Icc (n * p) ((n + 1) * p) :=
-        fun z h1 h2 => ⟨by rwa [le_div_iff₀ hp] at h1, by rw [div_lt_iff₀ hp] at h2; linarith⟩
-      exact (h n).dist_le_mul x (hmem x hx hx') y (hmem y hy hy')
+      have hmem : ∀ z, n ≤ z / p → z / p < n + 1 → z ∈ Icc (n * p) ((n + 1) * p) :=
+        fun z h1 h2 => ⟨by simp_all [le_div_iff₀ hp], by rw [div_lt_iff₀ hp] at h2; linarith⟩
+      exact (h n).dist_le_mul x (hmem x (Int.floor_le (x / p)) (Int.lt_floor_add_one (x / p))) y (hmem y hy hy')
     | succ k ih =>
       intro x y hxy hfl
       set n := ⌊x / p⌋
       set b : ℝ := (n + 1) * p
-      have hx := Int.floor_le (x / p)
-      have hx' := Int.lt_floor_add_one (x / p)
       have hxb : x ≤ b := by
-        have : x / p < n + 1 := hx'
-        rw [div_lt_iff₀ hp] at this; exact this.le
+        have  := Int.lt_floor_add_one (x / p)
+        rw [div_lt_iff₀ hp] at this; linarith
       have hbfl : ⌊b / p⌋ = n + 1 := by
-        simp only [b]; rw [mul_div_cancel_right₀ _ hp.ne']; exact_mod_cast Int.floor_intCast (n + 1)
+        rw [mul_div_cancel_right₀ _ hp.ne']; norm_num
       have hby : b ≤ y := by
-        have h1 : ((n + 1 : ℤ) : ℝ) ≤ ⌊y / p⌋ := by
-          rw [hfl]; push_cast; linarith
+        have h1 : (n + 1 : ℝ) ≤ ⌊y / p⌋ := by
+          simp_all
         have h2 := Int.floor_le (y / p)
-        have : (n + 1 : ℝ) ≤ y / p := by push_cast at h1; linarith
-        rw [le_div_iff₀ hp] at this; exact this
-      have h1 : dist (f x) (f b) ≤ K * dist x b := by
-        refine (h n).dist_le_mul x ⟨?_, hxb⟩ b ⟨?_, le_rfl⟩
-        · have : (n : ℝ) ≤ x / p := hx
-          rwa [le_div_iff₀ hp] at this
-        · simp only [b]; nlinarith
-      have h2 : dist (f b) (f y) ≤ K * dist b y :=
-        ih b y hby (by rw [hfl, hbfl]; push_cast; ring)
+        have : n + 1 ≤ y / p := by linarith
+        rw [le_div_iff₀ hp] at this; assumption
       calc dist (f x) (f y) ≤ dist (f x) (f b) + dist (f b) (f y) := dist_triangle _ _ _
-        _ ≤ K * dist x b + K * dist b y := add_le_add h1 h2
+        _ ≤ K * dist x b + K * dist b y := add_le_add (by
+        refine (h n).dist_le_mul x ⟨?_, hxb⟩ b ⟨?_, le_rfl⟩
+        · have  := Int.floor_le (x / p)
+          rwa [le_div_iff₀ hp] at this
+        linarith) (ih b y hby (by omega))
         _ = K * dist x y := by
           rw [Real.dist_eq, Real.dist_eq, Real.dist_eq, abs_of_nonpos (by linarith),
             abs_of_nonpos (by linarith), abs_of_nonpos (by linarith)]; ring
   refine LipschitzWith.of_dist_le_mul fun x y => ?_
   rcases le_total x y with hxy | hxy
-  · have hfl : ⌊x / p⌋ ≤ ⌊y / p⌋ := Int.floor_mono (div_le_div_of_nonneg_right hxy hp.le)
-    obtain ⟨k, hk⟩ := Int.eq_ofNat_of_zero_le (sub_nonneg.mpr hfl)
-    exact key k x y hxy (by omega)
-  · have hfl : ⌊y / p⌋ ≤ ⌊x / p⌋ := Int.floor_mono (div_le_div_of_nonneg_right hxy hp.le)
-    obtain ⟨k, hk⟩ := Int.eq_ofNat_of_zero_le (sub_nonneg.mpr hfl)
+  · obtain ⟨k, hk⟩ := Int.eq_ofNat_of_zero_le (sub_nonneg.mpr (Int.floor_mono (div_le_div_of_nonneg_right hxy hp.le)))
+    grind
+  · obtain ⟨k, hk⟩ := Int.eq_ofNat_of_zero_le (sub_nonneg.mpr (Int.floor_mono (div_le_div_of_nonneg_right hxy hp.le)))
     rw [dist_comm, dist_comm x]
-    exact key k y x hxy (by omega)
+    grind
 
 /-- Gluing strict monotonicity on two adjacent closed intervals. -/
 lemma strictMonoOn_Icc_union {g : ℝ → ℝ} {a t b : ℝ} (h1 : StrictMonoOn g (Icc a t))
@@ -92,9 +83,9 @@ lemma strictMonoOn_Icc_union {g : ℝ → ℝ} {a t b : ℝ} (h1 : StrictMonoOn 
   rcases le_total t x with htx | htx
   · exact h2 ⟨htx, hx.2⟩ ⟨hyt, hy.2⟩ hxy
   rcases lt_or_eq_of_le htx with htx' | htx'
-  · calc g x < g t := h1 ⟨hx.1, htx⟩ ⟨by linarith [hx.1], le_rfl⟩ htx'
-      _ ≤ g y := (h2.monotoneOn) ⟨le_rfl, by linarith [hy.2]⟩ ⟨hyt, hy.2⟩ hyt
-  · rw [htx']; exact h2 ⟨le_rfl, by linarith [hy.2]⟩ ⟨hyt, hy.2⟩ (by rw [← htx']; exact hxy)
+  · calc g x < g t := h1 ⟨hx.1, htx⟩ ⟨by grind, le_rfl⟩ htx'
+      _ ≤ g y := (h2.monotoneOn) ⟨le_rfl, by grind⟩ ⟨hyt, hy.2⟩ hyt
+  · rw [htx']; exact h2 ⟨le_rfl, by simp_all⟩ ⟨hyt, hy.2⟩ (by linarith)
 
 /-! ### The walk -/
 
@@ -150,27 +141,26 @@ lemma WalkData.walk_eq (hw : WalkData Ω ρ H K ch ℓ p₀) (n : ℕ) {u : ℝ}
   · have hfl : ⌊(n * ℓ + u) / ℓ⌋₊ = n := by
       rw [Nat.floor_eq_iff (by have := hu.1; positivity)]
       constructor
-      · rw [le_div_iff₀ hℓ]; linarith [hu.1]
+      · simp_all [le_div_iff₀ hℓ]
       · rw [div_lt_iff₀ hℓ]; linarith
-    simp only [walk, hfl]; congr 1; ring
+    simp [walk, hfl]
   · rw [heq]
     have hfl : ⌊(n * ℓ + ℓ) / ℓ⌋₊ = n + 1 := by
-      rw [show ((n : ℝ) * ℓ + ℓ) / ℓ = ((n + 1 : ℕ) : ℝ) by push_cast; field_simp]
+      rw [show (n * ℓ + ℓ) / ℓ = (n + 1 : ℕ) by push_cast; field_simp]
       exact Nat.floor_natCast _
     simp only [walk, hfl]
-    have : (n : ℝ) * ℓ + ℓ - ((n + 1 : ℕ) : ℝ) * ℓ = 0 := by push_cast; ring
+    have : n * ℓ + ℓ - (n + 1 : ℕ) * ℓ = 0 := by push_cast; ring
     rw [this, hw.stepCurve_zero (hw.walkPt_mem _)]
     rfl
 
 /-- Before the first full step (including negative times), the walk is the first chart graph. -/
 lemma WalkData.walk_eq_of_le (hw : WalkData Ω ρ H K ch ℓ p₀) {t : ℝ} (ht : t ≤ ℓ) :
     walk ch ℓ p₀ t = stepCurve ch p₀ t := by
-  have hℓ := hw.ℓ_pos
   rcases le_or_gt 0 t with h0 | h0
   · have := hw.walk_eq 0 ⟨h0, ht⟩
-    simpa [walkPt] using this
+    simp_all [walkPt]
   · have hfl : ⌊t / ℓ⌋₊ = 0 := Nat.floor_eq_zero.mpr (by
-      have : t / ℓ < 0 := div_neg_of_neg_of_pos h0 hℓ
+      have  := div_neg_of_neg_of_pos h0 hw.ℓ_pos
       linarith)
     simp [walk, hfl, walkPt]
 
@@ -179,23 +169,20 @@ lemma WalkData.lipschitzWith_walk (hw : WalkData Ω ρ H K ch ℓ p₀) :
   refine lipschitzWith_of_pieces hw.ℓ_pos fun n => ?_
   rcases lt_or_ge n 0 with hn | hn
   · -- negative pieces: the first chart graph
-    have hsub : Icc ((n : ℝ) * ℓ) ((n + 1) * ℓ) ⊆ Iic ℓ := fun t ht => by
+    have hsub : Icc (n * ℓ) ((n + 1) * ℓ) ⊆ Iic ℓ := fun t ht => by
       have h1 : (n : ℝ) + 1 ≤ 0 := by exact_mod_cast hn
-      have h2 := mul_le_mul_of_nonneg_right h1 hw.ℓ_pos.le
-      have := ht.2; simp only [mem_Iic]; nlinarith [hw.ℓ_pos]
+      have := ht.2; simp ; nlinarith [hw.ℓ_pos]
     refine LipschitzOnWith.of_dist_le_mul fun x hx y hy => ?_
     rw [hw.walk_eq_of_le (hsub hx), hw.walk_eq_of_le (hsub hy)]
     exact (hw.lipschitz_stepCurve hw.p₀_mem).dist_le_mul x y
   · obtain ⟨m, rfl⟩ := Int.eq_ofNat_of_zero_le hn
-    have hwm : ∀ t ∈ Icc ((m : ℝ) * ℓ) ((m + 1) * ℓ),
+    have hwm : ∀ t ∈ Icc (m * ℓ) ((m + 1) * ℓ),
         walk ch ℓ p₀ t = stepCurve ch (walkPt ch ℓ p₀ m) (t - m * ℓ) := fun t ht => by
-      have := hw.walk_eq m (u := t - m * ℓ) ⟨by linarith [ht.1], by linarith [ht.2]⟩
-      simpa only [add_sub_cancel] using this
-    push_cast
+      have := hw.walk_eq m (u := t - m * ℓ) ⟨by simp_all, by grind⟩
+      simp_all
     refine LipschitzOnWith.of_dist_le_mul fun x hx y hy => ?_
-    rw [hwm x hx, hwm y hy]
     have := (hw.lipschitz_stepCurve (hw.walkPt_mem m)).dist_le_mul (x - m * ℓ) (y - m * ℓ)
-    rwa [Real.dist_eq, sub_sub_sub_cancel_right, ← Real.dist_eq] at this
+    simp_all
 
 lemma WalkData.continuous_walk (hw : WalkData Ω ρ H K ch ℓ p₀) :
     Continuous (walk ch ℓ p₀) :=
@@ -207,15 +194,12 @@ lemma WalkData.walk_mem_frontier (hw : WalkData Ω ρ H K ch ℓ p₀) {t : ℝ}
   have hℓ := hw.ℓ_pos
   rcases lt_or_ge t 0 with h0 | h0
   · rw [hw.walk_eq_of_le (by linarith)]
-    exact hw.stepCurve_mem hw.p₀_mem (by rw [abs_lt]; constructor <;> linarith)
+    exact hw.stepCurve_mem hw.p₀_mem (by grind)
   · set n := ⌊t / ℓ⌋₊
-    have h1 : (n : ℝ) ≤ t / ℓ := Nat.floor_le (by positivity)
+    have h1 : n ≤ t / ℓ := Nat.floor_le (by positivity)
     have h2 : t / ℓ < n + 1 := Nat.lt_floor_add_one _
     rw [le_div_iff₀ hℓ] at h1
     rw [div_lt_iff₀ hℓ] at h2
-    have := hw.walk_eq n (u := t - n * ℓ) ⟨by linarith, by linarith⟩
-    rw [add_sub_cancel] at this
-    rw [this]
     exact hw.stepCurve_mem (hw.walkPt_mem n) (by rw [abs_lt]; constructor <;> linarith [hw.ℓ_lt])
 
 /-- Abscissa of the walk in a chart. -/
@@ -223,8 +207,7 @@ def walkX (ch : ℂ → ℂ × (ℝ → ℝ)) (ℓ : ℝ) (p₀ : ℂ) (p c : �
   (c * (walk ch ℓ p₀ s - p)).re
 
 lemma WalkData.continuous_walkX (hw : WalkData Ω ρ H K ch ℓ p₀) (p c : ℂ) :
-    Continuous (walkX ch ℓ p₀ p c) := by
-  exact Complex.continuous_re.comp (continuous_const.mul (hw.continuous_walk.sub continuous_const))
+    Continuous (walkX ch ℓ p₀ p c) := Complex.continuous_re.comp (continuous_const.mul (hw.continuous_walk.sub continuous_const))
 
 /-- Where the walk follows a single chart graph, its abscissa in any other chart is locally
 strictly increasing. -/
@@ -236,14 +219,14 @@ lemma WalkData.strictMonoOn_of_follow (hw : WalkData Ω ρ H K ch ℓ p₀) {q :
   obtain ⟨ε, hε, hmono⟩ := chart_orient hw.isOpen (hw.chart q hq) hch hx₀ hbox
   refine ⟨ε, hε, fun S hS s₁ hs₁ s₂ hs₂ h12 => ?_⟩
   simp only [walkX, hS s₁ hs₁.2, hS s₂ hs₂.2]
-  exact hmono ⟨by linarith [hs₁.1.1], by linarith [hs₁.1.2]⟩
-    ⟨by linarith [hs₂.1.1], by linarith [hs₂.1.2]⟩ (by linarith)
+  exact hmono ⟨by grind, by grind⟩
+    ⟨by grind, by grind⟩ (by linarith)
 
 lemma WalkData.walk_eq_step' (hw : WalkData Ω ρ H K ch ℓ p₀) (n : ℕ) :
-    ∀ s ∈ Icc ((n : ℝ) * ℓ) ((n + 1) * ℓ),
+    ∀ s ∈ Icc (n * ℓ) ((n + 1) * ℓ),
       walk ch ℓ p₀ s = stepCurve ch (walkPt ch ℓ p₀ n) (s - n * ℓ) := fun s hs => by
-  have := hw.walk_eq n (u := s - n * ℓ) ⟨by linarith [hs.1], by linarith [hs.2]⟩
-  simpa only [add_sub_cancel] using this
+  have := hw.walk_eq n (u := s - n * ℓ) ⟨by simp_all, by grind⟩
+  simp_all
 
 /-- **Local orientation of the walk.** In every chart whose box contains `walk t` (`t ≥ 0`),
 the abscissa of the walk is strictly increasing near `t`. -/
@@ -254,64 +237,48 @@ theorem WalkData.walk_local_strictMono (hw : WalkData Ω ρ H K ch ℓ p₀) {t 
   have hℓ := hw.ℓ_pos
   have hℓρ := hw.ℓ_lt
   set n := ⌊t / ℓ⌋₊ with hn
-  have h1 : (n : ℝ) ≤ t / ℓ := Nat.floor_le (by positivity)
+  have h1 : n ≤ t / ℓ := Nat.floor_le (by positivity)
   have h2 : t / ℓ < n + 1 := Nat.lt_floor_add_one _
   rw [le_div_iff₀ hℓ] at h1
   rw [div_lt_iff₀ hℓ] at h2
   set u := t - n * ℓ with hu
   have hu0 : 0 ≤ u := by linarith
-  have huℓ : u < ℓ := by linarith
-  have hwt : walk ch ℓ p₀ t = stepCurve ch (walkPt ch ℓ p₀ n) u :=
-    hw.walk_eq_step' n t ⟨h1, by linarith⟩
-  -- the right part (and the middle of a step)
-  obtain ⟨εR, hεR, hR⟩ := hw.strictMonoOn_of_follow (hw.walkPt_mem n) (a := n * ℓ)
-    (by rw [abs_of_nonneg hu0]; linarith) hch (by rw [← hwt]; exact hbox)
+  obtain ⟨εR, hεR, hR⟩ := hw.strictMonoOn_of_follow (hw.walkPt_mem n) 
+    (by rw [abs_of_nonneg hu0]; linarith) hch (by assumption)
   have hRS := hR _ (hw.walk_eq_step' n)
   rcases lt_or_eq_of_le hu0 with hupos | hu0'
   · refine ⟨min εR (min u (ℓ - u)), lt_min hεR (lt_min hupos (by linarith)), ?_⟩
     refine hRS.mono fun s hs => ⟨⟨?_, ?_⟩, ?_, ?_⟩
-    · have := min_le_left εR (min u (ℓ - u)); linarith [hs.1]
-    · have := min_le_left εR (min u (ℓ - u)); linarith [hs.2]
-    · have := le_trans (min_le_right εR _) (min_le_left u (ℓ - u)); linarith [hs.1]
-    · have := le_trans (min_le_right εR _) (min_le_right u (ℓ - u)); linarith [hs.2]
+    all_goals grind
   · -- at a step boundary `t = n ℓ`
     have htn : t = n * ℓ := by linarith
     have hRight : StrictMonoOn (walkX ch ℓ p₀ p c) (Icc t (t + min εR ℓ)) :=
-      hRS.mono fun s hs => ⟨⟨by linarith [hs.1, hεR], by
-        have := min_le_left εR ℓ; linarith [hs.2]⟩, by linarith [hs.1], by
-        have := min_le_right εR ℓ; linarith [hs.2]⟩
+      hRS.mono fun s hs => ⟨⟨by grind, by
+        grind⟩, by grind, by
+        grind⟩
     obtain ⟨εL, hεL, hLeft⟩ : ∃ εL > 0, StrictMonoOn (walkX ch ℓ p₀ p c) (Icc (t - εL) t) := by
       rcases Nat.eq_zero_or_pos n with hn0 | hnpos
       · -- before the start: the first chart graph
-        have ht0 : t = 0 := by rw [htn, hn0]; simp
+        have ht0 : t = 0 := by simp [htn, hn0]
         have hb0 : stepCurve ch p₀ 0 ∈ chartBox p c r h := by
-          rw [← hw.walk_eq_of_le (by linarith), ← ht0]; exact hbox
-        obtain ⟨ε', hε', h'⟩ := hw.strictMonoOn_of_follow hw.p₀_mem (a := 0)
+          rw [← hw.walk_eq_of_le (by linarith), ← ht0]; assumption
+        obtain ⟨ε', hε', h'⟩ := hw.strictMonoOn_of_follow hw.p₀_mem 
           (by simp; linarith) hch hb0
-        have h'' := h' (Iic ℓ) fun s hs => by rw [hw.walk_eq_of_le hs, sub_zero]
-        refine ⟨ε', hε', h''.mono fun s hs => ⟨⟨?_, ?_⟩, ?_⟩⟩
-        · rw [ht0] at hs; linarith [hs.1]
-        · rw [ht0] at hs; linarith [hs.2]
-        · rw [ht0] at hs; simp only [mem_Iic]; linarith [hs.2]
+        refine ⟨ε', hε', (h' (Iic ℓ) fun s hs => by rw [hw.walk_eq_of_le hs, sub_zero]).mono fun s hs => ⟨⟨?_, ?_⟩, ?_⟩⟩
+        all_goals grind
       · obtain ⟨m, hm⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
         rw [hm] at htn
         have hwq : walk ch ℓ p₀ t = stepCurve ch (walkPt ch ℓ p₀ m) ℓ := by
-          rw [htn]
-          have := hw.walk_eq m (u := ℓ) ⟨hℓ.le, le_rfl⟩
-          rw [← this]; push_cast; ring_nf
-        obtain ⟨ε', hε', h'⟩ := hw.strictMonoOn_of_follow (hw.walkPt_mem m) (a := m * ℓ)
-          (by rw [abs_of_pos hℓ]; exact hℓρ) hch (by rw [← hwq]; exact hbox)
-        have h'' := h' _ (hw.walk_eq_step' m)
-        refine ⟨min ε' ℓ, lt_min hε' hℓ, h''.mono fun s hs => ⟨⟨?_, ?_⟩, ?_, ?_⟩⟩
-        · have := min_le_left ε' ℓ; push_cast at htn; linarith [hs.1]
-        · push_cast at htn; linarith [hs.2, hε']
-        · have := min_le_right ε' ℓ; push_cast at htn; linarith [hs.1]
-        · push_cast at htn; linarith [hs.2]
+          have := hw.walk_eq m  ⟨hℓ.le, le_rfl⟩
+          grind
+        obtain ⟨ε', hε', h'⟩ := hw.strictMonoOn_of_follow (hw.walkPt_mem m) 
+          (by rw [abs_of_pos hℓ]; assumption) hch (by grind)
+        refine ⟨min ε' ℓ, lt_min hε' hℓ, (h' _ (hw.walk_eq_step' m)).mono fun s hs => ⟨⟨?_, ?_⟩, ?_, ?_⟩⟩
+        all_goals grind
     refine ⟨min εL (min εR ℓ), lt_min hεL (lt_min hεR hℓ), ?_⟩
-    refine strictMonoOn_Icc_union (t := t) (hLeft.mono fun s hs => ⟨?_, hs.2⟩)
+    refine strictMonoOn_Icc_union  (hLeft.mono fun s hs => ⟨?_, hs.2⟩)
       (hRight.mono fun s hs => ⟨hs.1, ?_⟩)
-    · have := min_le_left εL (min εR ℓ); linarith [hs.1]
-    · have := min_le_right εL (min εR ℓ); linarith [hs.2]
+    all_goals grind
 
 /-- On an interval of nonnegative times along which the walk stays in a chart box, the abscissa
 of the walk is strictly increasing. -/
@@ -335,7 +302,7 @@ theorem WalkData.capture (hw : WalkData Ω ρ H K ch ℓ p₀) {α β : ℝ} (h�
   obtain ⟨s, hs, hsX⟩ := intermediate_value_Icc hαβ (hw.continuous_walkX p c).continuousOn
     ⟨h1, h2⟩
   exact ⟨s, hs, eq_of_frontier_of_re_eq hw.isOpen hch
-    (hw.walk_mem_frontier (by linarith [hs.1])) hwf (hbox s hs) hwb hsX⟩
+    (hw.walk_mem_frontier (by grind)) hwf (hbox s hs) hwb hsX⟩
 
 /-- Along one step, the walk moves at least as far as the elapsed time. -/
 lemma WalkData.le_norm_walk_sub (hw : WalkData Ω ρ H K ch ℓ p₀) (n : ℕ) {u u' : ℝ}
@@ -346,9 +313,8 @@ lemma WalkData.le_norm_walk_sub (hw : WalkData Ω ρ H K ch ℓ p₀) (n : ℕ) 
   set q := walkPt ch ℓ p₀ n
   have := Complex.abs_re_le_norm ((ch q).1 * (stepCurve ch q u' - q) -
     (ch q).1 * (stepCurve ch q u - q))
-  rw [Complex.sub_re, stepCurve, re_mul_chartPt_sub hc, re_mul_chartPt_sub hc, ← mul_sub,
+  rwa [Complex.sub_re, stepCurve, re_mul_chartPt_sub hc, re_mul_chartPt_sub hc, ← mul_sub,
     norm_mul, hc, one_mul, sub_sub_sub_cancel_right] at this
-  exact this
 
 end Walk
 

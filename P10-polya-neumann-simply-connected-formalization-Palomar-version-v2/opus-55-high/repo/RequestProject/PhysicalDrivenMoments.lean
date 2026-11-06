@@ -38,9 +38,7 @@ local instance physicalDrivenTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi
 /-- The actual wave-number scalar in the transport coefficient. -/
 def physicalDrivenQ (E : ℝ) : ℂ := -(Complex.I * (Real.sqrt E : ℂ)) / 2
 
-theorem physicalDrivenQ_ne_zero {E : ℝ} (hE : 0 < E) : physicalDrivenQ E ≠ 0 := by
-  unfold physicalDrivenQ
-  exact div_ne_zero (neg_ne_zero.mpr (mul_ne_zero Complex.I_ne_zero
+theorem physicalDrivenQ_ne_zero {E : ℝ} (hE : 0 < E) : physicalDrivenQ E ≠ 0 := div_ne_zero (neg_ne_zero.mpr (mul_ne_zero Complex.I_ne_zero
     (Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hE).ne'))) (by norm_num)
 
 theorem physicalDrivenQ_sq_ne_zero {E : ℝ} (hE : 0 < E) : physicalDrivenQ E ^ 2 ≠ 0 :=
@@ -60,8 +58,8 @@ def physicalDrivenVector (W : ℝ → Ell2 →L[ℂ] Ell2) (g : ℝ → ℂ) (θ
 kernel, rather than an imposed periodic endpoint condition. -/
 theorem physicalDrivenVector_endpoint (W : ℝ → Ell2 →L[ℂ] Ell2) (g : ℝ → ℂ)
     (hO : observationAdj W g = 0) : physicalDrivenVector W g (2 * Real.pi) = 0 := by
-  change (-(Complex.I / (Real.sqrt 2 : ℂ))) • W (2 * Real.pi) (observationAdj W g) = 0
-  rw [hO, map_zero, smul_zero]
+  change (-(Complex.I / Real.sqrt 2)) • W (2 * Real.pi) (observationAdj W g) = 0
+  simp_all
 
 /-- The physical zeroth trace has its actual sqrt(2) normalization. -/
 def physicalDrivenRow (y : ℝ → Ell2) (n : ℕ) (θ : ℝ) : ℂ :=
@@ -75,52 +73,42 @@ def physicalDrivenScaledRow (E : ℝ) (y : ℝ → Ell2) (n : ℕ) (θ : ℝ) : 
 theorem physicalDrivenRow_hasDerivAt_succ
     (γ : ℝ → ℂ) (E : ℝ) (g : ℝ → ℂ) (y : ℝ → Ell2) {θ : ℝ}
     (hy : HasDerivAt y (transportCoeff γ E θ (y θ) +
-      (-(Complex.I / (Real.sqrt 2 : ℂ)) * g θ) • basisVec 0) θ) (n : ℕ) :
+      (-(Complex.I / Real.sqrt 2) * g θ) • basisVec 0) θ) (n : ℕ) :
     HasDerivAt (physicalDrivenRow y (n + 1))
       (physicalDrivenQ E * (deriv γ θ * physicalDrivenRow y (n + 2) θ +
         conj (deriv γ θ) * physicalDrivenRow y n θ)) θ := by
   have hd := ((innerSL ℂ (basisVec (n + 1))).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt
     θ hy
-  change HasDerivAt (fun s : ℝ => inner ℂ (basisVec (n + 1)) (y s))
+  change HasDerivAt (fun s  => inner ℂ (basisVec (n + 1)) (y s))
     (inner ℂ (basisVec (n + 1)) (transportCoeff γ E θ (y θ) +
-      (-(Complex.I / (Real.sqrt 2 : ℂ)) * g θ) • basisVec 0)) θ at hd
+      (-(Complex.I / Real.sqrt 2) * g θ) • basisVec 0)) θ at hd
   simp only [inner_basisVec] at hd
-  have he : physicalDrivenRow y (n + 1) = fun s : ℝ => (y s : ℕ → ℂ) (n + 1) := by
-    funext s
-    simp only [physicalDrivenRow, Nat.succ_ne_zero, if_false]
-  rw [he]
   apply hd.congr_deriv
-  simp only [lp.coeFn_add, Pi.add_apply, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul,
-    basisVec_coord, Nat.succ_ne_zero, if_false, mul_zero, add_zero]
-  rw [transportCoeff_apply_coord, shiftN_apply_succ]
-  cases n with
-  | zero => simp [physicalDrivenRow, physicalDrivenQ, shiftWeight]
-  | succ n => simp [physicalDrivenRow, physicalDrivenQ, shiftWeight, Nat.add_assoc]
+  simp only [lp.coeFn_add, Pi.add_apply, lp.coeFn_smul, Pi.smul_apply, basisVec_coord]
+  simp_all [transportCoeff_apply_coord, physicalDrivenRow, physicalDrivenQ, shiftWeight]
 
 /-- The exact recurrence used by the factorial cancellation. -/
 theorem physicalDrivenScaledRow_hasDerivAt_succ
     (γ : ℝ → ℂ) (E : ℝ) (g : ℝ → ℂ) (y : ℝ → Ell2) {θ : ℝ}
     (hy : HasDerivAt y (transportCoeff γ E θ (y θ) +
-      (-(Complex.I / (Real.sqrt 2 : ℂ)) * g θ) • basisVec 0) θ) (n : ℕ) :
+      (-(Complex.I / Real.sqrt 2) * g θ) • basisVec 0) θ) (n : ℕ) :
     HasDerivAt (physicalDrivenScaledRow E y (n + 1))
       (deriv γ θ * physicalDrivenScaledRow E y (n + 2) θ +
         physicalDrivenQ E ^ 2 * conj (deriv γ θ) * physicalDrivenScaledRow E y n θ) θ := by
   convert (physicalDrivenRow_hasDerivAt_succ γ E g y hy n).const_mul
     (physicalDrivenQ E ^ (n + 1)) using 1
-  · funext t; rfl
-  simp only [physicalDrivenScaledRow, pow_succ]
+  · rfl
+  simp only [physicalDrivenScaledRow]
   ring
 
 theorem norm_physicalDrivenRow_le (y : ℝ → Ell2) (n : ℕ) (θ : ℝ) :
     ‖physicalDrivenRow y n θ‖ ≤ 2 * ‖y θ‖ := by
-  have hc (k : ℕ) := lp.norm_apply_le_norm (p := 2) (by norm_num) (y θ) k
+  have hc (k : ℕ) := lp.norm_apply_le_norm  (by norm_num) (y θ) k
   unfold physicalDrivenRow
   split_ifs
   · rw [norm_mul]
-    have hs : ‖(Real.sqrt 2 : ℂ)‖ ≤ 2 := by
-      rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
-      nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2), Real.sqrt_nonneg 2]
-    exact mul_le_mul hs (hc 0) (norm_nonneg _) (by norm_num)
+    exact mul_le_mul (by
+      simp [abs_of_nonneg (Real.sqrt_nonneg _)]) (hc 0) (norm_nonneg _) (by norm_num)
   · exact (hc n).trans (by nlinarith [norm_nonneg (y θ)])
 
 theorem norm_physicalDrivenScaledRow_le (E : ℝ) (y : ℝ → Ell2) (n : ℕ) (θ : ℝ) :
@@ -151,23 +139,19 @@ theorem physicalDrivenPower_hasDerivAt_succ
     {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ) (ℓ : ℕ) (θ : ℝ) :
     HasDerivAt (physicalDrivenPower γ (ℓ + 1))
       (-deriv γ θ * physicalDrivenPower γ ℓ θ) θ := by
-  have hd := (((hγ.differentiable_one θ).hasDerivAt.sub_const (γ 0)).neg.pow
-    (ℓ + 1)).div_const ((ℓ + 1).factorial : ℂ)
-  convert hd using 1
-  · funext t; rfl
-  simp only [physicalDrivenPower, physicalDrivenCentered, Pi.neg_apply,
-    Nat.add_sub_cancel]
+  convert (((hγ.differentiable_one θ).hasDerivAt.sub_const (γ 0)).neg.pow
+    (ℓ + 1)).div_const (ℓ + 1).factorial using 1
+  · rfl
+  simp only [physicalDrivenPower, physicalDrivenCentered, Pi.neg_apply]
   rw [Nat.factorial_succ]
-  have hn : ((ℓ + 1 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast (by omega : ℓ + 1 ≠ 0)
-  have hf : (ℓ.factorial : ℂ) ≠ 0 := by exact_mod_cast (Nat.factorial_ne_zero ℓ)
   push_cast
-  field_simp [hn, hf]
+  field_simp 
 
 theorem norm_physicalDrivenGaugeTerm_le
     (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (j ℓ : ℕ) (θ : ℝ) :
     ‖physicalDrivenGaugeTerm γ E y j ℓ θ‖ ≤
       (2 * ‖y θ‖ * ‖physicalDrivenQ E‖ ^ j) *
-        ((‖physicalDrivenCentered γ θ‖ * ‖physicalDrivenQ E‖) ^ ℓ / (ℓ.factorial : ℝ)) := by
+        ((‖physicalDrivenCentered γ θ‖ * ‖physicalDrivenQ E‖) ^ ℓ / ℓ.factorial) := by
   unfold physicalDrivenGaugeTerm
   rw [norm_mul]
   calc
@@ -176,16 +160,14 @@ theorem norm_physicalDrivenGaugeTerm_le
       mul_le_mul_of_nonneg_left (norm_physicalDrivenScaledRow_le E y (ℓ + j) θ)
         (norm_nonneg _)
     _ = _ := by
-      simp only [physicalDrivenPower, norm_div, norm_pow, norm_neg, Complex.norm_natCast,
-        pow_add, mul_pow]
+      simp only [physicalDrivenPower, norm_div, norm_pow, norm_neg, Complex.norm_natCast]
       ring
 
 /-- The factorial series is genuinely absolutely convergent at every point
 for every actual Hilbert-space vector; no assumed row summability is used. -/
 theorem summable_norm_physicalDrivenGaugeTerm
     (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (j : ℕ) (θ : ℝ) :
-    Summable (fun ℓ : ℕ => ‖physicalDrivenGaugeTerm γ E y j ℓ θ‖) := by
-  exact Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
+    Summable (fun ℓ  => ‖physicalDrivenGaugeTerm γ E y j ℓ θ‖) := Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
     (norm_physicalDrivenGaugeTerm_le γ E y j · θ)
     ((Real.summable_pow_div_factorial
       (‖physicalDrivenCentered γ θ‖ * ‖physicalDrivenQ E‖)).mul_left
@@ -198,39 +180,35 @@ theorem exists_physicalDrivenGaugeTerm_majorant
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (j : ℕ) :
     ∃ u : ℕ → ℝ, Summable u ∧ ∀ ℓ θ, θ ∈ Icc 0 (2 * Real.pi) →
       ‖physicalDrivenGaugeTerm γ E y j ℓ θ‖ ≤ u ℓ := by
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * Real.pi) := ⟨le_rfl, Real.two_pi_pos.le⟩
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hy
-  have hz : Continuous (physicalDrivenCentered γ) := hγ.sub continuous_const
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn
-    hz.continuousOn
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0 h0)
-  have hR0 : 0 ≤ R := (norm_nonneg _).trans (hR 0 h0)
+    (hγ.sub continuous_const).continuousOn
+  have hM0  := (norm_nonneg _).trans (hM 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
   refine ⟨fun ℓ => (2 * M * ‖physicalDrivenQ E‖ ^ j) *
-    ((R * ‖physicalDrivenQ E‖) ^ ℓ / (ℓ.factorial : ℝ)),
+    ((R * ‖physicalDrivenQ E‖) ^ ℓ / ℓ.factorial),
     (Real.summable_pow_div_factorial _).mul_left _, ?_⟩
   intro ℓ θ hθ
   apply (norm_physicalDrivenGaugeTerm_le γ E y j ℓ θ).trans
   change (2 * ‖y θ‖ * ‖physicalDrivenQ E‖ ^ j) *
-      ((‖physicalDrivenCentered γ θ‖ * ‖physicalDrivenQ E‖) ^ ℓ / (ℓ.factorial : ℝ)) ≤
+      ((‖physicalDrivenCentered γ θ‖ * ‖physicalDrivenQ E‖) ^ ℓ / ℓ.factorial) ≤
     (2 * M * ‖physicalDrivenQ E‖ ^ j) *
-      ((R * ‖physicalDrivenQ E‖) ^ ℓ / (ℓ.factorial : ℝ))
+      ((R * ‖physicalDrivenQ E‖) ^ ℓ / ℓ.factorial)
   gcongr
-  · exact hM θ hθ
+  · simp_all
   · exact hR θ hθ
 
 theorem physicalDrivenRow_continuousOn (y : ℝ → Ell2)
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (n : ℕ) :
     ContinuousOn (physicalDrivenRow y n) (Icc 0 (2 * Real.pi)) := by
-  have hc (k : ℕ) : ContinuousOn (fun θ => (y θ : ℕ → ℂ) k)
+  have hc (k : ℕ) : ContinuousOn (fun θ => y θ k)
       (Icc 0 (2 * Real.pi)) := by
     have h := (innerSL ℂ (basisVec k)).continuous.comp_continuousOn hy
-    change ContinuousOn (fun θ : ℝ => inner ℂ (basisVec k) (y θ))
+    change ContinuousOn (fun θ  => inner ℂ (basisVec k) (y θ))
       (Icc 0 (2 * Real.pi)) at h
-    simpa only [inner_basisVec] using h
+    simp_all [inner_basisVec]
   unfold physicalDrivenRow
   split_ifs
-  · exact continuousOn_const.mul (hc 0)
-  · exact hc n
+  all_goals fun_prop
 
 theorem physicalDrivenGaugeTerm_continuousOn
     (γ : ℝ → ℂ) (hγ : Continuous γ) (E : ℝ) (y : ℝ → Ell2)
@@ -259,7 +237,7 @@ theorem physicalDrivenGauge_continuousOn
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (j : ℕ) :
     ContinuousOn (physicalDrivenGauge γ E y j) (Icc 0 (2 * Real.pi)) := by
   apply (physicalDrivenGauge_hasSumUniformlyOn γ hγ E y hy j).tendstoUniformlyOn.continuousOn
-  exact (Eventually.of_forall fun s : Finset ℕ =>
+  exact (Eventually.of_forall fun s  =>
     continuousOn_finset_sum s (fun ℓ _ =>
       physicalDrivenGaugeTerm_continuousOn γ hγ E y hy j ℓ)).frequently
 
@@ -268,12 +246,7 @@ theorem physicalDrivenGauge_eq_zero_of_vector_eq_zero
     (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (j : ℕ) {θ : ℝ} (hy : y θ = 0) :
     physicalDrivenGauge γ E y j θ = 0 := by
   unfold physicalDrivenGauge
-  calc
-    _ = ∑' _ : ℕ, (0 : ℂ) := by
-      apply tsum_congr
-      intro ℓ
-      simp [physicalDrivenGaugeTerm, physicalDrivenScaledRow, physicalDrivenRow, hy]
-    _ = 0 := tsum_zero
+  simp [physicalDrivenGaugeTerm, physicalDrivenScaledRow, physicalDrivenRow, hy]
 
 theorem physicalDrivenGauge_actual_endpoints
     (γ : ℝ → ℂ) (E : ℝ) (W : ℝ → Ell2 →L[ℂ] Ell2) (g : ℝ → ℂ)
@@ -294,7 +267,6 @@ theorem physicalDrivenGaugePartial_eq_zero_of_vector_eq_zero
     (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (j N : ℕ) {θ : ℝ} (hy : y θ = 0) :
     physicalDrivenGaugePartial γ E y j N θ = 0 := by
   apply Finset.sum_eq_zero
-  intro ℓ _
   simp [physicalDrivenGaugeTerm, physicalDrivenScaledRow, physicalDrivenRow, hy]
 
 /-- The finite physical antiholomorphic moment, with ordinary coordinate
@@ -317,25 +289,23 @@ theorem physicalDrivenGauge_weightedIntegral_hasSum
     (γ : ℝ → ℂ) (hγ : Continuous γ) (E : ℝ) (y : ℝ → Ell2)
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (j : ℕ) (w : ℝ → ℂ)
     (hw : ContinuousOn w (Icc 0 (2 * Real.pi))) :
-    HasSum (fun ℓ : ℕ => ∫ θ in (0 : ℝ)..(2 * Real.pi),
+    HasSum (fun ℓ  => ∫ θ in 0..(2 * Real.pi),
       w θ * physicalDrivenGaugeTerm γ E y j ℓ θ)
-      (∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * physicalDrivenGauge γ E y j θ) := by
+      (∫ θ in 0..(2 * Real.pi), w θ * physicalDrivenGauge γ E y j θ) := by
   obtain ⟨u, hu, hbd⟩ := exists_physicalDrivenGaugeTerm_majorant γ hγ E y hy j
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hw
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * Real.pi) := ⟨le_rfl, Real.two_pi_pos.le⟩
-  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 h0)
-  have hsub : uIoc (0 : ℝ) (2 * Real.pi) ⊆ Icc 0 (2 * Real.pi) := by
+  have hsub : uIoc 0 (2 * Real.pi) ⊆ Icc 0 (2 * Real.pi) := by
     rw [uIoc_of_le Real.two_pi_pos.le]
     exact Ioc_subset_Icc_self
   refine intervalIntegral.hasSum_integral_of_dominated_convergence
-    (μ := volume) (bound := fun ℓ _ => C * u ℓ) ?_ ?_ ?_ intervalIntegrable_const ?_
+     (bound := fun ℓ _ => C * u ℓ) ?_ ?_ ?_ intervalIntegrable_const ?_
   · intro ℓ
     exact ((hw.mul (physicalDrivenGaugeTerm_continuousOn γ hγ E y hy j ℓ)).mono hsub).aestronglyMeasurable
       measurableSet_uIoc
   · intro ℓ
     exact Eventually.of_forall fun θ hθ => by
       rw [norm_mul]
-      exact mul_le_mul (hC θ (hsub hθ)) (hbd ℓ θ (hsub hθ)) (norm_nonneg _) hC0
+      exact mul_le_mul (hC θ (hsub hθ)) (hbd ℓ θ (hsub hθ)) (norm_nonneg _) ((norm_nonneg _).trans (hC 0 ⟨le_rfl, Real.two_pi_pos.le⟩))
   · exact Eventually.of_forall fun _ _ => hu.mul_left C
   · exact Eventually.of_forall fun θ _ =>
       ((summable_norm_physicalDrivenGaugeTerm γ E y j θ).of_norm.hasSum).mul_left (w θ)
@@ -349,35 +319,31 @@ def physicalDrivenMoment (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (j m : 
 theorem physicalDrivenMomentPartial_tendsto
     (γ : ℝ → ℂ) (hγ : ContDiff ℝ 1 γ) (E : ℝ) (y : ℝ → Ell2)
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (j m : ℕ) :
-    Tendsto (fun N : ℕ => physicalDrivenMomentPartial γ E y j N m) atTop
+    Tendsto (fun N  => physicalDrivenMomentPartial γ E y j N m) atTop
       (𝓝 (physicalDrivenMoment γ E y j m)) := by
-  let w : ℝ → ℂ := fun θ => conj (deriv γ θ) * conj (physicalDrivenCentered γ θ) ^ m
+  let w  := fun θ => conj (deriv γ θ) * conj (physicalDrivenCentered γ θ) ^ m
   have hw : Continuous w :=
     (Complex.continuous_conj.comp hγ.continuous_deriv_one).mul
       ((Complex.continuous_conj.comp (hγ.continuous.sub continuous_const)).pow m)
   have hs := physicalDrivenGauge_weightedIntegral_hasSum γ hγ.continuous E y hy j w hw.continuousOn
-  have hm : (∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * physicalDrivenGauge γ E y j θ) =
+  have hm : (∫ θ in 0..(2 * Real.pi), w θ * physicalDrivenGauge γ E y j θ) =
       physicalDrivenMoment γ E y j m := by
     apply intervalIntegral.integral_congr
     intro θ _
-    dsimp only [w]
     ring
   rw [hm] at hs
   have he (N : ℕ) : physicalDrivenMomentPartial γ E y j N m =
-      ∑ ℓ ∈ Finset.range (N + 1), ∫ θ in (0 : ℝ)..(2 * Real.pi),
+      ∑ ℓ ∈ Finset.range (N + 1), ∫ θ in 0..(2 * Real.pi),
         w θ * physicalDrivenGaugeTerm γ E y j ℓ θ := by
     calc
-      _ = ∫ θ in (0 : ℝ)..(2 * Real.pi), ∑ ℓ ∈ Finset.range (N + 1),
+      _ = ∫ θ in 0..(2 * Real.pi), ∑ ℓ ∈ Finset.range (N + 1),
           w θ * physicalDrivenGaugeTerm γ E y j ℓ θ := by
         unfold physicalDrivenMomentPartial physicalDrivenGaugePartial
         apply intervalIntegral.integral_congr
         intro θ _
         dsimp only
         rw [Finset.mul_sum, Finset.sum_mul]
-        apply Finset.sum_congr rfl
-        intro ℓ _
-        dsimp only [w]
-        ring
+        grind
       _ = _ := intervalIntegral.integral_finset_sum (fun ℓ _ =>
         ((hw.continuousOn.mul (physicalDrivenGaugeTerm_continuousOn γ hγ.continuous E y hy j ℓ)).mono
           (by rw [uIcc_of_le Real.two_pi_pos.le])).intervalIntegrable)
@@ -389,20 +355,17 @@ termwise derivative limit is needed. -/
 theorem physicalDrivenTailMoment_tendsto_zero
     (γ : ℝ → ℂ) (hγ : ContDiff ℝ 1 γ) (E : ℝ) (y : ℝ → Ell2)
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (j m : ℕ) :
-    Tendsto (fun N : ℕ => physicalDrivenTailMoment γ E y j N m) atTop (𝓝 0) := by
-  let w : ℝ → ℂ := fun θ => deriv γ θ * conj (physicalDrivenCentered γ θ) ^ m
-  have hw : Continuous w := hγ.continuous_deriv_one.mul
-    ((Complex.continuous_conj.comp (hγ.continuous.sub continuous_const)).pow m)
-  have hs := physicalDrivenGauge_weightedIntegral_hasSum γ hγ.continuous E y hy (j + 2) w
-    hw.continuousOn
+    Tendsto (fun N  => physicalDrivenTailMoment γ E y j N m) atTop (𝓝 0) := by
+  let w  := fun θ => deriv γ θ * conj (physicalDrivenCentered γ θ) ^ m
   have he (N : ℕ) : physicalDrivenTailMoment γ E y j N m =
-      ∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * physicalDrivenGaugeTerm γ E y (j + 2) N θ := by
+      ∫ θ in 0..(2 * Real.pi), w θ * physicalDrivenGaugeTerm γ E y (j + 2) N θ := by
     apply intervalIntegral.integral_congr
     intro θ _
-    dsimp only [physicalDrivenTailMoment, physicalDrivenGaugeTerm, w]
-    rw [Nat.add_assoc]
+    dsimp only [physicalDrivenGaugeTerm, w]
     ring
-  simpa only [he] using hs.summable.tendsto_atTop_zero
+  simpa only [he] using (physicalDrivenGauge_weightedIntegral_hasSum γ hγ.continuous E y hy (j + 2) w
+    (hγ.continuous_deriv_one.mul
+    ((Complex.continuous_conj.comp (hγ.continuous.sub continuous_const)).pow m)).continuousOn).summable.tendsto_atTop_zero
 
 /-- The genuine periodic representative of the actual driven gauge on the
 closed parameter interval.  Continuity follows from the proved zero endpoints. -/
@@ -415,9 +378,8 @@ def physicalDrivenPeriodicGauge (γ : ℝ → ℂ) (E : ℝ)
 theorem physicalDrivenPeriodicGauge_periodic (γ : ℝ → ℂ) (E : ℝ)
     (W : ℝ → Ell2 →L[ℂ] Ell2) (g : ℝ → ℂ) (j : ℕ) :
     Function.Periodic (physicalDrivenPeriodicGauge γ E W g j) (2 * Real.pi) := by
-  intro θ
   unfold physicalDrivenPeriodicGauge
-  rw [AddCircle.coe_add_period]
+  norm_num
 
 theorem physicalDrivenPeriodicGauge_eqOn (γ : ℝ → ℂ) (E : ℝ)
     (W : ℝ → Ell2 →L[ℂ] Ell2) (g : ℝ → ℂ) (hO : observationAdj W g = 0) (j : ℕ) :
@@ -428,7 +390,7 @@ theorem physicalDrivenPeriodicGauge_eqOn (γ : ℝ → ℂ) (E : ℝ)
   by_cases hθL : θ = 2 * Real.pi
   · subst θ
     have hlift : AddCircle.liftIco (2 * Real.pi) 0
-        (physicalDrivenGauge γ E (physicalDrivenVector W g) j) (0 : AddCircle (2 * Real.pi)) =
+        (physicalDrivenGauge γ E (physicalDrivenVector W g) j) 0 =
           physicalDrivenGauge γ E (physicalDrivenVector W g) j 0 :=
       AddCircle.liftIco_zero_coe_apply ⟨le_rfl, Real.two_pi_pos⟩
     unfold physicalDrivenPeriodicGauge

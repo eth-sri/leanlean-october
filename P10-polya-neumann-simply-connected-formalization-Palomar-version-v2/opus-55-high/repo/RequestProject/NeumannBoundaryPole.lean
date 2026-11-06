@@ -38,13 +38,12 @@ private lemma isUnit_one_sub_smul_of_compact
   have hC : IsCompactOperator C := by
     exact hM.smul (-c)
   have heq : (1 : X →L[ℂ] X) + C = 1 - c • M := by
-    simpa only [C, sub_eq_add_neg] using
-      congrArg (fun T : X →L[ℂ] X => 1 + T) (_root_.neg_smul c M)
+    simp [C, sub_eq_add_neg]
   have hinj' : Function.Injective ((1 : X →L[ℂ] X) + C) := heq.symm ▸ hinj
   have hunit : IsUnit ((1 : X →L[ℂ] X) + C) :=
     ContinuousLinearMap.isUnit_iff_bijective.mpr
       ⟨hinj', (injective_iff_surjective_one_add hC).mp hinj'⟩
-  exact heq ▸ hunit
+  simp_all
 
 private lemma continuous_inverse_near_unit
     {A : Type*} [NormedRing A] [CompleteSpace A]
@@ -57,7 +56,7 @@ private lemma continuous_inverse_near_unit
   obtain ⟨u, hu⟩ := hE
   have hi : ContinuousAt (Ring.inverse : A → A) (B E) :=
     hu ▸ NormedRing.inverse_continuousAt u
-  exact (hi.comp hB.continuousAt).continuousWithinAt
+  fun_prop
 
 /-- The actual compact mass operator in the shifted-energy H¹ space. -/
 def h1MassOperator (Ω : Set ℂ) : NeumannH1 Ω →L[ℂ] NeumannH1 Ω :=
@@ -90,17 +89,14 @@ instance h1ComplementEndSMul (Ω : Set ℂ) (E₀ : ℝ) :
 theorem finiteDimensional_h1ResonantSpace {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) (E₀ : ℝ) :
     FiniteDimensional ℂ (h1ResonantSpace Ω E₀) := by
-  let C : NeumannH1 Ω →L[ℂ] NeumannH1 Ω := -((E₀ + 1 : ℝ) : ℂ) • h1MassOperator Ω
-  have hC : IsCompactOperator C := by
-    exact
-      (h1MassOperator_isCompactOperator hb hL).smul (-((E₀ + 1 : ℝ) : ℂ))
-  have heq : (1 : NeumannH1 Ω →L[ℂ] NeumannH1 Ω) + C = h1HelmholtzForm Ω E₀ := by
+  let C  := -((E₀ + 1 : ℝ) : ℂ) • h1MassOperator Ω
+  have hC : IsCompactOperator C := (h1MassOperator_isCompactOperator hb hL).smul (-((E₀ + 1 : ℝ) : ℂ))
+  have heq : 1 + C = h1HelmholtzForm Ω E₀ := by
     simpa only [C, h1HelmholtzForm, h1MassOperator, sub_eq_add_neg] using
-      congrArg (fun T : NeumannH1 Ω →L[ℂ] NeumannH1 Ω => 1 + T)
+      congrArg (fun T  => 1 + T)
         (_root_.neg_smul ((E₀ + 1 : ℝ) : ℂ) (h1MassOperator Ω))
   have hf := finiteDimensional_ker_one_add hC
-  rw [heq] at hf
-  exact hf
+  rwa [heq] at hf
 
 private lemma h1MassOperator_on_resonantSpace {Ω : Set ℂ} {E₀ : ℝ} (hE₀ : 0 ≤ E₀)
     {u : NeumannH1 Ω} (hu : u ∈ h1ResonantSpace Ω E₀) :
@@ -108,12 +104,12 @@ private lemma h1MassOperator_on_resonantSpace {Ω : Set ℂ} {E₀ : ℝ} (hE₀
   have hc : ((E₀ + 1 : ℝ) : ℂ) ≠ 0 := by exact_mod_cast (show E₀ + 1 ≠ 0 by linarith)
   have heq : u = ((E₀ + 1 : ℝ) : ℂ) • h1MassOperator Ω u := by
     change u - ((E₀ + 1 : ℝ) : ℂ) • h1MassOperator Ω u = 0 at hu
-    exact sub_eq_zero.mp hu
+    grind
   calc
     _ = (((E₀ + 1 : ℝ) : ℂ)⁻¹) •
         (((E₀ + 1 : ℝ) : ℂ) • h1MassOperator Ω u) := by
       rw [smul_smul, inv_mul_cancel₀ hc, one_smul]
-    _ = _ := by rw [← heq]
+    _ = _ := by grind
 
 private lemma h1MassOperator_mem_complement {Ω : Set ℂ} {E₀ : ℝ} (hE₀ : 0 ≤ E₀)
     {u : NeumannH1 Ω} (hu : u ∈ (h1ResonantSpace Ω E₀)ᗮ) :
@@ -161,9 +157,9 @@ def h1ComplementForm (Ω : Set ℂ) (E₀ E : ℝ) :
 
 private lemma coe_h1ComplementForm {Ω : Set ℂ} {E₀ : ℝ} (hE₀ : 0 ≤ E₀)
     (E : ℝ) (u : (h1ResonantSpace Ω E₀)ᗮ) :
-    (h1ComplementForm Ω E₀ E u : NeumannH1 Ω) = h1HelmholtzForm Ω E u := by
+    h1ComplementForm Ω E₀ E u = h1HelmholtzForm Ω E u := by
   simp only [h1ComplementForm, ContinuousLinearMap.sub_apply,
-    ContinuousLinearMap.one_apply, ContinuousLinearMap.smul_apply,
+    ContinuousLinearMap.smul_apply,
     Submodule.coe_sub, Submodule.coe_smul, coe_h1ComplementMass hE₀]
   rfl
 
@@ -173,21 +169,17 @@ theorem h1ComplementForm_injective {Ω : Set ℂ} {E₀ : ℝ} (hE₀ : 0 ≤ E�
     Function.Injective (h1ComplementForm Ω E₀ E₀) := by
   rw [injective_iff_map_eq_zero]
   intro u hu
-  have hzero : h1HelmholtzForm Ω E₀ (u : NeumannH1 Ω) = 0 := by
-    rw [← coe_h1ComplementForm hE₀ E₀ u, hu]
-    rfl
-  have hker : (u : NeumannH1 Ω) ∈ h1ResonantSpace Ω E₀ := hzero
-  have hinner := ((h1ResonantSpace Ω E₀).mem_orthogonal u).1 u.property u hker
-  apply Subtype.ext
-  exact inner_self_eq_zero.mp hinner
+  have hzero : h1HelmholtzForm Ω E₀ u = 0 := by
+    simp [← coe_h1ComplementForm hE₀ E₀ u, hu]
+  have hinner := ((h1ResonantSpace Ω E₀).mem_orthogonal u).1 u.property u hzero
+  simp_all
 
 /-- The proved Fredholm alternative supplies invertibility on the fixed
 complement at the reference energy, including at resonance. -/
 theorem h1ComplementForm_isUnit {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {E₀ : ℝ} (hE₀ : 0 ≤ E₀) :
-    IsUnit (h1ComplementForm Ω E₀ E₀) := by
-  exact @isUnit_one_sub_smul_of_compact _ _ (h1ComplementNormedSpace Ω E₀) _ (h1ComplementMass Ω E₀)
-    (h1ComplementMass_isCompactOperator hb hL E₀) ((E₀ + 1 : ℝ) : ℂ)
+    IsUnit (h1ComplementForm Ω E₀ E₀) := @isUnit_one_sub_smul_of_compact _ _ (h1ComplementNormedSpace Ω E₀) _ (h1ComplementMass Ω E₀)
+    (h1ComplementMass_isCompactOperator hb hL E₀) (E₀ + 1 : ℝ)
     (h1ComplementForm_injective hE₀)
 
 theorem continuous_h1ComplementForm (Ω : Set ℂ) (E₀ : ℝ) :
@@ -200,8 +192,7 @@ continuous in operator norm. The reference energy belongs to it. -/
 theorem h1ComplementForm_isUnit_near {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {E₀ : ℝ} (hE₀ : 0 ≤ E₀) :
     ∃ U ∈ 𝓝 E₀, (∀ E ∈ U, IsUnit (h1ComplementForm Ω E₀ E)) ∧
-      ContinuousOn (fun E => Ring.inverse (h1ComplementForm Ω E₀ E)) U := by
-  exact continuous_inverse_near_unit (h1ComplementForm Ω E₀)
+      ContinuousOn (fun E => Ring.inverse (h1ComplementForm Ω E₀ E)) U := continuous_inverse_near_unit (h1ComplementForm Ω E₀)
     (continuous_h1ComplementForm Ω E₀) E₀ (h1ComplementForm_isUnit hb hL hE₀)
 
 /-- The regular H¹ resolvent, obtained from the actual complement inverse.
@@ -221,8 +212,7 @@ private lemma h1HelmholtzForm_on_resonantSpace {Ω : Set ℂ} {E₀ : ℝ} (hE�
   have hscalar : 1 - ((E + 1 : ℝ) : ℂ) * ((E₀ + 1 : ℝ) : ℂ)⁻¹ =
       ((E₀ - E : ℝ) : ℂ) / ((E₀ + 1 : ℝ) : ℂ) := by
     field_simp [hc]
-    push_cast
-    ring
+    norm_num
   calc
     _ = (1 - ((E + 1 : ℝ) : ℂ) * ((E₀ + 1 : ℝ) : ℂ)⁻¹) • u := by
       rw [sub_smul, one_smul]
@@ -257,13 +247,12 @@ private lemma h1PoleCandidate_solve {Ω : Set ℂ}
   have hscalar : (-(((E₀ + 1 : ℝ) : ℂ) / ((E - E₀ : ℝ) : ℂ))) *
       (((E₀ - E : ℝ) : ℂ) / ((E₀ + 1 : ℝ) : ℂ)) = 1 := by
     field_simp [hc, hd]
-    push_cast
-    ring
+    norm_num
   calc
     _ = (-(((E₀ + 1 : ℝ) : ℂ) / ((E - E₀ : ℝ) : ℂ))) •
         (h1HelmholtzForm Ω E ((h1ResonantSpace Ω E₀).starProjection u)) +
         h1HelmholtzForm Ω E (h1RegularResolvent Ω E₀ E u) := by
-      rw [map_add, map_smul]
+      norm_num
     _ = (-(((E₀ + 1 : ℝ) : ℂ) / ((E - E₀ : ℝ) : ℂ))) •
         ((((E₀ - E : ℝ) : ℂ) / ((E₀ + 1 : ℝ) : ℂ)) •
           (h1ResonantSpace Ω E₀).starProjection u) +
@@ -295,22 +284,18 @@ theorem h1HelmholtzForm_isUnit_off_reference {Ω : Set ℂ}
     (hunit : IsUnit (h1ComplementForm Ω E₀ E)) :
     IsUnit (h1HelmholtzForm Ω E) := by
   have hsurj : Function.Surjective (h1HelmholtzForm Ω E) := fun u =>
-    ⟨(-(((E₀ + 1 : ℝ) : ℂ) / ((E - E₀ : ℝ) : ℂ))) •
+    ⟨(-(((E₀ + 1 : ℝ) : ℂ) / (E - E₀ : ℝ))) •
       (h1ResonantSpace Ω E₀).starProjection u + h1RegularResolvent Ω E₀ E u,
       h1PoleCandidate_solve hE₀ hne hunit u⟩
-  let C : NeumannH1 Ω →L[ℂ] NeumannH1 Ω := -((E + 1 : ℝ) : ℂ) • h1MassOperator Ω
-  have hC : IsCompactOperator C := by
-    exact
-      (h1MassOperator_isCompactOperator hb hL).smul (-((E + 1 : ℝ) : ℂ))
-  have heq : (1 : NeumannH1 Ω →L[ℂ] NeumannH1 Ω) + C = h1HelmholtzForm Ω E := by
+  let C  := -((E + 1 : ℝ) : ℂ) • h1MassOperator Ω
+  have heq : 1 + C = h1HelmholtzForm Ω E := by
     simpa only [C, h1HelmholtzForm, h1MassOperator, sub_eq_add_neg] using
-      congrArg (fun T : NeumannH1 Ω →L[ℂ] NeumannH1 Ω => 1 + T)
+      congrArg (fun T  => 1 + T)
         (_root_.neg_smul ((E + 1 : ℝ) : ℂ) (h1MassOperator Ω))
-  have hinj : Function.Injective (h1HelmholtzForm Ω E) := by
+  exact isUnit_of_bijective _ ⟨by
     rw [← heq]
-    apply injective_of_surjective_one_add hC
-    rwa [heq]
-  exact isUnit_of_bijective _ ⟨hinj, hsurj⟩
+    apply injective_of_surjective_one_add ((h1MassOperator_isCompactOperator hb hL).smul (-((E + 1 : ℝ) : ℂ)))
+    simp_all, hsurj⟩
 
 /-- The exact pole formula for the genuine H¹ inverse. The complement is
 invertible near the reference energy by the theorem above; invertibility
@@ -320,7 +305,7 @@ theorem h1HelmholtzResolvent_eq_pole_add_regular {Ω : Set ℂ}
     {E₀ E : ℝ} (hE₀ : 0 ≤ E₀) (hne : E ≠ E₀)
     (hunit : IsUnit (h1ComplementForm Ω E₀ E)) :
     h1HelmholtzResolvent Ω E =
-      (-(((E₀ + 1 : ℝ) : ℂ) / ((E - E₀ : ℝ) : ℂ))) •
+      (-(((E₀ + 1 : ℝ) : ℂ) / (E - E₀ : ℝ))) •
         (h1ResonantSpace Ω E₀).starProjection + h1RegularResolvent Ω E₀ E := by
   have hu := h1HelmholtzForm_isUnit_off_reference hb hL hE₀ hne hunit
   apply ContinuousLinearMap.ext
@@ -334,22 +319,7 @@ theorem h1HelmholtzResolvent_eq_pole_add_regular {Ω : Set ℂ}
   rw [hleft]
   exact (h1PoleCandidate_solve hE₀ hne hunit u).symm
 
-/-- The genuine finite-rank boundary residue. H¹ normalization accounts for
-the factor `E₀ + 1`; in an L²-normalized eigenfunction basis this factor
-becomes the usual sum of boundary trace rank-one operators. -/
-def neumannBoundaryResidue {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E₀ : ℝ) :
-    BoundaryL2 →L[ℂ] BoundaryL2 :=
-  ((E₀ + 1 : ℝ) : ℂ) •
-    (h1BoundaryTrace hb hL hγ ∘L (h1ResonantSpace Ω E₀).starProjection ∘L
-      h1BoundaryLoad hb hL hγ)
 
-/-- The regular boundary operator is the actual trace sandwich of the
-complement inverse, including its genuine value at the reference energy. -/
-def neumannBoundaryRegular {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    (E₀ E : ℝ) : BoundaryL2 →L[ℂ] BoundaryL2 :=
-  h1BoundaryTrace hb hL hγ ∘L h1RegularResolvent Ω E₀ E ∘L h1BoundaryLoad hb hL hγ
 
 end PolyaNeumann
 

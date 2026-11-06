@@ -10,11 +10,13 @@ noncomputable section
 namespace PolyaNeumann
 open scoped InnerProductSpace ComplexConjugate
 
-private theorem matrix_inner_std_left (b : L2Z) (n : ℤ) :
+variable (b : L2Z) (n : ℤ)
+
+private theorem matrix_inner_std_left :
     ⟪stdBasisZ n, b⟫_ℂ = b n := by
   simp [stdBasisZ_apply, lp.inner_single_left, RCLike.inner_apply]
 
-private theorem matrix_inner_std_right (b : L2Z) (n : ℤ) :
+private theorem matrix_inner_std_right :
     ⟪b, stdBasisZ n⟫_ℂ = conj (b n) := by
   simp [stdBasisZ_apply, lp.inner_single_right, RCLike.inner_apply]
 
@@ -28,7 +30,7 @@ private theorem matrix_operator_ext (A B : L2Z →L[ℂ] L2Z)
   apply ContinuousLinearMap.ext_on
     ((Submodule.dense_iff_topologicalClosure_eq_top).2 stdBasisZ.dense_span)
   rintro _ ⟨n, rfl⟩
-  exact h n
+  simp_all
 
 theorem hsMatrixOp_isSelfAdjoint (a : ℤ × ℤ → ℂ)
     (ha : Summable fun p => ‖a p‖ ^ 2)
@@ -41,7 +43,7 @@ theorem hsMatrixOp_isSelfAdjoint (a : ℤ × ℤ → ℂ)
   funext m
   rw [matrix_adjoint_coefficient]
   simp only [hsMatrixOp_stdBasisZ]
-  exact (hs m n).symm
+  grind
 
 theorem diagOp_isSelfAdjoint (w : ℤ → ℂ) (C : ℝ)
     (hw : ∀ n, ‖w n‖ ≤ C) (hs : ∀ n, conj (w n) = w n) :
@@ -52,11 +54,9 @@ theorem diagOp_isSelfAdjoint (w : ℤ → ℂ) (C : ℝ)
   apply lp.ext
   funext m
   rw [matrix_adjoint_coefficient]
-  simp only [diagOp_apply, stdBasisZ_apply, lp.single_apply]
+  simp only [stdBasisZ_apply]
   by_cases hmn : m = n
-  · subst m
-    simp [hs]
-  · simp [hmn, Ne.symm hmn]
+  all_goals simp_all
 
 end PolyaNeumann
 end

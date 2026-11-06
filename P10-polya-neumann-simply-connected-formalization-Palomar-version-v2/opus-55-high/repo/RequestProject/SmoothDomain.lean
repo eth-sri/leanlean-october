@@ -33,7 +33,7 @@ lemma IsSmoothDomain.isLipschitzDomain {Ω : Set ℂ} (h : IsSmoothDomain Ω) :
     IsLipschitzDomain Ω := by
   refine ⟨h.1, fun p hp => ?_⟩
   obtain ⟨c, r, k, K, f, hc, hr, hk, -, hf, h0, hb, hΩ⟩ := h.2 p hp
-  exact ⟨c, r, k, K, f, hc, hr, hk, hf, h0, hb, hΩ⟩
+  grind
 
 end PolyaNeumann
 

@@ -35,8 +35,9 @@ variable {H G : Type*}
     [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     [NormedAddCommGroup G] [InnerProductSpace ℂ G] [CompleteSpace G]
 
+variable (Q : H →L[ℂ] G) (A : H →L[ℂ] H) (W : H → H → ℂ)
+
 private theorem normalized_trace_weak_iff
-    (Q : H →L[ℂ] G) (A : H →L[ℂ] H) (W : H → H → ℂ)
     (hA : ∀ v u, ⟪v, A u⟫_ℂ = W v u) (b : G) (u : H) :
     (∀ v, W v u = ⟪Q v, b⟫_ℂ) ↔ A u = ContinuousLinearMap.adjoint Q b := by
   constructor
@@ -51,13 +52,12 @@ private theorem normalized_trace_weak_iff
 
 omit [CompleteSpace H] in
 private theorem normalized_form_inverse_apply
-    (A : H →L[ℂ] H) (hA : IsUnit A) (x : H) :
+    (hA : IsUnit A) (x : H) :
     A (Ring.inverse A x) = x := by
   simpa only [ContinuousLinearMap.mul_apply, ContinuousLinearMap.one_apply] using
     congrArg (fun B : H →L[ℂ] H => B x) (Ring.mul_inverse_cancel A hA)
 
 private theorem normalized_trace_inverse_solution
-    (Q : H →L[ℂ] G) (A : H →L[ℂ] H) (W : H → H → ℂ)
     (hA : ∀ v u, ⟪v, A u⟫_ℂ = W v u) (hunit : IsUnit A) (b : G) :
     ∀ v, W v (((Ring.inverse A).comp (ContinuousLinearMap.adjoint Q)) b) =
       ⟪Q v, b⟫_ℂ := by
@@ -66,19 +66,17 @@ private theorem normalized_trace_inverse_solution
     normalized_form_inverse_apply A hunit (ContinuousLinearMap.adjoint Q b)
 
 private theorem normalized_trace_sandwich_isSelfAdjoint
-    (Q : H →L[ℂ] G) (A : H →L[ℂ] H) (hA : IsSelfAdjoint A) :
+    (hA : IsSelfAdjoint A) :
     IsSelfAdjoint (Q.comp (A.comp (ContinuousLinearMap.adjoint Q))) :=
   hA.conj_adjoint Q
 
 private theorem normalized_trace_sandwich_pole
-    (Q : H →L[ℂ] G) {A P R : H →L[ℂ] H} {a c d : ℂ}
+    {A P R : H →L[ℂ] H} {a c d : ℂ}
     (ha : a = c * d) (hA : A = a • P + R) :
     Q.comp (A.comp (ContinuousLinearMap.adjoint Q)) =
       c • (d • (Q.comp (P.comp (ContinuousLinearMap.adjoint Q)))) +
         Q.comp (R.comp (ContinuousLinearMap.adjoint Q)) := by
-  rw [hA, ha]
-  simp only [ContinuousLinearMap.add_comp, ContinuousLinearMap.comp_add,
-    ContinuousLinearMap.smul_comp, ContinuousLinearMap.comp_smul, smul_smul]
+  simp [hA, ha, ContinuousLinearMap.add_comp, ContinuousLinearMap.comp_add, ContinuousLinearMap.smul_comp, smul_smul]
 
 end HilbertBarriers
 
@@ -97,28 +95,28 @@ def IsNormalizedNeumannSolution (E : ℝ) (b : L2Z) (u : NeumannH1 Ω) : Prop :=
     (∑ i, ⟪h1Gradient Ω i v, h1Gradient Ω i u⟫_ℂ) -
       (E : ℂ) * ⟪h1Value Ω v, h1Value Ω u⟫_ℂ = ⟪Q v, b⟫_ℂ
 
-theorem isNormalizedNeumannSolution_iff (E : ℝ) (b : L2Z) (u : NeumannH1 Ω) :
+variable (E : ℝ)
+
+theorem isNormalizedNeumannSolution_iff (b : L2Z) (u : NeumannH1 Ω) :
     IsNormalizedNeumannSolution Q E b u ↔
-      h1HelmholtzForm Ω E u = ContinuousLinearMap.adjoint Q b := by
-  exact normalized_trace_weak_iff (H := NeumannH1 Ω) (G := L2Z) Q
+      h1HelmholtzForm Ω E u = ContinuousLinearMap.adjoint Q b := normalized_trace_weak_iff   Q
     (h1HelmholtzForm Ω E)
     (fun v w => (∑ i, ⟪h1Gradient Ω i v, h1Gradient Ω i w⟫_ℂ) -
-      (E : ℂ) * ⟪h1Value Ω v, h1Value Ω w⟫_ℂ)
+      E * ⟪h1Value Ω v, h1Value Ω w⟫_ℂ)
     (h1HelmholtzForm_inner Ω E) b u
 
 theorem normalizedNeumannPoisson_isSolution {E : ℝ}
     (hE : IsUnit (h1HelmholtzForm Ω E)) (b : L2Z) :
-    IsNormalizedNeumannSolution Q E b (normalizedNeumannPoisson Q E b) := by
-  exact normalized_trace_inverse_solution (H := NeumannH1 Ω) (G := L2Z) Q
+    IsNormalizedNeumannSolution Q E b (normalizedNeumannPoisson Q E b) := normalized_trace_inverse_solution   Q
     (h1HelmholtzForm Ω E)
     (fun v w => (∑ i, ⟪h1Gradient Ω i v, h1Gradient Ω i w⟫_ℂ) -
-      (E : ℂ) * ⟪h1Value Ω v, h1Value Ω w⟫_ℂ)
+      E * ⟪h1Value Ω v, h1Value Ω w⟫_ℂ)
     (h1HelmholtzForm_inner Ω E) hE b
 
 theorem normalizedNeumannBoundary_isSelfAdjoint (E : ℝ) :
     IsSelfAdjoint (normalizedNeumannBoundary Q E) := by
   simpa only [normalizedNeumannBoundary, normalizedNeumannPoisson] using
-    normalized_trace_sandwich_isSelfAdjoint (H := NeumannH1 Ω) (G := L2Z) Q
+    normalized_trace_sandwich_isSelfAdjoint   Q
       (h1HelmholtzResolvent Ω E) (h1HelmholtzResolvent_isSelfAdjoint Ω E)
 
 def normalizedNeumannResidue (E₀ : ℝ) : L2Z →L[ℂ] L2Z :=
@@ -133,12 +131,8 @@ theorem normalizedNeumannBoundary_eq_pole_add_regular
     (hE₀ : 0 ≤ E₀) (hne : E ≠ E₀) (hunit : IsUnit (h1ComplementForm Ω E₀ E)) :
     normalizedNeumannBoundary Q E =
       (-((E - E₀ : ℝ) : ℂ)⁻¹) • normalizedNeumannResidue Q E₀ +
-        normalizedNeumannRegular Q E₀ E := by
-  have hs : -(((E₀ + 1 : ℝ) : ℂ) / ((E - E₀ : ℝ) : ℂ)) =
-      (-((E - E₀ : ℝ) : ℂ)⁻¹) * ((E₀ + 1 : ℝ) : ℂ) := by
-    rw [div_eq_mul_inv]
-    ring
-  exact normalized_trace_sandwich_pole (H := NeumannH1 Ω) (G := L2Z) Q hs
+        normalizedNeumannRegular Q E₀ E := normalized_trace_sandwich_pole   Q (by
+    ring)
     (h1HelmholtzResolvent_eq_pole_add_regular hb hL hE₀ hne hunit)
 
 end

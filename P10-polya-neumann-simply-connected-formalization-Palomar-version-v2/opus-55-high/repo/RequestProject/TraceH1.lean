@@ -52,11 +52,11 @@ instance smoothTraceTestsCoeFun : CoeFun smoothTraceTests (fun _ => ℂ → ℂ)
   ⟨fun f => f.1⟩
 
 lemma smoothTraceTests_memLp (Ω : Set ℂ) (f : smoothTraceTests) :
-    MemLp (f : ℂ → ℂ) 2 (volume.restrict Ω) :=
+    MemLp f 2 (volume.restrict Ω) :=
   f.property.memLp' 2
 
 lemma smoothTraceTests_memLp_deriv (Ω : Set ℂ) (f : smoothTraceTests)
-    (i : Fin 2) : MemLp (fun z => fderiv ℝ (f : ℂ → ℂ) z (coordDir i)) 2
+    (i : Fin 2) : MemLp (fun z => fderiv ℝ f z (coordDir i)) 2
       (volume.restrict Ω) :=
   (f.property.dirD (coordDir i)).memLp' 2
 
@@ -68,12 +68,12 @@ def smoothTraceH1 (Ω : Set ℂ) (f : smoothTraceTests) : NeumannH1 Ω :=
 
 @[simp] theorem h1Value_smoothTraceH1 (Ω : Set ℂ) (f : smoothTraceTests) :
     h1Value Ω (smoothTraceH1 Ω f) =
-      (smoothTraceTests_memLp Ω f).toLp (f : ℂ → ℂ) := rfl
+      (smoothTraceTests_memLp Ω f).toLp f := rfl
 
 @[simp] theorem h1Gradient_smoothTraceH1 (Ω : Set ℂ) (f : smoothTraceTests) (i : Fin 2) :
     h1Gradient Ω i (smoothTraceH1 Ω f) =
       (smoothTraceTests_memLp_deriv Ω f i).toLp
-        (fun z => fderiv ℝ (f : ℂ → ℂ) z (coordDir i)) := rfl
+        (fun z => fderiv ℝ f z (coordDir i)) := rfl
 
 /-- Restriction of smooth functions to H¹ is a linear map. Gradient
 uniqueness makes its linearity follow from that of the value restriction. -/
@@ -82,14 +82,10 @@ def smoothTraceH1Lin {Ω : Set ℂ} (hΩ : IsOpen Ω) :
   toFun := smoothTraceH1 Ω
   map_add' f g := by
     apply h1Value_injective hΩ
-    rw [map_add]
-    simp only [h1Value_smoothTraceH1]
-    exact MemLp.toLp_add (smoothTraceTests_memLp Ω f) (smoothTraceTests_memLp Ω g)
+    rfl
   map_smul' c f := by
     apply h1Value_injective hΩ
-    rw [map_smul]
-    simp only [h1Value_smoothTraceH1]
-    exact MemLp.toLp_const_smul c (smoothTraceTests_memLp Ω f)
+    rfl
 
 @[simp] theorem smoothTraceH1Lin_apply {Ω : Set ℂ} (hΩ : IsOpen Ω)
     (f : smoothTraceTests) : smoothTraceH1Lin hΩ f = smoothTraceH1 Ω f := rfl
@@ -99,7 +95,7 @@ private lemma tendsto_toLp_of_approx {α : Type*} [MeasurableSpace α] {μ : Mea
     (hu : Tendsto (fun n => eLpNorm (f n - (u : α → ℂ)) 2 μ) atTop (𝓝 0)) :
     Tendsto (fun n => (hf n).toLp (f n)) atTop (𝓝 u) := by
   have ht := (Lp.tendsto_Lp_iff_tendsto_eLpNorm'' f hf (u : α → ℂ) (Lp.memLp u)).2 hu
-  simpa only [Lp.toLp_coeFn] using ht
+  simp_all
 
 /-- Smooth functions on the whole plane have dense restrictions in the true
 H¹ norm, including both weak derivatives. -/
@@ -108,33 +104,26 @@ theorem denseRange_smoothTraceH1Lin {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   intro u
   obtain ⟨φ, hφ, hu, hg⟩ := exists_testFunction_approx hb hL (h1Value_weakGradient Ω u)
   let F : ℕ → smoothTraceTests := fun n => ⟨φ n, hφ n⟩
-  have ht0 : Tendsto (fun n => (smoothTraceTests_memLp Ω (F n)).toLp (φ n))
-      atTop (𝓝 (h1Value Ω u)) :=
+  have ht0  :=
     tendsto_toLp_of_approx φ (fun n => smoothTraceTests_memLp Ω (F n)) (h1Value Ω u) hu
-  have hti : ∀ i : Fin 2, Tendsto
-      (fun n => (smoothTraceTests_memLp_deriv Ω (F n) i).toLp
-        (fun z => fderiv ℝ (φ n) z (coordDir i))) atTop (𝓝 (h1Gradient Ω i u)) :=
-    fun i => tendsto_toLp_of_approx _
-      (fun n => smoothTraceTests_memLp_deriv Ω (F n) i) (h1Gradient Ω i u) (hg i)
   have htcoord : Tendsto
-      (fun n => WithLp.ofLp ((smoothTraceH1 Ω (F n) : NeumannH1 Ω) : H1Jet Ω))
+      (fun n => WithLp.ofLp (smoothTraceH1 Ω (F n) : H1Jet Ω))
       atTop (𝓝 (WithLp.ofLp (u : H1Jet Ω))) := by
     refine tendsto_pi_nhds.2 fun i => ?_
     refine Fin.cases ?_ (fun j => ?_) i
-    · exact ht0
-    · exact hti j
-  have ht : Tendsto (fun n => smoothTraceH1Lin hL.1.1 (F n)) atTop (𝓝 u) := by
+    · assumption
+    · exact (fun i => tendsto_toLp_of_approx _
+      (fun n => smoothTraceTests_memLp_deriv Ω (F n) i) (h1Gradient Ω i u) (hg i)) j
+  exact mem_closure_of_tendsto (by
     apply tendsto_subtype_rng.2
-    have h := ((PiLp.continuous_toLp 2 (fun _ : Fin 3 => L2 Ω)).tendsto
+    have h := ((PiLp.continuous_toLp 2 (fun _  => L2 Ω)).tendsto
         (WithLp.ofLp (u : H1Jet Ω))).comp htcoord
-    simp only [Function.comp_def, WithLp.toLp_ofLp] at h
-    exact h
-  exact mem_closure_of_tendsto ht (Eventually.of_forall fun n =>
-    Set.mem_range_self (f := smoothTraceH1Lin hL.1.1) (F n))
+    assumption) (Eventually.of_forall fun n =>
+    Set.mem_range_self  (F n))
 
 lemma smoothTraceBoundary_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (f : smoothTraceTests) :
-    MemLp (fun θ => f (γ θ)) 2 (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
+    MemLp (fun θ => f (γ θ)) 2 (volume.restrict (Ioc 0 (2 * π))) := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
   obtain ⟨B, hB⟩ := f.property.2.1.exists_bound_of_continuous f.property.1.continuous
   exact MemLp.of_bound (f.property.1.continuous.comp hK.continuous).aestronglyMeasurable
@@ -145,36 +134,34 @@ def smoothTraceBoundaryLin {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryPa
     smoothTraceTests →ₗ[ℂ] BoundaryL2 where
   toFun f := (smoothTraceBoundary_memLp hγ f).toLp (fun θ => f (γ θ))
   map_add' f g := by
-    exact MemLp.toLp_add (smoothTraceBoundary_memLp hγ f) (smoothTraceBoundary_memLp hγ g)
+    rfl
   map_smul' c f := by
-    exact MemLp.toLp_const_smul c (smoothTraceBoundary_memLp hγ f)
+    rfl
 
 lemma norm_sq_toLp_eq_integral {α : Type*} [MeasurableSpace α] {μ : Measure α}
     {f : α → ℂ} (hf : MemLp f 2 μ) :
     ‖hf.toLp f‖ ^ 2 = ∫ x, ‖f x‖ ^ 2 ∂μ := by
   let u := hf.toLp f
   have h := congrArg RCLike.re (L2.inner_def (𝕜 := ℂ) u u)
-  rw [inner_self_eq_norm_sq, ← integral_re (L2.integrable_inner u u)] at h
+  rw [← integral_re (L2.integrable_inner u u)] at h
   simp_rw [inner_self_eq_norm_sq] at h
   rw [h]
-  exact integral_congr_ae (hf.coeFn_toLp.fun_comp (fun z : ℂ => ‖z‖ ^ 2))
+  exact integral_congr_ae (hf.coeFn_toLp.fun_comp (fun z  => ‖z‖ ^ 2))
 
 /-- The norm of a smooth H¹ vector is exactly its shifted energy norm. -/
 theorem norm_sq_smoothTraceH1 (Ω : Set ℂ) (f : smoothTraceTests) :
     ‖smoothTraceH1 Ω f‖ ^ 2 =
-      (∫ z in Ω, ‖f z‖ ^ 2) + ∫ z in Ω, gradSq (f : ℂ → ℂ) z := by
-  rw [h1_norm_sq, h1Value_smoothTraceH1, norm_sq_toLp_eq_integral]
+      (∫ z in Ω, ‖f z‖ ^ 2) + ∫ z in Ω, gradSq f z := by
+  rw [h1_norm_sq, h1Value_smoothTraceH1]
   simp only [Fin.sum_univ_two, h1Gradient_smoothTraceH1, norm_sq_toLp_eq_integral]
-  have h0 := (smoothTraceTests_memLp_deriv Ω f 0).integrable_norm_pow (by decide : 2 ≠ 0)
-  have h1 := (smoothTraceTests_memLp_deriv Ω f 1).integrable_norm_pow (by decide : 2 ≠ 0)
-  rw [← integral_add h0 h1]
+  rw [← integral_add ((smoothTraceTests_memLp_deriv Ω f 0).integrable_norm_pow (by decide)) ((smoothTraceTests_memLp_deriv Ω f 1).integrable_norm_pow (by decide))]
   rfl
 
 /-- Boundary norms use ordinary coordinate measure exactly. -/
 theorem norm_sq_smoothTraceBoundary {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (f : smoothTraceTests) :
     ‖smoothTraceBoundaryLin hγ f‖ ^ 2 =
-      ∫ θ in (0 : ℝ)..(2 * π), ‖f (γ θ)‖ ^ 2 := by
+      ∫ θ in 0..(2 * π), ‖f (γ θ)‖ ^ 2 := by
   change ‖(smoothTraceBoundary_memLp hγ f).toLp (fun θ => f (γ θ))‖ ^ 2 = _
   rw [norm_sq_toLp_eq_integral, intervalIntegral.integral_of_le (by positivity)]
 
@@ -189,13 +176,13 @@ theorem exists_bound_smoothTraceBoundary {Ω : Set ℂ} (hb : Bornology.IsBounde
   obtain ⟨Kf, hKf⟩ := ContDiff.lipschitzWith_of_hasCompactSupport
     f.property.2.1 f.property.1 (by simp)
   obtain ⟨B, hB⟩ := f.property.2.1.exists_bound_of_continuous f.property.1.continuous
-  have hs := hbound (f : ℂ → ℂ) Kf hKf B hB
+  have hs := hbound f Kf hKf B hB
   rw [← norm_sq_smoothTraceBoundary hγ f, ← norm_sq_smoothTraceH1 Ω f] at hs
   have heq : (Real.sqrt C * ‖smoothTraceH1 Ω f‖) ^ 2 = C * ‖smoothTraceH1 Ω f‖ ^ 2 := by
-    rw [mul_pow, Real.sq_sqrt hC]
+    grind
   have hn : 0 ≤ Real.sqrt C * ‖smoothTraceH1 Ω f‖ := by positivity
   change ‖smoothTraceBoundaryLin hγ f‖ ≤ Real.sqrt C * ‖smoothTraceH1 Ω f‖
-  nlinarith [norm_nonneg (smoothTraceBoundaryLin hγ f)]
+  nlinarith 
 
 /-- The true boundary trace, constructed by bounded extension from the dense
 smooth restrictions in H¹. -/
@@ -216,8 +203,8 @@ theorem h1BoundaryTrace_smooth {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 theorem h1BoundaryTrace_smooth_ae {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     (f : smoothTraceTests) :
-    (h1BoundaryTrace hb hL hγ (smoothTraceH1 Ω f) : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * π))] fun θ => f (γ θ) := by
+    h1BoundaryTrace hb hL hγ (smoothTraceH1 Ω f)
+      =ᵐ[volume.restrict (Ioc 0 (2 * π))] fun θ => f (γ θ) := by
   rw [h1BoundaryTrace_smooth hb hL hγ f]
   exact (smoothTraceBoundary_memLp hγ f).coeFn_toLp
 
@@ -227,8 +214,7 @@ theorem h1BoundaryTrace_inner_smooth {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     (f : smoothTraceTests) (g : BoundaryL2) :
     ⟪h1BoundaryTrace hb hL hγ (smoothTraceH1 Ω f), g⟫_ℂ =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), conj (f (γ θ)) * g θ := by
-  rw [L2.inner_def]
+      ∫ θ in Ioc 0 (2 * π), conj (f (γ θ)) * g θ := by
   apply integral_congr_ae
   filter_upwards [h1BoundaryTrace_smooth_ae hb hL hγ f] with θ hθ
   simp only [RCLike.inner_apply', hθ]
@@ -243,8 +229,7 @@ def h1BoundaryLoad {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 theorem h1BoundaryLoad_inner {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
     (u : NeumannH1 Ω) (g : BoundaryL2) :
-    ⟪u, h1BoundaryLoad hb hL hγ g⟫_ℂ = ⟪h1BoundaryTrace hb hL hγ u, g⟫_ℂ := by
-  exact ContinuousLinearMap.adjoint_inner_right _ _ _
+    ⟪u, h1BoundaryLoad hb hL hγ g⟫_ℂ = ⟪h1BoundaryTrace hb hL hγ u, g⟫_ℂ := ContinuousLinearMap.adjoint_inner_right _ _ _
 
 end PolyaNeumann
 

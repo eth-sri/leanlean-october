@@ -25,50 +25,52 @@ open MeasureTheory Set Metric
 def normalizedInverseAbsSymbol (n : ℤ) : ℂ :=
   if n = 0 then 0 else ((sobWeight n / |(n : ℝ)| : ℝ) : ℂ)
 
+variable (m : ℕ) (b : L2Z) (n : ℤ)
+
 theorem normalizedInverseAbsSymbol_pos (m : ℕ) :
-    normalizedInverseAbsSymbol ((m + 1 : ℕ) : ℤ) =
-      ((((m + 2 : ℕ) : ℝ) / ((m + 1 : ℕ) : ℝ) : ℝ) : ℂ) := by
+    normalizedInverseAbsSymbol (m + 1 : ℕ) =
+      ((m + 2 : ℕ) / (m + 1 : ℕ) : ℝ) := by
   have hn : ((m + 1 : ℕ) : ℤ) ≠ 0 := by omega
-  have hweight : sobWeight ((m + 1 : ℕ) : ℤ) = ((m + 2 : ℕ) : ℝ) := by
+  have hweight : sobWeight (m + 1 : ℕ) = (m + 2 : ℕ) := by
     simp only [sobWeight, Int.cast_natCast,
-      abs_of_nonneg (by positivity : (0 : ℝ) ≤ ((m + 1 : ℕ) : ℝ))]
+      abs_of_nonneg (by positivity : (0 : ℝ) ≤ (m + 1 : ℕ))]
     push_cast
     ring
   simp only [normalizedInverseAbsSymbol, if_neg hn, hweight, Int.cast_natCast,
-    abs_of_nonneg (by positivity : (0 : ℝ) ≤ ((m + 1 : ℕ) : ℝ))]
+    abs_of_nonneg (by positivity : (0 : ℝ) ≤ (m + 1 : ℕ))]
 
-theorem normalizedInverseAbsSymbol_neg (m : ℕ) :
-    normalizedInverseAbsSymbol (-((m + 1 : ℕ) : ℤ)) =
-      ((((m + 2 : ℕ) : ℝ) / ((m + 1 : ℕ) : ℝ) : ℝ) : ℂ) := by
+theorem normalizedInverseAbsSymbol_neg :
+    normalizedInverseAbsSymbol (-(m + 1 : ℕ)) =
+      ((m + 2 : ℕ) / (m + 1 : ℕ) : ℝ) := by
   have hn : -((m + 1 : ℕ) : ℤ) ≠ 0 := by omega
-  have hweight : sobWeight (-((m + 1 : ℕ) : ℤ)) = ((m + 2 : ℕ) : ℝ) := by
+  have hweight : sobWeight (-(m + 1 : ℕ)) = (m + 2 : ℕ) := by
     simp only [sobWeight, Int.cast_neg, Int.cast_natCast, abs_neg,
-      abs_of_nonneg (by positivity : (0 : ℝ) ≤ ((m + 1 : ℕ) : ℝ))]
+      abs_of_nonneg (by positivity : (0 : ℝ) ≤ (m + 1 : ℕ))]
     push_cast
     ring
   simp only [normalizedInverseAbsSymbol, if_neg hn, hweight, Int.cast_neg,
     Int.cast_natCast, abs_neg,
-    abs_of_nonneg (by positivity : (0 : ℝ) ≤ ((m + 1 : ℕ) : ℝ))]
+    abs_of_nonneg (by positivity : (0 : ℝ) ≤ (m + 1 : ℕ))]
 
-private theorem norm_successor_ratio_le_two (m : ℕ) :
+private theorem norm_successor_ratio_le_two :
     ‖(((((m + 2 : ℕ) : ℝ) / ((m + 1 : ℕ) : ℝ) : ℝ) : ℂ))‖ ≤ 2 := by
   have hk : 0 < ((m + 1 : ℕ) : ℝ) := by positivity
   rw [Complex.norm_of_nonneg (div_nonneg (by positivity) hk.le), div_le_iff₀ hk]
   push_cast
   linarith
 
-theorem norm_normalizedInverseAbsSymbol_le (n : ℤ) :
+theorem norm_normalizedInverseAbsSymbol_le :
     ‖normalizedInverseAbsSymbol n‖ ≤ 2 := by
   cases n with
   | ofNat k =>
       cases k with
       | zero => norm_num [normalizedInverseAbsSymbol]
       | succ m =>
-          change ‖normalizedInverseAbsSymbol ((m + 1 : ℕ) : ℤ)‖ ≤ 2
+          change ‖normalizedInverseAbsSymbol (m + 1 : ℕ)‖ ≤ 2
           rw [normalizedInverseAbsSymbol_pos]
           exact norm_successor_ratio_le_two m
   | negSucc m =>
-      have hi : Int.negSucc m = -((m + 1 : ℕ) : ℤ) := by omega
+      have hi : Int.negSucc m = -(m + 1 : ℕ) := by omega
       rw [hi, normalizedInverseAbsSymbol_neg]
       exact norm_successor_ratio_le_two m
 
@@ -76,7 +78,7 @@ theorem norm_normalizedInverseAbsSymbol_le (n : ℤ) :
 def normalizedInverseAbsOperator : L2Z →L[ℂ] L2Z :=
   diagOp normalizedInverseAbsSymbol 2 norm_normalizedInverseAbsSymbol_le
 
-@[simp] theorem normalizedInverseAbsOperator_apply (b : L2Z) (n : ℤ) :
+@[simp] theorem normalizedInverseAbsOperator_apply :
     normalizedInverseAbsOperator b n = normalizedInverseAbsSymbol n * b n :=
   diagOp_apply normalizedInverseAbsSymbol 2 norm_normalizedInverseAbsSymbol_le b n
 
@@ -87,26 +89,20 @@ def zeroModeProjection : L2Z →L[ℂ] L2Z :=
       change ‖(if n = 0 then (1 : ℂ) else 0)‖ ≤ 1
       split_ifs <;> simp)
 
-@[simp] theorem zeroModeProjection_apply (b : L2Z) (n : ℤ) :
+@[simp] theorem zeroModeProjection_apply :
     zeroModeProjection b n = (if n = 0 then 1 else 0) * b n :=
   diagOp_apply _ _ _ b n
 
-theorem zeroModeProjection_eq_single (b : L2Z) :
+theorem zeroModeProjection_eq_single :
     zeroModeProjection b = lp.single 2 0 (b 0) := by
   apply lp.ext
   funext n
-  rw [zeroModeProjection_apply, lp.single_apply]
   by_cases hn : n = 0
-  · subst n
-    simp
-  · simp [hn]
+  all_goals simp_all
 
 theorem isCompactOperator_zeroModeProjection : IsCompactOperator zeroModeProjection := by
-  unfold zeroModeProjection
-  apply isCompactOperator_diagOp_of_finite _ _ _ ({0} : Finset ℤ)
-  intro n hn
-  simp only [Finset.mem_singleton] at hn
-  simp [hn]
+  apply isCompactOperator_diagOp_of_finite _ _ _ {0}
+  norm_num
 
 section
 

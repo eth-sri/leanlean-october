@@ -34,21 +34,21 @@ def nonpositiveFourierSubspace : Submodule ℂ L2Z where
     intro c b hb n hn
     simp [hb n hn]
 
+variable (b : L2Z)
+
 theorem nonpositiveFourierSubspace_eq_ker_posProj :
     nonpositiveFourierSubspace = posProj.ker := by
   apply Submodule.ext
   intro b
-  change IsNonpositiveFourierSupport b ↔ posProj b = 0
   constructor
   · intro hb
     apply lp.ext
     funext n
     by_cases hn : 0 < n
-    · simp [posProj, diagOp_apply, hn, hb n hn]
-    · simp [posProj, diagOp_apply, hn]
+    · simp [posProj, hb n hn]
+    simp [posProj, hn]
   · intro hb n hn
-    have h := congrArg (fun v : L2Z => v n) hb
-    simpa [posProj, diagOp_apply, hn] using h
+    simpa [posProj, hn] using congrArg (fun v  => v n) hb
 
 theorem isClosed_nonpositiveFourierSubspace :
     IsClosed (nonpositiveFourierSubspace : Set L2Z) := by
@@ -63,25 +63,21 @@ instance nonpositiveFourierComplementCompleteSpace :
     CompleteSpace nonpositiveFourierSubspaceᗮ :=
   nonpositiveFourierSubspace.isClosed_orthogonal.completeSpace_coe
 
-theorem one_sub_posProj_mem_nonpositive (b : L2Z) :
+theorem one_sub_posProj_mem_nonpositive :
     (1 - posProj) b ∈ nonpositiveFourierSubspace := by
   intro n hn
-  simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-    posProj, diagOp_apply, hn]
+  simp [posProj, hn]
 
-theorem posProj_mem_nonpositive_orthogonal (b : L2Z) :
+theorem posProj_mem_nonpositive_orthogonal :
     posProj b ∈ nonpositiveFourierSubspaceᗮ := by
-  rw [Submodule.mem_orthogonal]
   intro a ha
-  change IsNonpositiveFourierSupport a at ha
   rw [lp.inner_eq_tsum]
-  have hterms : (fun n => ⟪a n, posProj b n⟫_ℂ) = fun _ => (0 : ℂ) := by
+  have hterms : (fun n => ⟪a n, posProj b n⟫_ℂ) = fun _ => 0 := by
     funext n
     by_cases hn : 0 < n
     · simp [ha n hn]
-    · simp [posProj, diagOp_apply, hn]
-  rw [hterms]
-  exact tsum_zero
+    simp [posProj, hn]
+  simp_all
 
 /-- The zero frequency belongs to the first summand of the actual
 orthogonal decomposition used by the physical chart. -/
@@ -91,8 +87,7 @@ theorem nonpositiveFourierSubspace_starProjection :
   apply nonpositiveFourierSubspace.eq_starProjection_of_mem_orthogonal
     (one_sub_posProj_mem_nonpositive b)
   have heq : b - (1 - posProj) b = posProj b := by
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply]
-    abel
+    norm_num
   rw [heq]
   exact posProj_mem_nonpositive_orthogonal b
 

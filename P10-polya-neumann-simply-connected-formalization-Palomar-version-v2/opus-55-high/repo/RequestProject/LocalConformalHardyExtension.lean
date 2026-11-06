@@ -43,15 +43,15 @@ def localConformalHardyH1Extension :
   (localConformalH1Pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes).comp
     diskHardyExtension
 
-@[simp] theorem localConformalH1Pullback_hardyExtension (b : L2Z) :
+variable (b : L2Z)
+
+@[simp] theorem localConformalH1Pullback_hardyExtension :
     localConformalH1Pullback hR F hFs hL
       (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) =
-        diskHardyExtension b := by
-  exact localConformalH1Pullback_pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes
+        diskHardyExtension b := localConformalH1Pullback_pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes
     (diskHardyExtension b)
 
-theorem localConformalDiskHalfTrace_hardyExtension_eq_of_nonpositive (b : L2Z)
-    (hneg : ∀ n : ℤ, 0 < n → b n = 0) :
+theorem localConformalDiskHalfTrace_hardyExtension_eq_of_nonpositive (hneg : ∀ n : ℤ, 0 < n → b n = 0) :
     localConformalDiskHalfTrace hR F hFs hL
       (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) = b := by
   change diskHalfTrace (localConformalH1Pullback hR F hFs hL
@@ -60,10 +60,10 @@ theorem localConformalDiskHalfTrace_hardyExtension_eq_of_nonpositive (b : L2Z)
   exact diskHalfTrace_diskHardyExtension_eq_of_nonpositive b hneg
 
 /-- The transported vector satisfies the actual physical weak CR equation. -/
-theorem localConformalHardyH1Extension_cauchyRiemann (b : L2Z) :
-    h1Gradient (F '' ball (0 : ℂ) 1) 0
+theorem localConformalHardyH1Extension_cauchyRiemann :
+    h1Gradient (F '' ball 0 1) 0
         (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) =
-      Complex.I • h1Gradient (F '' ball (0 : ℂ) 1) 1
+      Complex.I • h1Gradient (F '' ball 0 1) 1
         (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) := by
   apply (localConformalH1Pullback_antiholomorphic_iff hR F hFs hb hL hhol hinj hC
     (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b)).mp

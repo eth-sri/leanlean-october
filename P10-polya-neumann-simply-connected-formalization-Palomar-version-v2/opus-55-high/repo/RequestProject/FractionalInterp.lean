@@ -60,39 +60,34 @@ include hv hr hper
 `|(2π)⁻¹ C (π/2)^β| 2^{2s} / (1 - 2^{2s-β})`. -/
 theorem sum_rpow_mul_fourierCoeff_rows_le {C β s : ℝ} (hs : 0 < s) (hsβ : 2 * s < β)
     (hdiff : ∀ h : ℝ, 0 < h → h ≤ π / 2 →
-      ∫ θ in (0 : ℝ)..(2 * π), ‖secondDiff r h θ‖ ^ 2 ≤ C * h ^ β) (u : Finset (ι × ℤ)) :
+      ∫ θ in 0..(2 * π), ‖secondDiff r h θ‖ ^ 2 ≤ C * h ^ β) (u : Finset (ι × ℤ)) :
     ∑ p ∈ u, |(p.2 : ℝ)| ^ (2 * s) *
       ‖fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v p.1⟫_ℂ) p.2‖ ^ 2 ≤
-      |(2 * π)⁻¹ * C * (π / 2) ^ β| * 2 ^ (2 * s) * (1 - (2 : ℝ) ^ (2 * s - β))⁻¹ := by
+      |(2 * π)⁻¹ * C * (π / 2) ^ β| * 2 ^ (2 * s) * (1 - 2 ^ (2 * s - β))⁻¹ := by
   classical
   set c : ι → ℤ → ℂ := fun j n => fourierCoeffOn two_pi_pos (fun θ => ⟪r θ, v j⟫_ℂ) n with hc
   have hcont : ∀ j, Continuous fun θ => ⟪r θ, v j⟫_ℂ := fun j => hr.inner continuous_const
-  have hsumj : ∀ j, Summable fun n => ‖c j n‖ ^ 2 := fun j =>
+  have hsumj  := fun j =>
     (hasSum_sq_fourierCoeffOn_of_continuous (hcont j)).summable
   set Cb : ℝ := (2 * π)⁻¹ * C * (π / 2) ^ β with hCb
-  set bound : ℝ := |Cb| * 2 ^ (2 * s) * (1 - (2 : ℝ) ^ (2 * s - β))⁻¹ with hbound
+  set bound : ℝ := |Cb| * 2 ^ (2 * s) * (1 - 2 ^ (2 * s - β))⁻¹ with hbound
   have hfin : ∀ (J : Finset ι) (U : Finset ℤ),
       ∑ n ∈ U, |(n : ℝ)| ^ (2 * s) * ∑ j ∈ J, ‖c j n‖ ^ 2 ≤ bound := by
     intro J U
     set aJ : ℤ → ℝ := fun n => ∑ j ∈ J, ‖c j n‖ ^ 2 with haJ
     have haJ0 : ∀ n, 0 ≤ aJ n := fun n => Finset.sum_nonneg fun j _ => by positivity
-    have haJs : Summable aJ := summable_sum fun j _ => hsumj j
-    have hblock := fun N hN u hu => block_bound_of_diff_bound haJ0 haJs 2
+    have hblock := fun N hN u hu => block_bound_of_diff_bound haJ0 (summable_sum fun j _ => hsumj j) 2
       (C := (2 * π)⁻¹ * C) (β := β) (fun h h0 h1 => ?_) N hN u hu
     · have := sum_rpow_mul_le_of_block_bound haJ0 hs.le hsβ hblock U
       rwa [Real.zero_rpow (by positivity), zero_mul, zero_add] at this
-    · have hw : ∀ j ∈ J, Summable fun n : ℤ =>
-          ‖Complex.exp (n * h * Complex.I) - 1‖ ^ (2 * 2) * ‖c j n‖ ^ 2 := by
+    · simp only [haJ, Finset.mul_sum]
+      rw [Summable.tsum_finsetSum (by
         intro j _
         refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
           ((hsumj j).mul_left (2 ^ (2 * 2)))
         refine mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (norm_nonneg _) ?_ _) (by positivity)
         refine (norm_sub_le _ _).trans ?_
-        rw [show (n : ℂ) * h * Complex.I = ((n * h : ℝ) : ℂ) * Complex.I from (by push_cast; ring),
-          Complex.norm_exp_ofReal_mul_I]
-        norm_num
-      simp only [haJ, Finset.mul_sum]
-      rw [Summable.tsum_finsetSum hw]
+        norm_num [show n * h * Complex.I = (n * h : ℝ) * Complex.I from (by norm_num)])]
       refine (sum_tsum_secondDiff_le hv hr hper J h).trans ?_
       rw [mul_assoc]
       exact mul_le_mul_of_nonneg_left (hdiff h h0 h1) (by positivity)
@@ -101,12 +96,9 @@ theorem sum_rpow_mul_fourierCoeff_rows_le {C β s : ℝ} (hs : 0 < s) (hsβ : 2 
   calc ∑ p ∈ u, |(p.2 : ℝ)| ^ (2 * s) * ‖c p.1 p.2‖ ^ 2
       ≤ ∑ p ∈ J ×ˢ U, |(p.2 : ℝ)| ^ (2 * s) * ‖c p.1 p.2‖ ^ 2 := by
         refine Finset.sum_le_sum_of_subset_of_nonneg (fun p hp => ?_) fun p _ _ => by positivity
-        rw [Finset.mem_product]
-        exact ⟨Finset.mem_image_of_mem _ hp, Finset.mem_image_of_mem _ hp⟩
+        grind
     _ = ∑ n ∈ U, |(n : ℝ)| ^ (2 * s) * ∑ j ∈ J, ‖c j n‖ ^ 2 := by
-        rw [Finset.sum_product_right]
-        refine Finset.sum_congr rfl fun n _ => ?_
-        rw [Finset.mul_sum]
+        simp [Finset.sum_product_right, Finset.mul_sum]
     _ ≤ bound := hfin J U
 
 omit [InnerProductSpace ℂ H] hv hper in
@@ -117,13 +109,11 @@ theorem secondDiff_integral_le_interp {A B M τ h : ℝ} (hτ0 : 0 ≤ τ) (hτ1
     (hh : 0 < h) (hh' : h ≤ π / 2)
     (hgood : ∀ θ ∈ Set.Icc 0 (2 * π - 2 * h), ‖secondDiff r h θ‖ ≤ A * h ^ 2)
     (hbad : ∀ θ, ‖secondDiff r h θ‖ ≤ B * h) (hM : ∀ θ, ‖r θ‖ ≤ M) :
-    ∫ θ in (0 : ℝ)..(2 * π), ‖secondDiff r h θ‖ ^ 2 ≤
+    ∫ θ in 0..(2 * π), ‖secondDiff r h θ‖ ^ 2 ≤
       ((π ^ 2 * A ^ 2 + 2 * B ^ 2) ^ τ * (32 * π * M ^ 2) ^ (1 - τ)) * h ^ (3 * τ) := by
   have hFc : Continuous fun θ => ‖secondDiff r h θ‖ ^ 2 :=
     (((hr.comp (continuous_id.add continuous_const)).sub (hr.comp (continuous_id.add continuous_const))).sub
       ((hr.comp (continuous_id.add continuous_const)).sub hr)).norm.pow 2
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
-  have h1 := secondDiff_integral_le hr hh hh' hgood hbad
   have h4 : ∀ θ, ‖secondDiff r h θ‖ ≤ 4 * M := by
     intro θ
     unfold secondDiff
@@ -132,21 +122,19 @@ theorem secondDiff_integral_le_interp {A B M τ h : ℝ} (hτ0 : 0 ≤ τ) (hτ1
     have e2 := norm_sub_le (r (θ + 2 * h)) (r (θ + h))
     have e3 := norm_sub_le (r (θ + h)) (r θ)
     linarith
-  have h2 : ∫ θ in (0 : ℝ)..(2 * π), ‖secondDiff r h θ‖ ^ 2 ≤ 32 * π * M ^ 2 := by
-    have := intervalIntegral.integral_mono_on (μ := volume) two_pi_pos.le
-      (hFc.intervalIntegrable _ _) intervalIntegrable_const
-      fun θ _ => pow_le_pow_left₀ (norm_nonneg _) (h4 θ) 2
-    simp only [intervalIntegral.integral_const, sub_zero, smul_eq_mul] at this
-    linarith
   have hX : 0 ≤ π ^ 2 * A ^ 2 + 2 * B ^ 2 := by positivity
-  have hm := min_le_rpow_mul_rpow (mul_nonneg hX (by positivity : (0 : ℝ) ≤ h ^ (3 : ℝ)))
-    (by positivity : (0 : ℝ) ≤ 32 * π * M ^ 2) hτ0 hτ1
   have e : ((π ^ 2 * A ^ 2 + 2 * B ^ 2) * h ^ (3 : ℝ)) ^ τ * (32 * π * M ^ 2) ^ (1 - τ) =
       ((π ^ 2 * A ^ 2 + 2 * B ^ 2) ^ τ * (32 * π * M ^ 2) ^ (1 - τ)) * h ^ (3 * τ) := by
     rw [Real.mul_rpow hX (by positivity), ← Real.rpow_mul hh.le]
     ring
   rw [← e]
-  exact (le_min h1 h2).trans hm
+  exact (le_min (secondDiff_integral_le hr hh hh' hgood hbad) (by
+    have := intervalIntegral.integral_mono_on (μ := volume) two_pi_pos.le
+      (hFc.intervalIntegrable _ _) intervalIntegrable_const
+      fun θ _ => pow_le_pow_left₀ (norm_nonneg _) (h4 θ) 2
+    simp  at this
+    linarith)).trans (min_le_rpow_mul_rpow (mul_nonneg hX (by positivity))
+    (by positivity) hτ0 hτ1)
 
 end Rows
 
@@ -165,17 +153,12 @@ def interpBound (A K M δ : ℝ) : ℝ :=
 theorem tendsto_interpBound (A K : ℝ) {δ : ℝ} (hδ' : δ < 1 / 2) :
     Tendsto (fun M => interpBound A K M δ) (𝓝 0) (𝓝 0) := by
   have hτ : 0 < 1 - interpExp δ := by unfold interpExp; linarith
-  have hc : Continuous fun M : ℝ => (32 * π * M ^ 2) ^ (1 - interpExp δ) :=
-    (continuous_const.mul (continuous_pow 2)).rpow_const fun _ => Or.inr hτ.le
-  have hcont : Continuous fun M => interpBound A K M δ := by
-    unfold interpBound
-    exact (((continuous_const.mul (continuous_const.mul hc)).mul continuous_const).abs.mul
+  have hcont : Continuous fun M => interpBound A K M δ := (((continuous_const.mul (continuous_const.mul ((continuous_const.mul (continuous_pow 2)).rpow_const fun _ => Or.inr hτ.le))).mul continuous_const).abs.mul
       continuous_const).mul continuous_const
   have := hcont.tendsto 0
   convert this using 2
   unfold interpBound
-  rw [show (32 * π * (0 : ℝ) ^ 2) = 0 by ring, Real.zero_rpow hτ.ne']
-  simp
+  simp [Real.zero_rpow hτ.ne']
 
 section Kernel
 
@@ -183,16 +166,12 @@ variable {k : ℝ → ℝ → ℂ} {M : ℝ} (hmeas : ∀ θ, Measurable (k θ))
 
 include hmeas hbd in
 lemma norm_kernelRow_le (θ : ℝ) : ‖kernelRow hmeas hbd θ‖ ≤ M := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hbd 0 0)
   unfold kernelRow
-  have h := Lp.norm_le_of_ae_bound (μ := (@AddCircle.haarAddCircle (2 * π) _)) (p := 2)
-    (f := MemLp.toLp _ (memLp_liftIco_two_pi (hmeas θ) (hbd θ))) (C := M) hM0 ?_
-  · have h1 : measureUnivNNReal (@AddCircle.haarAddCircle (2 * π) _) = 1 := by
-      simp [measureUnivNNReal]
-    simpa [h1] using h
+  have h := Lp.norm_le_of_ae_bound  
+    (f := MemLp.toLp _ (memLp_liftIco_two_pi (hmeas θ) (hbd θ)))  ((norm_nonneg _).trans (hbd 0 0)) ?_
+  · simp_all [measureUnivNNReal]
   · filter_upwards [MemLp.coeFn_toLp (memLp_liftIco_two_pi (hmeas θ) (hbd θ))] with x hx
-    rw [hx, liftIco_eq_comp]
-    exact hbd θ _
+    simp_all [liftIco_eq_comp]
 
 include hmeas hbd in
 /-- **Quantitative `H^{1+δ}` bound for kernels.** Let `k(θ, t)` be bounded by `M`, measurable in
@@ -212,7 +191,7 @@ theorem kernelCoeff_interp {K : NNReal} {A : ℝ} (hA : 0 ≤ A)
       interpBound A K M δ := by
   have hL : LipschitzWith K (kernelRow hmeas hbd) := by
     refine LipschitzWith.of_dist_le_mul fun θ θ' => ?_
-    rw [dist_eq_norm, Real.dist_eq]
+    rw [dist_eq_norm]
     exact norm_kernelRow_sub_le hmeas hbd hlip θ θ'
   have hbad : ∀ h : ℝ, 0 < h → h ≤ π / 2 → ∀ θ,
       ‖secondDiff (kernelRow hmeas hbd) h θ‖ ≤ (2 * K) * h := by
@@ -221,20 +200,16 @@ theorem kernelCoeff_interp {K : NNReal} {A : ℝ} (hA : 0 ≤ A)
     have e2 := norm_kernelRow_sub_le hmeas hbd hlip (θ + h) θ
     rw [show θ + 2 * h - (θ + h) = h by ring, abs_of_pos hh] at e1
     rw [show θ + h - θ = h by ring, abs_of_pos hh] at e2
-    unfold secondDiff
     refine (norm_sub_le _ _).trans ?_
     linarith
-  have hgood : ∀ h : ℝ, 0 < h → h ≤ π / 2 → ∀ θ ∈ Set.Icc 0 (2 * π - 2 * h),
-      ‖secondDiff (kernelRow hmeas hbd) h θ‖ ≤ A * h ^ 2 := fun h h0 h1 θ hθ =>
-    norm_secondDiff_kernelRow_le hmeas hbd (by positivity) (hsecond h h0 h1 θ hθ)
   have hτ0 : 0 ≤ interpExp δ := by unfold interpExp; linarith
-  have hτ1 : interpExp δ ≤ 1 := by unfold interpExp; linarith
-  have hfin := sum_rpow_mul_fourierCoeff_rows_le (fourierBasis (T := 2 * π)).orthonormal
-    hL.continuous (kernelRow_periodic hmeas hbd hper) (s := 1 + δ) (β := 3 * interpExp δ)
+  have hfin := sum_rpow_mul_fourierCoeff_rows_le (fourierBasis ).orthonormal
+    hL.continuous (kernelRow_periodic hmeas hbd hper) (s := 1 + δ) 
     (by linarith) (by unfold interpExp; linarith) fun h h0 h1 =>
-      secondDiff_integral_le_interp hL.continuous hτ0 hτ1 h0 h1 (hgood h h0 h1) (hbad h h0 h1)
+      secondDiff_integral_le_interp hL.continuous hτ0 (by unfold interpExp; linarith) h0 h1 ((fun h h0 h1 θ hθ =>
+    norm_secondDiff_kernelRow_le hmeas hbd (by positivity) (hsecond h h0 h1 θ hθ)) h h0 h1) (hbad h h0 h1)
         (norm_kernelRow_le hmeas hbd)
-  simp_rw [inner_kernelRow_fourierBasis, fourierCoeffOn_conj, Complex.norm_conj] at hfin
+  simp_rw [inner_kernelRow_fourierBasis, fourierCoeffOn_conj] at hfin
   set f : ℤ × ℤ → ℝ := fun p => |(p.2 : ℝ)| ^ (2 + 2 * δ) *
       ‖fourierCoeffOn two_pi_pos (fun θ => fourierCoeffOn two_pi_pos (k θ) p.1) p.2‖ ^ 2 with hf
   set σ : ℤ × ℤ ≃ ℤ × ℤ := Equiv.prodCongr (Equiv.refl ℤ) (Equiv.neg ℤ)
@@ -242,9 +217,8 @@ theorem kernelCoeff_interp {K : NNReal} {A : ℝ} (hA : 0 ≤ A)
     intro u
     refine le_of_eq_of_le (Finset.sum_congr rfl fun p _ => ?_) (hfin u)
     simp [hf, σ, show 2 * (1 + δ) = 2 + 2 * δ by ring]
-  have hs : Summable (f ∘ σ) := summable_of_sum_le (fun p => by simp only [Function.comp_apply, hf]; positivity) hfσ
-  have hs' : Summable f := (Equiv.summable_iff σ).mp hs
-  refine ⟨hs', ?_⟩
+  have hs  := summable_of_sum_le (fun p => by positivity) hfσ
+  refine ⟨(Equiv.summable_iff σ).mp hs, ?_⟩
   rw [← Equiv.tsum_eq σ]
   exact hs.tsum_le_of_sum_le hfσ
 

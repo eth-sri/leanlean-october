@@ -30,7 +30,6 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Metric
 open scoped Topology ComplexConjugate InnerProductSpace
 
-local instance radialVekuaTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
 
 /-- Normalized half-trace input for the actual ordinary Hardy constant one. -/
 def radialVekuaInput : L2Z := (Real.sqrt (2 * Real.pi) : ℂ) • stdBasisZ 0
@@ -38,42 +37,31 @@ def radialVekuaInput : L2Z := (Real.sqrt (2 * Real.pi) : ℂ) • stdBasisZ 0
 theorem radialVekuaInput_apply (n : ℤ) :
     radialVekuaInput n = if n = 0 then (Real.sqrt (2 * Real.pi) : ℂ) else 0 := by
   by_cases hn : n = 0
-  · subst n
-    simp [radialVekuaInput, stdBasisZ_apply, lp.single_apply]
-  · simp [radialVekuaInput, stdBasisZ_apply, lp.single_apply, hn]
+  all_goals simp [radialVekuaInput, stdBasisZ_apply, hn]
 
 theorem radialVekuaInput_nonpositive : IsNonpositiveFourierSupport radialVekuaInput := by
   intro n hn
-  rw [radialVekuaInput_apply, if_neg (ne_of_gt hn)]
+  simp [radialVekuaInput_apply, if_neg (ne_of_gt hn)]
 
 theorem normalizedHardyAverage_radialVekuaInput (n : ℤ) :
     normalizedHardyAverage radialVekuaInput n = if n = 0 then 1 else 0 := by
-  have hc : (Real.sqrt (2 * Real.pi) : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr Real.two_pi_pos).ne'
   by_cases hn : n = 0
   · subst n
     simp only [normalizedHardyAverage, fromL2, radialVekuaInput_apply,
-      sobWeight, Int.cast_zero, abs_zero]
+      sobWeight]
     norm_num
-    have h2 : (Real.sqrt (2 : ℝ) : ℂ) ≠ 0 := by
-      exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
-    have hπ : (Real.sqrt (Real.pi) : ℂ) ≠ 0 := by
-      exact_mod_cast (Real.sqrt_pos.mpr Real.pi_pos).ne'
-    field_simp [h2, hπ]
-  · simp [normalizedHardyAverage, fromL2, radialVekuaInput_apply, hn]
+    field_simp 
+  simp [normalizedHardyAverage, fromL2, radialVekuaInput_apply, hn]
 
-theorem radialVekuaInput_raw_H1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) radialVekuaInput) := by
+theorem radialVekuaInput_raw_H1 : IsSobolevSeq 1 (fromL2 (1 / 2) radialVekuaInput) := by
   classical
-  unfold IsSobolevSeq
   refine summable_of_ne_finset_zero (s := {0}) fun n hn => ?_
-  have hn0 : n ≠ 0 := by simpa only [Finset.mem_singleton] using hn
+  have hn0 : n ≠ 0 := by simp_all
   simp [fromL2, radialVekuaInput_apply, hn0]
 
 theorem hardyFourierTrace_radialVekuaInput (θ : ℝ) :
     hardyFourierTrace (normalizedHardyAverage radialVekuaInput) θ = 1 := by
-  classical
-  simp only [hardyFourierTrace, normalizedHardyAverage_radialVekuaInput]
-  simp
+  simp [hardyFourierTrace, normalizedHardyAverage_radialVekuaInput]
 
 private def radialPrimitivePolynomial (p : ℂ) (j : ℕ) (z : ℂ) : ℂ :=
   conj (z - p) ^ j / (j.factorial : ℂ)
@@ -90,19 +78,14 @@ private theorem radialPrimitivePolynomial_fderiv (p : ℂ) (j : ℕ) (z v : ℂ)
   have h := congrArg (fun A : ℂ →L[ℝ] ℂ => A v)
     ((hc.pow j).mul_const (j.factorial : ℂ)⁻¹).fderiv
   change fderiv ℝ (fun y : ℂ => conj (y - p) ^ j / (j.factorial : ℂ)) z v = _
-  simpa only [radialPrimitivePolynomial, div_eq_mul_inv, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply,
-    ContinuousLinearEquiv.coe_coe, Function.comp_apply, id_eq,
-    Complex.conjCLE_apply, nsmul_eq_mul, smul_eq_mul,
-    mul_comm, mul_left_comm, mul_assoc]
-    using h
+  simp_all [div_eq_mul_inv, ContinuousLinearEquiv.coe_coe, Function.comp_apply, id_eq, nsmul_eq_mul, smul_eq_mul, mul_comm, mul_left_comm]
 
 private theorem exists_radialPrimitiveTest {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (p : ℂ) (j : ℕ) : ∃ f : smoothTraceTests,
       ∀ z ∈ closure Ω, (f : ℂ → ℂ) =ᶠ[𝓝 z] radialPrimitivePolynomial p j := by
   obtain ⟨f, hf, heq⟩ := exists_smooth_compact_extension hb.isCompact_closure
     isOpen_univ (subset_univ _) (radialPrimitivePolynomial_contDiff p j).contDiffOn
-  exact ⟨⟨f, hf⟩, heq⟩
+  continuity
 
 private def radialPrimitiveTest {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (p : ℂ) (j : ℕ) : smoothTraceTests :=
@@ -144,23 +127,18 @@ private theorem radialPrimitiveTest_cauchyRiemann {Ω : Set ℂ}
         show coordDir 0 = (1 : ℂ) from rfl,
         show coordDir 1 = Complex.I from rfl, map_one, Complex.conj_I, mul_one]
       have hI : (Complex.I : ℂ) * (-Complex.I) = 1 := by
-        rw [mul_neg, Complex.I_mul_I, neg_neg]
-      simp only [div_eq_mul_inv]
-      calc
-        _ = (Complex.I * (-Complex.I)) *
-            (↑j * (starRingEnd ℂ) (z - p) ^ (j - 1) * (↑j.factorial)⁻¹) := by
-          rw [hI, one_mul]
-        _ = _ := by ring
+        norm_num
+      grind
     _ = Complex.I * ((((smoothTraceTests_memLp_deriv Ω
-        (radialPrimitiveTest hb p j) 1).toLp _ : L2 Ω) : ℂ → ℂ) z) := by rw [hy]
-    _ = _ := by simpa only [Pi.smul_apply, smul_eq_mul] using hs.symm
+        (radialPrimitiveTest hb p j) 1).toLp _ : L2 Ω) : ℂ → ℂ) z) := by simp_all
+    _ = _ := by simp_all
 
 private theorem radial_volterra_primitive_polynomial
     {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ) (j : ℕ) (θ : ℝ) :
     volterraPrimitiveIterate (fun s => conj (deriv γ s)) (fun _ => 1) j θ =
       conj (γ θ - γ 0) ^ j / (j.factorial : ℂ) := by
   induction j generalizing θ with
-  | zero => simp [volterraPrimitiveIterate]
+  | zero => continuity
   | succ j ih =>
     have hd (s : ℝ) : HasDerivAt
         (fun t => conj (γ t - γ 0) ^ (j + 1) / ((j + 1).factorial : ℂ))
@@ -172,7 +150,7 @@ private theorem radial_volterra_primitive_polynomial
       have hf : (j.factorial : ℂ) ≠ 0 := by exact_mod_cast j.factorial_ne_zero
       have hj : ((j + 1 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast Nat.succ_ne_zero j
       simp only [Nat.add_sub_cancel, Nat.factorial_succ, Nat.cast_mul]
-      field_simp [hf, hj]
+      field_simp
     have hc : Continuous (fun s => conj (deriv γ s) *
         (conj (γ s - γ 0) ^ j / (j.factorial : ℂ))) :=
       (Complex.continuous_conj.comp hγ.continuous_deriv_one).mul
@@ -182,7 +160,7 @@ private theorem radial_volterra_primitive_polynomial
     rw [show (fun s => conj (deriv γ s) *
         volterraPrimitiveIterate (fun t => conj (deriv γ t)) (fun _ => 1) j s) =
         (fun s => conj (deriv γ s) * (conj (γ s - γ 0) ^ j / (j.factorial : ℂ))) by
-          funext s; rw [ih s]]
+          simp_all]
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt (fun s _ => hd s)
       (hc.intervalIntegrable _ _)]
     simp
@@ -201,20 +179,14 @@ private theorem radial_Lp_series_ae {α : Type*} [MeasurableSpace α]
     | @insert a s ha ih =>
       simp only [Finset.sum_insert ha]
       filter_upwards [Lp.coeFn_add (u a) (∑ j ∈ s, u j), hf a, ih] with x hsum hfa his
-      simp only [Pi.add_apply] at hsum
-      rw [hsum, hfa, his]
+      simp_all
   have hLp : TendstoInMeasure μ
       (fun N => ((∑ j ∈ Finset.range N, u j : Lp ℂ 2 μ) : α → ℂ)) atTop v :=
     tendstoInMeasure_of_tendsto_Lp hs.tendsto_sum_nat
   have hlim : TendstoInMeasure μ (fun N x => ∑ j ∈ Finset.range N, f j x) atTop g :=
     tendstoInMeasure_of_tendsto_ae
       (fun N => by
-        have hfun : (∑ j ∈ Finset.range N, f j) =
-            (fun x => ∑ j ∈ Finset.range N, f j x) := by
-          funext x
-          simp
-        rw [← hfun]
-        exact Finset.aestronglyMeasurable_sum (Finset.range N) fun j _ => hfm j)
+        fun_prop)
       (Eventually.of_forall fun x => (hpt x).tendsto_sum_nat)
   exact tendstoInMeasure_ae_unique (hLp.congr (fun N => heq _) EventuallyEq.rfl) hlim
 
@@ -263,11 +235,11 @@ private theorem radial_herglotzWaveH1_smul {Ω : Set ℂ}
     _ = herglotzCoeff k (c • a) 0 z := hc
     _ = c * herglotzCoeff k a 0 z := herglotzCoeff_smul_density a c k 0 z
     _ = c * ((((herglotzCoeff_memLp_domain hb ha k 0).toLp _ : L2 Ω) : ℂ → ℂ) z) := by
-      rw [hcoeff]
+      simp_all
     _ = (c • ((((herglotzCoeff_memLp_domain hb ha k 0).toLp _ : L2 Ω) : ℂ → ℂ) z)) := by
       rfl
      _ = (((c • (herglotzCoeff_memLp_domain hb ha k 0).toLp _) : L2 Ω) : ℂ → ℂ) z := by
-       simpa only [Pi.smul_apply, smul_eq_mul] using hs.symm
+       simp_all
 
 private theorem exists_radialWaveTest {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hΩ : IsOpen Ω) {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
@@ -320,9 +292,7 @@ private theorem radial_herglotzWirtingerD_ae {Ω : Set ℂ}
     one_mul]
   ring_nf
   rw [show (Complex.I : ℂ) ^ 3 = -Complex.I by
-    rw [show (Complex.I : ℂ) ^ 3 = Complex.I ^ 2 * Complex.I by ring]
-    rw [Complex.I_sq]
-    ring]
+    norm_num]
   ring
 
 private theorem radialVekuaDensity_wave (k : ℝ) (p z : ℂ) :
@@ -343,22 +313,20 @@ private theorem radialVekuaDensity_wave (k : ℝ) (p z : ℂ) :
     rw [mul_assoc]
     rw [mul_comm (planeWave k (-p) φ) (planeWave k z φ)]
     rw [← planeWave_add k z (-p) φ]
-    rw [sub_eq_add_neg]
-  rw [hprod]
+    rfl
+  simp_all
 
 private theorem radial_wave_hasSum {E : ℝ} (hE : 0 < E) (p z : ℂ) :
-    HasSum (fun j : ℕ => physicalVekuaCoeff (E : ℂ) j * (z - p) ^ j *
+    HasSum (fun j  => physicalVekuaCoeff E j * (z - p) ^ j *
       radialPrimitivePolynomial p j z)
       (herglotzWave (Real.sqrt E) (radialVekuaDensity (Real.sqrt E) p) z) := by
-  have hk : Real.sqrt E ≠ 0 := (Real.sqrt_pos.mpr hE).ne'
-  have hs := hasSum_vekuaMonoTerm hk 0 (z - p)
+  have hs := hasSum_vekuaMonoTerm (Real.sqrt_pos.mpr hE).ne' 0 (z - p)
   rw [Real.sq_sqrt hE.le] at hs
-  simp only [Nat.factorial_zero, Nat.cast_one, pow_zero, inv_one, one_mul] at hs
+  simp  at hs
   rw [radialVekuaDensity_wave]
   convert hs using 1
   funext j
-  simp only [physicalVekuaCoeff, radialPrimitivePolynomial, vekuaMonoTerm,
-    Nat.factorial_zero, Nat.cast_one, zero_add, mul_one, div_eq_mul_inv, mul_inv_rev]
+  simp only [physicalVekuaCoeff, radialPrimitivePolynomial, vekuaMonoTerm]
   ring
 
 private theorem radial_affine_value_ae {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
@@ -367,7 +335,7 @@ private theorem radial_affine_value_ae {Ω : Set ℂ} (hb : Bornology.IsBounded 
     (h1Value Ω ((neumannH1AffineMultiplier hb p ^ j) u) : ℂ → ℂ)
       =ᵐ[volume.restrict Ω] fun z => (z - p) ^ j * f z := by
   induction j with
-  | zero => simpa only [pow_zero, ContinuousLinearMap.one_apply, one_mul] using hf
+  | zero => simp_all
   | succ j ih =>
     rw [pow_succ', ContinuousLinearMap.mul_apply, h1Value_neumannH1AffineMultiplier]
     filter_upwards [neumannAffineL2Multiplier_ae p (neumannH1AffineBound_spec hb p)
@@ -414,8 +382,7 @@ private theorem radial_primitive_trace (j : ℕ) (θ : ℝ) :
   have hf : hardyFourierTrace (normalizedHardyAverage radialVekuaInput) = fun _ => 1 :=
     funext hardyFourierTrace_radialVekuaInput
   rw [hf, radial_volterra_primitive_polynomial hΓF]
-  simp only [radialPrimitivePolynomial, physicalCircleTrace, circleMap_zero]
-  norm_num
+  simp [radialPrimitivePolynomial, physicalCircleTrace, circleMap_zero]
 
 /-- The completed physical Hardy primitive iterates are the actual
 antiholomorphic polynomials, proved using genuine CR trace uniqueness. -/
@@ -441,15 +408,14 @@ private theorem localConformalHardy_radial_primitive_eq (j : ℕ) :
     rw [hu, ht, radial_primitive_trace hR F hFs hhol j θ]
     have hz : F (circleMap 0 1 θ) ∈ closure ΩF := by
       rw [← localConformal_closedDisk_image_eq_closure hR F hFs]
-      exact mem_image_of_mem F (sphere_subset_closedBall
-        (circleMap_mem_sphere (0 : ℂ) (by norm_num : (0 : ℝ) ≤ 1) θ))
+      continuity
     exact ((radialPrimitiveTest_near hb (F 1) j hz).self_of_nhds).symm
 
 /-- Actual L2 values of every completed primitive iterate retain the
 factorial, full constant mode, and the physical boundary center. -/
 theorem localConformalHardy_radial_primitive_value_ae (j : ℕ) :
-    (h1Value ΩF (UF ((JF ^ j) radialVekuaInput)) : ℂ → ℂ)
-      =ᵐ[volume.restrict ΩF] fun z => conj (z - F 1) ^ j / (j.factorial : ℂ) := by
+    h1Value ΩF (UF ((JF ^ j) radialVekuaInput))
+      =ᵐ[volume.restrict ΩF] fun z => conj (z - F 1) ^ j / j.factorial := by
   rw [localConformalHardy_radial_primitive_eq hR F hFs hb hL hhol hinj hC hK e he hsource hes]
   exact radialPrimitiveTest_value_ae hb hL.1.1 (F 1) j
 
@@ -457,44 +423,41 @@ theorem localConformalHardy_radial_primitive_value_ae (j : ℕ) :
 equals the actual centered radial Herglotz H1 vector. This equality comes
 from the true completed H1 series and pointwise entire-wave series. -/
 theorem localConformalVekuaH1_radial_eq_herglotz {E : ℝ} (hE : 0 < E) :
-    VF (E : ℂ) radialVekuaInput =
+    VF E radialVekuaInput =
       herglotzWaveH1 hb (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1))
         (Real.sqrt E) := by
   haveI : IsFiniteMeasure (volume.restrict ΩF) :=
     isFiniteMeasure_restrict.mpr hb.measure_lt_top.ne
-  let term : ℕ → L2 ΩF := fun j => physicalVekuaCoeff (E : ℂ) j •
+  let term  := fun j => physicalVekuaCoeff E j •
     h1Value ΩF ((neumannH1AffineMultiplier hb (F 1) ^ j)
       (UF ((JF ^ j) radialVekuaInput)))
-  have hs : HasSum term (h1Value ΩF (VF (E : ℂ) radialVekuaInput)) := by
-    simpa only [term, map_smul, localConformalVekuaH1AtBoundaryOrigin] using
+  have hs : HasSum term (h1Value ΩF (VF E radialVekuaInput)) := by
+    simpa only [map_smul, localConformalVekuaH1AtBoundaryOrigin] using
       (h1Value ΩF).hasSum (localConformalVekuaH1_hasSum hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes (F 1) (E : ℂ) radialVekuaInput)
-  have ht (j : ℕ) : (term j : ℂ → ℂ) =ᵐ[volume.restrict ΩF]
-      fun z => physicalVekuaCoeff (E : ℂ) j * (z - F 1) ^ j *
+        e he hsource hes (F 1) E radialVekuaInput)
+  have ht (j : ℕ) : term j =ᵐ[volume.restrict ΩF]
+      fun z => physicalVekuaCoeff E j * (z - F 1) ^ j *
         radialPrimitivePolynomial (F 1) j z := by
-    have hu := localConformalHardy_radial_primitive_value_ae hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes j
     have hm := radial_affine_value_ae hb (F 1) (UF ((JF ^ j) radialVekuaInput))
-      (radialPrimitivePolynomial (F 1) j) hu j
-    filter_upwards [Lp.coeFn_smul (physicalVekuaCoeff (E : ℂ) j)
+      (radialPrimitivePolynomial (F 1) j) (localConformalHardy_radial_primitive_value_ae hR F hFs hb hL hhol hinj hC hK
+      e he hsource hes j) j
+    filter_upwards [Lp.coeFn_smul (physicalVekuaCoeff E j)
       (h1Value ΩF ((neumannH1AffineMultiplier hb (F 1) ^ j)
         (UF ((JF ^ j) radialVekuaInput)))), hm] with z hs hm
-    change (physicalVekuaCoeff (E : ℂ) j •
+    change (physicalVekuaCoeff E j •
       h1Value ΩF ((neumannH1AffineMultiplier hb (F 1) ^ j)
         (UF ((JF ^ j) radialVekuaInput)))) z = _
-    simp only [Pi.smul_apply, smul_eq_mul, hs, hm]
+    simp only [Pi.smul_apply, hs, hm]
     ring
-  have hval := radial_Lp_series_ae term (h1Value ΩF (VF (E : ℂ) radialVekuaInput))
-    (fun j z => physicalVekuaCoeff (E : ℂ) j * (z - F 1) ^ j *
+  apply h1Value_injective hL.1.1
+  apply Lp.ext
+  filter_upwards [radial_Lp_series_ae term (h1Value ΩF (VF E radialVekuaInput))
+    (fun j z => physicalVekuaCoeff E j * (z - F 1) ^ j *
       radialPrimitivePolynomial (F 1) j z)
     (herglotzWave (Real.sqrt E) (radialVekuaDensity (Real.sqrt E) (F 1))) hs ht
     (fun j => ((continuous_const.mul ((continuous_id.sub continuous_const).pow j)).mul
       (radialPrimitivePolynomial_contDiff (F 1) j).continuous).aestronglyMeasurable)
-    (fun z => radial_wave_hasSum hE (F 1) z)
-  apply h1Value_injective hL.1.1
-  apply Lp.ext
-  rw [h1Value_herglotzWaveH1]
-  filter_upwards [hval, (herglotzCoeff_memLp_domain hb
+    (radial_wave_hasSum hE (F 1)), (herglotzCoeff_memLp_domain hb
     (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)) (Real.sqrt E) 0).coeFn_toLp]
     with z hv hh
   exact hv.trans ((herglotzWave_eq _ _ z).trans hh.symm)
@@ -503,14 +466,14 @@ theorem localConformalVekuaH1_radial_eq_herglotz {E : ℝ} (hE : 0 < E) :
 the full zero component and the sqrt(2) convention of the jet space. -/
 theorem localConformalRadial_scaled_herglotzVec_at_boundary_origin (E : ℝ) (a : ℂ) :
     herglotzVec (isDirDensity_radialVekuaScaledDensity (Real.sqrt E) (F 1) a)
-      (Real.sqrt E) (F 1) = (a / (Real.sqrt 2 : ℂ)) • basisVec 0 := by
+      (Real.sqrt E) (F 1) = (a / Real.sqrt 2) • basisVec 0 := by
   simpa only [radialVekuaScaledDensity, antiPoly, Finset.sum_singleton, pow_zero, mul_one] using
     herglotzVec_centeredPolyDensity (Real.sqrt E) (F 1) {0} (fun _ => a)
 
 /-- Arbitrary scalar multiples preserve the actual radial realization,
 so the projected observation correction is a true zero-mode Vekua vector. -/
 theorem localConformalVekuaH1_radial_smul_eq {E : ℝ} (hE : 0 < E) (a : ℂ) :
-    VF (E : ℂ) (a • radialVekuaInput) = a •
+    VF E (a • radialVekuaInput) = a •
       herglotzWaveH1 hb (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1))
         (Real.sqrt E) := by
   rw [map_smul, localConformalVekuaH1_radial_eq_herglotz hR F hFs hb hL hhol hinj hC hK
@@ -519,7 +482,7 @@ theorem localConformalVekuaH1_radial_smul_eq {E : ℝ} (hE : 0 < E) (a : ℂ) :
 /-- Equality with the actual amplitude-a Herglotz H1 vector, rather than
 merely equality of formal coefficients. -/
 theorem localConformalVekuaH1_radial_smul_eq_herglotz {E : ℝ} (hE : 0 < E) (a : ℂ) :
-    VF (E : ℂ) (a • radialVekuaInput) =
+    VF E (a • radialVekuaInput) =
       herglotzWaveH1 hb (isDirDensity_radialVekuaScaledDensity (Real.sqrt E) (F 1) a)
         (Real.sqrt E) := by
   rw [localConformalVekuaH1_radial_smul_eq hR F hFs hb hL hhol hinj hC hK
@@ -533,8 +496,8 @@ ordinary centered Herglotz wave. No constant-speed property of Gamma is
 used: Gamma is the true conformal circle trace. -/
 theorem localConformalVekuaH1_radial_coordinate_trace_ae {E : ℝ}
     (hE : 0 < E) (a : ℂ) :
-    (TF (VF (E : ℂ) (a • radialVekuaInput)) : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))]
+    TF (VF E (a • radialVekuaInput))
+      =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
         fun θ => herglotzWave (Real.sqrt E)
           (radialVekuaScaledDensity (Real.sqrt E) (F 1) a) (ΓF θ) := by
   rw [localConformalVekuaH1_radial_smul_eq_herglotz hR F hFs hb hL hhol hinj hC hK
@@ -546,50 +509,42 @@ theorem localConformalVekuaH1_radial_coordinate_trace_ae {E : ℝ}
   rw [ht, herglotzWave_eq]
   apply hf
   rw [← localConformal_closedDisk_image_eq_closure hR F hFs]
-  exact mem_image_of_mem F (sphere_subset_closedBall
-    (circleMap_mem_sphere (0 : ℂ) (by norm_num : (0 : ℝ) ≤ 1) θ))
+  continuity
 
 /-- The true derivative companion A of the radial Vekua series has the
 actual smooth coefficient-one trace. This follows from the genuine
 Wirtinger derivative in L2 and value injectivity in the real H1 graph. -/
 theorem localConformalRadial_gradientA_coordinate_trace_ae {E : ℝ} (hE : 0 < E) :
-    (TF (AF (F 1) (E : ℂ) radialVekuaInput) : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))]
-        fun θ => -(Complex.I * (Real.sqrt E : ℂ) / 2) *
+    TF (AF (F 1) E radialVekuaInput)
+      =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
+        fun θ => -(Complex.I * Real.sqrt E / 2) *
           herglotzCoeff (Real.sqrt E) (radialVekuaDensity (Real.sqrt E) (F 1)) 1 (ΓF θ) := by
-  let ρ : ℝ → ℂ := radialVekuaDensity (Real.sqrt E) (F 1)
-  let c : ℂ := -(Complex.I * (Real.sqrt E : ℂ) / 2)
+  let ρ  := radialVekuaDensity (Real.sqrt E) (F 1)
+  let c  := -(Complex.I * Real.sqrt E / 2)
   obtain ⟨f, hf⟩ := exists_radialCoeffTest hb
     (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)) (Real.sqrt E) 1
-  have hAvalue : (h1Value ΩF (AF (F 1) (E : ℂ) radialVekuaInput) : ℂ → ℂ)
+  have hAvalue : h1Value ΩF (AF (F 1) E radialVekuaInput)
       =ᵐ[volume.restrict ΩF] fun z => c * herglotzCoeff (Real.sqrt E) ρ 1 z := by
-    have hD : h1Value ΩF (AF (F 1) (E : ℂ) radialVekuaInput) =
-        h1WirtingerD ΩF (VF (E : ℂ) radialVekuaInput) := by
-      rw [localConformalVekuaGradientA_apply, map_smul]
-      exact (localConformalVekuaH1_wirtingerD hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes (F 1) (E : ℂ) radialVekuaInput).symm
+    have hD : h1Value ΩF (AF (F 1) E radialVekuaInput) =
+        h1WirtingerD ΩF (VF E radialVekuaInput) := (localConformalVekuaH1_wirtingerD hR F hFs hb hL hhol hinj hC hK
+        e he hsource hes (F 1) E radialVekuaInput).symm
     rw [hD, localConformalVekuaH1_radial_eq_herglotz hR F hFs hb hL hhol hinj hC hK
       e he hsource hes hE]
     exact radial_herglotzWirtingerD_ae hb
       (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)) (Real.sqrt E)
-  have hA : AF (F 1) (E : ℂ) radialVekuaInput = c • smoothTraceH1 ΩF f := by
+  have hA : AF (F 1) E radialVekuaInput = c • smoothTraceH1 ΩF f := by
     apply h1Value_injective hL.1.1
-    rw [map_smul, h1Value_smoothTraceH1]
     apply Lp.ext
     filter_upwards [hAvalue, Lp.coeFn_smul c ((smoothTraceTests_memLp ΩF f).toLp _),
       (smoothTraceTests_memLp ΩF f).coeFn_toLp,
       ae_restrict_mem hL.1.1.measurableSet] with z ha hs hfv hz
-    simp only [Pi.smul_apply, smul_eq_mul, ha, hs, hfv,
-      hf z (subset_closure hz), ρ]
-  rw [hA, map_smul]
+    simp [ha, hs, hfv, hf z (subset_closure hz), ρ]
   filter_upwards [Lp.coeFn_smul c (TF (smoothTraceH1 ΩF f)),
     localConformalDiskH1Trace_smooth_ae hR F hFs hb hL hhol hinj hC f] with θ hs ht
-  simp only [Pi.smul_apply, smul_eq_mul, hs, ht]
   have hz : F (circleMap 0 1 θ) ∈ closure ΩF := by
     rw [← localConformal_closedDisk_image_eq_closure hR F hFs]
-    exact mem_image_of_mem F (sphere_subset_closedBall
-      (circleMap_mem_sphere (0 : ℂ) (by norm_num : (0 : ℝ) ≤ 1) θ))
-  exact congrArg (fun z : ℂ => c * z) (hf _ hz)
+    continuity
+  continuity
 
 /-- The actual radial conormal belongs to genuine parameter L2 even for
 the variable-speed conformal circle trace. This is a property of this
@@ -598,7 +553,7 @@ theorem localConformalRadial_conormal_memLp {L : NNReal}
     (hΓLip : LipschitzWith L ΓF) (E : ℝ) (a : ℂ) :
     MemLp (herglotzConormal (Real.sqrt E)
       (radialVekuaScaledDensity (Real.sqrt E) (F 1) a) ΓF) 2
-      (volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))) :=
+      (volume.restrict (Ioc 0 (2 * Real.pi))) :=
   memLp_herglotzConormal
     (isDirDensity_radialVekuaScaledDensity (Real.sqrt E) (F 1) a) (Real.sqrt E) hΓLip
 
@@ -610,20 +565,16 @@ theorem localConformalRadial_observationAdj_conormal {L : NNReal}
     observationAdj W (herglotzConormal (Real.sqrt E)
       (radialVekuaScaledDensity (Real.sqrt E) (F 1) a) ΓF) =
         (Complex.I * a) • cutC (W (2 * Real.pi)) (basisVec 0) := by
-  have hclosed : ΓF (2 * Real.pi) = ΓF 0 := by
-    simpa only [zero_add] using physicalCircleTrace_periodic F 0
   have hbase : ΓF 0 = F 1 := by
     simp [physicalCircleTrace, circleMap_zero]
-  rw [(herglotzForm_eq hΓLip hclosed hW
+  rw [(herglotzForm_eq hΓLip (by
+    simpa only [zero_add] using physicalCircleTrace_periodic F 0) hW
     (isDirDensity_radialVekuaScaledDensity (Real.sqrt E) (F 1) a)).1,
     hbase, localConformalRadial_scaled_herglotzVec_at_boundary_origin,
     map_smul, smul_smul]
-  change (((Real.sqrt 2 : ℂ) * Complex.I) * (a / (Real.sqrt 2 : ℂ))) •
+  change ((Real.sqrt 2 * Complex.I) * (a / Real.sqrt 2)) •
       cutC (W (2 * Real.pi)) (basisVec 0) = _
-  have h2 : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
-  congr 1
-  field_simp [h2]
+  field_simp 
   -- `field_simp` closes the scalar identity after clearing the nonzero square root.
 
 /-- The genuine variable-speed coordinate conormal as an ordinary L2
@@ -635,7 +586,7 @@ def localConformalRadialCoordinateLoad {L : NNReal}
 
 theorem localConformalRadialCoordinateLoad_ae {L : NNReal}
     (hΓLip : LipschitzWith L ΓF) (E : ℝ) (a : ℂ) :
-    (localConformalRadialCoordinateLoad F hΓLip E a : ℝ → ℂ)
+    localConformalRadialCoordinateLoad F hΓLip E a
       =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
         herglotzConormal (Real.sqrt E)
           (radialVekuaScaledDensity (Real.sqrt E) (F 1) a) ΓF :=
@@ -649,18 +600,14 @@ theorem localConformalRadialCoordinateLoad_smul {L : NNReal}
   filter_upwards [localConformalRadialCoordinateLoad_ae F hΓLip E a,
     localConformalRadialCoordinateLoad_ae F hΓLip E 1,
     Lp.coeFn_smul a (localConformalRadialCoordinateLoad F hΓLip E 1)] with θ ha h1 hs
-  simp only [Pi.smul_apply, smul_eq_mul, ha, hs, h1,
-    radialVekuaScaledDensity_eq_smul,
-    herglotzConormal_smul_density
-      (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1))]
-  simp only [one_mul]
+  simp [ha, hs, h1, radialVekuaScaledDensity_eq_smul, herglotzConormal_smul_density       (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1))] 
 
 /-- The actual ordinary L2 representative retains exactly the original
 observation adjoint, including the boundary-origin cut direction. -/
 theorem localConformalRadialCoordinateLoad_observationAdj {L : NNReal}
     (hΓLip : LipschitzWith L ΓF) {E : ℝ}
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport ΓF E W) (a : ℂ) :
-    observationAdj W (localConformalRadialCoordinateLoad F hΓLip E a : ℝ → ℂ) =
+    observationAdj W (localConformalRadialCoordinateLoad F hΓLip E a) =
       (Complex.I * a) • cutC (W (2 * Real.pi)) (basisVec 0) := by
   rw [← localConformalRadial_observationAdj_conormal F hΓLip hW a]
   rw [observationAdj, observationAdj,
@@ -668,54 +615,55 @@ theorem localConformalRadialCoordinateLoad_observationAdj {L : NNReal}
     intervalIntegral.integral_of_le Real.two_pi_pos.le]
   apply integral_congr_ae
   filter_upwards [localConformalRadialCoordinateLoad_ae F hΓLip E a] with θ hθ
-  rw [hθ]
+  simp_all
 
 include hb hL hhol hinj hC hK e he hsource hes in
 private theorem radial_normalizedConormal_eq_coordinateLoad_one {L : NNReal}
     (hΓLip : LipschitzWith L ΓF) {E : ℝ} (hE : 0 < E) :
-    NCF (E : ℂ) radialVekuaInput =
-      sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
+    NCF E radialVekuaInput =
+      sobolevSmoothing (1 / 2) (by norm_num)
         (boundaryFourier (localConformalRadialCoordinateLoad F hΓLip E 1)) := by
-  let ρ : ℝ → ℂ := radialVekuaDensity (Real.sqrt E) (F 1)
-  let c : ℂ := -(Complex.I * (Real.sqrt E : ℂ) / 2)
-  let f : ℝ → ℂ := fun θ => herglotzCoeff (Real.sqrt E) ρ 0 (ΓF θ)
-  let df : ℝ → ℂ := fun θ => c *
+  let ρ  := radialVekuaDensity (Real.sqrt E) (F 1)
+  let c  := -(Complex.I * Real.sqrt E / 2)
+  let f  := fun θ => herglotzCoeff (Real.sqrt E) ρ 0 (ΓF θ)
+  let df  := fun θ => c *
     (deriv ΓF θ * herglotzCoeff (Real.sqrt E) ρ 1 (ΓF θ) +
       conj (deriv ΓF θ) * herglotzCoeff (Real.sqrt E) ρ (-1) (ΓF θ))
-  let A : BoundaryL2 := VelF (TF (AF (F 1) (E : ℂ) radialVekuaInput))
-  let r : BoundaryL2 := localConformalRadialCoordinateLoad F hΓLip E 1
-  let d : BoundaryL2 := (2 : ℂ) • A - Complex.I • r
-  have hA : (A : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
+  let A  := VelF (TF (AF (F 1) E radialVekuaInput))
+  let r  := localConformalRadialCoordinateLoad F hΓLip E 1
+  let d  := (2 : ℂ) • A - Complex.I • r
+  have hA : A =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
       fun θ => deriv ΓF θ * (c * herglotzCoeff (Real.sqrt E) ρ 1 (ΓF θ)) := by
     filter_upwards [boundaryContinuousMultiplier_ae (localConformalVelocityCircle F)
-        (TF (AF (F 1) (E : ℂ) radialVekuaInput)),
+        (TF (AF (F 1) E radialVekuaInput)),
       localConformalRadial_gradientA_coordinate_trace_ae hR F hFs hb hL hhol hinj hC hK
         e he hsource hes hE] with θ hm ha
     rw [hm, ha, localConformalVelocityCircle_apply hR F hFs]
-  have hd : (d : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))] df := by
+  have hd : d =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))] df := by
     filter_upwards [Lp.coeFn_sub ((2 : ℂ) • A) (Complex.I • r),
       Lp.coeFn_smul (2 : ℂ) A, Lp.coeFn_smul Complex.I r, hA,
       localConformalRadialCoordinateLoad_ae F hΓLip E 1] with θ hs h2 hi ha hr
-    simp only [d, r, hs, h2, hi, Pi.sub_apply, Pi.smul_apply, smul_eq_mul, ha, hr,
+    simp only [d, r, hs, h2, hi, Pi.sub_apply, Pi.smul_apply, ha, hr,
       radialVekuaScaledDensity_one, herglotzConormal_eq
         (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)).intervalIntegrable, df, c, ρ]
     ring_nf
-  have ht : (TF (VF (E : ℂ) radialVekuaInput) : ℝ → ℂ)
+  have ht : TF (VF E radialVekuaInput)
       =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))] f := by
-    simpa only [one_smul, radialVekuaScaledDensity_one, herglotzWave_eq, f, ρ] using
+    simpa only [one_smul, radialVekuaScaledDensity_one, herglotzWave_eq] using
       localConformalVekuaH1_radial_coordinate_trace_ae hR F hFs hb hL hhol hinj hC hK
         e he hsource hes hE 1
   have hdf (θ : ℝ) : HasDerivAt f (df θ) θ := by
-    have h := (differentiable_herglotzCoeff
+    simpa only [Function.comp_def,
+      fderiv_herglotzCoeff_apply
+        (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)).intervalIntegrable,
+      zero_add, zero_sub] using (differentiable_herglotzCoeff
       (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)).intervalIntegrable
         (Real.sqrt E) 0 (ΓF θ)).hasFDerivAt.comp_hasDerivAt θ
           ((hΓF).differentiable_one θ).hasDerivAt
-    simpa only [f, df, c, ρ, Function.comp_def,
-      fderiv_herglotzCoeff_apply
-        (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)).intervalIntegrable,
-      zero_add, zero_sub] using h
-  have hdc : Continuous df := by
-    exact continuous_const.mul
+  have hcoeff (n : ℤ) : boundaryFourier d n =
+      (Complex.I * n) * boundaryFourier (TF (VF E radialVekuaInput)) n := by
+    rw [radial_boundaryFourier_ae d hd n,
+      radial_boundaryFourier_ae _ ht n, fourierCoeffOn_deriv hdf (continuous_const.mul
       (((hΓF).continuous_deriv_one.mul
         ((continuous_herglotzCoeff
           (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)).intervalIntegrable
@@ -723,33 +671,26 @@ private theorem radial_normalizedConormal_eq_coordinateLoad_one {L : NNReal}
         ((Complex.continuous_conj.comp (hΓF).continuous_deriv_one).mul
           ((continuous_herglotzCoeff
             (isDirDensity_radialVekuaDensity (Real.sqrt E) (F 1)).intervalIntegrable
-              (Real.sqrt E) (-1)).comp (hΓF).continuous)))
-  have hp : f 0 = f (2 * Real.pi) := by
+              (Real.sqrt E) (-1)).comp (hΓF).continuous)))) (by
     have hclosed : ΓF (2 * Real.pi) = ΓF 0 := by
       simpa only [zero_add] using physicalCircleTrace_periodic F 0
-    dsimp only [f]
-    rw [hclosed]
-  have hcoeff (n : ℤ) : boundaryFourier d n =
-      (Complex.I * (n : ℂ)) * boundaryFourier (TF (VF (E : ℂ) radialVekuaInput)) n := by
-    rw [radial_boundaryFourier_ae d hd n,
-      radial_boundaryFourier_ae _ ht n, fourierCoeffOn_deriv hdf hdc hp n]
+    grind) n]
     ring
   apply lp.ext
   funext n
   have hn := hcoeff n
   simp only [d, map_sub, map_smul, lp.coeFn_sub, Pi.sub_apply,
     lp.coeFn_smul, Pi.smul_apply, smul_eq_mul] at hn
-  have hi := congrArg (fun z : ℂ => Complex.I * z) hn
-  simp only [mul_sub, ← mul_assoc, Complex.I_mul_I, neg_one_mul] at hi
+  have hi := congrArg (fun z  => Complex.I * z) hn
+  simp only [mul_sub, ← mul_assoc, Complex.I_mul_I] at hi
   rw [localConformalVekua_normalizedConormal_fourier hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes (E : ℂ) radialVekuaInput radialVekuaInput_nonpositive
+    e he hsource hes E radialVekuaInput radialVekuaInput_nonpositive
       radialVekuaInput_raw_H1 n]
-  simp only [sobolevSmoothing, diagOp_apply]
-  change ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
-      (-(n : ℂ) * boundaryFourier (TF (VF (E : ℂ) radialVekuaInput)) n -
+  change (sobWeight n ^ (-(1 / 2)) : ℝ) *
+      (-n * boundaryFourier (TF (VF E radialVekuaInput)) n -
         2 * Complex.I * boundaryFourier A n) =
-    ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) * boundaryFourier r n
-  linear_combination -((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) * hi
+    (sobWeight n ^ (-(1 / 2)) : ℝ) * boundaryFourier r n
+  grind
 
 include hb hL hhol hinj hC hK e he hsource hes in
 /-- The genuine normalized conormal of every scalar full zero mode is
@@ -757,14 +698,13 @@ exactly the half-smoothed unitary Fourier transform of its actual L2
 radial conormal, including the zero mode and variable circle speed. -/
 theorem localConformalRadial_normalizedConormal_eq_coordinateLoad {L : NNReal}
     (hΓLip : LipschitzWith L ΓF) {E : ℝ} (hE : 0 < E) (a : ℂ) :
-    NCF (E : ℂ) (a • radialVekuaInput) =
-      sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
+    NCF E (a • radialVekuaInput) =
+      sobolevSmoothing (1 / 2) (by norm_num)
         (boundaryFourier (localConformalRadialCoordinateLoad F hΓLip E a)) := by
   rw [map_smul, radial_normalizedConormal_eq_coordinateLoad_one hR F hFs hb hL hhol hinj
     hC hK e he hsource hes hΓLip hE]
   have hload := localConformalRadialCoordinateLoad_smul (F := F) hΓLip E a
-  rw [hload]
-  simp only [map_smul]
+  simp_all 
 
 end PhysicalCoordinates
 

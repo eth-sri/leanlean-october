@@ -48,15 +48,17 @@ def periodicP (W : ℝ → Ell2 →L[ℂ] Ell2) (n g : ℝ → ℂ) (θ : ℝ) :
     observation W (cutB (cutC (W (2 * π)) (basisVec 0))
       (Complex.I • cutS (W (2 * π)) (basisVec 0)) (observationAdj W g)) θ
 
+variable {W : ℝ → Ell2 →L[ℂ] Ell2} {γ : ℝ → ℂ}
+
 /-- **Lemma 6.4 (jump of `i(T_E - T_E^*)`).** If `W` is continuous with `W(0) = I`, then
 `i(T_E - T_E^*) g` jumps by `i⟨s_E, O_E^* g⟩` between `0` and `L`. -/
-theorem volterra_jump {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : ContinuousOn W (Icc 0 (2 * π)))
+theorem volterra_jump (hW : ContinuousOn W (Icc 0 (2 * π)))
     (hW0 : W 0 = 1) {g : ℝ → ℂ} (hg : AEStronglyMeasurable g volume) {B : ℝ}
     (hgB : ∀ s, ‖g s‖ ≤ B) :
     Complex.I * (volterraOp W g (2 * π) - volterraOpAdj W g (2 * π)) -
         Complex.I * (volterraOp W g 0 - volterraOpAdj W g 0) =
       Complex.I * ⟪cutS (W (2 * π)) (basisVec 0), observationAdj W g⟫_ℂ := by
-  have hL : (0 : ℝ) ≤ 2 * π := by positivity
+  have hL : 0 ≤ 2 * π := by positivity
   have h0 := volterraOp_add_adj hW hg hgB ⟨le_rfl, hL⟩
   have h1 := volterraOp_add_adj hW hg hgB ⟨hL, le_rfl⟩
   have hT0 : volterraOp W g 0 = 0 := by simp [volterraOp]
@@ -75,13 +77,12 @@ theorem periodicA_jump {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : ContinuousOn W (I
     {B : ℝ} (hgB : ∀ s, ‖g s‖ ≤ B) :
     periodicA W n g (2 * π) - periodicA W n g 0 =
       Complex.I * ⟪cutS (W (2 * π)) (basisVec 0), observationAdj W g⟫_ℂ := by
-  rw [← volterra_jump hW hW0 hg hgB, periodicA, periodicA, hn]
-  ring
+  simp [← volterra_jump hW hW0 hg hgB, periodicA, hn]
 
-lemma transport_zero {γ : ℝ → ℂ} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) :
+lemma transport_zero {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) :
     W 0 = 1 := by
   have := hW.2 0 ⟨le_rfl, by positivity⟩
-  simpa using this
+  simp_all
 
 /-- **Lemma 6.4 (periodicity of `𝒫_E`).** For a transport `W` of a Lipschitz curve with
 `c_E ≠ 0` and a periodic Neumann trace `n`, the corrected form has matching endpoint values:
@@ -91,14 +92,11 @@ theorem periodicP_periodic {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
     (hc : cutC (W (2 * π)) (basisVec 0) ≠ 0) {n g : ℝ → ℂ} (hn : n (2 * π) = n 0)
     (hg : AEStronglyMeasurable g volume) {B : ℝ} (hgB : ∀ s, ‖g s‖ ≤ B) :
     periodicP W n g (2 * π) = periodicP W n g 0 := by
-  have hU := transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩
-  have hA := periodicA_jump hW.1 (transport_zero hW) hn hg hgB
   have hO := observation_jump hW (cutB (cutC (W (2 * π)) (basisVec 0))
       (Complex.I • cutS (W (2 * π)) (basisVec 0)) (observationAdj W g))
-  rw [inner_cutC_cutB hU _ hc] at hO
-  rw [← sub_eq_zero]
+  rw [inner_cutC_cutB (transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩) _ hc] at hO
   simp only [periodicP]
-  linear_combination hA + hO
+  linear_combination periodicA_jump hW.1 (transport_zero hW) hn hg hgB + hO
 
 /-! ### The small-energy Schur complement (Definition 8.1, Lemma 8.3) -/
 
@@ -111,7 +109,7 @@ lemma inner_observationAdj_right {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : Continu
     ⟪x, observationAdj W g⟫_ℂ = l2Inner (observation W x) g := by
   rw [← inner_conj_symm, inner_observationAdj hW hg hgB, ← intervalIntegral_conj, l2Inner]
   refine intervalIntegral.integral_congr fun s _ => ?_
-  simp only [map_mul, Complex.conj_conj]
+  simp 
   ring
 
 end PolyaNeumann

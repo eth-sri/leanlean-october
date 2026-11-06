@@ -50,24 +50,23 @@ lemma isSobolevSeq_add {s : ℝ} {f f' : ℤ → ℂ} (hf : IsSobolevSeq s f) (h
   refine Summable.of_nonneg_of_le (fun n => sq_nonneg _) (fun n => ?_)
     ((hf.mul_left 2).add (hf'.mul_left 2))
   have hw : 0 ≤ sobWeight n ^ s := by have := sobWeight_pos n; positivity
-  have h1 : ‖(f + f') n‖ ≤ ‖f n‖ + ‖f' n‖ := norm_add_le _ _
   have h2 : sobWeight n ^ s * ‖(f + f') n‖ ≤
       sobWeight n ^ s * ‖f n‖ + sobWeight n ^ s * ‖f' n‖ := by
-    rw [← mul_add]; exact mul_le_mul_of_nonneg_left h1 hw
+    rw [← mul_add]; exact mul_le_mul_of_nonneg_left (norm_add_le _ _) hw
   have h3 : 0 ≤ sobWeight n ^ s * ‖(f + f') n‖ := by positivity
   nlinarith [sq_nonneg (sobWeight n ^ s * ‖f n‖ - sobWeight n ^ s * ‖f' n‖)]
 
 lemma isSobolevSeq_smul {s : ℝ} (c : ℂ) {f : ℤ → ℂ} (hf : IsSobolevSeq s f) :
     IsSobolevSeq s (c • f) := by
   refine (hf.mul_left (‖c‖ ^ 2)).congr fun n => ?_
-  simp only [Pi.smul_apply, smul_eq_mul, norm_mul]; ring
+  simp ; ring
 
 lemma sobVec_congr {s : ℝ} {f f' : ℤ → ℂ} (e : f = f') (hf : IsSobolevSeq s f)
     (hf' : IsSobolevSeq s f') : sobVec s f hf = sobVec s f' hf' := by
-  subst e; rfl
+  simp_all
 
 @[simp] lemma sobVec_apply {s : ℝ} {f : ℤ → ℂ} (hf : IsSobolevSeq s f) (n : ℤ) :
-    (sobVec s f hf : ℤ → ℂ) n = ((sobWeight n ^ s : ℝ) : ℂ) * f n := rfl
+    sobVec s f hf n = (sobWeight n ^ s : ℝ) * f n := rfl
 
 lemma sobVec_add {s : ℝ} {f f' : ℤ → ℂ} (hf : IsSobolevSeq s f) (hf' : IsSobolevSeq s f')
     (hff : IsSobolevSeq s (f + f')) :
@@ -79,7 +78,7 @@ lemma sobVec_smul {s : ℝ} (c : ℂ) {f : ℤ → ℂ} (hf : IsSobolevSeq s f)
     (hcf : IsSobolevSeq s (c • f)) :
     sobVec s (c • f) hcf = c • sobVec s f hf := by
   ext n
-  simp only [sobVec_apply, Pi.smul_apply, smul_eq_mul, lp.coeFn_smul]
+  simp 
   ring
 
 lemma sobWeight_rpow_mul_neg (s : ℝ) (n : ℤ) : sobWeight n ^ s * sobWeight n ^ (-s) = 1 := by
@@ -99,14 +98,11 @@ lemma isSobolevSeq_fromL2 (s : ℝ) (f : L2Z) : IsSobolevSeq s (fromL2 s f) := b
 
 lemma sobVec_fromL2 (s : ℝ) (f : L2Z) : sobVec s (fromL2 s f) (isSobolevSeq_fromL2 s f) = f := by
   ext n
-  rw [sobVec_apply, fromL2, ← mul_assoc, ← Complex.ofReal_mul, sobWeight_rpow_mul_neg]
-  simp
+  simp [fromL2, ← mul_assoc, ← Complex.ofReal_mul, sobWeight_rpow_mul_neg]
 
 lemma fromL2_sobVec (s : ℝ) (h : ℤ → ℂ) (hh : IsSobolevSeq s h) : fromL2 s (sobVec s h hh) = h := by
   funext n
-  rw [fromL2, sobVec_apply, ← mul_assoc, ← Complex.ofReal_mul, mul_comm (sobWeight n ^ (-s)),
-    sobWeight_rpow_mul_neg]
-  simp
+  simp [fromL2, ← mul_assoc, ← Complex.ofReal_mul, mul_comm (sobWeight n ^ (-s)), sobWeight_rpow_mul_neg]
 
 lemma fromL2_add (s : ℝ) (f f' : L2Z) : fromL2 s (f + f') = fromL2 s f + fromL2 s f' := by
   funext n
@@ -114,7 +110,7 @@ lemma fromL2_add (s : ℝ) (f f' : L2Z) : fromL2 s (f + f') = fromL2 s f + fromL
 
 lemma fromL2_smul (s : ℝ) (c : ℂ) (f : L2Z) : fromL2 s (c • f) = c • fromL2 s f := by
   funext n
-  simp only [fromL2, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
+  simp only [fromL2, lp.coeFn_smul, Pi.smul_apply]
   ring
 
 /-! ### Bounded linear maps of coefficient sequences -/
@@ -144,22 +140,20 @@ lemma comp (H : SeqOpBound s t C Φ) (H' : SeqOpBound t u D Ψ) :
       _ ≤ D * (C * Real.sqrt (sobNormSq s h)) :=
           mul_le_mul_of_nonneg_left (H.bound h hh) H'.nonneg
       _ = _ := by ring
-  · simp only [Function.comp, H.map_add h h' hh hh',
-      H'.map_add _ _ (H.maps h hh) (H.maps h' hh')]
-  · simp only [Function.comp, H.map_smul c h hh, H'.map_smul c _ (H.maps h hh)]
+  · simp [H.map_add h h' hh hh', H'.map_add _ _ (H.maps h hh) (H.maps h' hh')]
+  simp [H.map_smul c h hh, H'.map_smul c _ (H.maps h hh)]
 
 lemma add (H : SeqOpBound s t C Φ) (H' : SeqOpBound s t D Ψ) :
     SeqOpBound s t (C + D) (fun h => Φ h + Ψ h) := by
   refine ⟨add_nonneg H.nonneg H'.nonneg, fun h hh => isSobolevSeq_add (H.maps h hh) (H'.maps h hh),
     fun h hh => ?_, fun h h' hh hh' => ?_, fun c h hh => ?_⟩
-  · have e := sobVec_add (H.maps h hh) (H'.maps h hh) (isSobolevSeq_add (H.maps h hh) (H'.maps h hh))
-    rw [← norm_sobVec _ _ (isSobolevSeq_add (H.maps h hh) (H'.maps h hh)), e]
+  · rw [← norm_sobVec _ _ (isSobolevSeq_add (H.maps h hh) (H'.maps h hh)), sobVec_add (H.maps h hh) (H'.maps h hh) (isSobolevSeq_add (H.maps h hh) (H'.maps h hh))]
     refine (norm_add_le _ _).trans ?_
     rw [norm_sobVec, norm_sobVec, add_mul]
     exact add_le_add (H.bound h hh) (H'.bound h hh)
   · rw [H.map_add h h' hh hh', H'.map_add h h' hh hh']
     abel
-  · rw [H.map_smul c h hh, H'.map_smul c h hh, smul_add]
+  simp [H.map_smul c h hh, H'.map_smul c h hh]
 
 lemma smul (c : ℂ) (H : SeqOpBound s t C Φ) :
     SeqOpBound s t (‖c‖ * C) (fun h => c • Φ h) := by
@@ -183,13 +177,13 @@ def toCLM (H : SeqOpBound s t C Φ) : L2Z →L[ℂ] L2Z :=
     { toFun := fun f => sobVec t (Φ (fromL2 s f)) (H.maps _ (isSobolevSeq_fromL2 s f))
       map_add' := fun f g => by
         have e : Φ (fromL2 s (f + g)) = Φ (fromL2 s f) + Φ (fromL2 s g) := by
-          rw [fromL2_add, H.map_add _ _ (isSobolevSeq_fromL2 s f) (isSobolevSeq_fromL2 s g)]
+          simp [fromL2_add, H.map_add _ _ (isSobolevSeq_fromL2 s f) (isSobolevSeq_fromL2 s g)]
         rw [sobVec_congr e _ (isSobolevSeq_add (H.maps _ (isSobolevSeq_fromL2 s f))
           (H.maps _ (isSobolevSeq_fromL2 s g)))]
         exact sobVec_add _ _ _
       map_smul' := fun c f => by
         have e : Φ (fromL2 s (c • f)) = c • Φ (fromL2 s f) := by
-          rw [fromL2_smul, H.map_smul _ _ (isSobolevSeq_fromL2 s f)]
+          simp [fromL2_smul, H.map_smul _ _ (isSobolevSeq_fromL2 s f)]
         rw [sobVec_congr e _ (isSobolevSeq_smul c (H.maps _ (isSobolevSeq_fromL2 s f)))]
         exact sobVec_smul _ _ _ }
     C (fun f => by
@@ -206,6 +200,8 @@ end SeqOpBound
 
 /-! ### The building blocks: multipliers and the normalized primitive -/
 
+variable {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} (hb : IsWL1 (1 / 2) b) (ha : IsWL1 (1 / 2) a) (hg : IsWL1 (1 / 2) g) (E : ℂ)
+
 theorem seqOpBound_seqConv {s : ℝ} (hs : 0 ≤ s) {c : ℤ → ℂ} (hc : IsWL1 s c) :
     SeqOpBound s s (wl1Norm s c) (seqConv c) := by
   have h0 : 0 ≤ wl1Norm s c := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
@@ -213,7 +209,7 @@ theorem seqOpBound_seqConv {s : ℝ} (hs : 0 ≤ s) {c : ℤ → ℂ} (hc : IsWL
     fun h h' hh hh' => ?_, fun c' h hh => ?_⟩
   · calc _ ≤ Real.sqrt (wl1Norm s c ^ 2 * sobNormSq s h) :=
           Real.sqrt_le_sqrt (sobNormSq_seqConv_le hs hc hh).2.2
-      _ = _ := by rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq h0]
+      _ = _ := by simp_all
   · funext n
     simp only [seqConv, Pi.add_apply, mul_add]
     exact Summable.tsum_add ((sobNormSq_seqConv_le hs hc hh).1 n)
@@ -221,7 +217,7 @@ theorem seqOpBound_seqConv {s : ℝ} (hs : 0 ≤ s) {c : ℤ → ℂ} (hc : IsWL
   · funext n
     simp only [seqConv, Pi.smul_apply, smul_eq_mul]
     rw [← tsum_mul_left]
-    exact tsum_congr fun k => by ring
+    grind
 
 lemma primSeq_add (u v : ℤ → ℂ) : primSeq (u + v) = primSeq u + primSeq v := by
   funext n; simp [primSeq, add_div]
@@ -229,11 +225,11 @@ lemma primSeq_add (u v : ℤ → ℂ) : primSeq (u + v) = primSeq u + primSeq v 
 lemma primSeq_smul (c : ℂ) (u : ℤ → ℂ) : primSeq (c • u) = c • primSeq u := by
   funext n; simp [primSeq, mul_div_assoc]
 
-lemma summable_primSeq_seqConv {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 s a)
+lemma summable_primSeq_seqConv (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 s a)
     (hh : IsSobolevSeq s h) : Summable (primSeq (seqConv a h)) :=
   (sq_tsum_norm_le hs (sobNormSq_primSeq_seqConv_le hs ha hh).1).1.of_norm
 
-theorem seqOpBound_antiPrim {s : ℝ} (hs : 0 ≤ s) {a : ℤ → ℂ} (ha : IsWL1 s a) :
+theorem seqOpBound_antiPrim (hs : 0 ≤ s) {a : ℤ → ℂ} (ha : IsWL1 s a) :
     SeqOpBound s (s + 1) (Real.sqrt (primConst s a)) (antiPrim a) := by
   refine ⟨Real.sqrt_nonneg _, fun h hh => (antiPrim_bound hs ha hh).1, fun h hh => ?_,
     fun h h' hh hh' => ?_, fun c h hh => ?_⟩
@@ -246,15 +242,11 @@ theorem seqOpBound_antiPrim {s : ℝ} (hs : 0 ≤ s) {a : ℤ → ℂ} (ha : IsW
     · simp only [antiPrim, hn, if_true, Pi.add_apply, hc, primSeq_add]
       rw [Summable.tsum_add (summable_primSeq_seqConv hs ha hh)
         (summable_primSeq_seqConv hs ha hh'), neg_add]
-    · simp [antiPrim, hn, hc, primSeq_add]
-  · have hc := (seqOpBound_seqConv hs ha).map_smul c h hh
-    funext n
-    by_cases hn : n = 0
-    · simp only [antiPrim, hn, if_true, Pi.smul_apply, hc, primSeq_smul, smul_eq_mul]
-      rw [tsum_mul_left]; ring
-    · simp [antiPrim, hn, hc, primSeq_smul]
+    simp [antiPrim, hn, hc, primSeq_add]
+  · funext n
+    all_goals simp [antiPrim, (seqOpBound_seqConv hs ha).map_smul c h hh, primSeq_smul, tsum_mul_left]
 
-theorem seqOpBound_antiPrimIter {s : ℝ} (hs : 0 ≤ s) {a : ℤ → ℂ} (ha : IsWL1 s a) (j : ℕ) :
+theorem seqOpBound_antiPrimIter (hs : 0 ≤ s) {a : ℤ → ℂ} (ha : IsWL1 s a) (j : ℕ) :
     SeqOpBound s s (Real.sqrt (primConst s a) ^ j) (antiPrimIter a j) := by
   induction j with
   | zero => exact (SeqOpBound.id_mono le_rfl).mono_const (by simp)
@@ -263,17 +255,15 @@ theorem seqOpBound_antiPrimIter {s : ℝ} (hs : 0 ≤ s) {a : ℤ → ℂ} (ha :
       funext h; exact Function.iterate_succ_apply' _ _ _
     rw [e]
     exact ((ih.comp (seqOpBound_antiPrim hs ha)).comp
-      (SeqOpBound.id_mono (by linarith : s ≤ s + 1))).mono_const (le_of_eq (by ring))
+      (SeqOpBound.id_mono (by linarith))).mono_const (le_of_eq (by ring))
 
 /-- Multiplication by `c · γ^j` on `H^s`, with bound `‖c‖_{ℓ¹_s} R^j`. -/
-theorem seqOpBound_conv_pow {s : ℝ} (hs : 0 ≤ s) {c g : ℤ → ℂ} (hc : IsWL1 s c)
+theorem seqOpBound_conv_pow (hs : 0 ≤ s) {c g : ℤ → ℂ} (hc : IsWL1 s c)
     (hg : IsWL1 s g) (j : ℕ) :
     SeqOpBound s s (wl1Norm s c * wl1Norm s g ^ j)
-      (fun h => seqConv c (seqConv (seqConvPow g j) h)) := by
-  have hc0 : 0 ≤ wl1Norm s c := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
-  exact ((seqOpBound_seqConv hs (wl1Norm_seqConvPow_le hs hg j).1).comp
+      (fun h => seqConv c (seqConv (seqConvPow g j) h)) := ((seqOpBound_seqConv hs (wl1Norm_seqConvPow_le hs hg j).1).comp
     (seqOpBound_seqConv hs hc)).mono_const
-    (mul_le_mul_of_nonneg_left (wl1Norm_seqConvPow_le hs hg j).2 hc0)
+    (mul_le_mul_of_nonneg_left (wl1Norm_seqConvPow_le hs hg j).2 (tsum_nonneg fun k => by have := sobWeight_pos k; positivity))
 
 /-! ### The conormal remainder `𝒥_E − |D|` -/
 
@@ -291,15 +281,12 @@ def conormalTermConst (s : ℝ) (b a g : ℤ → ℂ) (j : ℕ) : ℝ :=
 theorem seqOpBound_conormalTerm {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} (hb : IsWL1 s b)
     (ha : IsWL1 s a) (hg : IsWL1 s g) (j : ℕ) :
     SeqOpBound s s (conormalTermConst s b a g j) (conormalTermMap b a g j) := by
-  have H1 := ((seqOpBound_antiPrimIter hs ha (j + 1)).comp
-    (seqOpBound_conv_pow hs hb hg j)).smul (-Complex.I * (j + 1 : ℕ))
-  have H2 := ((seqOpBound_antiPrimIter hs ha j).comp
-    (seqOpBound_conv_pow hs ha hg (j + 1))).smul Complex.I
-  have hn : ‖-Complex.I * ((j + 1 : ℕ) : ℂ)‖ = j + 1 := by
-    rw [norm_mul, norm_neg, Complex.norm_I, one_mul, Complex.norm_natCast]; push_cast; ring
-  refine (H1.add H2).mono_const (le_of_eq ?_)
-  rw [hn, Complex.norm_I, conormalTermConst]
-  ring
+  have hn : ‖-Complex.I * (j + 1 : ℕ)‖ = j + 1 := by
+    rw [norm_mul, Complex.norm_natCast]; norm_num
+  refine ((((seqOpBound_antiPrimIter hs ha (j + 1)).comp
+    (seqOpBound_conv_pow hs hb hg j)).smul (-Complex.I * (j + 1 : ℕ))).add (((seqOpBound_antiPrimIter hs ha j).comp
+    (seqOpBound_conv_pow hs ha hg (j + 1))).smul Complex.I)).mono_const (le_of_eq ?_)
+  simp_all [conormalTermConst]
 
 /-- The `(j+1)`-th conormal term as a bounded operator on `ℓ²(ℤ)` (normalized `H^s`
 coordinates). -/
@@ -320,29 +307,21 @@ lemma norm_conormalCoeff_smul_le {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} 
   set M := wl1Norm s a
   set R := wl1Norm s g
   set q := Real.sqrt (primConst s a) with hq
-  have hB0 : 0 ≤ B := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
   have hM0 : 0 ≤ M := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
   have hR0 : 0 ≤ R := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
-  have hq0 : 0 ≤ q := Real.sqrt_nonneg _
-  have hr0 : 0 ≤ r := (norm_nonneg E).trans hE
+  have hr0  := (norm_nonneg E).trans hE
   set e := r / 4 with he
-  have he0 : 0 ≤ e := by positivity
-  have hT : ‖conormalTermOp hs hb ha hg j‖ ≤
-      (j + 1) * (B * R ^ j * q ^ (j + 1)) + M * R ^ (j + 1) * q ^ j :=
-    (seqOpBound_conormalTerm hs hb ha hg j).norm_toCLM_le
-  have hc : ‖conormalCoeff E j‖ ≤ e ^ (j + 1) / ((j + 1).factorial : ℝ) := by
+  have hf : ((j + 1).factorial : ℝ) = (j + 1) * j.factorial := by
+    simp [Nat.factorial_succ]
+  rw [norm_smul]
+  calc ‖conormalCoeff E j‖ * ‖conormalTermOp hs hb ha hg j‖
+      ≤ e ^ (j + 1) / (j + 1).factorial *
+          ((j + 1) * (B * R ^ j * q ^ (j + 1)) + M * R ^ (j + 1) * q ^ j) :=
+        mul_le_mul (by
     rw [conormalCoeff, norm_div, norm_pow, norm_div, norm_neg, Complex.norm_natCast,
       show ‖(4 : ℂ)‖ = 4 by norm_num]
     gcongr
-    rw [he]; linarith
-  have hf : ((j + 1).factorial : ℝ) = (j + 1) * j.factorial := by
-    push_cast [Nat.factorial_succ]; ring
-  have hfp : (0 : ℝ) < j.factorial := by exact_mod_cast Nat.factorial_pos j
-  rw [norm_smul]
-  calc ‖conormalCoeff E j‖ * ‖conormalTermOp hs hb ha hg j‖
-      ≤ e ^ (j + 1) / ((j + 1).factorial : ℝ) *
-          ((j + 1) * (B * R ^ j * q ^ (j + 1)) + M * R ^ (j + 1) * q ^ j) :=
-        mul_le_mul hc hT (norm_nonneg _) (by positivity)
+    linarith) (seqOpBound_conormalTerm hs hb ha hg j).norm_toCLM_le (norm_nonneg _) (by positivity)
     _ = e ^ (j + 1) / j.factorial * (B * R ^ j * q ^ (j + 1)) +
           e ^ (j + 1) / ((j + 1) * j.factorial) * (M * R ^ (j + 1) * q ^ j) := by
         rw [hf]; field_simp
@@ -351,9 +330,9 @@ lemma norm_conormalCoeff_smul_le {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} 
         gcongr
         nlinarith
     _ = e * (B * q + M * R) * ((r * R * q / 4) ^ j / j.factorial) := by
-        rw [he]; field_simp; ring
+        ring
 
-lemma summable_conormalSeries {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} (hb : IsWL1 s b)
+lemma summable_conormalSeries (hb : IsWL1 s b)
     (ha : IsWL1 s a) (hg : IsWL1 s g) (E : ℂ) :
     Summable fun j => conormalCoeff E j • conormalTermOp hs hb ha hg j :=
   Summable.of_norm_bounded
@@ -366,16 +345,15 @@ def conormalRemOp {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} (hb : IsWL1 s b
   ∑' j, conormalCoeff E j • conormalTermOp hs hb ha hg j
 
 /-- The conormal remainder depends continuously on `E` in operator norm. -/
-theorem continuous_conormalRemOp {s : ℝ} (hs : 0 ≤ s) {b a g : ℤ → ℂ} (hb : IsWL1 s b)
+theorem continuous_conormalRemOp (hb : IsWL1 s b)
     (ha : IsWL1 s a) (hg : IsWL1 s g) :
     Continuous fun E => conormalRemOp hs hb ha hg E := by
   refine continuous_iff_continuousAt.mpr fun E₀ => ?_
-  have hcont : ContinuousOn (fun E => conormalRemOp hs hb ha hg E)
+  have hcont : ContinuousOn (conormalRemOp hs hb ha hg)
       (Metric.ball 0 (‖E₀‖ + 1)) := by
     refine continuousOn_tsum (fun j => ?_) ((Real.summable_pow_div_factorial _).mul_left _)
       (fun j E hE => norm_conormalCoeff_smul_le hs hb ha hg
         (le_of_lt (mem_ball_zero_iff.mp hE)) j)
-    refine Continuous.continuousOn ?_
     unfold conormalCoeff
     fun_prop
   exact hcont.continuousAt (Metric.isOpen_ball.mem_nhds (by simp))
@@ -388,9 +366,8 @@ def normalizedConormalPrincipal : L2Z →L[ℂ] L2Z :=
 
 /-- The principal part is the Fourier multiplier `|n| / (1 + |n|)`. -/
 lemma normalizedConormal_principal_apply (f : L2Z) (n : ℤ) :
-    (normalizedConormalPrincipal f : ℤ → ℂ) n = ((|(n : ℝ)| / (1 + |(n : ℝ)|) : ℝ) : ℂ) * f n := by
-  have hw : (0 : ℝ) < 1 + |(n : ℝ)| := by positivity
-  have key : (|(n : ℝ)| / (1 + |(n : ℝ)|) : ℝ) = 1 - sobWeight n ^ (-(1 : ℝ)) := by
+    normalizedConormalPrincipal f n = (|(n : ℝ)| / (1 + |(n : ℝ)|) : ℝ) * f n := by
+  have key : |(n : ℝ)| / (1 + |(n : ℝ)|) = 1 - sobWeight n ^ (-(1 : ℝ)) := by
     rw [Real.rpow_neg_one, sobWeight]
     field_simp
     ring
@@ -409,11 +386,10 @@ def normalizedConormal {b a g : ℤ → ℂ} (hb : IsWL1 (1 / 2) b) (ha : IsWL1 
     (sobolevSmoothing 1 zero_le_one).comp (conormalRemOp (by norm_num) hb ha hg E)
 
 /-- **Lemma 6.14 (gain of one derivative).** `Ĵ_E − I = Λ^{-1} ∘ (R_E − I)`. -/
-theorem normalizedConormal_sub_one_eq {b a g : ℤ → ℂ} (hb : IsWL1 (1 / 2) b)
-    (ha : IsWL1 (1 / 2) a) (hg : IsWL1 (1 / 2) g) (E : ℂ) :
-    normalizedConormal hb ha hg E - (1 : L2Z →L[ℂ] L2Z) =
+theorem normalizedConormal_sub_one_eq :
+    normalizedConormal hb ha hg E - 1 =
       (sobolevSmoothing 1 zero_le_one).comp
-        (conormalRemOp (by norm_num) hb ha hg E - (1 : L2Z →L[ℂ] L2Z)) := by
+        (conormalRemOp (by norm_num) hb ha hg E - 1) := by
   unfold normalizedConormal normalizedConormalPrincipal
   have h1 : (sobolevSmoothing 1 zero_le_one).comp (1 : L2Z →L[ℂ] L2Z) =
       sobolevSmoothing 1 zero_le_one := ContinuousLinearMap.ext fun _ => rfl
@@ -421,15 +397,13 @@ theorem normalizedConormal_sub_one_eq {b a g : ℤ → ℂ} (hb : IsWL1 (1 / 2) 
   abel
 
 /-- **Lemma 6.14 (inclusion plus compact).** `Ĵ_E − I` is compact. -/
-theorem isCompactOperator_normalizedConormal_sub_one {b a g : ℤ → ℂ} (hb : IsWL1 (1 / 2) b)
-    (ha : IsWL1 (1 / 2) a) (hg : IsWL1 (1 / 2) g) (E : ℂ) :
+theorem isCompactOperator_normalizedConormal_sub_one :
     IsCompactOperator (normalizedConormal hb ha hg E - (1 : L2Z →L[ℂ] L2Z)) := by
   rw [normalizedConormal_sub_one_eq]
   exact (isCompactOperator_sobolevSmoothing one_pos).comp_clm _
 
 /-- **Lemma 6.14 (continuity).** `E ↦ Ĵ_E` is continuous in operator norm. -/
-theorem continuous_normalizedConormal {b a g : ℤ → ℂ} (hb : IsWL1 (1 / 2) b)
-    (ha : IsWL1 (1 / 2) a) (hg : IsWL1 (1 / 2) g) :
+theorem continuous_normalizedConormal :
     Continuous fun E => normalizedConormal hb ha hg E :=
   continuous_const.add (continuous_const.clm_comp (continuous_conormalRemOp _ hb ha hg))
 

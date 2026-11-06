@@ -43,16 +43,11 @@ def localConformalMassForcing :
 
 include hb hhol hinj hC in
 theorem localConformal_mass_pairing
-    (v u : NeumannH1 (F '' ball (0 : ℂ) 1)) :
-    ⟪h1Value (F '' ball (0 : ℂ) 1) v, h1Value (F '' ball (0 : ℂ) 1) u⟫_ℂ =
-      ⟪h1Value (ball (0 : ℂ) 1) (localConformalH1Pullback hR F hFs hL v),
+    (v u : NeumannH1 (F '' ball 0 1)) :
+    ⟪h1Value (F '' ball 0 1) v, h1Value (F '' ball 0 1) u⟫_ℂ =
+      ⟪h1Value (ball 0 1) (localConformalH1Pullback hR F hFs hL v),
         localConformalMassForcing hR F hFs hL hK u⟫_ℂ := by
   rw [← localConformalMassPullback_inner hR F hFs hb hL hhol hinj hC hK v u]
-  change ⟪lpBoundedMultiplier (localConformalMassDensity F)
-      (localConformalMassDensity_aemeasurable hR F hFs)
-      (localConformalMassDensity_ae_bound F hK)
-      (h1Value (ball (0 : ℂ) 1) (localConformalH1Pullback hR F hFs hL v)),
-      localConformalMassPullback hR F hFs hL hK u⟫_ℂ = _
   exact inner_lpBoundedMultiplier_real (localConformalMassDensity F)
     (localConformalMassDensity_aemeasurable hR F hFs)
     (localConformalMassDensity_ae_bound F hK)
@@ -63,9 +58,9 @@ def localConformalMassFourierH1 :
   diskMassForcingH1.comp (localConformalMassForcing hR F hFs hL hK)
 
 @[simp] theorem localConformalMassFourierH1_apply
-    (u : NeumannH1 (F '' ball (0 : ℂ) 1)) (n : ℤ) :
+    (u : NeumannH1 (F '' ball 0 1)) (n : ℤ) :
     localConformalMassFourierH1 hR F hFs hL hK u n =
-      (sobWeight n : ℂ) *
+      sobWeight n *
         diskMassForcingCoeff (localConformalMassForcing hR F hFs hL hK u) n := rfl
 
 end

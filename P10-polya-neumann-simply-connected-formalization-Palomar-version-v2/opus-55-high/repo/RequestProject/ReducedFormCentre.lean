@@ -51,10 +51,9 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
     · intro hz j
       exact (Submodule.mem_orthogonal _ _).1 hz _ (Submodule.subset_span ⟨j, rfl⟩)
     · intro h
-      rw [Submodule.mem_orthogonal]
       intro u hu
       induction hu using Submodule.span_induction with
-      | mem x hx => obtain ⟨j, rfl⟩ := hx; exact h j
+      | mem x hx => grind
       | zero => simp
       | add x y _ _ hx hy => rw [inner_add_left, hx, hy, add_zero]
       | smul c x _ hx => rw [inner_smul_left, hx, mul_zero]
@@ -65,8 +64,8 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
   refine ⟨A₀, hA₀, _, hev, ?_⟩
   intro E hE hEU
   obtain ⟨u, hu⟩ := hunit E hEU
-  set zc : H →L[ℂ] H₀ᗮ := H₀ᗮ.orthogonalProjection ∘L (↑u⁻¹ : H →L[ℂ] H) with hzc
-  refine ⟨LinearMap.pi fun j => (((innerSL ℂ (η j)) ∘L zc : H →L[ℂ] ℂ) : H →ₗ[ℂ] ℂ), ?_⟩
+  set zc : H →L[ℂ] H₀ᗮ := H₀ᗮ.orthogonalProjection ∘L ↑u⁻¹ with hzc
+  refine ⟨LinearMap.pi fun j => (innerSL ℂ (η j)) ∘L zc, ?_⟩
   intro y hy
   set x := (↑u⁻¹ : H →L[ℂ] H) y with hx
   set a := H₀.orthogonalProjection x with ha
@@ -76,31 +75,26 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
     exact congrFun hy j
   have hyx : y = J E a + R z := by
     have h1 : (u : H →L[ℂ] H) x = y := by
-      rw [hx, ← ContinuousLinearMap.mul_apply, Units.mul_inv, ContinuousLinearMap.one_apply]
-    rw [← h1, hu]
-    rfl
+      rw [← ContinuousLinearMap.mul_apply, Units.mul_inv, ContinuousLinearMap.one_apply]
+    grind
   have hSy : S E y = S E (R z) := by
     have := congrArg (fun T => T a) (hnullS E hEU)
-    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply] at this
-    rw [hyx, map_add, this, zero_add]
+    grind
   have hPJa : P E (J E a) = 0 := by
     have := congrArg (fun T => T a) (hnullP E hEU)
-    simpa using this
+    assumption
   have hPy : ⟪y, P E y⟫_ℂ = ⟪R z, P E (R z)⟫_ℂ := by
     rw [hyx, map_add, hPJa, zero_add, inner_add_left]
     have : ⟪J E a, P E (R z)⟫_ℂ = 0 := by
       rw [← (hsa E hEU).adjoint_eq, adjoint_inner_right, hPJa, inner_zero_left]
-    rw [this, zero_add]
-  have hwR : ∀ j, ⟪w j, R z⟫_ℂ = 0 := by
+    grind
+  have hpz : ⟪R z, P E (R z)⟫_ℂ = ⟪z, (adjoint R ∘L Preg E ∘L R) z⟫_ℂ := by
+    rw [hpole E hEU, inner_pole_add_eq_of_orthogonal w _ _ _ (by
     intro j
     rw [← adjoint_inner_left]
-    exact hzj j
-  have hpz : ⟪R z, P E (R z)⟫_ℂ = ⟪z, (adjoint R ∘L Preg E ∘L R) z⟫_ℂ := by
-    rw [hpole E hEU, inner_pole_add_eq_of_orthogonal w _ _ _ hwR,
+    grind),
       ContinuousLinearMap.comp_apply, ContinuousLinearMap.comp_apply, adjoint_inner_right]
-  have hb := hE z ((hmemZ z).2 hzj)
-  rw [hPy, hpz, hSy]
-  exact hb
+  grind
 
 end PolyaNeumann
 

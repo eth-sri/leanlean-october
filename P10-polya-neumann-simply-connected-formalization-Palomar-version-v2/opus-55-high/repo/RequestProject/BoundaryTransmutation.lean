@@ -49,7 +49,7 @@ def antiPrim (a h : ℤ → ℂ) (n : ℤ) : ℂ :=
 def primConst (s : ℝ) (a : ℤ → ℂ) : ℝ := 4 * (evalConst + 1) * wl1Norm s a ^ 2
 
 lemma evalConst_nonneg : 0 ≤ evalConst :=
-  tsum_nonneg fun n => by have := sobWeight_pos n; positivity
+  tsum_nonneg fun n => by positivity
 
 lemma primConst_nonneg (s : ℝ) (a : ℤ → ℂ) : 0 ≤ primConst s a := by
   have := evalConst_nonneg; unfold primConst; positivity
@@ -71,15 +71,14 @@ theorem antiPrim_bound {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 
     by_cases hn : n = 0
     · subst hn
       have hw : sobWeight 0 = 1 := by simp [sobWeight]
-      simp only [antiPrim, if_true, hw, Real.one_rpow, one_mul, norm_neg]
-      have h1 : ‖∑' m, p m‖ ≤ P := norm_tsum_le_tsum_norm hps
-      have h2 := sq_nonneg ‖p 0‖
+      simp only [antiPrim, if_true, hw, Real.one_rpow, norm_neg]
+      have h1  := norm_tsum_le_tsum_norm hps
       nlinarith [norm_nonneg (∑' m, p m)]
-    · simp [antiPrim, hn, hpdef]
+    simp [antiPrim, hn, hpdef]
   have hind : Summable fun n : ℤ => if n = 0 then P ^ 2 else 0 :=
     summable_of_ne_finset_zero (s := {0}) fun n hn => by
-      simp only [Finset.mem_singleton] at hn; simp [hn]
-  have hsum : IsSobolevSeq (s + 1) (antiPrim a h) :=
+      simp_all
+  have hsum  :=
     Summable.of_nonneg_of_le (fun n => sq_nonneg _) hpt (hp.add hind)
   refine ⟨hsum, ?_⟩
   calc sobNormSq (s + 1) (antiPrim a h)
@@ -168,7 +167,7 @@ lemma norm_sobVec (s : ℝ) (f : ℤ → ℂ) (hf : IsSobolevSeq s f) :
   rw [← Real.sqrt_sq (norm_nonneg (sobVec s f hf)), norm_sq_L2Z]
   congr 1
   refine tsum_congr fun n => ?_
-  change ‖((sobWeight n ^ s : ℝ) : ℂ) * f n‖ ^ 2 = _
+  change ‖(sobWeight n ^ s : ℝ) * f n‖ ^ 2 = _
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (by have := sobWeight_pos n; positivity)]
 
@@ -186,47 +185,40 @@ theorem vekuaBdry_sub_one_bound {s : ℝ} (hs : 0 ≤ s) {g a h : ℤ → ℂ} (
       ‖∑' j, ((-E / 4) ^ (j + 1) / (j + 1).factorial) • sobVec (s + 1) _ (hT j)‖ ≤
         (Real.exp (‖E‖ * wl1Norm (s + 1) g * Real.sqrt (primConst s a) / 4) - 1) *
           Real.sqrt (sobNormSq s h) := by
-  have hT : ∀ j, IsSobolevSeq (s + 1) (vekuaBdryTerm g a h (j + 1)) :=
+  have hT  :=
     fun j => (vekuaBdryTerm_bound hs hg ha hh j).1
   refine ⟨hT, ?_⟩
   set R := wl1Norm (s + 1) g with hR
   set K := primConst s a with hK
   set S := sobNormSq s h with hS
   have hR0 : 0 ≤ R := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
-  have hK0 : 0 ≤ K := primConst_nonneg s a
-  have hS0 : 0 ≤ S := sobNormSq_nonneg s h
   set x := ‖E‖ * R * Real.sqrt K / 4 with hx
-  have hx0 : 0 ≤ x := by positivity
   have hterm : ∀ j : ℕ, ‖((-E / 4) ^ (j + 1) / (j + 1).factorial) •
       sobVec (s + 1) _ (hT j)‖ ≤ x ^ (j + 1) / (j + 1).factorial * Real.sqrt S := by
     intro j
     rw [norm_smul, norm_sobVec, norm_div, norm_pow, norm_div, norm_neg, Complex.norm_natCast]
-    have hb := (vekuaBdryTerm_bound hs hg ha hh j).2
     have hsq : Real.sqrt (sobNormSq (s + 1) (vekuaBdryTerm g a h (j + 1))) ≤
         (R * Real.sqrt K) ^ (j + 1) * Real.sqrt S := by
       have e : (R ^ 2 * K) ^ (j + 1) * S = ((R * Real.sqrt K) ^ (j + 1)) ^ 2 * S := by
-        rw [← pow_mul, mul_comm (j + 1) 2, pow_mul, mul_pow (R : ℝ) (Real.sqrt K) 2,
-          Real.sq_sqrt hK0]
-      calc _ ≤ Real.sqrt ((R ^ 2 * K) ^ (j + 1) * S) := Real.sqrt_le_sqrt hb
+        rw [← pow_mul, mul_comm (j + 1) 2, pow_mul, mul_pow R (Real.sqrt K) 2,
+          Real.sq_sqrt (primConst_nonneg s a)]
+      calc _ ≤ Real.sqrt ((R ^ 2 * K) ^ (j + 1) * S) := Real.sqrt_le_sqrt (vekuaBdryTerm_bound hs hg ha hh j).2
         _ = _ := by
           rw [e, Real.sqrt_mul (by positivity), Real.sqrt_sq (by positivity)]
     have h4 : ‖(4 : ℂ)‖ = 4 := by norm_num
     rw [h4]
-    calc (‖E‖ / 4) ^ (j + 1) / ((j + 1).factorial : ℝ) *
+    calc (‖E‖ / 4) ^ (j + 1) / (j + 1).factorial *
           Real.sqrt (sobNormSq (s + 1) (vekuaBdryTerm g a h (j + 1)))
-        ≤ (‖E‖ / 4) ^ (j + 1) / ((j + 1).factorial : ℝ) *
+        ≤ (‖E‖ / 4) ^ (j + 1) / (j + 1).factorial *
           ((R * Real.sqrt K) ^ (j + 1) * Real.sqrt S) := by gcongr
-      _ = _ := by rw [hx]; ring
-  have hsumx : Summable fun j : ℕ => x ^ (j + 1) / (j + 1).factorial * Real.sqrt S :=
+      _ = _ := by ring
+  have hsumx : Summable fun j  => x ^ (j + 1) / (j + 1).factorial * Real.sqrt S :=
     ((summable_nat_add_iff 1).mpr (Real.summable_pow_div_factorial x)).mul_right _
   have hsumN := Summable.of_nonneg_of_le (fun j => norm_nonneg _) hterm hsumx
   refine ⟨hsumN, ?_⟩
   have hexp : ∑' j : ℕ, x ^ (j + 1) / (j + 1).factorial = Real.exp x - 1 := by
     have e := (Real.summable_pow_div_factorial x).tsum_eq_zero_add
-    have e2 : Real.exp x = ∑' n : ℕ, x ^ n / n.factorial := by
-      rw [Real.exp_eq_exp_ℝ, NormedSpace.exp_eq_tsum_div]
-    rw [e2, e]
-    simp
+    simp_all [Real.exp_eq_exp_ℝ, NormedSpace.exp_eq_tsum_div]
   calc _ ≤ ∑' j : ℕ, ‖((-E / 4) ^ (j + 1) / (j + 1).factorial) • sobVec (s + 1) _ (hT j)‖ :=
         norm_tsum_le_tsum_norm hsumN
     _ ≤ ∑' j : ℕ, x ^ (j + 1) / (j + 1).factorial * Real.sqrt S :=

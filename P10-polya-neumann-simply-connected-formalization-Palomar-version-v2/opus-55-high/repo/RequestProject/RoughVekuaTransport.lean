@@ -42,22 +42,17 @@ def roughBoundaryOneReal : Lp ℝ 2 μB :=
 
 private theorem rough_boundary_integral_norm_le (p : BoundaryL2) :
     (∫ θ, ‖p θ‖ ∂μB) ≤ ‖roughBoundaryOneReal‖ * ‖p‖ := by
-  let a : Lp ℝ 2 μB := (Lp.memLp p).norm.toLp (fun θ => ‖p θ‖)
+  let a  := (Lp.memLp p).norm.toLp (fun θ => ‖p θ‖)
   have he : ⟪roughBoundaryOneReal, a⟫_ℝ = ∫ θ, ‖p θ‖ ∂μB := by
-    rw [L2.inner_def]
     apply integral_congr_ae
-    filter_upwards [(memLp_const (1 : ℝ) : MemLp (fun _ : ℝ => (1 : ℝ)) 2 μB).coeFn_toLp,
+    filter_upwards [(memLp_const 1 : MemLp (fun _  => (1 : ℝ)) 2 μB).coeFn_toLp,
       (Lp.memLp p).norm.coeFn_toLp] with θ h1 ha
-    change ⟪roughBoundaryOneReal θ, a θ⟫_ℝ = ‖p θ‖
-    simp only [roughBoundaryOneReal, a, h1, ha, RCLike.inner_apply]
-    norm_num
+    simp_all [roughBoundaryOneReal, a]
   have ha : ‖a‖ = ‖p‖ := by
-    change ‖(Lp.memLp p).norm.toLp (fun θ => ‖p θ‖)‖ = ‖p‖
     rw [Lp.norm_toLp, eLpNorm_norm _ (Lp.aestronglyMeasurable p), Lp.norm_def]
-  have h := norm_inner_le_norm (𝕜 := ℝ) (E := Lp ℝ 2 μB)
+  have h := norm_inner_le_norm (𝕜 := ℝ) 
     roughBoundaryOneReal a
-  rw [he, Real.norm_eq_abs, abs_of_nonneg (integral_nonneg (fun _ => norm_nonneg _)), ha] at h
-  exact h
+  rwa [he, Real.norm_eq_abs, abs_of_nonneg (integral_nonneg (fun _ => norm_nonneg _)), ha] at h
 
 section BoundaryVectorIntegral
 
@@ -66,14 +61,16 @@ variable (k : ℝ → Ell2) (hk : ContinuousOn k (Icc 0 (2 * Real.pi)))
 def roughBoundaryKernelBound : ℝ :=
   Classical.choose (isCompact_Icc.exists_bound_of_continuousOn hk)
 
+variable (p : BoundaryL2)
+
 private theorem roughBoundaryKernelBound_spec (θ : ℝ) (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
     ‖k θ‖ ≤ roughBoundaryKernelBound k hk :=
   Classical.choose_spec (isCompact_Icc.exists_bound_of_continuousOn hk) θ hθ
 
 include hk in
-theorem roughBoundaryVectorProduct_memLp (p : BoundaryL2) :
+theorem roughBoundaryVectorProduct_memLp :
     MemLp (fun θ => p θ • k θ) 2 μB := by
-  apply (Lp.memLp p).of_le_mul (c := roughBoundaryKernelBound k hk)
+  apply (Lp.memLp p).of_le_mul 
     ((Lp.memLp p).aestronglyMeasurable.smul
       ((hk.mono Ioc_subset_Icc_self).aestronglyMeasurable measurableSet_Ioc))
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
@@ -83,7 +80,7 @@ theorem roughBoundaryVectorProduct_memLp (p : BoundaryL2) :
     (roughBoundaryKernelBound_spec k hk θ (Ioc_subset_Icc_self hθ)) (norm_nonneg _)
 
 include hk in
-theorem roughBoundaryVectorProduct_intervalIntegrable (p : BoundaryL2) :
+theorem roughBoundaryVectorProduct_intervalIntegrable :
     IntervalIntegrable (fun θ => p θ • k θ) volume 0 (2 * Real.pi) := by
   rw [intervalIntegrable_iff_integrableOn_Ioc_of_le Real.two_pi_pos.le]
   exact (roughBoundaryVectorProduct_memLp k hk p).integrable (by norm_num)
@@ -115,13 +112,10 @@ def roughBoundaryVectorIntegralLin : BoundaryL2 →ₗ[ℂ] Ell2 where
         exact (smul_smul c (p θ) (k θ)).symm
       _ = _ := integral_smul _ _
 
-theorem roughBoundaryVectorIntegralLin_norm_le (p : BoundaryL2) :
+theorem roughBoundaryVectorIntegralLin_norm_le :
     ‖roughBoundaryVectorIntegralLin k hk p‖ ≤
       (roughBoundaryKernelBound k hk * ‖roughBoundaryOneReal‖) * ‖p‖ := by
-  have hM : 0 ≤ roughBoundaryKernelBound k hk :=
-    (norm_nonneg (k 0)).trans
-      (roughBoundaryKernelBound_spec k hk 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
-  change ‖∫ θ in (0 : ℝ)..(2 * Real.pi), p θ • k θ‖ ≤ _
+  change ‖∫ θ in 0..(2 * Real.pi), p θ • k θ‖ ≤ _
   rw [intervalIntegral.integral_of_le Real.two_pi_pos.le]
   calc
     _ ≤ ∫ θ, roughBoundaryKernelBound k hk * ‖p θ‖ ∂μB := by
@@ -132,7 +126,8 @@ theorem roughBoundaryVectorIntegralLin_norm_le (p : BoundaryL2) :
         (roughBoundaryKernelBound_spec k hk θ (Ioc_subset_Icc_self hθ)) (norm_nonneg _)
     _ = roughBoundaryKernelBound k hk * (∫ θ, ‖p θ‖ ∂μB) := integral_const_mul _ _
     _ ≤ roughBoundaryKernelBound k hk * (‖roughBoundaryOneReal‖ * ‖p‖) :=
-      mul_le_mul_of_nonneg_left (rough_boundary_integral_norm_le p) hM
+      mul_le_mul_of_nonneg_left (rough_boundary_integral_norm_le p) ((norm_nonneg (k 0)).trans
+      (roughBoundaryKernelBound_spec k hk 0 ⟨le_rfl, Real.two_pi_pos.le⟩))
     _ = _ := by ring
 
 /-- A bounded actual Bochner integral, ready for extension on the Fourier
@@ -142,9 +137,9 @@ def roughBoundaryVectorIntegral : BoundaryL2 →L[ℂ] Ell2 :=
     (roughBoundaryKernelBound k hk * ‖roughBoundaryOneReal‖)
     (roughBoundaryVectorIntegralLin_norm_le k hk)
 
-@[simp] theorem roughBoundaryVectorIntegral_apply (p : BoundaryL2) :
+@[simp] theorem roughBoundaryVectorIntegral_apply :
     roughBoundaryVectorIntegral k hk p =
-      ∫ θ in (0 : ℝ)..(2 * Real.pi), p θ • k θ := rfl
+      ∫ θ in 0..(2 * Real.pi), p θ • k θ := rfl
 
 end BoundaryVectorIntegral
 
@@ -153,12 +148,11 @@ def roughNormalizedMean : L2Z →L[ℂ] ℂ :=
   ((Real.sqrt (2 * Real.pi) : ℂ)⁻¹) • innerSL ℂ (stdBasisZ 0)
 
 theorem roughNormalizedMean_apply (y : L2Z) :
-    roughNormalizedMean y = y 0 / (Real.sqrt (2 * Real.pi) : ℂ) := by
+    roughNormalizedMean y = y 0 / Real.sqrt (2 * Real.pi) := by
   have h : ⟪stdBasisZ 0, y⟫_ℂ = y 0 := by
-    rw [stdBasisZ_apply, lp.inner_single_left]
-    simp
+    simp [stdBasisZ_apply, lp.inner_single_left]
   simp only [roughNormalizedMean, ContinuousLinearMap.smul_apply, innerSL_apply_apply,
-    h, smul_eq_mul]
+    h]
   ring
 
 /-- True ordinary L2 forcing after the rough primitive is removed. -/
@@ -193,30 +187,23 @@ private theorem rough_transportCoeff_continuous : Continuous (transportCoeff γ 
 
 include hγ in
 theorem roughVekuaRegularForce_memLp (p : BoundaryL2) (m : ℂ) :
-    MemLp (roughVekuaRegularForce γ E p m) 2 μB := by
-  have hk : ContinuousOn (fun θ => transportCoeff γ E θ (basisVec 0))
-      (Icc 0 (2 * Real.pi)) :=
-    (rough_transportCoeff_continuous (E := E) hγ).continuousOn.clm_apply continuousOn_const
-  exact (roughBoundaryVectorProduct_memLp _ hk p).add (memLp_const (m • basisVec 0))
+    MemLp (roughVekuaRegularForce γ E p m) 2 μB := (roughBoundaryVectorProduct_memLp _ ((rough_transportCoeff_continuous  hγ).continuousOn.clm_apply continuousOn_const) p).add (memLp_const (m • basisVec 0))
 
 include hK hγ hW in
 theorem roughVekuaRegularIntegrand_memLp (p : BoundaryL2) (m : ℂ) :
     MemLp (fun θ => ContinuousLinearMap.adjoint (W θ)
       (roughVekuaRegularForce γ E p m θ)) 2 μB := by
   have hA := roughVekuaRegularForce_memLp (E := E) hγ p m
-  have hWa := (ContinuousLinearMap.adjoint.continuous.comp_continuousOn hW.1).mono Ioc_subset_Icc_self
-  have heval : Continuous (fun q : (Ell2 →L[ℂ] Ell2) × Ell2 => q.1 q.2) :=
-    continuous_fst.clm_apply continuous_snd
   apply hA.of_le_mul (c := 1)
-    (heval.comp_aestronglyMeasurable
-      ((hWa.aestronglyMeasurable measurableSet_Ioc).prodMk hA.aestronglyMeasurable))
+    ((continuous_fst.clm_apply continuous_snd).comp_aestronglyMeasurable
+      ((((ContinuousLinearMap.adjoint.continuous.comp_continuousOn hW.1).mono Ioc_subset_Icc_self).aestronglyMeasurable measurableSet_Ioc).prodMk hA.aestronglyMeasurable))
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
   refine ((ContinuousLinearMap.adjoint (W θ)).le_opNorm
     (roughVekuaRegularForce γ E p m θ)).trans ?_
-  rw [LinearIsometryEquiv.norm_map, one_mul]
+  rw [LinearIsometryEquiv.norm_map]
   simpa only [one_mul] using
     (mul_le_mul_of_nonneg_right
-      (norm_transport_le_one (E := E) (W := W) hK hW
+      (norm_transport_le_one   hK hW
         (Ioc_subset_Icc_self hθ))
       (norm_nonneg (roughVekuaRegularForce γ E p m θ)))
 
@@ -236,12 +223,7 @@ theorem roughVekuaRegularCorrection_continuousOn (p : BoundaryL2) (m α : ℂ) :
     exact (roughVekuaRegularIntegrand_memLp hK hγ hW p m).integrable (by norm_num)
   have hp := intervalIntegral.continuousOn_primitive_interval hi
   rw [uIcc_of_le Real.two_pi_pos.le] at hp
-  have hc : ContinuousOn (fun θ => α • basisVec 0 + (-(Complex.I / (Real.sqrt 2 : ℂ))) •
-      (∫ s in (0 : ℝ)..θ,
-        ContinuousLinearMap.adjoint (W s) (roughVekuaRegularForce γ E p m s)))
-      (Icc 0 (2 * Real.pi)) :=
-    continuousOn_const.add (ContinuousOn.const_smul hp (-(Complex.I / (Real.sqrt 2 : ℂ))))
-  exact hW.1.clm_apply hc
+  exact hW.1.clm_apply (continuousOn_const.add (ContinuousOn.const_smul hp (-(Complex.I / Real.sqrt 2))))
 
 include hK hγ hW in
 theorem roughVekuaRegularCorrection_absolutelyContinuous (p : BoundaryL2) (m α : ℂ) :
@@ -249,49 +231,37 @@ theorem roughVekuaRegularCorrection_absolutelyContinuous (p : BoundaryL2) (m α 
       0 (2 * Real.pi) := by
   obtain ⟨L, hL⟩ := volterra_lipschitzOn (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) hW.1 hW.2
-  have hWA : AbsolutelyContinuousOnInterval W 0 (2 * Real.pi) := by
-    apply LipschitzOnWith.absolutelyContinuousOnInterval
-    simpa only [uIcc_of_le Real.two_pi_pos.le] using hL
   have hp := absolutelyContinuousOnInterval_intervalIntegral_banach
     (roughVekuaRegularIntegrand_intervalIntegrable hK hγ hW p m)
     (by rw [uIcc_of_le Real.two_pi_pos.le]; exact ⟨le_rfl, Real.two_pi_pos.le⟩)
-  have hconst : AbsolutelyContinuousOnInterval
-      (fun _ : ℝ => α • basisVec 0) 0 (2 * Real.pi) := by
-    exact (LipschitzWith.const (α • basisVec 0)).lipschitzOnWith.absolutelyContinuousOnInterval
-  exact absolutelyContinuousOnInterval_clm_apply hWA
-    (hconst.add (hp.const_smul _))
+  exact absolutelyContinuousOnInterval_clm_apply (by
+    apply LipschitzOnWith.absolutelyContinuousOnInterval
+    simpa only [uIcc_of_le Real.two_pi_pos.le] using hL)
+    ((LipschitzWith.const (α • basisVec 0)).lipschitzOnWith.absolutelyContinuousOnInterval.add (hp.const_smul _))
 
 include hK hγ hW in
 theorem roughVekuaRegularCorrection_ae_hasDerivAt (p : BoundaryL2) (m α : ℂ) :
     ∀ᵐ θ, θ ∈ Ioo 0 (2 * Real.pi) →
       HasDerivAt (roughVekuaRegularCorrection γ E W p m α)
         (transportCoeff γ E θ (roughVekuaRegularCorrection γ E W p m α θ) +
-          (-(Complex.I / (Real.sqrt 2 : ℂ))) • roughVekuaRegularForce γ E p m θ) θ := by
-  have hdA := ae_hasDerivAt_intervalIntegral_banach Real.two_pi_pos.le
-    (roughVekuaRegularIntegrand_intervalIntegrable hK hγ hW p m)
-  filter_upwards [hdA] with θ hA hθ
+          (-(Complex.I / Real.sqrt 2)) • roughVekuaRegularForce γ E p m θ) θ := by
+  filter_upwards [ae_hasDerivAt_intervalIntegral_banach Real.two_pi_pos.le
+    (roughVekuaRegularIntegrand_intervalIntegrable hK hγ hW p m)] with θ hA hθ
   have hc := Ioo_subset_Icc_self hθ
-  have hdW := (hasDerivWithinAt_transport hγ.continuous_deriv_one.continuousOn hW hc).hasDerivAt (Icc_mem_nhds hθ.1 hθ.2)
-  have hconst : HasDerivAt (fun _ : ℝ => α • basisVec 0) 0 θ :=
-    hasDerivAt_const θ (α • basisVec 0)
-  have hd := hasDerivAt_clm_apply_real hdW
-    (hconst.add ((hA hθ).const_smul (-(Complex.I / (Real.sqrt 2 : ℂ)))))
-  have hu := transport_mul_adjoint hK hW hc
+  have hd := hasDerivAt_clm_apply_real ((hasDerivWithinAt_transport hγ.continuous_deriv_one.continuousOn hW hc).hasDerivAt (Icc_mem_nhds hθ.1 hθ.2))
+    ((hasDerivAt_const θ (α • basisVec 0)).add ((hA hθ).const_smul (-(Complex.I / Real.sqrt 2))))
   have hcancel : W θ (ContinuousLinearMap.adjoint (W θ)
       (roughVekuaRegularForce γ E p m θ)) = roughVekuaRegularForce γ E p m θ := by
-    rw [← ContinuousLinearMap.mul_apply, hu, ContinuousLinearMap.one_apply]
+    rw [← ContinuousLinearMap.mul_apply, transport_mul_adjoint hK hW hc, ContinuousLinearMap.one_apply]
   have hd' : HasDerivAt (roughVekuaRegularCorrection γ E W p m α)
       ((transportCoeff γ E θ * W θ)
-          (α • basisVec 0 + (-(Complex.I / (Real.sqrt 2 : ℂ))) •
-            (∫ s in (0 : ℝ)..θ,
+          (α • basisVec 0 + (-(Complex.I / Real.sqrt 2)) •
+            (∫ s in 0..θ,
               ContinuousLinearMap.adjoint (W s) (roughVekuaRegularForce γ E p m s))) +
-        W θ (0 + (-(Complex.I / (Real.sqrt 2 : ℂ))) •
+        W θ (0 + (-(Complex.I / Real.sqrt 2)) •
           (ContinuousLinearMap.adjoint (W θ)) (roughVekuaRegularForce γ E p m θ))) θ := by
-    exact hd
-  convert hd' using 1
-  dsimp only [roughVekuaRegularCorrection]
-  simp only [ContinuousLinearMap.mul_apply, map_zero, add_zero, zero_add,
-    map_smul, hcancel]
+    assumption
+  simp_all [roughVekuaRegularCorrection]
 
 include hγ hW in
 private theorem rough_adjoint_transport_row_hasDerivAt {θ : ℝ}
@@ -306,10 +276,7 @@ private theorem rough_adjoint_transport_row_hasDerivAt {θ : ℝ}
     have hs : star (transportCoeff γ E θ) = -transportCoeff γ E θ :=
       transportCoeff_star γ E θ
     have hstar := hdW.star
-    rw [star_mul, hs, ContinuousLinearMap.star_eq_adjoint] at hstar
-    have h_simpa := hstar
-    simp only [mul_neg] at h_simpa ⊢
-    exact h_simpa
+    continuity
   simpa only [ContinuousLinearMap.neg_apply, ContinuousLinearMap.mul_apply,
     map_zero, add_zero] using
     hasDerivAt_clm_apply_real hdA (hasDerivAt_const θ (basisVec 0))
@@ -326,32 +293,24 @@ theorem roughProjectedObservation_hasDerivAt (v : Ell2) {θ : ℝ}
     HasDerivAt (fun t => ⟪projObsRow W t, v⟫_ℂ)
       (roughProjectedObservationDerivative γ E W v θ) θ := by
   let Q := cutProj (cutC (W (2 * Real.pi)) (basisVec 0))
-  have hp := (Q.restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt θ
-    (rough_adjoint_transport_row_hasDerivAt hγ hW hθ)
-  convert hp.inner ℂ (hasDerivAt_const θ v) using 1 <;>
-    simp [projObsRow, roughProjectedObservationDerivative, Q, Function.comp_def,
-      ContinuousLinearMap.coe_restrictScalars, map_neg, inner_zero_right,
-      inner_neg_left, inner_cutProj_left, inner_conj_symm]
+  convert ((Q.restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt θ
+    (rough_adjoint_transport_row_hasDerivAt hγ hW hθ)).inner ℂ (hasDerivAt_const θ v) using 1 <;>
+    simp [projObsRow, roughProjectedObservationDerivative, Q, inner_cutProj_left]
 
 include hγ hW in
 theorem roughProjectedObservationDerivative_memLp (v : Ell2) :
-    MemLp (roughProjectedObservationDerivative γ E W v) 2 μB := by
-  have hc : ContinuousOn (roughProjectedObservationDerivative γ E W v)
-      (Icc 0 (2 * Real.pi)) :=
-    ((ContinuousLinearMap.adjoint.continuous.comp_continuousOn hW.1).clm_apply
-      ((rough_transportCoeff_continuous (E := E) hγ).continuousOn.clm_apply
-        continuousOn_const)).inner continuousOn_const |>.neg
-  exact rough_continuousOn_memLp_two hc
+    MemLp (roughProjectedObservationDerivative γ E W v) 2 μB := rough_continuousOn_memLp_two (((ContinuousLinearMap.adjoint.continuous.comp_continuousOn hW.1).clm_apply
+      ((rough_transportCoeff_continuous  hγ).continuousOn.clm_apply
+        continuousOn_const)).inner continuousOn_const |>.neg)
 
 include hK hW in
 theorem roughProjectedObservation_absolutelyContinuous (v : Ell2) :
     AbsolutelyContinuousOnInterval (fun t => ⟪projObsRow W t, v⟫_ℂ)
       0 (2 * Real.pi) := by
-  let M : NNReal := ⟨Real.sqrt E * shiftConst * K * ‖v‖, by
-    exact mul_nonneg (mul_nonneg (mul_nonneg (Real.sqrt_nonneg _) shiftConst_nonneg)
+  let M : NNReal := ⟨Real.sqrt E * shiftConst * K * ‖v‖, mul_nonneg (mul_nonneg (mul_nonneg (Real.sqrt_nonneg _) shiftConst_nonneg)
       K.coe_nonneg) (norm_nonneg _)⟩
-  have hl : LipschitzOnWith M (fun t => ⟪projObsRow W t, v⟫_ℂ)
-      (Icc 0 (2 * Real.pi)) := by
+  apply LipschitzOnWith.absolutelyContinuousOnInterval
+  simpa only [uIcc_of_le Real.two_pi_pos.le] using by
     apply LipschitzOnWith.of_dist_le_mul
     intro x hx y hy
     rw [dist_eq_norm, ← inner_sub_left]
@@ -360,31 +319,24 @@ theorem roughProjectedObservation_absolutelyContinuous (v : Ell2) :
       _ ≤ (Real.sqrt E * shiftConst * K * |x - y|) * ‖v‖ :=
         mul_le_mul_of_nonneg_right (norm_projObsRow_sub_le hK hW hx hy) (norm_nonneg _)
       _ = M * dist x y := by
-        rw [Real.dist_eq]
         change _ = (Real.sqrt E * shiftConst * K * ‖v‖) * |x - y|
         ring
-  apply LipschitzOnWith.absolutelyContinuousOnInterval
-  simpa only [uIcc_of_le Real.two_pi_pos.le] using hl
 
 include hK hγ hW in
 theorem boundaryFourier_projectedObservation_sobolev_one (v : Ell2) :
     IsSobolevSeq 1
-      (boundaryFourier (projectedObservationBoundary hK hW v) : ℤ → ℂ) := by
-  have hp : (⟪projObsRow W 0, v⟫_ℂ) = ⟪projObsRow W (2 * Real.pi), v⟫_ℂ := by
-    rw [projObsRow_endpoint hW]
-  have hr := isSobolevSeq_one_fourierCoeffOn_of_ac_ae_hasDerivAt
-    (roughProjectedObservation_absolutelyContinuous hK hW v)
-    (roughProjectedObservationDerivative_memLp hγ hW v)
-    (Eventually.of_forall fun θ hθ => roughProjectedObservation_hasDerivAt hγ hW v hθ) hp
-  have hcoef : (boundaryFourier (projectedObservationBoundary hK hW v) : ℤ → ℂ) =
+      (boundaryFourier (projectedObservationBoundary hK hW v)) := by
+  have hcoef : boundaryFourier (projectedObservationBoundary hK hW v) =
       (Real.sqrt (2 * Real.pi) : ℂ) •
         fourierCoeffOn Real.two_pi_pos (fun θ => ⟪projObsRow W θ, v⟫_ℂ) := by
     funext n
-    rw [boundaryFourier_apply,
-      fourierCoeffOn_congr_ae Real.two_pi_pos (projectedObservationBoundary_coe hK hW v)]
-    rfl
+    simp [boundaryFourier_apply, fourierCoeffOn_congr_ae Real.two_pi_pos (projectedObservationBoundary_coe hK hW v)]
   rw [hcoef]
-  exact isSobolevSeq_smul _ hr
+  exact isSobolevSeq_smul _ (isSobolevSeq_one_fourierCoeffOn_of_ac_ae_hasDerivAt
+    (roughProjectedObservation_absolutelyContinuous hK hW v)
+    (roughProjectedObservationDerivative_memLp hγ hW v)
+    (Eventually.of_forall fun θ hθ => roughProjectedObservation_hasDerivAt hγ hW v hθ) (by
+    rw [projObsRow_endpoint hW]))
 
 include hK hγ hW in
 theorem roughProjectedObservation_fourier_derivative (v : Ell2) :
@@ -412,7 +364,7 @@ theorem rough_endpoint_kernel_continuousOn :
     ContinuousOn (fun θ => ContinuousLinearMap.adjoint (W θ)
       (transportCoeff γ E θ (basisVec 0))) (Icc 0 (2 * Real.pi)) :=
   (ContinuousLinearMap.adjoint.continuous.comp_continuousOn hW.1).clm_apply
-    ((rough_transportCoeff_continuous (E := E) hγ).continuousOn.clm_apply continuousOn_const)
+    ((rough_transportCoeff_continuous  hγ).continuousOn.clm_apply continuousOn_const)
 
 include hγ hW in
 /-- The endpoint source is a bounded operator of the arbitrary normalized
@@ -427,24 +379,19 @@ def roughVekuaEndpointCore : L2Z →L[ℂ] Ell2 := by
 include hγ hW in
 theorem roughVekuaEndpointCore_apply (y : L2Z) :
     roughVekuaEndpointCore hγ hW y =
-      ∫ θ in (0 : ℝ)..(2 * Real.pi), ContinuousLinearMap.adjoint (W θ)
+      ∫ θ in 0..(2 * Real.pi), ContinuousLinearMap.adjoint (W θ)
         (roughVekuaRegularForce γ E (roughNormalizedPrimitive y) (roughNormalizedMean y) θ) := by
   have hk := rough_endpoint_kernel_continuousOn hγ hW
-  have h0 := continuousOn_adjoint_apply hW.1 (basisVec 0)
-  have hi0 : IntervalIntegrable (fun θ => roughNormalizedMean y •
-      ContinuousLinearMap.adjoint (W θ) (basisVec 0)) volume 0 (2 * Real.pi) := by
-    apply ContinuousOn.intervalIntegrable
-    have h_simpa := h0.const_smul (roughNormalizedMean y)
-    simp only [uIcc_of_le Real.two_pi_pos.le] at h_simpa ⊢
-    exact h_simpa
   simp only [roughVekuaEndpointCore, ContinuousLinearMap.add_apply,
     ContinuousLinearMap.comp_apply, roughBoundaryVectorIntegral_apply,
     ContinuousLinearMap.toSpanSingleton_apply]
   rw [← intervalIntegral.integral_smul, ← intervalIntegral.integral_add
-    (roughBoundaryVectorProduct_intervalIntegrable _ hk (roughNormalizedPrimitive y)) hi0]
-  apply intervalIntegral.integral_congr
-  intro θ _
-  simp only [roughVekuaRegularForce, map_add, map_smul]
+    (roughBoundaryVectorProduct_intervalIntegrable _ hk (roughNormalizedPrimitive y)) (by
+    apply ContinuousOn.intervalIntegrable
+    have h_simpa := (continuousOn_adjoint_apply hW.1 (basisVec 0)).const_smul (roughNormalizedMean y)
+    simp only [uIcc_of_le Real.two_pi_pos.le] at h_simpa ⊢
+    assumption)]
+  simp [roughVekuaRegularForce, map_add]
 
 include hK hγ hW in
 private theorem rough_projectedObservation_weightedFourier (v : Ell2) :
@@ -457,7 +404,7 @@ private theorem rough_projectedObservation_weightedFourier (v : Ell2) :
   apply lp.ext
   funext n
   simp only [sobVec_apply, boundaryFourier_projectedObservation hK hW,
-    lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, rowAnalysis_apply, normProjObsRow,
+    lp.coeFn_smul, Pi.smul_apply, rowAnalysis_apply, normProjObsRow,
     inner_smul_left, Complex.conj_ofReal]
   rw [← Real.sqrt_eq_rpow]
   change (Real.sqrt (sobWeight n) : ℂ) *
@@ -486,7 +433,7 @@ private theorem rough_endpoint_mean_pairing (y : L2Z) (v : Ell2) :
     (innerSL ℂ (cutProj (cutC (W (2 * Real.pi)) (basisVec 0)) v)) hi
   simp only [innerSL_apply_apply] at hcomp
   rw [← hcomp]
-  simp only [innerSL_apply_apply]
+  simp only
   have hinner (θ : ℝ) :
       ⟪cutProj (cutC (W (2 * Real.pi)) (basisVec 0)) v,
         ContinuousLinearMap.adjoint (W θ) (basisVec 0)⟫_ℂ =
@@ -506,7 +453,7 @@ private theorem rough_endpoint_mean_pairing (y : L2Z) (v : Ell2) :
   rw [roughNormalizedMean_apply]
   have hs : (Real.sqrt (2 * Real.pi) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.mpr Real.two_pi_pos).ne'
-  have hT : ((2 * Real.pi : ℝ) : ℂ) ≠ 0 := by exact_mod_cast Real.two_pi_pos.ne'
+  have hT : ((2 * Real.pi : ℝ) : ℂ) ≠ 0 := by norm_num
   have hsq : (Real.sqrt (2 * Real.pi) : ℂ) ^ 2 = ((2 * Real.pi : ℝ) : ℂ) := by
     exact_mod_cast Real.sq_sqrt Real.two_pi_pos.le
   field_simp [hs, hT, Real.pi_ne_zero]
@@ -514,17 +461,9 @@ private theorem rough_endpoint_mean_pairing (y : L2Z) (v : Ell2) :
   have hprod : ((Real.pi * 2 : ℝ) : ℂ) *
       ((Real.pi⁻¹ * (1 / 2) : ℝ) : ℂ) = 1 := by
     exact_mod_cast (by
-      field_simp [Real.pi_ne_zero] :
+      field_simp :
         (Real.pi * 2) * (Real.pi⁻¹ * (1 / 2)) = (1 : ℝ))
-  calc
-    _ = (y 0) *
-        (starRingEnd ℂ) (∫ (x : ℝ) in 0..Real.pi * 2,
-          ⟪projObsRow W x, v⟫_ℂ) * 1 := by ring
-    _ = (y 0) *
-        (starRingEnd ℂ) (∫ (x : ℝ) in 0..Real.pi * 2,
-          ⟪projObsRow W x, v⟫_ℂ) *
-        (((Real.pi * 2 : ℝ) : ℂ) * ((Real.pi⁻¹ * (1 / 2) : ℝ) : ℂ)) := by rw [hprod]
-    _ = _ := by ring
+  grind
 
 include hK hγ hW in
 private theorem rough_endpoint_primitive_pairing (y : L2Z) (v : Ell2) :
@@ -548,9 +487,7 @@ private theorem rough_endpoint_primitive_pairing (y : L2Z) (v : Ell2) :
   apply integral_congr_ae
   filter_upwards [(roughProjectedObservationDerivative_memLp hγ hW v).coeFn_toLp]
     with θ hθ
-  simp only [innerSL_apply_apply, inner_smul_right, RCLike.inner_apply', hθ,
-    roughProjectedObservationDerivative, map_neg, inner_conj_symm]
-  ring
+  simp [inner_smul_right, hθ, roughProjectedObservationDerivative, map_neg, inner_conj_symm]
 
 include hK hγ hW in
 /-- The true endpoint defect agrees with the original projected observation
@@ -584,11 +521,8 @@ theorem roughVekuaEndpointCore_eq_smul_of_projObsDual_eq_zero (y : L2Z)
       β • cutC (W (2 * Real.pi)) (basisVec 0) := by
   have hp := roughVekuaEndpointCore_projected hK hγ hW y
   rw [hy, smul_zero] at hp
-  refine ⟨(((‖cutC (W (2 * Real.pi)) (basisVec 0)‖ ^ 2 : ℝ) : ℂ)⁻¹ *
-    ⟪cutC (W (2 * Real.pi)) (basisVec 0), roughVekuaEndpointCore hγ hW y⟫_ℂ), ?_⟩
-  simp only [cutProj, ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-    ContinuousLinearMap.smul_apply, InnerProductSpace.rankOne_apply, smul_smul] at hp
-  exact sub_eq_zero.mp hp
+  simp only [cutProj, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, InnerProductSpace.rankOne_apply, smul_smul] at hp
+  grind
 
 include hW in
 theorem roughVekuaRegularCorrection_zero (p : BoundaryL2) (m α : ℂ) :
@@ -602,22 +536,20 @@ theorem roughVekuaRegularCorrection_endpoint_of_core_eq_smul (y : L2Z) (β : ℂ
     (hcore : roughVekuaEndpointCore hγ hW y =
       β • cutC (W (2 * Real.pi)) (basisVec 0)) :
     roughVekuaRegularCorrection γ E W (roughNormalizedPrimitive y) (roughNormalizedMean y)
-      (-(Complex.I / (Real.sqrt 2 : ℂ)) * β) (2 * Real.pi) =
+      (-(Complex.I / Real.sqrt 2) * β) (2 * Real.pi) =
     roughVekuaRegularCorrection γ E W (roughNormalizedPrimitive y) (roughNormalizedMean y)
-      (-(Complex.I / (Real.sqrt 2 : ℂ)) * β) 0 := by
+      (-(Complex.I / Real.sqrt 2) * β) 0 := by
   rw [roughVekuaRegularCorrection_zero hW]
   change W (2 * Real.pi)
-    ((-(Complex.I / (Real.sqrt 2 : ℂ)) * β) • basisVec 0 +
-      (-(Complex.I / (Real.sqrt 2 : ℂ))) •
-        (∫ θ in (0 : ℝ)..(2 * Real.pi), ContinuousLinearMap.adjoint (W θ)
+    ((-(Complex.I / Real.sqrt 2) * β) • basisVec 0 +
+      (-(Complex.I / Real.sqrt 2)) •
+        (∫ θ in 0..(2 * Real.pi), ContinuousLinearMap.adjoint (W θ)
           (roughVekuaRegularForce γ E (roughNormalizedPrimitive y) (roughNormalizedMean y) θ))) = _
   rw [← roughVekuaEndpointCore_apply hγ hW, hcore, smul_smul, ← smul_add]
-  have hu := transport_mul_adjoint hK hW ⟨Real.two_pi_pos.le, le_rfl⟩
   have hcut : basisVec 0 + cutC (W (2 * Real.pi)) (basisVec 0) =
       ContinuousLinearMap.adjoint (W (2 * Real.pi)) (basisVec 0) := by
-    simp only [cutC]
-    abel
-  rw [hcut, map_smul, ← ContinuousLinearMap.mul_apply, hu, ContinuousLinearMap.one_apply]
+    simp [cutC]
+  rw [hcut, map_smul, ← ContinuousLinearMap.mul_apply, transport_mul_adjoint hK hW ⟨Real.two_pi_pos.le, le_rfl⟩, ContinuousLinearMap.one_apply]
 
 include hK hγ hW in
 /-- Original projected-observation nullity supplies the actual periodic
@@ -630,15 +562,15 @@ theorem roughVekuaRegularCorrection_exists_periodic_of_projObsDual_eq_zero
       roughVekuaRegularCorrection γ E W (roughNormalizedPrimitive y) (roughNormalizedMean y)
         α (2 * Real.pi) = α • basisVec 0 := by
   obtain ⟨β, hβ⟩ := roughVekuaEndpointCore_eq_smul_of_projObsDual_eq_zero hK hγ hW y hy
-  refine ⟨-(Complex.I / (Real.sqrt 2 : ℂ)) * β,
+  refine ⟨-(Complex.I / Real.sqrt 2) * β,
     roughVekuaRegularCorrection_zero hW _ _ _, ?_⟩
   rw [roughVekuaRegularCorrection_endpoint_of_core_eq_smul hK hγ hW y β hβ,
     roughVekuaRegularCorrection_zero hW]
 
 theorem roughVekuaDrivenVector_positive_coord (p : BoundaryL2) (m α : ℂ)
     (n : ℕ) (θ : ℝ) :
-    (roughVekuaDrivenVector γ E W p m α θ : ℕ → ℂ) (n + 1) =
-      (roughVekuaRegularCorrection γ E W p m α θ : ℕ → ℂ) (n + 1) := by
+    roughVekuaDrivenVector γ E W p m α θ (n + 1) =
+      roughVekuaRegularCorrection γ E W p m α θ (n + 1) := by
   simp only [roughVekuaDrivenVector, lp.coeFn_add, Pi.add_apply,
     lp.coeFn_smul, Pi.smul_apply, basisVec_coord, Nat.succ_ne_zero,
     if_false, smul_eq_mul, mul_zero, zero_add]
@@ -646,11 +578,11 @@ theorem roughVekuaDrivenVector_positive_coord (p : BoundaryL2) (m α : ℂ)
 theorem roughVekuaRegularCorrection_derivative_eq_transportCoeff
     (p : BoundaryL2) (m α : ℂ) (θ : ℝ) :
     transportCoeff γ E θ (roughVekuaRegularCorrection γ E W p m α θ) +
-      (-(Complex.I / (Real.sqrt 2 : ℂ))) • roughVekuaRegularForce γ E p m θ =
+      (-(Complex.I / Real.sqrt 2)) • roughVekuaRegularForce γ E p m θ =
     transportCoeff γ E θ (roughVekuaDrivenVector γ E W p m α θ) +
-      (-(Complex.I / (Real.sqrt 2 : ℂ)) * m) • basisVec 0 := by
+      (-(Complex.I / Real.sqrt 2) * m) • basisVec 0 := by
   simp only [roughVekuaRegularForce, roughVekuaDrivenVector, map_add, map_smul,
-    smul_add, smul_smul, smul_eq_mul]
+    smul_add, smul_smul]
   abel
 
 include hK hγ hW in
@@ -670,18 +602,10 @@ theorem roughVekuaDrivenRow_succ_ae_hasDerivAt (p : BoundaryL2) (m α : ℂ) (n 
   rw [roughVekuaRegularCorrection_derivative_eq_transportCoeff] at hd
   convert hd using 1
   · funext t
-    simp only [Function.comp_apply, physicalDrivenRow, Nat.succ_ne_zero, if_false,
-      roughVekuaDrivenVector_positive_coord]
-    change (roughVekuaRegularCorrection γ E W p m α t : ℕ → ℂ) (n + 1) =
-      ⟪basisVec (n + 1), roughVekuaRegularCorrection γ E W p m α t⟫_ℂ
-    rw [inner_basisVec]
+    simp [physicalDrivenRow, roughVekuaDrivenVector_positive_coord, inner_basisVec]
   · simp only [inner_basisVec, lp.coeFn_add, Pi.add_apply, lp.coeFn_smul,
-      Pi.smul_apply, smul_eq_mul, basisVec_coord, Nat.succ_ne_zero, if_false,
-      mul_zero, add_zero]
-    rw [transportCoeff_apply_coord, shiftN_apply_succ]
-    cases n with
-    | zero => simp [physicalDrivenRow, physicalDrivenQ, shiftWeight]
-    | succ n => simp [physicalDrivenRow, physicalDrivenQ, shiftWeight, Nat.add_assoc]
+      Pi.smul_apply, basisVec_coord]
+    simp_all [transportCoeff_apply_coord, physicalDrivenRow, physicalDrivenQ, shiftWeight]
 
 include hK hγ hW in
 theorem roughVekuaDrivenScaledRow_succ_ae_hasDerivAt (p : BoundaryL2) (m α : ℂ) (n : ℕ) :
@@ -692,24 +616,19 @@ theorem roughVekuaDrivenScaledRow_succ_ae_hasDerivAt (p : BoundaryL2) (m α : �
             physicalDrivenScaledRow E (roughVekuaDrivenVector γ E W p m α) n θ) θ := by
   filter_upwards [roughVekuaDrivenRow_succ_ae_hasDerivAt hK hγ hW p m α n] with θ hθ hmem
   convert (hθ hmem).const_mul (physicalDrivenQ E ^ (n + 1)) using 1
-  · funext t
-    rfl
+  · rfl
   · simp only [physicalDrivenScaledRow]
     ring
 
 include hW in
 theorem roughVekuaDrivenRow_succ_zero (p : BoundaryL2) (m α : ℂ) (n : ℕ) :
     physicalDrivenRow (roughVekuaDrivenVector γ E W p m α) (n + 1) 0 = 0 := by
-  simp only [physicalDrivenRow, Nat.succ_ne_zero, if_false,
-    roughVekuaDrivenVector_positive_coord, roughVekuaRegularCorrection_zero hW,
-    lp.coeFn_smul, Pi.smul_apply, basisVec_coord, if_false, smul_eq_mul, mul_zero]
+  simp [physicalDrivenRow, roughVekuaDrivenVector_positive_coord, roughVekuaRegularCorrection_zero hW, basisVec_coord, smul_eq_mul]
 
 theorem roughVekuaDrivenRow_succ_endpoint (p : BoundaryL2) (m α : ℂ)
     (hα : roughVekuaRegularCorrection γ E W p m α (2 * Real.pi) = α • basisVec 0) (n : ℕ) :
     physicalDrivenRow (roughVekuaDrivenVector γ E W p m α) (n + 1) (2 * Real.pi) = 0 := by
-  simp only [physicalDrivenRow, Nat.succ_ne_zero, if_false,
-    roughVekuaDrivenVector_positive_coord, hα, lp.coeFn_smul,
-    Pi.smul_apply, basisVec_coord, Nat.succ_ne_zero, if_false, smul_eq_mul, mul_zero]
+  simp [physicalDrivenRow, roughVekuaDrivenVector_positive_coord, hα, basisVec_coord, smul_eq_mul]
 
 end GenuineTransport
 

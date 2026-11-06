@@ -38,15 +38,14 @@ instance : CoeFun SmoothH1Coefficient (fun _ => ℂ → ℂ) := ⟨SmoothH1Coeff
 /-- Smooth compact coefficients have actual global value and derivative bounds. -/
 theorem smoothTraceTests_exists_h1Coefficient_bound (a : smoothTraceTests) :
     ∃ B : ℝ, 0 ≤ B ∧ (∀ z, ‖a z‖ ≤ B) ∧
-      ∀ (i : Fin 2) z, ‖fderiv ℝ (a : ℂ → ℂ) z (coordDir i)‖ ≤ B := by
+      ∀ (i : Fin 2) z, ‖fderiv ℝ a z (coordDir i)‖ ≤ B := by
   obtain ⟨B, hB⟩ := a.property.2.1.exists_bound_of_continuous a.property.1.continuous
   obtain ⟨B₀, hB₀⟩ := (a.property.dirD (coordDir 0)).2.1.exists_bound_of_continuous
     (a.property.dirD (coordDir 0)).1.continuous
   obtain ⟨B₁, hB₁⟩ := (a.property.dirD (coordDir 1)).2.1.exists_bound_of_continuous
     (a.property.dirD (coordDir 1)).1.continuous
   refine ⟨max 0 (max B (max B₀ B₁)), le_max_left _ _, ?_, ?_⟩
-  · intro z
-    exact (hB z).trans ((le_max_left _ _).trans (le_max_right _ _))
+  · simp_all
   · intro i z
     fin_cases i
     · exact (hB₀ z).trans ((le_max_left _ _).trans
@@ -67,7 +66,7 @@ def smoothTraceTestsH1Coefficient (a : smoothTraceTests) : SmoothH1Coefficient w
     smoothTraceTestsH1Coefficient a z = a z := rfl
 
 theorem coefficient_derivative_continuous (a : SmoothH1Coefficient) (i : Fin 2) :
-    Continuous (fun z => fderiv ℝ (a : ℂ → ℂ) z (coordDir i)) :=
+    Continuous (fun z => fderiv ℝ a z (coordDir i)) :=
   ((a.smooth.fderiv_right (m := (⊤ : ℕ∞)) le_rfl).clm_apply contDiff_const).continuous
 
 def h1SmoothCoefficientL2 (Ω : Set ℂ) (a : SmoothH1Coefficient) : L2 Ω →L[ℂ] L2 Ω :=
@@ -81,27 +80,27 @@ def h1SmoothCoefficientDerivativeL2 (Ω : Set ℂ) (a : SmoothH1Coefficient) (i 
     (Eventually.of_forall (a.derivative_bound i))
 
 theorem h1SmoothCoefficientL2_ae (Ω : Set ℂ) (a : SmoothH1Coefficient) (u : L2 Ω) :
-    (h1SmoothCoefficientL2 Ω a u : ℂ → ℂ) =ᵐ[volume.restrict Ω] fun z => a z * u z :=
-  lpBoundedMultiplier_ae (a : ℂ → ℂ) a.smooth.continuous.aestronglyMeasurable
+    h1SmoothCoefficientL2 Ω a u =ᵐ[volume.restrict Ω] fun z => a z * u z :=
+  lpBoundedMultiplier_ae a a.smooth.continuous.aestronglyMeasurable
     (Eventually.of_forall a.value_bound) u
 
 theorem h1SmoothCoefficientDerivativeL2_ae (Ω : Set ℂ) (a : SmoothH1Coefficient)
     (i : Fin 2) (u : L2 Ω) :
-    (h1SmoothCoefficientDerivativeL2 Ω a i u : ℂ → ℂ) =ᵐ[volume.restrict Ω]
-      fun z => fderiv ℝ (a : ℂ → ℂ) z (coordDir i) * u z :=
-  lpBoundedMultiplier_ae (fun z => fderiv ℝ (a : ℂ → ℂ) z (coordDir i))
+    h1SmoothCoefficientDerivativeL2 Ω a i u =ᵐ[volume.restrict Ω]
+      fun z => fderiv ℝ a z (coordDir i) * u z :=
+  lpBoundedMultiplier_ae (fun z => fderiv ℝ a z (coordDir i))
     (coefficient_derivative_continuous a i).aestronglyMeasurable
     (Eventually.of_forall (a.derivative_bound i)) u
 
 theorem norm_h1SmoothCoefficientL2_apply_le (Ω : Set ℂ) (a : SmoothH1Coefficient)
     (u : L2 Ω) : ‖h1SmoothCoefficientL2 Ω a u‖ ≤ a.bound * ‖u‖ :=
-  norm_lpBoundedMulLin_le (a : ℂ → ℂ) a.smooth.continuous.aestronglyMeasurable
+  norm_lpBoundedMulLin_le a a.smooth.continuous.aestronglyMeasurable
     (Eventually.of_forall a.value_bound) u
 
 theorem norm_h1SmoothCoefficientDerivativeL2_apply_le (Ω : Set ℂ)
     (a : SmoothH1Coefficient) (i : Fin 2) (u : L2 Ω) :
     ‖h1SmoothCoefficientDerivativeL2 Ω a i u‖ ≤ a.bound * ‖u‖ :=
-  norm_lpBoundedMulLin_le (fun z => fderiv ℝ (a : ℂ → ℂ) z (coordDir i))
+  norm_lpBoundedMulLin_le (fun z => fderiv ℝ a z (coordDir i))
     (coefficient_derivative_continuous a i).aestronglyMeasurable
     (Eventually.of_forall (a.derivative_bound i)) u
 
@@ -127,15 +126,8 @@ theorem isWeakGradient_h1SmoothCoefficientL2 {Ω : Set ℂ} (a : SmoothH1Coeffic
         h1SmoothCoefficientDerivativeL2 Ω a i u) := by
   intro φ hφ i
   have hweak := hu (fun z => a z * φ z) (coefficient_test_mul a hφ) i
-  have hid : Integrable (fun z => h1SmoothCoefficientDerivativeL2 Ω a i u z * φ z)
-      (volume.restrict Ω) :=
+  have hid  :=
     (Lp.memLp (h1SmoothCoefficientDerivativeL2 Ω a i u)).integrable_mul hφ.memLp
-  have hif : Integrable (fun z => h1SmoothCoefficientL2 Ω a u z *
-      fderiv ℝ φ z (coordDir i)) (volume.restrict Ω) :=
-    (Lp.memLp (h1SmoothCoefficientL2 Ω a u)).integrable_mul (hφ.memLp_fderiv (coordDir i))
-  have hig : Integrable (fun z => h1SmoothCoefficientL2 Ω a (g i) z * φ z)
-      (volume.restrict Ω) :=
-    (Lp.memLp (h1SmoothCoefficientL2 Ω a (g i))).integrable_mul hφ.memLp
   have hleft : (∫ z in Ω, u z * fderiv ℝ (fun w => a w * φ w) z (coordDir i)) =
       (∫ z in Ω, h1SmoothCoefficientDerivativeL2 Ω a i u z * φ z) +
         ∫ z in Ω, h1SmoothCoefficientL2 Ω a u z * fderiv ℝ φ z (coordDir i) := by
@@ -147,16 +139,14 @@ theorem isWeakGradient_h1SmoothCoefficientL2 {Ω : Set ℂ} (a : SmoothH1Coeffic
           h1SmoothCoefficientDerivativeL2_ae Ω a i u] with z hz hdz
         rw [coefficient_test_mul_fderiv a hφ z i, hz, hdz]
         ring
-      _ = _ := integral_add hid hif
+      _ = _ := integral_add hid ((Lp.memLp (h1SmoothCoefficientL2 Ω a u)).integrable_mul (hφ.memLp_fderiv (coordDir i)))
   have hright : (∫ z in Ω, (g i) z * (a z * φ z)) =
       ∫ z in Ω, h1SmoothCoefficientL2 Ω a (g i) z * φ z := by
     apply integral_congr_ae
     filter_upwards [h1SmoothCoefficientL2_ae Ω a (g i)] with z hz
-    rw [hz]
-    ring
+    grind
   have hout : (∫ z in Ω,
-      ((h1SmoothCoefficientL2 Ω a (g i) + h1SmoothCoefficientDerivativeL2 Ω a i u : L2 Ω) :
-        ℂ → ℂ) z * φ z) =
+      (h1SmoothCoefficientL2 Ω a (g i) + h1SmoothCoefficientDerivativeL2 Ω a i u) z * φ z) =
       (∫ z in Ω, h1SmoothCoefficientL2 Ω a (g i) z * φ z) +
         ∫ z in Ω, h1SmoothCoefficientDerivativeL2 Ω a i u z * φ z := by
     calc
@@ -165,12 +155,9 @@ theorem isWeakGradient_h1SmoothCoefficientL2 {Ω : Set ℂ} (a : SmoothH1Coeffic
         apply integral_congr_ae
         filter_upwards [Lp.coeFn_add (h1SmoothCoefficientL2 Ω a (g i))
           (h1SmoothCoefficientDerivativeL2 Ω a i u)] with z hz
-        rw [hz]
-        simp only [Pi.add_apply, add_mul]
-      _ = _ := integral_add hig hid
-  rw [hleft, hright] at hweak
-  rw [hout]
-  linear_combination hweak
+        simp_all [add_mul]
+      _ = _ := integral_add ((Lp.memLp (h1SmoothCoefficientL2 Ω a (g i))).integrable_mul hφ.memLp) hid
+  grind
 
 theorem smooth_coefficient_h1_ext {Ω : Set ℂ} {u v : NeumannH1 Ω}
     (hv : h1Value Ω u = h1Value Ω v)
@@ -179,7 +166,7 @@ theorem smooth_coefficient_h1_ext {Ω : Set ℂ} {u v : NeumannH1 Ω}
   apply PiLp.ext
   intro i
   refine Fin.cases ?_ (fun j => ?_) i
-  · exact hv
+  · assumption
   · exact hg j
 
 def smoothCoefficientH1Vector (Ω : Set ℂ) (a : SmoothH1Coefficient)
@@ -203,15 +190,13 @@ def smoothCoefficientH1Lin (Ω : Set ℂ) (a : SmoothH1Coefficient) :
   toFun := smoothCoefficientH1Vector Ω a
   map_add' u v := by
     apply smooth_coefficient_h1_ext
-    · simp only [smoothCoefficientH1Vector_value, map_add]
+    · simp [smoothCoefficientH1Vector_value, map_add]
     · intro i
       simp only [smoothCoefficientH1Vector_gradient, map_add]
       abel
   map_smul' c u := by
     apply smooth_coefficient_h1_ext
-    · simp only [smoothCoefficientH1Vector_value, map_smul, RingHom.id_apply]
-    · intro i
-      simp only [smoothCoefficientH1Vector_gradient, map_smul, smul_add, RingHom.id_apply]
+    all_goals simp [smoothCoefficientH1Vector_value, map_smul, RingHom.id_apply, smoothCoefficientH1Vector_gradient, smul_add]
 
 private theorem smoothCoefficientH1Lin_value (Ω : Set ℂ) (a : SmoothH1Coefficient)
     (u : NeumannH1 Ω) :
@@ -244,11 +229,7 @@ private theorem smooth_coefficient_component_norm_le {Ω : Set ℂ} (u : Neumann
   rw [Fin.sum_univ_two] at hs
   have hc := smooth_real_component_bounds (norm_nonneg u) (norm_nonneg (h1Value Ω u))
     (norm_nonneg (h1Gradient Ω 0 u)) (norm_nonneg (h1Gradient Ω 1 u)) hs
-  refine ⟨hc.1, ?_⟩
-  intro i
-  fin_cases i
-  · exact hc.2.1
-  · exact hc.2.2
+  simp_all
 
 private theorem smooth_real_three_component_norm_le {r a b c A : ℝ}
     (hr : 0 ≤ r) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) (hA : 0 ≤ A)
@@ -275,14 +256,8 @@ theorem smoothCoefficientH1Lin_norm_le (Ω : Set ℂ) (a : SmoothH1Coefficient)
     (u : NeumannH1 Ω) :
     ‖smoothCoefficientH1Lin Ω a u‖ ≤ (2 * Real.sqrt 3 * a.bound) * ‖u‖ := by
   have hc := smooth_coefficient_component_norm_le u
-  have hv : ‖h1Value Ω (smoothCoefficientH1Lin Ω a u)‖ ≤ 2 * a.bound * ‖u‖ := by
-    rw [smoothCoefficientH1Lin_value]
-    exact (norm_h1SmoothCoefficientL2_apply_le Ω a _).trans
-      ((mul_le_mul_of_nonneg_left hc.1 a.bound_nonneg).trans
-        (by nlinarith [norm_nonneg u, a.bound_nonneg]))
   have hg (i : Fin 2) :
       ‖h1Gradient Ω i (smoothCoefficientH1Lin Ω a u)‖ ≤ 2 * a.bound * ‖u‖ := by
-    rw [smoothCoefficientH1Lin_gradient]
     calc
       _ ≤ ‖h1SmoothCoefficientL2 Ω a (h1Gradient Ω i u)‖ +
           ‖h1SmoothCoefficientDerivativeL2 Ω a i (h1Value Ω u)‖ := norm_add_le _ _
@@ -294,8 +269,10 @@ theorem smoothCoefficientH1Lin_norm_le (Ω : Set ℂ) (a : SmoothH1Coefficient)
           (mul_le_mul_of_nonneg_left hc.1 a.bound_nonneg)
       _ = _ := by ring
   have hn := smooth_coefficient_norm_le_of_components (smoothCoefficientH1Lin Ω a u)
-    (mul_nonneg (mul_nonneg (by norm_num) a.bound_nonneg) (norm_nonneg u)) hv hg
-  convert hn using 1; ring
+    (mul_nonneg (mul_nonneg (by norm_num) a.bound_nonneg) (norm_nonneg u)) ((norm_h1SmoothCoefficientL2_apply_le Ω a _).trans
+      ((mul_le_mul_of_nonneg_left hc.1 a.bound_nonneg).trans
+        (by nlinarith [norm_nonneg u, a.bound_nonneg]))) hg
+  linarith
 
 /-- Actual bounded multiplication in H¹, with no regularity premise on the input. -/
 def neumannH1SmoothMultiplier (Ω : Set ℂ) (a : SmoothH1Coefficient) :
@@ -328,15 +305,13 @@ theorem neumannH1SmoothMultiplier_smooth {Ω : Set ℂ} (hΩ : IsOpen Ω)
     neumannH1SmoothMultiplier Ω a (smoothTraceH1 Ω f) =
       smoothTraceH1 Ω (smoothCoefficientTestProduct a f) := by
   apply h1Value_injective hΩ
-  simp only [h1Value_neumannH1SmoothMultiplier, h1Value_smoothTraceH1]
+  simp only [h1Value_neumannH1SmoothMultiplier]
   apply Lp.ext
   filter_upwards [h1SmoothCoefficientL2_ae Ω a (h1Value Ω (smoothTraceH1 Ω f)),
     (smoothTraceTests_memLp Ω f).coeFn_toLp,
     (smoothTraceTests_memLp Ω (smoothCoefficientTestProduct a f)).coeFn_toLp]
     with z hm hf hp
-  simp only [h1Value_smoothTraceH1] at hm
-  rw [hm, hf, hp]
-  rfl
+  simp_all
 
 /-- Multiplication by the actual boundary values of the same coefficient. -/
 def h1SmoothBoundaryMultiplier {Ω : Set ℂ} {γ : ℝ → ℂ}
@@ -347,8 +322,8 @@ def h1SmoothBoundaryMultiplier {Ω : Set ℂ} {γ : ℝ → ℂ}
 
 theorem h1SmoothBoundaryMultiplier_ae {Ω : Set ℂ} {γ : ℝ → ℂ}
     (hγ : IsBoundaryParam Ω γ) (a : SmoothH1Coefficient) (g : BoundaryL2) :
-    (h1SmoothBoundaryMultiplier hγ a g : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * Real.pi))] fun θ => a (γ θ) * g θ :=
+    h1SmoothBoundaryMultiplier hγ a g
+      =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))] fun θ => a (γ θ) * g θ :=
   lpBoundedMultiplier_ae (fun θ => a (γ θ))
     (a.smooth.continuous.comp hγ.lipschitz.choose_spec.continuous).aestronglyMeasurable
     (Eventually.of_forall (fun θ => a.value_bound (γ θ))) g
@@ -361,8 +336,7 @@ theorem h1BoundaryTrace_neumannH1SmoothMultiplier {Ω : Set ℂ}
     h1BoundaryTrace hb hL hγ (neumannH1SmoothMultiplier Ω a u) =
       h1SmoothBoundaryMultiplier hγ a (h1BoundaryTrace hb hL hγ u) := by
   refine (denseRange_smoothTraceH1Lin hb hL).induction_on
-    (p := fun v => h1BoundaryTrace hb hL hγ (neumannH1SmoothMultiplier Ω a v) =
-      h1SmoothBoundaryMultiplier hγ a (h1BoundaryTrace hb hL hγ v)) u ?_ ?_
+     u ?_ ?_
   · exact isClosed_eq ((h1BoundaryTrace hb hL hγ).continuous.comp
       (neumannH1SmoothMultiplier Ω a).continuous)
       ((h1SmoothBoundaryMultiplier hγ a).continuous.comp (h1BoundaryTrace hb hL hγ).continuous)
@@ -374,8 +348,7 @@ theorem h1BoundaryTrace_neumannH1SmoothMultiplier {Ω : Set ℂ}
     filter_upwards [h1BoundaryTrace_smooth_ae hb hL hγ (smoothCoefficientTestProduct a f),
       h1SmoothBoundaryMultiplier_ae hγ a (h1BoundaryTrace hb hL hγ (smoothTraceH1 Ω f)),
       h1BoundaryTrace_smooth_ae hb hL hγ f] with θ hp hm hf
-    rw [hp, hm, hf]
-    rfl
+    simp_all
 
 end PolyaNeumann
 

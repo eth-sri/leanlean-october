@@ -62,7 +62,7 @@ def traceReparamConormalLinearMap {τ : ℝ → ℝ} {c : ℝ}
       Lp.coeFn_add (traceReparamConormalL2 hτ g) (traceReparamConormalL2 hτ h),
       hadd] with θ hab hg hh hs hc
     rw [hab, hs]
-    simp only [Pi.add_apply, hg, hh, hc, smul_add]
+    simp_all
   map_smul' a g := by
     apply Lp.ext
     have hsmul := isC1TraceReparam_ae_comp hτ (Lp.coeFn_smul a g)
@@ -110,12 +110,12 @@ theorem exists_herglotzCut_uniform_bound {δ : ℝ → ℂ} {K : NNReal}
       cutC (Ws E (2 * Real.pi)) (basisVec 0) ≠ 0 ∧ ‖cutBE (Ws E)‖ ≤ B := by
   have hB : ∀ᶠ E in 𝓝 E₀, ‖cutBE (Ws E)‖ ≤ ‖cutBE (Ws E₀)‖ + 1 :=
     ((tendsto_cutBE_energy hK hWs E₀ hc).norm.eventually
-      (gt_mem_nhds (by linarith : ‖cutBE (Ws E₀)‖ < ‖cutBE (Ws E₀)‖ + 1))).mono
+      (gt_mem_nhds (by linarith))).mono
         fun _ h => h.le
   obtain ⟨ρ, hρ, hsub⟩ := Metric.mem_nhds_iff.mp
     ((eventually_cutC_ne hK hWs E₀ hc).and hB)
   refine ⟨‖cutBE (Ws E₀)‖ + 1, ρ, by positivity, hρ, fun E hE => ?_⟩
-  exact hsub (mem_ball.mpr (by simpa only [Real.dist_eq] using hE))
+  exact hsub (mem_ball.mpr (by assumption))
 
 section Coordinates
 
@@ -134,6 +134,8 @@ local notation "ΩF" => F '' ball (0 : ℂ) 1
 local notation "ΓF" => physicalCircleTrace F
 local notation "QF" => localConformalDiskHalfTrace hR F hFs hL
 
+variable {L : NNReal} (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) {E : ℝ}
+
 private theorem herglotz_transfer_observationAdj_congr_ae
     (W : ℝ → Ell2 →L[ℂ] Ell2) {g h : ℝ → ℂ} (he : g =ᵐ[μB] h) :
     observationAdj W g = observationAdj W h := by
@@ -142,13 +144,13 @@ private theorem herglotz_transfer_observationAdj_congr_ae
     intervalIntegral.integral_of_le Real.two_pi_pos.le]
   apply integral_congr_ae
   filter_upwards [he] with θ hθ
-  rw [hθ]
+  simp_all
 
 include hcoord in
 /-- The unitary weak-load scale of the projected observation. The
 unprojected integral is evaluated only on the true conormal density. -/
 theorem localConformalHerglotzBoundary_projObsDual
-    {L : NNReal} (hΓLip : LipschitzWith L ΓF) {E : ℝ}
+    (hΓLip : LipschitzWith L ΓF) {E : ℝ}
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport ΓF E W)
     {a : ℝ → ℂ} (ha : IsDirDensity a) :
     (Real.sqrt (2 * Real.pi) : ℂ) • projObsDual W
@@ -156,30 +158,27 @@ theorem localConformalHerglotzBoundary_projObsDual
       cutProj (cutC (W (2 * Real.pi)) (basisVec 0))
         (observationAdj W (herglotzConormal (Real.sqrt E) a ΓF)) := by
   rw [localConformalHerglotzBoundaryLoad_eq_coordinateLoad F hγ hτ hcoord hΓLip ha]
-  rw [← map_smul]
   have h := projObsDual_boundary_normalized hΓLip hW
     (localConformalHerglotzCoordinateLoad F hΓLip ha (Real.sqrt E))
-  rw [herglotz_transfer_observationAdj_congr_ae W
-    (localConformalHerglotzCoordinateLoad_ae F hΓLip ha (Real.sqrt E))] at h
-  exact h
+  simp_all [herglotz_transfer_observationAdj_congr_ae W     (localConformalHerglotzCoordinateLoad_ae F hΓLip ha (Real.sqrt E))]
 
 include hcoord in
 theorem localConformalHerglotzBoundary_projObsDual_norm_sq
-    {L : NNReal} (hΓLip : LipschitzWith L ΓF) {E : ℝ}
+    (hΓLip : LipschitzWith L ΓF) {E : ℝ}
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport ΓF E W)
     {a : ℝ → ℂ} (ha : IsDirDensity a) :
     (2 * Real.pi) * ‖projObsDual W
         (localConformalBoundaryLoad hτ (herglotzConormalL2 hγ ha (Real.sqrt E)))‖ ^ 2 =
       ‖cutProj (cutC (W (2 * Real.pi)) (basisVec 0))
         (observationAdj W (herglotzConormal (Real.sqrt E) a ΓF))‖ ^ 2 := by
-  have hn := congrArg (fun v : Ell2 => ‖v‖ ^ 2)
+  have hn := congrArg (fun v  => ‖v‖ ^ 2)
     (localConformalHerglotzBoundary_projObsDual F hγ hτ hcoord hΓLip hW ha)
   simpa only [norm_smul, Complex.norm_of_nonneg (Real.sqrt_nonneg _),
     mul_pow, Real.sq_sqrt Real.two_pi_pos.le] using hn
 
 include hR hFs in
 private theorem herglotz_transfer_kernel_summable
-    {L : NNReal} (hΓLip : LipschitzWith L ΓF) {E : ℝ}
+    (hΓLip : LipschitzWith L ΓF) {E : ℝ}
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport ΓF E W)
     (hc : cutC (W (2 * Real.pi)) (basisVec 0) ≠ 0) :
     Summable fun p => ‖correctedRemainderMatrix W 0 0 p‖ ^ 2 := by
@@ -192,7 +191,7 @@ private theorem herglotz_transfer_kernel_summable
       ‖deriv ΓF x - deriv ΓF y‖ ≤ B * |x - y| := by
     intro x hx y hy
     have h := hB.dist_le_mul x hx y hy
-    rwa [dist_eq_norm, Real.dist_eq] at h
+    simp_all [dist_eq_norm]
   exact summable_correctedRemainderMatrix hΓLip hdiff hW hc
     (by norm_num) (by norm_num) (by norm_num) (by norm_num)
 
@@ -201,7 +200,7 @@ include hb hhol hinj hC hcoord in
 observation adjoint. Nonresonance removes precisely the genuine form
 kernel, rather than suppressing the constant Fourier mode. -/
 theorem normalizedPeriodicBoundaryFamily_herglotz_eq
-    (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) {E : ℝ} (hE : 0 ≤ E)
+    (hE : 0 ≤ E)
     (hnr : ∀ j, neumannEigenvalue ΩF j ≠ ENNReal.ofReal E)
     {L : NNReal} (hΓLip : LipschitzWith L ΓF) (hW : IsTransport ΓF E (Ws E))
     (hc : cutC (Ws E (2 * Real.pi)) (basisVec 0) ≠ 0)
@@ -234,18 +233,13 @@ private theorem herglotz_transfer_periodic_inner
   apply intervalIntegral.integral_congr
   intro θ hθ
   rw [uIcc_of_le Real.two_pi_pos.le] at hθ
-  change conj (herglotzConormal (Real.sqrt E) a δ θ) *
-      periodicP W (fun s => herglotzWave (Real.sqrt E) a (δ s))
-        (herglotzConormal (Real.sqrt E) a δ) θ =
-    conj (herglotzConormal (Real.sqrt E) a δ θ) *
-      observation W (regularHerglotzObservationVector (γ := δ) E W ha) θ
-  rw [periodicP_herglotz_eq_regularObservation hK hclosed hW ha hθ]
+  simp [periodicP_herglotz_eq_regularObservation hK hclosed hW ha hθ]
 
 include hb hhol hinj hC hcoord in
 /-- The exact complex ordinary-boundary pairing equals the full
 normalized pairing for the unitary weak load, with no factor 2π. -/
 theorem normalizedPeriodicBoundaryFamily_herglotz_inner
-    (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) {E : ℝ} (hE : 0 ≤ E)
+    (hE : 0 ≤ E)
     (hnr : ∀ j, neumannEigenvalue ΩF j ≠ ENNReal.ofReal E)
     {L : NNReal} (hΓLip : LipschitzWith L ΓF) (hW : IsTransport ΓF E (Ws E))
     (hc : cutC (Ws E (2 * Real.pi)) (basisVec 0) ≠ 0)
@@ -261,23 +255,21 @@ theorem normalizedPeriodicBoundaryFamily_herglotz_inner
     inner_smul_right, ContinuousLinearMap.adjoint_inner_right]
   have hclosed : ΓF (2 * Real.pi) = ΓF 0 := by
     simpa only [zero_add] using physicalCircleTrace_periodic F 0
-  have hz := regularHerglotzObservationVector_cutProj hΓLip hclosed hW hc ha
-  have hobs := localConformalHerglotzBoundary_projObsDual F hγ hτ hcoord hΓLip hW ha
   calc
     _ = ⟪(Real.sqrt (2 * Real.pi) : ℂ) • projObsDual (Ws E)
         (localConformalBoundaryLoad hτ (herglotzConormalL2 hγ ha (Real.sqrt E))),
-          regularHerglotzObservationVector (γ := ΓF) E (Ws E) ha⟫_ℂ := by
+          regularHerglotzObservationVector  E (Ws E) ha⟫_ℂ := by
       rw [inner_smul_left, Complex.conj_ofReal]
     _ = ⟪observationAdj (Ws E) (herglotzConormal (Real.sqrt E) a ΓF),
-        regularHerglotzObservationVector (γ := ΓF) E (Ws E) ha⟫_ℂ := by
-      rw [hobs, inner_cutProj_left, hz]
+        regularHerglotzObservationVector  E (Ws E) ha⟫_ℂ := by
+      rw [localConformalHerglotzBoundary_projObsDual F hγ hτ hcoord hΓLip hW ha, inner_cutProj_left, regularHerglotzObservationVector_cutProj hΓLip hclosed hW hc ha]
     _ = _ := (herglotz_transfer_periodic_inner hΓLip hclosed hW ha).symm
 
 include hb hhol hinj hC hcoord in
 /-- The sharp normalization in the fixed-energy transfer is A0/(2π).
 The remaining correction is the norm of the actual bounded cut operator. -/
 theorem localConformalHerglotzForm_lower_of_normalizedBoundary
-    (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) {E : ℝ} (hE : 0 ≤ E)
+    (hE : 0 ≤ E)
     (hnr : ∀ j, neumannEigenvalue ΩF j ≠ ENNReal.ofReal E)
     {L : NNReal} (hΓLip : LipschitzWith L ΓF) (hW : IsTransport ΓF E (Ws E))
     (hc : cutC (Ws E (2 * Real.pi)) (basisVec 0) ≠ 0)
@@ -296,17 +288,17 @@ theorem localConformalHerglotzForm_lower_of_normalizedBoundary
         (observationAdj (Ws E) (herglotzConormal (Real.sqrt E) a ΓF))‖ ^ 2 /
           (2 * Real.pi) := by
     apply (eq_div_iff Real.two_pi_pos.ne').mpr
-    simpa only [mul_comm] using hn
+    linarith
   rw [hn', normalizedPeriodicBoundaryFamily_herglotz_inner hR F hFs hb hL hhol hinj hC
     hγ hτ hcoord Ws hE hnr hΓLip hW hc ha] at hbound
   apply herglotzForm_lower_of_periodicP_lower hΓLip
     (by simpa only [zero_add] using physicalCircleTrace_periodic F 0) hW ha
     (div_nonneg hA₀ Real.two_pi_pos.le)
-  convert hbound using 1; ring
+  grind
 
 include hb hhol hinj hC hcoord in
 theorem localConformalHerglotzForm_lower_of_normalizedBoundary_boundedCut
-    (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) {E : ℝ} (hE : 0 ≤ E)
+    (hE : 0 ≤ E)
     (hnr : ∀ j, neumannEigenvalue ΩF j ≠ ENNReal.ofReal E)
     {L : NNReal} (hΓLip : LipschitzWith L ΓF) (hW : IsTransport ΓF E (Ws E))
     (hc : cutC (Ws E (2 * Real.pi)) (basisVec 0) ≠ 0)
@@ -320,8 +312,6 @@ theorem localConformalHerglotzForm_lower_of_normalizedBoundary_boundedCut
         herglotzForm (Ws E) ΓF E a := by
   have h := localConformalHerglotzForm_lower_of_normalizedBoundary hR F hFs hb hL hhol
     hinj hC hγ hτ hcoord Ws hE hnr hΓLip hW hc ha hA₀ hbound
-  have hm := mul_le_mul_of_nonneg_right hB (sq_nonneg
-    ‖observationAdj (Ws E) (herglotzConormal (Real.sqrt E) a ΓF)‖)
   nlinarith
 
 include hb hhol hinj hC hγ hτ hcoord in
@@ -329,7 +319,7 @@ include hb hhol hinj hC hγ hτ hcoord in
 normalized conditions. Instantiating it with originalNeumannMultiplicity
 therefore retains the original complex spectral multiplicity. -/
 theorem exists_localConformalHerglotz_boundary_conditions
-    (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) {E : ℝ} (hE : 0 ≤ E)
+    (hE : 0 ≤ E)
     (hnr : ∀ j, neumannEigenvalue ΩF j ≠ ENNReal.ofReal E)
     {KΓ : NNReal} (hΓLip : LipschitzWith KΓ ΓF) (hW : IsTransport ΓF E (Ws E))
     (hc : cutC (Ws E (2 * Real.pi)) (basisVec 0) ≠ 0)
@@ -344,14 +334,13 @@ theorem exists_localConformalHerglotz_boundary_conditions
   refine ⟨L, fun a ha hLa => ?_⟩
   apply localConformalHerglotzForm_lower_of_normalizedBoundary_boundedCut hR F hFs hb hL
     hhol hinj hC hγ hτ hcoord Ws hE hnr hΓLip hW hc ha hA₀ hB
-  apply hbound
-  exact (hconditions a ha).symm.trans hLa
+  simp_all
 
 include hb hhol hinj hC hγ hτ hcoord in
 /-- The same actual conditions give the original arclength-boundary
 estimate when the proved reparametrization fixes the integration endpoints. -/
 theorem exists_originalHerglotz_boundary_conditions_of_normalized
-    (Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2) {E : ℝ} (hE : 0 ≤ E)
+    (hE : 0 ≤ E)
     (hnr : ∀ j, neumannEigenvalue ΩF j ≠ ENNReal.ofReal E)
     {KΓ : NNReal} (hΓLip : LipschitzWith KΓ ΓF) (hW : IsTransport ΓF E (Ws E))
     (hc : cutC (Ws E (2 * Real.pi)) (basisVec 0) ≠ 0)
@@ -368,13 +357,12 @@ theorem exists_originalHerglotz_boundary_conditions_of_normalized
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨Kτ, hKτ⟩ := hτ.lipschitz
   have hΓ : ΓF = γ ∘ τ := by funext θ; exact hcoord θ
-  have hWcomp : IsTransport (γ ∘ τ) E (Ws E) := by rw [← hΓ]; exact hW
+  have hWcomp : IsTransport (γ ∘ τ) E (Ws E) := by simp_all
   refine ⟨L, ?_⟩
   apply herglotz_density_lower_bound_of_comp hKγ
     (by simpa only [zero_add] using hγ.periodic 0) hτ.monotone hKτ
     hτ.zero hτ.endpoint hWγ hWcomp L
-  rw [← hΓ]
-  exact hconditions
+  simp_all
 
 include hb hhol hinj hC hγ hτ hcoord in
 /-- The genuine normalized estimate transfers uniformly to the original
@@ -402,10 +390,8 @@ theorem exists_uniform_originalHerglotz_bound_of_normalized
   refine ⟨A₀ / (2 * Real.pi) + B, min δ₀ ρ,
     add_pos (div_pos hA₀ Real.two_pi_pos) hB, lt_min hδ₀ hρ, ?_⟩
   intro E hE hnear hnr Wγ hWγ
-  have hnear₀ := lt_of_lt_of_le hnear (min_le_left δ₀ ρ)
-  have hnearρ := lt_of_lt_of_le hnear (min_le_right δ₀ ρ)
-  obtain ⟨hcE, hBE⟩ := hcutBound E hnearρ
-  obtain ⟨ℓ, hℓ⟩ := hnormalized E hE hnear₀ hnr
+  obtain ⟨hcE, hBE⟩ := hcutBound E (lt_of_lt_of_le hnear (min_le_right δ₀ ρ))
+  obtain ⟨ℓ, hℓ⟩ := hnormalized E hE (lt_of_lt_of_le hnear (min_le_left δ₀ ρ)) hnr
   exact exists_originalHerglotz_boundary_conditions_of_normalized hR F hFs hb hL hhol hinj hC
     hγ hτ hcoord Ws hE.le hnr hΓLip (hWs E) hcE hWγ hA₀.le hBE ℓ hℓ
 

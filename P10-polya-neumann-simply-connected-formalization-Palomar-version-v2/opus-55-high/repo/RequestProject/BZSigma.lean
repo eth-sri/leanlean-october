@@ -34,28 +34,24 @@ lemma tentθ_le_one (hT : 0 < T) (a : ℝ) : tentθ T a ≤ 1 :=
                          linarith)
 
 lemma tentθ_eq_zero (hT : 0 < T) {a : ℝ} (ha : T ≤ |a|) : tentθ T a = 0 := by
-  unfold tentθ
   refine max_eq_left ?_
-  have : 1 ≤ |a| / T := by rw [le_div_iff₀ hT]; linarith
-  linarith
+  simp_all [le_div_iff₀ hT]
 
 lemma tentθ_zero : tentθ T 0 = 1 := by
   simp [tentθ]
 
 lemma abs_tentθ_sub_le (hT : 0 < T) (a a' : ℝ) : |tentθ T a - tentθ T a'| ≤ |a - a'| / T := by
-  unfold tentθ
   refine (abs_max_sub_max_le_max _ _ _ _).trans (max_le (by simp; positivity) ?_)
   rw [show 1 - |a| / T - (1 - |a'| / T) = (|a'| - |a|) / T by ring, abs_div, abs_of_pos hT]
   exact div_le_div_of_nonneg_right
-    (by rw [abs_sub_comm a a']; exact abs_abs_sub_abs_le_abs_sub a' a) hT.le
+    (by grind) hT.le
 
 lemma continuous_tentθ (T : ℝ) : Continuous (tentθ T) := by
   unfold tentθ; fun_prop
 
 variable {b b' : ℝ}
 
-lemma continuous_sigmaMap (T b : ℝ) : Continuous (sigmaMap T b) := by
-  unfold sigmaMap; exact continuous_id.add (continuous_const.mul (continuous_tentθ T))
+lemma continuous_sigmaMap (T b : ℝ) : Continuous (sigmaMap T b) := continuous_id.add (continuous_const.mul (continuous_tentθ T))
 
 lemma sigmaMap_zero : sigmaMap T b 0 = b := by
   simp [sigmaMap, tentθ_zero]
@@ -67,14 +63,12 @@ lemma sigmaMap_of_le_abs (hT : 0 < T) {a : ℝ} (ha : T ≤ |a|) : sigmaMap T b 
 lemma sigmaMap_sub_ge (hT : 0 < T) (hb : |b| ≤ T / 2) {a a' : ℝ} (h : a' ≤ a) :
     (a - a') / 2 ≤ sigmaMap T b a - sigmaMap T b a' := by
   unfold sigmaMap
-  have h1 := abs_tentθ_sub_le hT a a'
   have h2 : |b * (tentθ T a - tentθ T a')| ≤ (a - a') / 2 := by
     rw [abs_mul]
     calc |b| * |tentθ T a - tentθ T a'| ≤ (T / 2) * (|a - a'| / T) :=
-          mul_le_mul hb h1 (abs_nonneg _) (by positivity)
+          mul_le_mul hb (abs_tentθ_sub_le hT a a') (abs_nonneg _) (by positivity)
       _ = (a - a') / 2 := by rw [abs_of_nonneg (by linarith)]; field_simp
-  have := neg_abs_le (b * (tentθ T a - tentθ T a'))
-  nlinarith
+  grind
 
 lemma sigmaMap_strictMono (hT : 0 < T) (hb : |b| ≤ T / 2) : StrictMono (sigmaMap T b) :=
   fun a' a h => by have := sigmaMap_sub_ge hT hb h.le; linarith
@@ -93,18 +87,15 @@ lemma sigmaMap_pos (hT : 0 < T) (hb : |b| ≤ T / 2) (hb0 : 0 ≤ b) {a : ℝ} (
 
 lemma existsUnique_sigmaMap_eq (hT : 0 < T) (hb : |b| ≤ T / 2) (w : ℝ) :
     ∃! a, sigmaMap T b a = w := by
-  have hm := sigmaMap_strictMono hT hb
-  refine existsUnique_of_exists_of_unique ?_ (fun a a' h1 h2 => hm.injective (h1.trans h2.symm))
+  refine existsUnique_of_exists_of_unique ?_ (fun a a' h1 h2 => (sigmaMap_strictMono hT hb).injective (h1.trans h2.symm))
   by_cases hw : T ≤ |w|
   · exact ⟨w, sigmaMap_of_le_abs hT hw⟩
   · push_neg at hw
-    have h1 : sigmaMap T b (-T) = -T := sigmaMap_of_le_abs hT (by rw [abs_neg, abs_of_pos hT])
-    have h2 : sigmaMap T b T = T := sigmaMap_of_le_abs hT (by rw [abs_of_pos hT])
     obtain ⟨a, -, ha⟩ := intermediate_value_Icc (show -T ≤ T by linarith)
       (continuous_sigmaMap T b).continuousOn
-      (show w ∈ Set.Icc (sigmaMap T b (-T)) (sigmaMap T b T) by
-        rw [h1, h2]; exact ⟨(abs_lt.mp hw).1.le, (abs_lt.mp hw).2.le⟩)
-    exact ⟨a, ha⟩
+      (by
+        rw [sigmaMap_of_le_abs hT (by grind), sigmaMap_of_le_abs hT (by grind)]; exact ⟨(abs_lt.mp hw).1.le, (abs_lt.mp hw).2.le⟩)
+    grind
 
 open Classical in
 /-- The inverse of `σ_b` (for `|b| ≤ T/2`; the identity otherwise). -/
@@ -113,8 +104,8 @@ def sigmaInv (T b w : ℝ) : ℝ :=
 
 lemma sigmaMap_sigmaInv (hT : 0 < T) (hb : |b| ≤ T / 2) (w : ℝ) :
     sigmaMap T b (sigmaInv T b w) = w := by
-  simp only [sigmaInv, dif_pos (And.intro hT hb)]
-  exact (existsUnique_sigmaMap_eq hT hb w).exists.choose_spec
+  simp only [sigmaInv]
+  grind
 
 lemma sigmaInv_sigmaMap (hT : 0 < T) (hb : |b| ≤ T / 2) (a : ℝ) :
     sigmaInv T b (sigmaMap T b a) = a :=
@@ -133,33 +124,27 @@ lemma sigmaInv_pos_iff (hT : 0 < T) (hb : |b| ≤ T / 2) (w : ℝ) :
   constructor
   · intro h
     have := hm h
-    rwa [h0, h1] at this
+    linarith
   · intro h
     by_contra hle
     push_neg at hle
     have := hm.monotone hle
-    rw [h0, h1] at this
     linarith
 
 lemma abs_sigmaInv_sub_le (hT : 0 < T) (hb : |b| ≤ T / 2) (hb' : |b'| ≤ T / 2) (w w' : ℝ) :
     |sigmaInv T b w - sigmaInv T b' w'| ≤ 2 * |w - w'| + 2 * |b - b'| := by
   set a := sigmaInv T b w
   set a' := sigmaInv T b' w'
-  have hw : sigmaMap T b a = w := sigmaMap_sigmaInv hT hb w
-  have hw' : sigmaMap T b' a' = w' := sigmaMap_sigmaInv hT hb' w'
+  have hw  := sigmaMap_sigmaInv hT hb w
+  have hw'  := sigmaMap_sigmaInv hT hb' w'
   have h1 : |a - a'| / 2 ≤ |sigmaMap T b a - sigmaMap T b a'| := by
     rcases le_total a' a with h | h
     · have := sigmaMap_sub_ge hT hb h
-      rw [abs_of_nonneg (by linarith), abs_of_nonneg (by linarith)]; exact this
+      grind
     · have := sigmaMap_sub_ge hT hb h
-      rw [abs_of_nonpos (by linarith), abs_of_nonpos (by linarith)]; linarith
+      grind
   have h2 := abs_sigmaMap_sub_param (b := b) (b' := b') hT a'
-  have h3 : |sigmaMap T b a - sigmaMap T b a'| ≤ |w - w'| + |b - b'| := by
-    calc |sigmaMap T b a - sigmaMap T b a'|
-        = |(w - w') + (sigmaMap T b' a' - sigmaMap T b a')| := by rw [← hw, ← hw']; ring_nf
-      _ ≤ |w - w'| + |sigmaMap T b' a' - sigmaMap T b a'| := abs_add_le _ _
-      _ ≤ |w - w'| + |b - b'| := by rw [abs_sub_comm (sigmaMap T b' a')]; linarith
-  linarith
+  grind
 
 end PolyaNeumann
 

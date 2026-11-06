@@ -29,12 +29,12 @@ are proved below. -/
 def originalNeumannMultiplicity (Ω : Set ℂ) (E : ℝ) : ℕ :=
   {j : ℕ | neumannEigenvalue Ω j = ENNReal.ofReal E}.encard.toNat
 
-theorem originalNeumannMultiplicity_eq_finrank {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {E : ℝ} (hE : 0 ≤ E) :
+variable {Ω : Set ℂ}
+
+theorem originalNeumannMultiplicity_eq_finrank (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {E : ℝ} (hE : 0 ≤ E) :
     originalNeumannMultiplicity Ω E = Module.finrank ℂ (h1ResonantSpace Ω E) := by
   unfold originalNeumannMultiplicity
-  rw [← h1ResonantSpace_multiplicity_eq hb hL hE]
-  exact ENat.toNat_coe _
+  simp [← h1ResonantSpace_multiplicity_eq hb hL hE]
 
 /-- A genuine orthonormal H1 basis, with exactly the multiplicity
 specified by the original variational Neumann spectrum. -/

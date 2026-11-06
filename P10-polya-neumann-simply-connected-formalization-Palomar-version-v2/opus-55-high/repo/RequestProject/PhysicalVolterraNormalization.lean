@@ -20,6 +20,8 @@ namespace PolyaNeumann
 
 open Set Metric
 
+variable (c : ℂ)
+
 theorem volterraPrimitiveIterate_const_mul (a h : ℝ → ℂ) (c : ℂ) (j : ℕ) :
     volterraPrimitiveIterate a (fun θ => c * h θ) j =
       fun θ => c * volterraPrimitiveIterate a h j θ := by
@@ -27,16 +29,13 @@ theorem volterraPrimitiveIterate_const_mul (a h : ℝ → ℂ) (c : ℂ) (j : �
   | zero => rfl
   | succ j ih =>
     funext θ
-    change (∫ s in (0 : ℝ)..θ,
+    change (∫ s in 0..θ,
       a s * volterraPrimitiveIterate a (fun t => c * h t) j s) =
-      c * (∫ s in (0 : ℝ)..θ, a s * volterraPrimitiveIterate a h j s)
+      c * (∫ s in 0..θ, a s * volterraPrimitiveIterate a h j s)
     rw [← intervalIntegral.integral_const_mul]
-    apply intervalIntegral.integral_congr
-    intro s hs
-    rw [ih]
-    ring
+    grind
 
-theorem hardyFourierTrace_const_mul (c : ℂ) (h : ℤ → ℂ) (θ : ℝ) :
+theorem hardyFourierTrace_const_mul (h : ℤ → ℂ) (θ : ℝ) :
     hardyFourierTrace (fun n => c * h n) θ = c * hardyFourierTrace h θ := by
   unfold hardyFourierTrace
   simp only [mul_assoc]
@@ -44,7 +43,7 @@ theorem hardyFourierTrace_const_mul (c : ℂ) (h : ℤ → ℂ) (θ : ℝ) :
 
 theorem hardyFourierTrace_normalizedHardyAverage (b : L2Z) (θ : ℝ) :
     hardyFourierTrace (normalizedHardyAverage b) θ =
-      (Real.sqrt (2 * Real.pi) : ℂ)⁻¹ * hardyFourierTrace (fromL2 (1 / 2 : ℝ) b) θ :=
+      (Real.sqrt (2 * Real.pi) : ℂ)⁻¹ * hardyFourierTrace (fromL2 (1 / 2) b) θ :=
   hardyFourierTrace_const_mul _ _ _
 
 section PhysicalCoordinates
@@ -65,17 +64,17 @@ variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
 series of its original averaged input. -/
 theorem localConformalVekuaBoundary_average_volterra_hasSum_of_H1
     (E : ℂ) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
-    (hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b)) (θ : ℝ) :
-    HasSum (fun j : ℕ => physicalVekuaCoeff E j *
+    (hb1 : IsSobolevSeq 1 (fromL2 (1 / 2) b)) (θ : ℝ) :
+    HasSum (fun j  => physicalVekuaCoeff E j *
       (F (circleMap 0 1 θ) - F 1) ^ j *
       volterraPrimitiveIterate (fun s => star (deriv (physicalCircleTrace F) s))
         (hardyFourierTrace (normalizedHardyAverage b)) j θ)
       (hardyFourierTrace (normalizedHardyAverage
         (localConformalVekuaBoundary hR F hFs hb hL hhol hinj hC hK
           e he hsource hes E b)) θ) := by
-  let c : ℂ := (Real.sqrt (2 * Real.pi) : ℂ)⁻¹
+  let c : ℂ := (Real.sqrt (2 * Real.pi))⁻¹
   have hfun : hardyFourierTrace (normalizedHardyAverage b) =
-      fun t => c * hardyFourierTrace (fromL2 (1 / 2 : ℝ) b) t := by
+      fun t => c * hardyFourierTrace (fromL2 (1 / 2) b) t := by
     funext t
     exact hardyFourierTrace_normalizedHardyAverage b t
   have hs := (localConformalVekuaBoundary_volterra_hasSum_of_H1 hR F hFs hb hL hhol

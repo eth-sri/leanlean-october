@@ -30,46 +30,37 @@ theorem normalizedConormal_fixed_fourier_complement
     (hg : IsWL1 (1 / 2) g) {E₀ : ℝ}
     (hinj : Function.Injective ((normalizedConormal hb ha hg E₀).comp (H₀).subtypeL)) :
     ∃ (d : ℕ) (u : Fin d → H₀ᗮ) (v : Fin d → L2Z),
-      (∀ r, (Function.support ((u r : L2Z) : ℤ → ℂ)).Finite) ∧
-      (∀ r, (Function.support (v r : ℤ → ℂ)).Finite) ∧
+      (∀ r, (Function.support (u r : ℤ → ℂ)).Finite) ∧
+      (∀ r, (Function.support (v r)).Finite) ∧
       ∃ U ∈ 𝓝 E₀,
-        (∀ E ∈ U, IsUnit ((normalizedConormal hb ha hg (E : ℂ)).comp (H₀).subtypeL ∘L
+        (∀ E ∈ U, IsUnit ((normalizedConormal hb ha hg E).comp (H₀).subtypeL ∘L
           (H₀).orthogonalProjection +
           (Submodule.subtypeL H₀ᗮ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) ∘L
             H₀ᗮ.orthogonalProjection)) ∧
         ContinuousOn (fun E : ℝ => Ring.inverse
-          ((normalizedConormal hb ha hg (E : ℂ)).comp (H₀).subtypeL ∘L
+          ((normalizedConormal hb ha hg E).comp (H₀).subtypeL ∘L
             (H₀).orthogonalProjection +
             (Submodule.subtypeL H₀ᗮ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) ∘L
               H₀ᗮ.orthogonalProjection)) U := by
   have hJ : Continuous fun E : ℝ =>
-      (normalizedConormal hb ha hg (E : ℂ)).comp (H₀).subtypeL :=
+      (normalizedConormal hb ha hg E).comp (H₀).subtypeL :=
     ((continuous_normalizedConormal hb ha hg).comp Complex.continuous_ofReal).clm_comp
       continuous_const
   have heq : (normalizedConormal hb ha hg E₀).comp (H₀).subtypeL ∘L
       (H₀).orthogonalProjection + Submodule.subtypeL H₀ᗮ ∘L H₀ᗮ.orthogonalProjection -
-        (1 : L2Z →L[ℂ] L2Z) =
-      (normalizedConormal hb ha hg E₀ - (1 : L2Z →L[ℂ] L2Z)) ∘L
+        1 =
+      (normalizedConormal hb ha hg E₀ - 1) ∘L
         ((H₀).subtypeL ∘L (H₀).orthogonalProjection) := by
     ext1 x
-    have hx := (H₀).starProjection_add_starProjection_orthogonal x
-    rw [Submodule.starProjection_apply, Submodule.starProjection_apply] at hx
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.comp_apply, ContinuousLinearMap.one_apply, Submodule.subtypeL_apply]
-    rw [← sub_eq_zero]
-    have horth : (H₀ᗮ.orthogonalProjection x : L2Z) =
-        x - ((H₀).orthogonalProjection x : L2Z) := by
-      rw [eq_sub_iff_add_eq, add_comm]
-      exact hx
-    rw [horth]
-    abel
-  have hcpt : IsCompactOperator ((normalizedConormal hb ha hg E₀).comp (H₀).subtypeL ∘L
-      (H₀).orthogonalProjection + Submodule.subtypeL H₀ᗮ ∘L H₀ᗮ.orthogonalProjection -
-        (1 : L2Z →L[ℂ] L2Z)) := by
-    rw [heq]
-    exact (isCompactOperator_normalizedConormal_sub_one hb ha hg E₀).comp_clm _
+    simp 
+    have horth : H₀ᗮ.orthogonalProjection x =
+        x - (H₀).orthogonalProjection x := by
+      norm_num
+    grind
   obtain ⟨d, u, v, hu, hv, U, hU, hunit, hcont⟩ :=
-    exists_fixed_complement_basis H₀ hJ hcpt hinj stdBasisZ positiveFourierHilbertBasis
+    exists_fixed_complement_basis H₀ hJ (by
+    rw [heq]
+    exact (isCompactOperator_normalizedConormal_sub_one hb ha hg E₀).comp_clm _) hinj stdBasisZ positiveFourierHilbertBasis
   exact ⟨d, u, v,
     (fun r => finite_support_of_mem_span_positiveFourierHilbertBasis (hu r)),
     (fun r => finite_support_of_mem_span_stdBasisZ (hv r)), U, hU, hunit, hcont⟩
@@ -99,14 +90,14 @@ theorem exists_localConformal_fixed_fourier_complement_of_cutC_ne_zero
     (hW : IsTransport (physicalCircleTrace F) E₀ W)
     (hcut : cutC (W (2 * Real.pi)) (basisVec 0) ≠ 0) :
     ∃ (d : ℕ) (u : Fin d → H₀ᗮ) (v : Fin d → L2Z),
-      (∀ r, (Function.support ((u r : L2Z) : ℤ → ℂ)).Finite) ∧
-      (∀ r, (Function.support (v r : ℤ → ℂ)).Finite) ∧
+      (∀ r, (Function.support (u r : ℤ → ℂ)).Finite) ∧
+      (∀ r, (Function.support (v r)).Finite) ∧
       ∃ U ∈ 𝓝 E₀,
-        (∀ E ∈ U, IsUnit ((NF (E : ℂ)).comp (H₀).subtypeL ∘L
+        (∀ E ∈ U, IsUnit ((NF E).comp (H₀).subtypeL ∘L
           (H₀).orthogonalProjection +
           (Submodule.subtypeL H₀ᗮ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) ∘L
             H₀ᗮ.orthogonalProjection)) ∧
-        ContinuousOn (fun E : ℝ => Ring.inverse ((NF (E : ℂ)).comp (H₀).subtypeL ∘L
+        ContinuousOn (fun E : ℝ => Ring.inverse ((NF E).comp (H₀).subtypeL ∘L
           (H₀).orthogonalProjection +
           (Submodule.subtypeL H₀ᗮ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) ∘L
             H₀ᗮ.orthogonalProjection)) U := by

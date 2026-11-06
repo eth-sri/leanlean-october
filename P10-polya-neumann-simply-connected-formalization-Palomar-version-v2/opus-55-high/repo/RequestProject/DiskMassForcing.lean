@@ -34,35 +34,31 @@ def diskMassForcingCoeff (v : L2 (ball (0 : ℂ) 1)) : ℤ → ℂ
   | Int.negSucc m => (diskMassForcingScale m : ℂ) *
       ∫ z in ball (0 : ℂ) 1, (v : ℂ → ℂ) z * z ^ (m + 1)
 
+variable (v : L2 (ball 0 1)) (n : ℤ)
+
 private theorem diskMassForcingScale_weight (m : ℕ) (a : ℂ) :
-    (((m + 2 : ℕ) : ℝ) * ‖(diskMassForcingScale m : ℂ) * a‖) ^ 2 ≤
-      (4 / (2 * π)) * (((m + 2 : ℕ) : ℝ) * ‖a‖ ^ 2) := by
-  have hk : 0 < ((m + 1 : ℕ) : ℝ) := by positivity
+    ((m + 2 : ℕ) * ‖diskMassForcingScale m * a‖) ^ 2 ≤
+      (4 / (2 * π)) * ((m + 2 : ℕ) * ‖a‖ ^ 2) := by
   have hweightPos : 0 < ((m + 2 : ℕ) : ℝ) := by positivity
-  have hratio : ((m + 2 : ℕ) : ℝ) ^ 2 ≤ 4 * ((m + 1 : ℕ) : ℝ) ^ 2 := by
-    have hle : ((m + 2 : ℕ) : ℝ) ≤ 2 * ((m + 1 : ℕ) : ℝ) := by
-      push_cast
-      nlinarith
-    calc
-      ((m + 2 : ℕ) : ℝ) ^ 2 ≤ (2 * ((m + 1 : ℕ) : ℝ)) ^ 2 :=
-        (sq_le_sq₀ hweightPos.le (by positivity)).mpr hle
-      _ = 4 * ((m + 1 : ℕ) : ℝ) ^ 2 := by ring
-  have hscale : 0 ≤ diskMassForcingScale m := by unfold diskMassForcingScale; positivity
-  have hw : (((m + 2 : ℕ) : ℝ) * diskMassForcingScale m) ^ 2 ≤
-      (4 / (2 * π)) * ((m + 2 : ℕ) : ℝ) := by
+  calc
+    _ = ((m + 2 : ℕ) * diskMassForcingScale m) ^ 2 * ‖a‖ ^ 2 := by
+      rw [norm_mul, Complex.norm_of_nonneg (by unfold diskMassForcingScale; positivity)]
+      ring
+    _ ≤ ((4 / (2 * π)) * (m + 2 : ℕ)) * ‖a‖ ^ 2 :=
+      mul_le_mul_of_nonneg_right (by
     rw [mul_pow, diskMassForcingScale, div_pow, mul_pow,
       Real.sq_sqrt hweightPos.le, Real.sq_sqrt Real.two_pi_pos.le]
     calc
-      _ ≤ (4 * ((m + 1 : ℕ) : ℝ) ^ 2) *
-          (((m + 2 : ℕ) : ℝ) / ((2 * π) * ((m + 1 : ℕ) : ℝ) ^ 2)) :=
-        mul_le_mul_of_nonneg_right hratio (by positivity)
-      _ = _ := by field_simp [hk.ne', Real.pi_ne_zero]
-  calc
-    _ = (((m + 2 : ℕ) : ℝ) * diskMassForcingScale m) ^ 2 * ‖a‖ ^ 2 := by
-      rw [norm_mul, Complex.norm_of_nonneg hscale]
-      ring
-    _ ≤ ((4 / (2 * π)) * ((m + 2 : ℕ) : ℝ)) * ‖a‖ ^ 2 :=
-      mul_le_mul_of_nonneg_right hw (sq_nonneg _)
+      _ ≤ (4 * (m + 1 : ℕ) ^ 2) *
+          ((m + 2 : ℕ) / ((2 * π) * (m + 1 : ℕ) ^ 2)) :=
+        mul_le_mul_of_nonneg_right (by
+    calc
+      ((m + 2 : ℕ) : ℝ) ^ 2 ≤ (2 * (m + 1 : ℕ)) ^ 2 :=
+        (sq_le_sq₀ hweightPos.le (by positivity)).mpr (by
+      push_cast
+      nlinarith)
+      _ = 4 * (m + 1 : ℕ) ^ 2 := by ring) (by positivity)
+      _ = _ := by field_simp) (sq_nonneg _)
     _ = _ := by ring
 
 private theorem diskMassForcing_sector (M : ℕ → ℂ) (B : ℝ)
@@ -77,8 +73,7 @@ private theorem diskMassForcing_sector (M : ℕ → ℂ) (B : ℝ)
     ‖(diskMassForcingScale m : ℂ) * M (m + 1)‖) ^ 2
   have hi : Function.Injective (fun m : ℕ => m + 1) := by
     intro m n h
-    change m + 1 = n + 1 at h
-    exact Nat.add_right_cancel h
+    linarith
   have ht : Summable (fun m : ℕ => f (m + 1)) := hs.comp_injective hi
   have htail : (∑' m : ℕ, f (m + 1)) ≤ π * B :=
     (tsum_comp_le_tsum_of_inj hs (fun m => by positivity) hi).trans hB
@@ -107,62 +102,54 @@ private theorem diskMassForcing_int_halves (a : ℤ → ℝ) (b : ℕ ⊕ ℕ �
   have hn' : Summable (fun m : ℕ => a (-((m + 1 : ℕ) : ℤ))) :=
     hbr.congr (fun m => (hn m).symm)
   have hn0 : Summable (fun m : ℕ => a (-(m + 1 : ℤ))) := by
-    simpa only [Nat.cast_add, Nat.cast_one] using hn'
+    assumption
   refine ⟨Summable.of_nat_of_neg_add_one hp0 hn0, ?_⟩
   rw [tsum_of_nat_of_neg_add_one hp0 hn0, hp0.tsum_eq_zero_add]
   simp only [Nat.cast_zero, hz, zero_add]
   calc
     _ = (∑' m : ℕ, b (Sum.inl m)) + ∑' m : ℕ, b (Sum.inr m) := by
-      congr 1
-      · exact tsum_congr hp
-      · apply tsum_congr
-        intro m
-        simpa only [Nat.cast_add, Nat.cast_one] using hn m
+      simp_all
     _ = _ := (hbl.tsum_sum hbr).symm
 
-theorem diskMassForcingCoeff_h1 (v : L2 (ball (0 : ℂ) 1)) :
+theorem diskMassForcingCoeff_h1 (v : L2 (ball 0 1)) :
     IsSobolevSeq 1 (diskMassForcingCoeff v) ∧
       sobNormSq 1 (diskMassForcingCoeff v) ≤ 4 * ‖v‖ ^ 2 := by
-  let Mp : ℕ → ℂ := fun m => ∫ z in ball (0 : ℂ) 1, (v : ℂ → ℂ) z * conj z ^ m
-  let Mn : ℕ → ℂ := fun m => ∫ z in ball (0 : ℂ) 1, (v : ℂ → ℂ) z * z ^ m
+  let Mp  := fun m => ∫ z in ball 0 1, v z * conj z ^ m
+  let Mn  := fun m => ∫ z in ball 0 1, v z * z ^ m
   have hp := diskMassForcing_sector Mp (‖v‖ ^ 2)
     (disk_area_holomorphic_bessel v).1 (disk_area_holomorphic_bessel v).2
   have hn := diskMassForcing_sector Mn (‖v‖ ^ 2)
     (disk_area_antiholomorphic_bessel v).1 (disk_area_antiholomorphic_bessel v).2
-  let bp : ℕ → ℝ := fun m => (((m + 2 : ℕ) : ℝ) *
-    ‖(diskMassForcingScale m : ℂ) * Mp (m + 1)‖) ^ 2
-  let bn : ℕ → ℝ := fun m => (((m + 2 : ℕ) : ℝ) *
-    ‖(diskMassForcingScale m : ℂ) * Mn (m + 1)‖) ^ 2
-  let b : ℕ ⊕ ℕ → ℝ := Sum.elim bp bn
-  let a : ℤ → ℝ := fun n => (sobWeight n * ‖diskMassForcingCoeff v n‖) ^ 2
-  have hb : Summable b := Summable.sum b hp.1 hn.1
-  have hpos (m : ℕ) : a ((m + 1 : ℕ) : ℤ) = b (Sum.inl m) := by
-    simp only [a, b, Sum.elim_inl, bp, Mp, diskMassForcingCoeff, sobWeight,
+  let bp  := fun m => ((m + 2 : ℕ) *
+    ‖diskMassForcingScale m * Mp (m + 1)‖) ^ 2
+  let bn  := fun m => ((m + 2 : ℕ) *
+    ‖diskMassForcingScale m * Mn (m + 1)‖) ^ 2
+  let b  := Sum.elim bp bn
+  let a  := fun n => (sobWeight n * ‖diskMassForcingCoeff v n‖) ^ 2
+  have hpos (m : ℕ) : a (m + 1 : ℕ) = b (Sum.inl m) := by
+    simp only [a, b, Sum.elim_inl, bp, diskMassForcingCoeff, sobWeight,
       Int.cast_natCast, abs_of_nonneg (Nat.cast_nonneg (m + 1) :
-        (0 : ℝ) ≤ ((m + 1 : ℕ) : ℝ))]
-    congr 2
+        (0 : ℝ) ≤ (m + 1 : ℕ))]
     push_cast
     ring
-  have hneg (m : ℕ) : a (-((m + 1 : ℕ) : ℤ)) = b (Sum.inr m) := by
-    have hi : -((m + 1 : ℕ) : ℤ) = Int.negSucc m := by omega
-    simp only [a, b, Sum.elim_inr, bn, Mn, hi, diskMassForcingCoeff, sobWeight,
+  have hneg (m : ℕ) : a (-(m + 1 : ℕ)) = b (Sum.inr m) := by
+    have hi : -(m + 1 : ℕ) = Int.negSucc m := by omega
+    simp only [a, b, Sum.elim_inr, bn, hi, diskMassForcingCoeff, sobWeight,
       Int.cast_negSucc, abs_neg, abs_of_nonneg (Nat.cast_nonneg (m + 1) :
-        (0 : ℝ) ≤ ((m + 1 : ℕ) : ℝ))]
-    congr 2
+        (0 : ℝ) ≤ (m + 1 : ℕ))]
     push_cast
     ring
-  obtain ⟨ha, hsum⟩ := diskMassForcing_int_halves a b hb (by simp [a, diskMassForcingCoeff])
+  obtain ⟨ha, hsum⟩ := diskMassForcing_int_halves a b (Summable.sum b hp.1 hn.1) (by simp [a, diskMassForcingCoeff])
     hpos hneg
   refine ⟨?_, ?_⟩
   · simpa only [IsSobolevSeq, Real.rpow_one] using ha
-  · change (∑' n : ℤ, (sobWeight n ^ (1 : ℝ) * ‖diskMassForcingCoeff v n‖) ^ 2) ≤ _
-    simp only [Real.rpow_one]
-    change (∑' n : ℤ, a n) ≤ _
+  · change (∑' n : ℤ, (sobWeight n ^ 1 * ‖diskMassForcingCoeff v n‖) ^ 2) ≤ _
+    simp 
     rw [hsum, Summable.tsum_sum (f := b) hp.1 hn.1]
     change (∑' m : ℕ, bp m) + (∑' m : ℕ, bn m) ≤ _
-    linarith [hp.2, hn.2]
+    linarith 
 
-theorem diskMassForcingCoeff_add (v w : L2 (ball (0 : ℂ) 1)) (n : ℤ) :
+theorem diskMassForcingCoeff_add (v w : L2 (ball 0 1)) (n : ℤ) :
     diskMassForcingCoeff (v + w) n = diskMassForcingCoeff v n + diskMassForcingCoeff w n := by
   cases n with
   | ofNat k =>
@@ -177,7 +164,7 @@ theorem diskMassForcingCoeff_add (v w : L2 (ball (0 : ℂ) 1)) (n : ℤ) :
       rw [← inner_diskAntiholomorphicArea_eq_integral, ← inner_diskAntiholomorphicArea_eq_integral,
         ← inner_diskAntiholomorphicArea_eq_integral, inner_add_right, mul_add]
 
-theorem diskMassForcingCoeff_smul (c : ℂ) (v : L2 (ball (0 : ℂ) 1)) (n : ℤ) :
+theorem diskMassForcingCoeff_smul (c : ℂ) (v : L2 (ball 0 1)) (n : ℤ) :
     diskMassForcingCoeff (c • v) n = c * diskMassForcingCoeff v n := by
   cases n with
   | ofNat k =>
@@ -212,22 +199,20 @@ def diskMassForcingH1Lin : L2 (ball (0 : ℂ) 1) →ₗ[ℂ] L2Z where
     rw [diskMassForcingCoeff_smul]
     ring
 
-theorem norm_diskMassForcingH1Lin_le (v : L2 (ball (0 : ℂ) 1)) :
-    ‖diskMassForcingH1Lin v‖ ≤ 2 * ‖v‖ := by
-  have hsq : ‖diskMassForcingH1Lin v‖ ^ 2 ≤ (2 * ‖v‖) ^ 2 := by
+theorem norm_diskMassForcingH1Lin_le :
+    ‖diskMassForcingH1Lin v‖ ≤ 2 * ‖v‖ := (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp (by
     rw [norm_sq_L2Z]
-    change (∑' n : ℤ, ‖(sobWeight n : ℂ) * diskMassForcingCoeff v n‖ ^ 2) ≤ _
+    change (∑' n : ℤ, ‖sobWeight n * diskMassForcingCoeff v n‖ ^ 2) ≤ _
     simp only [norm_mul, Complex.norm_of_nonneg (sobWeight_pos _).le]
     have h := (diskMassForcingCoeff_h1 v).2
     simp only [sobNormSq, Real.rpow_one] at h
-    nlinarith [h]
-  exact (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp hsq
+    nlinarith)
 
 def diskMassForcingH1 : L2 (ball (0 : ℂ) 1) →L[ℂ] L2Z :=
   diskMassForcingH1Lin.mkContinuous 2 norm_diskMassForcingH1Lin_le
 
-@[simp] theorem diskMassForcingH1_apply (v : L2 (ball (0 : ℂ) 1)) (n : ℤ) :
-    diskMassForcingH1 v n = (sobWeight n : ℂ) * diskMassForcingCoeff v n := rfl
+@[simp] theorem diskMassForcingH1_apply :
+    diskMassForcingH1 v n = sobWeight n * diskMassForcingCoeff v n := rfl
 
 end PolyaNeumann
 

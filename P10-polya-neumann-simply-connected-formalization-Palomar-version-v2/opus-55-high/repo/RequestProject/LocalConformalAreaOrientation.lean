@@ -34,6 +34,8 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped ComplexConjugate Topology
 
+variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
+
 private theorem area_dirD_comm {φ : ℂ → ℂ}
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (v w z : ℂ) :
     dirD (dirD φ v) w z = dirD (dirD φ w) v z := by
@@ -41,18 +43,14 @@ private theorem area_dirD_comm {φ : ℂ → ℂ}
     (hφ.fderiv_right (m := (⊤ : ℕ∞)) le_rfl).differentiable (by simp) z
   have hv : fderiv ℝ (dirD φ v) z w = fderiv ℝ (fderiv ℝ φ) z w v := by
     change fderiv ℝ (fun x => fderiv ℝ φ x v) z w = _
-    rw [fderiv_clm_apply hd (differentiableAt_const _)]
-    simp
+    simp [fderiv_clm_apply hd (differentiableAt_const _)]
   have hw : fderiv ℝ (dirD φ w) z v = fderiv ℝ (fderiv ℝ φ) z v w := by
     change fderiv ℝ (fun x => fderiv ℝ φ x w) z v = _
-    rw [fderiv_clm_apply hd (differentiableAt_const _)]
-    simp
+    simp [fderiv_clm_apply hd (differentiableAt_const _)]
   change fderiv ℝ (dirD φ v) z w = fderiv ℝ (dirD φ w) z v
   rw [hv, hw]
   exact (hφ.contDiffAt.isSymmSndFDerivAt (by
-    simpa only [minSmoothness_of_isRCLikeNormedField] using
-      (show (2 : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞) from
-        WithTop.coe_le_coe.mpr le_top))).eq w v
+    norm_num)).eq w v
 
 /-- Differentiating the actual CR identity on an open set and commuting
 the mixed derivatives gives the classical Laplacian zero. -/
@@ -62,7 +60,7 @@ private theorem area_lap_eq_zero_of_CR {U : Set ℂ} (hU : IsOpen U)
     {z : ℂ} (hz : z ∈ U) : lap φ z = 0 := by
   have heq : dirD φ Complex.I =ᶠ[𝓝 z] fun w => Complex.I * dirD φ 1 w := by
     filter_upwards [hU.mem_nhds hz] with w hw
-    exact hCR w hw
+    simp_all
   have hd : DifferentiableAt ℝ (dirD φ 1) z :=
     ((hφ.fderiv_right (m := (⊤ : ℕ∞)) le_rfl).clm_apply
       contDiff_const).differentiable (by simp) z
@@ -72,10 +70,9 @@ private theorem area_lap_eq_zero_of_CR {U : Set ℂ} (hU : IsOpen U)
       congrArg (fun A : ℂ →L[ℝ] ℂ => A v)
         (heq.fderiv_eq.trans (fderiv_const_mul hd Complex.I))
   rw [lap, hD Complex.I, area_dirD_comm hφ 1 Complex.I z, hD 1]
-  ring_nf; simp only [Complex.I_sq]; ring
+  ring_nf; norm_num
 
-private theorem area_cutoff_dirD_disk {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
+private theorem area_cutoff_dirD_disk (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
     {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) (v : ℂ) :
     dirD (smoothDiskCutoff R hR F) v z = deriv F z * v := by
   unfold dirD
@@ -84,8 +81,7 @@ private theorem area_cutoff_dirD_disk {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
   change fderiv ℂ F z v = _
   exact fderiv_eq_deriv_mul
 
-theorem localConformal_cutoff_lap_eq_zero {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem localConformal_cutoff_lap_eq_zero (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
     (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
     {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) :
     lap (smoothDiskCutoff R hR F) z = 0 := by
@@ -104,10 +100,9 @@ private theorem area_cutoff_gradient_density {R : ℝ} (hR : 1 < R) (F : ℂ →
     (∑ i : Fin 2, dirD (fun w => conj (smoothDiskCutoff R hR F w)) (coordDir i) z *
       dirD (smoothDiskCutoff R hR F) (coordDir i) z) =
         ((2 * ‖deriv F z‖ ^ 2 : ℝ) : ℂ) := by
-  have hφ := contDiff_smoothDiskCutoff hR hFs
   simp only [Fin.sum_univ_two, show coordDir 0 = 1 from rfl,
     show coordDir 1 = Complex.I from rfl,
-    dirD_conj (hφ.of_le (by simp))]
+    dirD_conj ((contDiff_smoothDiskCutoff hR hFs).of_le (by simp))]
   rw [area_conj_mul_self, area_conj_mul_self,
     area_cutoff_dirD_disk hR F hhol hz 1,
     area_cutoff_dirD_disk hR F hhol hz Complex.I]
@@ -116,16 +111,13 @@ private theorem area_cutoff_gradient_density {R : ℝ} (hR : 1 < R) (F : ℂ →
   ring
 
 /-- The ordinary area is exactly the genuine conformal Jacobian integral. -/
-theorem localConformal_jacobian_integral_eq_volume (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
+theorem localConformal_jacobian_integral_eq_volume (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
     (hinj : InjOn F (ball (0 : ℂ) 1)) :
     (∫ z in ball (0 : ℂ) 1, ‖deriv F z‖ ^ 2) =
       (volume (F '' ball (0 : ℂ) 1)).toReal := by
-  have hcv := localConformal_integral_image isOpen_ball hhol hinj (fun _ => (1 : ℝ))
-  simpa only [setIntegral_const, measureReal_def, smul_eq_mul, mul_one] using hcv.symm
+  simpa only [setIntegral_const, measureReal_def, smul_eq_mul, mul_one] using (localConformal_integral_image isOpen_ball hhol hinj (fun _ => (1 : ℝ))).symm
 
-private theorem area_cutoff_conormal {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+private theorem area_cutoff_conormal (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
     (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) (θ : ℝ) :
     fderiv ℝ (smoothDiskCutoff R hR F) (circleMap 0 1 θ)
         (-(Complex.I * deriv (circleMap 0 1) θ)) =
@@ -134,12 +126,11 @@ private theorem area_cutoff_conormal {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
   rw [unitCircle_conormalDirection, fderiv_smoothDiskCutoff_eq hR F hz,
     localConformal_fderiv_closedDisk hR F hFs hhol hz,
     localConformal_circleTrace_deriv hR F hFs hhol]
-  ring_nf; simp only [Complex.I_sq]; ring
+  ring_nf; norm_num
 
 /-- Disk Green applied to the actual compact cutoff gives the complex
 boundary energy. All factors use ordinary area and angular measures. -/
-theorem localConformal_disk_green_energy {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem localConformal_disk_green_energy (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
     (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
     (hinj : InjOn F (ball (0 : ℂ) 1)) :
     doubleLayer (circleMap 0 1) (fun θ => conj (physicalCircleTrace F θ))
@@ -154,14 +145,13 @@ theorem localConformal_disk_green_energy {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ
     intro θ _
     exact congrArg conj (smoothDiskCutoff_eq_closedDisk hR F
       (circleMap_mem_closedBall (0 : ℂ) (by norm_num : (0 : ℝ) ≤ 1) θ))
-  have hgreen := doubleLayer_eq_integral unitDisk_bounded isLipschitzDomain_unitDisk
-    unitCircle_isBoundaryParam hK hV.2.1 htrace hφ.1
   calc
     _ = ∫ z in ball (0 : ℂ) 1,
         (conj (smoothDiskCutoff R hR F z) * lap (smoothDiskCutoff R hR F) z +
           ∑ i : Fin 2,
             dirD (fun w => conj (smoothDiskCutoff R hR F w)) (coordDir i) z *
-              dirD (smoothDiskCutoff R hR F) (coordDir i) z) := hgreen
+              dirD (smoothDiskCutoff R hR F) (coordDir i) z) := (doubleLayer_eq_integral unitDisk_bounded isLipschitzDomain_unitDisk
+    unitCircle_isBoundaryParam hK hV.2.1 htrace hφ.1)
     _ = ∫ z in ball (0 : ℂ) 1, ((2 * ‖deriv F z‖ ^ 2 : ℝ) : ℂ) := by
       apply setIntegral_congr_fun measurableSet_ball
       intro z hz
@@ -175,7 +165,7 @@ theorem localConformal_disk_green_energy {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ
     _ = _ := by rw [localConformal_jacobian_integral_eq_volume F hhol hinj]
 
 /-- The actual circle trace has the positive physical signed area. -/
-theorem localConformal_circleTrace_signedArea {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
+theorem localConformal_circleTrace_signedArea (hR : 1 < R) (F : ℂ → ℂ)
     (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
     (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
     (hinj : InjOn F (ball (0 : ℂ) 1)) :
@@ -207,14 +197,9 @@ theorem localConformal_circleTrace_signedArea {R : ℝ} (hR : 1 < R) (F : ℂ �
     intro θ _
     change (conj (physicalCircleTrace F θ) *
       (-(Complex.I * deriv (physicalCircleTrace F) θ))).re = _
-    rw [show conj (physicalCircleTrace F θ) *
-        (-(Complex.I * deriv (physicalCircleTrace F) θ)) =
-      -(Complex.I * (conj (physicalCircleTrace F θ) * deriv (physicalCircleTrace F) θ)) by ring]
-    simp only [Complex.neg_re, Complex.mul_re, Complex.I_re, Complex.I_im,
-      zero_mul, one_mul, zero_sub, neg_neg]
+    simp [show conj (physicalCircleTrace F θ) *         (-(Complex.I * deriv (physicalCircleTrace F) θ)) =       -(Complex.I * (conj (physicalCircleTrace F θ) * deriv (physicalCircleTrace F) θ)) by ring]
   have he := congrArg Complex.re (localConformal_disk_green_energy hR F hFs hhol hinj)
-  rw [hbd, hre, Complex.ofReal_re] at he
-  exact he
+  simp_all
 
 /-- The exact normalized arclength map preserves the actual signed area. -/
 theorem normalizedArcCurve_signedArea {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ)
@@ -229,10 +214,9 @@ theorem normalizedArcCurve_signedArea {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 �
     funext fun θ => (normalizedArcCurve_factorization hγ hper hnz θ).symm
   have hchain := ae_deriv_comp (normalizedArcCurve_lipschitz hγ hper hnz) e.monotone he
   rw [hcomp] at hchain
-  have hcv := integral_comp_orderIso he (normalizedArcOrderIso_zero hγ hper hnz)
+  rw [integral_comp_orderIso he (normalizedArcOrderIso_zero hγ hper hnz)
     (normalizedArcOrderIso_endpoint hγ hper hnz)
-    (signedAreaDensity (normalizedArcCurve hγ hper hnz))
-  rw [hcv]
+    (signedAreaDensity (normalizedArcCurve hγ hper hnz))]
   apply intervalIntegral.integral_congr_ae
   filter_upwards [hchain] with θ hθ _
   have hpoint : normalizedArcCurve hγ hper hnz (e θ) = γ θ := congrFun hcomp θ
@@ -241,7 +225,7 @@ theorem normalizedArcCurve_signedArea {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 �
 
 /-- The constructed exact arclength curve is now a genuine positively
 oriented physical boundary parameter, with all six fields proved. -/
-theorem exists_localConformal_isBoundaryParam {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
+theorem exists_localConformal_isBoundaryParam (hR : 1 < R) (F : ℂ → ℂ)
     (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
     (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
     (hinj : InjOn F (closedBall (0 : ℂ) 1))
@@ -254,7 +238,6 @@ theorem exists_localConformal_isBoundaryParam {R : ℝ} (hR : 1 < R) (F : ℂ �
   have hγ := contDiff_physicalCircleTrace_of_neighborhood hR F (hFs.of_le (by simp))
   have hp := physicalCircleTrace_periodic F
   have hv := localConformal_circleTrace_deriv_ne_zero hR F hFs hhol hnz
-  have him := localConformal_circleTrace_image_frontier hR F hFs hinj hL.1.1
   obtain ⟨c, hc, _, _⟩ := exists_isC1TraceReparam_normalizedArc hγ hp hv
   refine ⟨normalizedArcCurve hγ hp hv, c, ?_, hc,
     normalizedArcCurve_factorization hγ hp hv⟩
@@ -263,7 +246,7 @@ theorem exists_localConformal_isBoundaryParam {R : ℝ} (hR : 1 < R) (F : ℂ �
       periodic := normalizedArcCurve_periodic hγ hp hv
       injOn := normalizedArcCurve_injOn hγ hp hv
         (physicalCircleTrace_injOn_of_closedDisk_inj F hinj)
-      image := normalizedArcCurve_image_frontier hγ hp hv him
+      image := normalizedArcCurve_image_frontier hγ hp hv (localConformal_circleTrace_image_frontier hR F hFs hinj hL.1.1)
       const_speed := ⟨arcLen (physicalCircleTrace F) (2 * Real.pi) / (2 * Real.pi),
         div_pos (arcLen_period_pos_of_regular hγ hv) Real.two_pi_pos,
         Filter.Eventually.of_forall (normalizedArcCurve_speed hγ hp hv)⟩

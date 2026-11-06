@@ -23,12 +23,10 @@ conjugation of its physical density. -/
 theorem physicalOrdinaryCauchy_eq_neg_weighted (γ H : ℝ → ℂ) (w : ℂ) :
     physicalOrdinaryCauchy γ H w =
       -physicalWeightedCauchy γ (fun θ => conj (H θ)) w := by
-  rw [physicalOrdinaryCauchy, physicalWeightedCauchy, ← intervalIntegral.integral_neg]
+  rw [physicalWeightedCauchy, ← intervalIntegral.integral_neg]
   apply intervalIntegral.integral_congr
   intro θ _
-  change (deriv γ θ * conj (H θ)) / (w - γ θ) =
-    -((deriv γ θ * conj (H θ)) / (γ θ - w))
-  rw [show w - γ θ = -(γ θ - w) by ring, div_neg]
+  grind
 
 end PolyaNeumann
 

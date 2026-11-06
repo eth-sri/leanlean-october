@@ -49,15 +49,13 @@ theorem reduced_lower_bound (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : 
     ∃ A₀ > 0, ∀ᶠ E in 𝓝 E₀, ∀ z : Z, -(A₀ * ‖S E z‖ ^ 2) ≤ (⟪z, R E z⟫_ℂ).re := by
   obtain ⟨A, hA, ε, hε, δ, hδ, h⟩ := compact_perturbation_coercive_nhds α hα C hC (S E₀) hinj
   refine ⟨A, hA, ?_⟩
-  have h1 : ∀ᶠ E in 𝓝 E₀, ‖R E - R E₀‖ < δ := by
+  filter_upwards [by
     have := (hR.sub_const (R E₀)).norm
-    simp only [sub_self, norm_zero] at this
-    exact this.eventually (gt_mem_nhds hδ)
-  have h2 : ∀ᶠ E in 𝓝 E₀, ‖S E - S E₀‖ < δ := by
+    simp  at this
+    exact this.eventually (gt_mem_nhds hδ), by
     have := (hS.sub_const (S E₀)).norm
-    simp only [sub_self, norm_zero] at this
-    exact this.eventually (gt_mem_nhds hδ)
-  filter_upwards [h1, h2] with E hE1 hE2 z
+    simp  at this
+    exact this.eventually (gt_mem_nhds hδ)] with E hE1 hE2 z
   rw [hR₀] at hE1
   have := h (R E) (S E) hE1 hE2 z
   have : 0 ≤ ε / 2 * ‖z‖ ^ 2 := by positivity

@@ -54,21 +54,22 @@ def IsTransport (γ : ℝ → ℂ) (E : ℝ) (W : ℝ → Ell2 →L[ℂ] Ell2) :
 def monodromy (W : ℝ → Ell2 →L[ℂ] Ell2) : Ell2 →L[ℂ] Ell2 :=
   ContinuousLinearMap.adjoint (W (2 * π))
 
+variable (γ : ℝ → ℂ) (E : ℝ) {K : NNReal}
+
 /-- `‖U - I‖ > 0` as soon as `U ≠ I`. -/
 lemma norm_sub_one_pos {U : Ell2 →L[ℂ] Ell2} (h : U ≠ 1) : 0 < ‖U - 1‖ :=
   norm_pos_iff.mpr (sub_ne_zero.mpr h)
 
-lemma transportCoeff_aestronglyMeasurable (γ : ℝ → ℂ) (E : ℝ) :
+lemma transportCoeff_aestronglyMeasurable :
     AEStronglyMeasurable (transportCoeff γ E) volume := by
-  have hg : Continuous fun z : ℂ => (-(Complex.I * (Real.sqrt E : ℂ)) / 2) •
+  have hg : Continuous fun z : ℂ => (-(Complex.I * Real.sqrt E) / 2) •
       (z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN) := by
-    have : Continuous fun z : ℂ => conj z := Complex.continuous_conj
     fun_prop
   exact hg.comp_aestronglyMeasurable (measurable_deriv γ).aestronglyMeasurable
 
-lemma transportCoeff_norm_le (γ : ℝ → ℂ) (E : ℝ) {K : NNReal} (hK : LipschitzWith K γ)
-    (θ : ℝ) : ‖transportCoeff γ E θ‖ ≤ ‖(-(Complex.I * (Real.sqrt E : ℂ)) / 2)‖ *
-      (K * ‖(ContinuousLinearMap.adjoint shiftN : Ell2 →L[ℂ] Ell2)‖ + K * ‖shiftN‖) := by
+lemma transportCoeff_norm_le (hK : LipschitzWith K γ)
+    (θ : ℝ) : ‖transportCoeff γ E θ‖ ≤ ‖(-(Complex.I * Real.sqrt E) / 2)‖ *
+      (K * ‖ContinuousLinearMap.adjoint shiftN‖ + K * ‖shiftN‖) := by
   have hd : ‖deriv γ θ‖ ≤ K := norm_deriv_le_of_lipschitz hK
   unfold transportCoeff
   rw [norm_smul]
@@ -78,13 +79,13 @@ lemma transportCoeff_norm_le (γ : ℝ → ℂ) (E : ℝ) {K : NNReal} (hK : Lip
   · rw [norm_smul, Complex.norm_conj]; gcongr
 
 /-- Lemma 10.2 (existence): for a Lipschitz curve the transport equation has a solution. -/
-theorem transport_exists_of_lipschitz (γ : ℝ → ℂ) {K : NNReal} (hK : LipschitzWith K γ)
+theorem transport_exists_of_lipschitz (hK : LipschitzWith K γ)
     (E : ℝ) : ∃ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W :=
   exists_volterra_solution (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) (2 * π)
 
 /-- Lemma 10.2 (uniqueness): the transport is unique on `[0, L]`. -/
-theorem transport_unique_of_lipschitz (γ : ℝ → ℂ) {K : NNReal} (hK : LipschitzWith K γ)
+theorem transport_unique_of_lipschitz (hK : LipschitzWith K γ)
     (E : ℝ) {W W' : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
     (hW' : IsTransport γ E W') : Set.EqOn W W' (Set.Icc 0 (2 * π)) :=
   volterra_unique (transportCoeff_aestronglyMeasurable γ E) (transportCoeff_norm_le γ E hK)
