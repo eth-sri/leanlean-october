@@ -32,11 +32,15 @@ noncomputable section
 direct scalar field. -/
 abbrev DirectDegPoly (D : DirectLdParams) (c : ℕ) :=
   Fin (c + 1) → DirectScalarQ D
+variable {D : DirectLdParams}
+variable {c : ℕ}
+
+
 
 /-- A direct line polynomial evaluates to `a` at `u` when `u` lies on the line
 and every parameter presenting `u` gives value `a`.  The universal clause
 keeps the zero-direction case explicit. -/
-def DirectEvaluatesTo {D : DirectLdParams} {c : ℕ} (line : DirectLineDesc D)
+def DirectEvaluatesTo  (line : DirectLineDesc D)
     (f : DirectDegPoly D c) (u : Fin D.m → DirectScalarQ D)
     (a : DirectScalarQ D) : Prop :=
   (∃ t : DirectScalarQ D, u = line.base + t • line.direction) ∧
@@ -46,7 +50,7 @@ def DirectEvaluatesTo {D : DirectLdParams} {c : ℕ} (line : DirectLineDesc D)
 /-- Option-completed evaluation of a direct line polynomial.  `none` is an
 explicit outcome when the point does not determine an evaluation; no field
 value is used as a fallback. -/
-noncomputable def directEvalOpt {D : DirectLdParams} {c : ℕ}
+noncomputable def directEvalOpt 
     (line : DirectLineDesc D) (u : Fin D.m → DirectScalarQ D)
     (f : DirectDegPoly D c) : Option (DirectScalarQ D) := by
   classical
@@ -126,7 +130,7 @@ noncomputable instance instFintypeDirectLdAnswer (D : DirectLdParams) :
 
 /-- Check that a direct-game answer has the constructor required by its
 question type. -/
-def validDirectLdAnswer {D : DirectLdParams} (t : LdType)
+def validDirectLdAnswer  (t : LdType)
     (answer : DirectLdAnswer D) : Bool :=
   match t, answer with
   | .point, .pointVals _ => true
@@ -213,7 +217,7 @@ noncomputable abbrev DirectPolyMeasTuple (D : DirectLdParams) (ι : Type*)
   MIPStarRE.Quantum.Measurement (DirectPolyTuple D) ι
 
 /-- Evaluate every component of a direct polynomial tuple at a point. -/
-def evalDirectPolyTupleAt {D : DirectLdParams}
+def evalDirectPolyTupleAt 
     (u : Fin D.m → DirectScalarQ D) (g : DirectPolyTuple D) :
     Fin D.k → DirectScalarQ D :=
   fun j => MvPolynomial.eval u (g j).1

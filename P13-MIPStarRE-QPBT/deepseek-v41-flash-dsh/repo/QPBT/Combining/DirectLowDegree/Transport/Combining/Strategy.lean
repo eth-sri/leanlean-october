@@ -102,14 +102,15 @@ combining coordinate. -/
 def directCombinedIndexSplit (D : DirectLdParams) (i : Fin D.combined.m) :
     Fin D.m ⊕ Fin D.k :=
   finSumFinEquiv.symm i
+variable (D : DirectLdParams)
 
-@[simp] theorem directCombinedIndexSplit_combinedPointVar (D : DirectLdParams)
+
+@[simp] theorem directCombinedIndexSplit_combinedPointVar 
     (j : Fin D.m) :
     directCombinedIndexSplit D (combinedPointVar D.m D.k j) = Sum.inl j := by
   simp [directCombinedIndexSplit, combinedPointVar]
 
-@[simp] theorem directCombinedIndexSplit_combinedCoefficientVar
-    (D : DirectLdParams) (r : Fin D.k) :
+@[simp] theorem directCombinedIndexSplit_combinedCoefficientVar  (r : Fin D.k) :
     directCombinedIndexSplit D (combinedCoefficientVar D.m D.k r) = Sum.inr r := by
   simp [directCombinedIndexSplit, combinedCoefficientVar]
 
@@ -252,7 +253,7 @@ def directCombinedStrategy (D : DirectLdParams) (S : Strategy (directLdGame D)) 
 /-- Projectivity transfer for `def:ld-combined-strategy`: each measurement of
 the combined strategy is a coarse-graining of a measurement of the original
 strategy, and coarse-graining preserves projectivity. -/
-theorem directCombinedStrategy_isProjective (D : DirectLdParams)
+theorem directCombinedStrategy_isProjective 
     (S : Strategy (directLdGame D)) (hS : S.IsProjective) :
     (directCombinedStrategy D S).IsProjective := by
   refine ⟨fun q => ?_, fun q => ?_⟩

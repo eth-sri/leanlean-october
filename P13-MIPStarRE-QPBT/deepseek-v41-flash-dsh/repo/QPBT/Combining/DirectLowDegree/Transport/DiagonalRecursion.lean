@@ -57,11 +57,12 @@ last coordinate as its leading index by convention, and no recursion occurs. -/
 section DirectionCoordinates
 
 variable (D : DirectLdParams)
+variable (i i' : Fin D.m)
+
 
 /-- Restricting at an index where the direction vanishes is restricting at the
 next index. -/
-private theorem directPrefixProjection_succ_of_zero
-    (i i' : Fin D.m) (hi : i'.val = i.val + 1)
+private theorem directPrefixProjection_succ_of_zero  (hi : i'.val = i.val + 1)
     (v : Fin D.m → DirectScalarQ D) (hv : v i = 0) :
     directPrefixProjection i v = directPrefixProjection i' v := by
   funext j
@@ -76,8 +77,7 @@ private theorem directPrefixProjection_succ_of_zero
 
 /-- Restriction beyond a coordinate ignores translation along that
 coordinate. -/
-private theorem directPrefixProjection_add_single
-    (i i' : Fin D.m) (hi : i.val < i'.val)
+private theorem directPrefixProjection_add_single  (hi : i.val < i'.val)
     (v : Fin D.m → DirectScalarQ D) (c : DirectScalarQ D) :
     directPrefixProjection i' (v + c • Pi.single i (1 : DirectScalarQ D)) =
       directPrefixProjection i' v := by
@@ -126,7 +126,7 @@ private theorem directDiagonalIndexOf_prefixProjection_last
 /-- Restricting to the vanishing of a coordinate below the restriction index
 scales the uniform average by the inverse field size: translation along that
 coordinate permutes the directions and preserves the restriction. -/
-private theorem avgOver_uniform_coord_zero (i i' : Fin D.m) (hi : i.val < i'.val)
+private theorem avgOver_uniform_coord_zero  (hi : i.val < i'.val)
     (G : (Fin D.m → DirectScalarQ D) → ℝ) :
     avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
         (fun v => if v i = 0 then G (directPrefixProjection i' v) else 0) =
@@ -154,8 +154,6 @@ private theorem avgOver_uniform_coord_zero (i i' : Fin D.m) (hi : i.val < i'.val
       (∑ v : Fin D.m → DirectScalarQ D, G (directPrefixProjection i' v)) =
           ∑ v : Fin D.m → DirectScalarQ D, ∑ c : DirectScalarQ D,
             if v i = c then G (directPrefixProjection i' v) else 0 := by
-        refine Finset.sum_congr rfl fun v _ => ?_
-        rw [Finset.sum_ite_eq]
         simp
       _ = ∑ c : DirectScalarQ D, ∑ v : Fin D.m → DirectScalarQ D,
             if v i = c then G (directPrefixProjection i' v) else 0 :=
@@ -181,8 +179,7 @@ private def restrictedDirectionEquiv (j : Fin D.m) :
   toFun v :=
     (fun c => directScalarEquiv D (v ⟨D.m - 1 - c.val, by have := D.hm; omega⟩),
       fun c => v ⟨c.val, by
-        have h1 := c.isLt
-        have h2 := Fin.val_rev j
+        have h1 := Fin.val_rev j
         omega⟩)
   invFun x := fun c =>
     if h : c.val < (Fin.rev j).val then x.2 ⟨c.val, h⟩
@@ -199,15 +196,12 @@ private def restrictedDirectionEquiv (j : Fin D.m) :
     · simp only [dif_neg h, Equiv.symm_apply_apply]
       refine congrArg v (Fin.ext ?_)
       change D.m - 1 - (D.m - 1 - c.val) = c.val
-      have h1 := c.isLt
-      have h2 := D.hm
+      have h1 := D.hm
       omega
   right_inv x := by
     refine Prod.ext ?_ ?_
     · funext c
-      have h1 := c.isLt
-      have h2 := j.isLt
-      have h3 := Fin.val_rev j
+      have h1  := Fin.val_rev j
       have hc : ¬ (D.m - 1 - c.val < (Fin.rev j).val) := by omega
       simp only [dif_neg hc, Equiv.apply_symm_apply]
       refine congrArg x.1 (Fin.ext ?_)
@@ -215,10 +209,12 @@ private def restrictedDirectionEquiv (j : Fin D.m) :
       omega
     · funext c
       simp only [dif_pos c.isLt, Fin.eta]
+variable (j : Fin D.m)
+
 
 /-- The decoded `j`-restricted LDT direction of the free coordinates is the
 restriction of the direction at the reversed index. -/
-private theorem ldtPointToDirect_extend_restrictedDirectionEquiv (j : Fin D.m)
+private theorem ldtPointToDirect_extend_restrictedDirectionEquiv 
     (v : Fin D.m → DirectScalarQ D) :
     letI := D.toLDTFieldModel
     ldtPointToDirect D
@@ -245,7 +241,7 @@ private theorem ldtPointToDirect_extend_restrictedDirectionEquiv (j : Fin D.m)
 
 /-- Averaging over the LDT `j`-restricted diagonal sample is averaging over
 a direct point and a direct direction restricted at the reversed index. -/
-private theorem avgOver_restrictedDiagonalSample_eq (j : Fin D.m)
+private theorem avgOver_restrictedDiagonalSample_eq 
     (H : (Fin D.m → DirectScalarQ D) → (Fin D.m → DirectScalarQ D) → ℝ) :
     letI := D.toLDTFieldModel
     avgOver (uniformDistribution (RestrictedDiagonalSample D.toLDTParameters j))
@@ -284,8 +280,8 @@ private theorem sum_le_two_mul_sum_of_recursion {m : ℕ} (t r : Fin m → ℝ) 
     ∑ i, t i ≤ 2 * ∑ i, r i := by
   classical
   have hq0 : (0 : ℝ) < q := by linarith
-  have hqinv : q⁻¹ ≤ (2 : ℝ)⁻¹ := inv_anti₀ (by norm_num) hq
-  have hqinv0 : (0 : ℝ) ≤ q⁻¹ := inv_nonneg.mpr hq0.le
+  have hqinv := inv_anti₀ (by norm_num) hq
+  have hqinv0 := inv_nonneg.mpr hq0.le
   let succSum : Fin m → ℝ := fun i =>
     ∑ i' : Fin m, if i'.val = i.val + 1 then t i' else 0
   have hbound : ∀ i, t i ≤ r i + q⁻¹ * succSum i := by
@@ -307,16 +303,13 @@ private theorem sum_le_two_mul_sum_of_recursion {m : ℕ} (t r : Fin m → ℝ) 
         have := i.isLt
         omega
       have hsucc : succSum i = 0 := by
-        simp only [succSum]
         refine Finset.sum_eq_zero fun i' _ => ?_
         rw [if_neg]
-        intro h'
         have := i'.isLt
         omega
       rw [hsucc, mul_zero, add_zero]
       exact hlast i hlast'
   have hsuccSum : ∑ i, succSum i ≤ ∑ i, t i := by
-    simp only [succSum]
     rw [Finset.sum_comm]
     refine Finset.sum_le_sum fun i' _ => ?_
     rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
@@ -345,14 +338,14 @@ private theorem sum_le_two_mul_sum_of_recursion {m : ℕ} (t r : Fin m → ℝ) 
 section DiagonalRecursion
 
 variable (D : DirectLdParams)
+variable (dd : (Fin D.m → DirectScalarQ D) → ℝ) (rj : Fin D.m → (Fin D.m → DirectScalarQ D) → ℝ)
+
 
 /-- One step of the recursion at a fixed point.  On the generic event the
 leading index is the sampled index and the LDT defect is bounded by the
 direct rejection there; on the vanishing event the restriction agrees with the
 restriction at the next index. -/
-private theorem diagonal_recursion_step
-    (dd : (Fin D.m → DirectScalarQ D) → ℝ)
-    (rj : Fin D.m → (Fin D.m → DirectScalarQ D) → ℝ)
+private theorem diagonal_recursion_step 
     (hrj : ∀ i v, 0 ≤ rj i v)
     (hdd : ∀ v, dd v ≤ rj (directDiagonalIndexOf D v) v)
     (i i' : Fin D.m) (hi : i'.val = i.val + 1) :
@@ -389,9 +382,7 @@ private theorem diagonal_recursion_step
 
 /-- At the last index the LDT defect is bounded by the direct rejection
 without recursion. -/
-private theorem diagonal_recursion_last
-    (dd : (Fin D.m → DirectScalarQ D) → ℝ)
-    (rj : Fin D.m → (Fin D.m → DirectScalarQ D) → ℝ)
+private theorem diagonal_recursion_last 
     (hdd : ∀ v, dd v ≤ rj (directDiagonalIndexOf D v) v)
     (i : Fin D.m) (hi : i.val + 1 = D.m) :
     avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
@@ -407,9 +398,7 @@ private theorem diagonal_recursion_last
 
 /-- Summed over the restriction index, the LDT diagonal quantities at a
 fixed point are at most twice the direct rejections. -/
-private theorem diagonal_sum_le
-    (dd : (Fin D.m → DirectScalarQ D) → ℝ)
-    (rj : Fin D.m → (Fin D.m → DirectScalarQ D) → ℝ)
+private theorem diagonal_sum_le 
     (hdd0 : ∀ v, 0 ≤ dd v) (hrj : ∀ i v, 0 ≤ rj i v)
     (hdd : ∀ v, dd v ≤ rj (directDiagonalIndexOf D v) v) :
     ∑ i : Fin D.m, avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
@@ -466,10 +455,11 @@ private def diagonalPointLineDefect (p v : Fin D.m → DirectScalarQ D) : ℝ :=
       (directPointEquiv D p)).toSubMeas
     (postprocess ((directCoordinateProjStrat D S hS r).diagonalMeasurementB
       (ldtDiagonalLineOf D ⟨p, D.firstIndex, v⟩)).toSubMeas (fun g => g zeroCoord))
+variable (p v : Fin D.m → DirectScalarQ D)
+
 
 /-- The canonical direct question of the LDT line of a direct sample. -/
-private theorem directDiagonalQuestionOf_ldtDiagonalLineOf_eq
-    (p v : Fin D.m → DirectScalarQ D) :
+private theorem directDiagonalQuestionOf_ldtDiagonalLineOf_eq  :
     directDiagonalQuestionOf D (ldtDiagonalLineOf D ⟨p, D.firstIndex, v⟩) =
       (.dline, ⟨lineRepMap v p, directDiagonalIndexOf D v, v⟩) := by
   simp [directDiagonalQuestionOf, ldtDiagonalLineOf, ldtPointToDirect]
@@ -480,7 +470,7 @@ private theorem directPointQuestionOf_directPointEquiv (p : Fin D.m → DirectSc
 
 /-- The LDT diagonal defect is at most the direct rejection at the
 canonical question carrying the leading index. -/
-private theorem diagonalLinePointDefect_le (p v : Fin D.m → DirectScalarQ D) :
+private theorem diagonalLinePointDefect_le  :
     diagonalLinePointDefect D S hS r p v ≤
       diagonalLinePointRejection D S p (directDiagonalIndexOf D v) v := by
   letI := D.toLDTFieldModel
@@ -512,7 +502,7 @@ private theorem diagonalLinePointDefect_le (p v : Fin D.m → DirectScalarQ D) :
 
 /-- The LDT diagonal defect with the point on the left is at most the
 direct rejection at the canonical question carrying the leading index. -/
-private theorem diagonalPointLineDefect_le (p v : Fin D.m → DirectScalarQ D) :
+private theorem diagonalPointLineDefect_le  :
     diagonalPointLineDefect D S hS r p v ≤
       diagonalPointLineRejection D S p (directDiagonalIndexOf D v) v := by
   letI := D.toLDTFieldModel
@@ -564,10 +554,12 @@ private theorem ldtDiagonalLineOf_decode (u w : Point D.toLDTParameters) :
         ⟨ldtPointToDirect D u, D.firstIndex, ldtPointToDirect D w⟩ =
       { base := u, direction := w } := by
   simp [ldtDiagonalLineOf, ldtPointToDirect]
+variable (j : Fin D.m)
+
 
 /-- The LDT `j`-restricted diagonal branch with the line on the left, as
 an average of the decoded defect over the point-direction pair. -/
-private theorem diagonal_line_point_term_eq (j : Fin D.m) :
+private theorem diagonal_line_point_term_eq  :
     letI := D.toLDTFieldModel
     bipartiteConsError (directCoordinateProjStrat D S hS r).state
         (uniformDistribution (RestrictedDiagonalSample D.toLDTParameters j))
@@ -587,7 +579,7 @@ private theorem diagonal_line_point_term_eq (j : Fin D.m) :
 
 /-- The LDT `j`-restricted diagonal branch with the point on the left, as
 an average of the decoded defect over the point-direction pair. -/
-private theorem diagonal_point_line_term_eq (j : Fin D.m) :
+private theorem diagonal_point_line_term_eq  :
     letI := D.toLDTFieldModel
     bipartiteConsError (directCoordinateProjStrat D S hS r).state
         (uniformDistribution (RestrictedDiagonalSample D.toLDTParameters j))

@@ -67,8 +67,7 @@ theorem diagonal_parameter_evaluated_coefficient_defect_eq
           (.dline, directLdMap P.extendedDirectLd .dline sample)).postprocess
             (fun answer => evalCoefficient (readDiagonal answer) parameter)).effect value) := by
     unfold answerMeasurement
-    rw [diagonal_description_canonical]
-    rw [MIPStarRE.Quantum.Measurement.postprocess_comp,
+    rw [diagonal_description_canonical, MIPStarRE.Quantum.Measurement.postprocess_comp,
       MIPStarRE.Quantum.Measurement.postprocess_comp]
     rfl
   have hmeasurement :

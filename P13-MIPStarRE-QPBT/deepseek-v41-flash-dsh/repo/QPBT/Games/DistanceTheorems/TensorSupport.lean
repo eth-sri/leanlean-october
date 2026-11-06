@@ -26,12 +26,12 @@ namespace MIPStarRE.QPBT.DistanceCalculus
 
 open MIPStarRE.LDT MIPStarRE.Quantum
 open MIPStarRE.LDT.MakingMeasurementsProjective
+variable {α ιA ιB : Type*} [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-- Formalization-only definition used in the proof of Fact 4.26: place a
 complete measurement on the left tensor factor. -/
-noncomputable def leftPlacedMeasurement {α ιA ιB : Type*}
-    [Fintype α] [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB]
+noncomputable def leftPlacedMeasurement 
     (M : MIPStarRE.Quantum.Measurement α ιA) :
     MIPStarRE.Quantum.Measurement α (ιA × ιB) :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne
@@ -44,9 +44,7 @@ noncomputable def leftPlacedMeasurement {α ιA ιB : Type*}
 
 /-- Formalization-only definition used in the proof of Fact 4.26: place a
 complete measurement on the right tensor factor. -/
-noncomputable def rightPlacedMeasurement {α ιA ιB : Type*}
-    [Fintype α] [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB]
+noncomputable def rightPlacedMeasurement 
     (M : MIPStarRE.Quantum.Measurement α ιB) :
     MIPStarRE.Quantum.Measurement α (ιA × ιB) :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne
@@ -56,12 +54,12 @@ noncomputable def rightPlacedMeasurement {α ιA ιB : Type*}
     (by
       change ∑ a : α, rightTensor (ι₁ := ιA) (M.effect a) = 1
       rw [rightTensor_finset_sum, M.sum_eq_one, rightTensor_one])
+variable {ιA ιB : Type*} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-- Formalization-only auxiliary lemma for Fact 4.26: products of left and right
 placements evaluate as a Kronecker product. -/
-theorem placed_product_stateQForm_eq {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB]
+theorem placed_product_stateQForm_eq 
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (A : Op ιA) (B : Op ιB) :
     stateQForm ψ (heteroKron A 1 * heteroKron 1 B) =
       stateQForm ψ (heteroKron A B) := by
@@ -97,11 +95,12 @@ private theorem vectorQuantumState_ev_eq_stateQForm {ι : Type*}
   unfold stateQForm applyOperatorToState
   rw [EuclideanSpace.inner_eq_star_dotProduct]
   simp [Matrix.toEuclideanLin, Matrix.toLpLin_apply]
+variable {α β ιA ιB : Type*} [Fintype α]
+
 
 /-- Formalization-only auxiliary lemma for Fact 4.26: postprocessing can only
 increase diagonal tensor overlap. -/
-theorem diagonal_postprocess_stateQForm_ge {α β ιA ιB : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
+theorem diagonal_postprocess_stateQForm_ge  [DecidableEq α] [Fintype β] [DecidableEq β]
     [Fintype ιA] [DecidableEq ιA]
     [Fintype ιB] [DecidableEq ιB]
     (ψ : EuclideanSpace ℂ (ιA × ιB))
@@ -187,12 +186,12 @@ theorem measurement_fiber_sum_adjoint_mul_le_one {α β ι : Type*}
         (Finset.mem_univ a)
     _ = ∑ z : α × β, M.effect z := (Fintype.sum_prod_type _).symm
     _ = 1 := M.sum_eq_one
+variable [Fintype β] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: a left-placed measurement fiber is square-summable. -/
-theorem left_fiber_contraction {α β ιA ιB : Type*}
-    [Fintype α] [Fintype β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem left_fiber_contraction 
     (M : MIPStarRE.Quantum.Measurement (α × β) ιA) (a : α) :
     (1 - ∑ b : β, (leftTensor (ι₂ := ιB) (M.effect (a, b)))ᴴ *
       leftTensor (ι₂ := ιB) (M.effect (a, b))).PosSemidef := by
@@ -215,9 +214,7 @@ theorem left_fiber_contraction {α β ιA ιB : Type*}
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: a right-placed measurement fiber is square-summable. -/
-theorem right_fiber_contraction {α β ιA ιB : Type*}
-    [Fintype α] [Fintype β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem right_fiber_contraction 
     (M : MIPStarRE.Quantum.Measurement (α × β) ιB) (a : α) :
     (1 - ∑ b : β, (rightTensor (ι₁ := ιA) (M.effect (a, b)))ᴴ *
       rightTensor (ι₁ := ιA) (M.effect (a, b))).PosSemidef := by
@@ -324,8 +321,7 @@ theorem joint_marginal_product_rev {α β γ ι : Type*}
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: operators placed on opposite tensor factors commute. -/
-theorem left_right_commute {ιA ιB : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem left_right_commute 
     (A : Op ιA) (B : Op ιB) :
     leftTensor (ι₂ := ιB) A * rightTensor (ι₁ := ιA) B =
       rightTensor (ι₁ := ιA) B * leftTensor (ι₂ := ιB) A := by
@@ -350,14 +346,13 @@ theorem opFamilyDistSq_reindex {X α β ι : Type*}
     (fun a => ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2)
     (fun b => ‖applyOperatorToState (A x (e.symm b) - B x (e.symm b)) ψ‖ ^ 2)
     (by intro a; simp)
+variable {X α ι : Type*} [Fintype α] [Fintype ι] [DecidableEq ι] (μ : Distribution X) (A B A' B' : X → α → Op ι) (ψ : EuclideanSpace ℂ ι)
+
 
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: pointwise equal operator families have equal state-dependent
 distance. -/
-theorem opFamilyDistSq_congr {X α ι : Type*}
-    [Fintype α] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A B A' B' : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι)
+theorem opFamilyDistSq_congr 
     (hA : ∀ x a, A x a = A' x a) (hB : ∀ x a, B x a = B' x a) :
     opFamilyDistSq μ A B ψ = opFamilyDistSq μ A' B' ψ := by
   unfold opFamilyDistSq avgOver
@@ -371,10 +366,7 @@ theorem opFamilyDistSq_congr {X α ι : Type*}
 /-- Formalization-only auxiliary lemma for approximate commutation at paper
 lines 410--461: pointwise equal operator differences have equal state-dependent
 distance. -/
-theorem opFamilyDistSq_congr_sub {X α ι : Type*}
-    [Fintype α] [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A B A' B' : X → α → Op ι)
-    (ψ : EuclideanSpace ℂ ι)
+theorem opFamilyDistSq_congr_sub 
     (h : ∀ x a, A x a - B x a = A' x a - B' x a) :
     opFamilyDistSq μ A B ψ = opFamilyDistSq μ A' B' ψ := by
   unfold opFamilyDistSq avgOver

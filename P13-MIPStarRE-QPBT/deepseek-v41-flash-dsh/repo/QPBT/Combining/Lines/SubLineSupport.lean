@@ -153,14 +153,8 @@ theorem restrictedALineDist_eq_map_restrict (L : LdParams) (i : Fin L.m) :
     funext z
     rw [aLineDescOf_ldALineCL]
     rfl
-  have hpos :
-      0 < ∑ sample ∈
-          ((uniformDistribution (LdSpace L)).map
-            (fun z => (ldALineCL L z, ldPointCL L z))).support.filter
-              (restrictedLineSeedEvent L i),
-        ((uniformDistribution (LdSpace L)).map
-          (fun z => (ldALineCL L z, ldPointCL L z))).weight sample := by
-    simpa only [clDistribution] using restrictedALineSeedEvent_positive L i
+  have hpos := by
+    simpa using restrictedALineSeedEvent_positive L i
   unfold restrictedALineDist restrictedALinePreDist clDistribution
   rw [Distribution.restrict_map (uniformDistribution (LdSpace L))
       (fun z => (ldALineCL L z, ldPointCL L z))
@@ -189,14 +183,8 @@ theorem restrictedDLineDist_eq_map_restrict (L : LdParams) (i : Fin L.m) :
     funext z
     rw [dLineDescOf_ldDLineCL]
     rfl
-  have hpos :
-      0 < ∑ sample ∈
-          ((uniformDistribution (LdSpace L)).map
-            (fun z => (ldDLineCL L z, ldPointCL L z))).support.filter
-              (restrictedLineSeedEvent L i),
-        ((uniformDistribution (LdSpace L)).map
-          (fun z => (ldDLineCL L z, ldPointCL L z))).weight sample := by
-    simpa only [clDistribution] using restrictedDLineSeedEvent_positive L i
+  have hpos := by
+    simpa using restrictedDLineSeedEvent_positive L i
   unfold restrictedDLineDist restrictedDLinePreDist clDistribution
   rw [Distribution.restrict_map (uniformDistribution (LdSpace L))
       (fun z => (ldDLineCL L z, ldPointCL L z))

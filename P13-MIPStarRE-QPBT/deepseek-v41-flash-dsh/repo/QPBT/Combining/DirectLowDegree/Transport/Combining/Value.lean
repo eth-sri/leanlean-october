@@ -56,14 +56,17 @@ def directCombinedMeasuredRejectedMass (D : DirectLdParams)
   | .inr _ =>
       directRejectedMass D S (directLdPointQuestionOf D pd.1)
         (directLdPointQuestionOf D pd.1)
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+variable (types : LdType × LdType)
+
+
 
 /-- Branch-wise rejected-mass comparison at a fixed sample of the combined
 game: the acceptance transport of `directCombinedWinTransport_all` bounds the
 rejected mass of the combined strategy by the rejected mass of the original
 strategy at the measured questions, which `lem:ld-combined-question-law`
 identifies. -/
-theorem directRejectedMass_directCombinedStrategy_le_measured (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (types : LdType × LdType)
+theorem directRejectedMass_directCombinedStrategy_le_measured 
     (sample : DirectLdSpace D.combined) :
     directRejectedMass D.combined (directCombinedStrategy D S)
         (types.1, directLdMap D.combined types.1 sample)
@@ -78,35 +81,31 @@ theorem directRejectedMass_directCombinedStrategy_le_measured (D : DirectLdParam
       eq_combinedPointVar_of_indexSplit D hsplit
     rw [directCombined_measuredQuestion_of_pointVar D types.1 j sample hindex,
       directCombined_measuredQuestion_of_pointVar D types.2 j sample hindex]
-    simp only [directCombinedMeasuredRejectedMass, hsplit,
+    simp [directCombinedMeasuredRejectedMass, hsplit,
       directCombinedSampleProjection]
   · have hindex : sample.index = combinedCoefficientVar D.m D.k r :=
       eq_combinedCoefficientVar_of_indexSplit D hsplit
     rw [directCombined_measuredQuestion_of_coefficientVar D types.1 r sample hindex,
       directCombined_measuredQuestion_of_coefficientVar D types.2 r sample hindex]
-    simp only [directCombinedMeasuredRejectedMass, hsplit]
+    simp [directCombinedMeasuredRejectedMass, hsplit]
 
 /-- Conditioned on a point coordinate index, the measured pair is the canonical
 pair of the original game at the same ordered type pair attached to a uniform
 sample. -/
-theorem avgOver_directCombinedMeasuredRejectedMass_pointVar (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (types : LdType × LdType) (j : Fin D.m) :
+theorem avgOver_directCombinedMeasuredRejectedMass_pointVar  (j : Fin D.m) :
     avgOver (uniformDistribution
         ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
       (directCombinedMeasuredRejectedMass D S types
         (combinedPointVar D.m D.k j)) =
       directLdIndexedBranchRejectionProbability D S types j := by
   apply avgOver_congr
-  intro pd
-  simp only [directCombinedMeasuredRejectedMass,
+  simp [directCombinedMeasuredRejectedMass,
     directCombinedIndexSplit_combinedPointVar]
 
 /-- Conditioned on a combining coordinate index, both measured questions are
 the point question at a uniform point, so the branch reduces to the
 point-versus-point branch of the original game. -/
-theorem avgOver_directCombinedMeasuredRejectedMass_coefficientVar
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (types : LdType × LdType) (r : Fin D.k) :
+theorem avgOver_directCombinedMeasuredRejectedMass_coefficientVar  (r : Fin D.k) :
     avgOver (uniformDistribution
         ((Fin D.m → DirectScalarQ D) × (Fin D.m → DirectScalarQ D)))
       (directCombinedMeasuredRejectedMass D S types
@@ -122,8 +121,7 @@ theorem avgOver_directCombinedMeasuredRejectedMass_coefficientVar
           directRejectedMass D S (directLdPointQuestionOf D u)
             (directLdPointQuestionOf D u)) pd.1 pd.2) := by
     apply avgOver_congr
-    intro pd
-    simp only [directCombinedMeasuredRejectedMass,
+    simp [directCombinedMeasuredRejectedMass,
       directCombinedIndexSplit_combinedCoefficientVar]
   rw [hcongr, avgOver_uniform_prod
       (f := fun (u _ : Fin D.m → DirectScalarQ D) =>
@@ -137,9 +135,7 @@ theorem avgOver_directCombinedMeasuredRejectedMass_coefficientVar
 /-- Branch-wise half of `lem:ld-combined-value`: every branch of the combined
 game is rejected with probability at most the sum of the branch of the original
 game at the same ordered type pair and its point-versus-point branch. -/
-theorem directLdBranchRejectionProbability_directCombinedStrategy_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (types : LdType × LdType) :
+theorem directLdBranchRejectionProbability_directCombinedStrategy_le  :
     directLdBranchRejectionProbability D.combined (directCombinedStrategy D S)
         types ≤
         directLdBranchRejectionProbability D S types +
@@ -163,9 +159,7 @@ theorem directLdBranchRejectionProbability_directCombinedStrategy_le
       directCombinedMeasuredRejectedMass D S types i pd),
     avgOver_uniform_eq_inv_card_mul_sum, Fintype.card_fin]
   have hmkNat : D.combined.m = D.m + D.k := rfl
-  have hcard : (D.m : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hmpos.ne'
   have hmk : ((D.combined.m : ℕ) : ℝ) = (D.m : ℝ) + (D.k : ℝ) := by
-    rw [hmkNat]
     push_cast
     ring
   have hsum : ∑ i : Fin D.combined.m,
@@ -196,7 +190,6 @@ theorem directLdBranchRejectionProbability_directCombinedStrategy_le
     rw [directLdBranchRejectionProbability_eq_avgOver_index,
       avgOver_uniform_eq_inv_card_mul_sum, Fintype.card_fin]
     field_simp
-  rw [hsum, hbranch, hmk]
   have hB : 0 ≤ directLdBranchRejectionProbability D S types :=
     directLdBranchRejectionProbability_nonneg D S types
   have hP : 0 ≤ directLdBranchRejectionProbability D S (.point, .point) :=
@@ -214,8 +207,7 @@ combined strategy by the rejection probability of the original strategy plus
 its point-versus-point branch; that branch is in turn at most nine times the
 rejection probability of the original strategy.  The universal constant of the
 source statement is therefore `10`. -/
-theorem directLdRejectionProbability_directCombinedStrategy_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+theorem directLdRejectionProbability_directCombinedStrategy_le  :
     directLdRejectionProbability D.combined (directCombinedStrategy D S) ≤
       10 * directLdRejectionProbability D S := by
   have hle := directLdBranchRejectionProbability_directCombinedStrategy_le D S
@@ -235,8 +227,7 @@ parameters, then the combined strategy of `def:ld-combined-strategy` succeeds
 with probability at least `1 - 10 ε` in the directly indexed low-degree game
 with the combined parameters.  The universal constant of the source statement
 is `10`. -/
-theorem directCombinedStrategy_value_ge (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (ε : ℝ) (hvalue : 1 - ε ≤ S.value) :
+theorem directCombinedStrategy_value_ge  (ε : ℝ) (hvalue : 1 - ε ≤ S.value) :
     1 - 10 * ε ≤ (directCombinedStrategy D S).value := by
   have hcomb := directLdRejectionProbability_directCombinedStrategy_le D S
   rw [directLdRejectionProbability_eq_one_sub_value,

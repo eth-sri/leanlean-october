@@ -46,23 +46,23 @@ theorem norm_sub_pauliCorrelation_sq_le
   let C (u : I → K) :=
     heteroKron (1 : Op R) (heteroKron (tauObservable W u) (tauObservable W u))
   have hL (u : I → K) : (L u)ᴴ * L u = 1 := by
-    simp only [L, MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
+    simp [L, MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
       heteroKron_mul, Matrix.one_mul, tauObservable_conjTranspose_mul_self,
       heteroKron_one_one]
   have halg (u : I → K) : L u * (L u - B u) = 1 - C u := by
-    simp only [L, B, C, Matrix.mul_sub, heteroKron_mul, Matrix.one_mul,
+    simp [L, B, C, Matrix.mul_sub, heteroKron_mul, Matrix.one_mul,
       Matrix.mul_one, tauObservable_sq, heteroKron_one_one]
   have hdist : opDistSq (uniformDistribution (I → K)) (fun _ => 1) C psi =
       opDistSq (uniformDistribution (I → K)) L B psi := by
     unfold opDistSq opFamilyDistSq
-    simp only [Fintype.sum_unique]
+    simp [Fintype.sum_unique]
     apply avgOver_congr
     intro u
     rw [← halg, MagicSquareRigidity.norm_applyOperatorToState_isometry_mul (hL u)]
   have havg : averageOperatorOverDistribution (uniformDistribution (I → K))
       (fun u => (1 : ℂ) • ((1 : Op (R × ((I → K) × (I → K)))) - C u)) =
       1 - heteroKron (1 : Op R) (pauliCorrelation W) := by
-    simp only [one_smul]
+    simp [one_smul]
     have hsub : averageOperatorOverDistribution (uniformDistribution (I → K))
         (fun u => (1 : Op (R × ((I → K) × (I → K)))) - C u) =
         averageOperatorOverDistribution (uniformDistribution (I → K)) (fun _ => 1) -
@@ -73,7 +73,7 @@ theorem norm_sub_pauliCorrelation_sq_le
     congr 1
     rw [averageOperatorOverDistribution_uniform_eq_inv_card_smul_sum]
     change _ = (Matrix.kroneckerBilinear (R := ℂ) (α := ℂ) (1 : Op R)) _
-    simp only [pauliCorrelation, map_smul, map_sum, C]
+    simp [pauliCorrelation, map_smul, map_sum, C]
     rfl
   have h := avg_closeness (uniformDistribution (I → K))
     (uniformDistribution_isProbability _) (fun _ => 1) C (fun _ => 1)

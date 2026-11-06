@@ -63,12 +63,12 @@ theorem sum_option_prod_eq_of_none {β γ : Type*} [Fintype β] [Fintype γ]
         rw [h2 (some b), zero_add]
     _ = ∑ bc : β × γ, F (some bc.1, some bc.2) :=
         (Fintype.sum_prod_type (f := fun bc : β × γ => F (some bc.1, some bc.2))).symm
+variable {β γ d : Type*} [Fintype β] [Fintype γ] [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d] (Q : Measurement (β × γ) d)
+
 
 /-- The completed joint measurement has the joint effect on a pair of
 evaluations. -/
-theorem completedPair_effect_some {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
-    (Q : Measurement (β × γ) d) (bc : β × γ) :
+theorem completedPair_effect_some  (bc : β × γ) :
     (Q.postprocess fun ab => (some ab.1, some ab.2)).effect (some bc.1, some bc.2) =
       Q.effect bc := by
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
@@ -79,19 +79,14 @@ theorem completedPair_effect_some {β γ d : Type*} [Fintype β] [Fintype γ]
 
 /-- The completed joint measurement vanishes on outcomes outside the image of
 the completion. -/
-theorem completedPair_effect_eq_zero {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
-    (Q : Measurement (β × γ) d) (o : Option β × Option γ)
+theorem completedPair_effect_eq_zero  (o : Option β × Option γ)
     (ho : ∀ bc : β × γ, (some bc.1, some bc.2) ≠ o) :
     (Q.postprocess fun ab => (some ab.1, some ab.2)).effect o = 0 := by
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
   exact Finset.sum_eq_zero fun bc hbc =>
     absurd (Finset.mem_filter.mp hbc).2 (ho bc)
 
 /-- The completion of a projective joint measurement is projective. -/
-theorem completedPair_isProjective {β γ d : Type*} [Fintype β] [Fintype γ]
-    [DecidableEq β] [DecidableEq γ] [Fintype d] [DecidableEq d]
-    (Q : Measurement (β × γ) d) (hQ : Measurement.IsProjective Q) :
+theorem completedPair_isProjective  (hQ : Measurement.IsProjective Q) :
     Measurement.IsProjective (Q.postprocess fun ab => (some ab.1, some ab.2)) := by
   intro o
   by_cases h : ∃ bc : β × γ, (some bc.1, some bc.2) = o
@@ -105,9 +100,13 @@ theorem completedPair_isProjective {β γ d : Type*} [Fintype β] [Fintype γ]
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
+variable (S : ProjectiveSetting P ε)
+variable (p : Placement)
+
+
 
 /-- A placed projection is a projection. -/
-theorem place_isProj (S : ProjectiveSetting P ε) (p : Placement)
+theorem place_isProj 
     {E : Op (S.ExpandedLocalSpace p.side)} (hE : IsProj E) :
     IsProj (S.place p E) := by
   refine isStarProjection_iff'.2 ⟨?_, ?_⟩
@@ -118,7 +117,7 @@ theorem place_isProj (S : ProjectiveSetting P ε) (p : Placement)
 
 /-- Every effect of the completed expanded point measurement is a projection,
 the `none` effect being zero. -/
-theorem pointMeasExpOption_isProj (S : ProjectiveSetting P ε)
+theorem pointMeasExpOption_isProj 
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (o : Option (PauliScalar P)) :
     IsProj ((S.pointMeasExpOption side W u).effect o) := by
@@ -134,8 +133,7 @@ theorem pointMeasExpOption_isProj (S : ProjectiveSetting P ε)
 only on outcome pairs with two evaluations, so their placed state-dependent
 squared distance is the one of the joint point measurement and the point
 product.  Blueprint `ch15_qpbt_combining.tex:2651-2698`. -/
-theorem sum_norm_place_completedPair_sub_sq (S : ProjectiveSetting P ε)
-    (p : Placement)
+theorem sum_norm_place_completedPair_sub_sq 
     (Q : Measurement (PauliScalar P × PauliScalar P) (S.ExpandedLocalSpace p.side))
     (Gc : Option (PauliScalar P) × Option (PauliScalar P) →
       Op (S.ExpandedLocalSpace p.side))
@@ -163,7 +161,7 @@ theorem sum_norm_place_completedPair_sub_sq (S : ProjectiveSetting P ε)
 
 /-- The completed `Z`-then-`X` point product vanishes on both `none` classes
 and restricts to the ordered product on evaluated pairs. -/
-theorem completedPair_norm_sq_sum_ZX (S : ProjectiveSetting P ε) {δ : ℝ}
+theorem completedPair_norm_sq_sum_ZX  {δ : ℝ}
     (points : CombinedPointsWitness S δ) (p : Placement)
     (x z : Fin P.m → PauliScalar P) :
     (∑ o : Option (PauliScalar P) × Option (PauliScalar P),
@@ -286,8 +284,6 @@ theorem one_sub_overlap_le_of_consistencyDefect {X α ι : Type*}
           (∑ a, stateQForm ψ ((A x).effect a * ((Q x).effect a * R x a))) =
         ∑ a, stateQForm ψ ((A x).effect a * ((1 - (Q x).effect a) * R x a)) := by
       intro x
-      rw [← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun a _ => ?_
       simp [stateQForm, applyOperatorToState, sub_mul, mul_sub]
     rw [abs_sub_comm, ← avgOver_sub, avgOver_congr μ _ _ hpt]
     have hcs := abs_avgOver_sum_stateQForm_mul_mul_le_sqrt_mul_sqrt μ A
@@ -433,7 +429,7 @@ theorem CombinedLinesWitness.one_sub_Z_overlap_le_at
           (S.pointMeasExpOption second.side .X s.1.2).effect o.1) :=
       (ProjectiveSetting.place_conjTranspose S second _).symm.trans
         (congrArg (S.place second) hlocal)
-    dsimp only
+    dsimp
     rw [hplace]
   exact one_sub_overlap_le_of_consistencyDefect ν
     (fun s => S.placedMeasurement first
@@ -452,12 +448,15 @@ theorem CombinedLinesWitness.one_sub_Z_overlap_le_at
     hWR hnonneg η ζ hcons hdist
 
 end Placed
+variable (P : AdmissibleParams)
+variable (kind : LineKind) (i : Fin P.m)
+
+
 
 /-! ## The two deficits over a product of restricted line-point laws -/
 
 /-- Every restricted line-point law has total mass one. -/
-theorem restrictedLinePointDist_isProbability (P : AdmissibleParams)
-    (kind : LineKind) (i : Fin P.m) :
+theorem restrictedLinePointDist_isProbability  :
     (restrictedLinePointDist P kind i).IsProbability := by
   cases kind
   · change (restrictedALineDist P.toLdParams i).IsProbability
@@ -466,8 +465,7 @@ theorem restrictedLinePointDist_isProbability (P : AdmissibleParams)
     exact restrictedDLineDist_isProbability P.toLdParams i
 
 /-- The point marginal of a restricted line-point law is uniform. -/
-theorem restrictedLinePointDist_map_snd (P : AdmissibleParams) (kind : LineKind)
-    (i : Fin P.m) :
+theorem restrictedLinePointDist_map_snd  :
     (restrictedLinePointDist P kind i).map Prod.snd =
       uniformDistribution (Fin P.m → PauliScalar P) := by
   rw [restrictedLinePointDist_eq_map_prod, Distribution.map_map]
@@ -476,7 +474,7 @@ theorem restrictedLinePointDist_map_snd (P : AdmissibleParams) (kind : LineKind)
 
 /-- The pair of points of a product of two restricted line-point laws is a
 uniform pair. -/
-theorem prod_restrictedLinePointDist_map_points (P : AdmissibleParams)
+theorem prod_restrictedLinePointDist_map_points 
     (kindX kindZ : LineKind) (i j : Fin P.m) :
     (Distribution.prod (restrictedLinePointDist P kindX i)
         (restrictedLinePointDist P kindZ j)).map (fun s => (s.1.2, s.2.2)) =

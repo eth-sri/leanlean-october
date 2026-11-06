@@ -40,12 +40,15 @@ open MIPStarRE.Quantum
 noncomputable section
 
 variable {K : Type*} [Field K] [Fintype K] [DecidableEq K] [Algebra (ZMod 2) K]
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (W : PauliKind)
+variable (p : (ι → K) → Prop) [DecidablePred p]
+
+
 /-! ## Marginals of the Pauli basis -/
 
 /-- A marginal of the Pauli basis projectors, over any set of labels, is
 positive semidefinite. -/
-theorem posSemidef_sum_ite_pauliProj {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (W : PauliKind) (p : (ι → K) → Prop) [DecidablePred p] :
+theorem posSemidef_sum_ite_pauliProj  :
     (∑ e : ι → K, if p e then pauliProj W e else 0).PosSemidef := by
   classical
   refine Finset.sum_induction _ Matrix.PosSemidef (fun _ _ h₁ h₂ => h₁.add h₂)
@@ -59,20 +62,17 @@ theorem posSemidef_sum_ite_pauliProj {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-- A marginal of the Pauli basis projectors is a positive operator in the
 Loewner order. -/
-theorem sum_ite_pauliProj_nonneg {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (W : PauliKind) (p : (ι → K) → Prop) [DecidablePred p] :
+theorem sum_ite_pauliProj_nonneg  :
     0 ≤ ∑ e : ι → K, if p e then pauliProj W e else 0 := by
   refine Matrix.le_iff.mpr ?_
   simpa using posSemidef_sum_ite_pauliProj W p
 
 /-- The two marginals of the Pauli basis attached to a binary function of the
 labels sum to the identity. -/
-theorem sum_binary_marginal_pauliProj {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (W : PauliKind) (f : (ι → K) → ZMod 2) :
+theorem sum_binary_marginal_pauliProj  (f : (ι → K) → ZMod 2) :
     (∑ b : ZMod 2, ∑ e : ι → K, if f e = b then pauliProj W e else 0) = 1 := by
   classical
-  rw [Finset.sum_comm]
-  rw [← sum_pauliProj_eq_one (K := K) (ι := ι) W]
+  rw [Finset.sum_comm, ← sum_pauliProj_eq_one (K := K) (ι := ι) W]
   refine Finset.sum_congr rfl fun e _ => ?_
   rw [Finset.sum_ite_eq (Finset.univ : Finset (ZMod 2)) (f e) (fun _ => pauliProj W e)]
   simp

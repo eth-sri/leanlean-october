@@ -39,7 +39,6 @@ private theorem epsilon_le_deltaQld {P : AdmissibleParams}
     ε ≤ deltaQld a b ε P.m P.d P.q := by
   have hmd : (1 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) :=
     Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
-  have hmd0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := zero_le_one.trans hmd
   have ha0 : 0 ≤ a := zero_le_one.trans ha
   have hpref : 1 ≤ a * ((P.m * P.d : ℕ) : ℝ) ^ a :=
     one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hmd ha0)
@@ -65,7 +64,7 @@ private theorem raw_pauli_error_absorb {P : AdmissibleParams}
   have hd : 0 ≤ d := deltaQld_nonneg (zero_le_one.trans ha) hε0
   have hεd : ε ≤ d := epsilon_le_deltaQld ha hb hb1 hε0 hε1
   have hK : 1 ≤ K := by
-    dsimp only [K, rawPauliTransferFactor]
+    dsimp [K, rawPauliTransferFactor]
     have hcard : (0 : ℝ) ≤ Fintype.card PauliEdge := Nat.cast_nonneg _
     linarith
   have hbase : 3 * d + 6 * d ^ 2 ≤
@@ -77,7 +76,7 @@ private theorem raw_pauli_error_absorb {P : AdmissibleParams}
       have hcard : (0 : ℝ) ≤ Fintype.card PauliEdge := Nat.cast_nonneg _
       nlinarith [mul_nonneg hcard (sub_nonneg.mpr hεd)]
     _ ≤ K * (3 * d + 6 * d ^ 2) := by
-      dsimp only [K, rawPauliTransferFactor]
+      dsimp [K, rawPauliTransferFactor]
       have hcard : (0 : ℝ) ≤ Fintype.card PauliEdge := Nat.cast_nonneg _
       nlinarith [mul_nonneg hcard hd, mul_nonneg hcard (sq_nonneg d), sq_nonneg d]
     _ ≤ K * deltaQld (21 * a ^ 2) b ε P.m P.d P.q :=
@@ -102,19 +101,18 @@ theorem exists_arbitrary_strategy_raw_isometry_bounds :
   obtain ⟨a, b, ha, hb, hb1, hcompleted⟩ := exists_arbitrary_strategy_isometry_bounds
   let A := rawPauliTransferFactor * (21 * a ^ 2)
   have hfactor : 1 ≤ rawPauliTransferFactor := by
-    dsimp only [rawPauliTransferFactor]
-    have hcard : (0 : ℝ) ≤ Fintype.card PauliEdge := Nat.cast_nonneg _
+    dsimp [rawPauliTransferFactor]
     linarith
   have h21 : 1 ≤ 21 * a ^ 2 := by nlinarith [sq_nonneg a]
   have hA : 1 ≤ A := by
-    dsimp only [A]
+    dsimp [A]
     calc
       (1 : ℝ) = 1 * 1 := by ring
       _ ≤ rawPauliTransferFactor * (21 * a ^ 2) :=
         mul_le_mul hfactor h21 zero_le_one (zero_le_one.trans hfactor)
   have ha21 : a ≤ 21 * a ^ 2 := by nlinarith [sq_nonneg a]
   have h21A : 21 * a ^ 2 ≤ A := by
-    dsimp only [A]
+    dsimp [A]
     exact le_mul_of_one_le_left (by positivity) hfactor
   have haA : a ≤ A := ha21.trans h21A
   have hsmall : ∀ (P : AdmissibleParams) (ε : ℝ), 0 ≤ ε → ε ≤ 1 →
@@ -133,10 +131,10 @@ theorem exists_arbitrary_strategy_raw_isometry_bounds :
     have habsorb : 2 * d + 4 * d ^ 2 +
         4 * (Fintype.card PauliEdge : ℝ) * ε ≤
           deltaQld A b ε P.m P.d P.q := by
-      dsimp only [d, A]
+      dsimp [d, A]
       exact raw_pauli_error_absorb ha hb hb1 hε0 hε1
     have hmono : d ≤ deltaQld A b ε P.m P.d P.q := by
-      dsimp only [d]
+      dsimp [d]
       exact deltaQld_mono ha haA le_rfl hb hε0 hε1
     refine ⟨w, hstate.trans hmono, ?_, ?_⟩
     · intro W

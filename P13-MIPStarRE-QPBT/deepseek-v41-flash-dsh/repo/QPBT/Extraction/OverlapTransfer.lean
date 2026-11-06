@@ -109,10 +109,12 @@ theorem evaluated_overlap_state_transfer {Y α R I J : Type*}
   rw [avgOver_sub, avgOver_const_of_isProbability _
     (uniformDistribution_isProbability _)] at h
   linarith
+variable {P : AdmissibleParams}
+
 
 /-- Two distinct Pauli answers have encodings agreeing on at most an `md/q`
 fraction of points. Injectivity follows from the exact decoder identity. -/
-theorem pauli_encoding_collision_le {P : AdmissibleParams}
+theorem pauli_encoding_collision_le 
     (h k : PauliRegister P) (hne : h ≠ k) :
     avgOver (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u => if evalPoly (encodingPoly h) u = evalPoly (encodingPoly k) u
@@ -127,7 +129,7 @@ theorem pauli_encoding_collision_le {P : AdmissibleParams}
 by the evaluated overlap on another unit state, minus the collision and state
 errors. This combines paper `eq:qld-unitary-8` with the transfer following
 `eq:qld-unitary-9`, without any dimension or answer-count factor. -/
-theorem pauli_overlap_transfer {P : AdmissibleParams} {I J : Type*}
+theorem pauli_overlap_transfer  {I J : Type*}
     [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (A : Measurement (PauliRegister P) I) (B : Measurement (PauliRegister P) J)
     (theta ideal : EuclideanSpace ℂ (I × J))

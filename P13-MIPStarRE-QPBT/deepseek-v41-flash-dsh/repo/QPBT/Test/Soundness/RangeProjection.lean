@@ -26,11 +26,11 @@ namespace MIPStarRE.QPBT
 
 open MIPStarRE.Quantum
 open DistanceCalculus MagicSquareRigidity
+variable {ι κ : Type} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ] (phi : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ)
+
 
 /-- The identity conjugated by an isometry is its orthogonal range projection. -/
-private theorem conjIsometry_one_isProj {ι κ : Type}
-    [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (phi : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ) :
+private theorem conjIsometry_one_isProj  :
     IsProj (conjIsometry phi 1) := by
   constructor
   · change conjIsometry phi 1 * conjIsometry phi 1 = conjIsometry phi 1
@@ -39,9 +39,7 @@ private theorem conjIsometry_one_isProj {ι κ : Type}
     simp [conjIsometry_eq, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_mul]
 
 /-- Intertwining identifies isometry conjugation with insertion of its range projection. -/
-private theorem mul_conjIsometry_one_eq {ι κ : Type}
-    [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (phi : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ) (M : Op ι) (N : Op κ)
+private theorem mul_conjIsometry_one_eq  (M : Op ι) (N : Op κ)
     (hintertwine : N * isometryMatrix phi = isometryMatrix phi * M) :
     N * conjIsometry phi 1 = conjIsometry phi M := by
   rw [conjIsometry_eq, Matrix.mul_one, ← Matrix.mul_assoc, hintertwine]
@@ -85,7 +83,7 @@ theorem sum_norm_mul_projection_sub_sq_le {α ι : Type*}
           applyOperatorToState (N.effect a - T a) delta -
             applyOperatorToState (N.effect a * (1 - Q)) delta := by
         rw [hsplit]
-        simp only [applyOperatorToState, map_sub, LinearMap.sub_apply]
+        simp [applyOperatorToState, map_sub, LinearMap.sub_apply]
       rw [hsplit_action]
       have hpar := parallelogram_law_with_norm ℂ
         (applyOperatorToState (N.effect a - T a) delta)
@@ -99,17 +97,15 @@ theorem sum_norm_mul_projection_sub_sq_le {α ι : Type*}
       rw [Finset.sum_add_distrib, Finset.mul_sum, Finset.mul_sum]
     _ ≤ _ := add_le_add le_rfl (mul_le_mul_of_nonneg_left
       (hsum.trans hcomplement) (by norm_num))
+variable {α ιA ιB κA κB : Type} [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB] (phiA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA) (phiB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
+
 
 /-- Alice's isometry transfer on a bipartite comparison state. The state error
 uses both local isometries, while each effect is conjugated only by Alice's
 isometry, as required by blueprint `thm:pauli`. The exact local intertwining
 identity is the one obtained from the ancilla extension and swap unitary.
 This is blueprint `thm:pauli-isometry-transfer-alice-support`. -/
-theorem sum_norm_leftTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
-    [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (phiA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (phiB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
+theorem sum_norm_leftTensor_conjIsometry_sub_sq_le 
     (M : α → Op ιA) (N : MIPStarRE.Quantum.Measurement α κA)
     (T : α → Op (κA × κB))
     (hintertwine : ∀ a : α,
@@ -123,15 +119,15 @@ theorem sum_norm_leftTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
   have hQ : IsProj Q := by
     constructor
     · change Q * Q = Q
-      simp only [Q, heteroKron_mul, Matrix.one_mul,
+      simp [Q, heteroKron_mul, Matrix.one_mul,
         (conjIsometry_one_isProj phiA).isIdempotentElem.eq]
     · change star Q = Q
-      simp only [Q, Matrix.star_eq_conjTranspose, heteroKron, Matrix.kronecker,
+      simp [Q, Matrix.star_eq_conjTranspose, heteroKron, Matrix.kronecker,
         Matrix.conjTranspose_kronecker, Matrix.conjTranspose_one,
         (conjIsometry_one_isProj phiA).isSelfAdjoint.isHermitian.eq]
   have hfix : applyOperatorToState Q (isometryTensor phiA phiB psi) =
       isometryTensor phiA phiB psi := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [applyOperatorToState_leftTensor_conjIsometry, heteroKron_one_one,
       applyOperatorToState_one]
   have hcompression (a : α) : (leftPlacedMeasurement N).effect a * Q =
@@ -141,18 +137,14 @@ theorem sum_norm_leftTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
       mul_conjIsometry_one_eq phiA (M a) (N.effect a) (hintertwine a)]
   have hbound := sum_norm_mul_projection_sub_sq_le (leftPlacedMeasurement N) T Q hQ
     (isometryTensor phiA phiB psi) delta hfix
-  simp only [hcompression] at hbound
+  simp [hcompression] at hbound
   simpa only [leftPlacedMeasurement, MIPStarRE.Quantum.Measurement.ofSumEqOne] using hbound
 
 /-- Bob's isometry transfer on a bipartite comparison state, with the same
 state error and constants independent of the answer count as Alice's transfer.
 This is blueprint `thm:pauli-isometry-transfer-bob-support`, the second
 operator comparison needed in the proof of `thm:pauli`. -/
-theorem sum_norm_rightTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
-    [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (phiA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (phiB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
+theorem sum_norm_rightTensor_conjIsometry_sub_sq_le 
     (M : α → Op ιB) (N : MIPStarRE.Quantum.Measurement α κB)
     (T : α → Op (κA × κB))
     (hintertwine : ∀ a : α,
@@ -166,15 +158,15 @@ theorem sum_norm_rightTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
   have hQ : IsProj Q := by
     constructor
     · change Q * Q = Q
-      simp only [Q, heteroKron_mul, Matrix.one_mul,
+      simp [Q, heteroKron_mul, Matrix.one_mul,
         (conjIsometry_one_isProj phiB).isIdempotentElem.eq]
     · change star Q = Q
-      simp only [Q, Matrix.star_eq_conjTranspose, heteroKron, Matrix.kronecker,
+      simp [Q, Matrix.star_eq_conjTranspose, heteroKron, Matrix.kronecker,
         Matrix.conjTranspose_kronecker, Matrix.conjTranspose_one,
         (conjIsometry_one_isProj phiB).isSelfAdjoint.isHermitian.eq]
   have hfix : applyOperatorToState Q (isometryTensor phiA phiB psi) =
       isometryTensor phiA phiB psi := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [applyOperatorToState_rightTensor_conjIsometry, heteroKron_one_one,
       applyOperatorToState_one]
   have hcompression (a : α) : (rightPlacedMeasurement N).effect a * Q =
@@ -184,7 +176,7 @@ theorem sum_norm_rightTensor_conjIsometry_sub_sq_le {α ιA ιB κA κB : Type}
       mul_conjIsometry_one_eq phiB (M a) (N.effect a) (hintertwine a)]
   have hbound := sum_norm_mul_projection_sub_sq_le (rightPlacedMeasurement N) T Q hQ
     (isometryTensor phiA phiB psi) delta hfix
-  simp only [hcompression] at hbound
+  simp [hcompression] at hbound
   simpa only [rightPlacedMeasurement, MIPStarRE.Quantum.Measurement.ofSumEqOne] using hbound
 
 end MIPStarRE.QPBT

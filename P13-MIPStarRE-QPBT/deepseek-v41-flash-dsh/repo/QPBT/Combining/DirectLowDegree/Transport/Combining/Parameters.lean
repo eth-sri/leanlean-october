@@ -70,9 +70,11 @@ admissibility hypothesis are unchanged. -/
 
 @[simp] theorem DirectLdParams.combined_k (D : DirectLdParams) :
     D.combined.k = 1 := rfl
+variable (D : DirectLdParams)
+
 
 /-- The scalar field of a directly indexed low-degree game has `q` elements. -/
-theorem card_directScalarQ (D : DirectLdParams) :
+theorem card_directScalarQ  :
     Fintype.card (DirectScalarQ D) = D.q := by
   rw [Fintype.card_congr (binaryRepresentation D.model), Fintype.card_fin]
 
@@ -95,10 +97,12 @@ def directCombinedPolynomial (D : DirectLdParams) (g : DirectPolyTuple D) :
 @[simp] theorem directCombinedPolynomial_val (D : DirectLdParams) (g : DirectPolyTuple D) :
     (directCombinedPolynomial D g).1 = combinePolyTuple (fun r => (g r).1) :=
   rfl
+variable (g : DirectPolyTuple D)
+
 
 /-- Evaluating the combined polynomial at a point of the combined space with
 point part `u` and combining part `α` gives `∑_{r < k} α_r g_r(u)`. -/
-theorem directCombinedPolynomial_eval (D : DirectLdParams) (g : DirectPolyTuple D)
+theorem directCombinedPolynomial_eval 
     (u : Fin D.m → DirectScalarQ D) (α : Fin D.k → DirectScalarQ D) :
     MvPolynomial.eval (combinedPoint u α) (directCombinedPolynomial D g).1 =
       ∑ r : Fin D.k, α r * evalDirectPolyTupleAt u g r := by
@@ -106,7 +110,7 @@ theorem directCombinedPolynomial_eval (D : DirectLdParams) (g : DirectPolyTuple 
   rfl
 
 /-- The combining map is injective on polynomial tuples. -/
-theorem directCombinedPolynomial_injective (D : DirectLdParams) :
+theorem directCombinedPolynomial_injective  :
     Function.Injective (directCombinedPolynomial D) := by
   intro g g' h
   have hval : combinePolyTuple (fun r => (g r).1) =
@@ -152,8 +156,7 @@ def directTupleOfCombined (D : DirectLdParams)
   exact if h : IsDirectCombined D p then h.choose else fun _ => 0
 
 /-- The components of a combined polynomial are the tuple it combines. -/
-@[simp] theorem directTupleOfCombined_directCombinedPolynomial (D : DirectLdParams)
-    (g : DirectPolyTuple D) :
+@[simp] theorem directTupleOfCombined_directCombinedPolynomial  :
     directTupleOfCombined D (directCombinedPolynomial D g) = g := by
   classical
   have hex : IsDirectCombined D (directCombinedPolynomial D g) :=
@@ -166,8 +169,7 @@ def directTupleOfCombinedTuple (D : DirectLdParams)
     (p : DirectPolyTuple D.combined) : DirectPolyTuple D :=
   directTupleOfCombined D (p default)
 
-@[simp] theorem directTupleOfCombinedTuple_directCombinedTuple (D : DirectLdParams)
-    (g : DirectPolyTuple D) :
+@[simp] theorem directTupleOfCombinedTuple_directCombinedTuple  :
     directTupleOfCombinedTuple D (directCombinedTuple D g) = g := by
   rw [directTupleOfCombinedTuple, directCombinedTuple_apply,
     directTupleOfCombined_directCombinedPolynomial]

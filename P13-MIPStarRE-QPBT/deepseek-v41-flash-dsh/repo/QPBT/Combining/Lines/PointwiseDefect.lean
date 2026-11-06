@@ -39,7 +39,7 @@ theorem consistencyDefect_integrand_le_one {P : AdmissibleParams} {ε : ℝ}
         (S.place p1 (first.effect answer) * S.place p2 (second.effect other))) ≤ 1 := by
   have h := DistanceCalculus.point_defect_eq
     (S.placedMeasurement p1 first) (S.placedMeasurement p2 second) S.psiHat
-  simp only [ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] at h
+  simp [ProjectiveSetting.placedMeasurement_effect, S.psiHat_norm, one_pow] at h
   rw [h]
   have hproduct (answer : Outcome) :
       0 ≤ S.place p1 (first.effect answer) * S.place p2 (second.effect answer) := by

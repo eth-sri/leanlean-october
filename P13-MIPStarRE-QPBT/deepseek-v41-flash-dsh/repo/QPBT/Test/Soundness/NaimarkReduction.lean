@@ -71,17 +71,18 @@ theorem pauliNaimarkStrategy_value (P : AdmissibleParams)
       (default : PauliAnswer P) answer (S.A question))
     (fun question answer => dilatedMeasurement_compression
       (default : PauliAnswer P) answer (S.B question))
+variable (P : AdmissibleParams) (S : Strategy (pauliBasisTest P))
+
 
 /-- The padded state is precisely the tensor image under the two fixed ground
 embeddings; there is no identification of Alice's and Bob's local spaces. -/
-theorem pauliNaimarkStrategy_state (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) :
+theorem pauliNaimarkStrategy_state  :
     (pauliNaimarkStrategy P S).ψ =
       isometryTensor (pauliNaimarkEmbeddingA P S) (pauliNaimarkEmbeddingB P S) S.ψ := by
   change padState none none S.ψ = naimarkDilatedState (PauliAnswer P) S.ψ
   ext p
   rw [naimarkDilatedState_apply]
-  simp only [padState, EuclideanSpace.equiv]
+  simp [padState, EuclideanSpace.equiv]
   by_cases hA : p.1.2 = none <;> by_cases hB : p.2.2 = none <;> simp [hA, hB]
 
 /-- A winning strategy supplies a projective setting after dilation, with no
@@ -92,11 +93,12 @@ def pauliNaimarkSetting (P : AdmissibleParams) (epsilon : ℝ)
   toStrategy := pauliNaimarkStrategy P S
   isProjective := pauliNaimarkStrategy_isProjective P S
   win := by rw [pauliNaimarkStrategy_value]; exact hwin
+variable (W : PauliKind)
+
 
 /-- Compression commutes with the complete `pauliAnswerOrZero` postprocessing
 of Alice's Pauli-question measurement, including wrong-form outcomes. -/
-theorem pauliNaimarkStrategy_pauli_compressA (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) (W : PauliKind) :
+theorem pauliNaimarkStrategy_pauli_compressA  :
     (((pauliNaimarkStrategy P S).A (pauliQuestion P W)).postprocess
       pauliAnswerOrZero).compressAt none =
         (S.A (pauliQuestion P W)).postprocess pauliAnswerOrZero := by
@@ -107,8 +109,7 @@ theorem pauliNaimarkStrategy_pauli_compressA (P : AdmissibleParams)
 
 /-- Compression commutes with the complete `pauliAnswerOrZero` postprocessing
 of Bob's Pauli-question measurement, including wrong-form outcomes. -/
-theorem pauliNaimarkStrategy_pauli_compressB (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P)) (W : PauliKind) :
+theorem pauliNaimarkStrategy_pauli_compressB  :
     (((pauliNaimarkStrategy P S).B (pauliQuestion P W)).postprocess
       pauliAnswerOrZero).compressAt none =
         (S.B (pauliQuestion P W)).postprocess pauliAnswerOrZero := by
@@ -133,11 +134,11 @@ keeping both auxiliary carrier spaces and the same normalized auxiliary state. -
   φB := w.φB.comp (pauliNaimarkEmbeddingB P S)
   aux := w.aux
   aux_norm := w.aux_norm
+variable (w : PauliSoundnessWitness P (pauliNaimarkStrategy P S))
+
 
 /-- The extracted original state is exactly the extracted dilated state. -/
-theorem pauli_naimark_witness_state_eq (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P (pauliNaimarkStrategy P S)) :
+theorem pauli_naimark_witness_state_eq  :
     isometryTensor (pauliNaimarkWitness P S w).φA
         (pauliNaimarkWitness P S w).φB S.ψ =
       isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ := by
@@ -147,9 +148,7 @@ theorem pauli_naimark_witness_state_eq (P : AdmissibleParams)
 
 /-- Consequently the original and dilated witnesses have equal state-distance
 quantities from the same ideal auxiliary state. -/
-theorem pauli_naimark_witness_state_distance_eq (P : AdmissibleParams)
-    (S : Strategy (pauliBasisTest P))
-    (w : PauliSoundnessWitness P (pauliNaimarkStrategy P S)) :
+theorem pauli_naimark_witness_state_distance_eq  :
     ‖isometryTensor (pauliNaimarkWitness P S w).φA
         (pauliNaimarkWitness P S w).φB S.ψ -
       idealState P (pauliNaimarkWitness P S w).aux‖ =

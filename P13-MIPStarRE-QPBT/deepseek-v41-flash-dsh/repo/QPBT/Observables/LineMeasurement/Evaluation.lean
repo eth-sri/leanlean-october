@@ -61,12 +61,15 @@ theorem EvaluatesTo.left_of_add {L : LdParams} {c : ℕ} {line : LineDesc L}
     have h := hfg.2 t ht
     rw [evalCoefficient_add, hg.2 t ht] at h
     exact eq_sub_of_add_eq h⟩
+variable {L : LdParams} {c : ℕ}
+variable (line : LineDesc L) (u : Fin L.m → ScalarQ L) (f : DegPoly L c)
+
+
 
 /-- The partial evaluation returns `some a` exactly when the polynomial
 evaluates to `a`. This is the characterization that makes `evalOpt` the total
 form of the evaluation classes of `def:ideg-deg-polynomials`. -/
-theorem evalOpt_eq_some_iff {L : LdParams} {c : ℕ} (line : LineDesc L)
-    (u : Fin L.m → ScalarQ L) (f : DegPoly L c) (a : ScalarQ L) :
+theorem evalOpt_eq_some_iff  (a : ScalarQ L) :
     evalOpt line u f = some a ↔ EvaluatesTo line f u a := by
   constructor
   · intro h
@@ -82,8 +85,7 @@ theorem evalOpt_eq_some_iff {L : LdParams} {c : ℕ} (line : LineDesc L)
 /-- The partial evaluation returns `none` exactly when no value is
 determined. This is the outcome that completes the evaluation classes to a
 measurement, written `[eval_u(·) = ⊥]` in `def:ideg-deg-polynomials`. -/
-theorem evalOpt_eq_none_iff {L : LdParams} {c : ℕ} (line : LineDesc L)
-    (u : Fin L.m → ScalarQ L) (f : DegPoly L c) :
+theorem evalOpt_eq_none_iff  :
     evalOpt line u f = none ↔ ¬ ∃ a : ScalarQ L, EvaluatesTo line f u a := by
   unfold evalOpt
   split_ifs with hex <;> simp [hex]
@@ -110,7 +112,7 @@ theorem evalOpt_left_of_add_some {L : LdParams} {c : ℕ} {line : LineDesc L}
 
 /-- Off the line, no line polynomial evaluates, so every outcome falls in
 the `none` class. -/
-theorem evalOpt_eq_none_of_not_mem {L : LdParams} {c : ℕ} {line : LineDesc L}
+theorem evalOpt_eq_none_of_not_mem  {line : LineDesc L}
     {u : Fin L.m → ScalarQ L} (hu : u ∉ line.pointSet) (f : DegPoly L c) :
     evalOpt line u f = none := by
   rw [evalOpt_eq_none_iff]

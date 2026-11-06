@@ -76,10 +76,10 @@ noncomputable def blockDiagonalMeasurement
       (fun r => (M r).effect a) (fun r => (M r).pos a))
     (by
       ext ⟨i, r⟩ ⟨j, s⟩
-      simp only [Matrix.sum_apply, Matrix.blockDiagonal_apply]
+      simp [Matrix.sum_apply, Matrix.blockDiagonal_apply]
       by_cases hrs : r = s
       · subst s
-        simp only [if_pos]
+        simp [if_pos]
         calc
           ∑ x, (M r).effect x i j = (1 : Matrix iota iota ℂ) i j :=
             by
@@ -136,9 +136,11 @@ noncomputable def seedResidueAncilla (L : LdParams) :
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
   exact eprState (Fin (L.q / L.m))
+variable (L : LdParams)
+
 
 /-- The seed-residue ancilla has unit norm. -/
-theorem seedResidueAncilla_norm (L : LdParams) :
+theorem seedResidueAncilla_norm  :
     ‖seedResidueAncilla L‖ = 1 := by
   letI : Nonempty (Fin (L.q / L.m)) :=
     Fin.pos_iff_nonempty.mp L.seedFiberCard_pos
@@ -151,11 +153,12 @@ noncomputable def seedFiberLiftedState
     EuclideanSpace ℂ
       ((S.ιA × Fin (L.q / L.m)) × (S.ιB × Fin (L.q / L.m))) :=
   reindexState prodShuffle (vecTensor S.ψ (seedResidueAncilla L))
+variable {G : Game} (S : Strategy G) (L : LdParams)
+
 
 /-- The correlated seed-fiber lift preserves normalization of the strategy
 state. -/
-theorem seedFiberLiftedState_norm
-    {G : Game} (S : Strategy G) (L : LdParams) :
+theorem seedFiberLiftedState_norm  :
     ‖seedFiberLiftedState S L‖ = 1 := by
   rw [seedFiberLiftedState, reindexState_norm_eq, vecTensor_norm_eq,
     S.ψ_norm, seedResidueAncilla_norm, one_mul]
@@ -187,7 +190,7 @@ noncomputable def ldStrategyToDirect (L : LdParams)
       (S.B (seededLdQuestion L q residue))
 
 /-- Projectivity is preserved by the correlated seed-fiber dilation. -/
-theorem ldStrategyToDirect_isProjective (L : LdParams)
+theorem ldStrategyToDirect_isProjective 
     (S : Strategy (ldGame L)) (hS : S.IsProjective) :
     (ldStrategyToDirect L S).IsProjective := by
   constructor
@@ -223,8 +226,7 @@ theorem ldStrategyToDirect_isProjective (L : LdParams)
   rfl
 
 /-- Coordinate formula for the correlated residue lift. -/
-theorem seedFiberLiftedState_apply
-    {G : Game} (S : Strategy G) (L : LdParams)
+theorem seedFiberLiftedState_apply 
     (i : S.ιA) (j : S.ιB)
     (r s : Fin (L.q / L.m)) :
     seedFiberLiftedState S L ((i, r), (j, s)) =

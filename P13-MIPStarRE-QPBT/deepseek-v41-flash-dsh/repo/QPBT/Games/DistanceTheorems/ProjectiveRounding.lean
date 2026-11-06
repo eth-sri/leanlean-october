@@ -56,22 +56,20 @@ private noncomputable def roundPureState {ι : Type*}
       _ = inner ℂ ψ ψ := (EuclideanSpace.inner_eq_star_dotProduct ψ ψ).symm
       _ = (‖ψ‖ ^ 2 : ℂ) := inner_self_eq_norm_sq_to_K ψ
       _ = 1 := by rw [hψ]; norm_num
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] [Nonempty ι] (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) (T : Op ι)
+
 
 /-- The QPBT vector quadratic form equals evaluation in `roundPureState`. -/
-private theorem round_stateQForm_eq_ev {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) (T : Op ι) :
+private theorem round_stateQForm_eq_ev  :
     stateQForm ψ T = ev (roundPureState ψ hψ : QuantumState ι) T := by
   rw [PureState.ev_eq_re_inner]
-  simp only [roundPureState]
+  simp [roundPureState]
   change (inner ℂ ψ (WithLp.toLp 2 (T *ᵥ ψ.ofLp))).re =
     (star ψ.ofLp ⬝ᵥ T *ᵥ ψ.ofLp).re
   rw [EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm]
 
 /-- Evaluation of an operator square in `roundPureState` is the squared vector norm. -/
-private theorem round_ev_adjoint_mul_self_eq_norm_sq {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
-    (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) (T : Op ι) :
+private theorem round_ev_adjoint_mul_self_eq_norm_sq  :
     ev (roundPureState ψ hψ : QuantumState ι) (Tᴴ * T) =
       ‖applyOperatorToState T ψ‖ ^ 2 := by
   rw [← round_stateQForm_eq_ev]
@@ -101,12 +99,12 @@ private theorem round_measurement_outcome_nonempty {α ι : Type*}
   let i : ι := Classical.choice inferInstance
   have heq := congrArg (fun X : Op ι => X i i) M.sum_eq_one
   simp [Matrix.sum_apply] at heq
+variable {ιA ιB α : Type*} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Fintype α] [DecidableEq α]
+
 
 /-- QPBT vector consistency is the LDT bipartite consistency relation on the
 associated pure state and concrete measurements. -/
-private lemma round_consRel_of_consistencyDefect {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α] [Nonempty ιA] [Nonempty ιB]
+private lemma round_consRel_of_consistencyDefect  [Nonempty ιA] [Nonempty ιB]
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
     (Q : MIPStarRE.Quantum.Measurement α ιA)
     (R : MIPStarRE.Quantum.Measurement α ιB) (δ : Error)
@@ -143,8 +141,7 @@ private lemma round_consRel_of_consistencyDefect {ιA ιB α : Type*}
           (MatrixMeasurement.toMeasurement Qm).toSubMeas
           (MatrixMeasurement.toMeasurement Rm).toSubMeas by
       simp [bipartiteConsError, avgOver, uniformDistribution, constSubMeasFamily]]
-    rw [qBipartiteConsDefect_of_measurements]
-    rw [ev_one_of_isNormalized _ (roundPureState ψ hψ).toQuantumState_isNormalized]
+    rw [qBipartiteConsDefect_of_measurements, ev_one_of_isNormalized _ (roundPureState ψ hψ).toQuantumState_isNormalized]
     rw [show qBipartiteMatchMass (roundPureState ψ hψ : QuantumState (ιA × ιB))
         (MatrixMeasurement.toMeasurement Qm).toSubMeas
         (MatrixMeasurement.toMeasurement Rm).toSubMeas =
@@ -203,9 +200,7 @@ private lemma round_consRel_of_consistencyDefect {ιA ιB α : Type*}
 resulting ranges into the family `P_a = X̂ᴴ T_a X̂`, and completion at one fixed
 outcome give a projective measurement on Alice's original space within
 `220 * δ^(1/4)` of the given one. -/
-private lemma round_projective_ldt {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α] [Nonempty ιA] [Nonempty ιB]
+private lemma round_projective_ldt  [Nonempty ιA] [Nonempty ιB]
     (Ψ : QuantumState (ιA × ιB)) (hΨ : Ψ.IsNormalized)
     (A : MIPStarRE.LDT.Measurement α ιA)
     (B : MIPStarRE.LDT.Measurement α ιB) (a₀ : α) (δ : Error)
@@ -323,13 +318,6 @@ private lemma round_projective_ldt {ιA ιB α : Type*}
       exact ev_nonneg_of_psd φ _ hqtotal_nonneg
     have hp_nonneg : 0 ≤ pMass := by
       exact ev_nonneg_of_psd φ P.toSubMeas.total P.toSubMeas.total_nonneg
-    have hp_le_one : pMass ≤ 1 := by
-      calc
-        pMass ≤ ev φ (1 : Op ιA) :=
-          ev_mono φ _ _ P.toSubMeas.total_le_one
-        _ = 1 := ev_one_of_isNormalized φ hφ
-    have hsqrt_nonneg : 0 ≤ sqrtMass := by
-      exact ev_nonneg_of_psd φ _ (CFC.sqrt_nonneg (QTotal data.qLayer))
     have hsqrt_complete : sqrtMass ≥ 1 - 12 * t := by
       simpa [sqrtMass, t] using
         sqrtQCompleteness φ A δ data.qLayer hφ hδ hδ_small hRankData
@@ -337,12 +325,11 @@ private lemma round_projective_ldt {ιA ιB α : Type*}
         CFC.sqrt (QTotal data.qLayer) * P.toSubMeas.total =
           CFC.sqrt (QTotal data.qLayer) := by
       rw [show P.toSubMeas.total = data.xHatᴴ * data.xHat by
-        exact qxpProjSubMeas_total_eq_xHat_adjoint_mul_xHat data]
-      rw [← data.xHat_mixed]
+        exact qxpProjSubMeas_total_eq_xHat_adjoint_mul_xHat data, ← data.xHat_mixed]
       calc
         data.xᴴ * data.xHat * (data.xHatᴴ * data.xHat) =
             data.xᴴ * (data.xHat * data.xHatᴴ) * data.xHat := by
-              simp only [Matrix.mul_assoc]
+              simp [Matrix.mul_assoc]
         _ = data.xᴴ * data.xHat := by simp [data.xHat_coisometry]
     have hq_sqrt_sq :
         CFC.sqrt (QTotal data.qLayer) * (CFC.sqrt (QTotal data.qLayer))ᴴ =
@@ -389,11 +376,6 @@ private lemma round_projective_ldt {ιA ιB α : Type*}
       have htrunc := spectralTruncationError_le_zetaQuarterRoot δ hδ hδ_small
       dsimp [t]
       linarith
-    have hbase_nonneg : 0 ≤ 1 - 12 * t := by linarith
-    have hbase_sq : (1 - 12 * t) ^ 2 ≤ sqrtMass ^ 2 :=
-      (sq_le_sq₀ hbase_nonneg hsqrt_nonneg).2 hsqrt_complete
-    have hqpmass : qMass * pMass ≤ (1 + 2 * t) * pMass :=
-      mul_le_mul_of_nonneg_right hq_le hp_nonneg
     have hp_lower : 1 - 26 * t ≤ pMass := by
       nlinarith [sq_nonneg t]
     have hresidual :
@@ -423,8 +405,7 @@ private lemma round_projective_ldt {ιA ιB α : Type*}
     have hPCq : qSDD φ P.toSubMeas C.toSubMeas ≤ 26 * t := by
       rw [show C.toSubMeas =
           (MIPStarRE.LDT.Preliminaries.completeAtOutcome P.toSubMeas a₀).toSubMeas by
-        rfl]
-      rw [MIPStarRE.LDT.Preliminaries.completion_self_distance]
+        rfl, MIPStarRE.LDT.Preliminaries.completion_self_distance]
       exact hresidual
     have hACq : qSDD φ A.toSubMeas C.toSubMeas ≤ 220 * t := by
       calc
@@ -482,9 +463,7 @@ private lemma round_projective_ldt {ιA ιB α : Type*}
 
 /-- A consistent pair of POVMs admits an Alice-side projective rounding with
 the explicit dimension-independent error `220 * δ^(1/4)`. -/
-theorem projective_rounding_with_explicit_constant {ιA ιB α : Type*}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype α] [DecidableEq α]
+theorem projective_rounding_with_explicit_constant 
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (hψ : ‖ψ‖ = 1)
     (Q : MIPStarRE.Quantum.Measurement α ιA)
     (R : MIPStarRE.Quantum.Measurement α ιB) (δ : Error) (hδ : 0 ≤ δ)
@@ -552,12 +531,11 @@ theorem projective_rounding_with_explicit_constant {ιA ιB α : Type*}
     apply Finset.sum_congr rfl
     intro a _
     rw [round_ev_adjoint_mul_self_eq_norm_sq ψ hψ]
-    simp only [Pm, A, HA, leftPlacedSubMeas, mkLeftPlacedSubMeas_outcome,
+    simp [Pm, A, HA, leftPlacedSubMeas, mkLeftPlacedSubMeas_outcome,
       MatrixMeasurement.toMeasurement_outcome,
       MIPStarRE.Quantum.Measurement.ofSumEqOne]
     rfl
-  rw [hdist]
-  rw [MIPStarRE.LDT.Preliminaries.qSDD_symm]
+  rw [hdist, MIPStarRE.LDT.Preliminaries.qSDD_symm]
   simpa [zetaQuarterRoot] using hC
 
 end

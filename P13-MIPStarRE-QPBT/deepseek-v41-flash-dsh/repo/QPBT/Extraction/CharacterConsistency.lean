@@ -31,10 +31,12 @@ open MIPStarRE.Quantum DistanceCalculus
 open WinImplications
 
 noncomputable section
+variable {P : AdmissibleParams}
+
 
 /-- Regroup a field-weighted observable by its binary trace label. This is the
 postprocessing at paper `14_analysis_of_the_pauli_basis_test.tex:1547-1551`. -/
-theorem sum_basis_character_effect_eq {P : AdmissibleParams} {ι : Type*}
+theorem sum_basis_character_effect_eq  {ι : Type*}
     [Fintype ι] [DecidableEq ι] (A : Measurement (PauliScalar P) ι)
     (j : Fin P.model.basisDim) :
     (∑ a, phaseSign (fixedBinTrace P.model (P.model.basis j * a)) • A.effect a) =
@@ -55,8 +57,7 @@ theorem sum_basis_character_effect_eq {P : AdmissibleParams} {ι : Type*}
 consistency defect. The question distribution and basis coordinate are retained
 exactly. This proves the final conversion in blueprint
 `lem:qld-construct-the-paulis`, without assuming a bound on that defect. -/
-theorem basis_character_opDistSq_le_four_consistencyDefect
-    {P : AdmissibleParams} {X ιA ιB : Type*}
+theorem basis_character_opDistSq_le_four_consistencyDefect  {X ιA ιB : Type*}
     [Fintype X] [DecidableEq X]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (μ : Distribution X) (A : X → Measurement (PauliScalar P) ιA)
@@ -81,7 +82,7 @@ theorem basis_character_opDistSq_le_four_consistencyDefect
   have hobs := povm_to_obs_of_measurements μ
     (fun x => leftPlacedMeasurement (A' x))
     (fun x => rightPlacedMeasurement (B' x)) phaseSign norm_phaseSign ψ
-  simp only [ZMod.card, Nat.cast_ofNat] at hobs
+  simp [ZMod.card, Nat.cast_ofNat] at hobs
   have hbound := hobs.trans (mul_le_mul_of_nonneg_left hfam (by norm_num : (0 : ℝ) ≤ 2))
   simpa only [sum_basis_character_effect_eq, heteroKron_left_sum_smul,
     heteroKron_right_sum_smul, leftPlacedMeasurement, rightPlacedMeasurement,
@@ -94,8 +95,7 @@ The measurement consistency defect is an explicit quantity, not an assumed
 bound. Its construction-scale bound is the `eq:qld-pulling-cons`
 extraction obligation recorded under issue Dengnifer/MIPStarRE-QPBT-bak#123 in
 `docs/paper-gaps/qpbt_extraction-transfer.tex`; it is not supplied here. -/
-theorem tildeObs_opDistSq_le_four_consistencyDefect
-    {P : AdmissibleParams} {epsilon deltaG : ℝ}
+theorem tildeObs_opDistSq_le_four_consistencyDefect  {epsilon deltaG : ℝ}
     {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
     (W : PauliKind) (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))

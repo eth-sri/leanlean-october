@@ -48,19 +48,23 @@ namespace MIPStarRE.QPBT.MagicSquareRigidity
 open MIPStarRE.LDT MIPStarRE.Quantum
 
 noncomputable section
+variable {ιA ιB : Type}
+
 
 /-! ## Placement of an operator on one player's tensor factor -/
 
 /-- Formalization-only: an operator acting on Alice's tensor factor alone. -/
-private def AlicePlaced {ιA ιB : Type} [DecidableEq ιB] (Z : Op (ιA × ιB)) : Prop :=
+private def AlicePlaced  [DecidableEq ιB] (Z : Op (ιA × ιB)) : Prop :=
   ∃ M : Op ιA, Z = heteroKron M 1
 
 /-- Formalization-only: an operator acting on Bob's tensor factor alone. -/
-private def BobPlaced {ιA ιB : Type} [DecidableEq ιA] (Z : Op (ιA × ιB)) : Prop :=
+private def BobPlaced  [DecidableEq ιA] (Z : Op (ιA × ιB)) : Prop :=
   ∃ N : Op ιB, Z = heteroKron 1 N
+variable {ιA ιB : Type} [Fintype ιA]
+
 
 /-- Formalization-only: operators of the two players commute. -/
-private theorem AlicePlaced.comm {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
+private theorem AlicePlaced.comm  [DecidableEq ιA]
     [Fintype ιB] [DecidableEq ιB] {Z W : Op (ιA × ιB)} (hZ : AlicePlaced Z)
     (hW : BobPlaced W) : Z * W = W * Z := by
   obtain ⟨M, rfl⟩ := hZ
@@ -68,7 +72,7 @@ private theorem AlicePlaced.comm {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA
   exact heteroKron_comm M N
 
 /-- Formalization-only: products stay on Alice's tensor factor. -/
-private theorem AlicePlaced.mul {ιA ιB : Type} [Fintype ιA]
+private theorem AlicePlaced.mul 
     [Fintype ιB] [DecidableEq ιB] {Z W : Op (ιA × ιB)} (hZ : AlicePlaced Z)
     (hW : AlicePlaced W) : AlicePlaced (Z * W) := by
   obtain ⟨M, rfl⟩ := hZ
@@ -76,7 +80,7 @@ private theorem AlicePlaced.mul {ιA ιB : Type} [Fintype ιA]
   exact ⟨M * M', by rw [heteroKron_mul, mul_one]⟩
 
 /-- Formalization-only: products stay on Bob's tensor factor. -/
-private theorem BobPlaced.mul {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
+private theorem BobPlaced.mul  [DecidableEq ιA]
     [Fintype ιB] {Z W : Op (ιA × ιB)} (hZ : BobPlaced Z)
     (hW : BobPlaced W) : BobPlaced (Z * W) := by
   obtain ⟨N, rfl⟩ := hZ
@@ -103,11 +107,13 @@ private theorem alicePlaced_msVarObsA (S : Strategy msGame) (j : Fin 9) :
 /-- Bob's cell reflection acts on his tensor factor alone. -/
 private theorem bobPlaced_msCellObsB (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
     BobPlaced (msCellObsB S i k) := ⟨_, rfl⟩
+variable {ι : Type} [Fintype ι] [DecidableEq ι]
+
 
 /-! ## Isometry bookkeeping -/
 
 /-- Formalization-only: a product of isometric operators is isometric. -/
-private theorem isometry_mul_isometry {ι : Type} [Fintype ι] [DecidableEq ι]
+private theorem isometry_mul_isometry 
     {U V : Op ι} (hU : Uᴴ * U = 1) (hV : Vᴴ * V = 1) : (U * V)ᴴ * (U * V) = 1 := by
   rw [Matrix.conjTranspose_mul]
   calc Vᴴ * Uᴴ * (U * V) = Vᴴ * (Uᴴ * U) * V := by noncomm_ring
@@ -115,7 +121,7 @@ private theorem isometry_mul_isometry {ι : Type} [Fintype ι] [DecidableEq ι]
 
 /-- Formalization-only: a unit scalar multiple of an isometric operator is
 isometric. -/
-private theorem isometry_smul {ι : Type} [Fintype ι] [DecidableEq ι] {c : ℂ}
+private theorem isometry_smul  {c : ℂ}
     (hstar : star c = c) (hsq : c * c = 1) {U : Op ι} (hU : Uᴴ * U = 1) :
     (c • U)ᴴ * (c • U) = 1 := by
   have hstarT : (c • U)ᴴ = c • Uᴴ := by
@@ -139,7 +145,7 @@ the two constraints share the cell that `X` and `P` are attached to.  The
 conclusion rewrites the product `Y * Q` as the signed product of the two
 remaining reflections.  Formalization-only support for blueprint
 `thm:ms-rigidity`. -/
-private theorem normCloseOn_step {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
+private theorem normCloseOn_step  [DecidableEq ιA]
     [Fintype ιB] [DecidableEq ιB] {ψ : EuclideanSpace ℂ (ιA × ιB)} {δ : ℝ}
     {X Y W P Q R Pa Ra : Op (ιA × ιB)} {sI sJ : ℂ}
     (hXr : IsBinaryObservable X) (hYr : IsBinaryObservable Y) (hWr : IsBinaryObservable W)
@@ -197,7 +203,7 @@ private theorem normCloseOn_step {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA
 /-- Formalization-only: closeness to a negation is symmetric in the two
 operators, because `M - (-N) = N - (-M)`.  Used by the solution-group
 computations of both logical Pauli pairs. -/
-theorem normCloseOn_neg_swap {ι : Type} [Fintype ι] [DecidableEq ι]
+theorem normCloseOn_neg_swap 
     {ψ : EuclideanSpace ℂ ι} {δ : ℝ} {M N : Op ι} (h : NormCloseOn ψ δ M (-N)) :
     NormCloseOn ψ δ N (-M) := by
   change ‖applyOperatorToState (N - -M) ψ‖ ≤ δ
@@ -283,21 +289,21 @@ theorem msVarObsA_anticommute (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε �
       (msVarObsA S 0 * msVarObsA S 4) (-(msVarObsA S 4 * msVarObsA S 0)) := by
   have hA : ∀ a : MsAnswer, constraintBitOrZero 1 a + constraintBitOrZero 0 a +
       constraintBitOrZero 2 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hA' : ∀ a : MsAnswer, constraintBitOrZero 0 a + constraintBitOrZero 1 a +
       constraintBitOrZero 2 a = constraintBitSum a := fun a => rfl
   have hB : ∀ a : MsAnswer, constraintBitOrZero 2 a + constraintBitOrZero 0 a +
       constraintBitOrZero 1 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hB' : ∀ a : MsAnswer, constraintBitOrZero 2 a + constraintBitOrZero 1 a +
       constraintBitOrZero 0 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hC : ∀ a : MsAnswer, constraintBitOrZero 0 a + constraintBitOrZero 2 a +
       constraintBitOrZero 1 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hC' : ∀ a : MsAnswer, constraintBitOrZero 1 a + constraintBitOrZero 2 a +
       constraintBitOrZero 0 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hsign_pos : ∀ i : Fin 6, i ≠ 5 →
       ((bitSign (msParity i) : ℝ) : ℂ) = 1 := by
     intro i hi
@@ -483,21 +489,21 @@ theorem msVarObsB_anticommute (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε �
       (msVarObsB S 0 * msVarObsB S 4) (-(msVarObsB S 4 * msVarObsB S 0)) := by
   have hA : ∀ a : MsAnswer, constraintBitOrZero 1 a + constraintBitOrZero 0 a +
       constraintBitOrZero 2 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hA' : ∀ a : MsAnswer, constraintBitOrZero 0 a + constraintBitOrZero 1 a +
       constraintBitOrZero 2 a = constraintBitSum a := fun a => rfl
   have hB : ∀ a : MsAnswer, constraintBitOrZero 2 a + constraintBitOrZero 0 a +
       constraintBitOrZero 1 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hB' : ∀ a : MsAnswer, constraintBitOrZero 2 a + constraintBitOrZero 1 a +
       constraintBitOrZero 0 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hC : ∀ a : MsAnswer, constraintBitOrZero 0 a + constraintBitOrZero 2 a +
       constraintBitOrZero 1 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hC' : ∀ a : MsAnswer, constraintBitOrZero 1 a + constraintBitOrZero 2 a +
       constraintBitOrZero 0 a = constraintBitSum a := by
-    intro a; simp only [constraintBitSum]; ring
+    intro a; simp [constraintBitSum]; ring
   have hsign_pos : ∀ i : Fin 6, i ≠ 5 → ((bitSign (msParity i) : ℝ) : ℂ) = 1 := by
     intro i hi
     have hp : msParity i = 0 := by

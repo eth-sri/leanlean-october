@@ -102,7 +102,7 @@ private theorem scalarPolynomial_renamed_exponents (P : AdmissibleParams)
   have hvbound := (MvPolynomial.le_degreeOf_of_mem_support _ hmem).trans hdeg
   change v ((scalarBaseCoordinateEquiv P.m).symm i) ≤ P.d at hvbound
   subst e
-  simpa only [Finsupp.mapDomain_equiv_apply] using hvbound
+  simpa using hvbound
 
 /-- Both degree bounds follow from the genuine individual-degree certificate:
 every base coefficient has degree at most `2md`, and the outer scalar
@@ -221,7 +221,7 @@ theorem scalarPolynomial_eval (P : AdmissibleParams)
   change MvPolynomial.eval₂ (extendedDirectScalarEquiv P).toRingHom
       (fun i => extendedDirectScalarEquiv P ((extendedDirectScalarEquiv P).symm
         (Sum.elim v u (scalarBaseCoordinateEquiv P.m i)))) (g (0 : Fin 1)).1 = _ at h
-  simp only [RingEquiv.apply_symm_apply] at h
+  simp [RingEquiv.apply_symm_apply] at h
   exact h
 
 /-- Exact partial evaluation for either block order. This is the coefficient
@@ -280,10 +280,10 @@ theorem scalarPolynomial_linear_read_fiber (P : AdmissibleParams)
   have h01 : (Finsupp.single (0 : Fin 2) 1 : Fin 2 →₀ ℕ) ≠ Finsupp.single 1 1 := by
     intro h
     simpa using congrArg (fun e : Fin 2 →₀ ℕ => e 0) h
-  simp only [map_add, map_mul, MvPolynomial.map_C, MvPolynomial.map_X,
+  simp [map_add, map_mul, MvPolynomial.map_C, MvPolynomial.map_X,
     MvPolynomial.eval_C, MvPolynomial.eval_X]
   cases reverse <;>
-    simp only [Bool.false_eq_true, MvPolynomial.coeff_add,
+    simp [Bool.false_eq_true, MvPolynomial.coeff_add,
       MvPolynomial.coeff_C_mul, MvPolynomial.coeff_X, h01, Ne.symm h01,
       ↓reduceIte, mul_one, mul_zero, zero_add, add_zero]
   · change MvPolynomial.eval u r * v 0 + MvPolynomial.eval u t * v 1 =
@@ -393,7 +393,7 @@ theorem exists_polyPair_of_scalar_separated (P : AdmissibleParams)
   have h01 : (Finsupp.single (0 : Fin 2) 1 : Fin 2 →₀ ℕ) ≠ Finsupp.single 1 1 := by
     intro h
     simpa using congrArg (fun e : Fin 2 →₀ ℕ => e 0) h
-  simp only [hlin, MvPolynomial.coeff_add, MvPolynomial.coeff_C_mul,
+  simp [hlin, MvPolynomial.coeff_add, MvPolynomial.coeff_C_mul,
     MvPolynomial.coeff_X, h01, Ne.symm h01, ↓reduceIte, mul_one, mul_zero,
     add_zero, zero_add] at hf hh
   change r = MvPolynomial.rename (fun i => (baseCoordinateEquiv P.m).symm (.inl i)) f.1 at hf

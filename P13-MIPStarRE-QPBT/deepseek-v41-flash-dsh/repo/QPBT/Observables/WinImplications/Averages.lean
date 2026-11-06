@@ -42,14 +42,12 @@ theorem avgOver_uniform_fixed_le_card_mul_prod
       (Fintype.card X : ℝ) *
         avgOver (uniformDistribution (X × Y)) (fun xy => f xy.1 xy.2) := by
   rw [avgOver_uniform_prod]
-  have hcard : (Fintype.card X : ℝ) ≠ 0 := by
-    exact_mod_cast Fintype.card_ne_zero
   have hsum : (Fintype.card X : ℝ) *
       avgOver (uniformDistribution X)
         (fun x => avgOver (uniformDistribution Y) (f x)) =
       ∑ x : X, avgOver (uniformDistribution Y) (f x) := by
     unfold avgOver uniformDistribution Distribution.uniformOnFinset
-    simp only [Finset.mem_univ, ↓reduceIte, Finset.card_univ]
+    simp [Finset.mem_univ, ↓reduceIte, Finset.card_univ]
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro x _
@@ -58,10 +56,12 @@ theorem avgOver_uniform_fixed_le_card_mul_prod
   exact Finset.single_le_sum
     (fun x _ => avgOver_nonneg (uniformDistribution Y) (f x) (hf x))
     (Finset.mem_univ x0)
+variable {X : Type*}
+
 
 /-- Formalization-only auxiliary for items 1–7 of `lem:qld-win-implications`:
 a finite distribution average may be extended to the full finite type. -/
-theorem avgOver_eq_sum_univ {X : Type*} [Fintype X]
+theorem avgOver_eq_sum_univ  [Fintype X]
     (μ : Distribution X) (f : X → ℝ) :
     avgOver μ f = ∑ x : X, μ.weight x * f x := by
   classical
@@ -70,14 +70,14 @@ theorem avgOver_eq_sum_univ {X : Type*} [Fintype X]
 
 /-- Formalization-only auxiliary for item 2 of `lem:qld-win-implications`:
 averaging against a convex mixture is the corresponding convex combination. -/
-theorem avgOver_mix {X : Type*} [Finite X] [DecidableEq X]
+theorem avgOver_mix  [Finite X] [DecidableEq X]
     (t : ℝ) (ht0 : 0 ≤ t) (ht1 : t ≤ 1)
     (μ ν : Distribution X) (f : X → ℝ) :
     avgOver (Distribution.mix t ht0 ht1 μ ν) f =
       t * avgOver μ f + (1 - t) * avgOver ν f := by
   letI := Fintype.ofFinite X
   rw [avgOver_eq_sum_univ, avgOver_eq_sum_univ, avgOver_eq_sum_univ]
-  simp only [Distribution.mix]
+  simp [Distribution.mix]
   calc
     (∑ x, (t * μ.weight x + (1 - t) * ν.weight x) * f x) =
         (∑ x, (t * (μ.weight x * f x) + (1 - t) * (ν.weight x * f x))) := by
@@ -90,17 +90,12 @@ theorem avgOver_mix {X : Type*} [Finite X] [DecidableEq X]
 
 /-- Formalization-only auxiliary for items 4–7 of `lem:qld-win-implications`:
 conditioning a uniform law divides its gated ambient average by the event probability. -/
-theorem cardRatio_mul_avgOver_filter
-    {X : Type*} [Fintype X] [DecidableEq X] [Nonempty X]
+theorem cardRatio_mul_avgOver_filter  [Fintype X] [DecidableEq X] [Nonempty X]
     (p : X → Prop) [DecidablePred p] (hp : (Finset.univ.filter p).Nonempty)
     (f : X → ℝ) :
     ((Finset.univ.filter p).card : ℝ) / Fintype.card X *
         avgOver (Distribution.uniformOnFinset (Finset.univ.filter p)) f =
       avgOver (uniformDistribution X) (fun x => if p x then f x else 0) := by
-  have hcardX : (Fintype.card X : ℝ) ≠ 0 := by
-    exact_mod_cast Fintype.card_ne_zero
-  have hcardp : ((Finset.univ.filter p).card : ℝ) ≠ 0 := by
-    exact_mod_cast Finset.card_ne_zero.mpr hp
   unfold avgOver uniformDistribution
   simp only [Distribution.uniformOnFinset_support,
     Distribution.uniformOnFinset_weight, Finset.mem_filter, Finset.mem_univ,
@@ -150,7 +145,7 @@ theorem avgOver_anticomm_le_sixteen_mul_gated (P : AdmissibleParams)
         (fun ω => if IsAnticommuting ω then f ω else 0) := by
   have hnonempty : (Finset.univ.filter (@IsAnticommuting P)).Nonempty := by
     by_contra h
-    have hempty : Finset.univ.filter (@IsAnticommuting P) = ∅ :=
+    have hempty :=
       Finset.not_nonempty_iff_eq_empty.mp h
     have hprob := anticommTupleDist_isProbability P
     unfold anticommTupleDist Distribution.IsProbability Distribution.totalWeight at hprob
@@ -168,12 +163,13 @@ theorem avgOver_anticomm_le_sixteen_mul_gated (P : AdmissibleParams)
   have havg : 0 ≤ avgOver (anticommTupleDist P) f :=
     avgOver_nonneg (anticommTupleDist P) f hf
   nlinarith
+variable {G : Game}
+
 
 /-- Formalization-only auxiliary for items 1–5 and 7 of `lem:qld-win-implications`:
 inconsistency of two postprocessed strategy measurements is the Born mass
 of source outcomes whose postprocessed labels differ. -/
-theorem consistencyDefect_postprocess_eq_mismatch
-    {G : Game} {X β : Type*} [Fintype X] [DecidableEq X]
+theorem consistencyDefect_postprocess_eq_mismatch  {X β : Type*} [Fintype X] [DecidableEq X]
     [Fintype β] [DecidableEq β]
     (μ : Distribution X) (S : Strategy G)
     (qA : X → G.QuestionA) (qB : X → G.QuestionB)
@@ -293,16 +289,18 @@ noncomputable def pauliRejectionAt {P : AdmissibleParams}
   let questions := pauliSourceQuestions P e z
   outcomeEventWeight S questions.1 questions.2 fun a b =>
     (pauliBasisTest P).decide questions.1 questions.2 a b = false
+variable {P : AdmissibleParams}
+
 
 /-- Rejection mass at every fixed edge and seed is nonnegative. -/
-theorem pauliRejectionAt_nonneg {P : AdmissibleParams}
+theorem pauliRejectionAt_nonneg 
     (S : Strategy (pauliBasisTest P)) (e : PauliEdge) (z : PauliSpace P) :
     0 ≤ pauliRejectionAt S e z := by
   exact outcome_event_weight_nonneg S _ _ _
 
 /-- Formalization-only auxiliary for items 1–7 of `lem:qld-win-implications`:
 the average rejection mass of a finite game is one minus its value. -/
-theorem rejectionEventAverage_eq_one_sub_value {G : Game} (S : Strategy G) :
+theorem rejectionEventAverage_eq_one_sub_value  (S : Strategy G) :
     avgOver G.μ (fun questions =>
       outcomeEventWeight S questions.1 questions.2 fun a b =>
         G.decide questions.1 questions.2 a b = false) =
@@ -312,7 +310,7 @@ theorem rejectionEventAverage_eq_one_sub_value {G : Game} (S : Strategy G) :
     MIPStarRE.QPBT.rejectionMass_eq_one_sub_value S
 
 /-- Winning bounds the global rejection average. -/
-theorem pauliRejectionAverage_le_error {P : AdmissibleParams} {ε : ℝ}
+theorem pauliRejectionAverage_le_error  {ε : ℝ}
     (S : ProjectiveSetting P ε) :
     avgOver (uniformDistribution (PauliEdge × PauliSpace P))
         (fun ez => pauliRejectionAt S.toStrategy ez.1 ez.2) ≤ ε := by
@@ -327,7 +325,7 @@ theorem pauliRejectionAverage_le_error {P : AdmissibleParams} {ε : ℝ}
   linarith [S.win]
 
 /-- Fixing one verifier edge costs at most the cardinality of the finite edge graph. -/
-theorem fixedEdgeRejection_le_error {P : AdmissibleParams} {ε : ℝ}
+theorem fixedEdgeRejection_le_error  {ε : ℝ}
     (S : ProjectiveSetting P ε) (e : PauliEdge) :
     avgOver (uniformDistribution (PauliSpace P)) (pauliRejectionAt S.toStrategy e) ≤
       (Fintype.card PauliEdge : ℝ) * ε := by

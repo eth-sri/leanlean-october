@@ -86,13 +86,18 @@ def directCombinedPointEquiv (D : DirectLdParams) :
 @[simp] theorem directCombinedPointEquiv_apply (D : DirectLdParams)
     (z : (Fin D.m → DirectScalarQ D) × (Fin D.k → DirectScalarQ D)) :
     directCombinedPointEquiv D z = combinedPoint z.1 z.2 := rfl
+variable (D : DirectLdParams)
+variable (u : Fin D.m → DirectScalarQ D)
+variable (α : Fin D.k → DirectScalarQ D)
+
+
+
 
 /-! ## The point measurement of the combined strategy -/
 
 /-- On a point question of the combined game the combined strategy measures the
 point question of the original game at the point part. -/
-private theorem directCombinedMeasuredQuestion_point (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (α : Fin D.k → DirectScalarQ D) :
+private theorem directCombinedMeasuredQuestion_point  :
     directCombinedMeasuredQuestion D
         (directLdPointQuestionOf D.combined (combinedPoint u α)) =
       directLdPointQuestionOf D u := by
@@ -103,8 +108,7 @@ private theorem directCombinedMeasuredQuestion_point (D : DirectLdParams)
 /-- On a point question of the combined game the combined answer, read as a
 one-component tuple of scalars, is the combination of the measured point answer
 with the combining part of the sampled point. -/
-private theorem directCombinedPointAnswerMap_comp (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (α : Fin D.k → DirectScalarQ D) :
+private theorem directCombinedPointAnswerMap_comp  :
     (fun a : DirectLdAnswer D => directLdPointValuesOrZero D.combined
         (directCombinedAnswerMap D
           (directLdPointQuestionOf D.combined (combinedPoint u α)) a)) =
@@ -148,8 +152,7 @@ transport: for a fixed point, a fixed point answer and a fixed outcome of the
 combined game, the probability over the combining vector that the recovered
 tuple of values differs from the point answer while the outcome read at the
 combined point agrees with the combination is at most the local bound. -/
-private theorem directCombinedRecoveryEvent_transport (D : DirectLdParams)
-    (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D)
+private theorem directCombinedRecoveryEvent_transport  (b : Fin D.k → DirectScalarQ D)
     (p : DirectPolyTuple D.combined) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D)) (fun α =>
         if evalDirectPolyTupleAt u (directTupleOfCombinedTuple D p) ≠ b ∧
@@ -162,6 +165,8 @@ private theorem directCombinedRecoveryEvent_transport (D : DirectLdParams)
     (directCombinedRecoveryEvent_avg_le D (p default) u b)
   exact if_congr (and_congr Iff.rfl (const_eq_fun_iff _
     (evalDirectPolyTupleAt (D := D.combined) (combinedPoint u α) p))) rfl rfl
+variable (S : Strategy (directLdGame D))
+
 
 /-! ## The two point relations -/
 
@@ -170,8 +175,7 @@ set_option maxHeartbeats 1600000 in
 the original strategy is consistent with the recovered polynomial tuple
 evaluated at the sampled point, up to the defect of the first conclusion for
 the combined strategy plus `(m + k) d / q`. -/
-theorem directCombinedRecovery_relation_one (D : DirectLdParams)
-    (S : Strategy (directLdGame D))
+theorem directCombinedRecovery_relation_one 
     (GB : DirectPolyMeasTuple D.combined S.ιB) :
     consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
         (fun u outcome => heteroKron
@@ -263,8 +267,7 @@ set_option maxHeartbeats 1600000 in
 /-- Second conclusion of `lem:ld-combining-recovery`: the mirror of
 `directCombinedRecovery_relation_one`, with the point measurement of the
 original strategy on the second tensor factor. -/
-theorem directCombinedRecovery_relation_two (D : DirectLdParams)
-    (S : Strategy (directLdGame D))
+theorem directCombinedRecovery_relation_two 
     (GA : DirectPolyMeasTuple D.combined S.ιA) :
     consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
         (fun u outcome => heteroKron

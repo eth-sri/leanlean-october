@@ -74,7 +74,6 @@ theorem exists_direct_passing_polynomial_bound (pointError : ℝ → ℝ)
               (min_le_right _ _))
             (Real.rpow_le_rpow_of_exponent_ge' hratio hratioOne hu.le
               (min_le_left _ _))) (by linarith))
-      have heFull : 0 ≤ error ^ t := Real.rpow_nonneg herror _
       have hyFull : 0 ≤ ratio ^ u := Real.rpow_nonneg hratio _
       have hsum : pointError error + C * dimension * lineError error ratio ≤
           dimension * K * (error ^ t + ratio ^ u) := by
@@ -116,8 +115,6 @@ theorem exists_direct_passing_polynomial_bound (pointError : ℝ → ℝ)
           (by positivity : 0 ≤ u / 2) (by
             have : u ≤ 2 := min_le_right _ _
             linarith : u / 2 ≤ 1)
-      have hratioDim : ratio ≤ dimension * ratio ^ (u / 2) :=
-        hratioSmall.trans (le_mul_of_one_le_left hy hdimension)
       refine (min_le_right _ _).trans ?_
       dsimp [directPassingErrorEnvelope, D]
       nlinarith [mul_nonneg hdim he, mul_nonneg hdim hy]
@@ -173,12 +170,11 @@ private theorem exists_capped_direct_global_pair_error_bound (pointError : ℝ �
   apply min_le_min_left
   apply mul_le_mul_of_nonneg_left _ hscale
   refine add_le_add (add_le_add ?_ le_rfl) le_rfl
-  unfold deltaLd
   apply mul_le_mul_of_nonneg_left _
     (mul_nonneg haNonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _))
   refine add_le_add (add_le_add ?_ le_rfl) le_rfl
   apply Real.rpow_le_rpow (add_nonneg hpassNonneg herror) _ hb.le
-  simpa only [one_mul] using add_le_add hpass (le_refl error)
+  simpa using add_le_add hpass (le_refl error)
 
 /-- The full direct-game passing error, including both point and line errors,
 can be substituted in low-degree soundness and absorbed into the error form of
@@ -226,7 +222,6 @@ theorem exists_direct_global_pair_error_bound (pointError : ℝ → ℝ)
   · rw [min_eq_right hsmall] at hbound
     refine le_trans (min_le_min_left 1 ?_) hbound
     apply mul_le_mul_of_nonneg_right (by linarith)
-    unfold deltaLd
     exact add_nonneg (add_nonneg
       (mul_nonneg (mul_nonneg haNonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _))
         (add_nonneg (add_nonneg (Real.rpow_nonneg (add_nonneg hpassing herror) _)

@@ -36,7 +36,7 @@ theorem stateQForm_conjBy_mul_apply {I : Type*} [Fintype I] [DecidableEq I]
       stateQForm psi (A * B) := by
   rw [← stateQForm_conjTranspose_mul_mul]
   congr 1
-  simp only [conjBy]
+  simp [conjBy]
   calc
     _ = (Uᴴ * U) * A * (Uᴴ * U) * B * (Uᴴ * U) := by noncomm_ring
     _ = A * B := by rw [hU]; simp
@@ -58,12 +58,14 @@ def swappedPauliMeas (w : GlobalPairWitness S deltaG) (side : PlayerSide)
         (kronecker_nonneg ((S.pauliMeas side W).pos h) Matrix.PosSemidef.one.nonneg)
         Matrix.PosSemidef.one.nonneg)
     (by
-      simp only [conjBy, onPlayer, ← Finset.sum_mul, ← Matrix.mul_sum,
+      simp [conjBy, onPlayer, ← Finset.sum_mul, ← Matrix.mul_sum,
         ← heteroKron_finset_sum_left, (S.pauliMeas side W).sum_eq_one,
         heteroKron_one_one, Matrix.mul_one, swapUnitary_mul_conjTranspose])
+variable (w : GlobalPairWitness S deltaG)
+
 
 /-- Coarse-graining commutes with extending and conjugating the Pauli POVM. -/
-theorem swappedPauliMeas_eval_effect (w : GlobalPairWitness S deltaG)
+theorem swappedPauliMeas_eval_effect 
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (a : PauliScalar P) :
     ((S.swappedPauliMeas w side W).postprocess
@@ -73,16 +75,18 @@ theorem swappedPauliMeas_eval_effect (w : GlobalPairWitness S deltaG)
     pauliEvalMeas, conjBy, onPlayer, ← Finset.sum_mul, ← Matrix.mul_sum,
     ← heteroKron_finset_sum_left]
   rfl
+variable (side : PlayerSide)
+
 
 /-- Original-player placement agrees with extension to the whole local block. -/
-theorem placeSide_onPlayer (side : PlayerSide) (A : Op (S.LocalSpace side)) :
+theorem placeSide_onPlayer  (A : Op (S.LocalSpace side)) :
     S.placeSide side (S.onPlayer side A) = S.placePlayer side A := by
   cases side
   · exact S.placeSide_alice_tensor_one _
   · exact S.placeSide_bob_tensor_one _
 
 /-- The canonical last-register effect has the same block and crossed placements. -/
-theorem placeSide_extracted (side : PlayerSide) (T : Op (PauliRegister P)) :
+theorem placeSide_extracted  (T : Op (PauliRegister P)) :
     S.placeSide side (heteroKron (1 : Op (S.ExpandedLocalSpace side)) T) =
       S.placeExtractedRegister side T := by
   cases side
@@ -97,7 +101,7 @@ theorem placeSide_extracted (side : PlayerSide) (T : Op (PauliRegister P)) :
         ((if row.2.1 = col.2.1 then 1 else 0) * T row.1.2.2 col.1.2.2) *
         (if row.2.2.1 = col.2.2.1 then 1 else 0) *
         (if row.2.2.2 = col.2.2.2 then 1 else 0)
-    simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one,
+    simp [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one,
       zero_mul, mul_zero]
     split_ifs <;> rfl
   · ext row col
@@ -111,22 +115,22 @@ theorem placeSide_extracted (side : PlayerSide) (T : Op (PauliRegister P)) :
         (if row.1.2.2 = col.1.2.2 then 1 else 0) *
         (if row.2.1 = col.2.1 then 1 else 0) *
         (if row.2.2.1 = col.2.2.1 then 1 else 0)
-    simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one,
+    simp [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one,
       zero_mul, mul_zero]
     split_ifs <;> rfl
 
 /-- Block placement preserves conjugation. -/
-theorem placeSide_conjBy (side : PlayerSide)
+theorem placeSide_conjBy 
     (U A : Op (ExtractionBlock P (S.LocalSpace side))) :
     S.placeSide side (conjBy U A) = conjBy (S.placeSide side U) (S.placeSide side A) := by
   cases side <;>
-    simp only [placeSide, conjBy, ← reindexOp_conjTranspose,
+    simp [placeSide, conjBy, ← reindexOp_conjTranspose,
       ← WinImplications.reindexOp_mul, MagicSquareRigidity.heteroKron_conjTranspose,
       heteroKron_mul, Matrix.conjTranspose_one, Matrix.mul_one] <;> rfl
 
 /-- Conjugated total-Pauli effects in block coordinates give exactly the
 six-register operators required by the extraction witness. -/
-theorem placeSide_swappedPauliMeas (w : GlobalPairWitness S deltaG)
+theorem placeSide_swappedPauliMeas 
     (side : PlayerSide) (W : PauliKind) (h : PauliRegister P) :
     S.placeSide side ((S.swappedPauliMeas w side W).effect h) =
       conjBy (S.placeSide side (swapUnitary w side))
@@ -136,7 +140,7 @@ theorem placeSide_swappedPauliMeas (w : GlobalPairWitness S deltaG)
 
 /-- The evaluated canonical block measurement is the swap-conjugated
 pulled-apart measurement, by `eq:qld-unitary-6`. -/
-theorem canonical_eval_eq_conj_tildeM (w : GlobalPairWitness S deltaG)
+theorem canonical_eval_eq_conj_tildeM 
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (a : PauliScalar P) :
     ((rightPlacedMeasurement (ιA := S.ExpandedLocalSpace side)
@@ -154,13 +158,13 @@ theorem reindexOp_heteroKron_eq_placeSides
     (B : Op (ExtractionBlock P S.toStrategy.ιB)) :
     reindexOp (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
       (heteroKron A B) = S.placeSide .alice A * S.placeSide .bob B := by
-  simp only [placeSide, ← WinImplications.reindexOp_mul, heteroKron_mul,
+  simp [placeSide, ← WinImplications.reindexOp_mul, heteroKron_mul,
     Matrix.mul_one, Matrix.one_mul]
 
 /-- On the jointly swapped state, the overlap of conjugated block measurements
 is one minus their original consistency defect. This is simultaneous unitary
 invariance with the exact six-register reassociation. -/
-theorem swapped_block_overlap_eq (w : GlobalPairWitness S deltaG)
+theorem swapped_block_overlap_eq 
     {X α : Type*} [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     (mu : Distribution X) (hmu : mu.IsProbability)
     (A : X → Measurement α (ExtractionBlock P S.toStrategy.ιA))
@@ -176,7 +180,7 @@ theorem swapped_block_overlap_eq (w : GlobalPairWitness S deltaG)
   have h := consistencyDefect_eq_one_sub_overlap mu
     (fun x => S.blockMeasurement .alice (A x))
     (fun x => S.blockMeasurement .bob (B x)) S.psiHat hmu S.psiHat_norm
-  simp only [blockMeasurement_effect] at h
+  simp [blockMeasurement_effect] at h
   rw [h, sub_sub_cancel]
   apply avgOver_congr
   intro x
@@ -190,7 +194,7 @@ theorem swapped_block_overlap_eq (w : GlobalPairWitness S deltaG)
 set_option maxHeartbeats 800000 in
 /-- Alice's evaluated swapped total-Pauli overlap with Bob's canonical
 measurement is exactly one minus the evaluated-Pauli/tilde consistency defect. -/
-theorem swapped_pauli_overlap_alice (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem swapped_pauli_overlap_alice  (W : PauliKind) :
     avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
       ∑ a : PauliScalar P, stateQForm
         (reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
@@ -219,7 +223,7 @@ theorem swapped_pauli_overlap_alice (w : GlobalPairWitness S deltaG) (W : PauliK
 set_option maxHeartbeats 800000 in
 /-- Bob's evaluated swapped total-Pauli overlap with Alice's canonical
 measurement satisfies the same exact transport, without strategy symmetry. -/
-theorem swapped_pauli_overlap_bob (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem swapped_pauli_overlap_bob  (W : PauliKind) :
     avgOver (uniformDistribution (Fin P.m → PauliScalar P)) (fun u =>
       ∑ a : PauliScalar P, stateQForm
         (reindexState (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)

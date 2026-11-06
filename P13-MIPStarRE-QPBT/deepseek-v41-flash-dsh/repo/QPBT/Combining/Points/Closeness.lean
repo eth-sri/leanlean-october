@@ -208,8 +208,8 @@ theorem error_terms_le_rpow_eighth {ε C₀ : ℝ} (hε : 0 ≤ ε) (hε1 : ε �
     rw [h8, h4, Real.sqrt_zero]
     refine ⟨le_rfl, le_rfl, ?_⟩
     positivity
-  · have hsqrt : Real.sqrt ε = Real.rpow ε (1 / 2 : ℝ) := Real.sqrt_eq_rpow ε
-    have hε1' : Real.rpow ε 1 = ε := Real.rpow_one ε
+  · have hsqrt := Real.sqrt_eq_rpow ε
+    have hε1' := Real.rpow_one ε
     have hmono : ∀ y z : ℝ, z ≤ y → Real.rpow ε y ≤ Real.rpow ε z := fun y z hyz =>
       Real.rpow_le_rpow_of_exponent_ge hpos hε1 hyz
     refine ⟨?_, ?_, ?_⟩

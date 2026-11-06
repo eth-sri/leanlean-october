@@ -28,6 +28,8 @@ namespace MIPStarRE.QPBT
 open MIPStarRE.LDT hiding Measurement
 
 noncomputable section
+variable {P : AdmissibleParams}
+
 
 /-! ## Inflation of a restricted line-point average -/
 
@@ -35,7 +37,7 @@ noncomputable section
 index inflates it by at most `2 m`.  This is the pointwise form of item 1 of
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1052-1056`. -/
-theorem avgOver_restrictedLinePointDist_le {P : AdmissibleParams}
+theorem avgOver_restrictedLinePointDist_le 
     (f : (LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) → ℝ)
     (hf : ∀ sample, 0 ≤ f sample) (kind : LineKind) (i : Fin P.m) :
     avgOver (restrictedLinePointDist P kind i) f ≤
@@ -98,7 +100,7 @@ to one kind and coordinate index in each factor inflates it by at most
 `4 m ^ 2`.  This is the pointwise form of item 2 of
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1056-1058`. -/
-theorem avgOver_prod_restrictedLinePointDist_le {P : AdmissibleParams}
+theorem avgOver_prod_restrictedLinePointDist_le 
     (f : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
       (LineDesc P.toLdParams × (Fin P.m → PauliScalar P))) → ℝ)
     (hf : ∀ sample, 0 ≤ f sample) (kindX kindZ : LineKind) (i j : Fin P.m) :
@@ -109,10 +111,7 @@ theorem avgOver_prod_restrictedLinePointDist_le {P : AdmissibleParams}
   classical
   have hfactor : (0 : ℝ) ≤ 2 * (P.m : ℝ) := by positivity
   rw [SandwichProduct.avgOver_distribution_prod, SandwichProduct.avgOver_distribution_prod]
-  have hinner : ∀ s1 : LineDesc P.toLdParams × (Fin P.m → PauliScalar P),
-      avgOver (restrictedLinePointDist P kindZ j) (fun s2 => f (s1, s2)) ≤
-        2 * (P.m : ℝ) *
-          avgOver (linePointDist P.toLdParams) (fun s2 => f (s1, s2)) :=
+  have hinner :=
     fun s1 => avgOver_restrictedLinePointDist_le
       (fun s2 => f (s1, s2)) (fun s2 => hf (s1, s2)) kindZ j
   calc avgOver (restrictedLinePointDist P kindX i)

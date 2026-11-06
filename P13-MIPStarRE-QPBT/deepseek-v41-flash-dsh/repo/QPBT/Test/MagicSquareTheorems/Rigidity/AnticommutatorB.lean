@@ -39,10 +39,12 @@ space.  Formalization-only abbreviation. -/
 abbrev dilatedObsAf (S : Strategy msGame) (x : MsType) (f : MsAnswer → ZMod 2) :
     Op (S.ιA × Option MsAnswer) :=
   obsOf (((msDilatedStrategy S).A x).postprocess f)
+variable (S : Strategy msGame)
+
 
 /-- The inflation of Bob's original observable is the ground compression of
 his dilated observable. -/
-theorem naimarkInflation_obs_B (S : Strategy msGame) (y : MsType) :
+theorem naimarkInflation_obs_B  (y : MsType) :
     naimarkInflation (α := MsAnswer) (obsOf ((S.B y).postprocess msBitOrZero)) =
       groundProjection S.ιB MsAnswer * dilatedObsB S y msBitOrZero *
         groundProjection S.ιB MsAnswer := by
@@ -59,10 +61,12 @@ theorem conjTranspose_mul_le_one_dilatedObsAf (S : Strategy msGame) (x : MsType)
     (f : MsAnswer → ZMod 2) :
     (dilatedObsAf S x f)ᴴ * dilatedObsAf S x f ≤ 1 :=
   conjTranspose_mul_le_one_of_obsOf _
+variable (i : Fin 6) (k : Fin 3)
+
 
 /-- The leakage of Bob's dilated observable out of the ground slice is bounded
 by the two forward intertwining defects of its effects. -/
-theorem norm_leak_obs_le_B (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+theorem norm_leak_obs_le_B  :
     ‖applyOperatorToState (heteroKron 1 ((1 - groundProjection S.ιB MsAnswer) *
         dilatedObsB S (.var (msConstraintVars i k)) msBitOrZero))
         (naimarkDilatedState MsAnswer S.ψ)‖ ≤
@@ -85,7 +89,7 @@ theorem norm_leak_obs_le_B (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
 
 /-- The intertwining defect of Alice's dilated constraint observable against
 Bob's dilated variable observable is bounded by the two forward defects. -/
-theorem norm_intertwine_obs_le_B (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+theorem norm_intertwine_obs_le_B  :
     ‖applyOperatorToState (heteroKron (dilatedObsAf S (.constraint i) (constraintBitOrZero k)) 1 -
         heteroKron 1 (dilatedObsB S (.var (msConstraintVars i k)) msBitOrZero))
         (naimarkDilatedState MsAnswer S.ψ)‖ ≤
@@ -140,7 +144,7 @@ theorem norm_rightTensor_compressed_product_sub_le (α : Type) [Fintype α]
     have hassoc : groundProjection ιB α * A * groundProjection ιB α *
         (groundProjection ιB α * B * groundProjection ιB α) =
         groundProjection ιB α * A * groundProjection ιB α * B * groundProjection ιB α := by
-      simp only [Matrix.mul_assoc]
+      simp [Matrix.mul_assoc]
       rw [← Matrix.mul_assoc (groundProjection ιB α) (groundProjection ιB α) (B * _), hGG]
     rw [hassoc, show heteroKron (1 : Op (ιA × Option α)) (groundProjection ιB α * A *
         groundProjection ιB α * B * groundProjection ιB α) =
@@ -207,13 +211,11 @@ theorem norm_rightTensor_compressed_product_sub_le (α : Type) [Fintype α]
         refine le_trans (norm_sub_le _ _) ?_
         rw [norm_neg]
     _ ≤ _ := by linarith [hfirst, hsecond]
+variable {κA κB : Type} [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB] (S : Strategy msGame) (φA : EuclideanSpace ℂ (S.ιA × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κA) (φB : EuclideanSpace ℂ (S.ιB × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κB) (ξ : EuclideanSpace ℂ (κA × κB))
+
 
 /-- Right-placed counterpart of `norm_product_transfer_le_A`. -/
-theorem norm_product_transfer_le_B {κA κB : Type} [Fintype κA] [DecidableEq κA]
-    [Fintype κB] [DecidableEq κB] (S : Strategy msGame)
-    (φA : EuclideanSpace ℂ (S.ιA × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ (S.ιB × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ξ : EuclideanSpace ℂ (κA × κB)) (A B : Op (S.ιB × Option MsAnswer))
+theorem norm_product_transfer_le_B  (A B : Op (S.ιB × Option MsAnswer))
     (hA : Aᴴ * A ≤ 1) (hB : Bᴴ * B ≤ 1) :
     ‖applyOperatorToState
         (heteroKron 1 (conjIsometry φB (groundProjection S.ιB MsAnswer * A *
@@ -281,11 +283,7 @@ theorem norm_product_transfer_le_B {κA κB : Type} [Fintype κA] [DecidableEq �
 dilated strategy to the original one; see `ms_anticommutator_transfer_A`.
 The left-hand side is `msAnticommutatorDistanceB S w` for the witness whose
 isometry is the composite of the dilation embedding and `φ_B`. -/
-theorem ms_anticommutator_transfer_B {κA κB : Type} [Fintype κA] [DecidableEq κA]
-    [Fintype κB] [DecidableEq κB] (S : Strategy msGame)
-    (φA : EuclideanSpace ℂ (S.ιA × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ (S.ιB × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ξ : EuclideanSpace ℂ (κA × κB)) (ε η : ℝ)
+theorem ms_anticommutator_transfer_B  (ε η : ℝ)
     (hwin : 1 - ε ≤ S.value)
     (hξ : ‖isometryTensor φA φB (msDilatedStrategy S).ψ - ξ‖ ≤ η) :
     opDistSq (uniformDistribution Unit)

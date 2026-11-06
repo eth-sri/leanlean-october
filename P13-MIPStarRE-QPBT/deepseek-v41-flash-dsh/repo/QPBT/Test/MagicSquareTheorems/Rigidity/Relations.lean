@@ -74,9 +74,13 @@ theorem ms_support_card_le :
     _ ≤ (Finset.univ : Finset ((Fin 6 × Fin 3) × Bool)).card :=
       Finset.card_image_le
     _ = 36 := by norm_num
+variable (i : Fin 6)
+variable (k : Fin 3)
+
+
 
 /-- A constraint-to-variable incidence belongs to the question support. -/
-theorem ms_forward_incidence_mem_support (i : Fin 6) (k : Fin 3) :
+theorem ms_forward_incidence_mem_support  :
     (.constraint i, .var (msConstraintVars i k)) ∈
       (graphDistribution msEdges msEdges_nonempty).support := by
   apply Finset.mem_filter.mpr
@@ -84,7 +88,7 @@ theorem ms_forward_incidence_mem_support (i : Fin 6) (k : Fin 3) :
   exact Finset.mem_image.mpr ⟨(i, k), Finset.mem_univ _, rfl⟩
 
 /-- A variable-to-constraint incidence belongs to the question support. -/
-theorem ms_reverse_incidence_mem_support (i : Fin 6) (k : Fin 3) :
+theorem ms_reverse_incidence_mem_support  :
     (.var (msConstraintVars i k), .constraint i) ∈
       (graphDistribution msEdges msEdges_nonempty).support := by
   apply Finset.mem_filter.mpr
@@ -135,9 +139,13 @@ noncomputable def acceptanceMass (S : Strategy msGame) (x y : MsType) : ℝ :=
 noncomputable def totalRejectionMass (S : Strategy msGame) : ℝ :=
   avgOver (graphDistribution msEdges msEdges_nonempty) fun xy =>
     rejectionMass S xy.1 xy.2
+variable (S : Strategy msGame)
+variable (x y : MsType)
+
+
 
 /-- Acceptance and rejection partition the conditioned answer mass. -/
-theorem acceptance_mass_add_rejection_mass (S : Strategy msGame) (x y : MsType) :
+theorem acceptance_mass_add_rejection_mass  :
     acceptanceMass S x y + rejectionMass S x y = 1 := by
   rw [← show (∑ a : MsAnswer, ∑ b : MsAnswer, outcomeWeight S x y a b) = 1 by
     exact outcomeWeight_sum_eq_one S x y]
@@ -151,7 +159,7 @@ theorem acceptance_mass_add_rejection_mass (S : Strategy msGame) (x y : MsType) 
   cases h : msWinPredicate x y a b <;> simp [h]
 
 /-- The strategy value is the average conditioned acceptance mass. -/
-theorem strategy_value_eq_acceptance_mass (S : Strategy msGame) :
+theorem strategy_value_eq_acceptance_mass  :
     S.value = avgOver (graphDistribution msEdges msEdges_nonempty) fun xy =>
       acceptanceMass S xy.1 xy.2 := by
   unfold Strategy.value acceptanceMass outcomeEventWeight msGame
@@ -164,7 +172,7 @@ theorem strategy_value_eq_acceptance_mass (S : Strategy msGame) :
   cases h : msWinPredicate xy.1 xy.2 a b <;> simp [h]
 
 /-- Total rejection mass is exactly one minus the strategy value. -/
-theorem total_rejection_mass_eq_one_sub_value (S : Strategy msGame) :
+theorem total_rejection_mass_eq_one_sub_value  :
     totalRejectionMass S = 1 - S.value := by
   rw [show S.value = avgOver (graphDistribution msEdges msEdges_nonempty) (fun xy =>
       acceptanceMass S xy.1 xy.2) by exact strategy_value_eq_acceptance_mass S]
@@ -190,7 +198,7 @@ theorem total_rejection_mass_eq_one_sub_value (S : Strategy msGame) :
         simp [msEdges])]
 
 /-- Value at least `1 - ε` implies total rejection mass at most `ε`. -/
-theorem total_rejection_mass_le (S : Strategy msGame) (ε : ℝ)
+theorem total_rejection_mass_le  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) : totalRejectionMass S ≤ ε := by
   rw [total_rejection_mass_eq_one_sub_value]
   linarith
@@ -201,11 +209,11 @@ theorem rejection_mass_nonneg (S : Strategy msGame) (x y : MsType) :
   outcome_event_weight_nonneg S x y fun a b => msWinPredicate x y a b = false
 
 /-- A supported conditioned rejection mass is at most 36 times total rejection. -/
-theorem rejection_mass_le_thirty_six_mul_total (S : Strategy msGame)
+theorem rejection_mass_le_thirty_six_mul_total 
     {xy : MsType × MsType}
     (hxy : xy ∈ (graphDistribution msEdges msEdges_nonempty).support) :
     rejectionMass S xy.1 xy.2 ≤ 36 * totalRejectionMass S := by
-  have hrejection : 0 ≤ rejectionMass S xy.1 xy.2 :=
+  have hrejection :=
     rejection_mass_nonneg S xy.1 xy.2
   have hweight := ms_question_weight_ge hxy
   have hterm :
@@ -216,14 +224,12 @@ theorem rejection_mass_le_thirty_six_mul_total (S : Strategy msGame)
       (fun z _ => mul_nonneg
         ((graphDistribution msEdges msEdges_nonempty).nonnegative z)
         (rejection_mass_nonneg S z.1 z.2)) hxy
-  have hscaled : (1 / 36 : ℝ) * rejectionMass S xy.1 xy.2 ≤
-      (graphDistribution msEdges msEdges_nonempty).weight xy *
-        rejectionMass S xy.1 xy.2 :=
+  have hscaled :=
     mul_le_mul_of_nonneg_right hweight hrejection
   nlinarith
 
 /-- A supported conditioned rejection mass is at most `36 * ε`. -/
-theorem rejection_mass_le (S : Strategy msGame) (ε : ℝ)
+theorem rejection_mass_le  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) {xy : MsType × MsType}
     (hxy : xy ∈ (graphDistribution msEdges msEdges_nonempty).support) :
     rejectionMass S xy.1 xy.2 ≤ 36 * ε := by
@@ -234,7 +240,7 @@ theorem rejection_mass_le (S : Strategy msGame) (ε : ℝ)
       mul_le_mul_of_nonneg_left (total_rejection_mass_le S ε hwin) (by norm_num)
 
 /-- An event which always rejects has mass at most the conditioned rejection mass. -/
-theorem outcome_event_weight_le_rejection_mass (S : Strategy msGame) (x y : MsType)
+theorem outcome_event_weight_le_rejection_mass 
     (E : MsAnswer → MsAnswer → Prop) [DecidableRel E]
     (hE : ∀ a b, E a b → msWinPredicate x y a b = false) :
     outcomeEventWeight S x y E ≤ rejectionMass S x y := by
@@ -285,11 +291,11 @@ private instance reverseCellMismatchDecidableRel (k : Fin 3) :
   fun _ _ => inferInstance
 
 /-- The three cells in any fixed row or column are distinct. -/
-theorem constraint_vars_injective (i : Fin 6) : Function.Injective (msConstraintVars i) := by
+theorem constraint_vars_injective  : Function.Injective (msConstraintVars i) := by
   intro k l hkl
   apply Fin.ext
   unfold msConstraintVars at hkl
-  split at hkl <;> simp only [Fin.mk.injEq] at hkl ⊢ <;> omega
+  split at hkl <;> simp [Fin.mk.injEq] at hkl ⊢ <;> omega
 
 /-- Every Magic Square variable is incident to a row constraint. -/
 theorem every_variable_is_incident (j : Fin 9) :
@@ -298,7 +304,7 @@ theorem every_variable_is_incident (j : Fin 9) :
   let k : Fin 3 := ⟨j.val % 3, Nat.mod_lt _ (by omega)⟩
   refine ⟨i, k, ?_⟩
   apply Fin.ext
-  simp only [msConstraintVars, i, k]
+  simp [msConstraintVars, i, k]
   rw [if_pos (by omega)]
   omega
 
@@ -313,9 +319,10 @@ noncomputable def reverseCellMismatchMass (S : Strategy msGame)
     (i : Fin 6) (k : Fin 3) : ℝ :=
   @outcomeEventWeight msGame S (.var (msConstraintVars i k)) (.constraint i)
     (fun a b => msBitOrZero a ≠ constraintBitOrZero k b) (fun _ _ => inferInstance)
+variable (a b : MsAnswer)
 
-private theorem forward_cell_mismatch_rejects (i : Fin 6) (k : Fin 3)
-    (a b : MsAnswer) (hmismatch : constraintBitOrZero k a ≠ msBitOrZero b) :
+
+private theorem forward_cell_mismatch_rejects  (hmismatch : constraintBitOrZero k a ≠ msBitOrZero b) :
     msWinPredicate (.constraint i) (.var (msConstraintVars i k)) a b = false := by
   cases a with
   | bit γa => rfl
@@ -323,16 +330,15 @@ private theorem forward_cell_mismatch_rejects (i : Fin 6) (k : Fin 3)
       cases b with
       | triple βb => rfl
       | bit γ =>
-          simp only [constraintBitOrZero, msBitOrZero] at hmismatch
+          simp [constraintBitOrZero, msBitOrZero] at hmismatch
           rw [msWinPredicate, decide_eq_false_iff_not]
           intro haccept
           rcases haccept.2 with ⟨l, hl, hbit⟩
-          have hlk : l = k := constraint_vars_injective i hl
+          have hlk := constraint_vars_injective i hl
           subst l
           exact hmismatch hbit
 
-private theorem reverse_cell_mismatch_rejects (i : Fin 6) (k : Fin 3)
-    (a b : MsAnswer) (hmismatch : msBitOrZero a ≠ constraintBitOrZero k b) :
+private theorem reverse_cell_mismatch_rejects  (hmismatch : msBitOrZero a ≠ constraintBitOrZero k b) :
     msWinPredicate (.var (msConstraintVars i k)) (.constraint i) a b = false := by
   cases a with
   | triple α => rfl
@@ -340,16 +346,16 @@ private theorem reverse_cell_mismatch_rejects (i : Fin 6) (k : Fin 3)
       cases b with
       | bit γb => rfl
       | triple β =>
-          simp only [msBitOrZero, constraintBitOrZero] at hmismatch
+          simp [msBitOrZero, constraintBitOrZero] at hmismatch
           rw [msWinPredicate, decide_eq_false_iff_not]
           intro haccept
           rcases haccept.2 with ⟨l, hl, hbit⟩
-          have hlk : l = k := constraint_vars_injective i hl
+          have hlk := constraint_vars_injective i hl
           subst l
           exact hmismatch hbit.symm
 
 /-- Every forward directed incidence has cell-mismatch mass at most `36 * ε`. -/
-theorem forward_cell_mismatch_mass_le (S : Strategy msGame) (ε : ℝ)
+theorem forward_cell_mismatch_mass_le  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) (i : Fin 6) (k : Fin 3) :
     forwardCellMismatchMass S i k ≤ 36 * ε := by
   unfold forwardCellMismatchMass
@@ -362,7 +368,7 @@ theorem forward_cell_mismatch_mass_le (S : Strategy msGame) (ε : ℝ)
       rejection_mass_le S ε hwin (ms_forward_incidence_mem_support i k)
 
 /-- Every reverse directed incidence has cell-mismatch mass at most `36 * ε`. -/
-theorem reverse_cell_mismatch_mass_le (S : Strategy msGame) (ε : ℝ)
+theorem reverse_cell_mismatch_mass_le  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) (i : Fin 6) (k : Fin 3) :
     reverseCellMismatchMass S i k ≤ 36 * ε := by
   unfold reverseCellMismatchMass
@@ -384,8 +390,7 @@ def bitSign (b : ZMod 2) : ℝ :=
 theorem bit_sign_add (b c : ZMod 2) :
     bitSign (b + c) = bitSign b * bitSign c := by
   unfold bitSign
-  rw [ZMod.val_add]
-  rw [← neg_one_pow_eq_pow_mod_two]
+  rw [ZMod.val_add, ← neg_one_pow_eq_pow_mod_two]
   exact pow_add _ _ _
 
 /-- The sign of a three-bit parity is the product of the three signs. -/
@@ -423,7 +428,7 @@ noncomputable instance constraintParityFailureDecidablePred (i : Fin 6) :
   fun a => Classical.propDecidable (ConstraintParityFailure i a)
 
 /-- Every wrong-form constraint answer is included in the parity-failure event. -/
-theorem wrong_constraint_answer_implies_parity_failure (i : Fin 6) (a : MsAnswer)
+theorem wrong_constraint_answer_implies_parity_failure  (a : MsAnswer)
     (ha : wrongConstraintAnswer a = true) : ConstraintParityFailure i a := by
   cases a with
   | triple β => simp [wrongConstraintAnswer] at ha
@@ -441,8 +446,7 @@ noncomputable def bobParityFailureMass (S : Strategy msGame) (i : Fin 6) : ℝ :
   @bobEventWeight msGame S (.constraint i) (ConstraintParityFailure i)
     (constraintParityFailureDecidablePred i)
 
-private theorem forward_parity_failure_rejects (i : Fin 6) (k : Fin 3)
-    (a b : MsAnswer) (hparity : ConstraintParityFailure i a) :
+private theorem forward_parity_failure_rejects  (hparity : ConstraintParityFailure i a) :
     msWinPredicate (.constraint i) (.var (msConstraintVars i k)) a b = false := by
   cases a with
   | bit δ => rfl
@@ -459,8 +463,7 @@ private theorem forward_parity_failure_rejects (i : Fin 6) (k : Fin 3)
               (bit_sign_sum_fin_three β).symm
             _ = bitSign (msParity i) := by rw [haccept.1]
 
-private theorem reverse_parity_failure_rejects (i : Fin 6) (k : Fin 3)
-    (a b : MsAnswer) (hparity : ConstraintParityFailure i b) :
+private theorem reverse_parity_failure_rejects  (hparity : ConstraintParityFailure i b) :
     msWinPredicate (.var (msConstraintVars i k)) (.constraint i) a b = false := by
   cases a with
   | triple α => rfl
@@ -478,7 +481,7 @@ private theorem reverse_parity_failure_rejects (i : Fin 6) (k : Fin 3)
             _ = bitSign (msParity i) := by rw [haccept.1]
 
 /-- Alice satisfies each of the six row or column sign products up to mass `36 * ε`. -/
-theorem alice_parity_failure_mass_le (S : Strategy msGame) (ε : ℝ)
+theorem alice_parity_failure_mass_le  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) (i : Fin 6) :
     aliceParityFailureMass S i ≤ 36 * ε := by
   unfold aliceParityFailureMass
@@ -492,7 +495,7 @@ theorem alice_parity_failure_mass_le (S : Strategy msGame) (ε : ℝ)
       rejection_mass_le S ε hwin (ms_forward_incidence_mem_support i 0)
 
 /-- Bob satisfies each of the six row or column sign products up to mass `36 * ε`. -/
-theorem bob_parity_failure_mass_le (S : Strategy msGame) (ε : ℝ)
+theorem bob_parity_failure_mass_le  (ε : ℝ)
     (hwin : 1 - ε ≤ S.value) (i : Fin 6) :
     bobParityFailureMass S i ≤ 36 * ε := by
   unfold bobParityFailureMass

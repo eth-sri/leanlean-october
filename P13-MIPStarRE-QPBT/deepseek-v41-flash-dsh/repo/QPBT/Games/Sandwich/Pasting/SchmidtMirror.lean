@@ -50,11 +50,13 @@ theorem schmidt_pair_mirror_estimate (left right : ℝ) (hleft : 0 ≤ left)
       (mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hleft) hright)
         (Complex.normSq_nonneg _))
   linarith
+variable {ι : Type*} [Fintype ι]
+
 
 /-- A square matrix admits Schmidt coordinates, including its zero singular
 values. This specializes the existing positive-Gram orthonormal completion
 to equal row and column index types; no invertibility is assumed. -/
-theorem exists_schmidt_coordinates {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem exists_schmidt_coordinates  [DecidableEq ι]
     (coeff : Op ι) :
     ∃ (left right : Matrix.unitaryGroup ι ℂ) (values : ι → ℝ),
       (∀ index, 0 ≤ values index) ∧
@@ -112,7 +114,7 @@ theorem exists_schmidt_coordinates {ι : Type*} [Fintype ι] [DecidableEq ι]
 /-- Summing the paired-entry estimate gives the Schmidt commutator bound in
 diagonal coordinates. The coefficients may vanish and neither Hermitian
 operator is required to be projective. -/
-theorem schmidt_diagonal_mirror_estimate {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem schmidt_diagonal_mirror_estimate  [DecidableEq ι]
     (values : ι → ℝ) (hvalues : ∀ index, 0 ≤ values index)
     (alice bob : Op ι) (halice : alice.IsHermitian) (hbob : bob.IsHermitian) :
     (∑ row, ∑ col, Complex.normSq
@@ -142,13 +144,13 @@ theorem schmidt_diagonal_mirror_estimate {ι : Type*} [Fintype ι] [DecidableEq 
         (alice col row * (values row : ℂ) - (values col : ℂ) * bob col row)]
       have ha : (starRingEnd ℂ) (alice col row) = alice row col := halice.apply row col
       have hb : (starRingEnd ℂ) (bob col row) = bob row col := hbob.apply row col
-      simp only [map_sub, map_mul, Complex.conj_ofReal, ha, hb, mul_comm]
+      simp [map_sub, map_mul, Complex.conj_ofReal, ha, hb, mul_comm]
     rw [hleft, hright]
     simpa only [mul_comm] using hpair
-  simp only [Matrix.sub_apply, Matrix.mul_diagonal, Matrix.diagonal_mul]
+  simp [Matrix.sub_apply, Matrix.mul_diagonal, Matrix.diagonal_mul]
   have hsum := Finset.sum_le_sum fun row (_ : row ∈ (Finset.univ : Finset ι)) =>
     Finset.sum_le_sum fun col (_ : col ∈ (Finset.univ : Finset ι)) => hpoint row col
-  simp only [Finset.sum_add_distrib] at hsum
+  simp [Finset.sum_add_distrib] at hsum
   have hswap : (∑ row : ι, ∑ col : ι, Complex.normSq
       (alice col row * (values row : ℂ) - (values col : ℂ) * bob col row)) =
       ∑ row : ι, ∑ col : ι, Complex.normSq
@@ -157,12 +159,12 @@ theorem schmidt_diagonal_mirror_estimate {ι : Type*} [Fintype ι] [DecidableEq 
   rw [hswap] at hsum
   linarith
 
-private theorem schmidt_entry_mass_eq_trace {ι : Type*} [Fintype ι] (coeff : Op ι) :
+private theorem schmidt_entry_mass_eq_trace  (coeff : Op ι) :
     (∑ row, ∑ col, Complex.normSq (coeff row col)) = (coeff * coeffᴴ).trace.re := by
   simp [Matrix.trace, Matrix.diag, Matrix.mul_apply, Matrix.conjTranspose_apply,
     Complex.normSq_apply, Complex.mul_re]
 
-private theorem schmidt_entry_mass_unitary {ι : Type*} [Fintype ι] [DecidableEq ι]
+private theorem schmidt_entry_mass_unitary  [DecidableEq ι]
     (left right : Matrix.unitaryGroup ι ℂ) (coeff : Op ι) :
     (∑ row, ∑ col, Complex.normSq (((left : Op ι) * coeff * (right : Op ι)ᴴ) row col)) =
       ∑ row, ∑ col, Complex.normSq (coeff row col) := by
@@ -172,7 +174,7 @@ private theorem schmidt_entry_mass_unitary {ι : Type*} [Fintype ι] [DecidableE
   have hprod : ((left : Op ι) * coeff * (right : Op ι)ᴴ) *
       ((left : Op ι) * coeff * (right : Op ι)ᴴ)ᴴ =
       (left : Op ι) * (coeff * coeffᴴ) * (left : Op ι)ᴴ := by
-    simp only [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
+    simp [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
       Matrix.mul_assoc]
     rw [← Matrix.mul_assoc (right : Op ι)ᴴ (right : Op ι), hright, Matrix.one_mul]
   rw [hprod, Matrix.trace_mul_cycle, hleft, Matrix.one_mul]
@@ -215,16 +217,18 @@ noncomputable def schmidtMirror (ψ : EuclideanSpace ℂ (ι × ι)) : Op ι →
   map_add' first second := by simp [Matrix.transpose_add, Matrix.mul_add, Matrix.add_mul]
   map_smul' scalar bob := by
     simp [Matrix.transpose_smul]
+variable (ψ : EuclideanSpace ℂ (ι × ι))
+
 
 /-- Vectorizing a left/right operator difference gives its coefficient-matrix
 intertwining error, with the Hilbert norm rather than the function supremum norm. -/
-theorem schmidt_action_norm_sq (ψ : EuclideanSpace ℂ (ι × ι)) (alice bob : Op ι) :
+theorem schmidt_action_norm_sq  (alice bob : Op ι) :
     ‖applyOperatorToState (heteroKron alice 1) ψ -
       applyOperatorToState (heteroKron 1 bob) ψ‖ ^ 2 =
       ∑ row, ∑ col, Complex.normSq
         ((alice * schmidtCoefficientMatrix ψ - schmidtCoefficientMatrix ψ * bobᵀ) row col) := by
   rw [PiLp.norm_sq_eq_of_L2]
-  simp only [Complex.sq_norm, Fintype.sum_prod_type]
+  simp [Complex.sq_norm, Fintype.sum_prod_type]
   apply Finset.sum_congr rfl
   intro row _
   apply Finset.sum_congr rfl
@@ -236,7 +240,7 @@ theorem schmidt_action_norm_sq (ψ : EuclideanSpace ℂ (ι × ι)) (alice bob :
     Matrix.one_apply, ite_mul, mul_ite, mul_comm]
 
 /-- Mirrors preserve the identity and therefore completeness of a measurement. -/
-theorem schmidtMirror_one (ψ : EuclideanSpace ℂ (ι × ι)) :
+theorem schmidtMirror_one  :
     schmidtMirror ψ 1 = 1 := by
   change (schmidtMirrorUnitary ψ : Op ι) * (1 : Op ι)ᵀ *
     (schmidtMirrorUnitary ψ : Op ι)ᴴ = 1
@@ -244,24 +248,24 @@ theorem schmidtMirror_one (ψ : EuclideanSpace ℂ (ι × ι)) :
   exact Unitary.coe_mul_star_self _
 
 /-- Multiplication is reversed by the Schmidt mirror. -/
-theorem schmidtMirror_mul (ψ : EuclideanSpace ℂ (ι × ι)) (first second : Op ι) :
+theorem schmidtMirror_mul  (first second : Op ι) :
     schmidtMirror ψ (first * second) = schmidtMirror ψ second * schmidtMirror ψ first := by
   have hunitary : (schmidtMirrorUnitary ψ : Op ι)ᴴ *
       (schmidtMirrorUnitary ψ : Op ι) = 1 := Unitary.coe_star_mul_self _
   change _ * (first * second)ᵀ * _ = (_ * secondᵀ * _) * (_ * firstᵀ * _)
-  simp only [Matrix.transpose_mul, Matrix.mul_assoc]
+  simp [Matrix.transpose_mul, Matrix.mul_assoc]
   rw [← Matrix.mul_assoc (schmidtMirrorUnitary ψ : Op ι)ᴴ
     (schmidtMirrorUnitary ψ : Op ι), hunitary, Matrix.one_mul]
 
 /-- The mirror preserves adjoints, in addition to reversing products. -/
-theorem schmidtMirror_adjoint (ψ : EuclideanSpace ℂ (ι × ι)) (bob : Op ι) :
+theorem schmidtMirror_adjoint  (bob : Op ι) :
     schmidtMirror ψ bobᴴ = (schmidtMirror ψ bob)ᴴ := by
   change _ * bobᴴᵀ * _ = (_ * bobᵀ * _)ᴴ
-  simp only [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc]
+  simp [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc]
   rfl
 
 /-- The transpose and unitary conjugation preserve positivity of effects. -/
-theorem schmidtMirror_posSemidef (ψ : EuclideanSpace ℂ (ι × ι)) (bob : Op ι)
+theorem schmidtMirror_posSemidef  (bob : Op ι)
     (hbob : bob.PosSemidef) : (schmidtMirror ψ bob).PosSemidef := by
   have hpositive := hbob.transpose.conjTranspose_mul_mul_same (schmidtMirrorUnitary ψ : Op ι)ᴴ
   simpa only [schmidtMirror, LinearMap.coe_mk, AddHom.coe_mk,
@@ -272,7 +276,7 @@ opposite-register prediction error, in squared Hilbert norm. This is the
 dimension-independent estimate of the one-sided pasting argument in issue
 Dengnifer/MIPStarRE-QPBT-bak#201.
 Neither the state nor its reduced density operator is assumed faithful. -/
-theorem schmidtMirror_norm_sq_le (ψ : EuclideanSpace ℂ (ι × ι))
+theorem schmidtMirror_norm_sq_le 
     (alice bob : Op ι) (halice : alice.IsHermitian) (hbob : bob.IsHermitian) :
     ‖applyOperatorToState (heteroKron (schmidtMirror ψ bob) 1) ψ -
       applyOperatorToState (heteroKron 1 bob) ψ‖ ^ 2 ≤
@@ -292,11 +296,11 @@ theorem schmidtMirror_norm_sq_le (ψ : EuclideanSpace ℂ (ι × ι))
       Matrix.star_eq_conjTranspose]
   have halice' : alice'.IsHermitian := by
     change ((left : Op ι)ᴴ * alice * (left : Op ι))ᴴ = _
-    simp only [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
+    simp [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
       halice.eq, alice', Matrix.mul_assoc]
   have hbob' : bob'.IsHermitian := by
     change ((right : Op ι)ᴴ * bobᵀ * (right : Op ι))ᴴ = _
-    simp only [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
+    simp [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
       hbob.transpose.eq, bob', Matrix.mul_assoc]
   have hleft : (left : Op ι) * (left : Op ι)ᴴ = 1 := Unitary.coe_mul_star_self left
   have hleft' : (left : Op ι)ᴴ * (left : Op ι) = 1 := Unitary.coe_star_mul_self left
@@ -309,12 +313,12 @@ theorem schmidtMirror_norm_sq_le (ψ : EuclideanSpace ℂ (ι × ι))
       schmidtCoefficientMatrix ψ * bobᵀ =
       (left : Op ι) * (bob' * diagonal - diagonal * bob') * (right : Op ι)ᴴ := by
     rw [hmirror, hfactor]
-    simp only [bob', Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_assoc, hcancel', hright,
+    simp [bob', Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_assoc, hcancel', hright,
       Matrix.mul_one]
   have halicediff : alice * schmidtCoefficientMatrix ψ - schmidtCoefficientMatrix ψ * bobᵀ =
       (left : Op ι) * (alice' * diagonal - diagonal * bob') * (right : Op ι)ᴴ := by
     rw [hfactor]
-    simp only [alice', bob', Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_assoc, hcancel,
+    simp [alice', bob', Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_assoc, hcancel,
       hright, Matrix.mul_one]
   rw [schmidt_action_norm_sq, schmidt_action_norm_sq, hmirrordiff, halicediff,
     schmidt_entry_mass_unitary, schmidt_entry_mass_unitary]

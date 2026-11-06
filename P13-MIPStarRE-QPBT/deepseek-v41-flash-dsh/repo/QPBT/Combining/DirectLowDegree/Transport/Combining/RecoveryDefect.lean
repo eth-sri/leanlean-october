@@ -58,14 +58,14 @@ open SandwichProduct
 noncomputable section
 
 namespace RecoveryInternal
+variable {β Γ ιA ιB : Type*} [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-! ## Pair expansions of the diagonal overlap -/
 
 /-- The diagonal overlap of a measurement against a relabelled measurement on the
 opposite factor is the sum over pairs of outcomes with matching labels. -/
-private theorem diagonalRight_pair_sum {β Γ ιA ιB : Type*}
-    [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+private theorem diagonalRight_pair_sum 
     (A : Measurement β ιA) (B : Measurement Γ ιB)
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : Γ → β) :
     (∑ b : β, stateQForm ψ
@@ -79,9 +79,7 @@ private theorem diagonalRight_pair_sum {β Γ ιA ιB : Type*}
 
 /-- The diagonal overlap of a relabelled measurement against a measurement on
 the opposite factor, with the relabelled measurement on the first factor. -/
-private theorem diagonalLeft_pair_sum {β Γ ιA ιB : Type*}
-    [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+private theorem diagonalLeft_pair_sum 
     (A : Measurement β ιB) (B : Measurement Γ ιA)
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (f : Γ → β) :
     (∑ b : β, stateQForm ψ
@@ -92,13 +90,12 @@ private theorem diagonalLeft_pair_sum {β Γ ιA ιB : Type*}
   refine Finset.sum_congr rfl fun b _ => ?_
   rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
     heteroKron_finset_sum_left, stateQForm_finset_sum, Finset.sum_filter]
+variable {β Γ R ιA ιB : Type*} [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ] [Fintype R] [DecidableEq R] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-- The diagonal overlap of two relabelled measurements on opposite factors is
 the sum over pairs of outcomes with matching labels. -/
-private theorem diagonalPair_pair_sum {β Γ R ιA ιB : Type*}
-    [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
-    [Fintype R] [DecidableEq R]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+private theorem diagonalPair_pair_sum 
     (A : Measurement β ιA) (B : Measurement Γ ιB)
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (e : β → R) (f : Γ → R) :
     (∑ r : R, stateQForm ψ
@@ -135,10 +132,7 @@ private theorem diagonalPair_pair_sum {β Γ R ιA ιB : Type*}
 
 /-- The diagonal overlap of two relabelled measurements on opposite factors,
 with the second measurement on the first tensor factor. -/
-private theorem diagonalPairLeft_pair_sum {β Γ R ιA ιB : Type*}
-    [Fintype β] [DecidableEq β] [Fintype Γ] [DecidableEq Γ]
-    [Fintype R] [DecidableEq R]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+private theorem diagonalPairLeft_pair_sum 
     (A : Measurement β ιB) (B : Measurement Γ ιA)
     (ψ : EuclideanSpace ℂ (ιA × ιB)) (e : β → R) (f : Γ → R) :
     (∑ r : R, stateQForm ψ
@@ -247,7 +241,6 @@ private theorem recovery_avg_le {X Y β Γ R : Type*}
           linarith
       refine le_trans (avgOver_mono _ _ _ hsplit) ?_
       rw [avgOver_add, avgOver_uniform_const, avgOver_mul_const]
-      have hcomm : w x b g * F x g = F x g * w x b g := mul_comm _ _
       linarith [mul_le_mul_of_nonneg_right (hFbound x b g) (hwnonneg x b g)]
     refine le_trans (Finset.sum_le_sum fun b _ =>
       Finset.sum_le_sum fun g _ => hterm b g) ?_
@@ -339,8 +332,6 @@ theorem consistencyDefect_le_of_recoveryBound
     simp only
     rw [← (A x).sum_eq_one, heteroKron_finset_sum_left, stateQForm_finset_sum]
   have hWsum : (∑ g : Γ, W g) = 1 := by
-    rw [hWdef]
-    simp only
     rw [← stateQForm_finset_sum, ← heteroKron_finset_sum_right, B.sum_eq_one,
       heteroKron_one_one, stateQForm_one, hψ, one_pow]
   -- the two diagonal overlaps
@@ -365,7 +356,6 @@ theorem consistencyDefect_le_of_recoveryBound
         MIPStarRE.Quantum.Measurement.ofSumEqOne] at h
       simp_rw [placed_product_stateQForm_eq] at h
       rw [h, hψ, one_pow, hAgrG]
-      simp only
       rw [diagonalRight_pair_sum (A x) B ψ (f x)]
     rw [avgOver_congr _ _ _ hpoint, avgOver_sub, avgOver_uniform_const]
   have hhyp : consistencyDefect (uniformDistribution (X × Y))

@@ -67,33 +67,35 @@ inductive LineDesc (L : LdParams) where
       (baseFixed : lineRepMap direction base = base)
       (prefixZero : ∀ j : Fin L.m, j.val < (chiIndex L seed).val → direction j = 0)
   deriving DecidableEq
+variable {L : LdParams}
+
 
 /-- The tag of a canonical line description. -/
-def LineDesc.kind {L : LdParams} : LineDesc L → LineKind
+def LineDesc.kind  : LineDesc L → LineKind
   | .axis _ _ _ => .axis
   | .diagonal _ _ _ _ _ => .diagonal
 
 /-- The seed retained by a canonical line description. -/
-def LineDesc.seed {L : LdParams} : LineDesc L → ScalarQ L
+def LineDesc.seed  : LineDesc L → ScalarQ L
   | .axis _ seed _ => seed
   | .diagonal _ seed _ _ _ => seed
 
 /-- The canonical base stored by a line description. -/
-def LineDesc.base {L : LdParams} : LineDesc L → Fin L.m → ScalarQ L
+def LineDesc.base  : LineDesc L → Fin L.m → ScalarQ L
   | .axis base _ _ => base
   | .diagonal base _ _ _ _ => base
 
 /-- The geometric direction represented by a canonical line description.
 Diagonal descriptions already store the projected data, so this map does
 not apply a second projection. -/
-def LineDesc.direction {L : LdParams} (line : LineDesc L) :
+def LineDesc.direction  (line : LineDesc L) :
     Fin L.m → ScalarQ L :=
   match line with
   | .axis _ seed _ => coordinateDirection (chiIndex L seed)
   | .diagonal _ _ direction _ _ => direction
 
 /-- The point set represented by a seed-bearing line description. -/
-noncomputable def LineDesc.pointSet {L : LdParams} (line : LineDesc L) :
+noncomputable def LineDesc.pointSet  (line : LineDesc L) :
     Set (Fin L.m → ScalarQ L) :=
   linePoints line.base line.direction
 
@@ -102,15 +104,17 @@ most `c` over the scalar field of `L`. -/
 abbrev DegPoly (L : LdParams) (c : ℕ) := Fin (c + 1) → ScalarQ L
 
 /-- Extend a coefficient list by zero from degree bound `c` to `c'`. -/
-def DegPoly.padTo {L : LdParams} {c c' : ℕ} (_h : c ≤ c')
+def DegPoly.padTo  {c c' : ℕ} (_h : c ≤ c')
     (f : DegPoly L c) : DegPoly L c' :=
   fun i =>
     if hi : i.val < c + 1 then f ⟨i.val, hi⟩ else 0
+variable {c : ℕ}
+
 
 /-- A line polynomial evaluates to `a` at `u` when `u` has a line parameter
 and every such parameter gives the same value.  The universal clause handles
 the zero-direction presentation without choosing a sentinel parameter. -/
-def EvaluatesTo {L : LdParams} {c : ℕ} (line : LineDesc L)
+def EvaluatesTo  (line : LineDesc L)
     (f : DegPoly L c) (u : Fin L.m → ScalarQ L) (a : ScalarQ L) : Prop :=
   (∃ t : ScalarQ L, u = line.base + t • line.direction) ∧
     ∀ t : ScalarQ L, u = line.base + t • line.direction → evalCoefficient f t = a
@@ -119,7 +123,7 @@ def EvaluatesTo {L : LdParams} {c : ℕ} (line : LineDesc L)
 when the point does not determine an evaluation. This formalization-only
 completion is used in blueprint chapter 14; the displayed family at paper
 `14_analysis_of_the_pauli_basis_test.tex:197-206` has no bottom outcome. -/
-noncomputable def evalOpt {L : LdParams} {c : ℕ} (line : LineDesc L)
+noncomputable def evalOpt  (line : LineDesc L)
     (u : Fin L.m → ScalarQ L) (f : DegPoly L c) : Option (ScalarQ L) := by
   classical
   exact if h : ∃ a : ScalarQ L, EvaluatesTo line f u a then

@@ -180,7 +180,7 @@ theorem obsOf_pauliTraceMeasurement (P : AdmissibleParams) (W : PauliKind)
       dotProduct (r • indicatorVec u) e = lowDegreeEnc e u * r := by
     intro e
     rw [lowDegreeEnc_eq_dotProduct]
-    simp only [dotProduct, Finset.sum_mul, Pi.smul_apply, smul_eq_mul]
+    simp [dotProduct, Finset.sum_mul, Pi.smul_apply, smul_eq_mul]
     exact Finset.sum_congr rfl fun y _ => by ring
   have hp : ∀ e : PauliRegister P,
       phaseSign (binTrace (PauliScalar P) (dotProduct (r • indicatorVec u) e)) =
@@ -196,7 +196,7 @@ theorem obsOf_pauliTraceMeasurement (P : AdmissibleParams) (W : PauliKind)
       (Finset.univ.filter fun e : PauliRegister P => ¬ pauliTraceBit P u r e = 0) =
         Finset.univ.filter fun e : PauliRegister P => pauliTraceBit P u r e = 1 := by
     ext e
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    simp [Finset.mem_filter, Finset.mem_univ, true_and]
     rcases zmod_two_eq_zero_or_one (pauliTraceBit P u r e) with h | h <;> simp [h]
   have h0 : ∑ e ∈ Finset.univ.filter (fun e : PauliRegister P => pauliTraceBit P u r e = 0),
       phaseSign (pauliTraceBit P u r e) • pauliProj W e =
@@ -388,7 +388,7 @@ theorem pauliMagicCellMeasurement_projective (P : AdmissibleParams)
     (z : PauliSpace P) (hgamma : pauliPairGamma P z ≠ 0) (j : Fin 9) :
     MIPStarRE.QPBT.Measurement.IsProjective
       (pauliMagicCellMeasurement P z hgamma j) := by
-  simp only [pauliMagicCellMeasurement]
+  simp [pauliMagicCellMeasurement]
   exact msCellMeasurement_projective _ _
     (obsOf_conjTranspose _ (pauliTraceMeasurement_projective P .X _ _))
     (obsOf_conjTranspose _ (pauliTraceMeasurement_projective P .Z _ _))
@@ -403,7 +403,7 @@ theorem pauliMagicCellMeasurement_commute (P : AdmissibleParams)
     Commute
       ((pauliMagicCellMeasurement P z hgamma (msConstraintVars i k)).effect a)
       ((pauliMagicCellMeasurement P z hgamma (msConstraintVars i l)).effect b) := by
-  simp only [pauliMagicCellMeasurement]
+  simp [pauliMagicCellMeasurement]
   exact reflectionEffect_commute
     (msConstraintObservable_commute _ _
       (obsOf_sq _ (pauliTraceMeasurement_projective P .X _ _))
@@ -434,7 +434,7 @@ theorem pauliMagicMeasurement_effect_transpose (P : AdmissibleParams)
       (pauliMagicMeasurement P z hgamma x).effect a := by
   apply msStrategyMeasurement_effect_transpose
   intro j b
-  simp only [pauliMagicCellMeasurement]
+  simp [pauliMagicCellMeasurement]
   apply msCellMeasurement_transpose
   · rw [obsOf_pauliTraceMeasurement]
     exact tauObservable_transpose _ _

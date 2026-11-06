@@ -38,6 +38,8 @@ namespace MIPStarRE.QPBT.MagicSquareRigidity
 open MIPStarRE.LDT MIPStarRE.Quantum
 
 noncomputable section
+variable {ι : Type} [Fintype ι] [DecidableEq ι]
+
 
 /-! ## The one-qubit swap isometry -/
 
@@ -45,7 +47,7 @@ noncomputable section
 `thm:ms-rigidity`.  For a binary output `b`, its residual component is
 `X^b P_b(Z) psi`, where `P_b(Z)` is the spectral effect of the binary observable
 `Z`. -/
-def binarySwapMap {ι : Type} [Fintype ι] [DecidableEq ι]
+def binarySwapMap 
     (X Z : Op ι) :
     EuclideanSpace ℂ ι →ₗ[ℂ] EuclideanSpace ℂ (ZMod 2 × ι) where
   toFun ψ := (EuclideanSpace.equiv (ZMod 2 × ι) ℂ).symm
@@ -53,14 +55,14 @@ def binarySwapMap {ι : Type} [Fintype ι] [DecidableEq ι]
   map_add' ψ ξ := by
     apply (EuclideanSpace.equiv (ZMod 2 × ι) ℂ).injective
     funext bi
-    simp only [ContinuousLinearEquiv.apply_symm_apply]
+    simp [ContinuousLinearEquiv.apply_symm_apply]
     unfold applyOperatorToState
     rw [map_add]
     rfl
   map_smul' c ψ := by
     apply (EuclideanSpace.equiv (ZMod 2 × ι) ℂ).injective
     funext bi
-    simp only [ContinuousLinearEquiv.apply_symm_apply, RingHom.id_apply]
+    simp [ContinuousLinearEquiv.apply_symm_apply, RingHom.id_apply]
     unfold applyOperatorToState
     rw [map_smul]
     rfl
@@ -79,7 +81,7 @@ theorem binarySwapMap_norm {ι : Type} [Fintype ι] [DecidableEq ι]
       ‖applyOperatorToState (X ^ bi.1.val * reflectionEffect Z bi.1) ψ bi.2‖ ^ 2) =
       ∑ i : ι, ‖ψ i‖ ^ 2
   rw [Fintype.sum_prod_type, sum_zmod_two]
-  simp only [ZMod.val_zero, pow_zero, one_mul, ZMod.val_one, pow_one]
+  simp [ZMod.val_zero, pow_zero, one_mul, ZMod.val_one, pow_one]
   rw [show
       ∑ i : ι, ‖applyOperatorToState (reflectionEffect Z 0) ψ i‖ ^ 2 =
         ‖applyOperatorToState (reflectionEffect Z 0) ψ‖ ^ 2 by
@@ -98,8 +100,7 @@ theorem binarySwapMap_norm {ι : Type} [Fintype ι] [DecidableEq ι]
   have hminus : applyOperatorToState (reflectionEffect Z 1) ψ =
       (2 : ℂ)⁻¹ • (ψ - applyOperatorToState Z ψ) := by
     simp [reflectionEffect, applyOperatorToState]
-  rw [hplus, hminus, norm_smul, norm_smul]
-  rw [show ‖(2 : ℂ)⁻¹‖ = (2 : ℝ)⁻¹ by norm_num]
+  rw [hplus, hminus, norm_smul, norm_smul, show ‖(2 : ℂ)⁻¹‖ = (2 : ℝ)⁻¹ by norm_num]
   have hZnorm := norm_applyOperatorToState_of_isometry hZ.isometry ψ
   have hpara := parallelogram_law_with_norm_mul ℂ ψ (applyOperatorToState Z ψ)
   rw [hZnorm] at hpara
@@ -107,7 +108,7 @@ theorem binarySwapMap_norm {ι : Type} [Fintype ι] [DecidableEq ι]
 
 /-- Formalization-only local controlled-swap map for `thm:ms-rigidity`, bundled
 as a linear isometric embedding. -/
-noncomputable def binarySwapIsometry {ι : Type} [Fintype ι] [DecidableEq ι]
+noncomputable def binarySwapIsometry 
     (X Z : Op ι) (hX : IsBinaryObservable X) (hZ : IsBinaryObservable Z) :
     EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ (ZMod 2 × ι) where
   toLinearMap := binarySwapMap X Z

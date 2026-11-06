@@ -48,6 +48,12 @@ def bbAbBipartition (params : AdmissibleParams) (left right : Type*) :
     bbAbBipartition params left right indices =
       ((indices.2.1, indices.2.2.1),
         ((indices.1.1, indices.2.2.2), (indices.1.2.1, indices.1.2.2))) := rfl
+variable {params : AdmissibleParams} {error : ℝ}
+variable (setting : ProjectiveSetting params error)
+variable (first second : Placement)
+
+
+
 
 set_option synthInstance.maxSize 400 in
 /-- Every directed opposite placement has an actual heterogeneous
@@ -55,9 +61,7 @@ bipartition. The unused EPR pair is included on the right. This discharges the
 register identities needed for the application of pasting in all symmetric
 equivalents of `lem:qld-xz-lines`, paper
 `14_analysis_of_the_pauli_basis_test.tex:959-963`. -/
-theorem ProjectiveSetting.exists_opposite_bipartition {params : AdmissibleParams}
-    {error : ℝ} (setting : ProjectiveSetting params error)
-    (first second : Placement) (hopposite : first.IsOpposite second) :
+theorem ProjectiveSetting.exists_opposite_bipartition  (hopposite : first.IsOpposite second) :
     ∃ equivalence : SixReg params setting.toStrategy.ιA setting.toStrategy.ιB ≃
         setting.ExpandedLocalSpace first.side ×
           (setting.ExpandedLocalSpace second.side ×
@@ -81,7 +85,7 @@ theorem ProjectiveSetting.exists_opposite_bipartition {params : AdmissibleParams
         (1 : Op ((setting.toStrategy.ιA × PauliRegister params) ×
           (PauliRegister params × PauliRegister params)))
           ((row.1.1, row.2.2.2), row.1.2) ((column.1.1, column.2.2.2), column.1.2) = _
-      simp only [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
+      simp [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
       split_ifs <;> simp_all
     · intro operator
       ext row column
@@ -89,7 +93,7 @@ theorem ProjectiveSetting.exists_opposite_bipartition {params : AdmissibleParams
         (row.2.1, row.2.2.1) (column.2.1, column.2.2.1) *
           (operator (row.1.1, row.2.2.2) (column.1.1, column.2.2.2) *
             (1 : Op (PauliRegister params × PauliRegister params)) row.1.2 column.1.2) = _
-      simp only [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
+      simp [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
       split_ifs <;> simp_all
   · exact ⟨abBbBipartition params _ _, setting.reindexOp_abBbBipartition_left,
       setting.reindexOp_abBbBipartition_right⟩
@@ -100,8 +104,7 @@ open DistanceCalculus in
 specified opposite bipartition. The two identities are representation data,
 constructed for every opposite pair by `exists_opposite_bipartition`; no
 mathematical approximation or extra assumption on the strategy is introduced. -/
-theorem ProjectiveSetting.consistencyDefect_bipartition {params : AdmissibleParams}
-    {error : ℝ} (setting : ProjectiveSetting params error) (first second : Placement)
+theorem ProjectiveSetting.consistencyDefect_bipartition 
     (equivalence : SixReg params setting.toStrategy.ιA setting.toStrategy.ιB ≃
       setting.ExpandedLocalSpace first.side ×
         (setting.ExpandedLocalSpace second.side × (PauliRegister params × PauliRegister params)))
@@ -150,7 +153,7 @@ theorem evaluated_pastedMeasurement_heteroKron_one
     heteroKron (∑ firstAnswer, ∑ secondAnswer,
       if evaluate firstAnswer secondAnswer = output then
         pastedMeasurement first second firstAnswer secondAnswer else 0) (1 : Op unused) := by
-  simp only [pastedMeasurement, heteroKron_mul, mul_one]
+  simp [pastedMeasurement, heteroKron_mul, mul_one]
   ext row column
   simp [heteroKron, Matrix.kronecker, Matrix.sum_apply, Matrix.ite_apply,
     Finset.sum_mul, ite_mul]
@@ -175,8 +178,7 @@ gives precisely the evaluated sandwich in the one-sided pasting conclusion.
 This is an identity for all descriptors and points, not only on the support
 of the conditioned law. Source: `eq:qld-4-13-1`, paper
 `14_analysis_of_the_pauli_basis_test.tex:950-963`. -/
-theorem ProjectiveSetting.combinedLineMeasurement_evaluated_eq_pasted
-    {params : AdmissibleParams} {error : ℝ} (setting : ProjectiveSetting params error)
+theorem ProjectiveSetting.combinedLineMeasurement_evaluated_eq_pasted 
     (side : PlayerSide) (lineX lineZ : LineDesc params.toLdParams)
     (pointX pointZ : Fin params.m → PauliScalar params)
     (output : Option (PauliScalar params) × Option (PauliScalar params)) :
@@ -369,7 +371,7 @@ theorem exists_combinedLine_restored_defect_le :
 /-- Consistency is symmetric for measurements on opposite registers. The
 operator commutation, rather than symmetry of the state or equality of local
 dimensions, justifies exchanging the placements in `lem:qld-xz-lines`. -/
-theorem consistencyDefect_opposite_symm {params : AdmissibleParams} {error : ℝ}
+theorem consistencyDefect_opposite_symm 
     {Question Outcome : Type*} [Fintype Question] [DecidableEq Question]
     [Fintype Outcome] [DecidableEq Outcome]
     (setting : ProjectiveSetting params error) (first second : Placement)
@@ -393,7 +395,7 @@ theorem consistencyDefect_opposite_symm {params : AdmissibleParams} {error : ℝ
   apply Finset.sum_congr rfl
   intro other _
   rw [setting.place_comm first second hopposite]
-  simp only [eq_comm]
+  simp [eq_comm]
 
 /-- Formalization-only consistency theorem for the particular X-Z-X measurement
 constructed in the proof of `lem:qld-xz-lines`, paper

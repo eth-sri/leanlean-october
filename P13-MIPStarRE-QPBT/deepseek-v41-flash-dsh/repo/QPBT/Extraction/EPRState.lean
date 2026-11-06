@@ -76,12 +76,13 @@ namespace ProjectiveSetting
 variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
 
 open scoped Classical
+variable (aux : EuclideanSpace ℂ
+      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+
 
 /-- In EPR-first local coordinates, the ideal extraction state is the target
 of the existing auxiliary-state normalization theorem. -/
-theorem reindexState_idealExpState
-    (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+theorem reindexState_idealExpState  :
     reindexState (extractionEprFirstEquiv P S.toStrategy.ιA S.toStrategy.ιB)
         (S.idealExpState aux) =
       reindexState prodShuffle (vecTensor (eprState (PauliRegister P)) aux) := by
@@ -92,9 +93,7 @@ theorem reindexState_idealExpState
   exact mul_comm _ _
 
 /-- Tensoring an auxiliary vector with EPR preserves its norm. -/
-theorem idealExpState_norm
-    (aux : EuclideanSpace ℂ
-      (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB)) :
+theorem idealExpState_norm  :
     ‖S.idealExpState aux‖ = ‖aux‖ := by
   rw [idealExpState, reindexState_norm_eq, vecTensor_norm_eq, eprState_norm, mul_one]
 
@@ -124,13 +123,14 @@ def extractionAux0
     EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB) :=
   Extraction.eprPartialInner
     (reindexState (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm θ)
+variable (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB))
+
 
 /-- The unnormalized ideal extraction state is the EPR projection of the
 given six-register state. This identifies the actual auxiliary construction
 with the projection in paper lines 1776-1779, retaining the heterogeneous
 player spaces of blueprint `lem:qld-unitary`. -/
-theorem idealExpState_extractionAux0
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
+theorem idealExpState_extractionAux0  :
     S.idealExpState (S.extractionAux0 θ) =
       applyOperatorToState S.extractionEprProjection θ := by
   unfold idealExpState extractionAux0
@@ -149,8 +149,7 @@ theorem idealExpState_extractionAux0
 This is the normalization step at paper lines 1773-1783. The existing
 normalization theorem also covers a zero projection, using the reference
 vector above; no nonvanishing assumption is added. -/
-theorem exists_unit_aux_near_eprProjection
-    (θ : EuclideanSpace ℂ (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) (hθ : ‖θ‖ = 1) :
+theorem exists_unit_aux_near_eprProjection  (hθ : ‖θ‖ = 1) :
     ∃ aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB),
       ‖aux‖ = 1 ∧ ‖θ - S.idealExpState aux‖ ≤
         2 * ‖θ - applyOperatorToState S.extractionEprProjection θ‖ := by

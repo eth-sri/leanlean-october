@@ -34,9 +34,11 @@ def selectedPairBit (W : PauliKind) (bits : ZMod 2 × ZMod 2) : ZMod 2 :=
   match W with
   | .X => bits.1
   | .Z => bits.2
+variable (P : AdmissibleParams)
+
 
 /-- Winning the commuting Pair/W branch forces equality of the selected bits. -/
-theorem pairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
+theorem pairLabels_eq_of_win  (W : PauliKind)
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1)
     (hwin : pauliWinPredicate P
@@ -45,11 +47,11 @@ theorem pairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     ProjectiveSetting.pairWAnswerOrZero A =
       selectedPairBit W (ProjectiveSetting.pairAnswerOrZero B) := by
   cases A <;> cases B <;>
-    simp only [pauliWinPredicate, validPauliAnswer, Bool.and_true,
+    simp [pauliWinPredicate, validPauliAnswer, Bool.and_true,
       Bool.and_self, Bool.and_false, Bool.false_eq_true, ↓reduceIte,
       reduceCtorEq, decide_eq_true_eq] at hwin
   rename_i bit bits
-  simp only [ProjectiveSetting.pairWAnswerOrZero,
+  simp [ProjectiveSetting.pairWAnswerOrZero,
     ProjectiveSetting.pairAnswerOrZero]
   have hgamma : pauliPairGamma P (pauliCL P (.pairW W) z) = 0 := by
     change gammaValue P (pauliXBlock z) (pauliZBlock z)
@@ -59,7 +61,7 @@ theorem pairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
       (pauliRXBlock z) (pauliRZBlock z) = 0
     exact hcomm
   cases W <;>
-    simp only [pauliPairCondition, hgamma, ne_eq, not_true_eq_false,
+    simp [pauliPairCondition, hgamma, ne_eq, not_true_eq_false,
       false_or, selectedPairBit] at hwin ⊢ <;>
     exact hwin.symm
 
@@ -169,14 +171,14 @@ theorem win_comm_explicit :
       apply avgOver_mono
       intro z
       by_cases hcomm : IsCommuting (pauliSharedSplit P z).1
-      · simp only [if_pos hcomm]
+      · simp [if_pos hcomm]
         have hs := pairMismatch_le_rejection S W z hcomm
         rw [pauliCL_shared_eq P (.pairW W) rfl,
           pauliCL_shared_eq P .pair rfl] at hs
         simpa [pauliSharedSplit, ProjectiveSetting.pairWQuestion,
           ProjectiveSetting.pairQuestion]
           using hs
-      · simp only [if_neg hcomm]
+      · simp [if_neg hcomm]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
       rw [mul_assoc]
@@ -203,14 +205,14 @@ def pointTraceLabel (P : AdmissibleParams) (W : PauliKind)
     (ProjectiveSetting.pointAnswerOrZero A * selectedTupleScalar W ω)
 
 /-- The point coordinate of the low-degree projection is the selected shared block. -/
-theorem pauliToLd_point_eq_selected (P : AdmissibleParams) (W : PauliKind)
+theorem pauliToLd_point_eq_selected  (W : PauliKind)
     (z : PauliSpace P) :
     (pauliToLd P W z).point = selectedTuplePoint W (pauliSharedSplit P z).1 := by
   funext i
   cases W <;> rfl
 
 /-- Winning the commuting point/Pair-W branch forces equality of trace labels. -/
-theorem pointPairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
+theorem pointPairLabels_eq_of_win  (W : PauliKind)
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hcomm : IsCommuting (pauliSharedSplit P z).1)
     (hwin : pauliWinPredicate P
@@ -221,11 +223,11 @@ theorem pointPairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
           selectedTupleScalar W (pauliSharedSplit P z).1) =
       ProjectiveSetting.pairWAnswerOrZero B := by
   cases A <;> cases B <;>
-    simp only [pauliWinPredicate, validPauliAnswer, Bool.and_true,
+    simp [pauliWinPredicate, validPauliAnswer, Bool.and_true,
       Bool.and_self, Bool.and_false, Bool.false_eq_true, ↓reduceIte,
       reduceCtorEq, decide_eq_true_eq] at hwin
   rename_i a bit
-  simp only [ProjectiveSetting.pointAnswerOrZero,
+  simp [ProjectiveSetting.pointAnswerOrZero,
     ProjectiveSetting.pairWAnswerOrZero]
   have hgamma : pauliPairGamma P (pauliCL P (.pairW W) z) = 0 := by
     change gammaValue P (pauliXBlock z) (pauliZBlock z)
@@ -238,13 +240,13 @@ theorem pointPairLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
   rw [pauliCL_shared_eq P (.pairW W) rfl] at hwin
   cases W with
   | X =>
-      simp only [pauliPointPairCondition] at hwin
+      simp [pauliPointPairCondition] at hwin
       rcases hwin with hne | heq
       · exact (hne hgamma).elim
       · simpa [selectedTupleScalar, pauliSharedSplit, pauliRXBlock,
           ProjectiveSetting.contentOfTuple] using heq
   | Z =>
-      simp only [pauliPointPairCondition] at hwin
+      simp [pauliPointPairCondition] at hwin
       rcases hwin with hne | heq
       · exact (hne hgamma).elim
       · simpa [selectedTupleScalar, pauliSharedSplit, pauliRZBlock,
@@ -372,7 +374,7 @@ theorem win_comm_cons_explicit :
       apply avgOver_mono
       intro z
       by_cases hcomm : IsCommuting (pauliSharedSplit P z).1
-      · simp only [if_pos hcomm]
+      · simp [if_pos hcomm]
         have hs := pointPairMismatch_le_rejection S W z hcomm
         rw [pauliCL_point_eq,
           pauliCL_shared_eq P (.pairW W) rfl] at hs
@@ -380,7 +382,7 @@ theorem win_comm_cons_explicit :
         simpa [pauliSharedSplit, selectedTuplePoint,
           ProjectiveSetting.pointQuestion, ProjectiveSetting.pairWQuestion]
           using hs
-      · simp only [if_neg hcomm]
+      · simp [if_neg hcomm]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
       rw [mul_assoc]

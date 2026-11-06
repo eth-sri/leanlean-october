@@ -81,15 +81,15 @@ end DistanceCalculus
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
+variable (S : ProjectiveSetting P ε) (X : Op (S.toStrategy.ιA × PauliRegister P)) (Y : Op (S.toStrategy.ιB × PauliRegister P))
+
 
 /-! ## Transport between the six registers and the bipartitions -/
 
 set_option synthInstance.maxSize 400 in
 /-- On the `AA' | BA''(B'B'')` bipartition, the overlap of left and right
 tensor placements is the overlap of the `AA'` and `BA''` placements. -/
-theorem stateQForm_aaBa_mul_eq (S : ProjectiveSetting P ε)
-    (X : Op (S.toStrategy.ιA × PauliRegister P))
-    (Y : Op (S.toStrategy.ιB × PauliRegister P)) :
+theorem stateQForm_aaBa_mul_eq  :
     DistanceCalculus.stateQForm
         (reindexState (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
           S.psiHat)
@@ -104,9 +104,7 @@ theorem stateQForm_aaBa_mul_eq (S : ProjectiveSetting P ε)
 set_option synthInstance.maxSize 400 in
 /-- On the `AB'' | BB'(A'A'')` bipartition, the overlap of left and right
 tensor placements is the overlap of the `AB''` and `BB'` placements. -/
-theorem stateQForm_abBb_mul_eq (S : ProjectiveSetting P ε)
-    (X : Op (S.toStrategy.ιA × PauliRegister P))
-    (Y : Op (S.toStrategy.ιB × PauliRegister P)) :
+theorem stateQForm_abBb_mul_eq  :
     DistanceCalculus.stateQForm
         (reindexState (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
           S.psiHat)

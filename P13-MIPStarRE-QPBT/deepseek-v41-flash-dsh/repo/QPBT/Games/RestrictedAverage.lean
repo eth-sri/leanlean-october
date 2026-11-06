@@ -21,15 +21,14 @@ open scoped BigOperators
 namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT
+variable {Sample : Type*} [DecidableEq Sample] (dist : Distribution Sample) (good : Sample -> Prop) [DecidablePred good] (hpos : 0 < ∑ sample ∈ dist.support.filter good, dist.weight sample) (value : Sample -> ℝ)
+
 
 /-- Multiplying a normalized restricted average by its retained mass gives the
 unnormalized restricted sum. This formalization-only identity supports
 proof-only conditioning in `lem:qld-xz-lines`, paper
 `14_analysis_of_the_pauli_basis_test.tex:950-963`; it changes no game distribution. -/
-theorem avgOver_restrict_mul_mass {Sample : Type*} [DecidableEq Sample]
-    (dist : Distribution Sample) (good : Sample -> Prop) [DecidablePred good]
-    (hpos : 0 < ∑ sample ∈ dist.support.filter good, dist.weight sample)
-    (value : Sample -> ℝ) :
+theorem avgOver_restrict_mul_mass  :
     (∑ sample ∈ dist.support.filter good, dist.weight sample) *
       avgOver (Distribution.restrict dist good hpos) value =
       ∑ sample ∈ dist.support.filter good, dist.weight sample * value sample := by
@@ -37,17 +36,14 @@ theorem avgOver_restrict_mul_mass {Sample : Type*} [DecidableEq Sample]
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro sample hsample
-  simp only [if_pos (Finset.mem_filter.mp hsample).2]
+  simp [if_pos (Finset.mem_filter.mp hsample).2]
   field_simp
 
 /-- Conditioning a nonnegative finite average inflates its bound by at most
 the inverse retained mass. This is a formalization-only finite probability
 estimate used in the conditioning step of `lem:qld-xz-lines`, paper
 `14_analysis_of_the_pauli_basis_test.tex:950-963`. -/
-theorem avgOver_restrict_le_div_mass {Sample : Type*} [DecidableEq Sample]
-    (dist : Distribution Sample) (good : Sample -> Prop) [DecidablePred good]
-    (hpos : 0 < ∑ sample ∈ dist.support.filter good, dist.weight sample)
-    (value : Sample -> ℝ) (hnonneg : ∀ sample, 0 ≤ value sample) :
+theorem avgOver_restrict_le_div_mass  (hnonneg : ∀ sample, 0 ≤ value sample) :
     avgOver (Distribution.restrict dist good hpos) value ≤
       avgOver dist value /
         (∑ sample ∈ dist.support.filter good, dist.weight sample) := by
@@ -61,10 +57,7 @@ times its conditional average, plus the discarded probability mass. This
 formalization-only estimate restores the original distribution after proof-only
 conditioning in `lem:qld-xz-lines`, paper
 `14_analysis_of_the_pauli_basis_test.tex:950-963`. No discarded mass is omitted. -/
-theorem avgOver_le_restrict_add_discarded_mass {Sample : Type*} [DecidableEq Sample]
-    (dist : Distribution Sample) (good : Sample -> Prop) [DecidablePred good]
-    (hpos : 0 < ∑ sample ∈ dist.support.filter good, dist.weight sample)
-    (value : Sample -> ℝ) (hunit : ∀ sample, value sample ≤ 1) :
+theorem avgOver_le_restrict_add_discarded_mass  (hunit : ∀ sample, value sample ≤ 1) :
     avgOver dist value ≤
       (∑ sample ∈ dist.support.filter good, dist.weight sample) *
         avgOver (Distribution.restrict dist good hpos) value +

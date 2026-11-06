@@ -46,7 +46,7 @@ theorem reindexState_prodComm_eprState
   apply (EuclideanSpace.equiv (V × V) ℂ).injective
   funext p
   rcases p with ⟨i, j⟩
-  simp only [reindexState, eprState, ContinuousLinearEquiv.apply_symm_apply,
+  simp [reindexState, eprState, ContinuousLinearEquiv.apply_symm_apply,
     Equiv.prodComm, Equiv.coe_fn_symm_mk]
   by_cases hij : i = j
   · subst j
@@ -117,7 +117,7 @@ theorem obsOf_sq
     obsOf M * obsOf M =
         M.effect 0 * M.effect 0 - M.effect 0 * M.effect 1 -
           M.effect 1 * M.effect 0 + M.effect 1 * M.effect 1 := by
-      simp only [obsOf]
+      simp [obsOf]
       noncomm_ring
     _ = M.effect 0 + M.effect 1 := by
       rw [(hM 0).isIdempotentElem.eq, (hM 1).isIdempotentElem.eq, h01, h10]
@@ -187,29 +187,28 @@ theorem reflectionEffect_obsOf_measurement
     reflectionEffect (obsOf M) b = M.effect b := by
   have hsum := binary_effects_sum M
   rcases zmod_two_eq_zero_or_one b with rfl | rfl
-  · simp only [reflectionEffect, if_pos, obsOf]
+  · simp [reflectionEffect, if_pos, obsOf]
     rw [show (1 : Op V) = M.effect 0 + M.effect 1 from hsum.symm]
     module
-  · simp only [reflectionEffect, if_neg one_ne_zero, obsOf]
+  · simp [reflectionEffect, if_neg one_ne_zero, obsOf]
     rw [show (1 : Op V) = M.effect 0 + M.effect 1 from hsum.symm]
     module
 
 local notation "qubitX" => (tauShift (K := ZMod 2) 1)
 local notation "qubitZ" => (tauPhase (K := ZMod 2) 1)
+variable {V W : Type*} (A : Op V) (B : Op W)
 
-private theorem heteroKron_conjTranspose
-    {V W : Type*} (A : Op V) (B : Op W) :
+
+private theorem heteroKron_conjTranspose  :
     (heteroKron A B)ᴴ = heteroKron Aᴴ Bᴴ := by
   exact Matrix.conjTranspose_kronecker A B
 
-private theorem heteroKron_transpose
-    {V W : Type*} (A : Op V) (B : Op W) :
+private theorem heteroKron_transpose  :
     (heteroKron A B)ᵀ = heteroKron Aᵀ Bᵀ := by
   ext i j
   rfl
 
-private theorem heteroKron_neg_neg
-    {V W : Type*} (A : Op V) (B : Op W) :
+private theorem heteroKron_neg_neg  :
     heteroKron (-A) (-B) = heteroKron A B := by
   ext i j
   simp [heteroKron]
@@ -232,8 +231,7 @@ private theorem anti_mul_conjTranspose
     (A B : Op V) (hA : Aᴴ = A) (hB : Bᴴ = B)
     (hAB : A * B = -(B * A)) :
     (A * B)ᴴ = -(A * B) := by
-  rw [Matrix.conjTranspose_mul, hA, hB]
-  rw [hAB]
+  rw [Matrix.conjTranspose_mul, hA, hB, hAB]
   simp
 
 private theorem anti_mul_transpose
@@ -241,8 +239,7 @@ private theorem anti_mul_transpose
     (A B : Op V) (hA : Aᵀ = A) (hB : Bᵀ = B)
     (hAB : A * B = -(B * A)) :
     (A * B)ᵀ = -(A * B) := by
-  rw [Matrix.transpose_mul, hA, hB]
-  rw [hAB]
+  rw [Matrix.transpose_mul, hA, hB, hAB]
   simp
 
 /-- The nine observables in the operator table of `thm:ms-from-ac`. -/

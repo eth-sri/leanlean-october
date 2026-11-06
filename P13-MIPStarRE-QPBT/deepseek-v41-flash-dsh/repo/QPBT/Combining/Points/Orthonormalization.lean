@@ -101,10 +101,12 @@ def baAaBipartition (P : AdmissibleParams) (ιA ιB : Type*) :
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
+variable (S : ProjectiveSetting P ε)
+
 
 /-- Under the `BA'' | AA'(B'B'')` bipartition, a `BA''` placement is the
 ordinary left tensor placement. -/
-theorem reindexOp_baAaBipartition_left (S : ProjectiveSetting P ε)
+theorem reindexOp_baAaBipartition_left 
     (O : Op (S.ExpandedLocalSpace Placement.BA''.side)) :
     reindexOp (baAaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron O
@@ -114,7 +116,7 @@ theorem reindexOp_baAaBipartition_left (S : ProjectiveSetting P ε)
   ext i j
   obtain ⟨⟨a, a', a''⟩, b, b', b''⟩ := i
   obtain ⟨⟨c, c', c''⟩, d, d', d''⟩ := j
-  simp only [reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
+  simp [reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
     Equiv.symm_symm, place, baAaBipartition, Equiv.coe_fn_mk, heteroKron,
     Matrix.kronecker, Matrix.kroneckerMap_apply, Matrix.one_apply, Prod.mk.injEq]
   split_ifs
@@ -123,7 +125,7 @@ theorem reindexOp_baAaBipartition_left (S : ProjectiveSetting P ε)
 
 /-- Under the `BA'' | AA'(B'B'')` bipartition, an `AA'` placement is the
 ordinary right tensor placement, with identity on the unused EPR pair. -/
-theorem reindexOp_baAaBipartition_right (S : ProjectiveSetting P ε)
+theorem reindexOp_baAaBipartition_right 
     (O : Op (S.ExpandedLocalSpace Placement.AA'.side)) :
     reindexOp (baAaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron (1 : Op (S.toStrategy.ιB × PauliRegister P))
@@ -132,7 +134,7 @@ theorem reindexOp_baAaBipartition_right (S : ProjectiveSetting P ε)
   ext i j
   obtain ⟨⟨a, a', a''⟩, b, b', b''⟩ := i
   obtain ⟨⟨c, c', c''⟩, d, d', d''⟩ := j
-  simp only [reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
+  simp [reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
     Equiv.symm_symm, place, baAaBipartition, Equiv.coe_fn_mk, heteroKron,
     Matrix.kronecker, Matrix.kroneckerMap_apply, Matrix.one_apply, Prod.mk.injEq]
   split_ifs
@@ -144,12 +146,14 @@ theorem reindexOp_baAaBipartition_right (S : ProjectiveSetting P ε)
 section Bipartition
 
 variable (S : ProjectiveSetting P ε) (p₁ p₂ : Placement)
+variable {α : Type*} [Fintype α]
+
 
 set_option synthInstance.maxSize 400 in
 /-- The consistency defect of two placed POVMs, read in the bipartite picture
 of the reindexed expanded state, is their off-diagonal mass in the expanded
 state. -/
-theorem consistencyDefect_reindex_eq {α : Type*} [Fintype α] [DecidableEq α]
+theorem consistencyDefect_reindex_eq  [DecidableEq α]
     (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
       S.ExpandedLocalSpace p₁.side ×
         (S.ExpandedLocalSpace p₂.side × (PauliRegister P × PauliRegister P)))
@@ -186,7 +190,7 @@ set_option synthInstance.maxSize 400 in
 /-- The state-dependent distance of two families placed on the first factor,
 read in the bipartite picture, is their placed distance in the expanded
 state. -/
-theorem opFamilyDistSq_reindex_left_eq {α : Type*} [Fintype α]
+theorem opFamilyDistSq_reindex_left_eq 
     (e : SixReg P S.toStrategy.ιA S.toStrategy.ιB ≃
       S.ExpandedLocalSpace p₁.side ×
         (S.ExpandedLocalSpace p₂.side × (PauliRegister P × PauliRegister P)))

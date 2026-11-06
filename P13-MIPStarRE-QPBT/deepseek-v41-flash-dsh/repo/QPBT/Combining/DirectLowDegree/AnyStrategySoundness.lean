@@ -71,11 +71,16 @@ private theorem directLdNaimarkStrategy_value (D : DirectLdParams)
       (default : DirectLdAnswer D) answer (S.A question))
     (fun question answer => dilatedMeasurement_compression
       (default : DirectLdAnswer D) answer (S.B question))
+variable (D : DirectLdParams)
+variable (S : Strategy (directLdGame D))
+variable (question : DirectLdQuestion D)
+
+
+
 
 /-- Compressing Alice's dilated point measurement after point-answer
 postprocessing recovers the original postprocessed point measurement. -/
-private theorem directLdNaimarkStrategy_pointA_compress (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (question : DirectLdQuestion D) :
+private theorem directLdNaimarkStrategy_pointA_compress  :
     (((directLdNaimarkStrategy D S).A question).postprocess
         (directLdPointValuesOrZero D)).compressAt none =
       (S.A question).postprocess (directLdPointValuesOrZero D) := by
@@ -86,8 +91,7 @@ private theorem directLdNaimarkStrategy_pointA_compress (D : DirectLdParams)
 
 /-- Compressing Bob's dilated point measurement after point-answer
 postprocessing recovers the original postprocessed point measurement. -/
-private theorem directLdNaimarkStrategy_pointB_compress (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) (question : DirectLdQuestion D) :
+private theorem directLdNaimarkStrategy_pointB_compress  :
     (((directLdNaimarkStrategy D S).B question).postprocess
         (directLdPointValuesOrZero D)).compressAt none =
       (S.B question).postprocess (directLdPointValuesOrZero D) := by
@@ -98,8 +102,7 @@ private theorem directLdNaimarkStrategy_pointB_compress (D : DirectLdParams)
 
 /-- Compress concrete polynomial measurements for the dilated strategy back to
 the original player spaces while preserving all three consistency bounds. -/
-private theorem directLdNaimarkStrategy_compress_soundness
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) (bound : ℝ)
+private theorem directLdNaimarkStrategy_compress_soundness  (bound : ℝ)
     (GA : DirectPolyMeasTuple D (directLdNaimarkStrategy D S).ιA)
     (GB : DirectPolyMeasTuple D (directLdNaimarkStrategy D S).ιB)
     (h1 : consistencyDefect

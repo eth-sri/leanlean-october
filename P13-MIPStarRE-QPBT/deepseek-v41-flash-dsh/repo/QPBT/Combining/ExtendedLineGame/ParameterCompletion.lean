@@ -30,12 +30,12 @@ open MIPStarRE.LDT
 noncomputable section
 
 namespace ExtendedLineGame
+variable {params : DirectLdParams} {degree : ℕ} (line : DirectLineDesc params)
+
 
 /-- A successful completed readout at the point represented by `parameter`
 equals coefficient evaluation at `parameter`.  This includes zero directions. -/
-theorem evalCoefficient_eq_of_directEvalOpt_affine_eq_some
-    {params : DirectLdParams} {degree : ℕ}
-    (line : DirectLineDesc params) (coeffs : DirectDegPoly params degree)
+theorem evalCoefficient_eq_of_directEvalOpt_affine_eq_some  (coeffs : DirectDegPoly params degree)
     (parameter answer : DirectScalarQ params)
     (hread : directEvalOpt line (line.base + parameter • line.direction) coeffs =
       some answer) :
@@ -46,9 +46,7 @@ theorem evalCoefficient_eq_of_directEvalOpt_affine_eq_some
 
 /-- If two coefficient vectors disagree at a parameter, then their completed
 readouts at the represented point disagree, or at least one readout is `none`. -/
-theorem evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none
-    {params : DirectLdParams} {degree : ℕ}
-    (line : DirectLineDesc params) (coeffsA coeffsB : DirectDegPoly params degree)
+theorem evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none  (coeffsA coeffsB : DirectDegPoly params degree)
     (parameter : DirectScalarQ params)
     (hne : evalCoefficient coeffsA parameter ≠ evalCoefficient coeffsB parameter) :
     directEvalOpt line (line.base + parameter • line.direction) coeffsA ≠
@@ -77,9 +75,11 @@ theorem evalCoefficient_ne_imp_directEvalOpt_ne_or_eq_none
             _ = evalCoefficient coeffsB parameter :=
               (evalCoefficient_eq_of_directEvalOpt_affine_eq_some
                 line coeffsB parameter answerB hreadB).symm
+variable {G : Game} {params : DirectLdParams} {degree : ℕ}
+
 
 /-- Born mass of disagreement between the two parameter evaluations. -/
-def parameterEvalDefect {G : Game} {params : DirectLdParams} {degree : ℕ}
+def parameterEvalDefect 
     (S : Strategy G) (questionA : G.QuestionA) (questionB : G.QuestionB)
     (readA : G.AnswerA → DirectDegPoly params degree)
     (readB : G.AnswerB → DirectDegPoly params degree)
@@ -89,7 +89,7 @@ def parameterEvalDefect {G : Game} {params : DirectLdParams} {degree : ℕ}
       evalCoefficient (readB answerB) parameter
 
 /-- Born mass of disagreement between the two completed evaluation readouts. -/
-def completedEvalDefect {G : Game} {params : DirectLdParams} {degree : ℕ}
+def completedEvalDefect 
     (S : Strategy G) (questionA : G.QuestionA) (questionB : G.QuestionB)
     (readA : G.AnswerA → DirectDegPoly params degree)
     (readB : G.AnswerB → DirectDegPoly params degree)
@@ -99,7 +99,7 @@ def completedEvalDefect {G : Game} {params : DirectLdParams} {degree : ℕ}
       directEvalOpt line (line.base + parameter • line.direction) (readB answerB)
 
 /-- Alice's marginal Born mass of a failed completed evaluation. -/
-def completedEvalNoneMassA {G : Game} {params : DirectLdParams} {degree : ℕ}
+def completedEvalNoneMassA 
     (S : Strategy G) (questionA : G.QuestionA)
     (readA : G.AnswerA → DirectDegPoly params degree)
     (line : DirectLineDesc params) (parameter : DirectScalarQ params) : ℝ :=
@@ -107,7 +107,7 @@ def completedEvalNoneMassA {G : Game} {params : DirectLdParams} {degree : ℕ}
     directEvalOpt line (line.base + parameter • line.direction) (readA answerA) = none
 
 /-- Bob's marginal Born mass of a failed completed evaluation. -/
-def completedEvalNoneMassB {G : Game} {params : DirectLdParams} {degree : ℕ}
+def completedEvalNoneMassB 
     (S : Strategy G) (questionB : G.QuestionB)
     (readB : G.AnswerB → DirectDegPoly params degree)
     (line : DirectLineDesc params) (parameter : DirectScalarQ params) : ℝ :=
@@ -133,7 +133,6 @@ theorem parameterEvalDefect_le_completed_add_none
   unfold completedEvalNoneMassA completedEvalNoneMassB
   rw [← outcome_event_weight_left_eq S questionA questionB,
     ← outcome_event_weight_right_eq S questionA questionB]
-  unfold parameterEvalDefect completedEvalDefect outcomeEventWeight
   calc
     (∑ answerA : G.AnswerA, ∑ answerB : G.AnswerB,
         if evalCoefficient (readA answerA) parameter ≠

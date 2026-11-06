@@ -65,7 +65,7 @@ theorem norm_marginal_sub_sq_le {β ι : Type*} [Fintype β]
         (hQ b).isIdempotentElem.eq]
     have hsecond : V = (∑ b, B.effect b * Q b) - D := by
       dsimp [V]
-      simp only [mul_sub, ← mul_assoc, (hB _).isIdempotentElem.eq,
+      simp [mul_sub, ← mul_assoc, (hB _).isIdempotentElem.eq,
         Finset.sum_sub_distrib, ← Finset.sum_mul, B.sum_eq_one, one_mul]
     rw [hfirst, hsecond, Finset.sum_sub_distrib]
     abel

@@ -64,11 +64,12 @@ private def directLdSpacePointTranslateEquiv (D : DirectLdParams)
     (directLdSpacePointTranslateEquiv D directionOf t).symm sample =
       ⟨sample.point + (-t) • directionOf sample.index sample.direction,
         sample.index, sample.direction⟩ := rfl
+variable (D : DirectLdParams)
+
 
 /-- Uniformly resampling a canonical affine line by a scalar parameter
 recovers its original joint line-point sample. -/
-private theorem avgOver_directLinePoint_resample
-    (D : DirectLdParams)
+private theorem avgOver_directLinePoint_resample 
     (directionOf : Fin D.m → (Fin D.m → DirectScalarQ D) →
       (Fin D.m → DirectScalarQ D))
     (lineOf : DirectLdSpace D → DirectLineDesc D)
@@ -178,12 +179,12 @@ private theorem avgOver_directLinePoint_resample
       exact hsample
     _ = avgOver (uniformDistribution (DirectLdSpace D)) (fun sample =>
         F (lineOf sample, sample.point)) := avgOver_uniform_const _
+variable (F : (DirectLineDesc D × (Fin D.m → DirectScalarQ D)) → Error)
+
 
 /-- Sampling an axis line with its marginal and then a uniform affine
 parameter reproduces the original joint axis-line/point distribution. -/
-theorem avgOver_directALinePointDist_resample
-    (D : DirectLdParams)
-    (F : (DirectLineDesc D × (Fin D.m → DirectScalarQ D)) → Error) :
+theorem avgOver_directALinePointDist_resample  :
     avgOver ((directALinePointDist D).map Prod.fst) (fun line =>
         avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
           F (line, line.base + t • line.direction))) =
@@ -198,16 +199,13 @@ theorem avgOver_directALinePointDist_resample
   · intro sample
     rfl
   · intro sample t
-    rw [directLdSpacePointTranslateEquiv_apply]
     simp only [directALineDescOf]
     simp [lineRepMap_add_smul]
 
 /-- Sampling a prefix-diagonal line with its marginal and then a uniform
 affine parameter reproduces the original joint diagonal-line/point
 distribution, including samples with zero direction. -/
-theorem avgOver_directDLinePointDist_resample
-    (D : DirectLdParams)
-    (F : (DirectLineDesc D × (Fin D.m → DirectScalarQ D)) → Error) :
+theorem avgOver_directDLinePointDist_resample  :
     avgOver ((directDLinePointDist D).map Prod.fst) (fun line =>
         avgOver (uniformDistribution (DirectScalarQ D)) (fun t =>
           F (line, line.base + t • line.direction))) =
@@ -222,7 +220,6 @@ theorem avgOver_directDLinePointDist_resample
   · intro sample
     rfl
   · intro sample t
-    rw [directLdSpacePointTranslateEquiv_apply]
     simp only [directDLineDescOf]
     simp [lineRepMap_add_smul]
 

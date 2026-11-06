@@ -36,8 +36,8 @@ theorem ext {M N : Measurement α d} (h : ∀ a, M.effect a = N.effect a) :
           | mk effectM posM leM =>
               cases N with
               | mk effectN posN leN =>
-                  simp only at h
-                  have heffect : effectM = effectN := funext h
+                  simp at h
+                  have heffect := funext h
                   subst effectN
                   rfl
 
@@ -63,7 +63,7 @@ theorem postprocess_comp {γ : Type*} [Fintype γ]
           apply Finset.sum_congr rfl
           intro b _
           by_cases hgb : g b = c
-          · simp only [hgb, ite_true]
+          · simp [hgb, ite_true]
             rw [Finset.sum_filter]
           · simp [hgb]
     _ = ∑ b : β, ∑ a : α,
@@ -112,7 +112,7 @@ theorem averageOperatorOverDistribution_smul_const {α ι : Type*}
     (A : MIPStarRE.Quantum.Op ι) :
     averageOperatorOverDistribution 𝒟 (fun a => c a • A) =
       (∑ a ∈ 𝒟.support, (𝒟.weight a : ℂ) * c a) • A := by
-  simp only [averageOperatorOverDistribution, Finset.sum_smul]
+  simp [averageOperatorOverDistribution, Finset.sum_smul]
   apply Finset.sum_congr rfl
   intro a ha
   rw [← Complex.real_smul, smul_assoc]
@@ -122,7 +122,7 @@ theorem avgOver_uniform_eq_inv_card_mul_sum {α : Type*}
     [Fintype α] [DecidableEq α] [Nonempty α] (f : α → ℝ) :
     avgOver (uniformDistribution α) f = (Fintype.card α : ℝ)⁻¹ * ∑ a, f a := by
   unfold avgOver uniformDistribution Distribution.uniformOnFinset
-  simp only [Finset.mem_univ, ite_true, Finset.card_univ, one_div, Finset.mul_sum]
+  simp [Finset.mem_univ, ite_true, Finset.card_univ, one_div, Finset.mul_sum]
 
 namespace Distribution.IsProbability
 
@@ -288,8 +288,6 @@ private lemma normalizedTrace_leftMarginalDensity_mul_eq
     (ρ : MIPStarRE.Quantum.Op (ιA × ιB)) (X : MIPStarRE.Quantum.Op ιA) :
     MIPStarRE.Quantum.normalizedTrace (leftMarginalDensity ρ * X) =
       MIPStarRE.Quantum.normalizedTrace (ρ * leftTensor (ι₂ := ιB) X) := by
-  have hcard : ((Fintype.card ιB : Error) : ℂ) ≠ 0 := by
-    exact_mod_cast Nat.cast_ne_zero.mpr Fintype.card_ne_zero
   unfold MIPStarRE.Quantum.normalizedTrace leftMarginalDensity
   rw [smul_mul_assoc, Matrix.trace_smul, Matrix.sum_mul, Matrix.trace_sum]
   have hswap :
@@ -298,10 +296,7 @@ private lemma normalizedTrace_leftMarginalDensity_mul_eq
     refine Finset.sum_congr rfl ?_
     intro b _
     exact Matrix.trace_mul_comm _ _
-  rw [hswap]
-  rw [Matrix.trace_mul_comm]
-  rw [leftTensor_eq_blockDiagonal_const]
-  rw [trace_blockDiagonal_const_mul_eq_sum_trace_diagBlock]
+  rw [hswap, Matrix.trace_mul_comm, leftTensor_eq_blockDiagonal_const, trace_blockDiagonal_const_mul_eq_sum_trace_diagBlock]
   simp [Fintype.card_prod]
   ring
 
@@ -355,12 +350,12 @@ lemma matrix_eq_zero_of_rank_eq_zero {m n : Type*}
     A = 0 := by
   let _ : Fintype m := Fintype.ofFinite m
   classical
-  have hrange : A.mulVecLin.range = ⊥ := by
+  have hrange := by
     rw [Matrix.rank] at hA
     exact Submodule.finrank_eq_zero.mp hA
   ext i j
   have hv : A.mulVecLin (Pi.single j 1) ∈ A.mulVecLin.range := ⟨Pi.single j 1, rfl⟩
-  have hv0 : A.mulVecLin (Pi.single j 1) = 0 := by
+  have hv0 := by
     simpa [hrange] using hv
   have hentry := congrArg (fun w => w i) hv0
   simpa [Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Finset.sum_ite_eq,

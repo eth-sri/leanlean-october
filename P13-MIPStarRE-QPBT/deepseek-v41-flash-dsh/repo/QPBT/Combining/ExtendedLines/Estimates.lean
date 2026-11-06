@@ -204,7 +204,7 @@ theorem subline_z_term_near_one_at_explicit
           (fun t => zPointOverlapAt lines first second (sample.2, projZ (directPointToPauli P
             (sample.1.base + t • sample.1.direction))))) := by
     refine avgOver_congr _ _ _ fun sample => avgOver_congr _ _ _ fun t => ?_
-    simp only [zPointOverlapAt, ← ProjectiveSetting.pointMeasExpOption_effect_evalOpt]
+    simp [zPointOverlapAt, ← ProjectiveSetting.pointMeasExpOption_effect_evalOpt]
     rfl
   rw [hLHS]
   set L := avgOver sublines.D (fun sample =>
@@ -274,17 +274,17 @@ theorem subline_joint_overlap_near_one_at_explicit
         (lineError ^ (1 / 4 : ℝ) + pointError ^ (1 / 4 : ℝ)) := by
     have hbound := subline_remove_x_factor_at_explicit params error pointError lineError
       setting points lines sublines first second hopposite
-    simp only [← ProjectiveSetting.pointMeasExpOption_effect_evalOpt] at hbound
+    simp [← ProjectiveSetting.pointMeasExpOption_effect_evalOpt] at hbound
     unfold orderedSublineOverlap zOverlap zPointOverlapAt
-    simp only [Fintype.sum_prod_type, stateQForm_eq_inner_mulVec]
+    simp [Fintype.sum_prod_type, stateQForm_eq_inner_mulVec]
     with_unfolding_all exact hbound
   have hthird : |zOverlap - 1| ≤ 2 * Real.sqrt (params.m : ℝ) *
       (lineError ^ (1 / 4 : ℝ) + pointError ^ (1 / 4 : ℝ) + error ^ (1 / 4 : ℝ)) := by
     have hbound := subline_z_term_near_one_at_explicit params error pointError lineError
       setting points lines sublines first second hopposite
-    simp only [← ProjectiveSetting.pointMeasExpOption_effect_evalOpt] at hbound
+    simp [← ProjectiveSetting.pointMeasExpOption_effect_evalOpt] at hbound
     unfold zOverlap zPointOverlapAt
-    simp only [stateQForm_eq_inner_mulVec]
+    simp [stateQForm_eq_inner_mulVec]
     with_unfolding_all exact hbound
   have hchain := (abs_sub_le _ _ (1 : ℝ)).trans
     (add_le_add hfirst ((abs_sub_le _ zOverlap (1 : ℝ)).trans (add_le_add hsecond hthird)))
@@ -294,7 +294,7 @@ theorem subline_joint_overlap_near_one_at_explicit
   have hsum : 0 ≤ lineError ^ (1 / 4 : ℝ) + pointError ^ (1 / 4 : ℝ) :=
     add_nonneg (rpow_quarter_nonneg _) (rpow_quarter_nonneg _)
   have hquarter := rpow_quarter_nonneg error
-  simp only [Real.rpow_eq_pow] at hquarter
+  simp [Real.rpow_eq_pow] at hquarter
   have hdimension := Real.sqrt_nonneg (params.m : ℝ)
   refine hchain.trans ?_
   nlinarith [mul_nonneg hdimension hsum, mul_nonneg hdimension hquarter]

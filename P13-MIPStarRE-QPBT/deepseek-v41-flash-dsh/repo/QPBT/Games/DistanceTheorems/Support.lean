@@ -72,9 +72,11 @@ theorem applyOperatorToState_mul {ι : Type*}
       applyOperatorToState M (applyOperatorToState N v) := by
   unfold applyOperatorToState
   simp [Matrix.toEuclideanLin, Matrix.toLpLin_mul_same]
+variable {γ ι : Type*}
+
 
 /-- Finite-subset form of contraction by square-summable left multipliers. -/
-private theorem finset_sum_norm_mul_apply_le {γ ι : Type*}
+private theorem finset_sum_norm_mul_apply_le 
     [Fintype ι] [DecidableEq ι]
     (s : Finset γ) (C : γ → Op ι) (D : Op ι) (v : EuclideanSpace ℂ ι)
     (hC : ∑ c ∈ s, (C c)ᴴ * C c ≤ 1) :
@@ -103,7 +105,7 @@ private theorem finset_sum_norm_mul_apply_le {γ ι : Type*}
 
 /-- Formalization-only auxiliary lemma for Fact 4.20: a square-summable family
 of left multipliers contracts total squared norm. -/
-theorem sum_norm_mul_apply_le {γ ι : Type*}
+theorem sum_norm_mul_apply_le 
     [Fintype γ] [Fintype ι] [DecidableEq ι]
     (C : γ → Op ι) (D : Op ι) (v : EuclideanSpace ℂ ι)
     (hC : ∑ c : γ, (C c)ᴴ * C c ≤ 1) :
@@ -220,7 +222,7 @@ private theorem gram_finset_sum_projector_mul {α ι : Type*}
     simpa [Matrix.star_eq_conjTranspose] using (hproj a).isSelfAdjoint.star_eq
   calc
     _ = (∑ a ∈ s, (T a)ᴴ) * (∑ b ∈ s, T b) := by
-      simp only [T, Matrix.conjTranspose_sum]
+      simp [T, Matrix.conjTranspose_sum]
     _ = ∑ a ∈ s, ∑ b ∈ s, (T a)ᴴ * T b := by
       rw [Matrix.sum_mul]
       apply Finset.sum_congr rfl
@@ -230,7 +232,7 @@ private theorem gram_finset_sum_projector_mul {α ι : Type*}
       apply Finset.sum_congr rfl
       intro a ha
       rw [Finset.sum_eq_single a]
-      · simp only [T, Matrix.conjTranspose_mul, hstar a]
+      · simp [T, Matrix.conjTranspose_mul, hstar a]
         rw [mul_assoc (D a)ᴴ (P a) (P a * D a),
           ← mul_assoc (P a) (P a) (D a), (hproj a).isIdempotentElem.eq]
         exact (mul_assoc (D a)ᴴ (P a) (D a)).symm
@@ -279,18 +281,22 @@ theorem norm_finset_sum_projector_mul_sq_le {α ι : Type*}
       apply Finset.sum_congr rfl
       intro a _
       exact (norm_applyOperatorToState_sq_eq (D a) ψ).symm
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
 
 /-- Formalization-only definition for the agreement facts (Facts 4.13 and 4.14):
 the real quadratic form of an operator evaluated in a state vector. -/
-noncomputable def stateQForm {ι : Type*} [Fintype ι] [DecidableEq ι]
+noncomputable def stateQForm 
     (ψ : EuclideanSpace ℂ ι) (M : Op ι) : ℝ :=
   (inner ℂ ψ (applyOperatorToState M ψ)).re
+variable {β ιA ιB : Type*} (s : Finset β)
+
 
 /-- Tensor placement is additive over finite sums in the left factor. This is
 the formalization-only identity `lem:distance-tensor-sum-left`, used to expand
 the relabeled overlaps in `lem:ld-sandwich`; detailed source proof
 `references/neexp-paper/05_quantum_preliminaries.tex:952-999`. -/
-theorem heteroKron_finset_sum_left {β ιA ιB : Type*} (s : Finset β)
+theorem heteroKron_finset_sum_left 
     (A : β → Op ιA) (C : Op ιB) :
     heteroKron (∑ b ∈ s, A b) C = ∑ b ∈ s, heteroKron (A b) C := by
   ext p q
@@ -300,7 +306,7 @@ theorem heteroKron_finset_sum_left {β ιA ιB : Type*} (s : Finset β)
 the formalization-only identity `lem:distance-tensor-sum-right`, used to expand
 the relabeled overlaps in `lem:ld-sandwich`; detailed source proof
 `references/neexp-paper/05_quantum_preliminaries.tex:952-999`. -/
-theorem heteroKron_finset_sum_right {β ιA ιB : Type*} (s : Finset β)
+theorem heteroKron_finset_sum_right 
     (A : Op ιA) (C : β → Op ιB) :
     heteroKron A (∑ b ∈ s, C b) = ∑ b ∈ s, heteroKron A (C b) := by
   ext p q
@@ -404,7 +410,7 @@ private theorem norm_effect_sub_effect_sq_expand {α ι : Type*} [Fintype α]
   rw [show (A.effect a - B.effect a)ᴴ * (A.effect a - B.effect a) =
       A.effect a * A.effect a - B.effect a * A.effect a -
         (A.effect a * B.effect a - B.effect a * B.effect a) by
-    simp only [Matrix.conjTranspose_sub, measurement_effect_hermitian A a,
+    simp [Matrix.conjTranspose_sub, measurement_effect_hermitian A a,
       measurement_effect_hermitian B a]
     noncomm_ring]
   rw [stateQForm_sub, stateQForm_sub, stateQForm_sub]
@@ -569,10 +575,11 @@ theorem opFamilyDistSq_nonneg {X α ι : Type*}
   unfold opFamilyDistSq avgOver
   exact Finset.sum_nonneg fun x _ => mul_nonneg (μ.nonnegative x)
     (Finset.sum_nonneg fun a _ => sq_nonneg _)
+variable [Nonempty ι]
+
 
 /-- Regard a unit Euclidean vector as an LDT pure state. -/
-private noncomputable def pureStateOfUnitVector {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
+private noncomputable def pureStateOfUnitVector 
     (ψ : EuclideanSpace ℂ ι) (hψ : ‖ψ‖ = 1) : PureState ι where
   vector := ψ.ofLp
   unit := by
@@ -593,8 +600,7 @@ index type, and are used both by the distance calculus and by the low-degree
 consistency transport; the two formulations of consistency they relate are
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:295-395` and
 `references/ldt-paper/preliminaries.tex:649-666`. -/
-noncomputable def pureStateEuclideanVector {ι : Type*}
-    [Fintype ι] [DecidableEq ι] [Nonempty ι]
+noncomputable def pureStateEuclideanVector 
     (ψ : PureState ι) : EuclideanSpace ℂ ι :=
   (EuclideanSpace.equiv ι ℂ).symm ψ.vector
 
@@ -731,8 +737,7 @@ theorem overlap_gap_le_of_opFamilyDistSq {X α ι : Type*}
     intro x
     apply Finset.sum_congr rfl
     intro a _
-    exact stateQForm_eq_ev ψ hψ _]
-  rw [show avgOver μ (fun x => ∑ a,
+    exact stateQForm_eq_ev ψ hψ _, show avgOver μ (fun x => ∑ a,
       stateQForm ψ ((A x).effect a * (D x).effect a)) =
       avgOver μ (fun x => ∑ a,
         ev (ψp : QuantumState ι) ((A x).effect a * (D x).effect a)) by
@@ -740,8 +745,7 @@ theorem overlap_gap_le_of_opFamilyDistSq {X α ι : Type*}
     intro x
     apply Finset.sum_congr rfl
     intro a _
-    exact stateQForm_eq_ev ψ hψ _]
-  rw [hBA, hDA]
+    exact stateQForm_eq_ev ψ hψ _, hBA, hDA]
   simpa only [ψp, As, Bs, Ds, H,
     MatrixMeasurement.toMeasurement_outcome] using hgap
 
@@ -785,7 +789,7 @@ theorem opFamilyDistSq_symm {X α ι : Type*}
   intro x
   apply Finset.sum_congr rfl
   intro a _
-  simp only [applyOperatorToState, map_sub, LinearMap.sub_apply]
+  simp [applyOperatorToState, map_sub, LinearMap.sub_apply]
   rw [norm_sub_rev]
 
 end MIPStarRE.QPBT.DistanceCalculus

@@ -40,8 +40,7 @@ theorem avgOver_linePointDist_point (L : LdParams)
     (value : (Fin L.m → ScalarQ L) → ℝ) :
     avgOver (linePointDist L) (fun sample => value sample.2) =
       avgOver (uniformDistribution (Fin L.m → ScalarQ L)) value := by
-  rw [linePointDist, avgOver_mix]
-  rw [← Distribution.avgOver_map (aLinePointDist L) Prod.snd value,
+  rw [linePointDist, avgOver_mix, ← Distribution.avgOver_map (aLinePointDist L) Prod.snd value,
     ← Distribution.avgOver_map (dLinePointDist L) Prod.snd value,
     (aLinePointDist_point_marginal_uniform L).1,
     (dLinePointDist_point_marginal_uniform L).1]
@@ -77,7 +76,7 @@ theorem CombinedPointsWitness.postprocess_fst_effect
   classical
   change (∑ pair ∈ Finset.univ.filter (fun pair => pair.1 = a),
     (points.Q side x z).effect pair) = _
-  simp only [Finset.sum_filter, Fintype.sum_prod_type]
+  simp [Finset.sum_filter, Fintype.sum_prod_type]
   rw [Finset.sum_comm]
   simp
 

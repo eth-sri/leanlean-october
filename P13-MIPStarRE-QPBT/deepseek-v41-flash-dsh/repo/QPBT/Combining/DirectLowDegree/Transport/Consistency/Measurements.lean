@@ -28,11 +28,12 @@ open MIPStarRE.LDT.Preliminaries
 open MIPStarRE.Quantum
 
 noncomputable section
+variable (D : DirectLdParams)
+
 
 /-! ## Polynomial outcomes -/
 
-private theorem directPolynomialRename_degreeOf_le
-    (D : DirectLdParams) (p : MvPolynomial (Fin D.m) (DirectScalarQ D))
+private theorem directPolynomialRename_degreeOf_le  (p : MvPolynomial (Fin D.m) (DirectScalarQ D))
     (hp : ∀ i, MvPolynomial.degreeOf i p ≤ D.d) (i : Fin D.m) :
     MvPolynomial.degreeOf i (MvPolynomial.rename Fin.rev p) ≤ D.d := by
   rw [← Fin.rev_rev i,
@@ -77,22 +78,19 @@ noncomputable def directPolyEquivPolynomial (D : DirectLdParams) :
     apply Subtype.ext
     change MvPolynomial.rename Fin.rev
       (MvPolynomial.rename Fin.rev g.1) = g.1
-    rw [MvPolynomial.rename_rename]
-    rw [show Fin.rev ∘ Fin.rev = id by funext i; simp]
+    rw [MvPolynomial.rename_rename, show Fin.rev ∘ Fin.rev = id by funext i; simp]
     exact MvPolynomial.rename_id_apply g.1
   · intro g
     cases g with
     | mk p hp =>
         have hpoly : MvPolynomial.rename Fin.rev
             (MvPolynomial.rename Fin.rev p) = p := by
-          rw [MvPolynomial.rename_rename]
-          rw [show Fin.rev ∘ Fin.rev = id by funext i; simp]
+          rw [MvPolynomial.rename_rename, show Fin.rev ∘ Fin.rev = id by funext i; simp]
           exact MvPolynomial.rename_id_apply p
         exact (by
           exact ldtPolynomial_ext hpoly)
 
-@[simp] theorem directPolyEquivPolynomial_poly
-    (D : DirectLdParams) (g : PolyIndex D.m (DirectScalarQ D) D.d) :
+@[simp] theorem directPolyEquivPolynomial_poly  (g : PolyIndex D.m (DirectScalarQ D) D.d) :
     letI := D.toLDTFieldModel
     (directPolyEquivPolynomial D g).poly = MvPolynomial.rename Fin.rev g.1 := by
   letI := D.toLDTFieldModel
@@ -100,8 +98,7 @@ noncomputable def directPolyEquivPolynomial (D : DirectLdParams) :
 
 /-- The polynomial equivalence commutes with evaluation after the direct point
 and scalar codings. -/
-@[simp] theorem directPolyEquivPolynomial_apply
-    (D : DirectLdParams) (g : PolyIndex D.m (DirectScalarQ D) D.d)
+@[simp] theorem directPolyEquivPolynomial_apply  (g : PolyIndex D.m (DirectScalarQ D) D.d)
     (u : Fin D.m → DirectScalarQ D) :
     letI := D.toLDTFieldModel
     directPolyEquivPolynomial D g (directPointEquiv D u) =
@@ -116,7 +113,6 @@ and scalar codings. -/
     MvPolynomial.eval v g.1)
   funext i
   simp only [Function.comp_apply, directPointEquiv_apply, Fin.rev_rev]
-  change (directScalarEquiv D).symm (directScalarEquiv D (u i)) = u i
   exact (directScalarEquiv D).symm_apply_apply (u i)
 
 /-! ## Complete measurements -/
@@ -149,8 +145,7 @@ noncomputable def directPolynomialMeasurement
   exact matrixMeasurementTransport (directPolyEquivPolynomial D).symm
     (ldtMeasurementToMatrixMeasurement G.toMeasurement)
 
-@[simp] theorem directPolynomialMeasurement_effect
-    (D : DirectLdParams) :
+@[simp] theorem directPolynomialMeasurement_effect  :
     letI := D.toLDTFieldModel
     ∀ {iota : Type*} [Fintype iota] [DecidableEq iota]
       (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) iota)
@@ -163,8 +158,7 @@ noncomputable def directPolynomialMeasurement
 
 /-- Evaluating the transported polynomial measurement is the relabeling of
 the LDT evaluation postprocessing through `directScalarEquiv`. -/
-theorem directPolynomialMeasurement_evaluation_effect
-    (D : DirectLdParams) :
+theorem directPolynomialMeasurement_evaluation_effect  :
     letI := D.toLDTFieldModel
     ∀ {iota : Type*} [Fintype iota] [DecidableEq iota]
       (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) iota)
@@ -178,8 +172,7 @@ theorem directPolynomialMeasurement_evaluation_effect
   letI := D.toLDTFieldModel
   intro iota _ _ G u a
   classical
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
-  rw [ldtMeasurementToMatrixMeasurement_effect,
+  rw [MIPStarRE.Quantum.Measurement.postprocess_effect, ldtMeasurementToMatrixMeasurement_effect,
     ProjMeas.postprocess, SubMeas.postprocess_outcome]
   apply Finset.sum_bij (fun g _ => directPolyEquivPolynomial D g)
   · intro g hg
@@ -284,15 +277,12 @@ private theorem averageDiagonalBlock_finset_sum
     Matrix.submatrix_apply]
   simp_rw [Finset.smul_sum]
   rw [Finset.sum_comm]
+variable {alpha beta iota block : Type*} [Fintype alpha] [DecidableEq alpha] [Fintype beta] [DecidableEq beta] [Fintype iota] [DecidableEq iota] [Fintype block] [DecidableEq block]
+
 
 /-- Normalized diagonal-block compression commutes with deterministic outcome
 postprocessing. -/
-theorem correlatedAncillaCompressMeasurement_postprocess
-    {alpha beta iota block : Type*}
-    [Fintype alpha] [DecidableEq alpha]
-    [Fintype beta] [DecidableEq beta]
-    [Fintype iota] [DecidableEq iota]
-    [Fintype block] [DecidableEq block] [Nonempty block]
+theorem correlatedAncillaCompressMeasurement_postprocess  [Nonempty block]
     (M : MIPStarRE.Quantum.Measurement alpha (iota × block))
     (f : alpha → beta) :
     correlatedAncillaCompressMeasurement (M.postprocess f) =
@@ -326,11 +316,12 @@ noncomputable def seedFiberCompressMeasurement
     (seedFiberCompressMeasurement L M).effect a =
       averageDiagonalBlock (M.effect a) :=
   rfl
+variable (L : LdParams)
+
 
 /-- Seed-fiber compression commutes with deterministic outcome
 postprocessing. -/
-theorem seedFiberCompressMeasurement_postprocess
-    (L : LdParams) {alpha beta iota : Type*}
+theorem seedFiberCompressMeasurement_postprocess  {alpha beta iota : Type*}
     [Fintype alpha] [DecidableEq alpha]
     [Fintype beta] [DecidableEq beta]
     [Fintype iota] [DecidableEq iota]
@@ -360,8 +351,7 @@ noncomputable def seedFiberCompressPolyMeasTuple
 
 /-- Polynomial evaluation commutes exactly with compression of the correlated
 seed-residue carrier. -/
-theorem seedFiberCompressPolyMeasTuple_evaluation
-    (L : LdParams) {iota : Type*} [Fintype iota] [DecidableEq iota]
+theorem seedFiberCompressPolyMeasTuple_evaluation  {iota : Type*} [Fintype iota] [DecidableEq iota]
     (G : DirectPolyMeasTuple L.toDirectLdParams
       (iota × Fin (L.q / L.m))) (u : Fin L.m → ScalarQ L) :
     (seedFiberCompressPolyMeasTuple L G).postprocess (evalPolyTupleAt u) =
@@ -372,12 +362,7 @@ theorem seedFiberCompressPolyMeasTuple_evaluation
 
 /-- Block-diagonal assembly commutes with deterministic outcome
 postprocessing. -/
-theorem blockDiagonalMeasurement_postprocess
-    {alpha beta iota block : Type*}
-    [Fintype alpha] [DecidableEq alpha]
-    [Fintype beta] [DecidableEq beta]
-    [Fintype iota] [DecidableEq iota]
-    [Fintype block] [DecidableEq block]
+theorem blockDiagonalMeasurement_postprocess 
     (M : block → MIPStarRE.Quantum.Measurement alpha iota)
     (f : alpha → beta) :
     (blockDiagonalMeasurement M).postprocess f =
@@ -404,11 +389,10 @@ private theorem matrixMeasurementTransport_eq_postprocess
   classical
   apply MIPStarRE.Quantum.Measurement.ext
   intro b
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
-  rw [Finset.sum_eq_single (e.symm b)]
+  rw [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.sum_eq_single (e.symm b)]
   · simp
   · intro a haMem ha
-    have hea : e a = b := (Finset.mem_filter.mp haMem).2
+    have hea := (Finset.mem_filter.mp haMem).2
     exact (ha (e.injective (hea.trans (e.apply_symm_apply b).symm))).elim
   · simp
 

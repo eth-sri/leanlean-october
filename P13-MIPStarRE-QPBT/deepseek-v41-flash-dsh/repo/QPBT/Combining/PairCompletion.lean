@@ -49,11 +49,13 @@ noncomputable def recoverCombinedPair {K : Type*} [CommSemiring K] {m : ℕ}
     | .inl (.inl _) => 0
     | .inl (.inr coordinate) => MvPolynomial.X coordinate
     | .inr scalar => if scalar = 1 then 1 else 0) polynomial)
+variable {K : Type*} [CommSemiring K] {m : ℕ}
+
 
 /-- Substitution recovers both components of a combined polynomial. This is
 formalization support for the relabeling in `eq:qld-sgg-completeness`, paper
 lines 1375--1380. -/
-@[simp] theorem recoverCombinedPair_combinePoly {K : Type*} [CommSemiring K] {m : ℕ}
+@[simp] theorem recoverCombinedPair_combinePoly 
     (first second : MvPolynomial (Fin m) K) :
     recoverCombinedPair (combinePoly first second) = (first, second) := by
   simp [recoverCombinedPair, combinePoly, MvPolynomial.eval₂_rename,
@@ -62,7 +64,7 @@ lines 1375--1380. -/
 /-- Distinct polynomial pairs label distinct combined outcomes. This justifies
 restricting a measurement on extended polynomials to pairs without duplicating
 an effect in `eq:qld-sgg-completeness`, paper lines 1375--1380. -/
-theorem combinePoly_injective {K : Type*} [CommSemiring K] {m : ℕ} :
+theorem combinePoly_injective  :
     Function.Injective (fun pair : MvPolynomial (Fin m) K × MvPolynomial (Fin m) K =>
       combinePoly pair.1 pair.2) := by
   exact (show Function.LeftInverse recoverCombinedPair
@@ -86,6 +88,8 @@ noncomputable def combinedPolyEmbedding (P : AdmissibleParams) :
       combinePoly_injective hpoly
     exact Prod.ext (Subtype.ext (congrArg Prod.fst hpair))
       (Subtype.ext (congrArg Prod.snd hpair))
+variable (P : AdmissibleParams)
+
 
 /-- Evaluation of a combined outcome is the affine combination of its two
 components.  This is the pointwise algebraic identity used when transferring
@@ -94,7 +98,7 @@ the global-pair measurement to the expanded point measurements in
 It is a formalization-only consequence of `def:combine-map`; it does not assert
 any consistency or quantitative error estimate.
 -/
-theorem combinedPolyEmbedding_eval (P : AdmissibleParams)
+theorem combinedPolyEmbedding_eval 
     (u : Fin (2 * P.m + 2) → PauliScalar P) (pair : PolyPair P) :
     MvPolynomial.eval u (combinedPolyEmbedding P pair).1 =
       u (alphaVar P.m) * evalAt .X (projX u) pair +
@@ -120,15 +124,15 @@ noncomputable def combinedPairSubmeasurement (P : AdmissibleParams)
       (combinedPolyEmbedding P).injective heq)]
     exact (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
       (fun outcome _ _ => measurement.pos outcome)).trans measurement.sum_le_one
+variable {carrier : Type*} [Fintype carrier] [DecidableEq carrier] (measurement : Quantum.Measurement
+      (MIPStarRE.LDT.Preliminaries.polyFunc (2 * P.m + 2) (PauliScalar P) P.d) carrier)
+
 
 /-- The missing operator of the polynomial-pair submeasurement is exactly the
 sum of the effects outside the range of the combining map. This is the
 operator identity underlying `eq:qld-sgg-completeness`, paper lines 1375--1380;
 the bound on its state mass is a separate obligation. -/
-theorem combinedPairSubmeasurement_missing (P : AdmissibleParams)
-    {carrier : Type*} [Fintype carrier] [DecidableEq carrier]
-    (measurement : Quantum.Measurement
-      (MIPStarRE.LDT.Preliminaries.polyFunc (2 * P.m + 2) (PauliScalar P) P.d) carrier) :
+theorem combinedPairSubmeasurement_missing  :
     1 - (combinedPairSubmeasurement P measurement).total =
       ∑ polynomial ∈ Finset.univ.filter
         (fun polynomial => polynomial ∉ Set.range (combinedPolyEmbedding P)),
@@ -157,15 +161,16 @@ noncombined outcomes are retained at the completion outcome, not discarded. -/
 noncomputable def completedPairLabel (P : AdmissibleParams) (completionPair : PolyPair P) :
     MIPStarRE.LDT.Preliminaries.polyFunc (2 * P.m + 2) (PauliScalar P) P.d → PolyPair P :=
   Function.extend (combinedPolyEmbedding P) id (fun _ => completionPair)
+variable (completionPair pair : PolyPair P)
+
 
 /-- Completion preserves every combined polynomial's pair label. -/
-@[simp] theorem completedPairLabel_combinedPolyEmbedding (P : AdmissibleParams)
-    (completionPair pair : PolyPair P) :
+@[simp] theorem completedPairLabel_combinedPolyEmbedding  :
     completedPairLabel P completionPair (combinedPolyEmbedding P pair) = pair := by
   exact (combinedPolyEmbedding P).injective.extend_apply _ _ _
 
 /-- All outcomes outside the combining map's range go to the completion pair. -/
-theorem completedPairLabel_of_not_mem_range (P : AdmissibleParams)
+theorem completedPairLabel_of_not_mem_range 
     (completionPair : PolyPair P)
     (polynomial : MIPStarRE.LDT.Preliminaries.polyFunc (2 * P.m + 2) (PauliScalar P) P.d)
     (houtside : polynomial ∉ Set.range (combinedPolyEmbedding P)) :
@@ -186,18 +191,13 @@ noncomputable def completedPairMeasurement (P : AdmissibleParams)
 /-- Completing the pair measurement adds precisely its missing operator to
 the specified outcome and leaves all other effects unchanged. This is the
 completion formula of `lem:qld-4-7`, paper lines 1402--1404. -/
-theorem completedPairMeasurement_effect (P : AdmissibleParams)
-    {carrier : Type*} [Fintype carrier] [DecidableEq carrier]
-    (measurement : Quantum.Measurement
-      (MIPStarRE.LDT.Preliminaries.polyFunc (2 * P.m + 2) (PauliScalar P) P.d) carrier)
-    (completionPair pair : PolyPair P) :
+theorem completedPairMeasurement_effect  :
     (completedPairMeasurement P measurement completionPair).effect pair =
       (combinedPairSubmeasurement P measurement).effect pair +
         if pair = completionPair then 1 - (combinedPairSubmeasurement P measurement).total
         else 0 := by
   classical
-  rw [completedPairMeasurement, Quantum.Measurement.postprocess_effect, Finset.sum_filter]
-  rw [← Finset.sum_filter_add_sum_filter_not Finset.univ
+  rw [completedPairMeasurement, Quantum.Measurement.postprocess_effect, Finset.sum_filter, ← Finset.sum_filter_add_sum_filter_not Finset.univ
     (fun polynomial => polynomial ∈ Set.range (combinedPolyEmbedding P))]
   have hgood :
       Finset.univ.filter (fun polynomial => polynomial ∈ Set.range (combinedPolyEmbedding P)) =
@@ -230,10 +230,7 @@ theorem completedPairMeasurement_effect (P : AdmissibleParams)
 extended-polynomial measurement is projective. This proves the qualitative
 completion step in `lem:qld-4-7`, paper lines 1402--1404, without assuming its
 unproved consistency conclusion. -/
-theorem completedPairMeasurement_projective (P : AdmissibleParams)
-    {carrier : Type*} [Fintype carrier] [DecidableEq carrier]
-    (measurement : Quantum.Measurement
-      (MIPStarRE.LDT.Preliminaries.polyFunc (2 * P.m + 2) (PauliScalar P) P.d) carrier)
+theorem completedPairMeasurement_projective 
     (hprojective : Measurement.IsProjective measurement) (completionPair : PolyPair P) :
     Measurement.IsProjective (completedPairMeasurement P measurement completionPair) := by
   exact SandwichProduct.postprocess_isProjective measurement hprojective _

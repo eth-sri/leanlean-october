@@ -78,6 +78,8 @@ structure ExtractionWitness {P : AdmissibleParams} {epsilon deltaS : ℝ}
       (fun (_ : Unit) (h : PauliRegister P) =>
         S.placeExtractedRegister side (pauliProj W h))
       (S.idealExpState aux) ≤ delta
+variable {P : AdmissibleParams}
+
 
 /-- Construct a conditional extraction witness when the allowed squared error
 is at least four. The auxiliary vector is the normalized original state tensored
@@ -96,8 +98,7 @@ composition with `exists_globalPairWitness` are recorded in
 `docs/paper-gaps/qpbt_extraction-transfer.tex`, issue Dengnifer/MIPStarRE-QPBT-bak#123. The
 source-facing
 composition is `exists_extractionWitness`. -/
-theorem exists_extractionWitness_ofGlobalPairWitness_of_four_le
-    {P : AdmissibleParams} {epsilon deltaG delta : ℝ}
+theorem exists_extractionWitness_ofGlobalPairWitness_of_four_le  {epsilon deltaG delta : ℝ}
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
     (hdelta : 4 ≤ delta) : Nonempty (ExtractionWitness S w delta) := by
   refine ⟨{
@@ -134,8 +135,7 @@ paper `14_analysis_of_the_pauli_basis_test.tex:1743-1783`.
 construction is supplied by `exists_globalPairWitness` in the source-facing
 `exists_extractionWitness`; see issue Dengnifer/MIPStarRE-QPBT-bak#123 and
 `docs/paper-gaps/qpbt_extraction-transfer.tex`. -/
-theorem exists_extractionWitness_ofGlobalPairWitness_of_one_le_construct
-    {P : AdmissibleParams} {epsilon deltaG C : ℝ}
+theorem exists_extractionWitness_ofGlobalPairWitness_of_one_le_construct  {epsilon deltaG C : ℝ}
     (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
     (hC : 4 ≤ C)
     (hconstruct : 1 ≤ deltaConstructPaulis C epsilon deltaG P.m P.d P.q) :
@@ -332,7 +332,7 @@ theorem delta_extract_le_delta_qld_explicit (C a b : ℝ) (hC : 1 ≤ C) (ha : 1
     · apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
       nlinarith [mul_nonneg hb.le hdegree0]
   have hglobal0 : 0 ≤ deltaQld a b epsilon params.m params.d params.q := by
-    simp only [deltaQld, Real.rpow_eq_pow]
+    simp [deltaQld, Real.rpow_eq_pow]
     positivity
   have hglobal_root :
       (deltaQld a b epsilon params.m params.d params.q) ^ (1 / 4 : ℝ) ≤

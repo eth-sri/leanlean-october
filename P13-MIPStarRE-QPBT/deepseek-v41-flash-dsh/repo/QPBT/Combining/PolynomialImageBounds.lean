@@ -69,7 +69,7 @@ private theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι
   refine Finset.sum_congr rfl fun bc _ => ?_
   rw [Finset.mul_sum, Finset.sum_eq_single bc]
   · by_cases h : α * bc.1 + β * bc.2 = a
-    · simp only [if_pos h, Matrix.conjTranspose_mul, measurement_effect_hermitian]
+    · simp [if_pos h, Matrix.conjTranspose_mul, measurement_effect_hermitian]
       rw [mul_assoc (Z.effect bc.2), ← mul_assoc (X.effect bc.1),
         (hX bc.1).isIdempotentElem.eq, ← mul_assoc]
     · simp [h]
@@ -78,16 +78,16 @@ private theorem orderedIndicator_gram_of_ne_zero (X Z : Quantum.Measurement F ι
     · by_cases h' : α * bc'.1 + β * bc'.2 = a
       · have hb : bc.1 ≠ bc'.1 := by
           intro hb
-          have hc : bc.2 = bc'.2 := mul_left_cancel₀ hβ (by
+          have hc := mul_left_cancel₀ hβ (by
             apply add_left_cancel (a := α * bc.1)
             simpa only [hb] using h.trans h'.symm)
           exact hne (Prod.ext hb hc).symm
-        simp only [if_pos h, if_pos h', Matrix.conjTranspose_mul,
+        simp [if_pos h, if_pos h', Matrix.conjTranspose_mul,
           measurement_effect_hermitian]
         calc
           Z.effect bc.2 * X.effect bc.1 * (X.effect bc'.1 * Z.effect bc'.2) =
               Z.effect bc.2 * (X.effect bc.1 * X.effect bc'.1) * Z.effect bc'.2 := by
-            simp only [mul_assoc]
+            simp [mul_assoc]
           _ = 0 := by rw [projective_effect_mul_effect_eq_zero X hX hb]; simp
       · simp [h']
     · simp [h]
@@ -110,8 +110,6 @@ private theorem diagonalIndicator_bounds (X Z : Quantum.Measurement F ι)
     (hZ : Measurement.IsProjective Z) (α β a : F) :
     0 ≤ diagonalIndicator X Z α β a ∧ diagonalIndicator X Z α β a ≤ 1 := by
   obtain ⟨hpos, hsum⟩ := pastedMeasurement_isMeasurement X Z hZ
-  change (∀ bc : F × F, 0 ≤ Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2) at hpos
-  change (∑ bc : F × F, Z.effect bc.2 * X.effect bc.1 * Z.effect bc.2) = 1 at hsum
   constructor
   · exact Finset.sum_nonneg fun bc _ => by
       split_ifs
@@ -134,7 +132,7 @@ private theorem orderedIndicator_zero (X Z : Quantum.Measurement F ι) (α a : F
   rw [Fintype.sum_prod_type, Quantum.Measurement.postprocess_effect, Finset.sum_filter]
   refine Finset.sum_congr rfl fun b _ => ?_
   by_cases h : α * b = a
-  · simp only [zero_mul, add_zero, h, if_true]
+  · simp [zero_mul, add_zero, h, if_true]
     rw [← Finset.mul_sum, Z.sum_eq_one, mul_one]
   · simp [h]
 
@@ -320,7 +318,7 @@ private theorem avg_diagonalIndicator_le_of_not_linear {n : ℕ}
         stateQForm ψ (diagonalIndicator (X u) (Z u) (v 0) (v 1) (f u v))) ≤
         (if MvPolynomial.eval u (p.coeff e) = 0 then 1 else 0) * ‖ψ‖ ^ 2 + E * ‖ψ‖ ^ 2 := by
     by_cases hu : MvPolynomial.eval u (p.coeff e) = 0
-    · simp only [hu, if_true, one_mul]
+    · simp [hu, if_true, one_mul]
       apply le_trans (b := ‖ψ‖ ^ 2)
       · apply avgOver_uniform_le_const
         intro v
@@ -367,7 +365,7 @@ private theorem avg_orderedIndicator_norm_sq_le_of_not_linear {n : ℕ}
     change avgOver (uniformDistribution (Fin 2 → F))
       (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
     rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
-    simp only [Equiv.apply_symm_apply]
+    simp [Equiv.apply_symm_apply]
     rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
     simp [avgOver_uniform_eq_inv_card_mul_sum]
   calc
@@ -458,7 +456,7 @@ theorem nonlinear_mass_le_ordered_error {n : ℕ} {Γ : Type*}
     sum_mass_le_residual_add_image s ψ (A u v)
   have havg := avgOver_mono (uniformDistribution (Fin n → F)) _ _ fun u =>
     avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ (hpoint u)
-  simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at havg
+  simp [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at havg
   have hnorm := avg_sum_orderedIndicator_norm_sq_le_of_not_linear s p hp X Z hX hZ ψ
   change ∑ g ∈ s, ‖ψ g‖ ^ 2 ≤ 2 * avgOver (uniformDistribution (Fin n → F))
     (fun u => avgOver (uniformDistribution (Fin 2 → F))

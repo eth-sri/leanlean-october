@@ -55,13 +55,15 @@ theorem combinedVar_cases {m k : ℕ} (i : Fin (m + k)) :
   rcases h : finSumFinEquiv.symm i with j | r
   · exact Or.inl ⟨j, by rw [combinedPointVar, ← h, Equiv.apply_symm_apply]⟩
   · exact Or.inr ⟨r, by rw [combinedCoefficientVar, ← h, Equiv.apply_symm_apply]⟩
+variable {K : Type*}
 
-@[simp] theorem combinedPoint_combinedPointVar {K : Type*} {m k : ℕ}
+
+@[simp] theorem combinedPoint_combinedPointVar  {m k : ℕ}
     (u : Fin m → K) (α : Fin k → K) (j : Fin m) :
     combinedPoint u α (combinedPointVar m k j) = u j := by
   simp [combinedPoint, combinedPointVar]
 
-@[simp] theorem combinedPoint_combinedCoefficientVar {K : Type*} {m k : ℕ}
+@[simp] theorem combinedPoint_combinedCoefficientVar  {m k : ℕ}
     (u : Fin m → K) (α : Fin k → K) (r : Fin k) :
     combinedPoint u α (combinedCoefficientVar m k r) = α r := by
   simp [combinedPoint, combinedCoefficientVar]
@@ -75,13 +77,13 @@ def combinedRestrictSubstitution {K : Type*} [CommSemiring K] {m : ℕ} (k : ℕ
   fun i => Sum.elim (fun j : Fin m => MvPolynomial.C (u j))
     (fun r : Fin k => MvPolynomial.X r) (finSumFinEquiv.symm i)
 
-@[simp] theorem combinedRestrictSubstitution_point {K : Type*} [CommSemiring K]
+@[simp] theorem combinedRestrictSubstitution_point  [CommSemiring K]
     {m k : ℕ} (u : Fin m → K) (j : Fin m) :
     combinedRestrictSubstitution k u (combinedPointVar m k j) =
       MvPolynomial.C (u j) := by
   simp [combinedRestrictSubstitution, combinedPointVar]
 
-@[simp] theorem combinedRestrictSubstitution_coefficient {K : Type*} [CommSemiring K]
+@[simp] theorem combinedRestrictSubstitution_coefficient  [CommSemiring K]
     {m k : ℕ} (u : Fin m → K) (r : Fin k) :
     combinedRestrictSubstitution k u (combinedCoefficientVar m k r) =
       (MvPolynomial.X r : MvPolynomial (Fin k) K) := by
@@ -95,7 +97,7 @@ def combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
 
 /-- Evaluating the restriction of `p` at `u` at a combining vector `α`
 evaluates `p` at the combined point with parts `u` and `α`. -/
-theorem eval_combinedRestrict {K : Type*} [CommSemiring K] {m k : ℕ}
+theorem eval_combinedRestrict  [CommSemiring K] {m k : ℕ}
     (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) (α : Fin k → K) :
     MvPolynomial.eval α (combinedRestrict p u) =
       MvPolynomial.eval (combinedPoint u α) p := by

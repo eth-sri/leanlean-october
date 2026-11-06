@@ -22,16 +22,18 @@ open scoped BigOperators Matrix
 namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT MIPStarRE.LDT.Preliminaries MIPStarRE.Quantum
+variable {p : ℕ}
+
 
 /-- The shift observable in blueprint
 `lem:twisted-commutation`, paper `04_preliminaries.tex:1056-1089`. -/
-noncomputable def primeTauShift {p : ℕ} {K : Type*} [Field K] [Fintype K]
+noncomputable def primeTauShift  {K : Type*} [Field K] [Fintype K]
     [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K]
     (a : K) : Op K := fun i j => if i = j + a then 1 else 0
 
 /-- The phase observable in blueprint
 `lem:twisted-commutation`, paper `04_preliminaries.tex:1056-1089`. -/
-noncomputable def primeTauPhase {p : ℕ} {K : Type*} [Field K] [Fintype K]
+noncomputable def primeTauPhase  {K : Type*} [Field K] [Fintype K]
     [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K]
     (b : K) : Op K := fun i j =>
   if i = j then ffChar (p := p) (F := K) (b * j) else 0
@@ -39,7 +41,7 @@ noncomputable def primeTauPhase {p : ℕ} {K : Type*} [Field K] [Fintype K]
 /-- The multi-qudit observable in `lem:twisted-commutation`, with `false`
 denoting phase; blueprint `lem:twisted-commutation`, paper
 `04_preliminaries.tex:1073-1095,1141-1151`. -/
-noncomputable def primeTauObservable {p : ℕ} {K ι : Type*} [Field K] [Fintype K]
+noncomputable def primeTauObservable  {K ι : Type*} [Field K] [Fintype K]
     [DecidableEq K] [Fact p.Prime] [Algebra (ZMod p) K]
     [Fintype ι] [DecidableEq ι] (W : Bool) (a : ι → K) : Op (ι → K) :=
   fun x y => ∏ i : ι, if W then primeTauShift (p := p) (a i) (x i) (y i)
@@ -85,13 +87,13 @@ private theorem primeTauObservable_zero {p : ℕ} {K ι : Type*} [Field K]
   classical
   ext x y
   cases W <;>
-    simp only [primeTauObservable, if_true, Pi.zero_apply, primeTauShift,
+    simp [primeTauObservable, if_true, Pi.zero_apply, primeTauShift,
       primeTauPhase, zero_mul, AddChar.map_zero_eq_one, Matrix.one_apply]
   all_goals
     by_cases hxy : ∀ i, x i = y i
     · have h : x = y := funext hxy
       simp [h]
-    · simp only [not_forall] at hxy
+    · simp [not_forall] at hxy
       obtain ⟨i, hi⟩ := hxy
       rw [Finset.prod_eq_zero (Finset.mem_univ i) (by simp [hi])]
       have h : x ≠ y := fun hxy => hi (congr_fun hxy i)
@@ -131,7 +133,6 @@ private theorem primeTauObservable_pow_nat {p : ℕ} {K ι : Type*} [Field K]
       primeTauObservable (p := p) W (fun i => n • a i) := by
   induction n with
   | zero =>
-      rw [pow_zero]
       have hzero : (fun i => (0 : ℕ) • a i) = (0 : ι → K) := by
         funext i
         simp
@@ -196,13 +197,13 @@ theorem primeTauObservable_X_mul_Z {p : ℕ} {K ι : Type*} [Field K] [Fintype K
       (ffChar (p := p) (F := K) (-dotProduct a b)) •
         (primeTauObservable (p := p) false b * primeTauObservable (p := p) true a) := by
   let ψ := ffChar (p := p) (F := K)
-  have hchar : ψ (-dotProduct a b) = ∏ i, ψ (-(a i) * b i) := by
+  have hchar := by
     calc
       ψ (-dotProduct a b) = ψ (∑ i, -(a i) * b i) := by
         congr 1
         simp [dotProduct]
       _ = ∏ i, ψ (-(a i) * b i) := by
-        simpa only [AddChar.toMonoidHom_apply, toAdd_prod, toAdd_ofAdd] using
+        simpa using
           (map_prod ψ.toMonoidHom (fun i => Multiplicative.ofAdd (-(a i) * b i))
             Finset.univ)
   change productMatrix (fun i => primeTauShift (p := p) (a i)) *
@@ -221,7 +222,6 @@ with the binary trace. -/
 private theorem ffChar_two_eq_phaseSign {K : Type*} [Field K]
     [Algebra (ZMod 2) K] (x : K) :
     ffChar (p := 2) (F := K) x = phaseSign (binTrace K x) := by
-  rw [ffChar_apply]
   exact (phaseSign_eq_ffChar (binTrace K x)).symm
 
 /-- The binary Pauli observable is the characteristic-two specialization of
@@ -366,9 +366,9 @@ theorem tauObservable_X_apply
   change (∏ i : ι, if x i = y i + a i then 1 else 0) = _
   rw [Fintype.prod_boole]
   have hsupport : (∀ i, x i = y i + a i) ↔ x = y + a := by
-    simpa only [Pi.add_apply] using
+    simpa using
       (funext_iff (f := x) (g := y + a)).symm
-  simp only [hsupport]
+  simp [hsupport]
 
 /-- A phase observable is diagonal, with its phase given by the trace pairing. -/
 theorem tauObservable_Z_apply
@@ -383,7 +383,7 @@ theorem tauObservable_Z_apply
   rw [Fintype.prod_ite_zero, prod_phaseSign_binTrace_dotProduct]
   have hsupport : (∀ i, x i = y i) ↔ x = y :=
     (funext_iff (f := x) (g := y)).symm
-  simp only [hsupport]
+  simp [hsupport]
 
 /-- Binary-coordinate relabeling transports both generalized Pauli observables. -/
 private theorem tauObservable_reindex_quditQubitLabelEquiv
@@ -395,7 +395,7 @@ private theorem tauObservable_reindex_quditQubitLabelEquiv
         (tauObservable W (quditQubitLabelEquiv F a)) := by
   classical
   ext x y
-  simp only [Matrix.reindex_apply, Matrix.submatrix_apply, Equiv.symm_symm]
+  simp [Matrix.reindex_apply, Matrix.submatrix_apply, Equiv.symm_symm]
   cases W with
   | X =>
       rw [tauObservable_X_apply, tauObservable_X_apply]

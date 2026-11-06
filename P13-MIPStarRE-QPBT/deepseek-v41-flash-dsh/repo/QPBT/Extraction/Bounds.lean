@@ -32,10 +32,12 @@ namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {epsilon deltaG : ℝ}
 variable (S : ProjectiveSetting P epsilon)
+variable (w : GlobalPairWitness S deltaG)
+
 
 /-- The simultaneous swap is an isometry on the six-register space. This is
 the two-player consequence of the unitarity calculation at paper lines 1693-1700. -/
-theorem placeBoth_swap_left_unitary (w : GlobalPairWitness S deltaG) :
+theorem placeBoth_swap_left_unitary  :
     (S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob))ᴴ *
       S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob) = 1 := by
   classical
@@ -47,19 +49,20 @@ theorem placeBoth_swap_left_unitary (w : GlobalPairWitness S deltaG) :
   simp [reindexOp, Matrix.one_apply]
 
 /-- Applying the two concrete swap unitaries preserves normalization. -/
-theorem applyBoth_swap_norm (w : GlobalPairWitness S deltaG) :
+theorem applyBoth_swap_norm  :
     ‖S.applyBoth (swapUnitary w .alice) (swapUnitary w .bob) S.psiHat‖ = 1 := by
   rw [applyBoth, MagicSquareRigidity.norm_applyOperatorToState_of_isometry
     (S.placeBoth_swap_left_unitary w), S.psiHat_norm]
+variable (side : PlayerSide)
+
 
 /-- Each placed swap is an isometry on the six-register space. -/
-theorem placeSide_swap_left_unitary (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) :
+theorem placeSide_swap_left_unitary  :
     (S.placeSide side (swapUnitary w side))ᴴ *
       S.placeSide side (swapUnitary w side) = 1 := by
   classical
   cases side <;>
-    simp only [placeSide, ← reindexOp_conjTranspose, ← WinImplications.reindexOp_mul,
+    simp [placeSide, ← reindexOp_conjTranspose, ← WinImplications.reindexOp_mul,
       MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
       heteroKron_mul, Matrix.mul_one] <;>
     erw [conjTranspose_mul_swapUnitary] <;>
@@ -70,12 +73,14 @@ private theorem sum_place_sq_eq_one {α : Type*} [Fintype α]
     (p : Placement) (A : α → Op (S.ExpandedLocalSpace p.side))
     (hA : ∑ a, (A a)ᴴ * A a = 1) :
     ∑ a, (S.place p (A a))ᴴ * S.place p (A a) = 1 := by
-  simp only [← S.place_conjTranspose, ← S.place_mul]
+  simp [← S.place_conjTranspose, ← S.place_mul]
   rw [← S.place_finsetSum, hA, S.place_one]
+variable (side : PlayerSide) (W : PauliKind)
+
 
 /-- The original total-Pauli effects remain square-complete after placement.
 This is the completeness used to expand the distance at paper lines 1827-1834. -/
-theorem sum_placePlayer_pauli_sq (side : PlayerSide) (W : PauliKind) :
+theorem sum_placePlayer_pauli_sq  :
     ∑ h, (S.placePlayer side ((S.pauliMeas side W).effect h))ᴴ *
       S.placePlayer side ((S.pauliMeas side W).effect h) = 1 := by
   classical
@@ -86,35 +91,34 @@ theorem sum_placePlayer_pauli_sq (side : PlayerSide) (W : PauliKind) :
       cases side with
       | alice => exact S.isProjective.1 _
       | bob => exact S.isProjective.2 _
-    simp only [fun h => (hproj h).isSelfAdjoint.isHermitian.eq,
+    simp [fun h => (hproj h).isSelfAdjoint.isHermitian.eq,
       fun h => (hproj h).isIdempotentElem.eq]
     exact (S.pauliMeas side W).sum_eq_one
   cases side <;> apply sum_place_sq_eq_one <;>
-    simp only [MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
+    simp [MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
       heteroKron_mul, Matrix.one_mul, ← heteroKron_finset_sum_left] <;>
     erw [hlocal] <;> exact heteroKron_one_one
 
 /-- The ideal total-Pauli effects are square-complete on either extracted register. -/
-theorem sum_placeExtractedRegister_pauli_sq (side : PlayerSide) (W : PauliKind) :
+theorem sum_placeExtractedRegister_pauli_sq  :
     ∑ h : PauliRegister P, (S.placeExtractedRegister side (pauliProj W h))ᴴ *
       S.placeExtractedRegister side (pauliProj W h) = 1 := by
   classical
   have hlocal : ∑ h : PauliRegister P, (pauliProj W h)ᴴ * pauliProj W h = 1 := by
-    simp only [fun h => (posSemidef_pauliProj W h).isHermitian.eq,
+    simp [fun h => (posSemidef_pauliProj W h).isHermitian.eq,
       pauliProj_mul_pauliProj, ite_true]
     exact sum_pauliProj_eq_one W
   have htensor {R : Type} [Fintype R] [DecidableEq R] :
       ∑ h : PauliRegister P, (heteroKron (1 : Op R) (pauliProj W h))ᴴ *
         heteroKron (1 : Op R) (pauliProj W h) = 1 := by
-    simp only [MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
+    simp [MagicSquareRigidity.heteroKron_conjTranspose, Matrix.conjTranspose_one,
       heteroKron_mul, Matrix.one_mul, ← heteroKron_finset_sum_right, hlocal,
       heteroKron_one_one]
   cases side <;> apply sum_place_sq_eq_one <;> exact htensor
 
 /-- The entire conjugated total-Pauli family is square-complete; conjugation
 does not introduce a factor equal to the number of answers. -/
-theorem sum_conj_pauli_sq (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) :
+theorem sum_conj_pauli_sq  (W : PauliKind) :
     ∑ h : PauliRegister P,
       (conjBy (S.placeSide side (swapUnitary w side))
         (S.placePlayer side ((S.pauliMeas side W).effect h)))ᴴ *
@@ -122,11 +126,11 @@ theorem sum_conj_pauli_sq (w : GlobalPairWitness S deltaG)
         (S.placePlayer side ((S.pauliMeas side W).effect h)) = 1 := by
   classical
   let U := S.placeSide side (swapUnitary w side)
-  have hU : Uᴴ * U = 1 := S.placeSide_swap_left_unitary w side
-  have hU' : U * Uᴴ = 1 := mul_eq_one_comm.mp hU
+  have hU := S.placeSide_swap_left_unitary w side
+  have hU' := mul_eq_one_comm.mp hU
   have hterm (A : Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
       (conjBy U A)ᴴ * conjBy U A = U * (Aᴴ * A) * Uᴴ := by
-    simp only [conjBy, Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose]
+    simp [conjBy, Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose]
     calc
       _ = U * (Aᴴ * (Uᴴ * U) * A) * Uᴴ := by noncomm_ring
       _ = _ := by rw [hU, Matrix.mul_one]
@@ -137,7 +141,7 @@ theorem sum_conj_pauli_sq (w : GlobalPairWitness S deltaG)
 
 /-- On any normalized ideal state the extraction measurement error is at
 most four, uniformly in the local dimensions and number of answers. -/
-theorem extraction_pauli_dist_le_four (w : GlobalPairWitness S deltaG)
+theorem extraction_pauli_dist_le_four 
     (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
     (haux : ‖aux‖ = 1) (side : PlayerSide) (W : PauliKind) :
     opFamilyDistSq (MIPStarRE.LDT.uniformDistribution Unit)

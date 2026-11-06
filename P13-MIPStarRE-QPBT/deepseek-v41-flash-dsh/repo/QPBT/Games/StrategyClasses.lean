@@ -22,10 +22,12 @@ universe u
 open scoped BigOperators Matrix MatrixOrder ComplexOrder
 
 open MIPStarRE.LDT MIPStarRE.Quantum
+variable {G : Game}
+
 
 /-- Projectivity from blueprint
 `def:projective-strategy-general`, paper `06_nonlocal_games_and_mipstar.tex:68-72`. -/
-def Strategy.IsProjective {G : Game} (S : Strategy G) : Prop :=
+def Strategy.IsProjective  (S : Strategy G) : Prop :=
   (∀ x, MIPStarRE.QPBT.Measurement.IsProjective (S.A x)) ∧
     ∀ y, MIPStarRE.QPBT.Measurement.IsProjective (S.B y)
 
@@ -149,18 +151,16 @@ def padState
   (EuclideanSpace.equiv ((I × κA) × (J × κB)) ℂ).symm
     (fun p => if p.1.2 = aA then
       if p.2.2 = bB then ψ.ofLp (p.1.1, p.2.1) else 0 else 0)
+variable {I J κA κB : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J] [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB] (aA : κA) (bB : κB) (ψ : EuclideanSpace ℂ (I × J))
+
 
 /-- Padding a state at the two distinguished ancilla coordinates preserves its
 norm. -/
-theorem padState_norm
-    {I J κA κB : Type*} [Fintype I] [DecidableEq I]
-    [Fintype J] [DecidableEq J] [Fintype κA] [DecidableEq κA]
-    [Fintype κB] [DecidableEq κB]
-    (aA : κA) (bB : κB) (ψ : EuclideanSpace ℂ (I × J)) :
+theorem padState_norm  :
     ‖padState aA bB ψ‖ = ‖ψ‖ := by
   apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
-  simp only [padState, Fintype.sum_prod_type]
+  simp [padState, Fintype.sum_prod_type]
   apply Finset.sum_congr rfl
   intro i _
   rw [Finset.sum_eq_single aA]
@@ -179,11 +179,7 @@ theorem padState_norm
 
 /-- The quadratic form of a padded state depends only on the compression of
 each local operator at the distinguished ancilla coordinate. -/
-theorem stateQForm_padState
-    {I J κA κB : Type*} [Fintype I] [DecidableEq I]
-    [Fintype J] [DecidableEq J] [Fintype κA] [DecidableEq κA]
-    [Fintype κB] [DecidableEq κB]
-    (aA : κA) (bB : κB) (ψ : EuclideanSpace ℂ (I × J))
+theorem stateQForm_padState 
     (A : Op I) (B : Op J) (A' : Op (I × κA)) (B' : Op (J × κB))
     (hA : ∀ i j, A' (i, aA) (j, aA) = A i j)
     (hB : ∀ i j, B' (i, bB) (j, bB) = B i j) :
@@ -232,11 +228,11 @@ def oneMeasData
     [Fintype I] [DecidableEq I]
     (M : MIPStarRE.Quantum.Measurement α I) : OneMeasNaimarkData α I :=
   Classical.choose (oneMeasNaimark M.toSubmeasurement)
+variable {α I : Type} [Fintype α] [DecidableEq α] [Fintype I] [DecidableEq I]
+
 
 /-- The source submeasurement of the chosen Naimark data is the original POVM. -/
-theorem oneMeasData_source_effect
-    {α I : Type} [Fintype α] [DecidableEq α]
-    [Fintype I] [DecidableEq I]
+theorem oneMeasData_source_effect 
     (M : MIPStarRE.Quantum.Measurement α I) :
     (oneMeasData M).source.effect = M.effect := by
   exact congrArg MIPStarRE.Quantum.Submeasurement.effect
@@ -253,9 +249,7 @@ def dilatedMeasurement
     rw [P.sum_eq_total, P.total_eq_one]
 
 /-- Every effect of the completed Naimark measurement is a projection. -/
-theorem dilatedMeasurement_isProjective
-    {α I : Type} [Fintype α] [DecidableEq α]
-    [Fintype I] [DecidableEq I]
+theorem dilatedMeasurement_isProjective 
     (a₀ : α) (M : MIPStarRE.Quantum.Measurement α I) :
     MIPStarRE.QPBT.Measurement.IsProjective (dilatedMeasurement a₀ M) := by
   intro a
@@ -268,9 +262,7 @@ theorem dilatedMeasurement_isProjective
 
 /-- Compressing a completed Naimark effect to the distinguished ancilla
 coordinate recovers the original POVM effect. -/
-theorem dilatedMeasurement_compression
-    {α I : Type} [Fintype α] [DecidableEq α]
-    [Fintype I] [DecidableEq I]
+theorem dilatedMeasurement_compression 
     (a₀ a : α) (M : MIPStarRE.Quantum.Measurement α I) (i j : I) :
     (dilatedMeasurement a₀ M).effect a (i, none) (j, none) = M.effect a i j := by
   let D := oneMeasData M
@@ -291,8 +283,7 @@ theorem dilatedMeasurement_compression
   simp only [completeAtOutcome]
   by_cases ha : a = a₀
   · subst a
-    rw [dif_pos rfl]
-    rw [Matrix.add_apply, hcompress, Matrix.sub_apply, Matrix.one_apply, htotal]
+    rw [dif_pos rfl, Matrix.add_apply, hcompress, Matrix.sub_apply, Matrix.one_apply, htotal]
     by_cases hij : i = j <;> simp [hij, Matrix.one_apply]
   · rw [dif_neg ha]
     exact hcompress a
@@ -303,7 +294,7 @@ coordinates. This is the dilation step shared by
 blueprint `def:projective-strategy-general`, and
 blueprint
 `lem:projective-strategy-setup`. -/
-@[reducible] def paddedStrategy {G : Game} (S : Strategy G) {κA κB : Type}
+@[reducible] def paddedStrategy  (S : Strategy G) {κA κB : Type}
     [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
     (aA : κA) (bB : κB)
     (A' : G.QuestionA → MIPStarRE.Quantum.Measurement G.AnswerA (S.ιA × κA))
@@ -346,7 +337,7 @@ theorem paddedStrategy_value {G : Game} (S : Strategy G) {κA κB : Type}
   apply Finset.sum_congr rfl
   intro b _
   by_cases hw : G.decide xy.1 xy.2 a b
-  · simp only [hw, if_true]
+  · simp [hw, if_true]
     exact stateQForm_padState aA bB S.ψ ((S.A xy.1).effect a)
       ((S.B xy.2).effect b) ((A' xy.1).effect a) ((B' xy.2).effect b)
       (hA xy.1 a) (hB xy.2 b)

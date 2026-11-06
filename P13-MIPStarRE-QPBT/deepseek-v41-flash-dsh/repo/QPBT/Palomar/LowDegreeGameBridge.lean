@@ -84,9 +84,11 @@ def lowDegreeQuestionPairEquiv (P : MIPStarRE.QPBT.LdParams) :
         LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) ≃
       (MIPStarRE.QPBT.LdQuestion P × MIPStarRE.QPBT.LdQuestion P) :=
   Equiv.prodCongr (lowDegreeQuestionEquiv P) (lowDegreeQuestionEquiv P)
+variable (P : MIPStarRE.QPBT.LdParams)
+
 
 /-- The compact seed-index map is the original `chiIndex`. -/
-@[simp] theorem lowDegreeChiIndex_eq (P : MIPStarRE.QPBT.LdParams)
+@[simp] theorem lowDegreeChiIndex_eq 
     (s : MIPStarRE.QPBT.ScalarQ P) :
     lowDegreeChiIndex (LowDegreeParams.ofLdParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model) s =
@@ -98,10 +100,11 @@ def lowDegreeQuestionPairEquiv (P : MIPStarRE.QPBT.LdParams) :
     (i : Fin P.m) (v : Fin P.m → MIPStarRE.QPBT.ScalarQ P) :
     lowDegreePrefix i v = MIPStarRE.QPBT.prefixProjection i v :=
   rfl
+variable {K : Type} [Field K] [DecidableEq K] {m : ℕ}
+
 
 /-- The compact least nonzero coordinate is the one used by the published formula. -/
-theorem lowDegreePivot_eq_linePivotIndex {K : Type} [Field K] [DecidableEq K]
-    {m : ℕ} (v : Fin m → K) (hv : v ≠ 0) :
+theorem lowDegreePivot_eq_linePivotIndex  (v : Fin m → K) (hv : v ≠ 0) :
     lowDegreePivot v hv = MIPStarRE.QPBT.linePivotIndex v hv := by
   have hpivot_ne : v (lowDegreePivot v hv) ≠ 0 := by
     unfold lowDegreePivot
@@ -119,18 +122,18 @@ theorem lowDegreePivot_eq_linePivotIndex {K : Type} [Field K] [DecidableEq K]
     exact hpivot_ne (MIPStarRE.QPBT.linePivotIndex_zero_before v hv _ hlt)
 
 /-- The compact elementary representative is exactly the canonical representative. -/
-theorem lowDegreeLineRep_eq_lineRepMap {K : Type} [Field K] [DecidableEq K]
-    {m : ℕ} (u v : Fin m → K) :
+theorem lowDegreeLineRep_eq_lineRepMap  (u v : Fin m → K) :
     lowDegreeLineRep u v = MIPStarRE.QPBT.lineRepMap v u := by
   rw [MIPStarRE.QPBT.lineRepMap_apply_eq_explicitLineRep]
-  simp only [lowDegreeLineRep, MIPStarRE.QPBT.explicitLineRep]
+  simp [lowDegreeLineRep, MIPStarRE.QPBT.explicitLineRep]
   split_ifs with hv
   · rfl
   · rw [lowDegreePivot_eq_linePivotIndex v hv]
+variable (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
+
 
 /-- The compact point map agrees with the original point map. -/
-theorem lowDegreeMap_point_equiv (P : MIPStarRE.QPBT.LdParams)
-    (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) :
+theorem lowDegreeMap_point_equiv  :
     lowDegreeSpaceEquiv P
         (lowDegreeMap (LowDegreeParams.ofLdParams P)
           (MIPStarRE.QPBT.binaryRepresentation P.model)
@@ -139,8 +142,7 @@ theorem lowDegreeMap_point_equiv (P : MIPStarRE.QPBT.LdParams)
   rfl
 
 /-- The compact axis-line map agrees with the original axis-line map. -/
-theorem lowDegreeMap_aline_equiv (P : MIPStarRE.QPBT.LdParams)
-    (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) :
+theorem lowDegreeMap_aline_equiv  :
     lowDegreeSpaceEquiv P
         (lowDegreeMap (LowDegreeParams.ofLdParams P)
           (MIPStarRE.QPBT.binaryRepresentation P.model)
@@ -160,8 +162,7 @@ theorem lowDegreeMap_aline_equiv (P : MIPStarRE.QPBT.LdParams)
   · rfl
 
 /-- The compact diagonal-line map agrees with the original diagonal-line map. -/
-theorem lowDegreeMap_dline_equiv (P : MIPStarRE.QPBT.LdParams)
-    (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) :
+theorem lowDegreeMap_dline_equiv  :
     lowDegreeSpaceEquiv P
         (lowDegreeMap (LowDegreeParams.ofLdParams P)
           (MIPStarRE.QPBT.binaryRepresentation P.model)
@@ -181,7 +182,7 @@ theorem lowDegreeMap_dline_equiv (P : MIPStarRE.QPBT.LdParams)
   · rfl
 
 /-- All three compact question maps commute with the coordinate equivalence. -/
-theorem lowDegreeMap_equiv (P : MIPStarRE.QPBT.LdParams)
+theorem lowDegreeMap_equiv 
     (t : LowDegreeType)
     (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) :
     lowDegreeSpaceEquiv P
@@ -194,7 +195,7 @@ theorem lowDegreeMap_equiv (P : MIPStarRE.QPBT.LdParams)
   | dline => exact lowDegreeMap_dline_equiv P z
 
 /-- The compact question PMF is exactly the original question distribution. -/
-theorem lowDegreeQuestionPMF_map (P : MIPStarRE.QPBT.LdParams) :
+theorem lowDegreeQuestionPMF_map  :
     (lowDegreeQuestionPMF (LowDegreeParams.ofLdParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model)).map
         (lowDegreeQuestionPairEquiv P) =
@@ -223,9 +224,7 @@ theorem lowDegreeQuestionPMF_map (P : MIPStarRE.QPBT.LdParams) :
       · exact lowDegreeMap_equiv P z.1.2 z.2
   rw [show lowDegreeQuestionPMF (LowDegreeParams.ofLdParams P)
       (MIPStarRE.QPBT.binaryRepresentation P.model) =
-        (PMF.uniformOfFintype _).map compactMap by rfl]
-  rw [PMF.map_comp, hcomm, ← PMF.map_comp]
-  rw [PMF.uniformOfFintype_map_equiv (lowDegreeSourceEquiv P)]
+        (PMF.uniformOfFintype _).map compactMap by rfl, PMF.map_comp, hcomm, ← PMF.map_comp, PMF.uniformOfFintype_map_equiv (lowDegreeSourceEquiv P)]
   have hmap :=
     (MIPStarRE.LDT.Distribution.toPMF_map
       (MIPStarRE.LDT.uniformDistribution
@@ -244,43 +243,40 @@ theorem lowDegreeQuestionPMF_map (P : MIPStarRE.QPBT.LdParams) :
   rfl
 
 /-- The point block of the transported ambient vector is unchanged. -/
-@[simp] theorem lowDegreeSpaceEquiv_point (P : MIPStarRE.QPBT.LdParams)
-    (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) :
+@[simp] theorem lowDegreeSpaceEquiv_point  :
     MIPStarRE.QPBT.LdSpace.point (lowDegreeSpaceEquiv P z) = z.1.1 := by
   rfl
 
 /-- The scalar seed of the transported ambient vector is unchanged. -/
-@[simp] theorem lowDegreeSpaceEquiv_seed (P : MIPStarRE.QPBT.LdParams)
-    (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) :
+@[simp] theorem lowDegreeSpaceEquiv_seed  :
     MIPStarRE.QPBT.LdSpace.seed (lowDegreeSpaceEquiv P z) = z.1.2 := by
   rfl
 
 /-- The direction block of the transported ambient vector is unchanged. -/
-@[simp] theorem lowDegreeSpaceEquiv_direction (P : MIPStarRE.QPBT.LdParams)
-    (z : LowDegreeSpace (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)) :
+@[simp] theorem lowDegreeSpaceEquiv_direction  :
     MIPStarRE.QPBT.LdSpace.direction (lowDegreeSpaceEquiv P z) = z.2 := by
   rfl
 
 /-- Point-value answers map to the original point-value constructor. -/
-@[simp] theorem lowDegreeAnswerEquiv_point (P : MIPStarRE.QPBT.LdParams)
+@[simp] theorem lowDegreeAnswerEquiv_point 
     (a : Fin P.k → MIPStarRE.QPBT.ScalarQ P) :
     lowDegreeAnswerEquiv P (.inl a) = .pointVals a := by
   rfl
 
 /-- Axis-line answers map to the original axis-line constructor. -/
-@[simp] theorem lowDegreeAnswerEquiv_aline (P : MIPStarRE.QPBT.LdParams)
+@[simp] theorem lowDegreeAnswerEquiv_aline 
     (a : Fin P.k → Fin (P.d + 1) → MIPStarRE.QPBT.ScalarQ P) :
     lowDegreeAnswerEquiv P (.inr (.inl a)) = .alinePolys a := by
   rfl
 
 /-- Diagonal-line answers map to the original diagonal-line constructor. -/
-@[simp] theorem lowDegreeAnswerEquiv_dline (P : MIPStarRE.QPBT.LdParams)
+@[simp] theorem lowDegreeAnswerEquiv_dline 
     (a : Fin P.k → Fin (P.m * P.d + 1) → MIPStarRE.QPBT.ScalarQ P) :
     lowDegreeAnswerEquiv P (.inr (.inr a)) = .dlinePolys a := by
   rfl
 
 /-- The compact Boolean verifier is exactly the original verifier after relabeling. -/
-theorem lowDegreeWin_equiv (P : MIPStarRE.QPBT.LdParams)
+theorem lowDegreeWin_equiv 
     (x y : LowDegreeQuestion (LowDegreeParams.ofLdParams P)
       (MIPStarRE.QPBT.ScalarQ P))
     (a b : LowDegreeAnswer (LowDegreeParams.ofLdParams P)

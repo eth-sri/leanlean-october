@@ -35,10 +35,9 @@ theorem actual_rounding_error_le_root {delta point ratio t : ℝ}
   by_cases ht1 : t ≤ 1
   · rw [min_eq_right ht1]
     have hroot : Real.sqrt (Real.sqrt (Real.sqrt t)) = t ^ (1 / 8 : ℝ) := by
-      simp only [Real.sqrt_eq_rpow]
+      simp [Real.sqrt_eq_rpow]
       rw [← Real.rpow_mul ht, ← Real.rpow_mul ht]
       norm_num
-    rw [hroot]
     have h18 : t ≤ t ^ (1 / 8 : ℝ) := by
       simpa using Real.rpow_le_rpow_of_exponent_ge' ht ht1
         (by norm_num : (0 : ℝ) ≤ 1 / 8) (by norm_num : (1 / 8 : ℝ) ≤ 1)
@@ -123,7 +122,6 @@ theorem exists_actual_rounded_global_pair_error_bound (pointError : ℝ → ℝ)
   have hp : 0 ≤ pointError epsilon := by
     obtain ⟨_, _, _, _, h⟩ := hpoint
     exact (h epsilon he).1
-  have hs : 0 ≤ slack := by dsimp [slack, deltaLd]; positivity
   have hd : 0 ≤ delta := by dsimp [delta, deltaLd, directPassingErrorEnvelope]; positivity
   have hds : delta ≤ slack := by
     change deltaLd a b passing P.q (2 * P.m + 2) P.d 1 ≤ _

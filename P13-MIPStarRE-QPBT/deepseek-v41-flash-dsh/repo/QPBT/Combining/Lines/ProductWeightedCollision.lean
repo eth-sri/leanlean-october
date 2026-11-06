@@ -46,8 +46,7 @@ theorem prod_linePointDist_nondegenerate_weighted_collision_le
   simp only [SandwichProduct.avgOver_distribution_prod]
   rw [avgOver_comm, avgOver_comm (linePointDist L) (linePointDist L)
     (fun firstSample secondSample =>
-      if firstSample.1.direction ≠ 0 then weight firstSample.1 secondSample else 0)]
-  rw [← avgOver_const_mul]
+      if firstSample.1.direction ≠ 0 then weight firstSample.1 secondSample else 0), ← avgOver_const_mul]
   apply avgOver_mono
   intro sample
   exact linePointDist_nondegenerate_weighted_collision_le

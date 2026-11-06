@@ -60,13 +60,13 @@ private theorem point_diagonal_win_iff_read_eq
           (.point, directLdMap P.extendedDirectLd .point sample)
           (.dlinePolys coeffs) (.pointVals values) := by
     rfl
-  rw [hpredicate]
   constructor
   · exact fun h => (diagonal_point_win_iff_read_eq sample coeffs values).mp h |>.symm
   · exact fun h => (diagonal_point_win_iff_read_eq sample coeffs values).mpr h.symm
+variable (lines : ExtendedLinesWitness setting points deltaL)
 
-private theorem diagonal_read_effect_bob
-    (lines : ExtendedLinesWitness setting points deltaL)
+
+private theorem diagonal_read_effect_bob 
     (sample : DirectLdSpace P.extendedDirectLd) (answer : Option (PauliScalar P)) :
     ((((answerMeasurement lines .bob
         (.dline, directLdMap P.extendedDirectLd .dline sample)).postprocess
@@ -83,8 +83,7 @@ private theorem diagonal_read_effect_bob
   intro coeffs _
   rw [diagonalGameRead_diagonalAnswer_eq]
 
-private theorem point_diagonal_rejectedTerm_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+private theorem point_diagonal_rejectedTerm_eq_read_mismatch 
     (sample : DirectLdSpace P.extendedDirectLd)
     (answerA answerB : DirectLdAnswer P.extendedDirectLd) :
     (if directLdWinPredicate P.extendedDirectLd
@@ -144,8 +143,7 @@ private theorem point_diagonal_rejectedTerm_eq_read_mismatch
 
 /-- At a fixed point/diagonal-line question pair, rejected Born mass is
 exactly the mass of unequal completed readouts. -/
-theorem point_diagonal_rejectedMass_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+theorem point_diagonal_rejectedMass_eq_read_mismatch 
     (sample : DirectLdSpace P.extendedDirectLd) :
     directRejectedMass P.extendedDirectLd (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
@@ -156,7 +154,6 @@ theorem point_diagonal_rejectedMass_eq_read_mismatch
         (fun answerA answerB =>
           pointGameRead answerA ≠ diagonalGameRead sample answerB) := by
   classical
-  unfold directRejectedMass outcomeEventWeight
   apply Finset.sum_congr rfl
   intro answerA _
   apply Finset.sum_congr rfl
@@ -168,8 +165,7 @@ theorem point_diagonal_rejectedMass_eq_read_mismatch
 
 /-- The `BB'`--`AB''` completed diagonal-line/point defect is the consistency
 defect of the reversed completed direct-game readouts on `pairState`. -/
-theorem reversed_diagonal_completed_defect_eq_read_defect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem reversed_diagonal_completed_defect_eq_read_defect  :
     completedLinePointDefect lines .BB' .AB''
         (directDLinePointDist P.extendedDirectLd) =
       consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
@@ -193,7 +189,7 @@ theorem reversed_diagonal_completed_defect_eq_read_defect
   intro answerB _
   by_cases hab : answerA = answerB
   · simp [hab]
-  · have hba : answerB ≠ answerA := Ne.symm hab
+  · have hba := Ne.symm hab
     simp only [hab, hba, if_false, DistanceCalculus.consistency_term_eq_stateQForm]
     let A : Op (setting.ExpandedLocalSpace .alice) :=
       ((points.Q .alice
@@ -207,14 +203,14 @@ theorem reversed_diagonal_completed_defect_eq_read_defect
           (directEvalOpt
             (directDLineDescOf P.extendedDirectLd sample) sample.point coeffs).map
               (extendedDirectScalarEquiv P)).effect answerB
-    have hA : A.IsHermitian := by
+    have hA := by
       exact (Matrix.nonneg_iff_posSemidef.mp
         (((points.Q .alice
           (projX (directPointToPauli P sample.point))
           (projZ (directPointToPauli P sample.point))).postprocess fun values =>
             some (directPointToPauli P sample.point (alphaVar P.m) * values.1 +
               directPointToPauli P sample.point (betaVar P.m) * values.2)).pos answerA)).isHermitian
-    have hB : B.IsHermitian := by
+    have hB := by
       exact (Matrix.nonneg_iff_posSemidef.mp
         (((lines.Qline .bob
           (directDLineDescOf P.extendedDirectLd sample)).postprocess
@@ -234,13 +230,11 @@ theorem reversed_diagonal_completed_defect_eq_read_defect
 completed diagonal-line/point defect. Zero directions and failed completed
 evaluation retain their `none` outcome. Paper
 `14_analysis_of_the_pauli_basis_test.tex:1279-1288`; blueprint `lem:qld-4-7`. -/
-theorem point_dline_rejection_eq_completedLinePointDefect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem point_dline_rejection_eq_completedLinePointDefect  :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.point, .dline) =
       completedLinePointDefect lines .BB' .AB''
         (directDLinePointDist P.extendedDirectLd) := by
-  rw [directLdBranchRejectionProbability_eq_avgOver]
   calc
     avgOver (uniformDistribution (DirectLdSpace P.extendedDirectLd))
         (fun sample => directRejectedMass P.extendedDirectLd (strategy lines)
@@ -277,8 +271,7 @@ theorem point_dline_rejection_eq_completedLinePointDefect
 `4 * deltaL`. This combines only the exact branch identities with the two
 oriented completed-defect bounds supplied by `lines`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:1279-1288`; blueprint `lem:qld-4-7`. -/
-theorem mixed_line_point_rejections_le_four_mul
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem mixed_line_point_rejections_le_four_mul  :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
           (.aline, .point) +
         directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)

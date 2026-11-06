@@ -68,6 +68,8 @@ open MIPStarRE.LDT.Preliminaries
 open MIPStarRE.Quantum
 
 noncomputable section
+variable (D : DirectLdParams)
+
 
 /-! ## Direct polynomial collision estimate -/
 
@@ -79,7 +81,7 @@ low individual degree test, read through the polynomial and point
 identifications of the direct low-degree game; it is the collision
 hypothesis of blueprint `lem:ld-sandwich`
 (paper `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:465-501`). -/
-theorem directPolynomialAgreement_avg_le_mdq (D : DirectLdParams)
+theorem directPolynomialAgreement_avg_le_mdq 
     (g g' : PolyIndex D.m (DirectScalarQ D) D.d) (hneq : g ≠ g') :
     avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
         (fun u => if MvPolynomial.eval u g.1 = MvPolynomial.eval u g'.1 then
@@ -126,8 +128,7 @@ The coordinate strategy passes the test with failure probability at most
 from the positivity of the dimension and of the degree.  Blueprint
 `lem:ld-soundness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:413-458`. -/
-theorem directCoordinateMainFormal
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+theorem directCoordinateMainFormal  (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) (ε : Error)
     (hwin : 1 - ε ≤ S.value) :
     letI := D.toLDTFieldModel
@@ -179,7 +180,6 @@ private theorem postprocess_effect_const_tuple
     (M : Quantum.Measurement alpha d) (f : alpha → iota → beta) (b : beta) :
     (M.postprocess f).effect (fun _ => b) =
       (M.postprocess (fun a => f a default)).effect b := by
-  simp only [Quantum.Measurement.postprocess_effect]
   exact Finset.sum_congr
     (Finset.filter_congr fun a _ => const_tuple_eq_iff (f a) b)
     (fun _ _ => rfl)
@@ -197,8 +197,7 @@ private theorem postprocess_const_tuple_effect_self
 
 /-- Transport one-coordinate polynomial measurements to singleton tuples
 without changing any of the three consistency bounds. -/
-private theorem direct_coordinate_measurements_to_tuple_of_k_eq_one
-    (D : DirectLdParams) (hk : D.k = 1) (S : Strategy (directLdGame D))
+private theorem direct_coordinate_measurements_to_tuple_of_k_eq_one  (hk : D.k = 1) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (r : Fin D.k) (bound : ℝ)
     (hcoord :
       letI := D.toLDTFieldModel
@@ -311,8 +310,7 @@ measurements; see the module docstring and
 `docs/paper-gaps/qpbt_ld-simultaneous-sandwich.tex`.  Blueprint
 `lem:ld-soundness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:413-458`. -/
-theorem exists_directSimultaneousPolynomialMeasurements_of_k_eq_one
-    (D : DirectLdParams) (hk : D.k = 1) (S : Strategy (directLdGame D))
+theorem exists_directSimultaneousPolynomialMeasurements_of_k_eq_one  (hk : D.k = 1) (S : Strategy (directLdGame D))
     (hS : S.IsProjective) (ε : Error) (hwin : 1 - ε ≤ S.value) :
     ∃ GA : DirectPolyMeasTuple D S.ιA,
       ∃ GB : DirectPolyMeasTuple D S.ιB,

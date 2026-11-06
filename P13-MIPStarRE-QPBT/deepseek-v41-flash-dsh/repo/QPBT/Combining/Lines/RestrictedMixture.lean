@@ -29,6 +29,8 @@ namespace MIPStarRE.QPBT
 open MIPStarRE.LDT
 
 noncomputable section
+variable (L : LdParams)
+
 
 /-! ## The uniform coordinate-index law of the retained seed -/
 
@@ -36,7 +38,7 @@ noncomputable section
 vector is uniform.  Formalization-only auxiliary for blueprint
 `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-theorem uniformDistribution_map_chiIndex_ldSeed (L : LdParams) :
+theorem uniformDistribution_map_chiIndex_ldSeed  :
     (uniformDistribution (LdSpace L)).map
         (fun z : LdSpace L => chiIndex L z.seed) =
       uniformDistribution (Fin L.m) := by
@@ -54,7 +56,7 @@ theorem uniformDistribution_map_chiIndex_ldSeed (L : LdParams) :
 shared scalar coordinate carries mass `1 / m`.  This is the equal-weight
 statement behind blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
-theorem clDistribution_seedEvent_mass (L : LdParams) (i : Fin L.m)
+theorem clDistribution_seedEvent_mass  (i : Fin L.m)
     (CL : LdSpace L → LdSpace L)
     (hseed : ∀ z : LdSpace L, (CL z).seed = z.seed) :
     ∑ sample ∈
@@ -97,7 +99,7 @@ theorem clDistribution_seedEvent_mass (L : LdParams) (i : Fin L.m)
 coordinate-index restrictions.  This is the axis half of
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
-theorem aLinePointDist_eq_bind_restricted (L : LdParams) :
+theorem aLinePointDist_eq_bind_restricted  :
     aLinePointDist L =
       Distribution.bind (uniformDistribution (Fin L.m))
         (restrictedALineDist L) := by
@@ -118,7 +120,7 @@ theorem aLinePointDist_eq_bind_restricted (L : LdParams) :
 restrictions.  This is the diagonal half of
 blueprint `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
-theorem dLinePointDist_eq_bind_restricted (L : LdParams) :
+theorem dLinePointDist_eq_bind_restricted  :
     dLinePointDist L =
       Distribution.bind (uniformDistribution (Fin L.m))
         (restrictedDLineDist L) := by

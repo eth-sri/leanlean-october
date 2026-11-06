@@ -227,7 +227,7 @@ theorem averageOperatorOverDistribution_uniform_eq_inv_card_smul_sum
     averageOperatorOverDistribution (uniformDistribution α) f =
       (Fintype.card α : ℂ)⁻¹ • ∑ a, f a := by
   ext i j
-  simp only [averageOperatorOverDistribution, uniformDistribution,
+  simp [averageOperatorOverDistribution, uniformDistribution,
     Distribution.uniformOnFinset, Finset.mem_univ, if_true, Matrix.sum_apply,
     Matrix.smul_apply, Complex.real_smul, smul_eq_mul,
     Finset.card_univ, one_div, Complex.ofReal_inv, Complex.ofReal_natCast]
@@ -236,24 +236,28 @@ theorem averageOperatorOverDistribution_uniform_eq_inv_card_smul_sum
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
+variable (S : ProjectiveSetting P ε)
+variable (side : PlayerSide)
+
+
 
 /-- The Fourier form of an expanded point effect as a normalized character
 sum of the expanded observables.  This is the first display of
 `def:expanded-point-measurement`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:384-418`. -/
-theorem expPointOp_eq_inv_card_smul_sum (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
+theorem expPointOp_eq_inv_card_smul_sum  (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (a : PauliScalar P) :
     S.expPointOp side W u a =
       (Fintype.card (PauliScalar P) : ℂ)⁻¹ •
         ∑ r, phaseSign (fixedBinTrace P.model (a * r)) • S.expObs side W r u := by
   unfold expPointOp
   rw [averageOperatorOverDistribution_uniform_eq_inv_card_smul_sum]
+variable {ι K : Type*} [Fintype K] [Fintype ι] (c : ℂ) (α β : K → ℂ) (X Z : K → Op ι)
+
 
 /-- Formalization-only auxiliary: the product of two normalized weighted sums
 is the normalized double sum of the weighted products, indexed by pairs. -/
-theorem smul_sum_mul_smul_sum {ι K : Type*} [Fintype K] [Fintype ι]
-    (c : ℂ) (α β : K → ℂ) (X Z : K → Op ι) :
+theorem smul_sum_mul_smul_sum  :
     (c • ∑ r, α r • X r) * (c • ∑ s, β s • Z s) =
       (c * c) • ∑ rs : K × K, (α rs.1 * β rs.2) • (X rs.1 * Z rs.2) := by
   rw [Fintype.sum_prod_type, smul_mul_smul_comm, Finset.sum_mul_sum]
@@ -263,8 +267,7 @@ theorem smul_sum_mul_smul_sum {ι K : Type*} [Fintype K] [Fintype ι]
 
 /-- Formalization-only auxiliary: the product of two normalized weighted sums
 in the opposite order, indexed by the same pairs. -/
-theorem smul_sum_mul_smul_sum_swap {ι K : Type*} [Fintype K] [Fintype ι]
-    (c : ℂ) (α β : K → ℂ) (X Z : K → Op ι) :
+theorem smul_sum_mul_smul_sum_swap  :
     (c • ∑ s, β s • Z s) * (c • ∑ r, α r • X r) =
       (c * c) • ∑ rs : K × K, (α rs.1 * β rs.2) • (Z rs.2 * X rs.1) := by
   rw [Fintype.sum_prod_type_right, smul_mul_smul_comm, Finset.sum_mul_sum]
@@ -274,7 +277,7 @@ theorem smul_sum_mul_smul_sum_swap {ι K : Type*} [Fintype K] [Fintype ι]
 
 /-- The commutator of two field-valued point effects is the Fourier transform
 of the commutators of the expanded observables. -/
-theorem expPointOp_commutator_eq (S : ProjectiveSetting P ε) (side : PlayerSide)
+theorem expPointOp_commutator_eq 
     (x z : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
     S.expPointOp side .X x a * S.expPointOp side .Z z b -
         S.expPointOp side .Z z b * S.expPointOp side .X x a =
@@ -296,7 +299,7 @@ theorem expPointOp_commutator_eq (S : ProjectiveSetting P ε) (side : PlayerSide
 the placed commutators of the field-valued point effects equal the average over
 `(r, s)` of the squared norms of the placed commutators of the expanded
 observables. -/
-theorem sum_norm_place_expPointOp_commutator_sq (S : ProjectiveSetting P ε)
+theorem sum_norm_place_expPointOp_commutator_sq 
     (p : Placement) (x z : Fin P.m → PauliScalar P) :
     ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState (S.place p
@@ -334,10 +337,8 @@ theorem sum_norm_place_expPointOp_commutator_sq (S : ProjectiveSetting P ε)
         phaseSign (fixedBinTrace P.model (ab.2 * rs.2)))
     ((Fintype.card (PauliScalar P) : ℝ) ^ 2)
     (fun rs rs' => sum_pairCharacter_mul_pairCharacter rs rs') v
-  have hq : (0 : ℝ) < (Fintype.card (PauliScalar P) : ℝ) := by
-    exact_mod_cast Fintype.card_pos
   have hcnorm : ‖c * c‖ = ((Fintype.card (PauliScalar P) : ℝ) ^ 2)⁻¹ := by
-    simp only [c, norm_mul, norm_inv, Complex.norm_natCast]
+    simp [c, norm_mul, norm_inv, Complex.norm_natCast]
     rw [sq, mul_inv]
   calc ∑ ab : PauliScalar P × PauliScalar P,
         ‖applyOperatorToState (S.place p

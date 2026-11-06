@@ -35,12 +35,13 @@ namespace WinImplications
 
 local instance pauliEdgeNonemptyInterchanged : Nonempty PauliEdge :=
   pauliEdge_nonempty
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
+
 
 /-! ## The interchanged consistency inputs on the interchanged state -/
 
 /-- The fixed coefficient in `win_comm_cons_swapped_proof`. -/
-theorem win_comm_cons_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (hε : 0 ≤ ε) (W : PauliKind) :
+theorem win_comm_cons_swapped_explicit  (hε : 0 ≤ ε) (W : PauliKind) :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pointTraceMeas .bob W (selectedTuplePoint W ω)
@@ -59,8 +60,7 @@ theorem win_comm_cons_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
 interchanged state. Paper
 `14_analysis_of_the_pauli_basis_test.tex:315-320`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem pairW_self_consistency_comm_swapped {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem pairW_self_consistency_comm_swapped  (W : PauliKind) :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
@@ -74,8 +74,7 @@ theorem pairW_self_consistency_comm_swapped {P : AdmissibleParams} {ε : ℝ}
     S.toStrategy.ψ
 
 /-- The fixed coefficient in `win_comm_swapped_proof`. -/
-theorem win_comm_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (hε : 0 ≤ ε) (W : PauliKind) :
+theorem win_comm_swapped_explicit  (hε : 0 ≤ ε) (W : PauliKind) :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pairWMeas .bob W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
@@ -88,8 +87,7 @@ theorem win_comm_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
     S.toStrategy.ψ
 
 /-- The fixed coefficient in `win_ms_cons_swapped_proof`. -/
-theorem win_ms_cons_swapped_explicit {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (hε : 0 ≤ ε) (W : PauliKind) :
+theorem win_ms_cons_swapped_explicit  (hε : 0 ≤ ε) (W : PauliKind) :
     consistencyDefect (anticommTupleDist P)
         (fun ω a => heteroKron
           ((S.pointTraceMeas .bob W (selectedTuplePoint W ω)
@@ -122,8 +120,6 @@ theorem point_obs_commutator_comm_le_bob_explicit :
           1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) *
             (ε + Real.sqrt ε) := by
   classical
-  have hcard : (1 : ℝ) ≤ (Fintype.card PauliEdge : ℝ) := by
-    exact_mod_cast (Fintype.card_pos : 0 < Fintype.card PauliEdge)
   set K : ℝ := 4 * (Fintype.card PauliEdge : ℝ) with hKdef
   have hK : (0 : ℝ) ≤ K := by rw [hKdef]; linarith
   intro P ε S hε
@@ -162,8 +158,7 @@ theorem point_obs_commutator_comm_le_bob_explicit :
 /-- Alice's Magic Square variable anticommutator read on the interchanged
 state.  Paper `14_analysis_of_the_pauli_basis_test.tex:349-356`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem msVarBitObsA_anticommutator_swapped_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (ω : PauliTuple P) :
+theorem msVarBitObsA_anticommutator_swapped_le  (ω : PauliTuple P) :
     ‖applyOperatorToState
         (heteroKron (ιA := S.toStrategy.ιB) (ιB := S.toStrategy.ιA) 1
           (obsOf (S.msVarBitMeas .alice 0 ω) *

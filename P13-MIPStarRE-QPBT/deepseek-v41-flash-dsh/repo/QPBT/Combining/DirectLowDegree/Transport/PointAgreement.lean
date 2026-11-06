@@ -48,13 +48,15 @@ open MIPStarRE.LDT
 open MIPStarRE.Quantum
 
 noncomputable section
+variable (D : DirectLdParams)
+
 
 /-! ## The point-agreement branch of the directly indexed game -/
 
 /-- On the point-agreement branch an accepted pair of answers has equal
 simultaneous point readouts.  This is the tuple-valued form of
 `directPointAnswerReadout_eq_of_win`. -/
-private theorem directLdPointValuesOrZero_eq_of_win (D : DirectLdParams)
+private theorem directLdPointValuesOrZero_eq_of_win 
     (p : Fin D.m → DirectScalarQ D) (a b : DirectLdAnswer D)
     (hwin : directLdWinPredicate D (directLdPointQuestionOf D p)
       (directLdPointQuestionOf D p) a b = true) :
@@ -95,16 +97,16 @@ private theorem projMeas_postprocess_outcome_eq
   simp only [ProjMeas.postprocess, SubMeas.postprocess_outcome,
     matrixMeasurementToLDTProjMeas_outcome,
     MIPStarRE.Quantum.Measurement.postprocess_effect]
+variable (S : Strategy (directLdGame D))
+
 
 /-- The uniform average of the rejected mass at the canonical point questions
 is the point-agreement branch rejection probability. -/
-private theorem avgOver_directRejectedMass_point_eq (D : DirectLdParams)
-    (S : Strategy (directLdGame D)) :
+private theorem avgOver_directRejectedMass_point_eq  :
     avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
         (fun u => directRejectedMass D S (directLdPointQuestionOf D u)
           (directLdPointQuestionOf D u)) =
       directLdBranchRejectionProbability D S (.point, .point) := by
-  rw [directLdBranchRejectionProbability_eq_avgOver]
   let f : (Fin D.m → DirectScalarQ D) → ℝ := fun p =>
     directRejectedMass D S (directLdPointQuestionOf D p)
       (directLdPointQuestionOf D p)
@@ -122,8 +124,7 @@ private theorem avgOver_directRejectedMass_point_eq (D : DirectLdParams)
 
 /-- One of the nine ordered type branches carries at most nine times the
 uniformly weighted rejection probability. -/
-private theorem directLdBranchRejectionProbability_le_nine_mul
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
+private theorem directLdBranchRejectionProbability_le_nine_mul 
     (types : LdType × LdType) (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
     directLdBranchRejectionProbability D S types ≤ 9 * ε := by
   have hcard : Fintype.card (LdType × LdType) = 9 := by
@@ -142,7 +143,6 @@ private theorem directLdBranchRejectionProbability_le_nine_mul
   have hrej : directLdRejectionProbability D S ≤ ε := by
     rw [directLdRejectionProbability_eq_one_sub_value]
     linarith
-  norm_num at hsum
   linarith
 
 set_option maxHeartbeats 1000000 in
@@ -157,8 +157,7 @@ is at most nine times the uniformly weighted rejection because the nine
 ordered type branches carry equal weight.  Blueprint
 `ch13_qpbt_test.tex:137-167`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`. -/
-theorem directLdPointPair_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) (hS : S.IsProjective)
+theorem directLdPointPair_consistencyDefect_le  (hS : S.IsProjective)
     (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
     consistencyDefect (uniformDistribution (Fin D.m → DirectScalarQ D))
         (fun u a => heteroKron
@@ -194,7 +193,6 @@ theorem directLdPointPair_consistencyDefect_le
       (uniformDistribution (Fin D.m → DirectScalarQ D))
       (fun u => (PA u).toSubMeas) (fun u => (PB u).toSubMeas) (9 * ε) := by
     refine ⟨?_⟩
-    unfold bipartiteConsError
     calc avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
           (fun u => qBipartiteConsDefect (strategyQuantumState S)
             (PA u).toSubMeas (PB u).toSubMeas)
@@ -234,14 +232,15 @@ theorem averageDiagonalBlock_blockDiagonal_const
   unfold averageDiagonalBlock
   simp only [hsub, Finset.sum_const, Finset.card_univ]
   rw [← Nat.cast_smul_eq_nsmul ℝ, smul_smul, inv_mul_cancel₀ hcard, one_smul]
+variable (L : LdParams) (S : Strategy (ldGame L))
+
 
 /-- The point-readout consistency defect of the correlated seed-residue
 dilation is exactly that of the original seed-indexed strategy.  Both point
 measurements of the dilation are block-diagonal amplifications, so compressing
 one of the two correlated ancillas leaves the other one's amplification to be
 averaged back to itself. -/
-theorem ldStrategyToDirect_pointPair_compression
-    (L : LdParams) (S : Strategy (ldGame L)) :
+theorem ldStrategyToDirect_pointPair_compression  :
     consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
         (fun u a => heteroKron
           ((((ldStrategyToDirect L S).A
@@ -324,8 +323,7 @@ measurements are the block-diagonal amplifications of the original ones, so
 the estimate transports back verbatim.  Blueprint
 `ch13_qpbt_test.tex:137-167`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`. -/
-theorem ldPointPair_consistencyDefect_le
-    (L : LdParams) (S : Strategy (ldGame L)) (hS : S.IsProjective)
+theorem ldPointPair_consistencyDefect_le  (hS : S.IsProjective)
     (ε : ℝ) (hwin : 1 - ε ≤ S.value) :
     consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
         (fun u a => heteroKron

@@ -38,12 +38,12 @@ theorem avgOver_dLinePointDist_resample_parameter (L : LdParams)
           value (sample.1, sample.1.base + param • sample.1.direction))) := by
   classical
   unfold dLinePointDist clDistribution
-  simp only [Distribution.avgOver_map, dLineDescOf_ldDLineCL]
+  simp [Distribution.avgOver_map, dLineDescOf_ldDLineCL]
   have hblock := uniformDistribution_map_equiv (ldSpaceBlockEquiv L).symm
   rw [← hblock]
-  simp only [Distribution.avgOver_map]
+  simp [Distribution.avgOver_map]
   rw [uniformDistribution_prod]
-  simp only [SandwichProduct.avgOver_distribution_prod]
+  simp [SandwichProduct.avgOver_distribution_prod]
   rw [avgOver_comm, avgOver_comm (uniformDistribution (Fin L.m -> ScalarQ L))]
   apply congrArg
   funext block

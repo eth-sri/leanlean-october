@@ -133,11 +133,6 @@ theorem abs_overlap_gap_le_sqrt_of_opFamilyDistSq {X α ι : Type*}
         avgOver μ (fun x => ∑ a : α,
           stateQForm ψ ((A x).effect a * (B x a - C x a))) := by
     rw [← avgOver_sub]
-    refine avgOver_congr μ _ _ ?_
-    intro x
-    rw [← Finset.sum_sub_distrib]
-    refine Finset.sum_congr rfl ?_
-    intro a _
     simp [stateQForm, applyOperatorToState, mul_sub]
   rw [hdiff]
   refine le_trans
@@ -276,7 +271,6 @@ theorem abs_avgOver_sum_re_inner_le_sqrt_mul_sqrt {X α ι : Type*} [Fintype α]
 theorem stateQForm_conjTranspose {ι : Type*} [Fintype ι] [DecidableEq ι]
     (ψ : EuclideanSpace ℂ ι) (M : Op ι) :
     stateQForm ψ Mᴴ = stateQForm ψ M := by
-  unfold stateQForm
   change (inner ℂ ψ (Matrix.toEuclideanLin Mᴴ ψ)).re =
     (inner ℂ ψ (Matrix.toEuclideanLin M ψ)).re
   rw [Matrix.toEuclideanLin_conjTranspose_eq_adjoint, LinearMap.adjoint_inner_right,
@@ -416,8 +410,8 @@ theorem abs_overlap_gap_le_sqrt_one_sub_of_isProj {X α ι : Type*} [Fintype α]
     refine Finset.sum_congr rfl fun a _ => ?_
     simp [stateQForm, applyOperatorToState, mul_sub]
   rw [abs_sub_comm, ← avgOver_sub, avgOver_congr μ _ _ hpt]
-  have h1B : ∀ x a, IsProj (1 - B x a) := fun x a => (hB x a).one_sub
-  have hA1B : ∀ x a, Commute ((A x).effect a) (1 - B x a) := fun x a =>
+  have h1B := fun x a => (hB x a).one_sub
+  have hA1B := fun x a =>
     (Commute.one_right _).sub_right (hAB x a)
   have hcs := abs_avgOver_sum_stateQForm_mul_mul_le_sqrt_mul_sqrt μ A C
     (fun x a => 1 - B x a) ψ hC hAC
@@ -509,7 +503,7 @@ theorem abs_avgOver_sum_stateQForm_mul_le_sqrt_of_isProj' {X α ι : Type*}
   have hrw : ∀ x a, stateQForm ψ ((A x).effect a * (W x a * R x a)) =
       stateQForm ψ ((A x).effect a * (R x a * (W x a)ᴴ)) := by
     intro x a
-    have hAWH : Commute ((A x).effect a) (W x a)ᴴ := by
+    have hAWH := by
       have h := congrArg Matrix.conjTranspose (hAW x a).eq
       rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_mul,
         measurement_effect_hermitian] at h

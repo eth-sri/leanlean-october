@@ -262,7 +262,7 @@ theorem SubLineWitness.avgOver_zPointOverlap_le_one_at (sublines : SubLineWitnes
       S.psiHat_norm
       (fun w o => S.place_isProj _ (S.pointMeasExpOption_isProj _ _ _ _))
       (fun w o => S.place_comm first second hopposite _ _)
-    simp only [ProjectiveSetting.placedMeasurement_effect] at h
+    simp [ProjectiveSetting.placedMeasurement_effect] at h
     rw [avgOver_congr _ _ _ fun w => zPointOverlap_eq_at lines first second w]
     exact h
   calc

@@ -29,8 +29,10 @@ noncomputable section
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {epsilon : ℝ} (S : ProjectiveSetting P epsilon)
+variable (T : Op (PauliRegister P))
 
-private theorem reindex_extracted_left (T : Op (PauliRegister P)) :
+
+private theorem reindex_extracted_left  :
     reindexOp (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm
       (heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
         (heteroKron T (1 : Op (PauliRegister P)))) =
@@ -44,10 +46,10 @@ private theorem reindex_extracted_left (T : Op (PauliRegister P)) :
       T row.1.2.2 col.1.2.2) *
       (if ((row.2.1, row.2.2.1), row.2.2.2) =
         ((col.2.1, col.2.2.1), col.2.2.2) then 1 else 0)
-  simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one, zero_mul, mul_zero]
+  simp [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, mul_one, zero_mul, mul_zero]
   split_ifs <;> rfl
 
-private theorem reindex_extracted_right (T : Op (PauliRegister P)) :
+private theorem reindex_extracted_right  :
     reindexOp (extractionIdealShuffle P S.toStrategy.ιA S.toStrategy.ιB).symm
       (heteroKron (1 : Op (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
         (heteroKron (1 : Op (PauliRegister P)) T)) =
@@ -61,7 +63,7 @@ private theorem reindex_extracted_right (T : Op (PauliRegister P)) :
       ((col.1.1, col.1.2.1), col.1.2.2) then 1 else 0) *
       ((if (row.2.1, row.2.2.1) = (col.2.1, col.2.2.1) then 1 else 0) *
         T row.2.2.2 col.2.2.2)
-  simp only [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, zero_mul, mul_zero]
+  simp [Prod.mk.injEq, ite_and, ite_mul, mul_ite, one_mul, zero_mul, mul_zero]
   split_ifs <;> rfl
 
 /-- Changing to auxiliary/EPR coordinates and multiplying all Pauli labels by
@@ -84,7 +86,7 @@ theorem pauli_dist_reindex_extraction
         (tauObservable W (P.model.basis j • u)))) theta := by
   classical
   unfold opDistSq opFamilyDistSq
-  simp only [Fintype.sum_unique]
+  simp [Fintype.sum_unique]
   simp_rw [WinImplications.norm_applyOperatorToState_reindexState,
     WinImplications.reindexOp_sub, S.reindex_extracted_left, S.reindex_extracted_right]
   let e : PauliRegister P ≃ PauliRegister P := Equiv.piCongrRight

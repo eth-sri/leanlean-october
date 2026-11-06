@@ -88,9 +88,7 @@ theorem le_mul_sqrt_of_le_mul_of_le_four {x ε a : ℝ} (ha : 1 ≤ a) (hx0 : 0 
     (hxa : x ≤ a * ε) (hx4 : x ≤ 4) : x ≤ (a + 4) * Real.sqrt ε := by
   have hε : 0 ≤ ε := by
     by_contra hneg
-    have hlt : ε < 0 := lt_of_not_ge hneg
     nlinarith
-  have hsqrt : 0 ≤ Real.sqrt ε := Real.sqrt_nonneg ε
   by_cases hε1 : ε ≤ 1
   · have hle : ε ≤ Real.sqrt ε := by
       rw [Real.le_sqrt hε hε]

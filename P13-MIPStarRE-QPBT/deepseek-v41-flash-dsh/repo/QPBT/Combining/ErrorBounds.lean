@@ -106,13 +106,15 @@ theorem sqrt_deficit_bound_le (m δP δQ : ℝ) (hm : 1 ≤ m) (hP : 0 ≤ δP)
           (Real.rpow δP (1 / 4 : ℝ) + Real.rpow δQ (1 / 4 : ℝ)) := by
       have hQ4 : 0 ≤ Real.rpow δQ (1 / 4 : ℝ) := Real.rpow_nonneg hQ _
       nlinarith [hsqrtm, hQ4]
+variable (pointError : ℝ → ℝ)
+
 
 /-- Additive polynomial errors remain polynomial after conditioning and insertion
 of a polynomially small point error. The minimum uses the independent unit bound
 for normalized POVM consistency, not a replacement measurement. This scalar lemma
 supports `lem:qld-xz-lines`, paper lines 950--963; see issue Dengnifer/MIPStarRE-QPBT-bak#118 and
 `docs/paper-gaps/qpbt_combined-lines-error-term.tex`. -/
-theorem exists_conditioned_polynomial_bound (pointError : ℝ → ℝ)
+theorem exists_conditioned_polynomial_bound 
     (hpoint : IsPolyErr pointError) (constant : ℝ) (hconstant : 1 ≤ constant)
     (pastingError : ℝ → ℝ → ℝ) (hpasting : IsPolyErr₂ pastingError) :
     ∃ lineError : ℝ → ℝ → ℝ, IsPolyErr₂ lineError ∧
@@ -230,7 +232,7 @@ theorem exists_conditioned_polynomial_bound (pointError : ℝ → ℝ)
 The independent unit bound on consistency accounts for the minimum. The factor
 `dimension` is retained, as required by the correction to `lem:qld-4-13` in
 `docs/paper-gaps/qpbt_combined-lines-error-term.tex`, paper lines 1134--1246. -/
-theorem exists_combining_polynomial_bound (pointError : ℝ → ℝ)
+theorem exists_combining_polynomial_bound 
     (hpoint : IsPolyErr pointError) (lineError : ℝ → ℝ → ℝ)
     (hline : IsPolyErr₂ lineError) (constant : ℝ) (hconstant : 0 ≤ constant) :
     ∃ combinedError : ℝ → ℝ → ℝ, IsPolyErr₂ combinedError ∧
@@ -371,7 +373,7 @@ The input of low-degree soundness includes `error` as a positive slack when
 This is the numerical substitution at paper `lem:qld-4-7`, lines 1278--1288
 and 1402, not a construction of its measurements or a game transport theorem.
 See `docs/paper-gaps/qpbt_combined-lines-error-term.tex`. -/
-theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
+theorem global_pair_error_bound_explicit 
     (pointConstant pointPower : ℝ) (hpointConstant : 1 ≤ pointConstant)
     (hpointPower : 0 < pointPower)
     (hpointBound : ∀ error : ℝ, 0 ≤ error →
@@ -504,7 +506,6 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
       have hsecond := mul_le_mul_of_nonneg_left (hfieldMono _ hratioExponent)
         (Real.rpow_nonneg hsize0 (ratioPower * soundnessPower))
       have hsum := add_le_add hfirst hsecond
-      refine hsum.trans ?_
       dsimp [envelope]
       nlinarith [mul_nonneg (Real.rpow_nonneg hsize0 (ratioPower * soundnessPower))
         (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (-(finalPower * size)))]
@@ -595,7 +596,7 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
             ((combineConstant * (params.m : ℝ) * combinedError error ratio + error) ^
               soundnessPower + (params.q : ℝ) ^ (-soundnessPower) +
               (2 : ℝ) ^ (-(soundnessPower * extendedSize))) := by
-        simp only [deltaLd, extendedSize, Nat.mul_one, Real.rpow_eq_pow,
+        simp [deltaLd, extendedSize, Nat.mul_one, Real.rpow_eq_pow,
           Nat.mul_comm params.d (2 * params.m + 2)]
       rw [heq]
       refine (mul_le_mul hprefactor hbracket (by positivity) (by positivity)).trans_eq ?_
@@ -656,7 +657,7 @@ theorem global_pair_error_bound_explicit (pointError : ℝ → ℝ)
 
 /-- Polynomial point and combined-error estimates admit universal constants
 that bound the capped global polynomial-pair expression by `deltaQld`. -/
-theorem exists_global_pair_error_bound (pointError : ℝ → ℝ)
+theorem exists_global_pair_error_bound 
     (hpoint : IsPolyErr pointError) (combinedError : ℝ → ℝ → ℝ)
     (hcombined : IsPolyErr₂ combinedError)
     (combineConstant soundnessConstant soundnessPower finalScale : ℝ)

@@ -41,8 +41,7 @@ theorem linePointDist_nondegenerate_weighted_collision_le {L : LdParams}
         avgOver (linePointDist L) (fun sample =>
           if sample.1.direction ≠ 0 then weight sample.1 else 0) := by
   classical
-  rw [avgOver_linePointDist_resample_parameter]
-  rw [← avgOver_const_mul]
+  rw [avgOver_linePointDist_resample_parameter, ← avgOver_const_mul]
   apply avgOver_mono
   intro sample
   by_cases hdir : sample.1.direction ≠ 0

@@ -187,8 +187,7 @@ theorem consistencyDefect_le_deltaLd_of_transportBound
     consistencyDefect μ (fun x c => heteroKron ((A x).effect c) 1)
         (fun x c => heteroKron 1 ((B x).effect c)) ψ ≤
       deltaLd a b ε D.q D.m D.d D.k := by
-  have hle1 : consistencyDefect μ (fun x c => heteroKron ((A x).effect c) 1)
-      (fun x c => heteroKron 1 ((B x).effect c)) ψ ≤ 1 :=
+  have hle1 :=
     consistencyDefect_heteroKron_le_one μ hμ A B ψ hψ
   rcases le_or_gt ε 1 with hε1 | hε1
   · have hk : (1 : ℝ) ≤ (D.k : ℝ) := by exact_mod_cast D.hk
@@ -281,16 +280,11 @@ theorem direct_ld_soundness_of_k_eq_one_explicit :
   let a := pauliBaselineLowDegreeConstant
   let b := pauliBaselineLowDegreePower
   obtain ⟨ha₀, hb₀, _hb1, habs₀⟩ := direct_ld_transport_constants_explicit 1 le_rfl
-  have ha : 1 ≤ a := by
+  have ha := by
     simpa only [a, pauliBaselineLowDegreeConstant, mul_one] using ha₀
-  have hb : 0 < b := by
+  have hb := by
     simpa only [b, pauliBaselineLowDegreePower] using hb₀
-  have habs : ∀ (D : DirectLdParams) (ε : ℝ), 0 < ε → ε ≤ 1 →
-      1 * (D.k : ℝ) *
-          Real.sqrt
-            (Test.mainFormalError D.toLDTParameters (directLdAuxParameter D) (3 * ε) +
-              ((D.m : ℝ) * (D.d : ℝ)) / (D.q : ℝ) + ε) ≤
-        deltaLd a b ε D.q D.m D.d D.k := by
+  have habs := by
     simpa only [a, b, pauliBaselineLowDegreeConstant, pauliBaselineLowDegreePower,
       mul_one] using habs₀
   intro D ε hk hε S hS hwin

@@ -83,8 +83,6 @@ theorem exists_combined_points_witness_explicit :
   have hC₁ : (1 : ℝ) ≤ C₁ := by
     dsimp [C₁, pauliBaselineTwistedConstant, pauliBaselineCommutatorConstant]
     nlinarith [Real.sqrt_nonneg (344 : ℝ)]
-  have hC₂ : (1 : ℝ) ≤ C₂ := by simpa only [C₂] using hC₁
-  have hC₃ : (1 : ℝ) ≤ C₃ := by norm_num [C₃]
   have h₀ := ProjectiveSetting.avg_sandwich_defect_bound_le_explicit
   have h₁ := ProjectiveSetting.sandwich_point_ordered_dist_le_explicit
   have h₂ := ProjectiveSetting.exp_point_comm_explicit
@@ -97,7 +95,6 @@ theorem exists_combined_points_witness_explicit :
     dsimp [C₀, C₁, C₂, C₃]
     unfold pauliBaselinePointConstant
     ring
-  have hK4 : (4 : ℝ) ≤ K := by rw [hKformula]; nlinarith
   have hε : (0 : ℝ) ≤ ε := by
     have hv := WinImplications.strategy_value_le_one S.toStrategy
     have hw := S.win
@@ -127,7 +124,7 @@ theorem exists_combined_points_witness_explicit :
     have hr : Real.rpow (avgOver (uniformDistribution (PointPair P))
         (S.sandwichDefectBound p₁ p₂)) (1 / 4 : ℝ) ≤
         Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4 : ℝ) :=
-      Real.rpow_le_rpow hnn (by simpa only [C₀] using h₀ P ε S p₁ p₂ hopp)
+      Real.rpow_le_rpow hnn (by simpa using h₀ P ε S p₁ p₂ hopp)
         (by norm_num)
     have hr0 : 0 ≤ Real.rpow (C₀ * (ε + Real.sqrt ε)) (1 / 4 : ℝ) :=
       Real.rpow_nonneg (by positivity) _
@@ -148,9 +145,9 @@ theorem exists_combined_points_witness_explicit :
       exact le_trans hQaR (hbound .AA' .BA'' trivial)
   have hchain := fun (p₁ p₂ : Placement) (hopp : p₁.IsOpposite p₂) =>
     S.chain_bounds Q η C₁ C₂ C₃ hQR
-      (by simpa only [C₁] using h₁ P ε S)
-      (by simpa only [C₂] using h₂ P ε S)
-      (by simpa only [C₃] using h₃ P ε S) p₁ p₂ hopp
+      (by simpa using h₁ P ε S)
+      (by simpa using h₂ P ε S)
+      (by simpa using h₃ P ε S) p₁ p₂ hopp
   -- the numeric bound on the longest chain, in the two regimes of `ε`
   have hηnn : 0 ≤ η := by
     rw [hη]
@@ -249,9 +246,11 @@ theorem exists_combinedPointsWitness :
     ⟨pauliBaselinePointConstant, 1 / 8, hQ, by norm_num, fun ε hε =>
       ⟨mul_nonneg (by linarith) (Real.rpow_nonneg hε _), le_rfl⟩⟩,
     exists_combined_points_witness_explicit⟩
+variable {P : AdmissibleParams}
+
 
 /-- Register placement distributes over a filtered outcome sum. -/
-private theorem place_finset_sum {P : AdmissibleParams} {ε : ℝ}
+private theorem place_finset_sum  {ε : ℝ}
     (S : ProjectiveSetting P ε) (p : Placement) {α : Type*}
     (s : Finset α) (A : α → Op (S.ExpandedLocalSpace p.side)) :
     S.place p (∑ a ∈ s, A a) = ∑ a ∈ s, S.place p (A a) := by
@@ -267,7 +266,7 @@ set_option maxHeartbeats 1600000 in
 the coarse-graining specification used by `exists_extendedQ` to prove
 `lem:qld-4-12`, paper lines 993--1018; the `XZ` and `ZX` source products
 remain separate. -/
-theorem extendedQ_spec {P : AdmissibleParams} {ε δ : ℝ}
+theorem extendedQ_spec  {ε δ : ℝ}
     {S : ProjectiveSetting P ε} (points : CombinedPointsWitness S δ) :
     (∀ side x z alpha beta,
       Measurement.IsProjective (points.extendedQ side x z alpha beta)) ∧

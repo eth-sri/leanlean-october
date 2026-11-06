@@ -47,6 +47,10 @@ theorem prefixProjection_of_val_zero {L : LdParams} {i : Fin L.m}
     prefixProjection i v = v := by
   funext j
   simp [prefixProjection, hi]
+variable (P : AdmissibleParams)
+variable (i : Fin P.m) (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+
+
 
 /-! ## The `X` block of a truncated extended direction -/
 
@@ -54,8 +58,7 @@ theorem prefixProjection_of_val_zero {L : LdParams} {i : Fin L.m}
 coordinate is the `X` block truncated at that coordinate of the source space.
 Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_directPrefixProjection_embX (P : AdmissibleParams) (i : Fin P.m)
-    (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projX_directPrefixProjection_embX  :
     projX (directPointToPauli P
         (directPrefixProjection (D := P.extendedDirectLd) (embX P.m i) v)) =
       prefixProjection (P := P.toLdParams) i (projX (directPointToPauli P v)) := by
@@ -71,26 +74,26 @@ theorem projX_directPrefixProjection_embX (P : AdmissibleParams) (i : Fin P.m)
 /-- The `X` block of an extended direction truncated at a `Z`-block
 coordinate vanishes.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_directPrefixProjection_embZ (P : AdmissibleParams) (i : Fin P.m)
-    (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projX_directPrefixProjection_embZ  :
     projX (directPointToPauli P
       (directPrefixProjection (D := P.extendedDirectLd) (embZ P.m i) v)) = 0 := by
   funext a
-  have ha : a.val < P.m := a.isLt
+  have ha := a.isLt
   change extendedDirectScalarEquiv P
       (if (embX P.m a).val < (embZ P.m i).val then 0 else v (embX P.m a)) =
     (0 : PauliScalar P)
   rw [embX_val, embZ_val, if_pos (by omega), map_zero]
+variable (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd)
+
 
 /-- The `X` block of an extended direction truncated at the first scalar
 coordinate vanishes.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_directPrefixProjection_alphaVar (P : AdmissibleParams)
-    (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projX_directPrefixProjection_alphaVar  :
     projX (directPointToPauli P
       (directPrefixProjection (D := P.extendedDirectLd) (alphaVar P.m) v)) = 0 := by
   funext a
-  have ha : a.val < P.m := a.isLt
+  have ha := a.isLt
   change extendedDirectScalarEquiv P
       (if (embX P.m a).val < (alphaVar P.m).val then 0 else v (embX P.m a)) =
     (0 : PauliScalar P)
@@ -99,12 +102,11 @@ theorem projX_directPrefixProjection_alphaVar (P : AdmissibleParams)
 /-- The `X` block of an extended direction truncated at the second scalar
 coordinate vanishes.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projX_directPrefixProjection_betaVar (P : AdmissibleParams)
-    (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projX_directPrefixProjection_betaVar  :
     projX (directPointToPauli P
       (directPrefixProjection (D := P.extendedDirectLd) (betaVar P.m) v)) = 0 := by
   funext a
-  have ha : a.val < P.m := a.isLt
+  have ha := a.isLt
   change extendedDirectScalarEquiv P
       (if (embX P.m a).val < (betaVar P.m).val then 0 else v (embX P.m a)) =
     (0 : PauliScalar P)
@@ -116,8 +118,7 @@ theorem projX_directPrefixProjection_betaVar (P : AdmissibleParams)
 coordinate is the `Z` block truncated at that coordinate of the source space.
 Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_directPrefixProjection_embZ (P : AdmissibleParams) (i : Fin P.m)
-    (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projZ_directPrefixProjection_embZ  :
     projZ (directPointToPauli P
         (directPrefixProjection (D := P.extendedDirectLd) (embZ P.m i) v)) =
       prefixProjection (P := P.toLdParams) i (projZ (directPointToPauli P v)) := by
@@ -135,13 +136,12 @@ coordinate is the untruncated `Z` block, since every `Z`-block coordinate
 follows every `X`-block coordinate.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_directPrefixProjection_embX (P : AdmissibleParams) (i : Fin P.m)
-    (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projZ_directPrefixProjection_embX  :
     projZ (directPointToPauli P
         (directPrefixProjection (D := P.extendedDirectLd) (embX P.m i) v)) =
       projZ (directPointToPauli P v) := by
   funext a
-  have hi : i.val < P.m := i.isLt
+  have hi := i.isLt
   change extendedDirectScalarEquiv P
       (if (embZ P.m a).val < (embX P.m i).val then 0 else v (embZ P.m a)) =
     extendedDirectScalarEquiv P (v (embZ P.m a))
@@ -150,12 +150,11 @@ theorem projZ_directPrefixProjection_embX (P : AdmissibleParams) (i : Fin P.m)
 /-- The `Z` block of an extended direction truncated at the first scalar
 coordinate vanishes.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_directPrefixProjection_alphaVar (P : AdmissibleParams)
-    (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projZ_directPrefixProjection_alphaVar  :
     projZ (directPointToPauli P
       (directPrefixProjection (D := P.extendedDirectLd) (alphaVar P.m) v)) = 0 := by
   funext a
-  have ha : a.val < P.m := a.isLt
+  have ha := a.isLt
   change extendedDirectScalarEquiv P
       (if (embZ P.m a).val < (alphaVar P.m).val then 0 else v (embZ P.m a)) =
     (0 : PauliScalar P)
@@ -164,12 +163,11 @@ theorem projZ_directPrefixProjection_alphaVar (P : AdmissibleParams)
 /-- The `Z` block of an extended direction truncated at the second scalar
 coordinate vanishes.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem projZ_directPrefixProjection_betaVar (P : AdmissibleParams)
-    (v : Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd) :
+theorem projZ_directPrefixProjection_betaVar  :
     projZ (directPointToPauli P
       (directPrefixProjection (D := P.extendedDirectLd) (betaVar P.m) v)) = 0 := by
   funext a
-  have ha : a.val < P.m := a.isLt
+  have ha := a.isLt
   change extendedDirectScalarEquiv P
       (if (embZ P.m a).val < (betaVar P.m).val then 0 else v (embZ P.m a)) =
     (0 : PauliScalar P)

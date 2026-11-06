@@ -80,7 +80,7 @@ private theorem lineDescCode_injective (P : AdmissibleParams) :
   | axis base seed baseFixed =>
       cases y with
       | axis base' seed' baseFixed' =>
-          simp only [lineDescCode, Sum.inl.injEq, Prod.mk.injEq] at h
+          simp [lineDescCode, Sum.inl.injEq, Prod.mk.injEq] at h
           rcases h with ⟨rfl, rfl⟩
           rfl
       | diagonal => simp [lineDescCode] at h
@@ -88,7 +88,7 @@ private theorem lineDescCode_injective (P : AdmissibleParams) :
       cases y with
       | axis => simp [lineDescCode] at h
       | diagonal base' seed' direction' baseFixed' prefixZero' =>
-          simp only [lineDescCode, Sum.inr.injEq, Prod.mk.injEq] at h
+          simp [lineDescCode, Sum.inr.injEq, Prod.mk.injEq] at h
           rcases h with ⟨rfl, rfl, rfl⟩
           rfl
 

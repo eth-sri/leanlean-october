@@ -118,8 +118,7 @@ theorem avg_alineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : �
                   (aLineDescOf P.toLdParams
                     (ldALineCL P.toLdParams (pauliToLd P W z))) B))) := by
   unfold aLinePointDist clDistribution
-  rw [Distribution.avgOver_map, Distribution.avgOver_map]
-  rw [← avgOver_pauliToLd_uniform P W]
+  rw [Distribution.avgOver_map, Distribution.avgOver_map, ← avgOver_pauliToLd_uniform P W]
   apply avgOver_congr
   intro z
   rw [pauliCL_aline_eq, pauliCL_point_eq]
@@ -144,8 +143,7 @@ theorem avg_dlineMismatch_eq_source_interchanged {P : AdmissibleParams} {ε : �
                   (dLineDescOf P.toLdParams
                     (ldDLineCL P.toLdParams (pauliToLd P W z))) B))) := by
   unfold dLinePointDist clDistribution
-  rw [Distribution.avgOver_map, Distribution.avgOver_map]
-  rw [← avgOver_pauliToLd_uniform P W]
+  rw [Distribution.avgOver_map, Distribution.avgOver_map, ← avgOver_pauliToLd_uniform P W]
   apply avgOver_congr
   intro z
   rw [pauliCL_dline_eq, pauliCL_point_eq]

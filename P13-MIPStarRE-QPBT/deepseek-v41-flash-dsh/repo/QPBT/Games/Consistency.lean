@@ -83,7 +83,7 @@ theorem consistencyDefect_outcome_equiv
       by_cases hab : a = b
       · subst b
         simp
-      · have heab : e a ≠ e b := fun h => hab (e.injective h)
+      · have heab := fun h => hab (e.injective h)
         simp [hab, heab]
     _ =
         ∑ a : Beta, ∑ b : Alpha, term (e a) b := by
@@ -141,7 +141,7 @@ theorem consistencyDefect_congr
   intro b _
   by_cases hab : a = b
   · simp [hab]
-  · simp only [hab, if_false]
+  · simp [hab, if_false]
     rw [hA x a, hB x b]
 
 /-- Unit-alphabet specialization of blueprint

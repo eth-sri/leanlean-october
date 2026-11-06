@@ -43,12 +43,14 @@ theorem heteroKron_smul_left {ιA ιB : Type*} (c : ℂ) (M : Op ιA) (B : Op ι
     heteroKron (c • M) B = c • heteroKron M B := by
   ext i j
   simp [heteroKron, Matrix.kronecker, mul_assoc]
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
 
 /-- The commutator of two reflections written as `1 - 2P` is four times the
 commutator of the projections. This is the algebra of Equation `eq:lc-12`,
 paper `14_analysis_of_the_pauli_basis_test.tex:330-341`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem reflection_commutator_eq {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem reflection_commutator_eq 
     (A B : Op ι) :
     (1 - (2 : ℂ) • A) * (1 - (2 : ℂ) • B) -
         (1 - (2 : ℂ) • B) * (1 - (2 : ℂ) • A) =
@@ -59,14 +61,17 @@ theorem reflection_commutator_eq {ι : Type*} [Fintype ι] [DecidableEq ι]
     rw [show (4 : ℂ) = 2 + 2 by norm_num, add_smul, h2]
   rw [h2, h2, h4]
   noncomm_ring
+variable {P : AdmissibleParams}
+variable {ε : ℝ} (S : ProjectiveSetting P ε)
+
+
 
 /-- The strategy point observable is the reflection about the trace-coarse
 grained point projection at label one. This is the first display of
 Equation `eq:lc-12`, paper
 `14_analysis_of_the_pauli_basis_test.tex:330-336`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem pointObs_eq_one_sub_two_smul {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind)
+theorem pointObs_eq_one_sub_two_smul  (side : PlayerSide) (W : PauliKind)
     (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
     S.pointObs side W r u =
       1 - (2 : ℂ) • (S.pointTraceMeas side W u r).effect 1 := by
@@ -86,6 +91,8 @@ theorem pointObs_eq_one_sub_two_smul {P : AdmissibleParams} {ε : ℝ}
     rw [← hsum]; abel
   rw [heff0, two_smul]
   abel
+variable (W : PauliKind)
+
 
 /-! ## Pair/W self-consistency on commuting tuples -/
 
@@ -93,8 +100,7 @@ theorem pointObs_eq_one_sub_two_smul {P : AdmissibleParams} {ε : ℝ}
 item 1 of `lem:qld-win-implications` read on the Pair/W questions, paper
 `14_analysis_of_the_pauli_basis_test.tex:197-199,315-320`, blueprint
 `ch14_qpbt_observables.tex:633-637`. -/
-theorem pairWConsistency_eq_mismatch {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem pairWConsistency_eq_mismatch  :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
@@ -146,8 +152,7 @@ item 1 of `lem:qld-win-implications` on the Pair/W questions, used in the
 chain leading to Equation `eq:lc-11`, paper
 `14_analysis_of_the_pauli_basis_test.tex:315-320`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem pairW_self_consistency_comm_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (W : PauliKind) :
+theorem pairW_self_consistency_comm_le  :
     consistencyDefect (commTupleDist P)
         (fun ω a => heteroKron
           ((S.pairWMeas .alice W ω.1 ω.2.1 ω.2.2.1 ω.2.2.2).effect a) 1)
@@ -186,9 +191,9 @@ theorem pairW_self_consistency_comm_le {P : AdmissibleParams} {ε : ℝ}
         exact hne (by rw [hAB])
       rw [pauliCL_shared_eq P (.pairW W) rfl] at hs
       by_cases hcomm : IsCommuting (pauliSharedSplit P z).1
-      · simp only [if_pos hcomm]
+      · simp [if_pos hcomm]
         simpa [pauliSharedSplit, ProjectiveSetting.pairWQuestion] using hs
-      · simp only [if_neg hcomm]
+      · simp [if_neg hcomm]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
       rw [mul_assoc]
@@ -202,7 +207,7 @@ relation `eq:lc-11`. The statement is generic in the two tensor factors and in
 the state, so that both orientations of `eq:pts-obs-commutation` use it. Paper
 `14_analysis_of_the_pauli_basis_test.tex:311-322`, blueprint
 `ch14_qpbt_observables.tex:761-794`. -/
-theorem pointTrace_pairComponent_dist_le {P : AdmissibleParams}
+theorem pointTrace_pairComponent_dist_le 
     {ιL ιR : Type} [Fintype ιL] [DecidableEq ιL] [Fintype ιR] [DecidableEq ιR]
     (MP QL : PauliTuple P → MIPStarRE.Quantum.Measurement (ZMod 2) ιL)
     (QR RR : PauliTuple P → MIPStarRE.Quantum.Measurement (ZMod 2) ιR)
@@ -319,8 +324,7 @@ theorem point_trace_commutator_comm_le_explicit :
         rw [unitProd_postprocess_effect]
       · obtain ⟨⟨⟩, b⟩ := ab
         congr 1
-        rw [hBdef, MIPStarRE.Quantum.Measurement.postprocess_comp]
-        rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
+        rw [hBdef, MIPStarRE.Quantum.Measurement.postprocess_comp, MIPStarRE.Quantum.Measurement.postprocess_effect,
           MIPStarRE.Quantum.Measurement.postprocess_effect]
         refine Finset.sum_congr ?_ (fun _ _ => rfl)
         ext bits
@@ -351,8 +355,7 @@ theorem point_trace_commutator_comm_le_explicit :
         rw [unitProd_postprocess_effect]
       · obtain ⟨⟨⟩, c⟩ := ac
         congr 1
-        rw [hBdef, MIPStarRE.Quantum.Measurement.postprocess_comp]
-        rw [MIPStarRE.Quantum.Measurement.postprocess_effect,
+        rw [hBdef, MIPStarRE.Quantum.Measurement.postprocess_comp, MIPStarRE.Quantum.Measurement.postprocess_effect,
           MIPStarRE.Quantum.Measurement.postprocess_effect]
         refine Finset.sum_congr ?_ (fun _ _ => rfl)
         ext bits
@@ -384,7 +387,7 @@ theorem point_trace_commutator_comm_le_explicit :
 /-- Applying a scaled operator scales the resulting state. Formalization-only
 support for `eq:lc-12`, paper
 `14_analysis_of_the_pauli_basis_test.tex:330-341`. -/
-theorem applyOperatorToState_smul_op {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem applyOperatorToState_smul_op 
     (c : ℂ) (M : Op ι) (v : EuclideanSpace ℂ ι) :
     applyOperatorToState (c • M) v = c • applyOperatorToState M v := by
   unfold applyOperatorToState
@@ -485,7 +488,6 @@ theorem point_obs_commutator_comm_le_explicit :
     exact norm_pointObs_commutator_sq ((MX ω).effect 1) ((MZ ω).effect 1)
       (OX ω) (OZ ω) (hx ω) (hz ω) χ
   rw [hcongr]
-  have hs : (0 : ℝ) ≤ Real.sqrt (c₂ + c₃) := Real.sqrt_nonneg _
   have hfinal : 16 * (16 * δ) ≤ 1024 * (c₁ + Real.sqrt (c₂ + c₃)) := by
     rw [hδdef]
     nlinarith

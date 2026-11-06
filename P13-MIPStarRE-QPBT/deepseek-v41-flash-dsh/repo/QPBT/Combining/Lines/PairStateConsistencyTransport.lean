@@ -28,16 +28,12 @@ open MIPStarRE.Quantum
 noncomputable section
 
 namespace ProjectiveSetting
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) {Sample Outcome : Type*} [Fintype Sample] [DecidableEq Sample] [Fintype Outcome] [DecidableEq Outcome] (law : Distribution Sample) (first : Sample → Measurement Outcome (S.ExpandedLocalSpace .alice)) (second : Sample → Measurement Outcome (S.ExpandedLocalSpace .bob))
+
 
 /-- A consistency defect on the two-player expanded state equals the defect
 of the same measurements placed on `AA'` and `BA''` in the six-register state. -/
-theorem consistencyDefect_pairState_eq_AA'_BA''
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
-    {Sample Outcome : Type*} [Fintype Sample] [DecidableEq Sample]
-    [Fintype Outcome] [DecidableEq Outcome]
-    (law : Distribution Sample)
-    (first : Sample → Measurement Outcome (S.ExpandedLocalSpace .alice))
-    (second : Sample → Measurement Outcome (S.ExpandedLocalSpace .bob)) :
+theorem consistencyDefect_pairState_eq_AA'_BA''  :
     consistencyDefect law
         (fun sample answer => heteroKron ((first sample).effect answer) 1)
         (fun sample answer => heteroKron 1 ((second sample).effect answer))
@@ -56,7 +52,7 @@ theorem consistencyDefect_pairState_eq_AA'_BA''
   intro secondAnswer _
   by_cases hanswer : firstAnswer = secondAnswer
   · simp [hanswer]
-  · simp only [if_neg hanswer]
+  · simp [if_neg hanswer]
     change DistanceCalculus.stateQForm (ExtendedLineGame.pairState S)
         (heteroKron ((first sample).effect firstAnswer) 1 *
           heteroKron 1 ((second sample).effect secondAnswer)) =
@@ -70,13 +66,7 @@ theorem consistencyDefect_pairState_eq_AA'_BA''
 
 /-- A consistency defect on the two-player expanded state equals the defect
 of the same measurements placed on `AB''` and `BB'` in the six-register state. -/
-theorem consistencyDefect_pairState_eq_AB''_BB'
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
-    {Sample Outcome : Type*} [Fintype Sample] [DecidableEq Sample]
-    [Fintype Outcome] [DecidableEq Outcome]
-    (law : Distribution Sample)
-    (first : Sample → Measurement Outcome (S.ExpandedLocalSpace .alice))
-    (second : Sample → Measurement Outcome (S.ExpandedLocalSpace .bob)) :
+theorem consistencyDefect_pairState_eq_AB''_BB'  :
     consistencyDefect law
         (fun sample answer => heteroKron ((first sample).effect answer) 1)
         (fun sample answer => heteroKron 1 ((second sample).effect answer))
@@ -95,7 +85,7 @@ theorem consistencyDefect_pairState_eq_AB''_BB'
   intro secondAnswer _
   by_cases hanswer : firstAnswer = secondAnswer
   · simp [hanswer]
-  · simp only [if_neg hanswer]
+  · simp [if_neg hanswer]
     change DistanceCalculus.stateQForm (ExtendedLineGame.pairState S)
         (heteroKron ((first sample).effect firstAnswer) 1 *
           heteroKron 1 ((second sample).effect secondAnswer)) =

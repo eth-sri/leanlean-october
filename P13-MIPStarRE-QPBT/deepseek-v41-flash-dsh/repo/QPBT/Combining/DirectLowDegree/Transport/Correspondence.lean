@@ -93,9 +93,10 @@ noncomputable def directPointEquiv (D : DirectLdParams) :
 noncomputable def coefficientPolynomial
     {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K) : Polynomial K :=
   ((Polynomial.degreeLTEquiv K (n + 1)).symm c).1
+variable {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K)
 
-private theorem coefficientPolynomial_degree_le
-    {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K) :
+
+private theorem coefficientPolynomial_degree_le  :
     (coefficientPolynomial n c).natDegree ≤ n := by
   let p := (Polynomial.degreeLTEquiv K (n + 1)).symm c
   have hp : p.1 ∈ Polynomial.degreeLE K n := by
@@ -106,14 +107,12 @@ private theorem coefficientPolynomial_degree_le
   · simp [coefficientPolynomial, p, hzero]
   · exact Polynomial.natDegree_le_iff_degree_le.mpr hdegree
 
-@[simp] private theorem coefficientPolynomial_coeff
-    {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K)
+@[simp] private theorem coefficientPolynomial_coeff 
     (i : Fin (n + 1)) :
     (coefficientPolynomial n c).coeff i = c i := by
   exact congrFun ((Polynomial.degreeLTEquiv K (n + 1)).apply_symm_apply c) i
 
-private theorem coefficientPolynomial_eval
-    {K : Type*} [Field K] (n : ℕ) (c : Fin (n + 1) → K) (t : K) :
+private theorem coefficientPolynomial_eval  (t : K) :
     (coefficientPolynomial n c).eval t = evalCoefficient c t := by
   simpa [coefficientPolynomial, evalCoefficient] using
     (Polynomial.eval_eq_sum_degreeLTEquiv
@@ -168,10 +167,12 @@ noncomputable def directDiagonalAnswerEquiv (D : DirectLdParams) :
           f.degreeBounded
         intro i
         exact coefficientPolynomial_coeff (D.m * D.d) (fun j => f.poly.coeff j) i }
+variable (D : DirectLdParams)
+
 
 /-- Coefficient evaluation agrees with evaluation of the corresponding LDT
 axis-line polynomial. -/
-theorem directAxisAnswerEquiv_apply (D : DirectLdParams)
+theorem directAxisAnswerEquiv_apply 
     (c : DirectDegPoly D D.d) (t : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     directAxisAnswerEquiv D c (directScalarEquiv D t) =
@@ -188,7 +189,7 @@ theorem directAxisAnswerEquiv_apply (D : DirectLdParams)
 
 /-- Coefficient evaluation agrees with evaluation of the corresponding LDT
 diagonal-line polynomial. -/
-theorem directDiagonalAnswerEquiv_apply (D : DirectLdParams)
+theorem directDiagonalAnswerEquiv_apply 
     (c : DirectDegPoly D (D.m * D.d)) (t : DirectScalarQ D) :
     letI := D.toLDTFieldModel
     directDiagonalAnswerEquiv D c (directScalarEquiv D t) =
@@ -215,10 +216,11 @@ theorem directDiagonalAnswerEquiv_apply (D : DirectLdParams)
   hd := L.hd
   hk := L.hk
   hq := L.hq
+variable (L : LdParams)
 
-@[simp] theorem LdParams.toDirectLdParams_model (L : LdParams) :
+
+@[simp] theorem LdParams.toDirectLdParams_model  :
     L.toDirectLdParams.model = L.model := by
-  unfold DirectLdParams.model LdParams.model LdParams.toDirectLdParams
   congr
 
 /-- The canonical answer equivalence between the seed-indexed and directly
@@ -308,7 +310,7 @@ noncomputable def ldSpaceSeedFiberEquiv (L : LdParams) :
 
 /-- Parsing a canonical seed-indexed question reconstructed from a direct
 sample gives exactly the corresponding direct canonical question. -/
-theorem parseLdQuestion_ldCL_ofDirectResidue (L : LdParams)
+theorem parseLdQuestion_ldCL_ofDirectResidue 
     (t : LdType) (sample : DirectLdSpace L.toDirectLdParams)
     (residue : Fin (L.q / L.m)) :
     parseLdQuestion L
@@ -334,7 +336,7 @@ theorem parseLdQuestion_ldCL_ofDirectResidue (L : LdParams)
 
 /-- The seed-indexed and direct predicates agree after parsing questions and
 transporting answers. -/
-theorem ldWinPredicate_parse (L : LdParams)
+theorem ldWinPredicate_parse 
     (x y : LdQuestion L) (a b : LdAnswer L) :
     directLdWinPredicate L.toDirectLdParams
         (parseLdQuestion L x) (parseLdQuestion L y)

@@ -241,7 +241,6 @@ theorem exists_globalPairWitness :
   obtain ⟨pair⟩ := hpairs P ε (pointError ε)
     (C * (P.m : ℝ) * lineError ε ((P.m * P.d : ℕ) / (P.q : ℝ))) S points lines
   have hbound := hscalar P ε S.eps_nonneg
-  simp only [Nat.cast_mul] at hbound
   refine ⟨{ pair with point_consistent_alice := ?_, point_consistent_bob := ?_ }⟩
   · intro W
     refine (le_min (show _ ≤ (1 : ℝ) from ?_) (pair.point_consistent_alice W)).trans ?_
@@ -251,7 +250,7 @@ theorem exists_globalPairWitness :
           avgOver_mono _ _ _ fun u => consistencyDefect_integrand_le_one
             S .AA' .BA'' (by trivial) _ _
         _ = 1 := avgOver_const_of_isProbability _ (uniformDistribution_isProbability _) 1
-    · with_unfolding_all simpa only [Nat.cast_mul, Real.rpow_eq_pow] using hbound
+    · with_unfolding_all simpa using hbound
   · intro W
     refine (le_min (show _ ≤ (1 : ℝ) from ?_) (pair.point_consistent_bob W)).trans ?_
     · unfold consistencyDefect
@@ -260,7 +259,7 @@ theorem exists_globalPairWitness :
           avgOver_mono _ _ _ fun u => consistencyDefect_integrand_le_one
             S .BB' .AB'' (by trivial) _ _
         _ = 1 := avgOver_const_of_isProbability _ (uniformDistribution_isProbability _) 1
-    · with_unfolding_all simpa only [Nat.cast_mul, Real.rpow_eq_pow] using hbound
+    · with_unfolding_all simpa using hbound
 
 end
 

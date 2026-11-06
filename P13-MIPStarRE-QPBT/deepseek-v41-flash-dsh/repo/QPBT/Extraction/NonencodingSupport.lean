@@ -53,15 +53,18 @@ theorem consistencyDefect_comm_of_commute {X A I : Type*}
   intro b _
   apply Finset.sum_congr rfl
   intro a _
-  simp only [hcomm x a b, eq_comm]
+  simp [hcomm x a b, eq_comm]
+variable {P : AdmissibleParams}
+variable {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+
+
 
 /-- A polynomial measurement's mass outside the encoding image is at most
 its evaluated inconsistency with an encoding-supported reference, plus `md/q`.
 This is the Schwartz-Zippel step in blueprint `eq:qld-nonencoding-mass`.
 The reference support is explicit because this auxiliary applies to any POVM;
 the concrete reference above proves it without an additional strategy premise. -/
-theorem mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
-    {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+theorem mass_outside_encoding_le_evaluated_defect 
     (meas : Measurement (Poly P) I) (reference : Measurement (Poly P) J)
     (psi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1)
     (hsupport : ∀ g, ¬ IsEncoding g → reference.effect g = 0) :
@@ -74,7 +77,7 @@ theorem mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
   classical
   have hmass := mass_outside_support_le_point_defect meas reference psi
     (Finset.univ.filter IsEncoding) (by simpa using hsupport)
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hmass
+  simp [Finset.mem_filter, Finset.mem_univ, true_and] at hmass
   have hcollision := SandwichProduct.point_codeword_defect_le_avg_evaluated_add
     meas reference psi evalPoly ((P.m * P.d : ℝ) / P.q) hpsi
     (by positivity) poly_eval_collision_le
@@ -82,11 +85,12 @@ theorem mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
   rw [SandwichProduct.consistencyDefect_placed_eq_avg_point]
 
 namespace ProjectiveSetting
+variable {P : AdmissibleParams} {epsilon : ℝ} (S : ProjectiveSetting P epsilon) (W : PauliKind)
+
 
 /-- Adjoining the ideal point outcomes preserves the Pauli-basis check on the
 two-player expanded state, in the point--Pauli orientation. -/
-theorem point_encodingPauli_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (W : PauliKind) :
+theorem point_encodingPauli_consistency_eq  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
         (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
         (fun u a => heteroKron 1 (((S.encodingPauliMeas .bob W).postprocess
@@ -106,8 +110,7 @@ theorem point_encodingPauli_consistency_eq {P : AdmissibleParams} {epsilon : ℝ
     tauPointMeas, ExtendedLineGame.pairState] using h
 
 /-- The same exact preservation holds in the Pauli--point orientation. -/
-theorem encodingPauli_point_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (W : PauliKind) :
+theorem encodingPauli_point_consistency_eq  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
         (fun u a => heteroKron (((S.encodingPauliMeas .alice W).postprocess
           (fun g => evalPoly g u)).effect a) 1)
@@ -129,8 +132,7 @@ theorem encodingPauli_point_consistency_eq {P : AdmissibleParams} {epsilon : ℝ
 
 /-- Adjoining the same ideal point measurements also preserves point
 self-consistency exactly. -/
-theorem expanded_point_consistency_eq {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (W : PauliKind) :
+theorem expanded_point_consistency_eq  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
         (fun u a => heteroKron ((S.pointMeasExp .alice W u).effect a) 1)
         (fun u a => heteroKron 1 ((S.pointMeasExp .bob W u).effect a))
@@ -152,8 +154,7 @@ end ProjectiveSetting
 
 /-- The right-hand marginal version of the support estimate, obtained by
 interchanging the two tensor factors and using the same collision bound. -/
-theorem right_mass_outside_encoding_le_evaluated_defect {P : AdmissibleParams}
-    {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+theorem right_mass_outside_encoding_le_evaluated_defect 
     (reference : Measurement (Poly P) I) (meas : Measurement (Poly P) J)
     (psi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1)
     (hsupport : ∀ g, ¬ IsEncoding g → reference.effect g = 0) :
@@ -283,18 +284,19 @@ theorem global_marginal_encoding_consistency_explicit :
       intro u a b
       exact (WinImplications.heteroKron_left_right_comm _ _).symm)] at h
     exact h
+variable {epsilon : ℝ} (S : ProjectiveSetting P epsilon)
+
 
 /-- A marginal acting on `AA'` has the same mass in the extraction-block
 notation and the two-player expanded state. The unused registers carry identities. -/
-theorem stateQForm_placeSide_alice_tensor_one {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (A : Op (S.ExpandedLocalSpace .alice))
+theorem stateQForm_placeSide_alice_tensor_one  (A : Op (S.ExpandedLocalSpace .alice))
     (hA : A.IsHermitian) :
     stateQForm S.psiHat (S.placeSide .alice (heteroKron A (1 : Op (PauliRegister P)))) =
       stateQForm (ExtendedLineGame.pairState S) (heteroKron A 1) := by
   have hplace : S.placeSide .alice (heteroKron A (1 : Op (PauliRegister P))) =
       S.place .AA' A := by
     ext row col
-    simp only [placeSide, sixRegExtractionEquiv, reindexOp, place, heteroKron,
+    simp [placeSide, sixRegExtractionEquiv, reindexOp, place, heteroKron,
       Matrix.kronecker, Matrix.one_apply, mul_ite, ite_mul]
     split_ifs <;> simp_all
   rw [hplace]
@@ -307,15 +309,14 @@ theorem stateQForm_placeSide_alice_tensor_one {P : AdmissibleParams} {epsilon : 
 
 /-- The corresponding marginal-mass identity for `BB'`. The opposite placement
 uses the second EPR pair, as in the witness's Bob consistency hypothesis. -/
-theorem stateQForm_placeSide_bob_tensor_one {P : AdmissibleParams} {epsilon : ℝ}
-    (S : ProjectiveSetting P epsilon) (B : Op (S.ExpandedLocalSpace .bob))
+theorem stateQForm_placeSide_bob_tensor_one  (B : Op (S.ExpandedLocalSpace .bob))
     (hB : B.IsHermitian) :
     stateQForm S.psiHat (S.placeSide .bob (heteroKron B (1 : Op (PauliRegister P)))) =
       stateQForm (ExtendedLineGame.pairState S) (heteroKron 1 B) := by
   have hplace : S.placeSide .bob (heteroKron B (1 : Op (PauliRegister P))) =
       S.place .BB' B := by
     ext row col
-    simp only [placeSide, sixRegExtractionEquiv, reindexOp, place, heteroKron,
+    simp [placeSide, sixRegExtractionEquiv, reindexOp, place, heteroKron,
       Matrix.kronecker, Matrix.one_apply, mul_ite, ite_mul]
     split_ifs <;> simp_all
   rw [hplace]

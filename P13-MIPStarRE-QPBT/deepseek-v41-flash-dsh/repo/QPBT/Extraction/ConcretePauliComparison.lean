@@ -62,9 +62,9 @@ theorem pauli_distance_on_ideal_right_le {P : AdmissibleParams} {I J : Type*}
   have h := pauli_distance_on_ideal_le A W (reindexState (Equiv.prodComm I J) aux)
     (by rw [reindexState_norm_eq, haux]) (reindexState e theta)
     (by rw [reindexState_norm_eq, htheta])
-  dsimp only at h ⊢
+  dsimp at h ⊢
   rw [hideal, norm_reindexState_sub_eq] at h
-  dsimp only [e] at h
+  dsimp [e] at h
   simp_rw [WinImplications.norm_applyOperatorToState_reindexState,
     WinImplications.stateQForm_reindexState, WinImplications.reindexOp_prodComm_heteroKron] at h
   exact h
@@ -103,11 +103,12 @@ theorem placeSide_sub (side : PlayerSide)
     exact sub_mul _ _ _
   · ext row col
     exact mul_sub _ _ _
+variable (w : GlobalPairWitness S deltaG) (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+
 
 /-- The entire answer-summed distance in block coordinates is the distance
 appearing in `ExtractionWitness.pauli_close`, for either player. -/
-theorem extraction_pauli_dist_eq_sum (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+theorem extraction_pauli_dist_eq_sum 
     (side : PlayerSide) (W : PauliKind) :
     opFamilyDistSq (uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>
@@ -127,8 +128,7 @@ set_option maxHeartbeats 800000 in
 state is bounded by the evaluated consistency defect and the two established
 comparison losses. This instantiates `eq:qld-unitary-7`--`eq:qld-unitary-9`
 with all six-register placements and both player orientations. -/
-theorem extraction_pauli_dist_le (w : GlobalPairWitness S deltaG)
-    (aux : EuclideanSpace ℂ (ExtractionAuxRegisters P S.toStrategy.ιA S.toStrategy.ιB))
+theorem extraction_pauli_dist_le 
     (haux : ‖aux‖ = 1) (side : PlayerSide) (W : PauliKind) :
     opFamilyDistSq (uniformDistribution Unit)
       (fun (_ : Unit) (h : PauliRegister P) =>
@@ -148,7 +148,7 @@ theorem extraction_pauli_dist_le (w : GlobalPairWitness S deltaG)
   cases side
   · have h := pauli_distance_on_ideal_le (S.swappedPauliMeas w .alice W) W aux haux
       (reindexState e theta) htheta
-    dsimp only at h
+    dsimp at h
     erw [S.swapped_pauli_overlap_alice w W, sub_sub_cancel,
       ← S.reindexState_idealExpState_blocks aux, norm_reindexState_sub_eq] at h
     convert h using 1
@@ -159,7 +159,7 @@ theorem extraction_pauli_dist_le (w : GlobalPairWitness S deltaG)
     · rfl
   · have h := pauli_distance_on_ideal_right_le (S.swappedPauliMeas w .bob W) W aux haux
       (reindexState e theta) htheta
-    dsimp only at h
+    dsimp at h
     erw [S.swapped_pauli_overlap_bob w W, sub_sub_cancel,
       ← S.reindexState_idealExpState_blocks aux, norm_reindexState_sub_eq] at h
     convert h using 1

@@ -61,14 +61,15 @@ coordinates.  This is Lean-only support for the projections in blueprint
 -/
 def coordinateRestriction (S : Finset ι) (x : ι → K) : ι → K :=
   fun i => if i ∈ S then x i else 0
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] {K : Type*} [Field K]
+
 
 /-- Evaluation of a representation of a conditionally linear function.
 Lean-only support for blueprint
 `def:cl-func`, paper origin
 `references/qpbt-paper/05_conditionally_linear_functions.tex:35-57`.
 -/
-def CondLinearTerm.eval {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {K : Type*} [Field K] :
+def CondLinearTerm.eval  :
     {ell : ℕ} → CondLinearTerm K (ι := ι) ell → (ι → K) → (ι → K)
   | _, .zero => fun _ => 0
   | _, .succ S₁ L₁ _ rest =>
@@ -81,8 +82,7 @@ function.  This is a Lean-only companion to blueprint
 `def:cl-func`, paper origin
 `references/qpbt-paper/05_conditionally_linear_functions.tex:35-57`.
 -/
-def CondLinearTerm.supportedOn {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {K : Type*} [Field K] :
+def CondLinearTerm.supportedOn  :
     {ell : ℕ} → CondLinearTerm K (ι := ι) ell → Finset ι → Prop
   | _, .zero, _ => True
   | _, .succ S₁ _ _ rest, S =>
@@ -123,9 +123,11 @@ private theorem CondLinearTerm.eval_zeroOfLevel {K ι : Type*} [Field K]
   | zero => rfl
   | succ ell ih =>
       simp [CondLinearTerm.zeroOfLevel, CondLinearTerm.eval, ih]
+variable {K ιU ιV : Type*} [Field K]
+
 
 /-- Lift a linear map to the right summand of a direct sum of registers. -/
-private def condLinearLiftRight {K ιU ιV : Type*} [Field K]
+private def condLinearLiftRight 
     (L : (ιV → K) →ₗ[K] (ιV → K)) :
     (ιU ⊕ ιV → K) →ₗ[K] (ιU ⊕ ιV → K) where
   toFun x := Sum.elim 0 (L (fun i => x (.inr i)))
@@ -142,7 +144,7 @@ private def condLinearLiftRight {K ιU ιV : Type*} [Field K]
 
 /-- Lift a representation of a conditionally linear function to the right
 summand of a direct sum of registers. -/
-private def CondLinearTerm.liftRight {K ιU ιV : Type*} [Field K]
+private def CondLinearTerm.liftRight 
     [Fintype ιU] [DecidableEq ιU] [Fintype ιV] [DecidableEq ιV] :
     {ell : ℕ} → CondLinearTerm K (ι := ιV) ell →
       CondLinearTerm K (ι := ιU ⊕ ιV) ell
@@ -196,13 +198,14 @@ noncomputable def graphDistribution {T : Type*} [Fintype T] [DecidableEq T]
     (E : Finset (Sym2 T)) (_hE : E.Nonempty) : Distribution (T × T) :=
   Distribution.uniformOnFinset
     (Finset.univ.filter fun ab : T × T => Sym2.mk ab.1 ab.2 ∈ E)
+variable {T : Type*} [Fintype T] [DecidableEq T] (E : Finset (Sym2 T)) (hE : E.Nonempty)
+
 
 /-- The graph distribution has total mass one whenever its edge set is
 nonempty.  This is not a named statement of the source article; it is
 blueprint
 `lem:graph-distribution-mass`. -/
-theorem graphDistribution_isProbability {T : Type*} [Fintype T] [DecidableEq T]
-    (E : Finset (Sym2 T)) (hE : E.Nonempty) :
+theorem graphDistribution_isProbability  :
     (graphDistribution E hE).IsProbability := by
   apply Distribution.uniformOnFinset_isProbability
   obtain ⟨e, he⟩ := hE
@@ -215,8 +218,7 @@ the ordered pairs whose unordered pair is an edge, and that condition does not
 depend on the order of the pair.  This is not a named statement of the source
 article; it is `lem:graph-distribution-symm` in
 `blueprint/src/chapter/ch12_qpbt_games.tex`. -/
-theorem graphDistribution_symm {T : Type*} [Fintype T] [DecidableEq T]
-    (E : Finset (Sym2 T)) (hE : E.Nonempty) (a b : T) :
+theorem graphDistribution_symm  (a b : T) :
     (graphDistribution E hE).weight (a, b) =
       (graphDistribution E hE).weight (b, a) := by
   classical

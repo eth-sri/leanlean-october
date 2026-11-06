@@ -49,7 +49,7 @@ theorem completedPauliEffect_eq_raw_add_wrongForm {P : AdmissibleParams} {ι : T
     Finset.sum_filter]
   by_cases hu : u = 0
   · subst u
-    simp only [ite_true]
+    simp [ite_true]
     calc
       (∑ answer, if pauliAnswerOrZero answer = 0 then M.effect answer else 0) =
           ∑ answer, ((if answer = .pauliOutcome 0 then M.effect answer else 0) +
@@ -62,7 +62,7 @@ theorem completedPauliEffect_eq_raw_add_wrongForm {P : AdmissibleParams} {ι : T
         congr 1
         · simp
         · rw [← Finset.sum_filter]
-  · simp only [hu, ite_false, add_zero]
+  · simp [hu, ite_false, add_zero]
     rw [Finset.sum_eq_single (.pauliOutcome u)]
     · simp [pauliAnswerOrZero]
     · intro answer _ hanswer
@@ -85,7 +85,6 @@ theorem pauliRejectionAverage_le_error_of_win {P : AdmissibleParams} {ε : ℝ}
     unfold pauliBasisTest pauliQuestionDistribution
     rw [Distribution.avgOver_map]
     rfl
-  rw [havg]
   linarith
 
 /-- Rejection on one fixed oriented edge is at most the number of edge types
@@ -136,11 +135,10 @@ theorem wrongFormPauliMass_alice_le_error {P : AdmissibleParams} {ε : ℝ}
       by_cases ha : validPauliAnswer (.pauli W) a = false
       · simp [ha, stateQForm, aliceOutcomeWeight]
       · simp [ha]
-    rw [hmass]
-    rw [← outcome_event_weight_left_eq S (pauliQuestion P W)
+    rw [hmass, ← outcome_event_weight_left_eq S (pauliQuestion P W)
       ((.point W), pauliCL P (.point W) z)]
     unfold WinImplications.pauliRejectionAt WinImplications.pauliSourceQuestions
-    simp only [WinImplications.pauliPointEdge, pauliCL, pauliQuestion]
+    simp [WinImplications.pauliPointEdge, pauliCL, pauliQuestion]
     apply outcome_event_weight_mono
     intro a b ha
     simp [pauliWinPredicate, ha]
@@ -187,11 +185,10 @@ theorem wrongFormPauliMass_bob_le_error {P : AdmissibleParams} {ε : ℝ}
       by_cases hb : validPauliAnswer (.pauli W) b = false
       · simp [hb, stateQForm, bobOutcomeWeight]
       · simp [hb]
-    rw [hmass]
-    rw [← outcome_event_weight_right_eq S
+    rw [hmass, ← outcome_event_weight_right_eq S
       ((.point W), pauliCL P (.point W) z) (pauliQuestion P W)]
     unfold WinImplications.pauliRejectionAt WinImplications.pauliSourceQuestions
-    simp only [WinImplications.pointPauliEdge, pauliCL, pauliQuestion]
+    simp [WinImplications.pointPauliEdge, pauliCL, pauliQuestion]
     apply outcome_event_weight_mono
     intro a b hb
     simp [pauliWinPredicate, hb]
@@ -282,15 +279,14 @@ private theorem wrongFormEffect_ideal_norm_alice_le {P : AdmissibleParams}
   have hE : E = N.effect false := by
     exact wrongFormEffect_eq_validity_effect M W
   have hEcontr : Eᴴ * E ≤ 1 := by
-    rw [hE]
     exact MagicSquareRigidity.conjTranspose_mul_le_one_of_effect N false
   have hQcontr : Qᴴ * Q ≤ 1 := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [raw_transfer_liftedAEffect_eq_tensor]
     exact MagicSquareRigidity.conjTranspose_mul_le_one_leftTensor
       (MagicSquareRigidity.conjTranspose_mul_le_one_conjIsometry w.φA hEcontr)
   have htheta : ‖applyOperatorToState Q theta‖ ^ 2 ≤ r := by
-    dsimp only [Q, theta]
+    dsimp [Q, theta]
     rw [raw_transfer_liftedAEffect_eq_tensor,
       MagicSquareRigidity.applyOperatorToState_leftTensor_conjIsometry,
       MagicSquareRigidity.norm_isometryTensor]
@@ -343,15 +339,14 @@ private theorem wrongFormEffect_ideal_norm_bob_le {P : AdmissibleParams}
   have hE : E = N.effect false := by
     exact wrongFormEffect_eq_validity_effect M W
   have hEcontr : Eᴴ * E ≤ 1 := by
-    rw [hE]
     exact MagicSquareRigidity.conjTranspose_mul_le_one_of_effect N false
   have hQcontr : Qᴴ * Q ≤ 1 := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [raw_transfer_liftedBEffect_eq_tensor]
     exact MagicSquareRigidity.conjTranspose_mul_le_one_rightTensor
       (MagicSquareRigidity.conjTranspose_mul_le_one_conjIsometry w.φB hEcontr)
   have htheta : ‖applyOperatorToState Q theta‖ ^ 2 ≤ r := by
-    dsimp only [Q, theta]
+    dsimp [Q, theta]
     rw [raw_transfer_liftedBEffect_eq_tensor,
       MagicSquareRigidity.applyOperatorToState_rightTensor_conjIsometry,
       MagicSquareRigidity.norm_isometryTensor]
@@ -414,7 +409,7 @@ theorem raw_pauli_operator_distanceA_le_completed {P : AdmissibleParams} {ε δ 
     by_cases hu : u = 0
     · subst u
       rw [if_pos rfl, completedPauliEffect_eq_raw_add_wrongForm M W 0]
-      simp only [ite_true]
+      simp [ite_true]
       have hvec :
           applyOperatorToState
               (liftedAEffect S w.φA
@@ -427,7 +422,7 @@ theorem raw_pauli_operator_distanceA_le_completed {P : AdmissibleParams} {ε δ 
               applyOperatorToState (liftedAEffect S w.φA E)
                 (idealState P w.aux) := by
         rw [raw_transfer_liftedAEffect_add]
-        simp only [applyOperatorToState, map_sub, LinearMap.sub_apply, map_add,
+        simp [applyOperatorToState, map_sub, LinearMap.sub_apply, map_add,
           LinearMap.add_apply]
         abel
       rw [hvec]
@@ -438,7 +433,7 @@ theorem raw_pauli_operator_distanceA_le_completed {P : AdmissibleParams} {ε δ 
             pauliProjOnA'' P W 0) (idealState P w.aux))
         (applyOperatorToState (liftedAEffect S w.φA E) (idealState P w.aux))
       have hsquare := pow_le_pow_left₀ (norm_nonneg _) htri 2
-      dsimp only [bad]
+      dsimp [bad]
       nlinarith [sq_nonneg
         (‖applyOperatorToState
           (liftedAEffect S w.φA
@@ -446,7 +441,7 @@ theorem raw_pauli_operator_distanceA_le_completed {P : AdmissibleParams} {ε δ 
             pauliProjOnA'' P W 0) (idealState P w.aux)‖ -
           ‖applyOperatorToState (liftedAEffect S w.φA E) (idealState P w.aux)‖)]
     · rw [if_neg hu, completedPauliEffect_eq_raw_add_wrongForm M W u]
-      simp only [hu, ite_false, add_zero]
+      simp [hu, ite_false, add_zero]
       nlinarith [sq_nonneg
         ‖applyOperatorToState
           (liftedAEffect S w.φA (M.effect (.pauliOutcome u)) -
@@ -520,7 +515,7 @@ theorem raw_pauli_operator_distanceB_le_completed {P : AdmissibleParams} {ε δ 
     by_cases hu : u = 0
     · subst u
       rw [if_pos rfl, completedPauliEffect_eq_raw_add_wrongForm M W 0]
-      simp only [ite_true]
+      simp [ite_true]
       have hvec :
           applyOperatorToState
               (liftedBEffect S w.φB (M.effect (.pauliOutcome 0)) -
@@ -531,7 +526,7 @@ theorem raw_pauli_operator_distanceB_le_completed {P : AdmissibleParams} {ε δ 
               applyOperatorToState (liftedBEffect S w.φB E)
                 (idealState P w.aux) := by
         rw [raw_transfer_liftedBEffect_add]
-        simp only [applyOperatorToState, map_sub, LinearMap.sub_apply, map_add,
+        simp [applyOperatorToState, map_sub, LinearMap.sub_apply, map_add,
           LinearMap.add_apply]
         abel
       rw [hvec]
@@ -541,14 +536,14 @@ theorem raw_pauli_operator_distanceB_le_completed {P : AdmissibleParams} {ε δ 
             pauliProjOnB'' P W 0) (idealState P w.aux))
         (applyOperatorToState (liftedBEffect S w.φB E) (idealState P w.aux))
       have hsquare := pow_le_pow_left₀ (norm_nonneg _) htri 2
-      dsimp only [bad]
+      dsimp [bad]
       nlinarith [sq_nonneg
         (‖applyOperatorToState
           (liftedBEffect S w.φB (M.effect (.pauliOutcome 0) + E) -
             pauliProjOnB'' P W 0) (idealState P w.aux)‖ -
           ‖applyOperatorToState (liftedBEffect S w.φB E) (idealState P w.aux)‖)]
     · rw [if_neg hu, completedPauliEffect_eq_raw_add_wrongForm M W u]
-      simp only [hu, ite_false, add_zero]
+      simp [hu, ite_false, add_zero]
       nlinarith [sq_nonneg
         ‖applyOperatorToState
           (liftedBEffect S w.φB (M.effect (.pauliOutcome u)) -

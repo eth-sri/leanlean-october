@@ -58,13 +58,14 @@ theorem norm_applyOperatorToState_sq_eq_stateQForm {ι : Type*} [Fintype ι]
     [DecidableEq ι] (ψ : EuclideanSpace ℂ ι) (W : Op ι) :
     ‖applyOperatorToState W ψ‖ ^ 2 = stateQForm ψ (Wᴴ * W) :=
   MagicSquareRigidity.norm_applyOperatorToState_sq W ψ
+variable {α ι : Type*} [Fintype α] [Fintype ι] [DecidableEq ι]
+
 
 /-- For two projective measurements, the diagonal overlap in a vector `w` is
 the squared norm of `w` minus half the summed squared distances.  This is the
 identity behind `fact:agreement` for projective families, blueprint
 `blueprint/src/chapter/ch12_qpbt_games.tex:260-272`. -/
-theorem sum_stateQForm_mul_eq_of_projective {α ι : Type*} [Fintype α]
-    [Fintype ι] [DecidableEq ι]
+theorem sum_stateQForm_mul_eq_of_projective 
     (A B : Measurement α ι) (w : EuclideanSpace ℂ ι)
     (hA : MIPStarRE.QPBT.Measurement.IsProjective A)
     (hB : MIPStarRE.QPBT.Measurement.IsProjective B) :
@@ -76,8 +77,7 @@ theorem sum_stateQForm_mul_eq_of_projective {α ι : Type*} [Fintype α]
   ring
 
 /-- An effect of a projective measurement is a contraction. -/
-theorem norm_applyOperatorToState_proj_effect_le {α ι : Type*} [Fintype α]
-    [Fintype ι] [DecidableEq ι] (M : Measurement α ι)
+theorem norm_applyOperatorToState_proj_effect_le  (M : Measurement α ι)
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) (a : α)
     (v : EuclideanSpace ℂ ι) :
     ‖applyOperatorToState (M.effect a) v‖ ≤ ‖v‖ := by
@@ -105,7 +105,7 @@ theorem sandwich_mul_sandwich_eq (X₁ X₂ : Measurement α ι) (Z₁ Z₂ : Me
         (Z₁.effect b * Z₂.effect b) := by
   rw [Matrix.conjTranspose_mul, measurement_effect_hermitian,
     measurement_effect_hermitian]
-  simp only [Matrix.mul_assoc]
+  simp [Matrix.mul_assoc]
   rw [(show Commute (Z₁.effect b) (Z₂.effect b) from hZZ b).left_comm
       (X₂.effect a * Z₂.effect b),
     (show Commute (X₁.effect a) (Z₂.effect b) from hXZ a b).left_comm,
@@ -122,7 +122,7 @@ theorem sub_mul_mul_eq_add_commutators (X₁ X₂ Z₁ Z₂ : Op ι)
     (X₁ - X₂) * (Z₁ * Z₂) =
       Z₁ * Z₂ * (X₁ - X₂) + Z₂ * (X₁ * Z₁ - Z₁ * X₁) -
         Z₁ * (X₂ * Z₂ - Z₂ * X₂) := by
-  simp only [sub_mul, mul_sub, Matrix.mul_assoc]
+  simp [sub_mul, mul_sub, Matrix.mul_assoc]
   rw [(show Commute Z₂ X₁ from hXZ.symm).left_comm Z₁, ← hZZ,
     (show Commute Z₂ Z₁ from hZZ.symm).left_comm X₁,
     (show Commute Z₁ X₂ from hZX).left_comm Z₂]
@@ -244,7 +244,7 @@ theorem sandwich_defect_pointwise_le (ψ : EuclideanSpace ℂ ι)
         ← DistanceCalculus.applyOperatorToState_mul,
         ← DistanceCalculus.applyOperatorToState_mul, Matrix.mul_assoc]
       unfold applyOperatorToState
-      simp only [map_add, map_sub, LinearMap.add_apply, LinearMap.sub_apply]
+      simp [map_add, map_sub, LinearMap.add_apply, LinearMap.sub_apply]
     rw [hlin]
     set u := applyOperatorToState (Z₁.effect b)
       (applyOperatorToState (Z₂.effect b * (X₁.effect a - X₂.effect a)) ψ)
@@ -261,7 +261,7 @@ theorem sandwich_defect_pointwise_le (ψ : EuclideanSpace ℂ ι)
     have hw : ‖w‖ ≤ ‖applyOperatorToState
         (X₂.effect a * Z₂.effect b - Z₂.effect b * X₂.effect a) ψ‖ :=
       norm_applyOperatorToState_proj_effect_le Z₁ hZ₁ b _
-    have htri : ‖u + v - w‖ ≤ ‖u‖ + ‖v‖ + ‖w‖ :=
+    have htri :=
       le_trans (norm_sub_le (u + v) w) (add_le_add (norm_add_le u v) (le_refl ‖w‖))
     have hsq : ‖u + v - w‖ ^ 2 ≤ 3 * (‖u‖ ^ 2 + ‖v‖ ^ 2 + ‖w‖ ^ 2) := by
       nlinarith [sq_nonneg (‖u‖ - ‖v‖), sq_nonneg (‖v‖ - ‖w‖),
@@ -275,7 +275,7 @@ theorem sandwich_defect_pointwise_le (ψ : EuclideanSpace ℂ ι)
   have hcontr : ∑ ab : α × β, ‖applyOperatorToState (Z₂.effect ab.2 *
       (X₁.effect ab.1 - X₂.effect ab.1)) ψ‖ ^ 2 ≤
       ∑ a, ‖applyOperatorToState (X₁.effect a - X₂.effect a) ψ‖ ^ 2 := by
-    simp only [Fintype.sum_prod_type]
+    simp [Fintype.sum_prod_type]
     refine Finset.sum_le_sum fun a _ => ?_
     exact sum_norm_mul_apply_le Z₂.effect (X₁.effect a - X₂.effect a) ψ
       (measurement_sum_adjoint_mul_le_one Z₂)
@@ -353,7 +353,7 @@ theorem sandwich_offDiagonal_le_sandwichDefectBound (S : ProjectiveSetting P ε)
   simp only [placedMeasurement_effect, psiHat_norm] at hkey
   unfold sandwichDefectBound
   simp only [sandwichPoint_effect, place_mul]
-  simpa only [place_mul] using hkey
+  simpa using hkey
 
 /-- The average over the point pair of the pointwise bound is polynomially
 small: at most a universal constant times `ε + √ε`.  The `X`- and
@@ -367,7 +367,7 @@ theorem avg_sandwich_defect_bound_le_explicit :
   intro P ε S p₁ p₂ hopp
   have hC₁ : (1 : ℝ) ≤ 172 := by norm_num
   have hC₂ : (1 : ℝ) ≤ pauliBaselineTwistedConstant := by
-    simp only [pauliBaselineTwistedConstant, pauliBaselineCommutatorConstant]
+    simp [pauliBaselineTwistedConstant, pauliBaselineCommutatorConstant]
     nlinarith [Real.sqrt_nonneg (344 : ℝ)]
   have hε : (0 : ℝ) ≤ ε := by
     have hv := WinImplications.strategy_value_le_one S.toStrategy

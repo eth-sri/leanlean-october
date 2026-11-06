@@ -26,11 +26,13 @@ The companion constant adjustments are `deltaQld_mono`
 @[expose] public section
 
 namespace MIPStarRE.QPBT
+variable {P : AdmissibleParams} {a b epsilon : ℝ}
+
 
 /-- The Pauli soundness error is nonnegative whenever its prefactor and its
 error argument are. The remaining two summands of the error bracket are
 `rpow`s of nonnegative bases, so no admissibility hypothesis is needed. -/
-theorem deltaQld_nonneg {P : AdmissibleParams} {a b epsilon : ℝ}
+theorem deltaQld_nonneg 
     (ha : 0 ≤ a) (hepsilon : 0 ≤ epsilon) :
     0 ≤ deltaQld a b epsilon P.m P.d P.q := by
   have hdegree0 : (0 : ℝ) ≤ ((P.m * P.d : ℕ) : ℝ) := Nat.cast_nonneg _
@@ -73,7 +75,7 @@ Lean-only constant-bookkeeping helper, not an additional hypothesis of
 `thm:pauli`: the source absorbs the same universal constants inline at
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1862-1876`.
 It is stated as blueprint `lem:delta-qld-scalar-absorption-support`. -/
-theorem three_add_six_sq_deltaQld_le {P : AdmissibleParams} {a b epsilon : ℝ}
+theorem three_add_six_sq_deltaQld_le 
     (ha : 1 ≤ a) (hb : 0 < b) (hepsilon : 0 ≤ epsilon) (hepsilon1 : epsilon ≤ 1) :
     3 * deltaQld a b epsilon P.m P.d P.q +
         6 * deltaQld a b epsilon P.m P.d P.q ^ 2 ≤

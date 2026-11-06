@@ -31,28 +31,28 @@ namespace WinImplications
 
 local instance pauliEdgeNonemptyPointObs : Nonempty PauliEdge :=
   pauliEdge_nonempty
+variable {α ιA ιB : Type*} [Fintype α] (c : α → ℂ)
+
 
 /-! ## Linearity of the tensor placement -/
 
 /-- The left tensor placement commutes with weighted finite sums. This is
 formalization-only support for `lem:povm-to-obs`, blueprint
 `ch14_qpbt_observables.tex:365-382`. -/
-theorem heteroKron_left_sum_smul {α ιA ιB : Type*} [Fintype α]
-    (c : α → ℂ) (A : α → Op ιA) (B : Op ιB) :
+theorem heteroKron_left_sum_smul  (A : α → Op ιA) (B : Op ιB) :
     heteroKron (∑ a, c a • A a) B = ∑ a, c a • heteroKron (A a) B := by
   ext i j
-  simp only [heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply,
+  simp [heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply,
     Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul, Finset.sum_mul,
     mul_assoc]
 
 /-- The right tensor placement commutes with weighted finite sums. This is
 formalization-only support for `lem:povm-to-obs`, blueprint
 `ch14_qpbt_observables.tex:365-382`. -/
-theorem heteroKron_right_sum_smul {α ιA ιB : Type*} [Fintype α]
-    (c : α → ℂ) (A : Op ιA) (B : α → Op ιB) :
+theorem heteroKron_right_sum_smul  (A : Op ιA) (B : α → Op ιB) :
     heteroKron A (∑ a, c a • B a) = ∑ a, c a • heteroKron A (B a) := by
   ext i j
-  simp only [heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply,
+  simp [heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply,
     Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul, Finset.mul_sum]
   exact Finset.sum_congr rfl fun a _ => by ring
 
@@ -73,8 +73,7 @@ theorem pointObs_eq_traceMeas_obs {P : AdmissibleParams} {ε : ℝ}
     S.pointObs side W r u =
       ∑ b : ZMod 2, phaseSign b • (S.pointTraceMeas side W u r).effect b := by
   classical
-  rw [ProjectiveSetting.pointObs]
-  rw [← Finset.sum_fiberwise_of_maps_to
+  rw [ProjectiveSetting.pointObs, ← Finset.sum_fiberwise_of_maps_to
     (g := fun a : PauliScalar P => fixedBinTrace P.model (a * r))
     (t := (Finset.univ : Finset (ZMod 2)))
     (fun a _ => Finset.mem_univ _)

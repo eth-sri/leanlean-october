@@ -56,13 +56,14 @@ theorem marginalPoly_postprocess_eval {P : AdmissibleParams} {epsilon deltaG : �
   cases W <;> rfl
 
 end GlobalPairWitness
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+
 
 /-- Regrouping polynomial outcomes by their value at a point preserves the
 agreement operator. This is the finite-sum identity behind paper
 `14_analysis_of_the_pauli_basis_test.tex:1626-1637`, blueprint
 `lem:qld-constructing-the-paulis-helper`. -/
-theorem sum_marginalPoly_eval_mul {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+theorem sum_marginalPoly_eval_mul 
     (placement : Placement) (W : PauliKind) (point : Fin P.m → PauliScalar P)
     (family : PauliScalar P → Op (SixReg P S.toStrategy.ιA S.toStrategy.ιB)) :
     (∑ answer : PauliScalar P, S.place placement
@@ -85,14 +86,14 @@ theorem sum_marginalPoly_eval_mul {P : AdmissibleParams} {epsilon deltaG : ℝ}
       intro poly hpoly
       rw [(Finset.mem_filter.mp hpoly).2]
     _ = _ := Finset.sum_fiberwise _ _ _
+variable (W : PauliKind)
+
 
 /-- Alice's evaluated marginal on `AA'` retains the witness consistency with
 Bob's expanded point measurement on `BA''`. This is the direct placement in
 paper `14_analysis_of_the_pauli_basis_test.tex:1626-1637`, supporting blueprint
 `lem:qld-constructing-the-paulis-helper`; no register transfer is used. -/
-theorem marginalPoly_pointMeas_consistent_alice {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem marginalPoly_pointMeas_consistent_alice  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun point answer => S.place .AA'
         (((w.marginalPoly .alice W).postprocess
@@ -106,9 +107,7 @@ Alice's expanded point measurement on `AB''`. This is the reverse-player
 direct placement of paper `14_analysis_of_the_pauli_basis_test.tex:1626-1637`,
 supporting blueprint `lem:qld-constructing-the-paulis-helper`; no register
 transfer is used. -/
-theorem marginalPoly_pointMeas_consistent_bob {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem marginalPoly_pointMeas_consistent_bob  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun point answer => S.place .BB'
         (((w.marginalPoly .bob W).postprocess

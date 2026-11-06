@@ -191,6 +191,8 @@ blueprint
 noncomputable def tauDotProj {P : AdmissibleParams} (W : PauliKind)
     (u : PauliRegister P) (a : PauliScalar P) : Op (PauliRegister P) :=
   bracketOp (pauliProj W) (fun h => dotProduct h u) a
+variable {P : AdmissibleParams} (W : PauliKind) (u : PauliRegister P)
+
 
 /-- Each dot-product coarse-graining is a projector, as asserted in
 blueprint
@@ -199,8 +201,7 @@ blueprint
 
 Completeness makes the matrix of Pauli basis vectors unitary. The coarse-grained
 operator is the conjugate of the diagonal projector onto the specified outcomes. -/
-theorem tauDotProj_isProj {P : AdmissibleParams} (W : PauliKind)
-    (u : PauliRegister P) (a : PauliScalar P) :
+theorem tauDotProj_isProj  (a : PauliScalar P) :
     IsProj (tauDotProj W u a) := by
   classical
   let basisMatrix : Op (PauliRegister P) := fun row label => pauliVec W label row
@@ -212,7 +213,7 @@ theorem tauDotProj_isProj {P : AdmissibleParams} (W : PauliKind)
       basisMatrix * basisMatrixᴴ = ∑ label : PauliRegister P, pauliProj W label := by
         ext row column
         rw [Matrix.mul_apply]
-        simp only [basisMatrix, hbasisMatrix_conjTranspose, pauliProj,
+        simp [basisMatrix, hbasisMatrix_conjTranspose, pauliProj,
           Matrix.sum_apply, Matrix.vecMulVec_apply]
       _ = 1 := sum_pauliProj_eq_one W
   let diagonalProj : Op (PauliRegister P) :=
@@ -228,9 +229,9 @@ theorem tauDotProj_isProj {P : AdmissibleParams} (W : PauliKind)
       simp [diagonalProj, Matrix.diagonal_conjTranspose]
   have hcoarse : tauDotProj W u a = basisMatrix * diagonalProj * basisMatrixᴴ := by
     ext row column
-    simp only [tauDotProj, bracketOp, Matrix.sum_apply, pauliProj, Matrix.vecMulVec_apply]
+    simp [tauDotProj, bracketOp, Matrix.sum_apply, pauliProj, Matrix.vecMulVec_apply]
     rw [Matrix.mul_apply]
-    simp only [diagonalProj, Matrix.mul_diagonal]
+    simp [diagonalProj, Matrix.mul_diagonal]
     simp [basisMatrix, hbasisMatrix_conjTranspose, Finset.sum_filter, mul_ite, ite_mul]
   rw [hcoarse]
   exact hdiagonal.map (Unitary.conjStarAlgAut ℂ (Op (PauliRegister P))
@@ -242,8 +243,7 @@ This is the completeness assertion of blueprint
 `14_analysis_of_the_pauli_basis_test.tex:1426-1429`.
 
 The dot-product fibers partition the complete Pauli outcome family. -/
-theorem sum_tauDotProj_eq_one {P : AdmissibleParams} (W : PauliKind)
-    (u : PauliRegister P) :
+theorem sum_tauDotProj_eq_one  :
     ∑ a : PauliScalar P, tauDotProj W u a = 1 := by
   classical
   unfold tauDotProj bracketOp

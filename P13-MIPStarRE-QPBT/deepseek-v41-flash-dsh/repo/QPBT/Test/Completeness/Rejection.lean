@@ -30,14 +30,21 @@ open MIPStarRE.Quantum
 noncomputable section
 
 set_option maxRecDepth 8000
+variable (P : AdmissibleParams)
+variable (W : PauliKind)
+variable (z : PauliSpace P)
+variable {a : PauliAnswer P}
+
+
+
+
 
 /-! ### Answers of an inadmissible form -/
 
 /-- The honest Point/W measurement assigns the zero effect to every answer that
 is not a field value; part of the answer-format rejection clause of
 `def:pauli-win-predicate`. -/
-theorem honestPointMeasurement_effect_eq_zero (P : AdmissibleParams)
-    (W : PauliKind) (z : PauliSpace P) {a : PauliAnswer P}
+theorem honestPointMeasurement_effect_eq_zero 
     (ha : validPauliAnswer (.point W) a = false) :
     (honestPointMeasurement P W z).effect a = 0 := by
   refine placedPauliMeasurement_effect_eq_zero_of_notMem _ _ ?_
@@ -47,8 +54,7 @@ theorem honestPointMeasurement_effect_eq_zero (P : AdmissibleParams)
 /-- The honest Axis-line/W measurement assigns the zero effect to every answer
 that is not a degree-`d` coefficient list; part of the answer-format
 rejection clause of `def:pauli-win-predicate`. -/
-theorem honestALineMeasurement_effect_eq_zero (P : AdmissibleParams)
-    (W : PauliKind) (z : PauliSpace P) {a : PauliAnswer P}
+theorem honestALineMeasurement_effect_eq_zero 
     (ha : validPauliAnswer (.aline W) a = false) :
     (honestALineMeasurement P W z).effect a = 0 := by
   refine placedPauliMeasurement_effect_eq_zero_of_notMem _ _ ?_
@@ -58,19 +64,19 @@ theorem honestALineMeasurement_effect_eq_zero (P : AdmissibleParams)
 /-- The honest Diagonal-line/W measurement assigns the zero effect to every
 answer that is not a degree-`m d` coefficient list; part of the
 answer-format rejection clause of `def:pauli-win-predicate`. -/
-theorem honestDLineMeasurement_effect_eq_zero (P : AdmissibleParams)
-    (W : PauliKind) (z : PauliSpace P) {a : PauliAnswer P}
+theorem honestDLineMeasurement_effect_eq_zero 
     (ha : validPauliAnswer (.dline W) a = false) :
     (honestDLineMeasurement P W z).effect a = 0 := by
   refine placedPauliMeasurement_effect_eq_zero_of_notMem _ _ ?_
   rintro ⟨u, rfl⟩
   simp [validPauliAnswer] at ha
+variable {a : PauliAnswer P}
+
 
 /-- The honest Pauli/W measurement assigns the zero effect to every answer that
 is not a Pauli label; part of the answer-format rejection clause of
 `def:pauli-win-predicate`. -/
-theorem honestPauliMeasurement_effect_eq_zero (P : AdmissibleParams)
-    (W : PauliKind) {a : PauliAnswer P}
+theorem honestPauliMeasurement_effect_eq_zero 
     (ha : validPauliAnswer (.pauli W) a = false) :
     (honestPauliMeasurement P W).effect a = 0 := by
   refine placedPauliMeasurement_effect_eq_zero_of_notMem _ _ ?_
@@ -80,19 +86,19 @@ theorem honestPauliMeasurement_effect_eq_zero (P : AdmissibleParams)
 /-- The honest Pair/W measurement assigns the zero effect to every answer that
 is not a bit; part of the answer-format rejection clause of
 `def:pauli-win-predicate`. -/
-theorem honestPairWMeasurement_effect_eq_zero (P : AdmissibleParams)
-    (W : PauliKind) (z : PauliSpace P) {a : PauliAnswer P}
+theorem honestPairWMeasurement_effect_eq_zero 
     (ha : validPauliAnswer (.pairW W) a = false) :
     (honestPairWMeasurement P W z).effect a = 0 := by
   refine placedPauliMeasurement_effect_eq_zero_of_notMem _ _ ?_
   rintro ⟨u, rfl⟩
   simp [validPauliAnswer] at ha
+variable (z : PauliSpace P)
+
 
 /-- The honest Pair measurement assigns the zero effect to every answer that is
 not a pair of bits; part of the answer-format rejection clause of
 `def:pauli-win-predicate`. -/
-theorem honestPairMeasurement_effect_eq_zero (P : AdmissibleParams)
-    (z : PauliSpace P) {a : PauliAnswer P}
+theorem honestPairMeasurement_effect_eq_zero 
     (ha : validPauliAnswer .pair a = false) :
     (honestPairMeasurement P z).effect a = 0 := by
   classical
@@ -117,7 +123,7 @@ theorem honestPairMeasurement_effect_eq_zero (P : AdmissibleParams)
 /-- The honest Magic Square measurement assigns the zero effect to every answer
 that is not the one prescribed by its Magic Square question type; part of the
 answer-format rejection clause of `def:pauli-win-predicate`. -/
-theorem honestMagicMeasurement_effect_eq_zero (P : AdmissibleParams)
+theorem honestMagicMeasurement_effect_eq_zero 
     (s : MsType) (z : PauliSpace P) {a : PauliAnswer P}
     (ha : validPauliAnswer (.ms s) a = false) :
     (honestMagicMeasurement P s z).effect a = 0 := by
@@ -139,7 +145,7 @@ theorem honestMagicMeasurement_effect_eq_zero (P : AdmissibleParams)
           simp [honestMagicMeasurement, hg]
         rw [h1, Measurement.postprocess_effect]
         refine Finset.sum_eq_zero fun c hc => ?_
-        have hca : pauliAnswerOfMs c = a := (Finset.mem_filter.mp hc).2
+        have hca := (Finset.mem_filter.mp hc).2
         cases c with
         | triple β =>
             exact absurd ha (by rw [← hca]; simp [pauliAnswerOfMs, validPauliAnswer])
@@ -163,7 +169,7 @@ theorem honestMagicMeasurement_effect_eq_zero (P : AdmissibleParams)
           simp [honestMagicMeasurement, hg]
         rw [h1, Measurement.postprocess_effect]
         refine Finset.sum_eq_zero fun c hc => ?_
-        have hca : pauliAnswerOfMs c = a := (Finset.mem_filter.mp hc).2
+        have hca := (Finset.mem_filter.mp hc).2
         cases c with
         | triple β =>
             refine msStrategyMeasurement_var_zero _ _ _ j ?_
@@ -176,7 +182,7 @@ theorem honestMagicMeasurement_effect_eq_zero (P : AdmissibleParams)
 form is not the one prescribed by its question type; this is the
 answer-format rejection clause of `def:pauli-win-predicate`, blueprint
 `def:pauli-win-predicate`. -/
-theorem honestMeasurement_effect_eq_zero_of_invalid (P : AdmissibleParams)
+theorem honestMeasurement_effect_eq_zero_of_invalid 
     (t : PauliType) (z : PauliSpace P) {a : PauliAnswer P}
     (ha : validPauliAnswer t a = false) :
     (honestMeasurement P t z).effect a = 0 := by
@@ -194,21 +200,22 @@ theorem honestMeasurement_effect_eq_zero_of_invalid (P : AdmissibleParams)
 /-- Reading the low-degree register back from its embedding in the
 basis-selected Pauli blocks returns the original vector; this is the coordinate
 bookkeeping of `def:pauli-question-distribution`. -/
-theorem pauliToLd_embedLd (P : AdmissibleParams) (W : PauliKind)
+theorem pauliToLd_embedLd 
     (u : LdSpace P.toLdParams) : pauliToLd P W (embedLd P W u) = u := by
   funext i
   cases W <;> rcases i with (j | ⟨⟩) | j <;> rfl
 
 /-- The point block of a Point/W question is the point block of the ambient
 coefficient vector; `def:pauli-question-distribution`. -/
-theorem pauliPointBlock_pauliCL_point (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem pauliPointBlock_pauliCL_point  :
     pauliPointBlock W (pauliCL P (.point W) z) = pauliPointBlock W z := by
   cases W <;> rfl
+variable (L : LdParams) (w : LdSpace L)
+
 
 /-- The axis-line conditionally linear map of `def:ld-question-distribution` is
 idempotent. -/
-theorem ldALineCL_idempotent (L : LdParams) (w : LdSpace L) :
+theorem ldALineCL_idempotent  :
     ldALineCL L (ldALineCL L w) = ldALineCL L w := by
   funext i
   rcases i with (j | ⟨⟩) | j
@@ -219,7 +226,7 @@ theorem ldALineCL_idempotent (L : LdParams) (w : LdSpace L) :
 
 /-- The diagonal-line conditionally linear map of `def:ld-question-distribution`
 is idempotent. -/
-theorem ldDLineCL_idempotent (L : LdParams) (w : LdSpace L) :
+theorem ldDLineCL_idempotent  :
     ldDLineCL L (ldDLineCL L w) = ldDLineCL L w := by
   funext i
   rcases i with (j | ⟨⟩) | j
@@ -237,8 +244,7 @@ theorem ldDLineCL_idempotent (L : LdParams) (w : LdSpace L) :
 
 /-- The low-degree register carried by an Axis-line/W question is already fixed
 by the axis-line conditionally linear map; `def:pauli-question-distribution`. -/
-theorem ldALineCL_pauliToLd_pauliCL_aline (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem ldALineCL_pauliToLd_pauliCL_aline  :
     ldALineCL P.toLdParams (pauliToLd P W (pauliCL P (.aline W) z)) =
       ldALineCL P.toLdParams (pauliToLd P W z) := by
   rw [show pauliToLd P W (pauliCL P (.aline W) z) =
@@ -248,8 +254,7 @@ theorem ldALineCL_pauliToLd_pauliCL_aline (P : AdmissibleParams) (W : PauliKind)
 /-- The low-degree register carried by a Diagonal-line/W question is already
 fixed by the diagonal-line conditionally linear map;
 `def:pauli-question-distribution`. -/
-theorem ldDLineCL_pauliToLd_pauliCL_dline (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem ldDLineCL_pauliToLd_pauliCL_dline  :
     ldDLineCL P.toLdParams (pauliToLd P W (pauliCL P (.dline W) z)) =
       ldDLineCL P.toLdParams (pauliToLd P W z) := by
   rw [show pauliToLd P W (pauliCL P (.dline W) z) =
@@ -259,7 +264,7 @@ theorem ldDLineCL_pauliToLd_pauliCL_dline (P : AdmissibleParams) (W : PauliKind)
 /-- The base of the canonical axis-line description of an Axis-line/W question
 is the point block carried by that question;
 `def:pauli-question-distribution`. -/
-theorem aLineDescOf_base_eq (P : AdmissibleParams) (W : PauliKind) (z : PauliSpace P) :
+theorem aLineDescOf_base_eq  :
     (aLineDescOf P.toLdParams
         (ldALineCL P.toLdParams (pauliToLd P W z))).base =
       pauliPointBlock W (pauliCL P (.aline W) z) := by
@@ -268,8 +273,7 @@ theorem aLineDescOf_base_eq (P : AdmissibleParams) (W : PauliKind) (z : PauliSpa
 /-- The direction of the canonical axis-line description of an Axis-line/W
 question is the coordinate direction selected by the scalar block of that
 question; `def:pauli-question-distribution`. -/
-theorem aLineDescOf_direction_eq (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem aLineDescOf_direction_eq  :
     (aLineDescOf P.toLdParams
         (ldALineCL P.toLdParams (pauliToLd P W z))).direction =
       coordinateDirection
@@ -279,8 +283,7 @@ theorem aLineDescOf_direction_eq (P : AdmissibleParams) (W : PauliKind)
 /-- The direction of the canonical diagonal-line description of a
 Diagonal-line/W question is the direction block carried by that question;
 `def:pauli-question-distribution`. -/
-theorem dLineDescOf_direction_eq (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem dLineDescOf_direction_eq  :
     (dLineDescOf P.toLdParams
         (ldDLineCL P.toLdParams (pauliToLd P W z))).direction =
       pauliDirectionBlock (pauliCL P (.dline W) z) := by
@@ -288,8 +291,7 @@ theorem dLineDescOf_direction_eq (P : AdmissibleParams) (W : PauliKind)
 
 /-- The point block of a Diagonal-line/W question is the point coordinate of
 the diagonal-line conditionally linear image; `def:pauli-question-distribution`. -/
-theorem pauliPointBlock_pauliCL_dline (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem pauliPointBlock_pauliCL_dline  :
     pauliPointBlock W (pauliCL P (.dline W) z) =
       (ldDLineCL P.toLdParams (pauliToLd P W z)).point := by
   cases W <;> rfl
@@ -297,7 +299,7 @@ theorem pauliPointBlock_pauliCL_dline (P : AdmissibleParams) (W : PauliKind)
 /-- The base of the canonical diagonal-line description of a Diagonal-line/W
 question is the point block carried by that question;
 `def:pauli-question-distribution`. -/
-theorem dLineDescOf_base_eq (P : AdmissibleParams) (W : PauliKind) (z : PauliSpace P) :
+theorem dLineDescOf_base_eq  :
     (dLineDescOf P.toLdParams
         (ldDLineCL P.toLdParams (pauliToLd P W z))).base =
       pauliPointBlock W (pauliCL P (.dline W) z) := by
@@ -317,8 +319,7 @@ theorem dLineDescOf_base_eq (P : AdmissibleParams) (W : PauliKind) (z : PauliSpa
 /-- The honest Point/W measurement at a sampled Point/W question reports the
 value of the low-degree encoding of the measured Pauli label at the point block
 of the ambient vector. -/
-theorem honestMeasurement_point_eq (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem honestMeasurement_point_eq  :
     honestMeasurement P (.point W) (pauliCL P (.point W) z) =
       placedPauliMeasurement (pauliBasisMeasurement W)
         (fun h => PauliAnswer.value (lowDegreeEnc h (pauliPointBlock W z))) := by
@@ -333,8 +334,7 @@ theorem honestMeasurement_point_eq (P : AdmissibleParams) (W : PauliKind)
 
 /-- The honest Axis-line/W measurement at a sampled Axis-line/W question reports
 the degree-`d` restriction to the canonical line of the ambient vector. -/
-theorem honestMeasurement_aline_eq (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem honestMeasurement_aline_eq  :
     honestMeasurement P (.aline W) (pauliCL P (.aline W) z) =
       placedPauliMeasurement (pauliBasisMeasurement W)
         (fun h => PauliAnswer.alinePoly (restrictToAxisLine P.toLdParams
@@ -356,8 +356,7 @@ theorem honestMeasurement_aline_eq (P : AdmissibleParams) (W : PauliKind)
 /-- The honest Diagonal-line/W measurement at a sampled Diagonal-line/W question
 reports the degree-`m d` restriction to the canonical line of the ambient
 vector. -/
-theorem honestMeasurement_dline_eq (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) :
+theorem honestMeasurement_dline_eq  :
     honestMeasurement P (.dline W) (pauliCL P (.dline W) z) =
       placedPauliMeasurement (pauliBasisMeasurement W)
         (fun h => PauliAnswer.dlinePoly (restrictToLine P.toLdParams
@@ -404,7 +403,7 @@ theorem honestMeasurement_pairW_Z_eq (P : AdmissibleParams) (z : PauliSpace P) :
 /-- Two honest measurements coarse-graining one Pauli basis measurement have
 zero operator product at every rejected answer pair, because a single Pauli
 label produces an accepted pair. -/
-theorem placedBasis_rejected_mul (P : AdmissibleParams) (W : PauliKind)
+theorem placedBasis_rejected_mul 
     (x y : PauliQuestion P) (f g : PauliRegister P → PauliAnswer P)
     (hacc : ∀ h : PauliRegister P, pauliWinPredicate P x y (f h) (g h) = true)
     (a b : PauliAnswer P) (hrej : pauliWinPredicate P x y a b = false) :
@@ -415,14 +414,15 @@ theorem placedBasis_rejected_mul (P : AdmissibleParams) (W : PauliKind)
   intro h h1 h2
   rw [← h1, ← h2, hacc h] at hrej
   exact Bool.noConfusion hrej
+variable (h : PauliRegister P)
+
 
 /-! ### The consistency clauses along the incidence forms -/
 
 /-- The honest Axis-line/W answer evaluates, at every line parameter of the
 sampled point, to the honest Point/W value; this is the axis-line clause of
 `def:pauli-win-predicate`. -/
-theorem honest_alinePointCondition (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (h : PauliRegister P) :
+theorem honest_alinePointCondition  :
     pauliAlinePointCondition P W (pauliCL P (.aline W) z) (pauliCL P (.point W) z)
       (restrictToAxisLine P.toLdParams
         (aLineDescOf P.toLdParams (ldALineCL P.toLdParams (pauliToLd P W z)))
@@ -439,8 +439,7 @@ theorem honest_alinePointCondition (P : AdmissibleParams) (W : PauliKind)
 /-- The honest Diagonal-line/W answer evaluates, at every line parameter of the
 sampled point, to the honest Point/W value; this is the diagonal-line clause of
 `def:pauli-win-predicate`. -/
-theorem honest_dlinePointCondition (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (h : PauliRegister P) :
+theorem honest_dlinePointCondition  :
     pauliDlinePointCondition P W (pauliCL P (.dline W) z) (pauliCL P (.point W) z)
       (restrictToLine P.toLdParams
         (dLineDescOf P.toLdParams (ldDLineCL P.toLdParams (pauliToLd P W z)))
@@ -458,13 +457,14 @@ theorem honest_dlinePointCondition (P : AdmissibleParams) (W : PauliKind)
   rw [dLineDescOf_base_eq, dLineDescOf_direction_eq] at hkey2
   rw [ht]
   exact hkey.trans hkey2
+variable (a b : PauliAnswer P)
+
 
 /-! ### Zero products along the incidence forms of the Pauli type graph -/
 
 /-- Along the Point/Axis-line incidence form the honest measurements have zero
 operator product at every rejected answer pair. -/
-theorem honest_point_aline_rejected_mul (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (a b : PauliAnswer P)
+theorem honest_point_aline_rejected_mul 
     (hrej : pauliWinPredicate P (.point W, pauliCL P (.point W) z)
       (.aline W, pauliCL P (.aline W) z) a b = false) :
     (honestMeasurement P (.point W) (pauliCL P (.point W) z)).effect a *
@@ -475,8 +475,7 @@ theorem honest_point_aline_rejected_mul (P : AdmissibleParams) (W : PauliKind)
 
 /-- Along the Point/Diagonal-line incidence form the honest measurements have
 zero operator product at every rejected answer pair. -/
-theorem honest_point_dline_rejected_mul (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (a b : PauliAnswer P)
+theorem honest_point_dline_rejected_mul 
     (hrej : pauliWinPredicate P (.point W, pauliCL P (.point W) z)
       (.dline W, pauliCL P (.dline W) z) a b = false) :
     (honestMeasurement P (.point W) (pauliCL P (.point W) z)).effect a *
@@ -487,8 +486,7 @@ theorem honest_point_dline_rejected_mul (P : AdmissibleParams) (W : PauliKind)
 
 /-- Along the Point/Pauli incidence form the honest measurements have zero
 operator product at every rejected answer pair. -/
-theorem honest_point_pauli_rejected_mul (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (a b : PauliAnswer P)
+theorem honest_point_pauli_rejected_mul 
     (hrej : pauliWinPredicate P (.point W, pauliCL P (.point W) z)
       (.pauli W, pauliCL P (.pauli W) z) a b = false) :
     (honestMeasurement P (.point W) (pauliCL P (.point W) z)).effect a *
@@ -501,11 +499,12 @@ theorem honest_point_pauli_rejected_mul (P : AdmissibleParams) (W : PauliKind)
       lowDegreeEnc h (pauliPointBlock W z)
     rw [pauliPointBlock_pauliCL_point]
   simpa [pauliWinPredicate, validPauliAnswer] using hcond
+variable (a b : PauliAnswer P)
+
 
 /-- Along the Point/Pair incidence form in the X basis the honest measurements
 have zero operator product at every rejected answer pair. -/
-theorem honest_point_pairW_X_rejected_mul (P : AdmissibleParams)
-    (z : PauliSpace P) (a b : PauliAnswer P)
+theorem honest_point_pairW_X_rejected_mul 
     (hrej : pauliWinPredicate P (.point .X, pauliCL P (.point .X) z)
       (.pairW .X, pauliCL P (.pairW .X) z) a b = false) :
     (honestMeasurement P (.point .X) (pauliCL P (.point .X) z)).effect a *
@@ -519,8 +518,7 @@ theorem honest_point_pairW_X_rejected_mul (P : AdmissibleParams)
 
 /-- Along the Point/Pair incidence form in the Z basis the honest measurements
 have zero operator product at every rejected answer pair. -/
-theorem honest_point_pairW_Z_rejected_mul (P : AdmissibleParams)
-    (z : PauliSpace P) (a b : PauliAnswer P)
+theorem honest_point_pairW_Z_rejected_mul 
     (hrej : pauliWinPredicate P (.point .Z, pauliCL P (.point .Z) z)
       (.pairW .Z, pauliCL P (.pairW .Z) z) a b = false) :
     (honestMeasurement P (.point .Z) (pauliCL P (.point .Z) z)).effect a *
@@ -534,8 +532,7 @@ theorem honest_point_pairW_Z_rejected_mul (P : AdmissibleParams)
 
 /-- Along the Point/Variable incidence form in the X basis the honest
 measurements have zero operator product at every rejected answer pair. -/
-theorem honest_point_msVar_X_rejected_mul (P : AdmissibleParams)
-    (z : PauliSpace P) (a b : PauliAnswer P)
+theorem honest_point_msVar_X_rejected_mul 
     (hrej : pauliWinPredicate P (.point .X, pauliCL P (.point .X) z)
       (.ms (.var 0), pauliCL P (.ms (.var 0)) z) a b = false) :
     (honestMeasurement P (.point .X) (pauliCL P (.point .X) z)).effect a *
@@ -577,8 +574,7 @@ theorem honest_point_msVar_X_rejected_mul (P : AdmissibleParams)
 
 /-- Along the Point/Variable incidence form in the Z basis the honest
 measurements have zero operator product at every rejected answer pair. -/
-theorem honest_point_msVar_Z_rejected_mul (P : AdmissibleParams)
-    (z : PauliSpace P) (a b : PauliAnswer P)
+theorem honest_point_msVar_Z_rejected_mul 
     (hrej : pauliWinPredicate P (.point .Z, pauliCL P (.point .Z) z)
       (.ms (.var 4), pauliCL P (.ms (.var 4)) z) a b = false) :
     (honestMeasurement P (.point .Z) (pauliCL P (.point .Z) z)).effect a *
@@ -634,8 +630,7 @@ theorem placedPauliMeasurement_effect_image {P : AdmissibleParams}
 zero operator product at every rejected answer pair: with a vanishing phase bit
 the Pair effect is the product of the two Pair/W effects, and with a nonzero
 phase bit every well-formed answer pair is accepted. -/
-theorem honest_pairW_pair_rejected_mul (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (a b : PauliAnswer P)
+theorem honest_pairW_pair_rejected_mul 
     (hrej : pauliWinPredicate P (.pairW W, pauliCL P (.pairW W) z)
       (.pair, pauliCL P .pair z) a b = false) :
     (honestMeasurement P (.pairW W) (pauliCL P (.pairW W) z)).effect a *
@@ -681,7 +676,7 @@ theorem honest_pairW_pair_rejected_mul (P : AdmissibleParams) (W : PauliKind)
         have hne : β ≠ bits.1 := by
           intro h
           refine hcond ?_
-          simp only [pauliPairCondition]
+          simp [pauliPairCondition]
           exact Or.inr h.symm
         have h1 : (honestMeasurement P (PauliType.pairW PauliKind.X)
               (pauliCL P (.pairW .X) z)).effect (PauliAnswer.bit β) =
@@ -700,7 +695,7 @@ theorem honest_pairW_pair_rejected_mul (P : AdmissibleParams) (W : PauliKind)
         have hne : β ≠ bits.2 := by
           intro h
           refine hcond ?_
-          simp only [pauliPairCondition]
+          simp [pauliPairCondition]
           exact Or.inr h.symm
         have h1 : (honestMeasurement P (PauliType.pairW PauliKind.Z)
               (pauliCL P (.pairW .Z) z)).effect (PauliAnswer.bit β) =
@@ -727,7 +722,7 @@ theorem honest_pairW_pair_rejected_mul (P : AdmissibleParams) (W : PauliKind)
 zero operator product at every rejected answer pair: a vanishing phase bit makes
 the decision predicate accept, and otherwise the honest measurements are the
 relabelled Magic Square measurements of `thm:ms-from-ac`. -/
-theorem honest_ms_rejected_mul (P : AdmissibleParams) (z : PauliSpace P)
+theorem honest_ms_rejected_mul 
     {s₁ s₂ : MsType} (hms : Sym2.mk s₁ s₂ ∈ msEdges) (a b : PauliAnswer P)
     (hrej : pauliWinPredicate P (.ms s₁, pauliCL P (.ms s₁) z)
       (.ms s₂, pauliCL P (.ms s₂) z) a b = false) :
@@ -736,8 +731,8 @@ theorem honest_ms_rejected_mul (P : AdmissibleParams) (z : PauliSpace P)
   classical
   have hcl : ∀ s : MsType, pauliCL P (PauliType.ms s) z = pauliSharedProjection z :=
     fun _ => rfl
-  simp only [hcl] at hrej ⊢
-  have hsupp : (s₁, s₂) ∈ msGameSymm.μ.support := by
+  simp [hcl] at hrej ⊢
+  have hsupp := by
     change (s₁, s₂) ∈ (Finset.univ : Finset (MsType × MsType)).filter
       (fun ab => Sym2.mk ab.1 ab.2 ∈ msEdges)
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hms⟩
@@ -827,7 +822,7 @@ theorem honest_ms_rejected_mul (P : AdmissibleParams) (z : PauliSpace P)
 
 /-- Along every ordered incidence form of the Pauli type graph the honest
 measurements have zero operator product at every rejected answer pair. -/
-theorem honest_oriented_rejected_mul (P : AdmissibleParams) {t₁ t₂ : PauliType}
+theorem honest_oriented_rejected_mul  {t₁ t₂ : PauliType}
     (h : PauliEdgeOriented t₁ t₂) (z : PauliSpace P) (a b : PauliAnswer P)
     (hrej : pauliWinPredicate P (t₁, pauliCL P t₁ z) (t₂, pauliCL P t₂ z) a b = false) :
     (honestMeasurement P t₁ (pauliCL P t₁ z)).effect a *

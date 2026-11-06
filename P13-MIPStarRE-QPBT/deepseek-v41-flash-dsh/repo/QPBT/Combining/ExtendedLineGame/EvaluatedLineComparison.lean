@@ -54,7 +54,6 @@ private theorem consistencyDefect_uniform_equiv_fst
         (fun sample answer => A (e sample).1 answer)
         (fun sample answer => B (e sample).1 answer) psi =
       consistencyDefect (uniformDistribution X) A B psi := by
-  unfold consistencyDefect
   let f : X → ℝ := fun x =>
     ∑ a : Alpha, ∑ b : Alpha,
       if a = b then 0 else
@@ -101,11 +100,12 @@ noncomputable def diagonalSameLineEvaluationDefect
           (.dline, directLdMap P.extendedDirectLd .dline sample)).postprocess
             (diagonalGameRead sample))).effect answer)
     (pairState setting)
+variable (lines : ExtendedLinesWitness setting points deltaL)
+
 
 /-- The point/point read defect is unchanged when the jointly uniform direct
 sample's unused index and direction are retained. -/
-private theorem point_read_defect_on_direct_samples_eq_rejection
-    (lines : ExtendedLinesWitness setting points deltaL) :
+private theorem point_read_defect_on_direct_samples_eq_rejection  :
     consistencyDefect (uniformDistribution (DirectLdSpace P.extendedDirectLd))
         (fun sample answer => heteroKron
           (((answerMeasurement lines .alice
@@ -176,8 +176,7 @@ private theorem point_read_defect_on_direct_samples_eq_rejection
 
 /-- Completed axis-line readouts compare through the two point readouts. This
 uses the consistency triangle and does not assume projectivity of `Qline`. -/
-theorem axis_same_line_evaluation_defect_le_branch_chain
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem axis_same_line_evaluation_defect_le_branch_chain  :
     axisSameLineEvaluationDefect lines ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
           (.aline, .point) +
@@ -268,8 +267,7 @@ theorem axis_same_line_evaluation_defect_le_branch_chain
 
 /-- Completed diagonal-line readouts compare through the two point readouts.
 This uses the consistency triangle and does not assume projectivity of `Qline`. -/
-theorem diagonal_same_line_evaluation_defect_le_branch_chain
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem diagonal_same_line_evaluation_defect_le_branch_chain  :
     diagonalSameLineEvaluationDefect lines ≤
       directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
           (.dline, .point) +
@@ -360,8 +358,7 @@ theorem diagonal_same_line_evaluation_defect_le_branch_chain
 
 /-- The completed axis-line comparison obtained from the supplied line and
 point witnesses. This remains an `Option`-readout statement. -/
-theorem axis_same_line_evaluation_defect_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem axis_same_line_evaluation_defect_le  :
     axisSameLineEvaluationDefect lines ≤
       2 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
   have hforward := (completedLinePointDefect_sums_le lines).1
@@ -405,8 +402,7 @@ theorem axis_same_line_evaluation_defect_le
 
 /-- The completed diagonal-line comparison obtained from the supplied line
 and point witnesses. This remains an `Option`-readout statement. -/
-theorem diagonal_same_line_evaluation_defect_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem diagonal_same_line_evaluation_defect_le  :
     diagonalSameLineEvaluationDefect lines ≤
       2 * deltaL + 2 * Real.sqrt (deltaQ + 2 * deltaL) := by
   have hforward := (completedLinePointDefect_sums_le lines).1

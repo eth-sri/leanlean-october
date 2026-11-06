@@ -45,16 +45,17 @@ open scoped BigOperators
 namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT MIPStarRE.Quantum
+variable (D : DirectLdParams)
+
 
 /-! ## The error of `thm:main-formal` at the combined parameters -/
 
 /-- The auxiliary sampling parameter at the combined parameters, in the
 parameters of the original directly indexed game. -/
-private theorem directCombinedAux_cast (D : DirectLdParams) :
+private theorem directCombinedAux_cast  :
     (directLdAuxParameter D.combined : ℝ) =
       2560000 * (((D.m + D.k : ℕ) : ℝ) ^ (3 : ℕ)) * (D.d : ℝ) := by
   unfold directLdAuxParameter
-  simp only [DirectLdParams.combined_m, DirectLdParams.combined_d]
   push_cast
   ring
 
@@ -73,7 +74,7 @@ private theorem mainFormalError_combined_eq (D : DirectLdParams) (ε : ℝ) :
 
 /-- The polynomial prefactor of the error of `thm:main-formal` at the combined
 parameters. -/
-private theorem directCombinedPrefactor_eq (D : DirectLdParams) :
+private theorem directCombinedPrefactor_eq  :
     100000 * ((directLdAuxParameter D.combined : ℝ) ^ (2 : ℕ)) *
         (((D.m + D.k : ℕ) : ℝ) ^ (4 : ℕ)) =
       655360000000000000 * (((D.m + D.k : ℕ) : ℝ) ^ (10 : ℕ)) * ((D.d : ℝ) ^ (2 : ℕ)) := by
@@ -83,14 +84,13 @@ private theorem directCombinedPrefactor_eq (D : DirectLdParams) :
 /-- With the auxiliary sampling parameter of the combined parameters the
 exponential scale of the error of `thm:main-formal` collapses: the argument of
 its exponential term is exactly `(m + k) d`. -/
-private theorem directCombinedAux_exp_arg (D : DirectLdParams) :
+private theorem directCombinedAux_exp_arg  :
     (directLdAuxParameter D.combined : ℝ) /
         (2560000 * (((D.m + D.k : ℕ) : ℝ) ^ (2 : ℕ))) =
       ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) := by
   have hM : (1 : ℝ) ≤ ((D.m + D.k : ℕ) : ℝ) := by
     have h : 1 ≤ D.m + D.k := le_trans D.hm (Nat.le_add_right D.m D.k)
     exact_mod_cast h
-  have hMpos : (0 : ℝ) < ((D.m + D.k : ℕ) : ℝ) := lt_of_lt_of_le zero_lt_one hM
   have hne : (2560000 : ℝ) * (((D.m + D.k : ℕ) : ℝ) ^ (2 : ℕ)) ≠ 0 := ne_of_gt (by positivity)
   rw [directCombinedAux_cast, div_eq_iff hne]
   ring
@@ -116,7 +116,7 @@ private theorem directCombined_test_term_le {ε : ℝ} (hε0 : 0 < ε) (hε1 : �
 
 /-- The field term of the error of `thm:main-formal`, bounded by the polynomial
 `d` times `q^(-1/80000)`. -/
-private theorem directCombined_field_term_le (D : DirectLdParams) :
+private theorem directCombined_field_term_le  :
     Real.rpow ((D.d : ℝ) / (D.q : ℝ)) (1 / 40000) ≤
       (D.d : ℝ) * Real.rpow (D.q : ℝ) (-(1 / 80000)) := by
   have hd1 : (1 : ℝ) ≤ (D.d : ℝ) := by exact_mod_cast D.hd
@@ -136,7 +136,7 @@ private theorem directCombined_field_term_le (D : DirectLdParams) :
 /-- The exponential term of the error of `thm:main-formal` at the auxiliary
 sampling parameter of the combined parameters is `exp (-(m + k) d)`, hence at most the
 base-two decay `2^(-m d/80000)` of `deltaLd`. -/
-private theorem directCombined_exponential_term_le (D : DirectLdParams) :
+private theorem directCombined_exponential_term_le  :
     Real.exp (-(((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ))) ≤
       Real.rpow 2 (-((1 / 80000) * ((D.m * D.d : ℕ) : ℝ))) := by
   have hlog : Real.log 2 ≤ 1 := by
@@ -145,12 +145,10 @@ private theorem directCombined_exponential_term_le (D : DirectLdParams) :
   have hm0 : (0 : ℝ) ≤ (D.m : ℝ) := by positivity
   have hd0 : (0 : ℝ) ≤ (D.d : ℝ) := by positivity
   have hMm : (D.m : ℝ) ≤ ((D.m + D.k : ℕ) : ℝ) := by
-    have hk0 : (0 : ℝ) ≤ (D.k : ℝ) := by positivity
     push_cast
     linarith
   have hcast : ((D.m * D.d : ℕ) : ℝ) = (D.m : ℝ) * (D.d : ℝ) := by push_cast; ring
-  rw [hcast]
-  simp only [Real.rpow_eq_pow]
+  simp [Real.rpow_eq_pow]
   rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
   apply Real.exp_le_exp.mpr
   nlinarith [mul_le_mul_of_nonneg_right hMm hd0,
@@ -161,7 +159,7 @@ private theorem directCombined_exponential_term_le (D : DirectLdParams) :
 /-- The error of `thm:main-formal` at the combined parameters and the pass
 bound `30 ε`, bounded by an explicit polynomial in the parameters times the inner factor of
 `deltaLd` at the transport exponent `b = 1/80000`. -/
-private theorem mainFormalError_combined_le (D : DirectLdParams) {ε : ℝ}
+private theorem mainFormalError_combined_le  {ε : ℝ}
     (hε0 : 0 < ε) (hε1 : ε ≤ 1) :
     Test.mainFormalError D.combined.toLDTParameters
         (directLdAuxParameter D.combined) (3 * (10 * ε)) ≤
@@ -191,18 +189,16 @@ private theorem mainFormalError_combined_le (D : DirectLdParams) {ε : ℝ}
 /-- The recovery loss of `lem:ld-combining-recovery`, bounded by the polynomial
 `(m + k) d` times the inner factor of `deltaLd` at the transport exponent
 `b = 1/80000`. -/
-private theorem directCombinedRecoveryLoss_le (D : DirectLdParams) {ε : ℝ} (hε0 : 0 < ε) :
+private theorem directCombinedRecoveryLoss_le  {ε : ℝ} (hε0 : 0 < ε) :
     ((D.combined.m * D.d : ℕ) : ℝ) / (D.q : ℝ) ≤
       ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) * transportEnvelope D ε := by
   have hqn : 1 ≤ D.q := D.toLDTParameters.hq
   have hq1 : (1 : ℝ) ≤ (D.q : ℝ) := by exact_mod_cast hqn
   have hqpos : (0 : ℝ) < (D.q : ℝ) := by linarith
   have hcast : ((D.combined.m * D.d : ℕ) : ℝ) = ((D.m + D.k : ℕ) : ℝ) * (D.d : ℝ) := by
-    simp only [DirectLdParams.combined_m]
     push_cast
     ring
   have hqb : Real.rpow (D.q : ℝ) (1 / 80000) ≤ (D.q : ℝ) := by
-    simp only [Real.rpow_eq_pow]
     calc (D.q : ℝ) ^ ((1 : ℝ) / 80000) ≤ (D.q : ℝ) ^ (1 : ℝ) :=
           Real.rpow_le_rpow_of_exponent_le hq1 (by norm_num)
       _ = (D.q : ℝ) := Real.rpow_one _

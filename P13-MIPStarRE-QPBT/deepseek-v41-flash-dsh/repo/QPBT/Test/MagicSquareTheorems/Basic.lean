@@ -27,11 +27,13 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum
 
 noncomputable section
+variable (x y : MsType)
+
 
 /-- Symmetry of the Magic Square question distribution from blueprint
 `def:ms-game`, paper
 `08_classical_and_quantum_low_degree_tests.tex:512-610`. -/
-theorem msQuestionDistribution_symm (x y : MsType) :
+theorem msQuestionDistribution_symm  :
     msGame.μ.weight (x, y) = msGame.μ.weight (y, x) := by
   classical
   simp [msGame, graphDistribution, Sym2.eq_swap]
@@ -39,7 +41,7 @@ theorem msQuestionDistribution_symm (x y : MsType) :
 /-- Symmetry of the Magic Square decision predicate from blueprint
 `def:ms-game`, paper
 `08_classical_and_quantum_low_degree_tests.tex:512-610`. -/
-theorem msWinPredicate_symm (x y : MsType) (a b : MsAnswer) :
+theorem msWinPredicate_symm  (a b : MsAnswer) :
     msWinPredicate x y a b = msWinPredicate y x b a := by
   cases x <;> cases y <;> cases a <;> cases b <;>
     simp [msWinPredicate, and_comm, eq_comm]

@@ -41,7 +41,7 @@ theorem extracted_epr_actions_eq {I J V : Type*}
       applyOperatorToState (heteroKron (1 : Op (I × V)) (heteroKron (1 : Op J) T))
         (reindexState prodShuffle (vecTensor aux (eprState V))) := by
   ext p
-  simp only [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
+  simp [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
     Matrix.mulVec, dotProduct, Fintype.sum_prod_type]
   simp [heteroKron, Matrix.kronecker, Matrix.one_apply, reindexState, vecTensor,
     eprState, prodShuffle, mul_ite, ite_mul, Prod.ext_iff, ite_and]
@@ -70,7 +70,7 @@ theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
           (heteroKron ((A.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)
             ((B.postprocess (fun h => evalPoly (encodingPoly h) u)).effect a)))) +
         2 * ((P.m * P.d : ℝ) / P.q) + 4 * ‖theta - ideal‖ := by
-  dsimp only
+  dsimp
   let ideal := reindexState prodShuffle (vecTensor aux (eprState (PauliRegister P)))
   let B := rightPlacedMeasurement (ιA := J) (pauliRegisterMeas (params := P) W)
   have hideal : ‖ideal‖ = 1 := by
@@ -96,7 +96,7 @@ theorem pauli_distance_on_ideal_le {P : AdmissibleParams} {I J : Type*}
     rfl (fun h _ => congrArg (fun v => ‖v‖ ^ 2) (haction h))
   rw [hsum]
   have hoverlap := pauli_overlap_transfer A B theta ideal htheta hideal
-  simp only [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
+  simp [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
     placed_product_stateQForm_eq] at hdist
   exact hdist.trans (by dsimp [B] at hoverlap ⊢; linarith)
 

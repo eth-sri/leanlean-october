@@ -31,12 +31,14 @@ open MIPStarRE.Quantum MIPStarRE.QPBT.DistanceCalculus
 open scoped BigOperators Matrix MatrixOrder ComplexOrder
 
 noncomputable section
+variable {P : AdmissibleParams}
+
 
 /-- For arbitrary complete measurements on opposite placements, conditioning
 and question relabeling inflate the defect by at most the inverse retained mass.
 The needed nonnegativity follows from positivity on opposite registers, not a
 new input. Formalization-only support for `eq:pasting-q1`, paper lines 936--963. -/
-theorem consistencyDefect_nondegenerateLinePastingDist_le {P : AdmissibleParams} {ε : ℝ}
+theorem consistencyDefect_nondegenerateLinePastingDist_le  {ε : ℝ}
     {Outcome : Type*} [Fintype Outcome] [DecidableEq Outcome]
     (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopp : p1.IsOpposite p2)
     (first : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
@@ -98,7 +100,7 @@ theorem combined_points_conditioned_line_marginal_defect_le_explicit
         (fun pair => (some pair.2, some pair.1))).postprocess Prod.snd).effect answer =
         (((points.Q side pointX pointZ).postprocess
           (fun pair => (some pair.1, some pair.2))).postprocess Prod.fst).effect answer := by
-    simp only [MIPStarRE.Quantum.Measurement.postprocess_comp, and_self]
+    simp [MIPStarRE.Quantum.Measurement.postprocess_comp, and_self]
   simp_rw [(hswap _ _ _ _).1, (hswap _ _ _ _).2]
   have hmass := (prod_linePointDist_nondegenerate_mass_pos P.toLdParams).le
   constructor
@@ -110,7 +112,7 @@ theorem combined_points_conditioned_line_marginal_defect_le_explicit
         (combined_points_line_marginal_defect_le_explicit P ε δQ S points p1 p2 hopp).2
         hmass)
     unfold consistencyDefect nondegenerateLinePastingDist at h ⊢
-    simp only [Distribution.avgOver_map] at h ⊢
+    simp [Distribution.avgOver_map] at h ⊢
     exact h
   · have h := (consistencyDefect_nondegenerateLinePastingDist_le S p1 p2 hopp
       (fun sample => ((points.Q p1.side sample.1.2 sample.2.2).postprocess
@@ -120,7 +122,7 @@ theorem combined_points_conditioned_line_marginal_defect_le_explicit
         (combined_points_line_marginal_defect_le_explicit P ε δQ S points p1 p2 hopp).1
         hmass)
     unfold consistencyDefect nondegenerateLinePastingDist at h ⊢
-    simp only [Distribution.avgOver_map] at h ⊢
+    simp [Distribution.avgOver_map] at h ⊢
     exact h
 
 set_option maxHeartbeats 800000 in
@@ -129,8 +131,7 @@ set_option maxHeartbeats 800000 in
 and additive cost at most `1/(2q)`. This holds for the supplied measurement
 families on every directed opposite placement, without a defect hypothesis.
 Formalization-only support for `lem:qld-xz-lines`, paper lines 950--963. -/
-theorem consistencyDefect_le_nondegenerateLinePastingDist_add_mass
-    {P : AdmissibleParams} {ε : ℝ}
+theorem consistencyDefect_le_nondegenerateLinePastingDist_add_mass  {ε : ℝ}
     {Outcome : Type*} [Fintype Outcome] [DecidableEq Outcome]
     (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopp : p1.IsOpposite p2)
     (first : ((LineDesc P.toLdParams × (Fin P.m → PauliScalar P)) ×
@@ -167,7 +168,7 @@ theorem consistencyDefect_le_nondegenerateLinePastingDist_add_mass
         (linePointDist P.toLdParams)).weight sample) ≤
       1 / (2 * Fintype.card (ScalarQ P.toLdParams)) := by
     rw [Distribution.sum_filter_weight_eq_avgOver]
-    simpa only [ne_eq, not_not] using prod_linePointDist_zero_X_direction_mass_le P.toLdParams
+    simpa using prod_linePointDist_zero_X_direction_mass_le P.toLdParams
   have hfinal := h.trans (add_le_add_right hdiscard _)
   exact hfinal
 
@@ -177,8 +178,7 @@ not the final consistency estimate: its right side still contains the
 conditioned defect to be bounded by one-sided pasting. Source:
 `lem:qld-xz-lines`, paper `14_analysis_of_the_pauli_basis_test.tex:942-963`;
 remaining construction recorded in `docs/paper-gaps/qpbt_combined-lines-error-term.tex`. -/
-theorem ProjectiveSetting.combinedLineMeasurement_consistency_le_conditioned
-    {P : AdmissibleParams} {ε δQ : ℝ} (S : ProjectiveSetting P ε)
+theorem ProjectiveSetting.combinedLineMeasurement_consistency_le_conditioned  {ε δQ : ℝ} (S : ProjectiveSetting P ε)
     (points : CombinedPointsWitness S δQ)
     (p1 p2 : Placement) (hopp : p1.IsOpposite p2) :
     consistencyDefect (Distribution.prod (linePointDist P.toLdParams)

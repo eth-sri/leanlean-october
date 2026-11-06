@@ -154,7 +154,7 @@ theorem registeredMagicEdges_eq :
             (MIPStarRE.QPBT.MsType.var
               (MIPStarRE.QPBT.msConstraintVars ij.1 ij.2)))) := by
   ext e
-  simp only [MIPStarRE.QPBT.msEdges, Finset.mem_image, Finset.mem_filter,
+  simp [MIPStarRE.QPBT.msEdges, Finset.mem_image, Finset.mem_filter,
     Finset.mem_univ, true_and, Prod.exists, Sym2.eq_iff]
   constructor
   · rintro ⟨a, b, hab, he⟩
@@ -282,15 +282,17 @@ def pauliQuestionPairEquiv (P : MIPStarRE.QPBT.AdmissibleParams) :
         PauliQuestion (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) ≃
       (MIPStarRE.QPBT.PauliQuestion P × MIPStarRE.QPBT.PauliQuestion P) :=
   Equiv.prodCongr (pauliQuestionEquiv P) (pauliQuestionEquiv P)
+variable (P : MIPStarRE.QPBT.AdmissibleParams)
+
 
 /-- The compact Pauli parameters select exactly the registered low-degree tuple. -/
-theorem pauliLowDegreeParams_eq (P : MIPStarRE.QPBT.AdmissibleParams) :
+theorem pauliLowDegreeParams_eq  :
     (PauliParams.ofAdmissibleParams P).toLowDegreeParams =
       LowDegreeParams.ofLdParams P.toLdParams := by
   rfl
 
 /-- The published low-degree map bridge specialized to the Pauli parameters. -/
-theorem pauliLowDegreeMap_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
+theorem pauliLowDegreeMap_equiv 
     (t : LowDegreeType)
     (z : LowDegreeSpace (PauliParams.ofAdmissibleParams P).toLowDegreeParams
       (MIPStarRE.QPBT.PauliScalar P)) :
@@ -301,18 +303,18 @@ theorem pauliLowDegreeMap_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
         (lowDegreeSpaceEquiv P.toLdParams z) := by
   cases pauliLowDegreeParams_eq P
   exact lowDegreeMap_equiv P.toLdParams t z
+variable (W : PauliKind)
+
 
 /-- Reading the selected compact point block commutes with the space equivalence. -/
-@[simp] theorem pauliSpaceEquiv_pointBlock (P : MIPStarRE.QPBT.AdmissibleParams)
-    (W : PauliKind)
+@[simp] theorem pauliSpaceEquiv_pointBlock 
     (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
     MIPStarRE.QPBT.pauliPointBlock (pauliKindEquiv W) (pauliSpaceEquiv P z) =
       pauliPointBlock W z := by
   cases W <;> rfl
 
 /-- Restriction to one low-degree block commutes with the coordinate equivalence. -/
-theorem pauliLowDegreeSpace_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
-    (W : PauliKind)
+theorem pauliLowDegreeSpace_equiv 
     (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
     lowDegreeSpaceEquiv P.toLdParams (pauliLowDegreeSpace W z) =
       MIPStarRE.QPBT.pauliToLd P (pauliKindEquiv W) (pauliSpaceEquiv P z) := by
@@ -320,8 +322,7 @@ theorem pauliLowDegreeSpace_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
   rcases i with (i | u) | i <;> cases W <;> rfl
 
 /-- Embedding one low-degree block commutes with the coordinate equivalence. -/
-theorem pauliEmbedLowDegree_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
-    (W : PauliKind)
+theorem pauliEmbedLowDegree_equiv 
     (z : LowDegreeSpace (PauliParams.ofAdmissibleParams P).toLowDegreeParams
       (MIPStarRE.QPBT.PauliScalar P)) :
     pauliSpaceEquiv P (pauliEmbedLowDegree W z) =
@@ -331,8 +332,7 @@ theorem pauliEmbedLowDegree_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
   rcases i with ((((i | i) | u) | i) | u) | u <;> cases W <;> rfl
 
 /-- A basis-selected compact low-degree map commutes with ambient embedding. -/
-theorem pauliEmbeddedLowDegreeMap_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
-    (W : PauliKind) (t : LowDegreeType)
+theorem pauliEmbeddedLowDegreeMap_equiv  (t : LowDegreeType)
     (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
     pauliSpaceEquiv P (pauliEmbedLowDegree W
         (lowDegreeMap (PauliParams.ofAdmissibleParams P).toLowDegreeParams
@@ -352,17 +352,20 @@ theorem pauliEmbeddedLowDegreeMap_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
     _ = MIPStarRE.QPBT.ldCL P.toLdParams (lowDegreeTypeEquiv t)
         (MIPStarRE.QPBT.pauliToLd P (pauliKindEquiv W) (pauliSpaceEquiv P z)) := by
       rw [pauliLowDegreeSpace_equiv]
+variable (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P))
+
 
 /-- The shared four-register projection commutes with the space equivalence. -/
-theorem pauliSharedProjection_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
-    (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
+theorem pauliSharedProjection_equiv  :
     pauliSpaceEquiv P (z.1, z.2.1, 0, 0, z.2.2.2.2.1, z.2.2.2.2.2) =
       MIPStarRE.QPBT.pauliSharedProjection (pauliSpaceEquiv P z) := by
   funext i
   rcases i with ((((i | i) | u) | i) | u) | u <;> rfl
+variable (t : PauliType)
+
 
 /-- Every compact Pauli question map is the registered map in product coordinates. -/
-theorem pauliMap_equiv (P : MIPStarRE.QPBT.AdmissibleParams) (t : PauliType)
+theorem pauliMap_equiv 
     (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
     pauliSpaceEquiv P
         (pauliMap (PauliParams.ofAdmissibleParams P)
@@ -388,7 +391,7 @@ theorem pauliMap_equiv (P : MIPStarRE.QPBT.AdmissibleParams) (t : PauliType)
       exact pauliSharedProjection_equiv P z
 
 /-- The compact question PMF is exactly the registered question distribution. -/
-theorem pauliQuestionPMF_map (P : MIPStarRE.QPBT.AdmissibleParams) :
+theorem pauliQuestionPMF_map  :
     (pauliQuestionPMF (PauliParams.ofAdmissibleParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model)).map (pauliQuestionPairEquiv P) =
       (MIPStarRE.QPBT.pauliBasisTest P).μ.toPMF
@@ -417,9 +420,7 @@ theorem pauliQuestionPMF_map (P : MIPStarRE.QPBT.AdmissibleParams) :
       · exact pauliMap_equiv P s.1.1.2 s.2
   rw [show pauliQuestionPMF (PauliParams.ofAdmissibleParams P)
       (MIPStarRE.QPBT.binaryRepresentation P.model) =
-        (PMF.uniformOfFintype _).map compactMap by rfl]
-  rw [PMF.map_comp, hcomm, ← PMF.map_comp]
-  rw [PMF.uniformOfFintype_map_equiv (pauliSourceEquiv P)]
+        (PMF.uniformOfFintype _).map compactMap by rfl, PMF.map_comp, hcomm, ← PMF.map_comp, PMF.uniformOfFintype_map_equiv (pauliSourceEquiv P)]
   have hmap :=
     (MIPStarRE.LDT.Distribution.toPMF_map
       (MIPStarRE.LDT.uniformDistribution
@@ -462,7 +463,7 @@ theorem pauliQuestionPMF_map (P : MIPStarRE.QPBT.AdmissibleParams) :
   rfl
 
 /-- The compact balanced coordinate map is the registered `chiIndex`. -/
-@[simp] theorem pauliChiIndex_eq (P : MIPStarRE.QPBT.AdmissibleParams)
+@[simp] theorem pauliChiIndex_eq 
     (s : MIPStarRE.QPBT.PauliScalar P) :
     pauliChiIndex (PauliParams.ofAdmissibleParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model) s =
@@ -477,8 +478,7 @@ theorem pauliQuestionPMF_map (P : MIPStarRE.QPBT.AdmissibleParams) :
   (MIPStarRE.QPBT.indicatorVec_apply_eq_prod x y).symm
 
 /-- The complete compact indicator vector is the registered indicator vector. -/
-@[simp] theorem pauliIndicator_fun_eq_indicatorVec
-    (P : MIPStarRE.QPBT.AdmissibleParams)
+@[simp] theorem pauliIndicator_fun_eq_indicatorVec 
     (x : Fin P.m → MIPStarRE.QPBT.PauliScalar P) :
     pauliIndicator (P := PauliParams.ofAdmissibleParams P) x =
       MIPStarRE.QPBT.indicatorVec x := by
@@ -486,7 +486,7 @@ theorem pauliQuestionPMF_map (P : MIPStarRE.QPBT.AdmissibleParams) :
   exact pauliIndicator_eq_indicatorVec P x y
 
 /-- The compact multilinear encoding is the registered low-degree encoding. -/
-@[simp] theorem pauliEncoded_eq_lowDegreeEnc (P : MIPStarRE.QPBT.AdmissibleParams)
+@[simp] theorem pauliEncoded_eq_lowDegreeEnc 
     (h : (Fin P.m → Bool) → MIPStarRE.QPBT.PauliScalar P)
     (x : Fin P.m → MIPStarRE.QPBT.PauliScalar P) :
     pauliEncoded (P := PauliParams.ofAdmissibleParams P) h x =
@@ -495,8 +495,7 @@ theorem pauliQuestionPMF_map (P : MIPStarRE.QPBT.AdmissibleParams) :
   simp [pauliEncoded, pauliIndicator_fun_eq_indicatorVec]
 
 /-- The compact phase gate is exactly the registered Pauli pair gamma bit. -/
-@[simp] theorem pauliGamma_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
-    (z : PauliSpace (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
+@[simp] theorem pauliGamma_equiv  :
     pauliGamma (MIPStarRE.QPBT.fixedBinTrace P.model) z =
       MIPStarRE.QPBT.pauliPairGamma P (pauliSpaceEquiv P z) := by
   simp only [pauliGamma, MIPStarRE.QPBT.pauliPairGamma, MIPStarRE.QPBT.gammaValue,
@@ -511,8 +510,7 @@ theorem pauliQuestionPMF_map (P : MIPStarRE.QPBT.AdmissibleParams) :
   rfl
 
 /-- Answer-shape rejection is unchanged by the constructor equivalence. -/
-theorem validPauliAnswer_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
-    (t : PauliType)
+theorem validPauliAnswer_equiv 
     (a : PauliAnswer (PauliParams.ofAdmissibleParams P) (MIPStarRE.QPBT.PauliScalar P)) :
     validPauliAnswer t a =
       MIPStarRE.QPBT.validPauliAnswer (pauliTypeEquiv t) (pauliAnswerEquivCompact P a) := by
@@ -524,7 +522,7 @@ set_option maxRecDepth 10000 in
 set_option maxHeartbeats 4000000 in
 -- The proof checks all well-formed question/answer constructor pairs explicitly.
 /-- The compact Boolean verifier is exactly the registered verifier after relabeling. -/
-theorem pauliWin_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
+theorem pauliWin_equiv 
     (x y : PauliQuestion (PauliParams.ofAdmissibleParams P)
       (MIPStarRE.QPBT.PauliScalar P))
     (a b : PauliAnswer (PauliParams.ofAdmissibleParams P)
@@ -543,13 +541,13 @@ theorem pauliWin_equiv (P : MIPStarRE.QPBT.AdmissibleParams)
   by_cases hv : (validPauliAnswer tA a && validPauliAnswer tB b) = true
   · rw [if_pos hv, if_pos hv]
     by_cases ht : tA = tB
-    · have ht' : pauliTypeEquiv tA = pauliTypeEquiv tB := congrArg pauliTypeEquiv ht
+    · have ht' := congrArg pauliTypeEquiv ht
       rw [if_pos ht, if_pos ht']
       apply decide_eq_decide.mpr
       constructor
       · exact fun h => congrArg (pauliAnswerEquivCompact P) h
       · exact fun h => (pauliAnswerEquivCompact P).injective h
-    · have ht' : pauliTypeEquiv tA ≠ pauliTypeEquiv tB :=
+    · have ht' :=
         fun h => ht (pauliTypeEquiv.injective h)
       rw [if_neg ht, if_neg ht']
       obtain ⟨hvA, hvB⟩ := Bool.and_eq_true_iff.mp hv

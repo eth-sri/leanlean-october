@@ -39,12 +39,14 @@ open MIPStarRE.LDT
 open MIPStarRE.Quantum
 
 noncomputable section
+variable (L : LdParams)
+
 
 /-- Canonicalizing the seeded embedding of a canonical direct sample gives the
 canonical seeded sample of the original direct sample: the seed-indexed
 question asked in a residue block of the dilation is the seed-indexed
 question of the common sample carrying that residue. -/
-theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
+theorem ldCL_ldSpaceOfDirectResidue_directLdMap  (t : LdType)
     (sample : DirectLdSpace L.toDirectLdParams) (residue : Fin (L.q / L.m)) :
     ldCL L t (ldSpaceOfDirectResidue L
         (directLdMap L.toDirectLdParams t sample) residue) =
@@ -56,7 +58,7 @@ theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
   | aline =>
       funext idx
       rcases idx with (j | ⟨⟩) | j
-      · simp only [ldCL, ldALineCL, ldSpaceOfDirectResidue_point,
+      · simp [ldCL, ldALineCL, ldSpaceOfDirectResidue_point,
           ldSpaceOfDirectResidue_seed, directLdMap, chiIndex_seedOfIndexResidue]
         exact congrFun (lineRepMap_apply_self _ _) j
       · rfl
@@ -64,7 +66,7 @@ theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
   | dline =>
       funext idx
       rcases idx with (j | ⟨⟩) | j
-      · simp only [ldCL, ldDLineCL, ldSpaceOfDirectResidue_point,
+      · simp [ldCL, ldDLineCL, ldSpaceOfDirectResidue_point,
           ldSpaceOfDirectResidue_seed, ldSpaceOfDirectResidue_direction, directLdMap,
           chiIndex_seedOfIndexResidue]
         change lineRepMap
@@ -76,7 +78,7 @@ theorem ldCL_ldSpaceOfDirectResidue_directLdMap (L : LdParams) (t : LdType)
         rw [directPrefixProjection_idem]
         exact congrFun (lineRepMap_apply_self _ _) j
       · rfl
-      · simp only [ldCL, ldDLineCL, ldSpaceOfDirectResidue_seed,
+      · simp [ldCL, ldDLineCL, ldSpaceOfDirectResidue_seed,
           ldSpaceOfDirectResidue_direction, directLdMap, chiIndex_seedOfIndexResidue]
         change directPrefixProjection sample.index
             (directPrefixProjection sample.index sample.direction) j =
@@ -94,12 +96,13 @@ private def directAcceptedMass (D : DirectLdParams) (S : Strategy (directLdGame 
     (x y : DirectLdQuestion D) : ℝ :=
   ∑ a : DirectLdAnswer D, ∑ b : DirectLdAnswer D,
     if directLdWinPredicate D x y a b then outcomeWeight S x y a b else 0
+variable (S : Strategy (ldGame L))
+
 
 /-- At the canonical direct questions of a common direct sample, the accepted
 mass of the dilation is the uniform residue average of the accepted mass of
 the original strategy at the seeded canonical questions. -/
-private theorem directAcceptedMass_ldStrategyToDirect (L : LdParams)
-    (S : Strategy (ldGame L)) (tA tB : LdType)
+private theorem directAcceptedMass_ldStrategyToDirect  (tA tB : LdType)
     (sample : DirectLdSpace L.toDirectLdParams) :
     directAcceptedMass L.toDirectLdParams (ldStrategyToDirect L S)
         (tA, directLdMap L.toDirectLdParams tA sample)
@@ -148,7 +151,6 @@ private theorem directAcceptedMass_ldStrategyToDirect (L : LdParams)
     rw [← Equiv.sum_comp (ldDirectAnswerEquiv L).symm]
     refine Finset.sum_congr rfl fun b' _ => ?_
     rw [hwin residue a' b']
-  unfold directAcceptedMass
   simp only [hmass]
   calc
     ∑ a' : DirectLdAnswer L.toDirectLdParams,
@@ -219,7 +221,7 @@ value of `S`.  Both values are averages over the ordered type pair and the
 common sample; the direct sample together with a uniform residue is the
 seed-indexed sample, and the dilation realizes, in each residue block, the
 original strategy at the seed-indexed questions of that sample. -/
-theorem ldStrategyToDirect_value_eq (L : LdParams) (S : Strategy (ldGame L)) :
+theorem ldStrategyToDirect_value_eq  :
     (ldStrategyToDirect L S).value = S.value := by
   classical
   letI : Nonempty (Fin (L.q / L.m)) :=
@@ -235,7 +237,7 @@ theorem ldStrategyToDirect_value_eq (L : LdParams) (S : Strategy (ldGame L)) :
   unfold directLdQuestionDistribution ldQuestionDistribution
   rw [Distribution.avgOver_map, Distribution.avgOver_map,
     avgOver_uniform_equiv (ldQuestionSeedFiberEquiv L)]
-  simp only [hsymm]
+  simp [hsymm]
   rw [avgOver_uniform_prod (fun (src : (LdType × LdType) × DirectLdSpace L.toDirectLdParams)
       (residue : Fin (L.q / L.m)) =>
       ldAcceptedMass L S

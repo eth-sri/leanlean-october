@@ -48,7 +48,7 @@ def ProjectiveSetting.combinedLineMeasurement {P : AdmissibleParams} {ε : ℝ}
       have hsum := (pastedMeasurement_isMeasurement
         (S.lineMeasExp side .Z lineZ) (S.lineMeasExp side .X lineX)
         (S.lineMeasExp_isProjective side .X lineX)).2
-      simp only [pastedMeasurement, Fintype.sum_prod_type] at hsum ⊢
+      simp [pastedMeasurement, Fintype.sum_prod_type] at hsum ⊢
       rw [Finset.sum_comm]
       exact hsum)
 
@@ -73,27 +73,23 @@ theorem ProjectiveSetting.combinedLineMeasurement_effect_eq_pastedMeasurement
     (S.combinedLineMeasurement side lineX lineZ).effect (fX, fZ) =
       pastedMeasurement (S.lineMeasExp side .Z lineZ).effect
         (S.lineMeasExp side .X lineX).effect fZ fX := rfl
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (side : PlayerSide) (lineX lineZ : LineDesc P.toLdParams) (fX fZ : DegPoly P.toLdParams (P.m * P.d))
+
 
 /-- The X-axis degree bound for the constructed POVM, from the support
 argument at paper `14_analysis_of_the_pauli_basis_test.tex:949`. -/
-theorem ProjectiveSetting.combinedLineMeasurement_axis_degree_X
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (lineX lineZ : LineDesc P.toLdParams)
-    (fX fZ : DegPoly P.toLdParams (P.m * P.d))
+theorem ProjectiveSetting.combinedLineMeasurement_axis_degree_X 
     (haxis : lineX.kind = .axis) (hf : ¬ fX.FitsDegree P.d) :
     (S.combinedLineMeasurement side lineX lineZ).effect (fX, fZ) = 0 := by
-  simp only [S.combinedLineMeasurement_effect, S.lineMeasExp_effect,
+  simp [S.combinedLineMeasurement_effect, S.lineMeasExp_effect,
     S.expLineOp_zero_of_not_deg_d side .X lineX haxis fX hf, zero_mul]
 
 /-- The Z-axis degree bound for the constructed POVM, from the support
 argument at paper `14_analysis_of_the_pauli_basis_test.tex:949`. -/
-theorem ProjectiveSetting.combinedLineMeasurement_axis_degree_Z
-    {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (lineX lineZ : LineDesc P.toLdParams)
-    (fX fZ : DegPoly P.toLdParams (P.m * P.d))
+theorem ProjectiveSetting.combinedLineMeasurement_axis_degree_Z 
     (haxis : lineZ.kind = .axis) (hf : ¬ fZ.FitsDegree P.d) :
     (S.combinedLineMeasurement side lineX lineZ).effect (fX, fZ) = 0 := by
-  simp only [S.combinedLineMeasurement_effect, S.lineMeasExp_effect,
+  simp [S.combinedLineMeasurement_effect, S.lineMeasExp_effect,
     S.expLineOp_zero_of_not_deg_d side .Z lineZ haxis fZ hf, mul_zero, zero_mul]
 
 end

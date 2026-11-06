@@ -100,10 +100,15 @@ retains the affine compatibility proof without choosing any substitute lines. -/
 abbrev SubLineWitness.Fiber {params : AdmissibleParams} (sublines : SubLineWitness params)
     (line : DirectLineDesc params.extendedDirectLd) :=
   ↥(sublines.D.support.filter (fun sample => sample.1 = line))
+variable {params : AdmissibleParams}
+variable (sublines : SubLineWitness params)
+variable (line : DirectLineDesc params.extendedDirectLd)
+
+
+
 
 /-- The mass of a subline fiber is positive by the prescribed extended marginal. -/
-theorem SubLineWitness.fiber_mass_pos {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (line : DirectLineDesc params.extendedDirectLd) :
+theorem SubLineWitness.fiber_mass_pos  :
     0 < (sublines.D.map Prod.fst).weight line := by
   rw [sublines.extended_marginal]
   exact directLinePointDist_line_weight_pos _ _
@@ -120,8 +125,7 @@ def SubLineWitness.conditionalLaw {params : AdmissibleParams}
   outsideSupport sample hnot := (hnot (Finset.mem_univ sample)).elim
 
 /-- Conditioning on an extended line preserves total mass one. -/
-theorem SubLineWitness.conditionalLaw_isProbability {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (line : DirectLineDesc params.extendedDirectLd) :
+theorem SubLineWitness.conditionalLaw_isProbability  :
     (sublines.conditionalLaw line).IsProbability := by
   change (∑ sample : sublines.Fiber line,
     sublines.D.weight sample.val / (sublines.D.map Prod.fst).weight line) = 1
@@ -130,8 +134,7 @@ theorem SubLineWitness.conditionalLaw_isProbability {params : AdmissibleParams}
 
 /-- Supported subline triples supply all eight affine coordinates in the
 polynomial combination formula; the choice is only of proved compatible data. -/
-private theorem SubLineWitness.exists_affineData {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+private theorem SubLineWitness.exists_affineData  (sample : SubLineTriple params)
     (hsample : sample ∈ sublines.D.support) :
     ∃ data : Fin 8 → PauliScalar params,
       IsCombineLineCompatible (directPointToPauli params sample.1.base)
@@ -193,7 +196,7 @@ def SubLineWitness.extendedMeasurement {params : AdmissibleParams}
   have hsum : (∑ polynomial, averageOperatorOverDistribution (sublines.conditionalLaw line)
       (fun sample => (family sample).effect polynomial)) = 1 := by
     rw [← averageOperatorOverDistribution_sum]
-    simp only [Quantum.Measurement.sum_eq_one]
+    simp [Quantum.Measurement.sum_eq_one]
     exact averageOperatorOverDistribution_const_of_isProbability _
       (sublines.conditionalLaw_isProbability line) 1
   exact { effect := fun polynomial => averageOperatorOverDistribution
@@ -205,13 +208,12 @@ def SubLineWitness.extendedMeasurement {params : AdmissibleParams}
 
 /-- Integrating the conditional law recovers the original subline law.
 This is finite disintegration, not an independence assertion about projections. -/
-theorem SubLineWitness.avgOver_conditionalLaw {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (quantity : SubLineTriple params → ℝ) :
+theorem SubLineWitness.avgOver_conditionalLaw  (quantity : SubLineTriple params → ℝ) :
     avgOver (sublines.D.map Prod.fst) (fun line =>
       avgOver (sublines.conditionalLaw line) (fun sample => quantity sample.val)) =
         avgOver sublines.D quantity := by
   classical
-  simp only [avgOver, SubLineWitness.conditionalLaw]
+  simp [avgOver, SubLineWitness.conditionalLaw]
   calc
     (∑ line ∈ (sublines.D.map Prod.fst).support,
         (sublines.D.map Prod.fst).weight line *
@@ -250,7 +252,7 @@ private theorem directEvalOpt_eq_some_of_evaluatesTo {params : DirectLdParams} {
     (heval.2 parameter hparameter))
 
 /-- Evaluation commutes with the canonical scalar identification. -/
-private theorem evalCoefficient_extendedScalar {params : AdmissibleParams} {bound : ℕ}
+private theorem evalCoefficient_extendedScalar  {bound : ℕ}
     (polynomial : DirectDegPoly params.extendedDirectLd bound)
     (parameter : DirectScalarQ params.extendedDirectLd) :
     extendedDirectScalarEquiv params (evalCoefficient polynomial parameter) =
@@ -262,8 +264,7 @@ private theorem evalCoefficient_extendedScalar {params : AdmissibleParams} {boun
 polynomial has the required determined value at the extended point. This also
 covers zero-direction lines: every parameter is checked, rather than selecting
 one parameter or assigning a field-valued fallback. -/
-theorem SubLineWitness.combinedPolynomial_evaluatesTo {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.combinedPolynomial_evaluatesTo  (sample : SubLineTriple params)
     (hsample : sample ∈ sublines.D.support)
     (polynomials : DegPoly params.toLdParams (params.m * params.d) ×
       DegPoly params.toLdParams (params.m * params.d))
@@ -296,17 +297,16 @@ theorem SubLineWitness.combinedPolynomial_evaluatesTo {params : AdmissibleParams
   have hvalueZ := hevalZ.2 _ (hpointTransport ▸ hformula.2.1)
   apply (extendedDirectScalarEquiv params).injective
   rw [evalCoefficient_extendedScalar, RingEquiv.apply_symm_apply]
-  simp only [SubLineWitness.combinedPolynomial, RingEquiv.apply_symm_apply]
+  simp [SubLineWitness.combinedPolynomial, RingEquiv.apply_symm_apply]
   rw [hformula.2.2]
   erw [hvalueX, hvalueZ]
   rw [hpointTransport]
-  simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+  simp [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
   rw [hcompat.1, hcompat.2.1, hcompat.2.2.1, hcompat.2.2.2.1]
 
 /-- Completed evaluation of the actual combination agrees with the source
 linear combination whenever both source evaluations are defined. -/
-theorem SubLineWitness.combinedPolynomial_evalOpt {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.combinedPolynomial_evalOpt  (sample : SubLineTriple params)
     (hsample : sample ∈ sublines.D.support)
     (polynomials : DegPoly params.toLdParams (params.m * params.d) ×
       DegPoly params.toLdParams (params.m * params.d))
@@ -324,10 +324,13 @@ theorem SubLineWitness.combinedPolynomial_evalOpt {params : AdmissibleParams}
     (sublines.combinedPolynomial_evaluatesTo sample hsample polynomials point hpoint valueX valueZ
       ((evalOpt_eq_some_iff _ _ _ _).mp hevalX) ((evalOpt_eq_some_iff _ _ _ _).mp hevalZ))]
   simp
+variable {Scalar : Type*} [Field Scalar]
+variable {bound degree : ℕ}
+
+
 
 /-- Coefficient support bounds the degree of the represented polynomial. -/
-private theorem linePolynomial_natDegree_le_of_coefficients {Scalar : Type*}
-    [Field Scalar] {bound degree : ℕ} (polynomial : Fin (bound + 1) → Scalar)
+private theorem linePolynomial_natDegree_le_of_coefficients  (polynomial : Fin (bound + 1) → Scalar)
     (hdegree : ∀ index, degree < index.val → polynomial index = 0) :
     (linePolynomialOfCoefficients polynomial).natDegree ≤ degree := by
   apply Polynomial.natDegree_sum_le_of_forall_le
@@ -341,7 +344,7 @@ private theorem linePolynomial_natDegree_le_of_coefficients {Scalar : Type*}
   · simp [hdegree index (Nat.lt_of_not_ge hindex)]
 
 /-- Affine substitution preserves a degree bound. -/
-private theorem affine_comp_natDegree_le {Scalar : Type*} [Field Scalar]
+private theorem affine_comp_natDegree_le 
     (polynomial : Polynomial Scalar) (offset slope : Scalar) {degree : ℕ}
     (hdegree : polynomial.natDegree ≤ degree) :
     (polynomial.comp (Polynomial.C offset + Polynomial.C slope * Polynomial.X)).natDegree ≤
@@ -355,7 +358,7 @@ private theorem affine_comp_natDegree_le {Scalar : Type*} [Field Scalar]
 /-- The source combination has degree at most `degree` on an axis line:
 either the two scalar coordinates are constant, or both projected parameters
 are constant. This is the algebraic assertion at paper lines 1127--1132. -/
-theorem combineLinePoly_axis_degree {Scalar : Type*} [Field Scalar] {bound degree : ℕ}
+theorem combineLinePoly_axis_degree 
     (hdegree : 1 ≤ degree) (data : Fin 8 → Scalar)
     (polynomialX polynomialZ : Fin (bound + 1) → Scalar)
     (hdegreeX : ∀ index, degree < index.val → polynomialX index = 0)
@@ -373,10 +376,10 @@ theorem combineLinePoly_axis_degree {Scalar : Type*} [Field Scalar] {bound degre
     · simp only [halpha, hbeta, Polynomial.C_0, zero_mul, add_zero]
       refine (Polynomial.natDegree_add_le _ _).trans (max_le ?_ ?_)
       · refine Polynomial.natDegree_mul_le.trans ?_
-        simpa only [Polynomial.natDegree_C, Nat.zero_add] using
+        simpa using
           (affine_comp_natDegree_le _ (data 0) (data 1) hpolyX)
       · refine Polynomial.natDegree_mul_le.trans ?_
-        simpa only [Polynomial.natDegree_C, Nat.zero_add] using
+        simpa using
           (affine_comp_natDegree_le _ (data 2) (data 3) hpolyZ)
     · simp only [hparamX, hparamZ, Polynomial.C_0, zero_mul, add_zero, Polynomial.comp_C]
       have hterm (constant slope value : Scalar) :
@@ -401,7 +404,7 @@ private theorem source_axis_direction_ne_zero {params : LdParams}
   | diagonal => cases haxis
 
 /-- Two equal points on a nonzero affine direction force the parameter slope to vanish. -/
-private theorem affine_slope_eq_zero {Scalar : Type*} [Field Scalar] {dimension : ℕ}
+private theorem affine_slope_eq_zero  {dimension : ℕ}
     {point base direction : Fin dimension → Scalar} {offset slope : Scalar}
     (hdirection : direction ≠ 0) (hzero : point = base + offset • direction)
     (hone : point = base + (offset + slope) • direction) : slope = 0 := by
@@ -412,8 +415,7 @@ private theorem affine_slope_eq_zero {Scalar : Type*} [Field Scalar] {dimension 
   exact (smul_eq_zero.mp hvanish).resolve_right hdirection
 
 /-- Axis subline coordinates satisfy the source's constant-coordinate alternative. -/
-theorem SubLineWitness.affineData_axis {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.affineData_axis  (sample : SubLineTriple params)
     (hsample : sample ∈ sublines.D.support) (haxis : sample.1.kind = .axis) :
     let data := sublines.affineData sample hsample
     (data 5 = 0 ∧ data 7 = 0) ∨ (data 1 = 0 ∧ data 3 = 0) := by
@@ -438,8 +440,8 @@ theorem SubLineWitness.affineData_axis {params : AdmissibleParams}
         exact ⟨projX_coordinateDirection_betaVar, projZ_coordinateDirection_betaVar⟩
     have hzero := hcompat.2.2.2.2 (0 : PauliScalar params)
     have hone := hcompat.2.2.2.2 (1 : PauliScalar params)
-    simp only [zero_smul, add_zero, mul_zero] at hzero
-    simp only [one_smul, mul_one, projX_add, projZ_add, hprojection.1, hprojection.2,
+    simp [zero_smul, add_zero, mul_zero] at hzero
+    simp [one_smul, mul_one, projX_add, projZ_add, hprojection.1, hprojection.2,
       add_zero] at hone
     exact ⟨affine_slope_eq_zero (Scalar := PauliScalar params)
       (source_axis_direction_ne_zero _ hsource.1) hzero.1 hone.1,
@@ -452,8 +454,7 @@ theorem SubLineWitness.affineData_axis {params : AdmissibleParams}
     simp [coordinateDirection, halpha, hbeta]
 
 /-- The actual polynomial combination preserves the source axis-degree support. -/
-theorem SubLineWitness.combinedPolynomial_axis_degree {params : AdmissibleParams}
-    (sublines : SubLineWitness params) (sample : SubLineTriple params)
+theorem SubLineWitness.combinedPolynomial_axis_degree  (sample : SubLineTriple params)
     (hsample : sample ∈ sublines.D.support) (haxis : sample.1.kind = .axis)
     (polynomials : DegPoly params.toLdParams (params.m * params.d) ×
       DegPoly params.toLdParams (params.m * params.d))
@@ -471,7 +472,7 @@ theorem SubLineWitness.combinedPolynomial_axis_degree {params : AdmissibleParams
 
 /-- The conditional average of the actual paired-line POVMs has no outcomes
 above degree `d` on an extended axis line, as asserted at paper lines 1127--1132. -/
-theorem SubLineWitness.extendedMeasurement_axis_degree {params : AdmissibleParams}
+theorem SubLineWitness.extendedMeasurement_axis_degree 
     {error pointError lineError : ℝ} {setting : ProjectiveSetting params error}
     {points : CombinedPointsWitness setting pointError}
     (sublines : SubLineWitness params) (lines : CombinedLinesWitness setting points lineError)

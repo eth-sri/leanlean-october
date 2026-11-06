@@ -29,12 +29,14 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum DistanceCalculus
 
 noncomputable section
+variable {P : AdmissibleParams}
+variable {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG) (W : PauliKind)
+
+
 
 /-- The Alice evaluation defect is bounded by the supplied global consistency
 error, with no decoder correction or non-encoding mass term. -/
-theorem pullingMeas_eval_point_consistent_alice {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem pullingMeas_eval_point_consistent_alice  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u a => S.placeSide .alice
         (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a))
@@ -59,13 +61,12 @@ theorem pullingMeas_eval_point_consistent_alice {P : AdmissibleParams}
     apply congrArg (1 - ·)
     apply avgOver_congr
     intro u
-    simp only [pulled, point, marginal, expanded, ProjectiveSetting.blockMeasurement_effect,
+    simp [pulled, point, marginal, expanded, ProjectiveSetting.blockMeasurement_effect,
       ProjectiveSetting.placedMeasurement_effect]
     change (∑ a, stateQForm S.psiHat (S.placeSide .alice
       (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a) *
       S.placePlayer .bob ((S.pointMeas .bob W u).effect a))) = _
-    rw [← stateQForm_finset_sum, sum_pullingMeas_eval_mul_pointMeas]
-    rw [← stateQForm_finset_sum]
+    rw [← stateQForm_finset_sum, sum_pullingMeas_eval_mul_pointMeas, ← stateQForm_finset_sum]
     exact congrArg (stateQForm S.psiHat)
       (sum_marginalPoly_eval_mul w .AA' W u
         (fun a => S.place .BA'' ((S.pointMeasExp .bob W u).effect a))).symm
@@ -76,9 +77,7 @@ theorem pullingMeas_eval_point_consistent_alice {P : AdmissibleParams}
 
 /-- Bob's evaluation defect has the same bound, using the Bob point-consistency
 estimate of the supplied witness and its `BB'`--`AB''` placements. -/
-theorem pullingMeas_eval_point_consistent_bob {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem pullingMeas_eval_point_consistent_bob  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob
@@ -103,13 +102,12 @@ theorem pullingMeas_eval_point_consistent_bob {P : AdmissibleParams}
     apply congrArg (1 - ·)
     apply avgOver_congr
     intro u
-    simp only [pulled, point, marginal, expanded, ProjectiveSetting.blockMeasurement_effect,
+    simp [pulled, point, marginal, expanded, ProjectiveSetting.blockMeasurement_effect,
       ProjectiveSetting.placedMeasurement_effect]
     change (∑ a, stateQForm S.psiHat
       (S.placePlayer .alice ((S.pointMeas .alice W u).effect a) * S.placeSide .bob
         (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a))) = _
-    rw [← stateQForm_finset_sum, sum_pointMeas_mul_pullingMeas_eval]
-    rw [← stateQForm_finset_sum]
+    rw [← stateQForm_finset_sum, sum_pointMeas_mul_pullingMeas_eval, ← stateQForm_finset_sum]
     exact congrArg (stateQForm S.psiHat)
       (sum_marginalPoly_eval_mul w .BB' W u
         (fun a => S.place .AB'' ((S.pointMeasExp .alice W u).effect a))).symm
@@ -121,7 +119,7 @@ theorem pullingMeas_eval_point_consistent_bob {P : AdmissibleParams}
 /-- Tensoring the strategy state with the two normalized EPR states preserves
 the point-measurement consistency defect. This is the six-register form of
 the point self-consistency used at `eq:qld-pulling-3`. -/
-theorem point_consistencyDefect_psiHat {P : AdmissibleParams} {epsilon : ℝ}
+theorem point_consistencyDefect_psiHat  {epsilon : ℝ}
     (S : ProjectiveSetting P epsilon) (W : PauliKind) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
         (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
@@ -138,9 +136,7 @@ Agreement and two squared-distance triangle inequalities combine the two
 opposite-player comparisons with the original point self-consistency.
 The error is linear in the supplied witness error, as required before
 the collision step `eq:qld-pulling-12`. -/
-theorem pullingMeas_eval_consistencyDefect_le {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem pullingMeas_eval_consistencyDefect_le  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
         (fun u a => S.placeSide .alice
           (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a))

@@ -32,7 +32,6 @@ theorem sqrt_deltaQld_le {P : AdmissibleParams} {a b epsilon : ℝ}
   have hdegree : 1 ≤ degree :=
     Nat.one_le_cast.mpr (Nat.mul_pos P.one_le_m P.hd)
   have ha0 : 0 ≤ a := zero_le_one.trans ha
-  have hdegree0 : 0 ≤ degree := zero_le_one.trans hdegree
   have hprefactor : 1 ≤ a * degree ^ a :=
     one_le_mul_of_one_le_of_one_le ha (Real.one_le_rpow hdegree ha0)
   have hq : (0 : ℝ) ≤ P.q := Nat.cast_nonneg _

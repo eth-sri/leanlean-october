@@ -87,8 +87,7 @@ theorem ExtractionWitness.isometryTensor_eq (v : ExtractionWitness S w delta) :
     (eprState_norm _) (swapUnitary w .alice) (v.swap_left_unitary .alice)
   have hB := unitaryAncillaIsometry_matrix (eprState (PauliRegister P))
     (eprState_norm _) (swapUnitary w .bob) (v.swap_left_unitary .bob)
-  rw [hA, hB]
-  rw [Matrix.kronecker, Matrix.mul_kronecker_mul, toEuclideanLin_mul_apply]
+  rw [hA, hB, Matrix.kronecker, Matrix.mul_kronecker_mul, toEuclideanLin_mul_apply]
   rw [isometryTensor_eq_toEuclideanLin] at haction
   erw [haction]
   ext p

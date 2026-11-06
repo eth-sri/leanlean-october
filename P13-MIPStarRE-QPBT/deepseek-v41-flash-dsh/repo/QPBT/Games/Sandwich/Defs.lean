@@ -53,6 +53,8 @@ def HasConditionalCollisionBound {X Y₁ Y₂ R₂ Γ₂ : Type*}
       (∑ y₂ : Y₂, D.weight ((x, y₁), y₂) *
         if eval₂ g y₂ = eval₂ g' y₂ then 1 else 0) ≤
         η * (D.map Prod.fst).weight (x, y₁)
+variable {α ιA ιB : Type*} [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-! ### Tensor placements of measurements
 
@@ -63,16 +65,14 @@ measurement, so that the consistency calculus applies to it verbatim. -/
 /-- An alias of `DistanceCalculus.leftPlacedMeasurement`, whose effects are the
 left tensor placements of the effects of `M`. Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-noncomputable def Measurement.leftPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+noncomputable def Measurement.leftPlacement 
     (M : Measurement α ιA) : Measurement α (ιA × ιB) :=
   DistanceCalculus.leftPlacedMeasurement M
 
 /-- An alias of `DistanceCalculus.rightPlacedMeasurement`, whose effects are the
 right tensor placements of the effects of `M`. Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-noncomputable def Measurement.rightPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+noncomputable def Measurement.rightPlacement 
     (M : Measurement α ιB) : Measurement α (ιA × ιB) :=
   DistanceCalculus.rightPlacedMeasurement M
 
@@ -87,12 +87,13 @@ noncomputable def Measurement.rightPlacement {α ιA ιB : Type*} [Fintype α]
     [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
     (M : Measurement α ιB) (a : α) :
     (Measurement.rightPlacement (ιA := ιA) M).effect a = heteroKron 1 (M.effect a) := rfl
+variable {α ιA ιB : Type*} [Fintype α] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-- The left placement of a projective measurement is projective.
 Formalization support for `lem:pasting`, blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-theorem Measurement.isProjective_leftPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.isProjective_leftPlacement 
     (M : Measurement α ιA) (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective (Measurement.leftPlacement (ιB := ιB) M) := by
   intro a
@@ -109,8 +110,7 @@ theorem Measurement.isProjective_leftPlacement {α ιA ιB : Type*} [Fintype α]
 right-factor mirror of the preceding lemma and the second of the four
 properties of the placement collected in the formalization-support node
 `lem:pasting-tensor-placement`, blueprint `ch12_qpbt_games.tex:1063-1071`. -/
-theorem Measurement.isProjective_rightPlacement {α ιA ιB : Type*} [Fintype α]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.isProjective_rightPlacement 
     (M : Measurement α ιB) (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective (Measurement.rightPlacement (ιA := ιA) M) := by
   intro a
@@ -122,6 +122,8 @@ theorem Measurement.isProjective_rightPlacement {α ιA ιB : Type*} [Fintype α
     unfold heteroKron Matrix.kronecker
     rw [Matrix.conjTranspose_kronecker, measurement_effect_hermitian M a,
       Matrix.conjTranspose_one]
+variable {α β ιA ιB : Type*} [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β] [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-- Postprocessing commutes with the left tensor placement. This is one of the
 four properties of the placement collected in the formalization-support node
@@ -129,9 +131,7 @@ four properties of the placement collected in the formalization-support node
 records the compatibility of the placement of `lem:pasting` with the outcome
 coarse-grainings its statement applies, and is stated for the left factor
 alongside its right-factor mirror below. -/
-theorem Measurement.leftPlacement_postprocess {α β ιA ιB : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.leftPlacement_postprocess 
     (M : Measurement α ιA) (f : α → β) (b : β) :
     (Measurement.leftPlacement (ιB := ιB) (M.postprocess f)).effect b =
       ((Measurement.leftPlacement (ιB := ιB) M).postprocess f).effect b := by
@@ -143,9 +143,7 @@ theorem Measurement.leftPlacement_postprocess {α β ιA ιB : Type*}
 right-factor mirror of the preceding compatibility, the fourth of the four
 properties of the placement collected in the formalization-support node
 `lem:pasting-tensor-placement`, blueprint `ch12_qpbt_games.tex:1063-1071`. -/
-theorem Measurement.rightPlacement_postprocess {α β ιA ιB : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+theorem Measurement.rightPlacement_postprocess 
     (M : Measurement α ιB) (f : α → β) (b : β) :
     (Measurement.rightPlacement (ιA := ιA) (M.postprocess f)).effect b =
       ((Measurement.rightPlacement (ιA := ιA) M).postprocess f).effect b := by

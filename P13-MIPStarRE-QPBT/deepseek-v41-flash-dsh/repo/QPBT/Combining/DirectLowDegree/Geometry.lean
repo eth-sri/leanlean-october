@@ -113,15 +113,19 @@ def directLdSpaceIndexEquiv (D : DirectLdParams) :
   invFun sample := ⟨sample.2.1, sample.1, sample.2.2⟩
   left_inv sample := by cases sample; rfl
   right_inv sample := by cases sample; rfl
+variable {D : DirectLdParams}
+
 
 /-- Zero the coordinates preceding the directly sampled prefix index. -/
-def directPrefixProjection {D : DirectLdParams} (i : Fin D.m)
+def directPrefixProjection  (i : Fin D.m)
     (v : Fin D.m → DirectScalarQ D) : Fin D.m → DirectScalarQ D :=
   fun j => if j.val < i.val then 0 else v j
+variable (D : DirectLdParams)
+
 
 /-- Zeroing the coordinates preceding a prefix index is idempotent: the
 coordinates it leaves unchanged are exactly those it does not zero. -/
-theorem directPrefixProjection_idem (D : DirectLdParams) (i : Fin D.m)
+theorem directPrefixProjection_idem  (i : Fin D.m)
     (v : Fin D.m → DirectScalarQ D) :
     directPrefixProjection i (directPrefixProjection i v) =
       directPrefixProjection i v := by
@@ -156,14 +160,13 @@ def directLineDescCode (D : DirectLdParams) :
   | .diagonal base index direction _ _ => .inr (base, index, direction)
 
 /-- The direct-line code is injective by proof irrelevance. -/
-private theorem directLineDescCode_injective (D : DirectLdParams) :
+private theorem directLineDescCode_injective  :
     Function.Injective (directLineDescCode D) := by
   intro line line' h
   cases line with
   | axis base index baseFixed =>
       cases line' with
       | axis base' index' baseFixed' =>
-          simp only [directLineDescCode, Sum.inl.injEq, Prod.mk.injEq] at h
           rcases h with ⟨rfl, rfl⟩
           rfl
       | diagonal => simp [directLineDescCode] at h
@@ -171,7 +174,6 @@ private theorem directLineDescCode_injective (D : DirectLdParams) :
       cases line' with
       | axis => simp [directLineDescCode] at h
       | diagonal base' index' direction' baseFixed' prefixZero' =>
-          simp only [directLineDescCode, Sum.inr.injEq, Prod.mk.injEq] at h
           rcases h with ⟨rfl, rfl, rfl⟩
           rfl
 
@@ -182,30 +184,30 @@ noncomputable instance directLineDescFintype (D : DirectLdParams) :
     exact directLineDescCode_injective D)
 
 /-- The kind of a directly indexed line. -/
-def DirectLineDesc.kind {D : DirectLdParams} : DirectLineDesc D → LineKind
+def DirectLineDesc.kind  : DirectLineDesc D → LineKind
   | .axis _ _ _ => .axis
   | .diagonal _ _ _ _ _ => .diagonal
 
 /-- The coordinate index stored in a directly indexed line. -/
-def DirectLineDesc.index {D : DirectLdParams} : DirectLineDesc D → Fin D.m
+def DirectLineDesc.index  : DirectLineDesc D → Fin D.m
   | .axis _ index _ => index
   | .diagonal _ index _ _ _ => index
 
 /-- The canonical base point of a directly indexed line. -/
-def DirectLineDesc.base {D : DirectLdParams} :
+def DirectLineDesc.base  :
     DirectLineDesc D → Fin D.m → DirectScalarQ D
   | .axis base _ _ => base
   | .diagonal base _ _ _ _ => base
 
 /-- The geometric direction of a directly indexed line. -/
-def DirectLineDesc.direction {D : DirectLdParams} (line : DirectLineDesc D) :
+def DirectLineDesc.direction  (line : DirectLineDesc D) :
     Fin D.m → DirectScalarQ D :=
   match line with
   | .axis _ index _ => coordinateDirection index
   | .diagonal _ _ direction _ _ => direction
 
 /-- The point set represented by a directly indexed line. -/
-noncomputable def DirectLineDesc.pointSet {D : DirectLdParams}
+noncomputable def DirectLineDesc.pointSet 
     (line : DirectLineDesc D) : Set (Fin D.m → DirectScalarQ D) :=
   linePoints line.base line.direction
 
@@ -249,17 +251,17 @@ noncomputable def directLinePointDist (D : DirectLdParams) :
     (directALinePointDist D) (directDLinePointDist D)
 
 /-- The directly indexed axis-line/point law is probabilistic. -/
-theorem directALinePointDist_isProbability (D : DirectLdParams) :
+theorem directALinePointDist_isProbability  :
     (directALinePointDist D).IsProbability := by
   exact (uniformDistribution_isProbability (DirectLdSpace D)).map _
 
 /-- The directly indexed diagonal-line/point law is probabilistic. -/
-theorem directDLinePointDist_isProbability (D : DirectLdParams) :
+theorem directDLinePointDist_isProbability  :
     (directDLinePointDist D).IsProbability := by
   exact (uniformDistribution_isProbability (DirectLdSpace D)).map _
 
 /-- The directly indexed line-point mixture is probabilistic. -/
-theorem directLinePointDist_isProbability (D : DirectLdParams) :
+theorem directLinePointDist_isProbability  :
     (directLinePointDist D).IsProbability := by
   exact Distribution.mix_isProbability _ _ _
     (directALinePointDist_isProbability D) (directDLinePointDist_isProbability D)

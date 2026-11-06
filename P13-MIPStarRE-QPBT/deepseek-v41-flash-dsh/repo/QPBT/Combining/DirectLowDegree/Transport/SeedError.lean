@@ -59,7 +59,6 @@ theorem ten_sqrt_deltaLd_le (D : DirectLdParams) {a b ε : ℝ}
       (Real.rpow_le_rpow_of_exponent_le hN (by linarith)) (by linarith)
   unfold deltaLd
   simp only [Real.rpow_eq_pow]
-  change 10 * Real.sqrt (a * N ^ a * _) ≤ 10 * a * N ^ (10 * a) * _
   rw [Real.sqrt_mul hP0]
   have hbound := mul_le_mul (hsP.trans hmono) hsum (Real.sqrt_nonneg _)
     (by positivity : 0 ≤ a * N ^ (10 * a))
@@ -97,7 +96,6 @@ theorem error_and_collision_le_deltaLd (D : DirectLdParams) {a b ε : ℝ}
     Real.rpow_nonneg (by norm_num) _
   unfold deltaLd
   simp only [Real.rpow_eq_pow]
-  change ε ≤ a * N ^ a * _ ∧ (D.m : ℝ) * D.d / D.q ≤ a * N ^ a * _
   constructor
   · nlinarith [mul_nonneg (sub_nonneg.mpr (hN.trans hP)) hx,
       mul_nonneg (by linarith : 0 ≤ a * N ^ a) (add_nonneg hy hz)]

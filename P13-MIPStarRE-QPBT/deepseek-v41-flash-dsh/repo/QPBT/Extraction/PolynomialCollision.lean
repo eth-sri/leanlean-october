@@ -66,7 +66,7 @@ theorem poly_eval_collision_le {P : AdmissibleParams}
     avgOver (uniformDistribution (Fin P.m → PauliScalar P))
       (fun point => if evalPoly first point = evalPoly second point then (1 : ℝ) else 0) ≤
         (P.m * P.d : ℝ) / P.q := by
-  have hcard : Fintype.card (PauliScalar P) = P.q :=
+  have hcard :=
     @FieldModel.card P.q P.model.toFieldModel
   unfold evalPoly
   conv_rhs => rw [← hcard]

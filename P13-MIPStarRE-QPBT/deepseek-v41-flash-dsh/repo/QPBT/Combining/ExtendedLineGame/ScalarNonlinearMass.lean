@@ -41,9 +41,10 @@ def scalarNonlinearMass {P : AdmissibleParams} {ε : ℝ}
       (PauliScalar P), scalarPolynomial P g =
         MvPolynomial.C r * MvPolynomial.X 0 + MvPolynomial.C t * MvPolynomial.X 1),
     ‖applyOperatorToState (S.place p (R.effect g)) S.psiHat‖ ^ 2
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
 
-private theorem placed_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) (x : ExtendedPointQuestion P)
+
+private theorem placed_orderedIndicator  (p : Placement) (x : ExtendedPointQuestion P)
     (a : PauliScalar P) :
     orderedIndicator (S.placedMeasurement p (S.pointMeasExp p.side .X x.1.1))
       (S.placedMeasurement p (S.pointMeasExp p.side .Z x.1.2)) x.2.1 x.2.2 a =
@@ -52,28 +53,26 @@ private theorem placed_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
       (S.pointMeasExp p.side .X x.1.1).effect ab.1 *
         (S.pointMeasExp p.side .Z x.1.2).effect ab.2) := by
   rw [S.place_finsetSum, Finset.sum_filter]
-  simp only [orderedIndicator, ProjectiveSetting.placedMeasurement_effect,
+  simp [orderedIndicator, ProjectiveSetting.placedMeasurement_effect,
     ProjectiveSetting.place_mul]
 
 /-- Opposite placements commute, identifying the residual on the actual
 projected state with the ordered-error residual. This supports both orders
 of `eq:qld-g-42/43` and blueprint `lem:qld-4-7`. -/
-theorem placed_residual {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem placed_residual  (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : Op (S.ExpandedLocalSpace p1.side)) (T : Op (S.ExpandedLocalSpace p2.side)) :
     applyOperatorToState (S.place p1 R) S.psiHat -
       applyOperatorToState (S.place p2 T)
         (applyOperatorToState (S.place p1 R) S.psiHat) =
       applyOperatorToState (S.place p1 R * (1 - S.place p2 T)) S.psiHat := by
   rw [← applyOperatorToState_mul, ← S.place_comm p1 p2 hopposite R T, mul_sub, mul_one]
-  simp only [applyOperatorToState, map_sub, LinearMap.sub_apply]
+  simp [applyOperatorToState, map_sub, LinearMap.sub_apply]
 
 /-- The scalar-nonlinear outcome mass is bounded by twice the actual full
 ordered error plus `2*((2m+2)d+1)/q`. All transports and degree bounds are
 derived internally from the actual singleton outcomes. This auxiliary applies
 to every opposite placement of a complete projective measurement. -/
-theorem scalarNonlinearMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem scalarNonlinearMass_le_ordered_error  (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) :
     scalarNonlinearMass S p1 R ≤ 2 * extendedPolynomialOrderedError S p1 p2 R false +

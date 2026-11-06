@@ -31,10 +31,13 @@ noncomputable section
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {epsilon : ℝ}
+variable (S : ProjectiveSetting P epsilon)
+variable (B : Op (S.ExpandedLocalSpace .alice))
+
+
 
 /-- Placing a tensor with an identity on Alice's last register recovers `AA'`. -/
-theorem placeSide_alice_tensor_one (S : ProjectiveSetting P epsilon)
-    (B : Op (S.ExpandedLocalSpace .alice)) :
+theorem placeSide_alice_tensor_one  :
     S.placeSide .alice (heteroKron B (1 : Op (PauliRegister P))) = S.place .AA' B := by
   ext row col
   simp [placeSide, sixRegExtractionEquiv, reindexOp, heteroKron, Matrix.kronecker,
@@ -43,8 +46,7 @@ theorem placeSide_alice_tensor_one (S : ProjectiveSetting P epsilon)
 
 /-- The factors on `AA'A''` and `B` can be regrouped on `AA'` and `BA''`
 without exchanging registers or assuming symmetry of the strategy. -/
-theorem placeSide_alice_tensor_mul_placePlayer_bob (S : ProjectiveSetting P epsilon)
-    (B : Op (S.ExpandedLocalSpace .alice)) (T : Op (PauliRegister P))
+theorem placeSide_alice_tensor_mul_placePlayer_bob  (T : Op (PauliRegister P))
     (A : Op S.toStrategy.ιB) :
     S.placeSide .alice (heteroKron B T) * S.placePlayer .bob A =
       S.place .AA' B * S.place .BA'' (heteroKron A T) := by
@@ -56,7 +58,7 @@ theorem placeSide_alice_tensor_mul_placePlayer_bob (S : ProjectiveSetting P epsi
   split_ifs <;> ac_rfl
 
 /-- Alice's extraction-block placement preserves finite sums. -/
-theorem placeSide_alice_finset_sum (S : ProjectiveSetting P epsilon)
+theorem placeSide_alice_finset_sum 
     {I : Type*} (s : Finset I) (B : I → Op (ExtractionBlock P S.toStrategy.ιA)) :
     S.placeSide .alice (∑ i ∈ s, B i) = ∑ i ∈ s, S.placeSide .alice (B i) := by
   classical
@@ -64,37 +66,36 @@ theorem placeSide_alice_finset_sum (S : ProjectiveSetting P epsilon)
     (heteroKron (∑ i ∈ s, B i) (1 : Op (ExtractionBlock P S.toStrategy.ιB))) = _
   rw [heteroKron_finset_sum_left]
   ext row col
-  simp only [placeSide, reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
+  simp [placeSide, reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
     Matrix.sum_apply]
 
 end ProjectiveSetting
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG) (W : PauliKind)
+variable (u : Fin P.m → PauliScalar P)
+
+
 
 /-- The Alice-pulled/Bob-point overlap is exactly the expanded-point overlap
 at the decoded value. This is the register-interchanged version of the first
 three lines of the calculation in paper lines 1483--1492. -/
-theorem sum_tildeM_mul_pointMeas_eq_decoded_overlap
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+theorem sum_tildeM_mul_pointMeas_eq_decoded_overlap  :
     (∑ a : PauliScalar P, S.placeSide .alice (tildeM w .alice W (indicatorVec u) a) *
       S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) =
       ∑ g : Poly P, S.place .AA' ((w.marginalPoly .alice W).effect g) *
         S.place .BA'' ((S.pointMeasExp .bob W u).effect
           (dotProduct (decodeFq g) (indicatorVec u))) := by
   classical
-  simp only [tildeM, S.placeSide_alice_finset_sum, Finset.sum_mul]
+  simp [tildeM, S.placeSide_alice_finset_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro g _
-  simp only [S.placeSide_alice_tensor_mul_placePlayer_bob]
+  simp [S.placeSide_alice_tensor_mul_placePlayer_bob]
   rw [← Finset.mul_sum, ← S.place_finset_sum,
     S.pointMeasExp_effect_eq_sum_sub .bob W u]
 
 /-- The Alice-pulled/Bob-point consistency defect is one minus the decoded
 overlap. This uses completeness but no encoding restriction or mass estimate. -/
-theorem tildeM_consistencyDefect_eq_one_sub_decoded_overlap'
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem tildeM_consistencyDefect_eq_one_sub_decoded_overlap'  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
       (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat =
@@ -140,10 +141,7 @@ open scoped Classical in
 /-- On Alice's marginal, replacing polynomial evaluation by decoded evaluation
 loses at most the non-encoding mass. This is the support-restricted version of
 the fourth line of paper lines 1483--1492, with the players interchanged. -/
-theorem marginal_eval_overlap_le_decoded_add_nonencoding'
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+theorem marginal_eval_overlap_le_decoded_add_nonencoding'  :
     (∑ g : Poly P, stateQForm S.psiHat
       (S.place .AA' ((w.marginalPoly .alice W).effect g) *
         S.place .BA'' ((S.pointMeasExp .bob W u).effect (MvPolynomial.eval u g.1)))) ≤
@@ -173,10 +171,10 @@ theorem marginal_eval_overlap_le_decoded_add_nonencoding'
   apply Finset.sum_le_sum
   intro g _
   by_cases hg : IsEncoding g
-  · simp only [hg, not_true_eq_false, if_false, add_zero]
+  · simp [hg, not_true_eq_false, if_false, add_zero]
     rw [decodeFq_dotProduct_indicatorVec hg u]
     rfl
-  · simp only [hg, not_false_eq_true, if_true]
+  · simp [hg, not_false_eq_true, if_true]
     have hle := Finset.single_le_sum (fun a _ => hpos g a)
       (Finset.mem_univ (MvPolynomial.eval u g.1))
     rw [hsum] at hle

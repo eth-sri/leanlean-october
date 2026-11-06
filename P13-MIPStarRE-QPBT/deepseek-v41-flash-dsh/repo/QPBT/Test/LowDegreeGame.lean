@@ -94,23 +94,25 @@ abbrev LdIndex (P : LdParams) := (Fin P.m ⊕ Unit) ⊕ Fin P.m
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`).
 -/
 abbrev LdSpace (P : LdParams) := LdIndex P → ScalarQ P
+variable {P : LdParams}
+
 
 /-- The point coordinates of an ambient low-degree vector in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def LdSpace.point {P : LdParams} (z : LdSpace P) : Fin P.m → ScalarQ P :=
+def LdSpace.point  (z : LdSpace P) : Fin P.m → ScalarQ P :=
   fun i => z (.inl (.inl i))
 
 /-- The shared scalar coordinate of an ambient low-degree vector in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def LdSpace.seed {P : LdParams} (z : LdSpace P) : ScalarQ P :=
+def LdSpace.seed  (z : LdSpace P) : ScalarQ P :=
   z (.inl (.inr ()) )
 
 /-- The direction coordinates of an ambient low-degree vector in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def LdSpace.direction {P : LdParams} (z : LdSpace P) : Fin P.m → ScalarQ P :=
+def LdSpace.direction  (z : LdSpace P) : Fin P.m → ScalarQ P :=
   fun i => z (.inr i)
 
 /-- The zero-based coordinate index corresponding to the paper's map `χ`:
@@ -122,6 +124,8 @@ noncomputable def chiIndex (P : LdParams) (s : ScalarQ P) : Fin P.m := by
   letI : NeZero P.m := ⟨by
     exact Nat.ne_of_gt (lt_of_lt_of_le Nat.zero_lt_one P.hm)⟩
   exact Fin.ofNat P.m ((binaryRepresentation P.model s).val / (P.q / P.m))
+variable (L : LdParams)
+
 
 /-! ### Formalization-only coordinate-index fibers
 
@@ -134,7 +138,7 @@ of the exact seed decomposition supporting the balance assertion in
 `def:ld-question-distribution`, blueprint `lem:chi-seed-fibers`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:215-221`.
 -/
-theorem LdParams.seedFiberCard_pos (L : LdParams) : 0 < L.q / L.m := by
+theorem LdParams.seedFiberCard_pos  : 0 < L.q / L.m := by
   exact Nat.div_pos (Nat.le_of_dvd (by
     obtain ⟨n, hn, hq⟩ := L.hq
     rw [hq]
@@ -164,14 +168,14 @@ noncomputable def seedFiberEquiv (L : LdParams) :
       finProdFinEquiv.symm
 
 /-- The coordinate component of the exact seed decomposition is `chiIndex`. -/
-@[simp] theorem seedFiberEquiv_fst (L : LdParams) (s : ScalarQ L) :
+@[simp] theorem seedFiberEquiv_fst  (s : ScalarQ L) :
     (seedFiberEquiv L s).1 = chiIndex L s := by
   letI : NeZero L.m := ⟨Nat.ne_of_gt (lt_of_lt_of_le Nat.zero_lt_one L.hm)⟩
-  have hquot : (binaryRepresentation L.model s).val / (L.q / L.m) < L.m := by
+  have hquot := by
     apply (Nat.div_lt_iff_lt_mul L.seedFiberCard_pos).mpr
     rw [Nat.mul_div_cancel' L.hdvd]
     exact (binaryRepresentation L.model s).isLt
-  simp only [seedFiberEquiv, Equiv.trans_apply]
+  simp [seedFiberEquiv, Equiv.trans_apply]
   apply Fin.ext
   change
     (Equiv.cast (congrArg Fin L.seedFiberProduct_eq)
@@ -194,7 +198,7 @@ noncomputable def seedOfIndexResidue (L : LdParams)
   (seedFiberEquiv L).apply_symm_apply (i, r)
 
 /-- A reconstructed seed belongs to the prescribed `chiIndex` fiber. -/
-@[simp] theorem chiIndex_seedOfIndexResidue (L : LdParams)
+@[simp] theorem chiIndex_seedOfIndexResidue 
     (i : Fin L.m) (r : Fin (L.q / L.m)) :
     chiIndex L (seedOfIndexResidue L i r) = i := by
   rw [← seedFiberEquiv_fst]
@@ -206,7 +210,7 @@ prefix restriction in blueprint
 `def:ld-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def prefixProjection {P : LdParams} (i : Fin P.m) (v : Fin P.m → ScalarQ P) :
+def prefixProjection  (i : Fin P.m) (v : Fin P.m → ScalarQ P) :
     Fin P.m → ScalarQ P :=
   fun j => if j.val < i.val then 0 else v j
 
@@ -348,7 +352,7 @@ Lean encoding of the rejection clause in blueprint
 `def:ld-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:31-391`.
 -/
-def validLdAnswer {P : LdParams} (t : LdType) (a : LdAnswer P) : Bool :=
+def validLdAnswer  (t : LdType) (a : LdAnswer P) : Bool :=
   match t, a with
   | .point, .pointVals _ => true
   | .aline, .alinePolys _ => true

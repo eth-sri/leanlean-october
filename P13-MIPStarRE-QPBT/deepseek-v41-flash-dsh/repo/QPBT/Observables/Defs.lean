@@ -74,11 +74,11 @@ the side-qualified operators at paper
 
 instance localSpaceFintype (S : ProjectiveSetting P ε) (side : PlayerSide) :
     Fintype (S.LocalSpace side) := by
-  cases side <;> simp only [LocalSpace] <;> infer_instance
+  cases side <;> simp [LocalSpace] <;> infer_instance
 
 instance localSpaceDecidableEq (S : ProjectiveSetting P ε) (side : PlayerSide) :
     DecidableEq (S.LocalSpace side) := by
-  cases side <;> simp only [LocalSpace] <;> infer_instance
+  cases side <;> simp [LocalSpace] <;> infer_instance
 
 /-- Select the strategy measurement before outcome postprocessing on one
 player side. This is the heterogeneous interpretation of the shared symbol `M` at
@@ -317,18 +317,22 @@ noncomputable def pointObs (S : ProjectiveSetting P ε) (side : PlayerSide)
     Op (S.LocalSpace side) :=
   ∑ a : PauliScalar P,
     phaseSign (fixedBinTrace P.model (a * r)) • (S.pointMeas side W u).effect a
+variable (S : ProjectiveSetting P ε) (side : PlayerSide)
+
 
 /-- Select projectivity of the strategy POVM on either local space. -/
-private theorem strategyMeasurement_isProjective
-    (S : ProjectiveSetting P ε) (side : PlayerSide) (question : PauliQuestion P) :
+private theorem strategyMeasurement_isProjective  (question : PauliQuestion P) :
     Measurement.IsProjective (S.strategyMeasurement side question) := by
   cases side with
   | alice => exact S.isProjective.1 question
   | bob => exact S.isProjective.2 question
+variable (W : PauliKind)
+variable (u : Fin P.m → PauliScalar P)
+
+
 
 /-- The typed point measurement remains projective after answer folding. -/
-theorem pointMeas_isProjective (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem pointMeas_isProjective  :
     Measurement.IsProjective (S.pointMeas side W u) := by
   apply SandwichProduct.postprocess_isProjective
   exact strategyMeasurement_isProjective S side _
@@ -336,14 +340,13 @@ theorem pointMeas_isProjective (S : ProjectiveSetting P ε)
 /-- The point observables form an additive representation, as follows from
 `eq:qld-strat-obs`, paper `14_analysis_of_the_pauli_basis_test.tex:174-190`.
 This multiplication law is a formalization-only consequence of that definition. -/
-theorem pointObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r s : PauliScalar P)
+theorem pointObs_mul  (r s : PauliScalar P)
     (u : Fin P.m → PauliScalar P) :
     S.pointObs side W r u * S.pointObs side W s u =
       S.pointObs side W (r + s) u := by
   classical
   let M := S.pointMeas side W u
-  have hM : Measurement.IsProjective M := pointMeas_isProjective S side W u
+  have hM := pointMeas_isProjective S side W u
   change (∑ a : PauliScalar P,
       phaseSign (fixedBinTrace P.model (a * r)) • M.effect a) *
       (∑ a : PauliScalar P,
@@ -378,18 +381,18 @@ theorem pointObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
         exact (ha' (Finset.mem_univ a)).elim
 
 /-- The zero-label point observable is the identity by measurement completeness. -/
-theorem pointObs_zero (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem pointObs_zero  :
     S.pointObs side W 0 u = 1 := by
   classical
   simpa [pointObs, fixedBinTrace, phaseSign] using (S.pointMeas side W u).sum_eq_one
+variable (r : PauliScalar P) (u : Fin P.m → PauliScalar P)
+
 
 /-- The point observable squares to the identity. This is the assertion that
 the operator in `def:strategy-observables` has eigenvalues in `{+1,-1}`;
 paper `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
-theorem pointObs_sq_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+theorem pointObs_sq_eq_one  :
     S.pointObs side W r u * S.pointObs side W r u = 1 := by
   haveI : CharP (PauliScalar P) 2 :=
     (Algebra.charP_iff (ZMod 2) (PauliScalar P) 2).mp (ZMod.charP 2)
@@ -399,18 +402,14 @@ theorem pointObs_sq_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
 observable assertion following `eq:qld-strat-obs`, paper
 `14_analysis_of_the_pauli_basis_test.tex:174-190`, blueprint
 `def:strategy-observables`. -/
-theorem pointObs_isHermitian (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (r : PauliScalar P) (u : Fin P.m → PauliScalar P) :
+theorem pointObs_isHermitian  :
     (S.pointObs side W r u).IsHermitian := by
   classical
-  rw [pointObs, Matrix.IsHermitian]
-  rw [Matrix.conjTranspose_sum]
+  rw [pointObs, Matrix.IsHermitian, Matrix.conjTranspose_sum]
   apply Finset.sum_congr rfl
   intro a ha
-  rw [Matrix.conjTranspose_smul, star_phaseSign]
-  rw [(Matrix.nonneg_iff_posSemidef.mp
+  rw [Matrix.conjTranspose_smul, star_phaseSign, (Matrix.nonneg_iff_posSemidef.mp
     ((S.pointMeas side W u).pos a)).isHermitian.eq]
-
 end ProjectiveSetting
 
 end

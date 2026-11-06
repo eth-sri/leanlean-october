@@ -45,13 +45,14 @@ open MIPStarRE.LDT hiding Measurement
 open DistanceCalculus
 
 variable {P : AdmissibleParams}
+variable (W : PauliKind) (u : Fin P.m → PauliScalar P)
+
 
 /-- Distinct point fibers annihilate one another. This is the off-diagonal case
 of the existing `tauPointProj_mul_tauPointProj` in `Observables.ExpandedDefs`. -/
-theorem tauPointProj_mul_eq_zero_of_ne (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) {a b : PauliScalar P} (hab : a ≠ b) :
+theorem tauPointProj_mul_eq_zero_of_ne  {a b : PauliScalar P} (hab : a ≠ b) :
     tauPointProj W u a * tauPointProj W u b = 0 := by
-  simp only [tauPointProj_mul_tauPointProj, if_neg hab]
+  simp [tauPointProj_mul_tauPointProj, if_neg hab]
 
 /-- The ideal point projector has the same action on either half of one EPR
 pair, as used in the proof of `lem:qld-comm-cons`, paper line 489. -/
@@ -63,8 +64,7 @@ theorem tauPointProj_epr_action (W : PauliKind)
 
 /-- Two distinct ideal point outcomes annihilate the actual EPR vector.
 Move the second effect to the first half and use orthogonality of point fibers. -/
-theorem tauPointProj_epr_mulVec_eq_zero_of_ne (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) {a b : PauliScalar P} (hab : a ≠ b) :
+theorem tauPointProj_epr_mulVec_eq_zero_of_ne  {a b : PauliScalar P} (hab : a ≠ b) :
     (heteroKron (tauPointProj W u a) (tauPointProj W u b)).mulVec
       (eprState (PauliRegister P)) = 0 := by
   have hprod : heteroKron (tauPointProj W u a) (tauPointProj W u b) =
@@ -77,8 +77,7 @@ theorem tauPointProj_epr_mulVec_eq_zero_of_ne (W : PauliKind)
 
 /-- Every off-diagonal joint weight of the ideal point measurement on one EPR
 pair is zero. The Pauli basis and the point are arbitrary. -/
-theorem tauPointProj_epr_joint_eq_zero_of_ne (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) {a b : PauliScalar P} (hab : a ≠ b) :
+theorem tauPointProj_epr_joint_eq_zero_of_ne  {a b : PauliScalar P} (hab : a ≠ b) :
     stateQForm (eprState (PauliRegister P))
       (heteroKron (tauPointProj W u a) (tauPointProj W u b)) = 0 := by
   unfold stateQForm applyOperatorToState
@@ -92,8 +91,7 @@ theorem tauPointProj_epr_joint_eq_zero_of_ne (W : PauliKind)
 /-- Perfect ancillary consistency in the proof of `lem:qld-comm-cons`:
 the off-diagonal joint mass is zero on the two halves of the same EPR state.
 This auxiliary identity assumes no original strategy or consistency bound. -/
-theorem tauPointProj_epr_offDiagonal_eq_zero (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+theorem tauPointProj_epr_offDiagonal_eq_zero  :
     (∑ a : PauliScalar P, ∑ b : PauliScalar P, if a = b then 0 else
       stateQForm (eprState (PauliRegister P))
         (heteroKron (tauPointProj W u a) (tauPointProj W u b))) = 0 := by

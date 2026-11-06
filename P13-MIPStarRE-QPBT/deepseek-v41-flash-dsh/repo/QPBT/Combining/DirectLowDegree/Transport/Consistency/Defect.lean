@@ -29,14 +29,16 @@ open MIPStarRE.LDT.Preliminaries
 open MIPStarRE.Quantum
 
 noncomputable section
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+variable (hS : S.IsProjective) (r : Fin D.k)
+
+
 
 /-! ## The three LDT conclusions in direct coordinates -/
 
 /-- The direct single-coordinate point/global defect is exactly the LDT
 defect after the polynomial, point, and scalar equivalences. -/
-theorem directPointPolynomial_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) :
+theorem directPointPolynomial_consistencyDefect_eq  :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB),
       consistencyDefect
@@ -65,12 +67,10 @@ theorem directPointPolynomial_consistencyDefect_eq
           (directPointEquiv D u) (directScalarEquiv D a)) S.ψ := by
           apply consistencyDefect_congr
           · intro u a
-            unfold ldtPointAPlaced
             congr 1
             exact (directCoordinatePointMeasurement_effect_transport
               D S hS r u a).symm
           · intro u a
-            unfold ldtPolynomialEvaluationRight
             congr 1
             exact directPolynomialMeasurement_evaluation_effect D G u a
     _ = consistencyDefect (uniformDistribution (Point D.toLDTParameters))
@@ -84,9 +84,7 @@ theorem directPointPolynomial_consistencyDefect_eq
 /-- Convert the point-on-Alice/global-on-Bob conclusion of `LDT.Test.mainFormal`
 for one simultaneous coordinate to the direct QPBT defect, with the identical
 numerical bound. -/
-theorem directPointPolynomial_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) :
+theorem directPointPolynomial_consistencyDefect_le  :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB)
       (delta : ℝ),
@@ -119,9 +117,7 @@ theorem directPointPolynomial_consistencyDefect_le
 
 /-- The direct single-coordinate global/point defect is exactly the LDT
 defect after the polynomial, point, and scalar equivalences. -/
-theorem directPolynomialPoint_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) :
+theorem directPolynomialPoint_consistencyDefect_eq  :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA),
       consistencyDefect
@@ -150,11 +146,9 @@ theorem directPolynomialPoint_consistencyDefect_eq
           (directPointEquiv D u) (directScalarEquiv D a)) S.ψ := by
           apply consistencyDefect_congr
           · intro u a
-            unfold ldtPolynomialEvaluationLeft
             congr 1
             exact directPolynomialMeasurement_evaluation_effect D G u a
           · intro u a
-            unfold ldtPointBPlaced
             congr 1
             exact (directCoordinatePointMeasurementB_effect_transport
               D S hS r u a).symm
@@ -169,9 +163,7 @@ theorem directPolynomialPoint_consistencyDefect_eq
 /-- Convert the global-on-Alice/point-on-Bob conclusion of
 `LDT.Test.mainFormal` for one simultaneous coordinate to the direct QPBT
 defect, with the identical numerical bound. -/
-theorem directPolynomialPoint_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (hS : S.IsProjective) (r : Fin D.k) :
+theorem directPolynomialPoint_consistencyDefect_le  :
     letI := D.toLDTFieldModel
     ∀ (G : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
       (delta : ℝ),
@@ -220,8 +212,7 @@ theorem directPolynomialPoint_consistencyDefect_le
 
 /-- Relabeling both global polynomial measurements identifies their direct
 QPBT defect with the LDT global/global defect. -/
-theorem directPolynomialPolynomial_consistencyDefect_eq
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+theorem directPolynomialPolynomial_consistencyDefect_eq  :
     letI := D.toLDTFieldModel
     ∀ (GA : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
       (GB : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB),
@@ -260,8 +251,7 @@ theorem directPolynomialPolynomial_consistencyDefect_eq
 
 /-- Convert the global/global conclusion of `LDT.Test.mainFormal` to the direct
 QPBT defect, with the identical numerical bound. -/
-theorem directPolynomialPolynomial_consistencyDefect_le
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+theorem directPolynomialPolynomial_consistencyDefect_le  :
     letI := D.toLDTFieldModel
     ∀ (GA : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιA)
       (GB : ProjMeas (MIPStarRE.LDT.Polynomial D.toLDTParameters) S.ιB)

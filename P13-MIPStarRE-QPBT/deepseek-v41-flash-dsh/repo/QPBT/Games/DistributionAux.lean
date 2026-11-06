@@ -42,7 +42,7 @@ theorem Distribution.prod_isProbability {α β : Type*}
     [DecidableEq α] [DecidableEq β] (μ : Distribution α) (ν : Distribution β)
     (hμ : μ.IsProbability) (hν : ν.IsProbability) :
     (Distribution.prod μ ν).IsProbability := by
-  simp only [Distribution.IsProbability, Distribution.totalWeight,
+  simp [Distribution.IsProbability, Distribution.totalWeight,
     Distribution.prod]
   calc
     (∑ p ∈ μ.support.product ν.support, μ.weight p.1 * ν.weight p.2) =
@@ -73,8 +73,8 @@ noncomputable def Distribution.mix {α : Type*} [DecidableEq α]
       (mul_nonneg ht0 (μ.nonnegative a))
       (mul_nonneg (sub_nonneg.mpr ht1) (ν.nonnegative a))
   outsideSupport a ha := by
-    have hμ : a ∉ μ.support := fun h => ha (Finset.mem_union_left _ h)
-    have hν : a ∉ ν.support := fun h => ha (Finset.mem_union_right _ h)
+    have hμ := fun h => ha (Finset.mem_union_left _ h)
+    have hν := fun h => ha (Finset.mem_union_right _ h)
     simp [μ.outsideSupport a hμ, ν.outsideSupport a hν]
 
 /-- A convex mixture of probability distributions is a probability distribution;
@@ -84,8 +84,7 @@ theorem Distribution.mix_isProbability {α : Type*} [DecidableEq α]
     (t : ℝ) (μ ν : Distribution α) (hμ : μ.IsProbability)
     (hν : ν.IsProbability) (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
     (Distribution.mix t ht0 ht1 μ ν).IsProbability := by
-  have hμ_union :
-      ∑ a ∈ μ.support ∪ ν.support, μ.weight a = 1 := by
+  have hμ_union := by
     apply hμ.weight_sum_eq_one_of_subset
     intro a ha
     exact Finset.mem_union_left ν.support ha
@@ -94,7 +93,7 @@ theorem Distribution.mix_isProbability {α : Type*} [DecidableEq α]
     apply hν.weight_sum_eq_one_of_subset
     intro a ha
     exact Finset.mem_union_right μ.support ha
-  simp only [Distribution.IsProbability, Distribution.totalWeight,
+  simp [Distribution.IsProbability, Distribution.totalWeight,
     Distribution.mix]
   rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
     hμ_union, hν_union]
@@ -129,7 +128,7 @@ theorem Distribution.bind_isProbability {α β : Type*} [DecidableEq β]
     apply (hν a ha).weight_sum_eq_one_of_subset
     intro b hb
     exact Finset.mem_biUnion.mpr ⟨a, ha, hb⟩
-  simp only [Distribution.IsProbability, Distribution.totalWeight,
+  simp [Distribution.IsProbability, Distribution.totalWeight,
     Distribution.bind]
   rw [Finset.sum_comm]
   calc
@@ -165,7 +164,7 @@ noncomputable def Distribution.restrict {α : Type*} [DecidableEq α]
     · exact le_rfl
   outsideSupport a ha := by
     by_cases hp : p a
-    · have hμ : a ∉ μ.support := fun h => ha (Finset.mem_filter.mpr ⟨h, hp⟩)
+    · have hμ := fun h => ha (Finset.mem_filter.mpr ⟨h, hp⟩)
       simp [hp, μ.outsideSupport a hμ]
     · simp [hp]
 
@@ -177,7 +176,7 @@ theorem Distribution.restrict_isProbability {α : Type*} [DecidableEq α]
     (μ : Distribution α) (p : α → Prop) [DecidablePred p]
     (hpos : 0 < ∑ a ∈ μ.support.filter p, μ.weight a) :
     (Distribution.restrict μ p hpos).IsProbability := by
-  simp only [Distribution.IsProbability, Distribution.totalWeight,
+  simp [Distribution.IsProbability, Distribution.totalWeight,
     Distribution.restrict]
   calc
     (∑ a ∈ μ.support.filter p,
@@ -211,8 +210,8 @@ theorem Distribution.ext_of_support_of_weight {α : Type*} {μ ν : Distribution
   | mk s w hn ho =>
     cases ν with
     | mk s' w' hn' ho' =>
-      have hs : s = s' := hsupport
-      have hw : w = w' := hweight
+      have hs := hsupport
+      have hw := hweight
       subst hs
       subst hw
       rfl
@@ -296,16 +295,13 @@ theorem uniformDistribution_map_of_card_fiber {α β : Type*}
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (Finset.univ : Finset α).image e = (Finset.univ : Finset β)
     ext b
-    simp only [Finset.mem_image, Finset.mem_univ, iff_true, true_and]
+    simp [Finset.mem_image, Finset.mem_univ, iff_true, true_and]
     have hne : ((Finset.univ : Finset α).filter fun a => e a = b).Nonempty := by
       rw [← Finset.card_pos, hc]
       exact hcpos
     obtain ⟨a, ha⟩ := hne
     exact ⟨a, (Finset.mem_filter.mp ha).2⟩
   · funext b
-    have hbeta : (Fintype.card β : Error) ≠ 0 := by
-      exact_mod_cast Fintype.card_ne_zero (α := β)
-    have hc' : (c : Error) ≠ 0 := by exact_mod_cast hcpos.ne'
     change (∑ a ∈ (Finset.univ : Finset α).filter fun a => e a = b,
         (uniformDistribution α).weight a) = (uniformDistribution β).weight b
     rw [Finset.sum_congr rfl fun a _ => uniformDistribution_weight_apply α a,
@@ -482,7 +478,7 @@ theorem Distribution.bind_map {α β γ : Type*} [DecidableEq β] [DecidableEq �
       exact Finset.mem_filter.mpr
         ⟨Finset.mem_biUnion.mpr ⟨a, ha, hb1⟩, hb2⟩
     · intro b hb hbnot
-      have hfb : f b = c := (Finset.mem_filter.mp hb).2
+      have hfb := (Finset.mem_filter.mp hb).2
       have hnot : b ∉ (ν a).support := fun hmem =>
         hbnot (Finset.mem_filter.mpr ⟨hmem, hfb⟩)
       rw [(ν a).outsideSupport b hnot, mul_zero]
@@ -502,8 +498,6 @@ theorem Distribution.bind_uniform_restrict_eq {α ι : Type*} [DecidableEq α]
     Distribution.bind (uniformDistribution ι)
         (fun i => Distribution.restrict μ (p i) (hpos i)) = μ := by
   classical
-  have hcard : (0 : ℝ) < (Fintype.card ι : ℝ) := by
-    exact_mod_cast Fintype.card_pos
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · change (Finset.univ : Finset ι).biUnion
       (fun i => μ.support.filter (p i)) = μ.support
@@ -527,11 +521,11 @@ theorem Distribution.bind_uniform_restrict_eq {α ι : Type*} [DecidableEq α]
       by_cases h : p i a
       · have hw : (Distribution.restrict μ (p i) (hpos i)).weight a =
             μ.weight a / (1 / (Fintype.card ι : ℝ)) := by
-          simp only [Distribution.restrict, if_pos h, hmass i]
+          simp [Distribution.restrict, if_pos h, hmass i]
         rw [hw, if_pos h]
         field_simp
       · have hw : (Distribution.restrict μ (p i) (hpos i)).weight a = 0 := by
-          simp only [Distribution.restrict, if_neg h]
+          simp [Distribution.restrict, if_neg h]
         rw [hw, if_neg h, mul_zero]
     rw [Finset.sum_congr rfl fun i _ => hterm i]
     obtain ⟨i₀, hi₀, huniq⟩ := hunique a
@@ -632,7 +626,7 @@ theorem Distribution.bind_bind {α β γ : Type*} [DecidableEq β] [DecidableEq 
         (fun b => (ρ b).support) =
       μ.support.biUnion (fun a => (ν a).support.biUnion (fun b => (ρ b).support))
     ext c
-    simp only [Finset.mem_biUnion]
+    simp [Finset.mem_biUnion]
     constructor
     · rintro ⟨b, ⟨a, ha, hb⟩, hc⟩
       exact ⟨a, ha, b, hb, hc⟩
@@ -673,7 +667,7 @@ theorem Distribution.prod_bind_left {α β γ : Type*} [DecidableEq β]
   · change (μ.support.biUnion (fun a => (ν a).support)) ×ˢ ρ.support =
       μ.support.biUnion (fun a => (ν a).support ×ˢ ρ.support)
     ext w
-    simp only [Finset.mem_product, Finset.mem_biUnion]
+    simp [Finset.mem_product, Finset.mem_biUnion]
     constructor
     · rintro ⟨⟨a, ha, hb⟩, hc⟩
       exact ⟨a, ha, hb, hc⟩

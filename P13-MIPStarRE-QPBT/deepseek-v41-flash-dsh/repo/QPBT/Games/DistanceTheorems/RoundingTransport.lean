@@ -122,14 +122,14 @@ private theorem rounding_consistency_le {ιA ιB α : Type*}
   rw [consistencyDefect_placed_eq_one_sub_overlap (uniformDistribution Unit)
     (fun _ => P) (fun _ => B)
     ψ (uniformDistribution_isProbability Unit) hψ]
-  simp only [leftPlacedMeasurement, rightPlacedMeasurement,
+  simp [leftPlacedMeasurement, rightPlacedMeasurement,
     MIPStarRE.Quantum.Measurement.ofSumEqOne] at hgap
   change |avgOver (uniformDistribution Unit) (fun _ => ∑ a,
       stateQForm ψ (rightTensor (B.effect a) * leftTensor (A.effect a))) -
     avgOver (uniformDistribution Unit) (fun _ => ∑ a,
       stateQForm ψ (rightTensor (B.effect a) * leftTensor (P.effect a)))| ≤ _ at hgap
-  simp only [rightTensor_mul_leftTensor_eq_opTensor] at hgap
-  dsimp only [opTensor, heteroKron] at hgap hcons ⊢
+  simp [rightTensor_mul_leftTensor_eq_opTensor] at hgap
+  dsimp [opTensor, heteroKron] at hgap hcons ⊢
   have hdiff := (le_abs_self _).trans hgap
   linarith
 
@@ -236,7 +236,7 @@ theorem consistencyDefect_prodComm {X α ιA ιB : Type*}
   apply avgOver_congr
   intro x
   rw [Finset.sum_comm]
-  simp only [eq_comm]
+  simp [eq_comm]
 
 /-- Formalization-only distance identity for the Bob-side rounding in
 `lem:ortho`: left placement on the exchanged state is right placement on the

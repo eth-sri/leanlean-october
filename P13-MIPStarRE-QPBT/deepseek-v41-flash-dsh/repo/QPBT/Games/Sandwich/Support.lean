@@ -164,7 +164,7 @@ theorem avg_diagonal_postprocess_stateQForm_le
     let AL := leftPlacedMeasurement (ιB := ιB) A
     let BR := rightPlacedMeasurement (ιA := ιA) B
     have hpoint := point_defect_eq AL BR ψ
-    simp only [AL, BR, leftPlacedMeasurement, rightPlacedMeasurement,
+    simp [AL, BR, leftPlacedMeasurement, rightPlacedMeasurement,
       MIPStarRE.Quantum.Measurement.ofSumEqOne] at hpoint
     simp_rw [placed_product_stateQForm_eq] at hpoint
     have hdiag : 0 ≤ ∑ g : Γ, w g g :=
@@ -234,7 +234,7 @@ theorem avg_diagonal_postprocess_stateQForm_le
       intro g' _
       by_cases hgg' : g = g'
       · subst g'
-        simp only [if_pos]
+        simp [if_pos]
         exact le_of_eq (avgOver_uniform_const (w g g))
       · rw [if_neg hgg']
         calc
@@ -311,8 +311,7 @@ theorem point_codeword_defect_le_avg_evaluated_add
             ((A.postprocess (fun g => eval g y)).effect r)
             ((B.postprocess (fun g => eval g y)).effect r))) := by
     simp_rw [hevaluated]
-    rw [avgOver_sub, avgOver_uniform_const]
-    rw [hψ]
+    rw [avgOver_sub, avgOver_uniform_const, hψ]
     norm_num
   rw [hfull, hψ, one_pow, heval_avg]
   linarith
@@ -358,8 +357,7 @@ theorem consistencyDefect_codewords_le_evaluated_add
                 (((B x).postprocess (fun g => eval g y)).effect r'))) + ε := by
     exact point_codeword_defect_le_avg_evaluated_add
       (A x) (B x) ψ eval ε hψ hε hcollision
-  rw [consistencyDefect_placed_eq_avg_point μ A B]
-  rw [consistencyDefect_placed_eq_avg_point
+  rw [consistencyDefect_placed_eq_avg_point μ A B, consistencyDefect_placed_eq_avg_point
     (Distribution.prod μ (uniformDistribution Y))
     (fun xy => (A xy.1).postprocess (fun g => eval g xy.2))
     (fun xy => (B xy.1).postprocess (fun g => eval g xy.2))]
@@ -387,16 +385,15 @@ theorem consistencyDefect_codewords_le_evaluated_add
                   (((B x).postprocess (fun g => eval g y)).effect r')))) +
         avgOver μ (fun _ => ε) := avgOver_add _ _ _
     _ = _ := by rw [avgOver_const_of_isProbability μ hμ]
+variable {α β ι : Type*} [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β] [Fintype ι] [DecidableEq ι] (M : Measurement α ι)
+
 
 /-- Coarsening the outcomes of a projective measurement preserves
 projectivity. This is the formalization-only fact
 `lem:sandwich-postprocess-projective` used in the palindromic construction of
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:930-946`. -/
-theorem postprocess_isProjective {α β ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ι] [DecidableEq ι]
-    (M : Measurement α ι) (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
+theorem postprocess_isProjective  (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (f : α → β) : MIPStarRE.QPBT.Measurement.IsProjective (M.postprocess f) := by
   classical
   intro b
@@ -451,10 +448,7 @@ outcome. This is the formalization-only identity
 `lem:sandwich-injective-postprocess` used to identify product outcomes in
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:930-946`. -/
-theorem postprocess_effect_of_injective {α β ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ι] [DecidableEq ι]
-    (M : Measurement α ι) (f : α → β) (hf : Function.Injective f) (a : α) :
+theorem postprocess_effect_of_injective  (f : α → β) (hf : Function.Injective f) (a : α) :
     (M.postprocess f).effect (f a) = M.effect a := by
   simp only [MIPStarRE.Quantum.Measurement.postprocess_effect, Finset.sum_filter]
   rw [Fintype.sum_eq_single a]
@@ -468,10 +462,7 @@ multiplied on the right. This is the formalization-only identity
 `lem:sandwich-postprocess-effect-right` used in the joint-family comparison for
 `lem:ld-sandwich`; detailed source argument
 `references/neexp-paper/05_quantum_preliminaries.tex:930-946`. -/
-theorem effect_mul_postprocess_effect {α β ι : Type*}
-    [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
-    [Fintype ι] [DecidableEq ι]
-    (M : Measurement α ι) (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
+theorem effect_mul_postprocess_effect  (hM : MIPStarRE.QPBT.Measurement.IsProjective M)
     (f : α → β) (b : β) (a : α) :
     M.effect a * (M.postprocess f).effect b =
       if f a = b then M.effect a else 0 := by

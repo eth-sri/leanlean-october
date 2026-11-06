@@ -66,9 +66,10 @@ def diagonalParameterEvaluatedCoefficientDefect
       (((((lines.Qline .bob sample.1).postprocess (diagonalRead P)).postprocess
         (fun coefficients => evalCoefficient coefficients sample.2)).effect value)))
     (pairState setting)
+variable (lines : ExtendedLinesWitness setting points deltaL)
 
-private theorem axisCoefficientAnswerDefect_le_raw
-    (lines : ExtendedLinesWitness setting points deltaL) :
+
+private theorem axisCoefficientAnswerDefect_le_raw  :
     @LE.le Real Real.instLE (axisCoefficientAnswerDefect lines)
       (consistencyDefect ((directALinePointDist P.extendedDirectLd).map Prod.fst)
         (fun line coefficients => heteroKron
@@ -93,7 +94,6 @@ private theorem axisCoefficientAnswerDefect_le_raw
         (fun line answer => heteroKron (((A line).postprocess wrap).effect answer) 1)
         (fun line answer => heteroKron 1 (((B line).postprocess wrap).effect answer))
         (pairState setting) := by
-    unfold axisCoefficientAnswerDefect
     apply consistencyDefect_congr
     · intro line answer
       apply congrArg (fun effect => heteroKron effect 1)
@@ -110,8 +110,7 @@ private theorem axisCoefficientAnswerDefect_le_raw
   rw [hEq]
   exact h
 
-private theorem diagonalCoefficientAnswerDefect_le_raw
-    (lines : ExtendedLinesWitness setting points deltaL) :
+private theorem diagonalCoefficientAnswerDefect_le_raw  :
     @LE.le Real Real.instLE (diagonalCoefficientAnswerDefect lines)
       (consistencyDefect ((directDLinePointDist P.extendedDirectLd).map Prod.fst)
         (fun line coefficients => heteroKron
@@ -137,7 +136,6 @@ private theorem diagonalCoefficientAnswerDefect_le_raw
         (fun line answer => heteroKron (((A line).postprocess wrap).effect answer) 1)
         (fun line answer => heteroKron 1 (((B line).postprocess wrap).effect answer))
         (pairState setting) := by
-    unfold diagonalCoefficientAnswerDefect
     apply consistencyDefect_congr
     · intro line answer
       apply congrArg (fun effect => heteroKron effect 1)
@@ -156,8 +154,7 @@ private theorem diagonalCoefficientAnswerDefect_le_raw
 
 /-- The axis-axis branch rejection is bounded by the independently evaluated
 axis coefficient defect plus `d / q`. -/
-theorem aline_aline_rejection_le_axisParameterEvaluatedCoefficientDefect_add
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem aline_aline_rejection_le_axisParameterEvaluatedCoefficientDefect_add  :
     @LE.le Real Real.instLE
       (directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.aline, .aline))
@@ -186,8 +183,7 @@ theorem aline_aline_rejection_le_axisParameterEvaluatedCoefficientDefect_add
 
 /-- The diagonal-diagonal branch rejection is bounded by the independently
 evaluated diagonal coefficient defect plus `md / q`. -/
-theorem dline_dline_rejection_le_diagonalParameterEvaluatedCoefficientDefect_add
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem dline_dline_rejection_le_diagonalParameterEvaluatedCoefficientDefect_add  :
     @LE.le Real Real.instLE
       (directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.dline, .dline))

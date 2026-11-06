@@ -60,14 +60,15 @@ def ldSpaceSplit (L : LdParams) :
   right_inv p := by
     obtain ⟨⟨a, b⟩, c⟩ := p
     rfl
+variable (L : LdParams)
+
 
 /-- Formalization-only auxiliary lemma: the point block of a uniformly random
 ambient vector is uniform. -/
-private theorem map_uniformDistribution_point (L : LdParams) :
+private theorem map_uniformDistribution_point  :
     (uniformDistribution (LdSpace L)).map LdSpace.point =
       uniformDistribution (Fin L.m → ScalarQ L) := by
-  have hsplit : (uniformDistribution (LdSpace L)).map (ldSpaceSplit L) =
-      uniformDistribution (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L)) :=
+  have hsplit :=
     uniformDistribution_map_equiv (ldSpaceSplit L)
   calc
     (uniformDistribution (LdSpace L)).map LdSpace.point
@@ -87,11 +88,10 @@ uniformly random ambient vector is uniform. This is the seed marginal used in
 the proof of `lem:alnf`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:243-257`,
 and in blueprint `def:ith-restricted-line`. -/
-theorem uniformDistribution_map_ldSeed (L : LdParams) :
+theorem uniformDistribution_map_ldSeed  :
     (uniformDistribution (LdSpace L)).map LdSpace.seed =
       uniformDistribution (ScalarQ L) := by
-  have hsplit : (uniformDistribution (LdSpace L)).map (ldSpaceSplit L) =
-      uniformDistribution (((Fin L.m → ScalarQ L) × ScalarQ L) × (Fin L.m → ScalarQ L)) :=
+  have hsplit :=
     uniformDistribution_map_equiv (ldSpaceSplit L)
   calc
     (uniformDistribution (LdSpace L)).map LdSpace.seed
@@ -111,7 +111,7 @@ balance assertion in `def:ld-question-distribution`, blueprint
 `lem:chi-index-uniform`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:215-221`.
 -/
-theorem uniformDistribution_map_chiIndex (L : LdParams) :
+theorem uniformDistribution_map_chiIndex  :
     (uniformDistribution (ScalarQ L)).map (chiIndex L) =
       uniformDistribution (Fin L.m) := by
   letI : Nonempty (Fin (L.q / L.m)) :=
@@ -122,7 +122,7 @@ theorem uniformDistribution_map_chiIndex (L : LdParams) :
 /-- `lem:alnf`: the point and axis-index marginals of the axis line-point
 distribution are uniform. Blueprint `lem:alnf`, paper
 `08_classical_and_quantum_low_degree_tests.tex:243-257`. -/
-theorem aLinePointDist_point_marginal_uniform (L : LdParams) :
+theorem aLinePointDist_point_marginal_uniform  :
     (aLinePointDist L).map Prod.snd =
         uniformDistribution (Fin L.m → ScalarQ L) ∧
       (aLinePointDist L).map (fun sample => chiIndex L sample.1.seed) =
@@ -149,7 +149,7 @@ theorem aLinePointDist_point_marginal_uniform (L : LdParams) :
 /-- `lem:dlnf`: the point and prefix-index marginals of the diagonal
 line-point distribution are uniform. Blueprint `lem:dlnf`,
 paper `08_classical_and_quantum_low_degree_tests.tex:261-272`. -/
-theorem dLinePointDist_point_marginal_uniform (L : LdParams) :
+theorem dLinePointDist_point_marginal_uniform  :
     (dLinePointDist L).map Prod.snd =
         uniformDistribution (Fin L.m → ScalarQ L) ∧
       (dLinePointDist L).map (fun sample => chiIndex L sample.1.seed) =

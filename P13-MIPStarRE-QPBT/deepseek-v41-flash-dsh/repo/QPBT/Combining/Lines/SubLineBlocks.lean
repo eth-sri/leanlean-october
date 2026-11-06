@@ -67,13 +67,15 @@ instance ldSeedDirEvent_decidablePred (L : LdParams) (i : Fin L.m) :
   intro sw
   unfold ldSeedDirEvent
   infer_instance
+variable (L : LdParams) (i : Fin L.m)
+
 
 /-- Each coordinate-index event of the seed-direction block carries mass
 `1 / m` under the uniform law, because the retained seed is uniform and its
 `m` coordinate-index fibers are equal.  Blueprint
 `lem:restricted-line-mixture-bounds`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1049-1051`. -/
-theorem ldSeedDirEvent_mass (L : LdParams) (i : Fin L.m) :
+theorem ldSeedDirEvent_mass  :
     ∑ sw ∈ (uniformDistribution
           (ScalarQ L × (Fin L.m → ScalarQ L))).support.filter
         (ldSeedDirEvent L i),
@@ -101,7 +103,7 @@ theorem ldSeedDirEvent_mass (L : LdParams) (i : Fin L.m) :
 /-- Every coordinate-index event of the seed-direction block has positive
 mass.  Blueprint `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-theorem ldSeedDirEvent_positive (L : LdParams) (i : Fin L.m) :
+theorem ldSeedDirEvent_positive  :
     0 < ∑ sw ∈ (uniformDistribution
           (ScalarQ L × (Fin L.m → ScalarQ L))).support.filter
         (ldSeedDirEvent L i),
@@ -132,7 +134,7 @@ event of its seed leaves the point block uniform and independent of the fresh
 diagonal direction pair carried by the seed-direction block.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrict_uniform_ldSeedEvent_map_block (L : LdParams) (i : Fin L.m) :
+theorem restrict_uniform_ldSeedEvent_map_block  :
     (Distribution.restrict (uniformDistribution (LdSpace L)) (ldSeedEvent L i)
         (ldSeedEvent_positive L i)).map (ldSpaceBlockEquiv L) =
       Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
@@ -181,7 +183,7 @@ axis-parallel line through a uniform point block, in the coordinate direction
 named by an independent fresh diagonal direction pair at index `i`, together
 with that same point.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrictedALineDist_eq_map_prod (L : LdParams) (i : Fin L.m) :
+theorem restrictedALineDist_eq_map_prod  :
     restrictedALineDist L i =
       (Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
           (freshDiagonalPairDist L i)).map
@@ -205,7 +207,7 @@ diagonal line through a uniform point block, in the prefix-projected direction
 of an independent fresh diagonal direction pair at index `i`, together with
 that same point.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrictedDLineDist_eq_map_prod (L : LdParams) (i : Fin L.m) :
+theorem restrictedDLineDist_eq_map_prod  :
     restrictedDLineDist L i =
       (Distribution.prod (uniformDistribution (Fin L.m → ScalarQ L))
           (freshDiagonalPairDist L i)).map

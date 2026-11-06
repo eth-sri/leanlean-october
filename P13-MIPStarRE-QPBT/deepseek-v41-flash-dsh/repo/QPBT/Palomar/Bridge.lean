@@ -35,15 +35,17 @@ noncomputable def pmfDistribution {α : Type*} [Fintype α] (p : PMF α) :
   weight := fun a => (p a).toReal
   nonnegative := fun _ => ENNReal.toReal_nonneg
   outsideSupport := by simp
+variable {α : Type*}
+
 
 /-- The canonical distribution associated to a PMF has total mass one. -/
-theorem pmfDistribution_isProbability {α : Type*} [Fintype α] (p : PMF α) :
+theorem pmfDistribution_isProbability  [Fintype α] (p : PMF α) :
     (pmfDistribution p).IsProbability := by
   simpa [Distribution.IsProbability, Distribution.totalWeight, pmfDistribution] using
     PMF.sum_toReal_eq_one p
 
 /-- Converting a finite PMF to a project distribution and back is exact. -/
-@[simp] theorem pmfDistribution_toPMF {α : Type*} [Fintype α] (p : PMF α) :
+@[simp] theorem pmfDistribution_toPMF  [Fintype α] (p : PMF α) :
     (pmfDistribution p).toPMF (pmfDistribution_isProbability p) = p := by
   ext a
   rw [Distribution.toPMF_apply]
@@ -130,16 +132,18 @@ noncomputable def toSymmetricGame {X A : Type} [Fintype X] [Fintype A]
 end SymmetricGame
 
 namespace POVM
+variable {A I : Type*} [Fintype A] [Fintype I] [DecidableEq I]
+
 
 /-- Convert a library measurement to a compact POVM. -/
-def ofMeasurement {A I : Type*} [Fintype A] [Fintype I] [DecidableEq I]
+def ofMeasurement 
     (M : MIPStarRE.Quantum.Measurement A I) : POVM A I where
   effect := M.effect
   pos := fun a => Matrix.nonneg_iff_posSemidef.mp (M.pos a)
   sum_eq_one := M.sum_eq_one
 
 /-- Convert a compact POVM to a library measurement. -/
-def toMeasurement {A I : Type*} [Fintype A] [Fintype I] [DecidableEq I]
+def toMeasurement 
     (M : POVM A I) : MIPStarRE.Quantum.Measurement A I :=
   MIPStarRE.Quantum.Measurement.ofSumEqOne M.effect
     (fun a => Matrix.nonneg_iff_posSemidef.mpr (M.pos a)) M.sum_eq_one
@@ -151,16 +155,16 @@ def toMeasurement {A I : Type*} [Fintype A] [Fintype I] [DecidableEq I]
 @[simp] theorem toMeasurement_effect {A I : Type*} [Fintype A] [Fintype I]
     [DecidableEq I] (M : POVM A I) (a : A) :
     M.toMeasurement.effect a = M.effect a := rfl
+variable {A I : Type*} [Fintype A] [Fintype I] [DecidableEq I]
+
 
 /-- Compact-to-library-to-compact POVM conversion is exact. -/
-@[simp] theorem ofMeasurement_toMeasurement {A I : Type*} [Fintype A] [Fintype I]
-    [DecidableEq I] (M : POVM A I) : ofMeasurement M.toMeasurement = M := by
+@[simp] theorem ofMeasurement_toMeasurement  (M : POVM A I) : ofMeasurement M.toMeasurement = M := by
   cases M
   rfl
 
 /-- Library-to-compact-to-library measurement conversion is exact. -/
-@[simp] theorem toMeasurement_ofMeasurement {A I : Type*} [Fintype A] [Fintype I]
-    [DecidableEq I] (M : MIPStarRE.Quantum.Measurement A I) :
+@[simp] theorem toMeasurement_ofMeasurement  (M : MIPStarRE.Quantum.Measurement A I) :
     (ofMeasurement M).toMeasurement = M := by
   apply MIPStarRE.Quantum.Measurement.ext
   intro a
@@ -169,9 +173,11 @@ def toMeasurement {A I : Type*} [Fintype A] [Fintype I] [DecidableEq I]
 end POVM
 
 namespace Strategy
+variable {G : MIPStarRE.QPBT.Game}
+
 
 /-- Convert a library strategy to compact carrier-parametric data. -/
-def ofStrategy {G : MIPStarRE.QPBT.Game} (S : MIPStarRE.QPBT.Strategy G) :
+def ofStrategy  (S : MIPStarRE.QPBT.Strategy G) :
     Strategy G.QuestionA G.QuestionB G.AnswerA G.AnswerB where
   ιA := S.ιA
   ιB := S.ιB
@@ -181,7 +187,7 @@ def ofStrategy {G : MIPStarRE.QPBT.Game} (S : MIPStarRE.QPBT.Strategy G) :
   bob := fun y => POVM.ofMeasurement (S.B y)
 
 /-- Convert compact strategy data to a strategy for a library game on the same carriers. -/
-def toStrategy {G : MIPStarRE.QPBT.Game}
+def toStrategy 
     (S : Strategy G.QuestionA G.QuestionB G.AnswerA G.AnswerB) :
     MIPStarRE.QPBT.Strategy G where
   ιA := S.ιA
@@ -202,22 +208,24 @@ def toStrategy {G : MIPStarRE.QPBT.Game}
     (S : Strategy G.QuestionA G.QuestionB G.AnswerA G.AnswerB)
     (y : G.QuestionB) (b : G.AnswerB) :
     ((toStrategy S).B y).effect b = (S.bob y).effect b := rfl
+variable {G : MIPStarRE.QPBT.Game}
+
 
 /-- Library-to-compact-to-library strategy conversion is exact. -/
-@[simp] theorem toStrategy_ofStrategy {G : MIPStarRE.QPBT.Game}
+@[simp] theorem toStrategy_ofStrategy 
     (S : MIPStarRE.QPBT.Strategy G) : toStrategy (ofStrategy S) = S := by
   cases S
   rfl
 
 /-- Compact-to-library-to-compact strategy conversion is exact. -/
-@[simp] theorem ofStrategy_toStrategy {G : MIPStarRE.QPBT.Game}
+@[simp] theorem ofStrategy_toStrategy 
     (S : Strategy G.QuestionA G.QuestionB G.AnswerA G.AnswerB) :
     ofStrategy (toStrategy S) = S := by
   cases S
   rfl
 
 /-- The compact and library Born values agree for a library strategy. -/
-theorem value_ofStrategy {G : MIPStarRE.QPBT.Game}
+theorem value_ofStrategy 
     (S : MIPStarRE.QPBT.Strategy G) :
     (ofStrategy S).value (Game.ofGame G) = S.value := by
   unfold MIPStarRE.QPBT.Palomar.Strategy.value MIPStarRE.QPBT.Strategy.value
@@ -233,7 +241,7 @@ theorem isProjective_toStrategy_iff {G : MIPStarRE.QPBT.Game}
 end Strategy
 
 /-- A project distribution and its PMF have the same positive-probability support. -/
-theorem distribution_toPMF_pos_iff {α : Type*} (μ : Distribution α)
+theorem distribution_toPMF_pos_iff  (μ : Distribution α)
     (hμ : μ.IsProbability) (a : α) : 0 < μ.toPMF hμ a ↔ 0 < μ.weight a := by
   rw [Distribution.toPMF_apply]
   exact ENNReal.ofReal_pos
@@ -256,9 +264,11 @@ theorem isCommutingOn_toPMF_iff
     exact h x y ((distribution_toPMF_pos_iff μ hμ (x, y)).mp hxy) a b
 
 namespace SymmetricStrategy
+variable {G : MIPStarRE.QPBT.SymmetricGame}
+
 
 /-- Convert a library symmetric strategy to compact data. -/
-def ofSymmetricStrategy {G : MIPStarRE.QPBT.SymmetricGame}
+def ofSymmetricStrategy 
     (S : MIPStarRE.QPBT.SymmetricStrategy G) : SymmetricStrategy G.Question G.Answer where
   ι := S.ι
   ψ := S.ψ
@@ -267,37 +277,37 @@ def ofSymmetricStrategy {G : MIPStarRE.QPBT.SymmetricGame}
   meas := fun x => POVM.ofMeasurement (S.M x)
 
 /-- Convert compact symmetric strategy data to a library symmetric strategy. -/
-def toSymmetricStrategy {G : MIPStarRE.QPBT.SymmetricGame}
+def toSymmetricStrategy 
     (S : SymmetricStrategy G.Question G.Answer) : MIPStarRE.QPBT.SymmetricStrategy G where
   ι := S.ι
   ψ := S.ψ
   ψ_norm := S.ψ_norm
   ψ_swap := S.ψ_swap
   M := fun x => (S.meas x).toMeasurement
+variable {G : MIPStarRE.QPBT.SymmetricGame}
+
 
 /-- Library-to-compact-to-library symmetric strategy conversion is exact. -/
-@[simp] theorem toSymmetricStrategy_ofSymmetricStrategy
-    {G : MIPStarRE.QPBT.SymmetricGame} (S : MIPStarRE.QPBT.SymmetricStrategy G) :
+@[simp] theorem toSymmetricStrategy_ofSymmetricStrategy  (S : MIPStarRE.QPBT.SymmetricStrategy G) :
     toSymmetricStrategy (ofSymmetricStrategy S) = S := by
   cases S
   rfl
 
 /-- Compact-to-library-to-compact symmetric strategy conversion is exact. -/
-@[simp] theorem ofSymmetricStrategy_toSymmetricStrategy
-    {G : MIPStarRE.QPBT.SymmetricGame} (S : SymmetricStrategy G.Question G.Answer) :
+@[simp] theorem ofSymmetricStrategy_toSymmetricStrategy  (S : SymmetricStrategy G.Question G.Answer) :
     ofSymmetricStrategy (toSymmetricStrategy S) = S := by
   cases S
   rfl
 
 /-- The compact and library Born values agree for a library symmetric strategy. -/
-theorem value_ofSymmetricStrategy {G : MIPStarRE.QPBT.SymmetricGame}
+theorem value_ofSymmetricStrategy 
     (S : MIPStarRE.QPBT.SymmetricStrategy G) :
     (ofSymmetricStrategy S).toStrategy.value
         (SymmetricGame.ofSymmetricGame G).toGame = S.toStrategy.value := by
   exact Strategy.value_ofStrategy S.toStrategy
 
 /-- Library and compact SPCC predicates are exactly equivalent. -/
-theorem isSPCC_ofSymmetricStrategy_iff {G : MIPStarRE.QPBT.SymmetricGame}
+theorem isSPCC_ofSymmetricStrategy_iff 
     (S : MIPStarRE.QPBT.SymmetricStrategy G) :
     (ofSymmetricStrategy S).IsSPCC (SymmetricGame.ofSymmetricGame G) ↔ S.IsSPCC := by
   change

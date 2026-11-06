@@ -47,7 +47,7 @@ variable {points : CombinedPointsWitness setting deltaQ}
 @[simp] private theorem piCongrLeft_const_apply
     {I J K : Type*} (e : I ≃ J) (f : I → K) (j : J) :
     (e.piCongrLeft fun _ => K) f j = f (e.symm j) := by
-  simp only [Equiv.piCongrLeft_apply, eq_rec_constant]
+  simp [Equiv.piCongrLeft_apply, eq_rec_constant]
 
 /-- Split a direct extended point into its two Pauli points and two scalar
 coordinates.  This is a single bijection, so uniformity is joint rather than
@@ -110,7 +110,6 @@ private theorem consistencyDefect_dependent_postprocess_le
       consistencyDefect mu
         (fun x a => heteroKron ((A x).effect a) 1)
         (fun x a => heteroKron 1 ((B x).effect a)) psi := by
-  unfold consistencyDefect
   apply avgOver_mono
   intro x
   have h := consistencyDefect_postprocess_le (uniformDistribution Unit)
@@ -134,7 +133,6 @@ private theorem consistencyDefect_uniform_fst
       consistencyDefect (uniformDistribution X)
         (fun x a => heteroKron (A x a) 1)
         (fun x a => heteroKron 1 (B x a)) psi := by
-  unfold consistencyDefect
   let f : X → ℝ := fun x =>
     ∑ a : Alpha, ∑ b : Alpha,
       if a = b then 0 else
@@ -153,7 +151,7 @@ private theorem point_point_win_iff_read_eq
         (.point, directLdMap P.extendedDirectLd .point sample)
         (.pointVals valuesA) (.pointVals valuesB) = true ↔
       pointGameRead (.pointVals valuesA) = pointGameRead (.pointVals valuesB) := by
-  simp only [directLdWinPredicate, validDirectLdAnswer,
+  simp [directLdWinPredicate, validDirectLdAnswer,
     Bool.and_self, if_true, decide_eq_true_eq, pointGameRead, Option.some.injEq]
   change valuesA = valuesB ↔
     (extendedDirectScalarEquiv P)
@@ -171,9 +169,10 @@ private theorem point_point_win_iff_read_eq
     have hi : i = ⟨0, by change 0 < 1; decide⟩ := Fin.ext hval
     subst i
     exact (extendedDirectScalarEquiv P).injective h
+variable (lines : ExtendedLinesWitness setting points deltaL)
 
-private theorem point_rejected_term_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+
+private theorem point_rejected_term_eq_read_mismatch 
     (sample : DirectLdSpace P.extendedDirectLd)
     (answerA answerB : DirectLdAnswer P.extendedDirectLd) :
     (if directLdWinPredicate P.extendedDirectLd
@@ -195,10 +194,8 @@ private theorem point_rejected_term_eq_read_mismatch
           have hiff := point_point_win_iff_read_eq (P := P) sample valuesA valuesB
           exact if_congr hiff rfl rfl
       | alinePolys _ =>
-          rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inr rfl)]
           simp [pointGameRead, directLdWinPredicate, validDirectLdAnswer]
       | dlinePolys _ =>
-          rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inr rfl)]
           simp [pointGameRead, directLdWinPredicate, validDirectLdAnswer]
   | alinePolys _ =>
       rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inl rfl)]
@@ -207,8 +204,7 @@ private theorem point_rejected_term_eq_read_mismatch
       rw [outcomeWeight_eq_zero_of_invalid lines _ _ _ _ (Or.inl rfl)]
       cases answerB <;> simp [pointGameRead, directLdWinPredicate, validDirectLdAnswer]
 
-private theorem point_rejectedMass_eq_read_mismatch
-    (lines : ExtendedLinesWitness setting points deltaL)
+private theorem point_rejectedMass_eq_read_mismatch 
     (sample : DirectLdSpace P.extendedDirectLd) :
     directRejectedMass P.extendedDirectLd (strategy lines)
         (.point, directLdMap P.extendedDirectLd .point sample)
@@ -230,8 +226,7 @@ private theorem point_rejectedMass_eq_read_mismatch
 
 /-- The completed point read of the direct-game answer measurement is the
 corresponding scalar coarse-graining of the supplied joint point measurement. -/
-theorem point_read_effect
-    (lines : ExtendedLinesWitness setting points deltaL) (side : PlayerSide)
+theorem point_read_effect  (side : PlayerSide)
     (sample : DirectLdSpace P.extendedDirectLd) (answer : Option (PauliScalar P)) :
     (((answerMeasurement lines side
         (.point, directLdMap P.extendedDirectLd .point sample)).postprocess
@@ -249,8 +244,7 @@ theorem point_read_effect
 
 /-- The point/point branch rejection is exactly the consistency defect of the
 two completed scalar point readouts under the common uniform point question. -/
-theorem point_branch_rejection_eq_consistencyDefect
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem point_branch_rejection_eq_consistencyDefect  :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.point, .point) =
       consistencyDefect (uniformDistribution
@@ -312,8 +306,7 @@ theorem point_branch_rejection_eq_consistencyDefect
 
 /-- The point/point rejection probability of the supplied extended strategy is
 bounded by the self-consistency error of its joint point measurements. -/
-theorem point_point_rejection_le
-    (lines : ExtendedLinesWitness setting points deltaL) :
+theorem point_point_rejection_le  :
     directLdBranchRejectionProbability P.extendedDirectLd (strategy lines)
         (.point, .point) ≤ deltaQ := by
   rw [point_branch_rejection_eq_consistencyDefect lines]
@@ -410,7 +403,7 @@ theorem point_point_rejection_le
       · exact setting.placedMeasurement_effect .BA''
           (points.Q .bob xz.1 xz.2) values
     _ ≤ deltaQ := by
-      simpa only [Placement.side] using
+      simpa using
         points.self_consistent .AA' .BA'' trivial
 
 end ExtendedLineGame

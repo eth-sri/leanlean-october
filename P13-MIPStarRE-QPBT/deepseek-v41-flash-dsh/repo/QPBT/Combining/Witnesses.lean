@@ -167,15 +167,17 @@ noncomputable def subLinePointDist (P : AdmissibleParams)
   (Distribution.prod D
     (uniformDistribution (DirectScalarQ P.extendedDirectLd))).map fun sample =>
       (sample.1, sample.1.1.base + sample.2 • sample.1.1.direction)
+variable {P : AdmissibleParams}
+
 
 /-- Retain the projected line pair and the X projection of an extended point. -/
-def subLineXProjection {P : AdmissibleParams} (sample : SubLinePointSample P) :
+def subLineXProjection  (sample : SubLinePointSample P) :
     (LineDesc P.toLdParams × LineDesc P.toLdParams) ×
       (Fin P.m -> PauliScalar P) :=
   (sample.1.2, projX (directPointToPauli P sample.2))
 
 /-- Retain the projected line pair and the Z projection of an extended point. -/
-def subLineZProjection {P : AdmissibleParams} (sample : SubLinePointSample P) :
+def subLineZProjection  (sample : SubLinePointSample P) :
     (LineDesc P.toLdParams × LineDesc P.toLdParams) ×
       (Fin P.m -> PauliScalar P) :=
   (sample.1.2, projZ (directPointToPauli P sample.2))

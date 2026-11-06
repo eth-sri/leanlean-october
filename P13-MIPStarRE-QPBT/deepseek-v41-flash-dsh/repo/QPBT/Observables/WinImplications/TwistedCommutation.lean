@@ -111,14 +111,14 @@ theorem avgOver_gated_le {X : Type*} [Fintype X] [DecidableEq X] [Nonempty X]
   have hratio : ((Finset.univ.filter p).card : ℝ) / Fintype.card X ≤ 1 := by
     rw [div_le_one (by exact_mod_cast Fintype.card_pos)]
     exact_mod_cast Finset.card_le_univ _
-  have hratio0 : 0 ≤ ((Finset.univ.filter p).card : ℝ) / Fintype.card X := by
-    positivity
   nlinarith
+variable (P : AdmissibleParams)
+
 
 /-- The commuting event is nonempty. Paper
 `14_analysis_of_the_pauli_basis_test.tex:70-77`, blueprint
 `ch14_qpbt_observables.tex:159-194`. -/
-theorem commuting_filter_nonempty (P : AdmissibleParams) :
+theorem commuting_filter_nonempty  :
     (Finset.univ.filter (@IsCommuting P)).Nonempty := by
   refine ⟨0, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩⟩
   simp [IsCommuting, gammaValue, fixedBinTrace, binTrace, dotProduct]
@@ -126,7 +126,7 @@ theorem commuting_filter_nonempty (P : AdmissibleParams) :
 /-- The anticommuting event is nonempty. Paper
 `14_analysis_of_the_pauli_basis_test.tex:70-77`, blueprint
 `ch14_qpbt_observables.tex:159-194`. -/
-theorem anticommuting_filter_nonempty (P : AdmissibleParams) :
+theorem anticommuting_filter_nonempty  :
     (Finset.univ.filter (@IsAnticommuting P)).Nonempty := by
   by_contra h
   have hempty : Finset.univ.filter (@IsAnticommuting P) = ∅ :=
@@ -140,7 +140,7 @@ theorem anticommuting_filter_nonempty (P : AdmissibleParams) :
 /-- Splitting a uniform average over the commuting and anticommuting events.
 Formalization-only support for `eq:pts-obs-commutation`, paper
 `14_analysis_of_the_pauli_basis_test.tex:309-362`. -/
-theorem avgOver_uniform_split_le (P : AdmissibleParams)
+theorem avgOver_uniform_split_le 
     (f : PauliTuple P → ℝ) (hf : ∀ ω, 0 ≤ f ω) {Kc Ka : ℝ}
     (hc : avgOver (commTupleDist P) f ≤ Kc)
     (ha : avgOver (anticommTupleDist P) f ≤ Ka) :
@@ -156,7 +156,7 @@ theorem avgOver_uniform_split_le (P : AdmissibleParams)
     intro ω
     by_cases h : IsCommuting ω
     · have hna : ¬ IsAnticommuting ω := by
-        simp only [IsAnticommuting, not_not]
+        simp [IsAnticommuting, not_not]
         exact h
       simp [h, hna]
     · have hna : IsAnticommuting ω := by
@@ -216,7 +216,7 @@ theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
     have hph : phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) = 1 := by
       rw [show gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2 = 0 from hIs]
       simp [phaseSign]
-    simp only [hfdef]
+    simp [hfdef]
     rw [hph, one_smul]
   have habound : avgOver (anticommTupleDist P) f ≤ Ca * ε := by
     refine le_trans (le_of_eq ?_) hanti
@@ -236,7 +236,7 @@ theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
     have hph : phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) = -1 := by
       rw [hone]
       simp [phaseSign, show (1 : ZMod 2) ≠ 0 from by decide]
-    simp only [hfdef]
+    simp [hfdef]
     rw [hph, neg_one_smul, sub_neg_eq_add]
   have hmain : avgOver (uniformDistribution (PauliTuple P)) f ≤
       Cc * (ε + Real.sqrt ε) + Ca * ε :=
@@ -255,8 +255,6 @@ theorem twisted_commutation_of_halves {P : AdmissibleParams} {ιL ιR : Type}
         (2 * Cc + Ca) * Real.sqrt ε := by
       nlinarith [mul_le_mul_of_nonneg_left hεsq hCc,
         mul_le_mul_of_nonneg_left hεsq hCa]
-    have h2 : (2 * Cc + Ca) * Real.sqrt ε ≤
-        (2 * Cc + Ca + 4) * Real.sqrt ε := by nlinarith [hsq]
     linarith
   · have hgt : (1 : ℝ) < ε := not_le.mp hle
     have hone : (1 : ℝ) ≤ Real.sqrt ε := by
@@ -292,12 +290,10 @@ theorem point_obs_commutator_comm_le_alice_explicit :
           1024 * Real.sqrt (4 * (Fintype.card PauliEdge : ℝ))) *
             (ε + Real.sqrt ε) := by
   classical
-  have hcard : (1 : ℝ) ≤ (Fintype.card PauliEdge : ℝ) := by
-    exact_mod_cast (Fintype.card_pos : 0 < Fintype.card PauliEdge)
   set K : ℝ := 4 * (Fintype.card PauliEdge : ℝ) with hKdef
   have hK : (0 : ℝ) ≤ K := by rw [hKdef]; linarith
   intro P ε S hε
-  have hsq : (0 : ℝ) ≤ Real.sqrt ε := Real.sqrt_nonneg ε
+  have hsq := Real.sqrt_nonneg ε
   have hmain := point_obs_commutator_comm_le_explicit
     (ιL := S.toStrategy.ιA) (ιR := S.toStrategy.ιB)
     (fun ω => S.pointTraceMeas .alice .X ω.1 ω.2.2.1)

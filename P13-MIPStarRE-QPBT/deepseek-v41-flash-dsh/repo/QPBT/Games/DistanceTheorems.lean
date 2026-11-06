@@ -130,11 +130,11 @@ theorem avg_closeness {X ι : Type*}
         ∑ x ∈ μ.support, μ.weight x • (α x • v x) := by
     unfold averageOperatorOverDistribution applyOperatorToState
     rw [map_sum]
-    simp only [LinearMap.sum_apply]
+    simp [LinearMap.sum_apply]
     apply Finset.sum_congr rfl
     intro x _
     rw [← smul_assoc, map_smul]
-    simp only [v, applyOperatorToState, Complex.real_smul, map_sub,
+    simp [v, applyOperatorToState, Complex.real_smul, map_sub,
       LinearMap.smul_apply, LinearMap.sub_apply]
     rw [← smul_assoc, Complex.real_smul]
   have hnorm :
@@ -149,7 +149,7 @@ theorem avg_closeness {X ι : Type*}
         intro x _
         rw [norm_smul_of_nonneg (μ.nonnegative x), norm_smul]
         exact mul_le_mul_of_nonneg_left
-          (by simpa only [one_mul] using
+          (by simpa using
             mul_le_of_le_one_left (norm_nonneg (v x)) (hα x))
           (μ.nonnegative x)
   have hrhs_nonneg :
@@ -172,7 +172,7 @@ theorem avg_closeness {X ι : Type*}
       _ ≤ Real.sqrt (avgOver μ (fun x => ‖v x‖ ^ 2)) := havg_norm
   rw [happly]
   unfold opDistSq opFamilyDistSq avgOver
-  simp only [Fintype.sum_unique]
+  simp [Fintype.sum_unique]
   change ‖∑ x ∈ μ.support, μ.weight x • (α x • v x)‖ ^ 2 ≤
     ∑ x ∈ μ.support, μ.weight x * ‖v x‖ ^ 2
   calc
@@ -181,16 +181,15 @@ theorem avg_closeness {X ι : Type*}
       (sq_le_sq₀ (norm_nonneg _) (Real.sqrt_nonneg _)).2 hnorm_sqrt
     _ = ∑ x ∈ μ.support, μ.weight x * ‖v x‖ ^ 2 :=
       Real.sq_sqrt hrhs_nonneg
+variable {X α ι : Type*} [Fintype X] [DecidableEq X] [Fintype α] [Fintype ι] [DecidableEq ι] (μ : Distribution X)
+
 
 /-- Formalization-only auxiliary for `lem:povm-to-obs`: passing from arbitrary
 answer-indexed operator families to unit-modulus weighted sums costs at most the
 answer-alphabet cardinality. Paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:115-129` states
 the specialization to POVMs. -/
-theorem povm_to_obs {X α ι : Type*}
-    [Fintype X] [DecidableEq X] [Fintype α]
-    [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A B : X → α → Op ι)
+theorem povm_to_obs  (A B : X → α → Op ι)
     (c : α → ℂ) (hc : ∀ a, ‖c a‖ = 1) (ψ : EuclideanSpace ℂ ι) :
     opDistSq μ (fun x => ∑ a, c a • A x a) (fun x => ∑ a, c a • B x a) ψ ≤
       Fintype.card α * opFamilyDistSq μ A B ψ := by
@@ -206,9 +205,7 @@ theorem povm_to_obs {X α ι : Type*}
           ∑ a, c a • applyOperatorToState (A x a - B x a) ψ := by
       simp [applyOperatorToState, ← Finset.sum_sub_distrib, ← smul_sub]
     rw [hrewrite]
-    have hnorm :
-        ‖∑ a, c a • applyOperatorToState (A x a - B x a) ψ‖ ≤
-          ∑ a, ‖applyOperatorToState (A x a - B x a) ψ‖ := by
+    have hnorm := by
       calc
         ‖∑ a, c a • applyOperatorToState (A x a - B x a) ψ‖ ≤
             ∑ a, ‖c a • applyOperatorToState (A x a - B x a) ψ‖ :=
@@ -227,7 +224,7 @@ theorem povm_to_obs {X α ι : Type*}
           (s := Finset.univ)
           (f := fun a : α => ‖applyOperatorToState (A x a - B x a) ψ‖))
   unfold opDistSq opFamilyDistSq
-  simp only [Fintype.sum_unique]
+  simp [Fintype.sum_unique]
   calc
     avgOver μ (fun x =>
         ‖applyOperatorToState
@@ -245,10 +242,7 @@ observables costs at most the answer-alphabet cardinality. This is
 blueprint
 `lem:povm-to-obs`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:115-129`. -/
-theorem povm_to_obs_of_measurements {X α ι : Type*}
-    [Fintype X] [DecidableEq X] [Fintype α]
-    [Fintype ι] [DecidableEq ι]
-    (μ : Distribution X) (A B : X → Measurement α ι)
+theorem povm_to_obs_of_measurements  (A B : X → Measurement α ι)
     (c : α → ℂ) (hc : ∀ a, ‖c a‖ = 1) (ψ : EuclideanSpace ℂ ι) :
     opDistSq μ (fun x => ∑ a, c a • (A x).effect a)
         (fun x => ∑ a, c a • (B x).effect a) ψ ≤

@@ -23,10 +23,12 @@ namespace MIPStarRE.QPBT
 open MIPStarRE.LDT
 
 noncomputable section
+variable (L : LdParams)
+
 
 /-- The first-line nondegeneracy event has positive mass under the product
 line-point law. -/
-theorem prod_linePointDist_nondegenerate_mass_pos (L : LdParams) :
+theorem prod_linePointDist_nondegenerate_mass_pos  :
     0 < ∑ samples ∈
         (Distribution.prod (linePointDist L) (linePointDist L)).support.filter
           (fun samples => samples.1.1.direction ≠ 0),
@@ -46,7 +48,7 @@ def nondegenerateLinePastingDist (L : LdParams) :
       (fun samples => (((samples.1.1, samples.2.1), samples.2), samples.1))
 
 /-- The proof-only nondegenerate pasting question law is normalized. -/
-theorem nondegenerateLinePastingDist_isProbability (L : LdParams) :
+theorem nondegenerateLinePastingDist_isProbability  :
     (nondegenerateLinePastingDist L).IsProbability := by
   exact (Distribution.restrict_isProbability _ _
     (prod_linePointDist_nondegenerate_mass_pos L)).map _

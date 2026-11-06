@@ -153,14 +153,12 @@ theorem consistencyDefect_pasted_le_marginal_add_pinched
       exact ((G₂ q.1.1).sum_eq_one).symm
     have hQ : (Qm q).effect a₂ =
         ∑ g ∈ Finset.univ.filter (fun g => eval₂ g q.2 = a₂), (G₂ q.1.1).effect g := by
-      simp only [hQm]
       exact Measurement.postprocess_effect (G₂ q.1.1) (fun g => eval₂ g q.2) a₂
     have hpi : pinch q a₁ =
         (∑ g ∈ Finset.univ.filter (fun g => eval₂ g q.2 = a₂),
           (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g) +
         ∑ g ∈ Finset.univ.filter (fun g => ¬ eval₂ g q.2 = a₂),
           (G₂ q.1.1).effect g * (Pm q).effect a₁ * (G₂ q.1.1).effect g := by
-      simp only [hpinch]
       rw [Finset.sum_filter_add_sum_filter_not]
     have hrhs : (∑ g ∈ Finset.univ.filter (fun g => ¬ eval₂ g q.2 = a₂),
           (G₂ q.1.1).effect g * (1 - (Pm q).effect a₁) * (G₂ q.1.1).effect g) =
@@ -393,7 +391,7 @@ private theorem abs_pinch_overlap_gap_le_sqrt {R₁ Γ₂ ι : Type*}
       ‖applyOperatorToState (heteroKron (A.effect p.1) (G.effect p.2)) ψ‖ ^ 2) ≤ 1 := by
     have h := sum_norm_mul_apply_le (fun p : R₁ × Γ₂ => M.effect p) (1 : Op (ι × ι)) ψ
       (MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one M)
-    simp only [M, MIPStarRE.Quantum.Measurement.ofSumEqOne, mul_one] at h
+    simp [M, MIPStarRE.Quantum.Measurement.ofSumEqOne, mul_one] at h
     rw [hone1, hψ, one_pow] at h
     exact h
   have hcontract : ∀ (a : R₁) (g : Γ₂),
@@ -534,7 +532,7 @@ theorem consistencyDefect_pinched_le_marginal_add_sqrt
   have e2 := consistencyDefect_eq_one_sub_overlap D
     (fun q => Measurement.leftPlacement (ιB := ι) (A q))
     (fun q => Measurement.rightPlacement (ιA := ι) (P q)) ψ hD hψ
-  simp only [Measurement.leftPlacement_effect, Measurement.rightPlacement_effect,
+  simp [Measurement.leftPlacement_effect, Measurement.rightPlacement_effect,
     pinchM, MIPStarRE.Quantum.Measurement.ofSumEqOne] at e1 e2
   simp_rw [placed_product_stateQForm_eq] at e1 e2
   rw [e1, e2]

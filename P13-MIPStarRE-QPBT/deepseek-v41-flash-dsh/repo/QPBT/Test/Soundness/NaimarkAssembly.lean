@@ -64,7 +64,7 @@ theorem exists_arbitrary_strategy_isometry_bounds :
   refine ⟨21 * a ^ 2, b, by nlinarith, hb, hb1, ?_⟩
   intro P ε hε0 hε1 S hwin
   have hprojective := hproj P ε hε0 hε1 (pauliNaimarkSetting P ε S hwin)
-  simp only [pauliNaimarkSetting] at hprojective
+  simp [pauliNaimarkSetting] at hprojective
   obtain ⟨t, hstate, hA, hB⟩ := hprojective
   have hmono : deltaQld a b ε P.m P.d P.q ≤
       deltaQld (21 * a ^ 2) b ε P.m P.d P.q :=

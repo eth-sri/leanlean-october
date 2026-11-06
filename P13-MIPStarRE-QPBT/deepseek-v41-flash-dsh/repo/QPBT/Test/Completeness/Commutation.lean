@@ -131,9 +131,11 @@ theorem postprocess_commute_of_commute {α β γ δ V : Type*}
     Commute ((M.postprocess f).effect a) ((N.postprocess g).effect b) := by
   rw [Measurement.postprocess_effect, Measurement.postprocess_effect]
   exact Commute.sum_left _ _ _ fun x _ => Commute.sum_right _ _ _ fun y _ => h x y
+variable {P : AdmissibleParams}
+
 
 /-- The effect of a placed and relabelled measurement of the Pauli register. -/
-theorem placedPauliMeasurement_effect_eq {P : AdmissibleParams}
+theorem placedPauliMeasurement_effect_eq 
     {α : Type*} [Fintype α] [DecidableEq α]
     (M : Measurement α (PauliRegister P)) (f : α → PauliAnswer P)
     (a : PauliAnswer P) :
@@ -149,7 +151,7 @@ theorem placedPauliMeasurement_effect_eq {P : AdmissibleParams}
 /-- Placing a coarse-grained measurement of the Pauli register and relabelling
 its outcomes is the placement of the original measurement relabelled along the
 composite; this is the composition identity for successive coarse-grainings. -/
-theorem placedPauliMeasurement_postprocess_eq {P : AdmissibleParams}
+theorem placedPauliMeasurement_postprocess_eq 
     {ζ α : Type*} [Fintype ζ] [DecidableEq ζ] [Fintype α] [DecidableEq α]
     (M : Measurement ζ (PauliRegister P)) (g : ζ → α) (u : α → PauliAnswer P) :
     placedPauliMeasurement (M.postprocess g) u =
@@ -172,7 +174,7 @@ theorem placedPauliMeasurement_postprocess_eq {P : AdmissibleParams}
 
 /-- Placed measurements of the Pauli register with pairwise commuting effects
 have commuting effects. -/
-theorem placedPauliMeasurement_commute_of_commute {P : AdmissibleParams}
+theorem placedPauliMeasurement_commute_of_commute 
     {α β : Type*} [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
     (M : Measurement α (PauliRegister P)) (N : Measurement β (PauliRegister P))
     (h : ∀ x y, Commute (M.effect x) (N.effect y))
@@ -183,11 +185,12 @@ theorem placedPauliMeasurement_commute_of_commute {P : AdmissibleParams}
   refine leftPlaced_commute ?_
   rw [Measurement.postprocess_effect, Measurement.postprocess_effect]
   exact Commute.sum_left _ _ _ fun x _ => Commute.sum_right _ _ _ fun y _ => h x y
+variable {α V : Type*} [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
+
 
 /-- The deterministic measurement reports its prescribed outcome with the
 identity effect. -/
-theorem deterministicMeasurement_effect_self {α V : Type*}
-    [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V] (a₀ : α) :
+theorem deterministicMeasurement_effect_self  (a₀ : α) :
     (deterministicMeasurement (V := V) a₀).effect a₀ = 1 := by
   change ((unitMeasurement V).postprocess (fun _ => a₀)).effect a₀ = 1
   rw [Measurement.postprocess_effect]
@@ -195,8 +198,7 @@ theorem deterministicMeasurement_effect_self {α V : Type*}
 
 /-- Every effect of a deterministic measurement commutes with every
 operator. -/
-theorem deterministicMeasurement_effect_commute {α V : Type*}
-    [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
+theorem deterministicMeasurement_effect_commute 
     (a₀ a : α) (A : Op V) :
     Commute ((deterministicMeasurement (V := V) a₀).effect a) A := by
   by_cases h : a = a₀
@@ -374,7 +376,7 @@ theorem honestMagicMeasurement_ms_commute (P : AdmissibleParams)
         (pauliMagicMeasurement P z hg s).postprocess (pauliAnswerOfMs (P := P)) := by
       intro s
       simp [honestMagicMeasurement, hg]
-    have hsupp : (s₁, s₂) ∈ msGameSymm.μ.support := by
+    have hsupp := by
       change (s₁, s₂) ∈ (Finset.univ : Finset (MsType × MsType)).filter
         (fun ab => Sym2.mk ab.1 ab.2 ∈ msEdges)
       exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hms⟩
@@ -417,11 +419,7 @@ theorem honestMeasurement_commute_of_oriented (P : AdmissibleParams)
       exact (deterministicMeasurement_effect_commute _ _ _).symm
     · obtain ⟨f₁, hf₁⟩ := exists_placedBasis_of_basisType P (.point .X) .X
         (pauliCL P (.point .X) z) (Or.inl rfl)
-      have h₂ : honestMagicMeasurement P (.var 0) (pauliSharedProjection z) =
-          placedPauliMeasurement (pauliBasisMeasurement .X)
-            (fun h => .bit (pauliTraceBit P
-              (pauliXBlock (pauliSharedProjection z))
-              (pauliRXBlock (pauliSharedProjection z)) h)) :=
+      have h₂ :=
         (honestMagicMeasurement_var_eq_placedBasis P (pauliSharedProjection z) hg).1
       change Commute ((honestMeasurement P (.point .X) _).effect a)
         ((honestMagicMeasurement P (.var 0) (pauliSharedProjection z)).effect b)
@@ -439,11 +437,7 @@ theorem honestMeasurement_commute_of_oriented (P : AdmissibleParams)
       exact (deterministicMeasurement_effect_commute _ _ _).symm
     · obtain ⟨f₁, hf₁⟩ := exists_placedBasis_of_basisType P (.point .Z) .Z
         (pauliCL P (.point .Z) z) (Or.inl rfl)
-      have h₂ : honestMagicMeasurement P (.var 4) (pauliSharedProjection z) =
-          placedPauliMeasurement (pauliBasisMeasurement .Z)
-            (fun h => .bit (pauliTraceBit P
-              (pauliZBlock (pauliSharedProjection z))
-              (pauliRZBlock (pauliSharedProjection z)) h)) :=
+      have h₂ :=
         (honestMagicMeasurement_var_eq_placedBasis P (pauliSharedProjection z) hg).2
       change Commute ((honestMeasurement P (.point .Z) _).effect a)
         ((honestMagicMeasurement P (.var 4) (pauliSharedProjection z)).effect b)

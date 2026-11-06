@@ -181,7 +181,7 @@ theorem tauPointProj_transpose (W : PauliKind)
     (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
     (tauPointProj W u a)ᵀ = tauPointProj W u a := by
   classical
-  simp only [tauPointProj, Matrix.transpose_sum, pauliProj_transpose]
+  simp [tauPointProj, Matrix.transpose_sum, pauliProj_transpose]
 
 /-- Pauli point projectors belonging to distinct values are orthogonal, while
 each projector is idempotent. This is the ancillary product calculation in
@@ -237,10 +237,11 @@ private theorem phaseSign_fixedBinTrace_expect (c : PauliScalar P) :
   simpa only [fixedBinTrace, phaseSign_eq_ffChar,
     MIPStarRE.LDT.Preliminaries.ffChar_apply, mul_comm c] using
     (fourier_fact_scalar (p := 2) (F := PauliScalar P) c)
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
 
 /-- Averaging a trace phase times an operator selects the zero coefficient. -/
-private theorem average_phaseSign_fixedBinTrace_smul
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
+private theorem average_phaseSign_fixedBinTrace_smul 
     (c : PauliScalar P) (A : Op ι) :
     averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
         (fun r => phaseSign (fixedBinTrace P.model (c * r)) • A) =
@@ -262,8 +263,7 @@ private theorem average_phaseSign_fixedBinTrace_smul
   by_cases hc : c = 0 <;> simp [hc]
 
 /-- Averaging three fixed trace characters imposes the convolution constraint. -/
-private theorem average_three_phaseSign_fixedBinTrace_smul
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
+private theorem average_three_phaseSign_fixedBinTrace_smul 
     (a x y : PauliScalar P) (A : Op ι) :
     averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
         (fun r => phaseSign (fixedBinTrace P.model (a * r)) •
@@ -332,7 +332,7 @@ theorem expPointOp_eq_convolution (S : ProjectiveSetting P ε)
           (tauPointProj W u p.2) := by
   classical
   rw [expPointOp]
-  simp only [expObs, pointObs, tauObservable_eq_sum_pauliProj]
+  simp [expObs, pointObs, tauObservable_eq_sum_pauliProj]
   simp_rw [dot_smul_indicator]
   calc
     averageOperatorOverDistribution (uniformDistribution (PauliScalar P))
@@ -358,14 +358,12 @@ theorem expPointOp_eq_convolution (S : ProjectiveSetting P ε)
           if x + dotProduct e (indicatorVec u) = a then
             heteroKron ((S.pointMeas side W u).effect x) (pauliProj W e)
           else 0 := by
-      rw [averageOperatorOverDistribution_sum]
       simp_rw [averageOperatorOverDistribution_sum]
       simp_rw [average_three_phaseSign_fixedBinTrace_smul]
     _ = ∑ p ∈ Finset.univ.filter (fun p : PauliScalar P × PauliScalar P =>
           p.1 + p.2 = a),
         heteroKron ((S.pointMeas side W u).effect p.1)
           (tauPointProj W u p.2) := by
-      simp only [tauPointProj]
       rw [Finset.sum_filter, Fintype.sum_prod_type]
       apply Finset.sum_congr rfl
       intro x hx
@@ -424,7 +422,7 @@ private theorem sum_tauPointProj_eq_one (W : PauliKind)
   classical
   rw [show (∑ a, tauPointProj W u a) =
       ∑ e : PauliRegister P, pauliProj W e by
-    simp only [tauPointProj]
+    simp [tauPointProj]
     exact Finset.sum_fiberwise Finset.univ
       (fun e : PauliRegister P => dotProduct e (indicatorVec u))
       (fun e => pauliProj W e)]
@@ -574,7 +572,7 @@ private theorem expObs_mul (S : ProjectiveSetting P ε) (side : PlayerSide)
     _ = S.expObs side W (r + s) u := by
       congr 2
       funext h
-      simp only [Pi.add_apply]
+      simp [Pi.add_apply]
       ring
 
 /-- Idempotence of the expanded point effect, the idempotence half of projectivity
@@ -609,7 +607,7 @@ private theorem expPointOp_mul_self (S : ProjectiveSetting P ε)
       intro r
       apply averageOperatorOverDistribution_congr
       intro s
-      dsimp only [F]
+      dsimp [F]
       rw [Matrix.smul_mul, Matrix.mul_smul, smul_smul, expObs_mul]
       congr 1
       simpa only [mul_add] using

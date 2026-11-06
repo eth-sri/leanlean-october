@@ -105,7 +105,6 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
     have hc := mul_le_mul_of_nonneg_left hretained
       (show 0 ≤ 4 * (Fintype.card (PauliScalar P) : ℝ)⁻¹ by positivity)
     rw [hcard, mul_one] at hc
-    change _ ≤ 2 * _ + 4 * (Fintype.card (PauliScalar P) : ℝ)⁻¹ * _ at hs
     rw [hcard] at hs
     change _ ≤ 2 * avgOver _ (fun v => ∑ pair,
       ‖ψ (directCombinedEmbedding P pair) - A z x v (directCombinedEmbedding P pair)‖ ^ 2) +
@@ -120,8 +119,7 @@ theorem retainedPointMismatch_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
         extendedPolynomialOrderedError S p1 p2 R reverse := by
     rw [← avgOver_uniform_prod (fun z x =>
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
-        ∑ g, ‖ψ g - A z x v g‖ ^ 2))]
-    rw [← avgOver_uniform_prod
+        ∑ g, ‖ψ g - A z x v g‖ ^ 2)), ← avgOver_uniform_prod
       (fun zx : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) =>
         fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2)]
     unfold extendedPolynomialOrderedError

@@ -25,29 +25,31 @@ namespace MIPStarRE.QPBT
 open MIPStarRE.Quantum MIPStarRE.LDT DistanceCalculus
 
 noncomputable section
+variable {I J : Type} [Fintype I] [Fintype J]
 
-private theorem conjBy_reindexOp {I J : Type} [Fintype I] [Fintype J]
+
+private theorem conjBy_reindexOp 
     (e : I ≃ J) (U A : Op J) :
     conjBy (reindexOp e U) (reindexOp e A) = reindexOp e (conjBy U A) := by
   rw [conjBy, ← ProjectiveSetting.reindexOp_conjTranspose,
     ← WinImplications.reindexOp_mul, ← WinImplications.reindexOp_mul, conjBy]
 
-private theorem conjBy_heteroKron {I J : Type} [Fintype I] [Fintype J]
+private theorem conjBy_heteroKron 
     (U A : Op I) (V B : Op J) :
     conjBy (heteroKron U V) (heteroKron A B) =
       heteroKron (conjBy U A) (conjBy V B) := by
-  simp only [conjBy, MagicSquareRigidity.heteroKron_conjTranspose, heteroKron_mul]
+  simp [conjBy, MagicSquareRigidity.heteroKron_conjTranspose, heteroKron_mul]
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ} (S : ProjectiveSetting P epsilon) (w : GlobalPairWitness S deltaG)
+
 
 /-- Simultaneous swaps conjugate each local operator by its own swap. This
 retains the heterogeneous local spaces in the calculation at paper lines 1701-1713. -/
-theorem ProjectiveSetting.conjBy_placeBoth_swap_placeSide
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} (S : ProjectiveSetting P epsilon)
-    (w : GlobalPairWitness S deltaG) (side : PlayerSide)
+theorem ProjectiveSetting.conjBy_placeBoth_swap_placeSide  (side : PlayerSide)
     (A : Op (ExtractionBlock P (S.LocalSpace side))) :
     conjBy (S.placeBoth (swapUnitary w .alice) (swapUnitary w .bob)) (S.placeSide side A) =
       S.placeSide side (conjBy (swapUnitary w side) A) := by
   classical
-  cases side <;> simp only [ProjectiveSetting.placeBoth, ProjectiveSetting.placeSide,
+  cases side <;> simp [ProjectiveSetting.placeBoth, ProjectiveSetting.placeSide,
     conjBy_reindexOp, conjBy_heteroKron]
   · congr 2
     change swapUnitary w .bob * 1 * (swapUnitary w .bob)ᴴ = 1
@@ -64,12 +66,12 @@ theorem opDistSq_conjBy_apply_eq {X I : Type} [Fintype X] [DecidableEq X]
     opDistSq mu (fun x => conjBy U (A x)) (fun x => conjBy U (B x))
       (applyOperatorToState U psi) = opDistSq mu A B psi := by
   have hterm (M N : Op I) : (conjBy U M - conjBy U N) * U = U * (M - N) := by
-    simp only [conjBy]
+    simp [conjBy]
     calc
       _ = U * (M - N) * (Uᴴ * U) := by noncomm_ring
       _ = _ := by rw [hU, Matrix.mul_one]
   unfold opDistSq opFamilyDistSq
-  simp only [Fintype.sum_unique]
+  simp [Fintype.sum_unique]
   apply avgOver_congr
   intro x
   rw [← applyOperatorToState_mul, hterm,
@@ -77,9 +79,7 @@ theorem opDistSq_conjBy_apply_eq {X I : Type} [Fintype X] [DecidableEq X]
 
 /-- After the swaps, the pulled-apart distance is exactly the distance of the
 canonical Pauli observables on the two extracted blocks. -/
-theorem opDistSq_extracted_eq_tildeObs
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} (S : ProjectiveSetting P epsilon)
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) (j : Fin P.model.basisDim) :
+theorem opDistSq_extracted_eq_tildeObs  (W : PauliKind) (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))
       (fun u => S.placeSide .alice (heteroKron (1 : Op (S.ExpandedLocalSpace .alice))
         (tauObservable W (P.model.basis j • u))))

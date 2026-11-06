@@ -43,38 +43,40 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum MIPStarRE.QPBT.DistanceCalculus
 
 noncomputable section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
 
 /-! ## Contractions and their action on states -/
 
 /-- The identity acts trivially. -/
-theorem applyOperatorToState_one {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem applyOperatorToState_one 
     (v : EuclideanSpace ℂ ι) :
     applyOperatorToState (1 : Op ι) v = v := by
   simp [applyOperatorToState]
 
 /-- Operators act additively on states. -/
-theorem applyOperatorToState_add {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem applyOperatorToState_add 
     (M : Op ι) (u v : EuclideanSpace ℂ ι) :
     applyOperatorToState M (u + v) =
       applyOperatorToState M u + applyOperatorToState M v := by
   simp [applyOperatorToState]
 
 /-- Operators act additively on differences of states. -/
-theorem applyOperatorToState_sub {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem applyOperatorToState_sub 
     (M : Op ι) (u v : EuclideanSpace ℂ ι) :
     applyOperatorToState M (u - v) =
       applyOperatorToState M u - applyOperatorToState M v := by
   simp [applyOperatorToState]
 
 /-- The action on states is additive in the operator. -/
-theorem applyOperatorToState_add_op {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem applyOperatorToState_add_op 
     (M N : Op ι) (v : EuclideanSpace ℂ ι) :
     applyOperatorToState (M + N) v =
       applyOperatorToState M v + applyOperatorToState N v := by
   simp [applyOperatorToState]
 
 /-- Operators annihilate the zero state. -/
-theorem applyOperatorToState_zero {ι : Type*} [Fintype ι] [DecidableEq ι] (M : Op ι) :
+theorem applyOperatorToState_zero  (M : Op ι) :
     applyOperatorToState M (0 : EuclideanSpace ℂ ι) = 0 := by
   simp [applyOperatorToState]
 
@@ -85,9 +87,11 @@ theorem toEuclideanLin_mul_apply {m n o : Type*} [Fintype n] [Fintype o]
     Matrix.toEuclideanLin (A * B) v =
       Matrix.toEuclideanLin A (Matrix.toEuclideanLin B v) := by
   simp [Matrix.toEuclideanLin, Matrix.toLpLin_mul_same]
+variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq n]
+
 
 /-- The squared norm of `A v` is the quadratic form of `Aᴴ A` at `v`. -/
-theorem norm_toEuclideanLin_sq {m n : Type*} [Fintype m] [Fintype n] [DecidableEq n]
+theorem norm_toEuclideanLin_sq 
     (A : Matrix m n ℂ) (v : EuclideanSpace ℂ n) :
     ‖Matrix.toEuclideanLin A v‖ ^ 2 =
       (inner ℂ v (Matrix.toEuclideanLin (Aᴴ * A) v)).re := by
@@ -97,8 +101,7 @@ theorem norm_toEuclideanLin_sq {m n : Type*} [Fintype m] [Fintype n] [DecidableE
   rw [LinearMap.adjoint_inner_right]
 
 /-- A rectangular matrix `A` with `Aᴴ A = 1` preserves norms. -/
-theorem norm_toEuclideanLin_of_conjTranspose_mul_eq_one {m n : Type*} [Fintype m]
-    [Fintype n] [DecidableEq n] {A : Matrix m n ℂ} (hA : Aᴴ * A = 1)
+theorem norm_toEuclideanLin_of_conjTranspose_mul_eq_one  {A : Matrix m n ℂ} (hA : Aᴴ * A = 1)
     (v : EuclideanSpace ℂ n) :
     ‖Matrix.toEuclideanLin A v‖ = ‖v‖ := by
   have h := norm_toEuclideanLin_sq A v
@@ -117,7 +120,7 @@ theorem norm_applyOperatorToState_sq {ι : Type*} [Fintype ι] [DecidableEq ι]
   norm_toEuclideanLin_sq K v
 
 /-- An operator `K` with `Kᴴ K ≤ 1` does not increase norms. -/
-theorem norm_applyOperatorToState_le {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem norm_applyOperatorToState_le 
     {K : Op ι} (hK : Kᴴ * K ≤ 1) (v : EuclideanSpace ℂ ι) :
     ‖applyOperatorToState K v‖ ≤ ‖v‖ := by
   have h := quadratic_form_mono hK v
@@ -127,7 +130,7 @@ theorem norm_applyOperatorToState_le {ι : Type*} [Fintype ι] [DecidableEq ι]
   exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).1 h
 
 /-- The difference of two contractions at most doubles norms. -/
-theorem norm_applyOperatorToState_sub_le {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem norm_applyOperatorToState_sub_le 
     {A B : Op ι} (hA : Aᴴ * A ≤ 1) (hB : Bᴴ * B ≤ 1) (v : EuclideanSpace ℂ ι) :
     ‖applyOperatorToState (A - B) v‖ ≤ 2 * ‖v‖ := by
   have hsplit : applyOperatorToState (A - B) v =
@@ -141,7 +144,7 @@ theorem norm_applyOperatorToState_sub_le {ι : Type*} [Fintype ι] [DecidableEq 
     _ = 2 * ‖v‖ := by ring
 
 /-- Orthogonal projections are contractions. -/
-theorem conjTranspose_mul_le_one_of_isProj {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem conjTranspose_mul_le_one_of_isProj 
     {P : Op ι} (hP : IsProj P) : Pᴴ * P ≤ 1 := by
   have hstar : Pᴴ = P := by
     rw [← Matrix.star_eq_conjTranspose]
@@ -150,10 +153,10 @@ theorem conjTranspose_mul_le_one_of_isProj {ι : Type*} [Fintype ι] [DecidableE
   exact sub_nonneg.mp hP.one_sub.nonneg
 
 /-- Products of contractions are contractions. -/
-theorem conjTranspose_mul_le_one_mul {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem conjTranspose_mul_le_one_mul 
     {A B : Op ι} (hA : Aᴴ * A ≤ 1) (hB : Bᴴ * B ≤ 1) :
     (A * B)ᴴ * (A * B) ≤ 1 := by
-  have h1 : (1 - Aᴴ * A).PosSemidef := Matrix.le_iff.mp hA
+  have h1 := Matrix.le_iff.mp hA
   have h2 := h1.conjTranspose_mul_mul_same B
   have h3 : Bᴴ * (1 - Aᴴ * A) * B = Bᴴ * B - (A * B)ᴴ * (A * B) := by
     rw [Matrix.conjTranspose_mul]
@@ -172,10 +175,10 @@ theorem conjTranspose_mul_le_one_of_effect {α ι : Type*} [Fintype α]
 
 /-- The observable of a binary measurement is a contraction: writing
 `E = M_0`, the observable is `2E - 1` and `1 - (2E - 1)² = 4(E - E²) ≥ 0`. -/
-theorem conjTranspose_mul_le_one_of_obsOf {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem conjTranspose_mul_le_one_of_obsOf 
     (M : MIPStarRE.Quantum.Measurement (ZMod 2) ι) :
     (obsOf M)ᴴ * obsOf M ≤ 1 := by
-  have hsum : M.effect 0 + M.effect 1 = 1 := by
+  have hsum := by
     calc
       M.effect 0 + M.effect 1 = ∑ a : ZMod 2, M.effect a :=
         (Fin.sum_univ_two _).symm
@@ -190,23 +193,23 @@ theorem conjTranspose_mul_le_one_of_obsOf {ι : Type*} [Fintype ι] [DecidableEq
   rw [hobs]
   have hid : (M.effect 0 + M.effect 0 - 1)ᴴ * (M.effect 0 + M.effect 0 - 1) =
       1 - (4 : ℕ) • (M.effect 0 - M.effect 0 * M.effect 0) := by
-    simp only [Matrix.conjTranspose_sub, Matrix.conjTranspose_add,
+    simp [Matrix.conjTranspose_sub, Matrix.conjTranspose_add,
       Matrix.conjTranspose_one, hH]
     noncomm_ring
   rw [hid]
   exact sub_le_self _ (nsmul_nonneg hsq 4)
+variable {ιA ιB : Type*} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+
 
 /-- Left placement preserves contractions. -/
-theorem conjTranspose_mul_le_one_leftTensor {ιA ιB : Type*} [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB] {A : Op ιA} (hA : Aᴴ * A ≤ 1) :
+theorem conjTranspose_mul_le_one_leftTensor  {A : Op ιA} (hA : Aᴴ * A ≤ 1) :
     (heteroKron A (1 : Op ιB))ᴴ * heteroKron A (1 : Op ιB) ≤ 1 := by
   change (leftTensor (ι₂ := ιB) A)ᴴ * leftTensor (ι₂ := ιB) A ≤ 1
   rw [leftTensor_conjTranspose, leftTensor_mul_leftTensor]
   exact leftTensor_le_one hA
 
 /-- Right placement preserves contractions. -/
-theorem conjTranspose_mul_le_one_rightTensor {ιA ιB : Type*} [Fintype ιA] [DecidableEq ιA]
-    [Fintype ιB] [DecidableEq ιB] {B : Op ιB} (hB : Bᴴ * B ≤ 1) :
+theorem conjTranspose_mul_le_one_rightTensor  {B : Op ιB} (hB : Bᴴ * B ≤ 1) :
     (heteroKron (1 : Op ιA) B)ᴴ * heteroKron (1 : Op ιA) B ≤ 1 := by
   change (rightTensor (ι₁ := ιA) B)ᴴ * rightTensor (ι₁ := ιA) B ≤ 1
   rw [rightTensor_conjTranspose, rightTensor_mul_rightTensor]
@@ -245,13 +248,13 @@ theorem opFamilyDistSq_uniform_unit {γ ι : Type*} [Fintype γ] [Fintype ι]
       ∑ c : γ, ‖applyOperatorToState (M () c - N () c) ψ‖ ^ 2 := by
   unfold opFamilyDistSq avgOver
   simp [uniformDistribution, Distribution.uniformOnFinset_weight]
+variable {ι ι' : Type} [Fintype ι] [DecidableEq ι] [Fintype ι'] [DecidableEq ι'] (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι')
+
 
 /-! ## Matrices of isometries -/
 
 /-- The matrix of an isometry is a matrix isometry. -/
-theorem isometryMatrix_conjTranspose_mul {ι ι' : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') :
+theorem isometryMatrix_conjTranspose_mul  :
     (isometryMatrix φ)ᴴ * isometryMatrix φ = 1 := by
   apply Matrix.toEuclideanLin.injective
   have hM : Matrix.toEuclideanLin (isometryMatrix φ) = φ.toLinearMap :=
@@ -268,9 +271,7 @@ theorem isometryMatrix_conjTranspose_mul {ι ι' : Type} [Fintype ι] [Decidable
       rfl
 
 /-- The range projection `V Vᴴ` of a matrix isometry is at most the identity. -/
-theorem isometryMatrix_mul_conjTranspose_le_one {ι ι' : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') :
+theorem isometryMatrix_mul_conjTranspose_le_one  :
     isometryMatrix φ * (isometryMatrix φ)ᴴ ≤ 1 := by
   have hproj : IsProj (isometryMatrix φ * (isometryMatrix φ)ᴴ) := by
     constructor
@@ -284,15 +285,13 @@ theorem isometryMatrix_mul_conjTranspose_le_one {ι ι' : Type} [Fintype ι] [De
   exact sub_nonneg.mp hproj.one_sub.nonneg
 
 /-- Conjugation by an isometry preserves contractions. -/
-theorem conjTranspose_mul_le_one_conjIsometry {ι ι' : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') {A : Op ι} (hA : Aᴴ * A ≤ 1) :
+theorem conjTranspose_mul_le_one_conjIsometry  {A : Op ι} (hA : Aᴴ * A ≤ 1) :
     (conjIsometry φ A)ᴴ * conjIsometry φ A ≤ 1 := by
   rw [conjIsometry_eq]
   have h1 : (isometryMatrix φ * A * (isometryMatrix φ)ᴴ)ᴴ *
       (isometryMatrix φ * A * (isometryMatrix φ)ᴴ) =
       isometryMatrix φ * (Aᴴ * A) * (isometryMatrix φ)ᴴ := by
-    simp only [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
+    simp [Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose,
       Matrix.mul_assoc]
     rw [← Matrix.mul_assoc (isometryMatrix φ)ᴴ (isometryMatrix φ),
       isometryMatrix_conjTranspose_mul, Matrix.one_mul]
@@ -305,31 +304,28 @@ theorem conjTranspose_mul_le_one_conjIsometry {ι ι' : Type} [Fintype ι] [Deci
         simp [Matrix.mul_sub, Matrix.sub_mul]
     _ = isometryMatrix φ * (isometryMatrix φ)ᴴ := by rw [Matrix.mul_one]
     _ ≤ 1 := isometryMatrix_mul_conjTranspose_le_one φ
+variable (A B : Op ι)
+
 
 /-- Conjugation by an isometry is multiplicative. -/
-theorem conjIsometry_mul {ι ι' : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') (A B : Op ι) :
+theorem conjIsometry_mul  :
     conjIsometry φ A * conjIsometry φ B = conjIsometry φ (A * B) := by
-  simp only [conjIsometry_eq, Matrix.mul_assoc]
+  simp [conjIsometry_eq, Matrix.mul_assoc]
   rw [← Matrix.mul_assoc (isometryMatrix φ)ᴴ (isometryMatrix φ),
     isometryMatrix_conjTranspose_mul, Matrix.one_mul]
 
 /-- Conjugation by an isometry is additive. -/
-theorem conjIsometry_sub {ι ι' : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype ι'] [DecidableEq ι']
-    (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ ι') (A B : Op ι) :
+theorem conjIsometry_sub  :
     conjIsometry φ (A - B) = conjIsometry φ A - conjIsometry φ B := by
-  simp only [conjIsometry_eq, Matrix.mul_sub, Matrix.sub_mul]
+  simp [conjIsometry_eq, Matrix.mul_sub, Matrix.sub_mul]
+variable {ιA ιB κA κB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB] (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA) (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
+variable (ψ : EuclideanSpace ℂ (ιA × ιB))
+
+
 
 /-- The two-sided isometry image of a state is the action of the Kronecker
 product of the two isometry matrices. -/
-theorem isometryTensor_eq_toEuclideanLin {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem isometryTensor_eq_toEuclideanLin  :
     isometryTensor φA φB ψ =
       Matrix.toEuclideanLin
         (Matrix.kronecker (isometryMatrix φA) (isometryMatrix φB)) ψ := by
@@ -338,11 +334,7 @@ theorem isometryTensor_eq_toEuclideanLin {ιA ιB κA κB : Type}
   simp [Matrix.toEuclideanLin, Matrix.mulVec, dotProduct]
 
 /-- The Kronecker product of two matrix isometries is a matrix isometry. -/
-theorem kronecker_isometryMatrix_conjTranspose_mul {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB) :
+theorem kronecker_isometryMatrix_conjTranspose_mul  :
     (Matrix.kronecker (isometryMatrix φA) (isometryMatrix φB))ᴴ *
       Matrix.kronecker (isometryMatrix φA) (isometryMatrix φB) = 1 := by
   unfold Matrix.kronecker
@@ -351,12 +343,7 @@ theorem kronecker_isometryMatrix_conjTranspose_mul {ιA ιB κA κB : Type}
     Matrix.one_kronecker_one]
 
 /-- The two-sided isometry image preserves norms. -/
-theorem norm_isometryTensor {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem norm_isometryTensor  :
     ‖isometryTensor φA φB ψ‖ = ‖ψ‖ := by
   rw [isometryTensor_eq_toEuclideanLin]
   exact norm_toEuclideanLin_of_conjTranspose_mul_eq_one
@@ -364,11 +351,7 @@ theorem norm_isometryTensor {ιA ιB κA κB : Type}
 
 /-- A left-placed conjugated operator acts on the transported state as the
 left-placed original operator acts on the original state. -/
-theorem applyOperatorToState_leftTensor_conjIsometry {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
+theorem applyOperatorToState_leftTensor_conjIsometry 
     (X : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
     applyOperatorToState (heteroKron (conjIsometry φA X) 1) (isometryTensor φA φB ψ) =
       isometryTensor φA φB (applyOperatorToState (heteroKron X 1) ψ) := by
@@ -383,11 +366,7 @@ theorem applyOperatorToState_leftTensor_conjIsometry {ιA ιB κA κB : Type}
 
 /-- A right-placed conjugated operator acts on the transported state as the
 right-placed original operator acts on the original state. -/
-theorem applyOperatorToState_rightTensor_conjIsometry {ιA ιB κA κB : Type}
-    [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
-    (φA : EuclideanSpace ℂ ιA →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ ιB →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
+theorem applyOperatorToState_rightTensor_conjIsometry 
     (Y : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
     applyOperatorToState (heteroKron 1 (conjIsometry φB Y)) (isometryTensor φA φB ψ) =
       isometryTensor φA φB (applyOperatorToState (heteroKron 1 Y) ψ) := by
@@ -408,23 +387,23 @@ transfer step of blueprint `thm:ms-rigidity`. -/
 def groundProjection (ι α : Type) [Fintype ι] [DecidableEq ι]
     [Fintype α] [DecidableEq α] : Op (ι × Option α) :=
   naimarkInflation (α := α) (1 : Op ι)
+variable {ι α : Type} [Fintype ι] [DecidableEq ι] [Fintype α] [DecidableEq α]
+
 
 /-- Inflation is multiplicative. -/
-theorem naimarkInflation_mul {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] (M N : Op ι) :
+theorem naimarkInflation_mul  (M N : Op ι) :
     naimarkInflation (α := α) M * naimarkInflation (α := α) N =
       naimarkInflation (α := α) (M * N) := by
   ext p q
-  simp only [Matrix.mul_apply, naimarkInflation_apply, Fintype.sum_prod_type,
+  simp [Matrix.mul_apply, naimarkInflation_apply, Fintype.sum_prod_type,
     Fintype.sum_option]
   by_cases hp : p.2 = none <;> by_cases hq : q.2 = none <;> simp [hp, hq]
 
 /-- Inflation commutes with the conjugate transpose. -/
-theorem naimarkInflation_conjTranspose {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] (M : Op ι) :
+theorem naimarkInflation_conjTranspose  (M : Op ι) :
     (naimarkInflation (α := α) M)ᴴ = naimarkInflation (α := α) Mᴴ := by
   ext p q
-  simp only [Matrix.conjTranspose_apply, naimarkInflation_apply]
+  simp [Matrix.conjTranspose_apply, naimarkInflation_apply]
   by_cases hp : p.2 = none <;> by_cases hq : q.2 = none <;> simp [hp, hq]
 
 /-- The ground projection is an orthogonal projection. -/
@@ -439,12 +418,11 @@ theorem isProj_groundProjection (ι α : Type) [Fintype ι] [DecidableEq ι]
 
 /-- Inflating the compression of an operator to the ground slice is compressing
 it by the ground projection. -/
-theorem naimarkInflation_naimarkCompression {ι α : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype α] [DecidableEq α] (P : Op (ι × Option α)) :
+theorem naimarkInflation_naimarkCompression  (P : Op (ι × Option α)) :
     naimarkInflation (α := α) (naimarkCompression (α := α) P) =
       groundProjection ι α * P * groundProjection ι α := by
   ext p q
-  simp only [Matrix.mul_apply, naimarkInflation_apply, naimarkCompression_apply,
+  simp [Matrix.mul_apply, naimarkInflation_apply, naimarkCompression_apply,
     groundProjection, Fintype.sum_prod_type, Fintype.sum_option, Matrix.one_apply]
   by_cases hp : p.2 = none <;> by_cases hq : q.2 = none <;> simp [hp, hq]
 
@@ -455,11 +433,11 @@ theorem naimarkCompression_finset_sum {ι α β : Type} [Fintype ι] [DecidableE
       ∑ b ∈ s, naimarkCompression (α := α) (M b) := by
   ext i j
   simp [Matrix.sum_apply]
+variable (α : Type) [Fintype α] [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
+
 
 /-- The dilated state lies in the ground slice on Alice's side. -/
-theorem applyOperatorToState_leftTensor_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_leftTensor_groundProjection  :
     applyOperatorToState (heteroKron (groundProjection ιA α) 1) (naimarkDilatedState α ψ) =
       naimarkDilatedState α ψ := by
   have hfull : applyOperatorToState
@@ -473,9 +451,7 @@ theorem applyOperatorToState_leftTensor_groundProjection (α : Type) [Fintype α
   exact hfull
 
 /-- The dilated state lies in the ground slice on Bob's side. -/
-theorem applyOperatorToState_rightTensor_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_rightTensor_groundProjection  :
     applyOperatorToState (heteroKron 1 (groundProjection ιB α)) (naimarkDilatedState α ψ) =
       naimarkDilatedState α ψ := by
   have hfull : applyOperatorToState
@@ -490,9 +466,7 @@ theorem applyOperatorToState_rightTensor_groundProjection (α : Type) [Fintype �
 
 /-- The complement of the ground slice annihilates the dilated state on Alice's
 side. -/
-theorem applyOperatorToState_leftTensor_one_sub_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_leftTensor_one_sub_groundProjection  :
     applyOperatorToState (heteroKron (1 - groundProjection ιA α) 1)
       (naimarkDilatedState α ψ) = 0 := by
   have h : heteroKron (1 - groundProjection ιA α) (1 : Op (ιB × Option α)) =
@@ -509,9 +483,7 @@ theorem applyOperatorToState_leftTensor_one_sub_groundProjection (α : Type) [Fi
 
 /-- The complement of the ground slice annihilates the dilated state on Bob's
 side. -/
-theorem applyOperatorToState_rightTensor_one_sub_groundProjection (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_rightTensor_one_sub_groundProjection  :
     applyOperatorToState (heteroKron 1 (1 - groundProjection ιB α))
       (naimarkDilatedState α ψ) = 0 := by
   have h : heteroKron (1 : Op (ιA × Option α)) (1 - groundProjection ιB α) =
@@ -525,6 +497,8 @@ theorem applyOperatorToState_rightTensor_one_sub_groundProjection (α : Type) [F
     simp [applyOperatorToState]
   rw [h, hsub, applyOperatorToState_one, applyOperatorToState_rightTensor_groundProjection,
     sub_self]
+variable (P : Op (ιA × Option α)) (Q : Op (ιB × Option α))
+
 
 /-! ## Leakage out of the ground slice is bounded by the intertwining defect -/
 
@@ -533,10 +507,7 @@ dilated state is at most the intertwining defect of `P ⊗ 1` against any
 right-placed operator `1 ⊗ Q`, because `(1 - Π) ⊗ 1` annihilates `1 ⊗ Q ψ'`.
 This is the estimate replacing the `≈_δ` preservation that Naimark dilation
 lacks (`references/ldt-paper/orthonormalization.tex:82-101`). -/
-theorem norm_leftTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
-    (P : Op (ιA × Option α)) (Q : Op (ιB × Option α)) :
+theorem norm_leftTensor_one_sub_groundProjection_mul_le  :
     ‖applyOperatorToState (heteroKron ((1 - groundProjection ιA α) * P) 1)
         (naimarkDilatedState α ψ)‖ ≤
       ‖applyOperatorToState (heteroKron P 1 - heteroKron 1 Q)
@@ -571,10 +542,7 @@ theorem norm_leftTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
 /-- The leakage of a right-placed operator `Q` out of the ground slice on the
 dilated state is at most its intertwining defect against any left-placed
 operator. -/
-theorem norm_rightTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α]
-    [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB]
-    [DecidableEq ιB] (ψ : EuclideanSpace ℂ (ιA × ιB))
-    (P : Op (ιA × Option α)) (Q : Op (ιB × Option α)) :
+theorem norm_rightTensor_one_sub_groundProjection_mul_le  :
     ‖applyOperatorToState (heteroKron 1 ((1 - groundProjection ιB α) * Q))
         (naimarkDilatedState α ψ)‖ ≤
       ‖applyOperatorToState (heteroKron P 1 - heteroKron 1 Q)
@@ -582,7 +550,7 @@ theorem norm_rightTensor_one_sub_groundProjection_mul_le (α : Type) [Fintype α
   set ψ' := naimarkDilatedState α ψ
   set L : Op ((ιA × Option α) × (ιB × Option α)) :=
     heteroKron 1 (1 - groundProjection ιB α)
-  have hL0 : applyOperatorToState L ψ' = 0 :=
+  have hL0 :=
     applyOperatorToState_rightTensor_one_sub_groundProjection α ψ
   have hLcontr : Lᴴ * L ≤ 1 :=
     conjTranspose_mul_le_one_rightTensor

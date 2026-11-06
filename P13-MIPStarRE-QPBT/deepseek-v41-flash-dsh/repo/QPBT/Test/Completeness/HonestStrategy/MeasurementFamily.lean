@@ -46,10 +46,11 @@ noncomputable def deterministicMeasurement {α V : Type*}
     [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
     (a : α) : Measurement α V :=
   (unitMeasurement V).postprocess fun _ => a
+variable {α V : Type*} [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
+
 
 /-- A deterministic measurement is projective. -/
-theorem deterministicMeasurement_projective {α V : Type*}
-    [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
+theorem deterministicMeasurement_projective 
     (a : α) :
     MIPStarRE.QPBT.Measurement.IsProjective
       (deterministicMeasurement (V := V) a) := by
@@ -59,8 +60,7 @@ theorem deterministicMeasurement_projective {α V : Type*}
   exact IsStarProjection.one _
 
 /-- Every effect of a deterministic measurement is symmetric. -/
-theorem deterministicMeasurement_effect_transpose {α V : Type*}
-    [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
+theorem deterministicMeasurement_effect_transpose 
     (a b : α) :
     ((deterministicMeasurement (V := V) a).effect b)ᵀ =
       (deterministicMeasurement (V := V) a).effect b := by
@@ -71,8 +71,7 @@ theorem deterministicMeasurement_effect_transpose {α V : Type*}
 
 /-- A deterministic measurement has zero effect away from its prescribed
 outcome. -/
-theorem deterministicMeasurement_effect_eq_zero_of_ne {α V : Type*}
-    [Fintype α] [DecidableEq α] [Fintype V] [DecidableEq V]
+theorem deterministicMeasurement_effect_eq_zero_of_ne 
     {a₀ a : α} (ha : a ≠ a₀) :
     (deterministicMeasurement (V := V) a₀).effect a = 0 := by
   rw [show deterministicMeasurement (V := V) a₀ =
@@ -80,12 +79,12 @@ theorem deterministicMeasurement_effect_eq_zero_of_ne {α V : Type*}
   apply postprocess_effect_eq_zero_of_notMem
   rintro ⟨u, hu⟩
   exact ha hu.symm
+variable {α V W : Type*} [Fintype α] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] (M : Measurement α V)
+
 
 /-- Placing a projective measurement on the first tensor factor preserves
 projectivity. -/
-theorem leftPlacedMeasurement_projective {α V W : Type*}
-    [Fintype α] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (M : Measurement α V) (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
+theorem leftPlacedMeasurement_projective  (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective
       (DistanceCalculus.leftPlacedMeasurement (ιB := W) M) := by
   intro a
@@ -93,15 +92,13 @@ theorem leftPlacedMeasurement_projective {α V W : Type*}
     (hM a) (IsStarProjection.one _)
 
 /-- Tensor placement on the first factor preserves symmetry of effects. -/
-theorem leftPlacedMeasurement_effect_transpose {α V W : Type*}
-    [Fintype α] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (M : Measurement α V) (hM : ∀ a, (M.effect a)ᵀ = M.effect a) (a : α) :
+theorem leftPlacedMeasurement_effect_transpose  (hM : ∀ a, (M.effect a)ᵀ = M.effect a) (a : α) :
     ((DistanceCalculus.leftPlacedMeasurement (ιB := W) M).effect a)ᵀ =
       (DistanceCalculus.leftPlacedMeasurement (ιB := W) M).effect a := by
   change (heteroKron (M.effect a) (1 : Op W))ᵀ =
     heteroKron (M.effect a) (1 : Op W)
   ext ⟨i, k⟩ ⟨j, l⟩
-  simp only [Matrix.transpose_apply, heteroKron, Matrix.kronecker,
+  simp [Matrix.transpose_apply, heteroKron, Matrix.kronecker,
     Matrix.kroneckerMap_apply]
   rw [show M.effect a j i = M.effect a i j by
     exact congrFun (congrFun (hM a) i) j]
@@ -151,19 +148,17 @@ theorem postprocess_effect_mul_eq_zero_of_incompatible {ζ α β V : Type*}
     exact (hbad x (Finset.mem_filter.mp hx).2
       (Finset.mem_filter.mp hy).2).elim
   · exact DistanceCalculus.projective_effect_mul_effect_eq_zero M hM hxy
+variable {V W : Type*} [Fintype V] [Fintype W] [DecidableEq W] {A B : Op V}
+
 
 /-- Commutation is preserved when both operators are placed on the first
 tensor factor. -/
-theorem leftPlaced_commute {V W : Type*}
-    [Fintype V] [Fintype W] [DecidableEq W]
-    {A B : Op V} (h : Commute A B) :
+theorem leftPlaced_commute  (h : Commute A B) :
     Commute (heteroKron A (1 : Op W)) (heteroKron B (1 : Op W)) := by
   rw [commute_iff_eq, heteroKron_mul, heteroKron_mul, h.eq]
 
 /-- A zero product remains zero after placement on the first tensor factor. -/
-theorem leftPlaced_mul_eq_zero {V W : Type*}
-    [Fintype V] [Fintype W] [DecidableEq W]
-    {A B : Op V} (h : A * B = 0) :
+theorem leftPlaced_mul_eq_zero  (h : A * B = 0) :
     heteroKron A (1 : Op W) * heteroKron B (1 : Op W) = 0 := by
   rw [heteroKron_mul, h]
   ext ⟨i, k⟩ ⟨j, l⟩
@@ -172,10 +167,12 @@ theorem leftPlaced_mul_eq_zero {V W : Type*}
 /-- The local Hilbert-space index used by the honest Pauli strategy.  The
 second factor is the qubit supplied to the Magic Square construction. -/
 abbrev HonestIndex (P : AdmissibleParams) := PauliRegister P × ZMod 2
+variable {P : AdmissibleParams}
+
 
 /-- Place a Pauli-register measurement on the first factor of the honest local
 space and relabel its outcomes with a global answer embedding. -/
-noncomputable def placedPauliMeasurement {P : AdmissibleParams}
+noncomputable def placedPauliMeasurement 
     {α : Type*} [Fintype α] [DecidableEq α]
     (M : Measurement α (PauliRegister P)) (f : α → PauliAnswer P) :
     Measurement (PauliAnswer P) (HonestIndex P) :=
@@ -228,7 +225,7 @@ theorem placedPauliMeasurement_effect_eq_zero_of_notMem {P : AdmissibleParams}
 /-! ### The total honest measurement family -/
 
 /-- Embed a Magic Square answer into the global Pauli-test answer alphabet. -/
-def pauliAnswerOfMs {P : AdmissibleParams} : MsAnswer → PauliAnswer P
+def pauliAnswerOfMs  : MsAnswer → PauliAnswer P
   | .triple a => .msTriple a
   | .bit a => .bit a
 
@@ -236,7 +233,7 @@ def pauliAnswerOfMs {P : AdmissibleParams} : MsAnswer → PauliAnswer P
 theorem pauliAnswerOfMs_injective {P : AdmissibleParams} :
     Function.Injective (@pauliAnswerOfMs P) := by
   intro a b h
-  cases a <;> cases b <;> simp only [pauliAnswerOfMs] at h <;> cases h <;> rfl
+  cases a <;> cases b <;> simp [pauliAnswerOfMs] at h <;> cases h <;> rfl
 
 /-- The honest point measurement at a typed Pauli question. -/
 noncomputable def honestPointMeasurement (P : AdmissibleParams) (W : PauliKind)
@@ -343,10 +340,13 @@ theorem placedPauliMeasurement_effect_transpose {P : AdmissibleParams}
   apply postprocess_effect_transpose
   intro b
   exact leftPlacedMeasurement_effect_transpose M hM b
+variable (P : AdmissibleParams)
+variable (t : PauliType) (z : PauliSpace P)
+
+
 
 /-- The global honest measurement is projective at every question. -/
-theorem honestMeasurement_projective (P : AdmissibleParams) (t : PauliType)
-    (z : PauliSpace P) :
+theorem honestMeasurement_projective  :
     MIPStarRE.QPBT.Measurement.IsProjective (honestMeasurement P t z) := by
   cases t with
   | point W =>
@@ -399,25 +399,28 @@ theorem honestMeasurement_projective (P : AdmissibleParams) (t : PauliType)
       · simpa [honestMeasurement, honestMagicMeasurement, hg] using
           (SandwichProduct.postprocess_isProjective (pauliMagicMeasurement P z hg t)
             (pauliMagicMeasurement_projective P z hg t) pauliAnswerOfMs)
+variable (W : PauliKind)
+
 
 /-- The honest `Point/W` effects are symmetric matrices: each is a sum of
 generalized Pauli projectors, and those are symmetric in the computational
 basis.  Symmetry of the effects is what lets the maximally entangled state
 transfer a player's measurement to its partner in the consistency step of
 `lem:pauli-completeness`. -/
-theorem pauliPointMeasurement_effect_transpose (P : AdmissibleParams) (W : PauliKind)
+theorem pauliPointMeasurement_effect_transpose 
     (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
     ((pauliPointMeasurement P W u).effect a)ᵀ =
       (pauliPointMeasurement P W u).effect a := by
   apply postprocess_effect_transpose
   intro h
   exact pauliProj_transpose W h
+variable (z : PauliSpace P)
+
 
 /-- The honest `ALine/W` effects are symmetric matrices, by the same
 coarse-graining of symmetric generalized Pauli projectors as in the `Point`
 case. -/
-theorem pauliALineMeasurement_effect_transpose (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (a : Fin (P.d + 1) → PauliScalar P) :
+theorem pauliALineMeasurement_effect_transpose  (a : Fin (P.d + 1) → PauliScalar P) :
     ((pauliALineMeasurement P W z).effect a)ᵀ =
       (pauliALineMeasurement P W z).effect a := by
   apply postprocess_effect_transpose
@@ -427,8 +430,7 @@ theorem pauliALineMeasurement_effect_transpose (P : AdmissibleParams) (W : Pauli
 /-- The honest `DLine/W` effects are symmetric matrices, by the same
 coarse-graining of symmetric generalized Pauli projectors as in the `Point`
 case. -/
-theorem pauliDLineMeasurement_effect_transpose (P : AdmissibleParams) (W : PauliKind)
-    (z : PauliSpace P) (a : Fin (P.m * P.d + 1) → PauliScalar P) :
+theorem pauliDLineMeasurement_effect_transpose  (a : Fin (P.m * P.d + 1) → PauliScalar P) :
     ((pauliDLineMeasurement P W z).effect a)ᵀ =
       (pauliDLineMeasurement P W z).effect a := by
   apply postprocess_effect_transpose
@@ -436,8 +438,7 @@ theorem pauliDLineMeasurement_effect_transpose (P : AdmissibleParams) (W : Pauli
   exact pauliProj_transpose W h
 
 /-- The global honest measurement has symmetric effects. -/
-theorem honestMeasurement_effect_transpose (P : AdmissibleParams) (t : PauliType)
-    (z : PauliSpace P) (a : PauliAnswer P) :
+theorem honestMeasurement_effect_transpose  (a : PauliAnswer P) :
     ((honestMeasurement P t z).effect a)ᵀ =
       (honestMeasurement P t z).effect a := by
   cases t with
@@ -507,8 +508,7 @@ theorem honestMeasurement_isConsistentOn (P : AdmissibleParams) (t : PauliType)
 commutation along the self-loops of the Pauli question graph in
 `lem:pauli-completeness`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1364-1372`. -/
-theorem honestMeasurement_self_commute (P : AdmissibleParams) (t : PauliType)
-    (z : PauliSpace P) (a b : PauliAnswer P) :
+theorem honestMeasurement_self_commute  (a b : PauliAnswer P) :
     Commute ((honestMeasurement P t z).effect a)
       ((honestMeasurement P t z).effect b) := by
   by_cases hab : a = b

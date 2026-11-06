@@ -28,8 +28,10 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum
 
 noncomputable section
+variable {K : Type*}
 
-private theorem avgOver_uniform_eq_indicator {K : Type*}
+
+private theorem avgOver_uniform_eq_indicator 
     [Fintype K] [DecidableEq K] [Nonempty K] (x : K) :
     avgOver (uniformDistribution K) (fun y => if y = x then (1 : ℝ) else 0) =
       (Fintype.card K : ℝ)⁻¹ := by
@@ -39,7 +41,7 @@ private theorem avgOver_uniform_eq_indicator {K : Type*}
 /-- The uniform affine check accepts a distinct pair with probability `1/q`.
 This also supplies `eq:qld-g-separable`, supporting blueprint `lem:qld-4-7`.
 The proof is the existing affine coarse-graining calculation of this module. -/
-theorem affine_collision_average {K : Type*}
+theorem affine_collision_average 
     [Field K] [Fintype K] [DecidableEq K]
     (p p' : K × K) :
     avgOver (uniformDistribution (K × K)) (fun coefficients =>
@@ -255,8 +257,7 @@ private theorem avg_affine_fiber_norm_sq_le
           calc
             (∑ p, ∑ p', if p = p' then w p p' else qinv * w p p') =
                 qinv * (∑ p, ∑ p', w p p') + (1 - qinv) * ∑ p, w p p := by
-                  rw [Finset.mul_sum, Finset.mul_sum]
-                  rw [← Finset.sum_add_distrib]
+                  rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
                   apply Finset.sum_congr rfl
                   intro p _
                   calc
@@ -326,7 +327,7 @@ theorem opFamilyDistSq_uniform_affine_postprocess_le
       let v : K × K → EuclideanSpace ℂ ι := fun p =>
         applyOperatorToState (A x p - B x p) ψ
       have hvsum : ∑ p, v p = 0 := by
-        simp only [v]
+        simp [v]
         calc
           (∑ p, applyOperatorToState (A x p - B x p) ψ) =
               applyOperatorToState (∑ p, (A x p - B x p)) ψ :=
@@ -352,14 +353,17 @@ theorem opFamilyDistSq_uniform_affine_postprocess_le
                   apply Finset.sum_congr rfl
                   intro c _
                   congr 2
-                  simp only [v, applyOperatorToState, map_sub, LinearMap.sub_apply,
+                  simp [v, applyOperatorToState, map_sub, LinearMap.sub_apply,
                     map_sum, LinearMap.sum_apply, Finset.sum_sub_distrib]
         _ ≤ ∑ p, ‖v p‖ ^ 2 := avg_affine_fiber_norm_sq_le v hvsum
         _ = ∑ p, ‖applyOperatorToState (A x p - B x p) ψ‖ ^ 2 := rfl
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε) (p : Placement)
+variable {α : Type*} [Fintype α]
+
+
 
 /-- Register placement preserves the total of a finite operator family. -/
-theorem place_sum {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) {α : Type*} [Fintype α]
+theorem place_sum 
     (A : α → Op (S.ExpandedLocalSpace p.side)) :
     S.place p (∑ a, A a) = ∑ a, S.place p (A a) := by
   classical
@@ -367,30 +371,26 @@ theorem place_sum {P : AdmissibleParams} {ε : ℝ}
   cases p <;> simp [ProjectiveSetting.place, Matrix.sum_apply,
     Finset.sum_mul, Finset.mul_sum]
 
-private theorem place_one {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) :
+private theorem place_one  :
     S.place p (1 : Op (S.ExpandedLocalSpace p.side)) = 1 := by
   ext i j
-  cases p <;> simp only [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
+  cases p <;> simp [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
   all_goals split_ifs <;> simp_all [Prod.ext_iff]
 
 /-- A complete measurement remains complete after register placement. -/
-theorem sum_placed_measurement_eq_one {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) {α : Type*} [Fintype α]
+theorem sum_placed_measurement_eq_one 
     (M : Measurement α (S.ExpandedLocalSpace p.side)) :
     (∑ a, S.place p (M.effect a)) = 1 := by
   rw [← place_sum, M.sum_eq_one, place_one]
 
 /-- Ordered products of two complete measurements have total identity after placement. -/
-theorem sum_placed_measurement_products_eq_one
-    {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+theorem sum_placed_measurement_products_eq_one 
     {α β : Type*} [Fintype α] [Fintype β]
     (M : Measurement α (S.ExpandedLocalSpace p.side))
     (N : Measurement β (S.ExpandedLocalSpace p.side)) :
     (∑ ab : α × β, S.place p (M.effect ab.1 * N.effect ab.2)) = 1 := by
   rw [← place_sum, Fintype.sum_prod_type]
-  have hlocal : (∑ a : α, ∑ b : β, M.effect a * N.effect b) = 1 := by
+  have hlocal := by
     calc
     (∑ a : α, ∑ b : β, M.effect a * N.effect b) =
         ∑ a : α, M.effect a * ∑ b : β, N.effect b := by

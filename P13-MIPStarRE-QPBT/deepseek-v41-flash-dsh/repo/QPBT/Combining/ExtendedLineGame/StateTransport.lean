@@ -59,11 +59,13 @@ def abBbRegrouping (setting : ProjectiveSetting P epsilon) :
         (PauliRegister P × PauliRegister P) :=
   (abBbBipartition P setting.toStrategy.ιA setting.toStrategy.ιB).trans
     (Equiv.prodAssoc _ _ _).symm
+variable (setting : ProjectiveSetting P epsilon)
+
 
 /-- In the `AA'`--`BA''` grouping, the expanded state is `pairState` tensored
 with the unused EPR pair. This is a coordinate consequence of `eq:def-psihat`,
 not an assumption on the strategy or its measurement effects. -/
-theorem reindexState_aaBaRegrouping_psiHat (setting : ProjectiveSetting P epsilon) :
+theorem reindexState_aaBaRegrouping_psiHat  :
     reindexState (aaBaRegrouping setting) setting.psiHat =
       vecTensor (pairState setting) (eprState (PauliRegister P)) := by
   ext p
@@ -72,7 +74,7 @@ theorem reindexState_aaBaRegrouping_psiHat (setting : ProjectiveSetting P epsilo
 /-- The `AB''`--`BB'` grouping has the same two-player state because an EPR
 pair is invariant under exchanging its registers. The other EPR pair is unused.
 This is a coordinate consequence of `eq:def-psihat`. -/
-theorem reindexState_abBbRegrouping_psiHat (setting : ProjectiveSetting P epsilon) :
+theorem reindexState_abBbRegrouping_psiHat  :
     reindexState (abBbRegrouping setting) setting.psiHat =
       vecTensor (pairState setting) (eprState (PauliRegister P)) := by
   ext p
@@ -94,7 +96,7 @@ theorem reindexState_abBbRegrouping_psiHat (setting : ProjectiveSetting P epsilo
 `pairState` as their `AA'`--`BA''` placements on `psiHat`. Hermiticity holds for
 POVM effects; no factorization or consistency hypothesis is required. This
 transports Born correlations in the first proof paragraph of `lem:qld-4-7`. -/
-theorem stateQForm_pairState_eq_AA'_BA'' (setting : ProjectiveSetting P epsilon)
+theorem stateQForm_pairState_eq_AA'_BA'' 
     (A : Op (setting.ExpandedLocalSpace .alice))
     (B : Op (setting.ExpandedLocalSpace .bob))
     (hA : A.IsHermitian) (hB : B.IsHermitian) :
@@ -104,8 +106,6 @@ theorem stateQForm_pairState_eq_AA'_BA'' (setting : ProjectiveSetting P epsilon)
   let I : Op (PauliRegister P × PauliRegister P) := 1
   have hop : reindexOp (aaBaRegrouping setting) (heteroKron (heteroKron A B) I) =
       setting.place .AA' A * setting.place .BA'' B := by
-    change Op (setting.toStrategy.ιA × PauliRegister P) at A
-    change Op (setting.toStrategy.ιB × PauliRegister P) at B
     change reindexOp (aaBaBipartition P setting.toStrategy.ιA setting.toStrategy.ιB)
       (reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I)) = _
     rw [show reindexOp (Equiv.prodAssoc _ _ _).symm
@@ -135,7 +135,7 @@ theorem stateQForm_pairState_eq_AA'_BA'' (setting : ProjectiveSetting P epsilon)
 `pairState` as their `AB''`--`BB'` placements on `psiHat`. This is the second
 orientation of the Born-correlation transport for `lem:qld-4-7`; EPR symmetry
 reverses the active ancillary registers without transposing either operator. -/
-theorem stateQForm_pairState_eq_AB''_BB' (setting : ProjectiveSetting P epsilon)
+theorem stateQForm_pairState_eq_AB''_BB' 
     (A : Op (setting.ExpandedLocalSpace .alice))
     (B : Op (setting.ExpandedLocalSpace .bob))
     (hA : A.IsHermitian) (hB : B.IsHermitian) :
@@ -145,8 +145,6 @@ theorem stateQForm_pairState_eq_AB''_BB' (setting : ProjectiveSetting P epsilon)
   let I : Op (PauliRegister P × PauliRegister P) := 1
   have hop : reindexOp (abBbRegrouping setting) (heteroKron (heteroKron A B) I) =
       setting.place .AB'' A * setting.place .BB' B := by
-    change Op (setting.toStrategy.ιA × PauliRegister P) at A
-    change Op (setting.toStrategy.ιB × PauliRegister P) at B
     change reindexOp (abBbBipartition P setting.toStrategy.ιA setting.toStrategy.ιB)
       (reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I)) = _
     rw [show reindexOp (Equiv.prodAssoc _ _ _).symm

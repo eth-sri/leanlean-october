@@ -31,13 +31,15 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum
 
 noncomputable section
+variable {K ι : Type*} [Field K]
+
 
 /-! ## Algebraic preliminaries -/
 
 /-- The generalized Pauli observables are self-adjoint. This identity supports
 `lem:qld-comm-cons`. Blueprint `lem:twisted-commutation`,
 paper `references/qpbt-paper/04_preliminaries.tex:1052-1096`. -/
-theorem tauObservable_conjTranspose {K ι : Type*} [Field K] [Finite K]
+theorem tauObservable_conjTranspose  [Finite K]
     [DecidableEq K] [Algebra (ZMod 2) K] [Fintype ι] [DecidableEq ι]
     (W : PauliKind) (v : ι → K) :
     (tauObservable W v)ᴴ = tauObservable W v := by
@@ -51,7 +53,7 @@ theorem tauObservable_conjTranspose {K ι : Type*} [Field K] [Finite K]
 /-- The generalized Pauli observables are reflections. Blueprint
 `ch11_qpbt_algebra.tex:596-644`, paper
 `references/qpbt-paper/04_preliminaries.tex:1088-1089`. -/
-theorem tauObservable_conjTranspose_mul_self {K ι : Type*} [Field K]
+theorem tauObservable_conjTranspose_mul_self 
     [Fintype K] [DecidableEq K] [Algebra (ZMod 2) K] [Fintype ι]
     [DecidableEq ι] (W : PauliKind) (v : ι → K) :
     (tauObservable W v)ᴴ * tauObservable W v = 1 := by
@@ -118,36 +120,30 @@ noncomputable def twistedCommutator (S : ProjectiveSetting P ε)
   S.pointObs side .X ω.2.2.1 ω.1 * S.pointObs side .Z ω.2.2.2 ω.2.1 -
     phaseSign (gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2) •
       (S.pointObs side .Z ω.2.2.2 ω.2.1 * S.pointObs side .X ω.2.2.1 ω.1)
+variable (S : ProjectiveSetting P ε)
+
 
 /-- The commutator of the two expanded observables factorizes with the twisted
 commutator of the point observables on the strategy register. This is the
 display following `eq:lc-23` in the proof of `lem:qld-comm-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:487-505`, blueprint
 `ch14_qpbt_observables.tex:1164-1175`. -/
-theorem expObs_commutator (S : ProjectiveSetting P ε) (side : PlayerSide)
+theorem expObs_commutator  (side : PlayerSide)
     (ω : PauliTuple P) :
     S.expObs side .X ω.2.2.1 ω.1 * S.expObs side .Z ω.2.2.2 ω.2.1 -
         S.expObs side .Z ω.2.2.2 ω.2.1 * S.expObs side .X ω.2.2.1 ω.1 =
       heteroKron (S.twistedCommutator side ω) (tauX P ω * tauZ P ω) := by
-  rw [expObs, expObs, heteroKron_mul, heteroKron_mul]
-  rw [show tauObservable .X (fun h => ω.2.2.1 * indicatorVec ω.1 h) =
+  rw [expObs, expObs, heteroKron_mul, heteroKron_mul, show tauObservable .X (fun h => ω.2.2.1 * indicatorVec ω.1 h) =
     tauX P ω from rfl,
     show tauObservable .Z (fun h => ω.2.2.2 * indicatorVec ω.2.1 h) =
-      tauZ P ω from rfl]
-  rw [tauZ_mul_tauX, MagicSquareRigidity.heteroKron_smul_right,
+      tauZ P ω from rfl, tauZ_mul_tauX, MagicSquareRigidity.heteroKron_smul_right,
     ← WinImplications.heteroKron_smul_left,
     ← heteroKron_sub_left, twistedCommutator]
-
-/-! ## The approximate commutation on each placement -/
-
-/-- The placement of a scalar multiple is the scalar multiple of the
-placement. Paper `14_analysis_of_the_pauli_basis_test.tex:420-450`,
-blueprint `ch14_qpbt_observables.tex:1002-1031`. -/
-theorem place_smul (S : ProjectiveSetting P ε) (p : Placement) (c : ℂ)
+theorem place_smul  (p : Placement) (c : ℂ)
     (O : Op (S.ExpandedLocalSpace p.side)) :
     S.place p (c • O) = c • S.place p O := by
   ext i j
-  cases p <;> simp only [place, Matrix.smul_apply, smul_eq_mul] <;> ring
+  cases p <;> simp [place, Matrix.smul_apply, smul_eq_mul] <;> ring
 
 /-- The twisted commutator of the point observables is small on average, on
 either player side. This packages both orientations of

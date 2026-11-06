@@ -27,6 +27,8 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum DistanceCalculus
 
 noncomputable section
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG) (W : PauliKind)
+
 
 /-- For a supplied global polynomial-pair witness, the pulled-apart defect is
 bounded by its point-consistency error plus the non-encoding mass. This is the
@@ -35,9 +37,7 @@ support-restricted form of the calculation in paper
 `lem:qld-construct-the-paulis`. It uses no estimate for the non-encoding mass;
 the need for that separate estimate is explained in
 `docs/paper-gaps/qpbt_decoding-identity.tex`. -/
-theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat ≤
@@ -72,7 +72,7 @@ theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding
       (sum_marginalPoly_eval_mul w .BB' W u
         (fun a => S.place .AB'' ((S.pointMeasExp .alice W u).effect a)))).trans
       (stateQForm_finset_sum _ _ _)
-  simp only [hregroup] at hw
+  simp [hregroup] at hw
   have hcompare := avgOver_mono mu _ _
     (fun u => marginal_eval_overlap_le_decoded_add_nonencoding w W u)
   rw [avgOver_add, avgOver_const_of_isProbability mu
@@ -81,11 +81,11 @@ theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding
       ∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
         stateQForm S.psiHat (S.place .BB' ((w.marginalPoly .bob W).effect g)) := by
     unfold nonencodingMarginalMass
-    simp only [S.placeSide_bob_tensor_one]
+    simp [S.placeSide_bob_tensor_one]
     rfl
   rw [← hmass_eq] at hcompare
   rw [tildeM_consistencyDefect_eq_one_sub_decoded_overlap]
-  dsimp only [mu] at hw hcompare
+  dsimp [mu] at hw hcompare
   linarith
 
 /-- Conditional consistency of Alice's original point measurement with Bob's
@@ -153,9 +153,7 @@ mass. This is the register-interchanged, support-restricted calculation in
 paper `14_analysis_of_the_pauli_basis_test.tex:1483-1492`, supporting blueprint
 `lem:qld-construct-the-paulis`. The estimate uses no bound for that mass; see
 `docs/paper-gaps/qpbt_decoding-identity.tex` for the decoder restriction. -/
-theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding'
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding'  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u a => S.placeSide .alice (tildeM w .alice W (indicatorVec u) a))
       (fun u a => S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) S.psiHat ≤
@@ -190,7 +188,7 @@ theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding'
       (sum_marginalPoly_eval_mul w .AA' W u
         (fun a => S.place .BA'' ((S.pointMeasExp .bob W u).effect a)))).trans
       (stateQForm_finset_sum _ _ _)
-  simp only [hregroup] at hw
+  simp [hregroup] at hw
   have hcompare := avgOver_mono mu _ _
     (fun u => marginal_eval_overlap_le_decoded_add_nonencoding' w W u)
   rw [avgOver_add, avgOver_const_of_isProbability mu
@@ -199,11 +197,11 @@ theorem tildeM_consistencyDefect_le_deltaG_add_nonencoding'
       ∑ g ∈ Finset.univ.filter (fun g : Poly P => ¬ IsEncoding g),
         stateQForm S.psiHat (S.place .AA' ((w.marginalPoly .alice W).effect g)) := by
     unfold nonencodingMarginalMass
-    simp only [S.placeSide_alice_tensor_one]
+    simp [S.placeSide_alice_tensor_one]
     rfl
   rw [← hmass_eq] at hcompare
   rw [tildeM_consistencyDefect_eq_one_sub_decoded_overlap']
-  dsimp only [mu] at hw hcompare
+  dsimp [mu] at hw hcompare
   linarith
 
 /-- Conditional consistency of Alice's pulled-apart measurement with Bob's

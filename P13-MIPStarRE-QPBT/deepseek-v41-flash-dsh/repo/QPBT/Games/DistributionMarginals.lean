@@ -54,13 +54,15 @@ theorem uniformDistribution_map_fst_of_equiv
     _ = (uniformDistribution (beta × gamma)).map Prod.fst := by
       rw [uniformDistribution_map_equiv]
     _ = uniformDistribution beta := uniformDistribution_map_fst
+variable {α : Type*}
+
 
 /-! ## Nonemptiness of the support of a probability law -/
 
 /-- A law of total mass one has a nonempty support.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.support_nonempty_of_isProbability {α : Type*}
+theorem Distribution.support_nonempty_of_isProbability 
     {μ : Distribution α} (hμ : μ.IsProbability) : μ.support.Nonempty := by
   rw [← Finset.card_pos]
   by_contra hcard
@@ -118,13 +120,15 @@ theorem Distribution.prod_map_left {α β γ : Type*} [DecidableEq α]
           (fun b => ν.weight b) (μ.weight a)).symm),
       hy, ← Finset.sum_mul]
     rfl
+variable {α β : Type*}
+
 
 /-! ## The first marginal of a product -/
 
 /-- The first marginal of a product whose second factor is a probability law
 is the first factor.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.prod_map_fst {α β : Type*} [DecidableEq α] [DecidableEq β]
+theorem Distribution.prod_map_fst  [DecidableEq α] [DecidableEq β]
     (μ : Distribution α) (ν : Distribution β) (hν : ν.IsProbability) :
     (Distribution.prod μ ν).map Prod.fst = μ := by
   classical
@@ -186,7 +190,7 @@ theorem Distribution.prod_map_eq_bind {α β γ : Type*} [DecidableEq α]
   · change (μ.support ×ˢ ν.support).image g =
       μ.support.biUnion (fun a => ν.support.image (fun b => g (a, b)))
     ext c
-    simp only [Finset.mem_image, Finset.mem_biUnion, Finset.mem_product,
+    simp [Finset.mem_image, Finset.mem_biUnion, Finset.mem_product,
       Prod.exists]
     constructor
     · rintro ⟨a, b, ⟨ha, hb⟩, rfl⟩
@@ -232,7 +236,7 @@ weight to the corresponding weight, and if it has a two-sided inverse, the
 push-forward is the target law.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.map_bijective_eq {α β : Type*} [DecidableEq α]
+theorem Distribution.map_bijective_eq  [DecidableEq α]
     [DecidableEq β] (μ : Distribution α) (ν : Distribution β) (f : α → β)
     (g : β → α) (hgf : ∀ a, g (f a) = a) (hfg : ∀ b, f (g b) = b)
     (hs : ∀ a, a ∈ μ.support ↔ f a ∈ ν.support)
@@ -328,10 +332,6 @@ theorem uniformDistribution_prod (α β : Type*) [Fintype α] [DecidableEq α]
     uniformDistribution (α × β) =
       Distribution.prod (uniformDistribution α) (uniformDistribution β) := by
   classical
-  have ha : (Fintype.card α : ℝ) ≠ 0 := by
-    exact_mod_cast Fintype.card_ne_zero (α := α)
-  have hb : (Fintype.card β : ℝ) ≠ 0 := by
-    exact_mod_cast Fintype.card_ne_zero (α := β)
   refine Distribution.ext_of_support_of_weight ?_ ?_
   · show (Finset.univ : Finset (α × β)) =
       (Finset.univ : Finset α).product (Finset.univ : Finset β)
@@ -349,7 +349,7 @@ theorem uniformDistribution_prod (α β : Type*) [Fintype α] [DecidableEq α]
 second factor is the same under a uniform product law and under the uniform
 law of that factor.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem uniformDistribution_snd_event_mass {α β : Type*} [Fintype α]
+theorem uniformDistribution_snd_event_mass  [Fintype α]
     [DecidableEq α] [Nonempty α] [Fintype β] [DecidableEq β] [Nonempty β]
     (p : β → Prop) [DecidablePred p] :
     ∑ w ∈ (uniformDistribution (α × β)).support.filter (fun w => p w.2),
@@ -367,7 +367,7 @@ theorem uniformDistribution_snd_event_mass {α β : Type*} [Fintype α]
 restricted law only through its support and weights.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.restrict_congr {α : Type*} [DecidableEq α]
+theorem Distribution.restrict_congr  [DecidableEq α]
     {μ ν : Distribution α} (h : μ = ν) (p : α → Prop) [DecidablePred p]
     (hμ : 0 < ∑ a ∈ μ.support.filter p, μ.weight a)
     (hν : 0 < ∑ a ∈ ν.support.filter p, ν.weight a) :
@@ -379,7 +379,7 @@ theorem Distribution.restrict_congr {α : Type*} [DecidableEq α]
 leaves the first factor unchanged and independent of the conditioned second
 factor.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.restrict_prod_snd {α β : Type*} [DecidableEq α]
+theorem Distribution.restrict_prod_snd  [DecidableEq α]
     [DecidableEq β] (μ : Distribution α) (ν : Distribution β)
     (hμ : μ.IsProbability) (p : β → Prop) [DecidablePred p]
     (hpos : 0 < ∑ b ∈ ν.support.filter p, ν.weight b)
@@ -394,7 +394,7 @@ theorem Distribution.restrict_prod_snd {α β : Type*} [DecidableEq α]
       μ.support ×ˢ (ν.support.filter p) := by
     rw [hprodsupp]
     ext w
-    simp only [Finset.mem_filter, Finset.mem_product]
+    simp [Finset.mem_filter, Finset.mem_product]
     tauto
   have hmass : (∑ w ∈ (Distribution.prod μ ν).support.filter
         (fun w => p w.2), (Distribution.prod μ ν).weight w) =
@@ -431,7 +431,7 @@ theorem Distribution.restrict_prod_snd {α β : Type*} [DecidableEq α]
 the first factor uniform and independent.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrict_uniform_prod_snd {α β : Type*} [Fintype α] [DecidableEq α]
+theorem restrict_uniform_prod_snd  [Fintype α] [DecidableEq α]
     [Nonempty α] [Fintype β] [DecidableEq β] [Nonempty β] (p : β → Prop)
     [DecidablePred p]
     (hpos : 0 < ∑ b ∈ (uniformDistribution β).support.filter p,
@@ -460,7 +460,7 @@ theorem restrict_uniform_prod_snd {α β : Type*} [Fintype α] [DecidableEq α]
 leaves the second factor unchanged and independent of the conditioned first
 factor.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.restrict_prod_fst {α β : Type*} [DecidableEq α]
+theorem Distribution.restrict_prod_fst  [DecidableEq α]
     [DecidableEq β] (μ : Distribution α) (ν : Distribution β)
     (hν : ν.IsProbability) (p : α → Prop) [DecidablePred p]
     (hpos : 0 < ∑ a ∈ μ.support.filter p, μ.weight a)
@@ -474,7 +474,7 @@ theorem Distribution.restrict_prod_fst {α β : Type*} [DecidableEq α]
     change (μ.support ×ˢ ν.support).filter (fun w => p w.1) =
       (μ.support.filter p) ×ˢ ν.support
     ext w
-    simp only [Finset.mem_filter, Finset.mem_product]
+    simp [Finset.mem_filter, Finset.mem_product]
     tauto
   have hmass : (∑ w ∈ (Distribution.prod μ ν).support.filter
         (fun w => p w.1), (Distribution.prod μ ν).weight w) =
@@ -510,7 +510,7 @@ theorem Distribution.restrict_prod_fst {α β : Type*} [DecidableEq α]
 the second factor uniform and independent.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem restrict_uniform_prod_fst {α β : Type*} [Fintype α] [DecidableEq α]
+theorem restrict_uniform_prod_fst  [Fintype α] [DecidableEq α]
     [Nonempty α] [Fintype β] [DecidableEq β] [Nonempty β] (p : α → Prop)
     [DecidablePred p]
     (hpos : 0 < ∑ a ∈ (uniformDistribution α).support.filter p,
@@ -540,7 +540,7 @@ theorem restrict_uniform_prod_fst {α β : Type*} [Fintype α] [DecidableEq α]
 decidable event is the push-forward of the restriction to the pre-image of
 that event.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem Distribution.restrict_map {α β : Type*} [DecidableEq α] [DecidableEq β]
+theorem Distribution.restrict_map  [DecidableEq α] [DecidableEq β]
     (μ : Distribution α) (f : α → β) (p : β → Prop) [DecidablePred p]
     (q : α → Prop) [DecidablePred q] (hq : ∀ a, q a ↔ p (f a))
     (hpos : 0 < ∑ b ∈ (μ.map f).support.filter p, (μ.map f).weight b)
@@ -569,8 +569,7 @@ theorem Distribution.restrict_map {α β : Type*} [DecidableEq α] [DecidableEq 
       exact ⟨⟨a, ha1, rfl⟩, (hq a).mp ha2⟩
   have hmass : (∑ b ∈ (μ.map f).support.filter p, (μ.map f).weight b) =
       ∑ a ∈ μ.support.filter q, μ.weight a := by
-    rw [himg]
-    rw [← Finset.sum_fiberwise_of_maps_to
+    rw [himg, ← Finset.sum_fiberwise_of_maps_to
       (s := μ.support.filter q) (t := (μ.support.filter q).image f)
       (g := f) (fun a ha => Finset.mem_image_of_mem f ha) μ.weight]
     refine Finset.sum_congr rfl fun b hb => ?_

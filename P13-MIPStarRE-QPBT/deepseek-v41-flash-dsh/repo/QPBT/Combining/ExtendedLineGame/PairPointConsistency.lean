@@ -26,13 +26,16 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum DistanceCalculus PolynomialImageBounds
 
 noncomputable section
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
+variable (p : Placement)
 
-private theorem place_add {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+
+
+private theorem place_add 
     (A B : Op (S.ExpandedLocalSpace p.side)) :
     S.place p (A + B) = S.place p A + S.place p B := by
   ext i j
-  cases p <;> simp only [ProjectiveSetting.place, Matrix.add_apply, add_mul, mul_add]
+  cases p <;> simp [ProjectiveSetting.place, Matrix.add_apply, add_mul, mul_add]
 
 /-- The retained diagonal overlap with the actual opposite point measurement. -/
 def retainedPointOverlap {P : AdmissibleParams} {ε : ℝ}
@@ -44,8 +47,7 @@ def retainedPointOverlap {P : AdmissibleParams} {ε : ℝ}
       (S.place p1 (R.effect (directCombinedEmbedding P pair)) *
         S.place p2 ((S.pointMeasExp p2.side W x).effect (evalAt W x pair))))
 
-private theorem retained_mass_eq {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+private theorem retained_mass_eq 
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side))
     (hR : Measurement.IsProjective R) :
     (∑ pair : PolyPair P,
@@ -64,7 +66,6 @@ private theorem retained_mass_eq {P : AdmissibleParams} {ε : ℝ}
     ext g
     simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_filter]
     exact mem_range_directCombinedEmbedding P g
-  change (∑ pair, w (directCombinedEmbedding P pair)) = _
   rw [← Finset.sum_image (f := w) (fun a _ b _ h =>
     (directCombinedEmbedding P).injective h), hgood]
   have hsplit := Finset.sum_filter_add_sum_filter_not Finset.univ
@@ -77,8 +78,7 @@ private theorem retained_mass_eq {P : AdmissibleParams} {ε : ℝ}
 /-- Retained mass splits exactly into point overlap and point mismatch.
 This is the normalized good/bad identity of `eq:qld-s-good-and-bad`; the
 individual projected vectors in its proof remain unnormalized. -/
-theorem retainedPointMismatch_eq {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem retainedPointMismatch_eq  (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (W : PauliKind) :
     retainedPointMismatch S p1 p2 R W =
@@ -95,7 +95,7 @@ theorem retainedPointMismatch_eq {P : AdmissibleParams} {ε : ℝ}
     have hM := S.placedMeasurement_isProjective p2 _ (S.pointMeasExp_isProjective _ W x)
       (evalAt W x pair)
     have hG := S.placedMeasurement_isProjective p1 R hR (directCombinedEmbedding P pair)
-    simp only [ProjectiveSetting.placedMeasurement_effect] at hM hG
+    simp [ProjectiveSetting.placedMeasurement_effect] at hM hG
     have hcomm := S.place_comm p1 p2 hopposite
       (R.effect (directCombinedEmbedding P pair))
       ((S.pointMeasExp p2.side W x).effect (evalAt W x pair))
@@ -115,8 +115,7 @@ theorem retainedPointMismatch_eq {P : AdmissibleParams} {ε : ℝ}
 /-- Completion increases the retained diagonal overlap on any opposite
 placement. This transports the completion estimate to all four directed
 expanded placements, without identifying the player spaces. -/
-theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem directPairMeasurement_consistency_le  (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (pair₀ : PolyPair P) (W : PauliKind) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
@@ -188,9 +187,7 @@ theorem directPairMeasurement_consistency_le {P : AdmissibleParams} {ε : ℝ}
 
 /-- The completed pair measurement has point defect at most bad mass plus
 `2E + 4/q`, for each basis and every opposite placement. -/
-theorem directPairMeasurement_consistency_le_ordered_error
-    {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem directPairMeasurement_consistency_le_ordered_error  (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (pair₀ : PolyPair P) (reverse : Bool) :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))

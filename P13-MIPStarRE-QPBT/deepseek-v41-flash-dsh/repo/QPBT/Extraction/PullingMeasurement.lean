@@ -42,15 +42,19 @@ open WinImplications
 noncomputable section
 
 open scoped Classical
+variable {P : AdmissibleParams}
+
 
 /-- The outcome `g - g_h` in `eq:qld-pulling-12` is a bounded polynomial
 representative, even when `g` is not in the encoding image. -/
-def pullingPoly {P : AdmissibleParams} (outcome : Poly P × PauliRegister P) : Poly P :=
+def pullingPoly  (outcome : Poly P × PauliRegister P) : Poly P :=
   outcome.1 - encodingPoly outcome.2
+variable {P : AdmissibleParams}
+
 
 /-- Decoder linearity identifies the label in `eq:qld-pulling-12`. This uses
 `Dec(g_h) = h`, never the reverse identity on arbitrary polynomials. -/
-theorem decodeFq_pullingPoly {P : AdmissibleParams}
+theorem decodeFq_pullingPoly 
     (outcome : Poly P × PauliRegister P) :
     decodeFq (pullingPoly outcome) = decodeFq outcome.1 - outcome.2 := by
   have hsub (g h : Poly P) : decodeFq (g - h) = decodeFq g - decodeFq h := by
@@ -61,17 +65,19 @@ theorem decodeFq_pullingPoly {P : AdmissibleParams}
 /-- The projective measurement with polynomial outcomes `g - g_h` used to
 organize the last step of the pulling argument. Its input witness remains
 supplied; no global witness is constructed by this definition. -/
-def pullingMeas {P : AdmissibleParams} {epsilon deltaG : ℝ}
+def pullingMeas  {epsilon deltaG : ℝ}
     {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
     (side : PlayerSide) (W : PauliKind) :
     Measurement (Poly P) (ExtractionBlock P (S.LocalSpace side)) :=
   (tensorMeasurement (w.marginalPoly side W) (pauliRegisterMeas W)).postprocess pullingPoly
+variable {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+variable (side : PlayerSide) (W : PauliKind)
+
+
 
 /-- The joint effects are tensor products of orthogonal projections, and
 postprocessing retains projectivity. -/
-theorem pullingMeas_isProjective {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) :
+theorem pullingMeas_isProjective  :
     Measurement.IsProjective (pullingMeas w side W) := by
   apply SandwichProduct.postprocess_isProjective
   intro outcome
@@ -83,9 +89,7 @@ theorem pullingMeas_isProjective {P : AdmissibleParams} {epsilon deltaG : ℝ}
 
 /-- Decoding the difference-polynomial measurement recovers `eq:tilde_M`
 exactly. The equality holds on the full bounded polynomial carrier. -/
-theorem pullingMeas_postprocess_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (side : PlayerSide) (W : PauliKind) (u : PauliRegister P) (a : PauliScalar P) :
+theorem pullingMeas_postprocess_effect  (u : PauliRegister P) (a : PauliScalar P) :
     ((pullingMeas w side W).postprocess (fun g => dotProduct (decodeFq g) u)).effect a =
       tildeM w side W u a := by
   classical
@@ -107,7 +111,7 @@ theorem pullingMeas_postprocess_effect {P : AdmissibleParams} {epsilon deltaG : 
 
 /-- The coordinate change to two extraction blocks preserves the consistency
 defect, including every off-diagonal outcome and the question distribution. -/
-private theorem consistencyDefect_placeSide_eq {P : AdmissibleParams} {epsilon : ℝ}
+private theorem consistencyDefect_placeSide_eq  {epsilon : ℝ}
     {X A : Type*} [Fintype X] [DecidableEq X] [Fintype A] [DecidableEq A]
     (S : ProjectiveSetting P epsilon) (mu : Distribution X)
     (left : X → A → Op (ExtractionBlock P (S.LocalSpace .alice)))
@@ -133,7 +137,7 @@ private theorem consistencyDefect_placeSide_eq {P : AdmissibleParams} {epsilon :
 /-- Polynomial collision and deterministic decoding, before choosing a
 register placement. This separates the finite probability calculation from
 the six-register coordinate identities. -/
-private theorem polynomial_decoding_defect_le_evaluated_add {P : AdmissibleParams}
+private theorem polynomial_decoding_defect_le_evaluated_add 
     {I J : Type*} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
     (A : Measurement (Poly P) I) (B : Measurement (Poly P) J)
     (psi : EuclideanSpace ℂ (I × J)) (hpsi : ‖psi‖ = 1) :
@@ -158,6 +162,8 @@ private theorem polynomial_decoding_defect_le_evaluated_add {P : AdmissibleParam
     placed_product_stateQForm_eq]
   exact (avgOver_mono _ _ _ hpost).trans
     ((avgOver_uniform_const _).le.trans hcollision)
+variable (W : PauliKind)
+
 
 /-- The last polynomial-collision step of the pulling argument, followed by
 decoding. The field-measurement defect is bounded by the evaluated
@@ -168,9 +174,7 @@ measurement. Bounding the evaluated defect from the witness's point
 consistency remains the preceding steps of `eq:qld-pulling-cons`; no estimate
 for that defect is assumed here. The state and placements are the original
 six-register ones. -/
-theorem tildeM_consistencyDefect_le_pulling_eval_add {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem tildeM_consistencyDefect_le_pulling_eval_add  :
     consistencyDefect (uniformDistribution (PauliRegister P))
         (fun u a => S.placeSide .alice (tildeM w .alice W u a))
         (fun u a => S.placeSide .bob (tildeM w .bob W u a)) S.psiHat ≤
@@ -208,9 +212,7 @@ theorem tildeM_consistencyDefect_le_pulling_eval_add {P : AdmissibleParams}
 defect. The coefficient four, uniform register average, and fixed basis
 coordinate are exactly those of the established character conversion.
 This estimate assumes no bound on the remaining evaluated defect. -/
-theorem tildeObs_opDistSq_le_pulling_eval_add {P : AdmissibleParams}
-    {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) (j : Fin P.model.basisDim) :
+theorem tildeObs_opDistSq_le_pulling_eval_add  (j : Fin P.model.basisDim) :
     opDistSq (uniformDistribution (PauliRegister P))
         (fun u => S.placeSide .alice (tildeObs w .alice W u j))
         (fun u => S.placeSide .bob (tildeObs w .bob W u j)) S.psiHat ≤

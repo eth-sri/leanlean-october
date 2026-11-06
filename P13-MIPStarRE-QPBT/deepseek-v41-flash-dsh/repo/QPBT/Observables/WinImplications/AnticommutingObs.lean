@@ -32,13 +32,15 @@ open MIPStarRE.Quantum
 noncomputable section
 
 namespace WinImplications
+variable {ι : Type} [Fintype ι] [DecidableEq ι]
+
 
 /-! ## Reading the dilation back on the original space -/
 
 /-- The matrix of the identity isometry is the identity matrix.
 Formalization-only support for `thm:ms-rigidity`, blueprint
 `ch13_qpbt_test.tex:266-288`. -/
-theorem isometryMatrix_id {ι : Type} [Fintype ι] [DecidableEq ι] :
+theorem isometryMatrix_id  :
     MagicSquareRigidity.isometryMatrix
       (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ι)) = 1 := by
   ext k i
@@ -47,7 +49,7 @@ theorem isometryMatrix_id {ι : Type} [Fintype ι] [DecidableEq ι] :
 
 /-- Conjugation by the identity isometry is the identity. Formalization-only
 support for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem conjIsometry_id {ι : Type} [Fintype ι] [DecidableEq ι] (M : Op ι) :
+theorem conjIsometry_id  (M : Op ι) :
     conjIsometry (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ι)) M = M := by
   rw [MagicSquareRigidity.conjIsometry_eq, isometryMatrix_id]
   simp
@@ -61,8 +63,7 @@ theorem isometryTensor_id {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA]
       (LinearIsometry.id (R := ℂ) (E := EuclideanSpace ℂ ιB)) ψ = ψ := by
   ext p
   rw [MagicSquareRigidity.isometryTensor_apply_eq, isometryMatrix_id,
-    isometryMatrix_id]
-  rw [show Matrix.kronecker (1 : Op ιA) (1 : Op ιB) = 1 from
+    isometryMatrix_id, show Matrix.kronecker (1 : Op ιA) (1 : Op ιB) = 1 from
     Matrix.one_kronecker_one]
   simp [Matrix.one_apply]
 
@@ -75,14 +76,15 @@ theorem naimarkInflation_add {ι α : Type} [Fintype ι] [DecidableEq ι]
       MagicSquareRigidity.naimarkInflation (α := α) (M + N) := by
   ext p q
   by_cases h : p.2 = none ∧ q.2 = none <;> simp [h]
+variable (α : Type) [Fintype α] [DecidableEq α] {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
+variable (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB))
+
+
 
 /-- An operator inflated on the second factor acts on the dilated state exactly
 as the original operator acts on the original state. Formalization-only support
 for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem applyOperatorToState_heteroKron_one_naimarkInflation
-    (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_heteroKron_one_naimarkInflation  :
     applyOperatorToState
         (heteroKron (1 : Op (ιA × Option α))
           (MagicSquareRigidity.naimarkInflation (α := α) N))
@@ -97,7 +99,6 @@ theorem applyOperatorToState_heteroKron_one_naimarkInflation
   by_cases hoa : oa = none
   · by_cases hob : ob = none
     · subst hoa
-      subst hob
       simp [heteroKron, applyOperatorToState, Matrix.mulVec, dotProduct,
         Fintype.sum_prod_type, Matrix.one_apply]
     · simp [hob, heteroKron]
@@ -107,10 +108,7 @@ theorem applyOperatorToState_heteroKron_one_naimarkInflation
 measured on the dilated state, is the norm of the original operator on the
 original state. Formalization-only support for `thm:ms-rigidity`, blueprint
 `ch13_qpbt_test.tex:266-288`. -/
-theorem norm_heteroKron_one_naimarkInflation
-    (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (N : Op ιB) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem norm_heteroKron_one_naimarkInflation  :
     ‖applyOperatorToState
         (heteroKron (1 : Op (ιA × Option α))
           (MagicSquareRigidity.naimarkInflation (α := α) N))
@@ -118,13 +116,17 @@ theorem norm_heteroKron_one_naimarkInflation
       ‖applyOperatorToState (heteroKron (1 : Op ιA) N) ψ‖ := by
   rw [applyOperatorToState_heteroKron_one_naimarkInflation,
     MagicSquareRigidity.naimarkDilatedState_norm]
+variable (S : Strategy msGame)
+variable (j : Fin 9)
+
+
 
 /-! ## The Magic Square anticommutation on the undilated strategy -/
 
 /-- Bob's Magic Square variable reflections are the placed observables of his
 totalized variable measurements on the dilated strategy. Formalization-only
 support for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem msVarObsB_eq (S : Strategy msGame) (j : Fin 9) :
+theorem msVarObsB_eq  :
     MagicSquareRigidity.msVarObsB S j =
       heteroKron (1 : Op (S.ιA × Option MsAnswer))
         (MagicSquareRigidity.dilatedObsB S (.var j) msBitOrZero) := by
@@ -137,7 +139,7 @@ strategy state. This auxiliary estimate is proved on the projective dilation
 and read back through the ground slice. Paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:342-356`,
 blueprint `lem:qld-ms-anticommutator-original-state`. -/
-theorem msVarObs_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 ≤ ε)
+theorem msVarObs_anticommutator_le  (ε : ℝ) (hε : 0 ≤ ε)
     (hwin : 1 - ε ≤ S.value) :
     ‖applyOperatorToState
         (heteroKron (1 : Op S.ιA)
@@ -163,7 +165,6 @@ theorem msVarObs_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 ≤
       (E := EuclideanSpace ℂ (S.ιB × Option MsAnswer))) xi ε 0 hwin hxi
   simp only [MagicSquareRigidity.conjIsometry_comp_naimarkEmbedding,
     conjIsometry_id, MagicSquareRigidity.opDistSq_uniform_unit] at htrans
-  rw [hxidef] at htrans
   have hL : heteroKron (1 : Op (S.ιA × Option MsAnswer))
         (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
           (obsOf ((S.B (.var 0)).postprocess msBitOrZero))) *
@@ -213,17 +214,14 @@ theorem msVarObs_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 ≤
           rw [mul_pow, Real.sq_sqrt hε]
           ring
   have h48 : (48 : ℝ) * 0 ^ 2 = 0 := by norm_num
-  rw [h48, add_zero] at htrans
-  refine le_trans htrans ?_
   linarith
+variable (M : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB))
+
 
 /-- An operator inflated on the first factor acts on the dilated state exactly
 as the original operator acts on the original state. Formalization-only support
 for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem applyOperatorToState_heteroKron_naimarkInflation_one
-    (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem applyOperatorToState_heteroKron_naimarkInflation_one  :
     applyOperatorToState
         (heteroKron (MagicSquareRigidity.naimarkInflation (α := α) M)
           (1 : Op (ιB × Option α)))
@@ -248,10 +246,7 @@ theorem applyOperatorToState_heteroKron_naimarkInflation_one
 measured on the dilated state, is the norm of the original operator on the
 original state. Formalization-only support for `thm:ms-rigidity`, blueprint
 `ch13_qpbt_test.tex:266-288`. -/
-theorem norm_heteroKron_naimarkInflation_one
-    (α : Type) [Fintype α] [DecidableEq α]
-    {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
-    (M : Op ιA) (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem norm_heteroKron_naimarkInflation_one  :
     ‖applyOperatorToState
         (heteroKron (MagicSquareRigidity.naimarkInflation (α := α) M)
           (1 : Op (ιB × Option α)))
@@ -263,7 +258,7 @@ theorem norm_heteroKron_naimarkInflation_one
 /-- Alice's Magic Square variable reflections are the placed observables of her
 totalized variable measurements on the dilated strategy. Formalization-only
 support for `thm:ms-rigidity`, blueprint `ch13_qpbt_test.tex:266-288`. -/
-theorem msVarObsA_eq (S : Strategy msGame) (j : Fin 9) :
+theorem msVarObsA_eq  :
     MagicSquareRigidity.msVarObsA S j =
       heteroKron (MagicSquareRigidity.dilatedObsA S (.var j))
         (1 : Op (S.ιB × Option MsAnswer)) := by
@@ -276,7 +271,7 @@ strategy state. This auxiliary estimate is proved on the projective dilation
 and read back through the ground slice on the first tensor factor. Paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:342-356`,
 blueprint `lem:qld-ms-anticommutator-original-state`. -/
-theorem msVarObsA_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 ≤ ε)
+theorem msVarObsA_anticommutator_le  (ε : ℝ) (hε : 0 ≤ ε)
     (hwin : 1 - ε ≤ S.value) :
     ‖applyOperatorToState
         (heteroKron
@@ -303,7 +298,6 @@ theorem msVarObsA_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 �
       (E := EuclideanSpace ℂ (S.ιB × Option MsAnswer))) xi ε 0 hwin hxi
   simp only [MagicSquareRigidity.conjIsometry_comp_naimarkEmbedding,
     conjIsometry_id, MagicSquareRigidity.opDistSq_uniform_unit] at htrans
-  rw [hxidef] at htrans
   have hL : heteroKron
         (MagicSquareRigidity.naimarkInflation (α := MsAnswer)
           (obsOf ((S.A (.var 0)).postprocess msBitOrZero)))
@@ -349,24 +343,26 @@ theorem msVarObsA_anticommutator_le (S : Strategy msGame) (ε : ℝ) (hε : 0 �
           rw [mul_pow, Real.sq_sqrt hε]
           ring
   have h48 : (48 : ℝ) * 0 ^ 2 = 0 := by norm_num
-  rw [h48, add_zero] at htrans
   refine le_trans htrans ?_
   linarith
+variable {ιA ιB : Type*}
+
 
 /-! ## Reflections and the product transfer -/
 
 /-- The tensor placement respects the adjoint. Formalization-only support for
 `fact:add-a-proj`, blueprint `ch12_qpbt_games.tex:305-321`. -/
-theorem heteroKron_conjTranspose {ιA ιB : Type*} (A : Op ιA) (B : Op ιB) :
+theorem heteroKron_conjTranspose  (A : Op ιA) (B : Op ιB) :
     (heteroKron A B)ᴴ = heteroKron Aᴴ Bᴴ := by
   ext i j
   simp [heteroKron, Matrix.kronecker, Matrix.conjTranspose_apply]
+variable [DecidableEq ιA] [DecidableEq ιB] [Fintype ιA] [Fintype ιB]
+
 
 /-- Placing an isometry on the first factor gives an isometry.
 Formalization-only support for `fact:add-a-proj`, blueprint
 `ch12_qpbt_games.tex:305-321`. -/
-theorem heteroKron_left_isometry {ιA ιB : Type*} [DecidableEq ιA]
-    [DecidableEq ιB] [Fintype ιA] [Fintype ιB] (A : Op ιA)
+theorem heteroKron_left_isometry  (A : Op ιA)
     (hA : Aᴴ * A = 1) :
     (heteroKron A (1 : Op ιB))ᴴ * heteroKron A 1 = 1 := by
   rw [heteroKron_conjTranspose, heteroKron_mul, hA, Matrix.conjTranspose_one,
@@ -375,18 +371,18 @@ theorem heteroKron_left_isometry {ιA ιB : Type*} [DecidableEq ιA]
 /-- Placing an isometry on the second factor gives an isometry.
 Formalization-only support for `fact:add-a-proj`, blueprint
 `ch12_qpbt_games.tex:305-321`. -/
-theorem heteroKron_right_isometry {ιA ιB : Type*} [DecidableEq ιA]
-    [DecidableEq ιB] [Fintype ιA] [Fintype ιB] (B : Op ιB)
+theorem heteroKron_right_isometry  (B : Op ιB)
     (hB : Bᴴ * B = 1) :
     (heteroKron (1 : Op ιA) B)ᴴ * heteroKron 1 B = 1 := by
   rw [heteroKron_conjTranspose, heteroKron_mul, hB, Matrix.conjTranspose_one,
     one_mul, heteroKron_one_one]
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (M : MIPStarRE.Quantum.Measurement (ZMod 2) ι)
+
 
 /-- The observable of a binary projective measurement is a reflection.
 Formalization-only support for `lem:povm-to-obs`, blueprint
 `ch14_qpbt_observables.tex:365-382`. -/
-theorem obsOf_conjTranspose_mul_self {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (M : MIPStarRE.Quantum.Measurement (ZMod 2) ι)
+theorem obsOf_conjTranspose_mul_self 
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     (obsOf M)ᴴ * obsOf M = 1 := by
   have hsum : M.effect 0 + M.effect 1 = 1 := by
@@ -397,12 +393,10 @@ theorem obsOf_conjTranspose_mul_self {ι : Type*} [Fintype ι] [DecidableEq ι]
   have h10 : M.effect 1 * M.effect 0 = 0 :=
     DistanceCalculus.projective_effect_mul_effect_eq_zero M hM (by decide)
   have hherm : (obsOf M)ᴴ = obsOf M := by
-    rw [obsOf, Matrix.conjTranspose_sub]
-    rw [(Matrix.nonneg_iff_posSemidef.mp (M.pos 0)).isHermitian.eq,
+    rw [obsOf, Matrix.conjTranspose_sub, (Matrix.nonneg_iff_posSemidef.mp (M.pos 0)).isHermitian.eq,
       (Matrix.nonneg_iff_posSemidef.mp (M.pos 1)).isHermitian.eq]
   rw [hherm, obsOf, sub_mul, mul_sub, mul_sub, h01, h10,
-    (hM 0).isIdempotentElem.eq, (hM 1).isIdempotentElem.eq]
-  rw [sub_zero, zero_sub, sub_neg_eq_add]
+    (hM 0).isIdempotentElem.eq, (hM 1).isIdempotentElem.eq, sub_zero, zero_sub, sub_neg_eq_add]
   exact hsum
 
 /-- Transferring a product across the tensor factors costs the two individual
@@ -445,8 +439,7 @@ theorem norm_product_transfer_le {ιA ιB : Type} [Fintype ιA] [DecidableEq ιA
 /-- The signed sum of the effects of a binary measurement is its observable.
 Formalization-only support for `lem:povm-to-obs`, blueprint
 `ch14_qpbt_observables.tex:365-382`. -/
-theorem sum_phaseSign_smul_effect_eq_obsOf {ι : Type*} [Fintype ι]
-    [DecidableEq ι] (M : MIPStarRE.Quantum.Measurement (ZMod 2) ι) :
+theorem sum_phaseSign_smul_effect_eq_obsOf  :
     ∑ b : ZMod 2, phaseSign b • M.effect b = obsOf M := by
   rw [sum_zmod_two, obsOf]
   have hzero : phaseSign (0 : ZMod 2) = 1 := by simp [phaseSign]
@@ -498,8 +491,7 @@ theorem obsDist_le_of_consistencyDefect {X ιL ιR : Type*}
     DistanceCalculus.leftPlacedMeasurement (ιB := ιR) (M x) with hAdef
   set B : X → MIPStarRE.Quantum.Measurement (ZMod 2) (ιL × ιR) := fun x =>
     DistanceCalculus.rightPlacedMeasurement (ιA := ιL) (N x) with hBdef
-  have hfam : opFamilyDistSq μ
-      (fun x b => (A x).effect b) (fun x b => (B x).effect b) χ ≤ 2 * c :=
+  have hfam :=
     opFamilyDistSq_placed_le_of_consistencyDefect_le μ M N χ h
   have hobs := povm_to_obs_of_measurements μ A B phaseSign norm_phaseSign χ
   have hleft : ∀ x, (∑ b : ZMod 2, phaseSign b • (A x).effect b) =

@@ -128,55 +128,57 @@ blueprint `def:generalized-pauli`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:908-945`.
 -/
 abbrev PauliRegister (P : AdmissibleParams) := Cube P.m → PauliScalar P
+variable {P : AdmissibleParams}
+
 
 /- The nested sum is the fixed register order
 `V_X ⊕ V_Z ⊕ V_I ⊕ V_V ⊕ V_{R_X} ⊕ V_{R_Z}` from the blueprint. -/
 /-- The `V_X` block of an ambient Pauli vector (blueprint
 `def:pauli-question-distribution`; paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`). -/
-def pauliXBlock {P : AdmissibleParams} (z : PauliSpace P) : Fin P.m → PauliScalar P :=
+def pauliXBlock  (z : PauliSpace P) : Fin P.m → PauliScalar P :=
   fun i => z (.inl (.inl (.inl (.inl (.inl i)))))
 
 /-- The `V_Z` block of an ambient Pauli vector in blueprint
 `def:pauli-question-distribution`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def pauliZBlock {P : AdmissibleParams} (z : PauliSpace P) : Fin P.m → PauliScalar P :=
+def pauliZBlock  (z : PauliSpace P) : Fin P.m → PauliScalar P :=
   fun i => z (.inl (.inl (.inl (.inl (.inr i)))))
 
 /-- The scalar block `V_I` of an ambient Pauli vector in
 blueprint `def:pauli-question-distribution`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def pauliScalarBlock {P : AdmissibleParams} (z : PauliSpace P) : PauliScalar P :=
+def pauliScalarBlock  (z : PauliSpace P) : PauliScalar P :=
   z (.inl (.inl (.inl (.inr ()))))
 
 /-- The direction block `V_V` of an ambient Pauli vector in
 blueprint `def:pauli-question-distribution`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def pauliDirectionBlock {P : AdmissibleParams} (z : PauliSpace P) : Fin P.m → PauliScalar P :=
+def pauliDirectionBlock  (z : PauliSpace P) : Fin P.m → PauliScalar P :=
   fun i => z (.inl (.inl (.inr i)))
 
 /-- The `r_X` scalar block in the Pauli question content from
 blueprint `def:pauli-question-distribution`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def pauliRXBlock {P : AdmissibleParams} (z : PauliSpace P) : PauliScalar P :=
+def pauliRXBlock  (z : PauliSpace P) : PauliScalar P :=
   z (.inl (.inr ()))
 
 /-- The `r_Z` scalar block in the Pauli question content from
 blueprint `def:pauli-question-distribution`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def pauliRZBlock {P : AdmissibleParams} (z : PauliSpace P) : PauliScalar P :=
+def pauliRZBlock  (z : PauliSpace P) : PauliScalar P :=
   z (.inr ())
 
 /-- Select the basis-dependent point block from a Pauli question content in
 blueprint `def:pauli-question-distribution`,
 paper origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def pauliPointBlock {P : AdmissibleParams} (W : PauliKind) (z : PauliSpace P) :
+def pauliPointBlock  (W : PauliKind) (z : PauliSpace P) :
     Fin P.m → PauliScalar P :=
   match W with
   | .X => pauliXBlock z
@@ -220,7 +222,7 @@ def embedLd (P : AdmissibleParams) (W : PauliKind)
 blueprint `def:pauli-question-distribution`, paper
 origin `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:964-1120`.
 -/
-def pauliSharedProjection {P : AdmissibleParams} (z : PauliSpace P) : PauliSpace P :=
+def pauliSharedProjection  (z : PauliSpace P) : PauliSpace P :=
   fun i => match i with
   | .inl (.inl (.inl (.inl (.inl j)))) => z (.inl (.inl (.inl (.inl (.inl j)))))
   | .inl (.inl (.inl (.inl (.inr j)))) => z (.inl (.inl (.inl (.inl (.inr j)))))
@@ -350,7 +352,7 @@ inductive PauliAnswer (P : AdmissibleParams) where
 /-- A formalization-only total relabeling from the global Pauli-test answer
 alphabet to a Pauli register. It folds wrong-form answers into zero so that a
 Pauli question yields a complete `PauliRegister`-indexed measurement. -/
-def pauliAnswerOrZero {P : AdmissibleParams} : PauliAnswer P → PauliRegister P
+def pauliAnswerOrZero  : PauliAnswer P → PauliRegister P
   | .pauliOutcome u => u
   | _ => 0
 
@@ -445,7 +447,7 @@ well-formedness part of blueprint
 `def:pauli-win-predicate`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1126-1225`.
 -/
-def validPauliAnswer {P : AdmissibleParams} (t : PauliType) (a : PauliAnswer P) : Bool :=
+def validPauliAnswer  (t : PauliType) (a : PauliAnswer P) : Bool :=
   match t, a with
   | .point _, .value _ => true
   | .aline _, .alinePoly _ => true

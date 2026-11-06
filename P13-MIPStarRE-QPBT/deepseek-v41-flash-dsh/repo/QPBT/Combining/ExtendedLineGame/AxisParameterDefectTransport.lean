@@ -67,8 +67,7 @@ theorem axis_parameter_evaluated_coefficient_defect_eq
           (.aline, directLdMap P.extendedDirectLd .aline sample)).postprocess
             (fun answer => evalCoefficient (readAxis answer) parameter)).effect value) := by
     unfold answerMeasurement
-    rw [axis_description_canonical]
-    rw [MIPStarRE.Quantum.Measurement.postprocess_comp,
+    rw [axis_description_canonical, MIPStarRE.Quantum.Measurement.postprocess_comp,
       MIPStarRE.Quantum.Measurement.postprocess_comp]
     rfl
   have hmeasurement : axisParameterEvaluatedCoefficientDefect lines =

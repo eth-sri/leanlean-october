@@ -26,7 +26,6 @@ theorem trace_mul_eq_dotProduct_basisCoord {F K ι : Type*} [Field F] [Field K]
     Algebra.trace F K (x * y) = dotProduct (b.equivFun x) (b.equivFun y) := by
   have htraceMatrix :
       LinearMap.BilinForm.toMatrix b (Algebra.traceForm F K) = 1 := by
-    rw [← Algebra.traceMatrix_of_basis b]
     ext i j
     simpa [Algebra.traceMatrix_apply, Algebra.traceForm_apply, Matrix.one_apply] using hself i j
   calc
@@ -37,10 +36,12 @@ theorem trace_mul_eq_dotProduct_basisCoord {F K ι : Type*} [Field F] [Field K]
         (Algebra.traceForm F K) x y
     _ = dotProduct (b.equivFun x) (b.equivFun y) := by
       simp [htraceMatrix, Module.Basis.equivFun_apply]
+variable {K : Type*} [Field K]
+
 
 /-- The binary Frobenius automorphism preserves the field trace, as used in
 `lem:one`, paper `04_preliminaries.tex:739-747`. -/
-private theorem trace_sq_eq_trace {K : Type*} [Field K] [Finite K]
+private theorem trace_sq_eq_trace  [Finite K]
     [Algebra (ZMod 2) K] (x : K) :
     Algebra.trace (ZMod 2) K (x ^ 2) = Algebra.trace (ZMod 2) K x := by
   simpa [FiniteField.coe_frobeniusAlgEquivOfAlgebraic, ZMod.card] using
@@ -51,7 +52,7 @@ private theorem trace_sq_eq_trace {K : Type*} [Field K] [Finite K]
 set_option linter.unusedFintypeInType false in
 /-- The trace-one assertion of blueprint
 `lem:one`, paper `04_preliminaries.tex:730-765`. -/
-theorem trace_basis_eq_one_of_selfDual_normal {K : Type*} [Field K] [Fintype K]
+theorem trace_basis_eq_one_of_selfDual_normal  [Fintype K]
     [Algebra (ZMod 2) K] {k : ℕ} (hk : Odd k)
     (b : Module.Basis (Fin k) (ZMod 2) K)
     (hself : Basis.IsSelfDual b) (hnormal : Basis.IsNormal b) (i : Fin k) :
@@ -81,10 +82,12 @@ theorem trace_basis_eq_one_of_selfDual_normal {K : Type*} [Field K] [Fintype K]
   exact (htrace_basis i).trans hc_one
 
 -- The finite carrier is part of the fixed source-aligned interface for the binary field model.
+variable {q : ℕ} (F : FixedFieldModel q)
+
 
 /-- Fixed-model specialization of the trace-one assertion in blueprint
 `lem:one`, paper `04_preliminaries.tex:730-765`. -/
-theorem fixedFieldModel_trace_basis_eq_one {q : ℕ} (F : FixedFieldModel q)
+theorem fixedFieldModel_trace_basis_eq_one 
     (i : Fin F.basisDim) : Algebra.trace (ZMod 2) F.K (F.basis i) = 1 := by
   apply trace_basis_eq_one_of_selfDual_normal F.basisDimOdd F.basis
   · simpa [Basis.IsSelfDual, IsDualBasisPair] using F.selfDual
@@ -92,7 +95,7 @@ theorem fixedFieldModel_trace_basis_eq_one {q : ℕ} (F : FixedFieldModel q)
 
 /-- Canonical specialization of item 2 of blueprint
 `lem:downsize_field`, paper `04_preliminaries.tex:509-550`. -/
-theorem binTrace_mul_eq_dotProduct {q : ℕ} (F : FixedFieldModel q)
+theorem binTrace_mul_eq_dotProduct 
     (x y : F.K) :
     binTrace F.K (x * y) = dotProduct (F.binaryCoordinates x) (F.binaryCoordinates y) := by
   apply trace_mul_eq_dotProduct_basisCoord F.basis

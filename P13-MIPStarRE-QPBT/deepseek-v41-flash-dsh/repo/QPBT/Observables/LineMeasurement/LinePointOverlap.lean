@@ -62,7 +62,7 @@ theorem place_finset_sum (S : ProjectiveSetting P ε) (p : Placement)
     {γ : Type*} (s : Finset γ) (O : γ → Op (S.ExpandedLocalSpace p.side)) :
     S.place p (∑ g ∈ s, O g) = ∑ g ∈ s, S.place p (O g) := by
   ext i j
-  cases p <;> simp only [place, Matrix.sum_apply, Finset.sum_mul, Finset.mul_sum]
+  cases p <;> simp [place, Matrix.sum_apply, Finset.sum_mul, Finset.mul_sum]
 
 /-- A register placement of the zero operator is zero. -/
 theorem place_zero (S : ProjectiveSetting P ε) (p : Placement) :
@@ -135,8 +135,6 @@ theorem pointMeasExpOption_effect_some (S : ProjectiveSetting P ε)
 theorem pointMeasExpOption_effect_none (S : ProjectiveSetting P ε)
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P) :
     (S.pointMeasExpOption side W u).effect none = 0 := by
-  unfold pointMeasExpOption
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
   apply Finset.sum_eq_zero
   intro a ha
   exact absurd (Finset.mem_filter.mp ha).2 (by simp)
@@ -180,8 +178,6 @@ theorem lineEvalMeasExp_effect (S : ProjectiveSetting P ε) (side : PlayerSide)
       ∑ f ∈ Finset.univ.filter
         (fun f : DegPoly P.toLdParams (P.m * P.d) => evalOpt line u f = o),
         S.expLineOp side W line f := by
-  unfold lineEvalMeasExp
-  rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
   rfl
 
 /-! ## Factorization of opposite placements with distinct Pauli factors -/
@@ -200,7 +196,7 @@ theorem reindexOp_sixRegShuffle_place_AA'_mul_BA''_two
   rw [WinImplications.reindexOp_mul,
     reindexOp_sixRegShuffle_place_AA'_heteroKron,
     reindexOp_sixRegShuffle_place_BA''_heteroKron]
-  simp only [heteroKron_mul, Matrix.mul_one, Matrix.one_mul,
+  simp [heteroKron_mul, Matrix.mul_one, Matrix.one_mul,
     heteroKron_one_one]
 
 set_option synthInstance.maxSize 400 in
@@ -218,7 +214,7 @@ theorem reindexOp_sixRegShuffle_place_AB''_mul_BB'_two
   rw [WinImplications.reindexOp_mul,
     reindexOp_sixRegShuffle_place_AB''_heteroKron,
     reindexOp_sixRegShuffle_place_BB'_heteroKron]
-  simp only [heteroKron_mul, Matrix.mul_one, Matrix.one_mul,
+  simp [heteroKron_mul, Matrix.mul_one, Matrix.one_mul,
     heteroKron_one_one]
 
 set_option synthInstance.maxSize 400 in
@@ -314,6 +310,8 @@ theorem place_AB''_mul_place_BB'_comm (S : ProjectiveSetting P ε)
   exact key X Y
 
 end ProjectiveSetting
+variable (P : AdmissibleParams) (W : PauliKind) {ιL ιP : Type*} [Fintype ιL] [DecidableEq ιL] [Fintype ιP] [DecidableEq ιP] (LM : Measurement (DegPoly P.toLdParams (P.m * P.d)) ιL) (PM : Measurement (ScalarQ P.toLdParams) ιP) (Φ : Op (ιL × PauliRegister P) → Op (ιP × PauliRegister P) → ℝ) (Ψ : Op ιL → Op ιP → ℝ) (line : LineDesc P.toLdParams) (u : Fin P.m → ScalarQ P.toLdParams)
+
 
 /-! ## The overlap identity -/
 
@@ -329,13 +327,7 @@ projectors `tau^{W,line}_{f''}` and `tau^{W,u}_{f''(u)}` on the EPR pairs; the
 conclusion is the overlap of the strategy's evaluation classes with its
 completed point measurement. Paper `14_analysis_of_the_pauli_basis_test.tex:534-545`,
 blueprint `eq:qld-comm-line-pt-cons`, `eq:qld-comm-line-pt-cons2`. -/
-theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
-    {ιL ιP : Type*} [Fintype ιL] [DecidableEq ιL] [Fintype ιP] [DecidableEq ιP]
-    (LM : Measurement (DegPoly P.toLdParams (P.m * P.d)) ιL)
-    (PM : Measurement (ScalarQ P.toLdParams) ιP)
-    (Φ : Op (ιL × PauliRegister P) → Op (ιP × PauliRegister P) → ℝ)
-    (Ψ : Op ιL → Op ιP → ℝ)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → ScalarQ P.toLdParams)
+theorem overlap_identity_of_mem 
     (hu : u ∈ line.pointSet)
     (hΦ0 : ∀ X, Φ X 0 = 0)
     (hΦl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d) ×
@@ -377,7 +369,6 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
   let Pt : Option (ScalarQ P.toLdParams) → Op ιP := fun o => (PM.postprocess some).effect o
   have hPt_none : Pt none = 0 := by
     simp only [Pt]
-    rw [MIPStarRE.Quantum.Measurement.postprocess_effect]
     apply Finset.sum_eq_zero
     intro a ha
     exact absurd (Finset.mem_filter.mp ha).2 (by simp)
@@ -431,8 +422,7 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
       · have hsum : evalOpt line u (p.1 + p.2) = some a := by rw [hp, hf]
         have h1 : evalOpt line u p.1 = some (a - c'') :=
           evalOpt_left_of_add_some hsum h2
-        rw [h1, hPt_some]
-        rw [Finset.sum_eq_single (a - c'', c'')]
+        rw [h1, hPt_some, Finset.sum_eq_single (a - c'', c'')]
         · change Ψ (LM.effect p.1) (PM.effect (a - c'')) *
             (if some c'' = some c'' then c p.2 else 0) =
               Ψ (LM.effect p.1) (PM.effect (a - c'')) * c p.2
@@ -488,13 +478,7 @@ theorem overlap_identity_of_mem (P : AdmissibleParams) (W : PauliKind)
 /-- Off the line, both sides of the overlap identity vanish: no line
 polynomial evaluates, so the selected point effects are zero and the
 evaluation classes with a proper value are empty. -/
-theorem overlap_identity_of_not_mem (P : AdmissibleParams) (W : PauliKind)
-    {ιL ιP : Type*} [Fintype ιL] [DecidableEq ιL] [Fintype ιP] [DecidableEq ιP]
-    (LM : Measurement (DegPoly P.toLdParams (P.m * P.d)) ιL)
-    (PM : Measurement (ScalarQ P.toLdParams) ιP)
-    (Φ : Op (ιL × PauliRegister P) → Op (ιP × PauliRegister P) → ℝ)
-    (Ψ : Op ιL → Op ιP → ℝ)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → ScalarQ P.toLdParams)
+theorem overlap_identity_of_not_mem 
     (hu : u ∉ line.pointSet)
     (hΦ0 : ∀ X, Φ X 0 = 0)
     (hΨl : ∀ (s : Finset (DegPoly P.toLdParams (P.m * P.d)))

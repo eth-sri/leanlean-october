@@ -38,17 +38,17 @@ the original point question. -/
         (directLdPointQuestionOf L.toDirectLdParams u) residue =
       ldPointQuestionOf L u :=
   rfl
+variable (L : LdParams)
+
 
 /-- The direct point-answer readout agrees with the seed-indexed readout: the
 answer equivalence preserves point answers. -/
-@[simp] theorem ldPointValuesOrZero_ldDirectAnswerEquiv_symm
-    (L : LdParams) (a : DirectLdAnswer L.toDirectLdParams) :
+@[simp] theorem ldPointValuesOrZero_ldDirectAnswerEquiv_symm  (a : DirectLdAnswer L.toDirectLdParams) :
     ldPointValuesOrZero L ((ldDirectAnswerEquiv L).symm a) =
       directLdPointValuesOrZero L.toDirectLdParams a := by
   cases a <;> rfl
 
-private theorem seedFiberPointMeasurement
-    (L : LdParams) {iota : Type*} [Fintype iota] [DecidableEq iota]
+private theorem seedFiberPointMeasurement  {iota : Type*} [Fintype iota] [DecidableEq iota]
     (M : LdQuestion L →
       MIPStarRE.Quantum.Measurement (LdAnswer L) iota)
     (u : Fin L.m → ScalarQ L) :
@@ -70,8 +70,7 @@ private theorem seedFiberPointMeasurement
 
 /-- The point POVM of the correlated-residue extension of the strategy is the
 block-diagonal amplification of Alice's original seed-indexed point POVM. -/
-theorem ldStrategyToDirect_pointMeasurementA
-    (L : LdParams) (S : Strategy (ldGame L))
+theorem ldStrategyToDirect_pointMeasurementA  (S : Strategy (ldGame L))
     (u : Fin L.m → ScalarQ L) :
     (((ldStrategyToDirect L S).A
         (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
@@ -87,8 +86,7 @@ theorem ldStrategyToDirect_pointMeasurementA
 
 /-- The point POVM of the correlated-residue extension of the strategy is the
 block-diagonal amplification of Bob's original seed-indexed point POVM. -/
-theorem ldStrategyToDirect_pointMeasurementB
-    (L : LdParams) (S : Strategy (ldGame L))
+theorem ldStrategyToDirect_pointMeasurementB  (S : Strategy (ldGame L))
     (u : Fin L.m → ScalarQ L) :
     (((ldStrategyToDirect L S).B
         (directLdPointQuestionOf L.toDirectLdParams u)).postprocess
@@ -119,11 +117,10 @@ private theorem correlatedState_compress_left
       DistanceCalculus.stateQForm psi
         (heteroKron (averageDiagonalBlock A) B) := by
   classical
-  unfold DistanceCalculus.stateQForm
   apply congrArg Complex.re
   unfold applyOperatorToState heteroKron Matrix.kronecker averageDiagonalBlock
   simp_rw [EuclideanSpace.inner_eq_star_dotProduct]
-  simp only [Matrix.toEuclideanLin, Matrix.toLpLin_apply, dotProduct,
+  simp [Matrix.toEuclideanLin, Matrix.toLpLin_apply, dotProduct,
     Matrix.mulVec]
   simp_rw [← Finset.univ_product_univ, Finset.sum_product]
   suffices h :
@@ -179,11 +176,10 @@ private theorem correlatedState_compress_right
       DistanceCalculus.stateQForm psi
         (heteroKron A (averageDiagonalBlock B)) := by
   classical
-  unfold DistanceCalculus.stateQForm
   apply congrArg Complex.re
   unfold applyOperatorToState heteroKron Matrix.kronecker averageDiagonalBlock
   simp_rw [EuclideanSpace.inner_eq_star_dotProduct]
-  simp only [Matrix.toEuclideanLin, Matrix.toLpLin_apply, dotProduct,
+  simp [Matrix.toEuclideanLin, Matrix.toLpLin_apply, dotProduct,
     Matrix.mulVec]
   simp_rw [← Finset.univ_product_univ, Finset.sum_product]
   suffices h :
@@ -285,7 +281,7 @@ theorem consistencyDefect_seedFiber_compress_left
   intro b
   by_cases hab : a = b
   · simp [hab]
-  · simp only [if_neg hab]
+  · simp [if_neg hab]
     exact seedFiberLiftedState_compress_left S L (A x a) (B x b)
 
 /-- Compressing an arbitrary Bob family preserves its defect against an Alice
@@ -317,14 +313,13 @@ theorem consistencyDefect_seedFiber_compress_right
   intro b
   by_cases hab : a = b
   · simp [hab]
-  · simp only [if_neg hab]
+  · simp [if_neg hab]
     exact seedFiberLiftedState_compress_right S L (A x a) (B x b)
 
 /-- The point-on-Alice/global-on-Bob defect of the correlated-residue extension
 of the strategy is exactly the defect of the compressed polynomial tuple on the
 original seed-indexed strategy. -/
-theorem ldStrategyToDirect_pointPolynomial_compression
-    (L : LdParams) (S : Strategy (ldGame L))
+theorem ldStrategyToDirect_pointPolynomial_compression  (S : Strategy (ldGame L))
     (GB : DirectPolyMeasTuple L.toDirectLdParams
       (S.ιB × Fin (L.q / L.m))) :
     consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))
@@ -364,8 +359,7 @@ theorem ldStrategyToDirect_pointPolynomial_compression
 /-- The global-on-Alice/point-on-Bob defect of the correlated-residue extension
 of the strategy is exactly the defect of the compressed polynomial tuple on the
 original seed-indexed strategy. -/
-theorem ldStrategyToDirect_polynomialPoint_compression
-    (L : LdParams) (S : Strategy (ldGame L))
+theorem ldStrategyToDirect_polynomialPoint_compression  (S : Strategy (ldGame L))
     (GA : DirectPolyMeasTuple L.toDirectLdParams
       (S.ιA × Fin (L.q / L.m))) :
     consistencyDefect (uniformDistribution (Fin L.m → ScalarQ L))

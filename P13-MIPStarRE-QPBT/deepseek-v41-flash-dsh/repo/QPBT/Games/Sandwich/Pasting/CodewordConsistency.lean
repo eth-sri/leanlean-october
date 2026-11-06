@@ -113,7 +113,6 @@ theorem coarse_commutator_bound_explicit :
     refine opFamilyDistSq_congr D _ _ _ _ ψ (fun q ab => ?_) (fun q ab => rfl)
     congr 1
     rw [Measurement.postprocess_congrAlphabet]
-    simp only [Measurement.postprocess_effect]
     refine Finset.sum_congr (Finset.filter_congr fun a _ => ?_) fun _ _ => rfl
     simp [eB, f₁, Prod.ext_iff]
   have hBD : opFamilyDistSq D
@@ -127,7 +126,6 @@ theorem coarse_commutator_bound_explicit :
     refine opFamilyDistSq_congr D _ _ _ _ ψ (fun q ac => ?_) (fun q ac => rfl)
     congr 1
     rw [Measurement.postprocess_congrAlphabet]
-    simp only [Measurement.postprocess_effect]
     refine Finset.sum_congr (Finset.filter_congr fun a _ => ?_) fun _ _ => rfl
     simp [eB, f₂, Prod.ext_iff]
   have hconc := op_dist_sq_commutator_right_le_explicit
@@ -174,7 +172,6 @@ theorem avgOver_collision_le {X Y₁ Y₂ R₂ Γ₂ : Type*}
     have h1 : (D.map Prod.fst).weight p
         = ∑ a ∈ Finset.univ.filter (fun a : (X × Y₁) × Y₂ => a.1 = p),
             D.weight a := by
-      rw [Distribution.map_weight]
       refine Finset.sum_subset
         (Finset.filter_subset_filter _ (Finset.subset_univ _)) ?_
       intro a ha hna
@@ -290,7 +287,7 @@ theorem consistencyDefect_codeword_fine_le_coarse_add_distinct_families
     intro x
     have h := point_defect_eq (leftPlacedMeasurement (ιB := ι) (opposite x))
       (rightPlacedMeasurement (ιA := ι) (G₂ x)) ψ
-    simp only [leftPlacedMeasurement, rightPlacedMeasurement,
+    simp [leftPlacedMeasurement, rightPlacedMeasurement,
       MIPStarRE.Quantum.Measurement.ofSumEqOne] at h
     simp_rw [placed_product_stateQForm_eq] at h
     exact h
@@ -307,7 +304,7 @@ theorem consistencyDefect_codeword_fine_le_coarse_add_distinct_families
         ((opposite x).postprocess (fun g => eval₂ g y₂)))
       (rightPlacedMeasurement (ιA := ι)
         ((G₂ x).postprocess (fun g => eval₂ g y₂))) ψ
-    simp only [leftPlacedMeasurement, rightPlacedMeasurement,
+    simp [leftPlacedMeasurement, rightPlacedMeasurement,
       MIPStarRE.Quantum.Measurement.ofSumEqOne] at h
     simp_rw [placed_product_stateQForm_eq] at h
     exact h
@@ -374,8 +371,7 @@ theorem consistencyDefect_codeword_fine_le_coarse_add_distinct_families
       (fun q => G₂ q.1.1) ψ,
     SandwichProduct.consistencyDefect_placed_eq_avg_point D
       (fun q => (opposite q.1.1).postprocess (fun g => eval₂ g q.2))
-      (fun q => (G₂ q.1.1).postprocess (fun g => eval₂ g q.2)) ψ]
-  rw [avgOver_congr D _ _ hkey, avgOver_add]
+      (fun q => (G₂ q.1.1).postprocess (fun g => eval₂ g q.2)) ψ, avgOver_congr D _ _ hkey, avgOver_add]
   linarith
 
 /-- The pinched collision bound with an independent opposite-register family.
@@ -549,7 +545,7 @@ theorem consistencyDefect_schmidtMirror_le {Q α ι : Type*}
       applyOperatorToState, map_sub, LinearMap.sub_apply] using
       schmidtMirror_norm_sq_le ψ ((A question).effect answer) ((B question).effect answer)
         (measurement_effect_hermitian _ _) (measurement_effect_hermitian _ _)
-  simp only [Measurement.leftPlacement_effect, Measurement.rightPlacement_effect]
+  simp [Measurement.leftPlacement_effect, Measurement.rightPlacement_effect]
     at hmirror hpredict
   linarith
 

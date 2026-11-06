@@ -80,11 +80,12 @@ noncomputable def productPaddedState (a₀ : ιA) (b₀ : ιB)
     EuclideanSpace ℂ ((ιA × ιB) × (ιA × ιB)) :=
   WithLp.toLp 2 (fun p => if p.1.2 = b₀ then
     if p.2.1 = a₀ then ψ (p.1.1, p.2.2) else 0 else 0)
+variable (a₀ : ιA) (b₀ : ιB) (ψ : EuclideanSpace ℂ (ιA × ιB))
+
 
 /-- Adjoining unit basis vectors preserves the state norm. Formalization-only
 auxiliary, blueprint `lem:pasting-product-state-preservation`. -/
-theorem productPaddedState_norm (a₀ : ιA) (b₀ : ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) :
+theorem productPaddedState_norm  :
     ‖productPaddedState a₀ b₀ ψ‖ = ‖ψ‖ := by
   rw [← sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)]
   simp [EuclideanSpace.norm_sq_eq, productPaddedState, Fintype.sum_prod_type, apply_ite]
@@ -92,8 +93,7 @@ theorem productPaddedState_norm (a₀ : ιA) (b₀ : ιB)
 /-- Local tensor padding preserves every bipartite quadratic form. This exact
 identity is independent of positivity and of normalization of the state.
 Formalization-only auxiliary, blueprint `lem:pasting-product-state-preservation`. -/
-theorem stateQForm_productPaddedState (a₀ : ιA) (b₀ : ιB)
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (A : Op ιA) (B : Op ιB) :
+theorem stateQForm_productPaddedState  (A : Op ιA) (B : Op ιB) :
     stateQForm (productPaddedState a₀ b₀ ψ)
         (heteroKron (heteroKron A (1 : Op ιB)) (heteroKron (1 : Op ιA) B)) =
       stateQForm ψ (heteroKron A B) := by
@@ -279,7 +279,7 @@ theorem pasting_error_heterogeneous_explicit :
   let G₁' := fun x => Measurement.rightPlacement (ιA := ιA) (G₁ x)
   let G₂' := fun x => Measurement.rightPlacement (ιA := ιA) (G₂ x)
   let ψ' := Pasting.productPaddedState a₀ b₀ ψ
-  have hψ' : ‖ψ'‖ = 1 := (Pasting.productPaddedState_norm a₀ b₀ ψ).trans hψ
+  have hψ' := (Pasting.productPaddedState_norm a₀ b₀ ψ).trans hψ
   have h₁' : consistencyDefect D
       (fun q a₁ => heteroKron (((A' q).postprocess Prod.fst).effect a₁) 1)
       (fun q a₁ => heteroKron 1 (((G₁' q.1.1).postprocess
@@ -307,7 +307,7 @@ theorem pasting_error_heterogeneous_explicit :
           if (eval₁ g₁ q.1.2, eval₂ g₂ q.2) = a then
             pastedMeasurement (fun g => (G₁ q.1.1).effect g)
               (fun g => (G₂ q.1.1).effect g) g₁ g₂ else 0) := by
-    simp only [G₁', G₂', Measurement.rightPlacement_effect, pastedMeasurement,
+    simp [G₁', G₂', Measurement.rightPlacement_effect, pastedMeasurement,
       heteroKron_mul, one_mul]
     simp_rw [heteroKron_finset_sum_right]
     apply Finset.sum_congr rfl

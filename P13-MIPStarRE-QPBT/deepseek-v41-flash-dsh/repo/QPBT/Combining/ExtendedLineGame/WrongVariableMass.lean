@@ -30,13 +30,15 @@ open MIPStarRE.Quantum DistanceCalculus PolynomialImageBounds
 noncomputable section
 
 namespace ExtendedLineGame
+variable {P : AdmissibleParams} {ε : ℝ}
+
 
 /-- Actual mass of scalar-linear outcomes whose second coefficient in the
 chosen order depends on the varying block. In order `XZ` this is the coefficient
 of beta depending on x; in order `ZX` it is the coefficient of alpha depending
 on z. These are the two classes in `eq:qld-g-prime-xpt-bound` and
 `eq:qld-g-prime-zpt-bound`, supporting blueprint `lem:qld-4-7`. -/
-def scalarWrongVariableMass {P : AdmissibleParams} {ε : ℝ}
+def scalarWrongVariableMass 
     (S : ProjectiveSetting P ε) (p : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side))
     (reverse : Bool) : ℝ := by
@@ -48,11 +50,14 @@ def scalarWrongVariableMass {P : AdmissibleParams} {ε : ℝ}
     ¬ ∃ r, blockCoefficientPolynomial P g
       (Finsupp.single (if reverse then 0 else 1) 1) reverse = MvPolynomial.C r),
     ‖applyOperatorToState (S.place p (R.effect g)) S.psiHat‖ ^ 2
+variable {P : AdmissibleParams} {ε : ℝ} (S : ProjectiveSetting P ε)
+variable (p : Placement)
+
+
 
 /-- Exact placement and order transport for the common joint scalar sample.
 This also transports the retained-overlap calculation in `lem:qld-4-7`. -/
-theorem placed_fiber_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement) (reverse : Bool)
+theorem placed_fiber_orderedIndicator  (reverse : Bool)
     (x z : Fin P.m → PauliScalar P) (v : Fin 2 → PauliScalar P) (a : PauliScalar P) :
     orderedIndicator
       (S.placedMeasurement p (S.pointMeasExp p.side (if reverse then .Z else .X) x))
@@ -67,9 +72,9 @@ theorem placed_fiber_orderedIndicator {P : AdmissibleParams} {ε : ℝ}
       else
         (S.pointMeasExp p.side .X y.1.1).effect ab.1 *
           (S.pointMeasExp p.side .Z y.1.2).effect ab.2) := by
-  dsimp only
+  dsimp
   rw [S.place_finsetSum, Finset.sum_filter]
-  simp only [orderedIndicator, ProjectiveSetting.placedMeasurement_effect]
+  simp [orderedIndicator, ProjectiveSetting.placedMeasurement_effect]
   cases reverse
   · simp [fiberQuestionEquiv, ProjectiveSetting.place_mul]
   · apply Fintype.sum_equiv (Equiv.prodComm (PauliScalar P) (PauliScalar P))
@@ -83,8 +88,7 @@ and normalization retain the full outcome sum, so there is no outcome-count
 loss. This is the quantitative concentration step of
 `eq:qld-g-prime-xpt-bound` and `eq:qld-g-prime-zpt-bound`, supporting
 blueprint `lem:qld-4-7`. -/
-theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem scalarWrongVariableMass_le_ordered_error  (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) (reverse : Bool) :
     scalarWrongVariableMass S p1 R reverse ≤
@@ -149,8 +153,7 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
         extendedPolynomialOrderedError S p1 p2 R reverse := by
     rw [← avgOver_uniform_prod (fun z x =>
       avgOver (uniformDistribution (Fin 2 → PauliScalar P)) (fun v =>
-        ∑ g, ‖ψ g - A z x v g‖ ^ 2))]
-    rw [← avgOver_uniform_prod
+        ∑ g, ‖ψ g - A z x v g‖ ^ 2)), ← avgOver_uniform_prod
       (fun zx : (Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P) =>
         fun v => ∑ g, ‖ψ g - A zx.1 zx.2 v g‖ ^ 2)]
     unfold extendedPolynomialOrderedError
@@ -192,7 +195,7 @@ theorem scalarWrongVariableMass_le_ordered_error {P : AdmissibleParams} {ε : �
 the canonical field transport. This is the actual separated image of
 `eq:qld-g-non-separable` and `def:combine-map`, supporting blueprint
 `lem:qld-4-7`; no completion or overlap assertion is included. -/
-def separatedPolynomialMass {P : AdmissibleParams} {ε : ℝ}
+def separatedPolynomialMass 
     (S : ProjectiveSetting P ε) (p : Placement)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side)) : ℝ := by
   classical
@@ -201,8 +204,7 @@ def separatedPolynomialMass {P : AdmissibleParams} {ε : ℝ}
         combinePoly pair.1.1 pair.2.1),
     ‖applyOperatorToState (S.place p (R.effect g)) S.psiHat‖ ^ 2
 
-private theorem separatedPolynomialMass_le_three_masses {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p : Placement)
+private theorem separatedPolynomialMass_le_three_masses 
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p.side)) :
     separatedPolynomialMass S p R ≤ scalarNonlinearMass S p R +
       scalarWrongVariableMass S p R false + scalarWrongVariableMass S p R true := by
@@ -237,8 +239,7 @@ private theorem separatedPolynomialMass_le_three_masses {P : AdmissibleParams} {
 ordered errors. The image is the existing faithful `combinePoly` encoding
 with both components in `Poly P`. This proves concentration only, as in
 `eq:qld-g-non-separable`, supporting blueprint `lem:qld-4-7`. -/
-theorem separatedPolynomialMass_le_ordered_errors {P : AdmissibleParams} {ε : ℝ}
-    (S : ProjectiveSetting P ε) (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
+theorem separatedPolynomialMass_le_ordered_errors  (p1 p2 : Placement) (hopposite : p1.IsOpposite p2)
     (R : DirectPolyMeasTuple P.extendedDirectLd (S.ExpandedLocalSpace p1.side))
     (hR : Measurement.IsProjective R) :
     separatedPolynomialMass S p1 R ≤

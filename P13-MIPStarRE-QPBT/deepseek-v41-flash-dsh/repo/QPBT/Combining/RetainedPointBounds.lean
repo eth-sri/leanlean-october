@@ -178,7 +178,7 @@ theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
     have h := sum_mass_le_residual_add_image (Finset.univ : Finset Unit)
       (fun _ => applyOperatorToState (1 - X.effect r) ψ)
       (fun _ => applyOperatorToState ((1 - X.effect r) * T) ψ)
-    simp only [Finset.univ_unique, Finset.sum_singleton] at h
+    simp [Finset.univ_unique, Finset.sum_singleton] at h
     have hcontract :
         ‖applyOperatorToState (1 - X.effect r) ψ -
           applyOperatorToState ((1 - X.effect r) * T) ψ‖ ≤
@@ -187,7 +187,7 @@ theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
       have heq : applyOperatorToState (1 - X.effect r) ψ -
           applyOperatorToState (1 - X.effect r) (applyOperatorToState T ψ) =
           applyOperatorToState (1 - X.effect r) (ψ - applyOperatorToState T ψ) := by
-        simp only [applyOperatorToState, map_sub]
+        simp [applyOperatorToState, map_sub]
       rw [heq]
       exact MagicSquareRigidity.norm_applyOperatorToState_le
         (MagicSquareRigidity.conjTranspose_mul_le_one_of_isProj (hX r).one_sub) _
@@ -195,7 +195,7 @@ theorem point_mismatch_le_ordered_error (X Z : Quantum.Measurement F ι)
       (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg _) hcontract 2)
         (by norm_num)) le_rfl)
   have h := avgOver_mono (uniformDistribution (Fin 2 → F)) _ _ hpoint
-  simp only [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at h
+  simp [avgOver_uniform_const, avgOver_add, avgOver_const_mul] at h
   have hm := avg_wrong_ordered_norm_sq_le X Z hX hZ r t ψ
   linarith
 

@@ -61,10 +61,11 @@ theorem pointMeasExp_effect_mul_self (S : ProjectiveSetting P ε)
     (S.pointMeasExp side W u).effect a * (S.pointMeasExp side W u).effect a =
       (S.pointMeasExp side W u).effect a :=
   (S.pointMeasExp_isProjective side W u a).isIdempotentElem.eq
+variable (S : ProjectiveSetting P ε) (side : PlayerSide) (x z : Fin P.m → PauliScalar P)
+
 
 /-- The sandwich `M^Z_b M^X_a M^Z_b` is `(M^X_a M^Z_b)ᴴ (M^X_a M^Z_b)`. -/
-theorem sandwich_eq_conjTranspose_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P) (a b : PauliScalar P) :
+theorem sandwich_eq_conjTranspose_mul_self  (a b : PauliScalar P) :
     (S.pointMeasExp side .Z z).effect b * (S.pointMeasExp side .X x).effect a *
         (S.pointMeasExp side .Z z).effect b =
       ((S.pointMeasExp side .X x).effect a * (S.pointMeasExp side .Z z).effect b)ᴴ *
@@ -77,8 +78,7 @@ theorem sandwich_eq_conjTranspose_mul_self (S : ProjectiveSetting P ε)
     ← Matrix.mul_assoc]
 
 /-- The sandwich effects resolve the identity. -/
-theorem sum_sandwich_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (x z : Fin P.m → PauliScalar P) :
+theorem sum_sandwich_eq_one  :
     ∑ ab : PauliScalar P × PauliScalar P,
         (S.pointMeasExp side .Z z).effect ab.2 *
           (S.pointMeasExp side .X x).effect ab.1 *
@@ -129,8 +129,7 @@ def sandwichPoint (S : ProjectiveSetting P ε) (side : PlayerSide)
 `M^Z_b` times the commutator.  This is the algebra behind display
 `eq:qld-r-2`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:737-742`. -/
-theorem sandwichPoint_effect_sub_ordered (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (x z : Fin P.m → PauliScalar P)
+theorem sandwichPoint_effect_sub_ordered 
     (ab : PauliScalar P × PauliScalar P) :
     (S.sandwichPoint side x z).effect ab -
         (S.pointMeasExp side .Z z).effect ab.2 *
@@ -219,7 +218,7 @@ theorem ordered_cross_dist_le_explicit :
       intro ab
       rw [S.place_mul p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2)
         ((S.pointMeasExp p₁.side .X xz.1).effect ab.1), mul_sub]
-    simp only [hpt, Fintype.sum_prod_type]
+    simp [hpt, Fintype.sum_prod_type]
     refine Finset.sum_le_sum fun a _ => ?_
     exact DistanceCalculus.sum_norm_mul_apply_le
       (fun b => S.place p₁ ((S.pointMeasExp p₁.side .Z xz.2).effect b))
@@ -255,7 +254,7 @@ theorem ordered_cross_dist_le_explicit :
         ((S.pointMeasExp p₂.side .Z xz.2).effect ab.2),
         S.place_comm p₁ p₂ hopp ((S.pointMeasExp p₁.side .Z xz.2).effect ab.2)
           ((S.pointMeasExp p₂.side .X xz.1).effect ab.1), ← mul_sub]
-    simp only [hpt, Fintype.sum_prod_type_right]
+    simp [hpt, Fintype.sum_prod_type_right]
     refine Finset.sum_le_sum fun b _ => ?_
     exact DistanceCalculus.sum_norm_mul_apply_le
       (fun a => S.place p₂ ((S.pointMeasExp p₂.side .X xz.1).effect a))

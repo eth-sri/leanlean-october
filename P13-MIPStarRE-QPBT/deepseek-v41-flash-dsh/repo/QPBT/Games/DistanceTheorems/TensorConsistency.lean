@@ -36,18 +36,18 @@ section Factorization
 variable {ιA ιB κA κB : Type*}
   [Fintype ιA] [DecidableEq ιA] [Fintype ιB] [DecidableEq ιB]
   [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB]
+variable (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB)) (A : Op ιA) (B : Op ιB)
+
 
 /-- Joint expectations factor after regrouping an independent pair of bipartite
 states by player. The shuffle sends `((i, j), (k, l))` to `((i, k), (j, l))`. -/
-theorem inner_prodShuffle_vecTensor_heteroKron
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
-    (A : Op ιA) (B : Op ιB) (R : Op κA) (T : Op κB) :
+theorem inner_prodShuffle_vecTensor_heteroKron  (R : Op κA) (T : Op κB) :
     inner ℂ (reindexState prodShuffle (vecTensor ψ φ))
         (applyOperatorToState (heteroKron (heteroKron A R) (heteroKron B T))
           (reindexState prodShuffle (vecTensor ψ φ))) =
       inner ℂ ψ (applyOperatorToState (heteroKron A B) ψ) *
         inner ℂ φ (applyOperatorToState (heteroKron R T) φ) := by
-  simp only [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
+  simp [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
     EuclideanSpace.inner_eq_star_dotProduct, dotProduct, Matrix.mulVec]
   simp_rw [Finset.sum_mul, Finset.mul_sum]
   rw [← (prodShuffle : (ιA × ιB) × (κA × κB) ≃ _).sum_comp]
@@ -58,7 +58,7 @@ theorem inner_prodShuffle_vecTensor_heteroKron
     ∑ i : ιA × ιB, ∑ j : ιA × ιB, ∑ k : κA × κB, ∑ l : κA × κB,
       ((A i.1 j.1 * B i.2 j.2 * ψ j) * star (ψ i)) *
         ((R k.1 l.1 * T k.2 l.2 * φ l) * star (φ k))
-  simp only [Fintype.sum_prod_type (α₁ := ιA × ιB) (α₂ := κA × κB), star_mul]
+  simp [Fintype.sum_prod_type (α₁ := ιA × ιB) (α₂ := κA × κB), star_mul]
   conv_lhs =>
     arg 2
     ext i
@@ -68,9 +68,7 @@ theorem inner_prodShuffle_vecTensor_heteroKron
 
 /-- For positive ancillary effects, the real joint expectation factors on the
 shuffled tensor state. No normalization or positivity of `A` and `B` is needed. -/
-theorem stateQForm_prodShuffle_vecTensor_heteroKron
-    (ψ : EuclideanSpace ℂ (ιA × ιB)) (φ : EuclideanSpace ℂ (κA × κB))
-    (A : Op ιA) (B : Op ιB) {R : Op κA} {T : Op κB}
+theorem stateQForm_prodShuffle_vecTensor_heteroKron  {R : Op κA} {T : Op κB}
     (hR : 0 ≤ R) (hT : 0 ≤ T) :
     stateQForm (reindexState prodShuffle (vecTensor ψ φ))
         (heteroKron (heteroKron A R) (heteroKron B T)) =
@@ -81,7 +79,7 @@ theorem stateQForm_prodShuffle_vecTensor_heteroKron
     simpa only [applyOperatorToState, Matrix.toEuclideanLin, Matrix.toLpLin_apply,
       EuclideanSpace.inner_eq_star_dotProduct, dotProduct_comm, heteroKron] using
       (Complex.nonneg_iff.mp hnonneg).2.symm
-  simp only [stateQForm, inner_prodShuffle_vecTensor_heteroKron, Complex.mul_re,
+  simp [stateQForm, inner_prodShuffle_vecTensor_heteroKron, Complex.mul_re,
     him, mul_zero, sub_zero]
 
 end Factorization
@@ -95,7 +93,7 @@ theorem sum_add_fiber_heteroKron {G ι κ : Type*}
       heteroKron (A p.1) (R p.2)) =
       ∑ c : G, heteroKron (A (z - c)) (R c) := by
   rw [Finset.sum_filter, Fintype.sum_prod_type, Finset.sum_comm]
-  simp only [← eq_sub_iff_add_eq, Finset.sum_ite_eq', Finset.mem_univ, if_true]
+  simp [← eq_sub_iff_add_eq, Finset.sum_ite_eq', Finset.mem_univ, if_true]
 
 /-- Averaging a common additive shift preserves the off-diagonal mass of any
 weight function. The ancillary joint weights are supported on the diagonal
@@ -121,7 +119,7 @@ private theorem sum_convolution_off_diagonal_eq {G : Type*}
     refine Fintype.sum_equiv (Equiv.subRight c) _ _ fun w => ?_
     change (if z = w then 0 else p (z - c) (w - c)) =
       if z - c = w - c then 0 else p (z - c) (w - c)
-    simp only [sub_left_inj]
+    simp [sub_left_inj]
   simp_rw [hinner]
   calc
     (∑ z : G, ∑ w : G, if z = w then 0 else
@@ -198,9 +196,9 @@ theorem consistencyDefect_convolution_eq_of_perfect
   have hdiag : ∑ c : G, q c c = 1 := by
     have h := point_defect_eq (leftPlacedMeasurement (R x))
       (rightPlacedMeasurement (T x)) φ
-    simp only [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
+    simp [leftPlacedMeasurement, rightPlacedMeasurement, Measurement.ofSumEqOne,
       placed_product_stateQForm_eq, hperfect x, hφ, one_pow] at h
-    dsimp only [q]
+    dsimp [q]
     linarith
   have hfactor (a b c d : G) := stateQForm_prodShuffle_vecTensor_heteroKron ψ φ
     ((A x).effect a) ((B x).effect b) ((R x).pos c) ((T x).pos d)

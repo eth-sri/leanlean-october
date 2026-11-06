@@ -55,11 +55,13 @@ open MIPStarRE.LDT
 open MIPStarRE.LDT.Preliminaries
 
 noncomputable section
+variable (D : DirectLdParams)
+
 
 /-! ## Elementary facts about the parameters -/
 
 /-- The field size of a directly indexed low-degree game is positive. -/
-theorem directLdFieldSize_pos (D : DirectLdParams) : (0 : ℝ) < (D.q : ℝ) := by
+theorem directLdFieldSize_pos  : (0 : ℝ) < (D.q : ℝ) := by
   have h : 0 < Fintype.card (DirectScalarQ D) := Fintype.card_pos
   rw [card_directScalarQ] at h
   exact_mod_cast h
@@ -71,7 +73,7 @@ private theorem directCombiningSum_comm {K : Type*} [CommSemiring K] {k : ℕ}
 
 /-- The rational bound produced by the Schwartz--Zippel estimates, read in the
 field size of the directly indexed game. -/
-private theorem directCombiningRatio_eq (D : DirectLdParams) (n : ℕ) :
+private theorem directCombiningRatio_eq  (n : ℕ) :
     ((((n : ℕ) : ℚ≥0) / Fintype.card (DirectScalarQ D) : ℚ≥0) : Error) =
       ((n : ℕ) : Error) / D.q := by
   rw [card_directScalarQ]
@@ -83,7 +85,7 @@ private theorem directCombiningRatio_eq (D : DirectLdParams) (n : ℕ) :
 open scoped Classical in
 /-- Collision of two combinations with distinct coefficient tuples, written with
 the combining vector as the left factor. -/
-private theorem directCombiningCollision_avg_le_comm (D : DirectLdParams)
+private theorem directCombiningCollision_avg_le_comm 
     (c b : Fin D.k → DirectScalarQ D) (hne : c ≠ b) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D))
         (fun α => if ∑ r : Fin D.k, α r * c r = ∑ r : Fin D.k, α r * b r then
@@ -96,7 +98,7 @@ set_option maxHeartbeats 1000000 in
 open scoped Classical in
 /-- Collision of a restriction which is not a linear form with the linear form
 of a tuple of scalars, written with the combining vector as the left factor. -/
-private theorem directCombinedRestrictCollision_avg_le (D : DirectLdParams)
+private theorem directCombinedRestrictCollision_avg_le 
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
     (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D)
     (hu : ∀ c : Fin D.k → DirectScalarQ D,
@@ -137,7 +139,7 @@ the tuple of values at `u` of the components recovered from `p` differs from `b`
 while the value of `p` at the combined point with parts `u` and `α` equals the
 combination `∑_r α_r b_r`, is at most the bound at the point.  The bound does
 not depend on the tuple `b`. -/
-theorem directCombinedRecoveryEvent_avg_le (D : DirectLdParams)
+theorem directCombinedRecoveryEvent_avg_le 
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d)
     (u : Fin D.m → DirectScalarQ D) (b : Fin D.k → DirectScalarQ D) :
     avgOver (uniformDistribution (Fin D.k → DirectScalarQ D)) (fun α =>
@@ -212,7 +214,7 @@ open scoped Classical in
 bound is the constant `1 / q`; for a non-combined outcome the indicator that the
 restriction is a linear form averages to at most `m d / q` by
 `lem:ld-combining-exact-linearity`. -/
-theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
+theorem directCombinedRecoveryLocalBound_avg_le 
     (p : PolyIndex D.combined.m (DirectScalarQ D) D.d) :
     avgOver (uniformDistribution (Fin D.m → DirectScalarQ D))
         (directCombinedRecoveryLocalBound D p) ≤
@@ -223,7 +225,6 @@ theorem directCombinedRecoveryLocalBound_avg_le (D : DirectLdParams)
       ((D.m * D.d : ℕ) : Error) / D.q + ((D.k * D.d : ℕ) : Error) / D.q := by
     have hn : (D.combined.m * D.d : ℕ) = D.m * D.d + D.k * D.d := by
       simp [DirectLdParams.combined_m, Nat.add_mul]
-    rw [hn]
     push_cast
     ring
   by_cases hc : IsDirectCombined D p

@@ -44,7 +44,7 @@ theorem directCoefficientCollision_avg_le (D : DirectLdParams) (degree : ℕ)
   classical
   let collisionSet : Finset (DirectScalarQ D) :=
     Finset.univ.filter fun t => evalCoefficient a t = evalCoefficient b t
-  have hcollision_card : collisionSet.card ≤ degree :=
+  have hcollision_card :=
     evalCoefficient_collision_card_le a b hne
   calc
     avgOver (uniformDistribution (DirectScalarQ D))

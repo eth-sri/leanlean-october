@@ -64,10 +64,12 @@ theorem eprState_ofLp_swap {V : Type*} [Fintype V] [DecidableEq V]
   by_cases h : x = y
   · simp [h]
   · simp [h, Ne.symm h]
+variable (S : ProjectiveSetting P ε)
+
 
 /-- The auxiliary crosswise EPR exchange fixes the expanded state.  Only the
 symmetry of the EPR vector is used; no symmetry of the strategy is needed. -/
-theorem reindexState_eprCrossSwap_psiHat (S : ProjectiveSetting P ε) :
+theorem reindexState_eprCrossSwap_psiHat  :
     reindexState (eprCrossSwap P S.toStrategy.ιA S.toStrategy.ιB) S.psiHat =
       S.psiHat := by
   ext i
@@ -81,7 +83,7 @@ theorem reindexState_eprCrossSwap_psiHat (S : ProjectiveSetting P ε) :
 
 /-- The crosswise EPR exchange carries the `AB''` placement to the `AA'`
 placement. -/
-theorem reindexOp_eprCrossSwap_place_AB'' (S : ProjectiveSetting P ε)
+theorem reindexOp_eprCrossSwap_place_AB'' 
     (O : Op (S.ExpandedLocalSpace .alice)) :
     reindexOp (eprCrossSwap P S.toStrategy.ιA S.toStrategy.ιB)
       (S.place .AB'' O) = S.place .AA' O := by
@@ -91,11 +93,12 @@ theorem reindexOp_eprCrossSwap_place_AB'' (S : ProjectiveSetting P ε)
   simp only [reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
     Equiv.symm_symm, place, eprCrossSwap, Equiv.coe_fn_mk, Matrix.one_apply]
   ring!
+variable (O : Op (S.ExpandedLocalSpace .bob))
+
 
 /-- The crosswise EPR exchange carries the `BB'` placement to the `BA''`
 placement. -/
-theorem reindexOp_eprCrossSwap_place_BB' (S : ProjectiveSetting P ε)
-    (O : Op (S.ExpandedLocalSpace .bob)) :
+theorem reindexOp_eprCrossSwap_place_BB'  :
     reindexOp (eprCrossSwap P S.toStrategy.ιA S.toStrategy.ιB)
       (S.place .BB' O) = S.place .BA'' O := by
   ext i j
@@ -108,7 +111,7 @@ theorem reindexOp_eprCrossSwap_place_BB' (S : ProjectiveSetting P ε)
 /-- An operator placed on `AB''` has, on the expanded state, the same norm as
 the same operator placed on `AA'`.  The auxiliary crosswise EPR exchange
 gives this transfer without assuming a symmetric strategy. -/
-theorem norm_place_AB''_eq_norm_place_AA' (S : ProjectiveSetting P ε)
+theorem norm_place_AB''_eq_norm_place_AA' 
     (O : Op (S.ExpandedLocalSpace .alice)) :
     ‖applyOperatorToState (S.place .AB'' O) S.psiHat‖ =
       ‖applyOperatorToState (S.place .AA' O) S.psiHat‖ := by
@@ -119,18 +122,18 @@ theorem norm_place_AB''_eq_norm_place_AA' (S : ProjectiveSetting P ε)
 /-- An operator placed on `BB'` has, on the expanded state, the same norm as
 the same operator placed on `BA''`.  The auxiliary crosswise EPR exchange
 gives this transfer without assuming a symmetric strategy. -/
-theorem norm_place_BB'_eq_norm_place_BA'' (S : ProjectiveSetting P ε)
-    (O : Op (S.ExpandedLocalSpace .bob)) :
+theorem norm_place_BB'_eq_norm_place_BA''  :
     ‖applyOperatorToState (S.place .BB' O) S.psiHat‖ =
       ‖applyOperatorToState (S.place .BA'' O) S.psiHat‖ := by
   conv_lhs => rw [← reindexState_eprCrossSwap_psiHat S]
   rw [WinImplications.norm_applyOperatorToState_reindexState,
     reindexOp_eprCrossSwap_place_BB']
+variable {X α : Type*} [Fintype α] (S : ProjectiveSetting P ε) (μ : Distribution X)
+
 
 /-- Transfer of a same-side state-dependent distance between the `AA'` and
 `AB''` placements. -/
-theorem opFamilyDistSq_place_AB''_eq_AA' {X α : Type*} [Fintype α]
-    (S : ProjectiveSetting P ε) (μ : Distribution X)
+theorem opFamilyDistSq_place_AB''_eq_AA' 
     (A B : X → α → Op (S.ExpandedLocalSpace .alice)) :
     opFamilyDistSq μ (fun x a => S.place .AB'' (A x a))
         (fun x a => S.place .AB'' (B x a)) S.psiHat =
@@ -143,8 +146,7 @@ theorem opFamilyDistSq_place_AB''_eq_AA' {X α : Type*} [Fintype α]
 
 /-- Transfer of a same-side state-dependent distance between the `BA''` and
 `BB'` placements. -/
-theorem opFamilyDistSq_place_BB'_eq_BA'' {X α : Type*} [Fintype α]
-    (S : ProjectiveSetting P ε) (μ : Distribution X)
+theorem opFamilyDistSq_place_BB'_eq_BA'' 
     (A B : X → α → Op (S.ExpandedLocalSpace .bob)) :
     opFamilyDistSq μ (fun x a => S.place .BB' (A x a))
         (fun x a => S.place .BB' (B x a)) S.psiHat =

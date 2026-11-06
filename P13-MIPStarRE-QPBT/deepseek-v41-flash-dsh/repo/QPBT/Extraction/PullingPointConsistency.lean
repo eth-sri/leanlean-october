@@ -32,11 +32,12 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum DistanceCalculus
 
 noncomputable section
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+
 
 /-- Evaluation of the difference measurement is a convolution with the ideal
 Pauli point projectors. No encoding hypothesis on `g` is needed. -/
-theorem pullingMeas_eval_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
+theorem pullingMeas_eval_effect 
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (a : PauliScalar P) :
     ((pullingMeas w side W).postprocess (fun g => evalPoly g u)).effect a =
@@ -62,41 +63,39 @@ theorem pullingMeas_eval_effect {P : AdmissibleParams} {epsilon deltaG : ℝ}
       dotProduct h (indicatorVec u) = evalPoly g u - a := by
     constructor <;> intro heq <;> linear_combination -heq
   simp only [hlabel]
+variable (W : PauliKind) (u : Fin P.m → PauliScalar P)
+
 
 /-- Alice's evaluated difference measurement has precisely the overlap with
 Bob's point measurement in the Alice point-consistency estimate of the witness. -/
-theorem sum_pullingMeas_eval_mul_pointMeas {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem sum_pullingMeas_eval_mul_pointMeas  :
     (∑ a : PauliScalar P, S.placeSide .alice
       (((pullingMeas w .alice W).postprocess (fun g => evalPoly g u)).effect a) *
         S.placePlayer .bob ((S.pointMeas .bob W u).effect a)) =
       ∑ g : Poly P, S.place .AA' ((w.marginalPoly .alice W).effect g) *
         S.place .BA'' ((S.pointMeasExp .bob W u).effect (evalPoly g u)) := by
   simp_rw [pullingMeas_eval_effect (S := S) w .alice W u]
-  simp only [S.placeSide_alice_finset_sum, Finset.sum_mul]
+  simp [S.placeSide_alice_finset_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro g _
-  simp only [S.placeSide_alice_tensor_mul_placePlayer_bob]
+  simp [S.placeSide_alice_tensor_mul_placePlayer_bob]
   rw [← Finset.mul_sum, ← S.place_finset_sum, S.pointMeasExp_effect_eq_sum_sub .bob W u]
 
 /-- The reverse-player overlap uses the witness's Bob point-consistency relation, with
 the original `BB'` and `AB''` placements retained. -/
-theorem sum_pointMeas_mul_pullingMeas_eval {P : AdmissibleParams} {epsilon deltaG : ℝ}
-    {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem sum_pointMeas_mul_pullingMeas_eval  :
     (∑ a : PauliScalar P, S.placePlayer .alice ((S.pointMeas .alice W u).effect a) *
       S.placeSide .bob
         (((pullingMeas w .bob W).postprocess (fun g => evalPoly g u)).effect a)) =
       ∑ g : Poly P, S.place .BB' ((w.marginalPoly .bob W).effect g) *
         S.place .AB'' ((S.pointMeasExp .alice W u).effect (evalPoly g u)) := by
   simp_rw [pullingMeas_eval_effect (S := S) w .bob W u]
-  simp only [S.placeSide_bob_finset_sum, Finset.mul_sum]
+  simp [S.placeSide_bob_finset_sum, Finset.mul_sum]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro g _
-  simp only [S.placePlayer_alice_mul_placeSide_bob_tensor]
+  simp [S.placePlayer_alice_mul_placeSide_bob_tensor]
   rw [← Finset.mul_sum, ← S.place_finset_sum, S.pointMeasExp_effect_eq_sum_sub .alice W u]
 
 end

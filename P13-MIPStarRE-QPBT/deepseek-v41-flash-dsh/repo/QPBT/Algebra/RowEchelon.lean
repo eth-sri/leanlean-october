@@ -63,7 +63,7 @@ lemma IsReducedRowEchelon.prefixRank_eq_card
     intro c hc i
     have hi := congrFun hc
       ⟨(pivot i.val).val, (Finset.mem_filter.mp i.property).2⟩
-    simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul] at hi
+    simp [Finset.sum_apply, Pi.smul_apply, smul_eq_mul] at hi
     change (∑ j : s, c j * B j.val (pivot i.val)) = 0 at hi
     simpa [hB.pivot_entry, ← Subtype.ext_iff] using hi
   have hspan :

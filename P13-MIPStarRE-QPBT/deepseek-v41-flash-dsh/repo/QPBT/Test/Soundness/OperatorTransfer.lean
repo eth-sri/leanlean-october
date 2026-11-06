@@ -32,8 +32,10 @@ noncomputable section
 
 variable {P : AdmissibleParams} {epsilon deltaG delta : ℝ}
   {S : ProjectiveSetting P epsilon} {w : GlobalPairWitness S deltaG}
+variable (W : PauliKind) (h : PauliRegister P)
 
-private theorem extracted_alice_eq (W : PauliKind) (h : PauliRegister P) :
+
+private theorem extracted_alice_eq  :
     S.placeExtractedRegister .alice (pauliProj W h) =
       reindexOp (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
         (pauliProjOnA'' P (ιA' := S.toStrategy.ιA × PauliRegister P)
@@ -48,7 +50,7 @@ private theorem extracted_alice_eq (W : PauliKind) (h : PauliRegister P) :
     Matrix.one_apply, Prod.ext_iff, ite_and, mul_ite, ite_mul]
   split_ifs <;> simp_all
 
-private theorem extracted_bob_eq (W : PauliKind) (h : PauliRegister P) :
+private theorem extracted_bob_eq  :
     S.placeExtractedRegister .bob (pauliProj W h) =
       reindexOp (sixRegExtractionEquiv P S.toStrategy.ιA S.toStrategy.ιB)
         (pauliProjOnB'' P (ιA' := S.toStrategy.ιA × PauliRegister P)
@@ -334,7 +336,7 @@ theorem pauli_soundness_deltaQld_ofExtractionWitness
   have hfour := four_mul_deltaQld_le (P := P) (b := B / 2) hA hepsilon
   have hnonneg : 0 ≤ deltaQld A (B / 2) epsilon P.m P.d P.q := by
     have hA0 := zero_le_one.trans hA
-    simp only [deltaQld, Real.rpow_eq_pow]
+    simp [deltaQld, Real.rpow_eq_pow]
     positivity
   have hcommon : max (Real.sqrt _) (4 * _) ≤
       deltaQld (4 * A) (B / 2) epsilon P.m P.d P.q := max_le

@@ -64,9 +64,11 @@ noncomputable def subLineSeedDist (P : AdmissibleParams) (i : Fin P.m) :
     Distribution (ScalarQ P.toLdParams) :=
   Distribution.restrict (uniformDistribution (ScalarQ P.toLdParams))
     (ldSeedIndexEvent P.toLdParams i) (ldSeedIndexEvent_positive P.toLdParams i)
+variable (P : AdmissibleParams)
+
 
 /-- Every seed law of a source line has total mass one. -/
-theorem subLineSeedDist_isProbability (P : AdmissibleParams) (i : Fin P.m) :
+theorem subLineSeedDist_isProbability  (i : Fin P.m) :
     (subLineSeedDist P i).IsProbability := by
   rw [subLineSeedDist]
   exact Distribution.restrict_isProbability _ _
@@ -86,7 +88,7 @@ noncomputable def subLineSamplingDist (P : AdmissibleParams) :
           (subLineSeedDist P (subLineZIndex P k)))).map fun w => (k, w)
 
 /-- The auxiliary randomness law has total mass one. -/
-theorem subLineSamplingDist_isProbability (P : AdmissibleParams) :
+theorem subLineSamplingDist_isProbability  :
     (subLineSamplingDist P).IsProbability := by
   refine Distribution.bind_isProbability _ _
     (uniformDistribution_isProbability _) fun k _ => ?_
@@ -154,51 +156,48 @@ noncomputable def subLineDist (P : AdmissibleParams) :
     Distribution (SubLineTriple P) :=
   Distribution.bind (uniformDistribution (Fin 2))
     ![subLineBranchDist P .axis, subLineBranchDist P .diagonal]
+variable (kind : LineKind)
+variable (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+
+
 
 /-! ## Elementary evaluations of the sampled triple -/
 
 /-- The extended line of a branch has the kind of that branch. -/
-theorem subLineExtLine_kind (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P) :
+theorem subLineExtLine_kind  :
     (subLineExtLine P kind k w).kind = kind := by
   cases kind <;> rfl
 
 /-- The direction of the extended line of a branch is the branch direction. -/
-theorem subLineExtLine_direction (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P) :
+theorem subLineExtLine_direction  :
     (subLineExtLine P kind k w).direction =
       subLineExtDirection P kind k w.1.2 := by
   cases kind <;> rfl
 
 /-- The base of the extended line of a branch is the canonical representative
 of the drawn point in the branch direction. -/
-theorem subLineExtLine_base (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P) :
+theorem subLineExtLine_base  :
     (subLineExtLine P kind k w).base =
       lineRepMap (subLineExtDirection P kind k w.1.2) w.1.1 := by
   cases kind <;> rfl
+variable (b : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams) (d : Fin P.m → PauliScalar P)
+
 
 /-- A source line of a branch has the kind of that branch. -/
-theorem subLineSourceLine_kind (P : AdmissibleParams) (kind : LineKind)
-    (b : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams)
-    (d : Fin P.m → PauliScalar P) :
+theorem subLineSourceLine_kind  :
     (subLineSourceLine P kind b s d).kind = kind := by
   cases kind <;> rfl
 
 /-- The direction of a source line of a branch is the branch source direction
 at the coordinate index named by its seed. -/
-theorem subLineSourceLine_direction (P : AdmissibleParams) (kind : LineKind)
-    (b : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams)
-    (d : Fin P.m → PauliScalar P) :
+theorem subLineSourceLine_direction  :
     (subLineSourceLine P kind b s d).direction =
       subLineSourceDirection P kind (chiIndex P.toLdParams s) d := by
   cases kind <;> rfl
 
 /-- The base of a source line of a branch is the canonical representative of
 its point block in its own direction. -/
-theorem subLineSourceLine_base (P : AdmissibleParams) (kind : LineKind)
-    (b : Fin P.m → PauliScalar P) (s : ScalarQ P.toLdParams)
-    (d : Fin P.m → PauliScalar P) :
+theorem subLineSourceLine_base  :
     (subLineSourceLine P kind b s d).base =
       lineRepMap (subLineSourceDirection P kind (chiIndex P.toLdParams s) d)
         b := by
@@ -211,16 +210,14 @@ from auxiliary randomness whose two seeds lie in the coordinate-index fibers
 of the two coordinates carried by the two source lines.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem exists_samplingData_of_mem_subLineDist_support (P : AdmissibleParams)
+theorem exists_samplingData_of_mem_subLineDist_support 
     {sample : SubLineTriple P} (hsample : sample ∈ (subLineDist P).support) :
     ∃ (kind : LineKind) (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P),
       chiIndex P.toLdParams w.2.1 = subLineXIndex P k ∧
         chiIndex P.toLdParams w.2.2 = subLineZIndex P k ∧
         sample = subLineTripleOf P kind k w := by
   classical
-  have hbind : sample ∈ (uniformDistribution (Fin 2)).support.biUnion
-      (fun c => (![subLineBranchDist P .axis,
-        subLineBranchDist P .diagonal] c).support) := hsample
+  have hbind := hsample
   obtain ⟨c, -, hc⟩ := Finset.mem_biUnion.mp hbind
   obtain ⟨kind, hkind⟩ : ∃ kind : LineKind,
       sample ∈ (subLineBranchDist P kind).support := by
@@ -248,8 +245,7 @@ theorem exists_samplingData_of_mem_subLineDist_support (P : AdmissibleParams)
 
 /-- The direction of the source `X` line of a sampled triple is the branch
 source direction at the coordinate carried by that line. -/
-theorem subLineTripleOf_xDirection (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+theorem subLineTripleOf_xDirection 
     (hx : chiIndex P.toLdParams w.2.1 = subLineXIndex P k) :
     (subLineTripleOf P kind k w).2.1.direction =
       subLineSourceDirection P kind (subLineXIndex P k)
@@ -262,8 +258,7 @@ theorem subLineTripleOf_xDirection (P : AdmissibleParams) (kind : LineKind)
 
 /-- The direction of the source `Z` line of a sampled triple is the branch
 source direction at the coordinate carried by that line. -/
-theorem subLineTripleOf_zDirection (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+theorem subLineTripleOf_zDirection 
     (hz : chiIndex P.toLdParams w.2.2 = subLineZIndex P k) :
     (subLineTripleOf P kind k w).2.2.direction =
       subLineSourceDirection P kind (subLineZIndex P k)
@@ -276,8 +271,7 @@ theorem subLineTripleOf_zDirection (P : AdmissibleParams) (kind : LineKind)
 
 /-- The `X` block of the direction of the extended line of a sampled triple
 lies in the line spanned by the direction of its source `X` line. -/
-theorem subLineTripleOf_xSpan (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+theorem subLineTripleOf_xSpan 
     (hx : chiIndex P.toLdParams w.2.1 = subLineXIndex P k) :
     projX (directPointToPauli P (subLineTripleOf P kind k w).1.direction) ∈
       Submodule.span (PauliScalar P)
@@ -290,8 +284,7 @@ theorem subLineTripleOf_xSpan (P : AdmissibleParams) (kind : LineKind)
 
 /-- The `Z` block of the direction of the extended line of a sampled triple
 lies in the line spanned by the direction of its source `Z` line. -/
-theorem subLineTripleOf_zSpan (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+theorem subLineTripleOf_zSpan 
     (hz : chiIndex P.toLdParams w.2.2 = subLineZIndex P k) :
     projZ (directPointToPauli P (subLineTripleOf P kind k w).1.direction) ∈
       Submodule.span (PauliScalar P)
@@ -306,8 +299,7 @@ theorem subLineTripleOf_zSpan (P : AdmissibleParams) (kind : LineKind)
 representative, in its own direction, of the `X` block of the base of the
 extended line.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineTripleOf_xBase (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+theorem subLineTripleOf_xBase 
     (hx : chiIndex P.toLdParams w.2.1 = subLineXIndex P k) :
     (subLineTripleOf P kind k w).2.1.base =
       lineRepMap (subLineTripleOf P kind k w).2.1.direction
@@ -337,8 +329,7 @@ theorem subLineTripleOf_xBase (P : AdmissibleParams) (kind : LineKind)
 representative, in its own direction, of the `Z` block of the base of the
 extended line.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineTripleOf_zBase (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+theorem subLineTripleOf_zBase 
     (hz : chiIndex P.toLdParams w.2.2 = subLineZIndex P k) :
     (subLineTripleOf P kind k w).2.2.base =
       lineRepMap (subLineTripleOf P kind k w).2.2.direction
@@ -385,8 +376,7 @@ theorem subLineTripleOf_incidence (P : AdmissibleParams) (kind : LineKind)
 /-- Every sampled triple carries affine data sufficient for
 `combineLinePoly_spec`.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineTripleOf_compatibility (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+theorem subLineTripleOf_compatibility 
     (hx : chiIndex P.toLdParams w.2.1 = subLineXIndex P k)
     (hz : chiIndex P.toLdParams w.2.2 = subLineZIndex P k) :
     ∃ aX bX aZ bZ uAlpha vAlpha uBeta vBeta : PauliScalar P,
@@ -433,8 +423,7 @@ theorem subLineTripleOf_compatibility (P : AdmissibleParams) (kind : LineKind)
 /-- An extended axis line of a sampled triple has axis-parallel source lines.
 Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineTripleOf_axis_closure (P : AdmissibleParams) (kind : LineKind)
-    (k : Fin (2 * P.m + 2)) (w : SubLineSamplingData P)
+theorem subLineTripleOf_axis_closure 
     (haxis : (subLineTripleOf P kind k w).1.kind = .axis) :
     (subLineTripleOf P kind k w).2.1.kind = .axis ∧
       (subLineTripleOf P kind k w).2.2.kind = .axis := by
@@ -450,7 +439,7 @@ theorem subLineTripleOf_axis_closure (P : AdmissibleParams) (kind : LineKind)
 /-! ## Total mass and extended marginal -/
 
 /-- The sub-line law has total mass one. -/
-theorem subLineDist_isProbability (P : AdmissibleParams) :
+theorem subLineDist_isProbability  :
     (subLineDist P).IsProbability := by
   refine Distribution.bind_isProbability _ _
     (uniformDistribution_isProbability _) fun c _ => ?_
@@ -474,7 +463,7 @@ private def subLineSampleEquiv (P : AdmissibleParams) :
 the canonical line of the corresponding kind through a uniformly sampled
 extended direct sample.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineBranchDist_map_fst (P : AdmissibleParams) (kind : LineKind) :
+theorem subLineBranchDist_map_fst  :
     (subLineBranchDist P kind).map Prod.fst =
       (uniformDistribution (DirectLdSpace P.extendedDirectLd)).map
         (subLineExtLineOfSample P kind) := by
@@ -534,7 +523,7 @@ theorem subLineBranchDist_map_fst (P : AdmissibleParams) (kind : LineKind) :
 marginal of the directly indexed line-point law.  Blueprint
 `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem subLineDist_map_fst (P : AdmissibleParams) :
+theorem subLineDist_map_fst  :
     (subLineDist P).map Prod.fst =
       (directLinePointDist P.extendedDirectLd).map Prod.fst := by
   classical

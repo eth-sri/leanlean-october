@@ -73,11 +73,12 @@ theorem encodingPauliMeas_effect (setting : ProjectiveSetting params error)
         heteroKron ((setting.pauliMeas side basis).effect answers.1)
           (pauliProj basis answers.2) :=
   rfl
+variable (setting : ProjectiveSetting params error) (side : PlayerSide) (basis : PauliKind)
+
 
 /-- A nonencoding polynomial has zero reference effect. This is exact support of
 the auxiliary measurement, not a bound on the global polynomial measurement. -/
-theorem encodingPauliMeas_effect_eq_zero_of_not_isEncoding
-    (setting : ProjectiveSetting params error) (side : PlayerSide) (basis : PauliKind)
+theorem encodingPauliMeas_effect_eq_zero_of_not_isEncoding 
     (poly : Poly params) (hpoly : ¬ IsEncoding poly) :
     (setting.encodingPauliMeas side basis).effect poly = 0 := by
   classical
@@ -86,12 +87,13 @@ theorem encodingPauliMeas_effect_eq_zero_of_not_isEncoding
   intro answers hanswers
   exact False.elim (hpoly ((Finset.mem_filter.mp hanswers).2 ▸
     isEncoding_encodingPoly (answers.1 + answers.2)))
+variable (point : Fin params.m → PauliScalar params)
+
 
 /-- Evaluating the reference polynomial is equivalent to evaluating the two Pauli
 answers separately and adding their values. This uses linearity of the encoding,
 not the decoder/evaluation identity for arbitrary polynomial representatives. -/
-theorem encodingPauliMeas_postprocess_eval (setting : ProjectiveSetting params error)
-    (side : PlayerSide) (basis : PauliKind) (point : Fin params.m → PauliScalar params) :
+theorem encodingPauliMeas_postprocess_eval  :
     (setting.encodingPauliMeas side basis).postprocess (fun poly => evalPoly poly point) =
       (tensorMeasurement (setting.pauliEvalMeas side basis point)
         ((pauliRegisterMeas basis).postprocess
@@ -105,14 +107,12 @@ theorem encodingPauliMeas_postprocess_eval (setting : ProjectiveSetting params e
   funext answers
   change lowDegreeEnc (answers.1 + answers.2) point =
     lowDegreeEnc answers.1 point + lowDegreeEnc answers.2 point
-  simp only [lowDegreeEnc_eq_dotProduct, add_dotProduct]
+  simp [lowDegreeEnc_eq_dotProduct, add_dotProduct]
 
 /-- The evaluated reference effects are exactly the Pauli-answer convolution
 `K^u_a` in the proof of blueprint `eq:qld-nonencoding-mass`. This identity makes no
 approximation or assertion of consistency with the strategy's point measurement. -/
-theorem encodingPauliMeas_eval_effect_eq_convolution
-    (setting : ProjectiveSetting params error) (side : PlayerSide) (basis : PauliKind)
-    (point : Fin params.m → PauliScalar params) (value : PauliScalar params) :
+theorem encodingPauliMeas_eval_effect_eq_convolution  (value : PauliScalar params) :
     ((setting.encodingPauliMeas side basis).postprocess
       (fun poly => evalPoly poly point)).effect value =
       ∑ values ∈ Finset.univ.filter
@@ -125,7 +125,7 @@ theorem encodingPauliMeas_eval_effect_eq_convolution
   change heteroKron ((setting.pauliEvalMeas side basis point).effect values.1)
     (((pauliRegisterMeas basis).postprocess
       (fun answer => lowDegreeEnc answer point)).effect values.2) = _
-  simp only [Measurement.postprocess_effect, lowDegreeEnc_eq_dotProduct]
+  simp [Measurement.postprocess_effect, lowDegreeEnc_eq_dotProduct]
   rfl
 
 end ProjectiveSetting

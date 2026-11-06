@@ -77,7 +77,7 @@ theorem sum_heteroKron_mul_conjTranspose
   calc
     _ = (∑ outcome, heteroKron (measurement.effect outcome) (operators outcome)) *
         (∑ outcome, heteroKron (measurement.effect outcome) ((operators outcome)ᴴ)) := by
-      simp only [Matrix.conjTranspose_sum, heteroKron, Matrix.kronecker,
+      simp [Matrix.conjTranspose_sum, heteroKron, Matrix.kronecker,
         Matrix.conjTranspose_kronecker, hself]
     _ = ∑ outcome, heteroKron (measurement.effect outcome)
         (operators outcome * (operators outcome)ᴴ) :=

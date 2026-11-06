@@ -30,10 +30,12 @@ open MIPStarRE.LDT
 open MIPStarRE.Quantum
 
 noncomputable section
+variable (D : DirectLdParams) (S : Strategy (directLdGame D))
+variable (types : LdType × LdType)
 
-private theorem directLdAccepted_add_rejected_eq_one
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (types : LdType × LdType) (sample : DirectLdSpace D) :
+
+
+private theorem directLdAccepted_add_rejected_eq_one  (sample : DirectLdSpace D) :
     (∑ a : (directLdGame D).AnswerA, ∑ b : (directLdGame D).AnswerB,
         if directLdWinPredicate D
             (types.1, directLdMap D types.1 sample)
@@ -107,7 +109,6 @@ branch calculation for the game in
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:178-186`. -/
 theorem sum_ldType (f : LdType → ℝ) :
     ∑ t : LdType, f t = f .point + f .aline + f .dline := by
-  change (Finset.univ : Finset LdType).sum f = _
   rw [show (Finset.univ : Finset LdType) = {.point, .aline, .dline} by decide]
   simp [add_assoc]
 
@@ -123,16 +124,13 @@ theorem avgOver_ldType_pair (f : LdType × LdType → ℝ) :
         (f (.aline, .point) + f (.aline, .aline) + f (.aline, .dline)) +
         (f (.dline, .point) + f (.dline, .aline) + f (.dline, .dline))) / 9 := by
   unfold avgOver uniformDistribution Distribution.uniformOnFinset
-  simp only [Finset.mem_univ, if_true, Finset.card_univ, Fintype.card_prod]
-  rw [show Fintype.card LdType = 3 by decide]
-  rw [Fintype.sum_prod_type]
+  simp [Finset.mem_univ, if_true, Finset.card_univ, Fintype.card_prod]
+  rw [show Fintype.card LdType = 3 by decide, Fintype.sum_prod_type]
   simp_rw [sum_ldType]
   ring
 
 /-- Every fixed-type rejection probability is nonnegative. -/
-theorem directLdBranchRejectionProbability_nonneg
-    (D : DirectLdParams) (S : Strategy (directLdGame D))
-    (types : LdType × LdType) :
+theorem directLdBranchRejectionProbability_nonneg  :
     0 ≤ directLdBranchRejectionProbability D S types := by
   apply avgOver_nonneg
   intro sample
@@ -149,8 +147,7 @@ theorem directLdBranchRejectionProbability_nonneg
       (types.2, directLdMap D types.2 sample) a b
 
 /-- Total direct-game rejection is one minus the strategy value. -/
-theorem directLdRejectionProbability_eq_one_sub_value
-    (D : DirectLdParams) (S : Strategy (directLdGame D)) :
+theorem directLdRejectionProbability_eq_one_sub_value  :
     directLdRejectionProbability D S = 1 - S.value := by
   let accepted : (LdType × LdType) → DirectLdSpace D → ℝ :=
     fun types sample =>
@@ -177,12 +174,9 @@ theorem directLdRejectionProbability_eq_one_sub_value
       avgOver (uniformDistribution (LdType × LdType))
         (fun types => 1 -
           avgOver (uniformDistribution (DirectLdSpace D)) (accepted types)) by
-    unfold directLdRejectionProbability
     apply avgOver_congr
-    exact hbranch]
-  rw [avgOver_sub, avgOver_uniform_const]
+    exact hbranch, avgOver_sub, avgOver_uniform_const]
   congr 1
-  rw [Strategy.value]
   symm
   change avgOver (directLdQuestionDistribution D)
       (fun xy : DirectLdQuestion D × DirectLdQuestion D =>

@@ -67,25 +67,27 @@ def combinedPointVar (m k : ℕ) (j : Fin m) : Fin (m + k) :=
 component of a polynomial tuple. -/
 def combinedCoefficientVar (m k : ℕ) (r : Fin k) : Fin (m + k) :=
   finSumFinEquiv (Sum.inr r)
+variable (m k : ℕ)
 
-theorem combinedPointVar_injective (m k : ℕ) :
+
+theorem combinedPointVar_injective  :
     Function.Injective (combinedPointVar m k) := by
   intro j j' h
   simpa using finSumFinEquiv.injective h
 
-theorem combinedCoefficientVar_injective (m k : ℕ) :
+theorem combinedCoefficientVar_injective  :
     Function.Injective (combinedCoefficientVar m k) := by
   intro r r' h
   simpa using finSumFinEquiv.injective h
 
 /-- The two coordinate blocks of the combined dimension are disjoint. -/
-theorem combinedCoefficientVar_ne_combinedPointVar (m k : ℕ) (r : Fin k) (j : Fin m) :
+theorem combinedCoefficientVar_ne_combinedPointVar  (r : Fin k) (j : Fin m) :
     combinedCoefficientVar m k r ≠ combinedPointVar m k j := by
   intro h
   have := finSumFinEquiv.injective h
   simp at this
 
-theorem combinedCoefficientVar_notMem_range (m k : ℕ) (r : Fin k) :
+theorem combinedCoefficientVar_notMem_range  (r : Fin k) :
     combinedCoefficientVar m k r ∉ Set.range (combinedPointVar m k) := by
   rintro ⟨j, hj⟩
   exact combinedCoefficientVar_ne_combinedPointVar m k r j hj.symm
@@ -132,7 +134,7 @@ theorem combinePolyTuple_eval {K : Type*} [CommSemiring K] {m k : ℕ}
     MvPolynomial.eval z (combinePolyTuple g) =
       ∑ r : Fin k, combinedCoefficientPart z r *
         MvPolynomial.eval (combinedPointPart z) (g r) := by
-  simp only [combinePolyTuple, map_sum, map_mul, MvPolynomial.eval_X,
+  simp [combinePolyTuple, map_sum, map_mul, MvPolynomial.eval_X,
     MvPolynomial.eval_rename, combinedCoefficientPart]
   rfl
 
@@ -153,13 +155,15 @@ def combinedSubstitution (K : Type*) [CommSemiring K] (m k : ℕ) (r : Fin k) :
     Fin (m + k) → MvPolynomial (Fin m) K :=
   fun i => Sum.elim (fun j : Fin m => MvPolynomial.X j)
     (fun s : Fin k => if s = r then 1 else 0) (finSumFinEquiv.symm i)
+variable (K : Type*) [CommSemiring K] (m k : ℕ)
 
-@[simp] theorem combinedSubstitution_point (K : Type*) [CommSemiring K] (m k : ℕ)
+
+@[simp] theorem combinedSubstitution_point 
     (r : Fin k) (j : Fin m) :
     combinedSubstitution K m k r (combinedPointVar m k j) = MvPolynomial.X j := by
   simp [combinedSubstitution, combinedPointVar]
 
-@[simp] theorem combinedSubstitution_coefficient (K : Type*) [CommSemiring K] (m k : ℕ)
+@[simp] theorem combinedSubstitution_coefficient 
     (r s : Fin k) :
     combinedSubstitution K m k r (combinedCoefficientVar m k s) =
       if s = r then 1 else 0 := by
@@ -209,14 +213,13 @@ individual degree.  This is the converse direction of
 theorem mem_polyFunc_of_degreeOf_le {m d : ℕ} {K : Type*} [CommSemiring K]
     {p : MvPolynomial (Fin m) K} (h : ∀ i, p.degreeOf i ≤ d) :
     p ∈ polyFunc m K d := by
-  rw [MvPolynomial.mem_restrictDegree]
   exact fun s hs i => MvPolynomial.degreeOf_le_iff.mp (h i) s hs
 
 private theorem degreeOf_X_le_one {τ K : Type*} [CommSemiring K] (c i : τ) :
     (MvPolynomial.X c : MvPolynomial τ K).degreeOf i ≤ 1 := by
   rw [MvPolynomial.degreeOf_le_iff]
   intro s hs
-  have hs' : s ∈ ({Finsupp.single c 1} : Finset (τ →₀ ℕ)) :=
+  have hs' :=
     MvPolynomial.support_monomial_subset hs
   rw [Finset.mem_singleton] at hs'
   subst hs'

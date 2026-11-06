@@ -35,13 +35,15 @@ open MIPStarRE.Quantum
 noncomputable section
 
 namespace WinImplications
+variable {ι κ : Type*}
+
 
 /-! ## Reindexing the identity and the strategy state -/
 
 /-- Reindexing the identity operator gives the identity operator.
 Formalization-only support for the interchanged conclusions of
 `lem:qld-win-implications`, blueprint `ch14_qpbt_observables.tex:701-703`. -/
-theorem reindexOp_one {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
+theorem reindexOp_one  [DecidableEq ι] [DecidableEq κ]
     (e : ι ≃ κ) : reindexOp e (1 : Op κ) = (1 : Op ι) := by
   ext i j
   simp [reindexOp, Matrix.one_apply, e.injective.eq_iff]
@@ -68,11 +70,13 @@ theorem heteroKron_left_right_comm {ιA ιB : Type*} [Fintype ιA]
     heteroKron A (1 : Op ιB) * heteroKron (1 : Op ιA) B =
       heteroKron (1 : Op ιA) B * heteroKron A 1 := by
   rw [heteroKron_mul, heteroKron_mul, mul_one, one_mul, one_mul, mul_one]
+variable [Fintype ι]
+
 
 /-- Reindexing an operator along an equivalence is multiplicative.
 Formalization-only support for the interchanged conclusions of
 `lem:qld-win-implications`, blueprint `ch14_qpbt_observables.tex:701-703`. -/
-theorem reindexOp_mul {ι κ : Type*} [Fintype ι] [Fintype κ]
+theorem reindexOp_mul  [Fintype κ]
     (e : ι ≃ κ) (M N : Op κ) :
     reindexOp e (M * N) = reindexOp e M * reindexOp e N := by
   ext i j
@@ -83,7 +87,7 @@ theorem reindexOp_mul {ι κ : Type*} [Fintype ι] [Fintype κ]
 state and operator. Formalization-only support for the interchanged conclusions
 of blueprint `lem:qld-win-implications`; see
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:227`. -/
-theorem stateQForm_reindexState {ι κ : Type*} [Fintype ι] [DecidableEq ι]
+theorem stateQForm_reindexState  [DecidableEq ι]
     [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (T : Op κ)
     (ψ : EuclideanSpace ℂ ι) :
     DistanceCalculus.stateQForm (reindexState e ψ) T =

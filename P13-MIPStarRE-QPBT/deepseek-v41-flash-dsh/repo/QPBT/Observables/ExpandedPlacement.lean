@@ -39,13 +39,15 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum
 
 noncomputable section
+variable {ι κ : Type*}
+
 
 /-! ## Coordinate tensors -/
 
 /-- A Kronecker product of operators acts factorwise on a coordinate tensor.
 Formalization-only support for `def:expanded-state`, blueprint
 `ch14_qpbt_observables.tex:895-918`. -/
-theorem applyOperatorToState_heteroKron_vecTensor {ι κ : Type*}
+theorem applyOperatorToState_heteroKron_vecTensor 
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
     (A : Op ι) (B : Op κ) (u : EuclideanSpace ℂ ι) (v : EuclideanSpace ℂ κ) :
     applyOperatorToState (heteroKron A B) (vecTensor u v) =
@@ -72,7 +74,7 @@ theorem applyOperatorToState_heteroKron_vecTensor {ι κ : Type*}
 inner products. Formalization-only support for the EPR product calculation in
 `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
-theorem inner_vecTensor {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ]
+theorem inner_vecTensor  [Fintype ι] [DecidableEq ι] [Fintype κ]
     [DecidableEq κ] (u x : EuclideanSpace ℂ ι) (v y : EuclideanSpace ℂ κ) :
     inner ℂ (vecTensor u v) (vecTensor x y) = inner ℂ u x * inner ℂ v y := by
   rw [EuclideanSpace.inner_eq_star_dotProduct,
@@ -95,7 +97,7 @@ theorem inner_vecTensor {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype �
 the product of the two real quadratic forms. Formalization-only support for
 the EPR product calculation in `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
-theorem stateQForm_vecTensor_heteroKron {ι κ : Type*}
+theorem stateQForm_vecTensor_heteroKron 
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
     (A : Op ι) (B : Op κ) (u : EuclideanSpace ℂ ι) (v : EuclideanSpace ℂ κ)
     (hA : A.IsHermitian) (hB : B.IsHermitian) :
@@ -111,12 +113,12 @@ theorem stateQForm_vecTensor_heteroKron {ι κ : Type*}
   ring
 
 /-- Kronecker products preserve Hermiticity. -/
-theorem heteroKron_isHermitian {ι κ : Type*} (A : Op ι) (B : Op κ)
+theorem heteroKron_isHermitian  (A : Op ι) (B : Op κ)
     (hA : A.IsHermitian) (hB : B.IsHermitian) :
     (heteroKron A B).IsHermitian := by
   rw [Matrix.IsHermitian]
   unfold heteroKron
-  simp only [Matrix.kronecker]
+  simp [Matrix.kronecker]
   rw [Matrix.conjTranspose_kronecker, hA.eq, hB.eq]
 
 /-- The real quadratic form of the identity is the squared vector norm. -/
@@ -128,14 +130,15 @@ theorem stateQForm_one_eq_norm_sq {ι : Type*} [Fintype ι] [DecidableEq ι]
   simpa using (inner_self_eq_norm_sq (𝕜 := ℂ) u)
 
 namespace ProjectiveSetting
+variable {P : AdmissibleParams} (W : PauliKind) (u : Fin P.m → PauliScalar P)
+
 
 /-- Acting with the same Pauli point projector on both halves of the EPR state
 equals acting on one half. Symmetry transports the right action to the left,
 where idempotence absorbs the repeated projector. This is the perfect
 ancillary consistency used in item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
-theorem tauPointProj_pair_mulVec_eprState {P : AdmissibleParams}
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) (a : PauliScalar P) :
+theorem tauPointProj_pair_mulVec_eprState  (a : PauliScalar P) :
     (heteroKron (tauPointProj W u a) (tauPointProj W u a)).mulVec
         (eprState (PauliRegister P)) =
       (heteroKron (tauPointProj W u a) 1).mulVec
@@ -152,8 +155,7 @@ theorem tauPointProj_pair_mulVec_eprState {P : AdmissibleParams}
 one. Thus the ancillary measurement contributes no consistency defect. This is
 the perfect ancillary consistency in item 1 of `lem:qld-comm-cons`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:455-465`. -/
-theorem sum_tauPointProj_pair_stateQForm_eprState {P : AdmissibleParams}
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem sum_tauPointProj_pair_stateQForm_eprState  :
     ∑ a : PauliScalar P,
         DistanceCalculus.stateQForm (eprState (PauliRegister P))
           (heteroKron (tauPointProj W u a) (tauPointProj W u a)) = 1 := by
@@ -177,7 +179,7 @@ theorem sum_tauPointProj_pair_stateQForm_eprState {P : AdmissibleParams}
     rcases i with ⟨i₁, i₂⟩
     rcases j with ⟨j₁, j₂⟩
     unfold heteroKron Matrix.kronecker Matrix.kroneckerMap
-    simp only [Matrix.of_apply, Matrix.sum_apply]
+    simp [Matrix.of_apply, Matrix.sum_apply]
     rw [Finset.sum_mul]
   have htausum : ∑ a : PauliScalar P, tauPointProj W u a = 1 :=
     (tauPointMeas W u).sum_eq_one
@@ -212,15 +214,17 @@ noncomputable def placeStrategySide (S : ProjectiveSetting P ε) :
       Op (S.toStrategy.ιA × S.toStrategy.ιB)
   | .alice, T => heteroKron T 1
   | .bob, T => heteroKron 1 T
+variable (S : ProjectiveSetting P ε)
+
 
 /-- The placement of a difference is the difference of the placements. Paper
 `14_analysis_of_the_pauli_basis_test.tex:420-450`, blueprint
 `ch14_qpbt_observables.tex:1002-1031`. -/
-theorem place_sub (S : ProjectiveSetting P ε) (p : Placement)
+theorem place_sub  (p : Placement)
     (O₁ O₂ : Op (S.ExpandedLocalSpace p.side)) :
     S.place p (O₁ - O₂) = S.place p O₁ - S.place p O₂ := by
   ext i j
-  cases p <;> simp only [place, Matrix.sub_apply, sub_mul, mul_sub]
+  cases p <;> simp [place, Matrix.sub_apply, sub_mul, mul_sub]
 
 /-! ## The action of a placement on the expanded state -/
 
@@ -234,7 +238,7 @@ theorem psiHat_eq_reindexState (S : ProjectiveSetting P ε) :
         (eprState (PauliRegister P))) := rfl
 
 /-- The expanded strategy state is normalized. -/
-theorem psiHat_norm (S : ProjectiveSetting P ε) : ‖S.psiHat‖ = 1 := by
+theorem psiHat_norm  : ‖S.psiHat‖ = 1 := by
   rw [psiHat_eq_reindexState, reindexState_norm_eq, vecTensor_norm_eq,
     vecTensor_norm_eq, S.toStrategy.ψ_norm, eprState_norm]
   norm_num
@@ -271,7 +275,7 @@ def abBbBipartition (P : AdmissibleParams) (ιA ιB : Type*) :
 
 /-- Under the `AA' | BA''(B'B'')` bipartition, an `AA'` placement is the
 ordinary left tensor placement. -/
-theorem reindexOp_aaBaBipartition_left (S : ProjectiveSetting P ε)
+theorem reindexOp_aaBaBipartition_left 
     (O : Op (S.ExpandedLocalSpace .alice)) :
     reindexOp (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron O
@@ -287,7 +291,7 @@ theorem reindexOp_aaBaBipartition_left (S : ProjectiveSetting P ε)
 
 /-- Under the `AA' | BA''(B'B'')` bipartition, a `BA''` placement is the
 ordinary right tensor placement, with identity on the unused EPR pair. -/
-theorem reindexOp_aaBaBipartition_right (S : ProjectiveSetting P ε)
+theorem reindexOp_aaBaBipartition_right 
     (O : Op (S.ExpandedLocalSpace .bob)) :
     reindexOp (aaBaBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
@@ -302,7 +306,7 @@ theorem reindexOp_aaBaBipartition_right (S : ProjectiveSetting P ε)
 
 /-- Under the `AB'' | BB'(A'A'')` bipartition, an `AB''` placement is the
 ordinary left tensor placement. -/
-theorem reindexOp_abBbBipartition_left (S : ProjectiveSetting P ε)
+theorem reindexOp_abBbBipartition_left 
     (O : Op (S.ExpandedLocalSpace .alice)) :
     reindexOp (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron O
@@ -318,7 +322,7 @@ theorem reindexOp_abBbBipartition_left (S : ProjectiveSetting P ε)
 
 /-- Under the `AB'' | BB'(A'A'')` bipartition, a `BB'` placement is the
 ordinary right tensor placement, with identity on the unused EPR pair. -/
-theorem reindexOp_abBbBipartition_right (S : ProjectiveSetting P ε)
+theorem reindexOp_abBbBipartition_right 
     (O : Op (S.ExpandedLocalSpace .bob)) :
     reindexOp (abBbBipartition P S.toStrategy.ιA S.toStrategy.ιB)
         (heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
@@ -334,8 +338,7 @@ theorem reindexOp_abBbBipartition_right (S : ProjectiveSetting P ε)
 /-! ## The four placements -/
 
 /-- The `AA'` placement in the unshuffled tensor order of `psiHat`. -/
-theorem reindexOp_sixRegShuffle_place_AA'_heteroKron
-    (S : ProjectiveSetting P ε) (T : Op S.toStrategy.ιA)
+theorem reindexOp_sixRegShuffle_place_AA'_heteroKron  (T : Op S.toStrategy.ιA)
     (V : Op (PauliRegister P)) :
     reindexOp (sixRegShuffle P S.toStrategy.ιA S.toStrategy.ιB)
         (S.place .AA' (heteroKron T V)) =
@@ -352,8 +355,7 @@ theorem reindexOp_sixRegShuffle_place_AA'_heteroKron
   ring
 
 /-- The `BA''` placement in the unshuffled tensor order of `psiHat`. -/
-theorem reindexOp_sixRegShuffle_place_BA''_heteroKron
-    (S : ProjectiveSetting P ε) (T : Op S.toStrategy.ιB)
+theorem reindexOp_sixRegShuffle_place_BA''_heteroKron  (T : Op S.toStrategy.ιB)
     (V : Op (PauliRegister P)) :
     reindexOp (sixRegShuffle P S.toStrategy.ιA S.toStrategy.ιB)
         (S.place .BA'' (heteroKron T V)) =
@@ -370,8 +372,7 @@ theorem reindexOp_sixRegShuffle_place_BA''_heteroKron
   ring
 
 /-- The `BB'` placement in the unshuffled tensor order of `psiHat`. -/
-theorem reindexOp_sixRegShuffle_place_BB'_heteroKron
-    (S : ProjectiveSetting P ε) (T : Op S.toStrategy.ιB)
+theorem reindexOp_sixRegShuffle_place_BB'_heteroKron  (T : Op S.toStrategy.ιB)
     (V : Op (PauliRegister P)) :
     reindexOp (sixRegShuffle P S.toStrategy.ιA S.toStrategy.ιB)
         (S.place .BB' (heteroKron T V)) =
@@ -388,8 +389,7 @@ theorem reindexOp_sixRegShuffle_place_BB'_heteroKron
   ring
 
 /-- The `AB''` placement in the unshuffled tensor order of `psiHat`. -/
-theorem reindexOp_sixRegShuffle_place_AB''_heteroKron
-    (S : ProjectiveSetting P ε) (T : Op S.toStrategy.ιA)
+theorem reindexOp_sixRegShuffle_place_AB''_heteroKron  (T : Op S.toStrategy.ιA)
     (V : Op (PauliRegister P)) :
     reindexOp (sixRegShuffle P S.toStrategy.ιA S.toStrategy.ιB)
         (S.place .AB'' (heteroKron T V)) =
@@ -408,8 +408,7 @@ theorem reindexOp_sixRegShuffle_place_AB''_heteroKron
 /-- The product of opposite `AA'` and `BA''` placements separates into the
 strategy product, the first EPR-pair product, and the identity on the second
 EPR pair. -/
-theorem reindexOp_sixRegShuffle_place_AA'_mul_BA''
-    (S : ProjectiveSetting P ε) (A : Op S.toStrategy.ιA)
+theorem reindexOp_sixRegShuffle_place_AA'_mul_BA''  (A : Op S.toStrategy.ιA)
     (B : Op S.toStrategy.ιB) (T : Op (PauliRegister P)) :
     reindexOp (sixRegShuffle P S.toStrategy.ιA S.toStrategy.ιB)
         (S.place .AA' (heteroKron A T) * S.place .BA'' (heteroKron B T)) =
@@ -418,14 +417,13 @@ theorem reindexOp_sixRegShuffle_place_AA'_mul_BA''
   rw [WinImplications.reindexOp_mul,
     reindexOp_sixRegShuffle_place_AA'_heteroKron,
     reindexOp_sixRegShuffle_place_BA''_heteroKron]
-  simp only [heteroKron_mul, Matrix.mul_one, Matrix.one_mul,
+  simp [heteroKron_mul, Matrix.mul_one, Matrix.one_mul,
     heteroKron_one_one]
 
 /-- The product of opposite `AB''` and `BB'` placements separates into the
 strategy product, the identity on the first EPR pair, and the second EPR-pair
 product. -/
-theorem reindexOp_sixRegShuffle_place_AB''_mul_BB'
-    (S : ProjectiveSetting P ε) (A : Op S.toStrategy.ιA)
+theorem reindexOp_sixRegShuffle_place_AB''_mul_BB'  (A : Op S.toStrategy.ιA)
     (B : Op S.toStrategy.ιB) (T : Op (PauliRegister P)) :
     reindexOp (sixRegShuffle P S.toStrategy.ιA S.toStrategy.ιB)
         (S.place .AB'' (heteroKron A T) * S.place .BB' (heteroKron B T)) =
@@ -435,12 +433,12 @@ theorem reindexOp_sixRegShuffle_place_AB''_mul_BB'
   rw [WinImplications.reindexOp_mul,
     reindexOp_sixRegShuffle_place_AB''_heteroKron,
     reindexOp_sixRegShuffle_place_BB'_heteroKron]
-  simp only [heteroKron_mul, Matrix.mul_one, Matrix.one_mul,
+  simp [heteroKron_mul, Matrix.mul_one, Matrix.one_mul,
     heteroKron_one_one]
 
 /-- The diagonal quadratic form for the `AA'`--`BA''` product factors into
 the strategy overlap and the first EPR-pair overlap. -/
-theorem stateQForm_place_AA'_mul_BA'' (S : ProjectiveSetting P ε)
+theorem stateQForm_place_AA'_mul_BA'' 
     (A : Op S.toStrategy.ιA) (B : Op S.toStrategy.ιB)
     (T : Op (PauliRegister P)) (hA : A.IsHermitian) (hB : B.IsHermitian)
     (hT : T.IsHermitian) :
@@ -449,12 +447,11 @@ theorem stateQForm_place_AA'_mul_BA'' (S : ProjectiveSetting P ε)
       DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron A B) *
         DistanceCalculus.stateQForm (eprState (PauliRegister P))
           (heteroKron T T) := by
-  have hAB : (heteroKron A B).IsHermitian :=
+  have hAB :=
     heteroKron_isHermitian A B hA hB
-  have hTT : (heteroKron T T).IsHermitian :=
+  have hTT :=
     heteroKron_isHermitian T T hT hT
-  have hactive :
-      (heteroKron (heteroKron A B) (heteroKron T T)).IsHermitian :=
+  have hactive :=
     heteroKron_isHermitian _ _ hAB hTT
   rw [psiHat_eq_reindexState, WinImplications.stateQForm_reindexState,
     reindexOp_sixRegShuffle_place_AA'_mul_BA'',
@@ -465,7 +462,7 @@ theorem stateQForm_place_AA'_mul_BA'' (S : ProjectiveSetting P ε)
 
 /-- The diagonal quadratic form for the `AB''`--`BB'` product factors into
 the strategy overlap and the second EPR-pair overlap. -/
-theorem stateQForm_place_AB''_mul_BB' (S : ProjectiveSetting P ε)
+theorem stateQForm_place_AB''_mul_BB' 
     (A : Op S.toStrategy.ιA) (B : Op S.toStrategy.ιB)
     (T : Op (PauliRegister P)) (hA : A.IsHermitian) (hB : B.IsHermitian)
     (hT : T.IsHermitian) :
@@ -474,13 +471,13 @@ theorem stateQForm_place_AB''_mul_BB' (S : ProjectiveSetting P ε)
       DistanceCalculus.stateQForm S.toStrategy.ψ (heteroKron A B) *
         DistanceCalculus.stateQForm (eprState (PauliRegister P))
           (heteroKron T T) := by
-  have hAB : (heteroKron A B).IsHermitian :=
+  have hAB :=
     heteroKron_isHermitian A B hA hB
   have hpassive :
       (heteroKron (heteroKron A B)
         (1 : Op (PauliRegister P × PauliRegister P))).IsHermitian :=
     heteroKron_isHermitian _ _ hAB Matrix.isHermitian_one
-  have hTT : (heteroKron T T).IsHermitian :=
+  have hTT :=
     heteroKron_isHermitian T T hT hT
   rw [psiHat_eq_reindexState, WinImplications.stateQForm_reindexState,
     reindexOp_sixRegShuffle_place_AB''_mul_BB',
@@ -492,7 +489,7 @@ theorem stateQForm_place_AB''_mul_BB' (S : ProjectiveSetting P ε)
 /-- Placing a factorized operator on the register pair `AA'`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:420-450`, blueprint
 `ch14_qpbt_observables.tex:1002-1031`. -/
-theorem norm_place_AA'_heteroKron_psiHat (S : ProjectiveSetting P ε)
+theorem norm_place_AA'_heteroKron_psiHat 
     (T : Op S.toStrategy.ιA) (V : Op (PauliRegister P)) (hV : Vᴴ * V = 1) :
     ‖applyOperatorToState (S.place .AA' (heteroKron T V)) S.psiHat‖ =
       ‖applyOperatorToState
@@ -512,7 +509,7 @@ theorem norm_place_AA'_heteroKron_psiHat (S : ProjectiveSetting P ε)
 /-- Placing a factorized operator on the register pair `BA''`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:420-450`, blueprint
 `ch14_qpbt_observables.tex:1002-1031`. -/
-theorem norm_place_BA''_heteroKron_psiHat (S : ProjectiveSetting P ε)
+theorem norm_place_BA''_heteroKron_psiHat 
     (T : Op S.toStrategy.ιB) (V : Op (PauliRegister P)) (hV : Vᴴ * V = 1) :
     ‖applyOperatorToState (S.place .BA'' (heteroKron T V)) S.psiHat‖ =
       ‖applyOperatorToState
@@ -532,7 +529,7 @@ theorem norm_place_BA''_heteroKron_psiHat (S : ProjectiveSetting P ε)
 /-- Placing a factorized operator on the register pair `BB'`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:420-450`, blueprint
 `ch14_qpbt_observables.tex:1002-1031`. -/
-theorem norm_place_BB'_heteroKron_psiHat (S : ProjectiveSetting P ε)
+theorem norm_place_BB'_heteroKron_psiHat 
     (T : Op S.toStrategy.ιB) (V : Op (PauliRegister P)) (hV : Vᴴ * V = 1) :
     ‖applyOperatorToState (S.place .BB' (heteroKron T V)) S.psiHat‖ =
       ‖applyOperatorToState
@@ -552,7 +549,7 @@ theorem norm_place_BB'_heteroKron_psiHat (S : ProjectiveSetting P ε)
 /-- Placing a factorized operator on the register pair `AB''`. Paper
 `14_analysis_of_the_pauli_basis_test.tex:420-450`, blueprint
 `ch14_qpbt_observables.tex:1002-1031`. -/
-theorem norm_place_AB''_heteroKron_psiHat (S : ProjectiveSetting P ε)
+theorem norm_place_AB''_heteroKron_psiHat 
     (T : Op S.toStrategy.ιA) (V : Op (PauliRegister P)) (hV : Vᴴ * V = 1) :
     ‖applyOperatorToState (S.place .AB'' (heteroKron T V)) S.psiHat‖ =
       ‖applyOperatorToState
@@ -575,7 +572,7 @@ state, provided its Pauli factor is an isometry. This is the placement
 bookkeeping behind `lem:qld-comm-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:420-505`, blueprint
 `ch14_qpbt_observables.tex:1002-1031`. -/
-theorem norm_place_heteroKron_psiHat (S : ProjectiveSetting P ε)
+theorem norm_place_heteroKron_psiHat 
     (p : Placement) (T : Op (S.LocalSpace p.side)) (V : Op (PauliRegister P))
     (hV : Vᴴ * V = 1) :
     ‖applyOperatorToState (S.place p (heteroKron T V)) S.psiHat‖ =

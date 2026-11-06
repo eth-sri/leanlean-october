@@ -53,16 +53,16 @@ def blockMeasurement (side : PlayerSide) {α : Type*} [Fintype α]
       rw [heteroKron_one_one]
       ext row col
       simp [reindexOp, Matrix.one_apply]
+variable (side : PlayerSide) {α : Type*} [Fintype α] (A : Measurement α (ExtractionBlock P (S.LocalSpace side)))
+
 
 /-- The effects of a block measurement use the existing block placement. -/
-@[simp] theorem blockMeasurement_effect (side : PlayerSide) {α : Type*} [Fintype α]
-    (A : Measurement α (ExtractionBlock P (S.LocalSpace side))) (a : α) :
+@[simp] theorem blockMeasurement_effect  (a : α) :
     (S.blockMeasurement side A).effect a = S.placeSide side (A.effect a) := by
   rfl
 
 /-- Placing a projective measurement on an extraction block preserves projectivity. -/
-theorem blockMeasurement_isProjective (side : PlayerSide) {α : Type*} [Fintype α]
-    (A : Measurement α (ExtractionBlock P (S.LocalSpace side)))
+theorem blockMeasurement_isProjective 
     (hA : Measurement.IsProjective A) :
     Measurement.IsProjective (S.blockMeasurement side A) := by
   classical
@@ -97,7 +97,7 @@ theorem stateQForm_placePlayers (A : Op S.toStrategy.ιA) (B : Op S.toStrategy.�
   rw [S.psiHat_eq_reindexState, WinImplications.stateQForm_reindexState,
     WinImplications.reindexOp_mul, S.reindexOp_sixRegShuffle_place_AA'_heteroKron,
     S.reindexOp_sixRegShuffle_place_BB'_heteroKron]
-  simp only [heteroKron_mul, Matrix.one_mul, Matrix.mul_one, heteroKron_one_one]
+  simp [heteroKron_mul, Matrix.one_mul, Matrix.mul_one, heteroKron_one_one]
   rw [stateQForm_vecTensor_heteroKron _ _ _ _
     (heteroKron_isHermitian _ _ hAB Matrix.isHermitian_one) Matrix.isHermitian_one,
     stateQForm_vecTensor_heteroKron _ _ _ _ hAB Matrix.isHermitian_one,
@@ -122,8 +122,8 @@ theorem consistencyDefect_placePlayers {X α : Type*} [Fintype α] [DecidableEq 
   apply Finset.sum_congr rfl
   intro b _
   by_cases hab : a = b
-  · simp only [hab, if_true]
-  · simp only [if_neg hab, consistency_term_eq_stateQForm]
+  · simp [hab, if_true]
+  · simp [if_neg hab, consistency_term_eq_stateQForm]
     exact S.stateQForm_placePlayers _ _
       (Matrix.nonneg_iff_posSemidef.mp ((A x).pos a)).isHermitian
       (Matrix.nonneg_iff_posSemidef.mp ((B x).pos b)).isHermitian

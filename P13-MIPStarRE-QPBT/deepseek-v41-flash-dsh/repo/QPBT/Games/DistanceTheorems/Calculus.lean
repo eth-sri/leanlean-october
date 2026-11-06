@@ -29,11 +29,13 @@ namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum DistanceCalculus
+variable {X α ι : Type*}
+
 
 /-- Consistency bounds state-dependent distance, with the explicit factor
 hidden in blueprint `fact:agreement`, paper
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:295-311`. -/
-theorem opFamilyDistSq_le_two_mul_consistencyDefect {X α ι : Type*}
+theorem opFamilyDistSq_le_two_mul_consistencyDefect 
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (A B : X → Measurement α ι)
@@ -64,7 +66,7 @@ theorem opFamilyDistSq_le_two_mul_consistencyDefect {X α ι : Type*}
 /-- For projective POVMs, state-dependent distance bounds consistency. This is
 the second item of blueprint `fact:agreement`,
 paper `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:295-311`. -/
-theorem consistencyDefect_le_opFamilyDistSq_of_projective {X α ι : Type*}
+theorem consistencyDefect_le_opFamilyDistSq_of_projective 
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (A B : X → Measurement α ι)
@@ -128,7 +130,6 @@ theorem opFamilyDistSq_mul_left_le {X Y α β γ ι : Type*}
         (fun p (abc : (α × β) × γ) =>
           C p.2 abc.1.1 abc.2 * B p.1 (abc.1.1, abc.1.2)) ψ
         ≤ opFamilyDistSq μ (fun p ab => A p.1 ab) (fun p ab => B p.1 ab) ψ := by
-          unfold opFamilyDistSq
           apply avgOver_mono
           intro p
           rw [Fintype.sum_prod_type]
@@ -138,7 +139,6 @@ theorem opFamilyDistSq_mul_left_le {X Y α β γ ι : Type*}
             sum_norm_mul_apply_le (fun c => C p.2 ab.1 c)
               (A p.1 ab - B p.1 ab) ψ (hC' p.2 ab.1)
     _ = opFamilyDistSq (μ.map Prod.fst) A B ψ := by
-      unfold opFamilyDistSq
       exact (Distribution.avgOver_map μ Prod.fst
         (fun x => ∑ a : α × β,
           ‖applyOperatorToState (A x a - B x a) ψ‖ ^ 2)).symm
@@ -147,7 +147,7 @@ theorem opFamilyDistSq_mul_left_le {X Y α β γ ι : Type*}
 /-- Explicit squared-distance triangle inequality. This is blueprint
 `fact:triangle`, paper
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:383-387`. -/
-theorem opFamilyDistSq_le_of_le_of_le {X α ι : Type*}
+theorem opFamilyDistSq_le_of_le_of_le 
     [Fintype α] [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (A B C : X → α → Op ι)
     (ψ : EuclideanSpace ℂ ι) (δ ε : ℝ)
@@ -172,7 +172,6 @@ theorem opFamilyDistSq_le_of_le_of_le {X α ι : Type*}
           (norm_add_le u v)
       _ ≤ 2 * ‖u‖ ^ 2 + 2 * ‖v‖ ^ 2 := by
         nlinarith [sq_nonneg (‖u‖ - ‖v‖)]
-  unfold opFamilyDistSq at *
   calc
     avgOver μ (fun x => ∑ a, ‖applyOperatorToState (A x a - C x a) ψ‖ ^ 2)
         ≤ avgOver μ (fun x => ∑ a,
@@ -195,7 +194,7 @@ theorem opFamilyDistSq_le_of_le_of_le {X α ι : Type*}
 distribution, with the square-root loss of blueprint
 `fact:triangle-for-simeq`, paper
 `references/qpbt-paper/06_nonlocal_games_and_mipstar.tex:389-395`. -/
-theorem consistencyDefect_trans_le {X α ι : Type*}
+theorem consistencyDefect_trans_le 
     [Fintype X] [DecidableEq X] [Fintype α] [DecidableEq α]
     [Fintype ι] [DecidableEq ι]
     (μ : Distribution X) (A B C D : X → Measurement α ι)

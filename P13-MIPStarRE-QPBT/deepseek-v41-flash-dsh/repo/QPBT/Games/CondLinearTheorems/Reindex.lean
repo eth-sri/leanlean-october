@@ -23,13 +23,15 @@ The source definition is `def:cl-func` in
 @[expose] public section
 
 namespace MIPStarRE.QPBT
+variable {K κ ι : Type*} [Field K]
+
 
 /-- Transport a linear map of coefficient vectors along a reindexing `f` of
 registers: restrict a vector to the registers named by `f`, apply the map, and
 extend the result by zero outside the image of `f`.  This is the composition of
 restriction along `f` with `Function.ExtendByZero.linearMap`, named here for the
 reindexing of `def:cl-func`. -/
-noncomputable def reindexLinearMap {K κ ι : Type*} [Field K] (f : κ → ι)
+noncomputable def reindexLinearMap  (f : κ → ι)
     (L : (κ → K) →ₗ[K] (κ → K)) : (ι → K) →ₗ[K] (ι → K) :=
   (Function.ExtendByZero.linearMap K f).comp (L.comp (LinearMap.funLeft K K f))
 
@@ -50,7 +52,7 @@ theorem reindexLinearMap_apply_eq_zero {K κ ι : Type*} [Field K] [DecidableEq 
   rw [reindexLinearMap_apply]
   by_cases hex : ∃ k, f k = i
   · obtain ⟨k, rfl⟩ := hex
-    have hk : k ∉ S₁ := fun hk => hi (Finset.mem_image_of_mem f hk)
+    have hk := fun hk => hi (Finset.mem_image_of_mem f hk)
     rw [hf.extend_apply]
     exact hL _ k hk
   · rw [Function.extend_apply' _ _ _ hex]
@@ -60,7 +62,7 @@ theorem reindexLinearMap_apply_eq_zero {K κ ι : Type*} [Field K] [DecidableEq 
 injective reindexing of registers; the linear contribution of each level is
 reindexed by `reindexLinearMap` and its register is carried along by the image
 under `f`. -/
-noncomputable def CondLinearTerm.reindex {K κ ι : Type*} [Field K]
+noncomputable def CondLinearTerm.reindex 
     [Fintype κ] [DecidableEq κ]
     [Fintype ι] [DecidableEq ι] {f : κ → ι} (hf : Function.Injective f) :
     {ell : ℕ} → CondLinearTerm K (ι := κ) ell → CondLinearTerm K (ι := ι) ell

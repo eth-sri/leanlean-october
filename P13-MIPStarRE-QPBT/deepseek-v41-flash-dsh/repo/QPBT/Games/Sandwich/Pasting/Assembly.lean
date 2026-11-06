@@ -53,7 +53,6 @@ private theorem norm_sq_eq_stateQForm {ι : Type*} [Fintype ι] [DecidableEq ι]
     rw [h1]
     rfl
   have hkey := hqf Xᴴ X
-  rw [Matrix.conjTranspose_conjTranspose] at hkey
   rw [hkey]
   simpa using (inner_self_eq_norm_sq (𝕜 := ℂ) (applyOperatorToState X ψ)).symm
 
@@ -132,16 +131,13 @@ theorem mass_ordered_product_ge {X R₁ R₂ ι : Type*}
   -- the inlined identities of the distance calculus; see issue Dengnifer/MIPStarRE-QPBT-bak#204
   have hct : ∀ M N : Op ι, (heteroKron M N)ᴴ = heteroKron Mᴴ Nᴴ := by
     intro M N
-    unfold heteroKron
     exact Matrix.conjTranspose_kronecker M N
   have hmulapp : ∀ (M N : Op (ι × ι)), applyOperatorToState (M * N) ψ =
       applyOperatorToState M (applyOperatorToState N ψ) := by
-    intro M N
     unfold applyOperatorToState
     simp [Matrix.toEuclideanLin, Matrix.toLpLin_mul_same]
   have hlin : ∀ M N : Op (ι × ι), applyOperatorToState (M - N) ψ =
       applyOperatorToState M ψ - applyOperatorToState N ψ := by
-    intro M N
     simp [applyOperatorToState]
   have hsubr : ∀ M N : Op ι,
       heteroKron (1 : Op ι) (M - N) = heteroKron 1 M - heteroKron 1 N := by
@@ -187,7 +183,7 @@ theorem mass_ordered_product_ge {X R₁ R₂ ι : Type*}
     simpa [hS] using h
   have hC1le : ∀ q : X, C1 q ≤ 1 := by
     intro q
-    simp only [hC1]
+    simp [hC1]
     rw [Fintype.sum_prod_type]
     exact sum_norm_ordered_product_le_one (P q) (Q q) ψ hψ
   -- reversing the order of the placements preserves the mass
@@ -336,8 +332,7 @@ theorem pinched_coarse_sub_fine_eq_distinct_families {R₁ R₂ Γ₂ ι : Type*
       by_cases h : eval g' = b
       · simp [h, Finset.sum_filter]
       · simp [h]
-    rw [Finset.sum_congr rfl fun b _ => hstep b]
-    rw [Finset.sum_comm]
+    rw [Finset.sum_congr rfl fun b _ => hstep b, Finset.sum_comm]
     refine Finset.sum_congr rfl fun g' _ => ?_
     rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun g _ => ?_
@@ -363,8 +358,7 @@ theorem pinched_coarse_sub_fine_eq_distinct_families {R₁ R₂ Γ₂ ι : Type*
     refine Finset.sum_congr rfl fun g _ => ?_
     simp only [hF]
     rw [heteroKron_finset_sum_right, stateQForm_finset_sum]
-  rw [Finset.sum_congr rfl fun b _ => hcoarse b, hfib, hfine]
-  rw [Finset.sum_congr rfl fun g' _ =>
+  rw [Finset.sum_congr rfl fun b _ => hcoarse b, hfib, hfine, Finset.sum_congr rfl fun g' _ =>
     Finset.sum_congr rfl fun g _ => hsplit g g']
   simp only [Finset.sum_add_distrib]
   rw [hdiag]
@@ -676,7 +670,7 @@ theorem consistencyDefect_placed_le_one {X α ιA ιB : Type*}
   intro x
   have hpoint := point_defect_eq (leftPlacedMeasurement (ιB := ιB) (A x))
     (rightPlacedMeasurement (ιA := ιA) (B x)) ψ
-  simp only [leftPlacedMeasurement, rightPlacedMeasurement,
+  simp [leftPlacedMeasurement, rightPlacedMeasurement,
     MIPStarRE.Quantum.Measurement.ofSumEqOne] at hpoint
   simp_rw [placed_product_stateQForm_eq] at hpoint
   have hdiag : 0 ≤ ∑ a : α, stateQForm ψ
@@ -708,11 +702,11 @@ private theorem pasting_error_numeric_aux (C u v : ℝ) (hC : 1 ≤ C)
       2 * Real.sqrt (2 * ((u ^ 8 + 2 * Real.sqrt (2 * u ^ 8)) + v ^ 4)) +
       2 * Real.sqrt (2 * (u ^ 8 + 2 * Real.sqrt (2 * u ^ 8)))) ≤
       (3 * C + 19) * (v + u) := by
-  have hC0 : (0:ℝ) ≤ C := le_trans zero_le_one hC
+  have hC0 := le_trans zero_le_one hC
   have hu82 : u ^ 8 ≤ u ^ 2 := pow_le_pow_of_le_one hu0 hu1 (by norm_num)
   have hu84 : u ^ 8 ≤ u ^ 4 := pow_le_pow_of_le_one hu0 hu1 (by norm_num)
   have hu42 : u ^ 4 ≤ u ^ 2 := pow_le_pow_of_le_one hu0 hu1 (by norm_num)
-  have hu81 : u ^ 8 ≤ u := by
+  have hu81 := by
     simpa using pow_le_pow_of_le_one hu0 hu1 (show 1 ≤ 8 by norm_num)
   have hv42 : v ^ 4 ≤ v ^ 2 := pow_le_pow_of_le_one hv0 hv1 (by norm_num)
   have h1 : Real.sqrt (2 * u ^ 8) ≤ 3 / 2 * u ^ 4 := by
@@ -764,22 +758,16 @@ theorem pasting_error_sqrt_le_rpow (C δ η : ℝ) (hC : 1 ≤ C) (hδ0 : 0 ≤ 
       2 * Real.sqrt (2 * ((δ + 2 * Real.sqrt (2 * δ)) + η)) +
       2 * Real.sqrt (2 * (δ + 2 * Real.sqrt (2 * δ)))) ≤
       (3 * C + 19) * (η ^ (1/4 : ℝ) + δ ^ (1/8 : ℝ)) := by
-  have hu0' : 0 ≤ δ ^ (1/8 : ℝ) := Real.rpow_nonneg hδ0 _
-  have hv0' : 0 ≤ η ^ (1/4 : ℝ) := Real.rpow_nonneg hη0 _
-  have hu1' : δ ^ (1/8 : ℝ) ≤ 1 := Real.rpow_le_one hδ0 hδ1 (by norm_num)
-  have hv1' : η ^ (1/4 : ℝ) ≤ 1 := Real.rpow_le_one hη0 hη1 (by norm_num)
-  have hδu' : δ = (δ ^ (1/8 : ℝ)) ^ 8 := by
-    rw [← Real.rpow_natCast (δ ^ (1/8 : ℝ)) 8, ← Real.rpow_mul hδ0]
-    norm_num
-  have hηv' : η = (η ^ (1/4 : ℝ)) ^ 4 := by
-    rw [← Real.rpow_natCast (η ^ (1/4 : ℝ)) 4, ← Real.rpow_mul hη0]
-    norm_num
   obtain ⟨u, hu0, hu1, hδu, hue⟩ :
       ∃ u : ℝ, 0 ≤ u ∧ u ≤ 1 ∧ δ = u ^ 8 ∧ δ ^ (1/8 : ℝ) = u :=
-    ⟨δ ^ (1/8 : ℝ), hu0', hu1', hδu', rfl⟩
+    ⟨δ ^ (1/8 : ℝ), (Real.rpow_nonneg hδ0 _), (Real.rpow_le_one hδ0 hδ1 (by norm_num)), (by
+    rw [← Real.rpow_natCast (δ ^ (1/8 : ℝ)) 8, ← Real.rpow_mul hδ0]
+    norm_num), rfl⟩
   obtain ⟨v, hv0, hv1, hηv, hve⟩ :
       ∃ v : ℝ, 0 ≤ v ∧ v ≤ 1 ∧ η = v ^ 4 ∧ η ^ (1/4 : ℝ) = v :=
-    ⟨η ^ (1/4 : ℝ), hv0', hv1', hηv', rfl⟩
+    ⟨η ^ (1/4 : ℝ), (Real.rpow_nonneg hη0 _), (Real.rpow_le_one hη0 hη1 (by norm_num)), (by
+    rw [← Real.rpow_natCast (η ^ (1/4 : ℝ)) 4, ← Real.rpow_mul hη0]
+    norm_num), rfl⟩
   rw [hue, hve, hδu, hηv]
   exact pasting_error_numeric_aux C u v hC hu0 hu1 hv0 hv1
 

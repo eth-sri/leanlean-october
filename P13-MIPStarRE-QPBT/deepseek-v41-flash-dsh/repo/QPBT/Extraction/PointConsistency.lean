@@ -33,9 +33,11 @@ noncomputable section
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {epsilon : ℝ}
+variable (S : ProjectiveSetting P epsilon)
+
 
 /-- Placing a tensor with an identity on Bob's last register recovers `BB'`. -/
-theorem placeSide_bob_tensor_one (S : ProjectiveSetting P epsilon)
+theorem placeSide_bob_tensor_one 
     (B : Op (S.ExpandedLocalSpace .bob)) :
     S.placeSide .bob (heteroKron B (1 : Op (PauliRegister P))) = S.place .BB' B := by
   ext row col
@@ -45,7 +47,7 @@ theorem placeSide_bob_tensor_one (S : ProjectiveSetting P epsilon)
 
 /-- The point factor on `A` and the factors on `BB'B''` can be regrouped as
 the factors on `BB'` and `AB''`, without moving any register. -/
-theorem placePlayer_alice_mul_placeSide_bob_tensor (S : ProjectiveSetting P epsilon)
+theorem placePlayer_alice_mul_placeSide_bob_tensor 
     (A : Op S.toStrategy.ιA) (B : Op (S.ExpandedLocalSpace .bob))
     (T : Op (PauliRegister P)) :
     S.placePlayer .alice A * S.placeSide .bob (heteroKron B T) =
@@ -58,7 +60,7 @@ theorem placePlayer_alice_mul_placeSide_bob_tensor (S : ProjectiveSetting P epsi
   split_ifs <;> ac_rfl
 
 /-- Bob's extraction-block placement preserves finite sums. -/
-theorem placeSide_bob_finset_sum (S : ProjectiveSetting P epsilon)
+theorem placeSide_bob_finset_sum 
     {I : Type*} (s : Finset I) (B : I → Op (ExtractionBlock P S.toStrategy.ιB)) :
     S.placeSide .bob (∑ i ∈ s, B i) = ∑ i ∈ s, S.placeSide .bob (B i) := by
   classical
@@ -66,12 +68,12 @@ theorem placeSide_bob_finset_sum (S : ProjectiveSetting P epsilon)
     (heteroKron (1 : Op (ExtractionBlock P S.toStrategy.ιA)) (∑ i ∈ s, B i)) = _
   rw [heteroKron_finset_sum_right]
   ext row col
-  simp only [placeSide, reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
+  simp [placeSide, reindexOp, Matrix.reindex_apply, Matrix.submatrix_apply,
     Matrix.sum_apply]
 
 /-- The convolution formula with its second outcome solved for. This is the
 third line of the overlap calculation in paper lines 1483--1492. -/
-theorem pointMeasExp_effect_eq_sum_sub (S : ProjectiveSetting P epsilon)
+theorem pointMeasExp_effect_eq_sum_sub 
     (side : PlayerSide) (W : PauliKind) (u : Fin P.m → PauliScalar P)
     (a : PauliScalar P) :
     (S.pointMeasExp side W u).effect a =
@@ -80,43 +82,42 @@ theorem pointMeasExp_effect_eq_sum_sub (S : ProjectiveSetting P epsilon)
   classical
   change S.expPointOp side W u a = _
   rw [S.expPointOp_eq_convolution]
-  simp only [Finset.sum_filter, Fintype.sum_prod_type]
+  simp [Finset.sum_filter, Fintype.sum_prod_type]
   apply Finset.sum_congr rfl
   intro b _
   have h (c : PauliScalar P) : b + c = a ↔ c = a - b := by
     rw [eq_sub_iff_add_eq, add_comm]
-  simp only [h, Finset.sum_ite_eq', Finset.mem_univ, if_true]
+  simp [h, Finset.sum_ite_eq', Finset.mem_univ, if_true]
   rfl
 
 end ProjectiveSetting
+variable {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon} (w : GlobalPairWitness S deltaG) (W : PauliKind)
+variable (u : Fin P.m → PauliScalar P)
+
+
 
 /-- The original/pulled-apart overlap is exactly the expanded-point overlap
 at the decoded value. This is the first three lines of the proof of Item 1 in
 paper lines 1483--1492; it holds for every polynomial outcome. -/
-theorem sum_pointMeas_mul_tildeM_eq_decoded_overlap
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+theorem sum_pointMeas_mul_tildeM_eq_decoded_overlap  :
     (∑ a : PauliScalar P, S.placePlayer .alice ((S.pointMeas .alice W u).effect a) *
       S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) =
       ∑ g : Poly P, S.place .BB' ((w.marginalPoly .bob W).effect g) *
         S.place .AB'' ((S.pointMeasExp .alice W u).effect
           (dotProduct (decodeFq g) (indicatorVec u))) := by
   classical
-  simp only [tildeM, S.placeSide_bob_finset_sum, Finset.mul_sum]
+  simp [tildeM, S.placeSide_bob_finset_sum, Finset.mul_sum]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro g _
-  simp only [S.placePlayer_alice_mul_placeSide_bob_tensor]
+  simp [S.placePlayer_alice_mul_placeSide_bob_tensor]
   rw [← Finset.mul_sum, ← S.place_finset_sum,
     S.pointMeasExp_effect_eq_sum_sub .alice W u]
 
 /-- The pulled-apart consistency defect is one minus the decoded overlap.
 This combines completeness with the first three lines of the source's
 calculation, still without imposing an encoding restriction. -/
-theorem tildeM_consistencyDefect_eq_one_sub_decoded_overlap
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind) :
+theorem tildeM_consistencyDefect_eq_one_sub_decoded_overlap  :
     consistencyDefect (uniformDistribution (Fin P.m → PauliScalar P))
       (fun u a => S.placePlayer .alice ((S.pointMeas .alice W u).effect a))
       (fun u a => S.placeSide .bob (tildeM w .bob W (indicatorVec u) a)) S.psiHat =
@@ -162,10 +163,7 @@ open scoped Classical in
 /-- Replacing polynomial evaluation by decoded evaluation loses at most the
 mass of the non-encoding outcomes. This is the support-restricted replacement
 for the fourth line of paper lines 1483--1492. No mass estimate is assumed. -/
-theorem marginal_eval_overlap_le_decoded_add_nonencoding
-    {P : AdmissibleParams} {epsilon deltaG : ℝ} {S : ProjectiveSetting P epsilon}
-    (w : GlobalPairWitness S deltaG) (W : PauliKind)
-    (u : Fin P.m → PauliScalar P) :
+theorem marginal_eval_overlap_le_decoded_add_nonencoding  :
     (∑ g : Poly P, stateQForm S.psiHat
       (S.place .BB' ((w.marginalPoly .bob W).effect g) *
         S.place .AB'' ((S.pointMeasExp .alice W u).effect (MvPolynomial.eval u g.1)))) ≤
@@ -195,10 +193,10 @@ theorem marginal_eval_overlap_le_decoded_add_nonencoding
   apply Finset.sum_le_sum
   intro g _
   by_cases hg : IsEncoding g
-  · simp only [hg, not_true_eq_false, if_false, add_zero]
+  · simp [hg, not_true_eq_false, if_false, add_zero]
     rw [decodeFq_dotProduct_indicatorVec hg u]
     rfl
-  · simp only [hg, not_false_eq_true, if_true]
+  · simp [hg, not_false_eq_true, if_true]
     have hle := Finset.single_le_sum (fun a _ => hpos g a)
       (Finset.mem_univ (MvPolynomial.eval u g.1))
     rw [hsum] at hle

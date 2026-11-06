@@ -26,15 +26,14 @@ namespace MIPStarRE.QPBT
 open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum
 open DistanceCalculus
+variable {R₁ Γ₂ ι : Type*} [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂] [Fintype ι] [DecidableEq ι] (P : Measurement R₁ ι)
+
 
 /-- The cross move with independently chosen opposite-register and Bob families.
 The error is their actual cross distance; no identical-copy or symmetry
 assumption is used. This is the generalization needed for the Schmidt mirror
 in `docs/paper-gaps/qpbt_pasting-product-error.tex`, issue Dengnifer/MIPStarRE-QPBT-bak#201. -/
-theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
-    [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
-    [Fintype ι] [DecidableEq ι]
-    (P : Measurement R₁ ι) (G opposite : Measurement Γ₂ ι)
+theorem abs_cross_move_gap_le_sqrt_distinct_families  (G opposite : Measurement Γ₂ ι)
     (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1) :
     |(∑ a : R₁, ∑ g : Γ₂, stateQForm ψ (heteroKron 1
           (G.effect g * P.effect a * G.effect g * P.effect a))) -
@@ -103,7 +102,7 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
       rw [hct, measurement_effect_hermitian, measurement_effect_hermitian]
     have hudiff : applyOperatorToState (heteroKron 1 (P.effect a * G.effect g)) ψ -
         applyOperatorToState (heteroKron (opposite.effect g) (P.effect a)) ψ = u (a, g) := by
-      simp only [hu]
+      simp [hu]
       rw [show heteroKron (1 : Op ι) (P.effect a) *
           (heteroKron 1 (G.effect g) - heteroKron (opposite.effect g) 1) =
           heteroKron 1 (P.effect a * G.effect g) -
@@ -178,6 +177,8 @@ theorem abs_cross_move_gap_le_sqrt_distinct_families {R₁ Γ₂ ι : Type*}
     _ = Real.sqrt (∑ g : Γ₂, ‖applyOperatorToState
           (heteroKron 1 (G.effect g) - heteroKron (opposite.effect g) 1) ψ‖ ^ 2) := by
         rw [mul_one]
+variable (G : Measurement Γ₂ ι) (ψ : EuclideanSpace ℂ (ι × ι))
+
 
 /-- The expansion of the commutator mass of `lem:pasting` at a fixed question.
 For a measurement and a projective measurement placed on the second tensor
@@ -187,11 +188,7 @@ the first family, minus twice the cross term. This is the term-by-term
 expansion of step 5 of the proof of the adopted statement in
 `docs/paper-gaps/qpbt_pasting-product-error.tex`; blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-theorem commutator_mass_eq_expansion {R₁ Γ₂ ι : Type*}
-    [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
-    [Fintype ι] [DecidableEq ι]
-    (P : Measurement R₁ ι) (G : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι))
+theorem commutator_mass_eq_expansion 
     (hG : MIPStarRE.QPBT.Measurement.IsProjective G) :
     (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState (heteroKron 1
         (P.effect a * G.effect g - G.effect g * P.effect a)) ψ‖ ^ 2) =
@@ -243,7 +240,7 @@ theorem commutator_mass_eq_expansion {R₁ Γ₂ ι : Type*}
         applyOperatorToState M ψ - applyOperatorToState N ψ := by
       simp [applyOperatorToState]
     rw [hlin, norm_sub_sq (𝕜 := ℂ), hqf Mᴴ N, Matrix.conjTranspose_conjTranspose]
-    simp only [RCLike.re_to_complex]
+    simp [RCLike.re_to_complex]
     ring
   -- the pointwise expansion at a pair of an answer and a codeword
   have hpt : ∀ (a : R₁) (g : Γ₂),
@@ -325,22 +322,16 @@ second tensor factor is at most one. This bounds the first fine term of the
 expansion of step 5 of the proof of the adopted statement in
 `docs/paper-gaps/qpbt_pasting-product-error.tex`; blueprint
 `ch12_qpbt_games.tex:960-990`. -/
-theorem sum_norm_ordered_product_le_one {R₁ Γ₂ ι : Type*}
-    [Fintype R₁] [DecidableEq R₁] [Fintype Γ₂] [DecidableEq Γ₂]
-    [Fintype ι] [DecidableEq ι]
-    (P : Measurement R₁ ι) (G : Measurement Γ₂ ι)
-    (ψ : EuclideanSpace ℂ (ι × ι)) (hψ : ‖ψ‖ = 1) :
+theorem sum_norm_ordered_product_le_one  (hψ : ‖ψ‖ = 1) :
     (∑ a : R₁, ∑ g : Γ₂, ‖applyOperatorToState
       (heteroKron 1 (P.effect a * G.effect g)) ψ‖ ^ 2) ≤ 1 := by
   classical
   have hone : applyOperatorToState (1 : Op (ι × ι)) ψ = ψ := by
     simp [applyOperatorToState]
-  have hCP : ∑ a : R₁, (heteroKron (1 : Op ι) (P.effect a))ᴴ *
-      heteroKron 1 (P.effect a) ≤ 1 := by
+  have hCP := by
     simpa using MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
       (Measurement.rightPlacement (ιA := ι) P)
-  have hCG : ∑ g : Γ₂, (heteroKron (1 : Op ι) (G.effect g))ᴴ *
-      heteroKron 1 (G.effect g) ≤ 1 := by
+  have hCG := by
     simpa using MIPStarRE.QPBT.measurement_sum_adjoint_mul_le_one
       (Measurement.rightPlacement (ιA := ι) G)
   rw [Finset.sum_comm]

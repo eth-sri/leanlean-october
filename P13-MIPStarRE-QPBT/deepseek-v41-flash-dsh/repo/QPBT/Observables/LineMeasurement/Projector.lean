@@ -46,12 +46,15 @@ noncomputable def tauLineProj (P : AdmissibleParams) (W : PauliKind)
   ∑ h ∈ Finset.univ.filter (fun h : PauliRegister P =>
       restrictToLine P.toLdParams line (lowDegreeEncoding h) = f),
     pauliProj W h
+variable (P : AdmissibleParams) (W : PauliKind) (line : LineDesc P.toLdParams)
+variable (f : DegPoly P.toLdParams (P.m * P.d))
+
+
 
 /-- Pauli line projectors are positive semidefinite. This is the positivity of
 the ancillary measurement in `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem tauLineProj_nonneg (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (f : DegPoly P.toLdParams (P.m * P.d)) :
+theorem tauLineProj_nonneg  :
     0 ≤ tauLineProj P W line f := by
   classical
   unfold tauLineProj
@@ -62,19 +65,17 @@ symmetric matrix. Symmetry is what makes the projector act identically on
 either half of an EPR pair, and hence is the hypothesis behind the perfect
 ancilla consistency used in `enu:qld-comm-line-self-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:527-532`. -/
-theorem tauLineProj_transpose (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (f : DegPoly P.toLdParams (P.m * P.d)) :
+theorem tauLineProj_transpose  :
     (tauLineProj P W line f)ᵀ = tauLineProj P W line f := by
   classical
-  simp only [tauLineProj, Matrix.transpose_sum, pauliProj_transpose]
+  simp [tauLineProj, Matrix.transpose_sum, pauliProj_transpose]
 
 /-- Pauli line projectors belonging to distinct line polynomials are
 orthogonal, while each projector is idempotent. This is the ancillary product
 calculation in `def:expanded-line-measurement` and item 1 of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-558`. -/
-theorem tauLineProj_mul_tauLineProj (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (f g : DegPoly P.toLdParams (P.m * P.d)) :
+theorem tauLineProj_mul_tauLineProj  (f g : DegPoly P.toLdParams (P.m * P.d)) :
     tauLineProj P W line f * tauLineProj P W line g =
       if f = g then tauLineProj P W line f else 0 := by
   classical
@@ -105,13 +106,12 @@ theorem tauLineProj_mul_tauLineProj (P : AdmissibleParams) (W : PauliKind)
 projectors. This is the completeness of the ancillary measurement in
 `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem sum_tauLineProj_eq_one (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) :
+theorem sum_tauLineProj_eq_one  :
     ∑ f, tauLineProj P W line f = 1 := by
   classical
   rw [show (∑ f, tauLineProj P W line f) =
       ∑ e : PauliRegister P, pauliProj W e by
-    simp only [tauLineProj]
+    simp [tauLineProj]
     exact Finset.sum_fiberwise Finset.univ
       (fun e : PauliRegister P =>
         restrictToLine P.toLdParams line (lowDegreeEncoding e))
@@ -139,8 +139,7 @@ embedded degree-`d` subspace, because every restricted low-degree encoding has
 degree at most `d` there. This is the ancillary half of the last assertion of
 `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem tauLineProj_eq_zero_of_axis (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (haxis : line.kind = .axis)
+theorem tauLineProj_eq_zero_of_axis  (haxis : line.kind = .axis)
     (f : DegPoly P.toLdParams (P.m * P.d)) (hf : ¬ f.FitsDegree P.d) :
     tauLineProj P W line f = 0 := by
   classical
@@ -152,6 +151,8 @@ theorem tauLineProj_eq_zero_of_axis (P : AdmissibleParams) (W : PauliKind)
   rw [← (Finset.mem_filter.mp he).2]
   exact restrictToLine_lowDegreeEncoding_fitsDegree_of_axis P.toLdParams line
     haxis e
+variable (u : Fin P.m → PauliScalar P)
+
 
 /-! ## Interaction with the point projectors -/
 
@@ -159,9 +160,7 @@ theorem tauLineProj_eq_zero_of_axis (P : AdmissibleParams) (W : PauliKind)
 polynomials vanish: every restricted low-degree encoding evaluates there.
 Formalization-only auxiliary for items 2 and 3 of `lem:qld-comm-line-cons`,
 paper `14_analysis_of_the_pauli_basis_test.tex:534-545`. -/
-theorem tauLineProj_eq_zero_of_evalOpt_none (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (hu : u ∈ line.pointSet)
+theorem tauLineProj_eq_zero_of_evalOpt_none  (hu : u ∈ line.pointSet)
     (f : DegPoly P.toLdParams (P.m * P.d)) (hf : evalOpt line u f = none) :
     tauLineProj P W line f = 0 := by
   classical
@@ -181,8 +180,7 @@ point value, and zero otherwise. This is the exact consistency
 `tau^{W,line}_{f''}` versus `tau^{W,u}_{f''(u)}` in items 2 and 3 of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:534-545`. -/
-theorem tauLineProj_mul_tauPointProj (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P)
+theorem tauLineProj_mul_tauPointProj 
     (hu : u ∈ line.pointSet) (f : DegPoly P.toLdParams (P.m * P.d))
     (b : PauliScalar P) :
     tauLineProj P W line f * ProjectiveSetting.tauPointProj W u b =
@@ -216,11 +214,11 @@ theorem tauLineProj_mul_tauPointProj (P : AdmissibleParams) (W : PauliKind)
         exact hev'.trans (congrArg some (Finset.mem_filter.mp hmem).2)
     _ = _ := by
       split_ifs <;> simp
+variable (f : DegPoly P.toLdParams (P.m * P.d)) (b : PauliScalar P)
+
 
 /-- Pauli line and point projectors commute. -/
-theorem tauPointProj_mul_tauLineProj (P : AdmissibleParams) (W : PauliKind)
-    (line : LineDesc P.toLdParams) (u : Fin P.m → PauliScalar P)
-    (f : DegPoly P.toLdParams (P.m * P.d)) (b : PauliScalar P) :
+theorem tauPointProj_mul_tauLineProj  :
     ProjectiveSetting.tauPointProj W u b * tauLineProj P W line f =
       tauLineProj P W line f * ProjectiveSetting.tauPointProj W u b := by
   classical
@@ -238,10 +236,7 @@ Pauli point projector on the other half equals acting with their product on
 the first half. Formalization-only support for the exact ancillary
 consistency in items 2 and 3 of `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:534-545`. -/
-theorem tauLineProj_tauPointProj_mulVec_eprState (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d))
-    (b : PauliScalar P) :
+theorem tauLineProj_tauPointProj_mulVec_eprState  :
     (heteroKron (tauLineProj P W line f)
         (ProjectiveSetting.tauPointProj W u b)).mulVec
         (eprState (PauliRegister P)) =
@@ -263,10 +258,7 @@ uses the symmetry of the line projector rather than that of the point
 projector. Formalization-only auxiliary for the ancillary consistency of
 `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:527-532`. -/
-theorem tauPointProj_tauLineProj_mulVec_eprState (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (f : DegPoly P.toLdParams (P.m * P.d))
-    (b : PauliScalar P) :
+theorem tauPointProj_tauLineProj_mulVec_eprState  :
     (heteroKron (ProjectiveSetting.tauPointProj W u b)
         (tauLineProj P W line f)).mulVec
         (eprState (PauliRegister P)) =
@@ -287,9 +279,7 @@ alone when the line polynomial evaluates to the point value, and zero
 otherwise. This is the exact ancillary consistency in items 2 and 3 of
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:534-545`. -/
-theorem stateQForm_eprState_tauLineProj_tauPointProj (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (hu : u ∈ line.pointSet)
+theorem stateQForm_eprState_tauLineProj_tauPointProj  (hu : u ∈ line.pointSet)
     (f : DegPoly P.toLdParams (P.m * P.d)) (b : PauliScalar P) :
     DistanceCalculus.stateQForm (eprState (PauliRegister P))
         (heteroKron (tauLineProj P W line f)
@@ -321,9 +311,7 @@ projector alone. This is the interchanged form of
 `stateQForm_eprState_tauLineProj_tauPointProj`, supporting
 `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:527-532`. -/
-theorem stateQForm_eprState_tauPointProj_tauLineProj (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (u : Fin P.m → PauliScalar P) (hu : u ∈ line.pointSet)
+theorem stateQForm_eprState_tauPointProj_tauLineProj  (hu : u ∈ line.pointSet)
     (f : DegPoly P.toLdParams (P.m * P.d)) (b : PauliScalar P) :
     DistanceCalculus.stateQForm (eprState (PauliRegister P))
         (heteroKron (ProjectiveSetting.tauPointProj W u b)
@@ -354,8 +342,7 @@ theorem stateQForm_eprState_tauPointProj_tauLineProj (P : AdmissibleParams)
 one. Formalization-only auxiliary for the ancillary overlaps in
 `lem:qld-comm-line-cons`, paper
 `14_analysis_of_the_pauli_basis_test.tex:527-545`. -/
-theorem sum_stateQForm_eprState_tauLineProj_one (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams) :
+theorem sum_stateQForm_eprState_tauLineProj_one  :
     ∑ f : DegPoly P.toLdParams (P.m * P.d),
         DistanceCalculus.stateQForm (eprState (PauliRegister P))
           (heteroKron (tauLineProj P W line f) (1 : Op (PauliRegister P))) = 1 := by

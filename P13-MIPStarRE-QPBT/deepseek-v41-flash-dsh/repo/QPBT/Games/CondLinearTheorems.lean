@@ -25,11 +25,14 @@ open scoped BigOperators
 namespace MIPStarRE.QPBT
 
 open MIPStarRE.LDT
+variable {K ι : Type*}
+variable [Field K] [Fintype ι] [DecidableEq ι]
+
+
 
 /-- Raise a representation of a conditionally linear function by one level,
 whose linear contribution is zero. -/
-private def CondLinearTerm.raiseLevel {K ι : Type*} [Field K]
-    [Fintype ι] [DecidableEq ι] {ell : ℕ}
+private def CondLinearTerm.raiseLevel  {ell : ℕ}
     (t : CondLinearTerm K (ι := ι) ell) : CondLinearTerm K (ι := ι) (ell + 1) :=
   .succ ∅ 0 (by simp) (fun _ => t)
 
@@ -42,8 +45,7 @@ private theorem CondLinearTerm.eval_raiseLevel {K ι : Type*} [Field K]
 
 /-- Raise a representation of a conditionally linear function by a specified
 number of levels, each with zero linear contribution. -/
-private def CondLinearTerm.raiseBy {K ι : Type*} [Field K]
-    [Fintype ι] [DecidableEq ι] :
+private def CondLinearTerm.raiseBy  :
     (d : ℕ) → {ell : ℕ} → CondLinearTerm K (ι := ι) ell →
       CondLinearTerm K (ι := ι) (ell + d)
   | 0, _, t => t
@@ -98,13 +100,12 @@ private theorem coordinateRestriction_eq_zero_of_disjoint {K ι : Type*} [Field 
     coordinateRestriction S x = 0 := by
   ext a
   by_cases ha : a ∈ S
-  · have haT : a ∉ T := fun h => Finset.disjoint_left.mp hST ha h
+  · have haT := fun h => Finset.disjoint_left.mp hST ha h
     simp [coordinateRestriction, ha, hx a haT]
   · simp [coordinateRestriction, ha]
 
 /-- Coordinate restriction as a linear endomorphism. -/
-private def coordinateRestrictionLinear {K ι : Type*} [Field K]
-    [Fintype ι] [DecidableEq ι] (S : Finset ι) :
+private def coordinateRestrictionLinear  (S : Finset ι) :
     (ι → K) →ₗ[K] (ι → K) where
   toFun := coordinateRestriction S
   map_add' := coordinateRestriction_add S
@@ -116,7 +117,7 @@ private def coordinateRestrictionLinear {K ι : Type*} [Field K]
 formalization-only auxiliary for blueprint
 `lem:cl-kth`, paper
 `references/qpbt-paper/05_conditionally_linear_functions.tex:150-178`. -/
-def clPrefix {K ι : Type*} [Zero K] {ell : ℕ}
+def clPrefix  [Zero K] {ell : ℕ}
     (marginal : Fin ell → (ι → K) → (ι → K)) (k : Fin ell)
     (x : ι → K) : ι → K :=
   if _hk : k.val = 0 then 0
@@ -238,12 +239,10 @@ private theorem CondLinearTerm.nonempty_clDataOn_one {K ι : Type*} [Field K]
       · intro x a ha
         exact ⟨0, ha⟩
       · intro k u x a ha
-        change L₁ (coordinateRestriction S₁ x) a = 0
         exact hSupport _ _ (fun haS₁ => ha (ht.1 haS₁))
       · intro k x
         have hk : k = 0 := Subsingleton.elim _ _
-        subst k
-        simp only [Fin.sum_univ_one, Fin.isValue, le_refl, ↓reduceIte]
+        simp [Fin.sum_univ_one, Fin.isValue, le_refl, ↓reduceIte]
         change CondLinearTerm.eval (.succ S₁ L₁ hSupport rest) x =
           L₁ (coordinateRestriction S₁ (coordinateRestriction S x))
         rw [coordinateRestriction_coordinateRestriction ht.1]
@@ -256,15 +255,14 @@ private theorem CondLinearTerm.nonempty_clDataOn_one {K ι : Type*} [Field K]
         rfl
 
 /-- The first linear contribution in the inductive prefix decomposition. -/
-private def clDataFirst {K ι : Type*} [Field K] [Fintype ι] [DecidableEq ι]
+private def clDataFirst 
     (S₁ : Finset ι) (L₁ : (ι → K) →ₗ[K] (ι → K))
     (x : ι → K) : ι → K :=
   L₁ (coordinateRestriction S₁ x)
 
 /-- Add the first contribution to each marginal of residual decomposition
 data. -/
-private def clDataConsMarginal {K ι : Type*} [Field K]
-    [Fintype ι] [DecidableEq ι] {T : Finset ι} {ell : ℕ}
+private def clDataConsMarginal  {T : Finset ι} {ell : ℕ}
     {R : (ι → K) → (ι → K) → (ι → K)}
     (S₁ : Finset ι) (L₁ : (ι → K) →ₗ[K] (ι → K))
     (d : ∀ y, CLDataOn K ι T ell (R y)) :
@@ -273,8 +271,7 @@ private def clDataConsMarginal {K ι : Type*} [Field K]
     clDataFirst S₁ L₁ x + (d (clDataFirst S₁ L₁ x)).marginal k x
 
 /-- Select the first or residual factor register from a combined prefix. -/
-private def clDataConsFactor {K ι : Type*} [Field K]
-    [Fintype ι] [DecidableEq ι] {T : Finset ι} {ell : ℕ}
+private def clDataConsFactor  {T : Finset ι} {ell : ℕ}
     {R : (ι → K) → (ι → K) → (ι → K)}
     (S₁ : Finset ι) (d : ∀ y, CLDataOn K ι T ell (R y)) :
     Fin (ell + 1) → (ι → K) → Finset ι :=
@@ -282,8 +279,7 @@ private def clDataConsFactor {K ι : Type*} [Field K]
     (d (coordinateRestriction S₁ u)).factor k (coordinateRestriction T u)
 
 /-- Select the first or residual linear map from a combined prefix. -/
-private def clDataConsLinear {K ι : Type*} [Field K]
-    [Fintype ι] [DecidableEq ι] {T : Finset ι} {ell : ℕ}
+private def clDataConsLinear  {T : Finset ι} {ell : ℕ}
     {R : (ι → K) → (ι → K) → (ι → K)}
     (S₁ : Finset ι) (L₁ : (ι → K) →ₗ[K] (ι → K))
     (d : ∀ y, CLDataOn K ι T ell (R y)) :
@@ -321,7 +317,6 @@ private theorem clPrefix_cons_succ {K ι : Type*} [Field K]
   cases k using Fin.cases with
   | zero => simp [clPrefix]
   | succ k =>
-      simp only [clPrefix]
       change clDataConsMarginal S₁ L₁ d (Fin.castSucc k).succ x =
         clDataFirst S₁ L₁ x +
           (d (clDataFirst S₁ L₁ x)).marginal (Fin.castSucc k) x
@@ -373,8 +368,7 @@ private theorem coordinateRestriction_clPrefix_cons_succ_left
         (clPrefix (clDataConsMarginal S₁ L₁ d) k.succ x) =
       clDataFirst S₁ L₁ x := by
   rw [clPrefix_cons_succ, coordinateRestriction_add]
-  have hfirst : coordinateRestriction S₁ (clDataFirst S₁ L₁ x) =
-      clDataFirst S₁ L₁ x :=
+  have hfirst :=
     coordinateRestriction_eq_self (x := clDataFirst S₁ L₁ x) (hSupport _)
   have htail : coordinateRestriction S₁
       (clPrefix (d (clDataFirst S₁ L₁ x)).marginal k x) = 0 :=
@@ -398,9 +392,7 @@ private theorem coordinateRestriction_clPrefix_cons_succ_right
   rw [clPrefix_cons_succ, coordinateRestriction_add]
   have hfirst : coordinateRestriction T (clDataFirst S₁ L₁ x) = 0 :=
     coordinateRestriction_eq_zero_of_disjoint hDisjoint.symm (hSupport _)
-  have htail : coordinateRestriction T
-      (clPrefix (d (clDataFirst S₁ L₁ x)).marginal k x) =
-        clPrefix (d (clDataFirst S₁ L₁ x)).marginal k x :=
+  have htail :=
     coordinateRestriction_eq_self
       (fun a ha =>
         (d (clDataFirst S₁ L₁ x)).prefix_eq_zero_of_not_mem k x ha)
@@ -419,12 +411,9 @@ private theorem clDataConsFactor_prefix_succ
         (clPrefix (clDataConsMarginal S₁ L₁ d) k.succ x) =
       (d (clDataFirst S₁ L₁ x)).factor k
         (clPrefix (d (clDataFirst S₁ L₁ x)).marginal k x) := by
-  rw [clDataConsFactor_succ]
-  rw [coordinateRestriction_clPrefix_cons_succ_left S₁ L₁ hSupport d
+  rw [clDataConsFactor_succ, coordinateRestriction_clPrefix_cons_succ_left S₁ L₁ hSupport d
+    hDisjoint, coordinateRestriction_clPrefix_cons_succ_right S₁ L₁ hSupport d
     hDisjoint]
-  rw [coordinateRestriction_clPrefix_cons_succ_right S₁ L₁ hSupport d
-    hDisjoint]
-
 private theorem clDataConsLinear_prefix_succ
     {K ι : Type*} [Field K] [Fintype ι] [DecidableEq ι]
     {T : Finset ι} {ell : ℕ}
@@ -437,15 +426,9 @@ private theorem clDataConsLinear_prefix_succ
         (clPrefix (clDataConsMarginal S₁ L₁ d) k.succ x) =
       (d (clDataFirst S₁ L₁ x)).linear k
         (clPrefix (d (clDataFirst S₁ L₁ x)).marginal k x) := by
-  rw [clDataConsLinear_succ]
-  rw [coordinateRestriction_clPrefix_cons_succ_left S₁ L₁ hSupport d
+  rw [clDataConsLinear_succ, coordinateRestriction_clPrefix_cons_succ_left S₁ L₁ hSupport d
+    hDisjoint, coordinateRestriction_clPrefix_cons_succ_right S₁ L₁ hSupport d
     hDisjoint]
-  rw [coordinateRestriction_clPrefix_cons_succ_right S₁ L₁ hSupport d
-    hDisjoint]
-
-/-- Adjoining the first linear contribution to the decompositions of the
-remaining levels yields support-relative decomposition data at the next
-level. -/
 private theorem CondLinearTerm.nonempty_clDataOn_succ
     {K ι : Type*} [Field K] [Fintype ι] [DecidableEq ι] {ell : ℕ}
     (S₁ : Finset ι) (L₁ : (ι → K) →ₗ[K] (ι → K))
@@ -496,15 +479,13 @@ private theorem CondLinearTerm.nonempty_clDataOn_succ
         cases j using Fin.cases with
         | zero => exact (hij rfl).elim
         | succ j =>
-            rw [clDataConsFactor_zero]
-            rw [clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
+            rw [clDataConsFactor_zero, clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
             exact hDisjoint.mono_right
               ((d (clDataFirst S₁ L₁ x)).factor_subset j _)
     | succ i =>
         cases j using Fin.cases with
         | zero =>
-            rw [clDataConsFactor_zero]
-            rw [clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
+            rw [clDataConsFactor_zero, clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
             exact (hDisjoint.mono_right
               ((d (clDataFirst S₁ L₁ x)).factor_subset i _)).symm
         | succ j =>
@@ -512,13 +493,12 @@ private theorem CondLinearTerm.nonempty_clDataOn_succ
               intro h
               subst j
               exact hij rfl
-            rw [clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
-            rw [clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
+            rw [clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint, clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
             exact (d (clDataFirst S₁ L₁ x)).factor_disjoint x i j hij'
   · intro x a ha
     by_cases haS₁ : a ∈ S₁
     · exact ⟨0, by simpa using haS₁⟩
-    · have haTail : a ∈ S \ S₁ := Finset.mem_sdiff.mpr ⟨ha, haS₁⟩
+    · have haTail := Finset.mem_sdiff.mpr ⟨ha, haS₁⟩
       obtain ⟨i, hai⟩ :=
         (d (clDataFirst S₁ L₁ x)).factor_cover x a haTail
       refine ⟨i.succ, ?_⟩
@@ -528,7 +508,6 @@ private theorem CondLinearTerm.nonempty_clDataOn_succ
     revert ha
     refine Fin.cases ?_ (fun i => ?_) k
     · intro ha
-      change L₁ (coordinateRestriction S₁ x) a = 0
       exact hSupport _ _ ha
     · intro ha
       exact (d (coordinateRestriction S₁ u)).linear_supported i
@@ -558,9 +537,7 @@ private theorem CondLinearTerm.nonempty_clDataOn_succ
       by_cases hij : i.val ≤ j.val
       · have hsucc : i.succ.val ≤ j.succ.val := by
           simpa only [Fin.val_succ, Nat.succ_le_succ_iff] using hij
-        rw [if_pos hsucc, if_pos hij]
-        rw [clDataConsLinear_prefix_succ S₁ L₁ hSupport d hDisjoint]
-        rw [clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
+        rw [if_pos hsucc, if_pos hij, clDataConsLinear_prefix_succ S₁ L₁ hSupport d hDisjoint, clDataConsFactor_prefix_succ S₁ L₁ hSupport d hDisjoint]
       · have hsucc : ¬ i.succ.val ≤ j.succ.val := by
           simpa only [Fin.val_succ, Nat.succ_le_succ_iff] using hij
         rw [if_neg hsucc, if_neg hij]
@@ -571,11 +548,9 @@ private theorem CondLinearTerm.nonempty_clDataOn_succ
     have hlast :
         (⟨((ell + 1) + 1) - 1, Nat.sub_lt h (by decide)⟩ : Fin ((ell + 1) + 1)) =
           last.succ := by
-      apply Fin.ext
       simp [last]
     funext x
-    rw [hlast, clDataConsMarginal_succ]
-    rw [congrFun ((d (clDataFirst S₁ L₁ x)).top hTail) x]
+    rw [hlast, clDataConsMarginal_succ, congrFun ((d (clDataFirst S₁ L₁ x)).top hTail) x]
     rfl
 
 /-- Every positive-level supported representation of a conditionally linear

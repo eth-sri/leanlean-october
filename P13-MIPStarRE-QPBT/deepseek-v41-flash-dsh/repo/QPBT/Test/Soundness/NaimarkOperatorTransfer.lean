@@ -32,27 +32,30 @@ namespace MIPStarRE.QPBT
 open MIPStarRE.Quantum MagicSquareRigidity DistanceCalculus
 
 noncomputable section
+variable {P : AdmissibleParams}
+variable {G : Game}
+variable (S : Strategy G) {ιA' ιB' : Type} [Fintype ιA'] [DecidableEq ιA'] [Fintype ιB'] [DecidableEq ιB']
 
-private theorem liftedAEffect_eq_tensor {P : AdmissibleParams} {G : Game} (S : Strategy G)
-    {ιA' ιB' : Type} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
+
+
+
+private theorem liftedAEffect_eq_tensor 
     (φ : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
       EuclideanSpace ℂ (ιA' × PauliRegister P)) (M : Op S.ιA) :
     liftedAEffect S (ιB' := ιB') φ M = heteroKron (conjIsometry φ M) 1 := by
   ext i j
   simp [liftedAEffect, heteroKron, Matrix.kronecker, Matrix.one_apply]
 
-private theorem liftedBEffect_eq_tensor {P : AdmissibleParams} {G : Game} (S : Strategy G)
-    {ιA' ιB' : Type} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
+private theorem liftedBEffect_eq_tensor 
     (φ : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
       EuclideanSpace ℂ (ιB' × PauliRegister P)) (M : Op S.ιB) :
     liftedBEffect S (ιA' := ιA') φ M = heteroKron 1 (conjIsometry φ M) := by
   ext i j
   simp [liftedBEffect, heteroKron, Matrix.kronecker, Matrix.one_apply]
+variable {ι κ : Type} [Fintype ι]
 
-private theorem naimark_isProj_conjIsometry {ι κ : Type}
-    [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+
+private theorem naimark_isProj_conjIsometry  [DecidableEq ι] [Fintype κ] [DecidableEq κ]
     (φ : EuclideanSpace ℂ ι →ₗᵢ[ℂ] EuclideanSpace ℂ κ)
     {Q : Op ι} (hQ : IsProj Q) : IsProj (conjIsometry φ Q) := by
   constructor
@@ -62,7 +65,7 @@ private theorem naimark_isProj_conjIsometry {ι κ : Type}
     simp [conjIsometry_eq, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_mul,
       hQ.isSelfAdjoint.isHermitian.eq, Matrix.mul_assoc]
 
-private theorem naimark_left_isProj {ι κ : Type} [Fintype ι]
+private theorem naimark_left_isProj 
     [Fintype κ] [DecidableEq κ] {Q : Op ι} (hQ : IsProj Q) :
     IsProj (heteroKron Q (1 : Op κ)) := by
   classical
@@ -73,7 +76,7 @@ private theorem naimark_left_isProj {ι κ : Type} [Fintype ι]
     simp [heteroKron, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_kronecker,
       hQ.isSelfAdjoint.isHermitian.eq]
 
-private theorem naimark_right_isProj {ι κ : Type} [Fintype ι] [DecidableEq ι]
+private theorem naimark_right_isProj  [DecidableEq ι]
     [Fintype κ] {Q : Op κ} (hQ : IsProj Q) :
     IsProj (heteroKron (1 : Op ι) Q) := by
   classical
@@ -83,9 +86,10 @@ private theorem naimark_right_isProj {ι κ : Type} [Fintype ι] [DecidableEq ι
   · change star (heteroKron (1 : Op ι) Q) = heteroKron 1 Q
     simp [heteroKron, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_kronecker,
       hQ.isSelfAdjoint.isHermitian.eq]
+variable {α ι κ : Type*} [Fintype α] [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
 
-private theorem naimark_left_sum_adjoint_mul_le_one {α ι κ : Type*}
-    [Fintype α] [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+
+private theorem naimark_left_sum_adjoint_mul_le_one 
     (N : α → Op ι) (hN : ∑ a, (N a)ᴴ * N a ≤ 1) :
     ∑ a, (heteroKron (N a) (1 : Op κ))ᴴ * heteroKron (N a) 1 ≤ 1 := by
   change ∑ a, (MIPStarRE.LDT.leftTensor (ι₂ := κ) (N a))ᴴ *
@@ -95,8 +99,7 @@ private theorem naimark_left_sum_adjoint_mul_le_one {α ι κ : Type*}
     MIPStarRE.LDT.leftTensor_one, MIPStarRE.LDT.leftTensor_conjTranspose,
     MIPStarRE.LDT.leftTensor_mul_leftTensor] using h
 
-private theorem naimark_right_sum_adjoint_mul_le_one {α ι κ : Type*}
-    [Fintype α] [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+private theorem naimark_right_sum_adjoint_mul_le_one 
     (N : α → Op κ) (hN : ∑ a, (N a)ᴴ * N a ≤ 1) :
     ∑ a, (heteroKron (1 : Op ι) (N a))ᴴ * heteroKron 1 (N a) ≤ 1 := by
   change ∑ a, (MIPStarRE.LDT.rightTensor (ι₁ := ι) (N a))ᴴ *
@@ -113,7 +116,7 @@ private theorem naimark_sum_conjIsometry_adjoint_mul_le_one {α ι κ : Type}
     ∑ a, (conjIsometry φ (N a))ᴴ * conjIsometry φ (N a) ≤ 1 := by
   have heq (a : α) : (conjIsometry φ (N a))ᴴ * conjIsometry φ (N a) =
       isometryMatrix φ * ((N a)ᴴ * N a) * (isometryMatrix φ)ᴴ := by
-    simp only [conjIsometry_eq, Matrix.conjTranspose_mul,
+    simp [conjIsometry_eq, Matrix.conjTranspose_mul,
       Matrix.conjTranspose_conjTranspose, Matrix.mul_assoc]
     rw [← Matrix.mul_assoc (isometryMatrix φ)ᴴ (isometryMatrix φ),
       isometryMatrix_conjTranspose_mul, Matrix.one_mul]
@@ -131,38 +134,36 @@ private theorem naimark_sum_conjIsometry_adjoint_mul_le_one {α ι κ : Type}
     _ ≤ 1 := by
       rw [Matrix.mul_one]
       exact isometryMatrix_mul_conjTranspose_le_one φ
+variable {α : Type} [Fintype α] (S : Strategy G) {ιA' ιB' : Type} [Fintype ιA'] [DecidableEq ιA'] [Fintype ιB'] [DecidableEq ιB']
 
-private theorem liftedA_sum_adjoint_mul_le_one {P : AdmissibleParams} {G : Game}
-    {α : Type} [Fintype α] (S : Strategy G)
-    {ιA' ιB' : Type} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
+
+private theorem liftedA_sum_adjoint_mul_le_one 
     (φ : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
       EuclideanSpace ℂ (ιA' × PauliRegister P))
     (M : Measurement α S.ιA) :
     ∑ a, (liftedAEffect S (ιB' := ιB') φ (M.effect a))ᴴ *
       liftedAEffect S φ (M.effect a) ≤ 1 := by
   classical
-  simp only [liftedAEffect_eq_tensor]
+  simp [liftedAEffect_eq_tensor]
   exact naimark_left_sum_adjoint_mul_le_one _
     (naimark_sum_conjIsometry_adjoint_mul_le_one φ M.effect
       (measurement_sum_adjoint_mul_le_one M))
 
-private theorem liftedB_sum_adjoint_mul_le_one {P : AdmissibleParams} {G : Game}
-    {α : Type} [Fintype α] (S : Strategy G)
-    {ιA' ιB' : Type} [Fintype ιA'] [DecidableEq ιA']
-    [Fintype ιB'] [DecidableEq ιB']
+private theorem liftedB_sum_adjoint_mul_le_one 
     (φ : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]
       EuclideanSpace ℂ (ιB' × PauliRegister P))
     (M : Measurement α S.ιB) :
     ∑ a, (liftedBEffect S (ιA' := ιA') φ (M.effect a))ᴴ *
       liftedBEffect S φ (M.effect a) ≤ 1 := by
   classical
-  simp only [liftedBEffect_eq_tensor]
+  simp [liftedBEffect_eq_tensor]
   exact naimark_right_sum_adjoint_mul_le_one _
     (naimark_sum_conjIsometry_adjoint_mul_le_one φ M.effect
       (measurement_sum_adjoint_mul_le_one M))
+variable {ι : Type*} [Fintype ι]
 
-private theorem naimark_norm_add_three_sq_le {ι : Type*} [Fintype ι]
+
+private theorem naimark_norm_add_three_sq_le 
     (x y z : EuclideanSpace ℂ ι) :
     ‖x + y + z‖ ^ 2 ≤ 3 * (‖x‖ ^ 2 + ‖y‖ ^ 2 + ‖z‖ ^ 2) := by
   have h := pow_le_pow_left₀ (norm_nonneg _)
@@ -170,7 +171,7 @@ private theorem naimark_norm_add_three_sq_le {ι : Type*} [Fintype ι]
   nlinarith [sq_nonneg (‖x‖ - ‖y‖), sq_nonneg (‖x‖ - ‖z‖),
     sq_nonneg (‖y‖ - ‖z‖)]
 
-private theorem naimark_apply_sub_operator {ι : Type*} [Fintype ι]
+private theorem naimark_apply_sub_operator 
     [DecidableEq ι] (A B : Op ι) (v : EuclideanSpace ℂ ι) :
     applyOperatorToState (A - B) v =
       applyOperatorToState A v - applyOperatorToState B v := by
@@ -212,22 +213,20 @@ private theorem sum_norm_compression_sub_sq_le {α ι : Type*}
       noncomm_ring
     have hm : applyOperatorToState ((1 - Q) * T a) delta =
         applyOperatorToState (R a * (1 - Q)) delta := by
-      rw [applyOperatorToState_mul, hmirror]
-      rw [← applyOperatorToState_mul]
+      rw [applyOperatorToState_mul, hmirror, ← applyOperatorToState_mul]
       congr 1
       rw [sub_mul, mul_sub, one_mul, mul_one, hcomm]
-    rw [hs, naimark_apply_sub_operator, naimark_apply_sub_operator]
-    rw [hm, applyOperatorToState_mul, applyOperatorToState_mul,
+    rw [hs, naimark_apply_sub_operator, naimark_apply_sub_operator, hm, applyOperatorToState_mul, applyOperatorToState_mul,
       sub_eq_add_neg, sub_eq_add_neg]
     have h := naimark_norm_add_three_sq_le
       (applyOperatorToState Q (applyOperatorToState (N a - T a) delta))
       (-applyOperatorToState Q (applyOperatorToState (N a * (1 - Q)) delta))
       (-applyOperatorToState (R a * (1 - Q)) delta)
-    simp only [norm_neg] at h
+    simp [norm_neg] at h
     exact h.trans (mul_le_mul_of_nonneg_left
       (add_le_add (add_le_add (hcontract _) (hcontract _)) le_rfl) (by norm_num))
   have hsum := Finset.sum_le_sum (fun a (_ : a ∈ Finset.univ) => hpoint a)
-  simp only [← Finset.mul_sum, Finset.sum_add_distrib] at hsum
+  simp [← Finset.mul_sum, Finset.sum_add_distrib] at hsum
   nlinarith
 
 private def idealPauliMeasurement (P : AdmissibleParams) (W : PauliKind) :
@@ -279,7 +278,7 @@ private theorem pauliProjOnA_sum_adjoint_mul_le_one (P : AdmissibleParams)
     [Fintype ιB'] [DecidableEq ιB'] (W : PauliKind) :
     ∑ h, (pauliProjOnA'' P (ιA' := ιA') (ιB' := ιB') W h)ᴴ *
       pauliProjOnA'' P W h ≤ 1 := by
-  simp only [pauliProjOnA_eq_tensor]
+  simp [pauliProjOnA_eq_tensor]
   exact measurement_sum_adjoint_mul_le_one
     (leftPlacedMeasurement (rightPlacedMeasurement (idealPauliMeasurement P W)))
 
@@ -288,12 +287,13 @@ private theorem pauliProjOnB_sum_adjoint_mul_le_one (P : AdmissibleParams)
     [Fintype ιB'] [DecidableEq ιB'] (W : PauliKind) :
     ∑ h, (pauliProjOnB'' P (ιA' := ιA') (ιB' := ιB') W h)ᴴ *
       pauliProjOnB'' P W h ≤ 1 := by
-  simp only [pauliProjOnB_eq_tensor]
+  simp [pauliProjOnB_eq_tensor]
   exact measurement_sum_adjoint_mul_le_one
     (rightPlacedMeasurement (rightPlacedMeasurement (idealPauliMeasurement P W)))
+variable (S : Strategy (pauliBasisTest P)) (W : PauliKind) (h : PauliRegister P)
 
-private theorem naimark_compressed_effect {P : AdmissibleParams}
-    (S : Strategy (pauliBasisTest P)) (W : PauliKind) (h : PauliRegister P) :
+
+private theorem naimark_compressed_effect  :
     naimarkCompression
         ((((pauliNaimarkStrategy P S).A (pauliQuestion P W)).postprocess
           pauliAnswerOrZero).effect h) =
@@ -305,8 +305,7 @@ private theorem naimark_compressed_effect {P : AdmissibleParams}
         pauliAnswerOrZero).effect h) = _
   exact heff
 
-private theorem naimark_compressed_effect_bob {P : AdmissibleParams}
-    (S : Strategy (pauliBasisTest P)) (W : PauliKind) (h : PauliRegister P) :
+private theorem naimark_compressed_effect_bob  :
     naimarkCompression
         ((((pauliNaimarkStrategy P S).B (pauliQuestion P W)).postprocess
           pauliAnswerOrZero).effect h) =
@@ -436,14 +435,14 @@ theorem pauli_naimark_operator_distanceA_le
   let Q := liftedAEffect (pauliNaimarkStrategy P S) (ιB' := w.ιB') w.φA
     (groundProjection S.ιA (PauliAnswer P))
   have hQ : IsProj Q := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [liftedAEffect_eq_tensor]
     exact naimark_left_isProj (naimark_isProj_conjIsometry w.φA
       (isProj_groundProjection S.ιA (PauliAnswer P)))
   have hfix : applyOperatorToState Q
       (isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ) =
         isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [liftedAEffect_eq_tensor, applyOperatorToState_leftTensor_conjIsometry]
     have hp : padState (none : Option (PauliAnswer P))
         (none : Option (PauliAnswer P)) S.ψ =
@@ -453,9 +452,9 @@ theorem pauli_naimark_operator_distanceA_le
     erw [applyOperatorToState_leftTensor_groundProjection (PauliAnswer P) S.ψ]
   have hcomm (h : PauliRegister P) : Q * pauliProjOnB'' P W h =
       pauliProjOnB'' P W h * Q := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [liftedAEffect_eq_tensor, pauliProjOnB_eq_tensor]
-    simp only [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]
+    simp [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]
   have hb := sum_norm_compression_sub_sq_le
     (fun h => liftedAEffect (pauliNaimarkStrategy P S) (ιB' := w.ιB') w.φA
       ((((pauliNaimarkStrategy P S).A (pauliQuestion P W)).postprocess
@@ -475,12 +474,11 @@ theorem pauli_naimark_operator_distanceA_le
           6 * ‖isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ -
             idealState P w.aux‖ ^ 2 := by
     simpa only [pauliOperatorDistanceA, norm_sub_rev] using hb
-  unfold pauliOperatorDistanceA
   apply le_of_eq_of_le ?_ hb'
   apply Finset.sum_congr rfl
   intro h _
   have hcomp := naimark_lifted_compression_alice P S w W h
-  dsimp only [pauliNaimarkWitness] at hcomp ⊢
+  dsimp [pauliNaimarkWitness] at hcomp ⊢
   have hsub := congrArg
     (fun M : Op ((w.ιA' × PauliRegister P) × (w.ιB' × PauliRegister P)) =>
       ‖applyOperatorToState (M - pauliProjOnA'' P W h) (idealState P w.aux)‖ ^ 2) hcomp
@@ -501,14 +499,14 @@ theorem pauli_naimark_operator_distanceB_le
   let Q := liftedBEffect (pauliNaimarkStrategy P S) (ιA' := w.ιA') w.φB
     (groundProjection S.ιB (PauliAnswer P))
   have hQ : IsProj Q := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [liftedBEffect_eq_tensor]
     exact naimark_right_isProj (naimark_isProj_conjIsometry w.φB
       (isProj_groundProjection S.ιB (PauliAnswer P)))
   have hfix : applyOperatorToState Q
       (isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ) =
         isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [liftedBEffect_eq_tensor, applyOperatorToState_rightTensor_conjIsometry]
     have hp : padState (none : Option (PauliAnswer P))
         (none : Option (PauliAnswer P)) S.ψ =
@@ -518,9 +516,9 @@ theorem pauli_naimark_operator_distanceB_le
     erw [applyOperatorToState_rightTensor_groundProjection (PauliAnswer P) S.ψ]
   have hcomm (h : PauliRegister P) : Q * pauliProjOnA'' P W h =
       pauliProjOnA'' P W h * Q := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [liftedBEffect_eq_tensor, pauliProjOnA_eq_tensor]
-    simp only [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]
+    simp [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]
   have hb := sum_norm_compression_sub_sq_le
     (fun h => liftedBEffect (pauliNaimarkStrategy P S) (ιA' := w.ιA') w.φB
       ((((pauliNaimarkStrategy P S).B (pauliQuestion P W)).postprocess
@@ -541,12 +539,11 @@ theorem pauli_naimark_operator_distanceB_le
           6 * ‖isometryTensor w.φA w.φB (pauliNaimarkStrategy P S).ψ -
             idealState P w.aux‖ ^ 2 := by
     simpa only [pauliOperatorDistanceB, norm_sub_rev] using hb
-  unfold pauliOperatorDistanceB
   apply le_of_eq_of_le ?_ hb'
   apply Finset.sum_congr rfl
   intro h _
   have hcomp := naimark_lifted_compression_bob P S w W h
-  dsimp only [pauliNaimarkWitness] at hcomp ⊢
+  dsimp [pauliNaimarkWitness] at hcomp ⊢
   have hsub := congrArg
     (fun M : Op ((w.ιA' × PauliRegister P) × (w.ιB' × PauliRegister P)) =>
       ‖applyOperatorToState (M - pauliProjOnB'' P W h) (idealState P w.aux)‖ ^ 2) hcomp

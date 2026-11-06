@@ -31,18 +31,20 @@ blueprint `def:anticommuting-tuple`, paper
 abbrev PauliTuple (P : AdmissibleParams) :=
   (Fin P.m → PauliScalar P) ×
     (Fin P.m → PauliScalar P) × PauliScalar P × PauliScalar P
+variable {P : AdmissibleParams}
+
 
 /-- A Pauli tuple is anticommuting when its phase bit is nonzero. This is
 blueprint `def:anticommuting-tuple`, paper
 `14_analysis_of_the_pauli_basis_test.tex:64-68`. -/
-def IsAnticommuting {P : AdmissibleParams} (ω : PauliTuple P) : Prop :=
+def IsAnticommuting  (ω : PauliTuple P) : Prop :=
   gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2 ≠ 0
 
 /-- A Pauli tuple is commuting when its phase bit vanishes. This is the
 complementary case in blueprint
 `def:anticommuting-tuple`, paper
 `14_analysis_of_the_pauli_basis_test.tex:64-68`. -/
-def IsCommuting {P : AdmissibleParams} (ω : PauliTuple P) : Prop :=
+def IsCommuting  (ω : PauliTuple P) : Prop :=
   gammaValue P ω.1 ω.2.1 ω.2.2.1 ω.2.2.2 = 0
 
 noncomputable instance instDecidablePredPauliTupleIsAnticommuting (P : AdmissibleParams) :
@@ -86,12 +88,14 @@ tuple has exactly `q` elements. Blueprint
 private theorem card_pauliScalar (P : AdmissibleParams) :
     Fintype.card (PauliScalar P) = P.q :=
   @FieldModel.card P.q P.model.toFieldModel
+variable (P : AdmissibleParams)
+
 
 /-- The phase bit of a Pauli tuple is the trace of `r_Z r_X` times the product
 of the coordinate sums `1 + u_{X,i} + u_{Z,i}`. This is the closed form of
 `γ(ω)` derived in the proof of blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem gammaValue_eq_trace_prod (P : AdmissibleParams)
+private theorem gammaValue_eq_trace_prod 
     (uX uZ : Fin P.m → PauliScalar P) (rX rZ : PauliScalar P) :
     gammaValue P uX uZ rX rZ =
       fixedBinTrace P.model (rZ * (rX * ∏ i : Fin P.m, (1 + uX i + uZ i))) := by
@@ -102,14 +106,14 @@ private theorem gammaValue_eq_trace_prod (P : AdmissibleParams)
   unfold gammaValue
   congr 1
   rw [← hprod]
-  simp only [dotProduct, Pi.smul_apply, smul_eq_mul, Finset.mul_sum]
+  simp [dotProduct, Pi.smul_apply, smul_eq_mul, Finset.mul_sum]
   exact Finset.sum_congr rfl fun y _ => by ring
 
 /-- Formalization-only auxiliary: the field trace onto the two-element field
 takes each of its two values on exactly half of the scalars. This is the final
 step of the proof of blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem two_mul_card_trace_ne (P : AdmissibleParams) :
+private theorem two_mul_card_trace_ne  :
     2 * (Finset.univ.filter
         (fun a : PauliScalar P => fixedBinTrace P.model a ≠ 0)).card = P.q := by
   classical
@@ -168,7 +172,7 @@ private theorem two_mul_card_trace_ne (P : AdmissibleParams) :
 
 /-- Formalization-only auxiliary: the number of Pauli tuples. Blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem card_pauliTuple (P : AdmissibleParams) :
+private theorem card_pauliTuple  :
     Fintype.card (PauliTuple P) = P.q ^ P.m * (P.q ^ P.m * (P.q * P.q)) := by
   have hK := card_pauliScalar P
   simp [PauliTuple, Fintype.card_prod, hK]
@@ -176,7 +180,7 @@ private theorem card_pauliTuple (P : AdmissibleParams) :
 /-- Twice the number of anticommuting tuples is `q^{m+1}(q-1)^{m+1}`. This is
 the exact count established in the proof of blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem two_mul_card_anticommuting (P : AdmissibleParams) :
+private theorem two_mul_card_anticommuting  :
     2 * (Finset.univ.filter (@IsAnticommuting P)).card
       = P.q ^ (P.m + 1) * (P.q - 1) ^ (P.m + 1) := by
   classical
@@ -299,7 +303,7 @@ private theorem two_mul_card_anticommuting (P : AdmissibleParams) :
 
 /-- The anticommuting and commuting events partition the tuple space.
 Blueprint `fact:omega-anticomm-prob`. -/
-private theorem card_comm_add_card_anticomm (P : AdmissibleParams) :
+private theorem card_comm_add_card_anticomm  :
     (Finset.univ.filter (@IsCommuting P)).card
       + (Finset.univ.filter (@IsAnticommuting P)).card
       = Fintype.card (PauliTuple P) := by
@@ -314,7 +318,7 @@ private theorem card_comm_add_card_anticomm (P : AdmissibleParams) :
 
 /-- Formalization-only auxiliary: the tuple space is nonempty and finite.
 Blueprint `fact:omega-anticomm-prob`. -/
-private theorem card_pauliTuple_pos (P : AdmissibleParams) :
+private theorem card_pauliTuple_pos  :
     0 < Fintype.card (PauliTuple P) := by
   have hq : 0 < P.q := lt_of_lt_of_le (by norm_num) P.hq.two_le
   rw [card_pauliTuple P]
@@ -326,11 +330,11 @@ private theorem card_pauliTuple_pos (P : AdmissibleParams) :
 `fact:omega-anticomm-prob`; its derivation replaces the erroneous
 Schwartz--Zippel argument at paper
 `14_analysis_of_the_pauli_basis_test.tex:79-93`. -/
-theorem anticommProb_eq (P : AdmissibleParams) :
+theorem anticommProb_eq  :
     anticommProb P = (1 - (P.q : ℝ)⁻¹) ^ (P.m + 1) / 2 := by
-  have hq2 : 2 ≤ P.q := P.hq.two_le
-  have hqR : (0 : ℝ) < (P.q : ℝ) := by
-    have h : 0 < P.q := by omega
+  have hq2 := P.hq.two_le
+  have hqR := by
+    have h := by omega
     exact_mod_cast h
   have hcast : ((2 * (Finset.univ.filter (@IsAnticommuting P)).card : ℕ) : ℝ)
       = ((P.q ^ (P.m + 1) * (P.q - 1) ^ (P.m + 1) : ℕ) : ℝ) := by
@@ -350,7 +354,7 @@ theorem anticommProb_eq (P : AdmissibleParams) :
 anticommuting one. This is the complementarity clause of
 blueprint `fact:omega-anticomm-prob`,
 paper `14_analysis_of_the_pauli_basis_test.tex:70-77`. -/
-theorem commProb_eq_one_sub_anticommProb (P : AdmissibleParams) :
+theorem commProb_eq_one_sub_anticommProb  :
     commProb P = 1 - anticommProb P := by
   have hpos : (0 : ℝ) < (Fintype.card (PauliTuple P) : ℝ) := by
     exact_mod_cast card_pauliTuple_pos P
@@ -364,9 +368,9 @@ theorem commProb_eq_one_sub_anticommProb (P : AdmissibleParams) :
 /-- Formalization-only auxiliary: the base `1 - q^{-1}` of the exact
 anticommuting probability lies in the unit interval. Blueprint
 `fact:omega-anticomm-prob`. -/
-private theorem base_mem_unit_interval (P : AdmissibleParams) :
+private theorem base_mem_unit_interval  :
     (0 : ℝ) ≤ 1 - (P.q : ℝ)⁻¹ ∧ (1 : ℝ) - (P.q : ℝ)⁻¹ ≤ 1 := by
-  have hq2 : 2 ≤ P.q := P.hq.two_le
+  have hq2 := P.hq.two_le
   have hqR : (2 : ℝ) ≤ (P.q : ℝ) := by exact_mod_cast hq2
   have hinv : (P.q : ℝ)⁻¹ ≤ 1 / 2 := by
     rw [inv_le_comm₀ (by linarith) (by norm_num)]
@@ -378,7 +382,7 @@ private theorem base_mem_unit_interval (P : AdmissibleParams) :
 complementary bound in blueprint
 `fact:omega-anticomm-prob`, paper
 `14_analysis_of_the_pauli_basis_test.tex:70-77`. -/
-theorem commProb_ge_half (P : AdmissibleParams) : 1 / 2 ≤ commProb P := by
+theorem commProb_ge_half  : 1 / 2 ≤ commProb P := by
   obtain ⟨h0, h1⟩ := base_mem_unit_interval P
   have hle : (1 - (P.q : ℝ)⁻¹) ^ (P.m + 1) ≤ 1 := pow_le_one₀ h0 h1
   rw [commProb_eq_one_sub_anticommProb, anticommProb_eq]
@@ -387,14 +391,14 @@ theorem commProb_ge_half (P : AdmissibleParams) : 1 / 2 ≤ commProb P := by
 /-- When `m ≤ q`, the anticommuting event has the uniform constant lower
 bound added in blueprint
 `fact:omega-anticomm-prob`. -/
-theorem anticommProb_ge_of_m_le_q (P : AdmissibleParams) (hmq : P.m ≤ P.q) :
+theorem anticommProb_ge_of_m_le_q  (hmq : P.m ≤ P.q) :
     (2 : ℝ) ^ (-4 : ℤ) ≤ anticommProb P := by
   obtain ⟨h0, h1⟩ := base_mem_unit_interval P
-  have hq2 : 2 ≤ P.q := P.hq.two_le
+  have hq2 := P.hq.two_le
   have hqR : (2 : ℝ) ≤ (P.q : ℝ) := by exact_mod_cast hq2
   have hmain : (1 : ℝ) / 8 ≤ (1 - (P.q : ℝ)⁻¹) ^ (P.m + 1) := by
     rcases P.hq.eq_two_or_eight_dvd with hq | hdvd
-    · have hm : P.m ≤ 2 := hq ▸ hmq
+    · have hm := hq ▸ hmq
       have hb : (1 : ℝ) - (P.q : ℝ)⁻¹ = 1 / 2 := by
         rw [hq]
         norm_num
@@ -408,13 +412,9 @@ theorem anticommProb_ge_of_m_le_q (P : AdmissibleParams) (hmq : P.m ≤ P.q) :
         rw [hj]
         push_cast
         ring
-      have hjR0 : (0 : ℝ) < (j : ℝ) := by exact_mod_cast hj1
       have hbern : (7 : ℝ) / 8 ≤ (1 - (P.q : ℝ)⁻¹) ^ j := by
         have hle : (-2 : ℝ) ≤ -(P.q : ℝ)⁻¹ := by
           have : (0 : ℝ) ≤ (P.q : ℝ)⁻¹ := by positivity
-          have h2 : (P.q : ℝ)⁻¹ ≤ 1 := by
-            rw [inv_le_one₀ (by linarith)]
-            linarith
           linarith
         have hb := one_add_mul_le_pow hle j
         have hrw : (1 : ℝ) + (j : ℝ) * (-(P.q : ℝ)⁻¹) = 7 / 8 := by
@@ -430,7 +430,6 @@ theorem anticommProb_ge_of_m_le_q (P : AdmissibleParams) (hmq : P.m ≤ P.q) :
       have hpow : ((7 : ℝ) / 8) ^ 9 ≤ ((1 - (P.q : ℝ)⁻¹) ^ j) ^ 9 := by
         gcongr
       rw [← pow_mul, mul_comm j 9] at hpow
-      have hnum : (1 : ℝ) / 8 ≤ ((7 : ℝ) / 8) ^ 9 := by norm_num
       linarith
   rw [anticommProb_eq]
   have hconst : (2 : ℝ) ^ (-4 : ℤ) = 1 / 8 / 2 := by norm_num
@@ -458,11 +457,11 @@ noncomputable def commTupleDist (P : AdmissibleParams) :
 /-- The anticommuting conditional distribution is probabilistic. This is the
 well-formedness companion to the conditional sampling in
 blueprint `lem:qld-win-implications`. -/
-theorem anticommTupleDist_isProbability (P : AdmissibleParams) :
+theorem anticommTupleDist_isProbability  :
     (anticommTupleDist P).IsProbability := by
   refine Distribution.uniformOnFinset_isProbability _ ?_
   rw [← Finset.card_pos]
-  have hq2 : 2 ≤ P.q := P.hq.two_le
+  have hq2 := P.hq.two_le
   have hcount := two_mul_card_anticommuting P
   have hpos : 0 < P.q ^ (P.m + 1) * (P.q - 1) ^ (P.m + 1) :=
     Nat.mul_pos (pow_pos (by omega) _) (pow_pos (by omega) _)
@@ -471,7 +470,7 @@ theorem anticommTupleDist_isProbability (P : AdmissibleParams) :
 /-- The commuting conditional distribution is probabilistic. This is the
 well-formedness companion to the conditional sampling in
 blueprint `lem:qld-win-implications`. -/
-theorem commTupleDist_isProbability (P : AdmissibleParams) :
+theorem commTupleDist_isProbability  :
     (commTupleDist P).IsProbability := by
   refine Distribution.uniformOnFinset_isProbability _ ⟨0, ?_⟩
   refine Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩

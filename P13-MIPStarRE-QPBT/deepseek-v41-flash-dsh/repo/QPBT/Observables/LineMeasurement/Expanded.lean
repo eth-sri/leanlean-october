@@ -40,16 +40,18 @@ private theorem heteroKron_sum_sum {α β ι κ : Type*}
     heteroKron (∑ x, A x) (∑ y, B y) =
       ∑ x, ∑ y, heteroKron (A x) (B y) := by
   rw [DistanceCalculus.heteroKron_finset_sum_left]
-  simp only [DistanceCalculus.heteroKron_finset_sum_right]
+  simp [DistanceCalculus.heteroKron_finset_sum_right]
+variable {ι κ : Type*}
+
 
 /-- The tensor placement of a zero left factor vanishes. -/
-theorem heteroKron_zero_left {ι κ : Type*} (B : Op κ) :
+theorem heteroKron_zero_left  (B : Op κ) :
     heteroKron (0 : Op ι) B = 0 := by
   unfold heteroKron
   exact Matrix.zero_kronecker B
 
 /-- The tensor placement of a zero right factor vanishes. -/
-theorem heteroKron_zero_right {ι κ : Type*} (A : Op ι) :
+theorem heteroKron_zero_right  (A : Op ι) :
     heteroKron A (0 : Op κ) = 0 := by
   unfold heteroKron
   exact Matrix.kronecker_zero A
@@ -57,6 +59,8 @@ theorem heteroKron_zero_right {ι κ : Type*} (A : Op ι) :
 namespace ProjectiveSetting
 
 variable {P : AdmissibleParams} {ε : ℝ}
+variable (S : ProjectiveSetting P ε) (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
+
 
 /-- The line measurement of a projective strategy is again projective: folding
 the answers of a line question into a coefficient list is a postprocessing, and
@@ -65,8 +69,7 @@ measurement projectivity; both follow because postprocessing preserves
 projectivity. The line form is what the projectivity assertion of
 `def:expanded-line-measurement` needs, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem lineMeas_isProjective (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (line : LineDesc P.toLdParams) :
+theorem lineMeas_isProjective  :
     MIPStarRE.QPBT.Measurement.IsProjective (S.lineMeas side W line) := by
   apply SandwichProduct.postprocess_isProjective
   cases side with
@@ -78,8 +81,7 @@ embedded degree-`d` subspace: every prescribed answer is a degree-`d`
 coefficient list padded by zero. This is the strategy half of the last
 assertion of `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem lineMeas_effect_eq_zero_of_axis (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
+theorem lineMeas_effect_eq_zero_of_axis 
     (haxis : line.kind = .axis) (f : DegPoly P.toLdParams (P.m * P.d))
     (hf : ¬ f.FitsDegree P.d) :
     (S.lineMeas side W line).effect f = 0 := by
@@ -111,13 +113,13 @@ noncomputable def expLineOp (S : ProjectiveSetting P ε) (side : PlayerSide)
           DegPoly P.toLdParams (P.m * P.d) => pair.1 + pair.2 = f),
     heteroKron ((S.lineMeas side W line).effect pair.1)
       (tauLineProj P W line pair.2)
+variable (f : DegPoly P.toLdParams (P.m * P.d))
+
 
 /-- Expanded line effects are positive semidefinite. This is the positivity
 obligation of `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem expLineOp_nonneg (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
-    (f : DegPoly P.toLdParams (P.m * P.d)) :
+theorem expLineOp_nonneg  :
     0 ≤ S.expLineOp side W line f := by
   unfold expLineOp
   exact Finset.sum_nonneg fun pair _ => Quantum.kronecker_nonneg
@@ -126,8 +128,7 @@ theorem expLineOp_nonneg (S : ProjectiveSetting P ε) (side : PlayerSide)
 /-- Expanded line effects sum to the identity. This is the completeness
 obligation of `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem expLineOp_sum_eq_one (S : ProjectiveSetting P ε) (side : PlayerSide)
-    (W : PauliKind) (line : LineDesc P.toLdParams) :
+theorem expLineOp_sum_eq_one  :
     ∑ f, S.expLineOp side W line f = 1 := by
   let A : DegPoly P.toLdParams (P.m * P.d) × DegPoly P.toLdParams (P.m * P.d) →
       Op (S.ExpandedLocalSpace side) := fun pair =>
@@ -207,9 +208,7 @@ the Pauli line projectors are both orthogonal families, so distinct
 convolution terms annihilate one another. This is the projectivity
 calculation of `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-private theorem expLineOp_mul_self (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
-    (f : DegPoly P.toLdParams (P.m * P.d)) :
+private theorem expLineOp_mul_self  :
     S.expLineOp side W line f * S.expLineOp side W line f =
       S.expLineOp side W line f := by
   have hM := S.lineMeas_isProjective side W line
@@ -228,7 +227,7 @@ private theorem expLineOp_mul_self (S : ProjectiveSetting P ε)
       simp_rw [Finset.mul_sum]
     _ = ∑ p ∈ s, ∑ q ∈ s, if q = p then K p else 0 := by
       refine Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => ?_
-      simp only [K]
+      simp [K]
       rw [heteroKron_mul]
       by_cases hqp : q = p
       · subst hqp
@@ -247,8 +246,7 @@ private theorem expLineOp_mul_self (S : ProjectiveSetting P ε)
 /-- The expanded line measurement is projective. This is the projectivity
 assertion in `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem lineMeasExp_isProjective (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams) :
+theorem lineMeasExp_isProjective  :
     MIPStarRE.QPBT.Measurement.IsProjective (S.lineMeasExp side W line) := by
   intro f
   refine ⟨?_, ?_⟩
@@ -264,15 +262,14 @@ theorem lineMeasExp_isProjective (S : ProjectiveSetting P ε)
 space vanish. This is the last assertion of
 `def:expanded-line-measurement`, paper
 `14_analysis_of_the_pauli_basis_test.tex:552-556`. -/
-theorem expLineOp_zero_of_not_deg_d (S : ProjectiveSetting P ε)
-    (side : PlayerSide) (W : PauliKind) (line : LineDesc P.toLdParams)
+theorem expLineOp_zero_of_not_deg_d 
     (haxis : line.kind = .axis) (f : DegPoly P.toLdParams (P.m * P.d))
     (hf : ¬ f.FitsDegree P.d) :
     S.expLineOp side W line f = 0 := by
   unfold expLineOp
   apply Finset.sum_eq_zero
   intro pair hpair
-  have hsum : pair.1 + pair.2 = f := (Finset.mem_filter.mp hpair).2
+  have hsum := (Finset.mem_filter.mp hpair).2
   by_cases h1 : pair.1.FitsDegree P.d
   · have h2 : ¬ pair.2.FitsDegree P.d := by
       intro h2

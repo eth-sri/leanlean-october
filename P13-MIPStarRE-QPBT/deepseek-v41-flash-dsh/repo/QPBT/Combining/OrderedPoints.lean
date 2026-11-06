@@ -41,12 +41,12 @@ theorem Placement.exists_isOpposite (p : Placement) :
   | BA'' => exact ⟨.AA', trivial, trivial⟩
   | BB' => exact ⟨.AB'', trivial, trivial⟩
   | AB'' => exact ⟨.BB', trivial, trivial⟩
+variable {P : AdmissibleParams} {ε δ : ℝ} {S : ProjectiveSetting P ε} (points : CombinedPointsWitness S δ) (p : Placement)
+
 
 /-- On a single placement, the joint point measurement is close to the ordered
 `Z`-then-`X` point product, with inflation factor four. -/
-theorem CombinedPointsWitness.orderedZX_dist_le {P : AdmissibleParams}
-    {ε δ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δ) (p : Placement) :
+theorem CombinedPointsWitness.orderedZX_dist_le  :
     opFamilyDistSq
         (uniformDistribution
           ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))
@@ -72,9 +72,7 @@ theorem CombinedPointsWitness.orderedZX_dist_le {P : AdmissibleParams}
 `X`-then-`Z` point product, with the inflation factor four.  This is the
 same-placement form of the other ordered display of `lem:qld-4-10`, obtained
 from the self-consistency display in the same way. -/
-theorem CombinedPointsWitness.orderedXZ_dist_le {P : AdmissibleParams}
-    {ε δ : ℝ} {S : ProjectiveSetting P ε}
-    (points : CombinedPointsWitness S δ) (p : Placement) :
+theorem CombinedPointsWitness.orderedXZ_dist_le  :
     opFamilyDistSq
         (uniformDistribution
           ((Fin P.m → PauliScalar P) × (Fin P.m → PauliScalar P)))

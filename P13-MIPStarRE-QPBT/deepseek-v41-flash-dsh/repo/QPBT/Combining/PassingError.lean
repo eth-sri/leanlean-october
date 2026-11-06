@@ -28,9 +28,11 @@ namespace MIPStarRE.QPBT
 /-- The concrete two-variable polynomial envelope for the capped scalar bound. -/
 noncomputable def directPassingErrorEnvelope (x y : ℝ) : ℝ :=
   3 * (Real.sqrt x + y)
+variable (x y : ℝ)
+
 
 /-- A positive second input makes the direct passing-error envelope positive. -/
-theorem directPassingErrorEnvelope_pos (x y : ℝ) (hy : 0 < y) :
+theorem directPassingErrorEnvelope_pos  (hy : 0 < y) :
     0 < directPassingErrorEnvelope x y := by
   dsimp [directPassingErrorEnvelope]
   nlinarith [Real.sqrt_nonneg x]
@@ -49,11 +51,11 @@ theorem seven_branch_scalar_error_le (Q L r : ℝ) (hQ : 0 ≤ Q) (hL : 0 ≤ L)
       Real.sqrt_nonneg (Q + L), Real.sqrt_nonneg (Q + 2 * L)]
   nlinarith [Real.sqrt_nonneg (Q + L)]
 
-private theorem min_linear_sqrt_le_directPassingErrorEnvelope (x y : ℝ)
+private theorem min_linear_sqrt_le_directPassingErrorEnvelope 
     (hx : 0 ≤ x) (hy : 0 ≤ y) :
     min 1 (2 * x + Real.sqrt x + y) ≤ directPassingErrorEnvelope x y := by
   by_cases hxOne : x ≤ 1
-  · have hsqrtOne : Real.sqrt x ≤ 1 := by
+  · have hsqrtOne := by
       simpa using Real.sqrt_le_sqrt hxOne
     have hxSqrt : x ≤ Real.sqrt x := by
       nlinarith [Real.sq_sqrt hx, Real.sqrt_nonneg x]

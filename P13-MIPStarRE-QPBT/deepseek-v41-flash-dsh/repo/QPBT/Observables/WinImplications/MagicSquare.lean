@@ -38,9 +38,11 @@ def selectedMsVar : PauliKind → Fin 9
 def pointMsImplicationEdge : PauliKind → PauliEdge
   | .X => ⟨(.point .X, .ms (.var 0)), by simp [pauliEdges]⟩
   | .Z => ⟨(.point .Z, .ms (.var 4)), by simp [pauliEdges]⟩
+variable (P : AdmissibleParams)
+
 
 /-- Winning the anticommuting point/variable branch forces equality of trace bits. -/
-theorem pointMsLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
+theorem pointMsLabels_eq_of_win  (W : PauliKind)
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hanti : IsAnticommuting (pauliSharedSplit P z).1)
     (hwin : pauliWinPredicate P
@@ -217,7 +219,7 @@ theorem win_ms_cons_explicit :
       apply avgOver_mono
       intro z
       by_cases hanti : IsAnticommuting (pauliSharedSplit P z).1
-      · simp only [if_pos hanti]
+      · simp [if_pos hanti]
         have hs := pointMsMismatch_le_rejection S W z hanti
         rw [pauliCL_point_eq,
           pauliCL_shared_eq P (.ms (.var (selectedMsVar W))) rfl] at hs
@@ -225,7 +227,7 @@ theorem win_ms_cons_explicit :
         simpa [pauliSharedSplit, selectedTuplePoint, selectedMsVar,
           ProjectiveSetting.pointQuestion, ProjectiveSetting.msQuestion]
           using hs
-      · simp only [if_neg hanti]
+      · simp [if_neg hanti]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 16 * (Fintype.card PauliEdge : ℝ) * ε := by
       rw [mul_assoc]
@@ -347,9 +349,9 @@ theorem msRejection_eq_source {P : AdmissibleParams} {ε : ℝ}
 def msImplicationEdge (xy : MsType × MsType)
     (hxy : xy ∈ (graphDistribution msEdges msEdges_nonempty).support) : PauliEdge :=
   ⟨((.ms xy.1), (.ms xy.2)), by
-    have hedge : Sym2.mk xy.1 xy.2 ∈ msEdges :=
+    have hedge :=
       (Finset.mem_filter.mp hxy).2
-    simp only [pauliEdges, Finset.union_assoc, Fin.zero_eta, Fin.isValue,
+    simp [pauliEdges, Finset.union_assoc, Fin.zero_eta, Fin.isValue,
       Fin.reduceFinMk, Finset.union_insert, Finset.union_singleton,
       Finset.insert_union, Finset.mem_insert, Sym2.eq, Sym2.rel_iff',
       Prod.mk.injEq, reduceCtorEq, PauliType.ms.injEq, false_and,
@@ -359,8 +361,7 @@ def msImplicationEdge (xy : MsType × MsType)
     exact Or.inr ⟨xy.1, xy.2, hedge, Or.inl ⟨rfl, rfl⟩⟩⟩
 
 /-- A relabeled Magic Square rejection on an anticommuting tuple is a Pauli rejection. -/
-theorem msRejection_implies_pauliRejection
-    (P : AdmissibleParams) (z : PauliSpace P) (xy : MsType × MsType)
+theorem msRejection_implies_pauliRejection  (z : PauliSpace P) (xy : MsType × MsType)
     (hxy : xy ∈ (graphDistribution msEdges msEdges_nonempty).support)
     (hanti : IsAnticommuting (pauliSharedSplit P z).1)
     (A B : PauliAnswer P)
@@ -370,7 +371,7 @@ theorem msRejection_implies_pauliRejection
     pauliWinPredicate P
       ((.ms xy.1), pauliCL P (.ms xy.1) z)
       ((.ms xy.2), pauliCL P (.ms xy.2) z) A B = false := by
-  have hedge : Sym2.mk xy.1 xy.2 ∈ msEdges :=
+  have hedge :=
     (Finset.mem_filter.mp hxy).2
   rcases Finset.mem_image.mp hedge with ⟨ik, _, heq⟩
   have hor :
@@ -449,13 +450,13 @@ theorem gatedMsRejection_le_fixedEdge {P : AdmissibleParams} {ε : ℝ}
       apply avgOver_mono
       intro z
       by_cases hanti : IsAnticommuting (pauliSharedSplit P z).1
-      · simp only [if_pos hanti]
+      · simp [if_pos hanti]
         rw [inducedMsRejection, msRejection_eq_source]
         have hs := msRejection_le_pauliRejection S z xy hxy hanti
         rw [pauliCL_shared_eq P (.ms xy.1) rfl,
           pauliCL_shared_eq P (.ms xy.2) rfl] at hs
         simpa [pauliSharedSplit, ProjectiveSetting.msQuestion] using hs
-      · simp only [if_neg hanti]
+      · simp [if_neg hanti]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ (Fintype.card PauliEdge : ℝ) * ε :=
       fixedEdgeRejection_le_error S _
@@ -481,10 +482,7 @@ theorem win_magic_square_explicit :
       1 - S.msValueAt ω
     convert rejectionEventAverage_eq_one_sub_value (S.msStrategyAt ω) using 1 <;>
       rfl
-  have hvalue :
-      1 - avgOver (anticommTupleDist P) S.msValueAt =
-        avgOver (anticommTupleDist P) (fun ω =>
-          avgOver ν (inducedMsRejection S ω)) := by
+  have hvalue := by
     calc
       _ = avgOver (anticommTupleDist P) (fun ω => 1 - S.msValueAt ω) := by
         symm

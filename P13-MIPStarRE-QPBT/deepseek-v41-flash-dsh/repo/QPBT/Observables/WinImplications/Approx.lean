@@ -142,14 +142,14 @@ theorem win_comm_interchanged_explicit :
       apply avgOver_mono
       intro z
       by_cases hcomm : IsCommuting (pauliSharedSplit P z).1
-      · simp only [if_pos hcomm]
+      · simp [if_pos hcomm]
         have hs := pairMismatch_le_rejection_interchanged S W z hcomm
         rw [pauliCL_shared_eq P (.pairW W) rfl,
           pauliCL_shared_eq P .pair rfl] at hs
         simpa [pauliSharedSplit, ProjectiveSetting.pairWQuestion,
           ProjectiveSetting.pairQuestion]
           using hs
-      · simp only [if_neg hcomm]
+      · simp [if_neg hcomm]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
       rw [mul_assoc]
@@ -270,7 +270,7 @@ theorem win_comm_cons_interchanged_explicit :
       apply avgOver_mono
       intro z
       by_cases hcomm : IsCommuting (pauliSharedSplit P z).1
-      · simp only [if_pos hcomm]
+      · simp [if_pos hcomm]
         have hs := pointPairMismatch_le_rejection_interchanged S W z hcomm
         rw [pauliCL_point_eq,
           pauliCL_shared_eq P (.pairW W) rfl] at hs
@@ -278,7 +278,7 @@ theorem win_comm_cons_interchanged_explicit :
         simpa [pauliSharedSplit, selectedTuplePoint,
           ProjectiveSetting.pointQuestion, ProjectiveSetting.pairWQuestion]
           using hs
-      · simp only [if_neg hcomm]
+      · simp [if_neg hcomm]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 2 * (Fintype.card PauliEdge : ℝ) * ε := by
       rw [mul_assoc]
@@ -421,7 +421,7 @@ theorem win_ms_cons_interchanged_explicit :
       apply avgOver_mono
       intro z
       by_cases hanti : IsAnticommuting (pauliSharedSplit P z).1
-      · simp only [if_pos hanti]
+      · simp [if_pos hanti]
         have hs := pointMsMismatch_le_rejection_interchanged S W z hanti
         rw [pauliCL_point_eq,
           pauliCL_shared_eq P (.ms (.var (selectedMsVar W))) rfl] at hs
@@ -429,7 +429,7 @@ theorem win_ms_cons_interchanged_explicit :
         simpa [pauliSharedSplit, selectedTuplePoint, selectedMsVar,
           ProjectiveSetting.pointQuestion, ProjectiveSetting.msQuestion]
           using hs
-      · simp only [if_neg hanti]
+      · simp [if_neg hanti]
         exact pauliRejectionAt_nonneg S.toStrategy _ z
     _ ≤ 16 * (Fintype.card PauliEdge : ℝ) * ε := by
       rw [mul_assoc]

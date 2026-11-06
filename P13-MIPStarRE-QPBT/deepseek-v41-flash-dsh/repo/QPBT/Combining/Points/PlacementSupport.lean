@@ -83,15 +83,17 @@ theorem place_BB'_eq (S : ProjectiveSetting P ε)
         (heteroKron (1 : Op (S.toStrategy.ιA × PauliRegister P))
           (heteroKron O (1 : Op (PauliRegister P × PauliRegister P)))) :=
   (reindexOp_abBbBipartition_right S O).symm
+variable {ι κ : Type*}
+
 
 /-- Reindexing an operator commutes with the conjugate transpose. -/
-theorem reindexOp_conjTranspose {ι κ : Type*} (e : ι ≃ κ) (M : Op κ) :
+theorem reindexOp_conjTranspose  (e : ι ≃ κ) (M : Op κ) :
     reindexOp e Mᴴ = (reindexOp e M)ᴴ := by
   ext i j
   rfl
 
 /-- Reindexing an operator along an equivalence preserves positivity. -/
-theorem reindexOp_nonneg {ι κ : Type*} [Finite ι] [Finite κ]
+theorem reindexOp_nonneg  [Finite ι] [Finite κ]
     (e : ι ≃ κ) {M : Op κ} (hM : 0 ≤ M) :
     0 ≤ reindexOp e M := by
   letI := Fintype.ofFinite ι
@@ -128,14 +130,16 @@ theorem place_mul (S : ProjectiveSetting P ε) :
       rw [place_AB''_eq, place_AB''_eq, place_AB''_eq,
         ← WinImplications.reindexOp_mul, heteroKron_mul, mul_one]
       all_goals rfl
+variable (S : ProjectiveSetting P ε) (p : Placement)
+
 
 /-- A placement sends the local identity to the identity of the six-register
 space. -/
-theorem place_one (S : ProjectiveSetting P ε) (p : Placement) :
+theorem place_one  :
     S.place p (1 : Op (S.ExpandedLocalSpace p.side)) = 1 := by
   ext i j
   cases p <;>
-    · simp only [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
+    · simp [ProjectiveSetting.place, Matrix.one_apply, Prod.ext_iff]
       split_ifs <;> simp_all
 
 /-- A placement is additive over finite sums of local operators.
@@ -201,16 +205,15 @@ theorem place_nonneg (S : ProjectiveSetting P ε) :
 
 /-- The placement of a local operator bounded by the identity is bounded by
 the identity. -/
-theorem place_le_one (S : ProjectiveSetting P ε) (p : Placement)
+theorem place_le_one 
     {A : Op (S.ExpandedLocalSpace p.side)} (hA : A ≤ 1) :
     S.place p A ≤ 1 := by
-  have h : 0 ≤ S.place p (1 - A) := S.place_nonneg p (sub_nonneg.mpr hA)
+  have h := S.place_nonneg p (sub_nonneg.mpr hA)
   rw [place_sub, place_one] at h
   exact sub_nonneg.mp h
 
 /-- The placement of a projector is a contraction. -/
-theorem place_conjTranspose_mul_self_le_one (S : ProjectiveSetting P ε)
-    (p : Placement) {E : Op (S.ExpandedLocalSpace p.side)} (hE : IsProj E) :
+theorem place_conjTranspose_mul_self_le_one  {E : Op (S.ExpandedLocalSpace p.side)} (hE : IsProj E) :
     (S.place p E)ᴴ * S.place p E ≤ 1 := by
   rw [← place_conjTranspose, ← place_mul, hE.isSelfAdjoint.isHermitian.eq,
     hE.isIdempotentElem.eq]
@@ -227,22 +230,22 @@ theorem place_comm (S : ProjectiveSetting P ε) :
       classical
       rw [place_AA'_eq, place_BA''_eq, ← WinImplications.reindexOp_mul,
         ← WinImplications.reindexOp_mul]
-      simp only [heteroKron_mul, one_mul, mul_one]
+      simp [heteroKron_mul, one_mul, mul_one]
   | .BA'', .AA', _, A, B => by
       classical
       rw [place_AA'_eq, place_BA''_eq, ← WinImplications.reindexOp_mul,
         ← WinImplications.reindexOp_mul]
-      simp only [heteroKron_mul, one_mul, mul_one]
+      simp [heteroKron_mul, one_mul, mul_one]
   | .BB', .AB'', _, A, B => by
       classical
       rw [place_AB''_eq, place_BB'_eq, ← WinImplications.reindexOp_mul,
         ← WinImplications.reindexOp_mul]
-      simp only [heteroKron_mul, one_mul, mul_one]
+      simp [heteroKron_mul, one_mul, mul_one]
   | .AB'', .BB', _, A, B => by
       classical
       rw [place_AB''_eq, place_BB'_eq, ← WinImplications.reindexOp_mul,
         ← WinImplications.reindexOp_mul]
-      simp only [heteroKron_mul, one_mul, mul_one]
+      simp [heteroKron_mul, one_mul, mul_one]
   | .AA', .AA', h, _, _ => by simp [Placement.IsOpposite] at h
   | .AA', .BB', h, _, _ => by simp [Placement.IsOpposite] at h
   | .AA', .AB'', h, _, _ => by simp [Placement.IsOpposite] at h
@@ -272,8 +275,7 @@ def placedMeasurement (S : ProjectiveSetting P ε) (p : Placement) {α : Type*}
     (S.placedMeasurement p M).effect a = S.place p (M.effect a) := rfl
 
 /-- A placed projective measurement is projective. -/
-theorem placedMeasurement_isProjective (S : ProjectiveSetting P ε)
-    (p : Placement) {α : Type*} [Fintype α]
+theorem placedMeasurement_isProjective  {α : Type*} [Fintype α]
     (M : Measurement α (S.ExpandedLocalSpace p.side))
     (hM : MIPStarRE.QPBT.Measurement.IsProjective M) :
     MIPStarRE.QPBT.Measurement.IsProjective (S.placedMeasurement p M) := by

@@ -41,20 +41,21 @@ open MIPStarRE.LDT
 open MIPStarRE.LDT.Preliminaries
 
 noncomputable section
+variable {K : Type*}
+
 
 /-! ## Linear forms in terms of their coefficients -/
 
 /-- A linear form is the sum of its monomials at the standard basis vectors. -/
-theorem combiningLinearForm_eq_sum_monomial {K : Type*} [CommSemiring K] {k : ℕ}
+theorem combiningLinearForm_eq_sum_monomial  [CommSemiring K] {k : ℕ}
     (c : Fin k → K) :
     combiningLinearForm c =
       ∑ r : Fin k, MvPolynomial.monomial (Finsupp.single r 1) (c r) := by
-  simp only [combiningLinearForm]
   exact Finset.sum_congr rfl fun r _ => MvPolynomial.C_mul_X_eq_monomial
 
 /-- The coefficients of a linear form vanish outside the standard basis
 vectors. -/
-theorem coeff_combiningLinearForm_eq_zero {K : Type*} [CommSemiring K] {k : ℕ}
+theorem coeff_combiningLinearForm_eq_zero  [CommSemiring K] {k : ℕ}
     (c : Fin k → K) {μ : Fin k →₀ ℕ} (hμ : ∀ r : Fin k, μ ≠ Finsupp.single r 1) :
     (combiningLinearForm c).coeff μ = 0 := by
   classical
@@ -65,7 +66,7 @@ theorem coeff_combiningLinearForm_eq_zero {K : Type*} [CommSemiring K] {k : ℕ}
 
 /-- A polynomial in the combining variables is a linear form exactly when its
 coefficients vanish outside the `k` standard basis vectors. -/
-theorem exists_eq_combiningLinearForm_iff {K : Type*} [CommSemiring K] {k : ℕ}
+theorem exists_eq_combiningLinearForm_iff  [CommSemiring K] {k : ℕ}
     (P : MvPolynomial (Fin k) K) :
     (∃ c : Fin k → K, P = combiningLinearForm c) ↔
       ∀ μ : Fin k →₀ ℕ, (∀ r : Fin k, μ ≠ Finsupp.single r 1) →
@@ -81,13 +82,13 @@ theorem exists_eq_combiningLinearForm_iff {K : Type*} [CommSemiring K] {k : ℕ}
 
 /-- The restriction of `p` at `u` is a linear form exactly when the values at
 `u` of the coefficients off the standard basis vectors all vanish. -/
-theorem exists_eq_combiningLinearForm_combinedRestrict_iff {K : Type*} [CommSemiring K]
+theorem exists_eq_combiningLinearForm_combinedRestrict_iff  [CommSemiring K]
     {m k : ℕ} (p : MvPolynomial (Fin (m + k)) K) (u : Fin m → K) :
     (∃ c : Fin k → K, combinedRestrict p u = combiningLinearForm c) ↔
       ∀ μ : Fin k →₀ ℕ, (∀ r : Fin k, μ ≠ Finsupp.single r 1) →
         MvPolynomial.eval u (combinedCoef p μ) = 0 := by
   rw [exists_eq_combiningLinearForm_iff]
-  simp only [eval_combinedCoef]
+  simp [eval_combinedCoef]
 
 /-! ## The exact-linearity estimate -/
 
@@ -96,7 +97,7 @@ open scoped Classical in
 most `d` in the combined variables which is not the combined polynomial of any
 tuple restricts, at a uniformly sampled point of the original space, to a linear
 form in the combining variables with probability at most `m d / q`. -/
-theorem combinedRestrict_combiningLinearForm_avg_le {K : Type*} [Field K] [Fintype K]
+theorem combinedRestrict_combiningLinearForm_avg_le  [Field K] [Fintype K]
     [DecidableEq K] {m k d : ℕ} {p : MvPolynomial (Fin (m + k)) K}
     (hp : p ∈ polyFunc (m + k) K d)
     (hnc : ∀ g : Fin k → MvPolynomial (Fin m) K, p ≠ combinePolyTuple g) :
@@ -122,7 +123,6 @@ theorem combinedRestrict_combiningLinearForm_avg_le {K : Type*} [Field K] [Finty
         by_cases hu : ∃ c : Fin k → K, combinedRestrict p u = combiningLinearForm c
         · have h0 : MvPolynomial.eval u (combinedCoef p μ) =
               MvPolynomial.eval u (0 : MvPolynomial (Fin m) K) := by
-            rw [map_zero]
             exact (exists_eq_combiningLinearForm_combinedRestrict_iff p u).mp hu μ hμ
           rw [if_pos hu, if_pos h0]
         · rw [if_neg hu]
@@ -130,7 +130,7 @@ theorem combinedRestrict_combiningLinearForm_avg_le {K : Type*} [Field K] [Finty
     _ = (polynomialAgreementProbability m K (combinedCoef p μ) 0 : Error) :=
         polynomialAgreement_avg_eq_agreementProbability _ _
     _ ≤ ((((m * d : ℕ) : ℚ≥0) / Fintype.card K : ℚ≥0) : Error) := by
-        have hdeg : (combinedCoef p μ).totalDegree ≤ m * d :=
+        have hdeg :=
           totalDegree_combinedCoef_le hp μ
         have hzero : (0 : MvPolynomial (Fin m) K).totalDegree ≤ m * d := by
           simp
@@ -169,7 +169,7 @@ theorem directCombinedExactLinearity_avg_le (D : DirectLdParams)
 
 /-- A nonzero coefficient of `μ` comes from a monomial of `p` whose combining
 block is `μ`. -/
-theorem exists_mem_support_of_combinedCoef_ne_zero {K : Type*} [CommSemiring K] {m k : ℕ}
+theorem exists_mem_support_of_combinedCoef_ne_zero  [CommSemiring K] {m k : ℕ}
     {p : MvPolynomial (Fin (m + k)) K} {μ : Fin k →₀ ℕ} (h : combinedCoef p μ ≠ 0) :
     ∃ s ∈ p.support, combinedCoefExp s = μ := by
   classical
@@ -181,7 +181,7 @@ theorem exists_mem_support_of_combinedCoef_ne_zero {K : Type*} [CommSemiring K] 
 
 /-- The restriction of `p` to a point inherits the individual-degree bound of
 `p` in the combining variables. -/
-theorem degreeOf_combinedRestrict_le {K : Type*} [CommSemiring K] {m k d : ℕ}
+theorem degreeOf_combinedRestrict_le  [CommSemiring K] {m k d : ℕ}
     {p : MvPolynomial (Fin (m + k)) K} (hp : ∀ i, p.degreeOf i ≤ d) (u : Fin m → K)
     (r : Fin k) : (combinedRestrict p u).degreeOf r ≤ d := by
   classical
@@ -209,7 +209,7 @@ combined point agrees with the combined point answer of a tuple `b` at a
 uniformly sampled combining vector with probability at most `k d / q`.  Both
 polynomials in the combining variables have total degree at most `k d`, and
 they are distinct because one of them is a linear form. -/
-theorem combinedRestrict_collision_avg_le {K : Type*} [Field K] [Fintype K]
+theorem combinedRestrict_collision_avg_le  [Field K] [Fintype K]
     [DecidableEq K] {m k d : ℕ} {p : MvPolynomial (Fin (m + k)) K}
     (hp : p ∈ polyFunc (m + k) K d) (hkd : 1 ≤ k * d) (u : Fin m → K) (b : Fin k → K)
     (hu : ∀ c : Fin k → K, combinedRestrict p u ≠ combiningLinearForm c) :
@@ -218,9 +218,9 @@ theorem combinedRestrict_collision_avg_le {K : Type*} [Field K] [Fintype K]
           ∑ r : Fin k, b r * α r then (1 : Error) else 0) ≤
       ((((k * d : ℕ) : ℚ≥0) / Fintype.card K : ℚ≥0) : Error) := by
   classical
-  have hdeg : (combinedRestrict p u).totalDegree ≤ k * d :=
+  have hdeg :=
     totalDegree_combinedRestrict_le hp u
-  have hlin : (combiningLinearForm b).totalDegree ≤ k * d :=
+  have hlin :=
     le_trans (combiningLinearForm_totalDegree_le_one b) hkd
   calc
     avgOver (uniformDistribution (Fin k → K))

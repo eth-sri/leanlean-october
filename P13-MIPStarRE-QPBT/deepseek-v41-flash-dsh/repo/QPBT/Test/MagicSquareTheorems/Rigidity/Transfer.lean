@@ -53,13 +53,17 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum MIPStarRE.QPBT.DistanceCalculus
 
 noncomputable section
+variable (S : Strategy msGame)
+variable (i : Fin 6) (k : Fin 3)
+
+
 
 /-! ## Cell consistency of the postprocessed effects -/
 
 /-- The Born overlap of Alice's totalized variable bit with Bob's totalized
 constraint bit, summed over the bit, is the complement of the reverse
 cell-mismatch mass. -/
-theorem sum_stateQForm_reverse_eq (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+theorem sum_stateQForm_reverse_eq  :
     ∑ b : ZMod 2, stateQForm S.ψ (heteroKron
         (((S.A (.var (msConstraintVars i k))).postprocess msBitOrZero).effect b)
         (((S.B (.constraint i)).postprocess (constraintBitOrZero k)).effect b)) =
@@ -89,8 +93,6 @@ theorem sum_stateQForm_reverse_eq (S : Strategy msGame) (i : Fin 6) (k : Fin 3) 
   refine Finset.sum_congr rfl fun a _ => ?_
   rw [Finset.sum_comm, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun c _ => ?_
-  rw [Finset.sum_ite_eq]
-  simp only [Finset.mem_univ, if_true]
   by_cases h : msBitOrZero a = constraintBitOrZero k c
   · simp [h]
   · simp [h, Ne.symm h]
@@ -98,7 +100,7 @@ theorem sum_stateQForm_reverse_eq (S : Strategy msGame) (i : Fin 6) (k : Fin 3) 
 /-- The Born overlap of Alice's totalized constraint bit with Bob's totalized
 variable bit, summed over the bit, is the complement of the forward
 cell-mismatch mass. -/
-theorem sum_stateQForm_forward_eq (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+theorem sum_stateQForm_forward_eq  :
     ∑ b : ZMod 2, stateQForm S.ψ (heteroKron
         (((S.A (.constraint i)).postprocess (constraintBitOrZero k)).effect b)
         (((S.B (.var (msConstraintVars i k))).postprocess msBitOrZero).effect b)) =
@@ -128,8 +130,6 @@ theorem sum_stateQForm_forward_eq (S : Strategy msGame) (i : Fin 6) (k : Fin 3) 
   refine Finset.sum_congr rfl fun a _ => ?_
   rw [Finset.sum_comm, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun c _ => ?_
-  rw [Finset.sum_ite_eq]
-  simp only [Finset.mem_univ, if_true]
   by_cases h : constraintBitOrZero k a = msBitOrZero c
   · simp [h]
   · simp [h, Ne.symm h]
@@ -153,7 +153,7 @@ constraint bit: the summed squared defect is at most twice the reverse
 cell-mismatch mass of the original strategy.  This is the first item of
 blueprint `fact:agreement`, applied to the
 dilated strategy, whose Born masses are those of the original one. -/
-theorem sum_norm_sq_intertwining_le_reverse (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+theorem sum_norm_sq_intertwining_le_reverse  :
     ∑ b : ZMod 2, ‖applyOperatorToState
         (heteroKron (dilatedEffectA S (.var (msConstraintVars i k)) msBitOrZero b) 1 -
           heteroKron 1 (dilatedEffectB S (.constraint i) (constraintBitOrZero k) b))
@@ -186,7 +186,7 @@ theorem sum_norm_sq_intertwining_le_reverse (S : Strategy msGame) (i : Fin 6) (k
 /-- Alice's dilated constraint bit approximately intertwines with Bob's dilated
 variable bit: the summed squared defect is at most twice the forward
 cell-mismatch mass of the original strategy. -/
-theorem sum_norm_sq_intertwining_le_forward (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+theorem sum_norm_sq_intertwining_le_forward  :
     ∑ b : ZMod 2, ‖applyOperatorToState
         (heteroKron (dilatedEffectA S (.constraint i) (constraintBitOrZero k) b) 1 -
           heteroKron 1 (dilatedEffectB S (.var (msConstraintVars i k)) msBitOrZero b))
@@ -215,23 +215,27 @@ theorem sum_norm_sq_intertwining_le_forward (S : Strategy msGame) (i : Fin 6) (k
       (naimarkDilatedState MsAnswer S.ψ)‖ ^ 2 ≤
       2 * (1 ^ 2 - (1 - forwardCellMismatchMass S i k)) := h1
   linarith
+variable (x : MsType)
+variable (f : MsAnswer → ZMod 2) (b : ZMod 2)
+
+
 
 /-! ## Compressions of the dilated postprocessed effects -/
 
 /-- Compressing one of Alice's dilated postprocessed effects returns her original
 postprocessed effect. -/
-theorem naimarkCompression_dilatedEffectA (S : Strategy msGame) (x : MsType)
-    (f : MsAnswer → ZMod 2) (b : ZMod 2) :
+theorem naimarkCompression_dilatedEffectA  :
     naimarkCompression (dilatedEffectA S x f b) = ((S.A x).postprocess f).effect b := by
   have h := (naimarkCompression_finset_sum (Finset.univ.filter fun a : MsAnswer => f a = b)
     fun a => ((msDilatedStrategy S).A x).effect a).trans
     (Finset.sum_congr rfl fun a _ => naimarkCompression_msDilatedStrategy_A_effect S x a)
   exact h
+variable (y : MsType) (f : MsAnswer → ZMod 2) (b : ZMod 2)
+
 
 /-- Compressing one of Bob's dilated postprocessed effects returns his original
 postprocessed effect. -/
-theorem naimarkCompression_dilatedEffectB (S : Strategy msGame) (y : MsType)
-    (f : MsAnswer → ZMod 2) (b : ZMod 2) :
+theorem naimarkCompression_dilatedEffectB  :
     naimarkCompression (dilatedEffectB S y f b) = ((S.B y).postprocess f).effect b := by
   have h := (naimarkCompression_finset_sum (Finset.univ.filter fun a : MsAnswer => f a = b)
     fun a => ((msDilatedStrategy S).B y).effect a).trans
@@ -240,8 +244,7 @@ theorem naimarkCompression_dilatedEffectB (S : Strategy msGame) (y : MsType)
 
 /-- The inflation of Alice's original postprocessed effect is the ground
 compression `Π P Π` of her dilated one. -/
-theorem naimarkInflation_postprocess_A (S : Strategy msGame) (x : MsType)
-    (f : MsAnswer → ZMod 2) (b : ZMod 2) :
+theorem naimarkInflation_postprocess_A  :
     naimarkInflation (α := MsAnswer) (((S.A x).postprocess f).effect b) =
       groundProjection S.ιA MsAnswer * dilatedEffectA S x f b *
         groundProjection S.ιA MsAnswer := by
@@ -249,8 +252,7 @@ theorem naimarkInflation_postprocess_A (S : Strategy msGame) (x : MsType)
 
 /-- The inflation of Bob's original postprocessed effect is the ground
 compression `Π Q Π` of his dilated one. -/
-theorem naimarkInflation_postprocess_B (S : Strategy msGame) (y : MsType)
-    (f : MsAnswer → ZMod 2) (b : ZMod 2) :
+theorem naimarkInflation_postprocess_B  :
     naimarkInflation (α := MsAnswer) (((S.B y).postprocess f).effect b) =
       groundProjection S.ιB MsAnswer * dilatedEffectB S y f b *
         groundProjection S.ιB MsAnswer := by
@@ -267,22 +269,24 @@ theorem naimarkInflation_sub {ι α : Type} [Fintype ι] [DecidableEq ι]
       naimarkInflation (α := α) M - naimarkInflation (α := α) N := by
   ext p q
   by_cases h : p.2 = none ∧ q.2 = none <;> simp [h]
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
 
 /-- The action on states respects differences of operators. -/
-theorem applyOperatorToState_sub_op {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem applyOperatorToState_sub_op 
     (M N : Op ι) (v : EuclideanSpace ℂ ι) :
     applyOperatorToState (M - N) v =
       applyOperatorToState M v - applyOperatorToState N v := by
   simp [applyOperatorToState]
 
 /-- The action on states respects negation of operators. -/
-theorem applyOperatorToState_neg_op {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem applyOperatorToState_neg_op 
     (M : Op ι) (v : EuclideanSpace ℂ ι) :
     applyOperatorToState (-M) v = -applyOperatorToState M v := by
   simp [applyOperatorToState]
 
 /-- The one-outcome distance under the one-point uniform distribution. -/
-theorem opDistSq_uniform_unit {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem opDistSq_uniform_unit 
     (M N : Unit → Op ι) (ψ : EuclideanSpace ℂ ι) :
     opDistSq (uniformDistribution Unit) M N ψ =
       ‖applyOperatorToState (M () - N ()) ψ‖ ^ 2 := by
@@ -302,7 +306,7 @@ abbrev dilatedObsB (S : Strategy msGame) (y : MsType) (f : MsAnswer → ZMod 2) 
 
 /-- The inflation of Alice's original observable is the ground compression of
 her dilated observable. -/
-theorem naimarkInflation_obs_A (S : Strategy msGame) (x : MsType) :
+theorem naimarkInflation_obs_A  :
     naimarkInflation (α := MsAnswer) (obsOf ((S.A x).postprocess msBitOrZero)) =
       groundProjection S.ιA MsAnswer * dilatedObsA S x * groundProjection S.ιA MsAnswer := by
   change naimarkInflation (α := MsAnswer) (((S.A x).postprocess msBitOrZero).effect 0 -
@@ -326,7 +330,7 @@ theorem conjTranspose_mul_le_one_dilatedObsB (S : Strategy msGame) (y : MsType)
 
 /-- The leakage of Alice's dilated observable out of the ground slice is bounded
 by the two intertwining defects of its effects. -/
-theorem norm_leak_obs_le_A (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+theorem norm_leak_obs_le_A  :
     ‖applyOperatorToState (heteroKron ((1 - groundProjection S.ιA MsAnswer) *
         dilatedObsA S (.var (msConstraintVars i k))) 1) (naimarkDilatedState MsAnswer S.ψ)‖ ≤
       ‖applyOperatorToState
@@ -348,7 +352,7 @@ theorem norm_leak_obs_le_A (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
 
 /-- The intertwining defect of Alice's dilated observable against Bob's is
 bounded by the two intertwining defects of the effects. -/
-theorem norm_intertwine_obs_le_A (S : Strategy msGame) (i : Fin 6) (k : Fin 3) :
+theorem norm_intertwine_obs_le_A  :
     ‖applyOperatorToState (heteroKron (dilatedObsA S (.var (msConstraintVars i k))) 1 -
         heteroKron 1 (dilatedObsB S (.constraint i) (constraintBitOrZero k)))
         (naimarkDilatedState MsAnswer S.ψ)‖ ≤
@@ -408,7 +412,7 @@ theorem norm_leftTensor_compressed_product_sub_le (α : Type) [Fintype α]
     have hassoc : groundProjection ιA α * A * groundProjection ιA α *
         (groundProjection ιA α * B * groundProjection ιA α) =
         groundProjection ιA α * A * groundProjection ιA α * B * groundProjection ιA α := by
-      simp only [Matrix.mul_assoc]
+      simp [Matrix.mul_assoc]
       rw [← Matrix.mul_assoc (groundProjection ιA α) (groundProjection ιA α) (B * _), hGG]
     rw [hassoc, show heteroKron (groundProjection ιA α * A * groundProjection ιA α * B *
         groundProjection ιA α) (1 : Op (ιB × Option α)) =
@@ -475,16 +479,14 @@ theorem norm_leftTensor_compressed_product_sub_le (α : Type) [Fintype α]
         refine le_trans (norm_sub_le _ _) ?_
         rw [norm_neg]
     _ ≤ _ := by linarith [hfirst, hsecond]
+variable {κA κB : Type} [Fintype κA] [DecidableEq κA] [Fintype κB] [DecidableEq κB] (S : Strategy msGame) (φA : EuclideanSpace ℂ (S.ιA × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κA) (φB : EuclideanSpace ℂ (S.ιB × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κB) (ξ : EuclideanSpace ℂ (κA × κB))
+
 
 /-- Transfer of a product of two conjugated observables on Alice's side: the
 product of the conjugated original observables differs from the product of
 the conjugated dilated ones, on the target state, by the compressed-product
 defect on the dilated state plus twice the state closeness. -/
-theorem norm_product_transfer_le_A {κA κB : Type} [Fintype κA] [DecidableEq κA]
-    [Fintype κB] [DecidableEq κB] (S : Strategy msGame)
-    (φA : EuclideanSpace ℂ (S.ιA × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ (S.ιB × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ξ : EuclideanSpace ℂ (κA × κB)) (A B : Op (S.ιA × Option MsAnswer))
+theorem norm_product_transfer_le_A  (A B : Op (S.ιA × Option MsAnswer))
     (hA : Aᴴ * A ≤ 1) (hB : Bᴴ * B ≤ 1) :
     ‖applyOperatorToState
         (heteroKron (conjIsometry φA (groundProjection S.ιA MsAnswer * A *
@@ -581,11 +583,7 @@ leakage of both dilated observables out of the ground slice, controlled by the
 cell-consistency masses, and the state closeness.  Blueprint
 `thm:ms-rigidity`, paper
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:612-652`. -/
-theorem ms_anticommutator_transfer_A {κA κB : Type} [Fintype κA] [DecidableEq κA]
-    [Fintype κB] [DecidableEq κB] (S : Strategy msGame)
-    (φA : EuclideanSpace ℂ (S.ιA × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κA)
-    (φB : EuclideanSpace ℂ (S.ιB × Option MsAnswer) →ₗᵢ[ℂ] EuclideanSpace ℂ κB)
-    (ξ : EuclideanSpace ℂ (κA × κB)) (ε η : ℝ)
+theorem ms_anticommutator_transfer_A  (ε η : ℝ)
     (hwin : 1 - ε ≤ S.value)
     (hξ : ‖isometryTensor φA φB (msDilatedStrategy S).ψ - ξ‖ ≤ η) :
     opDistSq (uniformDistribution Unit)

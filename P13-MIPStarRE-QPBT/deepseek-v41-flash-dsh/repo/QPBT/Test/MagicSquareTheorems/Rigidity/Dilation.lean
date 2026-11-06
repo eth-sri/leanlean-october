@@ -250,9 +250,7 @@ semidefinite. -/
 theorem naimarkData_sum_some_le_one {α d : Type} [Fintype α] [DecidableEq α]
     [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) :
     ∑ a : α, (naimarkData M).liftedEffect (some a) ≤ 1 := by
-  have hsplit : ∑ oa : Option α, (naimarkData M).liftedEffect oa =
-      (naimarkData M).liftedEffect none +
-        ∑ a : α, (naimarkData M).liftedEffect (some a) :=
+  have hsplit :=
     Fintype.sum_option (f := fun oa => (naimarkData M).liftedEffect oa)
   have hle := (naimarkData M).lifted_sum_le_one
   rw [hsplit] at hle
@@ -284,7 +282,6 @@ noncomputable def naimarkDilatedEffect {α d : Type} [Fintype α] [DecidableEq �
 theorem naimarkDilatedEffect_pos {α d : Type} [Fintype α] [DecidableEq α]
     [Fintype d] [DecidableEq d] (M : MIPStarRE.Quantum.Measurement α d) (a₀ a : α) :
     0 ≤ naimarkDilatedEffect M a₀ a := by
-  unfold naimarkDilatedEffect
   refine add_nonneg ((naimarkData M).lifted_pos (some a)) ?_
   by_cases h : a = a₀
   · simpa [h] using sub_nonneg.mpr (naimarkData_sum_some_le_one M)
@@ -362,7 +359,7 @@ theorem naimarkCompression_naimarkDilatedEffect {α d : Type} [Fintype α] [Deci
   have hdef : naimarkCompression
       (1 - ∑ b : α, (naimarkData M).liftedEffect (some b)) = 0 := by
     rw [naimarkCompression_sub, naimarkCompression_one, naimarkCompression_sum]
-    simp only [hlift]
+    simp [hlift]
     rw [M.sum_eq_one, sub_self]
   unfold naimarkDilatedEffect
   rw [naimarkCompression_add, hlift]
@@ -391,7 +388,7 @@ theorem naimarkDilatedState_apply (α : Type) [Fintype α] [DecidableEq α]
       if p.1.2 = none ∧ p.2.2 = none then ψ (p.1.1, p.2.1) else 0 := by
   classical
   obtain ⟨⟨i, oa⟩, ⟨j, ob⟩⟩ := p
-  simp only [naimarkDilatedState, isometryTensor]
+  simp [naimarkDilatedState, isometryTensor]
   by_cases hoa : oa = none
   · by_cases hob : ob = none
     · simp [hoa, hob, EuclideanSpace.equiv, eq_comm]
@@ -535,7 +532,6 @@ theorem ms_dilated_strategy_bob_outcome_weight (S : Strategy msGame) (y : MsType
 theorem ms_dilated_strategy_outcome_event_weight (S : Strategy msGame) (x y : MsType)
     (E : MsAnswer → MsAnswer → Prop) [DecidableRel E] :
     outcomeEventWeight (msDilatedStrategy S) x y E = outcomeEventWeight S x y E := by
-  unfold outcomeEventWeight
   exact Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ => by
     by_cases h : E a b <;> simp [h, ms_dilated_strategy_outcome_weight]
 
@@ -544,7 +540,6 @@ answer. -/
 theorem ms_dilated_strategy_alice_event_weight (S : Strategy msGame) (x : MsType)
     (E : MsAnswer → Prop) [DecidablePred E] :
     aliceEventWeight (msDilatedStrategy S) x E = aliceEventWeight S x E := by
-  unfold aliceEventWeight
   exact Finset.sum_congr rfl fun a _ => by
     by_cases h : E a <;> simp [h, ms_dilated_strategy_alice_outcome_weight]
 
@@ -553,7 +548,6 @@ answer. -/
 theorem ms_dilated_strategy_bob_event_weight (S : Strategy msGame) (y : MsType)
     (E : MsAnswer → Prop) [DecidablePred E] :
     bobEventWeight (msDilatedStrategy S) y E = bobEventWeight S y E := by
-  unfold bobEventWeight
   exact Finset.sum_congr rfl fun b _ => by
     by_cases h : E b <;> simp [h, ms_dilated_strategy_bob_outcome_weight]
 
@@ -627,7 +621,7 @@ theorem isometryMatrix_comp {ι κ ν : Type} [Fintype ι] [DecidableEq ι]
   have h := congrFun (isometryMatrix_mulVec φ
     (E ((EuclideanSpace.equiv ι ℂ).symm (Pi.single i 1)))) k
   rw [isometryMatrix_apply, Matrix.mul_apply]
-  simp only [isometryMatrix_apply E]
+  simp [isometryMatrix_apply E]
   simpa [Matrix.mulVec, dotProduct] using h.symm
 
 /-- Conjugating by a composite isometry is conjugating twice.  This is how the
@@ -694,7 +688,7 @@ theorem conjIsometry_naimarkEmbedding {ι α : Type} [Fintype ι] [DecidableEq �
     conjIsometry (naimarkEmbedding ι α) M = naimarkInflation (α := α) M := by
   ext p q
   rw [conjIsometry_eq]
-  simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, isometryMatrix_apply,
+  simp [Matrix.mul_apply, Matrix.conjTranspose_apply, isometryMatrix_apply,
     naimarkEmbedding_apply, naimarkInflation_apply, EuclideanSpace.equiv]
   by_cases hp : p.2 = none
   · by_cases hq : q.2 = none <;> simp [hp, hq, eq_comm]

@@ -29,15 +29,16 @@ open MIPStarRE.LDT hiding Measurement
 open MIPStarRE.Quantum
 
 noncomputable section
+variable (i : Fin 6)
 
-private theorem msConstraintVars_injective (i : Fin 6) :
+
+private theorem msConstraintVars_injective  :
     Function.Injective (msConstraintVars i) := by
   intro k l h
   fin_cases i <;> fin_cases k <;> fin_cases l <;>
     simp [msConstraintVars] at h ⊢
 
-private theorem msConstraintVars_exists_iff
-    (i : Fin 6) (k : Fin 3) (β : Fin 3 → ZMod 2) (b : ZMod 2) :
+private theorem msConstraintVars_exists_iff  (k : Fin 3) (β : Fin 3 → ZMod 2) (b : ZMod 2) :
     (∃ l : Fin 3, msConstraintVars i l = msConstraintVars i k ∧ β l = b) ↔
       β k = b := by
   constructor
@@ -45,18 +46,18 @@ private theorem msConstraintVars_exists_iff
     rwa [msConstraintVars_injective i hl] at hlb
   · intro h
     exact ⟨k, rfl, h⟩
+variable {V : Type*} [Fintype V] [DecidableEq V]
+variable (P : Fin 9 → Measurement (ZMod 2) V) (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j)) (hcomm : ∀ i k l a b,
+      Commute ((P (msConstraintVars i k)).effect a)
+        ((P (msConstraintVars i l)).effect b))
+
+
 
 /-- Formalization-only auxiliary for the perfect Magic Square strategy and the
 proof of `lem:pauli-completeness`: a constraint effect commutes with each
 incident variable effect in the measurement family built from commuting
 projective cell measurements. -/
-theorem msStrategyMeasurement_incident_commute
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
-    (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
-    (hcomm : ∀ i k l a b,
-      Commute ((P (msConstraintVars i k)).effect a)
-        ((P (msConstraintVars i l)).effect b))
+theorem msStrategyMeasurement_incident_commute 
     (i : Fin 6) (k : Fin 3) (a b : MsAnswer) :
     Commute ((msStrategyMeasurement P hP hcomm (.constraint i)).effect a)
       ((msStrategyMeasurement P hP hcomm
@@ -77,13 +78,7 @@ theorem msStrategyMeasurement_incident_commute
   · rw [msStrategyMeasurement_constraint_zero _ _ _ _ ha]
     exact Commute.zero_left _
 
-private theorem msStrategyMeasurement_rejected_mul
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
-    (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
-    (hcomm : ∀ i k l a b,
-      Commute ((P (msConstraintVars i k)).effect a)
-        ((P (msConstraintVars i l)).effect b))
+private theorem msStrategyMeasurement_rejected_mul 
     (hmul : ∀ i k ab b,
       (msConstraintJoint P hP hcomm i).effect ab *
           (P (msConstraintVars i k)).effect b =
@@ -110,13 +105,7 @@ private theorem msStrategyMeasurement_rejected_mul
   · rw [msStrategyMeasurement_constraint_zero _ _ _ _ ha]
     simp
 
-private theorem msStrategyMeasurement_rejected_mul_reverse
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
-    (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
-    (hcomm : ∀ i k l a b,
-      Commute ((P (msConstraintVars i k)).effect a)
-        ((P (msConstraintVars i l)).effect b))
+private theorem msStrategyMeasurement_rejected_mul_reverse 
     (hmul : ∀ i k ab b,
       (msConstraintJoint P hP hcomm i).effect ab *
           (P (msConstraintVars i k)).effect b =
@@ -156,13 +145,7 @@ theorem msGame_support_incidence (x y : MsType)
 proof of `lem:pauli-completeness`: the constructed Magic Square family has
 zero operator product on rejected answers in its support, from the stated cell
 and joint-measurement identities. -/
-theorem msStrategyMeasurement_rejected_mul_on_support
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
-    (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
-    (hcomm : ∀ i k l a b,
-      Commute ((P (msConstraintVars i k)).effect a)
-        ((P (msConstraintVars i l)).effect b))
+theorem msStrategyMeasurement_rejected_mul_on_support 
     (hmul : ∀ i k ab b,
       (msConstraintJoint P hP hcomm i).effect ab *
           (P (msConstraintVars i k)).effect b =
@@ -182,13 +165,7 @@ theorem msStrategyMeasurement_rejected_mul_on_support
 proof of `lem:pauli-completeness`: the constructed Magic Square family has
 symmetric effects when its underlying projective cell measurements have
 symmetric effects. -/
-theorem msStrategyMeasurement_effect_transpose
-    {V : Type*} [Fintype V] [DecidableEq V]
-    (P : Fin 9 → Measurement (ZMod 2) V)
-    (hP : ∀ j, MIPStarRE.QPBT.Measurement.IsProjective (P j))
-    (hcomm : ∀ i k l a b,
-      Commute ((P (msConstraintVars i k)).effect a)
-        ((P (msConstraintVars i l)).effect b))
+theorem msStrategyMeasurement_effect_transpose 
     (hPt : ∀ j b, ((P j).effect b)ᵀ = (P j).effect b)
     (x : MsType) (a : MsAnswer) :
     ((msStrategyMeasurement P hP hcomm x).effect a)ᵀ =
@@ -205,8 +182,7 @@ theorem msStrategyMeasurement_effect_transpose
 proof of `lem:pauli-completeness`: local effects with zero product
 annihilate the maximally entangled vector after tensor placement, provided the
 second effect is symmetric. -/
-theorem heteroKron_mulVec_epr_eq_zero_of_mul_eq_zero
-    {V : Type*} [Fintype V] [DecidableEq V] [Nonempty V]
+theorem heteroKron_mulVec_epr_eq_zero_of_mul_eq_zero  [Nonempty V]
     (E F : Op V) (hFt : Fᵀ = F) (hEF : E * F = 0) :
     (heteroKron E F).mulVec (eprState V) = 0 := by
   have hfactor : heteroKron E F =
@@ -219,7 +195,7 @@ theorem heteroKron_mulVec_epr_eq_zero_of_mul_eq_zero
   have hz : heteroKron (0 : Op V) (1 : Op V) = 0 := by
     ext ⟨i, k⟩ ⟨j, l⟩
     simp [heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply]
-  simp only [mul_one]
+  simp [mul_one]
   rw [hz]
   exact Matrix.zero_mulVec _
 

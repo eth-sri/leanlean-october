@@ -63,22 +63,22 @@ section SecondPair
 variable {X₁A Z₁A X₂A Z₂A : Op ιA} {X₁B Z₁B X₂B Z₂B : Op ιB} {t : ℝ}
 
 end SecondPair
+variable {ι κ : Type} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
+
 
 /-! ## The joint state estimate -/
 
 /-! ## Normalizing the residual -/
 
 /-- The coordinate tensor is homogeneous in its second argument. -/
-theorem vecTensor_smul_right {ι κ : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (c : ℂ) (u : EuclideanSpace ℂ ι) (v : EuclideanSpace ℂ κ) :
+theorem vecTensor_smul_right  (c : ℂ) (u : EuclideanSpace ℂ ι) (v : EuclideanSpace ℂ κ) :
     vecTensor u (c • v) = c • vecTensor u v := by
   ext p
   simp [vecTensor, EuclideanSpace.equiv]
   ring
 
 /-- Reindexing is homogeneous. -/
-theorem reindexState_smul {ι κ : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype κ] [DecidableEq κ] (e : ι ≃ κ) (c : ℂ) (x : EuclideanSpace ℂ ι) :
+theorem reindexState_smul  (e : ι ≃ κ) (c : ℂ) (x : EuclideanSpace ℂ ι) :
     reindexState e (c • x) = c • reindexState e x := by
   ext p
   simp [reindexState, EuclideanSpace.equiv]
@@ -101,7 +101,6 @@ theorem exists_unit_residual {V : Type} [Fintype V] [DecidableEq V] [Nonempty V]
       (reindexState prodShuffle (vecTensor (eprState V) r0))
     rw [hu, htarget] at h1
     exact le_trans h1 h
-  have hc0 : 0 ≤ c := le_trans (abs_nonneg _) hgap
   by_cases h0 : r0 = 0
   · refine ⟨ψ, hψ, ?_⟩
     have h1 : (1 : ℝ) ≤ c := by
@@ -131,8 +130,7 @@ theorem exists_unit_residual {V : Type} [Fintype V] [DecidableEq V] [Nonempty V]
         have hs : ‖(1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹‖ = |1 - ‖r0‖⁻¹| := by
           rw [show (1 : ℂ) - ((‖r0‖ : ℝ) : ℂ)⁻¹ = (((1 - ‖r0‖⁻¹ : ℝ)) : ℂ) by
             push_cast
-            ring]
-          rw [Complex.norm_real, Real.norm_eq_abs]
+            ring, Complex.norm_real, Real.norm_eq_abs]
         have hfin : |1 - ‖r0‖⁻¹| * ‖r0‖ = |1 - ‖r0‖| := by
           have h1 : (1 - ‖r0‖⁻¹) * ‖r0‖ = -(1 - ‖r0‖) := by
             field_simp

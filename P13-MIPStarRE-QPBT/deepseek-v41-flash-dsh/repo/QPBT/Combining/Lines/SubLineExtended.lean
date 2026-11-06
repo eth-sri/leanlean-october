@@ -80,17 +80,19 @@ def extendedPointBlockEquiv (P : AdmissibleParams) :
       (Equiv.refl (DirectScalarQ P.extendedDirectLd))).trans
     ((Equiv.sumArrowEquivProdArrow _ _ _).trans
       (Equiv.prodCongr (Equiv.sumArrowEquivProdArrow _ _ _) (Equiv.refl _)))
+variable (P : AdmissibleParams)
+variable (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)
+
+
 
 /-- The first block of the decomposition is the `X` block. -/
-theorem extendedPointBlockEquiv_projX (P : AdmissibleParams)
-    (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
+theorem extendedPointBlockEquiv_projX  :
     (extendedPointBlockEquiv P u).1.1 = projX u := by
   funext i
   rfl
 
 /-- The second block of the decomposition is the `Z` block. -/
-theorem extendedPointBlockEquiv_projZ (P : AdmissibleParams)
-    (u : Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd) :
+theorem extendedPointBlockEquiv_projZ  :
     (extendedPointBlockEquiv P u).1.2 = projZ u := by
   funext i
   rfl
@@ -111,7 +113,7 @@ theorem uniformDistribution_map_extendedPointBlockEquiv (P : AdmissibleParams) :
 /-- The two source blocks of a uniformly sampled extended point are
 independent and uniform.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem uniformDistribution_map_projX_projZ (P : AdmissibleParams) :
+theorem uniformDistribution_map_projX_projZ  :
     (uniformDistribution
           (Fin (2 * P.m + 2) → DirectScalarQ P.extendedDirectLd)).map
         (fun u => (projX u, projZ u)) =

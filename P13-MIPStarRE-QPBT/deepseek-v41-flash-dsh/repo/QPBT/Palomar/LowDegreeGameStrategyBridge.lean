@@ -104,11 +104,11 @@ def relabel {X Y A B X' Y' A' B' : Type}
     (relabel S eX eY eA eB).outcomeWeight x y a b =
       S.outcomeWeight (eX.symm x) (eY.symm y) (eA.symm a) (eB.symm b) :=
   rfl
+variable {X Y A B X' Y' A' B' : Type} [Fintype X] [Fintype Y] [Fintype A] [Fintype B] [Fintype X'] [Fintype Y'] [Fintype A'] [Fintype B']
+
 
 /-- Relabeling preserves projectivity exactly. -/
-theorem relabel_isProjective_iff {X Y A B X' Y' A' B' : Type}
-    [Fintype X] [Fintype Y] [Fintype A] [Fintype B]
-    [Fintype X'] [Fintype Y'] [Fintype A'] [Fintype B']
+theorem relabel_isProjective_iff 
     (S : Strategy X Y A B) (eX : X ≃ X') (eY : Y ≃ Y')
     (eA : A ≃ A') (eB : B ≃ B') :
     (relabel S eX eY eA eB).IsProjective ↔ S.IsProjective := by
@@ -150,9 +150,7 @@ private theorem sum_equiv₂ {A B A' B' : Type*} [Fintype A] [Fintype B]
       exact Equiv.sum_comp eB.symm (f a)
 
 /-- Simultaneous relabeling of a compact game and strategy preserves value exactly. -/
-theorem value_relabel {X Y A B X' Y' A' B' : Type}
-    [Fintype X] [Fintype Y] [Fintype A] [Fintype B]
-    [Fintype X'] [Fintype Y'] [Fintype A'] [Fintype B']
+theorem value_relabel 
     [DecidableEq X] [DecidableEq Y] [DecidableEq A] [DecidableEq B]
     [DecidableEq X'] [DecidableEq Y'] [DecidableEq A'] [DecidableEq B']
     (G : Game X Y A B) (S : Strategy X Y A B)
@@ -165,15 +163,17 @@ theorem value_relabel {X Y A B X' Y' A' B' : Type}
   rw [PMF.realWeightedSum_map]
   apply congrArg (PMF.realWeightedSum G.μ)
   funext xy
-  simp only [Game.relabel, Equiv.prodCongr_apply, Prod.map_fst, Prod.map_snd,
+  simp [Game.relabel, Equiv.prodCongr_apply, Prod.map_fst, Prod.map_snd,
     outcomeWeight_relabel, Equiv.symm_apply_apply]
   exact sum_equiv₂ eA eB (fun a b =>
     if G.decide xy.1 xy.2 a b then S.outcomeWeight xy.1 xy.2 a b else 0)
 
 end Strategy
+variable (P : MIPStarRE.QPBT.LdParams)
+
 
 /-- Relabeling the concrete compact game gives the original registered game. -/
-theorem lowDegreeGame_relabel_eq (P : MIPStarRE.QPBT.LdParams) :
+theorem lowDegreeGame_relabel_eq  :
     Game.relabel
         (lowDegreeGame (LowDegreeParams.ofLdParams P)
           (MIPStarRE.QPBT.binaryRepresentation P.model))
@@ -204,14 +204,15 @@ def lowDegreeStrategyToLibrary (P : MIPStarRE.QPBT.LdParams)
     (Strategy.relabel S
       (lowDegreeQuestionEquiv P) (lowDegreeQuestionEquiv P)
       (lowDegreeAnswerEquiv P) (lowDegreeAnswerEquiv P))
-
-/-- Conversion to the registered low-degree game preserves the strategy value exactly. -/
-theorem lowDegreeStrategyToLibrary_value (P : MIPStarRE.QPBT.LdParams)
-    (S : Strategy
+variable (S : Strategy
       (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
       (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
       (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))) :
+      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P)))
+
+
+/-- Conversion to the registered low-degree game preserves the strategy value exactly. -/
+theorem lowDegreeStrategyToLibrary_value  :
     (lowDegreeStrategyToLibrary P S).value =
       S.value (lowDegreeGame (LowDegreeParams.ofLdParams P)
         (MIPStarRE.QPBT.binaryRepresentation P.model)) := by
@@ -238,12 +239,7 @@ theorem lowDegreeStrategyToLibrary_value (P : MIPStarRE.QPBT.LdParams)
       Strategy.value_relabel _ _ _ _ _ _
 
 /-- Conversion to the registered low-degree game preserves projectivity exactly. -/
-theorem lowDegreeStrategyToLibrary_isProjective_iff (P : MIPStarRE.QPBT.LdParams)
-    (S : Strategy
-      (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeQuestion (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))
-      (LowDegreeAnswer (LowDegreeParams.ofLdParams P) (MIPStarRE.QPBT.ScalarQ P))) :
+theorem lowDegreeStrategyToLibrary_isProjective_iff  :
     (lowDegreeStrategyToLibrary P S).IsProjective ↔ S.IsProjective := by
   change (Strategy.toStrategy (G := MIPStarRE.QPBT.ldGame P)
       (Strategy.relabel S

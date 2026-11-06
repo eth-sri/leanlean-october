@@ -108,29 +108,29 @@ theorem exp_line_point_cons_explicit' :
         apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg ε)
         linarith
   have htwo : (0 : ℝ) ≤ 2 := by norm_num
-  cases p₁ <;> cases p₂ <;> simp only [Placement.IsOpposite] at hopp
+  cases p₁ <;> cases p₂ <;> simp [Placement.IsOpposite] at hopp
   · have hb := (ProjectiveSetting.evalClassDist_aaBa_le S W).trans
       (mul_le_mul_of_nonneg_left
         (WinImplications.win_low_degree_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
+    simpa using key _ 86 (by norm_num) (by norm_num)
       (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
       (ProjectiveSetting.evalClassDist_aaBa_le_four S W)
   · have hb := (ProjectiveSetting.evalClassDist_baAa_le S W).trans
       (mul_le_mul_of_nonneg_left
         (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
+    simpa using key _ 86 (by norm_num) (by norm_num)
       (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
       (ProjectiveSetting.evalClassDist_baAa_le_four S W)
   · have hb := (ProjectiveSetting.evalClassDist_bbAb_le S W).trans
       (mul_le_mul_of_nonneg_left
         (WinImplications.win_low_degree_interchanged_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
+    simpa using key _ 86 (by norm_num) (by norm_num)
       (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
       (ProjectiveSetting.evalClassDist_bbAb_le_four S W)
   · have hb := (ProjectiveSetting.evalClassDist_abBb_le S W).trans
       (mul_le_mul_of_nonneg_left
         (WinImplications.win_low_degree_explicit P ε S hε W) htwo)
-    simpa only [Placement.side] using key _ 86 (by norm_num) (by norm_num)
+    simpa using key _ 86 (by norm_num) (by norm_num)
       (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _) hb
       (ProjectiveSetting.evalClassDist_abBb_le_four S W)
 

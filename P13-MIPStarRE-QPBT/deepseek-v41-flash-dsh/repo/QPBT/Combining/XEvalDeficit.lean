@@ -163,7 +163,7 @@ theorem CombinedLinesWitness.one_sub_X_overlap_le_at
           (S.pointMeasExpOption second.side .Z s.2.2).effect o.2) :=
       (ProjectiveSetting.place_conjTranspose S second _).symm.trans
         (congrArg (S.place second) hlocal)
-    dsimp only
+    dsimp
     rw [hplace]
   exact one_sub_overlap_le_of_consistencyDefect ν
     (fun s => S.placedMeasurement first

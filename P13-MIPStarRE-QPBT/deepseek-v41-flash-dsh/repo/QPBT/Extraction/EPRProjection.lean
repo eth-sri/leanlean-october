@@ -83,7 +83,7 @@ This is the shift average in paper lines 1739-1742. -/
 theorem pauliCorrelation_X_apply_diagonal (x : (ι → K) × (ι → K)) (a : ι → K) :
     pauliCorrelation .X x (a, a) =
       if x.1 = x.2 then (Fintype.card (ι → K) : ℂ)⁻¹ else 0 := by
-  simp only [pauliCorrelation, Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul,
+  simp [pauliCorrelation, Matrix.smul_apply, Matrix.sum_apply, smul_eq_mul,
     heteroKron, Matrix.kronecker, Matrix.kroneckerMap_apply]
   simp_rw [tauObservable_X_apply]
   rw [Finset.sum_eq_single (x.1 - a)]
@@ -109,7 +109,7 @@ theorem pauliCorrelation_mul_eq_epr :
   rw [Finset.sum_eq_single y]
   · by_cases hy : y.1 = y.2
     · rcases y with ⟨a, b⟩
-      dsimp only at hy
+      dsimp at hy
       subst b
       rw [if_pos ⟨rfl, rfl⟩, mul_one, pauliCorrelation_X_apply_diagonal]
       change (if x.1 = x.2 then (Fintype.card (ι → K) : ℂ)⁻¹ else 0) =

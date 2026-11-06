@@ -46,11 +46,13 @@ instance ldSeedIndexEvent_decidablePred (L : LdParams) (i : Fin L.m) :
   intro s
   unfold ldSeedIndexEvent
   infer_instance
+variable (L : LdParams) (i : Fin L.m)
+
 
 /-- Every coordinate-index event of a scalar seed has positive mass under the
 uniform law.  Blueprint `def:ith-restricted-line`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1038-1048`. -/
-theorem ldSeedIndexEvent_positive (L : LdParams) (i : Fin L.m) :
+theorem ldSeedIndexEvent_positive  :
     0 < ∑ s ∈ (uniformDistribution (ScalarQ L)).support.filter
         (ldSeedIndexEvent L i),
       (uniformDistribution (ScalarQ L)).weight s := by
@@ -71,7 +73,7 @@ theorem ldSeedIndexEvent_positive (L : LdParams) (i : Fin L.m) :
 conditioned on the coordinate-index fiber of `i` together with an independent
 uniform direction block.  Blueprint `lem:qld-sublines`, paper
 `references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:1063-1116`. -/
-theorem freshDiagonalPairDist_eq_prod (L : LdParams) (i : Fin L.m) :
+theorem freshDiagonalPairDist_eq_prod  :
     freshDiagonalPairDist L i =
       Distribution.prod
         (Distribution.restrict (uniformDistribution (ScalarQ L))

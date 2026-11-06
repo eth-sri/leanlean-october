@@ -112,31 +112,37 @@ private def ldPointSplit (L : LdParams) :
   right_inv zr := by
     rcases zr with ⟨point, seed, direction⟩
     rfl
+variable (P : AdmissibleParams)
+variable (W : PauliKind)
+
+
 
 /-- Uniform Pauli seeds have the uniform low-degree marginal in either basis. -/
-theorem avgOver_pauliToLd_uniform (P : AdmissibleParams) (W : PauliKind)
+theorem avgOver_pauliToLd_uniform 
     (f : LdSpace P.toLdParams → ℝ) :
     avgOver (uniformDistribution (PauliSpace P)) (fun z => f (pauliToLd P W z)) =
       avgOver (uniformDistribution (LdSpace P.toLdParams)) f := by
   exact avgOver_uniform_equiv_fst (pauliLdSplit P W) f
 
 /-- Uniform Pauli seeds have the uniform shared-tuple marginal. -/
-theorem avgOver_pauliTuple_uniform (P : AdmissibleParams)
+theorem avgOver_pauliTuple_uniform 
     (f : PauliTuple P → ℝ) :
     avgOver (uniformDistribution (PauliSpace P))
         (fun z => f (pauliSharedSplit P z).1) =
       avgOver (uniformDistribution (PauliTuple P)) f := by
   exact avgOver_uniform_equiv_fst (pauliSharedSplit P) f
+variable (L : LdParams)
+
 
 /-- The point block of a uniform low-degree seed is uniform. -/
-theorem avgOver_ldPoint_uniform (L : LdParams)
+theorem avgOver_ldPoint_uniform 
     (f : (Fin L.m → ScalarQ L) → ℝ) :
     avgOver (uniformDistribution (LdSpace L)) (fun z => f z.point) =
       avgOver (uniformDistribution (Fin L.m → ScalarQ L)) f := by
   exact avgOver_uniform_equiv_fst (ldPointSplit L) f
 
 /-- The point conditioning map produces the typed point content. -/
-theorem pauliCL_point_eq (P : AdmissibleParams) (W : PauliKind)
+theorem pauliCL_point_eq 
     (z : PauliSpace P) :
     pauliCL P (.point W) z =
       ProjectiveSetting.contentOfPoint P W (pauliToLd P W z).point := by
@@ -144,7 +150,7 @@ theorem pauliCL_point_eq (P : AdmissibleParams) (W : PauliKind)
   rcases i with ((((j | j) | u) | j) | u) | u <;> cases W <;> rfl
 
 /-- The shared conditioning map produces the typed tuple content. -/
-theorem pauliCL_shared_eq (P : AdmissibleParams) (t : PauliType)
+theorem pauliCL_shared_eq  (t : PauliType)
     (ht : pauliCL P t = pauliSharedProjection) (z : PauliSpace P) :
     pauliCL P t z = ProjectiveSetting.contentOfTuple P
       (pauliXBlock z) (pauliZBlock z) (pauliRXBlock z) (pauliRZBlock z) := by
@@ -153,28 +159,26 @@ theorem pauliCL_shared_eq (P : AdmissibleParams) (t : PauliType)
   rcases i with ((((j | j) | u) | j) | u) | u <;> rfl
 
 /-- Reading a typed point content recovers its point block. -/
-theorem pauliPointBlock_contentOfPoint (P : AdmissibleParams)
-    (W : PauliKind) (u : Fin P.m → PauliScalar P) :
+theorem pauliPointBlock_contentOfPoint  (u : Fin P.m → PauliScalar P) :
     pauliPointBlock W (ProjectiveSetting.contentOfPoint P W u) = u := by
   funext j
   cases W <;> rfl
+variable (line : LineDesc P.toLdParams)
+
 
 /-- Reading a typed line content recovers its canonical base. -/
-theorem pauliPointBlock_contentOfLine (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams) :
+theorem pauliPointBlock_contentOfLine  :
     pauliPointBlock W (ProjectiveSetting.contentOfLine P W line) = line.base := by
   funext j
   cases W <;> rfl
 
 /-- Reading a typed line content recovers its seed. -/
-theorem pauliScalarBlock_contentOfLine (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams) :
+theorem pauliScalarBlock_contentOfLine  :
     pauliScalarBlock (ProjectiveSetting.contentOfLine P W line) = line.seed := by
   cases W <;> rfl
 
 /-- Reading a typed line content recovers its geometric direction. -/
-theorem pauliDirectionBlock_contentOfLine (P : AdmissibleParams)
-    (W : PauliKind) (line : LineDesc P.toLdParams)
+theorem pauliDirectionBlock_contentOfLine 
     (hline : line.kind = .diagonal) :
     pauliDirectionBlock (ProjectiveSetting.contentOfLine P W line) = line.direction := by
   funext j
@@ -183,14 +187,16 @@ theorem pauliDirectionBlock_contentOfLine (P : AdmissibleParams)
   | diagonal => cases W <;> rfl
 
 /-- Prefix projection is idempotent at a fixed cutoff. -/
-theorem prefixProjection_idem (L : LdParams) (i : Fin L.m)
+theorem prefixProjection_idem  (i : Fin L.m)
     (v : Fin L.m → ScalarQ L) :
     prefixProjection i (prefixProjection i v) = prefixProjection i v := by
   funext j
   by_cases h : j.val < i.val <;> simp [prefixProjection, h]
+variable {L : LdParams}
+
 
 /-- Zero-padding a coefficient list does not change its polynomial value. -/
-theorem evalCoefficient_padTo {L : LdParams} {c c' : ℕ} (h : c ≤ c')
+theorem evalCoefficient_padTo  {c c' : ℕ} (h : c ≤ c')
     (f : DegPoly L c) (t : ScalarQ L) :
     evalCoefficient (DegPoly.padTo h f) t = evalCoefficient f t := by
   classical
@@ -203,12 +209,11 @@ theorem evalCoefficient_padTo {L : LdParams} {c c' : ℕ} (h : c ≤ c')
       rw [heq]
   | succ k ih =>
       rw [evalCoefficient, Fin.sum_univ_castSucc]
-      have hk : c ≤ c + k := Nat.le_add_right c k
+      have hk := Nat.le_add_right c k
       have hcast :
           (∑ i : Fin (c + (k + 1)),
               DegPoly.padTo h f i.castSucc * t ^ i.castSucc.val) =
             evalCoefficient (DegPoly.padTo hk f) t := by
-        unfold evalCoefficient
         apply Finset.sum_congr rfl
         intro i _
         congr 1
@@ -218,7 +223,7 @@ theorem evalCoefficient_padTo {L : LdParams} {c c' : ℕ} (h : c ≤ c')
       simp
 
 /-- A uniquely determined line evaluation is returned by `evalOpt`. -/
-theorem evalOpt_eq_some_of_evaluatesTo {L : LdParams} {c : ℕ}
+theorem evalOpt_eq_some_of_evaluatesTo  {c : ℕ}
     (line : LineDesc L) (f : DegPoly L c) (u : Fin L.m → ScalarQ L)
     (a : ScalarQ L) (h : EvaluatesTo line f u a) :
     evalOpt line u f = some a := by
@@ -229,7 +234,7 @@ theorem evalOpt_eq_some_of_evaluatesTo {L : LdParams} {c : ℕ}
   exact ((Classical.choose_spec ⟨a, h⟩).2 t ht).symm.trans (h.2 t ht)
 
 /-- The sampled point lies on its canonical axis line. -/
-theorem point_mem_sampled_aline (P : AdmissibleParams) (W : PauliKind)
+theorem point_mem_sampled_aline 
     (z : PauliSpace P) :
     (pauliToLd P W z).point ∈
       (aLineDescOf P.toLdParams
@@ -245,7 +250,7 @@ theorem point_mem_sampled_aline (P : AdmissibleParams) (W : PauliKind)
   exact mem_linePoints_lineRepMap _ _
 
 /-- The sampled point lies on its canonical diagonal line. -/
-theorem point_mem_sampled_dline (P : AdmissibleParams) (W : PauliKind)
+theorem point_mem_sampled_dline 
     (z : PauliSpace P) :
     (pauliToLd P W z).point ∈
       (dLineDescOf P.toLdParams
@@ -265,7 +270,7 @@ theorem point_mem_sampled_dline (P : AdmissibleParams) (W : PauliKind)
   exact mem_linePoints_lineRepMap _ _
 
 /-- The axis-line conditioning map produces the typed canonical line content. -/
-theorem pauliCL_aline_eq (P : AdmissibleParams) (W : PauliKind)
+theorem pauliCL_aline_eq 
     (z : PauliSpace P) :
     pauliCL P (.aline W) z = ProjectiveSetting.contentOfLine P W
       (aLineDescOf P.toLdParams (ldALineCL P.toLdParams (pauliToLd P W z))) := by
@@ -285,7 +290,7 @@ theorem pauliCL_aline_eq (P : AdmissibleParams) (W : PauliKind)
   · rfl
 
 /-- The diagonal-line conditioning map produces the typed canonical line content. -/
-theorem pauliCL_dline_eq (P : AdmissibleParams) (W : PauliKind)
+theorem pauliCL_dline_eq 
     (z : PauliSpace P) :
     pauliCL P (.dline W) z = ProjectiveSetting.contentOfLine P W
       (dLineDescOf P.toLdParams (ldDLineCL P.toLdParams (pauliToLd P W z))) := by
@@ -312,7 +317,7 @@ theorem pauliCL_dline_eq (P : AdmissibleParams) (W : PauliKind)
     rw [prefixProjection_idem]
 
 /-- A successful sampled axis-line check gives the corresponding evaluation identity. -/
-theorem aline_winning_condition (P : AdmissibleParams) (W : PauliKind)
+theorem aline_winning_condition 
     (z : PauliSpace P) (f : Fin (P.d + 1) → PauliScalar P)
     (a : PauliScalar P)
     (hwin : pauliWinPredicate P
@@ -340,7 +345,7 @@ theorem aline_winning_condition (P : AdmissibleParams) (W : PauliKind)
   exact congrFun ht j
 
 /-- A successful sampled diagonal-line check gives the corresponding evaluation identity. -/
-theorem dline_winning_condition (P : AdmissibleParams) (W : PauliKind)
+theorem dline_winning_condition 
     (z : PauliSpace P) (f : Fin (P.m * P.d + 1) → PauliScalar P)
     (a : PauliScalar P)
     (hwin : pauliWinPredicate P
@@ -370,7 +375,7 @@ theorem dline_winning_condition (P : AdmissibleParams) (W : PauliKind)
   exact congrFun ht j
 
 /-- Winning the sampled axis-line branch forces equality of the exposed labels. -/
-theorem alineLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
+theorem alineLabels_eq_of_win 
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hwin : pauliWinPredicate P
       ((.aline W), pauliCL P (.aline W) z)
@@ -382,7 +387,7 @@ theorem alineLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
           (aLineDescOf P.toLdParams (ldALineCL P.toLdParams (pauliToLd P W z))) A) =
       some (ProjectiveSetting.pointAnswerOrZero B) := by
   cases A <;> cases B <;>
-    simp only [pauliWinPredicate, validPauliAnswer, Bool.and_true,
+    simp [pauliWinPredicate, validPauliAnswer, Bool.and_true,
       Bool.and_self, Bool.and_false, Bool.false_eq_true, ↓reduceIte,
       reduceCtorEq, decide_eq_true_eq] at hwin
   rename_i f a
@@ -393,14 +398,12 @@ theorem alineLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     Nat.le_mul_of_pos_left P.d (Nat.zero_lt_of_lt P.one_le_m)
   rw [show ProjectiveSetting.lineAnswerOrZero P
       (aLineDescOf P.toLdParams (ldALineCL P.toLdParams (pauliToLd P W z)))
-      (.alinePoly f) = DegPoly.padTo hpad f by rfl]
-  rw [evalCoefficient_padTo hpad]
-  change evalCoefficient f t = a
+      (.alinePoly f) = DegPoly.padTo hpad f by rfl, evalCoefficient_padTo hpad]
   exact aline_winning_condition P W z f a (by
     simpa [pauliWinPredicate, validPauliAnswer] using hwin) t ht
 
 /-- Winning the sampled diagonal-line branch forces equality of exposed labels. -/
-theorem dlineLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
+theorem dlineLabels_eq_of_win 
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hwin : pauliWinPredicate P
       ((.dline W), pauliCL P (.dline W) z)
@@ -412,7 +415,7 @@ theorem dlineLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
           (dLineDescOf P.toLdParams (ldDLineCL P.toLdParams (pauliToLd P W z))) A) =
       some (ProjectiveSetting.pointAnswerOrZero B) := by
   cases A <;> cases B <;>
-    simp only [pauliWinPredicate, validPauliAnswer, Bool.and_true,
+    simp [pauliWinPredicate, validPauliAnswer, Bool.and_true,
       Bool.and_self, Bool.and_false, Bool.false_eq_true, ↓reduceIte,
       reduceCtorEq, decide_eq_true_eq] at hwin
   rename_i f a
@@ -422,7 +425,6 @@ theorem dlineLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
   rw [show ProjectiveSetting.lineAnswerOrZero P
       (dLineDescOf P.toLdParams (ldDLineCL P.toLdParams (pauliToLd P W z)))
       (.dlinePoly f) = f by rfl]
-  change evalCoefficient f t = a
   exact dline_winning_condition P W z f a (by
     simpa [pauliWinPredicate, validPauliAnswer] using hwin) t ht
 
@@ -464,7 +466,6 @@ theorem alineMismatch_le_rejection {P : AdmissibleParams} {ε : ℝ}
       pauliRejectionAt S.toStrategy (alinePointEdge W) z := by
   apply outcome_event_weight_mono
   intro A B hne
-  change pauliWinPredicate P _ _ A B = false
   apply Bool.eq_false_iff.mpr
   intro htrue
   exact hne (alineLabels_eq_of_win P W z A B htrue)
@@ -522,8 +523,7 @@ theorem avg_alineMismatch_eq_source {P : AdmissibleParams} {ε : ℝ}
                     (ldALineCL P.toLdParams (pauliToLd P W z))) A) ≠
               some (ProjectiveSetting.pointAnswerOrZero B))) := by
   unfold aLinePointDist clDistribution
-  rw [Distribution.avgOver_map, Distribution.avgOver_map]
-  rw [← avgOver_pauliToLd_uniform P W]
+  rw [Distribution.avgOver_map, Distribution.avgOver_map, ← avgOver_pauliToLd_uniform P W]
   apply avgOver_congr
   intro z
   rw [pauliCL_aline_eq, pauliCL_point_eq]
@@ -547,8 +547,7 @@ theorem avg_dlineMismatch_eq_source {P : AdmissibleParams} {ε : ℝ}
                     (ldDLineCL P.toLdParams (pauliToLd P W z))) A) ≠
               some (ProjectiveSetting.pointAnswerOrZero B))) := by
   unfold dLinePointDist clDistribution
-  rw [Distribution.avgOver_map, Distribution.avgOver_map]
-  rw [← avgOver_pauliToLd_uniform P W]
+  rw [Distribution.avgOver_map, Distribution.avgOver_map, ← avgOver_pauliToLd_uniform P W]
   apply avgOver_congr
   intro z
   rw [pauliCL_dline_eq, pauliCL_point_eq]
@@ -668,7 +667,7 @@ theorem win_low_degree_explicit :
   linarith
 
 /-- Winning the point-versus-Pauli branch forces equality of evaluated labels. -/
-theorem pauliBasisLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
+theorem pauliBasisLabels_eq_of_win 
     (z : PauliSpace P) (A B : PauliAnswer P)
     (hwin : pauliWinPredicate P
       ((.point W), pauliCL P (.point W) z)
@@ -676,7 +675,7 @@ theorem pauliBasisLabels_eq_of_win (P : AdmissibleParams) (W : PauliKind)
     ProjectiveSetting.pointAnswerOrZero A =
       lowDegreeEnc (pauliAnswerOrZero B) (pauliToLd P W z).point := by
   cases A <;> cases B <;>
-    simp only [pauliWinPredicate, validPauliAnswer, Bool.and_true,
+    simp [pauliWinPredicate, validPauliAnswer, Bool.and_true,
       Bool.and_self, Bool.and_false, Bool.false_eq_true, ↓reduceIte,
       reduceCtorEq, decide_eq_true_eq] at hwin
   rename_i a h

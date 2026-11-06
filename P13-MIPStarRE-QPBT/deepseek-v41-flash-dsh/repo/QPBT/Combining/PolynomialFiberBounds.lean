@@ -127,9 +127,10 @@ theorem avg_weighted_fiber_le {n k C D : ℕ}
     _ = _ := by push_cast; ring
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+variable (X Z : Quantum.Measurement F ι)
 
-private theorem avg_diagonalIndicator_linear_le
-    (X Z : Quantum.Measurement F ι) (hZ : Measurement.IsProjective Z)
+
+private theorem avg_diagonalIndicator_linear_le  (hZ : Measurement.IsProjective Z)
     (r t : F) (ψ : EuclideanSpace ℂ ι) :
     avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
       stateQForm ψ (diagonalIndicator X Z (v 0) (v 1) (v 0 * r + v 1 * t))) ≤
@@ -171,8 +172,7 @@ private theorem avg_diagonalIndicator_linear_le
       rw [← Finset.mul_sum, hsum]
       simp [w]
 
-private theorem avg_orderedIndicator_linear_le
-    (X Z : Quantum.Measurement F ι) (hX : Measurement.IsProjective X)
+private theorem avg_orderedIndicator_linear_le  (hX : Measurement.IsProjective X)
     (hZ : Measurement.IsProjective Z) (r t : F) (ψ : EuclideanSpace ℂ ι) :
     avgOver (uniformDistribution (Fin 2 → F)) (fun v =>
       ‖applyOperatorToState (orderedIndicator X Z (v 0) (v 1)
@@ -184,7 +184,7 @@ private theorem avg_orderedIndicator_linear_le
     change avgOver (uniformDistribution (Fin 2 → F))
       (fun v => if ((finTwoArrowEquiv F) v).2 = 0 then ‖ψ‖ ^ 2 else 0) = _
     rw [avgOver_uniform_equiv (finTwoArrowEquiv F)]
-    simp only [Equiv.apply_symm_apply]
+    simp [Equiv.apply_symm_apply]
     rw [avgOver_uniform_snd (fun β : F => if β = 0 then ‖ψ‖ ^ 2 else 0)]
     simp [avgOver_uniform_eq_inv_card_mul_sum]
   have hdrop : stateQForm ψ (Z.effect t * X.effect r * Z.effect t) ≤

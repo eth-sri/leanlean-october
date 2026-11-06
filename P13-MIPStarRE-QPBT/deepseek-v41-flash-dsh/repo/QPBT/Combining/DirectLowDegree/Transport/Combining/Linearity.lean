@@ -48,14 +48,16 @@ noncomputable section
 def combiningLinearForm {K : Type*} [CommSemiring K] {k : ℕ} (c : Fin k → K) :
     MvPolynomial (Fin k) K :=
   ∑ r : Fin k, MvPolynomial.C (c r) * MvPolynomial.X r
+variable {K : Type*}
 
-@[simp] theorem combiningLinearForm_eval {K : Type*} [CommSemiring K] {k : ℕ}
+
+@[simp] theorem combiningLinearForm_eval  [CommSemiring K] {k : ℕ}
     (c α : Fin k → K) :
     MvPolynomial.eval α (combiningLinearForm c) = ∑ r : Fin k, c r * α r := by
   simp [combiningLinearForm]
 
 /-- A linear form has total degree at most one. -/
-theorem combiningLinearForm_totalDegree_le_one {K : Type*} [CommSemiring K]
+theorem combiningLinearForm_totalDegree_le_one  [CommSemiring K]
     [Nontrivial K] {k : ℕ} (c : Fin k → K) :
     (combiningLinearForm c).totalDegree ≤ 1 := by
   refine le_trans (MvPolynomial.totalDegree_finsetSum _ _) (Finset.sup_le fun r _ => ?_)
@@ -63,7 +65,7 @@ theorem combiningLinearForm_totalDegree_le_one {K : Type*} [CommSemiring K]
   simp [MvPolynomial.totalDegree_C, MvPolynomial.totalDegree_X]
 
 /-- The coefficient of the variable `α_r` in a linear form is `c r`. -/
-theorem combiningLinearForm_coeff {K : Type*} [CommSemiring K] {k : ℕ}
+theorem combiningLinearForm_coeff  [CommSemiring K] {k : ℕ}
     (c : Fin k → K) (r : Fin k) :
     (combiningLinearForm c).coeff (Finsupp.single r 1) = c r := by
   classical
@@ -77,7 +79,7 @@ theorem combiningLinearForm_coeff {K : Type*} [CommSemiring K] {k : ℕ}
     exact absurd (Finset.mem_univ r) h
 
 /-- A linear form determines its coefficients. -/
-theorem combiningLinearForm_injective {K : Type*} [CommSemiring K] {k : ℕ} :
+theorem combiningLinearForm_injective  [CommSemiring K] {k : ℕ} :
     Function.Injective (combiningLinearForm (K := K) (k := k)) := by
   intro c c' h
   funext r
@@ -86,7 +88,7 @@ theorem combiningLinearForm_injective {K : Type*} [CommSemiring K] {k : ℕ} :
 /-- Two linear forms with distinct coefficient tuples agree at a uniformly
 sampled point with probability at most `1/q`.  This is the Schwartz--Zippel
 bound at total degree one. -/
-theorem combiningLinearForm_agreementProbability_le {K : Type*} [Field K] [Fintype K]
+theorem combiningLinearForm_agreementProbability_le  [Field K] [Fintype K]
     [DecidableEq K] {k : ℕ} (c b : Fin k → K) (hne : c ≠ b) :
     polynomialAgreementProbability k K (combiningLinearForm c) (combiningLinearForm b) ≤
       1 / Fintype.card K := by
@@ -156,7 +158,6 @@ theorem directCombiningCollision_avg_le (D : DirectLdParams)
     _ ≤ ((1 / Fintype.card (DirectScalarQ D) : ℚ≥0) : Error) := by
         exact_mod_cast hagree
     _ = (1 : Error) / D.q := by
-        rw [card_directScalarQ]
         simp
 
 end

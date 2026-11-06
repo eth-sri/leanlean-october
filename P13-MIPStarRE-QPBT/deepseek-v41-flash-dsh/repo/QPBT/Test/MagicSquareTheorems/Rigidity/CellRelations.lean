@@ -104,7 +104,7 @@ theorem norm_alice_sub_bob_signObs_sq_le (T : Strategy G) (x : G.QuestionA)
   · intro a b
     rcases bit_sign_eq_one_or_neg_one (f a) with h1 | h1 <;>
       rcases bit_sign_eq_one_or_neg_one (g b) with h2 | h2 <;>
-        simp only [h1, h2] <;> norm_num
+        simp [h1, h2] <;> norm_num
   · intro a b hab
     rw [not_not] at hab
     rw [hab, sub_self]
@@ -160,30 +160,34 @@ private theorem normCloseOn_of_sq_le {ι : Type} [Fintype ι] [DecidableEq ι]
     (hsq : ‖applyOperatorToState (M - N) ψ‖ ^ 2 ≤ 4 * m) (hm0 : 0 ≤ m)
     (hm : m ≤ 36 * ε) : NormCloseOn ψ (12 * Real.sqrt ε) M N := by
   have hε : (0 : ℝ) ≤ ε := by
-    have h36 : (0 : ℝ) ≤ 36 * ε := le_trans hm0 hm
     linarith
   have hbound : ‖applyOperatorToState (M - N) ψ‖ ^ 2 ≤ (12 * Real.sqrt ε) ^ 2 := by
     have hsq' : (12 * Real.sqrt ε) ^ 2 = 144 * ε := by
       rw [mul_pow, Real.sq_sqrt hε]
       ring
-    rw [hsq']
     linarith
   calc ‖applyOperatorToState (M - N) ψ‖
       = Real.sqrt (‖applyOperatorToState (M - N) ψ‖ ^ 2) :=
         (Real.sqrt_sq (norm_nonneg _)).symm
     _ ≤ Real.sqrt ((12 * Real.sqrt ε) ^ 2) := Real.sqrt_le_sqrt hbound
     _ = 12 * Real.sqrt ε := Real.sqrt_sq (by positivity)
+variable (T : Strategy msGame)
+variable (x : MsType)
+variable (E F : MsAnswer → Prop) [DecidablePred E] [DecidablePred F]
+
+
+
 
 /-- Formalization-only: monotonicity of Alice's marginal event mass. -/
-private theorem alice_event_weight_mono (T : Strategy msGame) (x : MsType)
-    (E F : MsAnswer → Prop) [DecidablePred E] [DecidablePred F]
+private theorem alice_event_weight_mono 
     (h : ∀ a, E a → F a) : aliceEventWeight T x E ≤ aliceEventWeight T x F := by
   rw [← outcome_event_weight_left_eq T x x E, ← outcome_event_weight_left_eq T x x F]
   exact outcome_event_weight_mono T x x _ _ fun a _ ha => h a ha
+variable (y : MsType)
+
 
 /-- Formalization-only: monotonicity of Bob's marginal event mass. -/
-private theorem bob_event_weight_mono (T : Strategy msGame) (y : MsType)
-    (E F : MsAnswer → Prop) [DecidablePred E] [DecidablePred F]
+private theorem bob_event_weight_mono 
     (h : ∀ b, E b → F b) : bobEventWeight T y E ≤ bobEventWeight T y F := by
   rw [← outcome_event_weight_right_eq T y y E, ← outcome_event_weight_right_eq T y y F]
   exact outcome_event_weight_mono T y y _ _ fun _ b hb => h b hb
@@ -325,16 +329,16 @@ theorem msCellObsB_prod (S : Strategy msGame) (i : Fin 6) :
     signObs_mul _ (msDilatedStrategy_isProjective_B S _),
     signObs_mul _ (msDilatedStrategy_isProjective_B S _), mul_one, one_mul]
   rfl
+variable (E : MsAnswer → Prop) [DecidablePred E]
+
 
 /-- Formalization-only: nonnegativity of Alice's marginal event mass. -/
-private theorem alice_event_weight_nonneg (T : Strategy msGame) (x : MsType)
-    (E : MsAnswer → Prop) [DecidablePred E] : 0 ≤ aliceEventWeight T x E := by
+private theorem alice_event_weight_nonneg  : 0 ≤ aliceEventWeight T x E := by
   rw [← outcome_event_weight_left_eq T x x E]
   exact outcome_event_weight_nonneg T x x _
 
 /-- Formalization-only: nonnegativity of Bob's marginal event mass. -/
-private theorem bob_event_weight_nonneg (T : Strategy msGame) (y : MsType)
-    (E : MsAnswer → Prop) [DecidablePred E] : 0 ≤ bobEventWeight T y E := by
+private theorem bob_event_weight_nonneg  : 0 ≤ bobEventWeight T y E := by
   rw [← outcome_event_weight_right_eq T y y E]
   exact outcome_event_weight_nonneg T y y _
 
@@ -449,7 +453,7 @@ theorem msCellObsA_prod_of (S : Strategy msGame) (i : Fin 6) (k₀ k₁ k₂ : F
     funext a
     exact hsum a
   rw [msCellObsA, msCellObsA, msCellObsA, heteroKron_mul, heteroKron_mul]
-  simp only [mul_one]
+  simp [mul_one]
   rw [hkey]
 
 /-- The product of Bob's three cell reflections of a constraint question, in any
@@ -472,7 +476,7 @@ theorem msCellObsB_prod_of (S : Strategy msGame) (i : Fin 6) (k₀ k₁ k₂ : F
     funext a
     exact hsum a
   rw [msCellObsB, msCellObsB, msCellObsB, heteroKron_mul, heteroKron_mul]
-  simp only [mul_one]
+  simp [mul_one]
   rw [hkey]
 
 /-- Each permuted row or column product of Alice's cell reflections is close, on
@@ -500,18 +504,20 @@ theorem msCellObsB_prod_close_of (S : Strategy msGame) (ε : ℝ)
       (msCellObsB S i k₀ * msCellObsB S i k₁ * msCellObsB S i k₂) := by
   rw [msCellObsB_prod_of S i k₀ k₁ k₂ hsum, ← msCellObsB_prod S i]
   exact msCellObsB_prod_close S ε hwin i
+variable (c : ZMod 2)
+
 
 /-! ## The two logical Pauli pairs -/
 
 /-! ## Unit scalars -/
 
 /-- The sign of a binary value has modulus one as a complex number. -/
-theorem norm_bitSign_ofReal (c : ZMod 2) : ‖((bitSign c : ℝ) : ℂ)‖ = 1 := by
+theorem norm_bitSign_ofReal  : ‖((bitSign c : ℝ) : ℂ)‖ = 1 := by
   rw [Complex.norm_real, Real.norm_eq_abs]
   rcases bit_sign_eq_one_or_neg_one c with h | h <;> rw [h] <;> norm_num
 
 /-- The square of the sign of a binary value is one. -/
-theorem bitSign_ofReal_mul_self (c : ZMod 2) :
+theorem bitSign_ofReal_mul_self  :
     ((bitSign c : ℝ) : ℂ) * ((bitSign c : ℝ) : ℂ) = 1 := by
   rw [← Complex.ofReal_mul]
   rcases bit_sign_eq_one_or_neg_one c with h | h <;> rw [h] <;> norm_num
@@ -567,18 +573,13 @@ theorem msCellObsB_mul_close (S : Strategy msGame) (ε : ℝ) (hwin : 1 - ε ≤
     NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε + 12 * Real.sqrt ε)
       (msCellObsB S I k * msCellObsB S J l)
       (msVarObsA S (msConstraintVars J l) * msVarObsA S (msConstraintVars I k)) := by
-  have p1 : NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε) (msCellObsB S J l)
-      (msVarObsA S (msConstraintVars J l)) :=
+  have p1 :=
     (msVarObsA_close_msCellObsB S ε hwin J l).symm
-  have p2 : NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε) (msCellObsB S I k)
-      (msVarObsA S (msConstraintVars I k)) :=
+  have p2 :=
     (msVarObsA_close_msCellObsB S ε hwin I k).symm
-  have h1 : NormCloseOn (msDilatedStrategy S).ψ (12 * Real.sqrt ε)
-      (msCellObsB S I k * msCellObsB S J l)
-      (msCellObsB S I k * msVarObsA S (msConstraintVars J l)) :=
+  have h1 :=
     NormCloseOn.isometry_mul (isBinaryObservable_msCellObsB S I k).isometry p1
-  have hswap : msCellObsB S I k * msVarObsA S (msConstraintVars J l) =
-      msVarObsA S (msConstraintVars J l) * msCellObsB S I k :=
+  have hswap :=
     (msVarObsA_comm_msCellObsB S (msConstraintVars J l) I k).symm
   rw [hswap] at h1
   exact h1.trans (NormCloseOn.isometry_mul (isBinaryObservable_msVarObsA S _).isometry p2)

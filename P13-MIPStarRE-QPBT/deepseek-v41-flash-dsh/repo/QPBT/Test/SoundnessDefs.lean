@@ -126,12 +126,14 @@ noncomputable def pauliProjOnB'' (P : AdmissibleParams)
     if p.1 = q.1 ∧ p.2.1 = q.2.1 then
       pauliProj W u p.2.2 q.2.2
     else 0
+variable {P : AdmissibleParams} {G : Game}
+
 
 /-- Lift a conjugated A-side effect to the full ideal register in blueprint
 `thm:pauli`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`.
 -/
-noncomputable def liftedAEffect {P : AdmissibleParams} {G : Game}
+noncomputable def liftedAEffect 
     (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB']
     (φA : EuclideanSpace ℂ S.ιA →ₗᵢ[ℂ]
@@ -147,7 +149,7 @@ noncomputable def liftedAEffect {P : AdmissibleParams} {G : Game}
 `thm:pauli`, paper origin
 `references/qpbt-paper/08_classical_and_quantum_low_degree_tests.tex:1426-1447`.
 -/
-noncomputable def liftedBEffect {P : AdmissibleParams} {G : Game}
+noncomputable def liftedBEffect 
     (S : Strategy G) {ιA' ιB' : Type*} [Fintype ιA'] [DecidableEq ιA']
     [Fintype ιB'] [DecidableEq ιB']
     (φB : EuclideanSpace ℂ S.ιB →ₗᵢ[ℂ]

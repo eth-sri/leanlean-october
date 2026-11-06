@@ -120,7 +120,7 @@ theorem consistencyDefect_padState_compressAt
   intro b _
   by_cases hab : a = b
   · simp [hab]
-  · simp only [hab, if_false]
+  · simp [hab, if_false]
     change vectorQForm (padState a₀ b₀ ψ)
         (heteroKron ((MA x).effect a) 1 * heteroKron 1 ((MB x).effect b)) =
       vectorQForm ψ
