@@ -77,7 +77,6 @@ universe u w
 /-- The limit stage `ω`: Knight's sentence describes the models of `S^ω` (Def. 3.3.3). -/
 def omegaStage : LimitStage := ⟨Ordinal.omega0, Ordinal.isSuccLimit_omega0⟩
 
-@[simp] theorem omegaStage_toOrdinal : omegaStage.1 = Ordinal.omega0 := rfl
 
 /-- Every limit stage lies above `ω`: the theory's language is a reduct of every chart
 language. -/

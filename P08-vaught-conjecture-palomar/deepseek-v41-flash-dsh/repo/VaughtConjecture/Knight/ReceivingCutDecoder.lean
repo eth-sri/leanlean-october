@@ -80,7 +80,6 @@ open CappedDonor CappedDonor.Ref ReceivingLadderCarrier ReceivingCatalogueSource
 variable {I : Type*} [Fintype I] {nP K : ℕ} {P : SemScheme (nP + 1)}
   {C : SemScheme 2} {R : Ref I nP 2 2 P C} (L : R.LowRef K)
 
-local instance : Fintype (C.scheme.below (effC 2 1)) := Fintype.ofFinite _
 local notation "ℓ" => rungs (P := P) (C := C)
 
 variable (hC : C.scheme.plan = privatePlan) (request : Cell P.scheme)

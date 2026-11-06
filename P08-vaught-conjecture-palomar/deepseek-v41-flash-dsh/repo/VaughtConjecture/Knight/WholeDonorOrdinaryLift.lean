@@ -37,8 +37,6 @@ theorem right_mem : C ∈ I.boundary.plan :=
 
 variable (n : ℕ) (hA : n + 3 ≤ A.card)
 
-theorem coded : (rows I hBA hCA n hA).IsCoded :=
-  CanonicalRecursiveCoding.coded I.rows (proper_boundary I hBA hCA) I.coded n hA
 
 variable {CI BJ : Finset ι × ℕ}
 

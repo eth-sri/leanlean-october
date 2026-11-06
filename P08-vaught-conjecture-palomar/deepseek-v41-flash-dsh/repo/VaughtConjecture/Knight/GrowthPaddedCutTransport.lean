@@ -33,11 +33,6 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 
 variable (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-/-- No added owner lies below a strictly lower cutoff. -/
-def stepEquiv (U : Finset ι × ℕ) (hu : U.2 ≤ k) :
-    P.carrier.below U ≃ (successor P hk hnext).carrier.below U :=
-  HighLayerBountiful.equiv P.carrier (Catalogue X (k + 1)) (k + 1)
-    (Nat.succ_pos k) hnext U (fun h => by have := h.2; omega)
 
 theorem step_lift {U V : Finset ι × ℕ} (h : GradedLe U V) (hv : V.2 ≤ k)
     (hl : CappedLift P.rows h) : CappedLift (successor P hk hnext).rows h :=

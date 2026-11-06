@@ -287,16 +287,6 @@ theorem visReplace_le_of_le_selfVis {γ δ : Ordinal.{0}} {k i : ℕ}
       _ = δ := decomposition δ
   · exact hγδ
 
-/-- `extVisibilityReplace` stays `≤ ofOrd δ` when `x ≤ ofOrd γ`, `γ ≤ δ`, `δ` is self-visible
-at `k`, and the replacement value is `≤ k`. -/
-theorem extVisReplace_le_of_le {γ δ : Ordinal.{0}} {k i : ℕ} {x : ExtOrd}
-    (hx : x ≤ ofOrd γ) (hγδ : γ ≤ δ) (hδ_sv : k ≤ finitePart δ) (hi : i ≤ k) :
-    extVisibilityReplace x k i ≤ ofOrd δ := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact bot_le
-  · exact absurd hx (not_top_le_ofOrd γ)
-  · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
-    exact visReplace_le_of_le_selfVis ((ofOrd_le_ofOrd.mp hx).trans hγδ) hδ_sv hi
 
 /-! ### Vertical truncation of labels -/
 

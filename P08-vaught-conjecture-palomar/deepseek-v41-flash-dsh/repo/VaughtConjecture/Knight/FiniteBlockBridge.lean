@@ -129,19 +129,6 @@ theorem target_le_finiteTargetSuppressor
     (Finset.mem_univ d)
   simpa only [finiteTargetSuppressor, le_refl, if_true] using hterm
 
-/-- Once the finite target is fixed, its suppressor can be chosen
-canonically and only the shifter remains. -/
-structure FiniteTargetShifterData
-    {D : Type*} [Finite D]
-    (grade : D → ℕ) (source target : D → ExtOrd) where
-  shifter : ExtOrd → ExtOrd
-  bot : shifter ⊥ = ⊥
-  mono : Monotone shifter
-  commutes : ∀ x k, shifter x ≤ finiteTargetSuppressor grade target k →
-    ∀ i, i ≤ k → shifter (extVisibilityReplace x k i) =
-      extVisibilityReplace (shifter x) k i
-  realizes : ∀ d, target d = min (shifter (source d))
-    (finiteTargetSuppressor grade target (grade d))
 
 private theorem isNonSuccessor_limitPart (δ : Ordinal) :
     IsNonSuccessor (limitPart δ) := by

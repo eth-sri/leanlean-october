@@ -67,7 +67,6 @@ namespace VaughtConjecture.Knight
 open AmalgamationPlan Transform Value ExtOrd
 open CellScheme.restrictFace (toCell belowMap pushGraded)
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
 
 /-! ## The exact capped-probe laws (after the research scout `CappedProbeLaws.lean`) -/
 
@@ -85,7 +84,6 @@ end ProbeLaws
 
 section Instances
 
-variable {q : D₂.below (Finset.univ, 3) → ExtOrd}
 
 end Instances
 
@@ -127,7 +125,6 @@ end SufficiencyProof
 
 section Necessity
 
-variable {q : D₂.below (Finset.univ, 3) → ExtOrd}
 
 end Necessity
 
@@ -135,7 +132,6 @@ end Necessity
 
 section FaceConstraints
 
-variable {BJ : Finset (Fin 4) × ℕ} {r : D₂.below BJ → ExtOrd}
 
 end FaceConstraints
 
@@ -143,7 +139,6 @@ end FaceConstraints
 
 section Sections
 
-variable {BJ : Finset (Fin 4) × ℕ} {r : D₂.below BJ → ExtOrd}
 
 end Sections
 

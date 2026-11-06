@@ -88,9 +88,6 @@ The constructors live in the `BoundedFormulaInf` namespace. Dot-notation on a
 @[match_pattern] protected abbrev ex (φ : L.BoundedFormulaω α (n + 1)) : L.BoundedFormulaω α n :=
   BoundedFormulaInf.ex φ
 
-/-- The true formula. Mathlib calls it `verum`; this is the project's historical name for it, and
-the two are definitionally equal (`not falsum` reduces to `imp falsum falsum`). -/
-protected abbrev top : L.BoundedFormulaω α n := BoundedFormulaInf.verum
 
 /-! Production's `not` and `ex` were `@[match_pattern]`; Mathlib's are not, and the attribute
 **cannot** be added downstream ("cannot add attribute to a declaration in an imported module").
@@ -108,16 +105,8 @@ protected def and (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
 
 instance : Min (L.BoundedFormulaω α n) := ⟨BoundedFormulaω.and⟩
 
-/-- Disjunction of two formulas. -/
-@[match_pattern]
-protected def or (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
-  φ.not.imp ψ
 
-instance : Max (L.BoundedFormulaω α n) := ⟨BoundedFormulaω.or⟩
 
-/-- Biconditional between formulas. -/
-protected def iff (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
-  (φ.imp ψ) ⊓ (ψ.imp φ)
 
 /-- Indexed conjunction over any `Encodable` type. This extends `iInf` from ℕ-indexed
 to general countable indices by encoding. -/
@@ -154,11 +143,7 @@ def esupWith {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α
     L.BoundedFormulaω α n :=
   @esup L α n ι e φs
 
-@[simp] theorem einfWith_eq {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
-    einfWith e φs = @einf L α n ι e φs := rfl
 
-@[simp] theorem esupWith_eq {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
-    esupWith e φs = @esup L α n ι e φs := rfl
 
 end BoundedFormulaω
 

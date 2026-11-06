@@ -233,23 +233,8 @@ noncomputable def restrictFace (t : S α n) (f : Fin m ↪ Fin n)
   label_bound i := t.label_bound (toCell t.scheme.scheme f hr i)
   respects := t.respects.restrictFace f hr
 
-@[simp] theorem restrictFace_scheme (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :
-    (t.restrictFace f hr).scheme = t.scheme.restrictFace f hr := rfl
 
-@[simp] theorem restrictFace_label (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (i : Cell (t.scheme.scheme.restrictFace f hr)) :
-    (t.restrictFace f hr).label i = t.label (toCell t.scheme.scheme f hr i) := rfl
 
-@[simp] theorem restrictFace_rows_E (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (Sig : Cell (t.scheme.scheme.restrictFace f hr))
-    (d : (t.scheme.scheme.restrictFace f hr).below
-      ((t.scheme.scheme.restrictFace f hr).cell Sig)) :
-    (t.restrictFace f hr).scheme.rows.E Sig d =
-      t.scheme.rows.E (toCell t.scheme.scheme f hr Sig) (belowMap t.scheme.scheme f hr Sig d) :=
-  rfl
 
 end StageType
 

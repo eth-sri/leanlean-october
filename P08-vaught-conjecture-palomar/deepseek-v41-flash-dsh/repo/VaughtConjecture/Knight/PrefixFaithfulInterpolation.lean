@@ -56,13 +56,7 @@ theorem replace_le_visible_cut_iff {m k i : ℕ} {a x : ExtOrd}
     exact (extVisibilityReplace_mono k i hi h).trans_eq
       (evr_eq_self_of_selfVis (selfVis_mono ha hk) i)
 
-open Classical in
-/-- Keep the old shifter through the cut, and the new one strictly above it. -/
-noncomputable def prefixSplice (a : ExtOrd) (σ τ : ExtOrd → ExtOrd) (x : ExtOrd) : ExtOrd :=
-  if x ≤ a then σ x else τ x
 
-theorem prefixSplice_of_le {a x : ExtOrd} {σ τ : ExtOrd → ExtOrd} (hx : x ≤ a) :
-    prefixSplice a σ τ x = σ x := ite_eq_left hx
 
 namespace BoundedMap
 

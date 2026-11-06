@@ -95,13 +95,7 @@ def oldAt (d : I.boundary.below (A, 1)) : (scheme I X hA).below (A, 1) :=
 abbrev privateAt (d : I.right.scheme.below (Finset.univ, 1)) := oldAt I X hA (privateIncl I d)
 abbrev donorAt (d : I.left.scheme.below (Finset.univ, 1)) := oldAt I X hA (donorIncl I d)
 
-def renderingAnchor (S : State I.right.scheme I.left.scheme) (hs : Admitted X 1 S) :
-    Catalogue X 1 := (exists_rank_anchor X (by decide : 1 ≤ 1) hs).choose
 
-/-- The ceiling-filled complete table, including spare and foreign rungs. -/
-def render (S : State I.right.scheme I.left.scheme) (hs : Admitted X 1 S) (β : ExtOrd) :
-    Cell (scheme I X hA) → ExtOrd :=
-  renderWith I.boundary hA (field I) (fields I X) (renderingAnchor I X S hs) S.profile β
 
 include T in
 theorem exists_physical_section {S : State I.right.scheme I.left.scheme}

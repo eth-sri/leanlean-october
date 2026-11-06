@@ -101,30 +101,9 @@ structure enters the range). -/
 def bfRight (s : List ℕ) : Fin s.length → ℕ :=
   fun j ↦ if j.val % 2 = 0 then s[j.val] else j.val / 2
 
-/-- Position `2 i` of the left tuple is `i`. -/
-@[simp]
-theorem bfLeft_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfLeft s ⟨2 * i, h⟩ = i := by
-  simp [bfLeft]
 
-/-- Position `2 i + 1` of the left tuple is the node's entry there. -/
-@[simp]
-theorem bfLeft_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfLeft s ⟨2 * i + 1, h⟩ = s[2 * i + 1] := by
-  simp [bfLeft, Nat.add_mod]
 
-/-- Position `2 i` of the right tuple is the node's entry there. -/
-@[simp]
-theorem bfRight_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfRight s ⟨2 * i, h⟩ = s[2 * i] := by
-  simp [bfRight]
 
-/-- Position `2 i + 1` of the right tuple is `i`. -/
-@[simp]
-theorem bfRight_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfRight s ⟨2 * i + 1, h⟩ = i := by
-  simp [bfRight, Nat.add_mod]
-  omega
 
 /-- On a prefix, the decoded tuples are restrictions. -/
 private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :

@@ -33,7 +33,6 @@ local notation "P" => tower I X T hA hB hC t ht
 local notation "D" => carrier I X T hA hB hC t ht
 local notation "Rows" => rows I X T hA hB hC t ht
 local notation "Pt" => RelativeLadderLayer.Point
-  (X := Field I.right.scheme I.left.scheme) (Q := Catalogue X 1)
 
 theorem original_injective : Function.Injective (original I X T hA hB hC t ht) :=
   ((P).base_mono.comp

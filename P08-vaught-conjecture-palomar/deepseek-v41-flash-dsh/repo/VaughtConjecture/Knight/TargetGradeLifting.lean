@@ -33,9 +33,6 @@ def Through (r : ℕ) : Prop :=
   ∀ {I J : Finset ι × ℕ}, I ∈ Plan.gradedPlan D.plan →
     J ∈ Plan.gradedPlan D.plan → (h : GradedLe I J) → J.2 ≤ r → CappedLift sem h
 
-theorem zero : Through sem 0 := by
-  intro I J _ hJ _ hj
-  exact False.elim ((not_lt_of_ge hj) (Plan.mem_gradedPlan.mp hJ).2.1)
 
 /-- The successor ledger requires only the genuinely new same-grade clauses.
 All lower-source grade changes are constructed using the lawful upper ambient. -/

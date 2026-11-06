@@ -58,85 +58,16 @@ theorem bfEquiv {height : Ordinal}
 
 end RankedMatchingFamily
 
-/-- Exact template labels for finite embedded covers. The labeling relation may have many
-values or none; totality is not silently assumed. -/
-structure FiniteCoverPresentation (M : Type w) where
-  Template : Ordinal.{0} → ℕ → Type s
-  allowed : ∀ {α k}, Template α k → Prop
-  realizes : ∀ {α k}, (Fin k ↪ M) → Template α k → Prop
-  realizes_allowed : ∀ {α k} {a : Fin k ↪ M} {p : Template α k},
-    realizes a p → allowed p
 
 namespace FiniteCoverPresentation
 
-/-- An actual matched finite cover with a common, possibly noninjective tuple selector. -/
-structure Receipt (C : FiniteCoverPresentation.{w, s} M)
-    (D : FiniteCoverPresentation.{w', t} N)
-    (compatible : ∀ α k, C.Template α k → D.Template α k → Prop)
-    (α : Ordinal) (n : ℕ) (a : Fin n → M) (b : Fin n → N) where
-  size : ℕ
-  source : Fin size ↪ M
-  target : Fin size ↪ N
-  selector : Fin n → Fin size
-  sourceValue : C.Template α size
-  targetValue : D.Template α size
-  source_exact : C.realizes source sourceValue
-  target_exact : D.realizes target targetValue
-  projected : compatible α size sourceValue targetValue
-  source_root : source ∘ selector = a
-  target_root : target ∘ selector = b
 
-/-- A received cover extends a matched root cover by literal embedding equations.
-The new point can already belong to the old cover. -/
-structure Extension (C : FiniteCoverPresentation.{w, s} M)
-    (D : FiniteCoverPresentation.{w', t} N)
-    (compatible : ∀ α k, C.Template α k → D.Template α k → Prop)
-    (α : Ordinal) {k : ℕ} (source : Fin k ↪ M) (target : Fin k ↪ N) where
-  size : ℕ
-  sourceCover : Fin size ↪ M
-  targetCover : Fin size ↪ N
-  root : Fin k ↪ Fin size
-  point : Fin size
-  sourceValue : C.Template α size
-  targetValue : D.Template α size
-  source_exact : C.realizes sourceCover sourceValue
-  target_exact : D.realizes targetCover targetValue
-  projected : compatible α size sourceValue targetValue
-  source_retained : root.trans sourceCover = source
-  target_retained : root.trans targetCover = target
 
 namespace Extension
 
 end Extension
 end FiniteCoverPresentation
 
-/-- Projected finite-template extension laws. Exact source and target values need not even
-have the same type. Lowering preserves the cover while allowing different exact labels;
-forth and back receive larger covers with literally retained roots and lose one level. -/
-structure ProjectedExtensionSystem (L : Language.{u, v}) (M : Type w) (N : Type w')
-    [L.IsRelational] [L.Structure M] [L.Structure N] (height : Ordinal) where
-  source : FiniteCoverPresentation.{w, s} M
-  target : FiniteCoverPresentation.{w', t} N
-  compatible : ∀ α k, source.Template α k → target.Template α k → Prop
-  atomic : ∀ {k} {a : Fin k ↪ M} {b : Fin k ↪ N}
-    {p : source.Template 0 k} {q : target.Template 0 k},
-    source.realizes a p → target.realizes b q → compatible 0 k p q →
-      ∀ idx : L.AtomicIdx k, idx.holds (a : Fin k → M) ↔ idx.holds (b : Fin k → N)
-  lower : ∀ {α β k} {a : Fin k ↪ M} {b : Fin k ↪ N}
-    {p : source.Template α k} {q : target.Template α k}, β ≤ α → α ≤ height →
-    source.realizes a p → target.realizes b q → compatible α k p q →
-      ∃ (p' : source.Template β k) (q' : target.Template β k),
-        source.realizes a p' ∧ target.realizes b q' ∧ compatible β k p' q'
-  forth : ∀ {α k} {a : Fin k ↪ M} {b : Fin k ↪ N}
-    {p : source.Template (α + 1) k} {q : target.Template (α + 1) k}, α + 1 ≤ height →
-    source.realizes a p → target.realizes b q → compatible (α + 1) k p q →
-      ∀ x : M, ∃ e : FiniteCoverPresentation.Extension source target compatible α a b,
-        e.sourceCover e.point = x
-  back : ∀ {α k} {a : Fin k ↪ M} {b : Fin k ↪ N}
-    {p : source.Template (α + 1) k} {q : target.Template (α + 1) k}, α + 1 ≤ height →
-    source.realizes a p → target.realizes b q → compatible (α + 1) k p q →
-      ∀ y : N, ∃ e : FiniteCoverPresentation.Extension source target compatible α a b,
-        e.targetCover e.point = y
 
 namespace ProjectedExtensionSystem
 

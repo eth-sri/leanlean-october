@@ -32,8 +32,6 @@ noncomputable def trim (m : ℕ) : ExtOrd → ExtOrd
   | some ⊤ => ⊤
   | some (some a) => ofOrd (limitPart a + (min (finitePart a) m : ℕ))
 
-@[simp] theorem trim_bot (m : ℕ) : trim m ⊥ = ⊥ := rfl
-@[simp] theorem trim_top (m : ℕ) : trim m ⊤ = ⊤ := rfl
 @[simp] theorem trim_ofOrd (m : ℕ) (a : Ordinal.{0}) :
     trim m (ofOrd a) = ofOrd (limitPart a + (min (finitePart a) m : ℕ)) := rfl
 

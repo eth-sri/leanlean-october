@@ -185,15 +185,6 @@ theorem SameAtomicType.symm {N : Type w'} [L.Structure N]
     SameAtomicType (L := L) (M := N) (N := M) b a :=
   fun idx => (h idx).symm
 
-omit [L.IsRelational] in
-/-- Same atomic type is transitive. -/
-@[trans]
-theorem SameAtomicType.trans {N P : Type*} [L.Structure N] [L.Structure P]
-    {a : Fin n → M} {b : Fin n → N} {c : Fin n → P}
-    (hab : SameAtomicType (L := L) (M := M) (N := N) a b)
-    (hbc : SameAtomicType (L := L) (M := N) (N := P) b c) :
-    SameAtomicType (L := L) (M := M) (N := P) a c :=
-  fun idx => (hab idx).trans (hbc idx)
 
 omit [L.IsRelational] in
 /-- Same atomic type is preserved under relabeling.

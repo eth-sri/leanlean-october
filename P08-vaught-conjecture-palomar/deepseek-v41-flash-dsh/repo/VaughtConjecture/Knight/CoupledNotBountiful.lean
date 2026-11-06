@@ -49,6 +49,5 @@ namespace VaughtConjecture.Knight
 
 open AmalgamationPlan Transform Value ExtOrd
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
 
 end VaughtConjecture.Knight

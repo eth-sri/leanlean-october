@@ -110,23 +110,11 @@ variable {hβ₁ : blockStage 0 ≤ β₁} {hβ₂ : blockStage 0 ≤ β₂}
 variable {W₁ : KnightRealization β₁ M₁} {W₂ : KnightRealization β₂ M₂}
 variable {R₁ : KnightRealization (blockStage 0) M₁} {R₂ : KnightRealization (blockStage 0) M₂}
 
-/-- The shared source label of the node — the common reduction. -/
-noncomputable def sourceType (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : S (blockStage 0).1 nd.arity :=
-  reduceType (blockStage 0).2 hβ₁ nd.type₁
 
-/-- The mirrored node: back is symmetry. -/
-def swap (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : PairedCover hβ₂ hβ₁ W₂ W₁ :=
-  ⟨nd.arity, nd.tuple₂, nd.tuple₁, nd.type₂, nd.type₁, nd.eval₂, nd.eval₁, nd.red_eq.symm⟩
 
-@[simp] theorem swap_swap (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : nd.swap.swap = nd := rfl
 
-@[simp] theorem swap_arity (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : nd.swap.arity = nd.arity := rfl
 
-@[simp] theorem swap_tuple₁ (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : nd.swap.tuple₁ = nd.tuple₂ :=
-  rfl
 
-@[simp] theorem swap_tuple₂ (nd : PairedCover hβ₁ hβ₂ W₁ W₂) : nd.swap.tuple₂ = nd.tuple₁ :=
-  rfl
 
 end PairedCover
 

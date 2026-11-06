@@ -73,7 +73,6 @@ theorem separated : OrderedScopeRelocation.Separated (D := X.carrier) (B := B) :
   intro d hd
   exact hnew (X.closed _ (X.occupied d) B hB hd)
 
-def restricted := ScopeBoundary.scheme X.carrier B (X.plan.symm ▸ hB)
 def restrictedRows := ScopeBoundary.rows X.carrier B (X.plan.symm ▸ hB) X.rows
 
 include hnew hready in

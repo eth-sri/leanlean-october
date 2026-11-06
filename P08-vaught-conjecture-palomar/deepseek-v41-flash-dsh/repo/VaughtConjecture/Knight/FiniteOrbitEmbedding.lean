@@ -33,7 +33,6 @@ noncomputable def ray (K : ℕ) (μ ν : Ordinal.{0}) : ExtOrd → ExtOrd
       else if limitPart ξ = μ then ofOrd (ν + (min (finitePart ξ) K : ℕ))
       else ofOrd (ν + K)
 
-@[simp] theorem ray_bot (K : ℕ) (μ ν : Ordinal.{0}) : ray K μ ν ⊥ = ⊥ := rfl
 
 open Classical in
 theorem ray_ofOrd (K : ℕ) (μ ν ξ : Ordinal.{0}) :

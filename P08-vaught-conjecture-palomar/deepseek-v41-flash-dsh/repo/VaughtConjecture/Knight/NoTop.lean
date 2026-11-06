@@ -49,18 +49,10 @@ universe u
 
 /-! ### The stage `ω₁` -/
 
-/-- The stage `ω₁ = (aleph 1).ord`, the top of Knight's construction, as a limit stage. -/
-noncomputable def omegaOneStage : LimitStage :=
-  ⟨(aleph 1).ord, Cardinal.isSuccLimit_ord (aleph0_le_aleph 1)⟩
 
-@[simp] theorem omegaOneStage_val : omegaOneStage.1 = (aleph 1).ord := rfl
 
 /-! ### Uniformity bands -/
 
-/-- The **Uniformity band** of a non-successor `γ`: the labels in `[γ, γ + ω)`
-(the target interval of Def. 3.2.1(4)(b), `UniformityFamily γ`). -/
-def band (γ : Ordinal.{0}) : Set ExtOrd :=
-  {x | ofOrd γ ≤ x ∧ x < ofOrd (γ + ω)}
 
 /-! ### The index set: non-successors below `ω₁` -/
 

@@ -96,22 +96,6 @@ theorem extend_commonChart (α : Ordinal.{0}) {M : Type w} {N : Type w'}
     · rw [Fin.comp_snoc, hsource, hx]
     · rw [Fin.comp_snoc, htarget]
 
-/-- Structural expansions with fixed bases and an actual common chart. Consistency,
-covering and receiving are supplied directly; the carrier universes are independent. -/
-structure Receipt (M : Type w) (N : Type w')
-    (baseM : baseLang.Structure M) (baseN : baseLang.Structure N)
-    (α : Ordinal.{0}) (n : ℕ) (a : Fin n → M) (b : Fin n → N) where
-  source : KnightRealization (blockStage α) M
-  target : KnightRealization (blockStage α) N
-  source_consistent : source.IsExactParentConsistent
-  target_consistent : target.IsExactParentConsistent
-  source_covering : source.IsCovering
-  target_covering : target.IsCovering
-  source_receiving : FiniteCutReceiving source
-  target_receiving : FiniteCutReceiving target
-  source_base : stageStructureOf (source.reduct (blockStage_zero_le α)) = baseM
-  target_base : stageStructureOf (target.reduct (blockStage_zero_le α)) = baseN
-  chart : HasCommonChart source target a b
 
 namespace Receipt
 

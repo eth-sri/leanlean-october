@@ -75,6 +75,6 @@ theorem paste_right {V : Type*} {p : X → V} {q : Y → V}
   · rw [right, dite_eq_right hy]
     rfl
 
-open NormalizedProfileFamily Transform Value ExtOrd
+open Transform Value ExtOrd
 
 end VaughtConjecture.Knight.ProfileFaceUnion

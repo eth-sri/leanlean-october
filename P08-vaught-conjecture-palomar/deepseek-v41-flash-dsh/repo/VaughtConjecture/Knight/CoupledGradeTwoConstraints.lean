@@ -38,11 +38,9 @@ namespace VaughtConjecture.Knight
 open AmalgamationPlan Transform Value ExtOrd
 open CellScheme.restrictFace (toCell belowMap pushGraded)
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
 
 section GradeTwo
 
-variable {q : D₂.below (Finset.univ, 2) → ExtOrd}
 
 end GradeTwo
 

@@ -89,35 +89,7 @@ theorem level_decode (p : X → ExtOrd) {f g : ExtOrd → ExtOrd}
       rw [hr d]
       exact hxi
 
-/-- The full rank table, including foreign anchors and the unused ceiling tail. -/
-def render (ranks : B → X → ℕ) (p : X → ExtOrd) (C : ExtOrd)
-    (v : RungOnlyLadder.Point H B) : ExtOrd :=
-  LadderScalarRendering.level (values p) C
-    (min (FiniteProfileControllers.cut H (fieldRank p) (ranks v.1)) (v.2.val + 1))
 
-/-- Exact whole-base decoding, with no omission of unused ranks or spare tips. -/
-theorem decode_normalized (ranks : B → X → ℕ) (j : ℕ) (p : X → ExtOrd)
-    (hp : ∀ d, p d ≠ ⊤) {G : Finset ExtOrd} {C D : ExtOrd}
-    (hG : ∀ z ∈ G, SelfVis j z) (hC : SelfVis j C)
-    (hD : PairedSlotDecoder.decode j (PairedSlotEncoding.values p) G C D = C)
-    (v : RungOnlyLadder.Point H B) :
-    PairedSlotDecoder.decode j (PairedSlotEncoding.values p) G C
-      (render ranks (PairedSlotEncoding.normalize j p) D v) = render ranks p C v := by
-  let f := PairedSlotIncoming.encoder j (PairedSlotEncoding.values p)
-  let g := PairedSlotDecoder.decode j (PairedSlotEncoding.values p) G C
-  have hf := PairedSlotIncoming.encoder_bounded j (PairedSlotEncoding.values p)
-  have hg : Witness (gTop j) g := PairedSlotDecoder.decode_witness hG hC
-  have hinv (d : X) : g (f (p d)) = p d := by
-    dsimp only [f, g]
-    rw [PairedSlotIncoming.encoder_profile]
-    exact PairedSlotDecoder.decode_normalize hG hC hp d
-  have hr : fieldRank (PairedSlotEncoding.normalize j p) = fieldRank p :=
-    funext (ReceivingCatalogueRanks.fieldRank_normalize j p hp)
-  unfold render
-  rw [hr]
-  have he := level_decode p hf.mono hg.mono hf.bot hg.bot hinv D
-    (min (FiniteProfileControllers.cut H (fieldRank p) (ranks v.1)) (v.2.val + 1))
-  simpa only [f, g, PairedSlotIncoming.encoder_profile, hD] using he
 
 end
 end VaughtConjecture.Knight.RungTableRendering

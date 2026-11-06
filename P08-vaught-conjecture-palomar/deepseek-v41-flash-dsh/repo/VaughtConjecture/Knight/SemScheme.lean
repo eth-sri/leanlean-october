@@ -58,8 +58,6 @@ def CellScheme.below.mono {X Y : Finset ι × ℕ} (h : GradedLe X Y) (d : D.bel
     D.below Y :=
   ⟨d.1, d.2.trans h⟩
 
-@[simp] theorem CellScheme.below.mono_val {X Y : Finset ι × ℕ} (h : GradedLe X Y)
-    (d : D.below X) : (CellScheme.below.mono (D := D) h d).1 = d.1 := rfl
 
 /-- **Restriction of respect**: a labelling respecting the restricted semantics `E⟨B,j⟩` restricts
 along `D⟨C,i⟩ ⊆ D⟨B,j⟩` to one respecting `E⟨C,i⟩`.  Availability restricts because the ambient
@@ -154,16 +152,6 @@ namespace SemScheme
 
 variable {n : ℕ}
 
-/-- Extensionality: two domains are equal when their schemes and rows agree (`rows` depends
-on `scheme`, hence `HEq`); the `Prop` fields follow by proof irrelevance. -/
-@[ext]
-theorem ext {D₁ D₂ : SemScheme n} (h_scheme : D₁.scheme = D₂.scheme)
-    (h_rows : HEq D₁.rows D₂.rows) : D₁ = D₂ := by
-  obtain ⟨s₁, r₁, _, _, _, _⟩ := D₁
-  obtain ⟨s₂, r₂, _, _, _, _⟩ := D₂
-  subst h_scheme
-  obtain rfl := eq_of_heq h_rows
-  rfl
 
 /-- There are countably many domains with associated semantics (Knight, Prop. 2.6.3(4)):
 a domain is its (countable, `CellScheme.countable_fin`) scheme together with finitely many
@@ -458,13 +446,7 @@ noncomputable def restrictFace (X : SemScheme n) (f : Fin m ↪ Fin n)
     obtain ⟨i, rfl⟩ := exists_toCell_eq X.scheme f hr hvis
     exact ⟨i, pushGraded_injective f ((pushGraded_cell X.scheme f hr i).trans hd)⟩
 
-@[simp] theorem restrictFace_scheme (X : SemScheme n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ X.scheme.plan) :
-    (X.restrictFace f hr).scheme = X.scheme.restrictFace f hr := rfl
 
-@[simp] theorem restrictFace_rows (X : SemScheme n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ X.scheme.plan) :
-    (X.restrictFace f hr).rows = X.rows.restrictFace f hr := rfl
 
 end SemScheme
 

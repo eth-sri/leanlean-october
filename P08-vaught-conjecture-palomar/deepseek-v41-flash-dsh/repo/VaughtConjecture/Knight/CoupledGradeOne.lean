@@ -57,7 +57,6 @@ namespace VaughtConjecture.Knight
 open AmalgamationPlan Transform Value ExtOrd
 open CellScheme.restrictFace (toCell belowMap pushGraded)
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
 
 /-! ## Cell uniqueness at grades at most two -/
 

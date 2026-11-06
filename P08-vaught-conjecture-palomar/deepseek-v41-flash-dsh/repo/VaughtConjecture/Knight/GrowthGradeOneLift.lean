@@ -56,7 +56,6 @@ variable {s : ℕ} (O : SemScheme s)
   (pick : Cell O.scheme → Field I.right.scheme I.left.scheme)
   (hfield : ∀ a : Catalogue X 1, ∀ d, a.val (field I (incl d).1) = a.val (pick d.1))
 
-local instance : Fintype (O.scheme.below (Finset.univ, 1)) := Fintype.ofFinite _
 
 include hfield in
 theorem source_face (a : Catalogue X 1) (d : O.scheme.below (Finset.univ, 1)) :

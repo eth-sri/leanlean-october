@@ -361,8 +361,6 @@ theorem consistent (hs : sem.IsConsistent)
     convert hr using 1
     exact funext (row_added D sem hA field fields hp v)
 
-def selected (a : Q) (C : ExtOrd) : Cell (carrier D hA (X := X) (Q := Q)) → ExtOrd :=
-  image D hA field fields a (LadderScalarRendering.level (values (fields a)) C)
 
 theorem coded (hs : sem.IsCoded) : (rows D sem hA field fields hp).IsCoded := by
   intro c d

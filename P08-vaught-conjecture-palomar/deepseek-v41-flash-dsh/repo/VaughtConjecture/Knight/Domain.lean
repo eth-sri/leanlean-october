@@ -227,13 +227,7 @@ noncomputable def extendOne : CellScheme (ι := Fin (n + 1)) Finset.univ where
   Fin.append_left (fun i => pushGraded Fin.castSuccEmb (C.cell i))
     (fun j => (C.newPairs.equivFin.symm j).1) i
 
-@[simp] theorem extendOne_scope_castAdd (i : Cell C) :
-    C.extendOne.scope (Fin.castAdd C.newPairs.card i) = (C.scope i).image Fin.castSuccEmb :=
-  congrArg Prod.fst (extendOne_cell_castAdd C i)
 
-@[simp] theorem extendOne_grade_castAdd (i : Cell C) :
-    C.extendOne.grade (Fin.castAdd C.newPairs.card i) = C.grade i :=
-  congrArg Prod.snd (extendOne_cell_castAdd C i)
 
 @[simp] theorem extendOne_cell_natAdd (j : Fin C.newPairs.card) :
     C.extendOne.cell (Fin.natAdd C.card j) = (C.newPairs.equivFin.symm j).1 :=
@@ -286,17 +280,12 @@ def Semantics.mute (D : CellScheme A) : Semantics D where
   E _ _ := ⊥
   orderly _ _ := (extVisibilityReplace_bot _ _).symm
 
-@[simp] theorem Semantics.mute_E (Sig : Cell D) (d : D.below (D.cell Sig)) :
-    (Semantics.mute D).E Sig d = ⊥ := rfl
 
 /-- The constantly-`−∞` labelling of a lower set respects the mute semantics there. -/
 theorem RespectsSemanticsBelow.mute (BJ : Finset ι × ℕ) :
     RespectsSemanticsBelow (Semantics.mute D) BJ (fun _ => ⊥) :=
   RespectsSemanticsBelow.bot _ _
 
-/-- The constantly-`−∞` labelling respects the mute semantics. -/
-theorem RespectsSemantics.mute : RespectsSemantics (Semantics.mute D) (fun _ => ⊥) :=
-  RespectsSemantics.bot _
 
 /-- A cell whose row is `−∞` on its own diagonal is forced to the label `−∞`: locality at the
 cell itself reads `min (r Σ) (r Σ) = min (σ ⊥) (g _) = ⊥`.  So the only labelling of a lower set
@@ -328,15 +317,8 @@ noncomputable def mute (C : CellScheme (ι := Fin n) Finset.univ) (hC : C.IsComp
       fun d => (hp.eq_bot_of_mute d).symm⟩
   complete := hC
 
-@[simp] theorem mute_scheme (C : CellScheme (ι := Fin n) Finset.univ) (hC : C.IsComplete) :
-    (mute C hC).scheme = C := rfl
 
-/-- A domain is **mute** when all its rows are constantly `−∞`. -/
-def IsMute (D : SemScheme n) : Prop :=
-  ∀ (Sig : Cell D.scheme) (d : D.scheme.below (D.scheme.cell Sig)), D.rows.E Sig d = ⊥
 
-theorem IsMute.rows_eq {D : SemScheme n} (hD : D.IsMute) : D.rows = Semantics.mute D.scheme :=
-  Semantics.ext (funext fun Sig => funext fun d => hD Sig d)
 
 /-- **One-point extension**: the mute domain on the one-point extension of the cell scheme of
 `D` (`CellScheme.extendOne`).  It is a domain on `n+1` whose face restriction along the initial
@@ -350,7 +332,6 @@ noncomputable def muteExtendOne (D : SemScheme n) : SemScheme (n + 1) :=
 
 variable (D : SemScheme n)
 
-@[simp] theorem muteExtendOne_scheme : D.muteExtendOne.scheme = D.scheme.extendOne := rfl
 
 /-- The chain of mute domains `D₀ ⊂ D₁ ⊂ ⋯`: the empty domain, extended one point at a
 time. -/
@@ -358,9 +339,6 @@ noncomputable def muteChain : (n : ℕ) → SemScheme n
   | 0 => StageType.emptySemScheme
   | n + 1 => (muteChain n).muteExtendOne
 
-/-- Domains with associated semantics exist at every arity (the positive-arity obligation of
-#41; Knight: Lemma 4.2.2 at arity 1, amalgamation beyond). -/
-instance nonempty (n : ℕ) : Nonempty (SemScheme n) := ⟨muteChain n⟩
 
 end SemScheme
 
@@ -397,8 +375,6 @@ noncomputable def ofScheme (hα : Order.IsSuccLimit α) (D : SemScheme (n + 1)) 
     label_bound := fun _ => truncExt_bound α _
     respects := ((D.consistent Sig).toRespects hall).truncate hα }
 
-@[simp] theorem ofScheme_scheme (hα : Order.IsSuccLimit α) (D : SemScheme (n + 1)) :
-    (ofScheme hα D).scheme = D := rfl
 
 /-- The stage types of every arity are nonempty at every limit stage: `emptyType` at arity 0,
 `ofScheme` on the mute domain `SemScheme.muteChain` beyond. -/
@@ -407,15 +383,7 @@ theorem nonempty (hα : Order.IsSuccLimit α) (n : ℕ) : Nonempty (S α n) := b
   | zero => exact ⟨emptyType⟩
   | succ n => exact ⟨ofScheme hα (SemScheme.muteChain (n + 1))⟩
 
-/-- The stage type on a mute domain at any stage: all labels `−∞`. -/
-noncomputable def mute (D : SemScheme n) (hD : D.IsMute) : S α n where
-  scheme := D
-  label _ := ⊥
-  label_bound _ := Or.inl (bot_lt_ofOrd α)
-  respects := by rw [hD.rows_eq]; exact RespectsSemantics.mute
 
-@[simp] theorem mute_scheme (D : SemScheme n) (hD : D.IsMute) :
-    (mute (α := α) D hD).scheme = D := rfl
 
 end StageType
 

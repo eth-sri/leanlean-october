@@ -165,28 +165,13 @@ end Separation
 
 /-! ### Rank tails -/
 
-/-- The **tails** of a rank: `rankTail r η = {x | η ≤ r x}`, the points of rank at least `η`. -/
-def rankTail (r : X → Ordinal.{0}) (η : Ordinal.{0}) : Set X := {x | η ≤ r x}
 
-/-- Membership in a rank tail: `x ∈ rankTail r η` iff `η ≤ r x`. -/
-@[simp]
-theorem mem_rankTail {r : X → Ordinal.{0}} {η : Ordinal.{0}} {x : X} :
-    x ∈ rankTail r η ↔ η ≤ r x :=
-  Iff.rfl
 
 section RankTail
 
 variable (r : X → Ordinal.{0})
 
-/-- Every point has rank at least `0`. -/
-@[simp]
-theorem rankTail_zero : rankTail r 0 = Set.univ :=
-  Set.eq_univ_of_forall fun _ ↦ mem_rankTail.2 zero_le
 
-/-- The complement of a tail is a strict initial segment of ranks. -/
-@[simp]
-theorem compl_rankTail (η : Ordinal.{0}) : (rankTail r η)ᶜ = {x | r x < η} := by
-  ext x; simp
 
 variable (hr : ∀ x, r x < Ordinal.omega 1)
     (hfib : ∀ α < Ordinal.omega 1, Countable {x // r x = α})

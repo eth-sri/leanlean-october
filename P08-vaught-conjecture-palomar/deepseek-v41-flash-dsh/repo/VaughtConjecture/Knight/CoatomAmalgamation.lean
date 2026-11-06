@@ -124,14 +124,8 @@ def ofPoints (a : Fin (n + 2)) (b' : Fin (n + 1)) : CoatomPair n where
     obtain ⟨k, -, hk⟩ := Finset.mem_image.mp hb
     exact Fin.succAbove_ne _ k hk
 
-@[simp] theorem ofPoints_f₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₁ = Fin.succAboveEmb a := rfl
 
-@[simp] theorem ofPoints_f₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₂ = Fin.succAboveEmb (a.succAbove b') := rfl
 
-@[simp] theorem ofPoints_g₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').g₁ = Fin.succAboveEmb b' := rfl
 
 @[simp] theorem ofPoints_g₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
     (ofPoints a b').g₂ = Fin.succAboveEmb (b'.predAbove a) := rfl

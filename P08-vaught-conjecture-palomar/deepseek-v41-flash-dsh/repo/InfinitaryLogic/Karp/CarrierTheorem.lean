@@ -70,23 +70,7 @@ open FirstOrder Structure BoundedFormulaInf
 
 /-! ### Equivalence at a carrier -/
 
-/-- `L∞ω`-equivalence at a fixed branching carrier `ι`: the structures satisfy the same
-sentences whose infinitary connectives branch over `ι`. The structures need not share a
-universe. -/
-def InfEquivAt (L : Language.{u, v}) (ι : Type uι) (M : Type w) (N : Type w')
-    [L.Structure M] [L.Structure N] : Prop :=
-  ∀ φ : L.SentenceInf ι, SentenceInf.Realize φ M ↔ SentenceInf.Realize φ N
 
-/-- `L∞ω`-equivalence with branching carriers drawn from the structures' own universe. The
-quantifier over index types is here, outside the syntax, rather than inside every
-infinitary node. -/
-@[blueprint "def:linf-equiv"
-  (title := /-- $\Linf$-elementary equivalence -/)
-  (statement := /-- $M \equiv_{\Linf}^w N$: the structures satisfy the same $\Linf$
-    sentences whose infinitary connectives branch over carriers in universe $w$. The
-    quantifier over branching carriers sits outside the syntax. -/)]
-def InfEquivW (L : Language.{u, v}) (M N : Type w) [L.Structure M] [L.Structure N] : Prop :=
-  ∀ ι : Type w, InfEquivAt L ι M N
 
 section KarpAtCarrier
 
@@ -98,161 +82,10 @@ private theorem term_eq_var {γ : Type*} (t : L.Term γ) : ∃ x, t = Term.var x
   | var x => exact ⟨x, rfl⟩
   | func f _ => exact (IsEmpty.false f).elim
 
-/-- The atomic formula of an `AtomicIdx`, with the tuple in **bound** positions, generic in
-the branching carrier.
 
-Bound positions are what let the `all` case below consume `forth`/`back` directly: no
-free-variable relabeling operation appears anywhere in this development. -/
-def atomicFormulaInf (idx : L.AtomicIdx n) : L.BoundedFormulaInf ι Empty n :=
-  match idx with
-  | .eq i j => .equal (.var (.inr i)) (.var (.inr j))
-  | .rel R f => .rel R fun k => .var (.inr (f k))
 
-omit [L.IsRelational] in
-theorem realize_atomicFormulaInf {P : Type w} [L.Structure P] (idx : L.AtomicIdx n)
-    (xs : Fin n → P) :
-    (atomicFormulaInf (ι := ι) idx).Realize Empty.elim xs ↔ idx.holds xs := by
-  cases idx with
-  | eq i j => simp [atomicFormulaInf, AtomicIdx.holds, Term.realize]
-  | rel R f =>
-    simp only [atomicFormulaInf, realize_rel, Term.realize, Sum.elim_inr, AtomicIdx.holds]
-    exact Iff.rfl
 
-/-- **Forward direction, generic in the carrier and its universe**: a potential isomorphism
-forces agreement on every formula over every carrier `ι`. -/
-private theorem potentialIso_agree_aux (P : PotentialIso L M N) :
-    ∀ {k : ℕ} (φ : L.BoundedFormulaInf ι Empty k) (xs : Fin k → M) (ys : Fin k → N),
-      (⟨k, xs, ys⟩ : Σ n : ℕ, (Fin n → M) × (Fin n → N)) ∈ P.family →
-      (φ.Realize Empty.elim xs ↔ φ.Realize Empty.elim ys) := by
-  intro k φ
-  induction φ with
-  | falsum => intro xs ys _; simp
-  | equal t₁ t₂ =>
-    intro xs ys hmem
-    obtain ⟨x₁, rfl⟩ := term_eq_var t₁
-    obtain ⟨x₂, rfl⟩ := term_eq_var t₂
-    rcases x₁ with e | i; · exact e.elim
-    rcases x₂ with e | j; · exact e.elim
-    simp only [realize_equal, Term.realize, Sum.elim_inr]
-    exact (P.compatible _ hmem) (.eq i j)
-  | rel R ts =>
-    intro xs ys hmem
-    have hvar : ∀ i, ∃ j, ts i = Term.var (Sum.inr j) := by
-      intro i
-      obtain ⟨x, hx⟩ := term_eq_var (ts i)
-      rcases x with e | j
-      · exact e.elim
-      · exact ⟨j, hx⟩
-    choose f hf using hvar
-    simp only [realize_rel, hf, Term.realize, Sum.elim_inr]
-    exact (P.compatible _ hmem) (.rel R f)
-  | imp φ ψ ihφ ihψ =>
-    intro xs ys hmem
-    exact imp_congr (ihφ xs ys hmem) (ihψ xs ys hmem)
-  | all φ ih =>
-    intro xs ys hmem
-    simp only [realize_all]
-    constructor
-    · intro hAll y
-      obtain ⟨m, hm⟩ := P.back ⟨_, xs, ys⟩ hmem y
-      exact (ih (Fin.snoc xs m) (Fin.snoc ys y) hm).mp (hAll m)
-    · intro hAll m
-      obtain ⟨y, hy⟩ := P.forth ⟨_, xs, ys⟩ hmem m
-      exact (ih (Fin.snoc xs m) (Fin.snoc ys y) hy).mpr (hAll y)
-  | iSup φs ih =>
-    intro xs ys hmem
-    exact exists_congr fun i => ih i xs ys hmem
-  | iInf φs ih =>
-    intro xs ys hmem
-    exact forall_congr' fun i => ih i xs ys hmem
 
-/-- **Forward direction**: a potential isomorphism yields agreement at every carrier, in
-every index universe. -/
-theorem PotentialIso.infEquivAt (P : PotentialIso L M N) (ι : Type uι) : InfEquivAt L ι M N :=
-  fun φ => potentialIso_agree_aux P φ Fin.elim0 Fin.elim0 P.empty_mem
-
-/-- **Backward direction at any common carrier**: agreement in a *single* carrier `κ`
-admitting codings of both structures already builds a potential isomorphism.
-
-The separating formula is an `iInfAlong` — a conjunction indexed by one structure's carrier,
-expressed at `κ` along the given coding — closed by `ex`. The sum carrier plays no role. -/
-theorem infEquivAt_implies_potentialIso (cM : IndexCoding M κ) (cN : IndexCoding N κ)
-    (h : InfEquivAt L κ M N) :
-    Nonempty (PotentialIso L M N) := by
-  refine ⟨{
-    family := { p : Σ n : ℕ, (Fin n → M) × (Fin n → N) |
-      ∀ φ : L.BoundedFormulaInf κ Empty p.1,
-        φ.Realize Empty.elim p.2.1 ↔ φ.Realize Empty.elim p.2.2 }
-    empty_mem := fun φ => h φ
-    compatible := ?_
-    forth := ?_
-    back := ?_ }⟩
-  · -- compatible: atomic formulas in bound positions detect atomic type
-    intro p hp idx
-    exact (realize_atomicFormulaInf idx p.2.1).symm.trans
-      ((hp _).trans (realize_atomicFormulaInf idx p.2.2))
-  · -- forth: contradiction via an `N`-indexed conjunction coded along `cN`
-    rintro ⟨n, a, b⟩ hmem m
-    by_contra h_no
-    have h_no' : ∀ n' : N, ∃ φ : L.BoundedFormulaInf κ Empty (n + 1),
-        ¬ (φ.Realize Empty.elim (Fin.snoc a m) ↔ φ.Realize Empty.elim (Fin.snoc b n')) := by
-      intro n'
-      by_contra hn
-      refine h_no ⟨n', fun φ => ?_⟩
-      by_contra hφ
-      exact hn ⟨φ, hφ⟩
-    choose φ_bad h_bad using h_no'
-    have h_sep : ∀ n' : N, ∃ ψ : L.BoundedFormulaInf κ Empty (n + 1),
-        ψ.Realize Empty.elim (Fin.snoc a m) ∧ ¬ ψ.Realize Empty.elim (Fin.snoc b n') := by
-      intro n'
-      by_cases hA : (φ_bad n').Realize Empty.elim (Fin.snoc a m)
-      · exact ⟨φ_bad n', hA, fun hB => h_bad n' (iff_of_true hA hB)⟩
-      · have hB : (φ_bad n').Realize Empty.elim (Fin.snoc b n') := by
-          by_contra hB
-          exact h_bad n' (iff_of_false hA hB)
-        exact ⟨(φ_bad n').not, (realize_not).mpr hA, fun hc => (realize_not).mp hc hB⟩
-    choose ψ hψ using h_sep
-    set χ : L.BoundedFormulaInf κ Empty n := (iInfAlong cN ψ).ex with hχ
-    have hM : χ.Realize Empty.elim a := by
-      rw [hχ, realize_ex]
-      exact ⟨m, by rw [realize_iInfAlong]; exact fun n' => (hψ n').1⟩
-    have hN : ¬ χ.Realize Empty.elim b := by
-      rw [hχ, realize_ex]
-      rintro ⟨y, hy⟩
-      rw [realize_iInfAlong] at hy
-      exact (hψ y).2 (hy y)
-    exact hN ((hmem χ).mp hM)
-  · -- back: the mirror, via an `M`-indexed conjunction coded along `cM`
-    rintro ⟨n, a, b⟩ hmem n'
-    by_contra h_no
-    have h_no' : ∀ m : M, ∃ φ : L.BoundedFormulaInf κ Empty (n + 1),
-        ¬ (φ.Realize Empty.elim (Fin.snoc a m) ↔ φ.Realize Empty.elim (Fin.snoc b n')) := by
-      intro m
-      by_contra hn
-      refine h_no ⟨m, fun φ => ?_⟩
-      by_contra hφ
-      exact hn ⟨φ, hφ⟩
-    choose φ_bad h_bad using h_no'
-    have h_sep : ∀ m : M, ∃ ψ : L.BoundedFormulaInf κ Empty (n + 1),
-        ψ.Realize Empty.elim (Fin.snoc b n') ∧ ¬ ψ.Realize Empty.elim (Fin.snoc a m) := by
-      intro m
-      by_cases hB : (φ_bad m).Realize Empty.elim (Fin.snoc b n')
-      · exact ⟨φ_bad m, hB, fun hA => h_bad m (iff_of_true hA hB)⟩
-      · have hA : (φ_bad m).Realize Empty.elim (Fin.snoc a m) := by
-          by_contra hA
-          exact h_bad m (iff_of_false hA hB)
-        exact ⟨(φ_bad m).not, (realize_not).mpr hB, fun hc => (realize_not).mp hc hA⟩
-    choose ψ hψ using h_sep
-    set χ : L.BoundedFormulaInf κ Empty n := (iInfAlong cM ψ).ex with hχ
-    have hN : χ.Realize Empty.elim b := by
-      rw [hχ, realize_ex]
-      exact ⟨n', by rw [realize_iInfAlong]; exact fun m => (hψ m).1⟩
-    have hM : ¬ χ.Realize Empty.elim a := by
-      rw [hχ, realize_ex]
-      rintro ⟨x, hx⟩
-      rw [realize_iInfAlong] at hx
-      exact (hψ x).2 (hx x)
-    exact hM ((hmem χ).mpr hN)
 
 end KarpAtCarrier
 
@@ -260,26 +93,6 @@ section KarpCanonical
 
 variable [L.IsRelational] {M N : Type w} [L.Structure M] [L.Structure N]
 
-/-- **Karp's theorem** (Keisler–Knight 2004, Theorem 1.2.1): potential isomorphism is equivalent to
-agreement on all `L∞ω` sentences branching over carriers in the structures' universe.
-
-Forward instantiates the generic direction at each `ι`; backward specializes to the single
-carrier `M ⊕ N`. Pure packaging around `karp_theorem_at`. -/
-@[blueprint "thm:karp-theorem"
-  (title := /-- Karp's theorem -/)
-  (statement := /-- $M$ and $N$ admit a potential isomorphism if and only if they are
-    $L_{\infty\omega}^w$-equivalent (satisfy the same $L_{\infty\omega}$ sentences whose
-    infinitary connectives branch over carriers in universe $w$). -/)
-  (proof := /-- Forward: a potential isomorphism witnesses agreement on every formula over
-    every carrier, by structural induction with the tuple in bound positions, so the
-    universal case consumes forth and back directly. Backward: at the single carrier
-    $M \oplus N$, separating formulas are conjunctions indexed by one structure's carrier
-    and expressed at the common carrier along its coding. -/)
-  (proofUses := ["def:potential-iso", "def:linf-equiv"])]
-theorem karp_theorem_w :
-    Nonempty (PotentialIso L M N) ↔ InfEquivW L M N :=
-  ⟨fun ⟨P⟩ ι => P.infEquivAt ι,
-   fun h => infEquivAt_implies_potentialIso (.sumInl M N) (.sumInr M N) (h (M ⊕ N))⟩
 
 end KarpCanonical
 

@@ -340,49 +340,7 @@ theorem PotentialIso.countable_toEquiv
   let ⟨e, _⟩ := P.countable_toEquiv_graph
   ⟨e⟩
 
-/-- Given a potential isomorphism, BFEquiv holds at every ordinal level for any pair
-in the family. This is the key inductive step for the (→) direction of the
-potential isomorphism characterization.
 
-The proof proceeds by ordinal induction: the zero case uses atomic type preservation,
-the successor case uses the forth/back extension properties, and the limit case
-follows from the induction hypothesis.
-
-The structures may live in different universes, and no countability of the language is
-required: the induction consumes only the family's atomic-type compatibility and its two
-extension properties. -/
-theorem PotentialIso.family_bfEquiv
-    {M : Type w} [L.Structure M]
-    {N : Type w'} [L.Structure N]
-    (P : PotentialIso L M N) (α : Ordinal)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (hab : ⟨n, a, b⟩ ∈ P.family) : BFEquiv (L := L) α n a b := by
-  induction α using Ordinal.limitRecOn generalizing n a b with
-  | zero =>
-    exact (BFEquiv.zero a b).mpr (P.compatible _ hab)
-  | add_one β ih =>
-    rw [← Order.succ_eq_add_one, BFEquiv.succ]
-    refine ⟨ih hab, ?_, ?_⟩
-    · intro m
-      obtain ⟨n', hn'⟩ := P.forth _ hab m
-      exact ⟨n', ih hn'⟩
-    · intro n'
-      obtain ⟨m, hm⟩ := P.back _ hab n'
-      exact ⟨m, ih hm⟩
-  | limit β hβ ih =>
-    rw [BFEquiv.limit β hβ]
-    exact fun γ hγ => ih γ hγ hab
-
-/-- Compatibility alias for `PotentialIso.family_bfEquiv`, which is stated without the
-countable-language hypothesis and for structures in different universes. -/
-@[deprecated PotentialIso.family_bfEquiv +typeChanged (since := "2026-08-14")]
-theorem potentialIso_family_BFEquiv [Countable (Σ l, L.Relations l)]
-    {M : Type w} [L.Structure M]
-    {N : Type w} [L.Structure N]
-    (P : PotentialIso L M N) (α : Ordinal)
-    {n : ℕ} {a : Fin n → M} {b : Fin n → N}
-    (hab : ⟨n, a, b⟩ ∈ P.family) : BFEquiv (L := L) α n a b :=
-  P.family_bfEquiv α hab
 
 /-! ## Proof-relevant presentations
 

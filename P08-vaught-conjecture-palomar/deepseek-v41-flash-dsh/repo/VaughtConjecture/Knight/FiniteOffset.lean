@@ -96,25 +96,7 @@ namespace StageType
 
 variable {α : Ordinal.{0}} {k m n : ℕ}
 
-/-- `mapCell` is injective (`toCell` is an order embedding and the cell transport is a
-`Fin.cast`). -/
-theorem mapCell_injective {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) : Function.Injective (mapCell h) := by
-  obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
-    ⟨visible_of_typeMap_eq_some h, restrictFace_eq_of_typeMap_eq_some h⟩
-  intro a b hab
-  have := toCell_injective q.scheme.scheme f (visible_of_typeMap_eq_some h) hab
-  exact Fin.ext (congrArg Fin.val this)
 
-/-- The graded preorder below the image of the face is that of the face: `mapCell` preserves
-and reflects `GradedLe` of cell contents. -/
-theorem gradedLe_mapCell_iff {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) {a b : Cell p.scheme.scheme} :
-    GradedLe (q.scheme.scheme.cell (mapCell h a)) (q.scheme.scheme.cell (mapCell h b)) ↔
-      GradedLe (p.scheme.scheme.cell a) (p.scheme.scheme.cell b) := by
-  obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
-    ⟨visible_of_typeMap_eq_some h, restrictFace_eq_of_typeMap_eq_some h⟩
-  exact (gradedLe_restrictFace_iff q.scheme.scheme f hr).symm
 
 /-- **Composition law**: the cell map of a composite restriction is the composite of the cell
 maps (the two strictly monotone enumerations of the `f.trans g`-visible cells agree). -/
@@ -156,53 +138,10 @@ theorem mapCell_trans {z : S α n} {y : S α m} {x : S α k} {g : Fin m ↪ Fin 
     _ = e d := key
     _ = mapCell hzy (mapCell hyx d) := rfl
 
-/-- The transport of the lower set below a face cell `Ξ` into the lower set below its
-underlying cell `mapCell h Ξ` (the `mapCell` form of `belowMap`). -/
-noncomputable def belowMapCell {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme)
-    (x : p.scheme.scheme.below (p.scheme.scheme.cell Xi)) :
-    q.scheme.scheme.below (q.scheme.scheme.cell (mapCell h Xi)) :=
-  ⟨mapCell h x.1, (gradedLe_mapCell_iff h).mpr x.2⟩
 
-@[simp] theorem belowMapCell_val {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme)
-    (x : p.scheme.scheme.below (p.scheme.scheme.cell Xi)) :
-    (belowMapCell h Xi x).1 = mapCell h x.1 := rfl
 
-/-- `belowMapCell` is a bijection: the cells of `q` below an old-face cell all lie inside the
-face (their scopes are contained in the image of `f`), so they are themselves old-face cells,
-below the restricted cell.  This is what makes case 1 of the three source-row cases (old-face
-inheritance) an equivalence rather than a one-sided transport. -/
-theorem belowMapCell_bijective {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme) :
-    Function.Bijective (belowMapCell h Xi) := by
-  constructor
-  · intro a b hab
-    have hval := congrArg Subtype.val hab
-    rw [belowMapCell_val, belowMapCell_val] at hval
-    exact Subtype.ext (mapCell_injective h hval)
-  · obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
-      ⟨visible_of_typeMap_eq_some h, restrictFace_eq_of_typeMap_eq_some h⟩
-    rintro ⟨d, hd⟩
-    have hdvis : q.scheme.scheme.scope d ⊆ Finset.univ.image f :=
-      hd.1.trans (scope_toCell_subset q.scheme.scheme f hr Xi)
-    obtain ⟨i, rfl⟩ := exists_toCell_eq q.scheme.scheme f hr hdvis
-    have hle : GradedLe ((q.scheme.scheme.restrictFace f hr).cell i)
-        ((q.scheme.scheme.restrictFace f hr).cell Xi) :=
-      (gradedLe_restrictFace_iff q.scheme.scheme f hr).mpr hd
-    exact ⟨⟨i, hle⟩, rfl⟩
 
-/-- The lower-set bijection below an old-face cell. -/
-noncomputable def belowCellEquiv {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme) :
-    p.scheme.scheme.below (p.scheme.scheme.cell Xi) ≃
-      q.scheme.scheme.below (q.scheme.scheme.cell (mapCell h Xi)) :=
-  Equiv.ofBijective _ (belowMapCell_bijective h Xi)
 
-@[simp] theorem belowCellEquiv_apply {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme)
-    (x : p.scheme.scheme.below (p.scheme.scheme.cell Xi)) :
-    belowCellEquiv h Xi x = belowMapCell h Xi x := rfl
 
 end StageType
 
@@ -222,27 +161,12 @@ open StageType
 
 variable {α : Ordinal.{0}} {k m n : ℕ}
 
-/-- A **finite offset assignment** on a source type `p : S α n`: a partial assignment of
-finite offsets to cells, defined only on source-`⊤` cells (`top_of_assigned`).  `η c = none`
-means the occurrence class of `c` keeps its source value (in particular a `⊤` cell remains
-genuinely `⊤`). -/
-structure FiniteOffset (p : S α n) : Type where
-  /-- The partial offset: `some i` sends a source-`⊤` cell to `α + (i+1)`; `none` keeps the
-  source value. -/
-  η : Cell p.scheme.scheme → Option ℕ
-  /-- Offsets are assigned only to source-`⊤` cells. -/
-  top_of_assigned : ∀ c i, η c = some i → p.label c = ⊤
 
 namespace FiniteOffset
 
 variable {p : S α n}
 
-/-- The empty assignment: every class keeps its source value. -/
-def empty (p : S α n) : FiniteOffset p where
-  η _ := none
-  top_of_assigned _ _ h := nomatch h
 
-@[simp] theorem empty_η (c : Cell p.scheme.scheme) : (empty p).η c = none := rfl
 
 /-! ### Coherent restriction and extension of offset assignments
 
@@ -253,17 +177,7 @@ larger type with every **newly seen class unassigned** — "a class introduced w
 offset is thereafter kept unassigned" — and `comap_extend` says the old classes keep their
 offsets: this is the *genuinely coherent types* discipline of the spine order. -/
 
-/-- Restriction of an offset assignment to an exact face: read `η` at the underlying cells. -/
-noncomputable def comap {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (ν : FiniteOffset q) : FiniteOffset p where
-  η d := ν.η (mapCell h d)
-  top_of_assigned d i hi := by
-    have htop := ν.top_of_assigned _ i hi
-    rwa [label_mapCell h d] at htop
 
-@[simp] theorem comap_η {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
-    (h : typeMap f q = some p) (ν : FiniteOffset q) (d : Cell p.scheme.scheme) :
-    (ν.comap h).η d = ν.η (mapCell h d) := rfl
 
 end FiniteOffset
 

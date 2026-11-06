@@ -39,10 +39,6 @@ noncomputable def release : ℕ → ExtOrd → ExtOrd
   | zero => rfl
   | succ b ih => simp only [reserve, ih, pad_bot]
 
-@[simp] theorem release_bot (b : ℕ) : release b ⊥ = ⊥ := by
-  induction b with
-  | zero => rfl
-  | succ b ih => simpa only [release, unpad_bot] using ih
 
 /-- The inverse is literal at every padded source, including bottom and top. -/
 theorem release_reserve (b : ℕ) (x : ExtOrd) : release b (reserve b x) = x := by

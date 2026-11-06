@@ -30,12 +30,7 @@ change, only `none` becomes `some`).  The order of the ω-step (shape shared wit
 def Extends (A A' : KnightRealization β M) : Prop :=
   Realization.Extends A A'
 
-/-- **The mute seed**: the empty realization, evaluating nothing. -/
-def emptySeed (β : LimitStage) (M : Type w) : KnightRealization β M where
-  eval _ := none
 
-@[simp] theorem emptySeed_eval {n : ℕ} (t : Fin n ↪ M) :
-    (emptySeed β M).eval t = none := rfl
 
 /-- The points a partial state has touched. -/
 def UsedPoints (A : KnightRealization β M) : Set M :=

@@ -52,7 +52,6 @@ namespace VaughtConjecture.Knight
 open AmalgamationPlan Transform Value ExtOrd
 open CellScheme.restrictFace (toCell belowMap pushGraded)
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
 
 section Reduction
 
@@ -62,7 +61,6 @@ end Reduction
 
 section GradeOne
 
-variable {q : D₂.below (Finset.univ, 1) → ExtOrd}
 
 end GradeOne
 

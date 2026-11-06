@@ -27,15 +27,8 @@ namespace VaughtConjecture.Knight.RelativePrefixEncoding
 
 open Transform Value ExtOrd SharpWitnessComposition SourceBlockPadding
 
-/-- The closed low prefix is literal; only values strictly above the cap are coded. -/
-noncomputable def encode (S : Finset Ordinal.{0}) (K b : ℕ) (γ : ExtOrd) :
-    ExtOrd → ExtOrd := prefixSplice γ id (PaddedSourceDecoder.encode S K b)
 
-theorem encode_of_le {S : Finset Ordinal.{0}} {K b : ℕ} {γ y : ExtOrd}
-    (hy : y ≤ γ) : encode S K b γ y = y := prefixSplice_of_le hy
 
-@[simp] theorem encode_bot (S : Finset Ordinal.{0}) (K b : ℕ) (γ : ExtOrd) :
-    encode S K b γ ⊥ = ⊥ := encode_of_le bot_le
 
 section FiniteInventory
 

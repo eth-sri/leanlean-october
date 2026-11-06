@@ -50,7 +50,6 @@ local notation "H" => ReceivingCatalogueSources.ceiling (P := P) (C := C)
 local notation "G" => grid (P := P) (C := C)
 local notation "D" => carrier L hC
 local notation "T" => SupportLadderRows.Point (rungs (P := P) (C := C))
-  (TField P C) (Controller L)
 
 end
 end VaughtConjecture.Knight.ReceivingCatalogueIncidences

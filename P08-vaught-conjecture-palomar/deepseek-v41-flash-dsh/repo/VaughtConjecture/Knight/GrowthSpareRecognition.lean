@@ -74,8 +74,6 @@ local notation "ranks₁" => RelativeLadderLayer.ranks (fields X 1)
 local notation "rungs" => RelativeLadderLayer.rungs (X := Fld)
 local notation "lowerΩ" => LadderWeightedSuccessor.Input.lower (input I X T hA hB hC)
 local notation "BaseRows" => LadderWeightedSuccessor.Input.lowerRows (input I X T hA hB hC)
-local notation "Low" =>
-  CellScheme.below (LadderWeightedSuccessor.Input.lower (input I X T hA hB hC)) (A, 1)
 local notation "spare" => SupportLadderRows.leaf (rungs_pos I)
 
 /-! ## The base restriction of an arbitrary lawful section -/

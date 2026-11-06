@@ -145,25 +145,6 @@ theorem IsPlan.empty_mem {A : Finset α} {P : Finset (Finset α)}
     simp only [Finset.mem_union, Finset.mem_singleton]
     left; left; exact ihQ
 
-/-- Every singleton of the domain is a visible face: a plan never drops a one-point face.
-In the `step` case `P = Q ∪ R ∪ {A}`, the singleton `{x}` lives in `Q` when `x ≠ a` and in
-`R` when `x = a` (then `x ≠ b`). -/
-theorem IsPlan.singleton_mem {A : Finset α} {P : Finset (Finset α)} (hP : IsPlan A P)
-    {x : α} (hx : x ∈ A) : {x} ∈ P := by
-  induction hP with
-  | empty => exact absurd hx (Finset.notMem_empty x)
-  | singleton a =>
-    rw [Finset.mem_singleton] at hx
-    subst hx
-    simp
-  | @step A a b Q R P ha hb hab hQ hR h_inter_mem h_restr_eq hP ihQ ihR =>
-    subst hP
-    by_cases hxa : x = a
-    · subst hxa
-      have hxR : {x} ∈ R := ihR (Finset.mem_erase.mpr ⟨hab, hx⟩)
-      simp [hxR]
-    · have hxQ : {x} ∈ Q := ihQ (Finset.mem_erase.mpr ⟨hxa, hx⟩)
-      simp [hxQ]
 
 /-- **Pivot rigidity** (Knight-VC `PaperExactPlanTraceGlue`): for `2 ≤ |A|` the visible
 co-arity-one faces `A ∖ {z}` are exactly those at the two pivots `a ≠ b` of (any) step
