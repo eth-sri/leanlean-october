@@ -15,6 +15,8 @@ Entries of the same character are allowed only when the sieve weight vanishes.
 
 @[expose] public section
 
+
+
 namespace GradedNear
 
 open NearData

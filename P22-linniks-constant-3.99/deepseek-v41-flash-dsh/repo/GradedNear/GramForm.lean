@@ -134,9 +134,9 @@ theorem gram_form_bound (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (D : N
   obtain ⟨q₁, hq₁⟩ := principal_entry hX31 hD.g_cond1 K hε
   obtain ⟨δ, hδ0, hδ1, q₂, hq₂⟩ := nonprincipal_entry hX32 hD.g_cond1 hD.g_cond2 K hε
   refine ⟨max (max q₁ q₂) 2, fun q _ hq T hT hTq hsafe ι _ E hγ hΔ a ha => ?_⟩
-  have hq1 : q₁ ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hq
-  have hq2' : q₂ ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hq
-  have hq2 : 2 ≤ q := le_trans (le_max_right _ _) hq
+  have hq1 : q₁ ≤ q := by omega
+  have hq2' : q₂ ≤ q := by omega
+  have hq2 : 2 ≤ q := by omega
   have hℓ := log_q_pos hq2
   classical
   -- bounds on the Gram point

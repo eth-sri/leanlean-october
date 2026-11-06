@@ -29,6 +29,16 @@ The helpers live in `GradedNear.Cert.SoundAux`:
 
 @[expose] public section
 
+
+
+local macro "ℝow" L:term:max k:term:max : term => `((($L).rows).getD $k ⟨1, []⟩)
+local macro "𝔹" box:term:max k:term:max : term => `((($box).getD $k ((0, 0) : ℤ × ℤ)))
+
+
+local notation "𝟘" => (0 : ℝ)
+
+
+
 namespace GradedNear.Cert
 
 namespace SoundAux
@@ -114,7 +124,7 @@ theorem colCosts_getD {L : Leaf} (hwf : wellFormed L = true) {col : Col} (hcol :
     {box : List (ℤ × ℤ)} (hbox : box.length = L.rows.length) {cs : List ℕ}
     (hcs : cs.length = L.rows.length) {k : ℕ} (hk : k < L.rows.length) :
     (colCosts col box cs).getD k 0 = colCost (col.v.getD k 0) (col.D.getD k 1)
-      (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) := by
+      (𝔹 box k).1 (𝔹 box k).2 (cs.getD k 0) := by
   obtain ⟨hv, hD⟩ := wf_col hwf hcol
   unfold colCosts
   rw [getD_zipWith3 _ _ (0, 0) (0, 1) 0 _ _ _ k (by omega) (by simp [hv, hD]; omega) (by omega),
@@ -129,8 +139,8 @@ theorem budgets_length {L : Leaf} {box : List (ℤ × ℤ)} (hbox : box.length =
 /-- Entry `k` of `budgets` is the budget of row `k`, as in `RelaxHolds`. -/
 theorem budgets_getD {L : Leaf} {box : List (ℤ × ℤ)} (hbox : box.length = L.rows.length)
     {cs : List ℕ} (hcs : cs.length = L.rows.length) {k : ℕ} (hk : k < L.rows.length) :
-    (budgets L box cs).getD k 0 = rowBudget (L.rows.getD k ⟨1, []⟩) (box.getD k (0, 0)).1
-      (box.getD k (0, 0)).2 (cs.getD k 0) := by
+    (budgets L box cs).getD k 0 = rowBudget (ℝow L k) (𝔹 box k).1
+      (𝔹 box k).2 (cs.getD k 0) := by
   unfold budgets
   rw [getD_zipWith3 _ _ ⟨1, []⟩ (0, 0) 0 _ _ _ k hk (by omega) (by omega)]
 
@@ -174,11 +184,11 @@ theorem weak_duality {m n : ℕ} (x : Fin m → ℝ) (hx : ∀ j, 0 ≤ x j)
 
 /-- From `DS · Σ G x ≤ T` to the certified value `⌈T / DS⌉ + first + final`. -/
 theorem obj_le_of {L : Leaf} {x : Fin L.cols.length → ℝ} {T : ℤ}
-    (h : ((DS : ℤ) : ℝ) * ∑ j, ((L.cols.get j).G : ℝ) * x j ≤ (T : ℝ)) :
+    (h : ((DS : ℤ) : ℝ) * ∑ j, ((L.cols.get j).G : ℝ) * x j ≤ ℝc T) :
     objective L x ≤ ((ceilDiv T DS + L.first + L.final : ℤ) : ℝ) := by
   have hDS : (0 : ℤ) < DS := by norm_num [DS]
-  have h2 : (T : ℝ) ≤ (DS : ℝ) * (ceilDiv T DS : ℝ) := by exact_mod_cast le_mul_ceilDiv T hDS
-  have hDSr : (0 : ℝ) < (DS : ℝ) := by exact_mod_cast hDS
+  have h2 : ℝc T ≤ (DS : ℝ) * (ceilDiv T DS : ℝ) := by exact_mod_cast le_mul_ceilDiv T hDS
+  have hDSr : 𝟘 < (DS : ℝ) := by exact_mod_cast hDS
   have h3 := le_of_mul_le_mul_left (h.trans h2) hDSr
   unfold objective
   push_cast
@@ -191,7 +201,7 @@ theorem caseValue_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ 
     {du : Duals} {v : ℤ} (hv : caseValue L box cs du = some v)
     {x : Fin L.cols.length → ℝ} {τ : ℕ → ℝ} (hfeas : Feasible L x τ)
     (hrel : ∀ k < L.rows.length,
-      RelaxHolds L x k (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0)) :
+      RelaxHolds L x k (𝔹 box k).1 (𝔹 box k).2 (cs.getD k 0)) :
     objective L x ≤ v := by
   obtain ⟨hx, hW, hC, hNH, hE, -⟩ := hfeas
   unfold caseValue at hv
@@ -205,7 +215,7 @@ theorem caseValue_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ 
   have hsum : ∑ k ∈ Finset.range L.rows.length,
       (du.Z.map (Nat.cast : ℕ → ℤ)).getD k 0 * (budgets L box cs).getD k 0 =
       ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℤ) *
-        rowBudget (L.rows.getD k ⟨1, []⟩) (box.getD k (0, 0)).1 (box.getD k (0, 0)).2
+        rowBudget (ℝow L k) (𝔹 box k).1 (𝔹 box k).2
           (cs.getD k 0) :=
     Finset.sum_congr rfl fun k hk => by
       rw [getD_map_cast, budgets_getD hbox hcs (Finset.mem_range.mp hk)]
@@ -216,7 +226,7 @@ theorem caseValue_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ 
         ((du.P : ℝ) - (du.M : ℝ)) * ((L.cols.get j).E : ℝ) +
         ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℝ) *
           ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
-            (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) : ℤ) : ℝ) := by
+            (𝔹 box k).1 (𝔹 box k).2 (cs.getD k 0) : ℤ) : ℝ) := by
     intro j
     have hmem : L.cols.get j ∈ L.cols := List.get_mem _ _
     have h1 := List.all_eq_true.mp hcols _ hmem
@@ -226,7 +236,7 @@ theorem caseValue_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ 
         (du.Z.map (Nat.cast : ℕ → ℤ)).getD k 0 * (colCosts (L.cols.get j) box cs).getD k 0 =
         ∑ k ∈ Finset.range L.rows.length, ((du.Z.getD k 0 : ℕ) : ℤ) *
           colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
-            (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) :=
+            (𝔹 box k).1 (𝔹 box k).2 (cs.getD k 0) :=
       Finset.sum_congr rfl fun k hk => by
         rw [getD_map_cast, colCosts_getD hwf hmem hbox hcs (Finset.mem_range.mp hk)]
     rw [h2] at h1
@@ -235,11 +245,11 @@ theorem caseValue_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ 
     (fun j => ((L.cols.get j).W : ℝ)) (fun j => ((L.cols.get j).C : ℝ))
     (fun j => ((L.cols.get j).NH : ℝ)) (fun j => ((L.cols.get j).E : ℝ))
     (fun j k => ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
-      (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) : ℤ) : ℝ))
-    (fun k => ((rowBudget (L.rows.getD k ⟨1, []⟩) (box.getD k (0, 0)).1 (box.getD k (0, 0)).2
+      (𝔹 box k).1 (𝔹 box k).2 (cs.getD k 0) : ℤ) : ℝ))
+    (fun k => ((rowBudget (ℝow L k) (𝔹 box k).1 (𝔹 box k).2
       (cs.getD k 0) : ℤ) : ℝ))
     (fun k => ((du.Z.getD k 0 : ℕ) : ℝ)) (fun k => Nat.cast_nonneg _)
-    (du.Y : ℝ) (du.V : ℝ) (du.U : ℝ) ((du.P : ℝ) - (du.M : ℝ)) (L.F : ℝ) (2 * (S : ℝ))
+    (du.Y : ℝ) (du.V : ℝ) (du.U : ℝ) ((du.P : ℝ) - (du.M : ℝ)) (L.F : ℝ) (2 * ℝc S)
     ((L.ng : ℝ) * S) ((L.n2 : ℝ) * S) ((DS : ℤ) : ℝ) (Nat.cast_nonneg _) (Nat.cast_nonneg _)
     (Nat.cast_nonneg _) hcol hW hC hNH hE hrel
   push_cast
@@ -252,7 +262,7 @@ theorem not_excludable {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ �
     (hbox : box.length = L.rows.length) {cs : List ℕ} (hcs : cs.length = L.rows.length)
     {x : Fin L.cols.length → ℝ} (hx : ∀ j, 0 ≤ x j)
     (hrel : ∀ k < L.rows.length,
-      RelaxHolds L x k (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0)) :
+      RelaxHolds L x k (𝔹 box k).1 (𝔹 box k).2 (cs.getD k 0)) :
     excludable L box cs ≠ true := by
   intro hex
   unfold excludable at hex
@@ -263,14 +273,14 @@ theorem not_excludable {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ �
   rw [budgets_getD hbox hcs hk] at hneg
   have hr := hrel k hk
   unfold RelaxHolds at hr
-  have hnn : (0 : ℝ) ≤ ∑ j, ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
-      (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 (cs.getD k 0) : ℤ) : ℝ) * x j := by
+  have hnn : 𝟘 ≤ ∑ j, ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1)
+      (𝔹 box k).1 (𝔹 box k).2 (cs.getD k 0) : ℤ) : ℝ) * x j := by
     refine Finset.sum_nonneg fun j _ => ?_
     have hmem : L.cols.get j ∈ L.cols := List.get_mem _ _
     have h1 := hcost _ hmem
     rw [decide_eq_true_eq, colCosts_getD hwf hmem hbox hcs hk] at h1
     exact mul_nonneg (by exact_mod_cast h1) (hx j)
-  have hneg' : ((rowBudget (L.rows.getD k ⟨1, []⟩) (box.getD k (0, 0)).1 (box.getD k (0, 0)).2
+  have hneg' : ((rowBudget (ℝow L k) (𝔹 box k).1 (𝔹 box k).2
       (cs.getD k 0) : ℤ) : ℝ) < 0 := by exact_mod_cast hneg
   linarith
 
@@ -361,17 +371,17 @@ theorem checkBox_spec {L : Leaf} {box : List (ℤ × ℤ)} {orders : List ℕ} {
 /-- The value of a node bounds the objective at every feasible point whose thresholds lie in the
 node's box. -/
 theorem checkBox_sound {L : Leaf} (hwf : wellFormed L = true) {box : List (ℤ × ℤ)}
-    (hbox : box.length = L.rows.length) (hlo : ∀ k < L.rows.length, 0 ≤ (box.getD k (0, 0)).1)
+    (hbox : box.length = L.rows.length) (hlo : ∀ k < L.rows.length, 0 ≤ (𝔹 box k).1)
     {orders : List ℕ} {certs : List CaseCert} {m : ℤ} (h : checkBox L box orders certs = some m)
     {x : Fin L.cols.length → ℝ} {τ : ℕ → ℝ} (hfeas : Feasible L x τ)
     (hτ : ∀ k < L.rows.length,
-      ((box.getD k (0, 0)).1 : ℝ) ≤ τ k * TS ∧ τ k * TS ≤ (box.getD k (0, 0)).2) :
+      ((𝔹 box k).1 : ℝ) ≤ τ k * TS ∧ τ k * TS ≤ (𝔹 box k).2) :
     objective L x ≤ m := by
   obtain ⟨hord, hcv⟩ := checkBox_spec h
   have hx := hfeas.1
   have hrow := hfeas.2.2.2.2.2
   obtain ⟨cs, hcs, hlen, hrel⟩ := exists_caseVector
-    (fun k c => RelaxHolds L x k (box.getD k (0, 0)).1 (box.getD k (0, 0)).2 c) orders (by
+    (fun k c => RelaxHolds L x k (𝔹 box k).1 (𝔹 box k).2 c) orders (by
       intro k hk
       rw [hord] at hk
       obtain ⟨-, -, hr⟩ := hrow k hk
@@ -398,9 +408,9 @@ contains every `τ_k·TS`, the value of the tree bounds the objective. -/
 theorem verifyTree_sound {L : Leaf} (hwf : wellFormed L = true) {x : Fin L.cols.length → ℝ}
     {τ : ℕ → ℝ} (hfeas : Feasible L x τ) (T : Tree) :
     ∀ (box : List (ℤ × ℤ)) (m : ℤ), verifyTree L T box = some m →
-      box.length = L.rows.length → (∀ k < L.rows.length, 0 ≤ (box.getD k (0, 0)).1) →
+      box.length = L.rows.length → (∀ k < L.rows.length, 0 ≤ (𝔹 box k).1) →
       (∀ k < L.rows.length,
-        ((box.getD k (0, 0)).1 : ℝ) ≤ τ k * TS ∧ τ k * TS ≤ (box.getD k (0, 0)).2) →
+        ((𝔹 box k).1 : ℝ) ≤ τ k * TS ∧ τ k * TS ≤ (𝔹 box k).2) →
       objective L x ≤ m := by
   induction T with
   | split k mid l r ihl ihr =>
@@ -412,7 +422,7 @@ theorem verifyTree_sound {L : Leaf} (hwf : wellFormed L = true) {x : Fin L.cols.
       obtain ⟨m1, h1, h2⟩ := Option.bind_eq_some_iff.mp h
       obtain ⟨m2, h3, rfl⟩ := Option.map_eq_some_iff.mp h2
       obtain ⟨hkl, hkv⟩ := List.getElem?_eq_some_iff.mp hk
-      have hgk : box.getD k (0, 0) = (a, b) := by rw [List.getD_eq_getElem _ _ hkl, hkv]
+      have hgk : 𝔹 box k = (a, b) := by rw [List.getD_eq_getElem _ _ hkl, hkv]
       have hkn : k < L.rows.length := hlen ▸ hkl
       obtain ⟨hτa, hτb⟩ := hτ k hkn
       rw [hgk] at hτa hτb
@@ -485,7 +495,7 @@ theorem isqrtUp_sq (n : ℕ) : n ≤ isqrtUp n * isqrtUp n := by
 
 /-- The root end contains every admissible threshold: `(τ·TS)² ≤ d TS²/S < ⌊d TS²/S⌋ + 1 ≤
 rootEnd²`. -/
-theorem le_rootEnd {d : ℤ} {t : ℝ} (ht : 0 ≤ t) (htd : t ^ 2 ≤ (d : ℝ) / S) :
+theorem le_rootEnd {d : ℤ} {t : ℝ} (ht : 0 ≤ t) (htd : t ^ 2 ≤ ℝc d / S) :
     t * TS ≤ rootEnd d := by
   have hS : (0 : ℤ) < S := by norm_num [S]
   have h1 : d * TS * TS < (d * TS * TS / S + 1) * S := Int.lt_ediv_add_one_mul_self _ hS
@@ -494,20 +504,20 @@ theorem le_rootEnd {d : ℤ} {t : ℝ} (ht : 0 ≤ t) (htd : t ^ 2 ≤ (d : ℝ)
   unfold rootEnd
   generalize d * TS * TS / S = q at h1 h2 h3 ⊢
   generalize isqrtUp (q.toNat + 1) = r at h3 ⊢
-  have hSr : (0 : ℝ) < S := by exact_mod_cast hS
-  have h1r : (d : ℝ) * TS * TS < ((q : ℝ) + 1) * S := by exact_mod_cast h1
-  have h2r : (q : ℝ) ≤ (q.toNat : ℝ) := by exact_mod_cast h2
-  have h3r : ((q.toNat : ℝ) + 1) ≤ (r : ℝ) * r := by exact_mod_cast h3
+  have hSr : 𝟘 < S := by exact_mod_cast hS
+  have h1r : ℝc d * TS * TS < (ℝc q + 1) * S := by exact_mod_cast h1
+  have h2r : ℝc q ≤ (q.toNat : ℝ) := by exact_mod_cast h2
+  have h3r : ((q.toNat : ℝ) + 1) ≤ ℝc r * r := by exact_mod_cast h3
   have h4 : t ^ 2 * S ≤ d := by rwa [le_div_iff₀ hSr] at htd
-  have h5 : (t * TS) ^ 2 * S < ((q : ℝ) + 1) * S := by
+  have h5 : (t * TS) ^ 2 * S < (ℝc q + 1) * S := by
     have := mul_le_mul_of_nonneg_right h4 (sq_nonneg (TS : ℝ))
     calc (t * TS) ^ 2 * S = t ^ 2 * S * (TS : ℝ) ^ 2 := by ring
       _ ≤ d * (TS : ℝ) ^ 2 := this
       _ = d * TS * TS := by ring
-      _ < ((q : ℝ) + 1) * S := h1r
-  have h6 : (t * TS) ^ 2 < (q : ℝ) + 1 := lt_of_mul_lt_mul_right h5 hSr.le
-  have hr0 : (0 : ℝ) ≤ r := Nat.cast_nonneg r
-  have hTS : (0 : ℝ) ≤ TS := by norm_num [TS]
+      _ < (ℝc q + 1) * S := h1r
+  have h6 : (t * TS) ^ 2 < ℝc q + 1 := lt_of_mul_lt_mul_right h5 hSr.le
+  have hr0 : 𝟘 ≤ r := Nat.cast_nonneg r
+  have hTS : 𝟘 ≤ TS := by norm_num [TS]
   have htT : 0 ≤ t * TS := mul_nonneg ht hTS
   push_cast
   nlinarith
@@ -516,7 +526,7 @@ theorem rootBox_length (L : Leaf) : (rootBox L).length = L.rows.length := by
   simp [rootBox]
 
 theorem rootBox_getD {L : Leaf} {k : ℕ} (hk : k < L.rows.length) :
-    (rootBox L).getD k (0, 0) = (0, rootEnd (L.rows.getD k ⟨1, []⟩).d) := by
+    (rootBox L).getD k (0, 0) = (0, rootEnd (ℝow L k).d) := by
   unfold rootBox
   rw [List.getD_eq_getElem _ _ (by simpa using hk), List.getElem_map,
     List.getD_eq_getElem _ _ hk]

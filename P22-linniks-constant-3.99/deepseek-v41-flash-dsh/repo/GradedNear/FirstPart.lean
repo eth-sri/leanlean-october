@@ -15,6 +15,10 @@ cell endpoints `t_k`; where `ω(u) = 0` we have `f = 0` nearby, so `φ = 0`. Its
 
 @[expose] public section
 
+local notation "𝟘" => (0 : ℝ)
+
+
+
 open scoped ArithmeticFunction.vonMangoldt
 
 namespace GradedNear
@@ -59,14 +63,14 @@ lemma exists_bound (hD : D.Valid) : ∃ M, ∀ u ∈ Set.Icc 0 D.xf, |phi D u| �
 lemma continuousAt_ite_Ico {a b c u : ℝ} (ha : u ≠ a) (hb : u ≠ b) :
     ContinuousAt (fun v : ℝ => if a ≤ v ∧ v < b then c else 0) u := by
   rcases lt_or_gt_of_ne ha with hua | hua
-  · refine (continuousAt_const : ContinuousAt (fun _ : ℝ => (0 : ℝ)) u).congr ?_
+  · refine (continuousAt_const : ContinuousAt (fun _ : ℝ => 𝟘) u).congr ?_
     filter_upwards [Iio_mem_nhds hua] with v hv
     rw [ite_eq_right (fun h => absurd h.1 (not_le.2 hv))]
   · rcases lt_or_gt_of_ne hb with hub | hub
     · refine (continuousAt_const : ContinuousAt (fun _ : ℝ => c) u).congr ?_
       filter_upwards [Ioo_mem_nhds hua hub] with v hv
       rw [ite_eq_left ⟨hv.1.le, hv.2⟩]
-    · refine (continuousAt_const : ContinuousAt (fun _ : ℝ => (0 : ℝ)) u).congr ?_
+    · refine (continuousAt_const : ContinuousAt (fun _ : ℝ => 𝟘) u).congr ?_
       filter_upwards [Ioi_mem_nhds hub] with v hv
       rw [ite_eq_right (fun h => absurd h.2 (not_lt.2 hv.le))]
 
@@ -110,9 +114,9 @@ lemma continuousAt_phi (hD : D.Valid) {u : ℝ} (hu0 : 0 < u) (hu : ∀ k ≤ D.
   · exact hnum.div hω hωu
 
 /-- `∫₀^{x_f} φ = I_B`. -/
-lemma integral_phi_eq (hD : D.Valid) : ∫ u in (0 : ℝ)..D.xf, phi D u = D.IB := by
+lemma integral_phi_eq (hD : D.Valid) : ∫ u in 𝟘..D.xf, phi D u = D.IB := by
   rw [intervalIntegral.integral_of_le hD.f_cond.pos.le]
-  show ∫ u in Set.Ioc 0 D.xf, phi D u = ∫ u in Set.Ioi (0 : ℝ), phi D u
+  show ∫ u in Set.Ioc 0 D.xf, phi D u = ∫ u in Set.Ioi 𝟘, phi D u
   symm
   apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
     Set.Ioc_subset_Ioi_self
@@ -128,7 +132,7 @@ end FirstPart
 
 theorem first_factor_bound (D : NearData) (hD : D.Valid) {ε : ℝ} (hε : 0 < ε) :
     ∃ q₀ : ℕ, ∀ q : ℕ, q₀ ≤ q →
-      (∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ D.xf⌋₊, Λ n / n *
+      (∑ n ∈ Finset.Icc 1 ⌊ℝc q ^ D.xf⌋₊, Λ n / n *
           (Real.exp (2 * D.s * tn q n) * D.f (tn q n) ^ 2 / D.omega (tn q n))) /
         Real.log q ≤ D.IB + ε := by
   obtain ⟨M, hM⟩ := FirstPart.exists_bound D hD

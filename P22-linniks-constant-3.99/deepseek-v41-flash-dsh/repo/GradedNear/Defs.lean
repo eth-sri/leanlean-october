@@ -2,6 +2,10 @@ module
 
 public import Mathlib
 
+/-! Source abbreviations for common expressions; each elaborates to the term on the right. -/
+notation "ℝc" x:max => (x : ℝ)
+notation "ℂc" x:max => (x : ℂ)
+
 /-!
 # Definitions: the graded near lemma, its zero form, and the leaf-LP certificates
 
@@ -43,12 +47,23 @@ this repository); that application is not formalized here.
 
 @[expose] public section
 
+local notation "⅔" => (2 / 3 : ℝ)
+local notation "𝟘" => (0 : ℝ)
+local notation "𝟙" => (1 : ℝ)
+
+
+
 open Complex MeasureTheory
 open scoped ArithmeticFunction.vonMangoldt ArithmeticFunction.Moebius
 
 noncomputable section
 
 namespace GradedNear
+
+/-- Casts of the basic bounds on a modulus. -/
+lemma natCast_pos {q : ℕ} (hq : 2 ≤ q) : (0 : ℝ) < q := by exact_mod_cast (by omega)
+lemma natCast_one_lt {q : ℕ} (hq : 2 ≤ q) : (1 : ℝ) < q := by exact_mod_cast (by omega)
+lemma natCast_one_le {q : ℕ} (hq : 2 ≤ q) : (1 : ℝ) ≤ q := by exact_mod_cast (by omega)
 
 open Classical in
 /-- The set of indices `k ≠ j` of the same character as `j` (used for pair excesses). -/
@@ -69,7 +84,7 @@ structure Condition1 (f : ℝ → ℝ) (x₀ B : ℝ) : Prop where
 
 /-- The Laplace transform `F(z) = ∫₀^∞ f(t) e^{-zt} dt`. -/
 def laplace (f : ℝ → ℝ) (z : ℂ) : ℂ :=
-  ∫ t in Set.Ioi (0 : ℝ), (f t : ℂ) * cexp (-(z * t))
+  ∫ t in Set.Ioi 𝟘, (f t : ℂ) * cexp (-(z * t))
 
 /-- [HB, Condition 2, p. 286] = [X, Bedingung 2, p. 18]: `f ≥ 0` on `[0, ∞)` and
 `Re F(z) ≥ 0` whenever `Re z ≥ 0`. -/
@@ -138,7 +153,7 @@ def BurgessBound : Prop :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ q : ℕ, ∀ χ : DirichletCharacter ℂ q, χ ≠ 1 →
     ∀ N H : ℕ, 1 ≤ H → H ≤ q →
       ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-        C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
+        C * (q : ℝ) ^ (𝟙 / 9 + ε) * (H : ℝ) ^ ⅔
 
 /-- [HB, Lemma 2.1, p. 7], the case `k = 3`, as printed: "Let `q ≥ 1` and let `χ` be a primitive
 character modulo `q`. Let `N ≥ 1` and `1 ≤ H ≤ q`. Then for any `ε > 0` we have
@@ -155,7 +170,7 @@ def BurgessPrimitive : Prop :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
     ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
       ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-        C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
+        C * (q : ℝ) ^ (𝟙 / 9 + ε) * (H : ℝ) ^ ⅔
 
 /-- The Selberg weights `ψ_d = μ(d) log(V/d) / log V` for `d ≤ V`, and `0` otherwise
 ([HB, (11.6)] with `U = 1`). -/
@@ -203,14 +218,14 @@ def sieveH (u : ℝ) : ℝ :=
 def omega (u : ℝ) : ℝ := D.g u * Real.exp (D.s₁ * u) + D.sieveH u
 
 /-- `I_B(s) = ∫ e^{2su} f(u)² / ω(u) du`. -/
-def IB : ℝ := ∫ u in Set.Ioi (0 : ℝ), Real.exp (2 * D.s * u) * D.f u ^ 2 / D.omega u
+def IB : ℝ := ∫ u in Set.Ioi 𝟘, Real.exp (2 * D.s * u) * D.f u ^ 2 / D.omega u
 
 /-- The sieve level exponent `δ_k = (t_k - 1/3)/2 - ε'` (the level is `q^{δ_k}`). -/
 def level (k : ℕ) : ℝ := (D.t k - 1 / 3) / 2 - D.ε'
 
 /-- `D(δ) = ∫ g(u) e^{(s₁ - 2δ)u} du + Σ_k h_k e^{-2δ t_k} (t_{k+1}² - t_k²) / (2 δ_k)`. -/
 def Dδ (δ : ℝ) : ℝ :=
-  (∫ u in Set.Ioi (0 : ℝ), D.g u * Real.exp ((D.s₁ - 2 * δ) * u)) +
+  (∫ u in Set.Ioi 𝟘, D.g u * Real.exp ((D.s₁ - 2 * δ) * u)) +
     ∑ k ∈ Finset.range D.m,
       D.h k * Real.exp (-2 * δ * D.t k) * (D.t (k + 1) ^ 2 - D.t k ^ 2) / (2 * D.level k)
 

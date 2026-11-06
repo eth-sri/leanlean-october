@@ -15,6 +15,16 @@ public import GradedNear.SieveError
 
 @[expose] public section
 
+
+
+local macro "𝕊" a:term:max : term => `((∑ j, $a j) ^ 2)
+
+
+local notation "𝟘" => (0 : ℝ)
+local notation "𝟙" => (1 : ℝ)
+
+
+
 open Complex
 open scoped ArithmeticFunction.vonMangoldt
 
@@ -30,7 +40,7 @@ def sieveDiag (D : NearData) (δ : ℝ) : ℝ :=
     D.h k * Real.exp (-2 * δ * D.t k) * (D.t (k + 1) ^ 2 - D.t k ^ 2) / (2 * D.level k)
 
 lemma Dδ_eq (D : NearData) (δ : ℝ) :
-    D.Dδ δ = (∫ u in Set.Ioi (0 : ℝ), D.g u * Real.exp ((D.s₁ - 2 * δ) * u)) +
+    D.Dδ δ = (∫ u in Set.Ioi 𝟘, D.g u * Real.exp ((D.s₁ - 2 * δ) * u)) +
       sieveDiag D δ := rfl
 
 /-- The sieve weight at `t_n` as a sum over the cells containing it. -/
@@ -49,8 +59,8 @@ lemma sieve_sum_cells (D : NearData) {q : ℕ} {ι : Type*} [Fintype ι] (E : En
 
 lemma rpow_le_natCast_iff_tn {q n : ℕ} (hq : 2 ≤ q) (hn : 1 ≤ n) (t : ℝ) :
     (q : ℝ) ^ t ≤ n ↔ t ≤ tn q n := by
-  have hq0 : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
-  have hn0 : (0 : ℝ) < n := by exact_mod_cast (show 0 < n by omega)
+  have hq0 := natCast_pos hq
+  have hn0 : 𝟘 < n := by exact_mod_cast (show 0 < n by omega)
   have hℓ := log_q_pos hq
   rw [← Real.log_le_log_iff (Real.rpow_pos_of_pos hq0 t) hn0, Real.log_rpow hq0, tn,
     le_div_iff₀ hℓ]
@@ -65,7 +75,7 @@ lemma natCast_lt_rpow_iff_tn {q n : ℕ} (hq : 2 ≤ q) (hn : 1 ≤ n) (t : ℝ)
 /-- The integers of a cell lie in `[⌈q^t⌉, ⌈q^{t'}⌉)`. -/
 lemma cell_filter_subset {q : ℕ} (hq : 2 ≤ q) (N : ℕ) (t t' : ℝ) :
     (Finset.Icc 1 N).filter (fun n => t ≤ tn q n ∧ tn q n < t') ⊆
-      Finset.Ico ⌈(q : ℝ) ^ t⌉₊ ⌈(q : ℝ) ^ t'⌉₊ := by
+      Finset.Ico ⌈ℝc q ^ t⌉₊ ⌈ℝc q ^ t'⌉₊ := by
   intro n hn
   rw [Finset.mem_filter, Finset.mem_Icc] at hn
   obtain ⟨⟨hn1, -⟩, ht, ht'⟩ := hn
@@ -74,11 +84,11 @@ lemma cell_filter_subset {q : ℕ} (hq : 2 ≤ q) (N : ℕ) (t t' : ℝ) :
   exact Nat.lt_ceil.2 ((natCast_lt_rpow_iff_tn hq hn1 t').2 ht')
 
 lemma cell_mem {q : ℕ} (hq : 2 ≤ q) {t t' : ℝ} {n : ℕ}
-    (hn : n ∈ Finset.Ico ⌈(q : ℝ) ^ t⌉₊ ⌈(q : ℝ) ^ t'⌉₊) : 1 ≤ n ∧ t ≤ tn q n := by
-  have hq0 : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
+    (hn : n ∈ Finset.Ico ⌈ℝc q ^ t⌉₊ ⌈ℝc q ^ t'⌉₊) : 1 ≤ n ∧ t ≤ tn q n := by
+  have hq0 := natCast_pos hq
   rw [Finset.mem_Ico] at hn
   have h1 : 1 ≤ n := by
-    have : 0 < ⌈(q : ℝ) ^ t⌉₊ := Nat.ceil_pos.2 (Real.rpow_pos_of_pos hq0 t)
+    have : 0 < ⌈ℝc q ^ t⌉₊ := Nat.ceil_pos.2 (Real.rpow_pos_of_pos hq0 t)
     omega
   refine ⟨h1, (rpow_le_natCast_iff_tn hq h1 t).1 ?_⟩
   exact (Nat.ceil_le.1 hn.1)
@@ -101,29 +111,29 @@ lemma cell_k_bound {V₀ CB CC κ : ℝ}
     (hoffC : ∀ ψ : DirichletCharacter ℂ q, ψ ≠ 1 →
       ∀ t t' β τ : ℝ, 1 / 3 + 2 * D.ε' < t → t ≤ t' → t' ≤ D.t D.m → 0 ≤ β → β ≤ 1 →
         |τ| ≤ Real.log q →
-        ‖∑ n ∈ Finset.Ico ⌈(q : ℝ) ^ t⌉₊ ⌈(q : ℝ) ^ t'⌉₊,
-            (sieveNu ((q : ℝ) ^ ((t - 1 / 3) / 2 - D.ε')) n : ℂ) * ψ n * (Real.log n : ℂ) *
-              (n : ℂ) ^ (-((1 + β : ℝ) + (τ : ℂ) * I))‖ ≤ CC * (q : ℝ) ^ (-κ))
+        ‖∑ n ∈ Finset.Ico ⌈ℝc q ^ t⌉₊ ⌈ℝc q ^ t'⌉₊,
+            (sieveNu (ℝc q ^ ((t - 1 / 3) / 2 - D.ε')) n : ℂ) * ψ n * (Real.log n : ℂ) *
+              ℂc n ^ (-((1 + β : ℝ) + (τ : ℂ) * I))‖ ≤ CC * ℝc q ^ (-κ))
     {ι : Type*} [Fintype ι] (E : Entries q ι) (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j)
     (hδ : ∀ j, 0 ≤ E.δ j) (hinj : Function.Injective E.χ)
     (hβ : ∀ j j', (E.δ j + E.δ j') / Real.log q ≤ 1) (hτ : ∀ j j', |E.γ j - E.γ j'| ≤ Real.log q)
     {k : ℕ} (hk : k < D.m) (ht0 : 1 / 3 + 2 * D.ε' < D.t k) (htk : D.t (k + 1) ≤ D.t D.m)
-    (hlev : 0 < D.level k) (hV : V₀ ≤ (q : ℝ) ^ D.level k) :
-    ∑ n ∈ Finset.Ico ⌈(q : ℝ) ^ D.t k⌉₊ ⌈(q : ℝ) ^ D.t (k + 1)⌉₊, Λ n / n * ‖Yn E a n‖ ^ 2 ≤
+    (hlev : 0 < D.level k) (hV : V₀ ≤ ℝc q ^ D.level k) :
+    ∑ n ∈ Finset.Ico ⌈ℝc q ^ D.t k⌉₊ ⌈ℝc q ^ D.t (k + 1)⌉₊, Λ n / n * ‖Yn E a n‖ ^ 2 ≤
       ∑ j, Real.exp (-2 * E.δ j * D.t k) *
           (Real.log q * (D.t (k + 1) ^ 2 - D.t k ^ 2) / (2 * D.level k) +
             |CB| * (D.t (k + 1) ^ 2 * Real.log q ^ 2 + 1) / (D.level k ^ 2 * Real.log q ^ 2)) *
           a j ^ 2 +
-        (|CC| * (q : ℝ) ^ (-κ) + 2 * (q : ℝ) ^ D.level k * (D.level k * Real.log q) /
-          (q : ℝ) ^ D.t k) * (∑ j, a j) ^ 2 := by
-  have hq0 : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
-  have hq1 : (1 : ℝ) ≤ q := by exact_mod_cast (show 1 ≤ q by omega)
+        (|CC| * ℝc q ^ (-κ) + 2 * ℝc q ^ D.level k * (D.level k * Real.log q) /
+          ℝc q ^ D.t k) * 𝕊 a := by
+  have hq0 := natCast_pos hq
+  have hq1 := natCast_one_le hq
   have hℓ := log_q_pos hq
   have htk_lt := hD.t_lt k hk
-  set V : ℝ := (q : ℝ) ^ D.level k with hVdef
-  set A : ℝ := (q : ℝ) ^ D.t k with hAdef
-  set B : ℝ := (q : ℝ) ^ D.t (k + 1) with hBdef
-  have hVpos : 1 < V := Real.one_lt_rpow (by exact_mod_cast (show 1 < q by omega)) hlev
+  set V : ℝ := ℝc q ^ D.level k with hVdef
+  set A : ℝ := ℝc q ^ D.t k with hAdef
+  set B : ℝ := ℝc q ^ D.t (k + 1) with hBdef
+  have hVpos : 1 < V := Real.one_lt_rpow (natCast_one_lt hq) hlev
   have hlev_lt : D.level k < D.t k := by
     unfold NearData.level; linarith [hD.ε'_pos]
   have hVA : V ≤ A := Real.rpow_le_rpow_of_exponent_le hq1 hlev_lt.le
@@ -133,7 +143,7 @@ lemma cell_k_bound {V₀ CB CC κ : ℝ}
   have hlogA : Real.log A = D.t k * Real.log q := Real.log_rpow hq0 _
   have hlogB : Real.log B = D.t (k + 1) * Real.log q := Real.log_rpow hq0 _
   -- apply the cell bound
-  refine cell_bound E a ha hδ hq V (D.t k) _ (|CC| * (q : ℝ) ^ (-κ)) _ _
+  refine cell_bound E a ha hδ hq V (D.t k) _ (|CC| * ℝc q ^ (-κ)) _ _
     (fun n hn => (cell_mem hq hn).1) (fun n hn => (cell_mem hq hn).2)
     (fun n => if IsPrimePow n ∧ ((Nat.minFac n : ℕ) : ℝ) ≤ V then Λ n else 0)
     (fun n => by split_ifs <;> simp [ArithmeticFunction.vonMangoldt_nonneg])
@@ -164,7 +174,7 @@ lemma cell_k_bound {V₀ CB CC κ : ℝ}
     have hb := hoffC _ hψ (D.t k) (D.t (k + 1)) ((E.δ j + E.δ j') / Real.log q)
       (E.γ j - E.γ j') ht0 htk_lt.le htk (div_nonneg (add_nonneg (hδ j) (hδ j')) hℓ.le)
       (hβ j j') (hτ j j')
-    have hV' : (q : ℝ) ^ ((D.t k - 1 / 3) / 2 - D.ε') = V := by
+    have hV' : ℝc q ^ ((D.t k - 1 / 3) / 2 - D.ε') = V := by
       rw [hVdef]; rfl
     rw [hV'] at hb
     refine le_trans (le_of_eq ?_) (hb.trans ?_)
@@ -193,10 +203,10 @@ lemma sieve_final_algebra {ι : Type*} [Fintype ι] (m : ℕ) (h : ℕ → ℝ)
     (a : ι → ℝ) (ha : ∀ j, 0 ≤ a j) {ℓ : ℝ} (hℓ : 0 < ℓ)
     (hDk : ∀ k ∈ Finset.range m, Dk k / ℓ = main k + err1 k) :
     (∑ k ∈ Finset.range m, h k * (∑ j, e j k * Dk k * a j ^ 2 +
-        (O k + P k) * (∑ j, a j) ^ 2)) / ℓ ≤
+        (O k + P k) * 𝕊 a)) / ℓ ≤
       ∑ j, (∑ k ∈ Finset.range m, h k * e j k * main k) * a j ^ 2 +
-        (∑ k ∈ Finset.range m, h k * (err1 k + (O k + P k) / ℓ)) * (∑ j, a j) ^ 2 := by
-  have hA2 : ∑ j, a j ^ 2 ≤ (∑ j, a j) ^ 2 := by
+        (∑ k ∈ Finset.range m, h k * (err1 k + (O k + P k) / ℓ)) * 𝕊 a := by
+  have hA2 : ∑ j, a j ^ 2 ≤ 𝕊 a := by
     rw [sq, Finset.sum_mul_sum]
     calc ∑ j, a j ^ 2 = ∑ j, a j * a j := by simp [sq]
       _ ≤ ∑ j, ∑ j', a j * a j' := Finset.sum_le_sum fun j _ =>
@@ -206,9 +216,9 @@ lemma sieve_final_algebra {ι : Type*} [Fintype ι] (m : ℕ) (h : ℕ → ℝ)
     rw [← hDk k hk]; field_simp
   -- expand, cell by cell
   have hk : ∀ k ∈ Finset.range m, h k * (∑ j, e j k * Dk k * a j ^ 2 +
-      (O k + P k) * (∑ j, a j) ^ 2) / ℓ =
+      (O k + P k) * 𝕊 a) / ℓ =
       (∑ j, h k * e j k * main k * a j ^ 2) + (∑ j, h k * e j k * err1 k * a j ^ 2) +
-        h k * ((O k + P k) / ℓ) * (∑ j, a j) ^ 2 := by
+        h k * ((O k + P k) / ℓ) * 𝕊 a := by
     intro k hk
     have e1 : h k * (∑ j, e j k * Dk k * a j ^ 2) / ℓ =
         ∑ j, h k * e j k * main k * a j ^ 2 + ∑ j, h k * e j k * err1 k * a j ^ 2 := by
@@ -226,14 +236,14 @@ lemma sieve_final_algebra {ι : Type*} [Fintype ι] (m : ℕ) (h : ℕ → ℝ)
     simp_rw [Finset.sum_mul]
     rw [Finset.sum_comm]
   have hsplit : (∑ k ∈ Finset.range m, h k * (∑ j, e j k * Dk k * a j ^ 2 +
-        (O k + P k) * (∑ j, a j) ^ 2)) / ℓ =
+        (O k + P k) * 𝕊 a)) / ℓ =
       ∑ j, (∑ k ∈ Finset.range m, h k * e j k * main k) * a j ^ 2 +
         ∑ j, (∑ k ∈ Finset.range m, h k * e j k * err1 k) * a j ^ 2 +
-        (∑ k ∈ Finset.range m, h k * ((O k + P k) / ℓ)) * (∑ j, a j) ^ 2 := by
+        (∑ k ∈ Finset.range m, h k * ((O k + P k) / ℓ)) * 𝕊 a := by
     rw [Finset.sum_div, Finset.sum_congr rfl hk, Finset.sum_add_distrib,
       Finset.sum_add_distrib, hmain, herr', Finset.sum_mul]
   have herr_le : ∑ j, (∑ k ∈ Finset.range m, h k * e j k * err1 k) * a j ^ 2 ≤
-      (∑ k ∈ Finset.range m, h k * err1 k) * (∑ j, a j) ^ 2 := by
+      (∑ k ∈ Finset.range m, h k * err1 k) * 𝕊 a := by
     have hE0 : 0 ≤ ∑ k ∈ Finset.range m, h k * err1 k :=
       Finset.sum_nonneg fun k hk => mul_nonneg (hh k hk) (herr k hk)
     calc ∑ j, (∑ k ∈ Finset.range m, h k * e j k * err1 k) * a j ^ 2
@@ -243,11 +253,11 @@ lemma sieve_final_algebra {ι : Type*} [Fintype ι] (m : ℕ) (h : ℕ → ℝ)
           have := mul_le_mul_of_nonneg_left (he1 j k hk) (mul_nonneg (hh k hk) (herr k hk))
           nlinarith [hh k hk, herr k hk]
       _ = (∑ k ∈ Finset.range m, h k * err1 k) * ∑ j, a j ^ 2 := by rw [Finset.mul_sum]
-      _ ≤ (∑ k ∈ Finset.range m, h k * err1 k) * (∑ j, a j) ^ 2 :=
+      _ ≤ (∑ k ∈ Finset.range m, h k * err1 k) * 𝕊 a :=
           mul_le_mul_of_nonneg_left hA2 hE0
-  have hlast : (∑ k ∈ Finset.range m, h k * err1 k) * (∑ j, a j) ^ 2 +
-      (∑ k ∈ Finset.range m, h k * ((O k + P k) / ℓ)) * (∑ j, a j) ^ 2 =
-      (∑ k ∈ Finset.range m, h k * (err1 k + (O k + P k) / ℓ)) * (∑ j, a j) ^ 2 := by
+  have hlast : (∑ k ∈ Finset.range m, h k * err1 k) * 𝕊 a +
+      (∑ k ∈ Finset.range m, h k * ((O k + P k) / ℓ)) * 𝕊 a =
+      (∑ k ∈ Finset.range m, h k * (err1 k + (O k + P k) / ℓ)) * 𝕊 a := by
     rw [← add_mul, ← Finset.sum_add_distrib]
     congr 1
     refine Finset.sum_congr rfl fun k _ => ?_
@@ -275,7 +285,7 @@ theorem sieve_part_bound (hGr : GrahamEstimate) (hBur : BurgessBound) (D : NearD
       ((∃ k < D.m, D.h k ≠ 0) → Function.Injective E.χ) →
       ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) → ∀ N : ℕ,
         (∑ n ∈ Finset.Icc 1 N, Λ n / n * D.sieveH (tn q n) * ‖Yn E a n‖ ^ 2) / Real.log q ≤
-          ∑ j, sieveDiag D (E.δ j) * a j ^ 2 + ε * (∑ j, a j) ^ 2 := by
+          ∑ j, sieveDiag D (E.δ j) * a j ^ 2 + ε * 𝕊 a := by
   obtain ⟨CB, V₀, -, hdiagG⟩ := sieve_diagonal hGr
   obtain ⟨CC, κ, hκ, qC, hoffC⟩ := sieve_offdiag hBur (tmax := D.t D.m) hD.ε'_pos
   have ht0k : ∀ k < D.m, 1 / 3 + 2 * D.ε' < D.t k := fun k hk =>
@@ -285,9 +295,9 @@ theorem sieve_part_bound (hGr : GrahamEstimate) (hBur : BurgessBound) (D : NearD
   have hlev_lt : ∀ k < D.m, D.level k < D.t k := fun k hk => by
     unfold NearData.level; linarith [ht0k k hk, hD.ε'_pos]
   obtain ⟨qE, hqE⟩ := sieve_error_eventually D.m D.h D.t D.level hlev_pos hlev_lt |CB| CC κ hκ hε
-  obtain ⟨qV, hqV⟩ : ∃ qV : ℕ, ∀ q : ℕ, qV ≤ q → ∀ k < D.m, V₀ ≤ (q : ℝ) ^ D.level k := by
+  obtain ⟨qV, hqV⟩ : ∃ qV : ℕ, ∀ q : ℕ, qV ≤ q → ∀ k < D.m, V₀ ≤ ℝc q ^ D.level k := by
     have hev : ∀ k ∈ Finset.range D.m,
-        ∀ᶠ q : ℕ in Filter.atTop, V₀ ≤ (q : ℝ) ^ D.level k := by
+        ∀ᶠ q : ℕ in Filter.atTop, V₀ ≤ ℝc q ^ D.level k := by
       intro k hk
       have hl := hlev_pos k (Finset.mem_range.1 hk)
       exact ((tendsto_rpow_atTop hl).comp tendsto_natCast_atTop_atTop).eventually_ge_atTop V₀
@@ -297,17 +307,13 @@ theorem sieve_part_bound (hGr : GrahamEstimate) (hBur : BurgessBound) (D : NearD
     (tendsto_log_nat_atTop.eventually_ge_atTop (2 * ∑ δ ∈ D.Δ, δ))
   refine ⟨max (max (max qC qE) (max qV qβ)) 2,
     fun q hq T hT hTq ι _ E hγ hΔ hinj a ha N => ?_⟩
-  have hq2 : 2 ≤ q := le_trans (le_max_right _ _) hq
-  have hqC : qC ≤ q := le_trans (le_trans (le_max_left _ _) (le_trans (le_max_left _ _)
-    (le_max_left _ _))) hq
-  have hqE' : qE ≤ q := le_trans (le_trans (le_max_right _ _) (le_trans (le_max_left _ _)
-    (le_max_left _ _))) hq
-  have hqV' : qV ≤ q := le_trans (le_trans (le_max_left _ _) (le_trans (le_max_right _ _)
-    (le_max_left _ _))) hq
-  have hqβ' : qβ ≤ q := le_trans (le_trans (le_max_right _ _) (le_trans (le_max_right _ _)
-    (le_max_left _ _))) hq
+  have hq2 : 2 ≤ q := by omega
+  have hqC : qC ≤ q := by omega
+  have hqE' : qE ≤ q := by omega
+  have hqV' : qV ≤ q := by omega
+  have hqβ' : qβ ≤ q := by omega
   have hℓ := log_q_pos hq2
-  have hq0 : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
+  have hq0 := natCast_pos hq2
   have hδ : ∀ j, 0 ≤ E.δ j := fun j => hD.Δ_nonneg _ (hΔ j)
   have hA : 0 ≤ ∑ j, a j := Finset.sum_nonneg fun j _ => ha j
   by_cases hH : ∃ k < D.m, D.h k ≠ 0
@@ -317,35 +323,31 @@ theorem sieve_part_bound (hGr : GrahamEstimate) (hBur : BurgessBound) (D : NearD
       by_contra h; exact hH ⟨k, hk, h⟩
     have hS0 : ∀ u, D.sieveH u = 0 := by
       intro u; unfold NearData.sieveH
-      refine Finset.sum_eq_zero fun k hk => ?_
-      rw [hH' k (Finset.mem_range.1 hk)]; simp
+      exact Finset.sum_eq_zero fun k hk => by rw [hH' k (Finset.mem_range.1 hk)]; simp
     have hD0 : ∀ δ, sieveDiag D δ = 0 := by
       intro δ; unfold sieveDiag
-      refine Finset.sum_eq_zero fun k hk => ?_
-      rw [hH' k (Finset.mem_range.1 hk)]; simp
+      exact Finset.sum_eq_zero fun k hk => by rw [hH' k (Finset.mem_range.1 hk)]; simp
     simp only [hS0, hD0, mul_zero, zero_mul, Finset.sum_const_zero, zero_div, zero_add]
     positivity
   have hinj' := hinj hH
   have hβ : ∀ j j', (E.δ j + E.δ j') / Real.log q ≤ 1 := by
     intro j j'
     rw [div_le_one hℓ]
-    have h1 : E.δ j ≤ ∑ δ ∈ D.Δ, δ := Finset.single_le_sum hD.Δ_nonneg (hΔ j)
-    have h2 : E.δ j' ≤ ∑ δ ∈ D.Δ, δ := Finset.single_le_sum hD.Δ_nonneg (hΔ j')
-    linarith [hqβ q hqβ']
+    linarith [Finset.single_le_sum hD.Δ_nonneg (hΔ j),
+      Finset.single_le_sum hD.Δ_nonneg (hΔ j'), hqβ q hqβ']
   have hτ : ∀ j j', |E.γ j - E.γ j'| ≤ Real.log q := by
     intro j j'
-    have := abs_sub (E.γ j) (E.γ j')
-    linarith [hγ j, hγ j']
+    linarith [abs_sub (E.γ j) (E.γ j'), hγ j, hγ j']
   rw [sieve_sum_cells]
   set Dk : ℕ → ℝ := fun k => Real.log q * (D.t (k + 1) ^ 2 - D.t k ^ 2) / (2 * D.level k) +
     |CB| * (D.t (k + 1) ^ 2 * Real.log q ^ 2 + 1) / (D.level k ^ 2 * Real.log q ^ 2) with hDk
-  set Pk : ℕ → ℝ := fun k => 2 * (q : ℝ) ^ D.level k * (D.level k * Real.log q) /
-    (q : ℝ) ^ D.t k with hPk
+  set Pk : ℕ → ℝ := fun k => 2 * ℝc q ^ D.level k * (D.level k * Real.log q) /
+    ℝc q ^ D.t k with hPk
   have hcell : ∀ k ∈ Finset.range D.m,
       D.h k * ∑ n ∈ (Finset.Icc 1 N).filter (fun n => D.t k ≤ tn q n ∧ tn q n < D.t (k + 1)),
         Λ n / n * ‖Yn E a n‖ ^ 2 ≤
       D.h k * (∑ j, Real.exp (-2 * E.δ j * D.t k) * Dk k * a j ^ 2 +
-        (|CC| * (q : ℝ) ^ (-κ) + Pk k) * (∑ j, a j) ^ 2) := by
+        (|CC| * ℝc q ^ (-κ) + Pk k) * 𝕊 a) := by
     intro k hk
     have hk' := Finset.mem_range.1 hk
     refine mul_le_mul_of_nonneg_left ?_ (hD.h_nonneg k hk')
@@ -366,7 +368,7 @@ theorem sieve_part_bound (hGr : GrahamEstimate) (hBur : BurgessBound) (D : NearD
     (fun k => (D.t (k + 1) ^ 2 - D.t k ^ 2) / (2 * D.level k))
     (fun k => |CB| * D.t (k + 1) ^ 2 / (D.level k ^ 2 * Real.log q) +
       |CB| / (D.level k ^ 2 * Real.log q ^ 3))
-    Dk (fun _ => |CC| * (q : ℝ) ^ (-κ)) Pk
+    Dk (fun _ => |CC| * ℝc q ^ (-κ)) Pk
     (fun k hk => by
       have := hlev_pos k (Finset.mem_range.1 hk)
       positivity)
@@ -380,19 +382,19 @@ theorem sieve_part_bound (hGr : GrahamEstimate) (hBur : BurgessBound) (D : NearD
     have herr : ∑ k ∈ Finset.range D.m, D.h k *
         ((|CB| * D.t (k + 1) ^ 2 / (D.level k ^ 2 * Real.log q) +
           |CB| / (D.level k ^ 2 * Real.log q ^ 3)) +
-          (|CC| * (q : ℝ) ^ (-κ) + Pk k) / Real.log q) ≤ ε := by
+          (|CC| * ℝc q ^ (-κ) + Pk k) / Real.log q) ≤ ε := by
       refine le_trans (le_of_eq ?_) (hqE q hqE')
       refine Finset.sum_congr rfl fun k _ => ?_
       congr 1
       simp only [hPk]
-      have hPq : 2 * (q : ℝ) ^ D.level k * (D.level k * Real.log q) / (q : ℝ) ^ D.t k /
-          Real.log q = 2 * D.level k * (q : ℝ) ^ (D.level k - D.t k) := by
+      have hPq : 2 * ℝc q ^ D.level k * (D.level k * Real.log q) / ℝc q ^ D.t k /
+          Real.log q = 2 * D.level k * ℝc q ^ (D.level k - D.t k) := by
         rw [Real.rpow_sub hq0]
         field_simp
       rw [add_div, hPq]
       ring
     simp_rw [hmain]
-    have hA2 : 0 ≤ (∑ j, a j) ^ 2 := sq_nonneg _
+    have hA2 : 0 ≤ 𝕊 a := sq_nonneg _
     nlinarith [mul_le_mul_of_nonneg_right herr hA2]
   · intro k hk
     have hl := hlev_pos k (Finset.mem_range.1 hk)

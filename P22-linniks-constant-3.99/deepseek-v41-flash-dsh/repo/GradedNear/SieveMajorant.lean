@@ -32,7 +32,7 @@ lemma sieveNu_eq_one_of_lt_minFac {V : ℝ} (hV : 1 < V) {n : ℕ} (hn : n ≠ 0
       have hd2 : 2 ≤ d := by omega
       have hle : Nat.minFac n ≤ d := Nat.minFac_le_of_dvd hd2 (Nat.dvd_of_mem_divisors hd)
       have hle' : ((Nat.minFac n : ℕ) : ℝ) ≤ d := by exact_mod_cast hle
-      have hnot : ¬ ((d : ℝ) ≤ V) := fun h => by linarith
+      have hnot : ¬ (ℝc d ≤ V) := fun h => by linarith
       simp [grahamWeight, hnot]
     · intro h
       exact absurd (Nat.one_mem_divisors.mpr hn) h
@@ -52,17 +52,17 @@ lemma geom_tail {p : ℕ} (hp : 2 ≤ p) {A : ℝ} (hA : 0 < A) (F : Finset ℕ)
     intro k hk
     exact Finset.mem_Ico.mpr ⟨F.min'_le k hk, Nat.lt_succ_of_le (F.le_max' k hk)⟩
   have hx0 : (0 : ℝ) ≤ 1 / p := by positivity
-  have hx1 : 1 / (p : ℝ) ≤ 1 / 2 := div_le_div_of_nonneg_left (by norm_num) (by norm_num) hp2
+  have hx1 : 1 / ℝc p ≤ 1 / 2 := div_le_div_of_nonneg_left (by norm_num) (by norm_num) hp2
   calc ∑ k ∈ F, 1 / (p : ℝ) ^ k = ∑ k ∈ F, (1 / (p : ℝ)) ^ k :=
         Finset.sum_congr rfl (fun k _ => (one_div_pow (p : ℝ) k).symm)
     _ ≤ ∑ k ∈ Finset.Ico (F.min' hne) (F.max' hne + 1), (1 / (p : ℝ)) ^ k :=
         Finset.sum_le_sum_of_subset_of_nonneg hsub (fun k _ _ => pow_nonneg hx0 k)
-    _ ≤ (1 / (p : ℝ)) ^ (F.min' hne) / (1 - 1 / (p : ℝ)) :=
+    _ ≤ (1 / ℝc p) ^ (F.min' hne) / (1 - 1 / ℝc p) :=
         geom_sum_Ico_le_of_lt_one hx0 (by linarith)
-    _ ≤ 2 * (1 / (p : ℝ)) ^ (F.min' hne) := by
+    _ ≤ 2 * (1 / ℝc p) ^ (F.min' hne) := by
         rw [div_le_iff₀ (by linarith)]
         nlinarith [pow_nonneg hx0 (F.min' hne)]
-    _ = 2 / (p : ℝ) ^ (F.min' hne) := by
+    _ = 2 / ℝc p ^ (F.min' hne) := by
         rw [one_div_pow]
         ring
     _ ≤ 2 / A := div_le_div_of_nonneg_left (by norm_num) hA (hF _ hm)
@@ -85,10 +85,10 @@ lemma fiber_bound {A : ℝ} (hA : 0 < A) (p : ℕ) (T : Finset ℕ)
     obtain ⟨hpp, hmin, _⟩ := hT n hn
     rw [← hmin]
     exact hpp.minFac_pow_factorization_eq
-  have hcast : ∀ n ∈ T, (n : ℝ) = (p : ℝ) ^ (n.factorization p) := by
+  have hcast : ∀ n ∈ T, ℝc n = ℝc p ^ (n.factorization p) := by
     intro n hn
     exact_mod_cast (hpow n hn).symm
-  have hterm : ∀ n ∈ T, Λ n / n = Real.log p * (1 / (p : ℝ) ^ (n.factorization p)) := by
+  have hterm : ∀ n ∈ T, Λ n / n = Real.log p * (1 / ℝc p ^ (n.factorization p)) := by
     intro n hn
     obtain ⟨hpp, hmin, _⟩ := hT n hn
     rw [ArithmeticFunction.vonMangoldt_apply, ite_eq_left hpp, hmin, hcast n hn]
@@ -99,14 +99,14 @@ lemma fiber_bound {A : ℝ} (hA : 0 < A) (p : ℕ) (T : Finset ℕ)
     calc n = p ^ (n.factorization p) := (hpow n hn).symm
       _ = p ^ (m.factorization p) := by rw [h']
       _ = m := hpow m hm
-  have hF : ∀ k ∈ T.image (fun n : ℕ => n.factorization p), A ≤ (p : ℝ) ^ k := by
+  have hF : ∀ k ∈ T.image (fun n : ℕ => n.factorization p), A ≤ ℝc p ^ k := by
     intro k hk
     obtain ⟨n, hn, rfl⟩ := Finset.mem_image.mp hk
     rw [← hcast n hn]
     exact (hT n hn).2.2
-  calc ∑ n ∈ T, Λ n / n = ∑ n ∈ T, Real.log p * (1 / (p : ℝ) ^ (n.factorization p)) :=
+  calc ∑ n ∈ T, Λ n / n = ∑ n ∈ T, Real.log p * (1 / ℝc p ^ (n.factorization p)) :=
         Finset.sum_congr rfl hterm
-    _ = Real.log p * ∑ k ∈ T.image (fun n : ℕ => n.factorization p), 1 / (p : ℝ) ^ k := by
+    _ = Real.log p * ∑ k ∈ T.image (fun n : ℕ => n.factorization p), 1 / ℝc p ^ k := by
         rw [Finset.sum_image hinj, Finset.mul_sum]
     _ ≤ Real.log p * (2 / A) :=
         mul_le_mul_of_nonneg_left (geom_tail hp.two_le hA _ hF) hlogp
@@ -154,7 +154,7 @@ theorem small_primepow_sum {V A B : ℝ} (hV : 1 ≤ V) (hA : 1 ≤ A) :
         intro p hp
         rw [Finset.mem_Icc] at hp
         have hp0 : (0 : ℝ) < p := by exact_mod_cast hp.1
-        have hpV : (p : ℝ) ≤ V := (Nat.cast_le.mpr hp.2).trans (Nat.floor_le (by linarith))
+        have hpV : ℝc p ≤ V := (Nat.cast_le.mpr hp.2).trans (Nat.floor_le (by linarith))
         have := Real.log_le_log hp0 hpV
         apply div_le_div_of_nonneg_right _ hA0.le
         linarith

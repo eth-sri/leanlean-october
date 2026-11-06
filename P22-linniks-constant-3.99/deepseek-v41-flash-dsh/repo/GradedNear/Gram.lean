@@ -23,7 +23,7 @@ variable {q : ℕ} {ι : Type*} [Fintype ι]
 /-- The general term identity: for `n ≥ 1`,
 `Λ(n) χ(n) n^{-((1 - σ/𝓛) + iγ)} F(t_n) = (Λ(n)/n) e^{σ t_n} F(t_n) · χ(n) e^{-iγ log n}`. -/
 lemma prime_term (F : ℝ → ℝ) {n : ℕ} (hn : 1 ≤ n) (χ : DirichletCharacter ℂ q) (σ γ : ℝ) :
-    (Λ n : ℂ) * χ n * (n : ℂ) ^ (-((((1 - σ / Real.log q : ℝ)) : ℂ) + (γ : ℂ) * I)) *
+    (Λ n : ℂ) * χ n * ℂc n ^ (-((((1 - σ / Real.log q : ℝ)) : ℂ) + (γ : ℂ) * I)) *
         (F (tn q n) : ℂ) =
       ((Λ n / n * Real.exp (σ * tn q n) * F (tn q n) : ℝ) : ℂ) *
         (χ n * cexp (-((γ * Real.log n : ℝ) : ℂ) * I)) := by
@@ -90,7 +90,7 @@ omit [Fintype ι] in
 lemma gram_term (D : NearData) (E : Entries q ι) (a : ι → ℝ) {n : ℕ} (hn : 1 ≤ n) (j k : ι) :
     Λ n / n * (D.g (tn q n) * Real.exp (D.s₁ * tn q n)) *
         (ycomp E a j n * (starRingEnd ℂ) (ycomp E a k n)).re =
-      a j * a k * ((Λ n : ℂ) * (E.χ j * (E.χ k)⁻¹) n * (n : ℂ) ^ (-sjk D E j k) *
+      a j * a k * ((Λ n : ℂ) * (E.χ j * (E.χ k)⁻¹) n * ℂc n ^ (-sjk D E j k) *
         (D.g (tn q n) : ℂ)).re := by
   rw [ycomp_mul_conj, sjk, prime_term D.g hn, Complex.re_ofReal_mul, Complex.re_ofReal_mul]
   have : Real.exp (D.s₁ * tn q n) * Real.exp (-(E.δ j + E.δ k) * tn q n) =
@@ -107,11 +107,11 @@ lemma gram_term (D : NearData) (E : Entries q ι) (a : ι → ℝ) {n : ℕ} (hn
 
 /-- The Gram part of the second factor as a quadratic form in the prime sums. -/
 lemma gram_part_eq (D : NearData) (E : Entries q ι) (a : ι → ℝ) (hq : 2 ≤ q)
-    (hg : ∀ t, D.xg ≤ t → D.g t = 0) {N : ℕ} (hN : ⌊(q : ℝ) ^ D.xg⌋₊ ≤ N) :
+    (hg : ∀ t, D.xg ≤ t → D.g t = 0) {N : ℕ} (hN : ⌊ℝc q ^ D.xg⌋₊ ≤ N) :
     ∑ n ∈ Finset.Icc 1 N, Λ n / n * (D.g (tn q n) * Real.exp (D.s₁ * tn q n)) *
         ‖Yn E a n‖ ^ 2 =
       ∑ j, ∑ k, a j * a k * (primeSum (E.χ j * (E.χ k)⁻¹) D.g (sjk D E j k)).re := by
-  set S := Finset.Icc 1 ⌊(q : ℝ) ^ D.xg⌋₊ with hS
+  set S := Finset.Icc 1 ⌊ℝc q ^ D.xg⌋₊ with hS
   have hsub : S ⊆ Finset.Icc 1 N := Finset.Icc_subset_Icc le_rfl hN
   have hLHS : ∑ n ∈ Finset.Icc 1 N, Λ n / n * (D.g (tn q n) * Real.exp (D.s₁ * tn q n)) *
         ‖Yn E a n‖ ^ 2 =
@@ -120,19 +120,19 @@ lemma gram_part_eq (D : NearData) (E : Entries q ι) (a : ι → ℝ) (hq : 2 �
     apply Finset.sum_subset hsub
     intro n hn hn'
     have h1 : 1 ≤ n := (Finset.mem_Icc.1 hn).1
-    have h2 : ⌊(q : ℝ) ^ D.xg⌋₊ < n := by
+    have h2 : ⌊ℝc q ^ D.xg⌋₊ < n := by
       by_contra h; exact hn' (Finset.mem_Icc.2 ⟨h1, not_lt.1 h⟩)
     rw [hg _ (tn_ge_of_gt hq h2)]
     simp
   rw [hLHS]
   have hR : ∀ j k, a j * a k * (primeSum (E.χ j * (E.χ k)⁻¹) D.g (sjk D E j k)).re =
-      ∑ n ∈ S, a j * a k * ((Λ n : ℂ) * (E.χ j * (E.χ k)⁻¹) n * (n : ℂ) ^ (-sjk D E j k) *
+      ∑ n ∈ S, a j * a k * ((Λ n : ℂ) * (E.χ j * (E.χ k)⁻¹) n * ℂc n ^ (-sjk D E j k) *
         (D.g (tn q n) : ℂ)).re := by
     intro j k
     rw [primeSum_eq_sum hq _ _ hg, Complex.re_sum, Finset.mul_sum]
   simp_rw [hR]
   have hL : ∀ n ∈ S, Λ n / n * (D.g (tn q n) * Real.exp (D.s₁ * tn q n)) * ‖Yn E a n‖ ^ 2 =
-      ∑ j, ∑ k, a j * a k * ((Λ n : ℂ) * (E.χ j * (E.χ k)⁻¹) n * (n : ℂ) ^ (-sjk D E j k) *
+      ∑ j, ∑ k, a j * a k * ((Λ n : ℂ) * (E.χ j * (E.χ k)⁻¹) n * ℂc n ^ (-sjk D E j k) *
         (D.g (tn q n) : ℂ)).re := by
     intro n hn
     rw [norm_Yn_sq, Finset.mul_sum]

@@ -13,6 +13,8 @@ public import GradedNear.Gram
 
 @[expose] public section
 
+
+
 open Complex
 open scoped ArithmeticFunction.vonMangoldt
 
@@ -27,11 +29,11 @@ lemma eventually_loglog_ge (K : ℝ) : ∃ q₀ : ℕ, ∀ q : ℕ, q₀ ≤ q �
   set M : ℝ := max (K ^ 2) K + 1
   obtain ⟨N, hN⟩ := exists_nat_gt (Real.exp (Real.exp M))
   refine ⟨max N 2, fun q hq => ?_⟩
-  have hq2 : 2 ≤ q := le_trans (le_max_right _ _) hq
-  have hqN : (N : ℝ) ≤ q := by exact_mod_cast le_trans (le_max_left _ _) hq
+  have hq2 : 2 ≤ q := by omega
+  have hqN : ℝc N ≤ q := by exact_mod_cast le_trans (le_max_left _ _) hq
   have h1 : Real.exp (Real.exp M) < q := lt_of_lt_of_le hN hqN
   have h2 : Real.exp M < Real.log q := by
-    rw [Real.lt_log_iff_exp_lt (by exact_mod_cast (show 0 < q by omega))]; exact h1
+    rw [Real.lt_log_iff_exp_lt (natCast_pos hq2)]; exact h1
   have h3 : M < Real.log (Real.log q) := by
     rw [Real.lt_log_iff_exp_lt (lt_trans (Real.exp_pos M) h2)]; exact h2
   have hM1 : K ^ 2 < Real.log (Real.log q) := by
@@ -54,8 +56,8 @@ lemma principal_entry (hX31 : XylourisLemma31) {g : ℝ → ℝ} {xg Bg : ℝ}
   obtain ⟨C, q₁, hC⟩ := hX31 g xg Bg hg
   obtain ⟨q₂, hq₂⟩ := eventually_loglog_ge (max K (|C| / ε + 1))
   refine ⟨max q₁ q₂, fun q hq s hre him => ?_⟩
-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
-  have hq2 : q₂ ≤ q := le_trans (le_max_right _ _) hq
+  have hq1 : q₁ ≤ q := by omega
+  have hq2 : q₂ ≤ q := by omega
   obtain ⟨hsq, hll, hq2'⟩ := hq₂ q hq2
   have hℓ := log_q_pos hq2'
   have hll_pos : 0 < Real.log (Real.log q) :=
@@ -115,8 +117,8 @@ lemma nonprincipal_entry (hX32 : XylourisLemma32) {g : ℝ → ℝ} {xg Bg : ℝ
     hX32 g xg Bg hg (hg2.nonneg 0 le_rfl) ε hε
   obtain ⟨q₂, hq₂⟩ := eventually_loglog_ge K
   refine ⟨δ, hδ0, hδ1, max q₁ q₂, fun q _ hq ψ hψ s hre him hz => ?_⟩
-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
-  obtain ⟨hsq, -, hq2'⟩ := hq₂ q (le_trans (le_max_right _ _) hq)
+  have hq1 : q₁ ≤ q := by omega
+  obtain ⟨hsq, -, hq2'⟩ := hq₂ q (by omega)
   have hℓ := log_q_pos hq2'
   have hreg : LemmaRegion q s :=
     ⟨le_trans hre (div_le_div_of_nonneg_right hsq hℓ.le), him⟩

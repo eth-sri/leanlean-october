@@ -28,6 +28,15 @@ open scoped ArithmeticFunction.Moebius
 
 namespace GradedNear
 
+local notation "⅔" => (2 / 3 : ℝ)
+local macro "𝕃" d:term:max e:term:max : term => `(((Nat.lcm $d $e : ℕ) : ℝ))
+local macro "𝕃b" b:term:max : term => `(Real.log (ℝc $b + 1))
+
+local notation "⅓" => (1 / 3 : ℝ)
+local notation "𝕢" q:max => ℝc q
+local notation "𝕀" V:max => Finset.Ioc 0 ⌊V⌋₊
+local notation "𝔰" s:max L:max => (1 + ‖s‖ * L)
+
 /-! ### The Selberg weights -/
 
 /-- The weights satisfy `|ψ_d| ≤ 1`. -/
@@ -120,8 +129,8 @@ character sums to zero, and apply the bound for `H ≤ q` to the remainder. -/
 lemma burgess_any_length {q : ℕ} (hq : 0 < q) (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1)
     {K : ℝ} (hK : 0 ≤ K)
     (h : ∀ N H : ℕ, 1 ≤ H → H ≤ q →
-      ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3)) :
-    ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+      ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * ℝc H ^ ⅔) :
+    ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * ℝc H ^ ⅔ := by
   intro N H
   induction H using Nat.strong_induction_on generalizing N with
   | _ H ih =>
@@ -136,8 +145,8 @@ lemma burgess_any_length {q : ℕ} (hq : 0 < q) (χ : DirichletCharacter ℂ q) 
         rw [Finset.sum_Ioc_consecutive _ (by omega) (by omega)]
         congr 2; omega
       rw [hsplit, sum_Ioc_period_eq_zero hq χ hχ, zero_add]
-      calc _ ≤ K * ((H - q : ℕ) : ℝ) ^ ((2 : ℝ) / 3) := ih (H - q) (by omega) (N + q)
-        _ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+      calc _ ≤ K * ((H - q : ℕ) : ℝ) ^ ⅔ := ih (H - q) (by omega) (N + q)
+        _ ≤ K * ℝc H ^ ⅔ := by
           gcongr
           exact_mod_cast Nat.sub_le H q
 
@@ -201,12 +210,12 @@ lemma wt_eq_exp (s : ℂ) {n : ℕ} (hn : 0 < n) :
 /-- `G'(u) = e^{-su} (1 - s u)`. -/
 lemma hasDerivAt_G (s : ℂ) (u : ℝ) :
     HasDerivAt (fun u : ℝ => (u : ℂ) * cexp ((u : ℂ) * (-s)))
-      (cexp ((u : ℂ) * (-s)) * (1 - u * s)) u := by
-  have h1 : HasDerivAt (fun u : ℝ => (u : ℂ)) 1 u := by
+      (cexp (ℂc u * (-s)) * (1 - u * s)) u := by
+  have h1 : HasDerivAt (fun u : ℝ => ℂc u) 1 u := by
     simpa using (hasDerivAt_id u).ofReal_comp
-  have h2 : HasDerivAt (fun u : ℝ => (u : ℂ) * (-s)) (1 * (-s)) u := h1.mul_const (-s)
-  have h3 : HasDerivAt (fun u : ℝ => cexp ((u : ℂ) * (-s)))
-      (cexp ((u : ℂ) * (-s)) * (1 * (-s))) u := h2.cexp
+  have h2 : HasDerivAt (fun u : ℝ => ℂc u * (-s)) (1 * (-s)) u := h1.mul_const (-s)
+  have h3 : HasDerivAt (fun u : ℝ => cexp (ℂc u * (-s)))
+      (cexp (ℂc u * (-s)) * (1 * (-s))) u := h2.cexp
   have h4 := h1.mul h3
   convert h4 using 1
   ring
@@ -215,7 +224,7 @@ lemma hasDerivAt_G (s : ℂ) (u : ℝ) :
 applied to `G` on `[log n, log(n+1)]`. -/
 lemma norm_wt_sub_le (s : ℂ) (hs : 1 ≤ s.re) {n : ℕ} (hn : 1 ≤ n) :
     ‖wt s n - wt s (n + 1)‖ ≤ (1 + ‖s‖ * Real.log (n + 1)) / (n : ℝ) ^ 2 := by
-  set G : ℝ → ℂ := fun u => (u : ℂ) * cexp ((u : ℂ) * (-s)) with hG
+  set G : ℝ → ℂ := fun u => ℂc u * cexp (ℂc u * (-s)) with hG
   have hn0 : (0:ℝ) < n := by exact_mod_cast hn
   have hwn : wt s n = G (Real.log n) := wt_eq_exp s hn
   have hwn1 : wt s (n + 1) = G (Real.log ((n:ℝ) + 1)) := by
@@ -225,12 +234,12 @@ lemma norm_wt_sub_le (s : ℂ) (hs : 1 ≤ s.re) {n : ℕ} (hn : 1 ≤ n) :
   have hu : u₀ ≤ u₁ := Real.log_le_log hn0 (by linarith)
   have hu0 : 0 ≤ u₀ := Real.log_nonneg (by exact_mod_cast hn)
   have hbound : ∀ u ∈ Set.Icc u₀ u₁,
-      ‖cexp ((u : ℂ) * (-s)) * (1 - u * s)‖ ≤ (1 + ‖s‖ * u₁) / n := by
+      ‖cexp (ℂc u * (-s)) * (1 - u * s)‖ ≤ (1 + ‖s‖ * u₁) / n := by
     intro u hu'
     obtain ⟨hu'0, hu'1⟩ := hu'
     have hu'nn : 0 ≤ u := le_trans hu0 hu'0
     rw [norm_mul, Complex.norm_exp, div_eq_mul_inv, mul_comm]
-    have e1 : ((u : ℂ) * (-s)).re = -(u * s.re) := by
+    have e1 : (ℂc u * (-s)).re = -(u * s.re) := by
       rw [Complex.re_ofReal_mul, Complex.neg_re]; ring
     rw [e1]
     have e2 : Real.exp (-(u * s.re)) ≤ (n:ℝ)⁻¹ := by
@@ -246,7 +255,7 @@ lemma norm_wt_sub_le (s : ℂ) (hs : 1 ≤ s.re) {n : ℕ} (hn : 1 ≤ n) :
     have hu₁0 : 0 ≤ u₁ := le_trans hu0 hu
     exact mul_le_mul e3 e2 (by positivity) (by positivity)
   have key := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
-    (f := G) (f' := fun u => cexp ((u : ℂ) * (-s)) * (1 - u * s)) (s := Set.Icc u₀ u₁)
+    (f := G) (f' := fun u => cexp (ℂc u * (-s)) * (1 - u * s)) (s := Set.Icc u₀ u₁)
     (C := (1 + ‖s‖ * u₁) / n)
     (fun u _ => (hasDerivAt_G s u).hasDerivWithinAt) hbound
     (convex_Icc u₀ u₁) (Set.left_mem_Icc.2 hu) (Set.right_mem_Icc.2 hu)
@@ -270,25 +279,25 @@ lemma norm_wt_sub_le (s : ℂ) (hs : 1 ≤ s.re) {n : ℕ} (hn : 1 ≤ n) :
 
 /-- `(x/l)^{2/3} ≤ l^{-2/3} c^{-1/3} x` for `0 < c ≤ x`. -/
 lemma rpow_two_thirds_div_le {x l c : ℝ} (hc : 0 < c) (hcx : c ≤ x) (hl : 0 < l) :
-    (x / l) ^ ((2 : ℝ) / 3) ≤ l ^ (-((2 : ℝ) / 3)) * c ^ (-((1 : ℝ) / 3)) * x := by
+    (x / l) ^ ⅔ ≤ l ^ (-⅔) * c ^ (-⅓) * x := by
   have hx : 0 < x := lt_of_lt_of_le hc hcx
   rw [Real.div_rpow hx.le hl.le, div_eq_mul_inv, ← Real.rpow_neg hl.le]
-  have h1 : x ^ ((2 : ℝ) / 3) = x * x ^ (-((1 : ℝ) / 3)) := by
-    rw [show (2 : ℝ) / 3 = 1 + (-((1 : ℝ) / 3)) by norm_num, Real.rpow_add hx, Real.rpow_one]
+  have h1 : x ^ ⅔ = x * x ^ (-⅓) := by
+    rw [show (2 : ℝ) / 3 = 1 + (-⅓) by norm_num, Real.rpow_add hx, Real.rpow_one]
   rw [h1]
-  have h2 : x ^ (-((1 : ℝ) / 3)) ≤ c ^ (-((1 : ℝ) / 3)) :=
+  have h2 : x ^ (-⅓) ≤ c ^ (-⅓) :=
     Real.rpow_le_rpow_of_nonpos hc hcx (by norm_num)
-  have h3 : 0 ≤ l ^ (-((2 : ℝ) / 3)) := Real.rpow_nonneg hl.le _
-  calc x * x ^ (-((1 : ℝ) / 3)) * l ^ (-((2 : ℝ) / 3))
-      ≤ x * c ^ (-((1 : ℝ) / 3)) * l ^ (-((2 : ℝ) / 3)) := by gcongr
-    _ = l ^ (-((2 : ℝ) / 3)) * c ^ (-((1 : ℝ) / 3)) * x := by ring
+  have h3 : 0 ≤ l ^ (-⅔) := Real.rpow_nonneg hl.le _
+  calc x * x ^ (-⅓) * l ^ (-⅔)
+      ≤ x * c ^ (-⅓) * l ^ (-⅔) := by gcongr
+    _ = l ^ (-⅔) * c ^ (-⅓) * x := by ring
 
 /-- Partial sums of `χ` over the multiples of `l` in `(a, x]`, from Burgess's bound. -/
 lemma norm_sum_Ioc_dvd_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤ K)
-    (h : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3))
+    (h : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * ℝc H ^ ⅔)
     {l : ℕ} (hl : 0 < l) (a x : ℕ) :
     ‖∑ k ∈ Finset.Ioc a x, (if l ∣ k then χ k else 0)‖ ≤
-      K * ((x : ℝ) / l) ^ ((2 : ℝ) / 3) := by
+      K * (ℝc x / l) ^ ⅔ := by
   rw [sum_Ioc_ite_dvd (f := fun k => χ k) hl]
   simp only [Nat.cast_mul, map_mul]
   rw [← Finset.mul_sum, norm_mul]
@@ -296,15 +305,15 @@ lemma norm_sum_Ioc_dvd_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (h
   by_cases hax : a / l ≤ x / l
   · obtain ⟨H, hH⟩ : ∃ H, x / l = a / l + H := ⟨x / l - a / l, by omega⟩
     rw [hH]
-    have hHx : (H : ℝ) ≤ (x : ℝ) / l := by
-      calc (H : ℝ) ≤ ((x / l : ℕ) : ℝ) := by
+    have hHx : ℝc H ≤ ℝc x / l := by
+      calc ℝc H ≤ ((x / l : ℕ) : ℝ) := by
             exact_mod_cast (show H ≤ x / l by rw [hH]; exact Nat.le_add_left _ _)
-        _ ≤ (x : ℝ) / l := Nat.cast_div_le
+        _ ≤ ℝc x / l := Nat.cast_div_le
     calc ‖χ (l : ZMod q)‖ * ‖∑ m ∈ Finset.Ioc (a / l) (a / l + H), χ m‖
-        ≤ 1 * (K * (H : ℝ) ^ ((2 : ℝ) / 3)) := by
+        ≤ 1 * (K * ℝc H ^ ⅔) := by
           gcongr
           exact h _ _
-      _ ≤ K * ((x : ℝ) / l) ^ ((2 : ℝ) / 3) := by
+      _ ≤ K * (ℝc x / l) ^ ⅔ := by
           rw [one_mul]
           gcongr
   · rw [Finset.Ioc_eq_empty (by omega)]
@@ -315,128 +324,105 @@ lemma norm_sum_Ioc_dvd_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (h
 `|Σ_{a < n ≤ b, l ∣ n} χ(n) W(n)| ≤ K l^{-2/3} (a+1)^{-1/3} Λ`, where
 `Λ = log(b+1) + (1 + |s| log(b+1))(1 + log(b+1))`. -/
 lemma norm_T_le {q : ℕ} (χ : DirichletCharacter ℂ q) {K : ℝ} (hK : 0 ≤ K)
-    (h : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ((2 : ℝ) / 3))
+    (h : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ K * (H : ℝ) ^ ⅔)
     (s : ℂ) (hs : 1 ≤ s.re) {l : ℕ} (hl : 0 < l) (a b : ℕ) :
     ‖∑ n ∈ Finset.Ioc a b, (if l ∣ n then χ n * wt s n else 0)‖ ≤
-      K * (l : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) *
+      K * ℝc l ^ (-⅔) * (ℝc a + 1) ^ (-⅓) *
         (Real.log (b + 1) + (1 + ‖s‖ * Real.log (b + 1)) * (1 + Real.log (b + 1))) := by
   have hlpos : (0 : ℝ) < l := by exact_mod_cast hl
-  have ha1 : (0 : ℝ) < (a : ℝ) + 1 := by positivity
-  have hE0 : 0 ≤ K * (l : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) := by
-    positivity
-  have hL0 : 0 ≤ Real.log ((b : ℝ) + 1) :=
+  have ha1 : (0 : ℝ) < ℝc a + 1 := by positivity
+  have hE0 : 0 ≤ K * ℝc l ^ (-⅔) * (ℝc a + 1) ^ (-⅓) := by positivity
+  have hL0 : 0 ≤ 𝕃b b :=
     Real.log_nonneg (by linarith [(Nat.cast_nonneg b : (0:ℝ) ≤ b)])
-  generalize hE : K * (l : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) = E at hE0
-  generalize hL : Real.log ((b : ℝ) + 1) = L at hL0
-  have hsum : ∑ n ∈ Finset.Ioc a b, (if l ∣ n then χ n * wt s n else 0) =
-      ∑ n ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) n * wt s n := by
-    apply Finset.sum_congr rfl
-    intro n _
-    by_cases hd : l ∣ n <;> simp [hd]
-  rw [hsum, sum_Ioc_by_parts]
-  have hkey : ∀ x : ℕ, a < x →
-      ‖∑ k ∈ Finset.Ioc a x, (fun n => if l ∣ n then χ n else 0) k‖ ≤ E * x := by
+  generalize hE : K * ℝc l ^ (-⅔) * (ℝc a + 1) ^ (-⅓) = E at hE0
+  generalize hL : 𝕃b b = L at hL0
+  have hsum : ∀ n ∈ Finset.Ioc a b, (if l ∣ n then χ n * wt s n else 0) =
+      (if l ∣ n then χ n else 0) * wt s n := fun n _ => by
+    split_ifs <;> simp
+  rw [Finset.sum_congr rfl hsum, sum_Ioc_by_parts]
+  have hkey : ∀ x : ℕ, a < x → ‖∑ k ∈ Finset.Ioc a x, (if l ∣ k then χ k else 0)‖ ≤ E * x := by
     intro x hx
-    have hcx : (a : ℝ) + 1 ≤ x := by exact_mod_cast hx
-    calc ‖∑ k ∈ Finset.Ioc a x, (fun n => if l ∣ n then χ n else 0) k‖
-        ≤ K * ((x : ℝ) / l) ^ ((2 : ℝ) / 3) := norm_sum_Ioc_dvd_le χ hK h hl a x
-      _ ≤ K * ((l : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) * x) := by
+    have hcx : ℝc a + 1 ≤ x := by exact_mod_cast hx
+    calc ‖∑ k ∈ Finset.Ioc a x, (if l ∣ k then χ k else 0)‖ ≤ K * (ℝc x / l) ^ ⅔ :=
+          norm_sum_Ioc_dvd_le χ hK h hl a x
+      _ ≤ K * (ℝc l ^ (-⅔) * (ℝc a + 1) ^ (-⅓) * x) := by
           gcongr
           exact rpow_two_thirds_div_le ha1 hcx hlpos
       _ = E * x := by rw [← hE]; ring
-  have hΛ0 : 0 ≤ L + (1 + ‖s‖ * L) * (1 + L) :=
+  have hΛ0 : 0 ≤ L + 𝔰 s L * (1 + L) :=
     add_nonneg hL0 (mul_nonneg (by nlinarith [norm_nonneg s]) (by linarith))
   rcases le_or_gt b a with hab | hab
   · rw [Finset.Ioc_eq_empty (by omega)]
     simp only [Finset.sum_empty, zero_mul, zero_add, norm_zero]
     exact mul_nonneg hE0 hΛ0
   have hb0 : (0 : ℝ) < b := by exact_mod_cast (show 0 < b by omega)
-  -- the boundary term
-  have hT1 : ‖(∑ k ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) k) * wt s (b + 1)‖ ≤
-      E * L := by
+  have hw1 : ‖wt s (b + 1)‖ ≤ L / (ℝc b + 1) := by
+    simpa [hL] using norm_wt_le s hs (b + 1)
+  have hT1 : ‖(∑ k ∈ Finset.Ioc a b, (if l ∣ k then χ k else 0)) * wt s (b + 1)‖ ≤ E * L := by
     rw [norm_mul]
-    have hw := norm_wt_le s hs (b + 1)
-    push_cast at hw
-    rw [hL] at hw
-    calc ‖∑ k ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) k‖ * ‖wt s (b + 1)‖
-        ≤ (E * b) * (L / ((b : ℝ) + 1)) :=
-          mul_le_mul (hkey b hab) hw (norm_nonneg _) (mul_nonneg hE0 hb0.le)
-      _ = E * L * (b / ((b : ℝ) + 1)) := by ring
+    calc _ ≤ (E * b) * (L / (ℝc b + 1)) :=
+          mul_le_mul (hkey b hab) hw1 (norm_nonneg _) (by positivity)
+      _ = E * L * (b / (ℝc b + 1)) := by ring
       _ ≤ E * L * 1 := by
           apply mul_le_mul_of_nonneg_left _ (mul_nonneg hE0 hL0)
           rw [div_le_one (by positivity)]
           linarith
       _ = E * L := mul_one _
-  -- the interior terms
   have hT2 : ∀ n ∈ Finset.Ioc a b,
-      ‖(∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k) *
-        (wt s n - wt s (n + 1))‖ ≤ E * (1 + ‖s‖ * L) * (1 / (n : ℝ)) := by
+      ‖(∑ k ∈ Finset.Ioc a n, (if l ∣ k then χ k else 0)) * (wt s n - wt s (n + 1))‖ ≤
+        E * 𝔰 s L * (1 / ℝc n) := by
     intro n hn
     rw [Finset.mem_Ioc] at hn
     have hn1 : 1 ≤ n := by omega
     have hn0 : (0 : ℝ) < n := by exact_mod_cast hn1
-    rw [norm_mul]
-    have hlog : Real.log ((n : ℝ) + 1) ≤ L := by
+    have hlog : Real.log (ℝc n + 1) ≤ L := by
       rw [← hL]
-      apply Real.log_le_log (by positivity)
-      have : (n : ℝ) ≤ b := by exact_mod_cast hn.2
-      linarith
-    have hw : ‖wt s n - wt s (n + 1)‖ ≤ (1 + ‖s‖ * L) / (n : ℝ) ^ 2 := by
-      refine (norm_wt_sub_le s hs hn1).trans ?_
-      gcongr
-    calc ‖∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k‖ *
-          ‖wt s n - wt s (n + 1)‖
-        ≤ (E * n) * ((1 + ‖s‖ * L) / (n : ℝ) ^ 2) :=
-          mul_le_mul (hkey n hn.1) hw (norm_nonneg _) (mul_nonneg hE0 hn0.le)
-      _ = E * (1 + ‖s‖ * L) * (1 / (n : ℝ)) := by field_simp
-  have hharm : ∑ n ∈ Finset.Ioc a b, (1 / (n : ℝ)) ≤ 1 + L := by
-    calc ∑ n ∈ Finset.Ioc a b, (1 / (n : ℝ)) ≤ 1 + Real.log b := sum_Ioc_inv_le a b
-      _ ≤ 1 + L := by
-          rw [← hL]
-          gcongr
-          linarith
-  calc ‖(∑ k ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) k) * wt s (b + 1) +
-        ∑ n ∈ Finset.Ioc a b, (∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k) *
+      have hnb : ℝc n ≤ b := by exact_mod_cast hn.2
+      exact Real.log_le_log (by positivity) (by linarith)
+    have hw : ‖wt s n - wt s (n + 1)‖ ≤ 𝔰 s L / ℝc n ^ 2 :=
+      (norm_wt_sub_le s hs hn1).trans (by gcongr)
+    rw [norm_mul]
+    calc _ ≤ (E * n) * (𝔰 s L / ℝc n ^ 2) :=
+          mul_le_mul (hkey n hn.1) hw (norm_nonneg _) (by positivity)
+      _ = E * 𝔰 s L * (1 / ℝc n) := by field_simp
+  have hharm : ∑ n ∈ Finset.Ioc a b, (1 / ℝc n) ≤ 1 + L :=
+    (sum_Ioc_inv_le a b).trans (by rw [← hL]; gcongr; linarith)
+  calc ‖(∑ k ∈ Finset.Ioc a b, (if l ∣ k then χ k else 0)) * wt s (b + 1) +
+        ∑ n ∈ Finset.Ioc a b, (∑ k ∈ Finset.Ioc a n, (if l ∣ k then χ k else 0)) *
           (wt s n - wt s (n + 1))‖
-      ≤ ‖(∑ k ∈ Finset.Ioc a b, (fun n => if l ∣ n then χ n else 0) k) * wt s (b + 1)‖ +
-        ∑ n ∈ Finset.Ioc a b, ‖(∑ k ∈ Finset.Ioc a n, (fun n => if l ∣ n then χ n else 0) k) *
-          (wt s n - wt s (n + 1))‖ :=
-        (norm_add_le _ _).trans (add_le_add le_rfl (norm_sum_le _ _))
-    _ ≤ E * L + ∑ n ∈ Finset.Ioc a b, E * (1 + ‖s‖ * L) * (1 / (n : ℝ)) :=
-        add_le_add hT1 (Finset.sum_le_sum hT2)
-    _ = E * L + E * (1 + ‖s‖ * L) * ∑ n ∈ Finset.Ioc a b, (1 / (n : ℝ)) := by
-        rw [Finset.mul_sum]
-    _ ≤ E * L + E * (1 + ‖s‖ * L) * (1 + L) := by
-        gcongr
-    _ = E * (L + (1 + ‖s‖ * L) * (1 + L)) := by ring
+      ≤ _ := (norm_add_le _ _).trans (add_le_add le_rfl (norm_sum_le _ _))
+    _ ≤ E * L + ∑ n ∈ Finset.Ioc a b, E * 𝔰 s L * (1 / ℝc n) := add_le_add hT1 (Finset.sum_le_sum hT2)
+    _ = E * L + E * 𝔰 s L * ∑ n ∈ Finset.Ioc a b, (1 / ℝc n) := by rw [Finset.mul_sum]
+    _ ≤ E * L + E * 𝔰 s L * (1 + L) := by gcongr
+    _ = E * (L + 𝔰 s L * (1 + L)) := by ring
 
 /-! ### The lcm sum -/
 
 /-- `Σ_{j ≤ Y} j^{-2/3} ≤ 3 Y^{1/3}`, by telescoping. -/
 lemma sum_rpow_neg_two_thirds_le (Y : ℕ) :
-    ∑ j ∈ Finset.Ioc 0 Y, (j : ℝ) ^ (-((2 : ℝ) / 3)) ≤ 3 * (Y : ℝ) ^ ((1 : ℝ) / 3) := by
+    ∑ j ∈ Finset.Ioc 0 Y, ℝc j ^ (-⅔) ≤ 3 * ℝc Y ^ ⅓ := by
   induction Y with
   | zero => simp
   | succ Y ih =>
     rw [Finset.sum_Ioc_succ_top (Nat.zero_le Y)]
     have hY0 : (0 : ℝ) ≤ Y := Nat.cast_nonneg Y
-    have hY1 : (0 : ℝ) < (Y : ℝ) + 1 := by linarith
-    have key : ((Y : ℝ) + 1) ^ (-((2 : ℝ) / 3)) ≤
-        3 * (((Y : ℝ) + 1) ^ ((1 : ℝ) / 3) - (Y : ℝ) ^ ((1 : ℝ) / 3)) := by
-      have ha3 : (((Y : ℝ) + 1) ^ ((1 : ℝ) / 3)) ^ 3 = (Y : ℝ) + 1 := by
+    have hY1 : (0 : ℝ) < ℝc Y + 1 := by linarith
+    have key : (ℝc Y + 1) ^ (-⅔) ≤
+        3 * ((ℝc Y + 1) ^ ⅓ - ℝc Y ^ ⅓) := by
+      have ha3 : ((ℝc Y + 1) ^ ⅓) ^ 3 = ℝc Y + 1 := by
         rw [← Real.rpow_natCast, ← Real.rpow_mul hY1.le]; norm_num
-      have hb3 : ((Y : ℝ) ^ ((1 : ℝ) / 3)) ^ 3 = (Y : ℝ) := by
+      have hb3 : (ℝc Y ^ ⅓) ^ 3 = ℝc Y := by
         rw [← Real.rpow_natCast, ← Real.rpow_mul hY0]; norm_num
-      have hlhs : ((Y : ℝ) + 1) ^ (-((2 : ℝ) / 3)) = 1 / (((Y : ℝ) + 1) ^ ((1 : ℝ) / 3)) ^ 2 := by
+      have hlhs : (ℝc Y + 1) ^ (-⅔) = 1 / ((ℝc Y + 1) ^ ⅓) ^ 2 := by
         rw [Real.rpow_neg hY1.le, ← Real.rpow_natCast, ← Real.rpow_mul hY1.le, one_div]
         norm_num
-      have ha0 : 0 < ((Y : ℝ) + 1) ^ ((1 : ℝ) / 3) := Real.rpow_pos_of_pos hY1 _
-      have hb0 : 0 ≤ (Y : ℝ) ^ ((1 : ℝ) / 3) := Real.rpow_nonneg hY0 _
-      have hba : (Y : ℝ) ^ ((1 : ℝ) / 3) ≤ ((Y : ℝ) + 1) ^ ((1 : ℝ) / 3) :=
+      have ha0 : 0 < (ℝc Y + 1) ^ ⅓ := Real.rpow_pos_of_pos hY1 _
+      have hb0 : 0 ≤ ℝc Y ^ ⅓ := Real.rpow_nonneg hY0 _
+      have hba : ℝc Y ^ ⅓ ≤ (ℝc Y + 1) ^ ⅓ :=
         Real.rpow_le_rpow hY0 (by linarith) (by norm_num)
       rw [hlhs]
-      generalize ((Y : ℝ) + 1) ^ ((1 : ℝ) / 3) = a at *
-      generalize (Y : ℝ) ^ ((1 : ℝ) / 3) = b at *
+      generalize (ℝc Y + 1) ^ ⅓ = a at *
+      generalize ℝc Y ^ ⅓ = b at *
       rw [div_le_iff₀ (by positivity)]
       nlinarith [mul_nonneg (mul_nonneg (sub_nonneg.2 hba) (sub_nonneg.2 hba))
         (by positivity : (0 : ℝ) ≤ 2 * a + b)]
@@ -445,63 +431,63 @@ lemma sum_rpow_neg_two_thirds_le (Y : ℕ) :
 
 /-- `[d, e]^{-2/3} = (d, e)^{2/3} d^{-2/3} e^{-2/3}`. -/
 lemma lcm_rpow_eq {d e : ℕ} (hd : 0 < d) (he : 0 < e) :
-    ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) =
-      ((Nat.gcd d e : ℕ) : ℝ) ^ ((2 : ℝ) / 3) *
-        ((d : ℝ) ^ (-((2 : ℝ) / 3)) * (e : ℝ) ^ (-((2 : ℝ) / 3))) := by
+    𝕃 d e ^ (-⅔) =
+      ((Nat.gcd d e : ℕ) : ℝ) ^ ⅔ *
+        (ℝc d ^ (-⅔) * ℝc e ^ (-⅔)) := by
   have hg : (0 : ℝ) < (Nat.gcd d e : ℕ) := by exact_mod_cast Nat.gcd_pos_of_pos_left e hd
   have hl : (0 : ℝ) < (Nat.lcm d e : ℕ) := by exact_mod_cast Nat.lcm_pos hd he
-  have hprod : ((Nat.gcd d e : ℕ) : ℝ) * (Nat.lcm d e : ℕ) = (d : ℝ) * e := by
+  have hprod : ((Nat.gcd d e : ℕ) : ℝ) * (Nat.lcm d e : ℕ) = ℝc d * e := by
     exact_mod_cast Nat.gcd_mul_lcm d e
-  have h1 : ((d : ℝ) * e) ^ (-((2 : ℝ) / 3)) =
-      (d : ℝ) ^ (-((2 : ℝ) / 3)) * (e : ℝ) ^ (-((2 : ℝ) / 3)) :=
+  have h1 : (ℝc d * e) ^ (-⅔) =
+      ℝc d ^ (-⅔) * ℝc e ^ (-⅔) :=
     Real.mul_rpow (Nat.cast_nonneg _) (Nat.cast_nonneg _)
   rw [← h1, ← hprod, Real.mul_rpow hg.le hl.le, ← mul_assoc, ← Real.rpow_add hg]
   norm_num
 
 /-- `Σ_{d ≤ K, g ∣ d} d^{-2/3} ≤ 3 K^{1/3} / g`. -/
 lemma sum_dvd_rpow_le (K : ℕ) {g : ℕ} (hg : 0 < g) :
-    ∑ d ∈ Finset.Ioc 0 K, (if g ∣ d then (d : ℝ) ^ (-((2 : ℝ) / 3)) else 0) ≤
-      3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹ := by
-  rw [sum_Ioc_ite_dvd (f := fun d => (d : ℝ) ^ (-((2 : ℝ) / 3))) hg, Nat.zero_div]
+    ∑ d ∈ Finset.Ioc 0 K, (if g ∣ d then ℝc d ^ (-⅔) else 0) ≤
+      3 * ℝc K ^ ⅓ * ℝc g⁻¹ := by
+  rw [sum_Ioc_ite_dvd (f := fun d => ℝc d ^ (-⅔)) hg, Nat.zero_div]
   have hg0 : (0 : ℝ) < g := by exact_mod_cast hg
   simp only [Nat.cast_mul]
-  have hsplit : ∀ m ∈ Finset.Ioc 0 (K / g), ((g : ℝ) * m) ^ (-((2 : ℝ) / 3)) =
-      (g : ℝ) ^ (-((2 : ℝ) / 3)) * (m : ℝ) ^ (-((2 : ℝ) / 3)) :=
+  have hsplit : ∀ m ∈ Finset.Ioc 0 (K / g), (ℝc g * m) ^ (-⅔) =
+      ℝc g ^ (-⅔) * ℝc m ^ (-⅔) :=
     fun m _ => Real.mul_rpow hg0.le (Nat.cast_nonneg _)
   rw [Finset.sum_congr rfl hsplit, ← Finset.mul_sum]
-  have hgg : (g : ℝ) ^ (-((2 : ℝ) / 3)) / (g : ℝ) ^ ((1 : ℝ) / 3) = (g : ℝ)⁻¹ := by
-    rw [← Real.rpow_sub hg0, show (-((2 : ℝ) / 3) - 1 / 3) = -1 by norm_num, Real.rpow_neg_one]
-  calc (g : ℝ) ^ (-((2 : ℝ) / 3)) * ∑ m ∈ Finset.Ioc 0 (K / g), (m : ℝ) ^ (-((2 : ℝ) / 3))
-      ≤ (g : ℝ) ^ (-((2 : ℝ) / 3)) * (3 * ((K : ℝ) / g) ^ ((1 : ℝ) / 3)) := by
+  have hgg : ℝc g ^ (-⅔) / ℝc g ^ ⅓ = ℝc g⁻¹ := by
+    rw [← Real.rpow_sub hg0, show (-⅔ - 1 / 3) = -1 by norm_num, Real.rpow_neg_one]
+  calc ℝc g ^ (-⅔) * ∑ m ∈ Finset.Ioc 0 (K / g), ℝc m ^ (-⅔)
+      ≤ ℝc g ^ (-⅔) * (3 * (ℝc K / g) ^ ⅓) := by
         gcongr
-        calc _ ≤ 3 * ((K / g : ℕ) : ℝ) ^ ((1 : ℝ) / 3) := sum_rpow_neg_two_thirds_le _
-          _ ≤ 3 * ((K : ℝ) / g) ^ ((1 : ℝ) / 3) := by
+        calc _ ≤ 3 * ((K / g : ℕ) : ℝ) ^ ⅓ := sum_rpow_neg_two_thirds_le _
+          _ ≤ 3 * (ℝc K / g) ^ ⅓ := by
               gcongr
               exact Nat.cast_div_le
-    _ = 3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹ := by
+    _ = 3 * ℝc K ^ ⅓ * ℝc g⁻¹ := by
         rw [Real.div_rpow (Nat.cast_nonneg _) hg0.le, ← hgg]
         ring
 
 /-- `Σ_{d, e ≤ K} [d, e]^{-2/3} ≤ 9 K^{2/3} (1 + log K)`. -/
 lemma lcm_sum_le (K : ℕ) :
-    ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) ≤
-      9 * (K : ℝ) ^ ((2 : ℝ) / 3) * (1 + Real.log K) := by
-  let F : ℕ → ℕ → ℝ := fun g d => if g ∣ d then (d : ℝ) ^ (-((2 : ℝ) / 3)) else 0
+    ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, 𝕃 d e ^ (-⅔) ≤
+      9 * ℝc K ^ ⅔ * (1 + Real.log K) := by
+  let F : ℕ → ℕ → ℝ := fun g d => if g ∣ d then ℝc d ^ (-⅔) else 0
   have hF0 : ∀ g d, 0 ≤ F g d := by
     intro g d
     simp only [F]
     split_ifs <;> positivity
-  let X : ℕ → ℕ → ℕ → ℝ := fun g d e => (g : ℝ) ^ ((2 : ℝ) / 3) * (F g d * F g e)
+  let X : ℕ → ℕ → ℕ → ℝ := fun g d e => ℝc g ^ ⅔ * (F g d * F g e)
   have hX0 : ∀ g d e, 0 ≤ X g d e := fun g d e =>
     mul_nonneg (by positivity) (mul_nonneg (hF0 g d) (hF0 g e))
   have h1 : ∀ d ∈ Finset.Ioc 0 K, ∀ e ∈ Finset.Ioc 0 K,
-      ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) ≤ ∑ g ∈ Finset.Ioc 0 K, X g d e := by
+      𝕃 d e ^ (-⅔) ≤ ∑ g ∈ Finset.Ioc 0 K, X g d e := by
     intro d hd e he
     rw [Finset.mem_Ioc] at hd he
     have hgS : Nat.gcd d e ∈ Finset.Ioc 0 K := by
       rw [Finset.mem_Ioc]
       exact ⟨Nat.gcd_pos_of_pos_left e hd.1, le_trans (Nat.gcd_le_left e hd.1) hd.2⟩
-    have hval : ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) = X (Nat.gcd d e) d e := by
+    have hval : 𝕃 d e ^ (-⅔) = X (Nat.gcd d e) d e := by
       rw [lcm_rpow_eq hd.1 he.1]
       simp only [X, F, Nat.gcd_dvd_left d e, Nat.gcd_dvd_right d e, ite_true]
     rw [hval]
@@ -516,51 +502,51 @@ lemma lcm_sum_le (K : ℕ) :
       _ = ∑ g ∈ Finset.Ioc 0 K, ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, X g d e :=
           Finset.sum_comm
   have hfactor : ∀ g, ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, X g d e =
-      (g : ℝ) ^ ((2 : ℝ) / 3) *
+      ℝc g ^ ⅔ *
         ((∑ d ∈ Finset.Ioc 0 K, F g d) * (∑ e ∈ Finset.Ioc 0 K, F g e)) := by
     intro g
     rw [Finset.sum_mul_sum, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro d _
     rw [Finset.mul_sum]
-  have hK13 : ((K : ℝ) ^ ((1 : ℝ) / 3)) * ((K : ℝ) ^ ((1 : ℝ) / 3)) =
-      (K : ℝ) ^ ((2 : ℝ) / 3) := by
+  have hK13 : (ℝc K ^ ⅓) * (ℝc K ^ ⅓) =
+      ℝc K ^ ⅔ := by
     rw [← Real.rpow_add' (Nat.cast_nonneg _) (by norm_num)]
     norm_num
-  calc ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3))
+  calc ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, 𝕃 d e ^ (-⅔)
       ≤ ∑ d ∈ Finset.Ioc 0 K, ∑ e ∈ Finset.Ioc 0 K, ∑ g ∈ Finset.Ioc 0 K, X g d e :=
         Finset.sum_le_sum fun d hd => Finset.sum_le_sum fun e he => h1 d hd e he
-    _ = ∑ g ∈ Finset.Ioc 0 K, (g : ℝ) ^ ((2 : ℝ) / 3) *
+    _ = ∑ g ∈ Finset.Ioc 0 K, ℝc g ^ ⅔ *
           ((∑ d ∈ Finset.Ioc 0 K, F g d) * (∑ e ∈ Finset.Ioc 0 K, F g e)) := by
         rw [hswap]
         exact Finset.sum_congr rfl fun g _ => hfactor g
-    _ ≤ ∑ g ∈ Finset.Ioc 0 K, 9 * (K : ℝ) ^ ((2 : ℝ) / 3) * (1 / (g : ℝ)) := by
+    _ ≤ ∑ g ∈ Finset.Ioc 0 K, 9 * ℝc K ^ ⅔ * (1 / ℝc g) := by
         apply Finset.sum_le_sum
         intro g hg
         have hg1' : 0 < g := (Finset.mem_Ioc.1 hg).1
         have hg1 : (1 : ℝ) ≤ g := by exact_mod_cast hg1'
         have hg0 : (0 : ℝ) < g := by linarith
-        have hU : ∑ d ∈ Finset.Ioc 0 K, F g d ≤ 3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹ :=
+        have hU : ∑ d ∈ Finset.Ioc 0 K, F g d ≤ 3 * ℝc K ^ ⅓ * ℝc g⁻¹ :=
           sum_dvd_rpow_le K hg1'
         have hU0 : 0 ≤ ∑ d ∈ Finset.Ioc 0 K, F g d := Finset.sum_nonneg fun d _ => hF0 g d
-        have hgg : (g : ℝ) ^ ((2 : ℝ) / 3) * (g : ℝ)⁻¹ ≤ 1 := by
+        have hgg : ℝc g ^ ⅔ * ℝc g⁻¹ ≤ 1 := by
           rw [mul_inv_le_iff₀ hg0, one_mul]
-          calc (g : ℝ) ^ ((2 : ℝ) / 3) ≤ (g : ℝ) ^ (1 : ℝ) :=
+          calc ℝc g ^ ⅔ ≤ ℝc g ^ (1 : ℝ) :=
                 Real.rpow_le_rpow_of_exponent_le hg1 (by norm_num)
             _ = g := Real.rpow_one _
-        calc (g : ℝ) ^ ((2 : ℝ) / 3) *
+        calc ℝc g ^ ⅔ *
               ((∑ d ∈ Finset.Ioc 0 K, F g d) * (∑ e ∈ Finset.Ioc 0 K, F g e))
-            ≤ (g : ℝ) ^ ((2 : ℝ) / 3) * ((3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹) *
-                (3 * (K : ℝ) ^ ((1 : ℝ) / 3) * (g : ℝ)⁻¹)) :=
+            ≤ ℝc g ^ ⅔ * ((3 * ℝc K ^ ⅓ * ℝc g⁻¹) *
+                (3 * ℝc K ^ ⅓ * ℝc g⁻¹)) :=
               mul_le_mul_of_nonneg_left (mul_self_le_mul_self hU0 hU) (by positivity)
-          _ = 9 * ((K : ℝ) ^ ((1 : ℝ) / 3) * (K : ℝ) ^ ((1 : ℝ) / 3)) *
-                ((g : ℝ) ^ ((2 : ℝ) / 3) * (g : ℝ)⁻¹) * (g : ℝ)⁻¹ := by ring
-          _ ≤ 9 * ((K : ℝ) ^ ((1 : ℝ) / 3) * (K : ℝ) ^ ((1 : ℝ) / 3)) * 1 * (g : ℝ)⁻¹ := by
+          _ = 9 * (ℝc K ^ ⅓ * ℝc K ^ ⅓) *
+                (ℝc g ^ ⅔ * ℝc g⁻¹) * ℝc g⁻¹ := by ring
+          _ ≤ 9 * (ℝc K ^ ⅓ * ℝc K ^ ⅓) * 1 * ℝc g⁻¹ := by
               gcongr
-          _ = 9 * (K : ℝ) ^ ((2 : ℝ) / 3) * (1 / (g : ℝ)) := by rw [hK13]; ring
-    _ = 9 * (K : ℝ) ^ ((2 : ℝ) / 3) * ∑ g ∈ Finset.Ioc 0 K, 1 / (g : ℝ) := by
+          _ = 9 * ℝc K ^ ⅔ * (1 / ℝc g) := by rw [hK13]; ring
+    _ = 9 * ℝc K ^ ⅔ * ∑ g ∈ Finset.Ioc 0 K, 1 / ℝc g := by
         rw [Finset.mul_sum]
-    _ ≤ 9 * (K : ℝ) ^ ((2 : ℝ) / 3) * (1 + Real.log K) := by
+    _ ≤ 9 * ℝc K ^ ⅔ * (1 + Real.log K) := by
         gcongr
         exact sum_Ioc_inv_le 0 K
 
@@ -569,7 +555,7 @@ lemma lcm_sum_le (K : ℕ) :
 /-- `Σ_{d ∣ n} ψ_d = Σ_{d ≤ ⌊V⌋} [d ∣ n] ψ_d` for `n ≠ 0`. -/
 lemma sum_divisors_grahamWeight (V : ℝ) {n : ℕ} (hn : n ≠ 0) :
     ∑ d ∈ n.divisors, grahamWeight V d =
-      ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, (if d ∣ n then grahamWeight V d else 0) := by
+      ∑ d ∈ 𝕀 V, (if d ∣ n then grahamWeight V d else 0) := by
   rw [← Finset.sum_filter]
   symm
   apply Finset.sum_subset
@@ -584,7 +570,7 @@ lemma sum_divisors_grahamWeight (V : ℝ) {n : ℕ} (hn : n ≠ 0) :
 
 /-- `ν_V(n) = Σ_{d, e ≤ ⌊V⌋} [[d, e] ∣ n] ψ_d ψ_e` for `n ≠ 0`. -/
 lemma sieveNu_eq (V : ℝ) {n : ℕ} (hn : n ≠ 0) :
-    sieveNu V n = ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+    sieveNu V n = ∑ d ∈ 𝕀 V, ∑ e ∈ 𝕀 V,
       (if Nat.lcm d e ∣ n then grahamWeight V d * grahamWeight V e else 0) := by
   unfold sieveNu
   rw [sum_divisors_grahamWeight V hn, sq, Finset.sum_mul_sum]
@@ -597,11 +583,11 @@ lemma sieveNu_eq (V : ℝ) {n : ℕ} (hn : n ≠ 0) :
 /-- Opening the square and swapping the sums. -/
 lemma sum_sieveNu_mul (V : ℝ) (R : Finset ℕ) (hR : ∀ n ∈ R, n ≠ 0) (F : ℕ → ℂ) :
     ∑ n ∈ R, (sieveNu V n : ℂ) * F n =
-      ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+      ∑ d ∈ 𝕀 V, ∑ e ∈ 𝕀 V,
         ((grahamWeight V d * grahamWeight V e : ℝ) : ℂ) *
           ∑ n ∈ R, (if Nat.lcm d e ∣ n then F n else 0) := by
   have hpt : ∀ n ∈ R, (sieveNu V n : ℂ) * F n =
-      ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+      ∑ d ∈ 𝕀 V, ∑ e ∈ 𝕀 V,
         ((grahamWeight V d * grahamWeight V e : ℝ) : ℂ) *
           (if Nat.lcm d e ∣ n then F n else 0) := by
     intro n hn
@@ -641,19 +627,16 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
       ∀ ψ : DirichletCharacter ℂ q, ψ ≠ 1 →
       ∀ t t' β τ : ℝ, 1 / 3 + 2 * ε' < t → t ≤ t' → t' ≤ tmax → 0 ≤ β → β ≤ 1 →
         |τ| ≤ Real.log q →
-        ‖∑ n ∈ Finset.Ico ⌈(q : ℝ) ^ t⌉₊ ⌈(q : ℝ) ^ t'⌉₊,
-            (sieveNu ((q : ℝ) ^ ((t - 1 / 3) / 2 - ε')) n : ℂ) * ψ n * (Real.log n : ℂ) *
-              (n : ℂ) ^ (-((1 + β : ℝ) + (τ : ℂ) * I))‖ ≤ C * (q : ℝ) ^ (-κ) := by
+        ‖∑ n ∈ Finset.Ico ⌈𝕢 q ^ t⌉₊ ⌈𝕢 q ^ t'⌉₊,
+            (sieveNu (𝕢 q ^ ((t - 1 / 3) / 2 - ε')) n : ℂ) * ψ n * (Real.log n : ℂ) *
+              (n : ℂ) ^ (-((1 + β : ℝ) + (τ : ℂ) * I))‖ ≤ C * 𝕢 q ^ (-κ) := by
   obtain ⟨CB, hCB⟩ := hBur (ε' / 3) (by positivity)
   obtain ⟨C₀, hCBC₀, hC₀0⟩ : ∃ C₀ : ℝ, CB ≤ C₀ ∧ 0 ≤ C₀ :=
     ⟨max CB 0, le_max_left _ _, le_max_right _ _⟩
   obtain ⟨c₁, hc₁1, hc₁t⟩ : ∃ c₁ : ℝ, 1 ≤ c₁ ∧ tmax ≤ c₁ :=
     ⟨max 1 tmax, le_max_left _ _, le_max_right _ _⟩
   obtain ⟨M, hM⟩ : ∃ M : ℝ, M = 1 + 24 / ε' := ⟨_, rfl⟩
-  have hM1 : 1 ≤ M := by
-    rw [hM]
-    have : 0 < 24 / ε' := by positivity
-    linarith
+  have hM1 : 1 ≤ M := by rw [hM]; linarith [show (0 : ℝ) < 24 / ε' by positivity]
   refine ⟨C₀ * (63 * c₁ ^ 3 * M ^ 4), ε' / 6, by positivity, 2, ?_⟩
   intro q hq ψ hψ t t' β τ ht htt' ht'max hβ0 hβ1 hτ
   have hqpos : 0 < q := by omega
@@ -663,16 +646,12 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
   have hℓ0 : 0 ≤ Real.log q := Real.log_nonneg hq1
   have ht0 : 0 < t := by linarith
   -- Burgess's bound for intervals of any length
-  have hKq0 : 0 ≤ C₀ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) := by positivity
+  have hKq0 : 0 ≤ C₀ * 𝕢 q ^ ((1 : ℝ) / 9 + ε' / 3) := by positivity
   have hBurq : ∀ N H : ℕ, ‖∑ n ∈ Finset.Ioc N (N + H), ψ n‖ ≤
-      C₀ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
-    apply burgess_any_length hqpos ψ hψ hKq0
-    intro N H hH1 hHq
-    calc _ ≤ CB * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) * (H : ℝ) ^ ((2 : ℝ) / 3) :=
-          hCB q ψ hψ N H hH1 hHq
-      _ ≤ C₀ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
-          gcongr
-  generalize hKq : C₀ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) = Kq at hKq0 hBurq
+      C₀ * 𝕢 q ^ ((1 : ℝ) / 9 + ε' / 3) * ℝc H ^ ⅔ := by
+    refine burgess_any_length hqpos ψ hψ hKq0 fun N H hH1 hHq =>
+      (hCB q ψ hψ N H hH1 hHq).trans (by gcongr)
+  generalize hKq : C₀ * 𝕢 q ^ ((1 : ℝ) / 9 + ε' / 3) = Kq at hKq0 hBurq
   -- the exponent `s = 1 + β + iτ`
   have hs : 1 ≤ (((1 + β : ℝ) : ℂ) + (τ : ℂ) * I).re := by
     simp
@@ -690,21 +669,21 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
   -- the level `V = q^δ`
   have hδ0 : 0 < (t - 1 / 3) / 2 - ε' := by linarith
   generalize hδ : (t - 1 / 3) / 2 - ε' = δ at hδ0 ⊢
-  have hV1 : 1 ≤ (q : ℝ) ^ δ := Real.one_le_rpow hq1 hδ0.le
-  have hlogV : Real.log ((q : ℝ) ^ δ) = δ * Real.log q := Real.log_rpow hq0 δ
-  have hexp : (q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) * ((q : ℝ) ^ t) ^ (-((1 : ℝ) / 3)) *
-      ((q : ℝ) ^ δ) ^ ((2 : ℝ) / 3) = (q : ℝ) ^ (-(ε' / 3)) := by
+  have hV1 : 1 ≤ 𝕢 q ^ δ := Real.one_le_rpow hq1 hδ0.le
+  have hlogV : Real.log (𝕢 q ^ δ) = δ * Real.log q := Real.log_rpow hq0 δ
+  have hexp : 𝕢 q ^ ((1 : ℝ) / 9 + ε' / 3) * (𝕢 q ^ t) ^ (-⅓) *
+      (𝕢 q ^ δ) ^ ⅔ = 𝕢 q ^ (-(ε' / 3)) := by
     rw [← Real.rpow_mul hq0.le, ← Real.rpow_mul hq0.le, ← Real.rpow_add hq0,
       ← Real.rpow_add hq0]
     congr 1
     rw [← hδ]
     ring
-  generalize hV : (q : ℝ) ^ δ = V at hV1 hlogV hexp ⊢
-  have hA1 : 1 ≤ (q : ℝ) ^ t := Real.one_le_rpow hq1 ht0.le
-  have hB1 : 1 ≤ (q : ℝ) ^ t' := Real.one_le_rpow hq1 (by linarith)
-  have hlogB : Real.log ((q : ℝ) ^ t') = t' * Real.log q := Real.log_rpow hq0 t'
-  generalize hA : (q : ℝ) ^ t = A at hA1 hexp ⊢
-  generalize hB : (q : ℝ) ^ t' = B at hB1 hlogB ⊢
+  generalize hV : 𝕢 q ^ δ = V at hV1 hlogV hexp ⊢
+  have hA1 : 1 ≤ 𝕢 q ^ t := Real.one_le_rpow hq1 ht0.le
+  have hB1 : 1 ≤ 𝕢 q ^ t' := Real.one_le_rpow hq1 (by linarith)
+  have hlogB : Real.log (𝕢 q ^ t') = t' * Real.log q := Real.log_rpow hq0 t'
+  generalize hA : 𝕢 q ^ t = A at hA1 hexp ⊢
+  generalize hB : 𝕢 q ^ t' = B at hB1 hlogB ⊢
   have hA0 : 0 < A := by linarith
   have hB0 : 0 < B := by linarith
   have hN₀ : 1 ≤ ⌈A⌉₊ := Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 hA0).ne'
@@ -732,10 +711,10 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
   generalize ha : ⌈A⌉₊ - 1 = a at ha1 ⊢
   generalize hb : ⌈B⌉₊ - 1 = b at hb1 ⊢
   -- each `(d, e)` term
-  have hT : ∀ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∀ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+  have hT : ∀ d ∈ 𝕀 V, ∀ e ∈ 𝕀 V,
       ‖((grahamWeight V d * grahamWeight V e : ℝ) : ℂ) *
           ∑ n ∈ Finset.Ioc a b, (if Nat.lcm d e ∣ n then ψ n * wt s n else 0)‖ ≤
-        Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) *
+        Kq * 𝕃 d e ^ (-⅔) * (ℝc a + 1) ^ (-⅓) *
           (Real.log (b + 1) + (1 + ‖s‖ * Real.log (b + 1)) * (1 + Real.log (b + 1))) := by
     intro d hd e he
     rw [Finset.mem_Ioc] at hd he
@@ -743,30 +722,23 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_mul]
     calc |grahamWeight V d| * |grahamWeight V e| *
           ‖∑ n ∈ Finset.Ioc a b, (if Nat.lcm d e ∣ n then ψ n * wt s n else 0)‖
-        ≤ 1 * 1 * (Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) *
-            ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) *
+        ≤ 1 * 1 * (Kq * 𝕃 d e ^ (-⅔) *
+            (ℝc a + 1) ^ (-⅓) *
             (Real.log (b + 1) + (1 + ‖s‖ * Real.log (b + 1)) * (1 + Real.log (b + 1)))) :=
           mul_le_mul (mul_le_mul (abs_grahamWeight_le_one V d) (abs_grahamWeight_le_one V e)
             (abs_nonneg _) zero_le_one) (norm_T_le ψ hKq0 hBurq s hs hl a b) (norm_nonneg _)
             (by norm_num)
       _ = _ := by ring
   -- bounds on the logarithmic factors
-  have hL0 : 0 ≤ Real.log ((b : ℝ) + 1) :=
+  have hL0 : 0 ≤ 𝕃b b :=
     Real.log_nonneg (by have := (Nat.cast_nonneg b : (0 : ℝ) ≤ b); linarith)
-  have hLle : Real.log ((b : ℝ) + 1) ≤ c₁ * (1 + Real.log q) := by
+  have hLle : 𝕃b b ≤ c₁ * (1 + Real.log q) := by
     rw [hb1]
-    have h1 : (⌈B⌉₊ : ℝ) ≤ 2 * B := by
-      have := Nat.ceil_lt_add_one hB0.le
-      linarith
-    have h2 : Real.log (⌈B⌉₊ : ℝ) ≤ Real.log (2 * B) :=
-      Real.log_le_log (by exact_mod_cast (show 0 < ⌈B⌉₊ by omega)) h1
-    rw [Real.log_mul (by norm_num) hB0.ne', hlogB] at h2
-    have hlog2 : Real.log 2 ≤ 1 := by
-      have := Real.log_le_sub_one_of_pos (x := 2) (by norm_num)
-      linarith
-    have h3 : t' * Real.log q ≤ c₁ * Real.log q :=
-      mul_le_mul_of_nonneg_right (by linarith) hℓ0
-    linarith
+    have h2 : Real.log (⌈B⌉₊ : ℝ) ≤ Real.log 2 + t' * Real.log q := by
+      rw [← hlogB, ← Real.log_mul (by norm_num) hB0.ne']
+      exact Real.log_le_log (by positivity) (by linarith [Nat.ceil_lt_add_one hB0.le])
+    linarith [Real.log_le_sub_one_of_pos (x := 2) (by norm_num),
+      mul_le_mul_of_nonneg_right (by linarith : t' ≤ c₁) hℓ0]
   have hK1 : 1 ≤ ⌊V⌋₊ := Nat.floor_pos.2 hV1
   have hlogK0 : 0 ≤ Real.log (⌊V⌋₊ : ℝ) := Real.log_nonneg (by exact_mod_cast hK1)
   have hlogK : 1 + Real.log (⌊V⌋₊ : ℝ) ≤ c₁ * (1 + Real.log q) := by
@@ -776,52 +748,51 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
     have hδt : δ ≤ c₁ := by rw [← hδ]; linarith
     have h3 : δ * Real.log q ≤ c₁ * Real.log q := mul_le_mul_of_nonneg_right hδt hℓ0
     linarith
-  have hK23 : (⌊V⌋₊ : ℝ) ^ ((2 : ℝ) / 3) ≤ V ^ ((2 : ℝ) / 3) :=
+  have hK23 : (⌊V⌋₊ : ℝ) ^ ⅔ ≤ V ^ ⅔ :=
     Real.rpow_le_rpow (Nat.cast_nonneg _) (Nat.floor_le (by linarith)) (by norm_num)
-  have hA13 : ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) ≤ A ^ (-((1 : ℝ) / 3)) := by
+  have hA13 : (ℝc a + 1) ^ (-⅓) ≤ A ^ (-⅓) := by
     rw [ha1]
     exact Real.rpow_le_rpow_of_nonpos hA0 (Nat.le_ceil A) (by norm_num)
-  have hPq : (1 + Real.log q) ^ 4 ≤ M ^ 4 * (q : ℝ) ^ (ε' / 6) := by
+  have hPq : (1 + Real.log q) ^ 4 ≤ M ^ 4 * 𝕢 q ^ (ε' / 6) := by
     have hlog := Real.log_le_rpow_div hq0.le (show 0 < ε' / 24 by positivity)
-    have hq24 : 1 ≤ (q : ℝ) ^ (ε' / 24) := Real.one_le_rpow hq1 (by positivity)
-    have hP : 1 + Real.log q ≤ M * (q : ℝ) ^ (ε' / 24) := by
+    have hq24 : 1 ≤ 𝕢 q ^ (ε' / 24) := Real.one_le_rpow hq1 (by positivity)
+    have hP : 1 + Real.log q ≤ M * 𝕢 q ^ (ε' / 24) := by
       rw [hM]
-      have : (q : ℝ) ^ (ε' / 24) / (ε' / 24) = 24 / ε' * (q : ℝ) ^ (ε' / 24) := by
-        field_simp
+      have : 𝕢 q ^ (ε' / 24) / (ε' / 24) = 24 / ε' * 𝕢 q ^ (ε' / 24) := by field_simp
       linarith
-    have hpow : ((q : ℝ) ^ (ε' / 24)) ^ 4 = (q : ℝ) ^ (ε' / 6) := by
+    have hpow : (𝕢 q ^ (ε' / 24)) ^ 4 = 𝕢 q ^ (ε' / 6) := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul hq0.le]
       congr 1
       push_cast
       ring
-    calc (1 + Real.log q) ^ 4 ≤ (M * (q : ℝ) ^ (ε' / 24)) ^ 4 := by
+    calc (1 + Real.log q) ^ 4 ≤ (M * 𝕢 q ^ (ε' / 24)) ^ 4 := by
           gcongr
-      _ = M ^ 4 * (q : ℝ) ^ (ε' / 6) := by rw [mul_pow, hpow]
-  generalize hLdef : Real.log ((b : ℝ) + 1) = L at hT hL0 hLle
+      _ = M ^ 4 * 𝕢 q ^ (ε' / 6) := by rw [mul_pow, hpow]
+  generalize hLdef : 𝕃b b = L at hT hL0 hLle
   generalize hPdef : 1 + Real.log q = P at hLle hlogK hsn hPq
   have hP1 : 1 ≤ P := by rw [← hPdef]; linarith
-  have hΛ0 : 0 ≤ L + (1 + ‖s‖ * L) * (1 + L) :=
+  have hΛ0 : 0 ≤ L + 𝔰 s L * (1 + L) :=
     add_nonneg hL0 (mul_nonneg (by nlinarith [norm_nonneg s]) (by linarith))
-  have hΛ : L + (1 + ‖s‖ * L) * (1 + L) ≤ 7 * c₁ ^ 2 * P ^ 3 :=
+  have hΛ : L + 𝔰 s L * (1 + L) ≤ 7 * c₁ ^ 2 * P ^ 3 :=
     Lambda_bound hL0 hLle (norm_nonneg s) hsn hc₁1 hP1
-  have hAr0 : 0 ≤ A ^ (-((1 : ℝ) / 3)) := Real.rpow_nonneg hA0.le _
-  have hVr0 : 0 ≤ V ^ ((2 : ℝ) / 3) := Real.rpow_nonneg (by linarith) _
+  have hAr0 : 0 ≤ A ^ (-⅓) := Real.rpow_nonneg hA0.le _
+  have hVr0 : 0 ≤ V ^ ⅔ := Real.rpow_nonneg (by linarith) _
   have hc0 : 0 ≤ c₁ := by linarith
   have hP0 : 0 ≤ P := by linarith
-  calc ‖∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+  calc ‖∑ d ∈ 𝕀 V, ∑ e ∈ 𝕀 V,
         ((grahamWeight V d * grahamWeight V e : ℝ) : ℂ) *
           ∑ n ∈ Finset.Ioc a b, (if Nat.lcm d e ∣ n then ψ n * wt s n else 0)‖
-      ≤ ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
+      ≤ ∑ d ∈ 𝕀 V, ∑ e ∈ 𝕀 V,
         ‖((grahamWeight V d * grahamWeight V e : ℝ) : ℂ) *
           ∑ n ∈ Finset.Ioc a b, (if Nat.lcm d e ∣ n then ψ n * wt s n else 0)‖ :=
         (norm_sum_le _ _).trans (Finset.sum_le_sum fun d _ => norm_sum_le _ _)
-    _ ≤ ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
-        Kq * ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) *
-          (L + (1 + ‖s‖ * L) * (1 + L)) :=
+    _ ≤ ∑ d ∈ 𝕀 V, ∑ e ∈ 𝕀 V,
+        Kq * 𝕃 d e ^ (-⅔) * (ℝc a + 1) ^ (-⅓) *
+          (L + 𝔰 s L * (1 + L)) :=
         Finset.sum_le_sum fun d hd => Finset.sum_le_sum fun e he => hT d hd e he
-    _ = Kq * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) * (L + (1 + ‖s‖ * L) * (1 + L)) *
-        ∑ d ∈ Finset.Ioc 0 ⌊V⌋₊, ∑ e ∈ Finset.Ioc 0 ⌊V⌋₊,
-          ((Nat.lcm d e : ℕ) : ℝ) ^ (-((2 : ℝ) / 3)) := by
+    _ = Kq * (ℝc a + 1) ^ (-⅓) * (L + 𝔰 s L * (1 + L)) *
+        ∑ d ∈ 𝕀 V, ∑ e ∈ 𝕀 V,
+          𝕃 d e ^ (-⅔) := by
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl
         intro d _
@@ -829,30 +800,26 @@ theorem sieve_offdiag (hBur : BurgessBound) {ε' tmax : ℝ} (hε' : 0 < ε') :
         apply Finset.sum_congr rfl
         intro e _
         ring
-    _ ≤ Kq * ((a : ℝ) + 1) ^ (-((1 : ℝ) / 3)) * (L + (1 + ‖s‖ * L) * (1 + L)) *
-        (9 * (⌊V⌋₊ : ℝ) ^ ((2 : ℝ) / 3) * (1 + Real.log ⌊V⌋₊)) :=
+    _ ≤ Kq * (ℝc a + 1) ^ (-⅓) * (L + 𝔰 s L * (1 + L)) *
+        (9 * (⌊V⌋₊ : ℝ) ^ ⅔ * (1 + Real.log ⌊V⌋₊)) :=
         mul_le_mul_of_nonneg_left (lcm_sum_le _)
           (mul_nonneg (mul_nonneg hKq0 (Real.rpow_nonneg (by positivity) _)) hΛ0)
-    _ ≤ Kq * A ^ (-((1 : ℝ) / 3)) * (7 * c₁ ^ 2 * P ^ 3) *
-        (9 * V ^ ((2 : ℝ) / 3) * (c₁ * P)) := by
-        apply mul_le_mul
-        · exact mul_le_mul (mul_le_mul_of_nonneg_left hA13 hKq0) hΛ hΛ0
-            (mul_nonneg hKq0 hAr0)
-        · exact mul_le_mul (mul_le_mul_of_nonneg_left hK23 (by norm_num)) hlogK (by linarith)
-            (by positivity)
-        · exact mul_nonneg (mul_nonneg (by norm_num) (Real.rpow_nonneg (by positivity) _))
-            (by linarith)
+    _ ≤ Kq * A ^ (-⅓) * (7 * c₁ ^ 2 * P ^ 3) * (9 * V ^ ⅔ * (c₁ * P)) := by
+        refine mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_left hA13 hKq0) hΛ hΛ0 ?_) ?_ ?_ ?_
+        · exact mul_nonneg hKq0 hAr0
+        · exact mul_le_mul (mul_le_mul_of_nonneg_left hK23 (by norm_num)) hlogK (by linarith) (by positivity)
+        · exact mul_nonneg (mul_nonneg (by norm_num) (Real.rpow_nonneg (by positivity) _)) (by linarith)
         · exact mul_nonneg (mul_nonneg hKq0 hAr0) (by positivity)
-    _ = 63 * c₁ ^ 3 * P ^ 4 * (C₀ * ((q : ℝ) ^ ((1 : ℝ) / 9 + ε' / 3) *
-        A ^ (-((1 : ℝ) / 3)) * V ^ ((2 : ℝ) / 3))) := by
+    _ = 63 * c₁ ^ 3 * P ^ 4 * (C₀ * (𝕢 q ^ ((1 : ℝ) / 9 + ε' / 3) *
+        A ^ (-⅓) * V ^ ⅔)) := by
         rw [← hKq]
         ring
-    _ = 63 * c₁ ^ 3 * P ^ 4 * (C₀ * (q : ℝ) ^ (-(ε' / 3))) := by rw [hexp]
-    _ ≤ 63 * c₁ ^ 3 * (M ^ 4 * (q : ℝ) ^ (ε' / 6)) * (C₀ * (q : ℝ) ^ (-(ε' / 3))) := by
+    _ = 63 * c₁ ^ 3 * P ^ 4 * (C₀ * 𝕢 q ^ (-(ε' / 3))) := by rw [hexp]
+    _ ≤ 63 * c₁ ^ 3 * (M ^ 4 * 𝕢 q ^ (ε' / 6)) * (C₀ * 𝕢 q ^ (-(ε' / 3))) := by
         apply mul_le_mul_of_nonneg_right _ (mul_nonneg hC₀0 (Real.rpow_nonneg hq0.le _))
         exact mul_le_mul_of_nonneg_left hPq (by positivity)
-    _ = C₀ * (63 * c₁ ^ 3 * M ^ 4) * ((q : ℝ) ^ (-(ε' / 3)) * (q : ℝ) ^ (ε' / 6)) := by ring
-    _ = C₀ * (63 * c₁ ^ 3 * M ^ 4) * (q : ℝ) ^ (-(ε' / 6)) := by
+    _ = C₀ * (63 * c₁ ^ 3 * M ^ 4) * (𝕢 q ^ (-(ε' / 3)) * 𝕢 q ^ (ε' / 6)) := by ring
+    _ = C₀ * (63 * c₁ ^ 3 * M ^ 4) * 𝕢 q ^ (-(ε' / 6)) := by
         rw [← Real.rpow_add hq0]
         congr 2
         ring

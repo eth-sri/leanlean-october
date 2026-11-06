@@ -23,31 +23,31 @@ namespace GradedNear
 def tn (q n : ℕ) : ℝ := Real.log n / Real.log q
 
 lemma log_q_pos {q : ℕ} (hq : 2 ≤ q) : 0 < Real.log q :=
-  Real.log_pos (by exact_mod_cast (show 1 < q by omega))
+  Real.log_pos (natCast_one_lt hq)
 
 lemma tn_nonneg (q n : ℕ) (hq : 2 ≤ q) : 0 ≤ tn q n :=
   div_nonneg (Real.log_natCast_nonneg n) (log_q_pos hq).le
 
 /-- For `n ≥ 1` and real `A, γ`: `n^{-(A + iγ)} = e^{-A log n} · e^{-i γ log n}`. -/
 lemma natCast_cpow_neg {n : ℕ} (hn : n ≠ 0) (A γ : ℝ) :
-    (n : ℂ) ^ (-((A : ℂ) + (γ : ℂ) * I)) =
+    ℂc n ^ (-(ℂc A + (γ : ℂ) * I)) =
       (Real.exp (-A * Real.log n) : ℂ) * cexp (-((γ * Real.log n : ℝ) : ℂ) * I) := by
-  have hn' : (n : ℂ) ≠ 0 := by exact_mod_cast hn
+  have hn' : ℂc n ≠ 0 := by exact_mod_cast hn
   rw [cpow_def_of_ne_zero hn', ← natCast_log, ofReal_exp, ← Complex.exp_add]
   congr 1
   push_cast
   ring
 
 /-- Indices beyond `q^X` have `t_n ≥ X`. -/
-lemma tn_ge_of_gt {q n : ℕ} (hq : 2 ≤ q) {X : ℝ} (hn : ⌊(q : ℝ) ^ X⌋₊ < n) : X ≤ tn q n := by
+lemma tn_ge_of_gt {q n : ℕ} (hq : 2 ≤ q) {X : ℝ} (hn : ⌊ℝc q ^ X⌋₊ < n) : X ≤ tn q n := by
   have hℓ := log_q_pos hq
-  have hq0 : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
-  have h1 : (q : ℝ) ^ X < n := by
-    have := Nat.lt_floor_add_one ((q : ℝ) ^ X)
-    have h2 : ((⌊(q : ℝ) ^ X⌋₊ : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hn
+  have hq0 := natCast_pos hq
+  have h1 : ℝc q ^ X < n := by
+    have := Nat.lt_floor_add_one (ℝc q ^ X)
+    have h2 : ((⌊ℝc q ^ X⌋₊ : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hn
     linarith
-  have hpos : 0 < (q : ℝ) ^ X := Real.rpow_pos_of_pos hq0 X
-  have h3 : Real.log ((q : ℝ) ^ X) < Real.log n := Real.log_lt_log hpos h1
+  have hpos : 0 < ℝc q ^ X := Real.rpow_pos_of_pos hq0 X
+  have h3 : Real.log (ℝc q ^ X) < Real.log n := Real.log_lt_log hpos h1
   rw [Real.log_rpow hq0] at h3
   unfold tn
   rw [le_div_iff₀ hℓ]
@@ -57,9 +57,9 @@ lemma tn_ge_of_gt {q n : ℕ} (hq : 2 ≤ q) {X : ℝ} (hn : ⌊(q : ℝ) ^ X⌋
 lemma primeSum_eq_sum {q : ℕ} (hq : 2 ≤ q) (χ : DirichletCharacter ℂ q) (f : ℝ → ℝ) {X : ℝ}
     (hf : ∀ t, X ≤ t → f t = 0) (s : ℂ) :
     primeSum χ f s = ∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊,
-      (Λ n : ℂ) * χ n * (n : ℂ) ^ (-s) * (f (tn q n) : ℂ) := by
+      (Λ n : ℂ) * χ n * ℂc n ^ (-s) * (f (tn q n) : ℂ) := by
   unfold primeSum
-  rw [tsum_eq_sum (s := Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊)]
+  rw [tsum_eq_sum (s := Finset.Icc 1 ⌊ℝc q ^ X⌋₊)]
   · rfl
   · intro n hn
     rw [Finset.mem_Icc, not_and_or, not_le, not_le] at hn
@@ -80,7 +80,6 @@ lemma weighted_cs {β : Type*} (N : Finset β) (c w y : β → ℝ) (hw : ∀ n 
     by_cases hc : c n = 0
     · simp [hc]
     · have hwn := hcw n hn hc
-      have hs : Real.sqrt (w n) ≠ 0 := (Real.sqrt_pos.2 hwn).ne'
       field_simp
   rw [Finset.sum_congr rfl key]
   refine (Finset.sum_mul_sq_le_sq_mul_sq N _ _).trans (le_of_eq ?_)

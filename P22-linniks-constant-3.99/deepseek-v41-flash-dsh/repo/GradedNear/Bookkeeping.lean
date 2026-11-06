@@ -13,6 +13,10 @@ The pair excess uses `2 a_j a_k ≤ a_j² + a_k²` (paper §8.5).
 
 @[expose] public section
 
+
+
+
+
 namespace GradedNear
 
 open Finset

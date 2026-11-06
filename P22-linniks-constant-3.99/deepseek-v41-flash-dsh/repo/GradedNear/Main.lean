@@ -13,6 +13,10 @@ the Gram part (`gram_part_eq`, `gram_form_bound`) and the sieve part (`sieve_par
 
 @[expose] public section
 
+
+
+
+
 open Complex
 open scoped ArithmeticFunction.vonMangoldt
 
@@ -38,8 +42,6 @@ lemma re_sum_sq_le {β : Type*} (S : Finset β) (c : β → ℝ) (Y : β → ℂ
     refine (Complex.abs_re_le_norm _).trans ((norm_sum_le _ _).trans (le_of_eq ?_))
     refine Finset.sum_congr rfl fun n _ => ?_
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-  have h2 : 0 ≤ ∑ n ∈ S, |c n| * ‖Y n‖ :=
-    Finset.sum_nonneg fun n _ => mul_nonneg (abs_nonneg _) (norm_nonneg _)
   calc ((∑ n ∈ S, (c n : ℂ) * Y n).re) ^ 2 = |(∑ n ∈ S, (c n : ℂ) * Y n).re| ^ 2 :=
         (sq_abs _).symm
     _ ≤ _ := pow_le_pow_left₀ (abs_nonneg _) h1 2
@@ -63,13 +65,13 @@ theorem graded_near_lemma'
   obtain ⟨qS, hqS⟩ := sieve_part_bound hGr hBur D hD (ε := η / 2) (half_pos hη)
   obtain ⟨c, hc, hωc⟩ := hD.omega_lb
   refine ⟨max (max qF qG) (max qS 2), fun q _ hq T hT hTq hsafe ι _ E _ hγ hΔ hinj a ha => ?_⟩
-  have hqF' : qF ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hq
-  have hqG' : qG ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hq
-  have hqS' : qS ≤ q := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hq
-  have hq2 : 2 ≤ q := le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hq
+  have hqF' : qF ≤ q := by omega
+  have hqG' : qG ≤ q := by omega
+  have hqS' : qS ≤ q := by omega
+  have hq2 : 2 ≤ q := by omega
   have hℓ := log_q_pos hq2
-  set Sf := Finset.Icc 1 ⌊(q : ℝ) ^ D.xf⌋₊ with hSf
-  set N := max ⌊(q : ℝ) ^ D.xf⌋₊ ⌊(q : ℝ) ^ D.xg⌋₊ with hN
+  set Sf := Finset.Icc 1 ⌊ℝc q ^ D.xf⌋₊ with hSf
+  set N := max ⌊ℝc q ^ D.xf⌋₊ ⌊ℝc q ^ D.xg⌋₊ with hN
   set w : ℕ → ℝ := fun n => Λ n / n * D.omega (tn q n) with hw
   have hw0 : ∀ n, 0 ≤ w n := fun n =>
     mul_nonneg (div_nonneg ArithmeticFunction.vonMangoldt_nonneg (Nat.cast_nonneg n))
@@ -111,7 +113,7 @@ theorem graded_near_lemma'
       ∑ n ∈ Finset.Icc 1 N, w n * ‖Yn E a n‖ ^ 2 :=
     Finset.sum_le_sum_of_subset_of_nonneg (f := fun n => w n * ‖Yn E a n‖ ^ 2)
       (Finset.Icc_subset_Icc (le_refl 1)
-        (le_max_left ⌊(q : ℝ) ^ D.xf⌋₊ ⌊(q : ℝ) ^ D.xg⌋₊))
+        (le_max_left ⌊ℝc q ^ D.xf⌋₊ ⌊ℝc q ^ D.xg⌋₊))
       (fun n _ _ => mul_nonneg (hw0 n) (sq_nonneg _))
   have hsplit : ∑ n ∈ Finset.Icc 1 N, w n * ‖Yn E a n‖ ^ 2 =
       ∑ n ∈ Finset.Icc 1 N, Λ n / n * (D.g (tn q n) * Real.exp (D.s₁ * tn q n)) *
@@ -140,10 +142,6 @@ theorem graded_near_lemma'
       ring
     rw [this]
     linarith
-  have hsecond0 : 0 ≤ (∑ n ∈ Sf, w n * ‖Yn E a n‖ ^ 2) / Real.log q :=
-    div_nonneg (Finset.sum_nonneg fun n _ => mul_nonneg (hw0 n) (sq_nonneg _)) hℓ.le
-  have hfirst0 : 0 ≤ (∑ n ∈ Sf, cWeight D q n ^ 2 / w n) / Real.log q :=
-    div_nonneg (Finset.sum_nonneg fun n _ => div_nonneg (sq_nonneg _) (hw0 n)) hℓ.le
   -- combine
   have hsq : (∑ j, a j * response D E j) ^ 2 ≤
       ((∑ n ∈ Sf, cWeight D q n ^ 2 / w n) / Real.log q) *
@@ -160,6 +158,8 @@ theorem graded_near_lemma'
     _ ≤ _ := hsq
     _ ≤ (1 + η) * D.IB * (∑ j, (D.Dδ (E.δ j) - D.d₁ + pairExcess D E j) * a j ^ 2 +
           (D.d₁ + η) * (∑ j, a j) ^ 2) :=
-        mul_le_mul hfirst hsecond hsecond0 (by nlinarith)
+        mul_le_mul hfirst hsecond
+          (div_nonneg (Finset.sum_nonneg fun n _ => mul_nonneg (hw0 n) (sq_nonneg _)) hℓ.le)
+          (by nlinarith [hD.IB_pos])
 
 end GradedNear

@@ -25,6 +25,9 @@ numerator of an entry's feature in `graded_near_threshold`.
 
 @[expose] public section
 
+local macro "λρ" q:term:max ρ:term:max : term => `((1 - ($ρ).re) * Real.log $q)
+
+
 open Complex
 
 noncomputable section
@@ -36,7 +39,7 @@ namespace GradedNear
 lemma laplace_re_real {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B) (x : ℝ) :
     (laplace f (x : ℂ)).re = ∫ t in (0 : ℝ)..x₀, f t * Real.exp (-(x * t)) := by
   rw [Decay.laplace_eq_intervalIntegral hf]
-  have : ∀ t : ℝ, (f t : ℂ) * Complex.exp (-((x : ℂ) * t)) =
+  have : ∀ t : ℝ, (f t : ℂ) * Complex.exp (-(ℂc x * t)) =
       ((f t * Real.exp (-(x * t)) : ℝ) : ℂ) := by
     intro t
     rw [Complex.ofReal_mul, Complex.ofReal_exp]
@@ -95,16 +98,16 @@ zero's term, with multiplicity, is at least `F(hi - σ)`. -/
 lemma zeroTerm_at_height {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B) (hf2 : Condition2 f)
     {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q} (hχ : χ ≠ 1) {σ γ hi : ℝ} {ρ : ℂ}
     (hρ : DirichletCharacter.LFunction χ ρ = 0) (hγ : ρ.im = γ)
-    (hhi : (1 - ρ.re) * Real.log q ≤ hi) :
+    (hhi : λρ q ρ ≤ hi) :
     (laplace f ((hi - σ : ℝ) : ℂ)).re ≤ zmult χ ρ * zeroTerm f q σ γ ρ := by
-  have hterm : zeroTerm f q σ γ ρ = (laplace f (((1 - ρ.re) * Real.log q - σ : ℝ) : ℂ)).re := by
+  have hterm : zeroTerm f q σ γ ρ = (laplace f ((λρ q ρ - σ : ℝ) : ℂ)).re := by
     unfold zeroTerm
     rw [hγ, sub_self, zero_mul, Complex.ofReal_zero, zero_mul, add_zero]
   rw [hterm]
   have h1 : (laplace f ((hi - σ : ℝ) : ℂ)).re ≤
-      (laplace f (((1 - ρ.re) * Real.log q - σ : ℝ) : ℂ)).re :=
+      (laplace f ((λρ q ρ - σ : ℝ) : ℂ)).re :=
     laplace_re_real_anti hf hf2 (by linarith)
-  have h0 := laplace_re_real_nonneg hf hf2 ((1 - ρ.re) * Real.log q - σ)
+  have h0 := laplace_re_real_nonneg hf hf2 (λρ q ρ - σ)
   have hm := one_le_zmult hχ hρ
   nlinarith
 
@@ -112,7 +115,7 @@ lemma zeroTerm_at_height {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x�
 multiplicity it is at least the term counted once. -/
 lemma zeroTerm_left {f : ℝ → ℝ} (hf2 : Condition2 f) {q : ℕ} [NeZero q]
     {χ : DirichletCharacter ℂ q} (hχ : χ ≠ 1) {σ γ : ℝ} {ρ : ℂ}
-    (hρ : DirichletCharacter.LFunction χ ρ = 0) (hleft : σ ≤ (1 - ρ.re) * Real.log q) :
+    (hρ : DirichletCharacter.LFunction χ ρ = 0) (hleft : σ ≤ λρ q ρ) :
     0 ≤ zeroTerm f q σ γ ρ ∧ zeroTerm f q σ γ ρ ≤ zmult χ ρ * zeroTerm f q σ γ ρ := by
   have h0 : 0 ≤ zeroTerm f q σ γ ρ := by
     unfold zeroTerm
@@ -131,7 +134,7 @@ variable {q : ℕ} {ι : Type*}
 theorem keptBound_single [NeZero q] (D : NearData) (hD : D.Valid) (hf2 : Condition2 D.f)
     (E : Entries q ι) (Sz : ι → Finset ℂ) (η : ℝ) (j : ι) (hχ : E.χ j ≠ 1) {ρ : ℂ} {hi : ℝ}
     (hS : Sz j = {ρ}) (hρ : DirichletCharacter.LFunction (E.χ j) ρ = 0) (hγ : ρ.im = E.γ j)
-    (hhi : (1 - ρ.re) * Real.log q ≤ hi) :
+    (hhi : λρ q ρ ≤ hi) :
     (laplace D.f ((hi - (D.s - E.δ j) : ℝ) : ℂ)).re - D.f 0 / 6 - η ≤ keptBound D E Sz η j := by
   unfold keptBound
   rw [hS, Finset.sum_singleton]
@@ -144,7 +147,7 @@ term. -/
 theorem keptBound_pair [NeZero q] (D : NearData) (hD : D.Valid) (hf2 : Condition2 D.f)
     (E : Entries q ι) (Sz : ι → Finset ℂ) (η : ℝ) (j : ι) (hχ : E.χ j ≠ 1) {ρ ρ' : ℂ} {hi : ℝ}
     (hne : ρ ≠ ρ') (hS : Sz j = {ρ, ρ'}) (hρ : DirichletCharacter.LFunction (E.χ j) ρ = 0)
-    (hγ : ρ.im = E.γ j) (hhi : (1 - ρ.re) * Real.log q ≤ hi)
+    (hγ : ρ.im = E.γ j) (hhi : λρ q ρ ≤ hi)
     (hρ' : DirichletCharacter.LFunction (E.χ j) ρ' = 0)
     (hleft : D.s - E.δ j ≤ (1 - ρ'.re) * Real.log q) :
     (laplace D.f ((hi - (D.s - E.δ j) : ℝ) : ℂ)).re +
@@ -222,9 +225,9 @@ theorem single_zero_threshold (hX31 : XylourisLemma31) (hX32 : XylourisLemma32)
 for `λ_ρ ≤ hi`, and nonnegative. -/
 lemma zeroTerm_at_height_le {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B)
     (hf2 : Condition2 f) {q : ℕ} {σ γ hi : ℝ} {ρ : ℂ} (hγ : ρ.im = γ)
-    (hhi : (1 - ρ.re) * Real.log q ≤ hi) :
+    (hhi : λρ q ρ ≤ hi) :
     (laplace f ((hi - σ : ℝ) : ℂ)).re ≤ zeroTerm f q σ γ ρ ∧ 0 ≤ zeroTerm f q σ γ ρ := by
-  have hterm : zeroTerm f q σ γ ρ = (laplace f (((1 - ρ.re) * Real.log q - σ : ℝ) : ℂ)).re := by
+  have hterm : zeroTerm f q σ γ ρ = (laplace f ((λρ q ρ - σ : ℝ) : ℂ)).re := by
     unfold zeroTerm
     rw [hγ, sub_self, zero_mul, Complex.ofReal_zero, zero_mul, add_zero]
   rw [hterm]
@@ -248,7 +251,7 @@ plus the zero's own term. -/
 theorem keptBound_double [NeZero q] (D : NearData) (hD : D.Valid) (hf2 : Condition2 D.f)
     (E : Entries q ι) (Sz : ι → Finset ℂ) (η : ℝ) (j : ι) {ρ : ℂ} {hi : ℝ}
     (hS : Sz j = {ρ}) (hm : 2 ≤ zmult (E.χ j) ρ) (hγ : ρ.im = E.γ j)
-    (hhi : (1 - ρ.re) * Real.log q ≤ hi) :
+    (hhi : λρ q ρ ≤ hi) :
     (laplace D.f ((hi - (D.s - E.δ j) : ℝ) : ℂ)).re +
         zeroTerm D.f q (D.s - E.δ j) (E.γ j) ρ - D.f 0 / 6 - η ≤ keptBound D E Sz η j := by
   unfold keptBound
@@ -265,7 +268,7 @@ is `≤ 0` and it contributes nothing to (T). -/
 theorem keptBound_pair_neg [NeZero q] (D : NearData) (hD : D.Valid) (hf2 : Condition2 D.f)
     (E : Entries q ι) (Sz : ι → Finset ℂ) (j : ι) (hχ : E.χ j ≠ 1) {ρ ρ' : ℂ} {hi C : ℝ}
     (hne : ρ ≠ ρ') (hS : Sz j = {ρ, ρ'}) (hγ : ρ.im = E.γ j)
-    (hhi : (1 - ρ.re) * Real.log q ≤ hi)
+    (hhi : λρ q ρ ≤ hi)
     (hρ' : DirichletCharacter.LFunction (E.χ j) ρ' = 0)
     (hm : zmult (E.χ j) ρ' ≤ zmult (E.χ j) ρ)
     (hC : -C ≤ zeroTerm D.f q (D.s - E.δ j) (E.γ j) ρ') :

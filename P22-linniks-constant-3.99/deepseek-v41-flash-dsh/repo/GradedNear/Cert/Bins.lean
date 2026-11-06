@@ -22,6 +22,13 @@ all rows that do not exceed the bin counts on the columns with a positive featur
 
 @[expose] public section
 
+local macro "ℝow" L:term:max k:term:max : term => `((($L).rows).getD $k ⟨1, []⟩)
+
+
+local notation "𝟘" => (0 : ℝ)
+
+
+
 namespace GradedNear.Cert
 
 open Finset
@@ -55,24 +62,24 @@ so their `x_c` is free; with `x_c` equal to the bin counts this is the row at th
 theorem near_row_of_bins (L : Leaf) (k : ℕ) {ι : Type*} [Fintype ι] (v Dg : ι → ℝ) (d τ : ℝ)
     (hDg : ∀ j, 0 < Dg j) (hd : 0 < d) (hτ0 : 0 ≤ τ) (hτd : τ ≤ Real.sqrt d)
     (hT : ∑ j, (max 0 (v j - τ)) ^ 2 / Dg j ≤ 1 - τ ^ 2 / d)
-    (bin : ι → Option (Fin L.cols.length ⊕ Fin (L.rows.getD k ⟨1, []⟩).fam.length))
+    (bin : ι → Option (Fin L.cols.length ⊕ Fin (ℝow L k).fam.length))
     (hcol : ∀ j c, bin j = some (Sum.inl c) →
       (((L.cols.get c).v.getD k 0 : ℝ) / S ≤ v j ∨ (L.cols.get c).v.getD k 0 ≤ 0) ∧
         Dg j ≤ ((L.cols.get c).D.getD k 1 : ℝ) / S)
     (hfam : ∀ j i, bin j = some (Sum.inr i) →
-      (((((L.rows.getD k ⟨1, []⟩).fam.get i).2.1 : ℤ) : ℝ) / S ≤ v j ∨
-          ((L.rows.getD k ⟨1, []⟩).fam.get i).2.1 ≤ 0) ∧
-        Dg j ≤ ((((L.rows.getD k ⟨1, []⟩).fam.get i).2.2 : ℤ) : ℝ) / S)
-    (hfamD : ∀ i, 0 < ((L.rows.getD k ⟨1, []⟩).fam.get i).2.2)
-    (hn : ∀ i, ((((L.rows.getD k ⟨1, []⟩).fam.get i).1 : ℤ) : ℝ) ≤
+      (((((ℝow L k).fam.get i).2.1 : ℤ) : ℝ) / S ≤ v j ∨
+          ((ℝow L k).fam.get i).2.1 ≤ 0) ∧
+        Dg j ≤ ((((ℝow L k).fam.get i).2.2 : ℤ) : ℝ) / S)
+    (hfamD : ∀ i, 0 < ((ℝow L k).fam.get i).2.2)
+    (hn : ∀ i, ((((ℝow L k).fam.get i).1 : ℤ) : ℝ) ≤
       ((univ.filter fun j => bin j = some (Sum.inr i)).card : ℝ))
-    (hdrow : d ≤ ((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)
+    (hdrow : d ≤ ((ℝow L k).d : ℝ) / S)
     (x : Fin L.cols.length → ℝ) (hx0 : ∀ c, 0 ≤ x c)
     (hx : ∀ c, 0 < (L.cols.get c).v.getD k 0 →
       x c ≤ ((univ.filter fun j => bin j = some (Sum.inl c)).card : ℝ)) :
-    0 ≤ τ ∧ τ ^ 2 ≤ ((L.rows.getD k ⟨1, []⟩).d : ℝ) / S ∧
-      rowLHS L x k τ ≤ 1 - τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S) := by
-  have hS : (0 : ℝ) < (S : ℝ) := by norm_num [S]
+    0 ≤ τ ∧ τ ^ 2 ≤ ((ℝow L k).d : ℝ) / S ∧
+      rowLHS L x k τ ≤ 1 - τ ^ 2 / (((ℝow L k).d : ℝ) / S) := by
+  have hS : 𝟘 < ℝc S := by norm_num [S]
   have hτ2 : τ ^ 2 ≤ d := by
     have := pow_le_pow_left₀ hτ0 hτd 2
     rwa [Real.sq_sqrt hd.le] at this
@@ -81,9 +88,9 @@ theorem near_row_of_bins (L : Leaf) (k : ℕ) {ι : Type*} [Fintype ι] (v Dg : 
   set t : ι → ℝ := fun j => (max 0 (v j - τ)) ^ 2 / Dg j with ht
   have ht0 : ∀ j, 0 ≤ t j := fun j => div_nonneg (sq_nonneg _) (hDg j).le
   -- (T) with the row's radius
-  have hTrow : ∑ j, t j ≤ 1 - τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S) := by
+  have hTrow : ∑ j, t j ≤ 1 - τ ^ 2 / (((ℝow L k).d : ℝ) / S) := by
     refine hT.trans ?_
-    have : τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S) ≤ τ ^ 2 / d :=
+    have : τ ^ 2 / (((ℝow L k).d : ℝ) / S) ≤ τ ^ 2 / d :=
       div_le_div_of_nonneg_left (sq_nonneg _) hd hdrow
     linarith
   -- split the entries by bin
@@ -142,21 +149,21 @@ theorem near_row_of_bins (L : Leaf) (k : ℕ) {ι : Type*} [Fintype ι] (v Dg : 
               (((L.cols.get c).D.getD k 1 : ℝ) / S) := (mul_div_assoc _ _ _).symm
           _ ≤ _ := hcount
   -- the family terms
-  have hfams : (((L.rows.getD k ⟨1, []⟩).fam).map fun u =>
+  have hfams : (((ℝow L k).fam).map fun u =>
         (u.1 : ℝ) * (max 0 ((u.2.1 : ℝ) / S - τ)) ^ 2 / ((u.2.2 : ℝ) / S)).sum ≤
       ∑ i, ∑ j ∈ univ.filter (fun j => bin j = some (Sum.inr i)), t j := by
     rw [← Fin.sum_univ_fun_getElem]
     refine Finset.sum_le_sum fun i _ => ?_
-    have hDi : (0 : ℝ) < (((L.rows.getD k ⟨1, []⟩).fam.get i).2.2 : ℝ) / S :=
+    have hDi : 𝟘 < (((ℝow L k).fam.get i).2.2 : ℝ) / S :=
       div_pos (by exact_mod_cast hfamD i) hS
-    have hti : 0 ≤ (max 0 ((((L.rows.getD k ⟨1, []⟩).fam.get i).2.1 : ℝ) / S - τ)) ^ 2 / ((((L.rows.getD k ⟨1, []⟩).fam.get i).2.2 : ℝ) / S) :=
+    have hti : 0 ≤ (max 0 ((((ℝow L k).fam.get i).2.1 : ℝ) / S - τ)) ^ 2 / ((((ℝow L k).fam.get i).2.2 : ℝ) / S) :=
       div_nonneg (sq_nonneg _) hDi.le
-    have hget : (L.rows.getD k ⟨1, []⟩).fam[i.1] = (L.rows.getD k ⟨1, []⟩).fam.get i := rfl
+    have hget : (ℝow L k).fam[i.1] = (ℝow L k).fam.get i := rfl
     rw [hget, mul_div_assoc]
-    calc (((L.rows.getD k ⟨1, []⟩).fam.get i).1 : ℝ) *
-          ((max 0 ((((L.rows.getD k ⟨1, []⟩).fam.get i).2.1 : ℝ) / S - τ)) ^ 2 / ((((L.rows.getD k ⟨1, []⟩).fam.get i).2.2 : ℝ) / S))
+    calc (((ℝow L k).fam.get i).1 : ℝ) *
+          ((max 0 ((((ℝow L k).fam.get i).2.1 : ℝ) / S - τ)) ^ 2 / ((((ℝow L k).fam.get i).2.2 : ℝ) / S))
         ≤ ((univ.filter fun j => bin j = some (Sum.inr i)).card : ℝ) *
-          ((max 0 ((((L.rows.getD k ⟨1, []⟩).fam.get i).2.1 : ℝ) / S - τ)) ^ 2 / ((((L.rows.getD k ⟨1, []⟩).fam.get i).2.2 : ℝ) / S)) :=
+          ((max 0 ((((ℝow L k).fam.get i).2.1 : ℝ) / S - τ)) ^ 2 / ((((ℝow L k).fam.get i).2.2 : ℝ) / S)) :=
           mul_le_mul_of_nonneg_right (hn i) hti
       _ ≤ ∑ j ∈ univ.filter (fun j => bin j = some (Sum.inr i)), t j := by
           rw [← nsmul_eq_mul, ← Finset.sum_const]

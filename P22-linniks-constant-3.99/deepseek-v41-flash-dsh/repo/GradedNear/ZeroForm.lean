@@ -25,6 +25,13 @@ Then some `τ ∈ [0, √d]` satisfies `Σ_j (v_j - τ)_+² / D_j ≤ 1 - τ²/d
 
 @[expose] public section
 
+
+
+local macro "𝕊" a:term:max : term => `((∑ j, $a j) ^ 2)
+
+
+
+
 open Complex
 
 noncomputable section
@@ -67,8 +74,8 @@ theorem graded_near_threshold (hX31 : XylourisLemma31) (hX32 : XylourisLemma32)
     response_lemma hX32 hD.f_cond hf2 (|D.s| + ∑ δ ∈ D.Δ, |δ|) K₀ hη
   refine ⟨M, hM, δ, hδ0, hδ1, max q₁ q₂, ?_⟩
   intro q _ hq T hT0 hTl hsafe ι _ E hχ hγ hΔ hinj Sz hSz hsep hK Dn hDn hDj
-  have hq1 : q₁ ≤ q := le_trans (le_max_left _ _) hq
-  have hq2 : q₂ ≤ q := le_trans (le_max_right _ _) hq
+  have hq1 : q₁ ≤ q := by omega
+  have hq2 : q₂ ≤ q := by omega
   have hℓ0 : 0 ≤ Real.log q := Real.log_natCast_nonneg q
   -- the kept zeros bound each response from below
   have hresp : ∀ j, keptBound D E Sz η j ≤ response D E j := by
@@ -105,9 +112,9 @@ theorem graded_near_threshold (hX31 : XylourisLemma31) (hX32 : XylourisLemma32)
       (max 0 (∑ j, a j * response D E j)) ^ 2 :=
     pow_le_pow_left₀ (le_max_left _ _) (max_le_max le_rfl h2) 2
   have h5 : ∑ j, (D.Dδ (E.δ j) - D.d₁ + pairExcess D E j) / Dn * a j ^ 2 +
-      (D.d₁ + η) / Dn * (∑ j, a j) ^ 2 =
+      (D.d₁ + η) / Dn * 𝕊 a =
       (∑ j, (D.Dδ (E.δ j) - D.d₁ + pairExcess D E j) * a j ^ 2 +
-        (D.d₁ + η) * (∑ j, a j) ^ 2) / Dn := by
+        (D.d₁ + η) * 𝕊 a) / Dn := by
     rw [eq_div_iff hDn.ne', add_mul, Finset.sum_mul]
     congr 1
     · exact Finset.sum_congr rfl fun j _ => by field_simp
@@ -117,9 +124,9 @@ theorem graded_near_threshold (hX31 : XylourisLemma31) (hX32 : XylourisLemma32)
       ≤ (max 0 (∑ j, a j * response D E j)) ^ 2 * Dn :=
         mul_le_mul_of_nonneg_right h4 hDn.le
     _ ≤ ((1 + η) * D.IB * (∑ j, (D.Dδ (E.δ j) - D.d₁ + pairExcess D E j) * a j ^ 2 +
-          (D.d₁ + η) * (∑ j, a j) ^ 2)) * Dn :=
+          (D.d₁ + η) * 𝕊 a)) * Dn :=
         mul_le_mul_of_nonneg_right hmain hDn.le
     _ = (∑ j, (D.Dδ (E.δ j) - D.d₁ + pairExcess D E j) * a j ^ 2 +
-          (D.d₁ + η) * (∑ j, a j) ^ 2) * ((1 + η) * D.IB * Dn) := by ring
+          (D.d₁ + η) * 𝕊 a) * ((1 + η) * D.IB * Dn) := by ring
 
 end GradedNear

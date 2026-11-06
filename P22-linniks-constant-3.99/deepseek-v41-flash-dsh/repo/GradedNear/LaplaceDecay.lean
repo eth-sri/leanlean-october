@@ -16,6 +16,10 @@ The proof is by integration by parts on `[0, x₀]` (`f` vanishes on `[x₀, ∞
 
 @[expose] public section
 
+local notation "𝟘" => (0 : ℝ)
+
+
+
 namespace GradedNear
 
 namespace Decay
@@ -25,22 +29,22 @@ open MeasureTheory Set
 /-- The derivative of a `Condition1` function is bounded on `(0, x₀]`. -/
 lemma exists_abs_deriv_le {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ t ∈ Ioc 0 x₀, |deriv f t| ≤ K := by
-  have hopen : IsOpen (Ioo (0 : ℝ) x₀) := isOpen_Ioo
+  have hopen : IsOpen (Ioo 𝟘 x₀) := isOpen_Ioo
   have hd1 : ContDiffOn ℝ 1 (deriv f) (Ioo 0 x₀) :=
     hf.smooth.deriv_of_isOpen hopen (by norm_num)
-  have hdiff : ∀ t ∈ Ioo (0 : ℝ) x₀, DifferentiableAt ℝ (deriv f) t := fun t ht =>
+  have hdiff : ∀ t ∈ Ioo 𝟘 x₀, DifferentiableAt ℝ (deriv f) t := fun t ht =>
     (hd1.differentiableOn (by norm_num) t ht).differentiableAt (hopen.mem_nhds ht)
-  have hbd : ∀ t ∈ Ioo (0 : ℝ) x₀, ‖deriv (deriv f) t‖ ≤ B := fun t ht => by
+  have hbd : ∀ t ∈ Ioo 𝟘 x₀, ‖deriv (deriv f) t‖ ≤ B := fun t ht => by
     rw [Real.norm_eq_abs]; exact hf.bound t ht
   have hx₀ := hf.pos
-  have hmid : x₀ / 2 ∈ Ioo (0 : ℝ) x₀ := ⟨by linarith, by linarith⟩
+  have hmid : x₀ / 2 ∈ Ioo 𝟘 x₀ := ⟨by linarith, by linarith⟩
   have hB : 0 ≤ B := (abs_nonneg _).trans (hf.bound _ hmid)
   refine ⟨max (|deriv f (x₀ / 2)| + B * x₀) |deriv f x₀|,
     (abs_nonneg _).trans (le_max_right _ _), fun t ht => ?_⟩
   rcases eq_or_lt_of_le ht.2 with h | h
   · rw [h]; exact le_max_right _ _
-  · have htm : t ∈ Ioo (0 : ℝ) x₀ := ⟨ht.1, h⟩
-    have hmv := (convex_Ioo (0 : ℝ) x₀).norm_image_sub_le_of_norm_deriv_le hdiff hbd hmid htm
+  · have htm : t ∈ Ioo 𝟘 x₀ := ⟨ht.1, h⟩
+    have hmv := (convex_Ioo 𝟘 x₀).norm_image_sub_le_of_norm_deriv_le hdiff hbd hmid htm
     rw [Real.norm_eq_abs, Real.norm_eq_abs] at hmv
     have h2 : |t - x₀ / 2| ≤ x₀ := by
       rw [abs_le]; constructor <;> linarith [htm.1, htm.2]
@@ -51,7 +55,7 @@ lemma exists_abs_deriv_le {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x�
 
 /-- Since `f` vanishes on `[x₀, ∞)`, the Laplace transform is an integral over `[0, x₀]`. -/
 lemma laplace_eq_intervalIntegral {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B) (z : ℂ) :
-    laplace f z = ∫ t in (0 : ℝ)..x₀, (f t : ℂ) * Complex.exp (-(z * t)) := by
+    laplace f z = ∫ t in 𝟘..x₀, (f t : ℂ) * Complex.exp (-(z * t)) := by
   rw [intervalIntegral.integral_of_le hf.pos.le, laplace]
   refine setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
     Ioc_subset_Ioi_self fun t ht => ?_
@@ -64,7 +68,7 @@ lemma laplace_eq_intervalIntegral {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Conditi
 lemma mul_laplace_eq {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B) {K : ℝ}
     (hK : ∀ t ∈ Ioc 0 x₀, |deriv f t| ≤ K) (z : ℂ) :
     z * laplace f z =
-      (f 0 : ℂ) + ∫ t in (0 : ℝ)..x₀, ((deriv f t : ℝ) : ℂ) * Complex.exp (-(z * t)) := by
+      (f 0 : ℂ) + ∫ t in 𝟘..x₀, ((deriv f t : ℝ) : ℂ) * Complex.exp (-(z * t)) := by
   have hx₀ := hf.pos
   have hmin : min 0 x₀ = 0 := min_eq_left hx₀.le
   have hmax : max 0 x₀ = x₀ := max_eq_right hx₀.le
@@ -82,7 +86,7 @@ lemma mul_laplace_eq {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B)
   have hvv' : ∀ t ∈ Ioo (min 0 x₀) (max 0 x₀),
       HasDerivAt (fun t : ℝ => Complex.exp (-(z * t))) (-z * Complex.exp (-(z * t))) t := by
     intro t _
-    have h1 : HasDerivAt (fun t : ℝ => -(z * (t : ℂ))) (-z) t := by
+    have h1 : HasDerivAt (fun t : ℝ => -(z * ℂc t)) (-z) t := by
       convert ((hasDerivAt_id' t).ofReal_comp).const_mul (-z) using 1
       · ext y; ring
       · simp
@@ -97,7 +101,7 @@ lemma mul_laplace_eq {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B)
     (by fun_prop : Continuous fun t : ℝ => -z * Complex.exp (-(z * t))).intervalIntegrable _ _
   have hibp := intervalIntegral.integral_mul_deriv_eq_deriv_mul_of_hasDerivAt hu hv huu' hvv'
     hu' hv'
-  have hlhs : (∫ t in (0 : ℝ)..x₀, (f t : ℂ) * (-z * Complex.exp (-(z * t)))) =
+  have hlhs : (∫ t in 𝟘..x₀, (f t : ℂ) * (-z * Complex.exp (-(z * t)))) =
       -z * laplace f z := by
     rw [laplace_eq_intervalIntegral hf, ← intervalIntegral.integral_const_mul]
     congr 1
@@ -138,9 +142,8 @@ theorem laplace_decay {f : ℝ → ℝ} {x₀ B : ℝ} (hf : Condition1 f x₀ B
   obtain ⟨K, hK0, hK⟩ := Decay.exists_abs_deriv_le hf
   have hx₀ := hf.pos
   set C := |f 0| + K * Real.exp (X * x₀) * x₀
-  have hC0 : 0 ≤ C := by positivity
   refine ⟨C / ε + 1, by positivity, fun x hx Y hY => ?_⟩
-  set z : ℂ := (x : ℂ) + (Y : ℂ) * Complex.I
+  set z : ℂ := ℂc x + ℂc Y * Complex.I
   have hzre : z.re = x := by simp [z]
   have hzim : z.im = Y := by simp [z]
   have hX : 0 ≤ X := by linarith [hx.1, hx.2]

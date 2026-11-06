@@ -25,6 +25,11 @@ The proof uses Mertens' estimate `Σ_{n ≤ x} Λ(n)/n = log x + O(1)`.
 
 @[expose] public section
 
+local notation "𝟘" => (0 : ℝ)
+local notation "𝟙" => (1 : ℝ)
+
+
+
 open scoped ArithmeticFunction.vonMangoldt
 
 namespace GradedNear
@@ -48,7 +53,7 @@ lemma sum_log_eq_sum_vonMangoldt (N : ℕ) :
 /-- Mertens lower bound at an integer: `Σ_{n ≤ N} Λ(n)/n ≥ log N - 1`. -/
 lemma mertens_nat_lower (N : ℕ) (hN : 1 ≤ N) :
     Real.log N - 1 ≤ ∑ n ∈ Finset.Ioc 0 N, Λ n / n := by
-  have hNR : (0 : ℝ) < N := by exact_mod_cast hN
+  have hNR : 𝟘 < N := by exact_mod_cast hN
   have h1 := Real.le_sum_log_nat N
   rw [sum_log_eq_sum_vonMangoldt] at h1
   have h2 : ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N / n : ℕ) : ℝ) ≤
@@ -70,7 +75,7 @@ lemma mertens_nat_lower (N : ℕ) (hN : 1 ≤ N) :
 /-- Mertens upper bound at an integer: `Σ_{n ≤ N} Λ(n)/n ≤ log N + log 4 + 4`. -/
 lemma mertens_nat_upper (N : ℕ) (hN : 1 ≤ N) :
     ∑ n ∈ Finset.Ioc 0 N, Λ n / n ≤ Real.log N + (Real.log 4 + 4) := by
-  have hNR : (0 : ℝ) < N := by exact_mod_cast hN
+  have hNR : 𝟘 < N := by exact_mod_cast hN
   have h1 := Real.sum_log_le' (x := (N : ℝ)) (by exact_mod_cast hN)
   rw [Nat.floor_natCast, sum_log_eq_sum_vonMangoldt] at h1
   have h2 : ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N : ℝ) / n - 1) ≤
@@ -79,7 +84,7 @@ lemma mertens_nat_upper (N : ℕ) (hN : 1 ≤ N) :
     intro n hn
     have hn0 : 0 < n := (Finset.mem_Ioc.1 hn).1
     apply mul_le_mul_of_nonneg_left _ ArithmeticFunction.vonMangoldt_nonneg
-    have hnR : (0 : ℝ) < n := by exact_mod_cast hn0
+    have hnR : 𝟘 < n := by exact_mod_cast hn0
     have h5 : N < N / n * n + n := Nat.lt_div_mul_add hn0
     have h6 : (N : ℝ) < ((N / n : ℕ) : ℝ) * n + n := by exact_mod_cast h5
     rw [div_sub_one hnR.ne', div_le_iff₀ hnR]
@@ -100,7 +105,7 @@ lemma mertens_nat_upper (N : ℕ) (hN : 1 ≤ N) :
 lemma abs_mertensSum_sub_log_le (x : ℝ) (hx : 1 ≤ x) :
     |mertensSum x - Real.log x| ≤ 6 := by
   have hN : 1 ≤ ⌊x⌋₊ := Nat.le_floor (by simpa using hx)
-  have hNR : (1 : ℝ) ≤ ⌊x⌋₊ := by exact_mod_cast hN
+  have hNR : 𝟙 ≤ ⌊x⌋₊ := by exact_mod_cast hN
   have hlo := mertens_nat_lower _ hN
   have hup := mertens_nat_upper _ hN
   have hfl : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le (by linarith)
@@ -119,8 +124,8 @@ lemma abs_mertensSum_sub_log_le (x : ℝ) (hx : 1 ≤ x) :
 /-- Short-interval form: `Σ_{q^a < n ≤ q^b} Λ(n)/n = (b - a) log q + O(1)`, with error `≤ 12`. -/
 lemma mertensSum_short (q : ℕ) (hq : 1 < q) {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     |mertensSum ((q : ℝ) ^ b) - mertensSum ((q : ℝ) ^ a) - (b - a) * Real.log q| ≤ 12 := by
-  have hqR : (1 : ℝ) ≤ q := by exact_mod_cast hq.le
-  have hqpos : (0 : ℝ) < q := by linarith
+  have hqR : 𝟙 ≤ q := by exact_mod_cast hq.le
+  have hqpos : 𝟘 < q := by linarith
   have h1 := abs_mertensSum_sub_log_le _ (Real.one_le_rpow hqR hb)
   have h2 := abs_mertensSum_sub_log_le _ (Real.one_le_rpow hqR ha)
   rw [Real.log_rpow hqpos] at h1 h2
@@ -137,8 +142,8 @@ lemma sum_le_partition (φ : ℝ → ℝ) (q : ℕ) (hq : 1 < q) (u c : ℕ → 
     ∑ n ∈ Finset.Ioc 0 ⌊(q : ℝ) ^ u j⌋₊, Λ n / n * φ (Real.log n / Real.log q) ≤
       ∑ i ∈ Finset.range j,
         c i * (mertensSum ((q : ℝ) ^ u (i + 1)) - mertensSum ((q : ℝ) ^ u i)) := by
-  have hqR : (1 : ℝ) < q := by exact_mod_cast hq
-  have hqpos : (0 : ℝ) < q := by linarith
+  have hqR : 𝟙 < q := by exact_mod_cast hq
+  have hqpos : 𝟘 < q := by linarith
   have hℓ : 0 < Real.log q := Real.log_pos hqR
   induction j with
   | zero =>
@@ -162,7 +167,7 @@ lemma sum_le_partition (φ : ℝ → ℝ) (q : ℕ) (hq : 1 < q) (u c : ℕ → 
     intro n hn
     rw [Finset.mem_Ioc] at hn
     have hn0 : 0 < n := lt_of_le_of_lt (Nat.zero_le _) hn.1
-    have hnR : (0 : ℝ) < n := by exact_mod_cast hn0
+    have hnR : 𝟘 < n := by exact_mod_cast hn0
     have h1 : (q : ℝ) ^ u j < n := (Nat.floor_lt (Real.rpow_pos_of_pos hqpos _).le).1 hn.1
     have h2 : (n : ℝ) ≤ (q : ℝ) ^ u (j + 1) :=
       (Nat.le_floor_iff (Real.rpow_pos_of_pos hqpos _).le).1 hn.2
@@ -217,7 +222,7 @@ lemma measurable_stepFn (φ : ℝ → ℝ) (h : ℝ) : Measurable (stepFn φ h) 
 /-- `∫₀^{j h} stepFn φ h = Σ_{i < j} cell φ h i · h`, with interval integrability. -/
 lemma integral_stepFn (φ : ℝ → ℝ) {h : ℝ} (hh : 0 < h) (j : ℕ) :
     IntervalIntegrable (stepFn φ h) volume 0 (j * h) ∧
-      ∫ t in (0 : ℝ)..(j * h), stepFn φ h t = ∑ i ∈ Finset.range j, cell φ h i * h := by
+      ∫ t in 𝟘..(j * h), stepFn φ h t = ∑ i ∈ Finset.range j, cell φ h i * h := by
   induction j with
   | zero => simp
   | succ j ih =>
@@ -246,7 +251,7 @@ lemma ceil_index {X : ℝ} (hX : 0 < X) {K : ℕ} (hK : 0 < K) {t : ℝ} (ht0 : 
     (htX : t ≤ X) :
     ⌈t / (X / K)⌉₊ - 1 < K ∧ ((⌈t / (X / K)⌉₊ - 1 : ℕ) : ℝ) * (X / K) < t ∧
       t ≤ (((⌈t / (X / K)⌉₊ - 1 : ℕ) : ℝ) + 1) * (X / K) := by
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK
+  have hKR : 𝟘 < K := Nat.cast_pos.2 hK
   have hh : 0 < X / K := div_pos hX hKR
   have hpos : 0 < t / (X / K) := div_pos ht0 hh
   have hKh : (K : ℝ) * (X / K) = X := by field_simp
@@ -269,7 +274,7 @@ lemma ceil_index {X : ℝ} (hX : 0 < X) {K : ℕ} (hK : 0 < K) {t : ℝ} (ht0 : 
 /-- For `i < K` the `i`-th cell of the mesh `X / K` lies in `[0, X]`. -/
 lemma cell_subset {X : ℝ} (hX : 0 < X) {K : ℕ} (hK : 0 < K) {i : ℕ} (hi : i < K) {v : ℝ}
     (hv : v ∈ Set.Icc ((i : ℝ) * (X / K)) ((i + 1) * (X / K))) : v ∈ Set.Icc 0 X := by
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK
+  have hKR : 𝟘 < K := Nat.cast_pos.2 hK
   have hh : 0 < X / K := div_pos hX hKR
   have hiK : (i : ℝ) + 1 ≤ K := by exact_mod_cast Nat.succ_le_of_lt hi
   have hKh : (K : ℝ) * (X / K) = X := by field_simp
@@ -290,7 +295,7 @@ lemma le_cell {φ : ℝ → ℝ} {X M : ℝ} (hX : 0 < X) (hbd : ∀ u ∈ Set.I
 /-- The cell suprema inherit the bound `|φ| ≤ M`. -/
 lemma abs_cell_le {φ : ℝ → ℝ} {X M : ℝ} (hX : 0 < X) (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
     {K : ℕ} (hK : 0 < K) {i : ℕ} (hi : i < K) : |cell φ (X / K) i| ≤ M := by
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK
+  have hKR : 𝟘 < K := Nat.cast_pos.2 hK
   have hh : 0 < X / K := div_pos hX hKR
   have hab : (i : ℝ) * (X / K) ≤ ((i : ℝ) + 1) * (X / K) := by nlinarith
   have hmem : (i : ℝ) * (X / K) ∈ Set.Icc ((i : ℝ) * (X / K)) ((i + 1) * (X / K)) :=
@@ -314,7 +319,7 @@ lemma tendsto_stepFn {φ : ℝ → ℝ} {X M : ℝ} (hX : 0 < X)
   obtain ⟨δ, hδ, hδφ⟩ := Metric.continuousAt_iff.1 hc (η / 2) (by linarith)
   refine ⟨⌈X / δ⌉₊ + 1, fun K hK => ?_⟩
   have hK0 : 0 < K := by omega
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK0
+  have hKR : 𝟘 < K := Nat.cast_pos.2 hK0
   have hh : 0 < X / K := div_pos hX hKR
   have hhδ : X / K < δ := by
     rw [div_lt_iff₀ hKR]
@@ -328,7 +333,6 @@ lemma tendsto_stepFn {φ : ℝ → ℝ} {X M : ℝ} (hX : 0 < X)
   have hstep : stepFn φ (X / K) t = cell φ (X / K) i := stepFn_eq φ hh i hi1 hi2
   rw [hstep, Real.dist_eq, abs_lt]
   have hlow : φ t ≤ cell φ (X / K) i := le_cell hX hbd hK0 hiK ⟨hi1.le, hi2⟩
-  have hexp : ((i : ℝ) + 1) * (X / K) = (i : ℝ) * (X / K) + X / K := by ring
   have hup : cell φ (X / K) i ≤ φ t + η / 2 := by
     unfold cell
     apply supOn_le (by linarith)
@@ -345,8 +349,8 @@ lemma tendsto_stepFn {φ : ℝ → ℝ} {X M : ℝ} (hX : 0 < X)
 lemma tendsto_integral_stepFn (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
     (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
     (hcont : ∀ u ∈ Set.Ioo 0 X, u ∉ P → ContinuousAt φ u) :
-    Tendsto (fun K : ℕ => ∫ t in (0 : ℝ)..X, stepFn φ (X / K) t) atTop
-      (𝓝 (∫ u in (0 : ℝ)..X, φ u)) := by
+    Tendsto (fun K : ℕ => ∫ t in 𝟘..X, stepFn φ (X / K) t) atTop
+      (𝓝 (∫ u in 𝟘..X, φ u)) := by
   apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence (fun _ => M)
   · exact Filter.Eventually.of_forall (fun K => (measurable_stepFn φ _).aestronglyMeasurable)
   · refine eventually_atTop.2 ⟨1, fun K hK => Filter.Eventually.of_forall (fun t ht => ?_)⟩
@@ -372,7 +376,7 @@ theorem riemann_upper_aux (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 
     {ε : ℝ} (hε : 0 < ε) :
     ∃ q₀ : ℕ, ∀ q : ℕ, q₀ ≤ q →
       (∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊, Λ n / n * φ (Real.log n / Real.log q)) /
-          Real.log q ≤ (∫ u in (0 : ℝ)..X, φ u) + ε := by
+          Real.log q ≤ (∫ u in 𝟘..X, φ u) + ε := by
   have hM : 0 ≤ M := le_trans (abs_nonneg _) (hbd 0 ⟨le_rfl, hX.le⟩)
   have hε2 : 0 < ε / 2 := by linarith
   obtain ⟨K₁, hK₁⟩ := Filter.eventually_atTop.1
@@ -381,13 +385,13 @@ theorem riemann_upper_aux (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 
   set K : ℕ := K₁ + 1 with hKdef
   have hK : 0 < K := Nat.succ_pos _
   have hKint := hK₁ K (Nat.le_succ _)
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK
+  have hKR : 𝟘 < K := Nat.cast_pos.2 hK
   set h : ℝ := X / K with hhdef
   have hh : 0 < h := div_pos hX hKR
   have hKh : (K : ℝ) * h = X := by rw [hhdef]; field_simp
   refine ⟨⌈Real.exp (24 * K * M / ε)⌉₊ + 2, fun q hq => ?_⟩
   have hq1 : 1 < q := by omega
-  have hqR : (1 : ℝ) < q := by exact_mod_cast hq1
+  have hqR : 𝟙 < q := by exact_mod_cast hq1
   have hℓ : 0 < Real.log q := Real.log_pos hqR
   have hℓbig : 24 * K * M < ε * Real.log q := by
     have h1 : 24 * K * M / ε < Real.log q := by
@@ -442,7 +446,7 @@ theorem riemann_upper (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < 
     {ε : ℝ} (hε : 0 < ε) :
     ∃ q₀ : ℕ, ∀ q : ℕ, q₀ ≤ q →
       (∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊, Λ n / n * φ (Real.log n / Real.log q)) /
-          Real.log q ≤ (∫ u in (0 : ℝ)..X, φ u) + ε :=
+          Real.log q ≤ (∫ u in 𝟘..X, φ u) + ε :=
   FirstFactor.riemann_upper_aux φ X M P hX hbd hcont hε
 
 end GradedNear

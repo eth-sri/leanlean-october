@@ -24,67 +24,49 @@ open Finset
 
 noncomputable section
 
+variable {ι : Type*} [Fintype ι]
+
 /-- The positive part, with the order of arguments fixed for the formulas below. -/
 def pos (x : ℝ) : ℝ := max x 0
 
 lemma pos_nonneg (x : ℝ) : 0 ≤ pos x := le_max_right _ _
 
-lemma pos_mul (x : ℝ) : pos x * x = (pos x) ^ 2 := by
-  rcases le_total x 0 with hx | hx
-  · simp [pos, max_eq_right hx]
-  · simp [pos, max_eq_left hx, pow_two]
+lemma pos_mono {x y : ℝ} (h : x ≤ y) : pos x ≤ pos y := max_le_max h le_rfl
 
-lemma pos_mono {x y : ℝ} (hxy : x ≤ y) : pos x ≤ pos y :=
-  max_le_max hxy le_rfl
+lemma pos_mul (x : ℝ) : pos x * x = pos x ^ 2 := by
+  rcases le_total x 0 with h | h <;> simp [pos, h, pow_two]
 
 /-- The resource quadratic form in the scalar two-test inequality. -/
-def resource {ι : Type*} [Fintype ι] (D : ι → ℝ) (d : ℝ) (a : ι → ℝ) : ℝ :=
-  (∑ i, D i * (a i) ^ 2) + d * (∑ i, a i) ^ 2
+def resource (D : ι → ℝ) (d : ℝ) (a : ι → ℝ) : ℝ :=
+  (∑ i, D i * a i ^ 2) + d * (∑ i, a i) ^ 2
 
-lemma resource_nonneg {ι : Type*} [Fintype ι] (D : ι → ℝ) (d : ℝ) (a : ι → ℝ)
-    (hD : ∀ i, 0 < D i) (hd : 0 < d) : 0 ≤ resource D d a :=
-  add_nonneg
-    (Finset.sum_nonneg (fun i _ => mul_nonneg (le_of_lt (hD i)) (sq_nonneg _)))
-    (mul_nonneg (le_of_lt hd) (sq_nonneg _))
+lemma resource_nonneg (D : ι → ℝ) (d : ℝ) (a : ι → ℝ) (hD : ∀ i, 0 < D i) (hd : 0 < d) :
+    0 ≤ resource D d a :=
+  add_nonneg (sum_nonneg fun i _ => mul_nonneg (hD i).le (sq_nonneg _))
+    (mul_nonneg hd.le (sq_nonneg _))
 
 /-- The common-threshold scalar cost. -/
-def thresholdCost {ι : Type*} [Fintype ι]
-    (v D : ι → ℝ) (d t : ℝ) : ℝ :=
-  t ^ 2 / d + ∑ i, (pos (v i - t)) ^ 2 / D i
+def thresholdCost (v D : ι → ℝ) (d t : ℝ) : ℝ :=
+  t ^ 2 / d + ∑ i, pos (v i - t) ^ 2 / D i
 
 /-- Existence of the common threshold, by a continuous scalar fixed-point equation. -/
-theorem exists_common_threshold {ι : Type*} [Fintype ι]
-    (v D : ι → ℝ) (d : ℝ) (hD : ∀ i, 0 < D i) (hd : 0 < d)
-    (hquad : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) →
-      (pos (∑ i, a i * v i)) ^ 2 ≤ resource D d a) :
+theorem exists_common_threshold (v D : ι → ℝ) (d : ℝ) (hD : ∀ i, 0 < D i) (hd : 0 < d)
+    (hquad : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) → pos (∑ i, a i * v i) ^ 2 ≤ resource D d a) :
     ∃ t : ℝ, 0 ≤ t ∧ t ≤ Real.sqrt d ∧ thresholdCost v D d t ≤ 1 := by
-  let b : ℝ := d * ∑ i, pos (v i) / D i
+  let b := d * ∑ i, pos (v i) / D i
   let f : ℝ → ℝ := fun t => d * (∑ i, pos (v i - t) / D i) - t
-  have hb : 0 ≤ b := by
-    dsimp [b]
-    exact mul_nonneg (le_of_lt hd)
-      (Finset.sum_nonneg (fun i _ => div_nonneg (pos_nonneg _) (le_of_lt (hD i))))
-  have hf : Continuous f := by
-    dsimp [f, pos]
-    fun_prop
-  have hf₀ : 0 ≤ f 0 := by simpa [f, b] using hb
+  have hb : 0 ≤ b := mul_nonneg hd.le (sum_nonneg fun i _ => div_nonneg (pos_nonneg _) (hD i).le)
+  have hf : Continuous f := by unfold f pos; fun_prop
   have hfb : f b ≤ 0 := by
-    have hp : (∑ i, pos (v i - b) / D i) ≤ ∑ i, pos (v i) / D i := by
-      apply Finset.sum_le_sum
-      intro i _
-      exact div_le_div_of_nonneg_right (pos_mono (by linarith)) (le_of_lt (hD i))
-    have hm := mul_le_mul_of_nonneg_left hp (le_of_lt hd)
-    dsimp [f, b] at *
-    linarith
-  obtain ⟨t, ht, hft⟩ := intermediate_value_Icc' hb hf.continuousOn ⟨hfb, hf₀⟩
+    have hp : (∑ i, pos (v i - b) / D i) ≤ ∑ i, pos (v i) / D i :=
+      sum_le_sum fun i _ => div_le_div_of_nonneg_right (pos_mono (by linarith)) (hD i).le
+    simp only [f, b]
+    nlinarith [mul_le_mul_of_nonneg_left hp hd.le]
+  obtain ⟨t, ht, hft⟩ := intermediate_value_Icc' hb hf.continuousOn ⟨hfb, by simpa [f] using hb⟩
   let a : ι → ℝ := fun i => pos (v i - t) / D i
-  have ha : ∀ i, 0 ≤ a i := by
-    intro i
-    exact div_nonneg (pos_nonneg _) (le_of_lt (hD i))
-  have htfix : t = d * ∑ i, a i := by
-    change d * (∑ i, a i) - t = 0 at hft
-    linarith
-  have hcoord : ∀ i, a i * v i = D i * (a i) ^ 2 + t * a i := by
+  have ha : ∀ i, 0 ≤ a i := fun i => div_nonneg (pos_nonneg _) (hD i).le
+  have htfix : t = d * ∑ i, a i := by simp only [f] at hft; linarith
+  have hcoord : ∀ i, a i * v i = D i * a i ^ 2 + t * a i := by
     intro i
     have hi := ne_of_gt (hD i)
     have hp := pos_mul (v i - t)
@@ -92,9 +74,8 @@ theorem exists_common_threshold {ι : Type*} [Fintype ι]
     field_simp
     nlinarith
   have hdot : (∑ i, a i * v i) = resource D d a := by
-    simp_rw [hcoord]
-    rw [Finset.sum_add_distrib, ← Finset.mul_sum]
-    dsimp [resource]
+    simp_rw [hcoord, sum_add_distrib, ← mul_sum]
+    unfold resource
     rw [htfix]
     ring
   have hres : 0 ≤ resource D d a := resource_nonneg D d a hD hd
@@ -104,24 +85,21 @@ theorem exists_common_threshold {ι : Type*} [Fintype ι]
     nlinarith
   have hcost : thresholdCost v D d t = resource D d a := by
     unfold thresholdCost resource
-    have he : ∀ i, (pos (v i - t)) ^ 2 / D i = D i * (a i) ^ 2 := by
+    have he : ∀ i, pos (v i - t) ^ 2 / D i = D i * a i ^ 2 := by
       intro i
-      dsimp [a]
+      simp only [a]
       field_simp
     simp_rw [he]
     rw [htfix]
     field_simp
     ring
   have ht₂ : t ^ 2 ≤ d := by
-    have hsum : 0 ≤ ∑ i, (pos (v i - t)) ^ 2 / D i :=
-      Finset.sum_nonneg (fun i _ => div_nonneg (sq_nonneg _) (le_of_lt (hD i)))
-    have hdiv : t ^ 2 / d ≤ 1 := by
-      rw [← hcost] at hres₁
-      dsimp [thresholdCost] at hres₁
-      linarith
-    exact (div_le_one hd).1 hdiv
-  refine ⟨t, ht.1, ?_, hcost ▸ hres₁⟩
-  exact Real.le_sqrt_of_sq_le ht₂
+    rw [← hcost] at hres₁
+    unfold thresholdCost at hres₁
+    have hS : 0 ≤ ∑ i, pos (v i - t) ^ 2 / D i :=
+      sum_nonneg fun i _ => div_nonneg (sq_nonneg _) (hD i).le
+    exact (div_le_one hd).1 (by linarith)
+  exact ⟨t, ht.1, Real.le_sqrt_of_sq_le ht₂, hcost ▸ hres₁⟩
 
 end
 
@@ -134,16 +112,13 @@ theorem threshold_of_quadratic {ι : Type*} [Fintype ι] (v D : ι → ℝ) (d :
     ∃ τ : ℝ, 0 ≤ τ ∧ τ ≤ Real.sqrt d ∧
       ∑ j, (max 0 (v j - τ)) ^ 2 / D j ≤ 1 - τ ^ 2 / d := by
   have hquad : ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
-      (ThresholdAux.pos (∑ j, a j * v j)) ^ 2 ≤ ThresholdAux.resource D d a := by
+      ThresholdAux.pos (∑ j, a j * v j) ^ 2 ≤ ThresholdAux.resource D d a := by
     intro a ha
-    have h := hq a ha
     rw [ThresholdAux.pos, max_comm]
-    exact h
+    exact hq a ha
   obtain ⟨τ, hτ0, hτd, hcost⟩ := ThresholdAux.exists_common_threshold v D d hD hd hquad
   refine ⟨τ, hτ0, hτd, ?_⟩
-  have hmax : ∀ j, max 0 (v j - τ) = ThresholdAux.pos (v j - τ) := fun j => max_comm _ _
-  simp only [hmax]
-  unfold ThresholdAux.thresholdCost at hcost
+  simp only [ThresholdAux.pos, max_comm, ThresholdAux.thresholdCost] at hcost ⊢
   linarith
 
 end GradedNear

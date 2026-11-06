@@ -26,6 +26,13 @@ p. 7 of the preprint `literature/heath-brown-1992-zero-free-regions-and-least-pr
 
 @[expose] public section
 
+local notation "⅔" => (2 / 3 : ℝ)
+local notation "𝟘" => (0 : ℝ)
+local notation "𝟙" => (1 : ℝ)
+local notation "𝟚" => (2 : ℝ)
+
+
+
 open Finset
 open scoped ArithmeticFunction.Moebius
 
@@ -37,50 +44,50 @@ namespace GradedNear
 
 /-- One prime-power factor of the divisor bound: `a + 1 ≤ M_p (p^ε)^a`, where `M_p = 1` for
 `p ≥ K ≥ 2^{1/ε}` and `M_p = max 1 (1/(2^ε - 1))` for `p < K`. -/
-private lemma divisor_factor_le {ε : ℝ} (hε : 0 < ε) {K : ℕ} (hK : (2 : ℝ) ^ (1 / ε) ≤ K)
+private lemma divisor_factor_le {ε : ℝ} (hε : 0 < ε) {K : ℕ} (hK : 𝟚 ^ (1 / ε) ≤ K)
     {p : ℕ} (hp : p.Prime) (a : ℕ) :
-    (a : ℝ) + 1 ≤
-      (if p < K then max 1 (1 / ((2 : ℝ) ^ ε - 1)) else 1) * ((p : ℝ) ^ ε) ^ a := by
-  have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast hp.two_le
+    ℝc a + 1 ≤
+      (if p < K then max 1 (1 / (𝟚 ^ ε - 1)) else 1) * (ℝc p ^ ε) ^ a := by
+  have hp2 : 𝟚 ≤ p := by exact_mod_cast hp.two_le
   split_ifs with hpK
-  · set b : ℝ := (2 : ℝ) ^ ε with hb
+  · set b : ℝ := 𝟚 ^ ε with hb
     have hb1 : 1 < b := Real.one_lt_rpow (by norm_num) hε
-    have hbp : b ≤ (p : ℝ) ^ ε := Real.rpow_le_rpow (by norm_num) hp2 hε.le
+    have hbp : b ≤ ℝc p ^ ε := Real.rpow_le_rpow (by norm_num) hp2 hε.le
     set M := max 1 (1 / (b - 1)) with hM
     have hM1 : 1 ≤ M := le_max_left _ _
     have hb' : 0 < b - 1 := by linarith
     have hMb : 1 ≤ M * (b - 1) := by
       have h1 : 1 / (b - 1) ≤ M := le_max_right _ _
-      calc (1 : ℝ) = 1 / (b - 1) * (b - 1) := by field_simp
+      calc 𝟙 = 1 / (b - 1) * (b - 1) := by field_simp
         _ ≤ M * (b - 1) := by gcongr
-    have hbern : 1 + (a : ℝ) * (b - 1) ≤ b ^ a := by
+    have hbern : 1 + ℝc a * (b - 1) ≤ b ^ a := by
       have h := one_add_mul_le_pow (show (-2 : ℝ) ≤ b - 1 by linarith) a
       simpa using h
-    have ha : (0 : ℝ) ≤ a := Nat.cast_nonneg a
-    calc (a : ℝ) + 1 ≤ M * (1 + a * (b - 1)) := by
+    have ha : 𝟘 ≤ a := Nat.cast_nonneg a
+    calc ℝc a + 1 ≤ M * (1 + a * (b - 1)) := by
           nlinarith [mul_nonneg ha (sub_nonneg.mpr hMb)]
       _ ≤ M * b ^ a := by gcongr
-      _ ≤ M * ((p : ℝ) ^ ε) ^ a := by gcongr
+      _ ≤ M * (ℝc p ^ ε) ^ a := by gcongr
   · have hpK' : K ≤ p := not_lt.mp hpK
-    have h2 : (2 : ℝ) ≤ (p : ℝ) ^ ε := by
-      calc (2 : ℝ) = ((2 : ℝ) ^ (1 / ε)) ^ ε := by
+    have h2 : 𝟚 ≤ ℝc p ^ ε := by
+      calc 𝟚 = (𝟚 ^ (1 / ε)) ^ ε := by
             rw [← Real.rpow_mul (by norm_num), one_div_mul_cancel hε.ne', Real.rpow_one]
-        _ ≤ (p : ℝ) ^ ε := by
+        _ ≤ ℝc p ^ ε := by
             apply Real.rpow_le_rpow (by positivity) _ hε.le
             exact hK.trans (by exact_mod_cast hpK')
-    calc (a : ℝ) + 1 ≤ 2 ^ a := by
+    calc ℝc a + 1 ≤ 2 ^ a := by
           have h := one_add_mul_le_pow (show (-2 : ℝ) ≤ 1 by norm_num) a
           norm_num at h
           linarith
-      _ ≤ ((p : ℝ) ^ ε) ^ a := by gcongr
-      _ = 1 * ((p : ℝ) ^ ε) ^ a := (one_mul _).symm
+      _ ≤ (ℝc p ^ ε) ^ a := by gcongr
+      _ = 1 * (ℝc p ^ ε) ^ a := (one_mul _).symm
 
 /-- The divisor bound `τ(n) ≪_ε n^ε`. -/
 theorem card_divisors_le_rpow {ε : ℝ} (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ n : ℕ, n ≠ 0 → (n.divisors.card : ℝ) ≤ C * (n : ℝ) ^ ε := by
-  set K : ℕ := ⌈(2 : ℝ) ^ (1 / ε)⌉₊
-  have hK : (2 : ℝ) ^ (1 / ε) ≤ K := Nat.le_ceil _
-  set M : ℝ := max 1 (1 / ((2 : ℝ) ^ ε - 1)) with hM
+    ∃ C : ℝ, 0 < C ∧ ∀ n : ℕ, n ≠ 0 → (n.divisors.card : ℝ) ≤ C * ℝc n ^ ε := by
+  set K : ℕ := ⌈𝟚 ^ (1 / ε)⌉₊
+  have hK : 𝟚 ^ (1 / ε) ≤ K := Nat.le_ceil _
+  set M : ℝ := max 1 (1 / (𝟚 ^ ε - 1)) with hM
   have hM1 : 1 ≤ M := le_max_left _ _
   refine ⟨M ^ K, by positivity, fun n hn => ?_⟩
   set g : ℕ → ℝ := fun p => if p < K then M else 1 with hg
@@ -88,7 +95,7 @@ theorem card_divisors_le_rpow {ε : ℝ} (hε : 0 < ε) :
     rw [Nat.card_divisors hn]
     push_cast
     rfl
-  have hn' : (n : ℝ) ^ ε = ∏ p ∈ n.primeFactors, ((p : ℝ) ^ ε) ^ (n.factorization p) := by
+  have hn' : ℝc n ^ ε = ∏ p ∈ n.primeFactors, (ℝc p ^ ε) ^ (n.factorization p) := by
     conv_lhs => rw [Nat.prod_primeFactors_pow_factorization hn]
     push_cast
     rw [← Real.finsetProd_rpow _ _ (fun p _ => by positivity)]
@@ -107,12 +114,12 @@ theorem card_divisors_le_rpow {ε : ℝ} (hε : 0 < ε) :
           simpa using hp.2
       _ = K := Finset.card_range K
   calc (n.divisors.card : ℝ) = ∏ p ∈ n.primeFactors, ((n.factorization p : ℝ) + 1) := hτ
-    _ ≤ ∏ p ∈ n.primeFactors, (g p * ((p : ℝ) ^ ε) ^ (n.factorization p)) := by
+    _ ≤ ∏ p ∈ n.primeFactors, (g p * (ℝc p ^ ε) ^ (n.factorization p)) := by
         apply Finset.prod_le_prod₀ (fun p _ => by positivity)
         intro p hp
         exact divisor_factor_le hε hK (Nat.prime_of_mem_primeFactors hp) _
-    _ = (∏ p ∈ n.primeFactors, g p) * (n : ℝ) ^ ε := by rw [Finset.prod_mul_distrib, hn']
-    _ ≤ M ^ K * (n : ℝ) ^ ε := by gcongr
+    _ = (∏ p ∈ n.primeFactors, g p) * ℝc n ^ ε := by rw [Finset.prod_mul_distrib, hn']
+    _ ≤ M ^ K * ℝc n ^ ε := by gcongr
 
 /-! ## Complete periods -/
 
@@ -189,11 +196,11 @@ private lemma primitive_bound_all {ε C : ℝ} (hC : 0 ≤ C)
     (hB : ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
       ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
         ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-          C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3))
+          C * ℝc q ^ (𝟙 / 9 + ε) * ℝc H ^ ⅔)
     {q : ℕ} [NeZero q] (ψ : DirichletCharacter ℂ q) (hprim : ψ.IsPrimitive) (hψ : ψ ≠ 1)
     (N H : ℕ) :
     ‖∑ n ∈ Finset.Ioc N (N + H), ψ n‖ ≤
-      C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+      C * ℝc q ^ (𝟙 / 9 + ε) * ℝc H ^ ⅔ := by
   have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
   have hH : H % q + q * (H / q) = H := Nat.mod_add_div H q
   have hsplit : ∑ n ∈ Ioc N (N + H), ψ n = ∑ n ∈ Ioc (N + q) (N + q + H % q), ψ n := by
@@ -201,14 +208,14 @@ private lemma primitive_bound_all {ε C : ℝ} (hC : 0 ≤ C)
       (show N + H % q ≤ N + H by omega), show N + H = N + H % q + q * (H / q) by omega,
       sum_Ioc_mul_period_eq_zero ψ hψ, add_zero, sum_Ioc_add_period ψ hψ]
   rw [hsplit]
-  have hRHS : 0 ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by positivity
+  have hRHS : 0 ≤ C * ℝc q ^ (𝟙 / 9 + ε) * ℝc H ^ ⅔ := by positivity
   rcases Nat.eq_zero_or_pos (H % q) with hr | hr
   · rw [hr, add_zero, Finset.Ioc_self, Finset.sum_empty, norm_zero]
     exact hRHS
   · calc ‖∑ n ∈ Ioc (N + q) (N + q + H % q), ψ n‖
-        ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * ((H % q : ℕ) : ℝ) ^ ((2 : ℝ) / 3) :=
+        ≤ C * ℝc q ^ (𝟙 / 9 + ε) * ((H % q : ℕ) : ℝ) ^ ⅔ :=
           hB q hq ψ hprim (N + q) (H % q) (by omega) hr (Nat.mod_lt H hq).le
-      _ ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+      _ ≤ C * ℝc q ^ (𝟙 / 9 + ε) * ℝc H ^ ⅔ := by
           gcongr
           exact_mod_cast Nat.mod_le H q
 
@@ -306,7 +313,7 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
   have hC₁' : ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
       ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
         ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-          C₁' * (q : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
+          C₁' * ℝc q ^ (𝟙 / 9 + ε / 2) * ℝc H ^ ⅔ := by
     intro q hq χ hχ N H hN hH hHq
     refine (hC₁ q hq χ hχ N H hN hH hHq).trans ?_
     gcongr
@@ -324,8 +331,7 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
   have hψprim : χ.primitiveCharacter.IsPrimitive := χ.primitiveCharacter_isPrimitive
   have hcond : (χ.conductor : ℝ) ≤ q := by
     exact_mod_cast Nat.le_of_dvd (by omega) χ.conductor_dvd_level
-  set B : ℝ := C₁' * (q : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) * (H : ℝ) ^ ((2 : ℝ) / 3) with hBdef
-  have hB0 : 0 ≤ B := by positivity
+  set B : ℝ := C₁' * ℝc q ^ (𝟙 / 9 + ε / 2) * ℝc H ^ ⅔ with hBdef
   have hinner : ∀ d ∈ q.divisors,
       ‖(μ d : ℂ) * ∑ n ∈ (Ioc N (N + H)).filter (d ∣ ·), χ.primitiveCharacter n‖ ≤ B := by
     intro d hd
@@ -344,13 +350,13 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
         = ‖(μ d : ℂ)‖ * (‖χ.primitiveCharacter d‖ * ‖S‖) := by rw [norm_mul, norm_mul]
       _ ≤ 1 * (1 * ‖S‖) := by gcongr
       _ = ‖S‖ := by ring
-      _ ≤ C₁' * (χ.conductor : ℝ) ^ ((1 : ℝ) / 9 + ε / 2) *
-            (((N + H) / d - N / d : ℕ) : ℝ) ^ ((2 : ℝ) / 3) :=
+      _ ≤ C₁' * (χ.conductor : ℝ) ^ (𝟙 / 9 + ε / 2) *
+            (((N + H) / d - N / d : ℕ) : ℝ) ^ ⅔ :=
           primitive_bound_all hC₁'0 hC₁' _ hψprim hψ1 _ _
       _ ≤ B := by
           rw [hBdef]
           gcongr
-  have hqpos : (0 : ℝ) < q := by exact_mod_cast hq1
+  have hqpos : 𝟘 < q := by exact_mod_cast hq1
   calc ‖∑ n ∈ Ioc N (N + H), χ n‖
       = ‖∑ d ∈ q.divisors,
           (μ d : ℂ) * ∑ n ∈ (Ioc N (N + H)).filter (d ∣ ·), χ.primitiveCharacter n‖ := by
@@ -360,12 +366,12 @@ theorem burgessBound_of_primitive (hB : BurgessPrimitive) : BurgessBound := by
         norm_sum_le _ _
     _ ≤ ∑ _d ∈ q.divisors, B := Finset.sum_le_sum hinner
     _ = (q.divisors.card : ℝ) * B := by rw [Finset.sum_const, nsmul_eq_mul]
-    _ ≤ (C₂ * (q : ℝ) ^ (ε / 2)) * B := by
+    _ ≤ (C₂ * ℝc q ^ (ε / 2)) * B := by
         gcongr
         exact hτ q hq0
-    _ = C₁' * C₂ * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3) := by
-        rw [hBdef, show (1 : ℝ) / 9 + ε = ε / 2 + ((1 : ℝ) / 9 + ε / 2) by ring,
-          Real.rpow_add hqpos (ε / 2) ((1 : ℝ) / 9 + ε / 2)]
+    _ = C₁' * C₂ * ℝc q ^ (𝟙 / 9 + ε) * ℝc H ^ ⅔ := by
+        rw [hBdef, show 𝟙 / 9 + ε = ε / 2 + (𝟙 / 9 + ε / 2) by ring,
+          Real.rpow_add hqpos (ε / 2) (𝟙 / 9 + ε / 2)]
         ring
 
 end GradedNear

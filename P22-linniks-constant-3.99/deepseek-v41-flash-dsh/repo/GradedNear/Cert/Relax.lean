@@ -20,12 +20,19 @@ term by its tangent line. Without `n ≥ 0` both statements are false. The hypot
 
 @[expose] public section
 
+local macro "ℝow" L:term:max k:term:max : term => `((($L).rows).getD $k ⟨1, []⟩)
+
+
+local notation "𝟘" => (0 : ℝ)
+
+
+
 namespace GradedNear.Cert
 
 /-- The relaxed linear constraint of row `k` for case `c` on the box interval `[a, b]`. -/
 def RelaxHolds (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (a b : ℤ) (c : ℕ) : Prop :=
   ∑ j, ((colCost ((L.cols.get j).v.getD k 0) ((L.cols.get j).D.getD k 1) a b c : ℤ) : ℝ) *
-      x j ≤ ((rowBudget (L.rows.getD k ⟨1, []⟩) a b c : ℤ) : ℝ)
+      x j ≤ ((rowBudget (ℝow L k) a b c : ℤ) : ℝ)
 
 namespace RelaxAux
 
@@ -33,14 +40,14 @@ namespace RelaxAux
 
 lemma S_pos_int : (0 : ℤ) < S := by unfold S; norm_num
 
-lemma S_pos : (0 : ℝ) < S := by exact_mod_cast S_pos_int
+lemma S_pos : 𝟘 < S := by exact_mod_cast S_pos_int
 
-lemma TS_pos : (0 : ℝ) < TS := by unfold TS; norm_num
+lemma TS_pos : 𝟘 < TS := by unfold TS; norm_num
 
 /-- `S / TS` is exact. -/
 lemma S_div_TS_mul : ((S / TS : ℤ) : ℝ) * TS = S := by norm_num [S, TS]
 
-lemma S_div_TS_nonneg : (0 : ℝ) ≤ ((S / TS : ℤ) : ℝ) := by norm_num [S, TS]
+lemma S_div_TS_nonneg : 𝟘 ≤ ((S / TS : ℤ) : ℝ) := by norm_num [S, TS]
 
 /-- `HS = S / (2 TS)`. -/
 lemma HS_mul : (HS : ℝ) * (2 * TS) = S := by norm_num [HS, S, TS]
@@ -67,7 +74,7 @@ lemma wf_colD {L : Leaf} (hwf : wellFormed L = true) (j : Fin L.cols.length) (k 
   | some y => simpa using hD y (List.mem_of_getElem? h)
 
 lemma wf_row {L : Leaf} (hwf : wellFormed L = true) (k : ℕ) :
-    0 < (L.rows.getD k ⟨1, []⟩).d ∧ ∀ t ∈ (L.rows.getD k ⟨1, []⟩).fam, 0 ≤ t.1 ∧ 0 < t.2.2 := by
+    0 < (ℝow L k).d ∧ ∀ t ∈ (ℝow L k).fam, 0 ≤ t.1 ∧ 0 < t.2.2 := by
   unfold wellFormed at hwf
   simp only [Bool.and_eq_true, List.all_eq_true, decide_eq_true_eq] at hwf
   rw [List.getD_eq_getElem?_getD]
@@ -76,14 +83,6 @@ lemma wf_row {L : Leaf} (hwf : wellFormed L = true) (k : ℕ) :
   | some r => simpa using hwf.2 r (List.mem_of_getElem? h)
 
 /-! ### Sums -/
-
-lemma list_sum_le {α : Type*} (l : List α) (f g : α → ℝ) (h : ∀ t ∈ l, f t ≤ g t) :
-    (l.map f).sum ≤ (l.map g).sum := by
-  induction l with
-  | nil => simp
-  | cons a l ih =>
-    simp only [List.map_cons, List.sum_cons]
-    exact add_le_add (h a (by simp)) (ih fun t ht => h t (by simp [ht]))
 
 lemma list_cast_sum_le {α : Type*} (l : List α) (f : α → ℤ) (g : α → ℝ) (c : ℝ)
     (h : ∀ t ∈ l, (f t : ℝ) ≤ c * g t) : (((l.map f).sum : ℤ) : ℝ) ≤ c * (l.map g).sum := by
@@ -133,8 +132,8 @@ lemma first_le (n v D sh : ℤ) (hn : 0 ≤ n) (hD : 0 < D) {τ : ℝ} (hsh : (S
     (((n * (max (v - sh) 0) ^ 2) / D : ℤ) : ℝ) ≤
       S * ((n : ℝ) * (max 0 ((v : ℝ) / S - τ)) ^ 2 / ((D : ℝ) / S)) := by
   have hS := S_pos
-  have hDr : (0 : ℝ) < D := by exact_mod_cast hD
-  have hnr : (0 : ℝ) ≤ n := by exact_mod_cast hn
+  have hDr : 𝟘 < D := by exact_mod_cast hD
+  have hnr : 𝟘 ≤ n := by exact_mod_cast hn
   refine (cast_ediv_le _ _ hD).trans ?_
   push_cast
   have hM : max ((v : ℝ) - sh) 0 ≤ S * max 0 ((v : ℝ) / S - τ) := by
@@ -194,7 +193,7 @@ noncomputable def quadT (r : RowHead) (m s : ℝ) : ℝ := (m ^ 2 + 2 * m * s) /
 
 /-- The tangent line at `m` of `τ ↦ rowLHS + τ²/(d/S)`, evaluated at `m + s`. -/
 noncomputable def tline (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (m s : ℝ) : ℝ :=
-  colT L x k m s + famT (L.rows.getD k ⟨1, []⟩) m s + quadT (L.rows.getD k ⟨1, []⟩) m s
+  colT L x k m s + famT (ℝow L k) m s + quadT (ℝow L k) m s
 
 lemma tline_affine (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (m s : ℝ) :
     tline L x k m s = tline L x k m 0 + s * (tline L x k m 1 - tline L x k m 0) := by
@@ -202,13 +201,13 @@ lemma tline_affine (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (m s : �
     finset_affine Finset.univ
       (fun j s => x j * tgt (((L.cols.get j).v.getD k 0 : ℝ) / S) m s /
         (((L.cols.get j).D.getD k 1 : ℝ) / S)) (fun j s => by simp only [tgt]; ring) s
-  have h2 : famT (L.rows.getD k ⟨1, []⟩) m s = famT (L.rows.getD k ⟨1, []⟩) m 0 +
-      s * (famT (L.rows.getD k ⟨1, []⟩) m 1 - famT (L.rows.getD k ⟨1, []⟩) m 0) :=
+  have h2 : famT (ℝow L k) m s = famT (ℝow L k) m 0 +
+      s * (famT (ℝow L k) m 1 - famT (ℝow L k) m 0) :=
     list_affine _
       (fun (t : ℤ × ℤ × ℤ) s => (t.1 : ℝ) * tgt ((t.2.1 : ℝ) / S) m s / ((t.2.2 : ℝ) / S))
       (fun t s => by simp only [tgt]; ring) s
-  have h3 : quadT (L.rows.getD k ⟨1, []⟩) m s = quadT (L.rows.getD k ⟨1, []⟩) m 0 +
-      s * (quadT (L.rows.getD k ⟨1, []⟩) m 1 - quadT (L.rows.getD k ⟨1, []⟩) m 0) := by
+  have h3 : quadT (ℝow L k) m s = quadT (ℝow L k) m 0 +
+      s * (quadT (ℝow L k) m 1 - quadT (ℝow L k) m 0) := by
     simp only [quadT]; ring
   unfold tline
   linear_combination h1 + h2 + h3
@@ -217,7 +216,7 @@ lemma tline_affine (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (m s : �
 lemma tline_le (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length → ℝ)
     (hx : ∀ j, 0 ≤ x j) (k : ℕ) (m τ : ℝ) :
     tline L x k m (τ - m) ≤
-      rowLHS L x k τ + τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S) := by
+      rowLHS L x k τ + τ ^ 2 / (((ℝow L k).d : ℝ) / S) := by
   obtain ⟨hd, hfam⟩ := wf_row hwf k
   have hS := S_pos
   have h1 : colT L x k m (τ - m) ≤
@@ -225,19 +224,19 @@ lemma tline_le (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length →
         (((L.cols.get j).D.getD k 1 : ℝ) / S) := by
     unfold colT
     refine Finset.sum_le_sum fun j _ => ?_
-    have hD : (0 : ℝ) < ((L.cols.get j).D.getD k 1 : ℝ) / S :=
+    have hD : 𝟘 < ((L.cols.get j).D.getD k 1 : ℝ) / S :=
       div_pos (by exact_mod_cast wf_colD hwf j k) hS
     exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left (tangent_ineq _ _ _) (hx j)) hD.le
-  have h2 : famT (L.rows.getD k ⟨1, []⟩) m (τ - m) ≤ ((L.rows.getD k ⟨1, []⟩).fam.map fun t =>
+  have h2 : famT (ℝow L k) m (τ - m) ≤ ((ℝow L k).fam.map fun t =>
       (t.1 : ℝ) * (max 0 ((t.2.1 : ℝ) / S - τ)) ^ 2 / ((t.2.2 : ℝ) / S)).sum := by
     unfold famT
-    refine list_sum_le _ _ _ fun t ht => ?_
-    have hD : (0 : ℝ) < (t.2.2 : ℝ) / S := div_pos (by exact_mod_cast (hfam t ht).2) hS
-    have hn : (0 : ℝ) ≤ t.1 := by exact_mod_cast (hfam t ht).1
+    refine List.sum_le_sum fun t ht => ?_
+    have hD : 𝟘 < (t.2.2 : ℝ) / S := div_pos (by exact_mod_cast (hfam t ht).2) hS
+    have hn : 𝟘 ≤ t.1 := by exact_mod_cast (hfam t ht).1
     exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left (tangent_ineq _ _ _) hn) hD.le
-  have h3 : quadT (L.rows.getD k ⟨1, []⟩) m (τ - m) ≤
-      τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S) := by
-    have hdS : (0 : ℝ) < ((L.rows.getD k ⟨1, []⟩).d : ℝ) / S :=
+  have h3 : quadT (ℝow L k) m (τ - m) ≤
+      τ ^ 2 / (((ℝow L k).d : ℝ) / S) := by
+    have hdS : 𝟘 < ((ℝow L k).d : ℝ) / S :=
       div_pos (by exact_mod_cast hd) hS
     exact div_le_div_of_nonneg_right (by nlinarith [sq_nonneg (τ - m)]) hdS.le
   unfold tline rowLHS
@@ -267,7 +266,7 @@ lemma tangentCost_le (v a b : ℤ) (c : ℕ) (hc : c = 0 ∨ c = 1) :
     simp [tgt, max_eq_left hX]
   · subst hc0
     have hX : 0 < (v : ℝ) / S - mid a b := by
-      have h0 : (0 : ℝ) < xi := by exact_mod_cast (not_le.mp hx)
+      have h0 : 𝟘 < xi := by exact_mod_cast (not_le.mp hx)
       rw [hxr] at h0
       exact pos_of_mul_pos_right h0 hS.le
     rw [tgt, max_eq_right hX.le]
@@ -277,7 +276,7 @@ lemma tangentCost_le (v a b : ℤ) (c : ℕ) (hc : c = 0 ∨ c = 1) :
     push_cast
     ring
   · have hX : 0 < (v : ℝ) / S - mid a b := by
-      have h0 : (0 : ℝ) < xi := by exact_mod_cast (not_le.mp hx)
+      have h0 : 𝟘 < xi := by exact_mod_cast (not_le.mp hx)
       rw [hxr] at h0
       exact pos_of_mul_pos_right h0 hS.le
     obtain rfl : c = 1 := by omega
@@ -293,7 +292,7 @@ lemma colCost_tangent_le (v D a b : ℤ) (hD : 0 < D) (c : ℕ) (hc : c = 0 ∨ 
     ((colCost v D a b c : ℤ) : ℝ) ≤
       S * (tgt ((v : ℝ) / S) (mid a b) (sgn a b c) / ((D : ℝ) / S)) := by
   have hS := S_pos
-  have hDr : (0 : ℝ) < D := by exact_mod_cast hD
+  have hDr : 𝟘 < D := by exact_mod_cast hD
   rw [colCost, ite_eq_right (by omega)]
   refine (cast_ediv_le _ _ hD).trans ?_
   rw [Int.cast_mul]
@@ -368,12 +367,12 @@ lemma relax_case (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length �
           mul_le_mul_of_nonneg_right (colCost_tangent_le _ _ a b (wf_colD hwf j k) c hc) (hx j)
       _ = S * (x j * tgt (((L.cols.get j).v.getD k 0 : ℝ) / S) (mid a b) (sgn a b c) /
             (((L.cols.get j).D.getD k 1 : ℝ) / S)) := by ring
-  have hbud := rowBudget_tangent_ge (L.rows.getD k ⟨1, []⟩) a b c hc
+  have hbud := rowBudget_tangent_ge (ℝow L k) a b c hc
   unfold tline at hG
   unfold RelaxHolds
   calc _ ≤ S * colT L x k (mid a b) (sgn a b c) := hcols
-    _ ≤ S * (1 - famT (L.rows.getD k ⟨1, []⟩) (mid a b) (sgn a b c) -
-          quadT (L.rows.getD k ⟨1, []⟩) (mid a b) (sgn a b c)) :=
+    _ ≤ S * (1 - famT (ℝow L k) (mid a b) (sgn a b c) -
+          quadT (ℝow L k) (mid a b) (sgn a b c)) :=
         mul_le_mul_of_nonneg_left (by linarith) hS.le
     _ ≤ _ := hbud
 
@@ -382,7 +381,7 @@ end RelaxAux
 theorem relax_first (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length → ℝ)
     (hx : ∀ j, 0 ≤ x j) {k : ℕ} (_hk : k < L.rows.length) {a b : ℤ} (ha : 0 ≤ a) {τ : ℝ}
     (hτa : (a : ℝ) ≤ τ * TS) (hτb : τ * TS ≤ b)
-    (hrow : rowLHS L x k τ ≤ 1 - τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)) :
+    (hrow : rowLHS L x k τ ≤ 1 - τ ^ 2 / (((ℝow L k).d : ℝ) / S)) :
     RelaxHolds L x k a b 2 := by
   obtain ⟨hd, hfam⟩ := RelaxAux.wf_row hwf k
   have hS := RelaxAux.S_pos
@@ -403,39 +402,37 @@ theorem relax_first (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.lengt
     calc _ ≤ S * ((max 0 (((L.cols.get j).v.getD k 0 : ℝ) / S - τ)) ^ 2 /
           (((L.cols.get j).D.getD k 1 : ℝ) / S)) * x j := mul_le_mul_of_nonneg_right h (hx j)
       _ = _ := by ring
-  have hfamb : ((((L.rows.getD k ⟨1, []⟩).fam.map fun t =>
+  have hfamb : ((((ℝow L k).fam.map fun t =>
       (t.1 * (max (t.2.1 - b * (S / TS)) 0) ^ 2) / t.2.2).sum : ℤ) : ℝ) ≤
-      S * (((L.rows.getD k ⟨1, []⟩).fam.map fun t =>
+      S * (((ℝow L k).fam.map fun t =>
         (t.1 : ℝ) * (max 0 ((t.2.1 : ℝ) / S - τ)) ^ 2 / ((t.2.2 : ℝ) / S)).sum) :=
     RelaxAux.list_cast_sum_le _ _ _ _ fun t ht =>
       RelaxAux.first_le t.1 t.2.1 t.2.2 _ (hfam t ht).1 (hfam t ht).2 hsh
-  have hquad : (((S * S * a * a) / (TS * TS * (L.rows.getD k ⟨1, []⟩).d) : ℤ) : ℝ) ≤
-      S * (τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)) := by
-    have hdr : (0 : ℝ) < (L.rows.getD k ⟨1, []⟩).d := by exact_mod_cast hd
-    have hTi : (0 : ℤ) < TS := by unfold TS; norm_num
+  have hquad : (((S * S * a * a) / (TS * TS * (ℝow L k).d) : ℤ) : ℝ) ≤
+      S * (τ ^ 2 / (((ℝow L k).d : ℝ) / S)) := by
+    have hdr : 𝟘 < (ℝow L k).d := by exact_mod_cast hd
+    have hTi : (0 : ℤ) < TS := by norm_num [TS]
     refine (RelaxAux.cast_ediv_le _ _ (mul_pos (mul_pos hTi hTi) hd)).trans ?_
-    have har : (0 : ℝ) ≤ a := by exact_mod_cast ha
+    have har : 𝟘 ≤ a := by exact_mod_cast ha
     have h1 : (a : ℝ) * a ≤ (τ * TS) * (τ * TS) := mul_self_le_mul_self har hτa
     push_cast
     rw [div_le_iff₀ (mul_pos (mul_pos hT hT) hdr)]
     have hS0 : (S : ℝ) ≠ 0 := hS.ne'
-    have hd0 : ((L.rows.getD k ⟨1, []⟩).d : ℝ) ≠ 0 := hdr.ne'
-    have e : (S : ℝ) * (τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)) *
-        (TS * TS * (L.rows.getD k ⟨1, []⟩).d) = S * S * ((τ * TS) * (τ * TS)) := by
+    have hd0 : ((ℝow L k).d : ℝ) ≠ 0 := hdr.ne'
+    have e : (S : ℝ) * (τ ^ 2 / (((ℝow L k).d : ℝ) / S)) *
+        (TS * TS * (ℝow L k).d) = S * S * ((τ * TS) * (τ * TS)) := by
       field_simp
     rw [e]
     nlinarith [mul_le_mul_of_nonneg_left h1 (mul_nonneg hS.le hS.le)]
   have key := mul_le_mul_of_nonneg_left hrow hS.le
-  unfold rowLHS at key
-  rw [mul_add, mul_sub, mul_one] at key
-  unfold RelaxHolds
-  rw [rowBudget, ite_eq_left rfl, Int.cast_sub, Int.cast_sub]
+  simp only [rowLHS, mul_add, mul_sub, mul_one] at key
+  rw [RelaxHolds, rowBudget, ite_eq_left rfl, Int.cast_sub, Int.cast_sub]
   linarith
 
 theorem relax_tangent (L : Leaf) (hwf : wellFormed L = true) (x : Fin L.cols.length → ℝ)
     (hx : ∀ j, 0 ≤ x j) {k : ℕ} (_hk : k < L.rows.length) {a b : ℤ} {τ : ℝ}
     (hτa : (a : ℝ) ≤ τ * TS) (hτb : τ * TS ≤ b)
-    (hrow : rowLHS L x k τ ≤ 1 - τ ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)) :
+    (hrow : rowLHS L x k τ ≤ 1 - τ ^ 2 / (((ℝow L k).d : ℝ) / S)) :
     RelaxHolds L x k a b 0 ∨ RelaxHolds L x k a b 1 := by
   have hT := RelaxAux.TS_pos
   have hB := RelaxAux.tline_le L hwf x hx k (RelaxAux.mid a b) τ
