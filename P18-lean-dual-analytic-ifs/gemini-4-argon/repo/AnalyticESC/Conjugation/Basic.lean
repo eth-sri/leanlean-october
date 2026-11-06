@@ -12,10 +12,9 @@ coordinates on `[0,1]`, conjugacy and sub-conjugacy to self-similar systems, per
 the iterates of the dual operators on `C^ω_ε([0,1])`.
 -/
 
-namespace AnalyticESC
+namespace Challenge
 
 open Set
-open scoped UniformConvergence
 
 /-- `g` is an analytic, invertible map on `[0,1]` (Definition 1.9): analytic on a neighbourhood
 of each point of `[0,1]` and injective on `[0,1]`. -/
@@ -32,12 +31,16 @@ def ConjSelfSimilar {M : ℕ} (F : Fin M → ℝ → ℝ) : Prop :=
 def periodic {N m : ℕ} (hm : 0 < m) (w : Fin m → Fin N) : ℕ → Fin N :=
   fun n => w ⟨n % m, Nat.mod_lt n hm⟩
 
+end Challenge
+
+namespace AnalyticESC
+
+open Set Challenge
+export Challenge (IsAnalyticCoord ConjSelfSimilar periodic)
+
 namespace IFS
 
 variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
-
-/-- The maps `x ↦ f_i(x)` of `Φ` on the real line. -/
-noncomputable def realMaps : Fin N → ℝ → ℝ := fun i x => (Φ.f i x).re
 
 /-- `Φ` is sub-conjugated to a self-similar IFS: for distinct words `i, j` of the same length,
 the pair `(f_i, f_j)` is conjugated to a self-similar IFS. -/

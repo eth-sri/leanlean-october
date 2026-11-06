@@ -16,13 +16,58 @@ agree with the derivatives of the real restriction. Finite words are lists, read
 `f_{i₁ ⋯ iₙ} = f_{i₁} ∘ ⋯ ∘ f_{iₙ}`.
 -/
 
-namespace AnalyticESC
+namespace Challenge
 
-open Set Metric Filter Topology
-open scoped UniformConvergence
+open Set Metric
 
 /-- The unit interval `I = [0,1]`. -/
 abbrev I : Set ℝ := Icc 0 1
+
+variable {N : ℕ}
+
+/-- `f_w = f_{w₁} ∘ ⋯ ∘ f_{w_k}` for a finite word `w`, with `f_∅ = id`. -/
+def comp (f : Fin N → ℂ → ℂ) (w : List (Fin N)) : ℂ → ℂ := w.foldr (fun i g => f i ∘ g) id
+
+/-- `sup_{x ∈ [0,1]} |f_i(x) - f_j(x)|` for finite words `i` and `j`. -/
+noncomputable def supDist (f : Fin N → ℂ → ℂ) (i j : List (Fin N)) : ℝ :=
+  ⨆ x : I, ‖comp f i x - comp f j x‖
+
+/-- The strong exponential separation condition (Definition 1.2). -/
+def SESC (f : Fin N → ℂ → ℂ) : Prop :=
+  ∃ c > 0, ∀ n, ∀ i j : Fin n → Fin N, i ≠ j → c ^ n ≤ supDist f (List.ofFn i) (List.ofFn j)
+
+/-- The natural projection `π(w) = lim_{n → ∞} f_{w₁ ⋯ wₙ}(0)` of (1.3). -/
+noncomputable def natProj (f : Fin N → ℂ → ℂ) (w : ℕ → Fin N) : ℝ :=
+  Filter.limUnder Filter.atTop fun n => (comp f (List.ofFn fun k : Fin n => w k) 0).re
+
+/-- The attractor `Λ = π(Σ)`. -/
+def attractor (f : Fin N → ℂ → ℂ) : Set ℝ := range (natProj f)
+
+/-- The `𝒞²` distance on `[0,1]` (Section 1.1). -/
+noncomputable def d2 (f g : Fin N → ℂ → ℂ) : ℝ :=
+  ⨆ i, (⨆ x : I, ‖f i x - g i x‖) +
+    (⨆ x : I, ‖deriv (f i) x - deriv (g i) x‖) +
+    (⨆ x : I, ‖deriv (deriv (f i)) x - deriv (deriv (g i)) x‖)
+
+section Dimension
+
+open MeasureTheory Filter Topology
+
+/-- The exponential separation condition (ESC). -/
+def ESC (f : Fin N → ℂ → ℂ) : Prop :=
+  ∃ c > 0, ∃ᶠ n in atTop, ∀ i j : Fin n → Fin N, i ≠ j →
+    c ^ n ≤ supDist f (List.ofFn i) (List.ofFn j)
+
+end Dimension
+
+end Challenge
+
+namespace AnalyticESC
+
+open Set Metric Filter Topology Challenge
+open scoped UniformConvergence
+
+export Challenge (I)
 
 /-- The open `δ`-neighbourhood `B_δ = {z ∈ ℂ : ∃ x ∈ I, |z - x| < δ}` of `I` in `ℂ`. -/
 def nbhd (δ : ℝ) : Set ℂ := thickening δ (((↑) : ℝ → ℂ) '' I)
@@ -86,29 +131,22 @@ namespace IFS
 variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
 /-- `f_w = f_{w₁} ∘ ⋯ ∘ f_{w_k}` for a finite word `w`, with `f_∅ = id`. -/
-def comp (w : List (Fin N)) : ℂ → ℂ := w.foldr (fun i g => Φ.f i ∘ g) id
+abbrev comp (w : List (Fin N)) : ℂ → ℂ := Challenge.comp Φ.f w
 
 /-- `sup_{x ∈ [0,1]} |f_i(x) - f_j(x)|` for finite words `i` and `j`. -/
-noncomputable def supDist (i j : List (Fin N)) : ℝ :=
-  ⨆ x : I, ‖Φ.comp i ((x : ℝ) : ℂ) - Φ.comp j ((x : ℝ) : ℂ)‖
+noncomputable abbrev supDist (i j : List (Fin N)) : ℝ := Challenge.supDist Φ.f i j
 
-/-- The exponential separation condition (ESC): there is `c > 0` with
-`sup_{x ∈ [0,1]} |f_i(x) - f_j(x)| ≥ c^n` for all distinct `i, j ∈ Σ_n`, for infinitely many
-`n`. -/
-def ESC : Prop :=
-  ∃ c > 0, ∃ᶠ n in atTop, ∀ i j : Fin n → Fin N, i ≠ j →
-    c ^ n ≤ Φ.supDist (List.ofFn i) (List.ofFn j)
+/-- The exponential separation condition (ESC). -/
+abbrev ESC : Prop := Challenge.ESC Φ.f
 
 /-- The strong exponential separation condition (SESC, Definition 1.2). -/
-def SESC : Prop :=
-  ∃ c > 0, ∀ n, ∀ i j : Fin n → Fin N, i ≠ j → c ^ n ≤ Φ.supDist (List.ofFn i) (List.ofFn j)
+abbrev SESC : Prop := Challenge.SESC Φ.f
 
 /-- The natural projection `π(w) = lim_{n → ∞} f_{w₁ ⋯ wₙ}(0)` of (1.3). -/
-noncomputable def natProj (w : ℕ → Fin N) : ℝ :=
-  limUnder atTop fun n => (Φ.comp (List.ofFn fun k : Fin n => w k) 0).re
+noncomputable abbrev natProj (w : ℕ → Fin N) : ℝ := Challenge.natProj Φ.f w
 
 /-- The attractor `Λ = π(Σ)`. -/
-def attractor : Set ℝ := range Φ.natProj
+abbrev attractor : Set ℝ := Challenge.attractor Φ.f
 
 /-- Compositions along distinct finite words differ somewhere on `[0,1]`: `f_i ≢ f_j` on `[0,1]`
 for all distinct `i, j ∈ Σ_*` (the hypothesis of Lemma 4.1). -/
@@ -143,41 +181,10 @@ noncomputable def dualOp (i : Fin N) (h : ℂ → ℂ) (z : ℂ) : ℂ :=
 noncomputable def dualComp (w : List (Fin N)) : (ℂ → ℂ) → ℂ → ℂ :=
   w.foldr (fun i G => Φ.dualOp i ∘ G) id
 
-end IFS
-
-/-- The restriction of `h` to `B_ε`, in the space of functions on `B_ε` with the topology of
-uniform convergence, that is, of the supremum norm over `B_ε`. -/
-def toNbhd (ε : ℝ) (h : ℂ → ℂ) : nbhd ε →ᵤ ℂ := UniformFun.ofFun fun z => h z
-
-/-- The space `C^ω_ε([0,1])` of Section 2.1: maps complex analytic on `B_ε`, continuous on
-`cl B_ε` and real on `I`, represented by their restrictions to `B_ε`. -/
-def analyticSpace (ε : ℝ) : Set (nbhd ε →ᵤ ℂ) :=
-  {h | ∃ g : ℂ → ℂ, DifferentiableOn ℂ g (nbhd ε) ∧ ContinuousOn g (closure (nbhd ε)) ∧
-    (∀ x ∈ I, (g x).im = 0) ∧ h = toNbhd ε g}
-
-/-- The pairs `ℬ_n = {(i, j) ∈ Σ_n × Σ_n : i₁ < j₁}` of Section 4.1. -/
-def pairs (N n : ℕ) : Set ((Fin n → Fin N) × (Fin n → Fin N)) :=
-  {p | ∃ h : 0 < n, p.1 ⟨0, h⟩ < p.2 ⟨0, h⟩}
-
-namespace IFS
-
-variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
-
-/-- The dual operator `F_i` acting on functions on `B_ε`; `f_i` maps `B_ε` into itself. -/
-noncomputable def dualOpU (i : Fin N) (h : nbhd ε →ᵤ ℂ) : nbhd ε →ᵤ ℂ :=
-  UniformFun.ofFun fun z =>
-    deriv (Φ.f i) z * UniformFun.toFun h ⟨Φ.f i z, (Φ.inClass i).mapsTo (subset_closure z.2)⟩ +
-      Φ.nonlin i z
-
-/-- `Λ` is an attractor of the dual IFS `Φ*` (Lemma 2.1): a nonempty compact subset of
-`C^ω_ε([0,1])` with `Λ = ⋃_i F_i Λ`. -/
-def IsDualAttractor (Λ : Set (nbhd ε →ᵤ ℂ)) : Prop :=
-  Λ ⊆ analyticSpace ε ∧ Λ.Nonempty ∧ IsCompact Λ ∧ Λ = ⋃ i, Φ.dualOpU i '' Λ
-
-/-- The dual IFS `Φ*` satisfies the strong separation condition: `F_i Λ* ∩ F_j Λ* = ∅` for
-`i ≠ j`. -/
+/-- The dual IFS `Φ*` satisfies the strong separation condition: `H_i` and `H_j` differ on `I`
+whenever `i₁ ≠ j₁`. -/
 def DualSSC : Prop :=
-  ∃ Λ, Φ.IsDualAttractor Λ ∧ ∀ i j, i ≠ j → Disjoint (Φ.dualOpU i '' Λ) (Φ.dualOpU j '' Λ)
+  ∀ i j : ℕ → Fin N, i 0 ≠ j 0 → ∃ x ∈ I, Φ.dualProj (.inf i) x ≠ Φ.dualProj (.inf j) x
 
 /-- `conv((F_i k)(x), (F_i K)(x))` for a finite word `i` and constants `k`, `K`. -/
 noncomputable def dualCylAt (k K : ℝ) (i : List (Fin N)) (x : ℝ) : Set ℝ :=
@@ -192,21 +199,22 @@ a list of real points. -/
 noncomputable def orbit (i : List (Fin N)) (x : ℝ) : List ℝ :=
   (List.range (i.length + 1)).map fun l => (Φ.comp (i.take l).reverse x).re
 
+/-- The real map `x ↦ f_i(x)` of the system. -/
+def realMap (i : Fin N) (x : ℝ) : ℝ := (Φ.f i x).re
+
 end IFS
 
 /-- The `𝒞²` distance on `I` between two maps (Section 1.1), with derivatives at real points. -/
 noncomputable def d2Map (f g : ℂ → ℂ) : ℝ :=
-  (⨆ x : I, ‖f ((x : ℝ) : ℂ) - g ((x : ℝ) : ℂ)‖) +
-    (⨆ x : I, ‖deriv f ((x : ℝ) : ℂ) - deriv g ((x : ℝ) : ℂ)‖) +
-    (⨆ x : I, ‖deriv (deriv f) ((x : ℝ) : ℂ) - deriv (deriv g) ((x : ℝ) : ℂ)‖)
+  (⨆ x : I, ‖f x - g x‖) + (⨆ x : I, ‖deriv f x - deriv g x‖) +
+    (⨆ x : I, ‖deriv (deriv f) x - deriv (deriv g) x‖)
 
 /-- The `𝒞²` distance `d₂(Φ, Ψ) = max_i d₂(f_i, g_i)` between two families of maps. -/
-noncomputable def d2Sys {N : ℕ} (f g : Fin N → ℂ → ℂ) : ℝ := ⨆ i, d2Map (f i) (g i)
+noncomputable abbrev d2Sys {N : ℕ} (f g : Fin N → ℂ → ℂ) : ℝ := ⨆ i, d2Map (f i) (g i)
 
 /-- The `𝒞²` distance `d₂(Φ, Ψ) = max_i d₂(f_i, g_i)` on `𝔖_N`. The two systems may lie in
 `𝔖_N(ε)` for different `ε`. -/
-noncomputable def d2 {N : ℕ} {ε ε' : ℝ} (Φ : IFS N ε) (Ψ : IFS N ε') : ℝ :=
-  ⨆ i, d2Map (Φ.f i) (Ψ.f i)
+noncomputable abbrev d2 {N : ℕ} {ε ε' : ℝ} (Φ : IFS N ε) (Ψ : IFS N ε') : ℝ := d2Sys Φ.f Ψ.f
 
 /-- The space `𝔖_N` of Section 1.1: families of maps that all lie in `S^ω_ε(I)` for some
 `ε > 0`, that is, in `S^ω(I) = ⋃_{ε > 0} S^ω_ε(I)`. -/
