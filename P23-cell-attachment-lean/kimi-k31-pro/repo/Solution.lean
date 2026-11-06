@@ -75,11 +75,6 @@ theorem normalClosure_range_le_ker_iff (r : ι → G) (f : G →* H) :
 def liftNormalClosure (r : ι → G) (f : G →* H) (h : ∀ i, f (r i) = 1) :
     G ⧸ Subgroup.normalClosure (Set.range r) →* H :=
   QuotientGroup.lift _ f ((normalClosure_range_le_ker_iff r f).mpr h)
-@[simp]
-theorem liftNormalClosure_mk (r : ι → G) (f : G →* H) (h : ∀ i, f (r i) = 1)
-    (g : G) :
-    liftNormalClosure r f h (QuotientGroup.mk' (Subgroup.normalClosure (Set.range r)) g) =
-      f g := rfl
 /-- The descended homomorphism commutes with the quotient projection. -/
 @[simp]
 theorem liftNormalClosure_comp_mk (r : ι → G) (f : G →* H) (h : ∀ i, f (r i) = 1) :
@@ -91,52 +86,6 @@ noncomputable def quotientNormalClosureEquiv (r : ι → G) (f : G →* H)
     (hf : Function.Surjective f) (hker : f.ker = Subgroup.normalClosure (Set.range r)) :
     G ⧸ Subgroup.normalClosure (Set.range r) ≃* H :=
   QuotientGroup.liftEquiv _ hf hker.symm
-@[simp]
-theorem quotientNormalClosureEquiv_mk (r : ι → G) (f : G →* H)
-    (hf : Function.Surjective f) (hker : f.ker = Subgroup.normalClosure (Set.range r))
-    (g : G) :
-    quotientNormalClosureEquiv r f hf hker
-      (QuotientGroup.mk' (Subgroup.normalClosure (Set.range r)) g) = f g := rfl
-/-- Compatibility in homomorphism form, suitable for a commutative diagram. -/
-@[simp]
-theorem quotientNormalClosureEquiv_comp_mk (r : ι → G) (f : G →* H)
-    (hf : Function.Surjective f) (hker : f.ker = Subgroup.normalClosure (Set.range r)) :
-    (quotientNormalClosureEquiv r f hf hker).toMonoidHom.comp
-      (QuotientGroup.mk' (Subgroup.normalClosure (Set.range r))) = f := rfl
-/-- Independently replacing the generators by conjugate elements does not change
-normal closure. This is the algebraic part of independence from whiskering paths. -/
-theorem normalClosure_range_eq_of_isConj (r s : ι → G)
-    (h : ∀ i, IsConj (r i) (s i)) :
-    Subgroup.normalClosure (Set.range r) = Subgroup.normalClosure (Set.range s) := by
-  apply le_antisymm
-  · apply Subgroup.normalClosure_le_normal
-    rintro _ ⟨i, rfl⟩
-    exact Subgroup.conjugatesOfSet_subset_normalClosure
-      (Group.mem_conjugatesOfSet_iff.mpr ⟨s i, Set.mem_range_self i, (h i).symm⟩)
-  · apply Subgroup.normalClosure_le_normal
-    rintro _ ⟨i, rfl⟩
-    exact Subgroup.conjugatesOfSet_subset_normalClosure
-      (Group.mem_conjugatesOfSet_iff.mpr ⟨r i, Set.mem_range_self i, h i⟩)
-/-- A separate conjugating element may be chosen for every generator. -/
-theorem normalClosure_range_conjugate (r c : ι → G) :
-    Subgroup.normalClosure (Set.range (fun i => c i * r i * (c i)⁻¹)) =
-      Subgroup.normalClosure (Set.range r) := by
-  symm
-  apply normalClosure_range_eq_of_isConj
-  intro i
-  exact isConj_iff.mpr ⟨c i, rfl⟩
-/-- Changing independently chosen conjugating paths induces the identity-on-
-representatives equivalence between the corresponding quotient groups. -/
-def quotientNormalClosureConjugateEquiv (r c : ι → G) :
-    G ⧸ Subgroup.normalClosure (Set.range (fun i => c i * r i * (c i)⁻¹)) ≃*
-      G ⧸ Subgroup.normalClosure (Set.range r) :=
-  QuotientGroup.quotientMulEquivOfEq (normalClosure_range_conjugate r c)
-@[simp]
-theorem quotientNormalClosureConjugateEquiv_mk (r c : ι → G) (g : G) :
-    quotientNormalClosureConjugateEquiv r c
-      (QuotientGroup.mk' (Subgroup.normalClosure
-        (Set.range (fun i => c i * r i * (c i)⁻¹))) g) =
-      QuotientGroup.mk' (Subgroup.normalClosure (Set.range r)) g := rfl
 end CellAttachment
 end CellAttachment_GroupQuotient
 /-! Source module: CellAttachment.GroupoidQuotient -/
@@ -820,26 +769,6 @@ theorem quotientMap_isQuotientMap (f : ι → C(Circle, X)) :
 /-- Identify the boundary point of a disk with a circle point. -/
 def diskBoundaryPoint (z : Disk) (h : ‖(z : ℂ)‖ = 1) : Circle :=
   ⟨z, mem_sphere_zero_iff_norm.mpr h⟩
-/-- An algebraic invariant used only to distinguish points of the original space.
-It is deliberately not asserted to be continuous. -/
-def baseValue (f : ι → C(Circle, X)) : Raw X ι → Option X
-  | .inl x => some x
-  | .inr ⟨i, z⟩ => if h : ‖(z : ℂ)‖ = 1 then some (f i (diskBoundaryPoint z h)) else none
-theorem baseValue_respects (f : ι → C(Circle, X)) {a b : Raw X ι}
-    (h : AttachingRel f a b) : baseValue f a = baseValue f b := by
-  cases h with
-  | boundary i z =>
-    change (if h : ‖(z : ℂ)‖ = 1 then some (f i (diskBoundaryPoint (boundaryInclusion z) h)) else none) = some (f i z)
-    rw [dite_eq_left (Circle.norm_coe z)]
-    rfl
-/-- Algebraic readout of the base value descends through precisely the attaching relation. -/
-def quotientBaseValue (f : ι → C(Circle, X)) : Space f → Option X :=
-  Quot.lift (baseValue f) (fun _ _ h => baseValue_respects f h)
-/-- The attaching quotient never identifies two distinct original points. -/
-theorem inclusion_injective (f : ι → C(Circle, X)) : Function.Injective (inclusion f) := by
-  intro x y h
-  have h' := congrArg (quotientBaseValue f) h
-  exact Option.some.inj h'
 /-- The specified map on fundamental groups is induced by the actual inclusion. -/
 def inclusionPi1 (f : ι → C(Circle, X)) (x₀ : X) :
     FundamentalGroup X x₀ →* FundamentalGroup (Space f) (inclusion f x₀) :=
@@ -1004,29 +933,6 @@ theorem fundamentalGroupToMulOpposite_apply_mk_eq {e : p ⁻¹' {x}}
     hp.fundamentalGroupToMulOpposite e (.mk γ) = .op g :=
   hp.toMultiplicative.fundamentalGroupToMulOpposite_apply_mk_eq hpΓ Γ_0 Γ_1
 end IsAddQuotientCoveringMap
-namespace AddCircle
-variable (p : ℝ)
-/-- The loop in `AddCircle p` based at `x` that winds `n` times, defined as
-`t ↦ n • (t * p) + x`. -/
-def zsmulLoop (x : ℝ) (n : ℤ) : Path (x : AddCircle p) x where
-  toFun t := n • (t * p : ℝ) + x
-  source' := by simp
-  target' := by simp [coe_period]
-  continuous_toFun := by fun_prop
-@[simp]
-theorem zsmulLoop_apply (x : ℝ) (n : ℤ) (t : I) :
-    zsmulLoop p x n t = n • (t * p : ℝ) + x :=
-  rfl
-variable {p} [hp : Fact (0 < p)]
-/-- **The fundamental group of the circle is `ℤ`**: the isomorphism sends the class of a loop to
-its winding number (`windingNumber_eq_div`). It does not depend on the choice of a lift of the
-basepoint (`IsAddQuotientCoveringMap.fundamentalGroupEquiv_eq`). -/
-noncomputable def windingNumberIso (x : AddCircle p) :
-    FundamentalGroup (AddCircle p) x ≃* Multiplicative ℤ :=
-  ((isAddQuotientCoveringMap_coe p).fundamentalGroupEquiv (x := x)
-      ⟨(equivIco p 0 x : ℝ), coe_equivIco⟩).trans <|
-    MulOpposite.opMulEquiv.symm.trans (AddSubgroup.zmultiplesEquivInt hp.out.ne').toMultiplicative
-end AddCircle
 /-! ## Project-specific concrete circle generator -/
 namespace CellAttachment
 /-- The standard positively oriented circle loop, `t ↦ exp(2πt)`, based at `1`. -/
@@ -1035,9 +941,6 @@ def circleGenerator : Path (1 : Circle) 1 where
   source' := by simp
   target' := by simp
   continuous_toFun := by fun_prop
-@[simp]
-theorem circleGenerator_apply (t : I) :
-    circleGenerator t = Circle.exp ((t : ℝ) * (2 * Real.pi)) := rfl
 /-- The corresponding homotopy class in the actual fundamental group. -/
 def circleGeneratorClass : FundamentalGroup Circle (1 : Circle) :=
   .mk circleGenerator
@@ -1074,14 +977,6 @@ theorem circleGenerator_generates (γ : FundamentalGroup Circle (1 : Circle)) :
   rw [map_zpow, circleFundamentalGroupEquivInt_generator]
   change (circleFundamentalGroupEquivInt γ).toAdd • (1 : ℤ) =
     (circleFundamentalGroupEquivInt γ).toAdd
-  simp
-/-- `AddCircle (2π)` and the complex unit circle are the same circle model. -/
-def additiveCircleIdentification : AddCircle (2 * Real.pi) ≃ₜ Circle :=
-  AddCircle.homeomorphCircle'
-@[simp]
-theorem additiveCircleIdentification_zero :
-    additiveCircleIdentification (0 : AddCircle (2 * Real.pi)) = (1 : Circle) := by
-  change Circle.exp 0 = 1
   simp
 end CellAttachment
 end
@@ -1231,20 +1126,12 @@ def homotopyEquivFundamentalGroup {X Y : Type*} [TopologicalSpace X] [Topologica
     (e : X ≃ₕ Y) (x : X) : FundamentalGroup X x ≃* FundamentalGroup Y (e x) :=
   (FundamentalGroupoidFunctor.equivOfHomotopyEquiv e).fullyFaithfulFunctor.mulEquivEnd
     (FundamentalGroupoid.mk x)
-@[simp] lemma homotopyEquivFundamentalGroup_apply {X Y : Type*}
-    [TopologicalSpace X] [TopologicalSpace Y] (e : X ≃ₕ Y) (x : X)
-    (γ : FundamentalGroup X x) :
-    homotopyEquivFundamentalGroup e x γ = FundamentalGroup.map e.toFun x γ := rfl
 /-- The based version with the target basepoint explicitly identified. -/
 def homotopyEquivFundamentalGroupOfEq {X Y : Type*}
     [TopologicalSpace X] [TopologicalSpace Y] (e : X ≃ₕ Y) {x : X} {y : Y} (h : e x = y) :
     FundamentalGroup X x ≃* FundamentalGroup Y y :=
   (homotopyEquivFundamentalGroup e x).trans
     (CategoryTheory.eqToIso (congrArg FundamentalGroupoid.mk h)).conj
-@[simp] lemma homotopyEquivFundamentalGroupOfEq_apply {X Y : Type*}
-    [TopologicalSpace X] [TopologicalSpace Y] (e : X ≃ₕ Y) {x : X} {y : Y} (h : e x = y)
-    (γ : FundamentalGroup X x) :
-    homotopyEquivFundamentalGroupOfEq e h γ = FundamentalGroup.mapOfEq e.toFun h γ := rfl
 /-- The explicit radius-half basepoint of the annulus. -/
 def annulusBasepoint : Annulus := halfCircle 1
 @[simp] lemma annulusPolar_basepoint : annulusPolar annulusBasepoint = 1 :=
@@ -1263,9 +1150,6 @@ def annulusGenerator : Path annulusBasepoint annulusBasepoint :=
 /-- The homotopy class of the concrete radius-half positive circle. -/
 def annulusGeneratorClass : FundamentalGroup Annulus annulusBasepoint :=
   .mk annulusGenerator
-@[simp] lemma annulusGenerator_coordinate (t : unitInterval) :
-    annulusCoordinate (annulusGenerator t) =
-      (1 / 2 : ℝ) • (Circle.exp ((t : ℝ) * (2 * Real.pi)) : ℂ) := rfl
 /-- Polar projection identifies the half-radius generator with the standard generator. -/
 lemma annulusPolar_generator :
     (annulusGenerator.map annulusPolar.continuous).cast
@@ -1288,16 +1172,6 @@ theorem annulusGenerator_generates (γ : FundamentalGroup Annulus annulusBasepoi
   refine ⟨n, annulusFundamentalGroupEquivCircle.injective ?_⟩
   rw [map_zpow, annulusFundamentalGroupEquivCircle_generator]
   exact hn
-/-- Winding numbers give an actual isomorphism of the annulus fundamental group with ℤ. -/
-def annulusFundamentalGroupEquivInt :
-    FundamentalGroup Annulus annulusBasepoint ≃* Multiplicative ℤ :=
-  annulusFundamentalGroupEquivCircle.trans circleFundamentalGroupEquivInt
-@[simp] theorem annulusFundamentalGroupEquivInt_generator :
-    annulusFundamentalGroupEquivInt annulusGeneratorClass = Multiplicative.ofAdd (1 : ℤ) := by
-  change circleFundamentalGroupEquivInt
-    (annulusFundamentalGroupEquivCircle annulusGeneratorClass) = _
-  rw [annulusFundamentalGroupEquivCircle_generator]
-  exact circleFundamentalGroupEquivInt_generator
 /-- The coordinate-defined open disk is exactly the ordinary convex metric ball. -/
 lemma openDisk_eq_ball : {z : ℂ | ‖z‖ < 1} = Metric.ball (0 : ℂ) 1 := by
   ext z
@@ -1362,7 +1236,7 @@ def puncturedNeighborhood (f : ι → C(Circle, X)) : Set (Space f) := (centers 
   by_cases h : ‖(z : ℂ)‖ = 1
   · simp only [normalize, h, dite_true, Sum.inl_ne_inr, exists_false, false_iff]
     intro hz
-    simpa [hz] using h
+    simp [hz] at h
   · simp only [normalize, h, dite_false]
     constructor
     · rintro ⟨j, hj⟩
@@ -1430,58 +1304,6 @@ noncomputable section
 namespace CellAttachment
 universe u v
 variable {X : Type u} [TopologicalSpace X] {ι : Type v}
-/-- Boundary inclusion is closed because its domain is compact and its
-codomain is Hausdorff. This does not require any separation of the base. -/
-theorem boundaryInclusion_isClosedMap : IsClosedMap boundaryInclusion :=
-  boundaryInclusion.continuous.isClosedMap
-/-- The part of a closed base image lying over a particular disk is exactly
-its attaching-boundary preimage. -/
-theorem quotient_inr_mem_inclusion_image (f : ι → C(Circle, X))
-    (A : Set X) (i : ι) (z : Disk) :
-    quotientMap f (.inr ⟨i, z⟩) ∈ inclusion f '' A ↔
-      z ∈ boundaryInclusion '' ((f i) ⁻¹' A) := by
-  constructor
-  · rintro ⟨x, hx, heq⟩
-    have hn := congrArg (normalForm f) heq
-    change normalize f (.inl x) = normalize f (.inr ⟨i, z⟩) at hn
-    by_cases hz : ‖(z : ℂ)‖ = 1
-    · simp only [normalize, hz, dite_true, Sum.inl.injEq] at hn
-      refine ⟨diskBoundaryPoint z hz, ?_, ?_⟩
-      · change f i (diskBoundaryPoint z hz) ∈ A
-        simpa only [← hn] using hx
-      · rfl
-    · simp only [normalize, hz, dite_false, Sum.inl_ne_inr] at hn
-  · rintro ⟨w, hw, rfl⟩
-    exact ⟨f i w, hw, (characteristic_boundary f i w).symm⟩
-/-- Closed subsets of the original space have closed images in the quotient. -/
-theorem inclusion_isClosedMap (f : ι → C(Circle, X)) : IsClosedMap (inclusion f) := by
-  intro A hA
-  rw [← (quotientMap_isQuotientMap f).isCoinducing.isClosed_preimage]
-  rw [isClosed_sum_iff]
-  constructor
-  · convert hA using 1
-    ext x
-    change inclusion f x ∈ inclusion f '' A ↔ x ∈ A
-    exact (inclusion_injective f).mem_set_image
-  · rw [isClosed_sigma_iff]
-    intro i
-    have hc := boundaryInclusion_isClosedMap ((f i) ⁻¹' A)
-      (hA.preimage (f i).continuous)
-    convert hc using 1
-    ext z
-    exact quotient_inr_mem_inclusion_image f A i z
-/-- The original space is a closed embedded subspace for every attaching
-family, including non-Hausdorff spaces and infinitely many disks. -/
-theorem inclusion_isClosedEmbedding (f : ι → C(Circle, X)) :
-    Topology.IsClosedEmbedding (inclusion f) :=
-  .of_continuous_injective_isClosedMap (inclusion f).continuous
-    (inclusion_injective f) (inclusion_isClosedMap f)
-/-- The original space is homeomorphic to its closed image. -/
-def inclusionHomeomorph (f : ι → C(Circle, X)) :
-    X ≃ₜ Set.range (inclusion f) :=
-  (inclusion_isClosedEmbedding f).isEmbedding.toHomeomorph
-@[simp] theorem inclusionHomeomorph_apply (f : ι → C(Circle, X)) (x : X) :
-    (inclusionHomeomorph f x : Space f) = inclusion f x := rfl
 /-- The canonical map from the open complex disk into the closed disk. -/
 def openDiskInclusion : C(OpenDisk, Disk) where
   toFun z := ⟨z, z.property.le⟩
@@ -1505,8 +1327,6 @@ theorem rawInteriorMap_isOpenMap : IsOpenMap (rawInteriorMap (X := X) (ι := ι)
 /-- The canonical continuous inclusion of the coproduct of open disks. -/
 def interiorMap (f : ι → C(Circle, X)) : C((Σ _ : ι, OpenDisk), Space f) :=
   (quotientMap f).comp rawInteriorMap
-@[simp] theorem interiorMap_apply (f : ι → C(Circle, X)) (z : Σ _ : ι, OpenDisk) :
-    interiorMap f z = quotientMap f (interiorRepresentative z.1 z.2) := rfl
 /-- A raw interior representative has no other raw representative in its
 quotient class. Boundary gluings do not affect it. -/
 theorem quotient_eq_interiorRepresentative_iff (f : ι → C(Circle, X))
@@ -1575,9 +1395,6 @@ def interiorsHomeomorph (f : ι → C(Circle, X)) :
     (Σ _ : ι, OpenDisk) ≃ₜ interiors f :=
   (interiorMap_isOpenEmbedding f).isEmbedding.toHomeomorph.trans
     (Homeomorph.setCongr (interiorMap_range f))
-@[simp] theorem interiorsHomeomorph_apply (f : ι → C(Circle, X))
-    (z : Σ _ : ι, OpenDisk) :
-    (interiorsHomeomorph f z : Space f) = interiorMap f z := rfl
 end CellAttachment
 end
 end CellAttachment_Embeddings
@@ -1686,15 +1503,11 @@ For any two natural numbers `i n : ℕ` with `i < n`, we have that
 `(2i+1)/(2n)` is contained in unit interval
 -/
 lemma mid_point_I {i n : ℕ} (hi : i < n) : (2 * i + 1 : ℝ)/(2 * n : ℝ) ∈ I := by
-  have n_cast_pos : 0 < (n : ℝ) := Nat.cast_pos.mpr (lt_of_le_of_lt (Nat.zero_le i) hi)
-  have : 2 * i + 1 ≤ 2 * n := by linarith
+  have hn : 0 < (n : ℝ) := by exact_mod_cast (Nat.zero_le i).trans_lt hi
   constructor
-  · apply div_nonneg
-    exact add_nonneg (mul_nonneg (by norm_num) (Nat.cast_nonneg i)) (by norm_num)
-    exact mul_nonneg (by norm_num) (Nat.cast_nonneg n)
-  · refine' (div_le_one (mul_pos (by norm_num) n_cast_pos)).mpr _
-    have : (↑(2 * i  + 1) : ℝ) ≤ ↑(2 * n) := Nat.cast_le.mpr this
-    convert this <;> simp
+  · positivity
+  · apply (div_le_one (by positivity)).mpr
+    exact_mod_cast (show 2 * i + 1 ≤ 2 * n by omega)
 namespace UnitIntervalSub
 open Set
 lemma mem_I_of_mem_interval {t : ℝ} {n i : ℕ} (hi : i < n.succ) (h : t ∈ Icc ((i:ℝ)/↑(n.succ)) (↑(i+1)/↑(n.succ))) :
@@ -2049,10 +1862,6 @@ instance DirectedProduct {α : Type u} {β : Type v} [t₁ : DirectedSpace α] [
       rw [Path.map_trans]
   isDipath_reparam := fun {a b : α × β} γ t₀ t₁ φ hφ_mono ⟨γ₁_dipath, γ₂_dipath⟩ =>
       ⟨isDipath_reparam hφ_mono γ₁_dipath, isDipath_reparam hφ_mono γ₂_dipath⟩
-/-- The projection map `α × β → α` -/
-def directed_fst {α β : Type*} [DirectedSpace α] [DirectedSpace β] : D(α × β, α) where
-  toFun := fun x => x.1
-  directed_toFun := fun _ _ γ ⟨hγ₁, _⟩ => hγ₁
 /-- The projection map `α × β → β` -/
 def directed_snd {α β : Type*} [DirectedSpace α] [DirectedSpace β] : D(α × β, β) where
   toFun := fun x => x.2
@@ -2081,14 +1890,6 @@ def DirectedMap.prod_const_fst (F : D(α × β, γ)) (a : α) : D(β, γ) :=
   F.comp (DirectedMap.prod_map_mk (DirectedMap.const β a) (DirectedMap.id β))
 @[simp] lemma DirectedMap.prod_const_fst_apply (F : D(α × β, γ)) (a : α) (b : β) :
   DirectedMap.prod_const_fst F a b = F (a, b) := rfl
-/--
-  For every `t : β`, we can convert a directed map `F : α × β → γ` to a directed map `α → γ` by
-  sending `a` to `F(a, t)`
--/
-def DirectedMap.prod_const_snd (F : D(α × β, γ)) (t : β) : D(α, γ) :=
-  F.comp (DirectedMap.prod_map_mk (DirectedMap.id α) (DirectedMap.const α t))
-@[simp] lemma DirectedMap.prod_const_snd_apply (F : D(α × β, γ)) (b : β) (a : α) :
-  DirectedMap.prod_const_snd F b a = F (a, b) := rfl
 end prod
 end Lean4_constructions
 /-! Source module: Lean4.directed_unit_interval -/
@@ -2122,8 +1923,7 @@ lemma isDipath_identityPath : IsDipath IdentityPath := fun _ _ hab => hab
 lemma isDipath_of_isDipath_comp_id {X : Type u} [DirectedSpace X] {x y : X} {γ : Path x y}
   (h : IsDipath $ IdentityPath.map γ.continuous_toFun) : IsDipath γ := by
   have hpath : (IdentityPath.map γ.continuous_toFun).cast γ.source.symm γ.target.symm = γ := by
-    apply Path.ext
-    funext t
+    ext t
     rfl
   rw [← hpath]
   exact isDipath_cast (IdentityPath.map γ.continuous_toFun) γ.source.symm γ.target.symm h
@@ -2258,7 +2058,6 @@ def of_directedMap (f : D(I, X)) : Dipath (f 0) (f 1) := {
   dipath_toPath := DirectedUnitInterval.isDipath_of_isDipath_comp_id
     $ f.directed_toFun DirectedUnitInterval.IdentityPath DirectedUnitInterval.isDipath_identityPath
 }
-@[simp] lemma coe_mk (f : I → X) (h₀ h₁ h₂ h₃) : ⇑(mk ⟨⟨f, h₀⟩, h₁, h₂⟩ h₃ : Dipath x y) = f := rfl
 variable (γ : Dipath x y)
 @[continuity]
 protected lemma continuous : Continuous γ :=
@@ -2267,17 +2066,10 @@ protected lemma continuous : Continuous γ :=
   γ.source'
 @[simp] protected lemma target : γ 1 = y :=
   γ.target'
+@[simp] lemma coe_toContinuousMap : ⇑γ.toContinuousMap = γ := rfl
+@[simp] lemma coe_toDirectedMap : ⇑γ.toDirectedMap = γ := rfl
 initialize_simps_projections Dipath (toPath_toContinuousMap_toFun → simps.apply, -toPath_toContinuousMap)
-@[simp]
-lemma coe_toContinuousMap : ⇑γ.toContinuousMap = γ := rfl
-@[simp]
-lemma coe_toDirectedMap : ⇑γ.toDirectedMap = γ := rfl
-/-- Any function `φ : Π (a : α), Dipath (x a) (y a)` can be seen as a function `α × I → X`. -/
-instance hasUncurryDipath {X α : Type*} [DirectedSpace X] {x y : α → X} :
-  Function.HasUncurry (∀ a : α, Dipath (x a) (y a)) (α × I) X :=
-⟨fun φ p => φ p.1 p.2⟩
 /-! ### Properites about the range of dipaths -/
-@[simp] lemma coe_range (γ : Dipath x y) : range γ = range γ.toPath := rfl
 @[simp] lemma range_eq_image (γ : Dipath x y) : range γ = γ.extend '' I :=
   Set.ext (fun z =>
     ⟨fun ⟨t, ht⟩ => (Set.mem_image γ.extend I z).mpr ⟨t, t.2, by { simp; exact ht }⟩,
@@ -2329,9 +2121,7 @@ def refl (x : X) : Dipath x x where
   dipath_toPath := isDipath_concat γ.dipath_toPath γ'.dipath_toPath
 }
 @[simp] lemma trans_to_path (γ : Dipath x y) (γ' : Dipath y z) :
-  γ.toPath.trans γ'.toPath = (γ.trans γ').toPath := by
-  ext t
-  rfl
+  γ.toPath.trans γ'.toPath = (γ.trans γ').toPath := rfl
 lemma trans_apply (γ : Dipath x y) (γ' : Dipath y z) (t : I) : (γ.trans γ') t =
   if h : (t : ℝ) ≤ 1/2 then
     γ ⟨2 * t, (unitInterval.mul_pos_mem_iff two_pos).2 ⟨t.2.1, h⟩⟩
@@ -2407,12 +2197,8 @@ dipath defined by `γ ∘ f`.
 def reparam (γ : Dipath x y) (f : D(I, I)) (hf₀ : f 0 = 0) (hf₁ : f 1 = 1) :
   Dipath x y :=
 (subparam γ f).cast (hf₀.symm ▸ γ.source.symm) (hf₁.symm ▸ γ.target.symm)
-@[simp]
-lemma coe_to_fun (γ : Dipath x y) (f : D(I, I)) (hf₀ : f 0 = 0) (hf₁ : f 1 = 1) :
+@[simp] lemma coe_to_fun (γ : Dipath x y) (f : D(I, I)) (hf₀ : f 0 = 0) (hf₁ : f 1 = 1) :
   ⇑(γ.reparam f hf₀ hf₁) = γ ∘ f := rfl
-@[simp]
-lemma reparam_id (γ : Dipath x y) : γ.reparam (DirectedMap.id I) rfl rfl = γ :=
-by { ext; rfl }
 lemma range_reparam (γ : Dipath x y) (f : D(I, I)) (hf₀ : f 0 = 0) (hf₁ : f 1 = 1) :
   range (γ.reparam f hf₀ hf₁) = range γ :=
 Path.range_reparam γ.toPath f.continuous_toFun hf₀ hf₁
@@ -2421,8 +2207,8 @@ variable {Y : Type*} [DirectedSpace Y] {x₀ x₁ : X} {y₀ y₁ : Y}
 def dipath_product (γ₁ : Dipath x₀ x₁) (γ₂ : Dipath y₀ y₁) : Dipath (x₀, y₀) (x₁, y₁) where
   toPath := {
     toContinuousMap := ⟨fun t => (γ₁ t, γ₂ t), γ₁.continuous.prodMk γ₂.continuous⟩
-    source' := by simp [γ₁.source', γ₂.source']
-    target' := by simp [γ₁.target', γ₂.target']
+    source' := by simp
+    target' := by simp
   }
   dipath_toPath := by
       constructor
@@ -2468,12 +2254,10 @@ instance : Category dTopCat where
 instance concreteCategory : ConcreteCategory dTopCat (fun X Y => DirectedMap X Y) where
   hom f := f
   ofHom f := f
-instance directedSpaceUnbundled (X : dTopCat) : DirectedSpace X := X.str
 instance (X Y : dTopCat) : CoeFun (X ⟶ Y) (fun _ => X → Y) where
   coe f := f
 /-- Construct a bundled directed space. -/
 def of (X : Type u) [DirectedSpace X] : dTopCat := ⟨X⟩
-instance directedSpace_coe (X : dTopCat) : DirectedSpace X := X.str
 @[reducible]
 instance directedSpace_forget (X : dTopCat) : DirectedSpace <| (forget dTopCat).obj X := X.str
 instance subspace_coe {X : dTopCat} : CoeTC (Set X) dTopCat := ⟨fun s => dTopCat.of s⟩
@@ -2565,13 +2349,13 @@ namespace SplitPath
 /-- The part of a path on the interval [0, T] -/
 def FirstPart (γ : Path x₀ x₁) (T : I) : Path x₀ (γ T) where
   toFun := fun t => γ ⟨(T : ℝ) * ↑t, unitInterval.mul_mem T.2 t.2⟩
-  source' := by simp [γ.source']
+  source' := by simp
   target' := by simp
 /-- The part of a path on the interval [T, 1] -/
 def SecondPart (γ : Path x₀ x₁) (T : I) : Path (γ T) x₁ where
   toFun := fun t => γ ⟨(σ T : ℝ) * ↑t + ↑T, interp_left_mem_I T t⟩
   source' := by simp
-  target' := by simp [γ.target']
+  target' := by simp
 /--
   The map needed to reparametrize the concatenation of the first and second part of a path
   back into the original pat
@@ -2780,8 +2564,8 @@ def stretch_up_path {t₀ t₁ : I} (γ : Dipath t₀ t₁) (ht₁ : ↑t₁ ≤
   ⟨2 * ↑t₁, double_mem_I ht₁⟩ where
     toContinuousMap := ⟨fun t => ⟨2 * (γ t : ℝ), double_mem_I_of_bounded t γ ht₁⟩,
       Continuous.subtype_mk (continuous_const.mul (continuous_subtype_val.comp γ.continuous)) _⟩
-    source' := by simp [γ.source']
-    target' := by simp [γ.target']
+    source' := by simp
+    target' := by simp
 lemma isDipath_stretch_up {t₀ t₁ : I} (γ : Dipath t₀ t₁) (ht₁ : ↑t₁ ≤ (2⁻¹ : ℝ)) :
   IsDipath (stretch_up_path γ ht₁) := by
   intros x y hxy
@@ -2803,8 +2587,8 @@ def stretch_down_path {t₀ t₁ : I} (γ : Dipath t₀ t₁) (ht₀ : (2⁻¹ :
     toContinuousMap := ⟨fun t => ⟨2 * (γ t : ℝ) - 1, double_sub_one_mem_I_of_bounded t γ ht₀⟩,
       Continuous.subtype_mk
         ((continuous_const.mul (continuous_subtype_val.comp γ.continuous)).sub continuous_const) _⟩
-    source' := by simp [γ.source']
-    target' := by simp [γ.target']
+    source' := by simp
+    target' := by simp
 lemma isDipath_stretch_down {t₀ t₁ : I} (γ : Dipath t₀ t₁) (ht₀ : (2⁻¹ : ℝ) ≤ ↑t₀) :
   IsDipath (stretch_down_path γ ht₀) := by
   intros x y hxy
@@ -2879,16 +2663,7 @@ Currying a dihomotopy to a map fron `I` to `D(X, Y)`.
 def curry (F : Dihomotopy f₀ f₁) : I → D(X, Y) := by
   intro t
   exact DirectedMap.prod_const_fst ↑F t
-@[simp]
-lemma curry_apply (F : Dihomotopy f₀ f₁) (t : I) (x : X) : F.curry t x = F (t, x) := rfl
-/--
-Currying a dihomotopy to a map fron `X` to `D(I, Y)`.
--/
-def curry_snd (F : Dihomotopy f₀ f₁) : X → D(I, Y) := by
-  intro x
-  exact DirectedMap.prod_const_snd ↑F x
-@[simp]
-lemma curry_snd_apply (F : Dihomotopy f₀ f₁) (x : X) (t : I) : F.curry_snd x t = F (t, x) := rfl
+@[simp] lemma curry_apply (F : Dihomotopy f₀ f₁) (t : I) (x : X) : F.curry t x = F (t, x) := rfl
 def hom_to_dihom (F : ContinuousMap.Homotopy (↑f₀ : C(X, Y)) ↑f₁) (HF : Directed (F : C(I × X, Y))) :
   Dihomotopy f₀ f₁ where
     toFun := F.toFun
@@ -2956,19 +2731,14 @@ end trans_aux₁
 section trans_aux₂
 variable {f₂ : D(X, Y)} (F : Dihomotopy f₀ f₁) (G: Dihomotopy f₁ f₂) (t : I) (x : X)
 lemma trans_apply_half_left (ht: t = half_I) : (dihom_to_hom F).trans (dihom_to_hom G) (t, x) = F (1, x) := by
-  rw [ContinuousMap.Homotopy.trans_apply]
-  have ht_coe : (t : ℝ) = 2⁻¹ := Subtype.coe_inj.mpr ht
-  have : (t : ℝ) ≤ 2⁻¹ := by linarith
-  simp [this]
-  simp [ht_coe]
+  subst t
+  simp [ContinuousMap.Homotopy.trans_apply, half_I]
 lemma trans_apply_half_right (ht: t = half_I) : (dihom_to_hom F).trans (dihom_to_hom G) (t, x) = G (0, x) := by
-  rw [ContinuousMap.Homotopy.trans_apply]
-  have ht_coe : (t : ℝ) = 2⁻¹ := Subtype.coe_inj.mpr ht
-  split_ifs <;> simp [ht_coe]
+  subst t
+  simp [ContinuousMap.Homotopy.trans_apply, half_I]
 lemma trans_apply_left (t : I) (x : X) (ht : (t : ℝ) ≤ 2⁻¹) :
   (dihom_to_hom F).trans (dihom_to_hom G) (t, x) = F (⟨2 * t, double_mem_I ht⟩, x) := by
-  rw [ContinuousMap.Homotopy.trans_apply]
-  simp [ht]
+  simp [ContinuousMap.Homotopy.trans_apply, ht]
   rfl
 lemma trans_apply_right (t : I) (x : X) (ht : 2⁻¹ ≤ (t : ℝ)) :
   (dihom_to_hom F).trans (dihom_to_hom G) (t, x) = G (⟨2 * t - 1, double_sub_one_mem_I ht⟩, x) := by
@@ -2993,12 +2763,8 @@ lemma trans_first_case {a₀ a₁ : I × X} {γ : Path a₀ a₁} (γ_dipath : I
   set γ₂ := γ_as_dipath.of_product_snd
   set p := Dipath.dipath_product (Dipath.stretch_up γ₁ ht₁) γ₂ with p_def
   set p' := p.map (↑F : D(I × X, Y)) with p'_def
-  have h : ∀ (t : I) (x : X), (ht : (t : ℝ) ≤ 2⁻¹) → Γ (t, x) = F (⟨2 * (t : ℝ), double_mem_I ht⟩, x) := by
-    intros t x ht
-    rw [Γ_def]
-    rw [ContinuousMap.Homotopy.trans_apply (dihom_to_hom F) (dihom_to_hom G) (t, x)]
-    simp [ht]
-    rfl
+  have h : ∀ (t : I) (x : X), (ht : (t : ℝ) ≤ 2⁻¹) → Γ (t, x) = F (⟨2 * (t : ℝ), double_mem_I ht⟩, x) :=
+    trans_apply_left F G
   have : (t₀ : ℝ) ≤ 2⁻¹ := le_trans (Subtype.coe_le_coe.mpr (directed_path_source_le_target γ_dipath.1)) ht₁
   convert (p'.cast (h t₀ x₀ this) (h t₁ x₁ ht₁)).dipath_toPath
   ext
@@ -3015,15 +2781,8 @@ lemma trans_second_case {a₀ a₁ : I × X} {γ : Path a₀ a₁} (γ_dipath : 
   set p := Dipath.dipath_product (Dipath.stretch_down γ₁ ht₀) γ₂ with p_def
   set p' := p.map (↑G : D(I × X, Y)) with p'_def
   have h : ∀ (t : I) (x : X), (ht : (2⁻¹ : ℝ) ≤ ↑t) →
-    Γ (t, x) = G (⟨2 * (t : ℝ) - 1, double_sub_one_mem_I ht⟩, x) := by
-    intros t x ht
-    rw [Γ_def]
-    rw [ContinuousMap.Homotopy.trans_apply (dihom_to_hom F) (dihom_to_hom G) (t, x)]
-    split_ifs with ht'
-    · simp at ht'
-      have : ↑t = (2⁻¹ : ℝ) := by linarith
-      simp [this]
-    · rfl
+    Γ (t, x) = G (⟨2 * (t : ℝ) - 1, double_sub_one_mem_I ht⟩, x) :=
+    trans_apply_right F G
   have : 2⁻¹ ≤ (t₁ : ℝ) := le_trans ht₀ (Subtype.coe_le_coe.mpr (directed_path_source_le_target γ₁.dipath_toPath))
   convert (p'.cast (h t₀ x₀ ht₀) (h t₁ x₁ this)).dipath_toPath
   ext
@@ -3077,46 +2836,12 @@ def trans {f₂ : D(X, Y)} (F : Dihomotopy f₀ f₁) (G: Dihomotopy f₁ f₂) 
     ext t
     have hr₁a₁ : r₁.toPath = a₁.toPath.map Γ.continuous_toFun := by
       ext x
-      have h₀ : ((a₁ x).1 : ℝ) ≤ 2⁻¹ := le_trans (directed_path_bounded a₁.dipath_toPath.1 _).2 hγT_le_half
-      have : (1/2 : ℝ) = 2⁻¹ := by norm_num
-      calc r₁ x
-        _ = F (⟨2 * ((a₁ x).1 : ℝ), double_mem_I h₀⟩, (a₁ x).2) := rfl
-        _ = if h : ((a₁ x).1 : ℝ) ≤ 1/2
-            then F (⟨2 * ((a₁ x).1 : ℝ), by { simp at h; exact double_mem_I h }⟩, (a₁ x).2)
-            else G (⟨2 * ((a₁ x).1 : ℝ) - 1, by { simp at h; exact double_sub_one_mem_I (le_of_lt h) }⟩, (a₁ x).2)
-                  := by { simp only [h₀, this]; simp }
-        _ = if h : ((a₁ x).1 : ℝ) ≤ 1/2
-            then Fₕ (⟨2 * ((a₁ x).1 : ℝ), by { simp at h; exact double_mem_I h }⟩, (a₁ x).2)
-            else Gₕ (⟨2 * ((a₁ x).1 : ℝ) - 1, by { simp at h; exact double_sub_one_mem_I (le_of_lt h) }⟩, (a₁ x).2)
-                  := rfl
-        _ = (Fₕ.trans Gₕ) (a₁ x) := (ContinuousMap.Homotopy.trans_apply Fₕ Gₕ (a₁ x)).symm
-        _ = Γ (a₁ x) := rfl
-        _ = (a₁.toPath.map Γ.continuous_toFun) x := rfl
+      exact (trans_apply_left F G _ _ (le_trans
+        (directed_path_bounded a₁.dipath_toPath.1 _).2 hγT_le_half)).symm
     have hr₂a₂ : r₂.toPath = a₂.toPath.map Γ.continuous_toFun := by
       ext x
-      have : 2⁻¹ ≤ ((a₂ x).1 : ℝ) := by
-        calc (2⁻¹ : ℝ)
-            _ = ↑(γ T).1 := Subtype.coe_inj.mpr hT_half.symm
-            _ ≤ ↑(a₂ x).1 := (directed_path_bounded a₂.dipath_toPath.1 _).1
-      calc r₂.toPath x
-        _ = G (⟨2 * ((a₂ x).1 : ℝ) - 1, double_sub_one_mem_I this⟩, (a₂ x).2) := rfl
-        _ = if h : ((a₂ x).1 : ℝ) ≤ 1/2
-                then F (⟨2 * ((a₂ x).1 : ℝ), by { simp at h; exact double_mem_I h }⟩, (a₂ x).2)
-                else G (⟨2 * ((a₂ x).1 : ℝ) - 1,  by { simp at h; exact double_sub_one_mem_I (le_of_lt h) }⟩, (a₂ x).2)
-              := by
-                split_ifs with h
-                · have : ((a₂ x).1 : ℝ) ≤ 2⁻¹ := by convert h using 1; norm_num
-                  have ha₂x : ((a₂ x).1 : ℝ) = 2⁻¹ := by linarith
-                  have : G (0, _) = F (1, _) := Eq.trans (G.map_zero_left (a₂ x).2) (F.map_one_left (a₂ x).2).symm
-                  convert this <;> rw [ha₂x] <;> norm_num
-                · rfl
-        _ = if h : ((a₂ x).1 : ℝ) ≤ 1/2
-                then Fₕ (⟨2 * ((a₂ x).1 : ℝ), by { simp at h; exact double_mem_I h }⟩, (a₂ x).2)
-                else Gₕ (⟨2 * ((a₂ x).1 : ℝ) - 1, by { simp at h; exact double_sub_one_mem_I (le_of_lt h) }⟩, (a₂ x).2)
-              := rfl
-        _ = (Fₕ.trans Gₕ) (a₂ x) := (ContinuousMap.Homotopy.trans_apply Fₕ Gₕ (a₂ x)).symm
-        _ = Γ (a₂ x) := rfl
-        _ = (a₂.toPath.map Γ.continuous_toFun) x := rfl
+      exact (trans_apply_right F G _ _ (le_trans (le_of_eq hγT_eq_half.symm)
+        (directed_path_bounded a₂.dipath_toPath.1 _).1)).symm
     calc (Γ ∘ γ) t
         _ = Γ (γ t) := rfl
         _ = Γ (((a₁.trans a₂).reparam φ φ₀ φ₁) t) := by { rw [←SplitDipath.first_trans_second_reparam_eq_self γ_as_dipath hT₀ hT₁]; rfl }
@@ -3131,10 +2856,8 @@ lemma trans_apply {f₀ f₁ f₂ : D(X, Y)} (F : Dihomotopy f₀ f₁) (G : Dih
   if h : (x.1 : ℝ) ≤ 1/2 then
     F (⟨2 * x.1, (unitInterval.mul_pos_mem_iff two_pos).2 ⟨x.1.2.1, h⟩⟩, x.2)
   else
-    G (⟨2 * x.1 - 1, unitInterval.two_mul_sub_one_mem_iff.2 ⟨(not_le.1 h).le, x.1.2.2⟩⟩, x.2) := by
-  have : ((dihom_to_hom F).trans (dihom_to_hom G)) x = (F.trans G) x := rfl
-  rw [←this]
-  exact ContinuousMap.Homotopy.trans_apply _ _ x
+    G (⟨2 * x.1 - 1, unitInterval.two_mul_sub_one_mem_iff.2 ⟨(not_le.1 h).le, x.1.2.2⟩⟩, x.2) :=
+  ContinuousMap.Homotopy.trans_apply _ _ x
 /--
 Casting a `Dihomotopy f₀ f₁` to a `Dihomotopy g₀ g₁` where `f₀ = g₀` and `f₁ = g₁`.
 -/
@@ -3145,19 +2868,7 @@ def cast {f₀ f₁ g₀ g₁ : D(X, Y)} (F : Dihomotopy f₀ f₁) (h₀ : f₀
     directed_toFun := F.directed_toFun
     map_zero_left := by simp [←h₀]
     map_one_left := by simp [←h₁]
-/--
-If we have a `Dihomotopy f₀ f₁` and a `Dihomotopy g₀ g₁`, then we can compose them and get a
-`Dihomotopy (g₀.comp f₀) (g₁.comp f₁)`.
--/
-@[simps!]
-def hcomp {f₀ f₁ : D(X, Y)} {g₀ g₁ : D(Y, Z)} (F : Dihomotopy f₀ f₁) (G : Dihomotopy g₀ g₁) :
-  Dihomotopy (g₀.comp f₀) (g₁.comp f₁) := by
-  set Fₕ := dihom_to_hom F
-  set Gₕ := dihom_to_hom G
-  exact hom_to_dihom (Gₕ.comp Fₕ) (G.comp (directed_fst.prod_map_mk (F : D(I × X, Y)))).directed_toFun
 end Dihomotopy
-namespace Dihomotopic
-end Dihomotopic
 /--
 The type of dihomotopies between `f₀ f₁ : D(X, Y)`, where the intermediate maps satisfy the predicate
 `P : D(X, Y) → Prop`
@@ -3179,26 +2890,15 @@ instance : DihomotopyLike (DihomotopyWith f₀ f₁ P) f₀ f₁ where
   map_directed F := F.directed_toFun
   map_zero_left F := F.map_zero_left
   map_one_left F := F.map_one_left
-theorem coeFn_injective : @Function.Injective (DihomotopyWith f₀ f₁ P) (I × X → Y) (⇑) :=
-  DFunLike.coe_injective
-@[ext]
-lemma ext {F G : DihomotopyWith f₀ f₁ P} (h : ∀ x, F x = G x) : F = G :=
-coeFn_injective $ funext h
 /-- See Note [custom simps projection]. We need to specify this projection explicitly in this case,
 because it is a composition of multiple projections. -/
 def Simps.apply (F : DihomotopyWith f₀ f₁ P) : I × X → Y := F
 initialize_simps_projections DihomotopyWith (toDihomotopy_toDirectedMap_toContinuousMap_toFun → apply,
     -toDihomotopy_toDirectedMap_toContinuousMap)
-@[continuity]
-protected lemma continuous (F : DihomotopyWith f₀ f₁ P) : Continuous F := F.continuous_toFun
 @[simp]
 lemma apply_zero (F : DihomotopyWith f₀ f₁ P) (x : X) : F (0, x) = f₀ x := F.map_zero_left x
 @[simp]
 lemma apply_one (F : DihomotopyWith f₀ f₁ P) (x : X) : F (1, x) = f₁ x := F.map_one_left x
-@[simp]
-lemma coe_to_continuous_map (F : DihomotopyWith f₀ f₁ P) : ⇑F.toContinuousMap = F := rfl
-@[simp]
-lemma coe_to_dihomotopy (F : DihomotopyWith f₀ f₁ P) : ⇑F.toDihomotopy = F := rfl
 lemma prop (F : DihomotopyWith f₀ f₁ P) (t : I) : P (F.toDihomotopy.curry t) := F.prop' t
 end
 variable {P : D(X, Y) → Prop}
@@ -3217,16 +2917,6 @@ def refl (f : D(X, Y)) (hf : P f) : DihomotopyWith f f P := {
 }
 instance : Inhabited (DihomotopyWith (DirectedMap.id X) (DirectedMap.id X) (fun _ => True)) :=
   ⟨DihomotopyWith.refl _ trivial⟩
-/--
-Casting a `DihomotopyWith f₀ f₁ P` to a `DihomotopyWith g₀ g₁ P` where `f₀ = g₀` and `f₁ = g₁`.
--/
-@[simps!]
-def cast {f₀ f₁ g₀ g₁ : D(X, Y)} (F : DihomotopyWith f₀ f₁ P) (h₀ : f₀ = g₀) (h₁ : f₁ = g₁) :
-  DihomotopyWith g₀ g₁ P :=
-{
-  F.toDihomotopy.cast h₀ h₁ with
-  prop' := F.prop,
-}
 end DihomotopyWith
 /--
 A `DihomotopyRel f₀ f₁ S` is a dihomotopy between `f₀` and `f₁` which is fixed on the points in `S`.
@@ -3238,10 +2928,6 @@ section
 variable {f₀ f₁ : D(X, Y)} {S : Set X}
 lemma eq_fst (F : DihomotopyRel f₀ f₁ S) (t : I) {x : X} (hx : x ∈ S) : F (t, x) = f₀ x :=
   F.prop t x hx
-lemma eq_snd (F : DihomotopyRel f₀ f₁ S) (t : I) {x : X} (hx : x ∈ S) : F (t, x) = f₁ x := by
-  rw [F.eq_fst t hx, ← F.eq_fst 1 hx, F.apply_one]
-lemma fst_eq_snd (F : DihomotopyRel f₀ f₁ S) {x : X} (hx : x ∈ S) : f₀ x = f₁ x :=
-  F.eq_fst 0 hx ▸ F.eq_snd 0 hx
 end
 variable {f₀ f₁ f₂ : D(X, Y)} {S : Set X}
 /--
@@ -3252,39 +2938,6 @@ filled in.
 @[simps!]
 def refl (f : D(X, Y)) (S : Set X) : DihomotopyRel f f S :=
 DihomotopyWith.refl f (fun _ _ => rfl)
-/--
-Given `DihomotopyRel f₀ f₁ S` and `DihomotopyRel f₁ f₂ S`, we can define a `DihomotopyRel f₀ f₂ S`
-by putting the first dihomotopy on `[0, 1/2]` and the second on `[1/2, 1]`.
--/
-def trans (F : DihomotopyRel f₀ f₁ S) (G : DihomotopyRel f₁ f₂ S) : DihomotopyRel f₀ f₂ S :=
-{
-  Dihomotopy.trans F.toDihomotopy G.toDihomotopy with
-  prop' := fun t => by
-    intros x hx
-    simp only [Dihomotopy.trans]
-    change (⟨⟨fun _ => ite ((t : ℝ) ≤ _) _ _, _⟩, _⟩ : D(X, Y)) x = f₀ x
-    split_ifs with h
-    · have : ((t : ℝ) ≤ 2⁻¹) := by { simp at h; exact h }
-      set t' : I := ⟨2 * (t : ℝ), double_mem_I this⟩
-      convert F.eq_fst t' hx
-      change ((F.toDihomotopy.dihom_to_hom.extend) (2 * t : ℝ)) x = F.toDihomotopy.dihom_to_hom (⟨2 * (t : ℝ), _⟩, x)
-      rw [←ContinuousMap.Homotopy.extend_apply_coe F.toDihomotopy.dihom_to_hom _ x]
-    · have : (2⁻¹ ≤ (t : ℝ)) := by { simp at h; linarith }
-      set t' : I := ⟨2 * (t : ℝ) - 1, double_sub_one_mem_I this⟩
-      convert (G.eq_fst t' hx).trans (F.fst_eq_snd hx).symm
-      change ((G.toDihomotopy.dihom_to_hom.extend) (2 * (t : ℝ) - 1)) x = G.toDihomotopy.dihom_to_hom (⟨2 * (t : ℝ) - 1, _⟩, x)
-      rw [←ContinuousMap.Homotopy.extend_apply_coe G.toDihomotopy.dihom_to_hom _ x]
-}
-/--
-Casting a `DihomotopyRel f₀ f₁ S` to a `DihomotopyRel g₀ g₁ S` where `f₀ = g₀` and `f₁ = g₁`.
--/
-@[simps!]
-def cast {f₀ f₁ g₀ g₁ : D(X, Y)} (F : DihomotopyRel f₀ f₁ S) (h₀ : f₀ = g₀) (h₁ : f₁ = g₁) :
-  DihomotopyRel g₀ g₁ S :=
-{
-  Dihomotopy.cast F.toDihomotopy h₀ h₁ with
-  prop' := fun t x hx => by { simpa [←h₀, ←h₁] using F.prop t x hx }
-}
 end DihomotopyRel
 namespace DihomotopicRel
 variable {S : Set X}
@@ -3472,18 +3125,13 @@ def eval (F : Dihomotopy p₀ p₁) (t : I) : Dipath x y where
   dipath_toPath := DirectedUnitInterval.isDipath_of_isDipath_comp_id
     $ (F.toDihomotopy.curry t).directed_toFun DirectedUnitInterval.IdentityPath
       DirectedUnitInterval.isDipath_identityPath
-@[simp]
-lemma coe_eval (F : Dihomotopy p₀ p₁) (t : I) :
-  (⇑(F.eval t) : I → X)  = ⇑(F.toDihomotopy.curry t) := rfl
-@[simp]
-lemma eval_zero (F : Dihomotopy p₀ p₁) : F.eval 0 = p₀ := by
+@[simp] lemma coe_eval (F : Dihomotopy p₀ p₁) (t : I) :
+  (⇑(F.eval t) : I → X) = ⇑(F.toDihomotopy.curry t) := rfl
+@[simp] lemma eval_zero (F : Dihomotopy p₀ p₁) : F.eval 0 = p₀ := by
   ext t
-  change F.toDihomotopy (0, t) = p₀ t
   exact F.toDihomotopy.apply_zero t
-@[simp]
-lemma eval_one (F : Dihomotopy p₀ p₁) : F.eval 1 = p₁ := by
+@[simp] lemma eval_one (F : Dihomotopy p₀ p₁) : F.eval 1 = p₁ := by
   ext t
-  change F.toDihomotopy (1, t) = p₁ t
   exact F.toDihomotopy.apply_one t
 end
 section
@@ -3494,19 +3142,6 @@ Given a dipath `p`, we can define a `Dihomotopy p p` by `F (t, x) = p x`
 @[simps!]
 def refl (p : Dipath x y) : Dihomotopy p p :=
   DirectedMap.DihomotopyRel.refl p.toDirectedMap {0, 1}
-/--
-Given `Dihomotopy p₀ p₁` and `Dihomotopy p₁ p₂`, we can define a `Dihomotopy p₀ p₂` by putting the first
-dihomotopy on `[0, 1/2]` and the second on `[1/2, 1]`.
--/
-def trans (F : Dihomotopy p₀ p₁) (G : Dihomotopy p₁ p₂) : Dihomotopy p₀ p₂ :=
-  DirectedMap.DihomotopyRel.trans F G
-/--
-Casting a `Dihomotopy p₀ p₁` to a `Dihomotopy q₀ q₁` where `p₀ = q₀` and `p₁ = q₁`.
--/
--- @[simps]
-def cast {p₀ p₁ q₀ q₁ : Dipath x y} (F : Dihomotopy p₀ p₁) (h₀ : p₀ = q₀) (h₁ : p₁ = q₁) :
-    Dihomotopy q₀ q₁ :=
-  DirectedMap.DihomotopyRel.cast F (congr_arg _ h₀) (congr_arg _ h₁)
 end
 section
 variable {p₀ q₀ : Dipath x y} {p₁ q₁ : Dipath y z}
@@ -3547,11 +3182,8 @@ lemma hcomp_first_case (F : Dihomotopy p₀ q₀) (G : Dihomotopy p₁ q₁) {a�
   set γ₂ := γ_as_dipath.of_product_snd
   set p := Dipath.dipath_product γ₁ (Dipath.stretch_up γ₂ ht₁)
   set p' := p.map (F.toDirectedMap)
-  have h : ∀ (s t : I), (h : (t : ℝ) ≤ 2⁻¹) → Γ (s, t) = F (s, ⟨2 * (t : ℝ), double_mem_I h⟩) := by
-    intros s t ht
-    rw [Path.Homotopy.hcomp_apply (dihom_to_hom F) (dihom_to_hom G) (s, t)]
-    simp [ht]
-    rfl
+  have h : ∀ (s t : I), (h : (t : ℝ) ≤ 2⁻¹) → Γ (s, t) = F (s, ⟨2 * (t : ℝ), double_mem_I h⟩) :=
+    hcomp_apply_left F G
   have ht₀ : (t₀ : ℝ) ≤ 2⁻¹ :=
     le_trans (Subtype.coe_le_coe.mpr (directed_path_source_le_target γ_dipath.2)) ht₁
   convert (p'.cast (h s₀ t₀ ht₀) (h s₁ t₁ ht₁)).dipath_toPath
@@ -3570,14 +3202,8 @@ lemma hcomp_second_case (F : Dihomotopy p₀ q₀) (G : Dihomotopy p₁ q₁) {a
   set p := Dipath.dipath_product γ₁ (Dipath.stretch_down γ₂ ht₀)
   set p' := p.map G.toDirectedMap
   have h : ∀ (s t : I), (h : (2⁻¹ : ℝ) ≤ ↑t) →
-    Γ (s, t) = G (s, ⟨2 * (t : ℝ) - 1, double_sub_one_mem_I h⟩) := by
-    intros s t ht
-    rw [Path.Homotopy.hcomp_apply (dihom_to_hom F) (dihom_to_hom G) (s, t)]
-    split_ifs with ht'
-    · simp at ht'
-      have : ↑t = (2⁻¹ : ℝ) := by linarith
-      simp [this]
-    · rfl
+    Γ (s, t) = G (s, ⟨2 * (t : ℝ) - 1, double_sub_one_mem_I h⟩) :=
+    hcomp_apply_right F G
   have ht₁ : 2⁻¹ ≤ (t₁ : ℝ) := le_trans ht₀ (Subtype.coe_le_coe.mpr (directed_path_source_le_target γ_dipath.2))
   convert (p'.cast (h s₀ t₀ ht₀) (h s₁ t₁ ht₁)).dipath_toPath
   ext x
@@ -3628,53 +3254,12 @@ def hcomp (F : Dihomotopy p₀ q₀) (G : Dihomotopy p₁ q₁) :
     ext t
     have hr₁a₁ : r₁.toPath = a₁.toPath.map Γ.continuous_toFun := by
       ext x
-      have this : ((a₁ x).2 : ℝ) ≤ 2⁻¹ := le_trans (directed_path_bounded a₁.dipath_toPath.2 _).2 hγT_le_half
-      calc r₁ x
-        _ = F ((a₁ x).1, ⟨2 * ((a₁ x).2 : ℝ), double_mem_I this⟩)
-              := rfl
-        _ = if h : ((a₁ x).2 : ℝ) ≤ 1/2
-                then F ((a₁ x).1, ⟨2 * ((a₁ x).2 : ℝ), double_mem_I this⟩)
-                else G ((a₁ x).1, ⟨2 * ((a₁ x).2 : ℝ) - 1, by { apply double_sub_one_mem_I (le_of_lt _); convert h; norm_num }⟩)
-              := by apply Eq.symm; apply dif_pos; convert this using 1; norm_num
-        _ = if h : ((a₁ x).2 : ℝ) ≤ 1/2
-                then Fₕ.eval (a₁ x).1 ⟨2 * ((a₁ x).2 : ℝ), double_mem_I this⟩
-                else Gₕ.eval (a₁ x).1 ⟨2 * ((a₁ x).2 : ℝ) - 1, by { apply double_sub_one_mem_I (le_of_lt _); convert h; norm_num }⟩
-              := rfl
-        _ = (Fₕ.hcomp Gₕ) (a₁ x)
-              := (Path.Homotopy.hcomp_apply Fₕ Gₕ (a₁ x)).symm
-        _ = Γ (a₁ x)
-              := rfl
-        _ = (a₁.toPath.map Γ.continuous_toFun) x
-              := rfl
+      exact (hcomp_apply_left F G _ _ (le_trans
+        (directed_path_bounded a₁.dipath_toPath.2 _).2 hγT_le_half)).symm
     have hr₂a₂ : r₂.toPath = a₂.toPath.map Γ.continuous_toFun := by
       ext x
-      have : 2⁻¹ ≤ ((a₂ x).2 : ℝ) := by
-        calc (2⁻¹ : ℝ)
-          _ = ↑(γ T).2   := Subtype.coe_inj.mpr hT_half.symm
-          _ ≤  ↑(a₂ x).2 := (directed_path_bounded a₂.dipath_toPath.2 _).1
-      calc r₂.toPath x
-        _ = G ((a₂ x).1, ⟨2 * ((a₂ x).2 : ℝ) - 1, double_sub_one_mem_I this⟩)
-              := rfl
-        _ = if h : ((a₂ x).2 : ℝ) ≤ 1/2
-                then F ((a₂ x).1, ⟨2 * ((a₂ x).2 : ℝ), by { apply double_mem_I; convert h using 1; norm_num }⟩)
-                else G ((a₂ x).1, ⟨2 * ((a₂ x).2 : ℝ) - 1,  by { apply double_sub_one_mem_I (le_of_lt _); convert h using 1; norm_num }⟩)
-              := by
-                split_ifs with h
-                · have : ((a₂ x).2 : ℝ) ≤ 2⁻¹ := by convert h using 1; norm_num
-                  have ha₂x : ((a₂ x).2 : ℝ) = 2⁻¹ := by linarith
-                  have : G (_, 0) = F (_, 1) := Eq.trans (G.source (a₂ x).1) (F.target (a₂ x).1).symm
-                  convert this <;> rw [ha₂x] <;> norm_num
-                · rfl
-        _ = if h : ((a₂ x).2 : ℝ) ≤ 1/2
-                then Fₕ.eval (a₂ x).1 ⟨2 * ((a₂ x).2 : ℝ), by { apply double_mem_I; convert h using 1; norm_num }⟩
-                else Gₕ.eval (a₂ x).1 ⟨2 * ((a₂ x).2 : ℝ) - 1, by { apply double_sub_one_mem_I (le_of_lt _); convert h using 1; norm_num }⟩
-              := rfl
-        _ = (Fₕ.hcomp Gₕ) (a₂ x)
-              := (Path.Homotopy.hcomp_apply Fₕ Gₕ (a₂ x)).symm
-        _ = Γ (a₂ x)
-              := rfl
-        _ = (a₂.toPath.map Γ.continuous_toFun) x
-              := rfl
+      exact (hcomp_apply_right F G _ _ (le_trans (le_of_eq hγT_eq_half.symm)
+        (directed_path_bounded a₂.dipath_toPath.2 _).1)).symm
     calc (Γ ∘ γ) t
       _ = Γ (γ t)
             := rfl
@@ -3826,7 +3411,7 @@ def PreDihomotopic : Prop := Nonempty (Dihomotopy p₀ p₁)
 def Dihomotopic : Prop := Relation.EqvGen PreDihomotopic p₀ p₁
 end
 namespace Dihomotopic
-lemma equivalence : Equivalence (@Dihomotopic X _ x y) := by apply Relation.EqvGen.is_equivalence
+lemma equivalence : Equivalence (@Dihomotopic X _ x y) := Relation.EqvGen.is_equivalence _
 /-- If `p` is dihomotopic with `q`, then `f ∘ p` is dihomotopic with `f ∘ q` for any directed map `f` -/
 lemma map {p q : Dipath x y} (h : p.Dihomotopic q) (f : D(X, Y)) :
     Dihomotopic (p.map f) (q.map f) :=
@@ -3859,80 +3444,7 @@ then `p₀.trans q₀` is dihomotopic with `p₁.trans q₁`.
 -/
 lemma hcomp {p₀ p₁ : Dipath x y} {q₀ q₁ : Dipath y z} (hp : p₀.Dihomotopic p₁)
     (hq : q₀.Dihomotopic q₁) : (p₀.trans q₀).Dihomotopic (p₁.trans q₁) :=
-  Relation.EqvGen.rec
-    (fun p₀ p₁ hp₀_p₁ => by
-      exact Relation.EqvGen.rec
-          (fun _ _ hq₀_q₁ => Relation.EqvGen.rel _ _ ⟨hp₀_p₁.some.hcomp hq₀_q₁.some⟩)
-          (fun q => Relation.EqvGen.rel _ _ ⟨hp₀_p₁.some.hcomp (Dihomotopy.refl q)⟩)
-          (fun q₀ q₁ _ hp₀q₀_p₁q₁ => by
-              have hp₀q₁_p₁q₂ := hcomp_aid_left q₁ (Relation.EqvGen.rel _ _ hp₀_p₁)
-              have hp₁q₁_p₀q₀ := Relation.EqvGen.symm _ _ hp₀q₀_p₁q₁
-              have hp₀q₀_p₁q₀ := hcomp_aid_left q₀ (Relation.EqvGen.rel _ _ hp₀_p₁)
-              exact Relation.EqvGen.trans _ _ _ (Relation.EqvGen.trans _ _ _ hp₀q₁_p₁q₂ hp₁q₁_p₀q₀) hp₀q₀_p₁q₀
-          )
-          (fun q₀ q₁ q₂ hq₀_q₁ hq₁_q₂ _ _ => by
-              have hp₀q₀_p₀q₁ := hcomp_aid_right p₀ hq₀_q₁
-              have hp₀q₁_p₀q₂ := hcomp_aid_right p₀ hq₁_q₂
-              have hp₀q₂_p₁q₂ := hcomp_aid_left q₂ (Relation.EqvGen.rel _ _ hp₀_p₁)
-              exact Relation.EqvGen.trans _ _ _ (Relation.EqvGen.trans _ _ _ hp₀q₀_p₀q₁ hp₀q₁_p₀q₂) hp₀q₂_p₁q₂
-          )
-        hq
-    )
-    (fun p => by
-      exact Relation.EqvGen.rec
-          (fun _ _ h => hcomp_aid_right p (Relation.EqvGen.rel _ _ h))
-          (fun q => Relation.EqvGen.refl (p.trans q))
-          (fun _ _ _ h => Relation.EqvGen.symm _ _ h)
-          (fun _ _ _ _ _ h₁ h₂ => Relation.EqvGen.trans _ _ _ h₁ h₂)
-        hq
-    )
-    (fun p₀ p₁ hp₀_p₁ _ => by
-      have hp₁_p₀ := Relation.EqvGen.symm _ _ hp₀_p₁
-      exact Relation.EqvGen.rec
-          (fun q₀ q₁ hq₀_q₁ => by
-            have hp₁q₀_p₀q₀ := hcomp_aid_left q₀ hp₁_p₀
-            have hp₀q₀_p₀q₁ := hcomp_aid_right p₀ (Relation.EqvGen.rel _ _ hq₀_q₁)
-            exact Relation.EqvGen.trans _ _ _ hp₁q₀_p₀q₀ hp₀q₀_p₀q₁
-          )
-          (fun q => hcomp_aid_left q hp₁_p₀)
-          (fun q₀ q₁ hq₀_q₁ _ => by
-            have hp₁q₁_p₁q₀ := hcomp_aid_right p₁ (Relation.EqvGen.symm _ _ hq₀_q₁)
-            have hp₁q₀_p₀q₀ := hcomp_aid_left q₀ (Relation.EqvGen.symm _ _ hp₀_p₁)
-            exact Relation.EqvGen.trans _ _ _ hp₁q₁_p₁q₀ hp₁q₀_p₀q₀
-          )
-          (fun q₀ q₁ q₂ _ _ hp₁q₀_p₀q₁ hp₁q₁_p₀q₂ => by
-            have hp₀q₁_p₁q₁ := hcomp_aid_left q₁ hp₀_p₁
-            exact Relation.EqvGen.trans _ _ _ (Relation.EqvGen.trans _ _ _ hp₁q₀_p₀q₁ hp₀q₁_p₁q₁) hp₁q₁_p₀q₂
-          )
-        hq
-    )
-    (fun p₀ p₁ p₂ hp₀_p₁ hp₁_p₂ _ _ => by
-      exact Relation.EqvGen.rec
-          (fun q₀ q₁ hq₀_q₁ => by
-            have hp₀q₁_p₁q₀ := hcomp_aid_left q₀ hp₀_p₁
-            have hp₁q₀_p₂q₀ := hcomp_aid_left q₀ hp₁_p₂
-            have hp₂q₀_p₂q₁ := hcomp_aid_right p₂ (Relation.EqvGen.rel _ _ hq₀_q₁)
-            exact Relation.EqvGen.trans _ _ _ (Relation.EqvGen.trans _ _ _ hp₀q₁_p₁q₀ hp₁q₀_p₂q₀) hp₂q₀_p₂q₁
-          )
-          (fun q => by
-            have hp₀q_p₁q := hcomp_aid_left q hp₀_p₁
-            have hp₁q_p₂q := hcomp_aid_left q hp₁_p₂
-            exact Relation.EqvGen.trans _ _ _ hp₀q_p₁q hp₁q_p₂q
-          )
-          (fun q₀ q₁ hq₀_q₁ hp₀q₀_p₂q₁ => by
-            have hq₁_q₀ := Relation.EqvGen.symm _ _ hq₀_q₁
-            have hp₀q₁_p₀q₀ := hcomp_aid_right p₀ hq₁_q₀
-            have hp₂q₁_p₂q₀ := hcomp_aid_right p₂ hq₁_q₀
-            exact Relation.EqvGen.trans _ _ _ (Relation.EqvGen.trans _ _ _ hp₀q₁_p₀q₀ hp₀q₀_p₂q₁) hp₂q₁_p₂q₀
-          )
-          (fun q₀ q₁ q₂ _ _ hp₀q₀_p₂q₁ hp₀q₁_p₂q₂ => by
-            have hp₂_p₀ := Relation.EqvGen.symm _ _ (Relation.EqvGen.trans _ _ _ hp₀_p₁ hp₁_p₂)
-            have hp₂q₂_p₀q₁ := hcomp_aid_left q₁ hp₂_p₀
-            exact Relation.EqvGen.trans _ _ _ (Relation.EqvGen.trans _ _ _ hp₀q₀_p₂q₁ hp₂q₂_p₀q₁) hp₀q₁_p₂q₂
-          )
-        hq
-    )
-  hp
+  Relation.EqvGen.trans _ _ _ (hcomp_aid_left q₀ hp) (hcomp_aid_right p₁ hq)
 /--
 If `p` is a dipath, then it is dihomotopic with any monotonic subparametrization.
 -/
@@ -4060,33 +3572,6 @@ end Dipath
 structure FundamentalCategory (X : Type u) where
   as : X
 namespace FundamentalCategory
-@[simps]
-def equiv (X : Type*) : FundamentalCategory X ≃ X where
-  toFun x := x.as
-  invFun x := .mk x
-  left_inv _ := rfl
-  right_inv _ := rfl
-@[simp]
-lemma isEmpty_iff (X : Type*) :
-    IsEmpty (FundamentalCategory X) ↔ IsEmpty X :=
-  equiv _ |>.isEmpty_congr
-instance (X : Type*) [IsEmpty X] :
-    IsEmpty (FundamentalCategory X) :=
-  equiv _ |>.isEmpty
-@[simp]
-lemma nonempty_iff (X : Type*) :
-    Nonempty (FundamentalCategory X) ↔ Nonempty X :=
-  equiv _ |>.nonempty_congr
-instance (X : Type*) [Nonempty X] :
-    Nonempty (FundamentalCategory X) :=
-  equiv _ |>.nonempty
-@[simp]
-lemma subsingleton_iff (X : Type*) :
-    Subsingleton (FundamentalCategory X) ↔ Subsingleton X :=
-  equiv _ |>.subsingleton_congr
-instance (X : Type*) [Subsingleton X] :
-    Subsingleton (FundamentalCategory X) :=
-  equiv _ |>.subsingleton
 instance {X : Type u} [Inhabited X] : Inhabited (FundamentalCategory X) :=
   ⟨⟨default⟩⟩
 attribute [local instance] Dipath.Dihomotopic.setoid
@@ -4145,29 +3630,10 @@ def fundamentalCategoryFunctor : dTopCat ⥤ CategoryTheory.Cat where
         congr
         ext x y p
         refine' Quotient.inductionOn p fun q => _
-        simp only [Quotient.map_mk, Dipath.map_map, Quotient.eq']
         rfl
 scoped notation "dπ" => FundamentalCategory.fundamentalCategoryFunctor
 scoped notation "dπₓ" => FundamentalCategory.fundamentalCategoryFunctor.obj
 scoped notation "dπₘ" => FundamentalCategory.fundamentalCategoryFunctor.map
-/-- Help the typechecker by converting a point in the fundamental category back to a point in
-the underlying directed space. -/
-@[reducible]
-def toTop {X : dTopCat} (x : dπₓ X) : X := x.as
-/-- Help the typechecker by converting a point in a directed space to a
-point in the fundamental category of that space -/
-@[reducible]
-def fromTop {X : dTopCat} (x : X) : dπₓ X := ⟨x⟩
-/-- Help the typechecker by converting an arrow in the fundamental category of
-a directed space back to a directed path in that space (i.e., `Dipath.Dihomotopic.Quotient`). -/
-@[reducible]
-def toPath {X : dTopCat} {x₀ x₁ : dπₓ X} (p : x₀ ⟶ x₁) :
-  Dipath.Dihomotopic.Quotient (X := X) x₀.as x₁.as := p
-/-- Help the typechecker by convering a directed path in a directed space to an arrow in the
-fundamental category of that space. -/
-@[reducible]
-def fromPath {X : dTopCat} {x₀ x₁ : X} (p : Dipath.Dihomotopic.Quotient x₀ x₁) :
-  FundamentalCategory.mk x₀ ⟶ FundamentalCategory.mk x₁ := p
 end FundamentalCategory
 end
 end Lean4_fundamental_category
@@ -4453,20 +3919,14 @@ lemma secondPart_range_interval (γ : Dipath x₀ x₁) {i n : ℕ} (hi : i < n)
       (Fraction hn (le_of_lt hi)) (Fraction hn (Nat.succ_le_of_lt hi)) =
     γ ''  Icc (Fraction (Nat.succ_pos n) (show i+1 ≤ n+1 by exact (le_of_lt (Nat.succ_lt_succ hi))))
               (Fraction (Nat.succ_pos n) (show i+2 ≤ n+1 by exact Nat.succ_lt_succ (Nat.succ_le_of_lt hi))) := by
+  have hn0 : (n : ℝ) ≠ 0 := ne_of_gt (Nat.cast_pos.mpr hn)
+  have hn1 : (n : ℝ) + 1 ≠ 0 := ne_of_gt (add_pos (Nat.cast_pos.mpr hn) one_pos)
   apply interval_cast (secondPart_image γ (Fraction.ofPos (Nat.succ_pos n)) _ _
     (le_of_lt (Fraction.lt_frac_succ hi)))
-  · apply Subtype.ext
+  all_goals
+    apply Subtype.ext
     simp only [Fraction.Fraction_coe, unitInterval.coe_symm_eq, Nat.cast_succ,
       Nat.cast_zero, Nat.cast_one]
-    have hn0 : (n : ℝ) ≠ 0 := ne_of_gt (Nat.cast_pos.mpr hn)
-    have hn1 : (n : ℝ) + 1 ≠ 0 := ne_of_gt (add_pos (Nat.cast_pos.mpr hn) one_pos)
-    field_simp [hn0, hn1]
-    ring
-  · apply Subtype.ext
-    simp only [Fraction.Fraction_coe, unitInterval.coe_symm_eq, Nat.cast_succ,
-      Nat.cast_zero, Nat.cast_one]
-    have hn0 : (n : ℝ) ≠ 0 := ne_of_gt (Nat.cast_pos.mpr hn)
-    have hn1 : (n : ℝ) + 1 ≠ 0 := ne_of_gt (add_pos (Nat.cast_pos.mpr hn) one_pos)
     field_simp [hn0, hn1]
     ring
 /--
@@ -4508,28 +3968,18 @@ lemma secondPart_range_partial_interval (γ : Dipath x₀ x₁) {i d n : ℕ} (h
         exact lt_tsub_iff_right.mp this
       )) -- (i+d+2)/(n+1)
     := by
+  have hdn : d < n := Nat.lt_of_succ_lt_succ hd
+  have hdlt : (↑d : ℝ) < ↑n := Nat.cast_lt.mpr hdn
+  have hnd : (↑n - ↑d : ℝ) ≠ 0 := ne_of_gt (sub_pos.mpr hdlt)
+  have hnPos : 0 < n := lt_of_le_of_lt (Nat.zero_le d) hdn
+  have hn1 : (↑n : ℝ) + 1 ≠ 0 := ne_of_gt (add_pos (Nat.cast_pos.mpr hnPos) one_pos)
   apply interval_cast (secondPart_image γ (Fraction (Nat.succ_pos n) (le_of_lt hd)) _ _
     (le_of_lt (Fraction.lt_frac_succ hi)))
-  · apply Subtype.ext
+  all_goals
+    apply Subtype.ext
     simp only [Fraction.Fraction_coe, Fraction.ofPos_coe, unitInterval.coe_symm_eq,
       Nat.cast_add, Nat.cast_succ]
-    have : d < n := Nat.lt_of_succ_lt_succ hd
-    rw [Nat.cast_sub (le_of_lt this)]
-    have hdlt : (↑d : ℝ) < ↑n := Nat.cast_lt.mpr this
-    have hnd : (↑n - ↑d : ℝ) ≠ 0 := ne_of_gt (sub_pos.mpr hdlt)
-    have hnPos : 0 < n := lt_of_le_of_lt (Nat.zero_le d) (Nat.lt_of_succ_lt_succ hd)
-    have hn1 : (↑n : ℝ) + 1 ≠ 0 := ne_of_gt (add_pos (Nat.cast_pos.mpr hnPos) one_pos)
-    field_simp [hnd, hn1]
-    ring
-  · apply Subtype.ext
-    simp only [Fraction.Fraction_coe, Fraction.ofPos_coe, unitInterval.coe_symm_eq,
-      Nat.cast_add, Nat.cast_succ]
-    have : d < n := Nat.lt_of_succ_lt_succ hd
-    rw [Nat.cast_sub (le_of_lt this)]
-    have hdlt : (↑d : ℝ) < ↑n := Nat.cast_lt.mpr this
-    have hnd : (↑n - ↑d : ℝ) ≠ 0 := ne_of_gt (sub_pos.mpr hdlt)
-    have hnPos : 0 < n := lt_of_le_of_lt (Nat.zero_le d) (Nat.lt_of_succ_lt_succ hd)
-    have hn1 : (↑n : ℝ) + 1 ≠ 0 := ne_of_gt (add_pos (Nat.cast_pos.mpr hnPos) one_pos)
+    rw [Nat.cast_sub (le_of_lt hdn)]
     field_simp [hnd, hn1]
     ring
 /--
@@ -4721,11 +4171,7 @@ lemma h₃ (n : ℕ) : (n + 1 + 1 : ℝ) ≠ 0 := by linarith [h₂ n]
 lemma h₄ (n : ℕ) : (↑n + ↑n + 1 + 1 + 1 + 1 : ℝ) > 0 := by linarith [h₂ n]
 lemma h₅ (n : ℕ) : (↑n + ↑n + 1 + 1 + 1 + 1 : ℝ) = 2 * (↑n + 1 + 1) := by ring
 lemma h₆ (n : ℕ) : (↑n + 1 + 1 : ℝ) / (↑n + ↑n + 1 + 1 + 1 + 1) = 2⁻¹ := by
-  rw [h₅ n]
-  rw [mul_comm]
-  rw [div_mul_eq_div_div]
-  rw [div_self (h₃ n)]
-  exact one_div _
+  field_simp [h₃ n, ne_of_gt (h₄ n)] <;> ring
 lemma h₇ (n : ℕ) : (n + n + 1 + 1 + 1: ℝ) ≠ 0 := by linarith [h₂ n]
 lemma h₈ (n : ℕ) : (↑n + 1 + (↑n + 1) + 1 + 1 : ℝ) = (↑n + ↑n + 1 + 1 + 1 + 1) := by ring
 lemma e₁ (n : ℕ) (t : I) :
@@ -4751,16 +4197,7 @@ lemma e₄ (n : ℕ) (t : I) :
 lemma e₅ (n : ℕ) (r : ℝ) :
     2 * (r / (n + n + 1 + 1 + 1 + 1 : ℝ) + ((n : ℝ) + 1 + (↑n + 1) + 1 + 1)⁻¹) =
     (r + 1) / (↑n + 1 + 1) := by
-  rw [h₈]
-  rw [← one_div]
-  rw [div_add_div_same]
-  rw [h₅]
-  rw [mul_div]
-  rw [mul_comm]
-  rw [← mul_div]
-  rw [div_mul_eq_div_div]
-  rw [div_self (show (2 : ℝ) ≠ 0 by norm_num)]
-  ring
+  field_simp [h₃ n, h₇ n] <;> ring
 lemma e₆ (n : ℕ) (r : ℝ) :
   (1 - (n + 1 + 1 : ℝ)⁻¹) * r + (n + 1 + 1 : ℝ)⁻¹ = ((n + 1) * r + 1) / (n + 1 + 1) := by
   nth_rewrite 1 [←div_self (h₃ n)]
@@ -6505,11 +5942,6 @@ lemma functorOnHomOfCovered_reparam {x y : X} {γ : Dipath x y} (hγ : covered h
     rw [functorOnHomOfCoveredAux₂_reparam hX h_comm hγ hf₀ hf₁]
     rw [←functorOnHomOfCovered_apply_right hX h_comm this]
     assumption
-lemma functorOnHomOfCovered_cast {x y x' y' : X} {γ : Dipath x y} (hγ : covered hX γ) (hx : x' = x) (hy : y' = y) :
-    F₀ ((covered_cast_iff γ hX hx hy).mp hγ) = (eqToHom (show F_obj ⟨x'⟩ = F_obj ⟨x⟩ by rw [hx])) ≫
-      (F₀ hγ) ≫ (eqToHom (show F_obj ⟨y⟩ = F_obj ⟨y'⟩ by rw [hy])) := by
-  subst_vars
-  rw [eqToHom_refl, eqToHom_refl, Category.comp_id, Category.id_comp]
 lemma functorOnHomOfCovered_cast_left {x y x' : X} {γ : Dipath x y} (hγ : covered hX γ) (hx : x' = x) :
     F₀ ((covered_cast_iff γ hX hx rfl).mp hγ) =
       (eqToHom (show F_obj ⟨x'⟩ = F_obj ⟨x⟩ by rw [hx])) ≫ (F₀ hγ) := by
@@ -6827,33 +6259,16 @@ lemma functorOnHomAux_of_homotopic_dimaps_0 {f g : D(I, X)} {H : DirectedMap.Dih
     Fh_aux (H.eval_at_right 0) ≫ Fh_aux (Dipath.of_directedMap g) := by
   let Γ := DihomToPathDihom.dihom_to_path_dihom H
   have Γ_cov : Dipath.Dihomotopy.covered hX Γ := by
-    unfold Dipath.Dihomotopy.covered
-    cases DirectedMap.Dihomotopy.covered_of_coveredPartwise hcov
-    case inl h =>
-      left
-      exact subset_trans (DihomToPathDihom.dihom_to_path_dihom_range _) h
-    case inr h =>
-      right
-      exact subset_trans (DihomToPathDihom.dihom_to_path_dihom_range _) h
+    rcases DirectedMap.Dihomotopy.covered_of_coveredPartwise hcov with h | h
+    · exact Or.inl (subset_trans (DihomToPathDihom.dihom_to_path_dihom_range _) h)
+    · exact Or.inr (subset_trans (DihomToPathDihom.dihom_to_path_dihom_range _) h)
   calc Fh_aux (Dipath.of_directedMap f) ≫ Fh_aux (H.eval_at_right 1)
-    _ = (𝟙 (F_obj ⟨f 0⟩) ≫ Fh_aux (of_directedMap f)) ≫ Fh_aux (H.eval_at_right 1)
-          := by rw [Category.id_comp]
-    _ = (Fh_aux (Dipath.refl (f 0)) ≫ Fh_aux (of_directedMap f)) ≫ Fh_aux (H.eval_at_right 1)
-          := by rw [functorOnHomAux_refl]
-    _ = Fh_aux ((Dipath.refl (f 0)).trans (of_directedMap f)) ≫ Fh_aux (H.eval_at_right 1)
-          := by rw [functorOnHomAux_trans]
-    _ = Fh_aux (((Dipath.refl (f 0)).trans (of_directedMap f)).trans (H.eval_at_right 1))
-          := by rw [←functorOnHomAux_trans]
-    _ = Fh_aux (((H.eval_at_right 0).trans (of_directedMap g)).trans (refl (g 1)))
-          := functorOnHomAux_of_covered_dihomotopic hX X₁_open X₂_open h_comm Γ_cov
-    _ = Fh_aux ((H.eval_at_right 0).trans (of_directedMap g)) ≫ Fh_aux (refl (g 1))
-          := by rw [functorOnHomAux_trans]
-    _ = Fh_aux ((H.eval_at_right 0).trans (of_directedMap g)) ≫ 𝟙 (F_obj ⟨g 1⟩)
-          := by rw [functorOnHomAux_refl]
-    _ = Fh_aux ((H.eval_at_right 0).trans (of_directedMap g))
-          := by rw [Category.comp_id]
-    _ = Fh_aux (H.eval_at_right 0) ≫ Fh_aux (Dipath.of_directedMap g)
-          := by rw [functorOnHomAux_trans]
+    _ = Fh_aux (((Dipath.refl (f 0)).trans (of_directedMap f)).trans (H.eval_at_right 1)) := by
+      rw [functorOnHomAux_trans, functorOnHomAux_trans, functorOnHomAux_refl, Category.id_comp]
+    _ = Fh_aux (((H.eval_at_right 0).trans (of_directedMap g)).trans (refl (g 1))) :=
+      functorOnHomAux_of_covered_dihomotopic hX X₁_open X₂_open h_comm Γ_cov
+    _ = Fh_aux (H.eval_at_right 0) ≫ Fh_aux (Dipath.of_directedMap g) := by
+      rw [functorOnHomAux_trans, functorOnHomAux_refl, Category.comp_id, functorOnHomAux_trans]
 lemma functorOnHomAux_of_homotopic_dimaps {m : ℕ} :
     Π  {f g : D(I, X)} {H : DirectedMap.Dihomotopy f g} (_ : DirectedMap.Dihomotopy.coveredPartwise hX H 0 m),
       Fh_aux (Dipath.of_directedMap f) ≫ Fh_aux (H.eval_at_right 1) =
@@ -6872,20 +6287,12 @@ lemma functorOnHomAux_of_homotopic_dimaps {m : ℕ} :
     let f₂ := (SplitDipath.SecondPart (Dipath.of_directedMap f) T)
     let g₁ := (SplitDipath.FirstPart (Dipath.of_directedMap g) T)
     let g₂ := (SplitDipath.SecondPart (Dipath.of_directedMap g) T)
+    have hT : T = Fraction.ofPos (Nat.succ_pos m.succ) :=
+      Subtype.ext (by simp [T, Fraction.Fraction_coe, Fraction.ofPos_coe])
     have h₁ : Fh_aux f₂ ≫ Fh_aux (H.eval_at_right 1) = Fh_aux (H.eval_at_right T) ≫ Fh_aux g₂ := by
       have := ih (DirectedMap.Dihomotopy.coveredPartwise_second_hpart hcov)
-      have hT : T = Fraction.ofPos (Nat.succ_pos m.succ) := by
-        apply Subtype.ext
-        simp [T, Fraction.Fraction_coe, Fraction.ofPos_coe]
-      rw [SplitDihomotopy.sph_eval_0] at this
-      rw [SplitDihomotopy.sph_eval_1] at this
-      rw [Dipath.dipath_of_directed_map_of_to_dimap] at this
-      rw [Dipath.dipath_of_directed_map_of_to_dimap] at this
-      rw [functorOnHomAux_cast] at this
-      rw [functorOnHomAux_cast] at this
-      rw [functorOnHomAux_cast] at this
-      rw [functorOnHomAux_cast] at this
-      simp at this
+      simp [SplitDihomotopy.sph_eval_0, SplitDihomotopy.sph_eval_1,
+        Dipath.dipath_of_directed_map_of_to_dimap, functorOnHomAux_cast] at this
       have := (eqToHom_comp_iff _ _ _).mp this
       rw [←Category.assoc] at this
       have := (comp_eqToHom_iff _ _ _).mp this
@@ -6894,40 +6301,18 @@ lemma functorOnHomAux_of_homotopic_dimaps {m : ℕ} :
       simp [T, g₂, Category.assoc]
     have h₂ : Fh_aux f₁ ≫ Fh_aux (H.eval_at_right T) = Fh_aux (H.eval_at_right 0) ≫ Fh_aux g₁ := by
       have := functorOnHomAux_of_homotopic_dimaps_0 hX X₁_open X₂_open h_comm
-            (DirectedMap.Dihomotopy.coveredPartwise_first_hpart hcov)
-      have hT : T = Fraction.ofPos (Nat.succ_pos m.succ) := by
-        apply Subtype.ext
-        simp [T, Fraction.Fraction_coe, Fraction.ofPos_coe]
-      rw [SplitDihomotopy.fph_eval_0] at this
-      rw [SplitDihomotopy.fph_eval_1] at this
-      rw [Dipath.dipath_of_directed_map_of_to_dimap] at this
-      rw [Dipath.dipath_of_directed_map_of_to_dimap] at this
-      rw [functorOnHomAux_cast] at this
-      rw [functorOnHomAux_cast] at this
-      rw [functorOnHomAux_cast] at this
-      rw [functorOnHomAux_cast] at this
-      simp at this
+        (DirectedMap.Dihomotopy.coveredPartwise_first_hpart hcov)
+      simp [SplitDihomotopy.fph_eval_0, SplitDihomotopy.fph_eval_1,
+        Dipath.dipath_of_directed_map_of_to_dimap, functorOnHomAux_cast] at this
       have := (eqToHom_comp_iff _ _ _).mp this
       rw [←Category.assoc] at this
       have := (comp_eqToHom_iff _ _ _).mp this
       rw [this]
       cases hT
       simp [T, g₁, Category.assoc]
-    calc Fh_aux (Dipath.of_directedMap f) ≫ Fh_aux (H.eval_at_right 1)
-      _ = (Fh_aux f₁ ≫ Fh_aux f₂) ≫ Fh_aux (H.eval_at_right 1)
-            := by rw [functorOnHomAux_split_of_covered_partwise _ _ _ _ f_cov]
-      _ = Fh_aux f₁ ≫ (Fh_aux f₂ ≫ Fh_aux (H.eval_at_right 1))
-            := by rw [Category.assoc]
-      _ = Fh_aux f₁ ≫ (Fh_aux (H.eval_at_right T) ≫ Fh_aux g₂)
-            := by rw [h₁]
-      _ = (Fh_aux f₁ ≫ Fh_aux (H.eval_at_right T)) ≫ Fh_aux g₂
-            := by rw [Category.assoc]
-      _ = (Fh_aux (H.eval_at_right 0) ≫ Fh_aux g₁) ≫ Fh_aux g₂
-            := by rw [h₂]
-      _ = Fh_aux (H.eval_at_right 0) ≫ (Fh_aux g₁ ≫ Fh_aux g₂)
-            := by rw [Category.assoc]
-      _ = Fh_aux (H.eval_at_right 0) ≫ Fh_aux (Dipath.of_directedMap g)
-            := by rw [functorOnHomAux_split_of_covered_partwise _ _ _ _ g_cov]
+    rw [functorOnHomAux_split_of_covered_partwise _ _ _ _ f_cov, Category.assoc, h₁,
+      ← Category.assoc, h₂, Category.assoc,
+      functorOnHomAux_split_of_covered_partwise _ _ _ _ g_cov]
 lemma functorOnHomAux_of_covered_dihomotopic_zero_m {m : ℕ} {x y : X} {γ γ' : Dipath x y}
   (h : Dipath.Dihomotopy.dihomotopicCovered hX γ γ' 0 m) :
     Fh_aux γ = Fh_aux γ' := by
@@ -6980,12 +6365,8 @@ lemma functorOnHomAux_of_pre_dihomotopic {γ γ' : Dipath x y} (h : γ.PreDihomo
   exact functorOnHomAux_of_partwise_covered_dihomotopic hX X₁_open X₂_open h_comm h
 lemma functorOnHomAux_of_dihomotopic (γ γ' : Dipath x y) (h : γ.Dihomotopic γ') :
     Fh_aux γ = Fh_aux γ' :=
-  Relation.EqvGen.rec
-    (fun _ _ h => functorOnHomAux_of_pre_dihomotopic _ _ _ _ h)
-    (fun _ => rfl)
-    (fun _ _ _ h => h.symm)
-    (fun _ _ _ _ _ h₁ h₂ => Eq.trans h₁ h₂)
-  h
+  Relation.EqvGen.eqvGen_le (r' := fun (a b : Dipath x y) => Fh_aux a = Fh_aux b)
+    (fun _ _ h => functorOnHomAux_of_pre_dihomotopic _ _ _ _ h) _ _ h
 /-
 -  ### Define the behaviour on quotient of paths
 -/
@@ -6995,9 +6376,8 @@ local notation "F_hom" => FunctorOnHom hX X₁_open X₂_open h_comm
 lemma functorOnHom_apply (γ : Dipath x y) :
   F_hom ⟦γ⟧ = Fh_aux γ := rfl
 lemma functorOnHom_trans {x y z : X} (γ₁ : Dipath x y) (γ₂ : Dipath y z) :
-    F_hom ⟦γ₁.trans γ₂⟧ = F_hom ⟦γ₁⟧ ≫ F_hom ⟦γ₂⟧ := by
-  repeat { rw [functorOnHom_apply] }
-  exact functorOnHomAux_trans hX X₁_open X₂_open h_comm γ₁ γ₂
+    F_hom ⟦γ₁.trans γ₂⟧ = F_hom ⟦γ₁⟧ ≫ F_hom ⟦γ₂⟧ :=
+  functorOnHomAux_trans hX X₁_open X₂_open h_comm γ₁ γ₂
 lemma functorOnHom_id (x : dπₓ X) : F_hom (𝟙 x) = 𝟙 (F_obj x) := by
   rw [id_eq_path_refl]
   rw [functorOnHom_apply]
@@ -7187,19 +6567,10 @@ attribute [local instance] Path.Homotopic.setoid Dipath.Dihomotopic.setoid
 noncomputable def pathToDipath {x y : X} (p : Path x y) : Dipath x y :=
   Dipath.of_isDipath (γ := p) (by intro a b hab; trivial)
 theorem dipathDihomotopic_to_pathHomotopic {x y : X} {p q : Dipath x y}
-    (h : p.Dihomotopic q) : p.toPath.Homotopic q.toPath := by
-  refine Relation.EqvGen.rec
-    (motive := fun p q _ => p.toPath.Homotopic q.toPath)
-    ?_ ?_ ?_ ?_ h
-  · intro p q h
-    rcases h with ⟨H⟩
-    exact ⟨H.dihom_to_hom⟩
-  · intro p
-    exact Path.Homotopic.refl _
-  · intro p q h hpq
-    exact Path.Homotopic.symm hpq
-  · intro p q r hpq hqr hpq' hqr'
-    exact Path.Homotopic.trans hpq' hqr'
+    (h : p.Dihomotopic q) : p.toPath.Homotopic q.toPath :=
+  Relation.EqvGen.eqvGen_le
+    (r' := fun (a b : Dipath x y) => a.toPath.Homotopic b.toPath)
+    (fun _ _ ⟨H⟩ => ⟨H.dihom_to_hom⟩) _ _ h
 theorem pathHomotopic_to_dipathDihomotopic {x y : X} {p q : Path x y}
     (h : p.Homotopic q) : (pathToDipath p).Dihomotopic (pathToDipath q) := by
   rcases h with ⟨H⟩
@@ -7239,8 +6610,7 @@ noncomputable def classicalToDirected : FundamentalGroupoid X ⥤ FundamentalCat
   map_id x := by
     change (⟦pathToDipath (Path.refl x.as)⟧ : Dipath.Dihomotopic.Quotient x.as x.as) = ⟦Dipath.refl x.as⟧
     have hp : pathToDipath (Path.refl x.as) = Dipath.refl x.as := by
-      apply Dipath.ext
-      funext t
+      ext t
       rfl
     rw [hp]
   map_comp := by
@@ -7251,8 +6621,7 @@ noncomputable def classicalToDirected : FundamentalGroupoid X ⥤ FundamentalCat
     change (⟦pathToDipath (p.trans q)⟧ : Dipath.Dihomotopic.Quotient x.as z.as) =
       ⟦(pathToDipath p).trans (pathToDipath q)⟧
     have hp : pathToDipath (p.trans q) = (pathToDipath p).trans (pathToDipath q) := by
-      apply Dipath.ext
-      funext t
+      ext t
       rfl
     rw [hp]
 end
@@ -7317,8 +6686,7 @@ lemma classicalToDirected_naturality (f : dTopCat.of X ⟶ dTopCat.of Y) :
   change (⟦pathToDipath (p.map f.toContinuousMap.continuous)⟧ : Dipath.Dihomotopic.Quotient _ _) ≍
     ⟦(pathToDipath p).map f⟧
   have hp : pathToDipath (p.map f.toContinuousMap.continuous) = (pathToDipath p).map f := by
-    apply Dipath.ext
-    funext t
+    ext t
     rfl
   rw [hp]
   rfl
@@ -7407,53 +6775,45 @@ theorem classicalOpenCoverPushout
   let cI₂ := Grpd.forgetToCat.map (FundamentalGroupoid.fundamentalGroupoidFunctor.map i₂)
   let cJ₁ := Grpd.forgetToCat.map (FundamentalGroupoid.fundamentalGroupoidFunctor.map j₁)
   let cJ₂ := Grpd.forgetToCat.map (FundamentalGroupoid.fundamentalGroupoidFunctor.map j₂)
-  let dToP_I : FundamentalCategory {x : X // x ∈ U ∩ V} ⥤ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of {x : X // x ∈ U ∩ V})) := directedToClassical (X := {x : X // x ∈ U ∩ V})
-  let dToP_U : FundamentalCategory U ⥤ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of U)) := directedToClassical (X := U)
-  let dToP_V : FundamentalCategory V ⥤ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of V)) := directedToClassical (X := V)
-  let dToP_X : FundamentalCategory X ⥤ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of X)) := directedToClassical (X := X)
-  let pToD_I : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of {x : X // x ∈ U ∩ V})) ⥤ FundamentalCategory {x : X // x ∈ U ∩ V} := classicalToDirected (X := {x : X // x ∈ U ∩ V})
-  let pToD_U : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of U)) ⥤ FundamentalCategory U := classicalToDirected (X := U)
-  let pToD_V : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of V)) ⥤ FundamentalCategory V := classicalToDirected (X := V)
-  let pToD_X : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of X)) ⥤ FundamentalCategory X := classicalToDirected (X := X)
-  let dToP_I_cat : FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of {x : X // x ∈ U ∩ V}) ⟶ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of {x : X // x ∈ U ∩ V})) := ⟨dToP_I⟩
-  let dToP_U_cat : FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of U) ⟶ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of U)) := ⟨dToP_U⟩
-  let dToP_V_cat : FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of V) ⟶ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of V)) := ⟨dToP_V⟩
-  let dToP_X_cat : FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of X) ⟶ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of X)) := ⟨dToP_X⟩
-  let pToD_I_cat : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of {x : X // x ∈ U ∩ V})) ⟶ FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of {x : X // x ∈ U ∩ V}) := ⟨pToD_I⟩
-  let pToD_U_cat : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of U)) ⟶ FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of U) := ⟨pToD_U⟩
-  let pToD_V_cat : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of V)) ⟶ FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of V) := ⟨pToD_V⟩
-  let pToD_X_cat : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of X)) ⟶ FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of X) := ⟨pToD_X⟩
+  let dToP_I_cat : FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of {x : X // x ∈ U ∩ V}) ⟶ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of {x : X // x ∈ U ∩ V})) := ⟨directedToClassical⟩
+  let dToP_U_cat : FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of U) ⟶ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of U)) := ⟨directedToClassical⟩
+  let dToP_V_cat : FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of V) ⟶ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of V)) := ⟨directedToClassical⟩
+  let dToP_X_cat : FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of X) ⟶ Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of X)) := ⟨directedToClassical⟩
+  let pToD_I_cat : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of {x : X // x ∈ U ∩ V})) ⟶ FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of {x : X // x ∈ U ∩ V}) := ⟨classicalToDirected⟩
+  let pToD_U_cat : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of U)) ⟶ FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of U) := ⟨classicalToDirected⟩
+  let pToD_V_cat : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of V)) ⟶ FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of V) := ⟨classicalToDirected⟩
+  let pToD_X_cat : Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of X)) ⟶ FundamentalCategory.fundamentalCategoryFunctor.obj (dTopCat.of X) := ⟨classicalToDirected⟩
   have hi₁_nat : dI₁ ≫ dToP_U_cat = dToP_I_cat ≫ cI₁ := by
     apply Cat.ext
-    dsimp [dI₁, dToP_U_cat, dToP_I_cat, cI₁, dToP_U, dToP_I]
+    dsimp [dI₁, dToP_U_cat, dToP_I_cat, cI₁]
     simpa only [← hi₁] using directedToClassical_naturality dI0_1
   have hi₂_nat : dI₂ ≫ dToP_V_cat = dToP_I_cat ≫ cI₂ := by
     apply Cat.ext
-    dsimp [dI₂, dToP_V_cat, dToP_I_cat, cI₂, dToP_V, dToP_I]
+    dsimp [dI₂, dToP_V_cat, dToP_I_cat, cI₂]
     simpa only [← hi₂] using directedToClassical_naturality dI0_2
   have hj₁_nat : dJ₁ ≫ dToP_X_cat = dToP_U_cat ≫ cJ₁ := by
     apply Cat.ext
-    dsimp [dJ₁, dToP_X_cat, dToP_U_cat, cJ₁, dToP_X, dToP_U]
+    dsimp [dJ₁, dToP_X_cat, dToP_U_cat, cJ₁]
     simpa only [← hj₁] using directedToClassical_naturality dJ0_1
   have hj₂_nat : dJ₂ ≫ dToP_X_cat = dToP_V_cat ≫ cJ₂ := by
     apply Cat.ext
-    dsimp [dJ₂, dToP_X_cat, dToP_V_cat, cJ₂, dToP_X, dToP_V]
+    dsimp [dJ₂, dToP_X_cat, dToP_V_cat, cJ₂]
     simpa only [← hj₂] using directedToClassical_naturality dJ0_2
   have hi₁_nat' : cI₁ ≫ pToD_U_cat = pToD_I_cat ≫ dI₁ := by
     apply Cat.ext
-    dsimp [dI₁, cI₁, pToD_U_cat, pToD_I_cat, pToD_U, pToD_I]
+    dsimp [dI₁, cI₁, pToD_U_cat, pToD_I_cat]
     simpa only [← hi₁] using classicalToDirected_naturality dI0_1
   have hi₂_nat' : cI₂ ≫ pToD_V_cat = pToD_I_cat ≫ dI₂ := by
     apply Cat.ext
-    dsimp [dI₂, cI₂, pToD_V_cat, pToD_I_cat, pToD_V, pToD_I]
+    dsimp [dI₂, cI₂, pToD_V_cat, pToD_I_cat]
     simpa only [← hi₂] using classicalToDirected_naturality dI0_2
   have hj₁_nat' : cJ₁ ≫ pToD_X_cat = pToD_U_cat ≫ dJ₁ := by
     apply Cat.ext
-    dsimp [dJ₁, cJ₁, pToD_X_cat, pToD_U_cat, pToD_X, pToD_U]
+    dsimp [dJ₁, cJ₁, pToD_X_cat, pToD_U_cat]
     simpa only [← hj₁] using classicalToDirected_naturality dJ0_1
   have hj₂_nat' : cJ₂ ≫ pToD_X_cat = pToD_V_cat ≫ dJ₂ := by
     apply Cat.ext
-    dsimp [dJ₂, cJ₂, pToD_X_cat, pToD_V_cat, pToD_X, pToD_V]
+    dsimp [dJ₂, cJ₂, pToD_X_cat, pToD_V_cat]
     simpa only [← hj₂] using classicalToDirected_naturality dJ0_2
   have hIsoI : pToD_I_cat ≫ dToP_I_cat = 𝟙 _ := by
     apply Cat.ext
@@ -7488,36 +6848,19 @@ theorem classicalOpenCoverPushout
     · rintro F' ⟨h₁, h₂⟩
       exact DirectedVanKampen.PushoutFunctor.functor_uniq hUV hU hV h_comm F' h₁ h₂
   have hcomm : cI₁ ≫ cJ₁ = cI₂ ≫ cJ₂ := by
-    calc
-      cI₁ ≫ cJ₁ = (pToD_I_cat ≫ dToP_I_cat) ≫ (cI₁ ≫ cJ₁) := by
-        rw [hIsoI]
-        simp
-      _ = pToD_I_cat ≫ ((dToP_I_cat ≫ cI₁) ≫ cJ₁) := by simp [Category.assoc]
-      _ = pToD_I_cat ≫ ((dI₁ ≫ dToP_U_cat) ≫ cJ₁) := by rw [← hi₁_nat]
-      _ = pToD_I_cat ≫ (dI₁ ≫ (dToP_U_cat ≫ cJ₁)) := by simp [Category.assoc]
-      _ = pToD_I_cat ≫ (dI₁ ≫ (dJ₁ ≫ dToP_X_cat)) := by rw [← hj₁_nat]
-      _ = pToD_I_cat ≫ ((dI₁ ≫ dJ₁) ≫ dToP_X_cat) := by simp [Category.assoc]
-      _ = pToD_I_cat ≫ ((dI₂ ≫ dJ₂) ≫ dToP_X_cat) := by
-        exact congrArg (fun f => pToD_I_cat ≫ f ≫ dToP_X_cat) hpathDescent.w
-      _ = pToD_I_cat ≫ (dI₂ ≫ (dJ₂ ≫ dToP_X_cat)) := by simp [Category.assoc]
-      _ = pToD_I_cat ≫ (dI₂ ≫ (dToP_V_cat ≫ cJ₂)) := by rw [hj₂_nat]
-      _ = pToD_I_cat ≫ ((dI₂ ≫ dToP_V_cat) ≫ cJ₂) := by simp [Category.assoc]
-      _ = pToD_I_cat ≫ ((dToP_I_cat ≫ cI₂) ≫ cJ₂) := by rw [hi₂_nat]
-      _ = (pToD_I_cat ≫ dToP_I_cat) ≫ (cI₂ ≫ cJ₂) := by simp [Category.assoc]
-      _ = cI₂ ≫ cJ₂ := by
-        rw [hIsoI]
-        simp
+    rw [← Category.id_comp (cI₁ ≫ cJ₁), ← hIsoI]
+    simp only [Category.assoc]
+    rw [← Category.assoc dToP_I_cat cI₁, ← hi₁_nat, Category.assoc dI₁ dToP_U_cat,
+      ← hj₁_nat, ← Category.assoc dI₁ dJ₁, hpathDescent.w,
+      Category.assoc dI₂ dJ₂, hj₂_nat, ← Category.assoc dI₂ dToP_V_cat, hi₂_nat,
+      Category.assoc dToP_I_cat cI₂, ← Category.assoc pToD_I_cat dToP_I_cat,
+      hIsoI, Category.id_comp]
   let cP : PushoutCocone cI₁ cI₂ := PushoutCocone.mk cJ₁ cJ₂ hcomm
   let toDirectedCocone : PushoutCocone cI₁ cI₂ → PushoutCocone dI₁ dI₂ := fun s =>
     PushoutCocone.mk (dToP_U_cat ≫ s.inl) (dToP_V_cat ≫ s.inr) (by
-      calc
-        dI₁ ≫ (dToP_U_cat ≫ s.inl) = (dI₁ ≫ dToP_U_cat) ≫ s.inl := by simp [Category.assoc]
-        _ = (dToP_I_cat ≫ cI₁) ≫ s.inl := by rw [hi₁_nat]
-        _ = dToP_I_cat ≫ (cI₁ ≫ s.inl) := by simp [Category.assoc]
-        _ = dToP_I_cat ≫ (cI₂ ≫ s.inr) := by exact congrArg (fun f => dToP_I_cat ≫ f) s.condition
-        _ = (dToP_I_cat ≫ cI₂) ≫ s.inr := by simp [Category.assoc]
-        _ = (dI₂ ≫ dToP_V_cat) ≫ s.inr := by rw [← hi₂_nat]
-        _ = dI₂ ≫ (dToP_V_cat ≫ s.inr) := by simp [Category.assoc])
+      rw [← Category.assoc dI₁ dToP_U_cat, hi₁_nat, Category.assoc dToP_I_cat cI₁,
+        s.condition, ← Category.assoc dToP_I_cat cI₂, ← hi₂_nat,
+        Category.assoc dI₂ dToP_V_cat])
   let liftDesc : ∀ s : PushoutCocone cI₁ cI₂,
       Grpd.forgetToCat.obj (FundamentalGroupoid.fundamentalGroupoidFunctor.obj (TopCat.of X)) ⟶ s.pt := fun s => by
     exact pToD_X_cat ≫ PushoutCocone.IsColimit.desc hpathDescent.isColimit
@@ -7527,53 +6870,35 @@ theorem classicalOpenCoverPushout
     refine PushoutCocone.IsColimit.mk (f := cI₁) (g := cI₂) (inl := cJ₁) (inr := cJ₂) hcomm liftDesc ?_ ?_ ?_
     · intro s
       let desc := PushoutCocone.IsColimit.desc hpathDescent.isColimit (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition
-      calc
-        cJ₁ ≫ liftDesc s = cJ₁ ≫ (pToD_X_cat ≫ desc) := rfl
-        _ = (cJ₁ ≫ pToD_X_cat) ≫ desc := by simp [Category.assoc]
-        _ = (pToD_U_cat ≫ dJ₁) ≫ desc := by rw [hj₁_nat']
-        _ = pToD_U_cat ≫ (dJ₁ ≫ desc) := by simp [Category.assoc]
-        _ = pToD_U_cat ≫ ((toDirectedCocone s).inl) := by
-          exact congrArg (fun f => pToD_U_cat ≫ f)
-            (PushoutCocone.IsColimit.inl_desc hpathDescent.isColimit (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition)
-        _ = (pToD_U_cat ≫ dToP_U_cat) ≫ s.inl := by simp [toDirectedCocone, Category.assoc]
-        _ = s.inl := by rw [hIsoU]; simp
+      change cJ₁ ≫ (pToD_X_cat ≫ desc) = s.inl
+      rw [← Category.assoc, hj₁_nat', Category.assoc,
+        show dJ₁ ≫ desc = (toDirectedCocone s).inl from
+          PushoutCocone.IsColimit.inl_desc hpathDescent.isColimit
+            (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition]
+      change pToD_U_cat ≫ (dToP_U_cat ≫ s.inl) = s.inl
+      rw [← Category.assoc, hIsoU, Category.id_comp]
     · intro s
       let desc := PushoutCocone.IsColimit.desc hpathDescent.isColimit (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition
-      calc
-        cJ₂ ≫ liftDesc s = cJ₂ ≫ (pToD_X_cat ≫ desc) := rfl
-        _ = (cJ₂ ≫ pToD_X_cat) ≫ desc := by simp [Category.assoc]
-        _ = (pToD_V_cat ≫ dJ₂) ≫ desc := by rw [hj₂_nat']
-        _ = pToD_V_cat ≫ (dJ₂ ≫ desc) := by simp [Category.assoc]
-        _ = pToD_V_cat ≫ ((toDirectedCocone s).inr) := by
-          exact congrArg (fun f => pToD_V_cat ≫ f)
-            (PushoutCocone.IsColimit.inr_desc hpathDescent.isColimit (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition)
-        _ = (pToD_V_cat ≫ dToP_V_cat) ≫ s.inr := by simp [toDirectedCocone, Category.assoc]
-        _ = s.inr := by rw [hIsoV]; simp
+      change cJ₂ ≫ (pToD_X_cat ≫ desc) = s.inr
+      rw [← Category.assoc, hj₂_nat', Category.assoc,
+        show dJ₂ ≫ desc = (toDirectedCocone s).inr from
+          PushoutCocone.IsColimit.inr_desc hpathDescent.isColimit
+            (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition]
+      change pToD_V_cat ≫ (dToP_V_cat ≫ s.inr) = s.inr
+      rw [← Category.assoc, hIsoV, Category.id_comp]
     · intro s m hm₁ hm₂
       let desc := PushoutCocone.IsColimit.desc hpathDescent.isColimit (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition
       have hmap : dToP_X_cat ≫ m = desc := by
         have hleft : dJ₁ ≫ (dToP_X_cat ≫ m) = dJ₁ ≫ desc := by
-          calc
-            dJ₁ ≫ (dToP_X_cat ≫ m) = (dJ₁ ≫ dToP_X_cat) ≫ m := by simp [Category.assoc]
-            _ = (dToP_U_cat ≫ cJ₁) ≫ m := by rw [hj₁_nat]
-            _ = dToP_U_cat ≫ (cJ₁ ≫ m) := by simp [Category.assoc]
-            _ = dToP_U_cat ≫ s.inl := by exact congrArg (fun f => dToP_U_cat ≫ f) hm₁
-            _ = dJ₁ ≫ desc := by
-              exact (PushoutCocone.IsColimit.inl_desc hpathDescent.isColimit (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition).symm
+          rw [← Category.assoc, hj₁_nat, Category.assoc, hm₁]
+          exact (PushoutCocone.IsColimit.inl_desc hpathDescent.isColimit
+            (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition).symm
         have hright : dJ₂ ≫ (dToP_X_cat ≫ m) = dJ₂ ≫ desc := by
-          calc
-            dJ₂ ≫ (dToP_X_cat ≫ m) = (dJ₂ ≫ dToP_X_cat) ≫ m := by simp [Category.assoc]
-            _ = (dToP_V_cat ≫ cJ₂) ≫ m := by rw [hj₂_nat]
-            _ = dToP_V_cat ≫ (cJ₂ ≫ m) := by simp [Category.assoc]
-            _ = dToP_V_cat ≫ s.inr := by exact congrArg (fun f => dToP_V_cat ≫ f) hm₂
-            _ = dJ₂ ≫ desc := by
-              exact (PushoutCocone.IsColimit.inr_desc hpathDescent.isColimit (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition).symm
+          rw [← Category.assoc, hj₂_nat, Category.assoc, hm₂]
+          exact (PushoutCocone.IsColimit.inr_desc hpathDescent.isColimit
+            (toDirectedCocone s).inl (toDirectedCocone s).inr (toDirectedCocone s).condition).symm
         exact PushoutCocone.IsColimit.hom_ext hpathDescent.isColimit hleft hright
-      calc
-        m = 𝟙 _ ≫ m := by simp
-        _ = (pToD_X_cat ≫ dToP_X_cat) ≫ m := by rw [hIsoX]
-        _ = pToD_X_cat ≫ (dToP_X_cat ≫ m) := by simp [Category.assoc]
-        _ = pToD_X_cat ≫ desc := by rw [hmap]
+      rw [← Category.id_comp m, ← hIsoX, Category.assoc, hmap]
   exact IsPushout.of_isColimit hcolim
 end ClassicalSVK
 end ClassicalSVK_Pushout
@@ -7800,8 +7125,6 @@ lemma rawRetraction_respects (f : ι → C(Circle, X)) (x₀ : X)
 /-- Algebraic quotient descent, prior to its restriction to the continuous domain. -/
 def quotientRetraction (f : ι → C(Circle, X)) (x₀ : X) : Space f → X :=
   Quot.lift (rawRetraction f x₀) (fun _ _ h => rawRetraction_respects f x₀ h)
-@[simp] lemma quotientRetraction_inclusion (f : ι → C(Circle, X)) (x₀ x : X) :
-    quotientRetraction f x₀ (inclusion f x) = x := rfl
 /-- On the punctured raw coproduct the retraction is continuous componentwise. -/
 lemma quotientRetraction_puncturedQuotient (f : ι → C(Circle, X)) (x₀ : X)
     (a : PuncturedRaw X ι) :
@@ -7863,8 +7186,6 @@ lemma sigmaAnnulusInclusion_isEmbedding :
 /-- Coordinates of punctured interior points in the actual quotient space. -/
 def annulusInteriorMap (f : ι → C(Circle, X)) : C((Σ _ : ι, Annulus), Space f) :=
   (interiorMap f).comp sigmaAnnulusInclusion
-@[simp] lemma annulusInteriorMap_apply (f : ι → C(Circle, X))
-    (z : Σ _ : ι, Annulus) : annulusInteriorMap f z = interiorMap f ⟨z.1, z.2.1⟩ := rfl
 lemma annulusInteriorMap_isEmbedding (f : ι → C(Circle, X)) :
     Topology.IsEmbedding (annulusInteriorMap f) :=
   (interiorMap_isOpenEmbedding f).isEmbedding.comp sigmaAnnulusInclusion_isEmbedding
@@ -7895,8 +7216,6 @@ def overlapHomeomorph (f : ι → C(Circle, X)) :
     (Σ _ : ι, Annulus) ≃ₜ overlap f :=
   (annulusInteriorMap_isEmbedding f).toHomeomorph.trans
     (Homeomorph.setCongr (annulusInteriorMap_range f))
-@[simp] lemma overlapHomeomorph_apply (f : ι → C(Circle, X))
-    (z : Σ _ : ι, Annulus) : (overlapHomeomorph f z : Space f) = annulusInteriorMap f z := rfl
 /-- The actual continuous inclusion of the overlap into the interior open set. -/
 def overlapToInteriors (f : ι → C(Circle, X)) : C(overlap f, interiors f) :=
   ⟨fun z => ⟨z.1, z.property.2⟩, continuous_subtype_val.subtype_mk _⟩
@@ -7918,17 +7237,6 @@ def cellInterior (f : ι → C(Circle, X)) (i : ι) : Set (Space f) :=
 lemma cellInteriorMap_isOpenEmbedding (f : ι → C(Circle, X)) (i : ι) :
     Topology.IsOpenEmbedding (cellInteriorMap f i) :=
   (interiorMap_isOpenEmbedding f).comp Topology.IsOpenEmbedding.sigmaMk
-/-- Each actual interior component is homeomorphic to the genuine open complex disk. -/
-def cellInteriorHomeomorph (f : ι → C(Circle, X)) (i : ι) : OpenDisk ≃ₜ cellInterior f i :=
-  (cellInteriorMap_isOpenEmbedding f i).isEmbedding.toHomeomorph
-@[simp] lemma cellInteriorHomeomorph_apply (f : ι → C(Circle, X)) (i : ι) (z : OpenDisk) :
-    (cellInteriorHomeomorph f i z : Space f) = cellInteriorMap f i z := rfl
-/-- Contractibility of the actual quotient-subspace cell interior follows from its coordinates. -/
-instance cellInterior_contractibleSpace (f : ι → C(Circle, X)) (i : ι) :
-    ContractibleSpace (cellInterior f i) :=
-  (cellInteriorHomeomorph f i).symm.contractibleSpace
-instance cellInterior_simplyConnectedSpace (f : ι → C(Circle, X)) (i : ι) :
-    SimplyConnectedSpace (cellInterior f i) := inferInstance
 /-- A single punctured disk's actual embedding into the quotient. -/
 def cellAnnulusMap (f : ι → C(Circle, X)) (i : ι) : C(Annulus, Space f) :=
   (cellInteriorMap f i).comp annulusInclusion
@@ -7955,11 +7263,6 @@ lemma cellAnnulusMap_range (f : ι → C(Circle, X)) (i : ι) :
 def cellOverlapHomeomorph (f : ι → C(Circle, X)) (i : ι) : Annulus ≃ₜ cellOverlap f i :=
   (cellAnnulusMap_isEmbedding f i).toHomeomorph.trans
     (Homeomorph.setCongr (cellAnnulusMap_range f i))
-@[simp] lemma cellOverlapHomeomorph_apply (f : ι → C(Circle, X)) (i : ι) (z : Annulus) :
-    (cellOverlapHomeomorph f i z : Space f) = cellAnnulusMap f i z := rfl
-instance cellOverlap_pathConnectedSpace (f : ι → C(Circle, X)) (i : ι) :
-    PathConnectedSpace (cellOverlap f i) :=
-  (cellOverlapHomeomorph f i).pathConnectedSpace
 /-- The actual half-radius basepoint in cell `i`'s overlap. -/
 def cellOverlapBasepoint (f : ι → C(Circle, X)) (i : ι) : cellOverlap f i :=
   cellOverlapHomeomorph f i annulusBasepoint
@@ -7971,64 +7274,15 @@ def cellOverlapGenerator (f : ι → C(Circle, X)) (i : ι) :
 def cellOverlapGeneratorClass (f : ι → C(Circle, X)) (i : ι) :
     FundamentalGroup (cellOverlap f i) (cellOverlapBasepoint f i) :=
   .mk (cellOverlapGenerator f i)
-/-- Coordinate transport is the induced isomorphism of actual based fundamental groups. -/
-def cellOverlapFundamentalGroupEquivAnnulus (f : ι → C(Circle, X)) (i : ι) :
-    FundamentalGroup (cellOverlap f i) (cellOverlapBasepoint f i) ≃*
-      FundamentalGroup Annulus annulusBasepoint :=
-  homotopyEquivFundamentalGroupOfEq (cellOverlapHomeomorph f i).symm.toHomotopyEquiv
-    ((cellOverlapHomeomorph f i).symm_apply_apply annulusBasepoint)
 set_option backward.isDefEq.respectTransparency false in
-@[simp] lemma cellOverlapFundamentalGroupEquivAnnulus_generator
-    (f : ι → C(Circle, X)) (i : ι) :
-    cellOverlapFundamentalGroupEquivAnnulus f i (cellOverlapGeneratorClass f i) =
-      annulusGeneratorClass := by
-  change FundamentalGroup.mapOfEq
-    ((cellOverlapHomeomorph f i).symm : C(cellOverlap f i, Annulus))
-    ((cellOverlapHomeomorph f i).symm_apply_apply annulusBasepoint)
-    (cellOverlapGeneratorClass f i) = _
-  unfold cellOverlapGeneratorClass cellOverlapGenerator
-  rw [FundamentalGroup.mapOfEq_apply]
-  change Path.Homotopic.Quotient.mk
-    (((cellOverlapGenerator f i).map (cellOverlapHomeomorph f i).symm.continuous).cast
-      ((cellOverlapHomeomorph f i).symm_apply_apply annulusBasepoint).symm
-      ((cellOverlapHomeomorph f i).symm_apply_apply annulusBasepoint).symm) = _
-  congr 1
-  apply Path.ext
-  funext t
-  exact (cellOverlapHomeomorph f i).symm_apply_apply (annulusGenerator t)
-lemma cellInterior_subset_interiors (f : ι → C(Circle, X)) (i : ι) :
-    cellInterior f i ⊆ interiors f := by
-  rintro y ⟨z, rfl⟩
-  exact interiorRepresentative_mem_interiors f i z
-/-- A cell interior included into the full interior open set. -/
-def cellInteriorToInteriors (f : ι → C(Circle, X)) (i : ι) :
-    C(cellInterior f i, interiors f) :=
-  ⟨fun z => ⟨z.1, cellInterior_subset_interiors f i z.property⟩,
-    continuous_subtype_val.subtype_mk _⟩
 /-- An overlap component included into the full overlap. -/
 def cellOverlapToOverlap (f : ι → C(Circle, X)) (i : ι) :
     C(cellOverlap f i, overlap f) :=
   ⟨fun z => ⟨z.1, z.property.1⟩, continuous_subtype_val.subtype_mk _⟩
-/-- An overlap component included into its actual disk interior. -/
-def cellOverlapToCellInterior (f : ι → C(Circle, X)) (i : ι) :
-    C(cellOverlap f i, cellInterior f i) :=
-  ⟨fun z => ⟨z.1, z.property.2⟩, continuous_subtype_val.subtype_mk _⟩
 /-- An overlap component included into the actual punctured neighborhood. -/
 def cellOverlapToNeighborhood (f : ι → C(Circle, X)) (i : ι) :
     C(cellOverlap f i, puncturedNeighborhood f) :=
   (overlapToNeighborhood f).comp (cellOverlapToOverlap f i)
-@[simp] lemma cellInteriorToInteriors_coordinates (f : ι → C(Circle, X)) (i : ι)
-    (z : OpenDisk) :
-    cellInteriorToInteriors f i (cellInteriorHomeomorph f i z) =
-      interiorsHomeomorph f ⟨i, z⟩ := rfl
-@[simp] lemma cellOverlapToOverlap_coordinates (f : ι → C(Circle, X)) (i : ι)
-    (z : Annulus) :
-    cellOverlapToOverlap f i (cellOverlapHomeomorph f i z) =
-      overlapHomeomorph f ⟨i, z⟩ := rfl
-@[simp] lemma cellOverlapToCellInterior_coordinates (f : ι → C(Circle, X)) (i : ι)
-    (z : Annulus) :
-    cellOverlapToCellInterior f i (cellOverlapHomeomorph f i z) =
-      cellInteriorHomeomorph f i z.1 := rfl
 /-- The neighborhood retraction on the overlap is exactly the original attaching map
 applied to the polar coordinate, not an abstract homotopic replacement. -/
 lemma neighborhoodRetraction_overlap_coordinates (f : ι → C(Circle, X)) (x₀ : X)
@@ -8119,9 +7373,6 @@ def coproductFundamentalGroupEquiv {A : Type*} [TopologicalSpace A] (i : ι) (a 
         ((p.map (coproductSecond (ι := ι)).continuous).map (coproductComponent i).continuous) = _
       rw [coproduct_path_reconstruction]
       rfl)
-@[simp] lemma coproductFundamentalGroupEquiv_apply {A : Type*} [TopologicalSpace A]
-    (i : ι) (a : A) (γ : FundamentalGroup A a) :
-    coproductFundamentalGroupEquiv i a γ = FundamentalGroup.map (coproductComponent i) a γ := rfl
 /-- The radius-half anchor of the actual full overlap in cell `i`. -/
 def overlapAnchor (f : ι → C(Circle, X)) (i : ι) : overlap f :=
   overlapHomeomorph f ⟨i, annulusBasepoint⟩
@@ -8175,12 +7426,6 @@ theorem overlapAnchorGenerator_generates (f : ι → C(Circle, X)) (i : ι)
   have h := congrArg (overlapAnchorFundamentalGroupEquiv f i) hn
   simpa only [map_zpow, overlapAnchorFundamentalGroupEquiv_generator,
     MulEquiv.apply_symm_apply] using h.symm
-/-- The retracted overlap anchor is exactly the attaching map's basepoint. -/
-@[simp] lemma neighborhoodRetraction_overlapAnchor (f : ι → C(Circle, X)) (x₀ : X) (i : ι) :
-    neighborhoodRetraction f x₀ (overlapLeft f (overlapAnchor f i)) = f i 1 := by
-  change neighborhoodRetraction f x₀
-    (overlapToNeighborhood f (overlapHomeomorph f ⟨i, annulusBasepoint⟩)) = _
-  rw [neighborhoodRetraction_overlap_coordinates, annulusPolar_basepoint]
 end CellAttachment
 end
 end CellAttachment_CoverModels
@@ -8215,8 +7460,6 @@ lemma rawRadial_respects (f : ι → C(Circle, X)) (t : unitInterval)
 /-- Algebraic radial descent; joint continuity on the punctured neighborhood is proved below. -/
 def quotientRadial (f : ι → C(Circle, X)) (t : unitInterval) : Space f → Space f :=
   Quot.map (rawRadial t) (fun _ _ h => rawRadial_respects f t h)
-@[simp] lemma quotientRadial_inclusion (f : ι → C(Circle, X)) (t : unitInterval) (x : X) :
-    quotientRadial f t (inclusion f x) = inclusion f x := rfl
 lemma quotientRadial_puncturedQuotient (f : ι → C(Circle, X)) (t : unitInterval)
     (a : PuncturedRaw X ι) :
     quotientRadial f t (puncturedQuotient f a) =
@@ -8339,8 +7582,6 @@ theorem homotopyEquivPi1_bijective (e : ContinuousMap.HomotopyEquiv X Y) (x : X)
 def homotopyEquivPi1 (e : ContinuousMap.HomotopyEquiv X Y) (x : X) :
     FundamentalGroup X x ≃* FundamentalGroup Y (e x) :=
   MulEquiv.ofBijective (FundamentalGroup.map e.toFun x) (homotopyEquivPi1_bijective e x)
-@[simp] theorem homotopyEquivPi1_apply (e : ContinuousMap.HomotopyEquiv X Y) (x : X)
-    (g : FundamentalGroup X x) : homotopyEquivPi1 e x g = FundamentalGroup.map e.toFun x g := rfl
 end CellAttachment
 end
 end CellAttachment_HomotopyPi1
@@ -8374,11 +7615,6 @@ constructed homotopy equivalence; it is not an extra hypothesis. -/
 theorem neighborhood_pathConnectedSpace (f : ι → C(Circle, X)) (x₀ : X)
     [PathConnectedSpace X] : PathConnectedSpace (puncturedNeighborhood f) :=
   homotopyEquivPathConnectedSpace (neighborhoodHomotopyEquiv f x₀).symm
-/-- The deformation fixes every point of the original space at every time. -/
-@[simp] theorem neighborhoodRadial_inclusion (f : ι → C(Circle, X)) (t : unitInterval) (x : X) :
-    neighborhoodRadial f t (neighborhoodInclusion f x) = neighborhoodInclusion f x := by
-  apply Subtype.ext
-  rfl
 /-- Retraction is invariant throughout the explicitly descended radial homotopy. -/
 @[simp] theorem neighborhoodRetraction_radial (f : ι → C(Circle, X)) (x₀ : X)
     (t : unitInterval) (y : puncturedNeighborhood f) :
@@ -8399,8 +7635,7 @@ theorem neighborhood_pathConnectedSpace (f : ι → C(Circle, X)) (x₀ : X)
     (y : puncturedNeighborhood f) :
     ((neighborhoodDeformation f x₀).evalAt y).map (neighborhoodRetraction f x₀).continuous =
       Path.refl (neighborhoodRetraction f x₀ y) := by
-  apply Path.ext
-  funext t
+  ext t
   exact neighborhoodRetraction_radial f x₀ t y
 /-- The inverse of the compatible neighborhood equivalence is the actual retraction map. -/
 theorem neighborhoodPi1Equiv_symm_apply (f : ι → C(Circle, X)) (x₀ : X)
@@ -8440,10 +7675,6 @@ def coverOverlapGeneratorClass (f : ι → C(Circle, X)) (i : ι) :
     FundamentalGroup (overlap f) (coverOverlapAnchor f i) :=
   FundamentalGroup.map (cellOverlapToOverlap f i) (cellOverlapBasepoint f i)
     (cellOverlapGeneratorClass f i)
-@[simp] theorem coverOverlapAnchor_eq (f : ι → C(Circle, X)) (i : ι) :
-    coverOverlapAnchor f i = overlapAnchor f i := rfl
-@[simp] theorem coverOverlapGeneratorClass_eq (f : ι → C(Circle, X)) (i : ι) :
-    coverOverlapGeneratorClass f i = overlapAnchorGeneratorClass f i := rfl
 /-- The relator in the actual punctured-neighborhood vertex group, transported
 using the specified path from the original basepoint to that cell's overlap anchor. -/
 def neighborhoodTransportedRelator (f : ι → C(Circle, X)) (x₀ : X)
@@ -8523,16 +7754,12 @@ theorem neighborhood_inclusion_vertex_quotient
     fun i => Path.Homotopic.Quotient.mk (p i.down)
   let r : ∀ i : I, End (anchor i) := fun i => coverOverlapGeneratorClass f i.down
   have hindexC : ∀ (y z : FundamentalGroupoid (interiors f)) (_γ : y ⟶ z),
-      indexC y = indexC z := by
-    intro y z γ
-    exact congrArg ULift.up (interiorIndex_arrow f γ)
+      indexC y = indexC z := fun _ _ γ => congrArg ULift.up (interiorIndex_arrow f γ)
   have hindex : ∀ w : FundamentalGroupoid (overlap f),
-      indexC ((FundamentalGroupoid.map (overlapRight f)).obj w) = indexA w := by
-    intro w
-    exact congrArg ULift.up (interiorIndex_overlapToInteriors f w.as)
-  have hcyc : ∀ (i : I) (g : End (anchor i)), ∃ n : ℤ, g = r i ^ n := by
-    intro i g
-    exact overlapAnchorGenerator_generates f i.down g
+      indexC ((FundamentalGroupoid.map (overlapRight f)).obj w) = indexA w :=
+    fun w => congrArg ULift.up (interiorIndex_overlapToInteriors f w.as)
+  have hcyc : ∀ (i : I) (g : End (anchor i)), ∃ n : ℤ, g = r i ^ n :=
+    fun i g => overlapAnchorGenerator_generates f i.down g
   have ht := pushout_vertex_quotient_of_component_data
     (FundamentalGroupoid.map (overlapLeft f)) (FundamentalGroupoid.map (overlapRight f))
     (FundamentalGroupoid.map (neighborhoodToSpace f)) (FundamentalGroupoid.map (interiorsToSpace f))
@@ -8545,8 +7772,8 @@ theorem neighborhood_inclusion_vertex_quotient
       Set.range (neighborhoodTransportedRelator f x₀ p) := by
     ext g
     constructor
-    · rintro ⟨i, rfl⟩
-      exact ⟨i.down, rfl⟩
+    · rintro ⟨⟨i⟩, rfl⟩
+      exact ⟨i, rfl⟩
     · rintro ⟨i, rfl⟩
       exact ⟨⟨i⟩, rfl⟩
   change Function.Surjective
@@ -8638,8 +7865,7 @@ lemma radialAnchorPath_retraction_class (f : ι → C(Circle, X)) (x₀ : X)
   rw [Path.map_trans, ← Path.map_symm, retraction_deformation_evalAt]
   have hg : (γ.map (neighborhoodInclusion f).continuous).map
       (neighborhoodRetraction f x₀).continuous = γ := by
-    apply Path.ext
-    funext t
+    ext t
     rfl
   rw [hg]
   simp [Path.Homotopic.Quotient.mk_trans, Path.Homotopic.Quotient.mk_refl]
@@ -8685,8 +7911,7 @@ lemma retraction_neighborhoodCellGenerator (f : ι → C(Circle, X)) (x₀ : X) 
     (neighborhoodCellGenerator f i).map (neighborhoodRetraction f x₀).continuous =
       ((circleGenerator.map (f i).continuous).cast
         (retraction_attachmentAnchor f x₀ i) (retraction_attachmentAnchor f x₀ i)) := by
-  apply Path.ext
-  funext t
+  ext t
   change neighborhoodRetraction f x₀
     (cellOverlapToNeighborhood f i (cellOverlapHomeomorph f i (annulusGenerator t))) =
       f i (circleGenerator t)
@@ -8798,10 +8023,8 @@ isomorphism, for arbitrary independent space/index universes. -/
 theorem two_cell_attachment : completeStatement.{u,v} := by
   intro X _ _ ι f x₀ γ
   obtain ⟨hs,hk⟩ := cell_attachment_exact f x₀ γ
-  refine ⟨hs,hk,?_⟩
-  refine ⟨quotientNormalClosureEquiv (attachingLoopClass f x₀ γ) (inclusionPi1 f x₀)
-    hs hk, ?_⟩
-  rfl
+  exact ⟨hs, hk, quotientNormalClosureEquiv (attachingLoopClass f x₀ γ)
+    (inclusionPi1 f x₀) hs hk, rfl⟩
 end CellAttachment
 end
 end CellAttachment_Main
